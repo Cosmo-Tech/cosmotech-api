@@ -6,6 +6,10 @@ plugins {
    id("org.openapi.generator")
 }
 
+dependencies {
+   api(project(":common"))
+}
+
 sourceSets {
    main {
       java.srcDirs("$buildDir/generated-sources/openapi/src/main/kotlin")
