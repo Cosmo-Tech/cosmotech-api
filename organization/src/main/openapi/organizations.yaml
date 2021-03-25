@@ -1,0 +1,46 @@
+openapi: 3.0.3
+info:
+  title: Cosmo Tech Organization Manager API
+  description: Cosmo Tech Organization Manager API
+  version: 1.0.0
+servers:
+- url: 'http://localhost:8080'
+security:
+- ApiKeyAuth: [ ]
+- AADOAuth2AuthCode: [ ]
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      description: The Cosmo Tech API Key
+      name: key
+      in: query
+    AADOAuth2AuthCode:
+      type: oauth2
+      description: Azure Active Directory authentication
+      flows:
+        implicit:
+          authorizationUrl: https://login.microsoftonline.com/e9641c78-d0d6-4d09-af63-168922724e7f/oauth2/v2.0/authorize
+          scopes:
+            http://sample.azure.cosmo-platform.com/user_impersonation: User Impersonation
+tags:
+- name: organization
+  description: Organization Management
+paths:
+  /organizations/{organization_id}:
+    get:
+      tags:
+        - organization
+      summary: Get a given organization
+      parameters:
+        - name: organization_id
+          in: path
+          description: the organization identifier
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: the organization details
+        "404":
+          description: the organization specified is unknown or you don't have access to it
