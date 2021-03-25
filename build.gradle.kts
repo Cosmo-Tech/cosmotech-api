@@ -11,7 +11,8 @@ plugins {
 }
 
 dependencies {
-	implementation(project("organization"))
+	api(project(":common"))
+	implementation(project(":organization"))
 }
 
 allprojects {
