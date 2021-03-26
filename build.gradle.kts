@@ -116,6 +116,17 @@ tasks.register<GenerateTask>("openApiJSGenerate") {
    ))
 }
 
+tasks.register<Copy>("copyJSGitPushScript") {
+  dependsOn("openApiJSGenerate")
+	from("${projectDir}/scripts/git_push.sh")
+	into("$buildDir/generated-sources/javascript")
+}
+
+tasks.register("generateJSClient") {
+    dependsOn("copyJSGitPushScript")
+}
+
+
 tasks.register<GenerateTask>("openApiPythonGenerate") {
    dependsOn("mergeOpenApiFiles")
    input = "${projectDir}/openapi/openapi.yaml"
@@ -127,10 +138,20 @@ tasks.register<GenerateTask>("openApiPythonGenerate") {
    ))
 }
 
+tasks.register<Copy>("copyPythonGitPushScript") {
+  dependsOn("openApiPythonGenerate")
+	from("${projectDir}/scripts/git_push.sh")
+	into("$buildDir/generated-sources/python")
+}
+
+tasks.register("generatePythonClient") {
+    dependsOn("copyPythonGitPushScript")
+}
+
 tasks.getByName<GenerateTask>("openApiGenerate") {
     enabled = false
 }
 
 tasks.register("generateClients") {
-    dependsOn("openApiJSGenerate", "openApiPythonGenerate")
+    dependsOn("generateJSClient", "generatePythonClient")
 }
