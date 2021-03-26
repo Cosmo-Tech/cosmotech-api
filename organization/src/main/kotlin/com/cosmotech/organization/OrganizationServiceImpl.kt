@@ -7,23 +7,23 @@ import org.springframework.stereotype.Service
 
 @Service
 class OrganizationServiceImpl : AbstractPhoenixService(), OrganizationsApiService {
-    override fun findAll(): List<Organization> {
+    override fun findAllOrganizations(): List<Organization> {
         TODO("Not yet implemented")
     }
 
-    override fun findById(organizationId: String): Organization {
+    override fun findOrganizationById(organizationId: String): Organization {
         TODO("Not yet implemented")
     }
 
-    override fun register(organization: Organization): Organization {
+    override fun registerOrganization(organization: Organization): Organization {
         TODO("Not yet implemented")
     }
 
-    override fun unregister(organizationId: String): Organization {
+    override fun unregisterOrganization(organizationId: String): Organization {
         TODO("Not yet implemented")
     }
 
-    override fun update(organizationId: String, organization: Organization): Organization {
+    override fun updateOrganization(organizationId: String, organization: Organization): Organization {
         TODO("Not yet implemented")
     }
 }

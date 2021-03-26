@@ -19,7 +19,7 @@ tags:
 paths:
   /organizations:
     post:
-      operationId: register
+      operationId: registerOrganization
       tags:
         - organization
       summary: Register a new organization
@@ -40,7 +40,7 @@ paths:
         "400":
           description: Bad request
     get:
-      operationId: findAll
+      operationId: findAllOrganizations
       tags:
         - organization
       summary: List all Organizations
@@ -57,7 +57,7 @@ paths:
                 Two:
                   summary: Two organization
                   description: Two organization example
-                  value:
+                  value: |
                     [
                       {
                         "id": "1",
@@ -78,7 +78,7 @@ paths:
         schema:
           type: string
     get:
-      operationId: findById
+      operationId: findOrganizationById
       tags:
         - organization
       summary: Get the details of an organization
@@ -92,7 +92,7 @@ paths:
         "404":
           description: the Organization specified is unknown or you don't have access to it
     patch:
-      operationId: update
+      operationId: updateOrganization
       tags:
         - organization
       summary: Update an organization
@@ -115,7 +115,7 @@ paths:
         "404":
           description: the Organization specified is unknown or you don't have access to it
     delete:
-      operationId: unregister
+      operationId: unregisterOrganization
       tags:
         - organization
       summary: Unregister an organization
@@ -151,9 +151,9 @@ components:
       type: object
       description: an Organization
       properties:
-        organizationId:
+        id:
           type: string
           description: the Organization unique identifier, in response
-        organizationName:
+        name:
           type: string
           description: the Organization name

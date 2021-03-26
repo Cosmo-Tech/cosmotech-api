@@ -35,3 +35,10 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### VIM ###
+*~
+*.swp
+
+### Generated ###
+openapi/openapi.yaml

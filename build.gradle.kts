@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
@@ -7,7 +8,7 @@ plugins {
 	kotlin("plugin.spring") version kotlinVersion
 	id("org.springframework.boot") version "2.4.4"
 	id("io.spring.dependency-management") version "1.0.11.RELEASE"
-	id("org.openapi.generator") version "5.1.0" apply false
+	id("org.openapi.generator") version "5.1.0"
 	id("com.rameshkp.openapi-merger-gradle-plugin") version "1.0.3"
 }
 
@@ -72,7 +73,7 @@ tasks.register<Copy>("copySubProjectsOpenAPIFiles") {
 openApiMerger {
 	inputDirectory.set(file("$buildDir/tmp/openapi"))
 	output {
-		directory.set(buildDir)
+		directory.set(file("$rootDir/openapi"))
 		fileName.set("openapi")
 		fileExtension.set("yaml")
 	}
@@ -102,4 +103,34 @@ openApiMerger {
 
 tasks.getByName<com.rameshkp.openapi.merger.gradle.task.OpenApiMergerTask>("mergeOpenApiFiles") {
 	dependsOn("copySubProjectsOpenAPIFiles")
+}
+tasks.register<GenerateTask>("openApiJSGenerate") {
+   dependsOn("mergeOpenApiFiles")
+   input = "${projectDir}/openapi/openapi.yaml"
+   outputDir.set("$buildDir/generated-sources/javascript")
+   generatorName.set("javascript")
+   additionalProperties.set(mapOf(
+          "projectName" to "@cosmotech/api",
+          "projectDescription" to "Cosmo Tech Platform API client",
+          "moduleName" to "CosmotechApi"
+   ))
+}
+
+tasks.register<GenerateTask>("openApiPythonGenerate") {
+   dependsOn("mergeOpenApiFiles")
+   input = "${projectDir}/openapi/openapi.yaml"
+   outputDir.set("$buildDir/generated-sources/python")
+   generatorName.set("python")
+   additionalProperties.set(mapOf(
+          "projectName" to "cosmotech-api",
+          "packageName" to "cosmotech_api"
+   ))
+}
+
+tasks.getByName<GenerateTask>("openApiGenerate") {
+    enabled = false
+}
+
+tasks.register("generateClients") {
+    dependsOn("openApiJSGenerate", "openApiPythonGenerate")
 }
