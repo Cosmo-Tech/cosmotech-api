@@ -7,7 +7,7 @@ plugins {
 }
 
 dependencies {
-   api(project(":common"))
+   api(project(":cosmotech-api-common"))
 }
 
 sourceSets {

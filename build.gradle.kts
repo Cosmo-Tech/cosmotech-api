@@ -11,8 +11,8 @@ plugins {
 }
 
 dependencies {
-	api(project(":common"))
-	implementation(project(":organization"))
+	api(project(":cosmotech-api-common"))
+	implementation(project(":cosmotech-organization-api"))
 }
 
 allprojects {
