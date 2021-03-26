@@ -53,6 +53,21 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Organization'
+              examples:
+                Two:
+                  summary: Two organization
+                  description: Two organization example
+                  value:
+                    [
+                      {
+                        "id": "1",
+                        "name": "Cosmo Tech"
+                      },
+                      {
+                        "id": "2",
+                        "name": "Phoenix"
+                      }
+                    ]
 
   /organizations/{organization_id}:
     parameters:
