@@ -1,13 +1,121 @@
 openapi: 3.0.3
+
 info:
   title: Cosmo Tech Organization Manager API
   description: Cosmo Tech Organization Manager API
   version: 1.0.0
+
 servers:
 - url: 'http://localhost:8080'
+
 security:
 - ApiKeyAuth: [ ]
 - AADOAuth2AuthCode: [ ]
+
+tags:
+- name: organization
+  description: Organization Management
+
+paths:
+  /organizations:
+    post:
+      operationId: register
+      tags:
+        - organization
+      summary: Register a new organization
+      requestBody:
+        description: the Organization to register
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Organization'
+      responses:
+        "201":
+          description: the organization details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        "400":
+          description: Bad request
+    get:
+      operationId: findAll
+      tags:
+        - organization
+      summary: List all Organizations
+      responses:
+        "200":
+          description: the organization details
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Organization'
+
+  /organizations/{organization_id}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: findById
+      tags:
+        - organization
+      summary: Get the details of an organization
+      responses:
+        "200":
+          description: the Organization details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        "404":
+          description: the Organization specified is unknown or you don't have access to it
+    patch:
+      operationId: update
+      tags:
+        - organization
+      summary: Update an organization
+      requestBody:
+        description: the new Organization details
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Organization'
+      responses:
+        "200":
+          description: the organization details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        "400":
+          description: Bad request
+        "404":
+          description: the Organization specified is unknown or you don't have access to it
+    delete:
+      operationId: unregister
+      tags:
+        - organization
+      summary: Unregister an organization
+      responses:
+        "200":
+          description: the organization details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        "400":
+          description: Bad request
+        "404":
+          description: the Organization specified is unknown or you don't have access to it
+
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -23,24 +131,14 @@ components:
           authorizationUrl: https://login.microsoftonline.com/e9641c78-d0d6-4d09-af63-168922724e7f/oauth2/v2.0/authorize
           scopes:
             http://sample.azure.cosmo-platform.com/user_impersonation: User Impersonation
-tags:
-- name: organization
-  description: Organization Management
-paths:
-  /organizations/{organization_id}:
-    get:
-      tags:
-        - organization
-      summary: Get a given organization
-      parameters:
-        - name: organization_id
-          in: path
-          description: the organization identifier
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: the organization details
-        "404":
-          description: the organization specified is unknown or you don't have access to it
+  schemas:
+    Organization:
+      type: object
+      description: an Organization
+      properties:
+        organizationId:
+          type: string
+          description: the Organization unique identifier, in response
+        organizationName:
+          type: string
+          description: the Organization name
