@@ -1,3 +1,3 @@
-rootProject.name = "phoenix-api"
+rootProject.name = "cosmotech-api"
 include("common")
 include("organization")
