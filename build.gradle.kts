@@ -8,11 +8,13 @@ plugins {
 	id("org.springframework.boot") version "2.4.4"
 	id("io.spring.dependency-management") version "1.0.11.RELEASE"
 	id("org.openapi.generator") version "5.1.0" apply false
+	id("com.rameshkp.openapi-merger-gradle-plugin") version "1.0.3"
 }
 
 dependencies {
 	api(project(":cosmotech-api-common"))
 	implementation(project(":cosmotech-organization-api"))
+	implementation(project(":cosmotech-user-api"))
 }
 
 allprojects {
@@ -60,4 +62,44 @@ allprojects {
 	tasks.getByName<BootJar>("bootJar") {
 		classifier = "uberjar"
 	}
+}
+
+tasks.register<Copy>("copySubProjectsOpenAPIFiles") {
+	from("organization/src/main/openapi/organizations.yaml", "user/src/main/openapi/users.yaml")
+	into("$buildDir/tmp/openapi")
+}
+
+openApiMerger {
+	inputDirectory.set(file("$buildDir/tmp/openapi"))
+	output {
+		directory.set(buildDir)
+		fileName.set("openapi")
+		fileExtension.set("yaml")
+	}
+	openApi {
+		openApiVersion.set("3.0.3")
+		info {
+			title.set("Cosmo Tech Plaform API")
+			description.set("Cosmo Tech Platform API")
+			version.set(project.version.toString())
+//			termsOfService.set("http://openapimerger.com/terms-of-service")
+//			contact {
+//				name.set("OpenApiMerger Team")
+//				email.set("openapi@sample.com")
+//				url.set("http://openapimerger.com")
+//			}
+//			license {
+//				name.set("Apache License v2.0")
+//				url.set("http://apache.org/v2")
+//			}
+		}
+//		externalDocs {
+//			description.set("External docs description")
+//			url.set("http://external-docs.com/uri")
+//		}
+	}
+}
+
+tasks.getByName<com.rameshkp.openapi.merger.gradle.task.OpenApiMergerTask>("mergeOpenApiFiles") {
+	dependsOn("copySubProjectsOpenAPIFiles")
 }
