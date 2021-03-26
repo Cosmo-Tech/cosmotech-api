@@ -1,0 +1,159 @@
+openapi: 3.0.3
+
+info:
+  title: Cosmo Tech User Manager API
+  description: Cosmo Tech User Manager API
+  version: 1.0.0
+
+servers:
+- url: 'http://localhost:8080'
+
+security:
+- ApiKeyAuth: [ ]
+- AADOAuth2AuthCode: [ ]
+
+tags:
+- name: user
+  description: User Management
+
+paths:
+  /users:
+    post:
+      operationId: register
+      tags:
+        - user
+      summary: Register a new user
+      requestBody:
+        description: the User to register
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        "201":
+          description: the user details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "400":
+          description: Bad request
+    get:
+      operationId: findAll
+      tags:
+        - user
+      summary: List all Users
+      responses:
+        "200":
+          description: the user details
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+              examples:
+                Two:
+                  summary: Two User
+                  description: Two User example
+                  value:
+                    [
+                      {
+                        "id": "1",
+                        "name": "Bob"
+                      },
+                      {
+                        "id": "2",
+                        "name": "Alice"
+                      }
+                    ]
+
+  /users/{user_id}:
+    parameters:
+      - name: user_id
+        in: path
+        description: the User identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: findById
+      tags:
+        - user
+      summary: Get the details of an user
+      responses:
+        "200":
+          description: the User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "404":
+          description: the User specified is unknown or you don't have access to it
+    patch:
+      operationId: update
+      tags:
+        - user
+      summary: Update an user
+      requestBody:
+        description: the new User details
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        "200":
+          description: the user details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "400":
+          description: Bad request
+        "404":
+          description: the User specified is unknown or you don't have access to it
+    delete:
+      operationId: unregister
+      tags:
+        - user
+      summary: Unregister an user
+      responses:
+        "200":
+          description: the user details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "400":
+          description: Bad request
+        "404":
+          description: the User specified is unknown or you don't have access to it
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      description: The Cosmo Tech API Key
+      name: key
+      in: query
+    AADOAuth2AuthCode:
+      type: oauth2
+      description: Azure Active Directory authentication
+      flows:
+        implicit:
+          authorizationUrl: https://login.microsoftonline.com/e9641c78-d0d6-4d09-af63-168922724e7f/oauth2/v2.0/authorize
+          scopes:
+            http://sample.azure.cosmo-platform.com/user_impersonation: User Impersonation
+  schemas:
+    User:
+      type: object
+      description: a User
+      properties:
+        userId:
+          type: string
+          description: the User unique identifier, in response
+        userName:
+          type: string
+          description: the User name
