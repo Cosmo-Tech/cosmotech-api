@@ -1,4 +1,3 @@
-import com.diffplug.gradle.spotless.SpotlessApply
 import com.diffplug.gradle.spotless.SpotlessExtension
 import com.rameshkp.openapi.merger.gradle.task.OpenApiMergerTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -79,8 +78,6 @@ allprojects {
       tasks.withType<AbstractCompile> { dependsOn(task) }
     }
   }
-
-  tasks.withType<AbstractCompile> { dependsOn(tasks.withType<SpotlessApply>()) }
 
   tasks.withType<KotlinCompile> {
     kotlinOptions {
