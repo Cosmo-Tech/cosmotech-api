@@ -7,9 +7,12 @@ plugins {
 	val kotlinVersion = "1.4.31"
 	kotlin("jvm") version kotlinVersion
 	kotlin("plugin.spring") version kotlinVersion
+
 	id("org.springframework.boot") version "2.4.4"
 	id("io.spring.dependency-management") version "1.0.11.RELEASE"
+
 	id("org.openapi.generator") version "5.1.0"
+
 	id("com.rameshkp.openapi-merger-gradle-plugin") version "1.0.3"
 }
 
@@ -41,8 +44,11 @@ allprojects {
 		implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 		implementation("javax.validation:validation-api:2.0.1.Final")
 		implementation("io.swagger:swagger-annotations:1.6.2")
-		implementation("io.springfox:springfox-boot-starter:3.0.0")
-		implementation("io.springfox:springfox-swagger-ui:3.0.0")
+
+		val springfoxVersion = "3.0.0"
+		implementation("io.springfox:springfox-boot-starter:${springfoxVersion}")
+		implementation("io.springfox:springfox-swagger-ui:${springfoxVersion}")
+
 		testImplementation("org.springframework.boot:spring-boot-starter-test")
 	}
 
