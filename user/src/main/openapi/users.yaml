@@ -30,6 +30,15 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/User'
+            examples:
+              Bob:
+                summary: Bob User
+                description: Bob User example
+                value: |
+                  {
+                    "id": "1",
+                    "name": "Bob"
+                  }
       responses:
         "201":
           description: the user details
@@ -37,6 +46,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+              examples:
+                Bob:
+                  summary: Bob User
+                  description: Bob User example
+                  value: |
+                    {
+                      "id": "1",
+                      "name": "Bob"
+                    }
         "400":
           description: Bad request
     get:
@@ -89,6 +107,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+              examples:
+                Bob:
+                  summary: Bob User
+                  description: Bob User example
+                  value: |
+                    {
+                      "id": "1",
+                      "name": "Bob"
+                    }
         "404":
           description: the User specified is unknown or you don't have access to it
     patch:
@@ -103,6 +130,15 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/User'
+            examples:
+              Bob:
+                summary: Bob User
+                description: Bob User example
+                value: |
+                  {
+                    "id": "1",
+                    "name": "Bob"
+                  }
       responses:
         "200":
           description: the user details
@@ -110,6 +146,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+              examples:
+                Bob:
+                  summary: Bob User
+                  description: Bob User example
+                  value: |
+                    {
+                      "id": "1",
+                      "name": "Bob"
+                    }
         "400":
           description: Bad request
         "404":
@@ -126,6 +171,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+              examples:
+                Bob:
+                  summary: Bob User
+                  description: Bob User example
+                  value: |
+                    {
+                      "id": "1",
+                      "name": "Bob"
+                    }
         "400":
           description: Bad request
         "404":

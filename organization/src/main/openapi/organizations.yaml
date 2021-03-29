@@ -33,11 +33,21 @@ paths:
             examples:
               New:
                 summary: Create a new organization
-                description: Create a new organization
+                description: Create a new organization with 2 users
                 value: |
                   {
                     "id"  : "NA",
-                    "name": "Cosmo Tech"
+                    "name": "Cosmo Tech",
+                    "users": [
+                      {
+                        "id": "1",
+                        "name": "Bob"
+                      },
+                      {
+                        "id": "2",
+                        "name": "Alice"
+                      }
+                    ]
                   }
       responses:
         "201":
@@ -53,7 +63,17 @@ paths:
                   value: |
                     {
                       "id": "1",
-                      "name": "Cosmo Tech"
+                      "name": "Cosmo Tech",
+                      "users": [
+                        {
+                          "id": "1",
+                          "name": "Bob"
+                        },
+                        {
+                          "id": "2",
+                          "name": "Alice"
+                        }
+                      ]
                     }
         "400":
           description: Bad request
@@ -79,11 +99,32 @@ paths:
                     [
                       {
                         "id": "1",
-                        "name": "Cosmo Tech"
+                        "name": "Cosmo Tech",
+                        "users": [
+                          {
+                            "id": "1",
+                            "name": "Bob"
+                          },
+                          {
+                            "id": "2",
+                            "name": "Alice"
+                          }
+                        ]
                       },
                       {
                         "id": "2",
-                        "name": "Phoenix"
+                        "name": "Phoenix",
+                        "users": [
+                          {
+                            "id": "1",
+                            "name": "Bob"
+                          },
+                          {
+                            "id": "2",
+                            "name": "Alice"
+                          }
+                        ]
+
                       }
                     ]
 
@@ -114,7 +155,17 @@ paths:
                   value: |
                     {
                       "id": "1",
-                      "name": "Cosmo Tech"
+                      "name": "Cosmo Tech",
+                      "users": [
+                        {
+                          "id": "1",
+                          "name": "Bob"
+                        },
+                        {
+                          "id": "2",
+                          "name": "Alice"
+                        }
+                      ]
                     }
         "404":
           description: the Organization specified is unknown or you don't have access to it
@@ -131,13 +182,51 @@ paths:
             schema:
               $ref: '#/components/schemas/Organization'
             examples:
-              Cosmo:
-                summary: Cosmo organization
-                description: Cosmo organisation with id 1
+              ChangeName:
+                summary: Change Name of Organization
+                description: Change the name of Organization 1 to CosmoTech Digital Twins Engine
                 value: |
                   {
-                    "id": "1",
-                    "name": "Cosmo Tech"
+                    "name": "CosmoTech Digital Twins Engine"
+                  }
+              AddUser:
+                summary: Add a user
+                description: Add the user Charles to organization Cosmo Tech
+                value: |
+                  {
+                    "users": [
+                      {
+                        "name": "Charles"
+                      }
+                    ]
+                  }
+              RenameUser:
+                summary: Rename a user
+                description: Rename the user Charles to Xavier
+                value: |
+                  {
+                    "users": [
+                      {
+                        "id": "3",
+                        "name": "Xavier"
+                      }
+                    ]
+                  }
+              RemoveUser:
+                summary: Remove a user
+                description: Remove the user Charles from organization Cosmo Tech
+                value: |
+                  {
+                    "users": [
+                      {
+                        "id": "1",
+                        "name": "Bob"
+                      },
+                      {
+                        "id": "2",
+                        "name": "Alice"
+                      }
+                    ]
                   }
       responses:
         "200":
@@ -153,7 +242,17 @@ paths:
                   value: |
                     {
                       "id": "1",
-                      "name": "Cosmo Tech"
+                      "name": "Cosmo Tech",
+                      "users": [
+                        {
+                          "id": "1",
+                          "name": "Bob"
+                        },
+                        {
+                          "id": "2",
+                          "name": "Alice"
+                        }
+                      ]
                     }
         "400":
           description: Bad request
@@ -178,7 +277,17 @@ paths:
                   value: |
                     {
                       "id": "1",
-                      "name": "Cosmo Tech"
+                      "name": "Cosmo Tech",
+                      "users": [
+                        {
+                          "id": "1",
+                          "name": "Bob"
+                        },
+                        {
+                          "id": "2",
+                          "name": "Alice"
+                        }
+                      ]
                     }
         "400":
           description: Bad request
@@ -211,3 +320,17 @@ components:
         name:
           type: string
           description: the Organization name
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+    User:
+      type: object
+      description: a User
+      properties:
+        id:
+          type: string
+          description: the User unique identifier, in response
+        name:
+          type: string
+          description: the User name
