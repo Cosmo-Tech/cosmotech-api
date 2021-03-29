@@ -72,10 +72,7 @@ allprojects {
 	}
 
 	if (project.name != "cosmotech-api-common") {
-		tasks.named("compileKotlin") {
-			dependsOn("openApiGenerate")
-		}
-		tasks.named("compileTestKotlin") {
+		tasks.withType<KotlinCompile> {
 			dependsOn("openApiGenerate")
 		}
 	}
