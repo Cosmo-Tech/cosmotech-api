@@ -63,6 +63,15 @@ allprojects {
 	tasks.getByName<BootJar>("bootJar") {
 		classifier = "uberjar"
 	}
+
+	if (project.name != "cosmotech-api-common") {
+		tasks.named("compileKotlin") {
+			dependsOn("openApiGenerate")
+		}
+		tasks.named("compileTestKotlin") {
+			dependsOn("openApiGenerate")
+		}
+	}
 }
 
 tasks.register<Copy>("copySubProjectsOpenAPIFiles") {
