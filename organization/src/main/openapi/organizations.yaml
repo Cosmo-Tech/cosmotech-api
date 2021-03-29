@@ -323,8 +323,8 @@ components:
         users:
           type: array
           items:
-            $ref: '#/components/schemas/User'
-    User:
+            $ref: '#/components/schemas/OrganizationUser'
+    OrganizationUser:
       type: object
       description: a User
       properties:

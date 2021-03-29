@@ -211,3 +211,17 @@ components:
         name:
           type: string
           description: the User name
+        organizations:
+          type: array
+          items:
+            $ref: '#/components/schema/UserOrganization'
+    UserOrganization:
+      type: object
+      description: The organization of the user
+      properties:
+        id:
+          type: string
+          description: the Organization id
+        name:
+          type: string
+          description: the Organization name
