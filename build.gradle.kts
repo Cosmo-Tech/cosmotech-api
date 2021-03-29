@@ -1,3 +1,4 @@
+import com.rameshkp.openapi.merger.gradle.task.OpenApiMergerTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.springframework.boot.gradle.tasks.bundling.BootJar
@@ -110,9 +111,10 @@ openApiMerger {
 	}
 }
 
-tasks.getByName<com.rameshkp.openapi.merger.gradle.task.OpenApiMergerTask>("mergeOpenApiFiles") {
+tasks.getByName<OpenApiMergerTask>("mergeOpenApiFiles") {
 	dependsOn("copySubProjectsOpenAPIFiles")
 }
+
 tasks.register<GenerateTask>("openApiJSGenerate") {
    dependsOn("mergeOpenApiFiles")
    input = "${projectDir}/openapi/openapi.yaml"
