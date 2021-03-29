@@ -1,3 +1,4 @@
+import com.diffplug.gradle.spotless.SpotlessExtension
 import com.rameshkp.openapi.merger.gradle.task.OpenApiMergerTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
@@ -7,6 +8,8 @@ plugins {
 	val kotlinVersion = "1.4.31"
 	kotlin("jvm") version kotlinVersion
 	kotlin("plugin.spring") version kotlinVersion
+
+	id("com.diffplug.spotless") version "5.11.1"
 
 	id("org.springframework.boot") version "2.4.4"
 	id("io.spring.dependency-management") version "1.0.11.RELEASE"
@@ -23,6 +26,7 @@ dependencies {
 }
 
 allprojects {
+	apply(plugin = "com.diffplug.spotless")
 	apply(plugin = "org.jetbrains.kotlin.jvm")
 	apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 	apply(plugin = "org.springframework.boot")
@@ -55,6 +59,18 @@ allprojects {
 		implementation("io.springfox:springfox-swagger-ui:${springfoxVersion}")
 
 		testImplementation("org.springframework.boot:spring-boot-starter-test")
+	}
+
+	configure<SpotlessExtension> {
+		java {
+			googleJavaFormat()
+		}
+		kotlin {
+			ktfmt()
+		}
+		kotlinGradle {
+			ktfmt()
+		}
 	}
 
 	tasks.withType<KotlinCompile> {
