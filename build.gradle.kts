@@ -164,3 +164,7 @@ tasks.getByName<GenerateTask>("openApiGenerate") {
 tasks.register("generateClients") {
     dependsOn("generateJSClient", "generatePythonClient")
 }
+
+tasks.getByName<BootJar>("bootJar") {
+	finalizedBy("generateClients")
+}
