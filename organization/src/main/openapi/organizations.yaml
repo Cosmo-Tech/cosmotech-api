@@ -30,6 +30,15 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Organization'
+            examples:
+              New:
+                summary: Create a new organization
+                description: Create a new organization
+                value: |
+                  {
+                    "id"  : "NA",
+                    "name": "Cosmo Tech"
+                  }
       responses:
         "201":
           description: the organization details
@@ -37,6 +46,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Organization'
+              examples:
+                Cosmo:
+                  summary: Cosmo organization
+                  description: Cosmo organisation with id 1
+                  value: |
+                    {
+                      "id": "1",
+                      "name": "Cosmo Tech"
+                    }
         "400":
           description: Bad request
     get:
@@ -89,6 +107,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Organization'
+              examples:
+                Cosmo:
+                  summary: Cosmo organization
+                  description: Cosmo organisation with id 1
+                  value: |
+                    {
+                      "id": "1",
+                      "name": "Cosmo Tech"
+                    }
         "404":
           description: the Organization specified is unknown or you don't have access to it
     patch:
@@ -103,6 +130,15 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Organization'
+            examples:
+              Cosmo:
+                summary: Cosmo organization
+                description: Cosmo organisation with id 1
+                value: |
+                  {
+                    "id": "1",
+                    "name": "Cosmo Tech"
+                  }
       responses:
         "200":
           description: the organization details
@@ -110,6 +146,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Organization'
+              examples:
+                Cosmo:
+                  summary: Cosmo organization
+                  description: Cosmo organisation with id 1
+                  value: |
+                    {
+                      "id": "1",
+                      "name": "Cosmo Tech"
+                    }
         "400":
           description: Bad request
         "404":
@@ -126,6 +171,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Organization'
+              examples:
+                Cosmo:
+                  summary: Cosmo organization
+                  description: Cosmo organisation with id 1
+                  value: |
+                    {
+                      "id": "1",
+                      "name": "Cosmo Tech"
+                    }
         "400":
           description: Bad request
         "404":

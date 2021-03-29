@@ -1,4 +1,6 @@
 ---
 plugin: openapi
 specFile: openapi.yaml
+response:
+    scriptFile: openapi-responses.groovy
 
