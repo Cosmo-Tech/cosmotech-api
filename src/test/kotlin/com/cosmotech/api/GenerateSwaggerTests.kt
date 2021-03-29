@@ -1,6 +1,7 @@
 package com.cosmotech.api
 
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -12,6 +13,7 @@ import java.io.File
 import java.nio.charset.StandardCharsets
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Disabled("Using 'com.rameshkp.openapi-merger-gradle-plugin' instead")
 class GenerateSwaggerTests {
 
     private val logger = LoggerFactory.getLogger(GenerateSwaggerTests::class.java)
