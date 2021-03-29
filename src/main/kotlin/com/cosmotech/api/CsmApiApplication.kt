@@ -6,22 +6,26 @@ import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.FilterType
 
 @SpringBootApplication
-@ComponentScan(basePackages = ["com.cosmotech"], excludeFilters = [
-	ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
-			classes = [
-				com.cosmotech.organization.Application::class,
-				com.cosmotech.user.Application::class
-	]),
-	ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
-			classes = [
-				com.cosmotech.organization.api.DefaultExceptionHandler::class,
-				com.cosmotech.user.api.DefaultExceptionHandler::class
-			])
-])
+@ComponentScan(
+    basePackages = ["com.cosmotech"],
+    excludeFilters =
+        [
+            ComponentScan.Filter(
+                type = FilterType.ASSIGNABLE_TYPE,
+                classes =
+                    [
+                        com.cosmotech.organization.Application::class,
+                        com.cosmotech.user.Application::class]),
+            ComponentScan.Filter(
+                type = FilterType.ASSIGNABLE_TYPE,
+                classes =
+                    [
+                        com.cosmotech.organization.api.DefaultExceptionHandler::class,
+                        com.cosmotech.user.api.DefaultExceptionHandler::class])])
 class CsmApiApplication
 
-//TODO Add Controller Advice for all sub-projects exceptions
+// TODO Add Controller Advice for all sub-projects exceptions
 
 fun main(args: Array<String>) {
-	runApplication<CsmApiApplication>(*args)
+  runApplication<CsmApiApplication>(*args)
 }

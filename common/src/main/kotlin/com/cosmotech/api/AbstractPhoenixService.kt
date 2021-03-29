@@ -7,6 +7,5 @@ import org.springframework.stereotype.Service
 @Service
 abstract class AbstractPhoenixService {
 
-    @Autowired protected lateinit var eventPublisher: ApplicationEventPublisher
-
+  @Autowired protected lateinit var eventPublisher: ApplicationEventPublisher
 }
