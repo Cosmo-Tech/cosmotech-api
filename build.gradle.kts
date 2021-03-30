@@ -104,12 +104,6 @@ tasks.register<Copy>("copySubProjectsOpenAPIFiles") {
 }
 
 openApiMerger {
-  inputDirectory.set(file("$buildDir/tmp/openapi"))
-  output {
-    directory.set(file("$rootDir/openapi"))
-    fileName.set("openapi")
-    fileExtension.set("yaml")
-  }
   openApi {
     openApiVersion.set("3.0.3")
     info {
@@ -134,7 +128,11 @@ openApiMerger {
   }
 }
 
-tasks.getByName<OpenApiMergerTask>("mergeOpenApiFiles") { dependsOn("copySubProjectsOpenAPIFiles") }
+tasks.getByName<OpenApiMergerTask>("mergeOpenApiFiles") {
+  dependsOn("copySubProjectsOpenAPIFiles")
+  inputDirectory.set(file("$buildDir/tmp/openapi"))
+  outputFileProperty.set(file("$rootDir/openapi/openapi.yaml"))
+}
 
 tasks.register<GenerateTask>("openApiJSGenerate") {
   dependsOn("mergeOpenApiFiles")
