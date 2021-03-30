@@ -57,9 +57,18 @@ allprojects {
   }
 
   configure<SpotlessExtension> {
-    java { googleJavaFormat() }
-    kotlin { ktfmt() }
-    kotlinGradle { ktfmt() }
+    java {
+      googleJavaFormat()
+      target("**/*.java")
+    }
+    kotlin {
+      ktfmt()
+      target("**/*.kt")
+    }
+    kotlinGradle {
+      ktfmt()
+      target("**/*.kts")
+    }
   }
 
   tasks.withType<KotlinCompile> {
