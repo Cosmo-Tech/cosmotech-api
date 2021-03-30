@@ -31,24 +31,8 @@ paths:
             schema:
               $ref: '#/components/schemas/Organization'
             examples:
-              New:
-                summary: Create a new organization
-                description: Create a new organization with 2 users
-                value: |
-                  {
-                    "id"  : "NA",
-                    "name": "Cosmo Tech",
-                    "users": [
-                      {
-                        "id": "1",
-                        "name": "Bob"
-                      },
-                      {
-                        "id": "2",
-                        "name": "Alice"
-                      }
-                    ]
-                  }
+              NewOrganizationIn:
+                $ref: '#/components/examples/NewOrganizationIn'
       responses:
         "201":
           description: the organization details
@@ -57,24 +41,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Organization'
               examples:
-                Cosmo:
-                  summary: Cosmo organization
-                  description: Cosmo organisation with id 1
-                  value: |
-                    {
-                      "id": "1",
-                      "name": "Cosmo Tech",
-                      "users": [
-                        {
-                          "id": "1",
-                          "name": "Bob"
-                        },
-                        {
-                          "id": "2",
-                          "name": "Alice"
-                        }
-                      ]
-                    }
+                CosmoOrganization:
+                  $ref: '#/components/examples/CosmoOrganization'
         "400":
           description: Bad request
     get:
@@ -92,37 +60,8 @@ paths:
                 items:
                   $ref: '#/components/schemas/Organization'
               examples:
-                Two:
-                  summary: Two organization
-                  description: Two organization example
-                  value: |
-                    [
-                      {
-                        "id": "1",
-                        "name": "Cosmo Tech",
-                        "users": [
-                          {
-                            "id": "1",
-                            "name": "Bob"
-                          },
-                          {
-                            "id": "2",
-                            "name": "Alice"
-                          }
-                        ]
-                      },
-                      {
-                        "id": "2",
-                        "name": "Phoenix",
-                        "users": [
-                          {
-                            "id": "1",
-                            "name": "Bob"
-                          }
-                        ]
-
-                      }
-                    ]
+                TwoOrganizations:
+                  $ref: '#/components/examples/TwoOrganizations'
 
   /organizations/{organization_id}:
     parameters:
@@ -145,24 +84,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Organization'
               examples:
-                Cosmo:
-                  summary: Cosmo organization
-                  description: Cosmo organisation with id 1
-                  value: |
-                    {
-                      "id": "1",
-                      "name": "Cosmo Tech",
-                      "users": [
-                        {
-                          "id": "1",
-                          "name": "Bob"
-                        },
-                        {
-                          "id": "2",
-                          "name": "Alice"
-                        }
-                      ]
-                    }
+                CosmoOrganization:
+                  $ref: '#/components/examples/CosmoOrganization'
         "404":
           description: the Organization specified is unknown or you don't have access to it
     patch:
@@ -181,49 +104,30 @@ paths:
               ChangeName:
                 summary: Change Name of Organization
                 description: Change the name of Organization 1 to CosmoTech Digital Twins Engine
-                value: |
-                  {
-                    "name": "CosmoTech Digital Twins Engine"
-                  }
+                value:
+                  name: "CosmoTech Digital Twins Engine"
               AddUser:
                 summary: Add a user
                 description: Add the user Charles to organization Cosmo Tech
-                value: |
-                  {
-                    "users": [
-                      {
-                        "name": "Charles"
-                      }
-                    ]
-                  }
+                value:
+                  users:
+                    - name: "Charles"
               RenameUser:
                 summary: Rename a user
                 description: Rename the user Charles to Xavier
-                value: |
-                  {
-                    "users": [
-                      {
-                        "id": "3",
-                        "name": "Xavier"
-                      }
-                    ]
-                  }
+                value:
+                  users:
+                    - id: "3"
+                      name: "Xavier"
               RemoveUser:
                 summary: Remove a user
                 description: Remove the user Charles from organization Cosmo Tech
-                value: |
-                  {
-                    "users": [
-                      {
-                        "id": "1",
-                        "name": "Bob"
-                      },
-                      {
-                        "id": "2",
-                        "name": "Alice"
-                      }
-                    ]
-                  }
+                value:
+                  users:
+                    - id: "1"
+                      name: "Bob"
+                    - id: "2"
+                      name: "Alice"
       responses:
         "200":
           description: the organization details
@@ -232,28 +136,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Organization'
               examples:
-                Cosmo:
-                  summary: Cosmo organization
-                  description: Cosmo organisation with id 1
-                  value: |
-                    {
-                      "id": "1",
-                      "name": "Cosmo Tech",
-                      "users": [
-                        {
-                          "id": "1",
-                          "name": "Bob"
-                        },
-                        {
-                          "id": "2",
-                          "name": "Alice"
-                        },
-                        {
-                          "id": "3",
-                          "name": "Xavier"
-                        }
-                      ]
-                    }
+                CosmoThreeUsers:
+                  $ref: '#/components/examples/CosmoThreeUsers'
         "400":
           description: Bad request
         "404":
@@ -271,24 +155,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Organization'
               examples:
-                Cosmo:
-                  summary: Cosmo organization
-                  description: Cosmo organisation with id 1
-                  value: |
-                    {
-                      "id": "1",
-                      "name": "Cosmo Tech",
-                      "users": [
-                        {
-                          "id": "1",
-                          "name": "Bob"
-                        },
-                        {
-                          "id": "2",
-                          "name": "Alice"
-                        }
-                      ]
-                    }
+                CosmoOrganization:
+                  $ref: '#/components/examples/CosmoOrganization'
         "400":
           description: Bad request
         "404":
@@ -334,3 +202,55 @@ components:
         name:
           type: string
           description: the User name
+  examples:
+    NewOrganizationIn:
+      summary: Create a new organization
+      description: Create a new organization with 2 users
+      value:
+        name: "Cosmo Tech"
+        users:
+          - id: "1"
+            name: "Bob"
+          - id: "2"
+            name: "Alice"
+    CosmoOrganization:
+      summary: Cosmo Tech Organization
+      description: Cosmo Tech Organization example
+      value:
+        id: "1"
+        name: "Cosmo Tech"
+        users:
+          - id: "1"
+            name: "Bob"
+          - id: "2"
+            name: "Alice"
+    CosmoThreeUsers:
+      summary: Cosmo Tech Organization with 3 users
+      description: Cosmo Tech Organization 3 users example
+      value:
+        id: "1"
+        name: "Cosmo Tech"
+        users:
+          - id: "1"
+            name: "Bob"
+          - id: "2"
+            name: "Alice"
+          - id: "3"
+            name: "Xavier"
+    TwoOrganization:
+      summary: Two Orgnizations
+      description: Two Organizations example
+      value:
+        - id: "1"
+          name: "Cosmo Tech"
+          users:
+            - id: "1"
+              name: "Bob"
+            - id: "2"
+              name: "Alice"
+        - id: "2"
+          name: "Phoenix"
+          users:
+            - id: "1"
+              name: "Bob"
+

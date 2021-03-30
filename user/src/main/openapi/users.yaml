@@ -178,6 +178,11 @@ components:
           type: string
           description: the Organization name
   examples:
+    BobCreateIn:
+      summary: Bob User Create
+      description: Bob User Create example
+      value:
+        name: "Bob"
     BobCreate:
       summary: Bob User Create
       description: Bob User Create example
