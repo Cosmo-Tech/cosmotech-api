@@ -1,3 +1,4 @@
+import com.diffplug.gradle.spotless.SpotlessApply
 import com.diffplug.gradle.spotless.SpotlessExtension
 import com.rameshkp.openapi.merger.gradle.task.OpenApiMergerTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -69,6 +70,10 @@ allprojects {
       ktfmt()
       target("**/*.kts")
     }
+  }
+
+  tasks.withType<AbstractCompile> {
+    dependsOn(tasks.withType<SpotlessApply>())
   }
 
   tasks.withType<KotlinCompile> {
