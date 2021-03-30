@@ -58,6 +58,7 @@ allprojects {
   }
 
   configure<SpotlessExtension> {
+    ratchetFrom = "origin/main"
     java {
       googleJavaFormat()
       target("**/*.java")
