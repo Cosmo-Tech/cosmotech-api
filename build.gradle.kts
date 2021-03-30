@@ -95,6 +95,10 @@ allprojects {
   tasks.getByName<BootJar>("bootJar") { classifier = "uberjar" }
 }
 
+tasks.getByName<Delete>("clean") {
+  delete("$rootDir/openapi/openapi.yaml", "$rootDir/openapi/plantuml")
+}
+
 tasks.register<Copy>("copySubProjectsOpenAPIFiles") {
   from(
       "organization/src/main/openapi/organizations.yaml",
