@@ -100,10 +100,21 @@ tasks.getByName<Delete>("clean") {
 }
 
 tasks.register<Copy>("copySubProjectsOpenAPIFiles") {
-  from(
-      "organization/src/main/openapi/organizations.yaml",
-      "user/src/main/openapi/users.yaml",
-      "connector/src/main/openapi/connectors.yaml")
+  // By convention, we expect OpenAPI files for sub-projects to be named and placed as follows:
+  // <subproject>/src/main/openapi/<subproject>s.yaml
+  // For example: organization/src/main/openapi/organizations.yaml
+  val sourcePaths =
+      subprojects
+          .map {
+            file("${it.projectDir}/src/main/openapi/${it.projectDir.relativeTo(rootDir)}s.yaml")
+          }
+          .filter { it.exists() }
+          .map { it.absolutePath }
+          .toMutableList()
+  // If you need to reference a non-conventional path, feel free to add it below to the
+  // sourcePaths local variable, like so: sourcePaths.add("my/path/to/another/openapi.yaml")
+
+  from(*sourcePaths.toTypedArray())
   into("$buildDir/tmp/openapi")
 }
 
