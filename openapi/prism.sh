@@ -1,0 +1,1 @@
+prism mock openapi.yaml

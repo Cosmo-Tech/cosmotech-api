@@ -31,14 +31,8 @@ paths:
             schema:
               $ref: '#/components/schemas/User'
             examples:
-              Bob:
-                summary: Bob User
-                description: Bob User example
-                value: |
-                  {
-                    "id": "1",
-                    "name": "Bob"
-                  }
+              BobCreate:
+                $ref: '#/components/examples/BobCreate'
       responses:
         "201":
           description: the user details
@@ -48,13 +42,7 @@ paths:
                 $ref: '#/components/schemas/User'
               examples:
                 Bob:
-                  summary: Bob User
-                  description: Bob User example
-                  value: |
-                    {
-                      "id": "1",
-                      "name": "Bob"
-                    }
+                  $ref: '#/components/examples/BobCreate'
         "400":
           description: Bad request
     get:
@@ -73,7 +61,7 @@ paths:
                   $ref: '#/components/schemas/User'
               examples:
                 Two:
-                  $ref: '#/components/examples/Two'
+                  $ref: '#/components/examples/TwoUsers'
 
   /users/{user_id}:
     parameters:
@@ -97,23 +85,7 @@ paths:
                 $ref: '#/components/schemas/User'
               examples:
                 Bob:
-                  summary: Bob User
-                  description: Bob User example
-                  value: |
-                    {
-                      "id": "1",
-                      "name": "Bob",
-                      "organizations": [
-                        {
-                          "id": "1",
-                          "name": "Cosmo Tech"
-                        },
-                        {
-                          "id": "2",
-                          "name": "Phoenix"
-                        }
-                      ]
-                    }
+                  $ref: '#/components/examples/Bob'
         "404":
           description: the User specified is unknown or you don't have access to it
     patch:
@@ -129,14 +101,8 @@ paths:
             schema:
               $ref: '#/components/schemas/User'
             examples:
-              RenameBob:
-                summary: Change Bob name
-                description: change the name of Bob User to Boby example
-                value: |
-                  {
-                    "id": "1",
-                    "name": "Boby",
-                  }
+              BobyUpdate:
+                $ref: '#/components/examples/BobyUpdate'
       responses:
         "200":
           description: the user details
@@ -145,14 +111,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
               examples:
-                Bob:
-                  summary: Bob User
-                  description: Bob User example
-                  value: |
-                    {
-                      "id": "1",
-                      "name": "Boby"
-                    }
+                BobyUpdate:
+                  $ref: '#/components/examples/BobyUpdate'
         "400":
           description: Bad request
         "404":
@@ -171,23 +131,7 @@ paths:
                 $ref: '#/components/schemas/User'
               examples:
                 Bob:
-                  summary: Bob User
-                  description: Bob User example
-                  value: |
-                    {
-                      "id": "1",
-                      "name": "Bob",
-                      "organizations": [
-                        {
-                          "id": "1",
-                          "name": "Cosmo Tech"
-                        },
-                        {
-                          "id": "2",
-                          "name": "Phoenix"
-                        }
-                      ]
-                    }
+                  $ref: '#/components/examples/Bob'
         "400":
           description: Bad request
         "404":
@@ -234,33 +178,42 @@ components:
           type: string
           description: the Organization name
   examples:
-    Two:
-      summary: Two User
-      description: Two User example
-      value: |-
-        [
-          {
-            "id": "1",
-            "name": "Bob",
-            "organizations": [
-              {
-                "id": "1",
-                "name": "Cosmo Tech"
-              },
-              {
-                "id": "2",
-                "name": "Phoenix"
-              }
-            ]
-          },
-          {
-            "id": "2",
-            "name": "Alice",
-            "organizations": [
-              {
-                "id": "2",
-                "name": "Phoenix"
-              }
-            ]
-          }
-        ]
+    BobCreate:
+      summary: Bob User Create
+      description: Bob User Create example
+      value:
+        id: "1"
+        name: "Bob"
+    Bob:
+      summary: Bob User
+      description: Bob User example
+      value:
+        id: "1"
+        name: "Bob"
+        organizations:
+          - id: "1"
+            name: "Cosmo Tech"
+          - id: "2"
+            name: "Phoenix"
+    BobyUpdate:
+      summary: Boby update User
+      description: Bob User renamed to Boby example
+      value:
+        id: "1"
+        name: "Boby"
+    TwoUsers:
+      summary: Two Users
+      description: Two Users example
+      value:
+        - id: "1"
+          name: "Bob"
+          organizations:
+            - id: "1"
+              name: "Cosmo Tech"
+            - id: "2"
+              name: "Phoenix"
+        - id: "2"
+          name: "Alice"
+          organizations:
+            - id: "2"
+              name: "Phoenix"
