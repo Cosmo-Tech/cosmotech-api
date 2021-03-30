@@ -182,6 +182,8 @@ tasks.register("generatePythonClient") { dependsOn("copyPythonGitPushScript") }
 
 tasks.getByName<GenerateTask>("openApiGenerate") { enabled = false }
 
-tasks.register("generateClients") { dependsOn("generateJSClient", "generatePythonClient", "openApiUmlGenerate") }
+tasks.register("generateClients") {
+  dependsOn("generateJSClient", "generatePythonClient", "openApiUmlGenerate")
+}
 
 tasks.getByName<BootJar>("bootJar") { finalizedBy("generateClients") }
