@@ -123,7 +123,7 @@ tasks.getByName<OpenApiMergerTask>("mergeOpenApiFiles") { dependsOn("copySubProj
 
 tasks.register<GenerateTask>("openApiJSGenerate") {
   dependsOn("mergeOpenApiFiles")
-  input = "${projectDir}/openapi/openapi.yaml"
+  inputSpec.set("${projectDir}/openapi/openapi.yaml")
   outputDir.set("$buildDir/generated-sources/javascript")
   generatorName.set("javascript")
   additionalProperties.set(
@@ -143,7 +143,7 @@ tasks.register("generateJSClient") { dependsOn("copyJSGitPushScript") }
 
 tasks.register<GenerateTask>("openApiPythonGenerate") {
   dependsOn("mergeOpenApiFiles")
-  input = "${projectDir}/openapi/openapi.yaml"
+  inputSpec.set("${projectDir}/openapi/openapi.yaml")
   outputDir.set("$buildDir/generated-sources/python")
   generatorName.set("python")
   additionalProperties.set(
