@@ -84,7 +84,7 @@ tasks.register<Copy>("copySubProjectsOpenAPIFiles") {
   from(
       "organization/src/main/openapi/organizations.yaml",
       "user/src/main/openapi/users.yaml",
-      "connector/src/main/openapi/users.yaml")
+      "connector/src/main/openapi/connectors.yaml")
   into("$buildDir/tmp/openapi")
 }
 
@@ -156,10 +156,17 @@ tasks.register<Copy>("copyPythonGitPushScript") {
   into("$buildDir/generated-sources/python")
 }
 
+tasks.register<GenerateTask>("openApiUmlGenerate") {
+  dependsOn("mergeOpenApiFiles")
+  input = "${projectDir}/openapi/openapi.yaml"
+  outputDir.set("$projectDir/openapi/plantuml")
+  generatorName.set("plantuml")
+}
+
 tasks.register("generatePythonClient") { dependsOn("copyPythonGitPushScript") }
 
 tasks.getByName<GenerateTask>("openApiGenerate") { enabled = false }
 
-tasks.register("generateClients") { dependsOn("generateJSClient", "generatePythonClient") }
+tasks.register("generateClients") { dependsOn("generateJSClient", "generatePythonClient", "openApiUmlGenerate") }
 
 tasks.getByName<BootJar>("bootJar") { finalizedBy("generateClients") }

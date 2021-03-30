@@ -36,6 +36,59 @@ paths:
                 description: ADT Connector example
                 value: |
                   {
+                    id: "NA",
+                    name: "ADT Connector",
+                    description: "Connector for Azure Digital Twins. Read ADT and write the data in CSV for the Simulation",
+                    repository: "azure-digital-twins-simulator-connector",
+                    version: "1.0",
+                    url: "https://github.com/Cosmo-Tech/azure-digital-twins-simulator-connector",
+                    readEnabled: true,
+                    writeEnabled: false,
+                    parameterGroups: [
+                      {
+                        id: "security",
+                        label: "Security",
+                        parameters: [
+                          {
+                            id: "AZURE_TENANT_ID",
+                            label: "Azure Tenant Id",
+                            valueType: "string",
+                            envVar: "AZURE_TENANT_ID"
+                          },
+                          {
+                            id: "AZURE_CLIENT_ID",
+                            label: "Azure Client Id",
+                            valueType: "string",
+                            envVar: "AZURE_CLIENT_ID"
+                          },
+                          {
+                            id: "AZURE_CLIENT_SECRET",
+                            label: "Azure CLient secret",
+                            valueType: "password",
+                            envVar: "AZURE_CLIENT_SECRET"
+                          }
+                        ]
+                      },
+                      {
+                        id: "parameters",
+                        label: "Parameters",
+                        parameters: [
+                          {
+                            id: "AZURE_DIGITAL_TWINS_URL",
+                            label: "Azure Digital Twins URL",
+                            valueType: "string",
+                            envVar: "AZURE_DIGITAL_TWINS_URL"
+                          },
+                          {
+                            id: "EXPORT_CSV_FILE_ABSOLUTE_PATH",
+                            label: "CSV file export absolute path",
+                            valueType: "string",
+                            default: "/mnt/simulation-data",
+                            envVar: "EXPORT_CSV_FILE_ABSOLUTE_PATH"
+                          }
+                        ]
+                      }
+                    ]
                   }
       responses:
         "201":
@@ -44,6 +97,66 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Connector'
+              examples:
+                ADT:
+                  summary: ADT Connector
+                  description: ADT Connector example
+                  value: |
+                    {
+                      id: "1",
+                      name: "ADT Connector",
+                      description: "Connector for Azure Digital Twins. Read ADT and write the data in CSV for the Simulation",
+                      repository: "azure-digital-twins-simulator-connector",
+                      version: "1.0",
+                      url: "https://github.com/Cosmo-Tech/azure-digital-twins-simulator-connector",
+                      readEnabled: true,
+                      writeEnabled: false,
+                      parameterGroups: [
+                        {
+                          id: "security",
+                          label: "Security",
+                          parameters: [
+                            {
+                              id: "AZURE_TENANT_ID",
+                              label: "Azure Tenant Id",
+                              valueType: "string",
+                              envVar: "AZURE_TENANT_ID"
+                            },
+                            {
+                              id: "AZURE_CLIENT_ID",
+                              label: "Azure Client Id",
+                              valueType: "string",
+                              envVar: "AZURE_CLIENT_ID"
+                            },
+                            {
+                              id: "AZURE_CLIENT_SECRET",
+                              label: "Azure CLient secret",
+                              valueType: "password",
+                              envVar: "AZURE_CLIENT_SECRET"
+                            }
+                          ]
+                        },
+                        {
+                          id: "parameters",
+                          label: "Parameters",
+                          parameters: [
+                            {
+                              id: "AZURE_DIGITAL_TWINS_URL",
+                              label: "Azure Digital Twins URL",
+                              valueType: "string",
+                              envVar: "AZURE_DIGITAL_TWINS_URL"
+                            },
+                            {
+                              id: "EXPORT_CSV_FILE_ABSOLUTE_PATH",
+                              label: "CSV file export absolute path",
+                              valueType: "string",
+                              default: "/mnt/simulation-data",
+                              envVar: "EXPORT_CSV_FILE_ABSOLUTE_PATH"
+                            }
+                          ]
+                        }
+                      ]
+                    }
         "400":
           description: Bad request
     get:
@@ -149,3 +262,65 @@ components:
         name:
           type: string
           description: the Connector name
+        description:
+          type: string
+          description: the Connector description
+        repository:
+          type: string
+          description: the registry repository containing the image
+        version:
+          type: string
+          description: the Connector version. Must be aligned with an existing repository tag
+        url:
+          type: string
+          description: an optional URL link to connector page
+        readEnabled:
+          type: boolean
+          description: whether or not the connector can read data
+        writeEnabled:
+          type: boolean
+          description: wheher or not the connector can write data
+        parameterGroups:
+          type: array
+          description: the list of connector parameters groups
+          items:
+            $ref: '#/components/schemas/ConnectorParameterGroup'
+    ConnectorParameterGroup:
+      type: object
+      description: a connector parameters group
+      properties:
+        id:
+          type: string
+          description: the connector parameter group id
+        label:
+          type: string
+          description: the list of translated parameter group labels
+        parameters:
+          type: array
+          description: the list of parameters
+          items:
+            $ref: '#/components/schemas/ConnectorParameter'
+    ConnectorParameter:
+      type: object
+      description: a connector parameter
+      properties:
+        id:
+          type: string
+          description: the connector parameter id
+        label:
+          type: string
+          description: the list of translated parameter group labels
+        valueType:
+          type: string
+          description: the parameter value type
+        options:
+          type: array
+          description: the list of available and valid values for the parameter
+          items:
+            type: string
+        default:
+          type: string
+          description: the default value
+        envVar:
+          type: string
+          description: associated environment variable in connector image
