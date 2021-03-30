@@ -23,6 +23,7 @@ dependencies {
   api(project(":cosmotech-api-common"))
   implementation(project(":cosmotech-organization-api"))
   implementation(project(":cosmotech-user-api"))
+  implementation(project(":cosmotech-connector-api"))
 }
 
 allprojects {
@@ -80,7 +81,10 @@ allprojects {
 }
 
 tasks.register<Copy>("copySubProjectsOpenAPIFiles") {
-  from("organization/src/main/openapi/organizations.yaml", "user/src/main/openapi/users.yaml")
+  from(
+      "organization/src/main/openapi/organizations.yaml",
+      "user/src/main/openapi/users.yaml",
+      "connector/src/main/openapi/users.yaml")
   into("$buildDir/tmp/openapi")
 }
 
