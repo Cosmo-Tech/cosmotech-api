@@ -80,6 +80,13 @@ paths:
                             envVar: "AZURE_DIGITAL_TWINS_URL"
                           },
                           {
+                            id: "ADT_QUERY",
+                            label: "Azure Digital Twins query",
+                            valueType: "string",
+                            envVar: "AZURE_DIGITAL_TWINS_QUERY",
+                            default: "SELECT * FROM digitaltwins"
+                          },
+                          {
                             id: "EXPORT_CSV_FILE_ABSOLUTE_PATH",
                             label: "CSV file export absolute path",
                             valueType: "string",
@@ -147,12 +154,20 @@ paths:
                               envVar: "AZURE_DIGITAL_TWINS_URL"
                             },
                             {
+                              id: "ADT_QUERY",
+                              label: "Azure Digital Twins query",
+                              valueType: "string",
+                              envVar: "AZURE_DIGITAL_TWINS_QUERY",
+                              default: "SELECT * FROM digitaltwins"
+                            },
+                            {
                               id: "EXPORT_CSV_FILE_ABSOLUTE_PATH",
                               label: "CSV file export absolute path",
                               valueType: "string",
                               default: "/mnt/simulation-data",
                               envVar: "EXPORT_CSV_FILE_ABSOLUTE_PATH"
                             }
+
                           ]
                         }
                       ]

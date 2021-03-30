@@ -184,7 +184,7 @@ tasks.register<Copy>("copyPythonGitPushScript") {
 
 tasks.register<GenerateTask>("openApiUmlGenerate") {
   dependsOn("mergeOpenApiFiles")
-  input = "${projectDir}/openapi/openapi.yaml"
+  inputSpec.set("${projectDir}/openapi/openapi.yaml")
   outputDir.set("$projectDir/openapi/plantuml")
   generatorName.set("plantuml")
 }

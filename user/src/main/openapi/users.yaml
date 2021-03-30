@@ -73,35 +73,7 @@ paths:
                   $ref: '#/components/schemas/User'
               examples:
                 Two:
-                  summary: Two User
-                  description: Two User example
-                  value: |
-                    [
-                      {
-                        "id": "1",
-                        "name": "Bob",
-                        "organizations": [
-                          {
-                            "id": "1",
-                            "name": "Cosmo Tech"
-                          },
-                          {
-                            "id": "2",
-                            "name": "Phoenix"
-                          }
-                        ]
-                      },
-                      {
-                        "id": "2",
-                        "name": "Alice",
-                        "organizations": [
-                          {
-                            "id": "2",
-                            "name": "Phoenix"
-                          }
-                        ]
-                      }
-                    ]
+                  $ref: '#/components/examples/Two'
 
   /users/{user_id}:
     parameters:
@@ -250,7 +222,7 @@ components:
         organizations:
           type: array
           items:
-            $ref: '#/components/schema/UserOrganization'
+            $ref: '#/components/schemas/UserOrganization'
     UserOrganization:
       type: object
       description: The organization of the user
@@ -261,3 +233,34 @@ components:
         name:
           type: string
           description: the Organization name
+  examples:
+    Two:
+      summary: Two User
+      description: Two User example
+      value: |-
+        [
+          {
+            "id": "1",
+            "name": "Bob",
+            "organizations": [
+              {
+                "id": "1",
+                "name": "Cosmo Tech"
+              },
+              {
+                "id": "2",
+                "name": "Phoenix"
+              }
+            ]
+          },
+          {
+            "id": "2",
+            "name": "Alice",
+            "organizations": [
+              {
+                "id": "2",
+                "name": "Phoenix"
+              }
+            ]
+          }
+        ]
