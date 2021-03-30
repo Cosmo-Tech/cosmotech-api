@@ -118,10 +118,6 @@ paths:
                           {
                             "id": "1",
                             "name": "Bob"
-                          },
-                          {
-                            "id": "2",
-                            "name": "Alice"
                           }
                         ]
 
@@ -251,6 +247,10 @@ paths:
                         {
                           "id": "2",
                           "name": "Alice"
+                        },
+                        {
+                          "id": "3",
+                          "name": "Xavier"
                         }
                       ]
                     }

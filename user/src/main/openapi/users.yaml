@@ -79,11 +79,27 @@ paths:
                     [
                       {
                         "id": "1",
-                        "name": "Bob"
+                        "name": "Bob",
+                        "organizations": [
+                          {
+                            "id": "1",
+                            "name": "Cosmo Tech"
+                          },
+                          {
+                            "id": "2",
+                            "name": "Phoenix"
+                          }
+                        ]
                       },
                       {
                         "id": "2",
-                        "name": "Alice"
+                        "name": "Alice",
+                        "organizations": [
+                          {
+                            "id": "2",
+                            "name": "Phoenix"
+                          }
+                        ]
                       }
                     ]
 
@@ -114,7 +130,17 @@ paths:
                   value: |
                     {
                       "id": "1",
-                      "name": "Bob"
+                      "name": "Bob",
+                      "organizations": [
+                        {
+                          "id": "1",
+                          "name": "Cosmo Tech"
+                        },
+                        {
+                          "id": "2",
+                          "name": "Phoenix"
+                        }
+                      ]
                     }
         "404":
           description: the User specified is unknown or you don't have access to it
@@ -124,20 +150,20 @@ paths:
         - user
       summary: Update an user
       requestBody:
-        description: the new User details
+        description: the new User details. Organization membership is handled in Organzation service.
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/User'
             examples:
-              Bob:
-                summary: Bob User
-                description: Bob User example
+              RenameBob:
+                summary: Change Bob name
+                description: change the name of Bob User to Boby example
                 value: |
                   {
                     "id": "1",
-                    "name": "Bob"
+                    "name": "Boby",
                   }
       responses:
         "200":
@@ -153,7 +179,7 @@ paths:
                   value: |
                     {
                       "id": "1",
-                      "name": "Bob"
+                      "name": "Boby"
                     }
         "400":
           description: Bad request
@@ -178,7 +204,17 @@ paths:
                   value: |
                     {
                       "id": "1",
-                      "name": "Bob"
+                      "name": "Bob",
+                      "organizations": [
+                        {
+                          "id": "1",
+                          "name": "Cosmo Tech"
+                        },
+                        {
+                          "id": "2",
+                          "name": "Phoenix"
+                        }
+                      ]
                     }
         "400":
           description: Bad request

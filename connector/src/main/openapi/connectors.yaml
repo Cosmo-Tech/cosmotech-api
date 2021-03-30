@@ -1,0 +1,151 @@
+openapi: 3.0.3
+
+info:
+  title: Cosmo Tech Connector Manager API
+  description: Cosmo Tech Connector Manager API
+  version: 1.0.0
+
+servers:
+- url: 'http://localhost:8080'
+
+security:
+- ApiKeyAuth: [ ]
+- AADOAuth2AuthCode: [ ]
+
+tags:
+- name: connector
+  description: Connector Management
+
+paths:
+  /connectors:
+    post:
+      operationId: registerConnector
+      tags:
+        - connector
+      summary: Register a new connector
+      requestBody:
+        description: the Connector to register
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Connector'
+            examples:
+              ADT:
+                summary: ADT Connector
+                description: ADT Connector example
+                value: |
+                  {
+                  }
+      responses:
+        "201":
+          description: the connector details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Connector'
+        "400":
+          description: Bad request
+    get:
+      operationId: findAllConnectors
+      tags:
+        - connector
+      summary: List all Connectors
+      responses:
+        "200":
+          description: the connector details
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Connector'
+
+  /connectors/{connector_id}:
+    parameters:
+      - name: connector_id
+        in: path
+        description: the Connector identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: findConnectorById
+      tags:
+        - connector
+      summary: Get the details of an connector
+      responses:
+        "200":
+          description: the Connector details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Connector'
+        "404":
+          description: the Connector specified is unknown or you don't have access to it
+    patch:
+      operationId: updateConnector
+      tags:
+        - connector
+      summary: Update an connector
+      requestBody:
+        description: the new Connector details
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Connector'
+      responses:
+        "200":
+          description: the connector details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Connector'
+        "400":
+          description: Bad request
+        "404":
+          description: the Connector specified is unknown or you don't have access to it
+    delete:
+      operationId: unregisterConnector
+      tags:
+        - connector
+      summary: Unregister an connector
+      responses:
+        "200":
+          description: the connector details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Connector'
+        "400":
+          description: Bad request
+        "404":
+          description: the Connector specified is unknown or you don't have access to it
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      description: The Cosmo Tech API Key
+      name: key
+      in: query
+    AADOAuth2AuthCode:
+      type: oauth2
+      description: Azure Active Directory authentication
+      flows:
+        implicit:
+          authorizationUrl: https://login.microsoftonline.com/e9641c78-d0d6-4d09-af63-168922724e7f/oauth2/v2.0/authorize
+          scopes:
+            http://sample.azure.cosmo-platform.com/user_impersonation: User Impersonation
+  schemas:
+    Connector:
+      type: object
+      description: a Connector
+      properties:
+        id:
+          type: string
+          description: the Connector unique identifier, in response
+        name:
+          type: string
+          description: the Connector name
