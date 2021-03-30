@@ -72,9 +72,14 @@ allprojects {
     }
   }
 
-  tasks.withType<AbstractCompile> {
-    dependsOn(tasks.withType<SpotlessApply>())
+  tasks.whenTaskAdded {
+    val task = this
+    if (task.name == "openApiGenerate") {
+      tasks.withType<AbstractCompile> { dependsOn(task) }
+    }
   }
+
+  tasks.withType<AbstractCompile> { dependsOn(tasks.withType<SpotlessApply>()) }
 
   tasks.withType<KotlinCompile> {
     kotlinOptions {
@@ -88,10 +93,6 @@ allprojects {
   tasks.getByName<Jar>("jar") { enabled = true }
 
   tasks.getByName<BootJar>("bootJar") { classifier = "uberjar" }
-
-  if (project.name != "cosmotech-api-common") {
-    tasks.withType<KotlinCompile> { dependsOn("openApiGenerate") }
-  }
 }
 
 tasks.register<Copy>("copySubProjectsOpenAPIFiles") {
