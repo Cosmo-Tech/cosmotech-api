@@ -42,6 +42,7 @@ out/
 
 ### Generated ###
 openapi/openapi.yaml
+openapi/plantuml
 
 ### Personal directory ###
 perso
