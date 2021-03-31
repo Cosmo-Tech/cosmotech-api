@@ -1,6 +1,6 @@
 # cosmotech-api
 
-> Cosmo Tech Cloud Platform API, Organization API, User API
+> Cosmo Tech Cloud Platform API (made up of Organization, User, Connector, Dataset, ... APIs)
 
 ## Building
 
