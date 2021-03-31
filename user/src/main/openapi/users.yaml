@@ -182,43 +182,43 @@ components:
       summary: Bob User Create
       description: Bob User Create example
       value:
-        name: "Bob"
+        name: Bob
     BobCreate:
       summary: Bob User Create
       description: Bob User Create example
       value:
         id: "1"
-        name: "Bob"
+        name: Bob
     Bob:
       summary: Bob User
       description: Bob User example
       value:
         id: "1"
-        name: "Bob"
+        name: Bob
         organizations:
           - id: "1"
-            name: "Cosmo Tech"
+            name: Cosmo Tech
           - id: "2"
-            name: "Phoenix"
+            name: Phoenix
     BobyUpdate:
       summary: Boby update User
       description: Bob User renamed to Boby example
       value:
         id: "1"
-        name: "Boby"
+        name: Boby
     TwoUsers:
       summary: Two Users
       description: Two Users example
       value:
         - id: "1"
-          name: "Bob"
+          name: Bob
           organizations:
             - id: "1"
-              name: "Cosmo Tech"
+              name: Cosmo Tech
             - id: "2"
-              name: "Phoenix"
+              name: Phoenix
         - id: "2"
-          name: "Alice"
+          name: Alice
           organizations:
             - id: "2"
-              name: "Phoenix"
+              name: Phoenix

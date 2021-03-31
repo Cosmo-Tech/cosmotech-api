@@ -173,6 +173,9 @@ components:
         version:
           type: string
           description: the Connector version. Must be aligned with an existing repository tag
+        ownerId:
+          type: string
+          description: the user id which own this connector version
         url:
           type: string
           description: an optional URL link to connector page
@@ -234,7 +237,8 @@ components:
         name: ADT Connector
         description: Connector for Azure Digital Twins. Read ADT and write the data in CSV for the Simulation
         repository: azure-digital-twins-simulator-connector
-        version: 1.0
+        version: "1.0"
+        ownerId: "1"
         url: https://github.com/Cosmo-Tech/azure-digital-twins-simulator-connector
         readEnabled: true
         writeEnabled: false
@@ -275,11 +279,12 @@ components:
       summary: ADT Connector
       description: ADT Connector example
       value:
-        id: 1
+        id: "1"
         name: ADT Connector
         description: Connector for Azure Digital Twins. Read ADT and write the data in CSV for the Simulation
         repository: azure-digital-twins-simulator-connector
-        version: 1.0
+        version: "1.0"
+        ownerId: "1"
         url: https://github.com/Cosmo-Tech/azure-digital-twins-simulator-connector
         readEnabled: true
         writeEnabled: false
@@ -320,11 +325,12 @@ components:
       summary: One Connector list
       description: One Connector list example
       value:
-        - id: 1
+        - id: "1"
           name: ADT Connector
           description: Connector for Azure Digital Twins. Read ADT and write the data in CSV for the Simulation
           repository: azure-digital-twins-simulator-connector
-          version: 1.0
+          version: "1.0"
+          ownerId: "1"
           url: https://github.com/Cosmo-Tech/azure-digital-twins-simulator-connector
           readEnabled: true
           writeEnabled: false

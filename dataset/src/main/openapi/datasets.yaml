@@ -192,6 +192,9 @@ components:
         version:
           type: string
           description: the Connector version
+        ownerId:
+          type: string
+          description: the User id which own this Dataset
         parametersValues:
           type: object
           additionalProperties: true
@@ -207,21 +210,22 @@ components:
           - Beer
           - Reference
         connector:
-          id: 1
+          id: "1"
           name: ADT Connector
-          version: 1.0
-        parametersValues:
-          AZURE_TENANT_ID: 12345678
-          AZURE_CLIENT_ID: 12345678
-          AZURE_CLIENT_SECRET: 12345678
-          AZURE_DIGITAL_TWINS_URL: mydt.api.weu.digitaltwins.azure.net
-          ADT_QUERY: SELECT * FROM digitaltwins
-          EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
+          version: "1.0"
+          ownerId: "1"
+          parametersValues:
+            AZURE_TENANT_ID: "12345678"
+            AZURE_CLIENT_ID: "12345678"
+            AZURE_CLIENT_SECRET: "12345678"
+            AZURE_DIGITAL_TWINS_URL: mydt.api.weu.digitaltwins.azure.net
+            ADT_QUERY: SELECT * FROM digitaltwins
+            EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
     BeerADT:
       summary: Beer ADT Dataset
       description: Beer Dataset in ADT example
       value:
-        id: 1
+        id: "1"
         name: Beer ADT reference
         description: Beer reference model in ADT
         labels:
@@ -229,21 +233,22 @@ components:
           - Beer
           - Reference
         connector:
-          id: 1
+          id: "1"
           name: ADT Connector
-          version: 1.0
-        parametersValues:
-          AZURE_TENANT_ID: 12345678
-          AZURE_CLIENT_ID: 12345678
-          AZURE_CLIENT_SECRET: 12345678
-          AZURE_DIGITAL_TWINS_URL: mydt.api.weu.digitaltwins.azure.net
-          ADT_QUERY: SELECT * FROM digitaltwins
-          EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
+          version: "1.0"
+          ownerId: "1"
+          parametersValues:
+            AZURE_TENANT_ID: "12345678"
+            AZURE_CLIENT_ID: "12345678"
+            AZURE_CLIENT_SECRET: "12345678"
+            AZURE_DIGITAL_TWINS_URL: mydt.api.weu.digitaltwins.azure.net
+            ADT_QUERY: SELECT * FROM digitaltwins
+            EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
     TwoDatasets:
       summary: Two Datasets example
       description: Two ADT Datasets example
       value:
-        - id: 1
+        - id: "1"
           name: Beer ADT reference
           description: Beer reference model in ADT
           labels:
@@ -251,33 +256,35 @@ components:
             - Beer
             - Reference
           connector:
-            id: 1
+            id: "1"
             name: ADT Connector
-            version: 1.0
-          parametersValues:
-            AZURE_TENANT_ID: 12345678
-            AZURE_CLIENT_ID: 12345678
-            AZURE_CLIENT_SECRET: 12345678
-            AZURE_DIGITAL_TWINS_URL: mydt.api.weu.digitaltwins.azure.net
-            ADT_QUERY: SELECT * FROM digitaltwins
-            EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
-        - id: 2
+            version: "1.0"
+            ownerId: "1"
+            parametersValues:
+              AZURE_TENANT_ID: "12345678"
+              AZURE_CLIENT_ID: "12345678"
+              AZURE_CLIENT_SECRET: "12345678"
+              AZURE_DIGITAL_TWINS_URL: mydt.api.weu.digitaltwins.azure.net
+              ADT_QUERY: SELECT * FROM digitaltwins
+              EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
+        - id: "2"
           name: Beer ADT future
           description: Beer future model in ADT
           labels:
             - ADT
             - Beer
           connector:
-            id: 1
+            id: "1"
             name: ADT Connector
-            version: 1.0
-          parametersValues:
-            AZURE_TENANT_ID: 12345678
-            AZURE_CLIENT_ID: 12345678
-            AZURE_CLIENT_SECRET: 12345678
-            AZURE_DIGITAL_TWINS_URL: myotherdt.api.weu.digitaltwins.azure.net
-            ADT_QUERY: SELECT * FROM digitaltwins
-            EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
+            version: "1.0"
+            ownerId: "1"
+            parametersValues:
+              AZURE_TENANT_ID: "12345678"
+              AZURE_CLIENT_ID: "12345678"
+              AZURE_CLIENT_SECRET: "12345678"
+              AZURE_DIGITAL_TWINS_URL: myotherdt.api.weu.digitaltwins.azure.net
+              ADT_QUERY: SELECT * FROM digitaltwins
+              EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
     BeerADTUpdate:
       summary: Beer ADT name update example
       description: Beer ADT reference model name update example
@@ -287,7 +294,7 @@ components:
       summary: Beer ADT updated Dataset
       description: Beer Dataset in ADT name updated example
       value:
-        id: 1
+        id: "1"
         name: Beer ADT new reference
         description: Beer reference model in ADT
         labels:
@@ -295,15 +302,16 @@ components:
           - Beer
           - Reference
         connector:
-          id: 1
+          id: "1"
           name: ADT Connector
-          version: 1.0
-        parametersValues:
-          AZURE_TENANT_ID: 12345678
-          AZURE_CLIENT_ID: 12345678
-          AZURE_CLIENT_SECRET: 12345678
-          AZURE_DIGITAL_TWINS_URL: mydt.api.weu.digitaltwins.azure.net
-          ADT_QUERY: SELECT * FROM digitaltwins
-          EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
+          version: "1.0"
+          ownerId: "1"
+          parametersValues:
+            AZURE_TENANT_ID: "12345678"
+            AZURE_CLIENT_ID: "12345678"
+            AZURE_CLIENT_SECRET: "12345678"
+            AZURE_DIGITAL_TWINS_URL: mydt.api.weu.digitaltwins.azure.net
+            ADT_QUERY: SELECT * FROM digitaltwins
+            EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
 
 

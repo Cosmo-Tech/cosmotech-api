@@ -207,50 +207,50 @@ components:
       summary: Create a new organization
       description: Create a new organization with 2 users
       value:
-        name: "Cosmo Tech"
+        name: Cosmo Tech
         users:
           - id: "1"
-            name: "Bob"
+            name: Bob
           - id: "2"
-            name: "Alice"
+            name: Alice
     CosmoOrganization:
       summary: Cosmo Tech Organization
       description: Cosmo Tech Organization example
       value:
         id: "1"
-        name: "Cosmo Tech"
+        name: Cosmo Tech
         users:
           - id: "1"
-            name: "Bob"
+            name: Bob
           - id: "2"
-            name: "Alice"
+            name: Alice
     CosmoThreeUsers:
       summary: Cosmo Tech Organization with 3 users
       description: Cosmo Tech Organization 3 users example
       value:
         id: "1"
-        name: "Cosmo Tech"
+        name: Cosmo Tech
         users:
           - id: "1"
-            name: "Bob"
+            name: Bob
           - id: "2"
-            name: "Alice"
+            name: Alice
           - id: "3"
-            name: "Xavier"
+            name: Xavier
     TwoOrganizations:
       summary: Two Orgnizations
       description: Two Organizations example
       value:
         - id: "1"
-          name: "Cosmo Tech"
+          name: Cosmo Tech
           users:
             - id: "1"
-              name: "Bob"
+              name: Bob
             - id: "2"
-              name: "Alice"
+              name: Alice
         - id: "2"
-          name: "Phoenix"
+          name: Phoenix
           users:
             - id: "1"
-              name: "Bob"
+              name: Bob
 
