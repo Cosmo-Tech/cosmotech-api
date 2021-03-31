@@ -184,7 +184,7 @@ components:
       properties:
         id:
           type: string
-          description: the Organization unique identifier, in response
+          description: the Organization unique identifier
         name:
           type: string
           description: the Organization name

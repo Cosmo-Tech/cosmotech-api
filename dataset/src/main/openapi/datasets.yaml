@@ -1,0 +1,309 @@
+openapi: 3.0.3
+
+info:
+  title: Cosmo Tech Dataset Manager API
+  description: Cosmo Tech Dataset Manager API
+  version: 1.0.0
+
+servers:
+- url: 'http://localhost:8080'
+
+security:
+- ApiKeyAuth: [ ]
+- AADOAuth2AuthCode: [ ]
+
+tags:
+- name: dataset
+  description: Dataset Management
+
+paths:
+  /datasets:
+    post:
+      operationId: createDataset
+      tags:
+        - dataset
+      summary: Register a new dataset
+      requestBody:
+        description: the Dataset to create
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Dataset'
+            examples:
+              BeerADTCreateIn:
+                $ref: '#/components/examples/BeerADTCreateIn'
+      responses:
+        "201":
+          description: the dataset details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dataset'
+              examples:
+                BeerADT:
+                  $ref: '#/components/examples/BeerADT'
+        "400":
+          description: Bad request
+    get:
+      operationId: findAllDatasets
+      tags:
+        - dataset
+      summary: List all Datasets
+      responses:
+        "200":
+          description: the dataset details
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Dataset'
+              examples:
+                Two:
+                  $ref: '#/components/examples/TwoDatasets'
+
+  /datasets/{dataset_id}:
+    parameters:
+      - name: dataset_id
+        in: path
+        description: the Dataset identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: findDatasetById
+      tags:
+        - dataset
+      summary: Get the details of a dataset
+      responses:
+        "200":
+          description: the Dataset details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dataset'
+              examples:
+                BeerADT:
+                  $ref: '#/components/examples/BeerADT'
+        "404":
+          description: the Dataset specified is unknown or you don't have access to it
+    patch:
+      operationId: updateDataset
+      tags:
+        - dataset
+      summary: Update a dataset
+      requestBody:
+        description: the new Dataset details.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Dataset'
+            examples:
+              BeerADTUpdate:
+                $ref: '#/components/examples/BeerADTUpdate'
+      responses:
+        "200":
+          description: the dataset details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dataset'
+              examples:
+                BeerADTUpdated:
+                  $ref: '#/components/examples/BeerADTUpdated'
+        "400":
+          description: Bad request
+        "404":
+          description: the Dataset specified is unknown or you don't have access to it
+    delete:
+      operationId: deleteDataset
+      tags:
+        - dataset
+      summary: Delete a dataset
+      responses:
+        "200":
+          description: the dataset details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dataset'
+              examples:
+                BeerADT:
+                  $ref: '#/components/examples/BeerADT'
+        "400":
+          description: Bad request
+        "404":
+          description: the Dataset specified is unknown or you don't have access to it
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      description: The Cosmo Tech API Key
+      name: key
+      in: query
+    AADOAuth2AuthCode:
+      type: oauth2
+      description: Azure Active Directory authentication
+      flows:
+        implicit:
+          authorizationUrl: https://login.microsoftonline.com/e9641c78-d0d6-4d09-af63-168922724e7f/oauth2/v2.0/authorize
+          scopes:
+            http://sample.azure.cosmo-platform.com/user_impersonation: User Impersonation
+  schemas:
+    Dataset:
+      type: object
+      description: a Dataset
+      properties:
+        id:
+          type: string
+          description: the Dataset unique identifier
+        name:
+          type: string
+          description: the Dataset name
+        description:
+          type: string
+          description: the Dataset description
+        labels:
+          type: array
+          description: the list of tags
+          items:
+            type: string
+        connector:
+          description: the Connector setup bound to a Dataset
+          $ref: '#/components/schemas/DatasetConnector'
+        fragmentsIds:
+          type: array
+          description: the list of other Datasets ids to compose as fragments
+          items:
+            type: string
+    DatasetConnector:
+      type: object
+      description: a Connector setup
+      properties:
+        id:
+          type: string
+          description: the Connector id
+        name:
+          type: string
+          description: the Connector name
+        version:
+          type: string
+          description: the Connector version
+        parametersValues:
+          type: object
+          additionalProperties: true
+  examples:
+    BeerADTCreateIn:
+      summary: Beer ADT Dataset Create
+      description: Beer Dataset in ADT Create example
+      value:
+        name: Beer ADT reference
+        description: Beer reference model in ADT
+        labels:
+          - ADT
+          - Beer
+          - Reference
+        connector:
+          id: 1
+          name: ADT Connector
+          version: 1.0
+        parametersValues:
+          AZURE_TENANT_ID: 12345678
+          AZURE_CLIENT_ID: 12345678
+          AZURE_CLIENT_SECRET: 12345678
+          AZURE_DIGITAL_TWINS_URL: mydt.api.weu.digitaltwins.azure.net
+          ADT_QUERY: SELECT * FROM digitaltwins
+          EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
+    BeerADT:
+      summary: Beer ADT Dataset
+      description: Beer Dataset in ADT example
+      value:
+        id: 1
+        name: Beer ADT reference
+        description: Beer reference model in ADT
+        labels:
+          - ADT
+          - Beer
+          - Reference
+        connector:
+          id: 1
+          name: ADT Connector
+          version: 1.0
+        parametersValues:
+          AZURE_TENANT_ID: 12345678
+          AZURE_CLIENT_ID: 12345678
+          AZURE_CLIENT_SECRET: 12345678
+          AZURE_DIGITAL_TWINS_URL: mydt.api.weu.digitaltwins.azure.net
+          ADT_QUERY: SELECT * FROM digitaltwins
+          EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
+    TwoDatasets:
+      summary: Two Datasets example
+      description: Two ADT Datasets example
+      value:
+        - id: 1
+          name: Beer ADT reference
+          description: Beer reference model in ADT
+          labels:
+            - ADT
+            - Beer
+            - Reference
+          connector:
+            id: 1
+            name: ADT Connector
+            version: 1.0
+          parametersValues:
+            AZURE_TENANT_ID: 12345678
+            AZURE_CLIENT_ID: 12345678
+            AZURE_CLIENT_SECRET: 12345678
+            AZURE_DIGITAL_TWINS_URL: mydt.api.weu.digitaltwins.azure.net
+            ADT_QUERY: SELECT * FROM digitaltwins
+            EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
+        - id: 2
+          name: Beer ADT future
+          description: Beer future model in ADT
+          labels:
+            - ADT
+            - Beer
+          connector:
+            id: 1
+            name: ADT Connector
+            version: 1.0
+          parametersValues:
+            AZURE_TENANT_ID: 12345678
+            AZURE_CLIENT_ID: 12345678
+            AZURE_CLIENT_SECRET: 12345678
+            AZURE_DIGITAL_TWINS_URL: myotherdt.api.weu.digitaltwins.azure.net
+            ADT_QUERY: SELECT * FROM digitaltwins
+            EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
+    BeerADTUpdate:
+      summary: Beer ADT name update example
+      description: Beer ADT reference model name update example
+      value:
+        name: Beer ADT new reference
+    BeerADTUpdated:
+      summary: Beer ADT updated Dataset
+      description: Beer Dataset in ADT name updated example
+      value:
+        id: 1
+        name: Beer ADT new reference
+        description: Beer reference model in ADT
+        labels:
+          - ADT
+          - Beer
+          - Reference
+        connector:
+          id: 1
+          name: ADT Connector
+          version: 1.0
+        parametersValues:
+          AZURE_TENANT_ID: 12345678
+          AZURE_CLIENT_ID: 12345678
+          AZURE_CLIENT_SECRET: 12345678
+          AZURE_DIGITAL_TWINS_URL: mydt.api.weu.digitaltwins.azure.net
+          ADT_QUERY: SELECT * FROM digitaltwins
+          EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
+
+

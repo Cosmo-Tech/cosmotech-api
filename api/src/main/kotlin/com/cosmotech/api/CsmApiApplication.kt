@@ -14,12 +14,16 @@ import org.springframework.context.annotation.FilterType
                 type = FilterType.ASSIGNABLE_TYPE,
                 classes =
                     [
+                        com.cosmotech.dataset.Application::class,
+                        com.cosmotech.connector.Application::class,
                         com.cosmotech.organization.Application::class,
                         com.cosmotech.user.Application::class]),
             ComponentScan.Filter(
                 type = FilterType.ASSIGNABLE_TYPE,
                 classes =
                     [
+                        com.cosmotech.dataset.api.DefaultExceptionHandler::class,
+                        com.cosmotech.connector.api.DefaultExceptionHandler::class,
                         com.cosmotech.organization.api.DefaultExceptionHandler::class,
                         com.cosmotech.user.api.DefaultExceptionHandler::class])])
 class CsmApiApplication

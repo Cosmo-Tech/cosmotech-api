@@ -9,6 +9,7 @@ dependencies {
   implementation(project(":cosmotech-organization-api"))
   implementation(project(":cosmotech-user-api"))
   implementation(project(":cosmotech-connector-api"))
+  implementation(project(":cosmotech-dataset-api"))
 }
 
 tasks.getByName<Delete>("clean") {
