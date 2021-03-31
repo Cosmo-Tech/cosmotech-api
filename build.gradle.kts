@@ -1,4 +1,6 @@
 import com.diffplug.gradle.spotless.SpotlessExtension
+import com.google.cloud.tools.jib.api.buildplan.ImageFormat.OCI
+import com.google.cloud.tools.jib.gradle.JibExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
@@ -13,6 +15,8 @@ plugins {
   id("io.spring.dependency-management") version "1.0.11.RELEASE" apply false
 
   id("org.openapi.generator") version "5.1.0" apply false
+
+  id("com.google.cloud.tools.jib") version "2.8.0" apply false
 }
 
 allprojects {
@@ -46,9 +50,10 @@ subprojects {
   apply(plugin = "org.springframework.boot")
   apply(plugin = "io.spring.dependency-management")
 
-  // Apply the OpenAPI Generator plugin to all projects except 'common'
+  // Apply some plugins to all projects except 'common'
   if (name != "cosmotech-api-common") {
     apply(plugin = "org.openapi.generator")
+    apply(plugin = "com.google.cloud.tools.jib")
   }
 
   java { toolchain { languageVersion.set(JavaLanguageVersion.of(16)) } }
@@ -86,5 +91,21 @@ subprojects {
 
   tasks.getByName<Jar>("jar") { enabled = true }
 
-  tasks.getByName<BootJar>("bootJar") { classifier = "uberjar" }
+  if (name != "cosmotech-api-common") {
+    tasks.getByName<BootJar>("bootJar") { classifier = "uberjar" }
+
+    configure<JibExtension> {
+      from { image = "openjdk:16-alpine" }
+      to { image = "${project.group}/${project.name}:${project.version}" }
+      container {
+        format = OCI
+        labels = mapOf("maintainer" to "Cosmo Tech")
+        environment =
+            mapOf(
+                "JAVA_TOOL_OPTIONS" to
+                    "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=localhost:5005")
+        ports = listOf("5005", "8080", "8081")
+      }
+    }
+  }
 }

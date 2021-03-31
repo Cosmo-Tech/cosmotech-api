@@ -1,3 +1,4 @@
+import com.google.cloud.tools.jib.gradle.JibTask
 import com.rameshkp.openapi.merger.gradle.task.OpenApiMergerTask
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.springframework.boot.gradle.tasks.bundling.BootJar
@@ -14,6 +15,20 @@ dependencies {
 
 tasks.getByName<Delete>("clean") {
   delete("$rootDir/openapi/openapi.yaml", "$rootDir/openapi/plantuml")
+}
+
+tasks.withType<JibTask> {
+  // Need to depend on all sub-projects Jar tasks
+  val jarTasks =
+      parent
+          ?.subprojects
+          ?.filter { it.name != project.name && it.name != "cosmotech-api-common" }
+          ?.flatMap { it.tasks.withType<Jar>() }
+          ?.toList()
+  logger.debug("jibTask ${this.name} needs to depend on : $jarTasks")
+  if (jarTasks?.isNotEmpty() == true) {
+    dependsOn(*jarTasks.toTypedArray())
+  }
 }
 
 tasks.register<Copy>("copySubProjectsOpenAPIFiles") {
