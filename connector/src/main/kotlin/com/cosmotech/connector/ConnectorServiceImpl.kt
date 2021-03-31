@@ -1,5 +1,5 @@
-// copyright (c) cosmo tech corporation.
-// licensed under the mit license.
+// Copyright (c) Cosmo Tech.
+// Licensed under the MIT license.
 
 package com.cosmotech.connector
 
@@ -19,6 +19,10 @@ class ConnectorServiceImpl : AbstractPhoenixService(), ConnectorsApiService {
   }
 
   override fun registerConnector(connector: Connector): Connector {
+    TODO("Not yet implemented")
+  }
+
+  override fun uploadConnector(connector: Connector): Connector {
     TODO("Not yet implemented")
   }
 

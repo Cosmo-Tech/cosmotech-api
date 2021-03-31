@@ -63,6 +63,35 @@ paths:
                 OneConnector:
                   $ref: '#/components/examples/OneConnector'
 
+  /connectors/upload:
+    post:
+      operationId: uploadConnector
+      tags:
+        - connector
+      summary: Upload and register a new connector
+      requestBody:
+        description: the Connector to upload and register
+        required: true
+        content:
+          application/yaml:
+            schema:
+              $ref: '#/components/schemas/Connector'
+            examples:
+              ADTNew:
+                $ref: '#/components/examples/ADTConnectorNew'
+      responses:
+        "201":
+          description: the connector details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Connector'
+              examples:
+                ADTConnector:
+                  $ref: '#/components/examples/ADTConnector'
+        "400":
+          description: Bad request
+
   /connectors/{connector_id}:
     parameters:
       - name: connector_id
