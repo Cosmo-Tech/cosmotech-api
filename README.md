@@ -5,7 +5,7 @@
 ## Building
 
 ```shell
-./gradlew spotlessApply build --info
+./gradlew spotlessApply build
 ```
 
 ## Running
