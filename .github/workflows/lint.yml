@@ -3,11 +3,11 @@ name: Lint
 on:
   push:
     branches:
-      - master
+      - main
     tags:
       - '*'
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   lint:
