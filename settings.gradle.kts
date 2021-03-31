@@ -1,4 +1,6 @@
-rootProject.name = "cosmotech-api"
+rootProject.name = "cosmotech-api-parent"
+
+include("api")
 
 include("common")
 
@@ -7,6 +9,8 @@ include("organization")
 include("user")
 
 include("connector")
+
+project(":api").name = "cosmotech-api"
 
 project(":common").name = "cosmotech-api-common"
 

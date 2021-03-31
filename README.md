@@ -11,5 +11,5 @@
 ## Running
 
 ```
-java -jar build/libs/cosmotech-api-0.0.1-SNAPSHOT-uberjar.jar
+java -jar api/build/libs/cosmotech-api-0.0.1-SNAPSHOT-uberjar.jar
 ```
