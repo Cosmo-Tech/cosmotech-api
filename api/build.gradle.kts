@@ -1,6 +1,7 @@
 import com.google.cloud.tools.jib.gradle.JibTask
 import com.rameshkp.openapi.merger.gradle.task.OpenApiMergerTask
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins { id("com.rameshkp.openapi-merger-gradle-plugin") version "1.0.3" }
@@ -132,6 +133,11 @@ tasks.register<GenerateTask>("openApiUmlGenerate") {
 tasks.register("generatePythonClient") { dependsOn("copyPythonGitPushScript") }
 
 tasks.getByName<GenerateTask>("openApiGenerate") { enabled = false }
+
+tasks.getByName<ValidateTask>("openApiValidate") {
+  dependsOn("mergeOpenApiFiles")
+  inputSpec.set("${rootDir}/openapi/openapi.yaml")
+}
 
 tasks.register("generateClients") {
   dependsOn("generateJSClient", "generatePythonClient", "openApiUmlGenerate")
