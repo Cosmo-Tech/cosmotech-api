@@ -237,7 +237,7 @@ components:
             name: "Alice"
           - id: "3"
             name: "Xavier"
-    TwoOrganization:
+    TwoOrganizations:
       summary: Two Orgnizations
       description: Two Organizations example
       value:
