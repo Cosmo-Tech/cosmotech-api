@@ -31,72 +31,8 @@ paths:
             schema:
               $ref: '#/components/schemas/Connector'
             examples:
-              ADT:
-                summary: ADT Connector
-                description: ADT Connector example
-                value: |
-                  {
-                    id: "NA",
-                    name: "ADT Connector",
-                    description: "Connector for Azure Digital Twins. Read ADT and write the data in CSV for the Simulation",
-                    repository: "azure-digital-twins-simulator-connector",
-                    version: "1.0",
-                    url: "https://github.com/Cosmo-Tech/azure-digital-twins-simulator-connector",
-                    readEnabled: true,
-                    writeEnabled: false,
-                    parameterGroups: [
-                      {
-                        id: "security",
-                        label: "Security",
-                        parameters: [
-                          {
-                            id: "AZURE_TENANT_ID",
-                            label: "Azure Tenant Id",
-                            valueType: "string",
-                            envVar: "AZURE_TENANT_ID"
-                          },
-                          {
-                            id: "AZURE_CLIENT_ID",
-                            label: "Azure Client Id",
-                            valueType: "string",
-                            envVar: "AZURE_CLIENT_ID"
-                          },
-                          {
-                            id: "AZURE_CLIENT_SECRET",
-                            label: "Azure CLient secret",
-                            valueType: "password",
-                            envVar: "AZURE_CLIENT_SECRET"
-                          }
-                        ]
-                      },
-                      {
-                        id: "parameters",
-                        label: "Parameters",
-                        parameters: [
-                          {
-                            id: "AZURE_DIGITAL_TWINS_URL",
-                            label: "Azure Digital Twins URL",
-                            valueType: "string",
-                            envVar: "AZURE_DIGITAL_TWINS_URL"
-                          },
-                          {
-                            id: "ADT_QUERY",
-                            label: "Azure Digital Twins query",
-                            valueType: "string",
-                            envVar: "AZURE_DIGITAL_TWINS_QUERY",
-                            default: "SELECT * FROM digitaltwins"
-                          },
-                          {
-                            id: "EXPORT_CSV_FILE_ABSOLUTE_PATH",
-                            label: "CSV file export absolute path",
-                            valueType: "string",
-                            default: "/mnt/simulation-data",
-                            envVar: "EXPORT_CSV_FILE_ABSOLUTE_PATH"
-                          }
-                        ]
-                      }
-                    ]
-                  }
+              ADTNew:
+                $ref: '#/components/examples/ADTConnectorNew'
       responses:
         "201":
           description: the connector details
@@ -105,73 +41,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Connector'
               examples:
-                ADT:
-                  summary: ADT Connector
-                  description: ADT Connector example
-                  value: |
-                    {
-                      id: "1",
-                      name: "ADT Connector",
-                      description: "Connector for Azure Digital Twins. Read ADT and write the data in CSV for the Simulation",
-                      repository: "azure-digital-twins-simulator-connector",
-                      version: "1.0",
-                      url: "https://github.com/Cosmo-Tech/azure-digital-twins-simulator-connector",
-                      readEnabled: true,
-                      writeEnabled: false,
-                      parameterGroups: [
-                        {
-                          id: "security",
-                          label: "Security",
-                          parameters: [
-                            {
-                              id: "AZURE_TENANT_ID",
-                              label: "Azure Tenant Id",
-                              valueType: "string",
-                              envVar: "AZURE_TENANT_ID"
-                            },
-                            {
-                              id: "AZURE_CLIENT_ID",
-                              label: "Azure Client Id",
-                              valueType: "string",
-                              envVar: "AZURE_CLIENT_ID"
-                            },
-                            {
-                              id: "AZURE_CLIENT_SECRET",
-                              label: "Azure CLient secret",
-                              valueType: "password",
-                              envVar: "AZURE_CLIENT_SECRET"
-                            }
-                          ]
-                        },
-                        {
-                          id: "parameters",
-                          label: "Parameters",
-                          parameters: [
-                            {
-                              id: "AZURE_DIGITAL_TWINS_URL",
-                              label: "Azure Digital Twins URL",
-                              valueType: "string",
-                              envVar: "AZURE_DIGITAL_TWINS_URL"
-                            },
-                            {
-                              id: "ADT_QUERY",
-                              label: "Azure Digital Twins query",
-                              valueType: "string",
-                              envVar: "AZURE_DIGITAL_TWINS_QUERY",
-                              default: "SELECT * FROM digitaltwins"
-                            },
-                            {
-                              id: "EXPORT_CSV_FILE_ABSOLUTE_PATH",
-                              label: "CSV file export absolute path",
-                              valueType: "string",
-                              default: "/mnt/simulation-data",
-                              envVar: "EXPORT_CSV_FILE_ABSOLUTE_PATH"
-                            }
-
-                          ]
-                        }
-                      ]
-                    }
+                ADTConnector:
+                  $ref: '#/components/examples/ADTConnector'
         "400":
           description: Bad request
     get:
@@ -188,6 +59,9 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Connector'
+              examples:
+                OneConnector:
+                  $ref: '#/components/examples/OneConnector'
 
   /connectors/{connector_id}:
     parameters:
@@ -209,6 +83,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Connector'
+              examples:
+                ADTConnector:
+                  $ref: '#/components/examples/ADTConnector'
         "404":
           description: the Connector specified is unknown or you don't have access to it
     patch:
@@ -223,6 +100,12 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Connector'
+            examples:
+              ChangeName:
+                summary: Change Name of Connector
+                description: Change the name of Connector ADT Connector
+                value:
+                  name: "New ADT Connector"
       responses:
         "200":
           description: the connector details
@@ -230,6 +113,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Connector'
+              examples:
+                ADTConnector:
+                  $ref: '#/components/examples/ADTConnectorRenamed'
         "400":
           description: Bad request
         "404":
@@ -246,6 +132,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Connector'
+              examples:
+                ADTConnector:
+                  $ref: '#/components/examples/ADTConnector'
         "400":
           description: Bad request
         "404":
@@ -339,3 +228,183 @@ components:
         envVar:
           type: string
           description: associated environment variable in connector image
+  examples:
+    ADTConnectorNew:
+      summary: New ADT Connector
+      description: ADT Connector new registration input example
+      value:
+        name: "ADT Connector"
+        description: "Connector for Azure Digital Twins. Read ADT and write the data in CSV for the Simulation"
+        repository: "azure-digital-twins-simulator-connector"
+        version: "1.0"
+        url: "https://github.com/Cosmo-Tech/azure-digital-twins-simulator-connector"
+        readEnabled: true
+        writeEnabled: false
+        parameterGroups:
+          - id: "security"
+            label: "Security"
+            parameters:
+              - id: "AZURE_TENANT_ID"
+                label: "Azure Tenant Id"
+                valueType: "string"
+                envVar: "AZURE_TENANT_ID"
+              - id: "AZURE_CLIENT_ID"
+                label: "Azure Client Id"
+                valueType: "string"
+                envVar: "AZURE_CLIENT_ID"
+              - id: "AZURE_CLIENT_SECRET"
+                label: "Azure CLient secret"
+                valueType: "password"
+                envVar: "AZURE_CLIENT_SECRET"
+          - id: "parameters"
+            label: "Parameters"
+            parameters:
+              - id: "AZURE_DIGITAL_TWINS_URL"
+                label: "Azure Digital Twins URL"
+                valueType: "string"
+                envVar: "AZURE_DIGITAL_TWINS_URL"
+              - id: "ADT_QUERY"
+                label: "Azure Digital Twins query"
+                valueType: "string"
+                envVar: "AZURE_DIGITAL_TWINS_QUERY"
+                default: "SELECT * FROM digitaltwins"
+              - id: "EXPORT_CSV_FILE_ABSOLUTE_PATH"
+                label: "CSV file export absolute path"
+                valueType: "string"
+                default: "/mnt/simulation-data"
+                envVar: "EXPORT_CSV_FILE_ABSOLUTE_PATH"
+    ADTConnector:
+      summary: ADT Connector
+      description: ADT Connector example
+      value:
+        id: "1"
+        name: "ADT Connector"
+        description: "Connector for Azure Digital Twins. Read ADT and write the data in CSV for the Simulation"
+        repository: "azure-digital-twins-simulator-connector"
+        version: "1.0"
+        url: "https://github.com/Cosmo-Tech/azure-digital-twins-simulator-connector"
+        readEnabled: true
+        writeEnabled: false
+        parameterGroups:
+          - id: "security"
+            label: "Security"
+            parameters:
+              - id: "AZURE_TENANT_ID"
+                label: "Azure Tenant Id"
+                valueType: "string"
+                envVar: "AZURE_TENANT_ID"
+              - id: "AZURE_CLIENT_ID"
+                label: "Azure Client Id"
+                valueType: "string"
+                envVar: "AZURE_CLIENT_ID"
+              - id: "AZURE_CLIENT_SECRET"
+                label: "Azure CLient secret"
+                valueType: "password"
+                envVar: "AZURE_CLIENT_SECRET"
+          - id: "parameters"
+            label: "Parameters"
+            parameters:
+              - id: "AZURE_DIGITAL_TWINS_URL"
+                label: "Azure Digital Twins URL"
+                valueType: "string"
+                envVar: "AZURE_DIGITAL_TWINS_URL"
+              - id: "ADT_QUERY"
+                label: "Azure Digital Twins query"
+                valueType: "string"
+                envVar: "AZURE_DIGITAL_TWINS_QUERY"
+                default: "SELECT * FROM digitaltwins"
+              - id: "EXPORT_CSV_FILE_ABSOLUTE_PATH"
+                label: "CSV file export absolute path"
+                valueType: "string"
+                default: "/mnt/simulation-data"
+                envVar: "EXPORT_CSV_FILE_ABSOLUTE_PATH"
+    ADTConnectorRenamed:
+      summary: ADT Connector
+      description: ADT Connector example
+      value:
+        id: "1"
+        name: "New ADT Connector"
+        description: "Connector for Azure Digital Twins. Read ADT and write the data in CSV for the Simulation"
+        repository: "azure-digital-twins-simulator-connector"
+        version: "1.0"
+        url: "https://github.com/Cosmo-Tech/azure-digital-twins-simulator-connector"
+        readEnabled: true
+        writeEnabled: false
+        parameterGroups:
+          - id: "security"
+            label: "Security"
+            parameters:
+              - id: "AZURE_TENANT_ID"
+                label: "Azure Tenant Id"
+                valueType: "string"
+                envVar: "AZURE_TENANT_ID"
+              - id: "AZURE_CLIENT_ID"
+                label: "Azure Client Id"
+                valueType: "string"
+                envVar: "AZURE_CLIENT_ID"
+              - id: "AZURE_CLIENT_SECRET"
+                label: "Azure CLient secret"
+                valueType: "password"
+                envVar: "AZURE_CLIENT_SECRET"
+          - id: "parameters"
+            label: "Parameters"
+            parameters:
+              - id: "AZURE_DIGITAL_TWINS_URL"
+                label: "Azure Digital Twins URL"
+                valueType: "string"
+                envVar: "AZURE_DIGITAL_TWINS_URL"
+              - id: "ADT_QUERY"
+                label: "Azure Digital Twins query"
+                valueType: "string"
+                envVar: "AZURE_DIGITAL_TWINS_QUERY"
+                default: "SELECT * FROM digitaltwins"
+              - id: "EXPORT_CSV_FILE_ABSOLUTE_PATH"
+                label: "CSV file export absolute path"
+                valueType: "string"
+                default: "/mnt/simulation-data"
+                envVar: "EXPORT_CSV_FILE_ABSOLUTE_PATH"
+    OneConnector:
+      summary: One Connector list
+      description: One Connector list example
+      value:
+        - id: "1"
+          name: "ADT Connector"
+          description: "Connector for Azure Digital Twins. Read ADT and write the data in CSV for the Simulation"
+          repository: "azure-digital-twins-simulator-connector"
+          version: "1.0"
+          url: "https://github.com/Cosmo-Tech/azure-digital-twins-simulator-connector"
+          readEnabled: true
+          writeEnabled: false
+          parameterGroups:
+            - id: "security"
+              label: "Security"
+              parameters:
+                - id: "AZURE_TENANT_ID"
+                  label: "Azure Tenant Id"
+                  valueType: "string"
+                  envVar: "AZURE_TENANT_ID"
+                - id: "AZURE_CLIENT_ID"
+                  label: "Azure Client Id"
+                  valueType: "string"
+                  envVar: "AZURE_CLIENT_ID"
+                - id: "AZURE_CLIENT_SECRET"
+                  label: "Azure CLient secret"
+                  valueType: "password"
+                  envVar: "AZURE_CLIENT_SECRET"
+            - id: "parameters"
+              label: "Parameters"
+              parameters:
+                - id: "AZURE_DIGITAL_TWINS_URL"
+                  label: "Azure Digital Twins URL"
+                  valueType: "string"
+                  envVar: "AZURE_DIGITAL_TWINS_URL"
+                - id: "ADT_QUERY"
+                  label: "Azure Digital Twins query"
+                  valueType: "string"
+                  envVar: "AZURE_DIGITAL_TWINS_QUERY"
+                  default: "SELECT * FROM digitaltwins"
+                - id: "EXPORT_CSV_FILE_ABSOLUTE_PATH"
+                  label: "CSV file export absolute path"
+                  valueType: "string"
+                  default: "/mnt/simulation-data"
+                  envVar: "EXPORT_CSV_FILE_ABSOLUTE_PATH"
