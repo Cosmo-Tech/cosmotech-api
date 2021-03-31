@@ -6,7 +6,10 @@ package com.cosmotech.connector
 import com.cosmotech.api.AbstractPhoenixService
 import com.cosmotech.connector.api.ConnectorsApiService
 import com.cosmotech.connector.domain.Connector
+import com.cosmotech.connector.domain.ConnectorParameterGroup
+import java.io.BufferedReader
 import org.springframework.stereotype.Service
+import org.springframework.util.FileCopyUtils
 
 @Service
 class ConnectorServiceImpl : AbstractPhoenixService(), ConnectorsApiService {
@@ -22,8 +25,13 @@ class ConnectorServiceImpl : AbstractPhoenixService(), ConnectorsApiService {
     TODO("Not yet implemented")
   }
 
-  override fun uploadConnector(connector: Connector): Connector {
-    TODO("Not yet implemented")
+  override fun uploadConnector(body: org.springframework.core.io.Resource): Connector {
+    print("hello")
+    print("length: " + body.contentLength().toString())
+    val content = body.getInputStream().bufferedReader().use(BufferedReader::readText)
+    print(content)
+
+    return Connector()
   }
 
   override fun unregisterConnector(connectorId: String): Connector {

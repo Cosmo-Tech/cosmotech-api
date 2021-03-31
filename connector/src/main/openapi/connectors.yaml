@@ -75,10 +75,8 @@ paths:
         content:
           application/yaml:
             schema:
-              $ref: '#/components/schemas/Connector'
-            examples:
-              ADTNew:
-                $ref: '#/components/examples/ADTConnectorNew'
+              type: string
+              format: binary
       responses:
         "201":
           description: the connector details
