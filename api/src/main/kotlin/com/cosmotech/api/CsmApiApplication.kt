@@ -14,8 +14,8 @@ import org.springframework.context.annotation.FilterType
                 type = FilterType.REGEX,
                 pattern =
                     [
-                        "com\\.cosmotech\\..*\\.ApplicationKt",
-                        "com\\.cosmotech\\..*\\.api\\.DefaultExceptionHandler"])])
+                        "com\\.cosmotech\\.\\w+\\.Application",
+                        "com\\.cosmotech\\.\\w+\\.api\\.DefaultExceptionHandler"])])
 class CsmApiApplication
 
 // TODO Add Controller Advice for all sub-projects exceptions

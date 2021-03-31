@@ -2,6 +2,7 @@ import com.diffplug.gradle.spotless.SpotlessExtension
 import com.google.cloud.tools.jib.api.buildplan.ImageFormat.OCI
 import com.google.cloud.tools.jib.gradle.JibExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
   val kotlinVersion = "1.4.31"
@@ -88,7 +89,11 @@ subprojects {
 
   tasks.withType<Test> { useJUnitPlatform() }
 
+  tasks.getByName<Jar>("jar") { enabled = true }
+
   if (name != "cosmotech-api-common") {
+    tasks.getByName<BootJar>("bootJar") { classifier = "uberjar" }
+
     configure<JibExtension> {
       from { image = "openjdk:16-alpine" }
       to { image = "${project.group}/${project.name}:${project.version}" }
