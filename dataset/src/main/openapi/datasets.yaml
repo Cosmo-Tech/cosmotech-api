@@ -159,6 +159,7 @@ components:
       properties:
         id:
           type: string
+          readOnly: true
           description: the Dataset unique identifier
         name:
           type: string
@@ -166,7 +167,11 @@ components:
         description:
           type: string
           description: the Dataset description
-        labels:
+        ownerId:
+          type: string
+          readOnly: true
+          description: the User id which own this Dataset
+        tags:
           type: array
           description: the list of tags
           items:
@@ -179,6 +184,14 @@ components:
           description: the list of other Datasets ids to compose as fragments
           items:
             type: string
+        compatibility:
+          type: array
+          description: the list of compatible Simulators versions
+          items:
+            $ref: '#/components/schemas/DatasetCompatibility'
+      required:
+        - name
+        - connector
     DatasetConnector:
       type: object
       description: a Connector setup
@@ -186,18 +199,26 @@ components:
         id:
           type: string
           description: the Connector id
-        name:
-          type: string
-          description: the Connector name
-        version:
-          type: string
-          description: the Connector version
-        ownerId:
-          type: string
-          description: the User id which own this Dataset
         parametersValues:
           type: object
           additionalProperties: true
+      required:
+        - id
+    DatasetCompatibility:
+      type: object
+      description: a Dataset compatibility constraint to a Simulator version open range
+      properties:
+        simulatorKey:
+          type: string
+          description: the Simulator key which group Simulator versions
+        minimumVersion:
+          type: string
+          description: the Simulator minimum version compatibility (version included)
+        maximumVersion:
+          type: string
+          description: the Simulator maximum version compatibility (version included)
+      required:
+        - simulatorKey
   examples:
     BeerADTCreateIn:
       summary: Beer ADT Dataset Create
@@ -205,7 +226,7 @@ components:
       value:
         name: Beer ADT reference
         description: Beer reference model in ADT
-        labels:
+        tags:
           - ADT
           - Beer
           - Reference
@@ -221,6 +242,9 @@ components:
             AZURE_DIGITAL_TWINS_URL: mydt.api.weu.digitaltwins.azure.net
             ADT_QUERY: SELECT * FROM digitaltwins
             EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
+        compatibility:
+          simulatorKey: Beer Simulator
+          minimumVersion: "1.0.0"
     BeerADT:
       summary: Beer ADT Dataset
       description: Beer Dataset in ADT example
@@ -228,7 +252,7 @@ components:
         id: "1"
         name: Beer ADT reference
         description: Beer reference model in ADT
-        labels:
+        tags:
           - ADT
           - Beer
           - Reference
@@ -244,6 +268,9 @@ components:
             AZURE_DIGITAL_TWINS_URL: mydt.api.weu.digitaltwins.azure.net
             ADT_QUERY: SELECT * FROM digitaltwins
             EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
+        compatibility:
+          simulatorKey: Beer Simulator
+          minimumVersion: "1.0.0"
     TwoDatasets:
       summary: Two Datasets example
       description: Two ADT Datasets example
@@ -251,7 +278,7 @@ components:
         - id: "1"
           name: Beer ADT reference
           description: Beer reference model in ADT
-          labels:
+          tags:
             - ADT
             - Beer
             - Reference
@@ -267,10 +294,13 @@ components:
               AZURE_DIGITAL_TWINS_URL: mydt.api.weu.digitaltwins.azure.net
               ADT_QUERY: SELECT * FROM digitaltwins
               EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
+          compatibility:
+            simulatorKey: Beer Simulator
+            minimumVersion: "1.0.0"
         - id: "2"
           name: Beer ADT future
           description: Beer future model in ADT
-          labels:
+          tags:
             - ADT
             - Beer
           connector:
@@ -297,7 +327,7 @@ components:
         id: "1"
         name: Beer ADT new reference
         description: Beer reference model in ADT
-        labels:
+        tags:
           - ADT
           - Beer
           - Reference
@@ -313,5 +343,6 @@ components:
             AZURE_DIGITAL_TWINS_URL: mydt.api.weu.digitaltwins.azure.net
             ADT_QUERY: SELECT * FROM digitaltwins
             EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
-
-
+        compatibility:
+          simulatorKey: Beer Simulator
+          minimumVersion: "1.0.0"

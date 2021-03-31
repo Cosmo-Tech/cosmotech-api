@@ -156,11 +156,15 @@ components:
   schemas:
     Connector:
       type: object
-      description: a Connector
+      description: a version of a Connector
       properties:
         id:
           type: string
-          description: the Connector unique identifier
+          readOnly: true
+          description: the Connector version unique identifier
+        connectorKey:
+          type: string
+          description: the Connector key which group Connector versions
         name:
           type: string
           description: the Connector name
@@ -172,24 +176,38 @@ components:
           description: the registry repository containing the image
         version:
           type: string
-          description: the Connector version. Must be aligned with an existing repository tag
+          description: the Connector version MAJOR.MINOR.PATCH. Must be aligned with an existing repository tag
+        tags:
+          type: array
+          description: the list of tags
+          items:
+            type: string
         ownerId:
           type: string
+          readOnly: true
           description: the user id which own this connector version
         url:
           type: string
           description: an optional URL link to connector page
-        readEnabled:
-          type: boolean
-          description: whether or not the connector can read data
-        writeEnabled:
-          type: boolean
-          description: wheher or not the connector can write data
+        ioTypes:
+          type: array
+          description: The read and write capabilities of connector
+          items:
+            type: string
+            enum:
+              - read
+              - write
         parameterGroups:
           type: array
           description: the list of connector parameters groups
           items:
             $ref: '#/components/schemas/ConnectorParameterGroup'
+      required:
+        - connectorKey
+        - name
+        - repository
+        - version
+        - ioTypes
     ConnectorParameterGroup:
       type: object
       description: a connector parameters group
@@ -205,6 +223,10 @@ components:
           description: the list of parameters
           items:
             $ref: '#/components/schemas/ConnectorParameter'
+      required:
+        - id
+        - label
+        - parameters
     ConnectorParameter:
       type: object
       description: a connector parameter
@@ -229,19 +251,26 @@ components:
         envVar:
           type: string
           description: associated environment variable in connector image
+      required:
+        - id
+        - label
+        - valueType
   examples:
     ADTConnectorNew:
       summary: New ADT Connector
       description: ADT Connector new registration input example
       value:
+        connectorKey: ADT Connector
         name: ADT Connector
         description: Connector for Azure Digital Twins. Read ADT and write the data in CSV for the Simulation
         repository: azure-digital-twins-simulator-connector
-        version: "1.0"
+        version: "1.0.0"
+        tags:
+          - ADT
         ownerId: "1"
         url: https://github.com/Cosmo-Tech/azure-digital-twins-simulator-connector
-        readEnabled: true
-        writeEnabled: false
+        ioTypes:
+          - read
         parameterGroups:
           - id: security
             label: Security
@@ -280,14 +309,17 @@ components:
       description: ADT Connector example
       value:
         id: "1"
+        connectorKey: ADT Connector
         name: ADT Connector
         description: Connector for Azure Digital Twins. Read ADT and write the data in CSV for the Simulation
         repository: azure-digital-twins-simulator-connector
-        version: "1.0"
+        version: "1.0.0"
+        tags:
+          - ADT
         ownerId: "1"
         url: https://github.com/Cosmo-Tech/azure-digital-twins-simulator-connector
-        readEnabled: true
-        writeEnabled: false
+        ioTypes:
+          - read
         parameterGroups:
           - id: security
             label: Security
@@ -326,14 +358,17 @@ components:
       description: One Connector list example
       value:
         - id: "1"
+          connectorKey: ADT Connector
           name: ADT Connector
           description: Connector for Azure Digital Twins. Read ADT and write the data in CSV for the Simulation
           repository: azure-digital-twins-simulator-connector
-          version: "1.0"
+          version: "1.0.0"
+          tags:
+            - ADT
           ownerId: "1"
           url: https://github.com/Cosmo-Tech/azure-digital-twins-simulator-connector
-          readEnabled: true
-          writeEnabled: false
+          ioTypes:
+            - read
           parameterGroups:
             - id: security
               label: Security

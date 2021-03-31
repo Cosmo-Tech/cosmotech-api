@@ -39,7 +39,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/UserDetails'
               examples:
                 Bob:
                   $ref: '#/components/examples/BobCreate'
@@ -58,7 +58,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/User'
+                  $ref: '#/components/schemas/UserDetails'
               examples:
                 Two:
                   $ref: '#/components/examples/TwoUsers'
@@ -82,7 +82,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/UserDetails'
               examples:
                 Bob:
                   $ref: '#/components/examples/Bob'
@@ -101,18 +101,18 @@ paths:
             schema:
               $ref: '#/components/schemas/User'
             examples:
-              BobyUpdate:
-                $ref: '#/components/examples/BobyUpdate'
+              BobyUpdateIn:
+                $ref: '#/components/examples/BobyUpdateIn'
       responses:
         "200":
           description: the user details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/UserDetails'
               examples:
-                BobyUpdate:
-                  $ref: '#/components/examples/BobyUpdate'
+                BobyUpdated:
+                  $ref: '#/components/examples/BobyUpdated'
         "400":
           description: Bad request
         "404":
@@ -128,7 +128,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/UserDetails'
               examples:
                 Bob:
                   $ref: '#/components/examples/Bob'
@@ -159,14 +159,24 @@ components:
       properties:
         id:
           type: string
+          readOnly: true
           description: the User unique identifier
         name:
           type: string
           description: the User name
-        organizations:
-          type: array
-          items:
-            $ref: '#/components/schemas/UserOrganization'
+      required:
+        - name
+    UserDetails:
+      allOf:
+        - $ref: '#/components/schemas/User'
+        - type: object
+          description: a User with Organization details
+          properties:
+            organizations:
+              type: array
+              readOnly: true
+              items:
+                $ref: '#/components/schemas/UserOrganization'
     UserOrganization:
       type: object
       description: The organization of the user
@@ -179,16 +189,17 @@ components:
           description: the Organization name
   examples:
     BobCreateIn:
-      summary: Bob User Create
-      description: Bob User Create example
+      summary: Bob User Create input example
+      description: Bob User Create input example
       value:
         name: Bob
     BobCreate:
-      summary: Bob User Create
-      description: Bob User Create example
+      summary: Bob User Created example
+      description: Bob User Created example
       value:
         id: "1"
         name: Bob
+        organizations: []
     Bob:
       summary: Bob User
       description: Bob User example
@@ -200,14 +211,25 @@ components:
             name: Cosmo Tech
           - id: "2"
             name: Phoenix
-    BobyUpdate:
-      summary: Boby update User
+    BobyUpdateIn:
+      summary: Boby update User input example
+      description: Bob User renamed to Boby input example
+      value:
+        id: "1"
+        name: Boby
+    BobyUpdated:
+      summary: Boby updated User
       description: Bob User renamed to Boby example
       value:
         id: "1"
         name: Boby
+        organizations:
+          - id: "1"
+            name: Cosmo Tech
+          - id: "2"
+            name: Phoenix
     TwoUsers:
-      summary: Two Users
+      summary: Two Users example
       description: Two Users example
       value:
         - id: "1"

@@ -184,6 +184,7 @@ components:
       properties:
         id:
           type: string
+          readOnly: true
           description: the Organization unique identifier
         name:
           type: string
@@ -192,6 +193,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/OrganizationUser'
+      required:
+        - name
     OrganizationUser:
       type: object
       description: a User
