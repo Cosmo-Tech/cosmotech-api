@@ -90,6 +90,10 @@ subprojects {
 
     implementation("org.zalando:problem-spring-web-starter:0.27.0-RC.0")
 
+    if (name != "cosmotech-api-common") {
+      implementation("com.azure.spring:azure-spring-boot-starter-cosmos:3.3.0")
+    }
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
     val developmentOnly = configurations.getByName("developmentOnly")
