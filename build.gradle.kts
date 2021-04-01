@@ -2,6 +2,7 @@ import com.diffplug.gradle.spotless.SpotlessExtension
 import com.google.cloud.tools.jib.api.buildplan.ImageFormat.OCI
 import com.google.cloud.tools.jib.gradle.JibExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
@@ -78,6 +79,7 @@ subprojects {
 
   if (name != "cosmotech-api-common") {
     tasks.withType<AbstractCompile> { dependsOn("openApiGenerate") }
+    tasks.withType<GenerateTask> { dependsOn("openApiValidate") }
   }
 
   tasks.withType<KotlinCompile> {
