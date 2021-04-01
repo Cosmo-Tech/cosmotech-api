@@ -1,9 +1,14 @@
 import com.diffplug.gradle.spotless.SpotlessExtension
+import com.fasterxml.jackson.annotation.JsonInclude.Include
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.cloud.tools.jib.api.buildplan.ImageFormat.OCI
 import com.google.cloud.tools.jib.gradle.JibExtension
+import io.swagger.parser.OpenAPIParser
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.springframework.boot.gradle.tasks.bundling.BootJar
+
+buildscript { dependencies { classpath("io.swagger.parser.v3:swagger-parser-v3:2.0.24") } }
 
 plugins {
   val kotlinVersion = "1.4.31"
@@ -68,11 +73,9 @@ subprojects {
     implementation("javax.validation:validation-api:2.0.1.Final")
     implementation("io.swagger:swagger-annotations:1.6.2")
 
-    if (name != "cosmotech-api-common") {
-      val springfoxVersion = "3.0.0"
-      implementation("io.springfox:springfox-boot-starter:${springfoxVersion}")
-      implementation("io.springfox:springfox-swagger-ui:${springfoxVersion}")
-    }
+    val springfoxVersion = "3.0.0"
+    implementation("io.springfox:springfox-boot-starter:${springfoxVersion}")
+    implementation("io.springfox:springfox-swagger-ui:${springfoxVersion}")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
   }
@@ -94,6 +97,48 @@ subprojects {
   tasks.getByName<Jar>("jar") { enabled = true }
 
   if (name != "cosmotech-api-common") {
+
+    val openApiFileDefinition =
+        if (name == "cosmotech-api") {
+          file("${rootDir}/openapi/openapi.yaml")
+        } else {
+          file("${projectDir}/src/main/openapi/${projectDir.relativeTo(rootDir)}s.yaml")
+        }
+    val jsonOutputFile = file("${buildDir}/tmp/static/openapi.json")
+    tasks.register("convertOpenAPIYaml2Json") {
+      inputs.file(openApiFileDefinition)
+      outputs.file(jsonOutputFile)
+      doLast {
+        if (openApiFileDefinition.exists()) {
+          val parseResult =
+              OpenAPIParser().readContents(openApiFileDefinition.readText(), null, null)
+          val openAPI = parseResult.openAPI
+          if (!parseResult.messages.isNullOrEmpty() || openAPI == null) {
+            throw IllegalStateException(
+                "Unable to parse OpenAPI definition from $openApiFileDefinition : ${parseResult.messages}")
+          }
+
+          ObjectMapper()
+              .apply { setSerializationInclusion(Include.NON_NULL) }
+              .writerWithDefaultPrettyPrinter()
+              .writeValue(jsonOutputFile, openAPI)
+        } else {
+          logger.warn(
+              "Unable to find OpenAPI definition for project '${project.name}' => 'convertOpenAPIYaml2Json' not registered ! ")
+        }
+      }
+    }
+
+    tasks.getByName<Copy>("processResources") {
+      dependsOn("convertOpenAPIYaml2Json")
+      from("${buildDir}/tmp")
+    }
+
+    tasks.getByName<Copy>("processTestResources") {
+      dependsOn("convertOpenAPIYaml2Json")
+      from("${buildDir}/tmp")
+    }
+
     tasks.getByName<BootJar>("bootJar") { classifier = "uberjar" }
 
     configure<JibExtension> {
