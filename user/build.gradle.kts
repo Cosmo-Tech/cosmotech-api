@@ -29,7 +29,7 @@ tasks.getByName<GenerateTask>("openApiGenerate") {
   additionalProperties.set(
       mapOf(
           "title" to "Cosmo Tech Organization Manager API",
-          "basePackage" to "com.cosmotech.user",
+          "basePackage" to "com.cosmotech",
           "configPackage" to "com.cosmotech.user.config",
           "enumPropertyNaming" to "original",
           "serviceInterface" to true,
