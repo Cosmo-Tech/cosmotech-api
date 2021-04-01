@@ -11,11 +11,7 @@ import org.springframework.context.annotation.FilterType
     excludeFilters =
         [
             ComponentScan.Filter(
-                type = FilterType.REGEX,
-                pattern =
-                    [
-                        "com\\.cosmotech\\.\\w+\\.Application",
-                        "com\\.cosmotech\\.\\w+\\.api\\.DefaultExceptionHandler"])])
+                type = FilterType.REGEX, pattern = ["com\\.cosmotech\\.\\w+\\.Application"])])
 class CsmApiApplication
 
 // TODO Add Controller Advice for all sub-projects exceptions

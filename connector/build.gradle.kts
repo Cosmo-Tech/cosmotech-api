@@ -35,6 +35,7 @@ tasks.getByName<GenerateTask>("openApiGenerate") {
           "basePackage" to "com.cosmotech",
           "configPackage" to "com.cosmotech.connector.config",
           "enumPropertyNaming" to "original",
+          "exceptionHandler" to false,
           "serviceInterface" to true,
           "swaggerAnnotations" to true))
 }
