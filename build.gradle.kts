@@ -35,7 +35,6 @@ allprojects {
   version = "0.0.1-SNAPSHOT"
 
   configure<SpotlessExtension> {
-    ratchetFrom = "origin/main"
     isEnforceCheck = false
     java {
       googleJavaFormat()
