@@ -145,7 +145,12 @@ subprojects {
 
     tasks.getByName<BootJar>("bootJar") { classifier = "uberjar" }
 
-    tasks.getByName<BootRun>("bootRun") { args = listOf("--spring.profiles.active=dev") }
+    tasks.getByName<BootRun>("bootRun") {
+      args = listOf("--spring.profiles.active=dev")
+      properties.filterKeys { it.startsWith("csm.") }.forEach {
+        systemProperty(it.key, it.value.toString())
+      }
+    }
 
     configure<JibExtension> {
       from { image = "openjdk:16-alpine" }
