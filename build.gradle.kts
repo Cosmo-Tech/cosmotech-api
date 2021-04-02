@@ -7,6 +7,7 @@ import io.swagger.parser.OpenAPIParser
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.springframework.boot.gradle.tasks.bundling.BootJar
+import org.springframework.boot.gradle.tasks.run.BootRun
 
 buildscript { dependencies { classpath("io.swagger.parser.v3:swagger-parser-v3:2.0.24") } }
 
@@ -143,6 +144,8 @@ subprojects {
     }
 
     tasks.getByName<BootJar>("bootJar") { classifier = "uberjar" }
+
+    tasks.getByName<BootRun>("bootRun") { args = listOf("--spring.profiles.active=dev") }
 
     configure<JibExtension> {
       from { image = "openjdk:16-alpine" }
