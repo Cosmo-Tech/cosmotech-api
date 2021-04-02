@@ -13,7 +13,7 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 buildscript { dependencies { classpath("io.swagger.parser.v3:swagger-parser-v3:2.0.24") } }
 
 plugins {
-  val kotlinVersion = "1.4.31"
+  val kotlinVersion = "1.4.32"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion apply false
 
