@@ -10,7 +10,14 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
 
-imagePullSecrets: []
+#imagePullSecrets: []
+
+# Set image pull secrets (in case you're using a private container registry).
+imageCredentials:
+  registry:
+  username:
+  password:
+
 nameOverride: ""
 fullnameOverride: ""
 
