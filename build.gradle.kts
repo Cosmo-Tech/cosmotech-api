@@ -73,7 +73,6 @@ subprojects {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("javax.validation:validation-api:2.0.1.Final")
-    implementation("io.swagger:swagger-annotations:1.6.2")
 
     val springfoxVersion = "3.0.0"
     implementation("io.springfox:springfox-boot-starter:${springfoxVersion}")
