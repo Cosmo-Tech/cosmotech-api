@@ -1,6 +1,5 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-
 package com.cosmotech.dataset
 
 import com.cosmotech.api.AbstractPhoenixService
