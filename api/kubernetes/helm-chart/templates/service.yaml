@@ -11,5 +11,9 @@ spec:
       targetPort: http
       protocol: TCP
       name: http
+    - port: {{ .Values.service.managementPort }}
+      targetPort: http-management
+      protocol: TCP
+      name: http-management
   selector:
     {{- include "cosmotech-api.selectorLabels" . | nindent 4 }}
