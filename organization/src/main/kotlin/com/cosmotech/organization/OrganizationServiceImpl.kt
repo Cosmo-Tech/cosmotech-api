@@ -42,7 +42,17 @@ class OrganizationServiceImpl(
   }
 
   override fun findOrganizationById(organizationId: String): Organization {
-    TODO("Not yet implemented")
+    val objectNode =
+        cosmosClient
+            .getDatabase(azureCosmosDbDatabaseCore)
+            .getContainer(azureCosmosDbDatabaseCoreOrganizationContainer)
+            .queryItems(
+                "SELECT * FROM c WHERE c.id = \"$organizationId\" OFFSET 0 LIMIT 1",
+                CosmosQueryRequestOptions(),
+                ObjectNode::class.java)
+            .firstOrNull()
+    return convertTo(
+        objectNode ?: throw IllegalArgumentException("Organization not found: $organizationId"))
   }
 
   override fun registerOrganization(organization: Organization): Organization {
