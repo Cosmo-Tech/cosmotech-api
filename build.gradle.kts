@@ -84,6 +84,8 @@ subprojects {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("javax.validation:validation-api:2.0.1.Final")
 
+    implementation("org.springframework.cloud:spring-cloud-starter-kubernetes-fabric8-config:2.0.2")
+
     val springfoxVersion = "3.0.0"
     implementation("io.springfox:springfox-boot-starter:${springfoxVersion}")
     implementation("io.springfox:springfox-swagger-ui:${springfoxVersion}")

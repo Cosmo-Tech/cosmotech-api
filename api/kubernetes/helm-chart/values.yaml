@@ -89,3 +89,10 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+config:
+  # Specific application properties : application.yaml
+  logging:
+    level:
+      com:
+        cosmotech: INFO

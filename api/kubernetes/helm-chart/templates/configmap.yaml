@@ -1,0 +1,10 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ include "cosmotech-api.fullname" . }}
+data:
+  application.yml: |-
+    spring:
+      application:
+        name: {{ include "cosmotech-api.fullname" . }}
+    {{- toYaml .Values.config | nindent 4 }}
