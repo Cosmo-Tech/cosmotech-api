@@ -38,17 +38,26 @@ allprojects {
 
   configure<SpotlessExtension> {
     isEnforceCheck = false
+
+    val licenseHeaderComment = """
+        // Copyright (c) Cosmo Tech.
+        // Licensed under the MIT license.
+      """.trimIndent()
+
     java {
       googleJavaFormat()
       target("**/*.java")
+      licenseHeader(licenseHeaderComment)
     }
     kotlin {
       ktfmt()
       target("**/*.kt")
+      licenseHeader(licenseHeaderComment)
     }
     kotlinGradle {
       ktfmt()
       target("**/*.kts")
+      licenseHeader(licenseHeaderComment, "")
     }
   }
 }
