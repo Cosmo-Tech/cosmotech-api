@@ -27,7 +27,11 @@ class OrganizationServiceImpl(
   @Value("\${csm.azure.cosmosdb.database.core.organizations.container}")
   private lateinit var azureCosmosDbDatabaseCoreOrganizationContainer: String
   override fun findAllOrganizations(): List<Organization> {
-    TODO("Not yet implemented")
+    return cosmosClient
+        .getDatabase(azureCosmosDbDatabaseCore)
+        .getContainer(azureCosmosDbDatabaseCoreOrganizationContainer)
+        .queryItems("SELECT * FROM c", CosmosQueryRequestOptions(), Organization::class.java)
+        .toList()
   }
 
   override fun findOrganizationById(organizationId: String): Organization {
