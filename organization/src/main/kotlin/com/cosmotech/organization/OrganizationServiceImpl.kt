@@ -8,6 +8,7 @@ import com.azure.cosmos.models.CosmosQueryRequestOptions
 import com.cosmotech.api.AbstractPhoenixService
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
+import com.fasterxml.jackson.databind.node.ObjectNode
 import java.util.*
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -30,7 +31,13 @@ class OrganizationServiceImpl(
     return cosmosClient
         .getDatabase(azureCosmosDbDatabaseCore)
         .getContainer(azureCosmosDbDatabaseCoreOrganizationContainer)
-        .queryItems("SELECT * FROM c", CosmosQueryRequestOptions(), Organization::class.java)
+        .queryItems("SELECT * FROM c", CosmosQueryRequestOptions(), ObjectNode::class.java)
+        .map {
+          // Workaround because of the issue reported in
+          // https://github.com/Azure/azure-sdk-for-java/issues/12269
+          // Azure Cosmos SDK is not able to deserialize Kotlin data classes
+          convertTo<Organization>(it)
+        }
         .toList()
   }
 
