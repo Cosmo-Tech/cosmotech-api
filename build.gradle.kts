@@ -39,7 +39,8 @@ allprojects {
   configure<SpotlessExtension> {
     isEnforceCheck = false
 
-    val licenseHeaderComment = """
+    val licenseHeaderComment =
+        """
         // Copyright (c) Cosmo Tech.
         // Licensed under the MIT license.
       """.trimIndent()
