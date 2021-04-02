@@ -6,6 +6,7 @@ import com.google.cloud.tools.jib.gradle.JibExtension
 import io.swagger.parser.OpenAPIParser
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+import org.springframework.boot.gradle.dsl.SpringBootExtension
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 import org.springframework.boot.gradle.tasks.run.BootRun
 
@@ -151,6 +152,8 @@ subprojects {
         systemProperty(it.key, it.value.toString())
       }
     }
+
+    configure<SpringBootExtension> { buildInfo() }
 
     configure<JibExtension> {
       from { image = "openjdk:16-alpine" }
