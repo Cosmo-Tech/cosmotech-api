@@ -78,6 +78,9 @@ subprojects {
     implementation("io.springfox:springfox-swagger-ui:${springfoxVersion}")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+    val developmentOnly = configurations.getByName("developmentOnly")
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
   }
 
   if (name != "cosmotech-api-common") {
