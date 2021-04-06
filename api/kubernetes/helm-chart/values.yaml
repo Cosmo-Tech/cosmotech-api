@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: localhost:5000/cosmotech-api
+  repository: cosmotech-api
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
