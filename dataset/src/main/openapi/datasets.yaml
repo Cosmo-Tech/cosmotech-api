@@ -31,8 +31,8 @@ paths:
             schema:
               $ref: '#/components/schemas/Dataset'
             examples:
-              BeerADTCreateIn:
-                $ref: '#/components/examples/BeerADTCreateIn'
+              BeerADT:
+                $ref: '#/components/examples/BeerADT'
       responses:
         "201":
           description: the dataset details
@@ -220,31 +220,6 @@ components:
       required:
         - simulatorKey
   examples:
-    BeerADTCreateIn:
-      summary: Beer ADT Dataset Create
-      description: Beer Dataset in ADT Create example
-      value:
-        name: Beer ADT reference
-        description: Beer reference model in ADT
-        tags:
-          - ADT
-          - Beer
-          - Reference
-        connector:
-          id: "1"
-          name: ADT Connector
-          version: "1.0"
-          ownerId: "1"
-          parametersValues:
-            AZURE_TENANT_ID: "12345678"
-            AZURE_CLIENT_ID: "12345678"
-            AZURE_CLIENT_SECRET: "12345678"
-            AZURE_DIGITAL_TWINS_URL: mydt.api.weu.digitaltwins.azure.net
-            ADT_QUERY: SELECT * FROM digitaltwins
-            EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
-        compatibility:
-          simulatorKey: Beer Simulator
-          minimumVersion: "1.0.0"
     BeerADT:
       summary: Beer ADT Dataset
       description: Beer Dataset in ADT example
