@@ -6,6 +6,8 @@ info:
   version: 1.0.0
 
 servers:
+- url: 'https://api.azure.cosmo-platform.com'
+- url: 'https://gateway.api.cosmo-platform.com'
 - url: 'http://localhost:8080'
 
 security:
@@ -31,8 +33,8 @@ paths:
             schema:
               $ref: '#/components/schemas/Dataset'
             examples:
-              BeerADT:
-                $ref: '#/components/examples/BeerADT'
+              BreweryADT:
+                $ref: '#/components/examples/BreweryADT'
       responses:
         "201":
           description: the dataset details
@@ -41,8 +43,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Dataset'
               examples:
-                BeerADT:
-                  $ref: '#/components/examples/BeerADT'
+                BreweryADT:
+                  $ref: '#/components/examples/BreweryADT'
         "400":
           description: Bad request
     get:
@@ -84,8 +86,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Dataset'
               examples:
-                BeerADT:
-                  $ref: '#/components/examples/BeerADT'
+                BreweryADT:
+                  $ref: '#/components/examples/BreweryADT'
         "404":
           description: the Dataset specified is unknown or you don't have access to it
     patch:
@@ -101,8 +103,8 @@ paths:
             schema:
               $ref: '#/components/schemas/Dataset'
             examples:
-              BeerADTUpdate:
-                $ref: '#/components/examples/BeerADTUpdate'
+              BreweryADTUpdate:
+                $ref: '#/components/examples/BreweryADTUpdate'
       responses:
         "200":
           description: the dataset details
@@ -111,8 +113,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Dataset'
               examples:
-                BeerADTUpdated:
-                  $ref: '#/components/examples/BeerADTUpdated'
+                BreweryADTUpdated:
+                  $ref: '#/components/examples/BreweryADTUpdated'
         "400":
           description: Bad request
         "404":
@@ -130,8 +132,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Dataset'
               examples:
-                BeerADT:
-                  $ref: '#/components/examples/BeerADT'
+                BreweryADT:
+                  $ref: '#/components/examples/BreweryADT'
         "400":
           description: Bad request
         "404":
@@ -220,16 +222,16 @@ components:
       required:
         - simulatorKey
   examples:
-    BeerADT:
-      summary: Beer ADT Dataset
-      description: Beer Dataset in ADT example
+    BreweryADT:
+      summary: Brewery ADT Dataset
+      description: Brewery Dataset in ADT example
       value:
         id: "1"
-        name: Beer ADT reference
-        description: Beer reference model in ADT
+        name: Brewery ADT reference
+        description: Brewery reference model in ADT
         tags:
           - ADT
-          - Beer
+          - Brewery
           - Reference
         connector:
           id: "1"
@@ -244,18 +246,18 @@ components:
             ADT_QUERY: SELECT * FROM digitaltwins
             EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
         compatibility:
-          simulatorKey: Beer Simulator
+          simulatorKey: Brewery Simulator
           minimumVersion: "1.0.0"
     TwoDatasets:
       summary: Two Datasets example
       description: Two ADT Datasets example
       value:
         - id: "1"
-          name: Beer ADT reference
-          description: Beer reference model in ADT
+          name: Brewery ADT reference
+          description: Brewery reference model in ADT
           tags:
             - ADT
-            - Beer
+            - Brewery
             - Reference
           connector:
             id: "1"
@@ -270,14 +272,14 @@ components:
               ADT_QUERY: SELECT * FROM digitaltwins
               EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
           compatibility:
-            simulatorKey: Beer Simulator
+            simulatorKey: Brewery Simulator
             minimumVersion: "1.0.0"
         - id: "2"
-          name: Beer ADT future
-          description: Beer future model in ADT
+          name: Brewery ADT future
+          description: Brewery future model in ADT
           tags:
             - ADT
-            - Beer
+            - Brewery
           connector:
             id: "1"
             name: ADT Connector
@@ -290,21 +292,21 @@ components:
               AZURE_DIGITAL_TWINS_URL: myotherdt.api.weu.digitaltwins.azure.net
               ADT_QUERY: SELECT * FROM digitaltwins
               EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
-    BeerADTUpdate:
-      summary: Beer ADT name update example
-      description: Beer ADT reference model name update example
+    BreweryADTUpdate:
+      summary: Brewery ADT name update example
+      description: Brewery ADT reference model name update example
       value:
-        name: Beer ADT new reference
-    BeerADTUpdated:
-      summary: Beer ADT updated Dataset
-      description: Beer Dataset in ADT name updated example
+        name: Brewery ADT new reference
+    BreweryADTUpdated:
+      summary: Brewery ADT updated Dataset
+      description: Brewery Dataset in ADT name updated example
       value:
         id: "1"
-        name: Beer ADT new reference
-        description: Beer reference model in ADT
+        name: Brewery ADT new reference
+        description: Brewery reference model in ADT
         tags:
           - ADT
-          - Beer
+          - Brewery
           - Reference
         connector:
           id: "1"
@@ -319,5 +321,5 @@ components:
             ADT_QUERY: SELECT * FROM digitaltwins
             EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
         compatibility:
-          simulatorKey: Beer Simulator
+          simulatorKey: Brewery Simulator
           minimumVersion: "1.0.0"

@@ -6,6 +6,8 @@ info:
   version: 1.0.0
 
 servers:
+- url: 'https://api.azure.cosmo-platform.com'
+- url: 'https://gateway.api.cosmo-platform.com'
 - url: 'http://localhost:8080'
 
 security:
