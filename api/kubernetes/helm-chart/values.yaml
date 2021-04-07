@@ -57,6 +57,7 @@ ingress:
     - host: chart-example.local
       paths:
       - path: /
+        pathType: Prefix # For Kubernetes >= 1.19.0
         backend:
           serviceName: chart-example.local
           servicePort: 8080
