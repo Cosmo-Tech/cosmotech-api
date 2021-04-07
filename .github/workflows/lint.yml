@@ -10,7 +10,7 @@ on:
     branches: [ main ]
 
 jobs:
-  lint:
+  lint_gradle:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,11 +22,6 @@ jobs:
         distribution: 'adopt'
         java-version: '15'
 
-    - name: Set up Helm
-      uses: azure/setup-helm@v1.1
-      with:
-        version: v3.4.0
-
     - uses: actions/cache@v2.1.4
       with:
         path: |
@@ -36,11 +31,22 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-gradle-
 
-    - name: Validate OpenAPI spec definitions
-      run: ./gradlew openApiValidate --stacktrace
-
     - name: Check with Spotless
       run: ./gradlew spotlessCheck --stacktrace
 
-    - name: Lint Helm Chart (api)
-      run: helm lint api/kubernetes/helm-chart
+    - name: Validate OpenAPI spec definitions
+      run: ./gradlew openApiValidate --stacktrace
+
+  lint_helm:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v1.1
+        with:
+          version: v3.4.0
+
+      - name: Lint Helm Chart (api)
+        run: helm lint api/kubernetes/helm-chart
