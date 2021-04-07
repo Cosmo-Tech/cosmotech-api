@@ -159,8 +159,8 @@ subprojects {
 
     tasks.getByName<BootRun>("bootRun") {
       args = listOf("--spring.profiles.active=dev")
-      properties.filterKeys { it.startsWith("csm.") }.forEach {
-        systemProperty(it.key, it.value.toString())
+      if (project.hasProperty("jvmArgs")) {
+        jvmArgs = project.property("jvmArgs")?.toString()?.split("\\s+".toRegex()) ?: listOf()
       }
     }
 
