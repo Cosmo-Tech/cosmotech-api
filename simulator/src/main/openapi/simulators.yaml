@@ -1,0 +1,364 @@
+openapi: 3.0.3
+
+info:
+  title: Cosmo Tech Simulator Manager API
+  description: Cosmo Tech Simulator Manager API
+  version: 1.0.0
+
+servers:
+- url: 'https://api.azure.cosmo-platform.com'
+- url: 'https://gateway.api.cosmo-platform.com'
+- url: 'http://localhost:8080'
+
+security:
+- ApiKeyAuth: [ ]
+- AADOAuth2AuthCode: [ ]
+
+tags:
+- name: simulator
+  description: Simulator Management
+
+paths:
+  /organizations/{organization_id}/simulators:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: createSimulator
+      tags:
+        - simulator
+      summary: Register a new simulator
+      requestBody:
+        description: the Simulator to create
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Simulator'
+            examples:
+              Brewery:
+                $ref: '#/components/examples/Brewery'
+      responses:
+        "201":
+          description: the simulator details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Simulator'
+              examples:
+                Brewery:
+                  $ref: '#/components/examples/Brewery'
+        "400":
+          description: Bad request
+    get:
+      operationId: findAllSimulators
+      tags:
+        - simulator
+      summary: List all Simulators
+      responses:
+        "200":
+          description: the simulator details
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Simulator'
+              examples:
+                Two:
+                  $ref: '#/components/examples/OneSimulator'
+
+  /organizations/{organization_id}/simulators/{simulator_id}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: simulator_id
+        in: path
+        description: the Simulator identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: findSimulatorById
+      tags:
+        - simulator
+      summary: Get the details of a simulator
+      responses:
+        "200":
+          description: the Simulator details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Simulator'
+              examples:
+                Brewery:
+                  $ref: '#/components/examples/Brewery'
+        "404":
+          description: the Simulator specified is unknown or you don't have access to it
+    patch:
+      operationId: updateSimulator
+      tags:
+        - simulator
+      summary: Update a simulator
+      requestBody:
+        description: the new Simulator details.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Simulator'
+            examples:
+              BreweryUpdate:
+                $ref: '#/components/examples/BreweryUpdate'
+      responses:
+        "200":
+          description: the simulator details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Simulator'
+              examples:
+                BreweryUpdated:
+                  $ref: '#/components/examples/BreweryUpdated'
+        "400":
+          description: Bad request
+        "404":
+          description: the Simulator specified is unknown or you don't have access to it
+    delete:
+      operationId: deleteSimulator
+      tags:
+        - simulator
+      summary: Delete a simulator
+      responses:
+        "200":
+          description: the simulator details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Simulator'
+              examples:
+                Brewery:
+                  $ref: '#/components/examples/Brewery'
+        "400":
+          description: Bad request
+        "404":
+          description: the Simulator specified is unknown or you don't have access to it
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      description: The Cosmo Tech API Key
+      name: key
+      in: query
+    AADOAuth2AuthCode:
+      type: oauth2
+      description: Azure Active Directory authentication
+      flows:
+        implicit:
+          authorizationUrl: https://login.microsoftonline.com/e9641c78-d0d6-4d09-af63-168922724e7f/oauth2/v2.0/authorize
+          scopes:
+            http://sample.azure.cosmo-platform.com/user_impersonation: User Impersonation
+  schemas:
+    Simulator:
+      type: object
+      description: a version of a Simulator
+      properties:
+        id:
+          type: string
+          readOnly: true
+          description: the Simulator version unique identifier
+        simulatorKey:
+          type: string
+          description: the Simulator key which group Connector versions
+        name:
+          type: string
+          description: the Simulator name
+        description:
+          type: string
+          description: the Simulator description
+        repository:
+          type: string
+          description: the registry repository containing the image
+        version:
+          type: string
+          description: the Simulator version MAJOR.MINOR.PATCH. Must be aligned with an existing repository tag
+        ownerId:
+          type: string
+          readOnly: true
+          description: the User id which own this Simulator
+        url:
+          type: string
+          description: an optional URL link to connector page
+        tags:
+          type: array
+          description: the list of tags
+          items:
+            type: string
+        analysis:
+          type: array
+          description: list of Simulator Analysis
+          items:
+            $ref: '#/components/schemas/SimulatorAnalysis'
+      required:
+        - simulatorKey
+        - name
+        - repository
+        - version
+    SimulatorAnalysis:
+      type: object
+      description: a Simulator Analysis run template
+      properties:
+        id:
+          type: string
+          description: the Simulator Analysis id
+        name:
+          type: string
+          description: the Simulator Analysis name
+        description:
+          type: string
+          description: the Simulator Analysis description
+        simulation:
+          type: string
+          description: the simulation name
+        tags:
+          type: array
+          description: the list of Simulator Analysis tags
+          items:
+            type: string
+        computeSize:
+          type: string
+          description: the compute size needed for this Analysis
+        parametersHandlerResource:
+          description: the parameters handler script resource. Default type is local and default path is analysis/${CSM_ANALYSIS_ID}/parameters_handler.{zip,py}. Ignored with warning if resource does not exist. A Parameters Handler receives the Analysis information including all input parameters Key/Value.
+          $ref: '#/components/schemas/AnalysisResourceStorage'
+        datasetValidatorResource:
+          description: the dataset validator script resource. Default type is local and default path is analysis/${CSM_ANALYSIS_ID}/validator.{py,zip}. Ignored with warning if resource does not exist.
+          $ref: '#/components/schemas/AnalysisResourceStorage'
+        customDriverResource:
+          description: the custome driver script resource. Default type is local and default path is analysis/${CSM_ANALYSIS_ID}/driver.{zip,py}. Ignored with warning if resource does not exist. A Custom Driver receives the Analysis information including all input parameters Key/Value. A custom driver has the responsibility to run the Simulator Analysis.
+          $ref: '#/components/schemas/AnalysisResourceStorage'
+        parameterGroups:
+          type: array
+          description: the list of parameters groups for the Analysis
+          items:
+            $ref: '#/components/schemas/AnalysisParameterGroup'
+      required:
+        - id
+        - name
+        - simulation
+    AnalysisParameterGroup:
+      type: object
+      description: a Parameter Group for an Analysis
+      properties:
+        id:
+          type: string
+          description: the Parameter Group id
+        labels:
+          $ref: '#/components/schemas/TranslatedLabels'
+        order:
+          type: integer
+          description: the Parameter Group order
+        isTable:
+          type: boolean
+          description: does the group define a table
+        options:
+          type: object
+          description: freeform options
+          additionalProperties: true
+        groups:
+          type: array
+          description: a list of children Analysis Parameter Groups
+          items:
+            $ref: '#/components/schemas/AnalysisParameterGroup'
+        parameters:
+          type: array
+          description: a list of Simulator Analysis Parameters
+          items:
+            $ref: '#/components/schemas/AnalysisParameter'
+      required:
+        - id
+        - labels
+        - parameters
+    AnalysisParameter:
+      type: object
+      description: a Simulator Analysis Parameter
+      properties:
+        id:
+          type: string
+          description: the Parameter id
+        labels:
+          $ref: '#/components/schemas/TranslatedLabels'
+        varType:
+          type: string
+          description: the variable type for the parameter
+        order:
+          type: integer
+          description: the Parameter Group order
+        options:
+          type: object
+          description: freeform options
+          additionalProperties: true
+      required:
+        - id
+        - labels
+        - varType
+    AnalysisResourceStorage:
+      type: object
+      properties:
+        storageType:
+          type: string
+          description: the storage type. Use ${CSM_PROJECT_PATH} or ${CSM_STORAGE_SIMULATOR} behind the scene
+          enum: ["local","cloud","customUri"]
+        resourcePath:
+          type: string
+          description: the resource path
+        customUri:
+          type: string
+          description: a custom Uri to provide the resource in resourcePath
+      required:
+        - storageType
+        - resourcePath
+    TranslatedLabels:
+      type: array
+      description: a list of translated labels
+      items:
+        $ref: '#/components/schemas/TranslatedLabel'
+    TranslatedLabel:
+      type: object
+      description: a translated label with key as ISO 639-1 code
+      additionalProperties:
+        type: string
+        description: the translated label
+  examples:
+    Brewery:
+      summary: Brewery Simulator
+      description: Brewery Simulator example
+      value:
+        id: "1"
+        name:  reference
+        description: Brewery simulator model
+        tags:
+          - Brewery
+    BreweryUpdate:
+      summary: Brewery Simulator update
+      description: Brewery Simulator update example
+      value:
+        name:  reference 2021
+    BreweryUpdated:
+      summary: Brewery Simulator
+      description: Brewery Simulator example
+      value:
+        id: "1"
+        name:  reference 2021
+        description: Brewery simulator model
+        tags:
+          - Brewery

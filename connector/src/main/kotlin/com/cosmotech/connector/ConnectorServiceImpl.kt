@@ -1,36 +1,36 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.simulator
+package com.cosmotech.connector
 
 import com.cosmotech.api.AbstractPhoenixService
-import com.cosmotech.simulator.api.SimulatorsApiService
-import com.cosmotech.simulator.domain.Simulator
+import com.cosmotech.connector.api.ConnectorsApiService
+import com.cosmotech.connector.domain.Connector
 import org.springframework.stereotype.Service
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.introspector.BeanAccess
 
 @Service
-class SimulatorServiceImpl : AbstractPhoenixService(), SimulatorsApiService {
-  override fun findAllSimulators(): List<Simulator> {
+class ConnectorServiceImpl : AbstractPhoenixService(), ConnectorsApiService {
+  override fun findAllConnectors(): List<Connector> {
     TODO("Not yet implemented")
   }
 
-  override fun findSimulatorById(simulatorId: String): Simulator {
+  override fun findConnectorById(connectorId: String): Connector {
     TODO("Not yet implemented")
   }
 
-  override fun registerSimulator(simulator: Simulator): Simulator {
+  override fun registerConnector(connector: Connector): Connector {
     TODO("Not yet implemented")
   }
 
-  override fun uploadSimulator(body: org.springframework.core.io.Resource): Simulator {
+  override fun uploadConnector(body: org.springframework.core.io.Resource): Connector {
     val yaml = Yaml()
     yaml.setBeanAccess(BeanAccess.FIELD)
-    val simulator = yaml.loadAs(body.getInputStream(), Simulator::class.java)
-    return simulator
+    val connector = yaml.loadAs(body.getInputStream(), Connector::class.java)
+    return connector
   }
 
-  override fun unregisterSimulator(simulatorId: String): Simulator {
+  override fun unregisterConnector(connectorId: String): Connector {
     TODO("Not yet implemented")
   }
 }

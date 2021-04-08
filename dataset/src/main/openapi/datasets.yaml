@@ -19,7 +19,14 @@ tags:
   description: Dataset Management
 
 paths:
-  /datasets:
+  /organizations/{organization_id}/datasets:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
     post:
       operationId: createDataset
       tags:
@@ -65,8 +72,14 @@ paths:
                 Two:
                   $ref: '#/components/examples/TwoDatasets'
 
-  /datasets/{dataset_id}:
+  /organizations/{organization_id}/{dataset_id}:
     parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
       - name: dataset_id
         in: path
         description: the Dataset identifier
@@ -138,6 +151,109 @@ paths:
           description: Bad request
         "404":
           description: the Dataset specified is unknown or you don't have access to it
+  /organizations/{organization_id}/validators:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: createValidator
+      tags:
+        - validator
+      summary: Register a new validator
+      requestBody:
+        description: the Validator to create
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Validator'
+            examples:
+              BreweryADTValidator:
+                $ref: '#/components/examples/BreweryADTValidator'
+      responses:
+        "201":
+          description: the validator details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Validator'
+              examples:
+                BreweryADTValidator:
+                  $ref: '#/components/examples/BreweryADTValidator'
+        "400":
+          description: Bad request
+    get:
+      operationId: findAllValidators
+      tags:
+        - validator
+      summary: List all Validators
+      responses:
+        "200":
+          description: the validator details
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Validator'
+              examples:
+                Two:
+                  $ref: '#/components/examples/OneValidator'
+
+  /organizations/{organization_id}/datasets/validators/{validator_id}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: validator_id
+        in: path
+        description: the Validator identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: findValidatorById
+      tags:
+        - validator
+      summary: Get the details of a validator
+      responses:
+        "200":
+          description: the Validator details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Validator'
+              examples:
+                BreweryADTValidator:
+                  $ref: '#/components/examples/BreweryADTValidator'
+        "404":
+          description: the Validator specified is unknown or you don't have access to it
+    delete:
+      operationId: deleteValidator
+      tags:
+        - validator
+      summary: Delete a validator
+      responses:
+        "200":
+          description: the validator details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Validator'
+              examples:
+                BreweryADTValidator:
+                  $ref: '#/components/examples/BreweryADTValidator'
+        "400":
+          description: Bad request
+        "404":
+          description: the Validator specified is unknown or you don't have access to it
 
 components:
   securitySchemes:
@@ -186,6 +302,9 @@ components:
           description: the list of other Datasets ids to compose as fragments
           items:
             type: string
+        validatorId:
+          type: string
+          description: the validator id
         compatibility:
           type: array
           description: the list of compatible Simulators versions
@@ -221,6 +340,43 @@ components:
           description: the Simulator maximum version compatibility (version included)
       required:
         - simulatorKey
+    Validator:
+      type: object
+      description: a Validator to validate a Dataset
+      properties:
+        id:
+          type: string
+          readOnly: true
+          description: the Validator id
+        name:
+          type: string
+          description: the Validator name
+        description:
+          type: string
+          description: the Validator description
+        repository:
+          type: string
+          description: the registry repository containing the Validator image
+        version:
+          type: string
+          description: the Validator version MAJOR.MINOR.PATCH. Must be aligned with an existing repository tag
+        ownerId:
+          type: string
+          readOnly: true
+          description: the User id which own this Validator
+        url:
+          type: string
+          description: an optional URL link to Validator page
+        tags:
+          type: array
+          description: the list of tags
+          items:
+            type: string
+      required:
+        - id
+        - name
+        - repository
+        - version
   examples:
     BreweryADT:
       summary: Brewery ADT Dataset
@@ -323,3 +479,31 @@ components:
         compatibility:
           simulatorKey: Brewery Simulator
           minimumVersion: "1.0.0"
+    OneValidator:
+      summary: Dataset Validator list
+      description: a Validator list with one element
+      value:
+        - id: 1
+          name: Brewery ADT Validator
+          description: A Validator for the Brewery Dataset from ADT
+          repository: brewery_adt_validator
+          version: 1.0.0
+          ownerId: 1
+          url: https://github.com/brewery-adt-validator
+          tags:
+            - Brewery
+            - ADT
+    BreweryADTValidator:
+      summary: Brewery ADT Dataset Validator
+      description: a Validator for the Brewery Dataset from ADT in a Docker image
+      value:
+        id: 1
+        name: Brewery ADT Validator
+        description: A Validator for the Brewery Dataset from ADT
+        repository: brewery_adt_validator
+        version: 1.0.0
+        ownerId: 1
+        url: https://github.com/brewery-adt-validator
+        tags:
+          - Brewery
+          - ADT
