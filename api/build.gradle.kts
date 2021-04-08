@@ -145,4 +145,6 @@ tasks.register("generateClients") {
 
 tasks.getByName<BootJar>("bootJar") { finalizedBy("generateClients") }
 
-tasks.getByName("convertOpenAPIYaml2Json") { dependsOn("mergeOpenApiFiles") }
+tasks.getByName<Copy>("copyOpenApiYamlToMainResources") { dependsOn("mergeOpenApiFiles") }
+
+tasks.getByName<Copy>("copyOpenApiYamlToTestResources") { dependsOn("mergeOpenApiFiles") }
