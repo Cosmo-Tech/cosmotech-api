@@ -335,9 +335,7 @@ components:
     TranslatedLabel:
       type: object
       description: a translated label with key as ISO 639-1 code
-      additionalProperties:
-        type: string
-        description: the translated label
+      additionalProperties: true
   examples:
     Brewery:
       summary: Brewery Simulator
