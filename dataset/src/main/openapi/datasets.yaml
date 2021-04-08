@@ -254,7 +254,161 @@ paths:
           description: Bad request
         "404":
           description: the Validator specified is unknown or you don't have access to it
-
+  /organizations/{organization_id}/validators/{validator_id}/run:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: validator_id
+        in: path
+        description: the ValidatorRun identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: runValidator
+      tags:
+        - validator
+      summary: Run a Validator
+      requestBody:
+        description: the Validator to run
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidatorRun'
+            examples:
+              BreweryADTRunValidator:
+                $ref: '#/components/examples/BreweryADTRunValidator'
+      responses:
+        "201":
+          description: the validator run details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidatorRun'
+              examples:
+                BreweryADTValidatorRun:
+                  $ref: '#/components/examples/BreweryADTValidatorRun'
+        "400":
+          description: Bad request
+  /organizations/{organization_id}/validators/{validator_id}/history:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: validator_id
+        in: path
+        description: the ValidatorRun identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: createValidatorRun
+      tags:
+        - validator
+      summary: Register a new validator run
+      requestBody:
+        description: the Validator Run to create
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidatorRun'
+            examples:
+              BreweryADTValidatorRun:
+                $ref: '#/components/examples/BreweryADTValidatorRun'
+      responses:
+        "201":
+          description: the validator run details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidatorRun'
+              examples:
+                BreweryADTValidatorRun:
+                  $ref: '#/components/examples/BreweryADTValidatorRun'
+        "400":
+          description: Bad request
+    get:
+      operationId: findAllValidatorRuns
+      tags:
+        - validator
+      summary: List all Validator Runs
+      responses:
+        "200":
+          description: the validator run details
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ValidatorRun'
+              examples:
+                Two:
+                  $ref: '#/components/examples/ThreeValidatorRun'
+  /organizations/{organization_id}/datasets/validators/{validator_id}/history/{validatorrun_id}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: validator_id
+        in: path
+        description: the Validator identifier
+        required: true
+        schema:
+          type: string
+      - name: validatorrun_id
+        in: path
+        description: the Validator Run identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: findValidatorRunById
+      tags:
+        - validator
+      summary: Get the details of a validator run
+      responses:
+        "200":
+          description: the Validator Run details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidatorRun'
+              examples:
+                BreweryADTValidatorRun:
+                  $ref: '#/components/examples/BreweryADTValidatorRun'
+        "404":
+          description: the ValidatorRun specified is unknown or you don't have access to it
+    delete:
+      operationId: deleteValidatorRun
+      tags:
+        - validator
+      summary: Delete a validator run
+      responses:
+        "200":
+          description: the validator run details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidatorRun'
+              examples:
+                BreweryADTValidatorRun:
+                  $ref: '#/components/examples/BreweryADTValidatorRun'
+        "400":
+          description: Bad request
+        "404":
+          description: the ValidatorRun specified is unknown or you don't have access to it
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -377,6 +531,44 @@ components:
         - name
         - repository
         - version
+    ValidatorRun:
+      type: object
+      description: a Validator Run
+      properties:
+        id:
+          type: string
+          readOnly: true
+          description: the Validator Run id
+        validatorId:
+          type: string
+          readOnly: true
+          description: the Validator id
+        validatorName:
+          type: string
+          readOnly: true
+          description: the validator name
+        datasetId:
+          type: string
+          description: the Dataset id to run the validator on
+        datasetName:
+          type: string
+          readOnly: true
+          description: the Dataset name
+        state:
+          type: string
+          readOnly: true
+          description: the Validator Run state
+          enum: ["Running","Finished","OnError"]
+        containerId:
+          type: string
+          readOnly: true
+          description: the Validator Run container id
+        logs:
+          type: string
+          readOnly: true
+          description: the Validator Run logs
+      required:
+        - datasetId
   examples:
     BreweryADT:
       summary: Brewery ADT Dataset
@@ -479,20 +671,6 @@ components:
         compatibility:
           simulatorKey: Brewery Simulator
           minimumVersion: "1.0.0"
-    OneValidator:
-      summary: Dataset Validator list
-      description: a Validator list with one element
-      value:
-        - id: 1
-          name: Brewery ADT Validator
-          description: A Validator for the Brewery Dataset from ADT
-          repository: brewery_adt_validator
-          version: 1.0.0
-          ownerId: 1
-          url: https://github.com/brewery-adt-validator
-          tags:
-            - Brewery
-            - ADT
     BreweryADTValidator:
       summary: Brewery ADT Dataset Validator
       description: a Validator for the Brewery Dataset from ADT in a Docker image
@@ -507,3 +685,62 @@ components:
         tags:
           - Brewery
           - ADT
+    OneValidator:
+      summary: Dataset Validator list
+      description: a Validator list with one element
+      value:
+        - id: 1
+          name: Brewery ADT Validator
+          description: A Validator for the Brewery Dataset from ADT
+          repository: brewery_adt_validator
+          version: 1.0.0
+          ownerId: 1
+          url: https://github.com/brewery-adt-validator
+          tags:
+            - Brewery
+            - ADT
+    BreweryADTValidatorRun:
+      summary: Brewery ADT Dataset Validator Run
+      description: a Validator Run for the Brewery Dataset from ADT in a Docker image
+      value:
+        id: 1
+        validatorId: 1
+        validatorName: Brewery ADT Validator
+        datasetId: 1
+        datasetName: Brewery ADT reference
+        state: Finished
+        containerId: 387ab9ffe8361eabc24b2de516e71f9bd704d992840f53d9f365b11fdb8bcaa7
+        logs: Validation ended with success\nBrewery ADT reference OK
+    ThreeValidatorRun:
+      summary: Brewery ADT Dataset Validator Run list
+      description: a list of Validator Run for the Brewery Dataset
+      value:
+        - id: 1
+          validatorId: 1
+          validatorName: Brewery ADT Validator
+          datasetId: 1
+          datasetName: Brewery ADT reference
+          state: Finished
+          containerId: 387ab9ffe8361eabc24b2de516e71f9bd704d992840f53d9f365b11fdb8bcaa7
+          logs: Validation ended with success\nBrewery ADT reference OK
+        - id: 2
+          validatorId: 1
+          validatorName: Brewery ADT Validator
+          datasetId: 1
+          datasetName: Brewery ADT reference
+          state: OnError
+          containerId: 387ab9ffe8361eabc24b2de516e71f9bd704d992840f53d9f365b11fdb8bcaa8
+          logs: Validation ended with errors\nBrewery ADT reference KO
+        - id: 3
+          validatorId: 1
+          validatorName: Brewery ADT Validator
+          datasetId: 1
+          datasetName: Brewery ADT reference
+          state: Running
+          containerId: 387ab9ffe8361eabc24b2de516e71f9bd704d992840f53d9f365b11fdb8bcaa9
+          logs: none
+    BreweryADTRunValidator:
+      summary: Brewery ADT Dataset Validator Run input
+      description: a Validator Run input for the Brewery Dataset from ADT in a Docker image
+      value:
+        datasetId: 1

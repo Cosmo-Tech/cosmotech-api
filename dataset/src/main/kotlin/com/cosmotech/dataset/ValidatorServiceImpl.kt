@@ -5,6 +5,7 @@ package com.cosmotech.dataset
 import com.cosmotech.api.AbstractPhoenixService
 import com.cosmotech.dataset.api.ValidatorApiService
 import com.cosmotech.dataset.domain.Validator
+import com.cosmotech.dataset.domain.ValidatorRun
 import org.springframework.stereotype.Service
 
 @Service
@@ -22,6 +23,26 @@ class ValidatorServiceImpl : AbstractPhoenixService(), ValidatorApiService {
   }
 
   override fun deleteValidator(organizationId: String, validatorId: String): Validator {
+    TODO("Not yet implemented")
+  }
+
+  override fun runValidator(organizationId: String, validatorId: String, validatorRun: ValidatorRun): ValidatorRun {
+    TODO("Not yet implemented")
+  }
+
+  override fun findAllValidatorRuns(organizationId: String, validatorId: String): List<ValidatorRun> {
+    TODO("Not yet implemented")
+  }
+
+  override fun findValidatorRunById(organizationId: String, validatorId: String, validatorRunId: String): ValidatorRun {
+    TODO("Not yet implemented")
+  }
+
+  override fun createValidatorRun(organizationId: String, validatorId: String, validatorRun: ValidatorRun): ValidatorRun {
+    TODO("Not yet implemented")
+  }
+
+  override fun deleteValidatorRun(organizationId: String, validatorId: String, validatorRunId: String): ValidatorRun {
     TODO("Not yet implemented")
   }
 }
