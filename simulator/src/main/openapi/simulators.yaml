@@ -362,11 +362,6 @@ components:
         - storageType
         - resourcePath
     TranslatedLabels:
-      type: array
-      description: a list of translated labels
-      items:
-        $ref: '#/components/schemas/TranslatedLabel'
-    TranslatedLabel:
       type: object
       description: a translated label with key as ISO 639-1 code
       additionalProperties: true
@@ -380,104 +375,13 @@ components:
         name:  Brewery Simulator
         description: A Brewery Supplier Simulator Model which simulate stock, production, transport and customer satisfaction
         repository: brewery_simulator
-        version: 1.0.0
-        ownerId: 1
+        version: "1.0.0"
+        ownerId: "1"
         url: https://github.com/Cosm-Tech/brewery.git
         tags:
           - Brewery
         analysis:
-          id: hundred
-          name: Full simulation 100 steps
-          description: Run a full simulation with 100 steps
-          simulation: DeployedSimulation
-          tags:
-            - Full
-            - Supply
-          computeSize: basic
-          parametersHandlerResource:
-            storageType: local
-            resourcePath: analysis/hundred/parameters_handler.zip
-          datasetValidatorResource:
-            storageType: local
-            resourcePath: analysis/hundred/validator.zip
-          customDriverResource:
-            storageType: local
-            resourcePath: analysis/hundred/driver.zip
-          parameterGroups:
-            - id: consumers
-              labels:
-                fr: Consommateurs
-                en: Consumers
-              parameters:
-                - id: prefix
-                  labels:
-                    fr: Prefix des noms
-                    en: Names prefix
-                  varType: string
-    BreweryUpdate:
-      summary: Brewery Simulator update
-      description: Brewery Simulator update example
-      value:
-        name: Brewery Simulator 2021
-    BreweryUpdated:
-      summary: Brewery Simulator
-      description: Brewery Simulator example
-      value:
-        id: "1"
-        simulatorKey: Brewery Simulator
-        name:  Brewery Simulator 2021
-        description: A Brewery Supplier Simulator Model which simulate stock, production, transport and customer satisfaction
-        repository: brewery_simulator
-        version: 1.0.0
-        ownerId: 1
-        url: https://github.com/Cosm-Tech/brewery.git
-        tags:
-          - Brewery
-        analysis:
-          id: hundred
-          name: Full simulation 100 steps
-          description: Run a full simulation with 100 steps
-          simulation: DeployedSimulation
-          tags:
-            - Full
-            - Supply
-          computeSize: basic
-          parametersHandlerResource:
-            storageType: local
-            resourcePath: analysis/hundred/parameters_handler.zip
-          datasetValidatorResource:
-            storageType: local
-            resourcePath: analysis/hundred/validator.zip
-          customDriverResource:
-            storageType: local
-            resourcePath: analysis/hundred/driver.zip
-          parameterGroups:
-            - id: consumers
-              labels:
-                fr: Consommateurs
-                en: Consumers
-              parameters:
-                - id: prefix
-                  labels:
-                    fr: Prefix des noms
-                    en: Names prefix
-                  varType: string
-    OneSimulator:
-      summary: Brewery Simulator
-      description: Brewery Simulator example
-      value:
-        - id: "1"
-          simulatorKey: Brewery Simulator
-          name:  Brewery Simulator
-          description: A Brewery Supplier Simulator Model which simulate stock, production, transport and customer satisfaction
-          repository: brewery_simulator
-          version: 1.0.0
-          ownerId: 1
-          url: https://github.com/Cosm-Tech/brewery.git
-          tags:
-            - Brewery
-          analysis:
-            id: hundred
+          - id: hundred
             name: Full simulation 100 steps
             description: Run a full simulation with 100 steps
             simulation: DeployedSimulation
@@ -505,3 +409,94 @@ components:
                       fr: Prefix des noms
                       en: Names prefix
                     varType: string
+    BreweryUpdate:
+      summary: Brewery Simulator update
+      description: Brewery Simulator update example
+      value:
+        name: Brewery Simulator 2021
+    BreweryUpdated:
+      summary: Brewery Simulator
+      description: Brewery Simulator example
+      value:
+        id: "1"
+        simulatorKey: Brewery Simulator
+        name:  Brewery Simulator 2021
+        description: A Brewery Supplier Simulator Model which simulate stock, production, transport and customer satisfaction
+        repository: brewery_simulator
+        version: "1.0.0"
+        ownerId: "1"
+        url: https://github.com/Cosm-Tech/brewery.git
+        tags:
+          - Brewery
+        analysis:
+          - id: hundred
+            name: Full simulation 100 steps
+            description: Run a full simulation with 100 steps
+            simulation: DeployedSimulation
+            tags:
+              - Full
+              - Supply
+            computeSize: basic
+            parametersHandlerResource:
+              storageType: local
+              resourcePath: analysis/hundred/parameters_handler.zip
+            datasetValidatorResource:
+              storageType: local
+              resourcePath: analysis/hundred/validator.zip
+            customDriverResource:
+              storageType: local
+              resourcePath: analysis/hundred/driver.zip
+            parameterGroups:
+              - id: consumers
+                labels:
+                  fr: Consommateurs
+                  en: Consumers
+                parameters:
+                  - id: prefix
+                    labels:
+                      fr: Prefix des noms
+                      en: Names prefix
+                    varType: string
+    OneSimulator:
+      summary: Brewery Simulator
+      description: Brewery Simulator example
+      value:
+        - id: "1"
+          simulatorKey: Brewery Simulator
+          name:  Brewery Simulator
+          description: A Brewery Supplier Simulator Model which simulate stock, production, transport and customer satisfaction
+          repository: brewery_simulator
+          version: "1.0.0"
+          ownerId: "1"
+          url: https://github.com/Cosm-Tech/brewery.git
+          tags:
+            - Brewery
+          analysis:
+            - id: hundred
+              name: Full simulation 100 steps
+              description: Run a full simulation with 100 steps
+              simulation: DeployedSimulation
+              tags:
+                - Full
+                - Supply
+              computeSize: basic
+              parametersHandlerResource:
+                storageType: local
+                resourcePath: analysis/hundred/parameters_handler.zip
+              datasetValidatorResource:
+                storageType: local
+                resourcePath: analysis/hundred/validator.zip
+              customDriverResource:
+                storageType: local
+                resourcePath: analysis/hundred/driver.zip
+              parameterGroups:
+                - id: consumers
+                  labels:
+                    fr: Consommateurs
+                    en: Consumers
+                  parameters:
+                    - id: prefix
+                      labels:
+                        fr: Prefix des noms
+                        en: Names prefix
+                      varType: string

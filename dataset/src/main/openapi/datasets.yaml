@@ -72,7 +72,7 @@ paths:
                 Two:
                   $ref: '#/components/examples/TwoDatasets'
 
-  /organizations/{organization_id}/{dataset_id}:
+  /organizations/{organization_id}/datasets/{dataset_id}:
     parameters:
       - name: organization_id
         in: path
@@ -151,7 +151,7 @@ paths:
           description: Bad request
         "404":
           description: the Dataset specified is unknown or you don't have access to it
-  /organizations/{organization_id}/validators:
+  /organizations/{organization_id}/datasets/validators:
     parameters:
       - name: organization_id
         in: path
@@ -254,7 +254,7 @@ paths:
           description: Bad request
         "404":
           description: the Validator specified is unknown or you don't have access to it
-  /organizations/{organization_id}/validators/{validator_id}/run:
+  /organizations/{organization_id}/datasets/validators/{validator_id}/run:
     parameters:
       - name: organization_id
         in: path
@@ -295,7 +295,7 @@ paths:
                   $ref: '#/components/examples/BreweryADTValidatorRun'
         "400":
           description: Bad request
-  /organizations/{organization_id}/validators/{validator_id}/history:
+  /organizations/{organization_id}/datasets/validators/{validator_id}/history:
     parameters:
       - name: organization_id
         in: path
@@ -594,8 +594,8 @@ components:
             ADT_QUERY: SELECT * FROM digitaltwins
             EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
         compatibility:
-          simulatorKey: Brewery Simulator
-          minimumVersion: "1.0.0"
+          - simulatorKey: Brewery Simulator
+            minimumVersion: "1.0.0"
     TwoDatasets:
       summary: Two Datasets example
       description: Two ADT Datasets example
@@ -620,8 +620,8 @@ components:
               ADT_QUERY: SELECT * FROM digitaltwins
               EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
           compatibility:
-            simulatorKey: Brewery Simulator
-            minimumVersion: "1.0.0"
+            - simulatorKey: Brewery Simulator
+              minimumVersion: "1.0.0"
         - id: "2"
           name: Brewery ADT future
           description: Brewery future model in ADT
@@ -669,18 +669,18 @@ components:
             ADT_QUERY: SELECT * FROM digitaltwins
             EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
         compatibility:
-          simulatorKey: Brewery Simulator
-          minimumVersion: "1.0.0"
+          - simulatorKey: Brewery Simulator
+            minimumVersion: "1.0.0"
     BreweryADTValidator:
       summary: Brewery ADT Dataset Validator
       description: a Validator for the Brewery Dataset from ADT in a Docker image
       value:
-        id: 1
+        id: "1"
         name: Brewery ADT Validator
         description: A Validator for the Brewery Dataset from ADT
         repository: brewery_adt_validator
-        version: 1.0.0
-        ownerId: 1
+        version: "1.0.0"
+        ownerId: "1"
         url: https://github.com/brewery-adt-validator
         tags:
           - Brewery
@@ -689,12 +689,12 @@ components:
       summary: Dataset Validator list
       description: a Validator list with one element
       value:
-        - id: 1
+        - id: "1"
           name: Brewery ADT Validator
           description: A Validator for the Brewery Dataset from ADT
           repository: brewery_adt_validator
-          version: 1.0.0
-          ownerId: 1
+          version: "1.0.0"
+          ownerId: "1"
           url: https://github.com/brewery-adt-validator
           tags:
             - Brewery
@@ -704,9 +704,9 @@ components:
       description: a Validator Run for the Brewery Dataset from ADT in a Docker image
       value:
         id: 1
-        validatorId: 1
+        validatorId: "1"
         validatorName: Brewery ADT Validator
-        datasetId: 1
+        datasetId: "1"
         datasetName: Brewery ADT reference
         state: Finished
         containerId: 387ab9ffe8361eabc24b2de516e71f9bd704d992840f53d9f365b11fdb8bcaa7
@@ -715,26 +715,26 @@ components:
       summary: Brewery ADT Dataset Validator Run list
       description: a list of Validator Run for the Brewery Dataset
       value:
-        - id: 1
-          validatorId: 1
+        - id: "1"
+          validatorId: "1"
           validatorName: Brewery ADT Validator
-          datasetId: 1
+          datasetId: "1"
           datasetName: Brewery ADT reference
           state: Finished
           containerId: 387ab9ffe8361eabc24b2de516e71f9bd704d992840f53d9f365b11fdb8bcaa7
           logs: Validation ended with success\nBrewery ADT reference OK
-        - id: 2
-          validatorId: 1
+        - id: "2"
+          validatorId: "1"
           validatorName: Brewery ADT Validator
-          datasetId: 1
+          datasetId: "1"
           datasetName: Brewery ADT reference
           state: OnError
           containerId: 387ab9ffe8361eabc24b2de516e71f9bd704d992840f53d9f365b11fdb8bcaa8
           logs: Validation ended with errors\nBrewery ADT reference KO
-        - id: 3
-          validatorId: 1
+        - id: "3"
+          validatorId: "1"
           validatorName: Brewery ADT Validator
-          datasetId: 1
+          datasetId: "1"
           datasetName: Brewery ADT reference
           state: Running
           containerId: 387ab9ffe8361eabc24b2de516e71f9bd704d992840f53d9f365b11fdb8bcaa9
@@ -743,4 +743,4 @@ components:
       summary: Brewery ADT Dataset Validator Run input
       description: a Validator Run input for the Brewery Dataset from ADT in a Docker image
       value:
-        datasetId: 1
+        datasetId: "1"

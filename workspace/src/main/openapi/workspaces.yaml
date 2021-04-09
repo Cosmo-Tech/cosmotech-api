@@ -209,7 +209,7 @@ components:
           additionalProperties: true
       required:
         - name
-        - simulatorId
+        - simulator
     WorkspaceUser:
       type: object
       description: a Workspace user with roles
@@ -267,22 +267,22 @@ components:
       summary: Brewery Workspace
       description: Brewery Workspace example
       value:
-        id: 1
+        id: "1"
         name: Brewery Analysis
         description: Brewery analysis for stock, production, transport and customer satisfaction
-        version: 1.0.0
+        version: "1.0.0"
         tags:
           - Brewery
-        ownerId: 1
+        ownerId: "1"
         simulator:
-          simulatorId: 1
+          simulatorId: "1"
           defaultAnalysisDataset:
-            1: 1
+            1: "1"
         userList:
-          - id: 1
+          - id: "1"
             name: Bob
             roles: Advanced
-          - id: 2
+          - id: "2"
             name: Alice
             roles: Viewer
         webApp:
@@ -299,22 +299,22 @@ components:
       summary: One Workspace list
       description: One Workspace list example
       value:
-        - id: 1
+        - id: "1"
           name: Brewery Analysis
           description: Brewery analysis for stock, production, transport and customer satisfaction
-          version: 1.0.0
+          version: "1.0.0"
           tags:
             - Brewery
-          ownerId: 1
+          ownerId: "1"
           simulator:
-            simulatorId: 1
+            simulatorId: "1"
             defaultAnalysisDataset:
-              1: 1
+              1: "1"
           userList:
-            - id: 1
+            - id: "1"
               name: Bob
               roles: Advanced
-            - id: 2
+            - id: "2"
               name: Alice
               roles: Viewer
           webApp:
@@ -336,22 +336,22 @@ components:
       summary: Brewery Workspace
       description: Brewery Workspace example
       value:
-        id: 1
+        id: "1"
         name: Brewery Analysis 2021
         description: Brewery analysis for stock, production, transport and customer satisfaction
-        version: 1.0.0
+        version: "1.0.0"
         tags:
           - Brewery
-        ownerId: 1
+        ownerId: "1"
         simulator:
-          simulatorId: 1
+          simulatorId: "1"
           defaultAnalysisDataset:
-            1: 1
+            1: "1"
         userList:
-          - id: 1
+          - id: "1"
             name: Bob
             roles: Advanced
-          - id: 2
+          - id: "2"
             name: Alice
             roles: Viewer
         webApp:
