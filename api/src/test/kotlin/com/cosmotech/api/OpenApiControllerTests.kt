@@ -57,7 +57,11 @@ abstract class OpenApiControllerTestBase {
     assertFalse(responseOpenAPI.servers.isNullOrEmpty())
     val responseOpenAPIServerUrls = responseOpenAPI.servers.map { it.url }
     val refOpenAPIServerUrls = refOpenAPI.servers.map { it.url }
-    assertTrue(responseOpenAPI.servers.map { it.url }.contains(basePath))
+    if (servletContext.contextPath.isNullOrBlank()) {
+      assertTrue(responseOpenAPIServerUrls.contains("http://localhost:$port"))
+    } else {
+      assertTrue(responseOpenAPIServerUrls.contains(basePath))
+    }
     assertTrue(responseOpenAPIServerUrls.containsAll(refOpenAPIServerUrls))
   }
 }
