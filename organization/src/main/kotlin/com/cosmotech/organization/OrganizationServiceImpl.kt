@@ -6,6 +6,7 @@ import com.azure.cosmos.CosmosClient
 import com.azure.cosmos.models.CosmosContainerProperties
 import com.azure.cosmos.models.CosmosQueryRequestOptions
 import com.cosmotech.api.AbstractPhoenixService
+import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -73,7 +74,9 @@ class OrganizationServiceImpl(
     database.createContainerIfNotExists(
         CosmosContainerProperties("${organizationId}_workspaces", "/workspaceId"))
 
-    // TODO Publish event and handle rollbacks in case of errors
+    this.eventPublisher.publishEvent(OrganizationRegistered(this, organizationId))
+    // TODO Handle rollbacks in case of errors
+
     return organizationToCreate
   }
 
