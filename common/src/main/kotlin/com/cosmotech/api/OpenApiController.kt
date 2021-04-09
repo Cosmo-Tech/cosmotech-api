@@ -31,7 +31,7 @@ val openApiYamlParseResult: SwaggerParseResult by lazy {
 }
 
 @RestController
-class OpenApiController() {
+class OpenApiController {
   @Value("\${api.version}") private lateinit var apiVersion: String
 
   @Value("\${api.swagger-ui.base-path}") private lateinit var swaggerUiBasePath: String
@@ -53,7 +53,7 @@ class OpenApiController() {
 
   @GetMapping("/openapi.json", produces = [MediaType.APPLICATION_JSON_VALUE])
   @ResponseBody
-  fun getOpenAPIJson(): OpenAPI {
+  fun getOpenAPIJson(): String {
     // Copy parsed OpenAPI to add dynamic base URL
     val objectMapper =
         ObjectMapper()
@@ -78,7 +78,10 @@ class OpenApiController() {
       serverList.add(OpenApiServerUrlMatching(it))
     }
     openAPICopy.servers = serverList
-    return openAPICopy
+    // We are serializing manually because we want in this sole case to avoid returning null fields.
+    // Otherwise, Swagger UI may complain on null $ref.
+    // But we do want the default object mapper to write null fields.
+    return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(openAPICopy)
   }
 }
 
