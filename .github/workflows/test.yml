@@ -32,4 +32,4 @@ jobs:
           ${{ runner.os }}-gradle-
 
     - name: Run tests
-      run: ./gradlew test -x spotlessCheck -x openApiValidate --stacktrace
+      run: ./gradlew test -x spotlessCheck -x openApiValidate --info

@@ -32,10 +32,10 @@ jobs:
           ${{ runner.os }}-gradle-
 
     - name: Check with Spotless
-      run: ./gradlew spotlessCheck --stacktrace
+      run: ./gradlew spotlessCheck --info
 
     - name: Validate OpenAPI spec definitions
-      run: ./gradlew openApiValidate --stacktrace
+      run: ./gradlew openApiValidate --info
 
   lint_helm:
     runs-on: ubuntu-latest
