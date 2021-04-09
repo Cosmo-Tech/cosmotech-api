@@ -43,7 +43,7 @@ if [ "$release_note" = "" ]; then
 fi
 
 # Create the release directory
-mkdir ../../release
+mkdir -p ../../release
 
 # Sets the new remote URI
 if [ "$GIT_TOKEN" = "" ]; then
