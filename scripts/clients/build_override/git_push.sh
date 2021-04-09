@@ -48,7 +48,7 @@ mkdir -p ../../release
 # Sets the new remote URI
 if [ "$GIT_TOKEN" = "" ]; then
     echo "[INFO] \$GIT_TOKEN (environment variable) is not set. Using the git credential in your environment."
-    github_uri=https://${git_host}/${git_organization_id}/${git_repo_id}.git
+    github_uri=https://${git_user_id}@${git_host}/${git_organization_id}/${git_repo_id}.git
 else
     github_uri=https://${git_user_id}:${GIT_TOKEN}@${git_host}/${git_organization_id}/${git_repo_id}.git
 fi
@@ -72,3 +72,5 @@ echo "Git pushing to https://${git_host}/${git_organization_id}/${git_repo_id}.g
 git push origin master 2>&1 | grep -v 'To https'
 
 popd
+# Cleaning release repository
+rm -rf ../../release

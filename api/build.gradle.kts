@@ -102,7 +102,7 @@ tasks.register<GenerateTask>("openApiJSGenerate") {
 
 tasks.register<Copy>("copyJSGitPushScript") {
   dependsOn("openApiJSGenerate")
-  from("${rootDir}/scripts/git_push.sh")
+  from("${rootDir}/scripts/clients/build_override/git_push.sh")
   into("$buildDir/generated-sources/javascript")
 }
 
@@ -119,7 +119,7 @@ tasks.register<GenerateTask>("openApiPythonGenerate") {
 
 tasks.register<Copy>("copyPythonGitPushScript") {
   dependsOn("openApiPythonGenerate")
-  from("${rootDir}/scripts/git_push.sh")
+  from("${rootDir}/scripts/clients/build_override/git_push.sh")
   into("$buildDir/generated-sources/python")
 }
 
