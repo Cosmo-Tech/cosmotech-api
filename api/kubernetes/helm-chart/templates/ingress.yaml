@@ -1,6 +1,7 @@
 {{- if .Values.ingress.enabled -}}
 {{- $kubeVersion := .Capabilities.KubeVersion.GitVersion -}}
 {{- $fullName := include "cosmotech-api.fullname" . -}}
+{{- $svcPort := .Values.service.port -}}
 {{- if semverCompare ">=1.19-0" $kubeVersion -}}
 apiVersion: networking.k8s.io/v1
 {{- else if semverCompare ">=1.14-0" $kubeVersion -}}
@@ -41,13 +42,13 @@ spec:
             backend:
               {{- if semverCompare ">=1.19-0" $kubeVersion }}
               service:
-                name: {{ .backend.serviceName }}
+                name: {{ $fullName }}
                 port:
-                  number: {{ .backend.servicePort }}
+                  number: {{ $svcPort }}
               {{- else }}
-              serviceName: {{ .backend.serviceName }}
-              servicePort: {{ .backend.servicePort }}
+              serviceName: {{ $fullName }}
+              servicePort: {{ $svcPort }}
               {{- end }}
-          {{- end }}
+            {{- end }}
     {{- end }}
   {{- end }}
