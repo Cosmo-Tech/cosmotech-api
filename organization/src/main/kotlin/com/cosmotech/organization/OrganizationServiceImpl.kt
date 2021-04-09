@@ -9,6 +9,7 @@ import com.azure.spring.data.cosmos.core.CosmosTemplate
 import com.cosmotech.api.AbstractPhoenixService
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
+import com.cosmotech.api.utils.changed
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import java.lang.IllegalStateException
@@ -98,9 +99,9 @@ class OrganizationServiceImpl(
     }
     if (organization.users != null && organization.changed(existingOrganization) { users }) {
       // TODO Find out which users to change
-        if (organization.users!!.isEmpty()) {
-          existingOrganization.users = listOf()
-        }
+      if (organization.users!!.isEmpty()) {
+        existingOrganization.users = listOf()
+      }
       hasChanged = true
     }
     return if (hasChanged) {
@@ -109,13 +110,4 @@ class OrganizationServiceImpl(
       existingOrganization
     }
   }
-}
-
-inline fun <reified T, R> T.changed(old: T?, memberAccess: T.() -> R): Boolean {
-  if (old == null) {
-    return true
-  }
-  val currentValue = with(this, memberAccess)
-  val oldValue = with(old, memberAccess)
-  return currentValue != oldValue
 }
