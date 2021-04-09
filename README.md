@@ -107,13 +107,25 @@ kubectl create namespace phoenix
 This uses [Helm](https://helm.sh/); so make sure you have it installed.
 
 ```shell
-export API_VERSION=latest
-helm upgrade --install cosmotech-api-${API_VERSION} \
+export API_VERSION=latest;
+helm upgrade --install cosmotech-api-latest \
   api/kubernetes/helm-chart \
   --namespace phoenix \
   --values api/kubernetes/helm-chart/values-dev.yaml \
   --set image.tag=latest \
-  --set config.api.version=$API_VERSION
+  --set config.api.version=latest
+```
+
+To deploy a `vX` version, you can use the [api/kubernetes/helm-chart/values-dev-vX.yaml](api/kubernetes/helm-chart/values-dev-vX.yaml) like so :
+
+```shell
+export API_VERSION=v1;
+envsubst < api/kubernetes/helm-chart/values-dev-vX.yaml | helm upgrade --install cosmotech-api-${API_VERSION} \
+  api/kubernetes/helm-chart \
+  --namespace phoenix \
+  --values - \
+  --set config.api.version=$API_VERSION \
+  --set image.tag=latest
 ```
 
 ## License
