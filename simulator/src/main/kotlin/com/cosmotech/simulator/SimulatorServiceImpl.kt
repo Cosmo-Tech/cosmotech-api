@@ -32,4 +32,11 @@ class SimulatorServiceImpl : AbstractPhoenixService(), SimulatorApiService {
   ): Simulator {
     TODO("Not yet implemented")
   }
+
+  override fun upload(
+      organizationId: kotlin.String,
+      body: org.springframework.core.io.Resource
+  ): Simulator {
+    TODO("Not yet implemented")
+  }
 }

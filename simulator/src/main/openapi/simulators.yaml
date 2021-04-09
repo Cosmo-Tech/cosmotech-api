@@ -71,6 +71,42 @@ paths:
               examples:
                 Two:
                   $ref: '#/components/examples/OneSimulator'
+  /organizations/{organization_id}/simulators/upload:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: upload
+      tags:
+        - simulator
+      summary: Upload and register a new simulator
+      requestBody:
+        description: the Simulator to upload and register
+        required: true
+        content:
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            examples:
+              ADTConnector:
+                $ref: '#/components/examples/Brewery'
+      responses:
+        "201":
+          description: the simulator details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Simulator'
+              examples:
+                ADTConnector:
+                  $ref: '#/components/examples/Brewery'
+        "400":
+          description: Bad request
 
   /organizations/{organization_id}/simulators/{simulator_id}:
     parameters:
@@ -178,7 +214,7 @@ components:
           description: the Simulator version unique identifier
         simulatorKey:
           type: string
-          description: the Simulator key which group Connector versions
+          description: the Simulator key which group Simulator versions
         name:
           type: string
           description: the Simulator name
@@ -197,7 +233,7 @@ components:
           description: the User id which own this Simulator
         url:
           type: string
-          description: an optional URL link to connector page
+          description: an optional URL link to simulator page
         tags:
           type: array
           description: the list of tags
@@ -236,7 +272,7 @@ components:
             type: string
         computeSize:
           type: string
-          description: the compute size needed for this Analysis
+          description: the compute size needed for this Analysis. Standard sizes are basic and highcpu. Default is basic
         parametersHandlerResource:
           description: the parameters handler script resource. Default type is local and default path is analysis/${CSM_ANALYSIS_ID}/parameters_handler.{zip,py}. Ignored with warning if resource does not exist. A Parameters Handler receives the Analysis information including all input parameters Key/Value.
           $ref: '#/components/schemas/AnalysisResourceStorage'
@@ -340,30 +376,132 @@ components:
       description: Brewery Simulator example
       value:
         id: "1"
-        name:  reference
-        description: Brewery simulator model
+        simulatorKey: Brewery Simulator
+        name:  Brewery Simulator
+        description: A Brewery Supplier Simulator Model which simulate stock, production, transport and customer satisfaction
+        repository: brewery_simulator
+        version: 1.0.0
+        ownerId: 1
+        url: https://github.com/Cosm-Tech/brewery.git
         tags:
           - Brewery
+        analysis:
+          id: hundred
+          name: Full simulation 100 steps
+          description: Run a full simulation with 100 steps
+          simulation: DeployedSimulation
+          tags:
+            - Full
+            - Supply
+          computeSize: basic
+          parametersHandlerResource:
+            storageType: local
+            resourcePath: analysis/hundred/parameters_handler.zip
+          datasetValidatorResource:
+            storageType: local
+            resourcePath: analysis/hundred/validator.zip
+          customDriverResource:
+            storageType: local
+            resourcePath: analysis/hundred/driver.zip
+          parameterGroups:
+            - id: consumers
+              labels:
+                fr: Consommateurs
+                en: Consumers
+              parameters:
+                - id: prefix
+                  labels:
+                    fr: Prefix des noms
+                    en: Names prefix
+                  varType: string
     BreweryUpdate:
       summary: Brewery Simulator update
       description: Brewery Simulator update example
       value:
-        name:  reference 2021
+        name: Brewery Simulator 2021
     BreweryUpdated:
       summary: Brewery Simulator
       description: Brewery Simulator example
       value:
         id: "1"
-        name:  reference 2021
-        description: Brewery simulator model
+        simulatorKey: Brewery Simulator
+        name:  Brewery Simulator 2021
+        description: A Brewery Supplier Simulator Model which simulate stock, production, transport and customer satisfaction
+        repository: brewery_simulator
+        version: 1.0.0
+        ownerId: 1
+        url: https://github.com/Cosm-Tech/brewery.git
         tags:
           - Brewery
+        analysis:
+          id: hundred
+          name: Full simulation 100 steps
+          description: Run a full simulation with 100 steps
+          simulation: DeployedSimulation
+          tags:
+            - Full
+            - Supply
+          computeSize: basic
+          parametersHandlerResource:
+            storageType: local
+            resourcePath: analysis/hundred/parameters_handler.zip
+          datasetValidatorResource:
+            storageType: local
+            resourcePath: analysis/hundred/validator.zip
+          customDriverResource:
+            storageType: local
+            resourcePath: analysis/hundred/driver.zip
+          parameterGroups:
+            - id: consumers
+              labels:
+                fr: Consommateurs
+                en: Consumers
+              parameters:
+                - id: prefix
+                  labels:
+                    fr: Prefix des noms
+                    en: Names prefix
+                  varType: string
     OneSimulator:
-      summary: One Simulator
-      description: One Simulator list
+      summary: Brewery Simulator
+      description: Brewery Simulator example
       value:
         - id: "1"
-          name:  reference 2021
-          description: Brewery simulator model
+          simulatorKey: Brewery Simulator
+          name:  Brewery Simulator
+          description: A Brewery Supplier Simulator Model which simulate stock, production, transport and customer satisfaction
+          repository: brewery_simulator
+          version: 1.0.0
+          ownerId: 1
+          url: https://github.com/Cosm-Tech/brewery.git
           tags:
             - Brewery
+          analysis:
+            id: hundred
+            name: Full simulation 100 steps
+            description: Run a full simulation with 100 steps
+            simulation: DeployedSimulation
+            tags:
+              - Full
+              - Supply
+            computeSize: basic
+            parametersHandlerResource:
+              storageType: local
+              resourcePath: analysis/hundred/parameters_handler.zip
+            datasetValidatorResource:
+              storageType: local
+              resourcePath: analysis/hundred/validator.zip
+            customDriverResource:
+              storageType: local
+              resourcePath: analysis/hundred/driver.zip
+            parameterGroups:
+              - id: consumers
+                labels:
+                  fr: Consommateurs
+                  en: Consumers
+                parameters:
+                  - id: prefix
+                    labels:
+                      fr: Prefix des noms
+                      en: Names prefix
+                    varType: string
