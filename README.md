@@ -50,27 +50,45 @@ az aks get-credentials \
   --name phoenixAKS
 ```
 
+* Create the namespace if needed
+
+```shell
+kubectl create namespace phenix
+```
+
 * Install the Helm Chart
 
 This uses [Helm](https://helm.sh/); so make sure you have it installed.
 
 ```shell
-export API_VERSION=latest
+export API_VERSION=latest;
 helm upgrade --install cosmotech-api-${API_VERSION} \
   api/kubernetes/helm-chart \
   --namespace phoenix \
   --set image.repository=csmphoenix.azurecr.io/cosmotech-api \
+  --set config.api.version=$API_VERSION \
   --set image.tag=latest
+```
+
+Alternatively, it is recommended to use a dedicated `values.yaml` file and use it instead, e.g.:
+
+```shell
+export API_VERSION=latest;
+helm upgrade --install cosmotech-api-${API_VERSION} \
+  api/kubernetes/helm-chart \
+  --namespace phoenix \
+  --values /path/to/my/values-azure.yaml \
+  --set config.api.version=$API_VERSION
 ```
 
 #### Local Kubernetes Cluster
 
 * Spawn a local cluster. Skip if you already have configured a local cluster.
-Otherwise, you may want to leverage the [scripts/kubernetes/create-local-k8s-cluster.sh](scripts/kubernetes/create-local-k8s-cluster.sh) script to 
-provision a local [Kind](https://kind.sigs.k8s.io/) cluster, along with a private local container 
-registry.
+Otherwise, you may want to leverage the [scripts/kubernetes/create-local-k8s-cluster.sh](scripts/kubernetes/create-local-k8s-cluster.sh) script,
+  which provisions a local [Kind](https://kind.sigs.k8s.io/) cluster, along with a private local container 
+registry and an [NGINX Ingress Controller](https://kubernetes.github.io/ingress-nginx/).
   
-* Build and push the container image, e.g.:
+* Build and push the container image to the local registry, e.g.:
 
 ```shell
 ./gradlew :cosmotech-api:jib \
@@ -78,6 +96,12 @@ registry.
   -Djib.to.image=localhost:5000/cosmotech-api:latest
 ```
 
+* Create the namespace if needed
+
+```shell
+kubectl create namespace phenix
+```
+
 * Install the Helm Chart
 
 This uses [Helm](https://helm.sh/); so make sure you have it installed.
@@ -87,9 +111,9 @@ export API_VERSION=latest
 helm upgrade --install cosmotech-api-${API_VERSION} \
   api/kubernetes/helm-chart \
   --namespace phoenix \
-  --set image.repository=localhost:5000/cosmotech-api \
+  --values api/kubernetes/helm-chart/values-dev.yaml \
   --set image.tag=latest \
-  --set image.pullPolicy=Always
+  --set config.api.version=$API_VERSION
 ```
 
 ## License
