@@ -25,7 +25,11 @@ class SimulatorServiceImpl : AbstractPhoenixService(), SimulatorApiService {
     TODO("Not yet implemented")
   }
 
-  override fun updateSimulator(organizationId: String, simulatorId: String, simulator: Simulator): Simulator {
+  override fun updateSimulator(
+      organizationId: String,
+      simulatorId: String,
+      simulator: Simulator
+  ): Simulator {
     TODO("Not yet implemented")
   }
 }

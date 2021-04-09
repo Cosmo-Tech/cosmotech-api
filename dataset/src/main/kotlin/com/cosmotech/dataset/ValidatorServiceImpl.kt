@@ -26,23 +26,42 @@ class ValidatorServiceImpl : AbstractPhoenixService(), ValidatorApiService {
     TODO("Not yet implemented")
   }
 
-  override fun runValidator(organizationId: String, validatorId: String, validatorRun: ValidatorRun): ValidatorRun {
+  override fun runValidator(
+      organizationId: String,
+      validatorId: String,
+      validatorRun: ValidatorRun
+  ): ValidatorRun {
     TODO("Not yet implemented")
   }
 
-  override fun findAllValidatorRuns(organizationId: String, validatorId: String): List<ValidatorRun> {
+  override fun findAllValidatorRuns(
+      organizationId: String,
+      validatorId: String
+  ): List<ValidatorRun> {
     TODO("Not yet implemented")
   }
 
-  override fun findValidatorRunById(organizationId: String, validatorId: String, validatorRunId: String): ValidatorRun {
+  override fun findValidatorRunById(
+      organizationId: String,
+      validatorId: String,
+      validatorRunId: String
+  ): ValidatorRun {
     TODO("Not yet implemented")
   }
 
-  override fun createValidatorRun(organizationId: String, validatorId: String, validatorRun: ValidatorRun): ValidatorRun {
+  override fun createValidatorRun(
+      organizationId: String,
+      validatorId: String,
+      validatorRun: ValidatorRun
+  ): ValidatorRun {
     TODO("Not yet implemented")
   }
 
-  override fun deleteValidatorRun(organizationId: String, validatorId: String, validatorRunId: String): ValidatorRun {
+  override fun deleteValidatorRun(
+      organizationId: String,
+      validatorId: String,
+      validatorRunId: String
+  ): ValidatorRun {
     TODO("Not yet implemented")
   }
 }
