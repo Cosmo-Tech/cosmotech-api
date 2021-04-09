@@ -1,0 +1,39 @@
+# Default values for cosmotech-api.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: localhost:5000/cosmotech-api
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+serviceAccount:
+  create: true
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/use-regex: "true"
+  hosts:
+  - host: localhost
+    paths:
+    # A Cosmo Tech Helm Release (e.g., latest, vX) is linked to an API Version; so it must define its own path rules here
+    # Use /cosmotech-api(/|$)(.*) for 'latest' and /cosmotech-api/v1(/|$)(.*) for v1
+    - path: /cosmotech-api(/|$)(.*)
+      pathType: Prefix
+
+config:
+  logging:
+    level:
+      com:
+        cosmotech: DEBUG
+  api:
+    version: "latest"
+    swagger-ui:
+      # Use /cosmotech-api/v1 for a v1
+      base-path: /cosmotech-api
