@@ -90,6 +90,32 @@ class OrganizationServiceImpl(
       organizationId: String,
       organization: Organization
   ): Organization {
-    TODO("Not yet implemented")
+    val existingOrganization = findOrganizationById(organizationId)
+    var hasChanged = false
+    if (organization.name != null && organization.changed(existingOrganization) { name }) {
+      existingOrganization.name = organization.name
+      hasChanged = true
+    }
+    if (organization.users != null && organization.changed(existingOrganization) { users }) {
+      // TODO Find out which users to change
+        if (organization.users!!.isEmpty()) {
+          existingOrganization.users = listOf()
+        }
+      hasChanged = true
+    }
+    return if (hasChanged) {
+      cosmosTemplate.upsertAndReturnEntity(coreOrganizationContainer, existingOrganization)
+    } else {
+      existingOrganization
+    }
   }
+}
+
+inline fun <reified T, R> T.changed(old: T?, memberAccess: T.() -> R): Boolean {
+  if (old == null) {
+    return true
+  }
+  val currentValue = with(this, memberAccess)
+  val oldValue = with(old, memberAccess)
+  return currentValue != oldValue
 }
