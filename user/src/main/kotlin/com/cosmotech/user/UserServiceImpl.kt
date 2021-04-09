@@ -3,13 +3,13 @@
 package com.cosmotech.user
 
 import com.cosmotech.api.AbstractPhoenixService
-import com.cosmotech.user.api.UsersApiService
+import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
 import com.cosmotech.user.domain.UserDetails
 import org.springframework.stereotype.Service
 
 @Service
-class UserServiceImpl : AbstractPhoenixService(), UsersApiService {
+class UserServiceImpl : AbstractPhoenixService(), UserApiService {
   override fun findAllUsers(): List<UserDetails> {
     TODO("Not yet implemented")
   }

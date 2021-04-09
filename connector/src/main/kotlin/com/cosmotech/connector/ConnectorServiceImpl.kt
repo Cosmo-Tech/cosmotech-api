@@ -3,14 +3,14 @@
 package com.cosmotech.connector
 
 import com.cosmotech.api.AbstractPhoenixService
-import com.cosmotech.connector.api.ConnectorsApiService
+import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
 import org.springframework.stereotype.Service
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.introspector.BeanAccess
 
 @Service
-class ConnectorServiceImpl : AbstractPhoenixService(), ConnectorsApiService {
+class ConnectorServiceImpl : AbstractPhoenixService(), ConnectorApiService {
   override fun findAllConnectors(): List<Connector> {
     TODO("Not yet implemented")
   }

@@ -3,12 +3,12 @@
 package com.cosmotech.organization
 
 import com.cosmotech.api.AbstractPhoenixService
-import com.cosmotech.organization.api.OrganizationsApiService
+import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import org.springframework.stereotype.Service
 
 @Service
-class OrganizationServiceImpl : AbstractPhoenixService(), OrganizationsApiService {
+class OrganizationServiceImpl : AbstractPhoenixService(), OrganizationApiService {
   override fun findAllOrganizations(): List<Organization> {
     TODO("Not yet implemented")
   }

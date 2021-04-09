@@ -1,7 +1,10 @@
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 
-dependencies { api(project(":cosmotech-api-common")) }
+dependencies {
+  implementation("org.yaml:snakeyaml:1.28")
+  api(project(":cosmotech-api-common"))
+}
 
 sourceSets {
   main { java.srcDirs("$buildDir/generated-sources/openapi/src/main/kotlin") }
@@ -9,15 +12,15 @@ sourceSets {
 }
 
 tasks.getByName<ValidateTask>("openApiValidate") {
-  inputSpec.set("${projectDir}/src/main/openapi/datasets.yaml")
+  inputSpec.set("${projectDir}/src/main/openapi/workspaces.yaml")
 }
 
 tasks.getByName<GenerateTask>("openApiGenerate") {
-  inputSpec.set("${projectDir}/src/main/openapi/datasets.yaml")
+  inputSpec.set("${projectDir}/src/main/openapi/workspaces.yaml")
   outputDir.set("$buildDir/generated-sources/openapi")
   generatorName.set("kotlin-spring")
-  apiPackage.set("com.cosmotech.dataset.api")
-  modelPackage.set("com.cosmotech.dataset.domain")
+  apiPackage.set("com.cosmotech.workspace.api")
+  modelPackage.set("com.cosmotech.workspace.domain")
   globalProperties.set(
       mapOf(
           "apiDocs" to "true",
@@ -28,9 +31,9 @@ tasks.getByName<GenerateTask>("openApiGenerate") {
           "apiTests" to "false"))
   additionalProperties.set(
       mapOf(
-          "title" to "Cosmo Tech Dataset Manager API",
+          "title" to "Cosmo Tech Organization Manager API",
           "basePackage" to "com.cosmotech",
-          "configPackage" to "com.cosmotech.dataset.config",
+          "configPackage" to "com.cosmotech.workspace.config",
           "enumPropertyNaming" to "original",
           "exceptionHandler" to false,
           "serviceInterface" to true,

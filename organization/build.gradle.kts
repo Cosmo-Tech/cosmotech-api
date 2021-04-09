@@ -34,5 +34,6 @@ tasks.getByName<GenerateTask>("openApiGenerate") {
           "enumPropertyNaming" to "original",
           "exceptionHandler" to false,
           "serviceInterface" to true,
-          "swaggerAnnotations" to false))
+          "swaggerAnnotations" to false,
+          "useTags" to true))
 }

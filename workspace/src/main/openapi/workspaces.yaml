@@ -1,0 +1,366 @@
+openapi: 3.0.3
+
+info:
+  title: Cosmo Tech Workspace Manager API
+  description: Cosmo Tech Workspace Manager API
+  version: 1.0.0
+
+servers:
+- url: 'https://api.azure.cosmo-platform.com'
+- url: 'https://gateway.api.cosmo-platform.com'
+- url: 'http://localhost:8080'
+
+security:
+- ApiKeyAuth: [ ]
+- AADOAuth2AuthCode: [ ]
+
+tags:
+- name: workspace
+  description: Workspace Management
+
+paths:
+  /organizations/{organization_id}/workspaces:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: createWorkspace
+      tags:
+        - workspace
+      summary: Create a new workspace
+      requestBody:
+        description: the Workspace to create
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Workspace'
+            examples:
+              Workspace:
+                $ref: '#/components/examples/BreweryWorkspace'
+      responses:
+        "201":
+          description: the workspace details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+              examples:
+                Workspace:
+                  $ref: '#/components/examples/BreweryWorkspace'
+        "400":
+          description: Bad request
+    get:
+      operationId: findAllWorkspaces
+      tags:
+        - workspace
+      summary: List all Workspaces
+      responses:
+        "200":
+          description: the workspace details
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Workspace'
+              examples:
+                OneWorkspace:
+                  $ref: '#/components/examples/OneWorkspace'
+  /organizations/{organization_id}/workspaces/{workspace_id}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: findWorkspaceById
+      tags:
+        - workspace
+      summary: Get the details of an workspace
+      responses:
+        "200":
+          description: the Workspace details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+              examples:
+                Workspace:
+                  $ref: '#/components/examples/BreweryWorkspace'
+        "404":
+          description: the Workspace specified is unknown or you don't have access to it
+    patch:
+      operationId: updateWorkspace
+      tags:
+        - workspace
+      summary: Update a workspace
+      requestBody:
+        description: the new Workspace details.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Workspace'
+            examples:
+              BreweryUpdate:
+                $ref: '#/components/examples/BreweryWorkspaceUpdate'
+      responses:
+        "200":
+          description: the workspace details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+              examples:
+                BreweryUpdated:
+                  $ref: '#/components/examples/BreweryWorkspaceUpdated'
+        "400":
+          description: Bad request
+        "404":
+          description: the Workspace specified is unknown or you don't have access to it
+    delete:
+      operationId: deleteWorkspace
+      tags:
+        - workspace
+      summary: Delete a workspace
+      responses:
+        "200":
+          description: the workspace details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+              examples:
+                Workspace:
+                  $ref: '#/components/examples/BreweryWorkspace'
+        "400":
+          description: Bad request
+        "404":
+          description: the Workspace specified is unknown or you don't have access to it
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      description: The Cosmo Tech API Key
+      name: key
+      in: query
+    AADOAuth2AuthCode:
+      type: oauth2
+      description: Azure Active Directory authentication
+      flows:
+        implicit:
+          authorizationUrl: https://login.microsoftonline.com/e9641c78-d0d6-4d09-af63-168922724e7f/oauth2/v2.0/authorize
+          scopes:
+            http://sample.azure.cosmo-platform.com/user_impersonation: User Impersonation
+  schemas:
+    Workspace:
+      type: object
+      description: a Workspace
+      properties:
+        id:
+          type: string
+          readOnly: true
+          description: the Workspace version unique identifier
+        name:
+          type: string
+          description: the Workspace name
+        description:
+          type: string
+          description: the Workspace description
+        version:
+          type: string
+          description: the Workspace version MAJOR.MINOR.PATCH.
+        tags:
+          type: array
+          description: the list of tags
+          items:
+            type: string
+        ownerId:
+          type: string
+          readOnly: true
+          description: the user id which own this workspace
+        simulator:
+          $ref: '#/components/schemas/WorkspaceSimulator'
+        userList:
+          type: array
+          description: the list of user Id which have 
+          items:
+            $ref: '#/components/schemas/WorkspaceUser'
+        webApp:
+          $ref: '#/components/schemas/WorkspaceWebApp'
+        resources:
+          type: object
+          readOnly: true
+          description: a list of resources for the Workspace with resourceName/resourceUrl
+          additionalProperties: true
+      required:
+        - name
+        - simulatorId
+    WorkspaceUser:
+      type: object
+      description: a Workspace user with roles
+      properties:
+        id:
+          type: string
+          description: the User id
+        name:
+          type: string
+          description: the User name
+        roles:
+          type: string
+          description: the User role
+          enum: ["Viewer","Advanced"]
+      required:
+        - id
+        - roles
+    WorkspaceWebApp:
+      type: object
+      description: a Workspace Web Application
+      properties:
+        url:
+          type: string
+          description: the Workspace Web Application URL
+        iframes:
+          type: object
+          description: a map of iframeKey/iframeURL
+          additionalProperties: true
+        options:
+          type: object
+          description: free form options for Web Application
+          additionalProperties: true
+      required:
+        - url
+    WorkspaceSimulator:
+      type: object
+      description: the Workspace Simulator configuration
+      properties:
+        simulatorId:
+          type: string
+          description: the Simulator Id attached to this workspace
+        simulatorAnalysisFilter:
+          type: array
+          description: the list of Simulator Analysis Id to filter
+          items:
+            type: string
+        defaultAnalysisDataset:
+          type: object
+          description: a map of AnalysisId/DatasetId to set a default dataset for an analysis
+          additionalProperties: true
+      required:
+        - simulatorId
+  examples:
+    BreweryWorkspace:
+      summary: Brewery Workspace
+      description: Brewery Workspace example
+      value:
+        id: 1
+        name: Brewery Analysis
+        description: Brewery analysis for stock, production, transport and customer satisfaction
+        version: 1.0.0
+        tags:
+          - Brewery
+        ownerId: 1
+        simulator:
+          simulatorId: 1
+          defaultAnalysisDataset:
+            1: 1
+        userList:
+          - id: 1
+            name: Bob
+            roles: Advanced
+          - id: 2
+            name: Alice
+            roles: Viewer
+        webApp:
+          url: https://brewery.app.cosmotech.com
+          iframes:
+            main: https://app.powerbi.com/reportEmbed?reportId=05eee4e7-b301-4fb3-8850-9ef00f3516ef&autoAuth=true&ctid=e9641c78-d0d6-4d09-af63-168922724e7f&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWZyYW5jZS1jZW50cmFsLWEtcHJpbWFyeS1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D
+            dashboard: https://app.powerbi.com/reportEmbed?reportId=05eee4e7-b301-4fb3-8850-9ef00f3516ef&autoAuth=true&ctid=e9641c78-d0d6-4d09-af63-168922724e7f&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWZyYW5jZS1jZW50cmFsLWEtcHJpbWFyeS1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D
+        resources:
+          eventhub: brewery
+          eventhub-simulation: brewery-simulation
+          adxdb: Brewery
+          storage: organizations/1/workspaces/1
+    OneWorkspace:
+      summary: One Workspace list
+      description: One Workspace list example
+      value:
+        - id: 1
+          name: Brewery Analysis
+          description: Brewery analysis for stock, production, transport and customer satisfaction
+          version: 1.0.0
+          tags:
+            - Brewery
+          ownerId: 1
+          simulator:
+            simulatorId: 1
+            defaultAnalysisDataset:
+              1: 1
+          userList:
+            - id: 1
+              name: Bob
+              roles: Advanced
+            - id: 2
+              name: Alice
+              roles: Viewer
+          webApp:
+            url: https://brewery.app.cosmotech.com
+            iframes:
+              main: https://app.powerbi.com/reportEmbed?reportId=05eee4e7-b301-4fb3-8850-9ef00f3516ef&autoAuth=true&ctid=e9641c78-d0d6-4d09-af63-168922724e7f&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWZyYW5jZS1jZW50cmFsLWEtcHJpbWFyeS1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D
+              dashboard: https://app.powerbi.com/reportEmbed?reportId=05eee4e7-b301-4fb3-8850-9ef00f3516ef&autoAuth=true&ctid=e9641c78-d0d6-4d09-af63-168922724e7f&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWZyYW5jZS1jZW50cmFsLWEtcHJpbWFyeS1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D
+          resources:
+            eventhub: brewery
+            eventhub-simulation: brewery-simulation
+            adxdb: Brewery
+            storage: organizations/1/workspaces/1
+    BreweryWorkspaceUpdate:
+      summary: Update the Brewery Workspace
+      description: Update the Brewery Workspace by changing its name
+      value:
+        name: Brewery Analysis 2021
+    BreweryWorkspaceUpdated:
+      summary: Brewery Workspace
+      description: Brewery Workspace example
+      value:
+        id: 1
+        name: Brewery Analysis 2021
+        description: Brewery analysis for stock, production, transport and customer satisfaction
+        version: 1.0.0
+        tags:
+          - Brewery
+        ownerId: 1
+        simulator:
+          simulatorId: 1
+          defaultAnalysisDataset:
+            1: 1
+        userList:
+          - id: 1
+            name: Bob
+            roles: Advanced
+          - id: 2
+            name: Alice
+            roles: Viewer
+        webApp:
+          url: https://brewery.app.cosmotech.com
+          iframes:
+            main: https://app.powerbi.com/reportEmbed?reportId=05eee4e7-b301-4fb3-8850-9ef00f3516ef&autoAuth=true&ctid=e9641c78-d0d6-4d09-af63-168922724e7f&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWZyYW5jZS1jZW50cmFsLWEtcHJpbWFyeS1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D
+            dashboard: https://app.powerbi.com/reportEmbed?reportId=05eee4e7-b301-4fb3-8850-9ef00f3516ef&autoAuth=true&ctid=e9641c78-d0d6-4d09-af63-168922724e7f&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWZyYW5jZS1jZW50cmFsLWEtcHJpbWFyeS1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D
+        resources:
+          eventhub: brewery
+          eventhub-simulation: brewery-simulation
+          adxdb: Brewery
+          storage: organizations/1/workspaces/1

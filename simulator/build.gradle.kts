@@ -28,7 +28,7 @@ tasks.getByName<GenerateTask>("openApiGenerate") {
           "apiTests" to "false"))
   additionalProperties.set(
       mapOf(
-          "title" to "Cosmo Tech Organization Manager API",
+          "title" to "Cosmo Tech Simulator Manager API",
           "basePackage" to "com.cosmotech",
           "configPackage" to "com.cosmotech.simulator.config",
           "enumPropertyNaming" to "original",
