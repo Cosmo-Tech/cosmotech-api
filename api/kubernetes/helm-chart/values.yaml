@@ -92,8 +92,11 @@ tolerations: []
 affinity: {}
 
 config:
-  # Specific application properties : application.yaml
   logging:
     level:
       com:
         cosmotech: INFO
+  api:
+    version: "latest"
+    swagger-ui:
+      base-path: /

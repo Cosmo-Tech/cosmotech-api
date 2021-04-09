@@ -2,17 +2,23 @@
 // Licensed under the MIT license.
 package com.cosmotech.api
 
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.util.TokenBuffer
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.servers.Server
 import io.swagger.v3.parser.OpenAPIV3Parser
 import io.swagger.v3.parser.core.models.SwaggerParseResult
 import java.util.*
-import javax.servlet.ServletContext
+import javax.servlet.http.HttpServletResponse
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder
 
 val openApiYamlParseResult: SwaggerParseResult by lazy {
   val parseResult =
@@ -25,30 +31,54 @@ val openApiYamlParseResult: SwaggerParseResult by lazy {
 }
 
 @RestController
-class OpenApiController(val servletContext: ServletContext) {
+class OpenApiController() {
+  @Value("\${api.version}") private lateinit var apiVersion: String
+
+  @Value("\${api.swagger-ui.base-path}") private lateinit var swaggerUiBasePath: String
 
   private val openApiParsed: OpenAPI by lazy {
     val openAPI =
         openApiYamlParseResult.openAPI
             ?: throw IllegalStateException(
-                "Unable to parse OpenAPI definition from 'classpath:openapi.yaml' : ${openApiYamlParseResult.messages}")
-    val serverList =
-        mutableListOf<Server>(
-            OpenApiServerUrlMatching().apply {
-              val contextPath = servletContext.contextPath
-              url = if (contextPath.isNullOrBlank()) "/" else contextPath
-              description = "inferred"
-            })
-    openAPI.servers?.filterNot { serverList.contains(it) }?.forEach {
-      serverList.add(OpenApiServerUrlMatching(it))
-    }
-    openAPI.servers = serverList
+                "Couldn't parse resource 'classpath:openapi.yaml' : ${openApiYamlParseResult.messages}")
     openAPI
+  }
+
+  @GetMapping("/")
+  fun redirectHomeToSwaggerUi(httpServletResponse: HttpServletResponse) {
+    val pathSeparator = if (swaggerUiBasePath.endsWith("/")) "" else "/"
+    httpServletResponse.sendRedirect("${swaggerUiBasePath}${pathSeparator}swagger-ui/")
   }
 
   @GetMapping("/openapi.json", produces = [MediaType.APPLICATION_JSON_VALUE])
   @ResponseBody
-  fun getOpenAPIJson() = openApiParsed
+  fun getOpenAPIJson(): OpenAPI {
+    // Copy parsed OpenAPI to add dynamic base URL
+    val objectMapper =
+        ObjectMapper()
+            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    val tokenBuffer = TokenBuffer(objectMapper, false)
+    objectMapper.writeValue(tokenBuffer, openApiParsed)
+    val openAPICopy = objectMapper.readValue(tokenBuffer.asParser(), OpenAPI::class.java)
+
+    val openApiEndpointBaseUri =
+        swaggerUiBasePath.ifBlank {
+          val uriString = ServletUriComponentsBuilder.fromCurrentRequest().build().toUriString()
+          uriString.substring(0, uriString.lastIndexOf('/'))
+        }
+    val serverList =
+        mutableListOf<Server>(
+            OpenApiServerUrlMatching().apply {
+              url = openApiEndpointBaseUri
+              description = "inferred"
+            })
+    openAPICopy.servers?.filterNot { serverList.contains(it) }?.forEach {
+      serverList.add(OpenApiServerUrlMatching(it))
+    }
+    openAPICopy.servers = serverList
+    return openAPICopy
+  }
 }
 
 private class OpenApiServerUrlMatching() : Server() {
