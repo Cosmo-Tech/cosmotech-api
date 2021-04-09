@@ -28,6 +28,8 @@ class OrganizationServiceImpl(
 
   private var cosmosClient: CosmosClient? = null
 
+  @Value("\${azure.cosmos.database}") private lateinit var databaseName: String
+
   @Value("\${csm.azure.cosmosdb.database.core.organizations.container}")
   private lateinit var coreOrganizationContainer: String
   @PostConstruct
@@ -55,7 +57,7 @@ class OrganizationServiceImpl(
             ?: throw IllegalStateException(
                 "No ID returned for organization registered: $organizationRegistered")
 
-    val database = cosmosClient!!.getDatabase(coreOrganizationContainer)
+    val database = cosmosClient!!.getDatabase(databaseName)
 
     database.createContainerIfNotExists(
         CosmosContainerProperties("${organizationId}_user-data", "/userId"))
@@ -64,8 +66,9 @@ class OrganizationServiceImpl(
         CosmosContainerProperties("${organizationId}_workspaces", "/workspaceId"))
 
     this.eventPublisher.publishEvent(OrganizationRegistered(this, organizationId))
-    //    // TODO Handle rollbacks in case of errors
-    //
+
+    // TODO Handle rollbacks in case of errors
+
     return organizationRegistered
   }
 
