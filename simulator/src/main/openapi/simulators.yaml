@@ -274,11 +274,9 @@ components:
           type: object
           description: freeform options
           additionalProperties: true
-        groups:
-          type: array
-          description: a list of children Analysis Parameter Groups
-          items:
-            $ref: '#/components/schemas/AnalysisParameterGroup'
+        parentId:
+          type: string
+          description: the Simulator Analysis Group parent Id
         parameters:
           type: array
           description: a list of Simulator Analysis Parameters
@@ -360,3 +358,12 @@ components:
         description: Brewery simulator model
         tags:
           - Brewery
+    OneSimulator:
+      summary: One Simulator
+      description: One Simulator list
+      value:
+        - id: "1"
+          name:  reference 2021
+          description: Brewery simulator model
+          tags:
+            - Brewery
