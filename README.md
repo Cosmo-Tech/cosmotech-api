@@ -70,7 +70,7 @@ helm upgrade --install cosmotech-api-${API_VERSION} \
   --set image.tag=latest
 ```
 
-Alternatively, it is recommended to use a dedicated `values.yaml` file and use it instead, e.g.:
+Alternatively, it is recommended to use a dedicated `values.yaml` file instead, e.g.:
 
 ```shell
 export API_VERSION=latest;
