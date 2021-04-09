@@ -8,6 +8,7 @@ import com.azure.cosmos.models.CosmosContainerProperties
 import com.azure.spring.data.cosmos.core.CosmosTemplate
 import com.cosmotech.api.AbstractPhoenixService
 import com.cosmotech.api.events.OrganizationRegistered
+import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import java.lang.IllegalStateException
@@ -73,7 +74,16 @@ class OrganizationServiceImpl(
   }
 
   override fun unregisterOrganization(organizationId: String): Organization {
-    TODO("Not yet implemented")
+    val organization = findOrganizationById(organizationId)
+    cosmosTemplate.deleteContainer("${organizationId}_user-data")
+    cosmosTemplate.deleteContainer("${organizationId}_workspaces")
+    cosmosTemplate.deleteEntity(coreOrganizationContainer, organization)
+
+    this.eventPublisher.publishEvent(OrganizationUnregistered(this, organizationId))
+
+    // TODO Handle rollbacks in case of errors
+
+    return organization
   }
 
   override fun updateOrganization(
