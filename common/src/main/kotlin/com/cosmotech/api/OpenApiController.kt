@@ -41,6 +41,7 @@ class OpenApiController() {
         openApiYamlParseResult.openAPI
             ?: throw IllegalStateException(
                 "Couldn't parse resource 'classpath:openapi.yaml' : ${openApiYamlParseResult.messages}")
+    openAPI.info.version = apiVersion
     openAPI
   }
 
