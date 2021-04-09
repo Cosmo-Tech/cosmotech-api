@@ -53,7 +53,7 @@ az aks get-credentials \
 * Create the namespace if needed
 
 ```shell
-kubectl create namespace phenix
+kubectl create namespace phoenix
 ```
 
 * Install the Helm Chart
@@ -99,7 +99,7 @@ registry and an [NGINX Ingress Controller](https://kubernetes.github.io/ingress-
 * Create the namespace if needed
 
 ```shell
-kubectl create namespace phenix
+kubectl create namespace phoenix
 ```
 
 * Install the Helm Chart
