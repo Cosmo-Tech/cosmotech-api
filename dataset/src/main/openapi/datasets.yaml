@@ -71,7 +71,43 @@ paths:
               examples:
                 Two:
                   $ref: '#/components/examples/TwoDatasets'
-
+  /organizations/{organization_id}/datasets/copy:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: copyDataset
+      tags:
+        - dataset
+      summary: Copy a Dataset to another Dataset. Source must have a read capable connector and Target a write capable connector.
+      requestBody:
+        description: the Dataset copy parameters
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DatasetCopyParameters'
+            examples:
+              BreweryDatasetCopyParameters:
+                $ref: '#/components/examples/BreweryDatasetCopyParameters'
+      responses:
+        "200":
+          description: the Dataset copy operation parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetCopyParameters'
+              examples:
+                BreweryADT:
+                  $ref: '#/components/examples/BreweryDatasetCopyParameters'
+        "400":
+          description: Bad request
+        "404":
+          description: the Dataset specified is unknown or you don't have access to it
   /organizations/{organization_id}/datasets/{dataset_id}:
     parameters:
       - name: organization_id
@@ -569,6 +605,20 @@ components:
           description: the Validator Run logs
       required:
         - datasetId
+    DatasetCopyParameters:
+      type: object
+      description: the Dataset Copy Parameters
+      properties:
+        sourceId:
+          type: string
+          description: the source Dataset id
+        targetId:
+          type: string
+          description: the target Dataset id
+        options:
+          type: object
+          description: freeform options to path to connectors
+          additionalProperties: true
   examples:
     BreweryADT:
       summary: Brewery ADT Dataset
@@ -744,3 +794,10 @@ components:
       description: a Validator Run input for the Brewery Dataset from ADT in a Docker image
       value:
         datasetId: "1"
+    BreweryDatasetCopyParameters:
+      summary: Parameters for Dataset copy example
+      description: Parameters for Dataset copy from Dataset 1 to 2 example
+      value:
+        sourceId: "1"
+        targetId: "2"
+

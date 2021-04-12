@@ -202,14 +202,27 @@ components:
             $ref: '#/components/schemas/WorkspaceUser'
         webApp:
           $ref: '#/components/schemas/WorkspaceWebApp'
-        resources:
-          type: object
-          readOnly: true
-          description: a list of resources for the Workspace with resourceName/resourceUrl
-          additionalProperties: true
+        services:
+          $ref: '#/components/schemas/WorkspaceServices'
       required:
         - name
         - simulator
+    WorkspaceServices:
+      type: object
+      description: the cloud service resources of the Workspace
+      properties:
+        resultsEventBus:
+          type: string
+          description: the event bus which receive Workspace Simulation results messages
+        simulationEventBus:
+          type: string
+          description: the event bus which receive Workspace Simulation events messages
+        dataWarehouse:
+          type: string
+          description: the Workspace DataWarehouse specific informations
+        storage:
+          type: string
+          description: ths Workspace file storage specific informations
     WorkspaceUser:
       type: object
       description: a Workspace user with roles
@@ -291,10 +304,10 @@ components:
           iframes:
             main: https://app.powerbi.com/reportEmbed?reportId=05eee4e7-b301-4fb3-8850-9ef00f3516ef&autoAuth=true&ctid=e9641c78-d0d6-4d09-af63-168922724e7f&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWZyYW5jZS1jZW50cmFsLWEtcHJpbWFyeS1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D
             dashboard: https://app.powerbi.com/reportEmbed?reportId=05eee4e7-b301-4fb3-8850-9ef00f3516ef&autoAuth=true&ctid=e9641c78-d0d6-4d09-af63-168922724e7f&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWZyYW5jZS1jZW50cmFsLWEtcHJpbWFyeS1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D
-        resources:
-          eventhub: brewery
-          eventhub-simulation: brewery-simulation
-          adxdb: Brewery
+        services:
+          resultsEventBus: brewery
+          simulationEventBus: brewery-simulation
+          dataWarehouse: Brewery
           storage: organizations/1/workspaces/1
     OneWorkspace:
       summary: One Workspace list
@@ -323,10 +336,10 @@ components:
             iframes:
               main: https://app.powerbi.com/reportEmbed?reportId=05eee4e7-b301-4fb3-8850-9ef00f3516ef&autoAuth=true&ctid=e9641c78-d0d6-4d09-af63-168922724e7f&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWZyYW5jZS1jZW50cmFsLWEtcHJpbWFyeS1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D
               dashboard: https://app.powerbi.com/reportEmbed?reportId=05eee4e7-b301-4fb3-8850-9ef00f3516ef&autoAuth=true&ctid=e9641c78-d0d6-4d09-af63-168922724e7f&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWZyYW5jZS1jZW50cmFsLWEtcHJpbWFyeS1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D
-          resources:
-            eventhub: brewery
-            eventhub-simulation: brewery-simulation
-            adxdb: Brewery
+          services:
+            resultsEventBus: brewery
+            simulationEventBus: brewery-simulation
+            dataWarehouse: Brewery
             storage: organizations/1/workspaces/1
     BreweryWorkspaceUpdate:
       summary: Update the Brewery Workspace
@@ -360,8 +373,8 @@ components:
           iframes:
             main: https://app.powerbi.com/reportEmbed?reportId=05eee4e7-b301-4fb3-8850-9ef00f3516ef&autoAuth=true&ctid=e9641c78-d0d6-4d09-af63-168922724e7f&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWZyYW5jZS1jZW50cmFsLWEtcHJpbWFyeS1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D
             dashboard: https://app.powerbi.com/reportEmbed?reportId=05eee4e7-b301-4fb3-8850-9ef00f3516ef&autoAuth=true&ctid=e9641c78-d0d6-4d09-af63-168922724e7f&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWZyYW5jZS1jZW50cmFsLWEtcHJpbWFyeS1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D
-        resources:
-          eventhub: brewery
-          eventhub-simulation: brewery-simulation
-          adxdb: Brewery
+        services:
+          resultsEventBus: brewery
+          simulationEventBus: brewery-simulation
+          dataWarehouse: Brewery
           storage: organizations/1/workspaces/1

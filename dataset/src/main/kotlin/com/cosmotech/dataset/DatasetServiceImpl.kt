@@ -5,6 +5,7 @@ package com.cosmotech.dataset
 import com.cosmotech.api.AbstractPhoenixService
 import com.cosmotech.dataset.api.DatasetApiService
 import com.cosmotech.dataset.domain.Dataset
+import com.cosmotech.dataset.domain.DatasetCopyParameters
 import org.springframework.stereotype.Service
 
 @Service
@@ -26,6 +27,13 @@ class DatasetServiceImpl : AbstractPhoenixService(), DatasetApiService {
   }
 
   override fun updateDataset(organizationId: String, datasetId: String, dataset: Dataset): Dataset {
+    TODO("Not yet implemented")
+  }
+
+  override fun copyDataset(
+      organizationId: String,
+      datasetCopyParameters: DatasetCopyParameters
+  ): DatasetCopyParameters {
     TODO("Not yet implemented")
   }
 }

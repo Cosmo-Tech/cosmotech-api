@@ -193,9 +193,9 @@ components:
           description: an optional URL link to connector page
         ioTypes:
           type: array
-          description: The read and write capabilities of connector
           items:
             type: string
+            description: The read and write capabilities of connector
             enum:
               - read
               - write

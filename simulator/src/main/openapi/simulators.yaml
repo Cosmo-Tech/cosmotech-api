@@ -333,7 +333,7 @@ components:
           $ref: '#/components/schemas/TranslatedLabels'
         varType:
           type: string
-          description: the variable type for the parameter
+          description: the variable type for the parameter. Basic types or special type $DATASETID, $DATAPATH
         order:
           type: integer
           description: the Parameter Group order
