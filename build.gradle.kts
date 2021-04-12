@@ -19,7 +19,7 @@ plugins {
 
   id("org.openapi.generator") version "5.1.0" apply false
 
-  id("com.google.cloud.tools.jib") version "2.8.0" apply false
+  id("com.google.cloud.tools.jib") version "3.0.0" apply false
 }
 
 allprojects {
