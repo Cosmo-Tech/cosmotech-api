@@ -177,6 +177,28 @@ tasks.register<Copy>("copyJavaLicense") {
 
 tasks.register("generateJavaClient") { dependsOn("copyJavaGitPushScript", "copyJavaLicense") }
 
+tasks.register<GenerateTask>("openApiCSharpGenerate") {
+  dependsOn("mergeOpenApiFiles")
+  inputSpec.set("${rootDir}/openapi/openapi.yaml")
+  outputDir.set("$buildDir/generated-sources/csharp")
+  generatorName.set("csharp-netcore")
+  additionalProperties.set(mapOf("packageName" to "Com.Cosmotech"))
+}
+
+tasks.register<Copy>("copyCSharpGitPushScript") {
+  dependsOn("openApiCSharpGenerate")
+  from("${rootDir}/scripts/clients/build_override/git_push.sh")
+  into("$buildDir/generated-sources/csharp")
+}
+
+tasks.register<Copy>("copyCSharpLicense") {
+  dependsOn("openApiCSharpGenerate")
+  from("${rootDir}/scripts/clients/build_override/LICENSE")
+  into("$buildDir/generated-sources/csharp")
+}
+
+tasks.register("generateCSharpClient") { dependsOn("copyCSharpGitPushScript", "copyCSharpLicense") }
+
 tasks.register<GenerateTask>("openApiUmlGenerate") {
   dependsOn("mergeOpenApiFiles")
   inputSpec.set("${rootDir}/openapi/openapi.yaml")
@@ -192,7 +214,12 @@ tasks.getByName<ValidateTask>("openApiValidate") {
 }
 
 tasks.register("generateClients") {
-  dependsOn("generateJSClient", "generatePythonClient", "generateJavaClient", "openApiUmlGenerate")
+  dependsOn(
+      "generateJSClient",
+      "generatePythonClient",
+      "generateJavaClient",
+      "generateCSharpClient",
+      "openApiUmlGenerate")
 }
 
 tasks.getByName<BootJar>("bootJar") { finalizedBy("generateClients") }

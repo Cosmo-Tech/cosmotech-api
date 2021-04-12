@@ -1,5 +1,5 @@
 #!/bin/bash
-usage="./publish_client.sh {javascript,python} USER RELEASE_NOTE [GIT_TOKEN]"
+usage="./publish_client.sh {javascript,python,java,csharp} USER RELEASE_NOTE [GIT_TOKEN]"
 echo == Cosmo Tech client library publish script ==
 echo USAGE:
 echo $usage
@@ -7,7 +7,7 @@ echo WARNING: If you use Two-Factor Authentication you must export or provide a 
 echo ====
 if [ -z $1 ]
 then
-  echo You must provide a client name: javascript, python, java
+  echo You must provide a client name: javascript, python, java, csharp
   exit 1
 fi
 if [ -z $2 ]
