@@ -219,6 +219,7 @@ components:
           description: the User id
         name:
           type: string
+          readOnly: true
           description: the User name
         roles:
           type: string

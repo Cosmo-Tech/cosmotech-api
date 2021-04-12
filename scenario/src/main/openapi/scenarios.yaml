@@ -75,8 +75,39 @@ paths:
                 items:
                   $ref: '#/components/schemas/Scenario'
               examples:
-                OneScenario:
-                  $ref: '#/components/examples/TwoScenarios'
+                ThreeScenario:
+                  $ref: '#/components/examples/ThreeScenarios'
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/tree:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getScenariosTree
+      tags:
+        - scenario
+      summary: Get the Scenarios Tree
+      responses:
+        "200":
+          description: the scenario tree
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/ScenariosTree'
+              examples:
+                ScenarioTree:
+                  $ref: '#/components/examples/ScenariosTree'
   /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}:
     parameters:
       - name: organization_id
@@ -162,6 +193,49 @@ paths:
           description: Bad request
         "404":
           description: the Scenario specified is unknown or you don't have access to it
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/compare/{compared_scenario_id}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: scenario_id
+        in: path
+        description: the Scenario identifier
+        required: true
+        schema:
+          type: string
+      - name: compared_scenario_id
+        in: path
+        description: the Scenario identifier to compare to
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: compareScenarios
+      tags:
+        - scenario
+      summary: Compare the Scenario with another one and returns the difference for parameters values
+      responses:
+        "200":
+          description: the comparison result for parameters values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioComparisonResult'
+              examples:
+                BreweryScenarioComparisonResult:
+                  $ref: '#/components/examples/BreweryScenarioComparison'
+        "404":
+          description: the Scenario specified is unknown or you don't have access to it
 
 components:
   securitySchemes:
@@ -179,9 +253,9 @@ components:
           scopes:
             http://sample.azure.cosmo-platform.com/user_impersonation: User Impersonation
   schemas:
-    Scenario:
+    ScenarioBase:
       type: object
-      description: a Scenario
+      description: a Scenario with base information
       properties:
         id:
           type: string
@@ -205,22 +279,33 @@ components:
           type: string
           readOnly: true
           description: the user id which own this Scenario
-        simulatorId:
-          type: string
-          readOnly: true
-          description: the Simulator Id associated with this Scenario
         userList:
           type: array
           description: the list of users Id with their role
           items:
             $ref: '#/components/schemas/ScenarioUser'
-        analysis:
-          type: array
-          description: the configuration for Analysis
-          items:
-            $ref: '#/components/schemas/ScenarioAnalysis'
       required:
         - name
+    ScenariosTree:
+      type: array
+      description: the Scenarios Tree
+      items:
+        $ref: '#/components/schemas/ScenarioBase'
+    Scenario:
+      allOf:
+        - $ref: '#/components/schemas/ScenarioBase'
+        - type: object
+          description: a Scenario with detailed information
+          properties:
+            simulatorId:
+              type: string
+              readOnly: true
+              description: the Simulator Id associated with this Scenario
+            analysis:
+              type: array
+              description: the configuration for Analysis
+              items:
+                $ref: '#/components/schemas/ScenarioAnalysis'
     ScenarioAnalysis:
       type: object
       description: a Scenario configuration for a Simulator Analysis
@@ -234,11 +319,32 @@ components:
           items:
             type: string
         parametersValues:
-          type: object
-          description: the list of Simulator Analysis parameters value parameterId/parameterValue
-          additionalProperties: true
+          type: array
+          description: the list of Simulator Analysis parameters values
+          items:
+            $ref: '#/components/schemas/ScenarioAnalysisParameterValue'
       required:
         - analysisId
+    ScenarioAnalysisParameterValue:
+      type: object
+      description: the value of an Analysis parameter for a Scenario
+      properties:
+        parameterId:
+          type: string
+          description: the parameter Id
+        varType:
+          type: string
+          readOnly: true
+          description: the parameter value type
+        value:
+          type: string
+          description: the parameter value
+        isInherited:
+          type: string
+          description: whether or not the value is inherited from parent or has been changed
+      required:
+        - parameterId
+        - value
     ScenarioUser:
       type: object
       description: a Scenario user with roles
@@ -248,6 +354,7 @@ components:
           description: the User id
         name:
           type: string
+          readOnly: true
           description: the User name
         roles:
           type: string
@@ -256,6 +363,44 @@ components:
       required:
         - id
         - roles
+    ScenarioComparisonResult:
+      type: object
+      description: the result of the comparison of two scenarios
+      properties:
+        scenarioId:
+          type: string
+          readOnly: true
+          description: the Scenario Id which is the reference for the comparison
+        comparedScenarioId:
+          type: string
+          readOnly: true
+          description: the Scenario Id the reference Scenario is compared to
+        changedValues:
+          type: array
+          readOnly: true
+          description: the list of changed values for parameters
+          items:
+            $ref: '#/components/schemas/ScenarioChangedParameterValue'
+    ScenarioChangedParameterValue:
+      type: object
+      description: the difference between the values of a parameter
+      properties:
+        parameterId:
+          type: string
+          readOnly: true
+          description: the parameter id the values refer to
+        varType:
+          type: string
+          readOnly: true
+          description: the parameter value type
+        value:
+          type: string
+          readOnly: true
+          description: the parameter value for the reference Scenario
+        comparedValue:
+          type: string
+          readOnly: true
+          description: the parameter value for the compared Scenario
   examples:
     BreweryScenario:
       summary: Brewery Scenario
@@ -281,10 +426,12 @@ components:
             datasetList:
               - "1"
             parametersValues:
-              prefix: master
-    TwoScenarios:
-      summary: Two Scenarios with parent and child
-      description: Two Scenarios with parent master Scenario and a child Scenario
+              - parameterId: prefix
+                varType: string
+                value: ""
+    ThreeScenarios:
+      summary: Three Scenarios with parent and children
+      description: Three Scenarios with parent master Scenario and two children Scenarios
       value:
         - id: "1"
           name: Brewery Master Analysis
@@ -307,13 +454,16 @@ components:
               datasetList:
                 - "1"
               parametersValues:
-                prefix: ""
+                - parameterId: prefix
+                  varType: string
+                  value: ""
         - id: "2"
           name: Brewery Analysis name example
           description: Brewery analysis with example as name prefix
           tags:
             - Brewery
-            - reference
+            - example
+          parentId: "1"
           ownerId: "1"
           simulatorId: "1"
           userList:
@@ -328,7 +478,33 @@ components:
               datasetList:
                 - "1"
               parametersValues:
-                prefix: example
+                - parameterId: prefix
+                  varType: string
+                  value: example
+        - id: "3"
+          name: Brewery Analysis name no change
+          description: Brewery analysis with no change on name prefix
+          tags:
+            - Brewery
+          parentId: "1"
+          ownerId: "1"
+          simulatorId: "1"
+          userList:
+            - id: "1"
+              name: Bob
+              roles: Editor
+            - id: "2"
+              name: Alice
+              roles: Viewer 
+          analysis:
+            - analysisId: "1"
+              datasetList:
+                - "1"
+              parametersValues:
+                - parameterId: prefix
+                  varType: string
+                  value: ""
+                  inherited: true
     BreweryScenarioUpdate:
       summary: Update the Brewery Scenario
       description: Update the Brewery Scenario by changing its name
@@ -358,4 +534,65 @@ components:
             datasetList:
               - "1"
             parametersValues:
-              prefix: master
+              - parameterId: prefix
+                varType: string
+                value: ""
+    BreweryScenarioComparison:
+      summary: Brewery comparison result
+      description: Brewery comparison result between a parent Scenario and its child
+      value:
+        scenarioId: "1"
+        comparedScenarioId: "2"
+        changedValues:
+          - parameterId: prefix
+            varType: string
+            value: Brewery Master Analysis
+            comparedValue: Brewery Master Analysis 2021
+    ScenariosTree:
+      summary: Scenarios Tree example
+      description: Scenarios Tree example with 1 master Scenario and 2 children
+      value:
+        - id: "1"
+          name: Brewery Master Analysis
+          description: Brewery master reference analysis
+          version: "1.0.0"
+          tags:
+            - Brewery
+            - reference
+          ownerId: "1"
+          userList:
+            - id: "1"
+              name: Bob
+              roles: Editor
+            - id: "2"
+              name: Alice
+              roles: Viewer 
+        - id: "2"
+          name: Brewery Analysis name example
+          description: Brewery analysis with example as name prefix
+          tags:
+            - Brewery
+            - example
+          parentId: "1"
+          ownerId: "1"
+          userList:
+            - id: "1"
+              name: Bob
+              roles: Editor
+            - id: "2"
+              name: Alice
+              roles: Viewer 
+        - id: "3"
+          name: Brewery Analysis name no change
+          description: Brewery analysis with no change on name prefix
+          tags:
+            - Brewery
+          parentId: "1"
+          ownerId: "1"
+          userList:
+            - id: "1"
+              name: Bob
+              roles: Editor
+            - id: "2"
+              name: Alice
+              roles: Viewer 
