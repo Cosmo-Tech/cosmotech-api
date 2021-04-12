@@ -12,15 +12,15 @@ sourceSets {
 }
 
 tasks.getByName<ValidateTask>("openApiValidate") {
-  inputSpec.set("${projectDir}/src/main/openapi/workspaces.yaml")
+  inputSpec.set("${projectDir}/src/main/openapi/scenarios.yaml")
 }
 
 tasks.getByName<GenerateTask>("openApiGenerate") {
-  inputSpec.set("${projectDir}/src/main/openapi/workspaces.yaml")
+  inputSpec.set("${projectDir}/src/main/openapi/scenarios.yaml")
   outputDir.set("$buildDir/generated-sources/openapi")
   generatorName.set("kotlin-spring")
-  apiPackage.set("com.cosmotech.workspace.api")
-  modelPackage.set("com.cosmotech.workspace.domain")
+  apiPackage.set("com.cosmotech.scenario.api")
+  modelPackage.set("com.cosmotech.scenario.domain")
   globalProperties.set(
       mapOf(
           "apiDocs" to "true",
@@ -31,9 +31,9 @@ tasks.getByName<GenerateTask>("openApiGenerate") {
           "apiTests" to "false"))
   additionalProperties.set(
       mapOf(
-          "title" to "Cosmo Tech Workspace Manager API",
+          "title" to "Cosmo Tech Scenario Manager API",
           "basePackage" to "com.cosmotech",
-          "configPackage" to "com.cosmotech.workspace.config",
+          "configPackage" to "com.cosmotech.scenario.config",
           "enumPropertyNaming" to "original",
           "exceptionHandler" to false,
           "serviceInterface" to true,

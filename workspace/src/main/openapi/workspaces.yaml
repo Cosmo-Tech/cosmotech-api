@@ -197,7 +197,7 @@ components:
           $ref: '#/components/schemas/WorkspaceSimulator'
         userList:
           type: array
-          description: the list of user Id which have 
+          description: the list of users Id with their role
           items:
             $ref: '#/components/schemas/WorkspaceUser'
         webApp:
