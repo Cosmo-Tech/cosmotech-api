@@ -102,11 +102,11 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: array
                 items:
-                  $ref: '#/components/schemas/ScenariosTree'
+                  $ref: '#/components/schemas/ScenarioBase'
               examples:
-                ScenarioTree:
+                ScenariosTree:
                   $ref: '#/components/examples/ScenariosTree'
   /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}:
     parameters:
@@ -286,11 +286,6 @@ components:
             $ref: '#/components/schemas/ScenarioUser'
       required:
         - name
-    ScenariosTree:
-      type: array
-      description: the Scenarios Tree
-      items:
-        $ref: '#/components/schemas/ScenarioBase'
     Scenario:
       allOf:
         - $ref: '#/components/schemas/ScenarioBase'

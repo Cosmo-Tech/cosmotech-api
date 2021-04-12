@@ -56,10 +56,7 @@ class ScenarioServiceImpl : AbstractPhoenixService(), ScenarioApiService {
     TODO("Not yet implemented")
   }
 
-  override fun getScenariosTree(
-      organizationId: String,
-      workspaceId: String
-  ): List<List<ScenarioBase>> {
+  override fun getScenariosTree(organizationId: String, workspaceId: String): List<ScenarioBase> {
     TODO("Not yet implemented")
   }
 }

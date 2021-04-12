@@ -7,7 +7,7 @@ echo WARNING: If you use Two-Factor Authentication you must export or provide a 
 echo ====
 if [ -z $1 ]
 then
-  echo You must provide a client name: javascript or python
+  echo You must provide a client name: javascript, python, java
   exit 1
 fi
 if [ -z $2 ]
