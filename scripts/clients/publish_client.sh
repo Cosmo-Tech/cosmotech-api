@@ -20,7 +20,9 @@ then
   echo You must provide a release note
   exit 1
 fi
-export GIT_TOKEN=$4
+if [ -n "$4" ]; then
+  export GIT_TOKEN=$4
+fi
 pushd ../../api/build/generated-sources/$1
-./git_push.sh $2 Cosmo-Tech cosmotech-api-$1-client $3
+./git_push.sh $2 Cosmo-Tech cosmotech-api-$1-client "$3"
 popd
