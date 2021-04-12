@@ -79,7 +79,7 @@ subprojects {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("javax.validation:validation-api:2.0.1.Final")
 
-    val swaggerParserVersion = "2.0.24"
+    val swaggerParserVersion = "2.0.25"
     if (name == "cosmotech-api-common") {
       implementation("io.swagger.parser.v3:swagger-parser-v3:${swaggerParserVersion}")
     } else {
