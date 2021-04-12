@@ -1,9 +1,9 @@
 #!/bin/bash
-usage="./publish_client.sh {javascript,python} USER RELEASE_NOTE [GITHUB_TOKEN]"
+usage="./publish_client.sh {javascript,python} USER RELEASE_NOTE [GIT_TOKEN]"
 echo == Cosmo Tech client library publish script ==
 echo USAGE:
 echo $usage
-echo WARNING: If you use Two-Factor Authentication you must export or provide a GITHUB_TOKEN with a Personal Access Token
+echo WARNING: If you use Two-Factor Authentication you must export or provide a GIT_TOKEN with a Personal Access Token
 echo ====
 if [ -z $1 ]
 then
