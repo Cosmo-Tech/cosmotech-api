@@ -282,6 +282,9 @@ components:
         customDriverResource:
           description: the custome driver script resource. Default type is local and default path is analysis/${CSM_ANALYSIS_ID}/driver.{zip,py}. Ignored with warning if resource does not exist. A Custom Driver receives the Analysis information including all input parameters Key/Value. A custom driver has the responsibility to run the Simulator Analysis.
           $ref: '#/components/schemas/AnalysisResourceStorage'
+        datasetSchemaResource:
+          description: an optional schema Uri to validate the Dataset 
+          $ref: '#/components/schemas/AnalysisResourceStorage'
         parameterGroups:
           type: array
           description: the list of parameters groups for the Analysis
@@ -290,7 +293,6 @@ components:
       required:
         - id
         - name
-        - simulation
     AnalysisParameterGroup:
       type: object
       description: a Parameter Group for an Analysis
@@ -398,6 +400,9 @@ components:
             customDriverResource:
               storageType: local
               resourcePath: analysis/hundred/driver.zip
+            datasetSchemaResource:
+              storageType: local
+              resourcePath: analysis/hundred/schema
             parameterGroups:
               - id: consumers
                 labels:
@@ -446,6 +451,9 @@ components:
             customDriverResource:
               storageType: local
               resourcePath: analysis/hundred/driver.zip
+            datasetSchemaResource:
+              storageType: local
+              resourcePath: analysis/hundred/schema
             parameterGroups:
               - id: consumers
                 labels:
@@ -489,6 +497,9 @@ components:
               customDriverResource:
                 storageType: local
                 resourcePath: analysis/hundred/driver.zip
+              datasetSchemaResource:
+                storageType: local
+                resourcePath: analysis/hundred/schema
               parameterGroups:
                 - id: consumers
                   labels:
