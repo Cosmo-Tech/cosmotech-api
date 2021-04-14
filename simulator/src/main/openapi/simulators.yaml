@@ -274,16 +274,16 @@ components:
           type: string
           description: the compute size needed for this Analysis. Standard sizes are basic and highcpu. Default is basic
         parametersHandlerResource:
-          description: the parameters handler script resource. Default type is local and default path is analysis/${CSM_ANALYSIS_ID}/parameters_handler.{zip,py}. Ignored with warning if resource does not exist. A Parameters Handler receives the Analysis information including all input parameters Key/Value.
+          description: the parameters handler script resource. Default type is local and default path is analysis/${CSM_ANALYSIS_ID}/parameters_handler/. Ignored with warning if resource does not exist. A Parameters Handler receives the Analysis information including all input parameters Key/Value.
           $ref: '#/components/schemas/AnalysisResourceStorage'
         datasetValidatorResource:
-          description: the dataset validator script resource. Default type is local and default path is analysis/${CSM_ANALYSIS_ID}/validator.{py,zip}. Ignored with warning if resource does not exist.
+          description: the dataset validator script resource. Default type is local and default path is analysis/${CSM_ANALYSIS_ID}/validator/. Ignored with warning if resource does not exist.
           $ref: '#/components/schemas/AnalysisResourceStorage'
         customDriverResource:
-          description: the custome driver script resource. Default type is local and default path is analysis/${CSM_ANALYSIS_ID}/driver.{zip,py}. Ignored with warning if resource does not exist. A Custom Driver receives the Analysis information including all input parameters Key/Value. A custom driver has the responsibility to run the Simulator Analysis.
+          description: the custome driver script resource. Default type is local and default path is analysis/${CSM_ANALYSIS_ID}/driver/. Ignored with warning if resource does not exist. A Custom Driver receives the Analysis information including all input parameters Key/Value. A custom driver has the responsibility to run the Simulator Analysis.
           $ref: '#/components/schemas/AnalysisResourceStorage'
         datasetSchemaResource:
-          description: an optional schema Uri to validate the Dataset 
+          description: an optional schema Uri to validate the Dataset. Default type is local and default path is analysis/${CSM_ANALYSIS_ID}/schema. 
           $ref: '#/components/schemas/AnalysisResourceStorage'
         parameterGroups:
           type: array
@@ -393,13 +393,13 @@ components:
             computeSize: basic
             parametersHandlerResource:
               storageType: local
-              resourcePath: analysis/hundred/parameters_handler.zip
+              resourcePath: analysis/hundred/parameters_handler/
             datasetValidatorResource:
               storageType: local
-              resourcePath: analysis/hundred/validator.zip
+              resourcePath: analysis/hundred/validator/
             customDriverResource:
               storageType: local
-              resourcePath: analysis/hundred/driver.zip
+              resourcePath: analysis/hundred/driver/
             datasetSchemaResource:
               storageType: local
               resourcePath: analysis/hundred/schema
@@ -444,13 +444,13 @@ components:
             computeSize: basic
             parametersHandlerResource:
               storageType: local
-              resourcePath: analysis/hundred/parameters_handler.zip
+              resourcePath: analysis/hundred/parameters_handler/
             datasetValidatorResource:
               storageType: local
-              resourcePath: analysis/hundred/validator.zip
+              resourcePath: analysis/hundred/validator/
             customDriverResource:
               storageType: local
-              resourcePath: analysis/hundred/driver.zip
+              resourcePath: analysis/hundred/driver/
             datasetSchemaResource:
               storageType: local
               resourcePath: analysis/hundred/schema
@@ -490,13 +490,13 @@ components:
               computeSize: basic
               parametersHandlerResource:
                 storageType: local
-                resourcePath: analysis/hundred/parameters_handler.zip
+                resourcePath: analysis/hundred/parameters_handler/
               datasetValidatorResource:
                 storageType: local
-                resourcePath: analysis/hundred/validator.zip
+                resourcePath: analysis/hundred/validator/
               customDriverResource:
                 storageType: local
-                resourcePath: analysis/hundred/driver.zip
+                resourcePath: analysis/hundred/driver/
               datasetSchemaResource:
                 storageType: local
                 resourcePath: analysis/hundred/schema

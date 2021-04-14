@@ -2,7 +2,7 @@
   name: ADT Connector
   description: Connector for Azure Digital Twins. Read ADT and write the data in CSV for the Simulation
   repository: azure-digital-twins-simulator-connector
-  version: "1.0"
+  version: "1.0.0"
   tags:
     - ADT
   ownerId: "1"

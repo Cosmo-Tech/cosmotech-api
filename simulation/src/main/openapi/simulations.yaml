@@ -1,0 +1,648 @@
+openapi: 3.0.3
+
+info:
+  title: Cosmo Tech Simulation Manager API
+  description: Cosmo Tech Simulation Manager API
+  version: 1.0.0
+
+servers:
+- url: 'https://api.azure.cosmo-platform.com'
+- url: 'https://gateway.api.cosmo-platform.com'
+- url: 'http://localhost:8080'
+
+security:
+- ApiKeyAuth: [ ]
+- AADOAuth2AuthCode: [ ]
+
+tags:
+- name: simulation
+  description: Simulation Management
+
+paths:
+  /organizations/{organization_id}/simulations/search:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: searchSimulations
+      tags:
+        - simulation
+      summary: Search Simulations
+      requestBody:
+        description: the Simulation search parameters
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SimulationSearch'
+            examples:
+              BrewerySearch:
+                $ref: '#/components/examples/BrewerySearch'
+      responses:
+        "200":
+          description: the simulation details
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Simulation'
+              examples:
+                OneSimulation:
+                  $ref: '#/components/examples/OneSimulation'
+  /organizations/{organization_id}/simulations/start:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: startSimulationScenario
+      tags:
+        - simulation
+      summary: Start a new simulation for a Scenario
+      requestBody:
+        description: the Scenario information to start
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SimulationStartScenario'
+            examples:
+              SimulationStartScenario:
+                $ref: '#/components/examples/BrewerySimulationStartScenario'
+      responses:
+        "202":
+          description: the simulation details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Simulation'
+              examples:
+                Simulation:
+                  $ref: '#/components/examples/BrewerySimulationScenario'
+        "400":
+          description: Bad request
+        "404":
+          description: the Scenario specified is unknown or you don't have access to it
+  /organizations/{organization_id}/simulations/startsimulator:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: startSimulationSimulator
+      tags:
+        - simulation
+      summary: Start a new simulation for a Simulator Analysis
+      requestBody:
+        description: the Simulator Analysis information to start
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SimulationStartSimulator'
+            examples:
+              SimulationStartSimulator:
+                $ref: '#/components/examples/BrewerySimulationStartSimulator'
+      responses:
+        "202":
+          description: the simulation details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Simulation'
+              examples:
+                Simulation:
+                  $ref: '#/components/examples/BrewerySimulationSimulator'
+        "400":
+          description: Bad request
+        "404":
+          description: the Scenario specified is unknown or you don't have access to it
+  /organizations/{organization_id}/simulations/startcontainers:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: startSimulationContainers
+      tags:
+        - simulation
+      summary: Start a new simulation with raw containers definition
+      requestBody:
+        description: the raw containers definition
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SimulationStartContainers'
+            examples:
+              SimulationStartSimulator:
+                $ref: '#/components/examples/BrewerySimulationStartContainers'
+      responses:
+        "202":
+          description: the simulation details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Simulation'
+              examples:
+                Simulation:
+                  $ref: '#/components/examples/BrewerySimulationContainers'
+        "400":
+          description: Bad request
+        "404":
+          description: the Scenario specified is unknown or you don't have access to it
+  /organizations/{organization_id}/simulations/{simulation_id}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: simulation_id
+        in: path
+        description: the Simulation identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: findSimulationById
+      tags:
+        - simulation
+      summary: Get the details of a simulation
+      responses:
+        "200":
+          description: the Simulation details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Simulation'
+              examples:
+                Simulation:
+                  $ref: '#/components/examples/BrewerySimulation'
+        "404":
+          description: the Simulation specified is unknown or you don't have access to it
+    delete:
+      operationId: deleteSimulation
+      tags:
+        - simulation
+      summary: Delete a simulation
+      responses:
+        "200":
+          description: the simulation details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Simulation'
+              examples:
+                Simulation:
+                  $ref: '#/components/examples/BrewerySimulation'
+        "400":
+          description: Bad request
+        "404":
+          description: the Simulation specified is unknown or you don't have access to it
+  /organizations/{organization_id}/simulations/{simulation_id}/logs/search:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: simulation_id
+        in: path
+        description: the Simulation identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: searchSimulationLogs
+      tags:
+        - simulation
+      summary: Search the logs of a simulation
+      requestBody:
+        description: the options to search logs
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SimulationLogsOptions'
+            examples:
+              SimulationStartSimulator:
+                $ref: '#/components/examples/BrewerySimulationLogsOptions'
+      responses:
+        "200":
+          description: the Simulation logs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimulationLogs'
+              examples:
+                Simulation:
+                  $ref: '#/components/examples/BrewerySimulationLogs'
+        "404":
+          description: the Simulation specified is unknown or you don't have access to it
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      description: The Cosmo Tech API Key
+      name: key
+      in: query
+    AADOAuth2AuthCode:
+      type: oauth2
+      description: Azure Active Directory authentication
+      flows:
+        implicit:
+          authorizationUrl: https://login.microsoftonline.com/e9641c78-d0d6-4d09-af63-168922724e7f/oauth2/v2.0/authorize
+          scopes:
+            http://sample.azure.cosmo-platform.com/user_impersonation: User Impersonation
+  schemas:
+    SimulationSearch:
+      type: object
+      description: the search options
+      properties:
+        workspaceId:
+          type: string
+          description: the Workspace Id to search
+        scenarioId:
+          type: string
+          description: the Scenario Id to search
+        state:
+          type: string
+          description: the state to search
+        jobId:
+          type: string
+          description: the Cosmo Tech compute cluster Job Id to search
+    SimulationStartScenario:
+      type: object
+      description: the parameters to run a Scenario
+      properties:
+        workspaceId:
+          type: string
+          description: the Workspace Id
+        scenarioId:
+          type: string
+          description: the Scenario Id
+    SimulationStartSimulator:
+      type: object
+      description: the parameters to run directly a Simulator
+      properties:
+        simulatorId:
+          type: string
+          description: the Simulator Id
+        simulatorAnalysisId:
+          type: string
+          description: the Simulator Analysis id
+        datasetList:
+          type: array
+          description: the list of Dataset Id associated to this Analysis
+          items:
+            type: string
+        parametersValues:
+          type: array
+          description: the list of Simulator Analysis parameters values
+          items:
+            $ref: '#/components/schemas/SimulationAnalysisParameterValue'
+        sendInputToDataWarehouse:
+          type: boolean
+          description: whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to Simulation Run
+        dataWarehouseDB:
+          type: string
+          description: the DataWarehouse database name to send data if sendInputToDataWarehouse is set
+        resultsEventBusResourceUri:
+          type: string
+          description: the event bus which receive Workspace Simulation results messages. Message won't be send if this is not set
+        simulationEventBusResourceUri:
+          type: string
+          description: the event bus which receive Workspace Simulation events messages. Message won't be send if this is not set
+        additionalRunArgs:
+          type: array
+          description: the list of additional arguments for the main container
+          items:
+            type: string
+    SimulationStartContainers:
+      type: object
+      description: the parameters to run directly containers
+      properties:
+        nodeLabel:
+          type: string
+          description: the node label request
+        initContainers:
+          type: array
+          description: the list of init containers
+          items:
+            $ref: '#/components/schemas/SimulationContainers'
+        mainContainer:
+          description: the main container
+          $ref: '#/components/schemas/SimulationContainers'
+    Simulation:
+      type: object
+      description: a Simulation
+      properties:
+        id:
+          type: string
+          readOnly: true
+          description: the Simulation
+        jobId:
+          type: string
+          readOnly: true
+          description: the Platform compute cluster Job Id
+        ownerId:
+          type: string
+          readOnly: true
+          description: the user id which own this simulation
+        workspaceId:
+          type: string
+          readOnly: true
+          description: the Workspace Id
+        workspaceName:
+          type: string
+          readOnly: true
+          description: the Workspace name
+        scenarioId:
+          type: string
+          readOnly: true
+          description: the Scenario Id
+        scenarioName:
+          type: string
+          readOnly: true
+          description: the Scenario name
+        simulatorId:
+          type: string
+          readOnly: true
+          description: the Simulator Id
+        simulatorName:
+          type: string
+          readOnly: true
+          description: the Simulator name
+        simulatorVersion:
+          type: string
+          readOnly: true
+          description: the Simulator version
+        simulatorAnalysisId:
+          type: string
+          readOnly: true
+          description: the Simulator Analysis id
+        simulatorAnalysisName:
+          type: string
+          readOnly: true
+          description: the Simulator Analysis name
+        datasetList:
+          type: array
+          readOnly: true
+          description: the list of Dataset Id associated to this Analysis
+          items:
+            type: string
+        parametersValues:
+          type: array
+          readOnly: true
+          description: the list of Simulator Analysis parameters values
+          items:
+            $ref: '#/components/schemas/SimulationAnalysisParameterValue'
+        sendInputToDataWarehouse:
+          type: boolean
+          readOnly: true
+          description: whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to Simulation Run
+        state:
+          type: string
+          readOnly: true
+          description: the Simulation state
+        initContainers:
+          type: array
+          description: the list of init containers
+          items:
+            $ref: '#/components/schemas/SimulationContainers'
+        mainContainer:
+          description: the main container
+          $ref: '#/components/schemas/SimulationContainers'
+    SimulationAnalysisParameterValue:
+      type: object
+      description: the value of Analysis parameter for a Scenario for this Simulation
+      properties:
+        parameterId:
+          type: string
+          description: the parameter Id
+        varType:
+          type: string
+          readOnly: true
+          description: the parameter value type
+        value:
+          type: string
+          description: the parameter value
+      required:
+        - parameterId
+        - value
+    SimulationContainers:
+      type: object
+      description: a Simulation container description
+      properties:
+        id:
+          type: string
+          readOnly: true
+          description: the container Id
+        envVars:
+          type: object
+          description: a freeform environment variable map
+          additionalProperties: true
+        image:
+          type: string
+          description: the container image URI
+        runArgs:
+          type: array
+          description: the list of run arguments for the container
+          items:
+            type: string
+    SimulationLogsOptions:
+      type: object
+      description: the simulation logs options
+      properties:
+        containerId:
+          type: array
+          description: the list of container Id to get the log for
+          items:
+            type: string
+        plainText:
+          type: boolean
+          description: whether or not to return the log in plain text instead of structured form
+    SimulationLogs:
+      type: object
+      description: the simulation logs returned by all containers
+      properties:
+        simulationId:
+          type: string
+          readOnly: true
+          description: the Simulation Id
+        initLogs:
+          type: array
+          readOnly: true
+          description: the list of simulation logs for init containers
+          items:
+            $ref: '#/components/schemas/SimulationContainerLogs'
+        mainLogs:
+          readOnly: true
+          description: the main container simulation logs
+          $ref: '#/components/schemas/SimulationContainerLogs'
+    SimulationContainerLogs:
+      type: object
+      description: logs for a given container
+      properties:
+        containerId:
+          type: string
+          readOnly: true
+          description: container ID for log source as seen by Docker engine
+        computer:
+          type: string
+          readOnly: true
+          description: computer/node that's generating the log
+        logs:
+          type: array
+          readOnly: true
+          description: the list of container logs in structured format
+          items:
+            $ref: '#/components/schemas/SimulationContainerLog'
+        textLog:
+          type: string
+          description: the plain text log if plainText option has been set
+    SimulationContainerLog:
+      type: object
+      description: a container log line
+      properties:
+        timeGenerated:
+          type: string
+          readOnly: true
+          description: date and time the record was created
+        entrySource:
+          type: string
+          readOnly: true
+          description: source of the log line. Possible values are stdout or stderr
+        logEntry:
+          type: string
+          readOnly: true
+          description: actual log line
+  examples:
+    BrewerySimulation:
+      summary: Brewery Simulation example
+      description: Brewery Simulation example
+      value:
+        id: "1"
+        name: Brewery Analysis
+        description: Brewery analysis for stock, production, transport and customer satisfaction
+    BrewerySimulationScenario:
+      summary: Brewery Simulation example
+      description: Brewery Simulation example
+      value:
+        id: "1"
+        name: Brewery Analysis
+        description: Brewery analysis for stock, production, transport and customer satisfaction
+    BrewerySimulationSimulator:
+      summary: Brewery Simulation example
+      description: Brewery Simulation example
+      value:
+        id: "1"
+        name: Brewery Analysis
+        description: Brewery analysis for stock, production, transport and customer satisfaction
+    BrewerySimulationContainers:
+      summary: Brewery Simulation example
+      description: Brewery Simulation example
+      value:
+        id: "1"
+        name: Brewery Analysis
+        description: Brewery analysis for stock, production, transport and customer satisfaction
+    OneSimulation:
+      summary: Brewery Simulation list example
+      description: Brewery Simulation list example
+      value:
+        - id: "1"
+          name: Brewery Analysis
+          description: Brewery analysis for stock, production, transport and customer satisfaction
+    BrewerySearch:
+      summary: Brewery search Simulation example
+      description: Brewery search Simulation of Workspace 1 in Running state example
+      value:
+        workspaceId: "1"
+        state: "Running"
+    BrewerySimulationStartScenario:
+      summary: Brewery start Simulation for a Scenario example
+      description: Brewery start Simulation for Scenario 1 example
+      value:
+        workspaceId: "1"
+        scenarioId: "1"
+    BrewerySimulationStartSimulator:
+      summary: Brewery start Simulation for a Simulator example
+      description: Brewery start Simulation for Simulator 1 example
+      value:
+        simulatorId: "1"
+        simulatorAnalysisId: "1"
+        datasetList:
+          - "1"
+        parametersValues:
+          - parameterId: prefix
+            value: new
+        sendInputToDataWarehouse: true
+        dataWarehouseDB: Brewery
+        resultsEventBusResourceUri: brewery
+        simulationEventBusResourceUri: brewery-simulation
+    BrewerySimulationStartContainers:
+      summary: Brewery start Simulation directly with containers example
+      description: Brewery start Simulation directly with containers example
+      value:
+        nodeLabel: highcpupool
+        initContainers:
+          - envVars:
+              ADT_INSTANCE_URL: https://supply.api.weu.digitaltwins.azure.net
+              AZURE_TENANT_ID: "12345678"
+              AZURE_CLIENT_ID: "12345678"
+              AZURE_CLIENT_SECRET: azertyuiop
+            image: csmphoenix.azurecr.io/azure-digital-twins-simulator-connector:latest
+          - envVars:
+              ADX_DATA_INGESTION_URI: https://ingest-phoenix.westeurope.kusto.windows.net
+              ADX_DATABASE: Brewery
+              AZURE_TENANT_ID: "12345678"
+              AZURE_CLIENT_ID: "12345678"
+              AZURE_CLIENT_SECRET: azertyuiop
+            image: csmphoenix.azurecr.io/azure-data-explorer-simulation-sender:latest
+        mainContainer:
+          envVars:
+            CSM_AMQPCONSUMER_USER: k8ssender
+            CSM_AMQPCONSUMER_PASSWORD: "azertyuiop"
+          image: twinengines.azurecr.io/brewery_simulator:latest
+          runArgs:
+            - -i
+            - DeployedSimulation
+            - --amqp-consumer
+            - amqps://csm-phoenix.servicebus.windows.net/brewery
+    BrewerySimulationLogsOptions:
+      summary: Brewery Simulation logs options example
+      description: Brewery Simulation logs options with plain text example
+      value:
+        containerId: "azertyuiop"
+        plainText: true
+    BrewerySimulationLogs:
+      summary: Brewery Simulation logs  example
+      description: Brewery Simulation logs with plain text example
+      value:
+        simulationId: "1"
+        initLogs:
+          - containerId: "1"
+            computer: azertyuiop
+            textLog: container log
+        mainLogs:
+          containerId: "2"
+          computer: azertyuiop
+          textLog: container log

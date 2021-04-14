@@ -193,6 +193,43 @@ paths:
           description: Bad request
         "404":
           description: the Scenario specified is unknown or you don't have access to it
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/run:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: scenario_id
+        in: path
+        description: the Scenario identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: runScenario
+      tags:
+        - scenario
+      summary: Get the details of an scenario
+      responses:
+        "202":
+          description: the Scenario details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioRunningAnalysis'
+              examples:
+                ScenarioRunningAnalysis:
+                  $ref: '#/components/examples/ScenarioRunningAnalysis'
+        "404":
+          description: the Scenario specified is unknown or you don't have access to it
   /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/compare/{compared_scenario_id}:
     parameters:
       - name: organization_id
@@ -743,3 +780,17 @@ components:
             - id: "2"
               name: Alice
               roles: Viewer 
+    ScenarioRunningAnalysis:
+      summary: Scenario running Analysis example
+      description: a Scenario running analysis information returned after a new run example
+      value:
+        analysisId: "1"
+        datasetList:
+          - "1"
+        parametersValues:
+          - parameterId: prefix
+            varType: string
+            value: last
+        simulationId: "3"
+        jobId: "1"
+        state: Pending

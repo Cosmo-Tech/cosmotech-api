@@ -31,7 +31,7 @@ paths:
       operationId: createDataset
       tags:
         - dataset
-      summary: Register a new dataset
+      summary: Create a new dataset
       requestBody:
         description: the Dataset to create
         required: true
@@ -634,7 +634,7 @@ components:
         connector:
           id: "1"
           name: ADT Connector
-          version: "1.0"
+          version: "1.0.0"
           ownerId: "1"
           parametersValues:
             AZURE_TENANT_ID: "12345678"
@@ -660,7 +660,7 @@ components:
           connector:
             id: "1"
             name: ADT Connector
-            version: "1.0"
+            version: "1.0.0"
             ownerId: "1"
             parametersValues:
               AZURE_TENANT_ID: "12345678"
@@ -681,7 +681,7 @@ components:
           connector:
             id: "1"
             name: ADT Connector
-            version: "1.0"
+            version: "1.0.0"
             ownerId: "1"
             parametersValues:
               AZURE_TENANT_ID: "12345678"
@@ -709,7 +709,7 @@ components:
         connector:
           id: "1"
           name: ADT Connector
-          version: "1.0"
+          version: "1.0.0"
           ownerId: "1"
           parametersValues:
             AZURE_TENANT_ID: "12345678"

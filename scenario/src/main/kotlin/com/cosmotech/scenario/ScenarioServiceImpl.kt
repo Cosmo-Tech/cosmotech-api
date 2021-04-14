@@ -7,6 +7,7 @@ import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioBase
 import com.cosmotech.scenario.domain.ScenarioComparisonResult
+import com.cosmotech.scenario.domain.ScenarioRunningAnalysis
 import org.springframework.stereotype.Service
 
 @Service
@@ -57,6 +58,14 @@ class ScenarioServiceImpl : AbstractPhoenixService(), ScenarioApiService {
   }
 
   override fun getScenariosTree(organizationId: String, workspaceId: String): List<ScenarioBase> {
+    TODO("Not yet implemented")
+  }
+
+  override fun runScenario(
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String
+  ): ScenarioRunningAnalysis {
     TODO("Not yet implemented")
   }
 }
