@@ -137,7 +137,6 @@ paths:
           description: Bad request
         "404":
           description: the Connector specified is unknown or you don't have access to it
-
 components:
   securitySchemes:
     oAuth2AuthCode:

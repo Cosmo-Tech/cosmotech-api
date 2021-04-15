@@ -276,7 +276,7 @@ components:
           type: string
           readOnly: true
           description: the Simulator Id associated with this Scenario
-        userList:
+        users:
           type: array
           description: the list of users Id with their role
           items:
@@ -410,7 +410,7 @@ components:
           - reference
         ownerId: "1"
         simulatorId: "1"
-        userList:
+        users:
           - id: "1"
             name: Bob
             roles: Editor
@@ -438,7 +438,7 @@ components:
             - reference
           ownerId: "1"
           simulatorId: "1"
-          userList:
+          users:
             - id: "1"
               name: Bob
               roles: Editor
@@ -462,7 +462,7 @@ components:
           parentId: "1"
           ownerId: "1"
           simulatorId: "1"
-          userList:
+          users:
             - id: "1"
               name: Bob
               roles: Editor
@@ -485,7 +485,7 @@ components:
           parentId: "1"
           ownerId: "1"
           simulatorId: "1"
-          userList:
+          users:
             - id: "1"
               name: Bob
               roles: Editor
@@ -518,7 +518,7 @@ components:
           - reference
         ownerId: "1"
         simulatorId: "1"
-        userList:
+        users:
           - id: "1"
             name: Bob
             roles: Editor
@@ -556,7 +556,7 @@ components:
             - Brewery
             - reference
           ownerId: "1"
-          userList:
+          users:
             - id: "1"
               name: Bob
               roles: Editor
@@ -571,7 +571,7 @@ components:
             - example
           parentId: "1"
           ownerId: "1"
-          userList:
+          users:
             - id: "1"
               name: Bob
               roles: Editor
@@ -585,7 +585,7 @@ components:
             - Brewery
           parentId: "1"
           ownerId: "1"
-          userList:
+          users:
             - id: "1"
               name: Bob
               roles: Editor

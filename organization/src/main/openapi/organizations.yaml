@@ -113,6 +113,8 @@ paths:
                 value:
                   users:
                     - name: "Charles"
+                      roles:
+                        - Developer
               RenameUser:
                 summary: Rename a user
                 description: Rename the user Charles to Xavier
@@ -127,8 +129,12 @@ paths:
                   users:
                     - id: "1"
                       name: "Bob"
+                      roles:
+                        - Admin
                     - id: "2"
                       name: "Alice"
+                      roles:
+                        - User
       responses:
         "200":
           description: the organization details
@@ -162,7 +168,31 @@ paths:
           description: Bad request
         "404":
           description: the Organization specified is unknown or you don't have access to it
-
+  /organizations/{organization_id}/me:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getCurrentOrganizationUser
+      tags:
+        - organization
+      summary: Get the current User information for the Organization
+      responses:
+        "200":
+          description: the User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationUser'
+              examples:
+                CosmoOrganization:
+                  $ref: '#/components/examples/BobUser'
+        "404":
+          description: the Organization specified is unknown or you don't have access to it
 components:
   securitySchemes:
     oAuth2AuthCode:
@@ -184,6 +214,10 @@ components:
         name:
           type: string
           description: the Organization name
+        ownerId:
+          type: string
+          readOnly: true
+          description: the Owner User Id
         users:
           type: array
           items:
@@ -196,10 +230,24 @@ components:
       properties:
         id:
           type: string
+          readOnly: true
           description: the User unique identifier, in response
         name:
           type: string
           description: the User name
+        organizationId:
+          type: string
+          readOnly: true
+          description: the Organization Id context
+        roles:
+          type: array
+          description: the User's roles for the Organization
+          items:
+            type: string
+            enum: ["Admin","User","Viewer","Developer"]
+      required:
+        - name
+        - roles
   examples:
     NewOrganizationIn:
       summary: Create a new organization
@@ -208,47 +256,76 @@ components:
         name: Cosmo Tech
         users:
           - id: "1"
-            name: Bob
+            roles:
+              - Admin
           - id: "2"
-            name: Alice
+            roles:
+              - User
     CosmoOrganization:
       summary: Cosmo Tech Organization
       description: Cosmo Tech Organization example
       value:
         id: "1"
         name: Cosmo Tech
+        ownerId: "1"
         users:
           - id: "1"
             name: Bob
+            roles:
+              - Admin
           - id: "2"
             name: Alice
+            roles:
+              - User
     CosmoThreeUsers:
       summary: Cosmo Tech Organization with 3 users
       description: Cosmo Tech Organization 3 users example
       value:
         id: "1"
         name: Cosmo Tech
+        ownerId: "1"
         users:
           - id: "1"
             name: Bob
+            roles:
+              - Admin
           - id: "2"
             name: Alice
+            roles:
+              - User
           - id: "3"
             name: Xavier
+            roles:
+              - Developer
     TwoOrganizations:
       summary: Two Orgnizations
       description: Two Organizations example
       value:
         - id: "1"
           name: Cosmo Tech
+          ownerId: "1"
           users:
             - id: "1"
               name: Bob
+              roles:
+                - Admin
             - id: "2"
               name: Alice
+              roles:
+                - User
         - id: "2"
           name: Phoenix
           users:
             - id: "1"
               name: Bob
-
+              roles:
+                - Admin
+    BobUser:
+      summary: Bob User example
+      description: Bob User example
+      value:
+        id: "1"
+        name: Bob
+        organizationId: "1"
+        roles:
+          - Admin

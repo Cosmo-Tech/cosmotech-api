@@ -149,7 +149,37 @@ paths:
           description: Bad request
         "404":
           description: the Workspace specified is unknown or you don't have access to it
-
+  /organizations/{organization_id}/workspaces/{workspace_id}/me:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getCurrentWorkspaceUser
+      tags:
+        - workspace
+      summary: Get the current User information for the Workspace
+      responses:
+        "200":
+          description: the User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceUserDetails'
+              examples:
+                BobUser:
+                  $ref: '#/components/examples/BobUser'
+        "404":
+          description: the Organization specified is unknown or you don't have access to it
 components:
   securitySchemes:
     oAuth2AuthCode:
@@ -193,7 +223,7 @@ components:
           description: a filter list of available Simulator Analysis
           items:
             type: string
-        userList:
+        users:
           type: array
           description: the list of users Id with their role
           items:
@@ -249,7 +279,7 @@ components:
           description: a freeform credentials object. Structure depends on service
           additionalProperties: true
       required:
-        - name
+        - cloudService
     WorkspaceUser:
       type: object
       description: a Workspace user with roles
@@ -261,13 +291,33 @@ components:
           type: string
           readOnly: true
           description: the User name
-        roles:
+        role:
           type: string
           description: the User role
-          enum: ["Viewer","Advanced"]
+          enum: ["Admin","User","Viewer"]
       required:
         - id
-        - roles
+        - role
+    WorkspaceUserDetails:
+      allOf:
+        - $ref: '#/components/schemas/WorkspaceUser'
+        - type: object
+          description: details information on Workspace User
+          properties:
+            organizationId:
+              type: string
+              readOnly: true
+              description: the Organization Id context
+            organizationRoles:
+              type: array
+              readOnly: true
+              description: the Organizations roles for the User
+              items:
+                type: string
+            workspaceId:
+              type: string
+              readOnly: true
+              description: the Workspace Id context
     WorkspaceWebApp:
       type: object
       description: a Workspace Web Application
@@ -321,13 +371,13 @@ components:
             - "1"
           defaultAnalysisDataset:
             1: "1"
-        userList:
+        users:
           - id: "1"
             name: Bob
-            roles: Advanced
+            role: Admin
           - id: "2"
             name: Alice
-            roles: Viewer
+            role: Viewer
         webApp:
           url: https://brewery.app.cosmotech.com
           iframes:
@@ -373,13 +423,13 @@ components:
               - "1"
             defaultAnalysisDataset:
               1: "1"
-          userList:
+          users:
             - id: "1"
               name: Bob
-              roles: Advanced
+              role: Admin
             - id: "2"
               name: Alice
-              roles: Viewer
+              role: Viewer
           webApp:
             url: https://brewery.app.cosmotech.com
             iframes:
@@ -430,13 +480,13 @@ components:
             - "1"
           defaultAnalysisDataset:
             1: "1"
-        userList:
+        users:
           - id: "1"
             name: Bob
-            roles: Advanced
+            role: Admin
           - id: "2"
             name: Alice
-            roles: Viewer
+            role: Viewer
         webApp:
           url: https://brewery.app.cosmotech.com
           iframes:
@@ -465,3 +515,14 @@ components:
             resourceUri: workspaces/1
             credentials:
               sas: sp=racwdl&st=2021-04-13T10:09:52Z&se=2021-04-13T18:09:52Z&spr=https&sv=2020-02-10&sr=c&sig=Otw2kGNBkQVaB3GatZBSKRo7Y6%2FuSaCqz2s2%2Fg3w73Q%3D
+    BobUser:
+      summary: Bob User details example
+      description: Bob User details example
+      value:
+        id: "1"
+        name: Bob
+        workspaceId: "1"
+        role: Admin
+        organizationId: "1"
+        organizationRoles:
+          - Admin
