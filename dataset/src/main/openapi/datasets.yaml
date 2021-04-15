@@ -11,8 +11,7 @@ servers:
 - url: 'http://localhost:8080'
 
 security:
-- ApiKeyAuth: [ ]
-- AADOAuth2AuthCode: [ ]
+- oAuth2AuthCode: [ ]
 
 tags:
 - name: dataset
@@ -447,19 +446,13 @@ paths:
           description: the ValidatorRun specified is unknown or you don't have access to it
 components:
   securitySchemes:
-    ApiKeyAuth:
-      type: apiKey
-      description: The Cosmo Tech API Key
-      name: key
-      in: query
-    AADOAuth2AuthCode:
+    oAuth2AuthCode:
       type: oauth2
       description: Azure Active Directory authentication
       flows:
         implicit:
-          authorizationUrl: https://login.microsoftonline.com/e9641c78-d0d6-4d09-af63-168922724e7f/oauth2/v2.0/authorize
-          scopes:
-            http://sample.azure.cosmo-platform.com/user_impersonation: User Impersonation
+          authorizationUrl: oauth2/authorize
+          scopes: {}
   schemas:
     Dataset:
       type: object

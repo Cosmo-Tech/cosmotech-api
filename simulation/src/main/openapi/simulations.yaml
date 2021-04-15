@@ -11,8 +11,7 @@ servers:
 - url: 'http://localhost:8080'
 
 security:
-- ApiKeyAuth: [ ]
-- AADOAuth2AuthCode: [ ]
+- oAuth2AuthCode: [ ]
 
 tags:
 - name: simulation
@@ -50,7 +49,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Simulation'
+                  $ref: '#/components/schemas/SimulationBase'
               examples:
                 OneSimulation:
                   $ref: '#/components/examples/OneSimulation'
@@ -86,7 +85,7 @@ paths:
                 $ref: '#/components/schemas/Simulation'
               examples:
                 Simulation:
-                  $ref: '#/components/examples/BrewerySimulationScenario'
+                  $ref: '#/components/examples/BrewerySimulation'
         "400":
           description: Bad request
         "404":
@@ -254,29 +253,215 @@ paths:
               examples:
                 Simulation:
                   $ref: '#/components/examples/BrewerySimulationLogs'
+        "400":
+          description: Bad request
         "404":
           description: the Simulation specified is unknown or you don't have access to it
-
+  /organizations/{organization_id}/workspaces/{workspace_id}/simulations:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getWorkspaceSimulations
+      tags:
+        - simulation
+      summary: get the list of Simulations for the Workspace
+      responses:
+        "200":
+          description: the simulation details list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SimulationBase'
+              examples:
+                OneSimulation:
+                  $ref: '#/components/examples/OneSimulation'
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/simulations:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: scenario_id
+        in: path
+        description: the Scenario identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getScenarioSimulations
+      tags:
+        - simulation
+      summary: get the list of Simulations for the Scenario
+      responses:
+        "200":
+          description: the simulation details list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SimulationBase'
+              examples:
+                OneSimulation:
+                  $ref: '#/components/examples/OneSimulation'
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/simulations/{simulation_id}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: scenario_id
+        in: path
+        description: the Scenario identifier
+        required: true
+        schema:
+          type: string
+      - name: simulation_id
+        in: path
+        description: the Simulation identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getScenarioSimulation
+      tags:
+        - simulation
+      summary: get the Simulation for the Scenario
+      responses:
+        "200":
+          description: the simulation details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Simulation'
+              examples:
+                BrewerySimulation:
+                  $ref: '#/components/examples/BrewerySimulation'
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/simulations/{simulation_id}/logs:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: scenario_id
+        in: path
+        description: the Scenario identifier
+        required: true
+        schema:
+          type: string
+      - name: simulation_id
+        in: path
+        description: the Simulation identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getScenarioSimulationLogs
+      tags:
+        - simulation
+      summary: get the logs for the Simulation
+      responses:
+        "200":
+          description: the simulation logs details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimulationLogs'
+              examples:
+                Simulation:
+                  $ref: '#/components/examples/BrewerySimulationLogs'
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/run:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: scenario_id
+        in: path
+        description: the Scenario identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: runScenario
+      tags:
+        - simulation
+      summary: run a Simulation for the Scenario
+      responses:
+        "200":
+          description: the simulation details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimulationBase'
+              examples:
+                Simulation:
+                  $ref: '#/components/examples/BrewerySimulationBase'
 components:
   securitySchemes:
-    ApiKeyAuth:
-      type: apiKey
-      description: The Cosmo Tech API Key
-      name: key
-      in: query
-    AADOAuth2AuthCode:
+    oAuth2AuthCode:
       type: oauth2
       description: Azure Active Directory authentication
       flows:
         implicit:
-          authorizationUrl: https://login.microsoftonline.com/e9641c78-d0d6-4d09-af63-168922724e7f/oauth2/v2.0/authorize
-          scopes:
-            http://sample.azure.cosmo-platform.com/user_impersonation: User Impersonation
+          authorizationUrl: oauth2/authorize
+          scopes: {}
   schemas:
     SimulationSearch:
       type: object
       description: the search options
       properties:
+        simulatorId:
+          type: string
+          description: the Simulator Id to search
+        simulatorAnalysisId:
+          type: string
+          description: the Simulator Analysis Id to search
         workspaceId:
           type: string
           description: the Workspace Id to search
@@ -289,6 +474,9 @@ components:
         jobId:
           type: string
           description: the Cosmo Tech compute cluster Job Id to search
+        ownerId:
+          type: string
+          description: the owner Id to search
     SimulationStartScenario:
       type: object
       description: the parameters to run a Scenario
@@ -331,11 +519,6 @@ components:
         simulationEventBusResourceUri:
           type: string
           description: the event bus which receive Workspace Simulation events messages. Message won't be send if this is not set
-        additionalRunArgs:
-          type: array
-          description: the list of additional arguments for the main container
-          items:
-            type: string
     SimulationStartContainers:
       type: object
       description: the parameters to run directly containers
@@ -351,9 +534,9 @@ components:
         mainContainer:
           description: the main container
           $ref: '#/components/schemas/SimulationContainers'
-    Simulation:
+    SimulationBase:
       type: object
-      description: a Simulation
+      description: a Simulation with only base properties
       properties:
         id:
           type: string
@@ -403,34 +586,67 @@ components:
           type: string
           readOnly: true
           description: the Simulator Analysis name
-        datasetList:
-          type: array
+        computeSize:
+          type: string
           readOnly: true
-          description: the list of Dataset Id associated to this Analysis
-          items:
-            type: string
-        parametersValues:
-          type: array
-          readOnly: true
-          description: the list of Simulator Analysis parameters values
-          items:
-            $ref: '#/components/schemas/SimulationAnalysisParameterValue'
-        sendInputToDataWarehouse:
-          type: boolean
-          readOnly: true
-          description: whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to Simulation Run
+          description: the compute size needed for this Analysis. Standard sizes are basic and highcpu. Default is basic
         state:
           type: string
           readOnly: true
           description: the Simulation state
-        initContainers:
-          type: array
-          description: the list of init containers
-          items:
-            $ref: '#/components/schemas/SimulationContainers'
-        mainContainer:
-          description: the main container
-          $ref: '#/components/schemas/SimulationContainers'
+        startTime:
+          type: string
+          readOnly: true
+          description: the Simulation start Date Time
+        endTime:
+          type: string
+          readOnly: true
+          description: the Simulation end Date Time
+    Simulation:
+      allOf:
+        - $ref: '#/components/schemas/SimulationBase'
+        - type: object
+          description: a Simulation
+          properties:
+            datasetList:
+              type: array
+              readOnly: true
+              description: the list of Dataset Id associated to this Analysis
+              items:
+                type: string
+            parametersValues:
+              type: array
+              readOnly: true
+              description: the list of Simulator Analysis parameters values
+              items:
+                $ref: '#/components/schemas/SimulationAnalysisParameterValue'
+            sendInputToDataWarehouse:
+              type: boolean
+              readOnly: true
+              description: whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to Simulation Run
+            dataWarehouseDB:
+              type: string
+              description: the DataWarehouse database name to send data if sendInputToDataWarehouse is set
+            resultsEventBusResourceUri:
+              type: string
+              description: the event bus which receive Workspace Simulation results messages. Message won't be send if this is not set
+            simulationEventBusResourceUri:
+              type: string
+              description: the event bus which receive Workspace Simulation events messages. Message won't be send if this is not set
+            nodeLabel:
+              type: string
+              readOnly: true
+              description: the node label request
+            initContainers:
+              type: array
+              readOnly: true
+              description: the list of init containers
+              items:
+                $ref: '#/components/schemas/SimulationContainers'
+            mainContainer:
+              readOnly: true
+              description: the main container
+              $ref: '#/components/schemas/SimulationContainers'
     SimulationAnalysisParameterValue:
       type: object
       description: the value of Analysis parameter for a Scenario for this Simulation
@@ -472,7 +688,7 @@ components:
       type: object
       description: the simulation logs options
       properties:
-        containerId:
+        containerIds:
           type: array
           description: the list of container Id to get the log for
           items:
@@ -488,6 +704,8 @@ components:
           type: string
           readOnly: true
           description: the Simulation Id
+        options:
+          $ref: '#/components/schemas/SimulationLogsOptions'
         initLogs:
           type: array
           readOnly: true
@@ -541,36 +759,330 @@ components:
       description: Brewery Simulation example
       value:
         id: "1"
-        name: Brewery Analysis
-        description: Brewery analysis for stock, production, transport and customer satisfaction
-    BrewerySimulationScenario:
-      summary: Brewery Simulation example
-      description: Brewery Simulation example
-      value:
-        id: "1"
-        name: Brewery Analysis
-        description: Brewery analysis for stock, production, transport and customer satisfaction
+        jobId: "1"
+        ownerId: "1"
+        workspaceId: "1"
+        workspaceName: Brewery Analysis
+        scenarioId: "1"
+        scenarioName: Brewery Master Analysis
+        simulatorId: "1"
+        simulatorName: Brewery Simulator
+        simulatorVersion: "1.0.0"
+        simulatorAnalysisId: hundred
+        simulatorAnalysisName: Full simulation 100 steps
+        computeSize: highcpu
+        parametersHandler: analysis/hundred/parameters_handler/
+        datasetValidator: analysis/hundred/validator/
+        customDriver: analysis/hundred/driver/
+        datasetList:
+          - "1"
+        parametersValues:
+          - parameterId: prefix
+            value: new
+        sendInputToDataWarehouse: true
+        dataWarehouseDB: Brewery
+        resultsEventBusResourceUri: brewery
+        simulationEventBusResourceUri: brewery-simulation
+        state: Running
+        starTime: 4/15/2021, 10:52:18.593 AM
+        nodeLabel: highcpupool
+        initContainers:
+          - id: azertyuiop
+            envVars:
+              AZURE_TENANT_ID: "12345678"
+              AZURE_CLIENT_ID: "12345678"
+              AZURE_CLIENT_SECRET: azertyuiop
+              CSM_API_URL: https://api.comostech.com
+              ADT_INSTANCE_URL: https://supply.api.weu.digitaltwins.azure.net
+              ADT_QUERY: SELECT * FROM digitaltwins
+              EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
+            image: csmphoenix.azurecr.io/azure-digital-twins-simulator-connector:latest
+          - id: aqwzsx
+            envVars:
+              AZURE_TENANT_ID: "12345678"
+              AZURE_CLIENT_ID: "12345678"
+              AZURE_CLIENT_SECRET: azertyuiop
+              CSM_API_URL: https://api.comostech.com
+              CSM_SCENARIO_ID: "1"
+              CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/simulation-parameters
+            image: csmphoenix.azurecr.io/cosmotech-scenario-parameters-loader:latest
+          - id: yhnujki
+            envVars:
+              AZURE_TENANT_ID: "12345678"
+              AZURE_CLIENT_ID: "12345678"
+              AZURE_CLIENT_SECRET: azertyuiop
+              CSM_API_URL: https://api.comostech.com
+              CSM_PARAMETERS_HANDLER_PROVIDER: local
+              CSM_PARAMETERS_HANDLER_PATH: analysis/hundred/parameters_handler/
+              CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/simulation-parameters
+            image: twinengines.azurecr.io/brewery_simulator:latest
+            runArgs:
+              - handle-parameters
+          - id: rfvtgb
+            envVars:
+              AZURE_TENANT_ID: "12345678"
+              AZURE_CLIENT_ID: "12345678"
+              AZURE_CLIENT_SECRET: azertyuiop
+              CSM_API_URL: https://api.comostech.com
+              CSM_DATASET_VALIDATOR_PROVIDER: local
+              CSM_DATASET_VALIDATOR_PATH: analysis/hundred/validator/
+              CSM_DATASET_ABSOLUTE_PATH: /mnt/simulation-data
+            image: twinengines.azurecr.io/brewery_simulator:latest
+            runArgs:
+              - validate
+          - id: qsdfghjklm
+            envVars:
+              AZURE_TENANT_ID: "12345678"
+              AZURE_CLIENT_ID: "12345678"
+              AZURE_CLIENT_SECRET: azertyuiop
+              CSM_API_URL: https://api.comostech.com
+              CSM_DATASET_ABSOLUTE_PATH: /mnt/simulation-data
+              CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/simulation-parameters
+              ADX_DATA_INGESTION_URI: https://ingest-phoenix.westeurope.kusto.windows.net
+              ADX_DATABASE: Brewery
+            image: csmphoenix.azurecr.io/azure-data-explorer-simulation-sender:latest
+        mainContainer:
+          id: wxcvbn
+          envVars:
+            AZURE_TENANT_ID: "12345678"
+            AZURE_CLIENT_ID: "12345678"
+            AZURE_CLIENT_SECRET: azertyuiop
+            CSM_API_URL: https://api.comostech.com
+            CSM_CUSTOM_DRIVER_PROVIDER: local
+            CSM_CUSTOM_DRIVER_PATH: analysis/hundred/driver/
+            CSM_DATASET_ABSOLUTE_PATH: /mnt/simulation-data
+            CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/simulation-parameters
+            CSM_CONTROL_PLANE_TOPIC: brewery-simulation
+          image: twinengines.azurecr.io/brewery_simulator:latest
+          runArgs:
+            - -i
+            - DeployedSimulation
+            - --amqp-consumer
+            - amqps://csm-phoenix.servicebus.windows.net/brewery
     BrewerySimulationSimulator:
-      summary: Brewery Simulation example
-      description: Brewery Simulation example
+      summary: Brewery Simulation Simulator example
+      description: Brewery Simulation ran with Simulator information example
       value:
         id: "1"
-        name: Brewery Analysis
-        description: Brewery analysis for stock, production, transport and customer satisfaction
+        jobId: "1"
+        ownerId: "1"
+        simulatorId: "1"
+        simulatorName: Brewery Simulator
+        simulatorVersion: "1.0.0"
+        simulatorAnalysisId: hundred
+        simulatorAnalysisName: Full simulation 100 steps
+        computeSize: highcpu
+        parametersHandler: analysis/hundred/parameters_handler/
+        datasetValidator: analysis/hundred/validator/
+        customDriver: analysis/hundred/driver/
+        datasetList:
+          - "1"
+        parametersValues:
+          - parameterId: prefix
+            value: new
+        sendInputToDataWarehouse: true
+        dataWarehouseDB: Brewery
+        resultsEventBusResourceUri: brewery
+        simulationEventBusResourceUri: brewery-simulation
+        state: Running
+        starTime: 4/15/2021, 10:52:18.593 AM
+        nodeLabel: highcpupool
+        initContainers:
+          - id: azertyuiop
+            envVars:
+              AZURE_TENANT_ID: "12345678"
+              AZURE_CLIENT_ID: "12345678"
+              AZURE_CLIENT_SECRET: azertyuiop
+              CSM_API_URL: https://api.comostech.com
+              ADT_INSTANCE_URL: https://supply.api.weu.digitaltwins.azure.net
+              ADT_QUERY: SELECT * FROM digitaltwins
+              EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
+            image: csmphoenix.azurecr.io/azure-digital-twins-simulator-connector:latest
+          - id: aqwzsx
+            envVars:
+              AZURE_TENANT_ID: "12345678"
+              AZURE_CLIENT_ID: "12345678"
+              AZURE_CLIENT_SECRET: azertyuiop
+              CSM_API_URL: https://api.comostech.com
+              CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/simulation-parameters
+            image: csmphoenix.azurecr.io/cosmotech-scenario-parameters-inline:latest
+            runArgs:
+              - --prefix=new
+          - id: yhnujki
+            envVars:
+              AZURE_TENANT_ID: "12345678"
+              AZURE_CLIENT_ID: "12345678"
+              AZURE_CLIENT_SECRET: azertyuiop
+              CSM_API_URL: https://api.comostech.com
+              CSM_PARAMETERS_HANDLER_PROVIDER: local
+              CSM_PARAMETERS_HANDLER_PATH: analysis/hundred/parameters_handler/
+              CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/simulation-parameters
+            image: twinengines.azurecr.io/brewery_simulator:latest
+            runArgs:
+              - handle-parameters
+          - id: rfvtgb
+            envVars:
+              AZURE_TENANT_ID: "12345678"
+              AZURE_CLIENT_ID: "12345678"
+              AZURE_CLIENT_SECRET: azertyuiop
+              CSM_API_URL: https://api.comostech.com
+              CSM_DATASET_VALIDATOR_PROVIDER: local
+              CSM_DATASET_VALIDATOR_PATH: analysis/hundred/validator/
+              CSM_DATASET_ABSOLUTE_PATH: /mnt/simulation-data
+            image: twinengines.azurecr.io/brewery_simulator:latest
+            runArgs:
+              - validate
+          - id: qsdfghjklm
+            envVars:
+              AZURE_TENANT_ID: "12345678"
+              AZURE_CLIENT_ID: "12345678"
+              AZURE_CLIENT_SECRET: azertyuiop
+              CSM_API_URL: https://api.comostech.com
+              CSM_DATASET_ABSOLUTE_PATH: /mnt/simulation-data
+              CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/simulation-parameters
+              ADX_DATA_INGESTION_URI: https://ingest-phoenix.westeurope.kusto.windows.net
+              ADX_DATABASE: Brewery
+            image: csmphoenix.azurecr.io/azure-data-explorer-simulation-sender:latest
+        mainContainer:
+          id: wxcvbn
+          envVars:
+            AZURE_TENANT_ID: "12345678"
+            AZURE_CLIENT_ID: "12345678"
+            AZURE_CLIENT_SECRET: azertyuiop
+            CSM_API_URL: https://api.comostech.com
+            CSM_CUSTOM_DRIVER_PROVIDER: local
+            CSM_CUSTOM_DRIVER_PATH: analysis/hundred/driver/
+            CSM_DATASET_ABSOLUTE_PATH: /mnt/simulation-data
+            CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/simulation-parameters
+            CSM_CONTROL_PLANE_TOPIC: brewery-simulation
+          image: twinengines.azurecr.io/brewery_simulator:latest
+          runArgs:
+            - -i
+            - DeployedSimulation
+            - --amqp-consumer
+            - amqps://csm-phoenix.servicebus.windows.net/brewery
     BrewerySimulationContainers:
-      summary: Brewery Simulation example
-      description: Brewery Simulation example
+      summary: Brewery Simulation Containers example
+      description: Brewery Simulation ran with containers information example
       value:
         id: "1"
-        name: Brewery Analysis
-        description: Brewery analysis for stock, production, transport and customer satisfaction
+        jobId: "1"
+        ownerId: "1"
+        state: Running
+        starTime: 4/15/2021, 10:52:18.593 AM
+        nodeLabel: highcpupool
+        initContainers:
+          - id: azertyuiop
+            envVars:
+              AZURE_TENANT_ID: "12345678"
+              AZURE_CLIENT_ID: "12345678"
+              AZURE_CLIENT_SECRET: azertyuiop
+              CSM_API_URL: https://api.comostech.com
+              ADT_INSTANCE_URL: https://supply.api.weu.digitaltwins.azure.net
+              ADT_QUERY: SELECT * FROM digitaltwins
+              EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
+            image: csmphoenix.azurecr.io/azure-digital-twins-simulator-connector:latest
+          - id: aqwzsx
+            envVars:
+              AZURE_TENANT_ID: "12345678"
+              AZURE_CLIENT_ID: "12345678"
+              AZURE_CLIENT_SECRET: azertyuiop
+              CSM_API_URL: https://api.comostech.com
+              CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/simulation-parameters
+            image: csmphoenix.azurecr.io/cosmotech-scenario-parameters-inline:latest
+            runArgs:
+              - --prefix=new
+          - id: yhnujki
+            envVars:
+              AZURE_TENANT_ID: "12345678"
+              AZURE_CLIENT_ID: "12345678"
+              AZURE_CLIENT_SECRET: azertyuiop
+              CSM_API_URL: https://api.comostech.com
+              CSM_PARAMETERS_HANDLER_PROVIDER: local
+              CSM_PARAMETERS_HANDLER_PATH: analysis/hundred/parameters_handler/
+              CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/simulation-parameters
+            image: twinengines.azurecr.io/brewery_simulator:latest
+            runArgs:
+              - handle-parameters
+          - id: rfvtgb
+            envVars:
+              AZURE_TENANT_ID: "12345678"
+              AZURE_CLIENT_ID: "12345678"
+              AZURE_CLIENT_SECRET: azertyuiop
+              CSM_API_URL: https://api.comostech.com
+              CSM_DATASET_VALIDATOR_PROVIDER: local
+              CSM_DATASET_VALIDATOR_PATH: analysis/hundred/validator/
+              CSM_DATASET_ABSOLUTE_PATH: /mnt/simulation-data
+            image: twinengines.azurecr.io/brewery_simulator:latest
+            runArgs:
+              - validate
+          - id: qsdfghjklm
+            envVars:
+              AZURE_TENANT_ID: "12345678"
+              AZURE_CLIENT_ID: "12345678"
+              AZURE_CLIENT_SECRET: azertyuiop
+              CSM_API_URL: https://api.comostech.com
+              CSM_DATASET_ABSOLUTE_PATH: /mnt/simulation-data
+              CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/simulation-parameters
+              ADX_DATA_INGESTION_URI: https://ingest-phoenix.westeurope.kusto.windows.net
+              ADX_DATABASE: Brewery
+            image: csmphoenix.azurecr.io/azure-data-explorer-simulation-sender:latest
+        mainContainer:
+          id: wxcvbn
+          envVars:
+            AZURE_TENANT_ID: "12345678"
+            AZURE_CLIENT_ID: "12345678"
+            AZURE_CLIENT_SECRET: azertyuiop
+            CSM_API_URL: https://api.comostech.com
+            CSM_CUSTOM_DRIVER_PROVIDER: local
+            CSM_CUSTOM_DRIVER_PATH: analysis/hundred/driver/
+            CSM_DATASET_ABSOLUTE_PATH: /mnt/simulation-data
+            CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/simulation-parameters
+            CSM_CONTROL_PLANE_TOPIC: brewery-simulation
+          image: twinengines.azurecr.io/brewery_simulator:latest
+          runArgs:
+            - -i
+            - DeployedSimulation
+            - --amqp-consumer
+            - amqps://csm-phoenix.servicebus.windows.net/brewery
+    BrewerySimulationBase:
+      summary: Brewery Simulation base example
+      description: Brewery Simulation base example
+      value:
+        id: "1"
+        jobId: "1"
+        ownerId: "1"
+        workspaceId: "1"
+        workspaceName: Brewery Analysis
+        scenarioId: "1"
+        scenarioName: Brewery Master Analysis
+        simulatorId: "1"
+        simulatorName: Brewery Simulator
+        simulatorVersion: "1.0.0"
+        simulatorAnalysisId: hundred
+        simulatorAnalysisName: Full simulation 100 steps
+        computeSize: highcpu
+        state: Running
+        starTime: 4/15/2021, 10:52:18.593 AM
     OneSimulation:
       summary: Brewery Simulation list example
       description: Brewery Simulation list example
       value:
         - id: "1"
-          name: Brewery Analysis
-          description: Brewery analysis for stock, production, transport and customer satisfaction
+          jobId: "1"
+          ownerId: "1"
+          workspaceId: "1"
+          workspaceName: Brewery Analysis
+          scenarioId: "1"
+          scenarioName: Brewery Master Analysis
+          simulatorId: "1"
+          simulatorName: Brewery Simulator
+          simulatorVersion: "1.0.0"
+          simulatorAnalysisId: hundred
+          simulatorAnalysisName: Full simulation 100 steps
+          computeSize: highcpu
+          state: Running
+          starTime: 4/15/2021, 10:52:18.593 AM
     BrewerySearch:
       summary: Brewery search Simulation example
       description: Brewery search Simulation of Workspace 1 in Running state example
@@ -620,7 +1132,7 @@ components:
         mainContainer:
           envVars:
             CSM_AMQPCONSUMER_USER: k8ssender
-            CSM_AMQPCONSUMER_PASSWORD: "azertyuiop"
+            CSM_AMQPCONSUMER_PASSWORD: azertyuiop
           image: twinengines.azurecr.io/brewery_simulator:latest
           runArgs:
             - -i
@@ -631,18 +1143,37 @@ components:
       summary: Brewery Simulation logs options example
       description: Brewery Simulation logs options with plain text example
       value:
-        containerId: "azertyuiop"
-        plainText: true
+        containerIds:
+          - azertyuiop
+          - wxcvbn
+        plainText: false
     BrewerySimulationLogs:
       summary: Brewery Simulation logs  example
       description: Brewery Simulation logs with plain text example
       value:
         simulationId: "1"
+        options:
+          containerIds:
+            - azertyuiop
+            - wxcvbn
+          plainText: false
         initLogs:
-          - containerId: "1"
-            computer: azertyuiop
-            textLog: container log
+          - containerId: azertyuiop
+            computer: aks-highcpupool-30630301-vmss000000 
+            logs:
+              - timeGenerated: 4/15/2021, 10:52:20.593 AM
+                entrySource: stderr
+                logEntry: cannot read source file
+              - timeGenerated: 4/15/2021, 10:52:21.593 AM
+                entrySource: stderr
+                logEntry: stopping stream
         mainLogs:
-          containerId: "2"
-          computer: azertyuiop
-          textLog: container log
+          containerId: wxcvbn
+          computer: aks-highcpupool-30630301-vmss000000 
+          logs:
+            - timeGenerated: 4/15/2021, 10:52:22.593 AM
+              entrySource: stderr
+              logEntry: cannot run simulator
+            - timeGenerated: 4/15/2021, 10:52:23.593 AM
+              entrySource: stderr
+              logEntry: critical error

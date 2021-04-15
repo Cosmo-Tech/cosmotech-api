@@ -5,6 +5,7 @@ package com.cosmotech.simulation
 import com.cosmotech.api.AbstractPhoenixService
 import com.cosmotech.simulation.api.SimulationApiService
 import com.cosmotech.simulation.domain.Simulation
+import com.cosmotech.simulation.domain.SimulationBase
 import com.cosmotech.simulation.domain.SimulationLogs
 import com.cosmotech.simulation.domain.SimulationLogsOptions
 import com.cosmotech.simulation.domain.SimulationSearch
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class SimulationServiceImpl : AbstractPhoenixService(), SimulationApiService {
+
   override fun deleteSimulation(
       organizationId: kotlin.String,
       simulationId: kotlin.String
@@ -29,6 +31,47 @@ class SimulationServiceImpl : AbstractPhoenixService(), SimulationApiService {
     TODO("Not yet implemented")
   }
 
+  override fun getScenarioSimulation(
+      organizationId: kotlin.String,
+      workspaceId: kotlin.String,
+      scenarioId: kotlin.String,
+      simulationId: kotlin.String
+  ): Simulation {
+    TODO("Not yet implemented")
+  }
+
+  override fun getScenarioSimulationLogs(
+      organizationId: kotlin.String,
+      workspaceId: kotlin.String,
+      scenarioId: kotlin.String,
+      simulationId: kotlin.String
+  ): SimulationLogs {
+    TODO("Not yet implemented")
+  }
+
+  override fun getScenarioSimulations(
+      organizationId: kotlin.String,
+      workspaceId: kotlin.String,
+      scenarioId: kotlin.String
+  ): List<SimulationBase> {
+    TODO("Not yet implemented")
+  }
+
+  override fun getWorkspaceSimulations(
+      organizationId: kotlin.String,
+      workspaceId: kotlin.String
+  ): List<SimulationBase> {
+    TODO("Not yet implemented")
+  }
+
+  override fun runScenario(
+      organizationId: kotlin.String,
+      workspaceId: kotlin.String,
+      scenarioId: kotlin.String
+  ): SimulationBase {
+    TODO("Not yet implemented")
+  }
+
   override fun searchSimulationLogs(
       organizationId: kotlin.String,
       simulationId: kotlin.String,
@@ -40,7 +83,7 @@ class SimulationServiceImpl : AbstractPhoenixService(), SimulationApiService {
   override fun searchSimulations(
       organizationId: kotlin.String,
       simulationSearch: SimulationSearch
-  ): List<Simulation> {
+  ): List<SimulationBase> {
     TODO("Not yet implemented")
   }
 

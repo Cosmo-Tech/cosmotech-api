@@ -11,8 +11,7 @@ servers:
 - url: 'http://localhost:8080'
 
 security:
-- ApiKeyAuth: [ ]
-- AADOAuth2AuthCode: [ ]
+- oAuth2AuthCode: [ ]
 
 tags:
 - name: scenario
@@ -193,43 +192,6 @@ paths:
           description: Bad request
         "404":
           description: the Scenario specified is unknown or you don't have access to it
-  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/run:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: scenario_id
-        in: path
-        description: the Scenario identifier
-        required: true
-        schema:
-          type: string
-    post:
-      operationId: runScenario
-      tags:
-        - scenario
-      summary: Get the details of an scenario
-      responses:
-        "202":
-          description: the Scenario details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ScenarioRunningAnalysis'
-              examples:
-                ScenarioRunningAnalysis:
-                  $ref: '#/components/examples/ScenarioRunningAnalysis'
-        "404":
-          description: the Scenario specified is unknown or you don't have access to it
   /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/compare/{compared_scenario_id}:
     parameters:
       - name: organization_id
@@ -276,19 +238,13 @@ paths:
 
 components:
   securitySchemes:
-    ApiKeyAuth:
-      type: apiKey
-      description: The Cosmo Tech API Key
-      name: key
-      in: query
-    AADOAuth2AuthCode:
+    oAuth2AuthCode:
       type: oauth2
       description: Azure Active Directory authentication
       flows:
         implicit:
-          authorizationUrl: https://login.microsoftonline.com/e9641c78-d0d6-4d09-af63-168922724e7f/oauth2/v2.0/authorize
-          scopes:
-            http://sample.azure.cosmo-platform.com/user_impersonation: User Impersonation
+          authorizationUrl: oauth2/authorize
+          scopes: {}
   schemas:
     ScenarioBase:
       type: object
@@ -342,18 +298,6 @@ components:
             analysis:
               description: the configuration for next Analysis
               $ref: '#/components/schemas/ScenarioAnalysis'
-            successfulAnalysis:
-              readOnly: true
-              description: the configuration and information for last successful Analysis Run
-              $ref: '#/components/schemas/ScenarioSuccessfulAnalysis'
-            failedAnalysis:
-              readOnly: true
-              description: the configuration and information for last failed Analysis Run
-              $ref: '#/components/schemas/ScenarioFailedAnalysis'
-            runningAnalysis:
-              readOnly: true
-              description: the configuration and information for currently running Analysis Run
-              $ref: '#/components/schemas/ScenarioRunningAnalysis'
             sendInputToDataWarehouse:
               type: boolean
               description: default setting for all Analysis to set whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to Simulation Run
@@ -377,48 +321,6 @@ components:
         sendInputToDataWarehouse:
           type: boolean
           description: whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to Simulation Run
-    ScenarioSuccessfulAnalysis:
-      allOf:
-        - $ref: '#/components/schemas/ScenarioAnalysis'
-        - type: object
-          description: a previously ran or running Scenario Analysis with run information
-          properties:
-            simulationId:
-              type: string
-              readOnly: true
-              description: the Simulation Run Id
-    ScenarioFailedAnalysis:
-      allOf:
-        - $ref: '#/components/schemas/ScenarioAnalysis'
-        - type: object
-          description: a previously ran or running Scenario Analysis with run information
-          properties:
-            simulationId:
-              type: string
-              readOnly: true
-              description: the Simulation Run Id
-            error:
-              type: string
-              readOnly: true
-              description: the Simulation Run error message
-    ScenarioRunningAnalysis:
-      allOf:
-        - $ref: '#/components/schemas/ScenarioAnalysis'
-        - type: object
-          description: a previously ran or running Scenario Analysis with run information
-          properties:
-            simulationId:
-              type: string
-              readOnly: true
-              description: the Simulation Run Id
-            jobId:
-              type: string
-              readOnly: true
-              description: the compute cluster job Id
-            state:
-              type: string
-              readOnly: true
-              description: the job state
     ScenarioAnalysisParameterValue:
       type: object
       description: the value of an Analysis parameter for a Scenario
@@ -523,36 +425,6 @@ components:
             - parameterId: prefix
               varType: string
               value: ""
-        successfulAnalysis:
-          analysisId: "1"
-          datasetList:
-            - "1"
-          parametersValues:
-            - parameterId: prefix
-              varType: string
-              value: last
-          simulationId: "1"
-        failedAnalysis:
-          analysisId: "1"
-          datasetList:
-            - "1"
-          parametersValues:
-            - parameterId: prefix
-              varType: string
-              value: erroredValue_
-          simulationId: "2"
-          error: value _ is not valid
-        runningAnalysis:
-          analysisId: "1"
-          datasetList:
-            - "1"
-          parametersValues:
-            - parameterId: prefix
-              varType: string
-              value: last
-          simulationId: "3"
-          jobId: "1"
-          state: Running
     ThreeScenarios:
       summary: Three Scenarios with parent and children
       description: Three Scenarios with parent master Scenario and two children Scenarios
@@ -581,36 +453,6 @@ components:
               - parameterId: prefix
                 varType: string
                 value: ""
-          successfulAnalysis:
-            analysisId: "1"
-            datasetList:
-              - "1"
-            parametersValues:
-              - parameterId: prefix
-                varType: string
-                value: last
-            simulationId: "1"
-          failedAnalysis:
-            analysisId: "1"
-            datasetList:
-              - "1"
-            parametersValues:
-              - parameterId: prefix
-                varType: string
-                value: erroredValue_
-            simulationId: "2"
-            error: value _ is not valid
-          runningAnalysis:
-            analysisId: "1"
-            datasetList:
-              - "1"
-            parametersValues:
-              - parameterId: prefix
-                varType: string
-                value: last
-            simulationId: "3"
-            jobId: "1"
-            state: Running
         - id: "2"
           name: Brewery Analysis name example
           description: Brewery analysis with example as name prefix
@@ -691,36 +533,6 @@ components:
             - parameterId: prefix
               varType: string
               value: ""
-        successfulAnalysis:
-          analysisId: "1"
-          datasetList:
-            - "1"
-          parametersValues:
-            - parameterId: prefix
-              varType: string
-              value: last
-          simulationId: "1"
-        failedAnalysis:
-          analysisId: "1"
-          datasetList:
-            - "1"
-          parametersValues:
-            - parameterId: prefix
-              varType: string
-              value: erroredValue_
-          simulationId: "2"
-          error: value _ is not valid
-        runningAnalysis:
-          analysisId: "1"
-          datasetList:
-            - "1"
-          parametersValues:
-            - parameterId: prefix
-              varType: string
-              value: last
-          simulationId: "3"
-          jobId: "1"
-          state: Running
     BreweryScenarioComparison:
       summary: Brewery comparison result
       description: Brewery comparison result between a parent Scenario and its child
@@ -780,17 +592,3 @@ components:
             - id: "2"
               name: Alice
               roles: Viewer 
-    ScenarioRunningAnalysis:
-      summary: Scenario running Analysis example
-      description: a Scenario running analysis information returned after a new run example
-      value:
-        analysisId: "1"
-        datasetList:
-          - "1"
-        parametersValues:
-          - parameterId: prefix
-            varType: string
-            value: last
-        simulationId: "3"
-        jobId: "1"
-        state: Pending

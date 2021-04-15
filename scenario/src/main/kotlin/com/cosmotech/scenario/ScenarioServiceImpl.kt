@@ -7,65 +7,63 @@ import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioBase
 import com.cosmotech.scenario.domain.ScenarioComparisonResult
-import com.cosmotech.scenario.domain.ScenarioRunningAnalysis
 import org.springframework.stereotype.Service
 
 @Service
 class ScenarioServiceImpl : AbstractPhoenixService(), ScenarioApiService {
-  override fun findAllScenarios(organizationId: String, workspaceId: String): List<Scenario> {
-    TODO("Not yet implemented")
-  }
-
-  override fun findScenarioById(
-      organizationId: String,
-      workspaceId: String,
-      scenarioId: String
-  ): Scenario {
+  override fun compareScenarios(
+      organizationId: kotlin.String,
+      workspaceId: kotlin.String,
+      scenarioId: kotlin.String,
+      comparedScenarioId: kotlin.String
+  ): ScenarioComparisonResult {
     TODO("Not yet implemented")
   }
 
   override fun createScenario(
-      organizationId: String,
-      workspaceId: String,
-      scenario: Scenario
-  ): Scenario {
-    TODO("Not yet implemented")
-  }
-
-  override fun updateScenario(
-      organizationId: String,
-      workspaceId: String,
-      scenarioId: String,
+      organizationId: kotlin.String,
+      workspaceId: kotlin.String,
       scenario: Scenario
   ): Scenario {
     TODO("Not yet implemented")
   }
 
   override fun deleteScenario(
-      organizationId: String,
-      workspaceId: String,
-      scenarioId: String
+      organizationId: kotlin.String,
+      workspaceId: kotlin.String,
+      scenarioId: kotlin.String
   ): Scenario {
     TODO("Not yet implemented")
   }
-  override fun compareScenarios(
-      organizationId: String,
-      workspaceId: String,
-      scenarioId: String,
-      comparedScenarioId: String
-  ): ScenarioComparisonResult {
+
+  override fun findAllScenarios(
+      organizationId: kotlin.String,
+      workspaceId: kotlin.String
+  ): List<Scenario> {
     TODO("Not yet implemented")
   }
 
-  override fun getScenariosTree(organizationId: String, workspaceId: String): List<ScenarioBase> {
+  override fun findScenarioById(
+      organizationId: kotlin.String,
+      workspaceId: kotlin.String,
+      scenarioId: kotlin.String
+  ): Scenario {
     TODO("Not yet implemented")
   }
 
-  override fun runScenario(
-      organizationId: String,
-      workspaceId: String,
-      scenarioId: String
-  ): ScenarioRunningAnalysis {
+  override fun getScenariosTree(
+      organizationId: kotlin.String,
+      workspaceId: kotlin.String
+  ): List<ScenarioBase> {
+    TODO("Not yet implemented")
+  }
+
+  override fun updateScenario(
+      organizationId: kotlin.String,
+      workspaceId: kotlin.String,
+      scenarioId: kotlin.String,
+      scenario: Scenario
+  ): Scenario {
     TODO("Not yet implemented")
   }
 }
