@@ -206,6 +206,13 @@ tasks.register<GenerateTask>("openApiUmlGenerate") {
   generatorName.set("plantuml")
 }
 
+tasks.register<GenerateTask>("openApiMarkdownGenerate") {
+  dependsOn("mergeOpenApiFiles")
+  inputSpec.set("${rootDir}/openapi/openapi.yaml")
+  outputDir.set("$rootDir/doc")
+  generatorName.set("markdown")
+}
+
 tasks.getByName<GenerateTask>("openApiGenerate") { enabled = false }
 
 tasks.getByName<ValidateTask>("openApiValidate") {
@@ -219,7 +226,8 @@ tasks.register("generateClients") {
       "generatePythonClient",
       "generateJavaClient",
       "generateCSharpClient",
-      "openApiUmlGenerate")
+      "openApiUmlGenerate",
+      "openApiMarkdownGenerate")
 }
 
 tasks.getByName<BootJar>("bootJar") { finalizedBy("generateClients") }
