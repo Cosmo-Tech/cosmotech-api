@@ -271,7 +271,7 @@ components:
           readOnly: true
           description: the list of Workspaces roles
           items:
-            $ref: '#/components/schema/UserWorkspace'
+            $ref: '#/components/schemas/UserWorkspace'
     UserWorkspace:
       type: object
       readOnly: true

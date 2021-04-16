@@ -5,7 +5,6 @@ package com.cosmotech.organization
 import com.cosmotech.api.AbstractPhoenixService
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
-import com.cosmotech.organization.domain.OrganizationUser
 import org.springframework.stereotype.Service
 
 @Service
@@ -15,10 +14,6 @@ class OrganizationServiceImpl : AbstractPhoenixService(), OrganizationApiService
   }
 
   override fun findOrganizationById(organizationId: String): Organization {
-    TODO("Not yet implemented")
-  }
-
-  override fun getCurrentOrganizationUser(organizationId: kotlin.String): OrganizationUser {
     TODO("Not yet implemented")
   }
 

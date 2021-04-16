@@ -10,23 +10,38 @@ import org.springframework.stereotype.Service
 
 @Service
 class UserServiceImpl : AbstractPhoenixService(), UserApiService {
-  override fun findAllUsers(): List<UserDetails> {
+  override fun findAllUsers(): List<User> {
     TODO("Not yet implemented")
   }
 
-  override fun findUserById(userId: String): UserDetails {
+  override fun findUserById(userId: kotlin.String): UserDetails {
     TODO("Not yet implemented")
   }
 
-  override fun registerUser(user: User): UserDetails {
+  override fun getCurrentUser(): UserDetails {
     TODO("Not yet implemented")
   }
 
-  override fun unregisterUser(userId: String): UserDetails {
+  override fun getOrganizationCurrentUser(organizationId: kotlin.String): UserDetails {
     TODO("Not yet implemented")
   }
 
-  override fun updateUser(userId: String, user: User): UserDetails {
+  override fun getWorkspaceCurrentUser(
+      organizationId: kotlin.String,
+      workspaceId: kotlin.String
+  ): UserDetails {
+    TODO("Not yet implemented")
+  }
+
+  override fun registerUser(user: User): User {
+    TODO("Not yet implemented")
+  }
+
+  override fun unregisterUser(userId: kotlin.String): User {
+    TODO("Not yet implemented")
+  }
+
+  override fun updateUser(userId: kotlin.String, user: User): User {
     TODO("Not yet implemented")
   }
 }
