@@ -7,8 +7,7 @@ info:
 
 servers:
 - url: 'https://api.azure.cosmo-platform.com'
-- url: 'https://gateway.api.cosmo-platform.com'
-- url: 'http://localhost:8080'
+- url: 'http://localhost:4010'
 
 security:
 - oAuth2AuthCode: [ ]
@@ -168,31 +167,6 @@ paths:
           description: Bad request
         "404":
           description: the Organization specified is unknown or you don't have access to it
-  /organizations/{organization_id}/me:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-    get:
-      operationId: getCurrentOrganizationUser
-      tags:
-        - organization
-      summary: Get the current User information for the Organization
-      responses:
-        "200":
-          description: the User details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrganizationUser'
-              examples:
-                CosmoOrganization:
-                  $ref: '#/components/examples/BobUser'
-        "404":
-          description: the Organization specified is unknown or you don't have access to it
 components:
   securitySchemes:
     oAuth2AuthCode:
@@ -320,12 +294,3 @@ components:
               name: Bob
               roles:
                 - Admin
-    BobUser:
-      summary: Bob User example
-      description: Bob User example
-      value:
-        id: "1"
-        name: Bob
-        organizationId: "1"
-        roles:
-          - Admin

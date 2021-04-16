@@ -7,8 +7,7 @@ info:
 
 servers:
 - url: 'https://api.azure.cosmo-platform.com'
-- url: 'https://gateway.api.cosmo-platform.com'
-- url: 'http://localhost:8080'
+- url: 'http://localhost:4010'
 
 security:
 - oAuth2AuthCode: [ ]
@@ -40,10 +39,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserDetails'
+                $ref: '#/components/schemas/User'
               examples:
                 Bob:
-                  $ref: '#/components/examples/BobCreate'
+                  $ref: '#/components/examples/Bob'
         "400":
           description: Bad request
     get:
@@ -59,7 +58,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/UserDetails'
+                  $ref: '#/components/schemas/User'
               examples:
                 Two:
                   $ref: '#/components/examples/TwoUsers'
@@ -86,7 +85,7 @@ paths:
                 $ref: '#/components/schemas/UserDetails'
               examples:
                 Bob:
-                  $ref: '#/components/examples/Bob'
+                  $ref: '#/components/examples/BobDetails'
         "404":
           description: the User specified is unknown or you don't have access to it
     patch:
@@ -110,7 +109,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserDetails'
+                $ref: '#/components/schemas/User'
               examples:
                 BobyUpdated:
                   $ref: '#/components/examples/BobyUpdated'
@@ -129,7 +128,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserDetails'
+                $ref: '#/components/schemas/User'
               examples:
                 Bob:
                   $ref: '#/components/examples/Bob'
@@ -137,7 +136,80 @@ paths:
           description: Bad request
         "404":
           description: the User specified is unknown or you don't have access to it
-
+  /users/me:
+    get:
+      operationId: getCurrentUser
+      tags:
+        - user
+      summary: Get the details of an user
+      responses:
+        "200":
+          description: the User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetails'
+              examples:
+                Bob:
+                  $ref: '#/components/examples/BobDetails'
+        "404":
+          description: the User specified is unknown or you don't have access to it
+  /organizations/{organization_id}/me:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getOrganizationCurrentUser
+      tags:
+        - user
+      summary: Get the details of an user with roles for an Organization
+      responses:
+        "200":
+          description: the User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetails'
+              examples:
+                Bob:
+                  $ref: '#/components/examples/BobDetailsOrganization'
+        "404":
+          description: the User specified is unknown or you don't have access to it
+  /organizations/{organization_id}/workspaces/{workspace_id}/me:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getWorkspaceCurrentUser
+      tags:
+        - user
+      summary: Get the details of an user with roles for a Workspace
+      responses:
+        "200":
+          description: the User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetails'
+              examples:
+                Bob:
+                  $ref: '#/components/examples/BobDetailsWorkspace'
+        "404":
+          description: the User specified is unknown or you don't have access to it
 components:
   securitySchemes:
     oAuth2AuthCode:
@@ -159,8 +231,15 @@ components:
         name:
           type: string
           description: the User name
+        platformRoles:
+          type: array
+          description: the list of Platform roles
+          items:
+            type: string
+            enum: ["Admin","User","ConnectorDeveloper"]
       required:
         - name
+        - platformRoles
     UserDetails:
       allOf:
         - $ref: '#/components/schemas/User'
@@ -182,30 +261,73 @@ components:
         name:
           type: string
           description: the Organization name
+        roles:
+          type: array
+          description: the roles of the User in the Organization
+          items:
+            type: string
+        workspaces:
+          type: array
+          readOnly: true
+          description: the list of Workspaces roles
+          items:
+            $ref: '#/components/schema/UserWorkspace'
+    UserWorkspace:
+      type: object
+      readOnly: true
+      description: the list of User roles for a Workspace
+      properties:
+        id:
+          type: string
+          readOnly: true
+          description: the Workspace Id
+        name:
+          type: string
+          readOnly: true
+          description: the Workspace name
+        roles:
+          type: array
+          description: the roles of the User in the Workspace
+          items:
+            type: string
   examples:
     BobCreateIn:
       summary: Bob User Create input example
       description: Bob User Create input example
       value:
         name: Bob
-    BobCreate:
-      summary: Bob User Created example
-      description: Bob User Created example
-      value:
-        id: "1"
-        name: Bob
-        organizations: []
+        platformRoles:
+          - Admin
     Bob:
       summary: Bob User
       description: Bob User example
       value:
         id: "1"
         name: Bob
+        platformRoles:
+          - Admin
+    BobDetails:
+      summary: Bob User
+      description: Bob User example
+      value:
+        id: "1"
+        name: Bob
+        platformRoles:
+          - Admin
         organizations:
           - id: "1"
             name: Cosmo Tech
+            roles:
+              - Admin
+            workspaces:
+              - id: "1"
+                name: Brewery Analysis 
+                roles:
+                  - Admin
           - id: "2"
             name: Phoenix
+            roles:
+              - Admin
     BobyUpdateIn:
       summary: Boby update User input example
       description: Bob User renamed to Boby input example
@@ -218,24 +340,53 @@ components:
       value:
         id: "1"
         name: Boby
-        organizations:
-          - id: "1"
-            name: Cosmo Tech
-          - id: "2"
-            name: Phoenix
+        platformRoles:
+          - Admin
     TwoUsers:
       summary: Two Users example
       description: Two Users example
       value:
         - id: "1"
           name: Bob
-          organizations:
-            - id: "1"
-              name: Cosmo Tech
-            - id: "2"
-              name: Phoenix
+          platformRoles:
+            - Admin
         - id: "2"
           name: Alice
-          organizations:
-            - id: "2"
-              name: Phoenix
+          platformRoles:
+            - User
+    BobDetailsOrganization:
+      summary: Bob User for an Organization example
+      description: Bob User for Organization 1 example
+      value:
+        id: "1"
+        name: Bob
+        platformRoles:
+          - Admin
+        organizations:
+          - id: "1"
+            name: Cosmo Tech
+            roles:
+              - Admin
+            workspaces:
+              - id: "1"
+                name: Brewery Analysis 
+                roles:
+                  - Admin
+    BobDetailsWorkspace:
+      summary: Bob User for a Workspace example
+      description: Bob User for Organization 1 and Workspace 1 example
+      value:
+        id: "1"
+        name: Bob
+        platformRoles:
+          - Admin
+        organizations:
+          - id: "1"
+            name: Cosmo Tech
+            roles:
+              - Admin
+            workspaces:
+              - id: "1"
+                name: Brewery Analysis 
+                roles:
+                  - Admin
