@@ -210,6 +210,22 @@ paths:
                   $ref: '#/components/examples/BobDetailsWorkspace'
         "404":
           description: the User specified is unknown or you don't have access to it
+  /oauth2/authorize:
+    get:
+      operationId: authorizeUser
+      tags:
+        - user
+      summary: Authorize an User with OAuth2. Delegated to configured OAuth2 service
+      responses:
+        "302":
+          description: Redirection response
+          headers:
+            Location:
+              schema:
+                type: "string"
+              examples:
+                AzureAD:
+                  $ref: '#/components/examples/AzureADRedirect'
 components:
   securitySchemes:
     oAuth2AuthCode:
@@ -390,3 +406,8 @@ components:
                 name: Brewery Analysis 
                 roles:
                   - Admin
+    AzureADRedirect:
+      summary: Azure AD redirect example
+      description: authorize redirection to Azure Active Directory example
+      value:
+        Location: https://login.microsoftonline.com/e9641c78-d0d6-4d09-af63-168922724e7f/oauth2/v2.0/authorize?client_id=6731de76-14a6-49ae-97bc-6eba6914391e&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%2Fmyapp%2F&response_mode=query&scope=https%3A%2F%2Fgraph.microsoft.com%2Fmail.read

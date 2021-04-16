@@ -10,6 +10,10 @@ import org.springframework.stereotype.Service
 
 @Service
 class UserServiceImpl : AbstractPhoenixService(), UserApiService {
+  override fun authorizeUser(): Unit {
+    TODO("Not yet implemented")
+  }
+
   override fun findAllUsers(): List<User> {
     TODO("Not yet implemented")
   }

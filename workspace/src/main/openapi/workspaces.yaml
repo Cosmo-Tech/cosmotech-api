@@ -271,26 +271,6 @@ components:
       required:
         - id
         - roles
-    WorkspaceUserDetails:
-      allOf:
-        - $ref: '#/components/schemas/WorkspaceUser'
-        - type: object
-          description: details information on Workspace User
-          properties:
-            organizationId:
-              type: string
-              readOnly: true
-              description: the Organization Id context
-            organizationRoles:
-              type: array
-              readOnly: true
-              description: the Organizations roles for the User
-              items:
-                type: string
-            workspaceId:
-              type: string
-              readOnly: true
-              description: the Workspace Id context
     WorkspaceWebApp:
       type: object
       description: a Workspace Web Application
