@@ -130,7 +130,7 @@ envsubst < api/kubernetes/helm-chart/values-dev-vX.yaml | helm upgrade --install
 
 ## Generated items
 Some generated items are stored in GitHub:
-Documentation: in [docs/](docs/)
+Documentation: in [doc/](doc/)
 Merged Open API specification:  [openapi/openapi.yaml](openapi/openapi.yaml)
 PlantUml file and image: in [openapi/plantuml](openapi/plantuml)
 
