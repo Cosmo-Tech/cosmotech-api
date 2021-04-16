@@ -1,0 +1,479 @@
+@startuml
+
+title Cosmo Tech Plaform API Schemas Diagram
+
+entity AnalysisParameter { 
+    * id: String
+    * labels: Map
+    * varType: String
+    order: Integer
+    options: Map
+}
+
+entity AnalysisParameterGroup { 
+    * id: String
+    * labels: Map
+    order: Integer
+    isTable: Boolean
+    options: Map
+    parentId: String
+    * parameters: List<AnalysisParameter>
+}
+
+entity AnalysisResourceStorage { 
+    * storageType: String
+    * resourcePath: String
+    customUri: String
+}
+
+entity Connector { 
+    id: String
+    * connectorKey: String
+    * name: String
+    description: String
+    * repository: String
+    * version: String
+    tags: List<String>
+    ownerId: String
+    url: String
+    * ioTypes: List<String>
+    parameterGroups: List<ConnectorParameterGroup>
+}
+
+entity ConnectorParameter { 
+    * id: String
+    * label: String
+    * valueType: String
+    options: List<String>
+    default: String
+    envVar: String
+}
+
+entity ConnectorParameterGroup { 
+    * id: String
+    * label: String
+    * parameters: List<ConnectorParameter>
+}
+
+entity Dataset { 
+    id: String
+    * name: String
+    description: String
+    ownerId: String
+    tags: List<String>
+    * connector: DatasetConnector
+    fragmentsIds: List<String>
+    validatorId: String
+    compatibility: List<DatasetCompatibility>
+}
+
+entity DatasetCompatibility { 
+    * simulatorKey: String
+    minimumVersion: String
+    maximumVersion: String
+}
+
+entity DatasetConnector { 
+    * id: String
+    parametersValues: Map
+}
+
+entity DatasetCopyParameters { 
+    sourceId: String
+    targetId: String
+    options: Map
+}
+
+entity Organization { 
+    id: String
+    * name: String
+    ownerId: String
+    users: List<OrganizationUser>
+    services: OrganizationServices
+}
+
+entity OrganizationService { 
+    cloudService: String
+    baseUri: String
+    platformService: String
+    resourceUri: String
+    credentials: Map
+}
+
+entity OrganizationServices { 
+    tenantCredentials: Map
+    storage: OrganizationService
+    simulatorsContainerRegistry: OrganizationService
+}
+
+entity OrganizationUser { 
+    id: String
+    * name: String
+    organizationId: String
+    * roles: List<String>
+}
+
+entity Platform { 
+    * name: String
+    description: String
+    * version: String
+    * ownerId: String
+    apiHost: String
+    webAppUrl: String
+    * services: PlatformServices
+}
+
+entity PlatformService { 
+    cloudService: String
+    baseUri: String
+    resourceUri: String
+    credentials: Map
+    options: Map
+}
+
+entity PlatformServices { 
+    * provider: String
+    credentials: Map
+    storage: PlatformService
+    coreContainerRegistry: PlatformService
+    simulatorsContainerRegistry: PlatformService
+    eventBusCluster: PlatformService
+    dataWarehouseCluster: PlatformService
+    databaseCluster: PlatformService
+    keyVault: PlatformService
+    kubernetesCluster: PlatformService
+    directory: PlatformService
+    monitoring: PlatformService
+    analytic: PlatformService
+}
+
+entity Scenario { 
+    simulatorName: String
+    simulatorAnalysisName: String
+    analysis: ScenarioAnalysis
+    sendInputToDataWarehouse: Boolean
+}
+
+entity ScenarioAnalysis { 
+    analysisId: String
+    datasetList: List<String>
+    parametersValues: List<ScenarioAnalysisParameterValue>
+    sendInputToDataWarehouse: Boolean
+}
+
+entity ScenarioAnalysisParameterValue { 
+    * parameterId: String
+    varType: String
+    * value: String
+    isInherited: String
+}
+
+entity ScenarioBase { 
+    id: String
+    * name: String
+    description: String
+    tags: List<String>
+    parentId: String
+    ownerId: String
+    simulatorId: String
+    users: List<ScenarioUser>
+}
+
+entity ScenarioChangedParameterValue { 
+    parameterId: String
+    varType: String
+    value: String
+    comparedValue: String
+}
+
+entity ScenarioComparisonResult { 
+    scenarioId: String
+    comparedScenarioId: String
+    changedValues: List<ScenarioChangedParameterValue>
+}
+
+entity ScenarioUser { 
+    * id: String
+    name: String
+    * roles: String
+}
+
+entity Simulation { 
+    datasetList: List<String>
+    parametersValues: List<SimulationAnalysisParameterValue>
+    sendInputToDataWarehouse: Boolean
+    dataWarehouseDB: String
+    resultsEventBusResourceUri: String
+    simulationEventBusResourceUri: String
+    nodeLabel: String
+    initContainers: List<SimulationContainers>
+    mainContainer: SimulationContainers
+}
+
+entity SimulationAnalysisParameterValue { 
+    * parameterId: String
+    varType: String
+    * value: String
+}
+
+entity SimulationBase { 
+    id: String
+    jobId: String
+    ownerId: String
+    workspaceId: String
+    workspaceName: String
+    scenarioId: String
+    scenarioName: String
+    simulatorId: String
+    simulatorName: String
+    simulatorVersion: String
+    simulatorAnalysisId: String
+    simulatorAnalysisName: String
+    computeSize: String
+    state: String
+    startTime: String
+    endTime: String
+}
+
+entity SimulationContainerLog { 
+    timeGenerated: String
+    entrySource: String
+    logEntry: String
+}
+
+entity SimulationContainerLogs { 
+    containerId: String
+    computer: String
+    logs: List<SimulationContainerLog>
+    textLog: String
+}
+
+entity SimulationContainers { 
+    id: String
+    envVars: Map
+    image: String
+    runArgs: List<String>
+}
+
+entity SimulationLogs { 
+    simulationId: String
+    options: SimulationLogsOptions
+    initLogs: List<SimulationContainerLogs>
+    mainLogs: SimulationContainerLogs
+}
+
+entity SimulationLogsOptions { 
+    containerIds: List<String>
+    plainText: Boolean
+}
+
+entity SimulationSearch { 
+    simulatorId: String
+    simulatorAnalysisId: String
+    workspaceId: String
+    scenarioId: String
+    state: String
+    jobId: String
+    ownerId: String
+}
+
+entity SimulationStartContainers { 
+    nodeLabel: String
+    initContainers: List<SimulationContainers>
+    mainContainer: SimulationContainers
+}
+
+entity SimulationStartScenario { 
+    workspaceId: String
+    scenarioId: String
+}
+
+entity SimulationStartSimulator { 
+    simulatorId: String
+    simulatorAnalysisId: String
+    datasetList: List<String>
+    parametersValues: List<SimulationAnalysisParameterValue>
+    sendInputToDataWarehouse: Boolean
+    dataWarehouseDB: String
+    resultsEventBusResourceUri: String
+    simulationEventBusResourceUri: String
+}
+
+entity Simulator { 
+    id: String
+    * simulatorKey: String
+    * name: String
+    description: String
+    * repository: String
+    * version: String
+    ownerId: String
+    url: String
+    tags: List<String>
+    analysis: List<SimulatorAnalysis>
+}
+
+entity SimulatorAnalysis { 
+    * id: String
+    * name: String
+    description: String
+    simulation: String
+    tags: List<String>
+    computeSize: String
+    parametersHandlerResource: AnalysisResourceStorage
+    datasetValidatorResource: AnalysisResourceStorage
+    customDriverResource: AnalysisResourceStorage
+    datasetSchemaResource: AnalysisResourceStorage
+    parameterGroups: List<AnalysisParameterGroup>
+}
+
+entity User { 
+    id: String
+    * name: String
+    * platformRoles: List<String>
+}
+
+entity UserDetails { 
+    organizations: List<UserOrganization>
+}
+
+entity UserOrganization { 
+    id: String
+    name: String
+    roles: List<String>
+    workspaces: List<UserWorkspace>
+}
+
+entity UserWorkspace { 
+    id: String
+    name: String
+    roles: List<String>
+}
+
+entity Validator { 
+    * id: String
+    * name: String
+    description: String
+    * repository: String
+    * version: String
+    ownerId: String
+    url: String
+    tags: List<String>
+}
+
+entity ValidatorRun { 
+    id: String
+    validatorId: String
+    validatorName: String
+    * datasetId: String
+    datasetName: String
+    state: String
+    containerId: String
+    logs: String
+}
+
+entity Workspace { 
+    id: String
+    * name: String
+    description: String
+    version: String
+    tags: List<String>
+    ownerId: String
+    * simulator: WorkspaceSimulator
+    simulatorAnalysisFilter: List<String>
+    users: List<WorkspaceUser>
+    webApp: WorkspaceWebApp
+    services: WorkspaceServices
+    sendInputToDataWarehouse: Boolean
+}
+
+entity WorkspaceService { 
+    cloudService: String
+    baseUri: String
+    platformService: String
+    resourceUri: String
+    credentials: Map
+}
+
+entity WorkspaceServices { 
+    tenantCredentials: Map
+    resultsEventBus: WorkspaceService
+    simulationEventBus: WorkspaceService
+    dataWarehouse: WorkspaceService
+    storage: WorkspaceService
+}
+
+entity WorkspaceSimulator { 
+    * simulatorId: String
+    analysisFilter: List<String>
+    defaultAnalysisDataset: Map
+}
+
+entity WorkspaceUser { 
+    * id: String
+    name: String
+    * roles: List<String>
+}
+
+entity WorkspaceWebApp { 
+    * url: String
+    iframes: Map
+    options: Map
+}
+
+ScenarioBase <|--- Scenario
+SimulationBase <|--- Simulation
+User <|--- UserDetails
+
+ScenarioAnalysis -- "0..*" ScenarioAnalysisParameterValue : parametersValues
+Platform -- PlatformServices : services
+ScenarioBase -- "0..*" ScenarioUser : users
+UserDetails -- "0..*" UserOrganization : organizations
+ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
+SimulationStartSimulator -- "0..*" SimulationAnalysisParameterValue : parametersValues
+SimulationContainerLogs -- "0..*" SimulationContainerLog : logs
+SimulationStartContainers -- "0..*" SimulationContainers : initContainers
+SimulationStartContainers -- SimulationContainers : mainContainer
+OrganizationServices -- OrganizationService : storage
+OrganizationServices -- OrganizationService : simulatorsContainerRegistry
+Scenario -- ScenarioAnalysis : analysis
+SimulationLogs -- SimulationLogsOptions : options
+SimulationLogs -- "0..*" SimulationContainerLogs : initLogs
+SimulationLogs -- SimulationContainerLogs : mainLogs
+Simulator -- "0..*" SimulatorAnalysis : analysis
+Connector -- "0..*" ConnectorParameterGroup : parameterGroups
+Organization -- "0..*" OrganizationUser : users
+Organization -- OrganizationServices : services
+UserOrganization -- "0..*" UserWorkspace : workspaces
+SimulatorAnalysis -- AnalysisResourceStorage : parametersHandlerResource
+SimulatorAnalysis -- AnalysisResourceStorage : datasetValidatorResource
+SimulatorAnalysis -- AnalysisResourceStorage : customDriverResource
+SimulatorAnalysis -- AnalysisResourceStorage : datasetSchemaResource
+SimulatorAnalysis -- "0..*" AnalysisParameterGroup : parameterGroups
+ScenarioComparisonResult -- "0..*" ScenarioChangedParameterValue : changedValues
+Dataset -- DatasetConnector : connector
+Dataset -- "0..*" DatasetCompatibility : compatibility
+WorkspaceServices -- WorkspaceService : resultsEventBus
+WorkspaceServices -- WorkspaceService : simulationEventBus
+WorkspaceServices -- WorkspaceService : dataWarehouse
+WorkspaceServices -- WorkspaceService : storage
+Simulation -- "0..*" SimulationAnalysisParameterValue : parametersValues
+Simulation -- "0..*" SimulationContainers : initContainers
+Simulation -- SimulationContainers : mainContainer
+PlatformServices -- PlatformService : storage
+PlatformServices -- PlatformService : coreContainerRegistry
+PlatformServices -- PlatformService : simulatorsContainerRegistry
+PlatformServices -- PlatformService : eventBusCluster
+PlatformServices -- PlatformService : dataWarehouseCluster
+PlatformServices -- PlatformService : databaseCluster
+PlatformServices -- PlatformService : keyVault
+PlatformServices -- PlatformService : kubernetesCluster
+PlatformServices -- PlatformService : directory
+PlatformServices -- PlatformService : monitoring
+PlatformServices -- PlatformService : analytic
+AnalysisParameterGroup -- "0..*" AnalysisParameter : parameters
+Workspace -- WorkspaceSimulator : simulator
+Workspace -- "0..*" WorkspaceUser : users
+Workspace -- WorkspaceWebApp : webApp
+Workspace -- WorkspaceServices : services
+
+@enduml

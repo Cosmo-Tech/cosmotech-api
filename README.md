@@ -128,6 +128,19 @@ envsubst < api/kubernetes/helm-chart/values-dev-vX.yaml | helm upgrade --install
   --set image.tag=latest
 ```
 
+## Generated items
+Some generated items are stored in GitHub:
+Documentation: in [docs/](docs/)
+Merged Open API specification:  [openapi/openapi.yaml](openapi/openapi.yaml)
+PlantUml file and image: in [openapi/plantuml](openapi/plantuml)
+
+## Generated API clients
+Clients for the API are generated and available on GitHub:
+* [Javascript](https://github.com/Cosmo-Tech/cosmotech-api-javascript-client)
+* [Python](https://github.com/Cosmo-Tech/cosmotech-api-python-client)
+* [Java](https://github.com/Cosmo-Tech/cosmotech-api-java-client)
+* [C#](https://github.com/Cosmo-Tech/cosmotech-api-csharp-client)
+
 ## License
 
     Copyright 2021 Cosmo Tech

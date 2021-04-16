@@ -40,9 +40,8 @@ out/
 *~
 *.swp
 
-### Generated ###
-openapi/openapi.yaml
-openapi/plantuml
+# generated plantuml
+openapi/plantuml/.openapi-generator*
 
 ### Personal directory ###
 perso
