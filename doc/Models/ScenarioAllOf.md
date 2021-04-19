@@ -3,6 +3,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**ownerName** | [**String**](string.md) | the name of the owner | [optional] [default to null]
 **solutionName** | [**String**](string.md) | the Solution name | [optional] [default to null]
 **runTemplateName** | [**String**](string.md) | the Solution Run Template name associated with this Scenario | [optional] [default to null]
 **datasetList** | [**List**](string.md) | the list of Dataset Id associated to this Scenario Run Template | [optional] [default to null]

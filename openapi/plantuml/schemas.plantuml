@@ -169,6 +169,7 @@ entity RunTemplateResourceStorage {
 }
 
 entity Scenario { 
+    ownerName: String
     solutionName: String
     runTemplateName: String
     datasetList: List<String>
@@ -186,6 +187,8 @@ entity ScenarioBase {
     solutionId: String
     runTemplateId: String
     users: List<ScenarioUser>
+    state: String
+    creationDate: String
 }
 
 entity ScenarioChangedParameterValue { 

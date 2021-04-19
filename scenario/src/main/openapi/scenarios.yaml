@@ -285,6 +285,15 @@ components:
           description: the list of users Id with their role
           items:
             $ref: '#/components/schemas/ScenarioUser'
+        state:
+          type: string
+          readOnly: true
+          description: the Scenario state
+          enum: ["Created","Running","Successful","Failed"]
+        creationDate:
+          type: string
+          readOnly: true
+          description: the Scenario creation date
       required:
         - name
     Scenario:
@@ -293,6 +302,10 @@ components:
         - type: object
           description: a Scenario with detailed information
           properties:
+            ownerName:
+              type: string
+              readOnly: true
+              description: the name of the owner
             solutionName:
               type: string
               readOnly: true
@@ -446,6 +459,9 @@ components:
           - id: "2"
             name: Alice
             roles: Viewer 
+        state: Created
+        ownerName: Bob
+        creationDate: 4/15/2021, 10:52:21.593 AM
         datasetList:
           - "1"
         parametersValues:
@@ -475,6 +491,9 @@ components:
             - id: "2"
               name: Alice
               roles: Viewer 
+          state: Created
+          ownerName: Bob
+          creationDate: 4/15/2021, 10:52:21.593 AM
           datasetList:
             - "1"
           parametersValues:
@@ -500,6 +519,9 @@ components:
             - id: "2"
               name: Alice
               roles: Viewer 
+          state: Running
+          ownerName: Bob
+          creationDate: 4/15/2021, 11:52:21.593 AM
           datasetList:
             - "1"
           parametersValues:
@@ -512,7 +534,7 @@ components:
           tags:
             - Brewery
           parentId: "1"
-          ownerId: "1"
+          ownerId: "2"
           solutionId: "1"
           solutionName: Brewery Solution
           runTemplateId: "1"
@@ -523,7 +545,10 @@ components:
               roles: Editor
             - id: "2"
               name: Alice
-              roles: Viewer 
+              roles: Editor 
+          state: Failed
+          ownerName: Alice
+          creationDate: 4/16/2021, 11:52:21.593 AM
           datasetList:
             - "1"
           parametersValues:
@@ -558,6 +583,9 @@ components:
           - id: "2"
             name: Alice
             roles: Viewer 
+        state: Created
+        ownerName: Bob
+        creationDate: 4/15/2021, 10:52:21.593 AM
         datasetList:
           - "1"
         parametersValues:
@@ -594,6 +622,8 @@ components:
             - id: "2"
               name: Alice
               roles: Viewer 
+          state: Created
+          creationDate: 4/15/2021, 10:52:21.593 AM
         - id: "2"
           name: Brewery Analysis name example
           description: Brewery analysis with example as name prefix
@@ -609,17 +639,21 @@ components:
             - id: "2"
               name: Alice
               roles: Viewer 
+          state: Running
+          creationDate: 4/15/2021, 11:52:21.593 AM
         - id: "3"
           name: Brewery Analysis name no change
           description: Brewery analysis with no change on name prefix
           tags:
             - Brewery
           parentId: "1"
-          ownerId: "1"
+          ownerId: "2"
           users:
             - id: "1"
               name: Bob
               roles: Editor
             - id: "2"
               name: Alice
-              roles: Viewer 
+              roles: Editor 
+          state: Failed
+          creationDate: 4/16/2021, 10:52:21.593 AM
