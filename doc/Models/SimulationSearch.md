@@ -3,8 +3,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**simulatorId** | [**String**](string.md) | the Simulator Id to search | [optional] [default to null]
-**simulatorAnalysisId** | [**String**](string.md) | the Simulator Analysis Id to search | [optional] [default to null]
+**solutionId** | [**String**](string.md) | the Solution Id to search | [optional] [default to null]
+**runTemplateId** | [**String**](string.md) | the Solution Analysis Id to search | [optional] [default to null]
 **workspaceId** | [**String**](string.md) | the Workspace Id to search | [optional] [default to null]
 **scenarioId** | [**String**](string.md) | the Scenario Id to search | [optional] [default to null]
 **state** | [**String**](string.md) | the state to search | [optional] [default to null]

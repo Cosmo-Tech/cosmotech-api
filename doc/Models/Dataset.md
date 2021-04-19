@@ -11,7 +11,7 @@ Name | Type | Description | Notes
 **connector** | [**DatasetConnector**](DatasetConnector.md) |  | [default to null]
 **fragmentsIds** | [**List**](string.md) | the list of other Datasets ids to compose as fragments | [optional] [default to null]
 **validatorId** | [**String**](string.md) | the validator id | [optional] [default to null]
-**compatibility** | [**List**](DatasetCompatibility.md) | the list of compatible Simulators versions | [optional] [default to null]
+**compatibility** | [**List**](DatasetCompatibility.md) | the list of compatible Solutions versions | [optional] [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

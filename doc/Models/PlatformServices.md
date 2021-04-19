@@ -7,7 +7,7 @@ Name | Type | Description | Notes
 **credentials** | [**Map**](object.md) | a freeform credentials object for the Platform. Structure depends on cloud provider | [optional] [default to null]
 **storage** | [**PlatformService**](PlatformService.md) |  | [optional] [default to null]
 **coreContainerRegistry** | [**PlatformService**](PlatformService.md) |  | [optional] [default to null]
-**simulatorsContainerRegistry** | [**PlatformService**](PlatformService.md) |  | [optional] [default to null]
+**solutionsContainerRegistry** | [**PlatformService**](PlatformService.md) |  | [optional] [default to null]
 **eventBusCluster** | [**PlatformService**](PlatformService.md) |  | [optional] [default to null]
 **dataWarehouseCluster** | [**PlatformService**](PlatformService.md) |  | [optional] [default to null]
 **databaseCluster** | [**PlatformService**](PlatformService.md) |  | [optional] [default to null]

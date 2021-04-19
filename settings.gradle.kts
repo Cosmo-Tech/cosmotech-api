@@ -12,7 +12,7 @@ include("connector")
 
 include("dataset")
 
-include("simulator")
+include("solution")
 
 include("workspace")
 
@@ -34,7 +34,7 @@ project(":connector").name = "cosmotech-connector-api"
 
 project(":dataset").name = "cosmotech-dataset-api"
 
-project(":simulator").name = "cosmotech-simulator-api"
+project(":solution").name = "cosmotech-solution-api"
 
 project(":workspace").name = "cosmotech-workspace-api"
 

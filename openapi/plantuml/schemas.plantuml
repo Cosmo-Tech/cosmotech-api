@@ -2,30 +2,6 @@
 
 title Cosmo Tech Plaform API Schemas Diagram
 
-entity AnalysisParameter { 
-    * id: String
-    * labels: Map
-    * varType: String
-    order: Integer
-    options: Map
-}
-
-entity AnalysisParameterGroup { 
-    * id: String
-    * labels: Map
-    order: Integer
-    isTable: Boolean
-    options: Map
-    parentId: String
-    * parameters: List<AnalysisParameter>
-}
-
-entity AnalysisResourceStorage { 
-    * storageType: String
-    * resourcePath: String
-    customUri: String
-}
-
 entity Connector { 
     id: String
     * connectorKey: String
@@ -68,7 +44,7 @@ entity Dataset {
 }
 
 entity DatasetCompatibility { 
-    * simulatorKey: String
+    * solutionKey: String
     minimumVersion: String
     maximumVersion: String
 }
@@ -103,7 +79,7 @@ entity OrganizationService {
 entity OrganizationServices { 
     tenantCredentials: Map
     storage: OrganizationService
-    simulatorsContainerRegistry: OrganizationService
+    solutionsContainerRegistry: OrganizationService
 }
 
 entity OrganizationUser { 
@@ -136,7 +112,7 @@ entity PlatformServices {
     credentials: Map
     storage: PlatformService
     coreContainerRegistry: PlatformService
-    simulatorsContainerRegistry: PlatformService
+    solutionsContainerRegistry: PlatformService
     eventBusCluster: PlatformService
     dataWarehouseCluster: PlatformService
     databaseCluster: PlatformService
@@ -147,25 +123,57 @@ entity PlatformServices {
     analytic: PlatformService
 }
 
-entity Scenario { 
-    simulatorName: String
-    simulatorAnalysisName: String
-    analysis: ScenarioAnalysis
-    sendInputToDataWarehouse: Boolean
+entity RunTemplate { 
+    * id: String
+    * name: String
+    description: String
+    isStandardSimulator: Boolean
+    simulation: String
+    tags: List<String>
+    computeSize: String
+    parametersHandlerResource: RunTemplateResourceStorage
+    datasetValidatorResource: RunTemplateResourceStorage
+    customSimulatorResource: RunTemplateResourceStorage
+    datasetSchemaResource: RunTemplateResourceStorage
+    parameterGroups: List<RunTemplateParameterGroup>
 }
 
-entity ScenarioAnalysis { 
-    analysisId: String
-    datasetList: List<String>
-    parametersValues: List<ScenarioAnalysisParameterValue>
-    sendInputToDataWarehouse: Boolean
+entity RunTemplateParameter { 
+    * id: String
+    * labels: Map
+    * varType: String
+    order: Integer
+    options: Map
 }
 
-entity ScenarioAnalysisParameterValue { 
+entity RunTemplateParameterGroup { 
+    * id: String
+    * labels: Map
+    order: Integer
+    isTable: Boolean
+    options: Map
+    parentId: String
+    * parameters: List<RunTemplateParameter>
+}
+
+entity RunTemplateParameterValue { 
     * parameterId: String
     varType: String
     * value: String
-    isInherited: String
+}
+
+entity RunTemplateResourceStorage { 
+    * storageType: String
+    * resourcePath: String
+    customUri: String
+}
+
+entity Scenario { 
+    solutionName: String
+    runTemplateName: String
+    datasetList: List<String>
+    parametersValues: List<ScenarioRunTemplateParameterValue>
+    sendInputToDataWarehouse: Boolean
 }
 
 entity ScenarioBase { 
@@ -175,7 +183,8 @@ entity ScenarioBase {
     tags: List<String>
     parentId: String
     ownerId: String
-    simulatorId: String
+    solutionId: String
+    runTemplateId: String
     users: List<ScenarioUser>
 }
 
@@ -192,6 +201,13 @@ entity ScenarioComparisonResult {
     changedValues: List<ScenarioChangedParameterValue>
 }
 
+entity ScenarioRunTemplateParameterValue { 
+    * parameterId: String
+    varType: String
+    * value: String
+    isInherited: String
+}
+
 entity ScenarioUser { 
     * id: String
     name: String
@@ -200,7 +216,7 @@ entity ScenarioUser {
 
 entity Simulation { 
     datasetList: List<String>
-    parametersValues: List<SimulationAnalysisParameterValue>
+    parametersValues: List<RunTemplateParameterValue>
     sendInputToDataWarehouse: Boolean
     dataWarehouseDB: String
     resultsEventBusResourceUri: String
@@ -208,12 +224,6 @@ entity Simulation {
     nodeLabel: String
     initContainers: List<SimulationContainers>
     mainContainer: SimulationContainers
-}
-
-entity SimulationAnalysisParameterValue { 
-    * parameterId: String
-    varType: String
-    * value: String
 }
 
 entity SimulationBase { 
@@ -224,11 +234,11 @@ entity SimulationBase {
     workspaceName: String
     scenarioId: String
     scenarioName: String
-    simulatorId: String
-    simulatorName: String
-    simulatorVersion: String
-    simulatorAnalysisId: String
-    simulatorAnalysisName: String
+    solutionId: String
+    solutionName: String
+    solutionVersion: String
+    runTemplateId: String
+    runTemplateName: String
     computeSize: String
     state: String
     startTime: String
@@ -268,8 +278,8 @@ entity SimulationLogsOptions {
 }
 
 entity SimulationSearch { 
-    simulatorId: String
-    simulatorAnalysisId: String
+    solutionId: String
+    runTemplateId: String
     workspaceId: String
     scenarioId: String
     state: String
@@ -288,42 +298,29 @@ entity SimulationStartScenario {
     scenarioId: String
 }
 
-entity SimulationStartSimulator { 
-    simulatorId: String
-    simulatorAnalysisId: String
+entity SimulationStartSolution { 
+    solutionId: String
+    runTemplateId: String
     datasetList: List<String>
-    parametersValues: List<SimulationAnalysisParameterValue>
+    parametersValues: List<RunTemplateParameterValue>
     sendInputToDataWarehouse: Boolean
     dataWarehouseDB: String
     resultsEventBusResourceUri: String
     simulationEventBusResourceUri: String
 }
 
-entity Simulator { 
+entity Solution { 
     id: String
-    * simulatorKey: String
+    * solutionKey: String
     * name: String
     description: String
     * repository: String
+    simulator: String
     * version: String
     ownerId: String
     url: String
     tags: List<String>
-    analysis: List<SimulatorAnalysis>
-}
-
-entity SimulatorAnalysis { 
-    * id: String
-    * name: String
-    description: String
-    simulation: String
-    tags: List<String>
-    computeSize: String
-    parametersHandlerResource: AnalysisResourceStorage
-    datasetValidatorResource: AnalysisResourceStorage
-    customDriverResource: AnalysisResourceStorage
-    datasetSchemaResource: AnalysisResourceStorage
-    parameterGroups: List<AnalysisParameterGroup>
+    run_templates: List<RunTemplate>
 }
 
 entity User { 
@@ -378,8 +375,7 @@ entity Workspace {
     version: String
     tags: List<String>
     ownerId: String
-    * simulator: WorkspaceSimulator
-    simulatorAnalysisFilter: List<String>
+    * solution: WorkspaceSolution
     users: List<WorkspaceUser>
     webApp: WorkspaceWebApp
     services: WorkspaceServices
@@ -402,10 +398,10 @@ entity WorkspaceServices {
     storage: WorkspaceService
 }
 
-entity WorkspaceSimulator { 
-    * simulatorId: String
-    analysisFilter: List<String>
-    defaultAnalysisDataset: Map
+entity WorkspaceSolution { 
+    * solutionId: String
+    runTemplateFilter: List<String>
+    defaultRunTemplateDataset: Map
 }
 
 entity WorkspaceUser { 
@@ -424,31 +420,31 @@ ScenarioBase <|--- Scenario
 SimulationBase <|--- Simulation
 User <|--- UserDetails
 
-ScenarioAnalysis -- "0..*" ScenarioAnalysisParameterValue : parametersValues
 Platform -- PlatformServices : services
+RunTemplateParameterGroup -- "0..*" RunTemplateParameter : parameters
 ScenarioBase -- "0..*" ScenarioUser : users
 UserDetails -- "0..*" UserOrganization : organizations
+SimulationStartSolution -- "0..*" RunTemplateParameterValue : parametersValues
 ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
-SimulationStartSimulator -- "0..*" SimulationAnalysisParameterValue : parametersValues
 SimulationContainerLogs -- "0..*" SimulationContainerLog : logs
 SimulationStartContainers -- "0..*" SimulationContainers : initContainers
 SimulationStartContainers -- SimulationContainers : mainContainer
 OrganizationServices -- OrganizationService : storage
-OrganizationServices -- OrganizationService : simulatorsContainerRegistry
-Scenario -- ScenarioAnalysis : analysis
+OrganizationServices -- OrganizationService : solutionsContainerRegistry
+Scenario -- "0..*" ScenarioRunTemplateParameterValue : parametersValues
 SimulationLogs -- SimulationLogsOptions : options
 SimulationLogs -- "0..*" SimulationContainerLogs : initLogs
 SimulationLogs -- SimulationContainerLogs : mainLogs
-Simulator -- "0..*" SimulatorAnalysis : analysis
 Connector -- "0..*" ConnectorParameterGroup : parameterGroups
 Organization -- "0..*" OrganizationUser : users
 Organization -- OrganizationServices : services
+RunTemplate -- RunTemplateResourceStorage : parametersHandlerResource
+RunTemplate -- RunTemplateResourceStorage : datasetValidatorResource
+RunTemplate -- RunTemplateResourceStorage : customSimulatorResource
+RunTemplate -- RunTemplateResourceStorage : datasetSchemaResource
+RunTemplate -- "0..*" RunTemplateParameterGroup : parameterGroups
 UserOrganization -- "0..*" UserWorkspace : workspaces
-SimulatorAnalysis -- AnalysisResourceStorage : parametersHandlerResource
-SimulatorAnalysis -- AnalysisResourceStorage : datasetValidatorResource
-SimulatorAnalysis -- AnalysisResourceStorage : customDriverResource
-SimulatorAnalysis -- AnalysisResourceStorage : datasetSchemaResource
-SimulatorAnalysis -- "0..*" AnalysisParameterGroup : parameterGroups
+Solution -- "0..*" RunTemplate : run_templates
 ScenarioComparisonResult -- "0..*" ScenarioChangedParameterValue : changedValues
 Dataset -- DatasetConnector : connector
 Dataset -- "0..*" DatasetCompatibility : compatibility
@@ -456,12 +452,12 @@ WorkspaceServices -- WorkspaceService : resultsEventBus
 WorkspaceServices -- WorkspaceService : simulationEventBus
 WorkspaceServices -- WorkspaceService : dataWarehouse
 WorkspaceServices -- WorkspaceService : storage
-Simulation -- "0..*" SimulationAnalysisParameterValue : parametersValues
+Simulation -- "0..*" RunTemplateParameterValue : parametersValues
 Simulation -- "0..*" SimulationContainers : initContainers
 Simulation -- SimulationContainers : mainContainer
 PlatformServices -- PlatformService : storage
 PlatformServices -- PlatformService : coreContainerRegistry
-PlatformServices -- PlatformService : simulatorsContainerRegistry
+PlatformServices -- PlatformService : solutionsContainerRegistry
 PlatformServices -- PlatformService : eventBusCluster
 PlatformServices -- PlatformService : dataWarehouseCluster
 PlatformServices -- PlatformService : databaseCluster
@@ -470,8 +466,7 @@ PlatformServices -- PlatformService : kubernetesCluster
 PlatformServices -- PlatformService : directory
 PlatformServices -- PlatformService : monitoring
 PlatformServices -- PlatformService : analytic
-AnalysisParameterGroup -- "0..*" AnalysisParameter : parameters
-Workspace -- WorkspaceSimulator : simulator
+Workspace -- WorkspaceSolution : solution
 Workspace -- "0..*" WorkspaceUser : users
 Workspace -- WorkspaceWebApp : webApp
 Workspace -- WorkspaceServices : services

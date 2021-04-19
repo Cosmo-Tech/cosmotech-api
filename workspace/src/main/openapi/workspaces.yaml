@@ -184,13 +184,8 @@ components:
           type: string
           readOnly: true
           description: the user id which own this workspace
-        simulator:
-          $ref: '#/components/schemas/WorkspaceSimulator'
-        simulatorAnalysisFilter:
-          type: array
-          description: a filter list of available Simulator Analysis
-          items:
-            type: string
+        solution:
+          $ref: '#/components/schemas/WorkspaceSolution'
         users:
           type: array
           description: the list of users Id with their role
@@ -204,10 +199,10 @@ components:
         sendInputToDataWarehouse:
           type: boolean
           default: true
-          description: default setting for all Scenarios and Analysis to set whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to Simulation Run
+          description: default setting for all Scenarios and Run Templates to set whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to Simulation Run
       required:
         - name
-        - simulator
+        - solution
     WorkspaceServices:
       type: object
       description: the cloud service resources of the Workspace
@@ -288,24 +283,24 @@ components:
           additionalProperties: true
       required:
         - url
-    WorkspaceSimulator:
+    WorkspaceSolution:
       type: object
-      description: the Workspace Simulator configuration
+      description: the Workspace Solution configuration
       properties:
-        simulatorId:
+        solutionId:
           type: string
-          description: the Simulator Id attached to this workspace
-        analysisFilter:
+          description: the Solution Id attached to this workspace
+        runTemplateFilter:
           type: array
-          description: the list of Simulator Analysis Id to filter
+          description: the list of Solution Run Template Id to filter
           items:
             type: string
-        defaultAnalysisDataset:
+        defaultRunTemplateDataset:
           type: object
-          description: a map of AnalysisId/DatasetId to set a default dataset for an analysis
+          description: a map of RunTemplateId/DatasetId to set a default dataset for a Run Template
           additionalProperties: true
       required:
-        - simulatorId
+        - solutionId
   examples:
     BreweryWorkspaceCreateIn:
       summary: Brewery Workspace Create input parameters example
@@ -316,11 +311,11 @@ components:
         version: "1.0.0"
         tags:
           - Brewery
-        simulator:
-          simulatorId: "1"
-          AnalysisFilter:
+        solution:
+          solutionId: "1"
+          runTemplateFilter:
             - "1"
-          defaultAnalysisDataset:
+          defaultRunTemplateDataset:
             1: "1"
         users:
           - id: "1"
@@ -358,11 +353,11 @@ components:
         tags:
           - Brewery
         ownerId: "1"
-        simulator:
-          simulatorId: "1"
-          AnalysisFilter:
+        solution:
+          solutionId: "1"
+          runTemplateFilter:
             - "1"
-          defaultAnalysisDataset:
+          defaultRunTemplateDataset:
             1: "1"
         users:
           - id: "1"
@@ -414,11 +409,11 @@ components:
           tags:
             - Brewery
           ownerId: "1"
-          simulator:
-            simulatorId: "1"
-            AnalysisFilter:
+          solution:
+            solutionId: "1"
+            runTemplateFilter:
               - "1"
-            defaultAnalysisDataset:
+            defaultRunTemplateDataset:
               1: "1"
           users:
             - id: "1"
@@ -475,11 +470,11 @@ components:
         tags:
           - Brewery
         ownerId: "1"
-        simulator:
-          simulatorId: "1"
-          AnalysisFilter:
+        solution:
+          solutionId: "1"
+          runTemplateFilter:
             - "1"
-          defaultAnalysisDataset:
+          defaultRunTemplateDataset:
             1: "1"
         users:
           - id: "1"

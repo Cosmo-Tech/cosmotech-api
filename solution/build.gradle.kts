@@ -9,15 +9,15 @@ sourceSets {
 }
 
 tasks.getByName<ValidateTask>("openApiValidate") {
-  inputSpec.set("${projectDir}/src/main/openapi/simulators.yaml")
+  inputSpec.set("${projectDir}/src/main/openapi/solutions.yaml")
 }
 
 tasks.getByName<GenerateTask>("openApiGenerate") {
-  inputSpec.set("${projectDir}/src/main/openapi/simulators.yaml")
+  inputSpec.set("${projectDir}/src/main/openapi/solutions.yaml")
   outputDir.set("$buildDir/generated-sources/openapi")
   generatorName.set("kotlin-spring")
-  apiPackage.set("com.cosmotech.simulator.api")
-  modelPackage.set("com.cosmotech.simulator.domain")
+  apiPackage.set("com.cosmotech.solution.api")
+  modelPackage.set("com.cosmotech.solution.domain")
   globalProperties.set(
       mapOf(
           "apiDocs" to "true",
@@ -28,9 +28,9 @@ tasks.getByName<GenerateTask>("openApiGenerate") {
           "apiTests" to "false"))
   additionalProperties.set(
       mapOf(
-          "title" to "Cosmo Tech Simulator Manager API",
+          "title" to "Cosmo Tech Solution Manager API",
           "basePackage" to "com.cosmotech",
-          "configPackage" to "com.cosmotech.simulator.config",
+          "configPackage" to "com.cosmotech.solution.config",
           "enumPropertyNaming" to "original",
           "exceptionHandler" to false,
           "serviceInterface" to true,

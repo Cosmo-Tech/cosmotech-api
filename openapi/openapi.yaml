@@ -9,12 +9,12 @@ servers:
 security:
 - oAuth2AuthCode: []
 tags:
+- name: solution
+  description: Solution Management
 - name: platform
   description: Platform Management
 - name: simulation
   description: Simulation Management
-- name: simulator
-  description: Simulator Management
 - name: workspace
   description: Workspace Management
 - name: connector
@@ -28,6 +28,184 @@ tags:
 - name: dataset
   description: Dataset Management
 paths:
+  /organizations/{organization_id}/solutions:
+    get:
+      tags:
+      - solution
+      summary: List all Solutions
+      operationId: findAllSolutions
+      responses:
+        "200":
+          description: the solution details
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Solution'
+              examples:
+                Two:
+                  $ref: '#/components/examples/OneSolution'
+    post:
+      tags:
+      - solution
+      summary: Register a new solution
+      operationId: createSolution
+      requestBody:
+        description: the Solution to create
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Solution'
+            examples:
+              Brewery:
+                $ref: '#/components/examples/Brewery'
+        required: true
+      responses:
+        "201":
+          description: the solution details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Solution'
+              examples:
+                Brewery:
+                  $ref: '#/components/examples/Brewery'
+        "400":
+          description: Bad request
+    parameters:
+    - name: organization_id
+      in: path
+      description: the Organization identifier
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+  /organizations/{organization_id}/solutions/upload:
+    post:
+      tags:
+      - solution
+      summary: Upload and register a new solution
+      operationId: upload
+      requestBody:
+        description: the Solution to upload and register
+        content:
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            examples:
+              ADTConnector:
+                $ref: '#/components/examples/Brewery'
+        required: true
+      responses:
+        "201":
+          description: the solution details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Solution'
+              examples:
+                ADTConnector:
+                  $ref: '#/components/examples/Brewery'
+        "400":
+          description: Bad request
+    parameters:
+    - name: organization_id
+      in: path
+      description: the Organization identifier
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+  /organizations/{organization_id}/solutions/{solution_id}:
+    get:
+      tags:
+      - solution
+      summary: Get the details of a solution
+      operationId: findSolutionById
+      responses:
+        "200":
+          description: the Solution details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Solution'
+              examples:
+                Brewery:
+                  $ref: '#/components/examples/Brewery'
+        "404":
+          description: the Solution specified is unknown or you don't have access
+            to it
+    delete:
+      tags:
+      - solution
+      summary: Delete a solution
+      operationId: deleteSolution
+      responses:
+        "200":
+          description: the solution details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Solution'
+              examples:
+                Brewery:
+                  $ref: '#/components/examples/Brewery'
+        "400":
+          description: Bad request
+        "404":
+          description: the Solution specified is unknown or you don't have access
+            to it
+    patch:
+      tags:
+      - solution
+      summary: Update a solution
+      operationId: updateSolution
+      requestBody:
+        description: the new Solution details.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Solution'
+            examples:
+              BreweryUpdate:
+                $ref: '#/components/examples/BreweryUpdate'
+        required: true
+      responses:
+        "200":
+          description: the solution details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Solution'
+              examples:
+                BreweryUpdated:
+                  $ref: '#/components/examples/BreweryUpdated'
+        "400":
+          description: Bad request
+        "404":
+          description: the Solution specified is unknown or you don't have access
+            to it
+    parameters:
+    - name: organization_id
+      in: path
+      description: the Organization identifier
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    - name: solution_id
+      in: path
+      description: the Solution identifier
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
   /platform:
     get:
       tags:
@@ -178,21 +356,21 @@ paths:
       explode: false
       schema:
         type: string
-  /organizations/{organization_id}/simulations/startsimulator:
+  /organizations/{organization_id}/simulations/startsolution:
     post:
       tags:
       - simulation
-      summary: Start a new simulation for a Simulator Analysis
-      operationId: startSimulationSimulator
+      summary: Start a new simulation for a Solution Run Template
+      operationId: startSimulationSolution
       requestBody:
-        description: the Simulator Analysis information to start
+        description: the Solution Run Template information to start
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SimulationStartSimulator'
+              $ref: '#/components/schemas/SimulationStartSolution'
             examples:
-              SimulationStartSimulator:
-                $ref: '#/components/examples/BrewerySimulationStartSimulator'
+              SimulationStartSolution:
+                $ref: '#/components/examples/BrewerySimulationStartSolution'
         required: true
       responses:
         "202":
@@ -203,7 +381,7 @@ paths:
                 $ref: '#/components/schemas/Simulation'
               examples:
                 Simulation:
-                  $ref: '#/components/examples/BrewerySimulationSimulator'
+                  $ref: '#/components/examples/BrewerySimulationSolution'
         "400":
           description: Bad request
         "404":
@@ -231,7 +409,7 @@ paths:
             schema:
               $ref: '#/components/schemas/SimulationStartContainers'
             examples:
-              SimulationStartSimulator:
+              SimulationStartContainers:
                 $ref: '#/components/examples/BrewerySimulationStartContainers'
         required: true
       responses:
@@ -327,7 +505,7 @@ paths:
             schema:
               $ref: '#/components/schemas/SimulationLogsOptions'
             examples:
-              SimulationStartSimulator:
+              SimulationLogsOptions:
                 $ref: '#/components/examples/BrewerySimulationLogsOptions'
         required: true
       responses:
@@ -574,184 +752,6 @@ paths:
     - name: scenario_id
       in: path
       description: the Scenario identifier
-      required: true
-      style: simple
-      explode: false
-      schema:
-        type: string
-  /organizations/{organization_id}/simulators:
-    get:
-      tags:
-      - simulator
-      summary: List all Simulators
-      operationId: findAllSimulators
-      responses:
-        "200":
-          description: the simulator details
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Simulator'
-              examples:
-                Two:
-                  $ref: '#/components/examples/OneSimulator'
-    post:
-      tags:
-      - simulator
-      summary: Register a new simulator
-      operationId: createSimulator
-      requestBody:
-        description: the Simulator to create
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Simulator'
-            examples:
-              Brewery:
-                $ref: '#/components/examples/Brewery'
-        required: true
-      responses:
-        "201":
-          description: the simulator details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Simulator'
-              examples:
-                Brewery:
-                  $ref: '#/components/examples/Brewery'
-        "400":
-          description: Bad request
-    parameters:
-    - name: organization_id
-      in: path
-      description: the Organization identifier
-      required: true
-      style: simple
-      explode: false
-      schema:
-        type: string
-  /organizations/{organization_id}/simulators/upload:
-    post:
-      tags:
-      - simulator
-      summary: Upload and register a new simulator
-      operationId: upload
-      requestBody:
-        description: the Simulator to upload and register
-        content:
-          application/yaml:
-            schema:
-              type: string
-              format: binary
-            examples:
-              ADTConnector:
-                $ref: '#/components/examples/Brewery'
-        required: true
-      responses:
-        "201":
-          description: the simulator details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Simulator'
-              examples:
-                ADTConnector:
-                  $ref: '#/components/examples/Brewery'
-        "400":
-          description: Bad request
-    parameters:
-    - name: organization_id
-      in: path
-      description: the Organization identifier
-      required: true
-      style: simple
-      explode: false
-      schema:
-        type: string
-  /organizations/{organization_id}/simulators/{simulator_id}:
-    get:
-      tags:
-      - simulator
-      summary: Get the details of a simulator
-      operationId: findSimulatorById
-      responses:
-        "200":
-          description: the Simulator details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Simulator'
-              examples:
-                Brewery:
-                  $ref: '#/components/examples/Brewery'
-        "404":
-          description: the Simulator specified is unknown or you don't have access
-            to it
-    delete:
-      tags:
-      - simulator
-      summary: Delete a simulator
-      operationId: deleteSimulator
-      responses:
-        "200":
-          description: the simulator details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Simulator'
-              examples:
-                Brewery:
-                  $ref: '#/components/examples/Brewery'
-        "400":
-          description: Bad request
-        "404":
-          description: the Simulator specified is unknown or you don't have access
-            to it
-    patch:
-      tags:
-      - simulator
-      summary: Update a simulator
-      operationId: updateSimulator
-      requestBody:
-        description: the new Simulator details.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Simulator'
-            examples:
-              BreweryUpdate:
-                $ref: '#/components/examples/BreweryUpdate'
-        required: true
-      responses:
-        "200":
-          description: the simulator details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Simulator'
-              examples:
-                BreweryUpdated:
-                  $ref: '#/components/examples/BreweryUpdated'
-        "400":
-          description: Bad request
-        "404":
-          description: the Simulator specified is unknown or you don't have access
-            to it
-    parameters:
-    - name: organization_id
-      in: path
-      description: the Organization identifier
-      required: true
-      style: simple
-      explode: false
-      schema:
-        type: string
-    - name: simulator_id
-      in: path
-      description: the Simulator identifier
       required: true
       style: simple
       explode: false
@@ -1424,7 +1424,7 @@ paths:
               $ref: '#/components/schemas/Scenario'
             examples:
               Scenario:
-                $ref: '#/components/examples/BreweryScenario'
+                $ref: '#/components/examples/BreweryScenarioIn'
         required: true
       responses:
         "201":
@@ -2101,81 +2101,6 @@ paths:
         type: string
 components:
   schemas:
-    AnalysisParameter:
-      required:
-      - id
-      - labels
-      - varType
-      type: object
-      properties:
-        id:
-          type: string
-          description: the Parameter id
-        labels:
-          $ref: '#/components/schemas/TranslatedLabels'
-        varType:
-          type: string
-          description: "the variable type for the parameter. Basic types or special\
-            \ type $DATASETID, $DATAPATH"
-        order:
-          type: integer
-          description: the Parameter Group order
-        options:
-          type: object
-          additionalProperties: true
-          description: freeform options
-      description: a Simulator Analysis Parameter
-    AnalysisParameterGroup:
-      required:
-      - id
-      - labels
-      - parameters
-      type: object
-      properties:
-        id:
-          type: string
-          description: the Parameter Group id
-        labels:
-          $ref: '#/components/schemas/TranslatedLabels'
-        order:
-          type: integer
-          description: the Parameter Group order
-        isTable:
-          type: boolean
-          description: does the group define a table
-        options:
-          type: object
-          additionalProperties: true
-          description: freeform options
-        parentId:
-          type: string
-          description: the Simulator Analysis Group parent Id
-        parameters:
-          type: array
-          description: a list of Simulator Analysis Parameters
-          items:
-            $ref: '#/components/schemas/AnalysisParameter'
-      description: a Parameter Group for an Analysis
-    AnalysisResourceStorage:
-      required:
-      - resourcePath
-      - storageType
-      type: object
-      properties:
-        storageType:
-          type: string
-          description: "the storage type. Use ${CSM_PROJECT_PATH} or ${CSM_STORAGE_SIMULATOR}\
-            \ behind the scene"
-          enum:
-          - local
-          - cloud
-          - customUri
-        resourcePath:
-          type: string
-          description: the resource path
-        customUri:
-          type: string
-          description: a custom Uri to provide the resource in resourcePath
     Connector:
       required:
       - connectorKey
@@ -2315,26 +2240,25 @@ components:
           description: the validator id
         compatibility:
           type: array
-          description: the list of compatible Simulators versions
+          description: the list of compatible Solutions versions
           items:
             $ref: '#/components/schemas/DatasetCompatibility'
       description: a Dataset
     DatasetCompatibility:
       required:
-      - simulatorKey
+      - solutionKey
       type: object
       properties:
-        simulatorKey:
+        solutionKey:
           type: string
-          description: the Simulator key which group Simulator versions
+          description: the Solution key which group Solution versions
         minimumVersion:
           type: string
-          description: the Simulator minimum version compatibility (version included)
+          description: the Solution minimum version compatibility (version included)
         maximumVersion:
           type: string
-          description: the Simulator maximum version compatibility (version included)
-      description: a Dataset compatibility constraint to a Simulator version open
-        range
+          description: the Solution maximum version compatibility (version included)
+      description: a Dataset compatibility constraint to a Solution version open range
     DatasetConnector:
       required:
       - id
@@ -2414,7 +2338,7 @@ components:
             Structure depends on cloud provider
         storage:
           $ref: '#/components/schemas/OrganizationService'
-        simulatorsContainerRegistry:
+        solutionsContainerRegistry:
           $ref: '#/components/schemas/OrganizationService'
       description: the cloud service resources of the Organization
     OrganizationUser:
@@ -2516,7 +2440,7 @@ components:
           $ref: '#/components/schemas/PlatformService'
         coreContainerRegistry:
           $ref: '#/components/schemas/PlatformService'
-        simulatorsContainerRegistry:
+        solutionsContainerRegistry:
           $ref: '#/components/schemas/PlatformService'
         eventBusCluster:
           $ref: '#/components/schemas/PlatformService'
@@ -2535,47 +2459,108 @@ components:
         analytic:
           $ref: '#/components/schemas/PlatformService'
       description: the list of Platform services
-    Scenario:
-      allOf:
-      - $ref: '#/components/schemas/ScenarioBase'
-      - type: object
-        properties:
-          simulatorName:
-            type: string
-            readOnly: false
-          simulatorAnalysisName:
-            type: string
-            readOnly: false
-          analysis:
-            $ref: '#/components/schemas/ScenarioAnalysis'
-          sendInputToDataWarehouse:
-            type: boolean
-            description: default setting for all Analysis to set whether or not the
-              Dataset values and the input parameters values are send to the DataWarehouse
-              prior to Simulation Run
-        description: a Scenario with detailed information
-    ScenarioAnalysis:
+    RunTemplate:
+      required:
+      - id
+      - name
       type: object
       properties:
-        analysisId:
+        id:
           type: string
-          description: the Simulator Analysis Id associated with this Scenario
-        datasetList:
+          description: the Solution Run Template id
+        name:
+          type: string
+          description: the Run Template name
+        description:
+          type: string
+          description: the Run Template description
+        isStandardSimulator:
+          type: boolean
+          description: whether or not the Run Template use the main standard Simulator
+            directly. False if there is a Custom Simulator set
+          readOnly: true
+        simulation:
+          type: string
+          description: the simulation name. This information is send to the Simulator
+        tags:
           type: array
-          description: the list of Dataset Id associated to this Scenario Analysis
+          description: the list of Run Template tags
           items:
             type: string
-        parametersValues:
+        computeSize:
+          type: string
+          description: the compute size needed for this Run Template. Standard sizes
+            are basic and highcpu. Default is basic
+        parametersHandlerResource:
+          $ref: '#/components/schemas/RunTemplateResourceStorage'
+        datasetValidatorResource:
+          $ref: '#/components/schemas/RunTemplateResourceStorage'
+        customSimulatorResource:
+          $ref: '#/components/schemas/RunTemplateResourceStorage'
+        datasetSchemaResource:
+          $ref: '#/components/schemas/RunTemplateResourceStorage'
+        parameterGroups:
           type: array
-          description: the list of Simulator Analysis parameters values
+          description: the list of parameters groups for the Run Template
           items:
-            $ref: '#/components/schemas/ScenarioAnalysisParameterValue'
-        sendInputToDataWarehouse:
+            $ref: '#/components/schemas/RunTemplateParameterGroup'
+      description: a Solution Run Template
+    RunTemplateParameter:
+      required:
+      - id
+      - labels
+      - varType
+      type: object
+      properties:
+        id:
+          type: string
+          description: the Parameter id
+        labels:
+          $ref: '#/components/schemas/TranslatedLabels'
+        varType:
+          type: string
+          description: "the variable type for the parameter. Basic types or special\
+            \ type $DATASETID, $DATAPATH"
+        order:
+          type: integer
+          description: the Parameter Group order
+        options:
+          type: object
+          additionalProperties: true
+          description: freeform options
+      description: a Run Template Parameter
+    RunTemplateParameterGroup:
+      required:
+      - id
+      - labels
+      - parameters
+      type: object
+      properties:
+        id:
+          type: string
+          description: the Parameter Group id
+        labels:
+          $ref: '#/components/schemas/TranslatedLabels'
+        order:
+          type: integer
+          description: the Parameter Group order
+        isTable:
           type: boolean
-          description: whether or not the Dataset values and the input parameters
-            values are send to the DataWarehouse prior to Simulation Run
-      description: a Scenario configuration for a Simulator Analysis
-    ScenarioAnalysisParameterValue:
+          description: does the group define a table
+        options:
+          type: object
+          additionalProperties: true
+          description: freeform options
+        parentId:
+          type: string
+          description: the Run Template Group parent Id
+        parameters:
+          type: array
+          description: a list of Run Template Parameters
+          items:
+            $ref: '#/components/schemas/RunTemplateParameter'
+      description: a Parameter Group for a Run Template
+    RunTemplateParameterValue:
       required:
       - parameterId
       - value
@@ -2591,11 +2576,55 @@ components:
         value:
           type: string
           description: the parameter value
-        isInherited:
+      description: the value of Analysis parameter for a Scenario for this Simulation
+    RunTemplateResourceStorage:
+      required:
+      - resourcePath
+      - storageType
+      type: object
+      properties:
+        storageType:
           type: string
-          description: whether or not the value is inherited from parent or has been
-            changed
-      description: the value of an Analysis parameter for a Scenario
+          description: "the storage type. Use ${CSM_PROJECT_PATH} or ${CSM_STORAGE_SIMULATOR}\
+            \ behind the scene"
+          enum:
+          - local
+          - cloud
+          - customUri
+        resourcePath:
+          type: string
+          description: the resource path
+        customUri:
+          type: string
+          description: a custom Uri to provide the resource in resourcePath
+    Scenario:
+      allOf:
+      - $ref: '#/components/schemas/ScenarioBase'
+      - type: object
+        properties:
+          solutionName:
+            type: string
+            description: the Solution name
+            readOnly: true
+          runTemplateName:
+            type: string
+            description: the Solution Run Template name associated with this Scenario
+            readOnly: true
+          datasetList:
+            type: array
+            description: the list of Dataset Id associated to this Scenario Run Template
+            items:
+              type: string
+          parametersValues:
+            type: array
+            description: the list of Solution Run Template parameters values
+            items:
+              $ref: '#/components/schemas/ScenarioRunTemplateParameterValue'
+          sendInputToDataWarehouse:
+            type: boolean
+            description: whether or not the Dataset values and the input parameters
+              values are send to the DataWarehouse prior to Simulation Run
+        description: a Scenario with detailed information
     ScenarioBase:
       required:
       - name
@@ -2623,10 +2652,13 @@ components:
           type: string
           description: the user id which own this Scenario
           readOnly: true
-        simulatorId:
+        solutionId:
           type: string
-          description: the Simulator Id associated with this Scenario
+          description: the Solution Id associated with this Scenario
           readOnly: true
+        runTemplateId:
+          type: string
+          description: the Solution Run Template Id associated with this Scenario
         users:
           type: array
           description: the list of users Id with their role
@@ -2671,6 +2703,27 @@ components:
           items:
             $ref: '#/components/schemas/ScenarioChangedParameterValue'
       description: the result of the comparison of two scenarios
+    ScenarioRunTemplateParameterValue:
+      required:
+      - parameterId
+      - value
+      type: object
+      properties:
+        parameterId:
+          type: string
+          description: the parameter Id
+        varType:
+          type: string
+          description: the parameter value type
+          readOnly: true
+        value:
+          type: string
+          description: the parameter value
+        isInherited:
+          type: string
+          description: whether or not the value is inherited from parent or has been
+            changed
+      description: the value of a Solution Run Template parameter for a Scenario
     ScenarioUser:
       required:
       - id
@@ -2704,10 +2757,10 @@ components:
               type: string
           parametersValues:
             type: array
-            description: the list of Simulator Analysis parameters values
+            description: the list of Run Template parameters values
             readOnly: true
             items:
-              $ref: '#/components/schemas/SimulationAnalysisParameterValue'
+              $ref: '#/components/schemas/RunTemplateParameterValue'
           sendInputToDataWarehouse:
             type: boolean
             description: whether or not the Dataset values and the input parameters
@@ -2738,23 +2791,6 @@ components:
           mainContainer:
             $ref: '#/components/schemas/SimulationContainers'
         description: a Simulation
-    SimulationAnalysisParameterValue:
-      required:
-      - parameterId
-      - value
-      type: object
-      properties:
-        parameterId:
-          type: string
-          description: the parameter Id
-        varType:
-          type: string
-          description: the parameter value type
-          readOnly: true
-        value:
-          type: string
-          description: the parameter value
-      description: the value of Analysis parameter for a Scenario for this Simulation
     SimulationBase:
       type: object
       properties:
@@ -2786,25 +2822,25 @@ components:
           type: string
           description: the Scenario name
           readOnly: true
-        simulatorId:
+        solutionId:
           type: string
-          description: the Simulator Id
+          description: the Solution Id
           readOnly: true
-        simulatorName:
+        solutionName:
           type: string
-          description: the Simulator name
+          description: the Solution name
           readOnly: true
-        simulatorVersion:
+        solutionVersion:
           type: string
-          description: the Simulator version
+          description: the Solution version
           readOnly: true
-        simulatorAnalysisId:
+        runTemplateId:
           type: string
-          description: the Simulator Analysis id
+          description: the Solution Run Template id
           readOnly: true
-        simulatorAnalysisName:
+        runTemplateName:
           type: string
-          description: the Simulator Analysis name
+          description: the Run Template name
           readOnly: true
         computeSize:
           type: string
@@ -2915,12 +2951,12 @@ components:
     SimulationSearch:
       type: object
       properties:
-        simulatorId:
+        solutionId:
           type: string
-          description: the Simulator Id to search
-        simulatorAnalysisId:
+          description: the Solution Id to search
+        runTemplateId:
           type: string
-          description: the Simulator Analysis Id to search
+          description: the Solution Analysis Id to search
         workspaceId:
           type: string
           description: the Workspace Id to search
@@ -2961,15 +2997,15 @@ components:
           type: string
           description: the Scenario Id
       description: the parameters to run a Scenario
-    SimulationStartSimulator:
+    SimulationStartSolution:
       type: object
       properties:
-        simulatorId:
+        solutionId:
           type: string
-          description: the Simulator Id
-        simulatorAnalysisId:
+          description: the Solution Id
+        runTemplateId:
           type: string
-          description: the Simulator Analysis id
+          description: the Solution Run Template id
         datasetList:
           type: array
           description: the list of Dataset Id associated to this Analysis
@@ -2977,9 +3013,9 @@ components:
             type: string
         parametersValues:
           type: array
-          description: the list of Simulator Analysis parameters values
+          description: the list of Solution Run Template parameters values
           items:
-            $ref: '#/components/schemas/SimulationAnalysisParameterValue'
+            $ref: '#/components/schemas/RunTemplateParameterValue'
         sendInputToDataWarehouse:
           type: boolean
           description: whether or not the Dataset values and the input parameters
@@ -2996,94 +3032,56 @@ components:
           type: string
           description: the event bus which receive Workspace Simulation events messages.
             Message won't be send if this is not set
-      description: the parameters to run directly a Simulator
-    Simulator:
+      description: the parameters to run directly a Solution
+    Solution:
       required:
       - name
       - repository
-      - simulatorKey
+      - solutionKey
       - version
       type: object
       properties:
         id:
           type: string
-          description: the Simulator version unique identifier
+          description: the Solution version unique identifier
           readOnly: true
-        simulatorKey:
+        solutionKey:
           type: string
-          description: the Simulator key which group Simulator versions
+          description: the Solution key which group Solution versions
         name:
           type: string
-          description: the Simulator name
+          description: the Solution name
         description:
           type: string
-          description: the Simulator description
+          description: the Solution description
         repository:
           type: string
           description: the registry repository containing the image
+        simulator:
+          type: string
+          description: the main simulator name used in standard Run Template
         version:
           type: string
-          description: the Simulator version MAJOR.MINOR.PATCH. Must be aligned with
+          description: the Solution version MAJOR.MINOR.PATCH. Must be aligned with
             an existing repository tag
         ownerId:
           type: string
-          description: the User id which own this Simulator
+          description: the User id which own this Solution
           readOnly: true
         url:
           type: string
-          description: an optional URL link to simulator page
+          description: an optional URL link to solution page
         tags:
           type: array
           description: the list of tags
           items:
             type: string
-        analysis:
+        run_templates:
           type: array
-          description: list of Simulator Analysis
+          description: list of Run Template
           items:
-            $ref: '#/components/schemas/SimulatorAnalysis'
-      description: a version of a Simulator
-    SimulatorAnalysis:
-      required:
-      - id
-      - name
-      type: object
-      properties:
-        id:
-          type: string
-          description: the Simulator Analysis id
-        name:
-          type: string
-          description: the Simulator Analysis name
-        description:
-          type: string
-          description: the Simulator Analysis description
-        simulation:
-          type: string
-          description: the simulation name
-        tags:
-          type: array
-          description: the list of Simulator Analysis tags
-          items:
-            type: string
-        computeSize:
-          type: string
-          description: the compute size needed for this Analysis. Standard sizes are
-            basic and highcpu. Default is basic
-        parametersHandlerResource:
-          $ref: '#/components/schemas/AnalysisResourceStorage'
-        datasetValidatorResource:
-          $ref: '#/components/schemas/AnalysisResourceStorage'
-        customDriverResource:
-          $ref: '#/components/schemas/AnalysisResourceStorage'
-        datasetSchemaResource:
-          $ref: '#/components/schemas/AnalysisResourceStorage'
-        parameterGroups:
-          type: array
-          description: the list of parameters groups for the Analysis
-          items:
-            $ref: '#/components/schemas/AnalysisParameterGroup'
-      description: a Simulator Analysis run template
+            $ref: '#/components/schemas/RunTemplate'
+      description: a version of a Solution
     TranslatedLabels:
       type: object
       additionalProperties: true
@@ -3243,7 +3241,7 @@ components:
     Workspace:
       required:
       - name
-      - simulator
+      - solution
       type: object
       properties:
         id:
@@ -3268,13 +3266,8 @@ components:
           type: string
           description: the user id which own this workspace
           readOnly: true
-        simulator:
-          $ref: '#/components/schemas/WorkspaceSimulator'
-        simulatorAnalysisFilter:
-          type: array
-          description: a filter list of available Simulator Analysis
-          items:
-            type: string
+        solution:
+          $ref: '#/components/schemas/WorkspaceSolution'
         users:
           type: array
           description: the list of users Id with their role
@@ -3286,9 +3279,9 @@ components:
           $ref: '#/components/schemas/WorkspaceServices'
         sendInputToDataWarehouse:
           type: boolean
-          description: default setting for all Scenarios and Analysis to set whether
-            or not the Dataset values and the input parameters values are send to
-            the DataWarehouse prior to Simulation Run
+          description: default setting for all Scenarios and Run Templates to set
+            whether or not the Dataset values and the input parameters values are
+            send to the DataWarehouse prior to Simulation Run
           default: true
       description: a Workspace
     WorkspaceService:
@@ -3331,25 +3324,25 @@ components:
         storage:
           $ref: '#/components/schemas/WorkspaceService'
       description: the cloud service resources of the Workspace
-    WorkspaceSimulator:
+    WorkspaceSolution:
       required:
-      - simulatorId
+      - solutionId
       type: object
       properties:
-        simulatorId:
+        solutionId:
           type: string
-          description: the Simulator Id attached to this workspace
-        analysisFilter:
+          description: the Solution Id attached to this workspace
+        runTemplateFilter:
           type: array
-          description: the list of Simulator Analysis Id to filter
+          description: the list of Solution Run Template Id to filter
           items:
             type: string
-        defaultAnalysisDataset:
+        defaultRunTemplateDataset:
           type: object
           additionalProperties: true
-          description: a map of AnalysisId/DatasetId to set a default dataset for
-            an analysis
-      description: the Workspace Simulator configuration
+          description: a map of RunTemplateId/DatasetId to set a default dataset for
+            a Run Template
+      description: the Workspace Solution configuration
     WorkspaceUser:
       required:
       - id
@@ -3534,24 +3527,25 @@ components:
         platformRoles:
         - Admin
     Brewery:
-      summary: Brewery Simulator
-      description: Brewery Simulator example
+      summary: Brewery Solution
+      description: Brewery Solution example
       value:
         id: "1"
-        simulatorKey: Brewery Simulator
-        name: Brewery Simulator
-        description: "A Brewery Supplier Simulator Model which simulate stock, production,\
+        solutionKey: Brewery Solution
+        name: Brewery Solution
+        description: "A Brewery Supplier Solution Model which simulate stock, production,\
           \ transport and customer satisfaction"
-        repository: brewery_simulator
+        repository: brewery_solution
         version: 1.0.0
         ownerId: "1"
         url: https://github.com/Cosm-Tech/brewery.git
         tags:
         - Brewery
-        analysis:
+        run_templates:
         - id: hundred
           name: Full simulation 100 steps
           description: Run a full simulation with 100 steps
+          isStandardSimulator: false
           simulation: DeployedSimulation
           tags:
           - Full
@@ -3559,16 +3553,16 @@ components:
           computeSize: highcpu
           parametersHandlerResource:
             storageType: local
-            resourcePath: analysis/hundred/parameters_handler/
+            resourcePath: run_templates/hundred/parameters_handler/
           datasetValidatorResource:
             storageType: local
-            resourcePath: analysis/hundred/validator/
-          customDriverResource:
+            resourcePath: run_templates/hundred/validator/
+          customSimulatorResource:
             storageType: local
-            resourcePath: analysis/hundred/driver/
+            resourcePath: run_templates/hundred/custom_simulator/
           datasetSchemaResource:
             storageType: local
-            resourcePath: analysis/hundred/schema
+            resourcePath: run_templates/hundred/schema
           parameterGroups:
           - id: consumers
             labels:
@@ -3604,7 +3598,7 @@ components:
             ADT_QUERY: SELECT * FROM digitaltwins
             EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
         compatibility:
-        - simulatorKey: Brewery Simulator
+        - solutionKey: Brewery Solution
           minimumVersion: 1.0.0
     BreweryADTRunValidator:
       summary: Brewery ADT Dataset Validator Run input
@@ -3641,7 +3635,7 @@ components:
             ADT_QUERY: SELECT * FROM digitaltwins
             EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
         compatibility:
-        - simulatorKey: Brewery Simulator
+        - solutionKey: Brewery Solution
           minimumVersion: 1.0.0
     BreweryADTValidator:
       summary: Brewery ADT Dataset Validator
@@ -3686,7 +3680,10 @@ components:
         - Brewery
         - reference
         ownerId: "1"
-        simulatorId: "1"
+        solutionId: "1"
+        solutionName: Brewery Solution
+        runTemplateId: "1"
+        runTemplateName: Full simulation 100 steps
         users:
         - id: "1"
           name: Bob
@@ -3694,14 +3691,12 @@ components:
         - id: "2"
           name: Alice
           roles: Viewer
-        analysis:
-          analysisId: "1"
-          datasetList:
-          - "1"
-          parametersValues:
-          - parameterId: prefix
-            varType: string
-            value: ""
+        datasetList:
+        - "1"
+        parametersValues:
+        - parameterId: prefix
+          varType: string
+          value: ""
     BreweryScenarioComparison:
       summary: Brewery comparison result
       description: Brewery comparison result between a parent Scenario and its child
@@ -3713,6 +3708,29 @@ components:
           varType: string
           value: Brewery Master Analysis
           comparedValue: Brewery Master Analysis 2021
+    BreweryScenarioIn:
+      summary: Brewery Scenario input example
+      description: Brewery Scenario input example
+      value:
+        name: Brewery Master Analysis
+        description: Brewery master reference analysis
+        tags:
+        - Brewery
+        - reference
+        runTemplateId: "1"
+        users:
+        - id: "1"
+          name: Bob
+          roles: Editor
+        - id: "2"
+          name: Alice
+          roles: Viewer
+        datasetList:
+        - "1"
+        parametersValues:
+        - parameterId: prefix
+          varType: string
+          value: ""
     BreweryScenarioUpdate:
       summary: Update the Brewery Scenario
       description: Update the Brewery Scenario by changing its name
@@ -3729,7 +3747,10 @@ components:
         - Brewery
         - reference
         ownerId: "1"
-        simulatorId: "1"
+        solutionId: "1"
+        solutionName: Brewery Solution
+        runTemplateId: "1"
+        runTemplateName: Full simulation 100 steps
         users:
         - id: "1"
           name: Bob
@@ -3737,14 +3758,12 @@ components:
         - id: "2"
           name: Alice
           roles: Viewer
-        analysis:
-          analysisId: "1"
-          datasetList:
-          - "1"
-          parametersValues:
-          - parameterId: prefix
-            varType: string
-            value: ""
+        datasetList:
+        - "1"
+        parametersValues:
+        - parameterId: prefix
+          varType: string
+          value: ""
     BrewerySearch:
       summary: Brewery search Simulation example
       description: Brewery search Simulation of Workspace 1 in Running state example
@@ -3762,15 +3781,15 @@ components:
         workspaceName: Brewery Analysis
         scenarioId: "1"
         scenarioName: Brewery Master Analysis
-        simulatorId: "1"
-        simulatorName: Brewery Simulator
-        simulatorVersion: 1.0.0
-        simulatorAnalysisId: hundred
-        simulatorAnalysisName: Full simulation 100 steps
+        solutionId: "1"
+        solutionName: Brewery Solution
+        solutionVersion: 1.0.0
+        runTemplateId: hundred
+        runTemplateName: Full simulation 100 steps
         computeSize: highcpu
-        parametersHandler: analysis/hundred/parameters_handler/
-        datasetValidator: analysis/hundred/validator/
-        customDriver: analysis/hundred/driver/
+        parametersHandler: run_templates/hundred/parameters_handler/
+        datasetValidator: run_templates/hundred/validator/
+        customDriver: run_templates/hundred/driver/
         datasetList:
         - "1"
         parametersValues:
@@ -3810,7 +3829,7 @@ components:
             AZURE_CLIENT_SECRET: azertyuiop
             CSM_API_URL: https://api.comostech.com
             CSM_PARAMETERS_HANDLER_PROVIDER: local
-            CSM_PARAMETERS_HANDLER_PATH: analysis/hundred/parameters_handler/
+            CSM_PARAMETERS_HANDLER_PATH: run_templates/hundred/parameters_handler/
             CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/simulation-parameters
           image: twinengines.azurecr.io/brewery_simulator:latest
           runArgs:
@@ -3822,7 +3841,7 @@ components:
             AZURE_CLIENT_SECRET: azertyuiop
             CSM_API_URL: https://api.comostech.com
             CSM_DATASET_VALIDATOR_PROVIDER: local
-            CSM_DATASET_VALIDATOR_PATH: analysis/hundred/validator/
+            CSM_DATASET_VALIDATOR_PATH: run_templates/hundred/validator/
             CSM_DATASET_ABSOLUTE_PATH: /mnt/simulation-data
           image: twinengines.azurecr.io/brewery_simulator:latest
           runArgs:
@@ -3846,7 +3865,7 @@ components:
             AZURE_CLIENT_SECRET: azertyuiop
             CSM_API_URL: https://api.comostech.com
             CSM_CUSTOM_DRIVER_PROVIDER: local
-            CSM_CUSTOM_DRIVER_PATH: analysis/hundred/driver/
+            CSM_CUSTOM_DRIVER_PATH: run_templates/hundred/driver/
             CSM_DATASET_ABSOLUTE_PATH: /mnt/simulation-data
             CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/simulation-parameters
             CSM_CONTROL_PLANE_TOPIC: brewery-simulation
@@ -3867,11 +3886,11 @@ components:
         workspaceName: Brewery Analysis
         scenarioId: "1"
         scenarioName: Brewery Master Analysis
-        simulatorId: "1"
-        simulatorName: Brewery Simulator
-        simulatorVersion: 1.0.0
-        simulatorAnalysisId: hundred
-        simulatorAnalysisName: Full simulation 100 steps
+        solutionId: "1"
+        solutionName: Brewery Solution
+        solutionVersion: 1.0.0
+        runTemplateId: hundred
+        runTemplateName: Full simulation 100 steps
         computeSize: highcpu
         state: Running
         starTime: "4/15/2021, 10:52:18.593 AM"
@@ -3913,7 +3932,7 @@ components:
             AZURE_CLIENT_SECRET: azertyuiop
             CSM_API_URL: https://api.comostech.com
             CSM_PARAMETERS_HANDLER_PROVIDER: local
-            CSM_PARAMETERS_HANDLER_PATH: analysis/hundred/parameters_handler/
+            CSM_PARAMETERS_HANDLER_PATH: run_templates/hundred/parameters_handler/
             CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/simulation-parameters
           image: twinengines.azurecr.io/brewery_simulator:latest
           runArgs:
@@ -3925,7 +3944,7 @@ components:
             AZURE_CLIENT_SECRET: azertyuiop
             CSM_API_URL: https://api.comostech.com
             CSM_DATASET_VALIDATOR_PROVIDER: local
-            CSM_DATASET_VALIDATOR_PATH: analysis/hundred/validator/
+            CSM_DATASET_VALIDATOR_PATH: run_templates/hundred/validator/
             CSM_DATASET_ABSOLUTE_PATH: /mnt/simulation-data
           image: twinengines.azurecr.io/brewery_simulator:latest
           runArgs:
@@ -3949,7 +3968,7 @@ components:
             AZURE_CLIENT_SECRET: azertyuiop
             CSM_API_URL: https://api.comostech.com
             CSM_CUSTOM_DRIVER_PROVIDER: local
-            CSM_CUSTOM_DRIVER_PATH: analysis/hundred/driver/
+            CSM_CUSTOM_DRIVER_PATH: run_templates/hundred/driver/
             CSM_DATASET_ABSOLUTE_PATH: /mnt/simulation-data
             CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/simulation-parameters
             CSM_CONTROL_PLANE_TOPIC: brewery-simulation
@@ -3985,7 +4004,7 @@ components:
           logs:
           - timeGenerated: "4/15/2021, 10:52:22.593 AM"
             entrySource: stderr
-            logEntry: cannot run simulator
+            logEntry: cannot run solution
           - timeGenerated: "4/15/2021, 10:52:23.593 AM"
             entrySource: stderr
             logEntry: critical error
@@ -3997,22 +4016,22 @@ components:
         - azertyuiop
         - wxcvbn
         plainText: false
-    BrewerySimulationSimulator:
-      summary: Brewery Simulation Simulator example
-      description: Brewery Simulation ran with Simulator information example
+    BrewerySimulationSolution:
+      summary: Brewery Simulation Solution example
+      description: Brewery Simulation ran with Solution information example
       value:
         id: "1"
         jobId: "1"
         ownerId: "1"
-        simulatorId: "1"
-        simulatorName: Brewery Simulator
-        simulatorVersion: 1.0.0
-        simulatorAnalysisId: hundred
-        simulatorAnalysisName: Full simulation 100 steps
+        solutionId: "1"
+        solutionName: Brewery Solution
+        solutionVersion: 1.0.0
+        runTemplateId: hundred
+        runTemplateName: Full simulation 100 steps
         computeSize: highcpu
-        parametersHandler: analysis/hundred/parameters_handler/
-        datasetValidator: analysis/hundred/validator/
-        customDriver: analysis/hundred/driver/
+        parametersHandler: run_templates/hundred/parameters_handler/
+        datasetValidator: run_templates/hundred/validator/
+        customDriver: run_templates/hundred/driver/
         datasetList:
         - "1"
         parametersValues:
@@ -4053,7 +4072,7 @@ components:
             AZURE_CLIENT_SECRET: azertyuiop
             CSM_API_URL: https://api.comostech.com
             CSM_PARAMETERS_HANDLER_PROVIDER: local
-            CSM_PARAMETERS_HANDLER_PATH: analysis/hundred/parameters_handler/
+            CSM_PARAMETERS_HANDLER_PATH: run_templates/hundred/parameters_handler/
             CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/simulation-parameters
           image: twinengines.azurecr.io/brewery_simulator:latest
           runArgs:
@@ -4065,7 +4084,7 @@ components:
             AZURE_CLIENT_SECRET: azertyuiop
             CSM_API_URL: https://api.comostech.com
             CSM_DATASET_VALIDATOR_PROVIDER: local
-            CSM_DATASET_VALIDATOR_PATH: analysis/hundred/validator/
+            CSM_DATASET_VALIDATOR_PATH: run_templates/hundred/validator/
             CSM_DATASET_ABSOLUTE_PATH: /mnt/simulation-data
           image: twinengines.azurecr.io/brewery_simulator:latest
           runArgs:
@@ -4089,7 +4108,7 @@ components:
             AZURE_CLIENT_SECRET: azertyuiop
             CSM_API_URL: https://api.comostech.com
             CSM_CUSTOM_DRIVER_PROVIDER: local
-            CSM_CUSTOM_DRIVER_PATH: analysis/hundred/driver/
+            CSM_CUSTOM_DRIVER_PATH: run_templates/hundred/driver/
             CSM_DATASET_ABSOLUTE_PATH: /mnt/simulation-data
             CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/simulation-parameters
             CSM_CONTROL_PLANE_TOPIC: brewery-simulation
@@ -4134,12 +4153,12 @@ components:
       value:
         workspaceId: "1"
         scenarioId: "1"
-    BrewerySimulationStartSimulator:
-      summary: Brewery start Simulation for a Simulator example
-      description: Brewery start Simulation for Simulator 1 example
+    BrewerySimulationStartSolution:
+      summary: Brewery start Simulation for a Solution example
+      description: Brewery start Simulation for Solution 1 example
       value:
-        simulatorId: "1"
-        simulatorAnalysisId: "1"
+        solutionId: "1"
+        runTemplateId: "1"
         datasetList:
         - "1"
         parametersValues:
@@ -4150,29 +4169,30 @@ components:
         resultsEventBusResourceUri: brewery
         simulationEventBusResourceUri: brewery-simulation
     BreweryUpdate:
-      summary: Brewery Simulator update
-      description: Brewery Simulator update example
+      summary: Brewery Solution update
+      description: Brewery Solution update example
       value:
-        name: Brewery Simulator 2021
+        name: Brewery Solution 2021
     BreweryUpdated:
-      summary: Brewery Simulator
-      description: Brewery Simulator example
+      summary: Brewery Solution
+      description: Brewery Solution example
       value:
         id: "1"
-        simulatorKey: Brewery Simulator
-        name: Brewery Simulator 2021
-        description: "A Brewery Supplier Simulator Model which simulate stock, production,\
+        solutionKey: Brewery Solution
+        name: Brewery Solution 2021
+        description: "A Brewery Supplier Solution Model which simulate stock, production,\
           \ transport and customer satisfaction"
-        repository: brewery_simulator
+        repository: brewery_solution
         version: 1.0.0
         ownerId: "1"
         url: https://github.com/Cosm-Tech/brewery.git
         tags:
         - Brewery
-        analysis:
+        run_templates:
         - id: hundred
           name: Full simulation 100 steps
           description: Run a full simulation with 100 steps
+          isStandardSimulator: false
           simulation: DeployedSimulation
           tags:
           - Full
@@ -4180,16 +4200,16 @@ components:
           computeSize: highcpu
           parametersHandlerResource:
             storageType: local
-            resourcePath: analysis/hundred/parameters_handler/
+            resourcePath: run_templates/hundred/parameters_handler/
           datasetValidatorResource:
             storageType: local
-            resourcePath: analysis/hundred/validator/
-          customDriverResource:
+            resourcePath: run_templates/hundred/validator/
+          customSimulatorResource:
             storageType: local
-            resourcePath: analysis/hundred/driver/
+            resourcePath: run_templates/hundred/custom_simulator/
           datasetSchemaResource:
             storageType: local
-            resourcePath: analysis/hundred/schema
+            resourcePath: run_templates/hundred/schema
           parameterGroups:
           - id: consumers
             labels:
@@ -4213,11 +4233,11 @@ components:
         tags:
         - Brewery
         ownerId: "1"
-        simulator:
-          simulatorId: "1"
-          AnalysisFilter:
+        solution:
+          solutionId: "1"
+          runTemplateFilter:
           - "1"
-          defaultAnalysisDataset:
+          defaultRunTemplateDataset:
             "1": "1"
         users:
         - id: "1"
@@ -4268,11 +4288,11 @@ components:
         version: 1.0.0
         tags:
         - Brewery
-        simulator:
-          simulatorId: "1"
-          AnalysisFilter:
+        solution:
+          solutionId: "1"
+          runTemplateFilter:
           - "1"
-          defaultAnalysisDataset:
+          defaultRunTemplateDataset:
             "1": "1"
         users:
         - id: "1"
@@ -4316,11 +4336,11 @@ components:
         tags:
         - Brewery
         ownerId: "1"
-        simulator:
-          simulatorId: "1"
-          AnalysisFilter:
+        solution:
+          solutionId: "1"
+          runTemplateFilter:
           - "1"
-          defaultAnalysisDataset:
+          defaultRunTemplateDataset:
             "1": "1"
         users:
         - id: "1"
@@ -4387,7 +4407,7 @@ components:
             cloudService: AzureStorage
             baseUri: https://csmphoenix.blob.core.windows.net
             resourceUri: organization-1/files
-          simulatorsContainerRegistry:
+          solutionsContainerRegistry:
             cloudService: AzureContainerRegistries
             baseUri: twinengines-1.azurecr.io
     CosmoTechPlatform:
@@ -4414,7 +4434,7 @@ components:
           coreContainerRegistry:
             cloudService: AzureContainerRegistries
             baseUri: csmphoenix.azurecr.io
-          simulatorsContainerRegistry:
+          solutionsContainerRegistry:
             cloudService: AzureContainerRegistries
             baseUri: twinengines.azurecr.io
           eventBusCluster:
@@ -4476,7 +4496,7 @@ components:
           coreContainerRegistry:
             cloudService: AzureContainerRegistries
             baseUri: csmphoenix.azurecr.io
-          simulatorsContainerRegistry:
+          solutionsContainerRegistry:
             cloudService: AzureContainerRegistries
             baseUri: twinengines.azurecr.io
           eventBusCluster:
@@ -4539,7 +4559,7 @@ components:
             cloudService: AzureStorage
             baseUri: https://csmphoenix.blob.core.windows.net
             resourceUri: organization-1/files
-          simulatorsContainerRegistry:
+          solutionsContainerRegistry:
             cloudService: AzureContainerRegistries
             baseUri: twinengines-1.azurecr.io
     NewOrganizationIn:
@@ -4562,7 +4582,7 @@ components:
           storage:
             platformService: storage
             resourceUri: organization-1/files
-          simulatorsContainerRegistry:
+          solutionsContainerRegistry:
             cloudService: AzureContainerRegistries
             baseUri: twinengines-1.azurecr.io
     OneConnector:
@@ -4626,33 +4646,34 @@ components:
         workspaceName: Brewery Analysis
         scenarioId: "1"
         scenarioName: Brewery Master Analysis
-        simulatorId: "1"
-        simulatorName: Brewery Simulator
-        simulatorVersion: 1.0.0
-        simulatorAnalysisId: hundred
-        simulatorAnalysisName: Full simulation 100 steps
+        solutionId: "1"
+        solutionName: Brewery Solution
+        solutionVersion: 1.0.0
+        runTemplateId: hundred
+        runTemplateName: Full simulation 100 steps
         computeSize: highcpu
         state: Running
         starTime: "4/15/2021, 10:52:18.593 AM"
-    OneSimulator:
-      summary: Brewery Simulator
-      description: Brewery Simulator example
+    OneSolution:
+      summary: Brewery Solution
+      description: Brewery Solution example
       value:
       - id: "1"
-        simulatorKey: Brewery Simulator
-        name: Brewery Simulator
-        description: "A Brewery Supplier Simulator Model which simulate stock, production,\
+        solutionKey: Brewery Solution
+        name: Brewery Solution
+        description: "A Brewery Supplier Solution Model which simulate stock, production,\
           \ transport and customer satisfaction"
-        repository: brewery_simulator
+        repository: brewery_solution
         version: 1.0.0
         ownerId: "1"
         url: https://github.com/Cosm-Tech/brewery.git
         tags:
         - Brewery
-        analysis:
+        run_templates:
         - id: hundred
           name: Full simulation 100 steps
           description: Run a full simulation with 100 steps
+          isStandardSimulator: false
           simulation: DeployedSimulation
           tags:
           - Full
@@ -4660,16 +4681,16 @@ components:
           computeSize: highcpu
           parametersHandlerResource:
             storageType: local
-            resourcePath: analysis/hundred/parameters_handler/
+            resourcePath: run_templates/hundred/parameters_handler/
           datasetValidatorResource:
             storageType: local
-            resourcePath: analysis/hundred/validator/
-          customDriverResource:
+            resourcePath: run_templates/hundred/validator/
+          customSimulatorResource:
             storageType: local
-            resourcePath: analysis/hundred/driver/
+            resourcePath: run_templates/hundred/custom_simulator/
           datasetSchemaResource:
             storageType: local
-            resourcePath: analysis/hundred/schema
+            resourcePath: run_templates/hundred/schema
           parameterGroups:
           - id: consumers
             labels:
@@ -4681,6 +4702,15 @@ components:
                 fr: Prefix des noms
                 en: Names prefix
               varType: string
+        - id: standard
+          name: Standard Simulation
+          description: Run the standard Simulation
+          isStandardSimulator: true
+          simulation: DeployedSimulation
+          tags:
+          - Full
+          - Supply
+          computeSize: basic
     OneValidator:
       summary: Dataset Validator list
       description: a Validator list with one element
@@ -4707,11 +4737,11 @@ components:
         tags:
         - Brewery
         ownerId: "1"
-        simulator:
-          simulatorId: "1"
-          AnalysisFilter:
+        solution:
+          solutionId: "1"
+          runTemplateFilter:
           - "1"
-          defaultAnalysisDataset:
+          defaultRunTemplateDataset:
             "1": "1"
         users:
         - id: "1"
@@ -4812,7 +4842,10 @@ components:
         - Brewery
         - reference
         ownerId: "1"
-        simulatorId: "1"
+        solutionId: "1"
+        solutionName: Brewery Solution
+        runTemplateId: "1"
+        runTemplateName: Full simulation 100 steps
         users:
         - id: "1"
           name: Bob
@@ -4820,14 +4853,12 @@ components:
         - id: "2"
           name: Alice
           roles: Viewer
-        analysis:
-          analysisId: "1"
-          datasetList:
-          - "1"
-          parametersValues:
-          - parameterId: prefix
-            varType: string
-            value: ""
+        datasetList:
+        - "1"
+        parametersValues:
+        - parameterId: prefix
+          varType: string
+          value: ""
       - id: "2"
         name: Brewery Analysis name example
         description: Brewery analysis with example as name prefix
@@ -4836,7 +4867,10 @@ components:
         - example
         parentId: "1"
         ownerId: "1"
-        simulatorId: "1"
+        solutionId: "1"
+        solutionName: Brewery Solution
+        runTemplateId: "1"
+        runTemplateName: Full simulation 100 steps
         users:
         - id: "1"
           name: Bob
@@ -4844,14 +4878,12 @@ components:
         - id: "2"
           name: Alice
           roles: Viewer
-        analysis:
-          analysisId: "1"
-          datasetList:
-          - "1"
-          parametersValues:
-          - parameterId: prefix
-            varType: string
-            value: example
+        datasetList:
+        - "1"
+        parametersValues:
+        - parameterId: prefix
+          varType: string
+          value: example
       - id: "3"
         name: Brewery Analysis name no change
         description: Brewery analysis with no change on name prefix
@@ -4859,7 +4891,10 @@ components:
         - Brewery
         parentId: "1"
         ownerId: "1"
-        simulatorId: "1"
+        solutionId: "1"
+        solutionName: Brewery Solution
+        runTemplateId: "1"
+        runTemplateName: Full simulation 100 steps
         users:
         - id: "1"
           name: Bob
@@ -4867,15 +4902,13 @@ components:
         - id: "2"
           name: Alice
           roles: Viewer
-        analysis:
-          analysisId: "1"
-          datasetList:
-          - "1"
-          parametersValues:
-          - parameterId: prefix
-            varType: string
-            value: ""
-            inherited: true
+        datasetList:
+        - "1"
+        parametersValues:
+        - parameterId: prefix
+          varType: string
+          value: ""
+          inherited: true
     ThreeValidatorRun:
       summary: Brewery ADT Dataset Validator Run list
       description: a list of Validator Run for the Brewery Dataset
@@ -4928,7 +4961,7 @@ components:
             ADT_QUERY: SELECT * FROM digitaltwins
             EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
         compatibility:
-        - simulatorKey: Brewery Simulator
+        - solutionKey: Brewery Solution
           minimumVersion: 1.0.0
       - id: "2"
         name: Brewery ADT future
@@ -4974,7 +5007,7 @@ components:
             cloudService: AzureStorage
             baseUri: https://csmphoenix.blob.core.windows.net
             resourceUri: organization-1/files
-          simulatorsContainerRegistry:
+          solutionsContainerRegistry:
             cloudService: AzureContainerRegistries
             baseUri: twinengines-1.azurecr.io
       - id: "2"
@@ -4994,7 +5027,7 @@ components:
             cloudService: AzureStorage
             baseUri: https://csmphoenix.blob.core.windows.net
             resourceUri: organization-2/files
-          simulatorsContainerRegistry:
+          solutionsContainerRegistry:
             cloudService: AzureContainerRegistries
             baseUri: twinengines-2.azurecr.io
     TwoUsers:

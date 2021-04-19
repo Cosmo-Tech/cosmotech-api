@@ -11,7 +11,7 @@ import com.cosmotech.simulation.domain.SimulationLogsOptions
 import com.cosmotech.simulation.domain.SimulationSearch
 import com.cosmotech.simulation.domain.SimulationStartContainers
 import com.cosmotech.simulation.domain.SimulationStartScenario
-import com.cosmotech.simulation.domain.SimulationStartSimulator
+import com.cosmotech.simulation.domain.SimulationStartSolution
 import org.springframework.stereotype.Service
 
 @Service
@@ -101,9 +101,9 @@ class SimulationServiceImpl : AbstractPhoenixService(), SimulationApiService {
     TODO("Not yet implemented")
   }
 
-  override fun startSimulationSimulator(
+  override fun startSimulationSolution(
       organizationId: kotlin.String,
-      simulationStartSimulator: SimulationStartSimulator
+      simulationStartSolution: SimulationStartSolution
   ): Simulation {
     TODO("Not yet implemented")
   }

@@ -89,7 +89,7 @@ paths:
           description: Bad request
         "404":
           description: the Scenario specified is unknown or you don't have access to it
-  /organizations/{organization_id}/simulations/startsimulator:
+  /organizations/{organization_id}/simulations/startsolution:
     parameters:
       - name: organization_id
         in: path
@@ -98,20 +98,20 @@ paths:
         schema:
           type: string
     post:
-      operationId: startSimulationSimulator
+      operationId: startSimulationSolution
       tags:
         - simulation
-      summary: Start a new simulation for a Simulator Analysis
+      summary: Start a new simulation for a Solution Run Template
       requestBody:
-        description: the Simulator Analysis information to start
+        description: the Solution Run Template information to start
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SimulationStartSimulator'
+              $ref: '#/components/schemas/SimulationStartSolution'
             examples:
-              SimulationStartSimulator:
-                $ref: '#/components/examples/BrewerySimulationStartSimulator'
+              SimulationStartSolution:
+                $ref: '#/components/examples/BrewerySimulationStartSolution'
       responses:
         "202":
           description: the simulation details
@@ -121,7 +121,7 @@ paths:
                 $ref: '#/components/schemas/Simulation'
               examples:
                 Simulation:
-                  $ref: '#/components/examples/BrewerySimulationSimulator'
+                  $ref: '#/components/examples/BrewerySimulationSolution'
         "400":
           description: Bad request
         "404":
@@ -147,7 +147,7 @@ paths:
             schema:
               $ref: '#/components/schemas/SimulationStartContainers'
             examples:
-              SimulationStartSimulator:
+              SimulationStartContainers:
                 $ref: '#/components/examples/BrewerySimulationStartContainers'
       responses:
         "202":
@@ -240,7 +240,7 @@ paths:
             schema:
               $ref: '#/components/schemas/SimulationLogsOptions'
             examples:
-              SimulationStartSimulator:
+              SimulationLogsOptions:
                 $ref: '#/components/examples/BrewerySimulationLogsOptions'
       responses:
         "200":
@@ -455,12 +455,12 @@ components:
       type: object
       description: the search options
       properties:
-        simulatorId:
+        solutionId:
           type: string
-          description: the Simulator Id to search
-        simulatorAnalysisId:
+          description: the Solution Id to search
+        runTemplateId:
           type: string
-          description: the Simulator Analysis Id to search
+          description: the Solution Analysis Id to search
         workspaceId:
           type: string
           description: the Workspace Id to search
@@ -486,16 +486,16 @@ components:
         scenarioId:
           type: string
           description: the Scenario Id
-    SimulationStartSimulator:
+    SimulationStartSolution:
       type: object
-      description: the parameters to run directly a Simulator
+      description: the parameters to run directly a Solution
       properties:
-        simulatorId:
+        solutionId:
           type: string
-          description: the Simulator Id
-        simulatorAnalysisId:
+          description: the Solution Id
+        runTemplateId:
           type: string
-          description: the Simulator Analysis id
+          description: the Solution Run Template id
         datasetList:
           type: array
           description: the list of Dataset Id associated to this Analysis
@@ -503,9 +503,9 @@ components:
             type: string
         parametersValues:
           type: array
-          description: the list of Simulator Analysis parameters values
+          description: the list of Solution Run Template parameters values
           items:
-            $ref: '#/components/schemas/SimulationAnalysisParameterValue'
+            $ref: '#/components/schemas/RunTemplateParameterValue'
         sendInputToDataWarehouse:
           type: boolean
           description: whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to Simulation Run
@@ -565,26 +565,26 @@ components:
           type: string
           readOnly: true
           description: the Scenario name
-        simulatorId:
+        solutionId:
           type: string
           readOnly: true
-          description: the Simulator Id
-        simulatorName:
+          description: the Solution Id
+        solutionName:
           type: string
           readOnly: true
-          description: the Simulator name
-        simulatorVersion:
+          description: the Solution name
+        solutionVersion:
           type: string
           readOnly: true
-          description: the Simulator version
-        simulatorAnalysisId:
+          description: the Solution version
+        runTemplateId:
           type: string
           readOnly: true
-          description: the Simulator Analysis id
-        simulatorAnalysisName:
+          description: the Solution Run Template id
+        runTemplateName:
           type: string
           readOnly: true
-          description: the Simulator Analysis name
+          description: the Run Template name
         computeSize:
           type: string
           readOnly: true
@@ -616,9 +616,9 @@ components:
             parametersValues:
               type: array
               readOnly: true
-              description: the list of Simulator Analysis parameters values
+              description: the list of Run Template parameters values
               items:
-                $ref: '#/components/schemas/SimulationAnalysisParameterValue'
+                $ref: '#/components/schemas/RunTemplateParameterValue'
             sendInputToDataWarehouse:
               type: boolean
               readOnly: true
@@ -646,7 +646,7 @@ components:
               readOnly: true
               description: the main container
               $ref: '#/components/schemas/SimulationContainers'
-    SimulationAnalysisParameterValue:
+    RunTemplateParameterValue:
       type: object
       description: the value of Analysis parameter for a Scenario for this Simulation
       properties:
@@ -764,15 +764,15 @@ components:
         workspaceName: Brewery Analysis
         scenarioId: "1"
         scenarioName: Brewery Master Analysis
-        simulatorId: "1"
-        simulatorName: Brewery Simulator
-        simulatorVersion: "1.0.0"
-        simulatorAnalysisId: hundred
-        simulatorAnalysisName: Full simulation 100 steps
+        solutionId: "1"
+        solutionName: Brewery Solution
+        solutionVersion: "1.0.0"
+        runTemplateId: hundred
+        runTemplateName: Full simulation 100 steps
         computeSize: highcpu
-        parametersHandler: analysis/hundred/parameters_handler/
-        datasetValidator: analysis/hundred/validator/
-        customDriver: analysis/hundred/driver/
+        parametersHandler: run_templates/hundred/parameters_handler/
+        datasetValidator: run_templates/hundred/validator/
+        customDriver: run_templates/hundred/driver/
         datasetList:
           - "1"
         parametersValues:
@@ -812,7 +812,7 @@ components:
               AZURE_CLIENT_SECRET: azertyuiop
               CSM_API_URL: https://api.comostech.com
               CSM_PARAMETERS_HANDLER_PROVIDER: local
-              CSM_PARAMETERS_HANDLER_PATH: analysis/hundred/parameters_handler/
+              CSM_PARAMETERS_HANDLER_PATH: run_templates/hundred/parameters_handler/
               CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/simulation-parameters
             image: twinengines.azurecr.io/brewery_simulator:latest
             runArgs:
@@ -824,7 +824,7 @@ components:
               AZURE_CLIENT_SECRET: azertyuiop
               CSM_API_URL: https://api.comostech.com
               CSM_DATASET_VALIDATOR_PROVIDER: local
-              CSM_DATASET_VALIDATOR_PATH: analysis/hundred/validator/
+              CSM_DATASET_VALIDATOR_PATH: run_templates/hundred/validator/
               CSM_DATASET_ABSOLUTE_PATH: /mnt/simulation-data
             image: twinengines.azurecr.io/brewery_simulator:latest
             runArgs:
@@ -848,7 +848,7 @@ components:
             AZURE_CLIENT_SECRET: azertyuiop
             CSM_API_URL: https://api.comostech.com
             CSM_CUSTOM_DRIVER_PROVIDER: local
-            CSM_CUSTOM_DRIVER_PATH: analysis/hundred/driver/
+            CSM_CUSTOM_DRIVER_PATH: run_templates/hundred/driver/
             CSM_DATASET_ABSOLUTE_PATH: /mnt/simulation-data
             CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/simulation-parameters
             CSM_CONTROL_PLANE_TOPIC: brewery-simulation
@@ -858,22 +858,22 @@ components:
             - DeployedSimulation
             - --amqp-consumer
             - amqps://csm-phoenix.servicebus.windows.net/brewery
-    BrewerySimulationSimulator:
-      summary: Brewery Simulation Simulator example
-      description: Brewery Simulation ran with Simulator information example
+    BrewerySimulationSolution:
+      summary: Brewery Simulation Solution example
+      description: Brewery Simulation ran with Solution information example
       value:
         id: "1"
         jobId: "1"
         ownerId: "1"
-        simulatorId: "1"
-        simulatorName: Brewery Simulator
-        simulatorVersion: "1.0.0"
-        simulatorAnalysisId: hundred
-        simulatorAnalysisName: Full simulation 100 steps
+        solutionId: "1"
+        solutionName: Brewery Solution
+        solutionVersion: "1.0.0"
+        runTemplateId: hundred
+        runTemplateName: Full simulation 100 steps
         computeSize: highcpu
-        parametersHandler: analysis/hundred/parameters_handler/
-        datasetValidator: analysis/hundred/validator/
-        customDriver: analysis/hundred/driver/
+        parametersHandler: run_templates/hundred/parameters_handler/
+        datasetValidator: run_templates/hundred/validator/
+        customDriver: run_templates/hundred/driver/
         datasetList:
           - "1"
         parametersValues:
@@ -914,7 +914,7 @@ components:
               AZURE_CLIENT_SECRET: azertyuiop
               CSM_API_URL: https://api.comostech.com
               CSM_PARAMETERS_HANDLER_PROVIDER: local
-              CSM_PARAMETERS_HANDLER_PATH: analysis/hundred/parameters_handler/
+              CSM_PARAMETERS_HANDLER_PATH: run_templates/hundred/parameters_handler/
               CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/simulation-parameters
             image: twinengines.azurecr.io/brewery_simulator:latest
             runArgs:
@@ -926,7 +926,7 @@ components:
               AZURE_CLIENT_SECRET: azertyuiop
               CSM_API_URL: https://api.comostech.com
               CSM_DATASET_VALIDATOR_PROVIDER: local
-              CSM_DATASET_VALIDATOR_PATH: analysis/hundred/validator/
+              CSM_DATASET_VALIDATOR_PATH: run_templates/hundred/validator/
               CSM_DATASET_ABSOLUTE_PATH: /mnt/simulation-data
             image: twinengines.azurecr.io/brewery_simulator:latest
             runArgs:
@@ -950,7 +950,7 @@ components:
             AZURE_CLIENT_SECRET: azertyuiop
             CSM_API_URL: https://api.comostech.com
             CSM_CUSTOM_DRIVER_PROVIDER: local
-            CSM_CUSTOM_DRIVER_PATH: analysis/hundred/driver/
+            CSM_CUSTOM_DRIVER_PATH: run_templates/hundred/driver/
             CSM_DATASET_ABSOLUTE_PATH: /mnt/simulation-data
             CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/simulation-parameters
             CSM_CONTROL_PLANE_TOPIC: brewery-simulation
@@ -998,7 +998,7 @@ components:
               AZURE_CLIENT_SECRET: azertyuiop
               CSM_API_URL: https://api.comostech.com
               CSM_PARAMETERS_HANDLER_PROVIDER: local
-              CSM_PARAMETERS_HANDLER_PATH: analysis/hundred/parameters_handler/
+              CSM_PARAMETERS_HANDLER_PATH: run_templates/hundred/parameters_handler/
               CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/simulation-parameters
             image: twinengines.azurecr.io/brewery_simulator:latest
             runArgs:
@@ -1010,7 +1010,7 @@ components:
               AZURE_CLIENT_SECRET: azertyuiop
               CSM_API_URL: https://api.comostech.com
               CSM_DATASET_VALIDATOR_PROVIDER: local
-              CSM_DATASET_VALIDATOR_PATH: analysis/hundred/validator/
+              CSM_DATASET_VALIDATOR_PATH: run_templates/hundred/validator/
               CSM_DATASET_ABSOLUTE_PATH: /mnt/simulation-data
             image: twinengines.azurecr.io/brewery_simulator:latest
             runArgs:
@@ -1034,7 +1034,7 @@ components:
             AZURE_CLIENT_SECRET: azertyuiop
             CSM_API_URL: https://api.comostech.com
             CSM_CUSTOM_DRIVER_PROVIDER: local
-            CSM_CUSTOM_DRIVER_PATH: analysis/hundred/driver/
+            CSM_CUSTOM_DRIVER_PATH: run_templates/hundred/driver/
             CSM_DATASET_ABSOLUTE_PATH: /mnt/simulation-data
             CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/simulation-parameters
             CSM_CONTROL_PLANE_TOPIC: brewery-simulation
@@ -1055,11 +1055,11 @@ components:
         workspaceName: Brewery Analysis
         scenarioId: "1"
         scenarioName: Brewery Master Analysis
-        simulatorId: "1"
-        simulatorName: Brewery Simulator
-        simulatorVersion: "1.0.0"
-        simulatorAnalysisId: hundred
-        simulatorAnalysisName: Full simulation 100 steps
+        solutionId: "1"
+        solutionName: Brewery Solution
+        solutionVersion: "1.0.0"
+        runTemplateId: hundred
+        runTemplateName: Full simulation 100 steps
         computeSize: highcpu
         state: Running
         starTime: 4/15/2021, 10:52:18.593 AM
@@ -1074,11 +1074,11 @@ components:
           workspaceName: Brewery Analysis
           scenarioId: "1"
           scenarioName: Brewery Master Analysis
-          simulatorId: "1"
-          simulatorName: Brewery Simulator
-          simulatorVersion: "1.0.0"
-          simulatorAnalysisId: hundred
-          simulatorAnalysisName: Full simulation 100 steps
+          solutionId: "1"
+          solutionName: Brewery Solution
+          solutionVersion: "1.0.0"
+          runTemplateId: hundred
+          runTemplateName: Full simulation 100 steps
           computeSize: highcpu
           state: Running
           starTime: 4/15/2021, 10:52:18.593 AM
@@ -1094,12 +1094,12 @@ components:
       value:
         workspaceId: "1"
         scenarioId: "1"
-    BrewerySimulationStartSimulator:
-      summary: Brewery start Simulation for a Simulator example
-      description: Brewery start Simulation for Simulator 1 example
+    BrewerySimulationStartSolution:
+      summary: Brewery start Simulation for a Solution example
+      description: Brewery start Simulation for Solution 1 example
       value:
-        simulatorId: "1"
-        simulatorAnalysisId: "1"
+        solutionId: "1"
+        runTemplateId: "1"
         datasetList:
           - "1"
         parametersValues:
@@ -1172,7 +1172,7 @@ components:
           logs:
             - timeGenerated: 4/15/2021, 10:52:22.593 AM
               entrySource: stderr
-              logEntry: cannot run simulator
+              logEntry: cannot run solution
             - timeGenerated: 4/15/2021, 10:52:23.593 AM
               entrySource: stderr
               logEntry: critical error

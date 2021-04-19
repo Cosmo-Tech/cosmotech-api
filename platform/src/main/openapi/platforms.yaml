@@ -147,8 +147,8 @@ components:
         coreContainerRegistry:
           description: the Container Registry for Platform core images
           $ref: '#/components/schemas/PlatformService'
-        simulatorsContainerRegistry:
-          description: the Container Registry for common Simulator images
+        solutionsContainerRegistry:
+          description: the Container Registry for common Solutions images
           $ref: '#/components/schemas/PlatformService'
         eventBusCluster:
           description: the Platform event bus cluster for Simulation probes measures & event messages
@@ -224,7 +224,7 @@ components:
           coreContainerRegistry:
             cloudService: AzureContainerRegistries
             baseUri: csmphoenix.azurecr.io
-          simulatorsContainerRegistry:
+          solutionsContainerRegistry:
             cloudService: AzureContainerRegistries
             baseUri: twinengines.azurecr.io
           eventBusCluster:
@@ -286,7 +286,7 @@ components:
           coreContainerRegistry:
             cloudService: AzureContainerRegistries
             baseUri: csmphoenix.azurecr.io
-          simulatorsContainerRegistry:
+          solutionsContainerRegistry:
             cloudService: AzureContainerRegistries
             baseUri: twinengines.azurecr.io
           eventBusCluster:

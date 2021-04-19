@@ -489,7 +489,7 @@ components:
           description: the validator id
         compatibility:
           type: array
-          description: the list of compatible Simulators versions
+          description: the list of compatible Solutions versions
           items:
             $ref: '#/components/schemas/DatasetCompatibility'
       required:
@@ -509,19 +509,19 @@ components:
         - id
     DatasetCompatibility:
       type: object
-      description: a Dataset compatibility constraint to a Simulator version open range
+      description: a Dataset compatibility constraint to a Solution version open range
       properties:
-        simulatorKey:
+        solutionKey:
           type: string
-          description: the Simulator key which group Simulator versions
+          description: the Solution key which group Solution versions
         minimumVersion:
           type: string
-          description: the Simulator minimum version compatibility (version included)
+          description: the Solution minimum version compatibility (version included)
         maximumVersion:
           type: string
-          description: the Simulator maximum version compatibility (version included)
+          description: the Solution maximum version compatibility (version included)
       required:
-        - simulatorKey
+        - solutionKey
     Validator:
       type: object
       description: a Validator to validate a Dataset
@@ -636,7 +636,7 @@ components:
             ADT_QUERY: SELECT * FROM digitaltwins
             EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
         compatibility:
-          - simulatorKey: Brewery Simulator
+          - solutionKey: Brewery Solution
             minimumVersion: "1.0.0"
     TwoDatasets:
       summary: Two Datasets example
@@ -662,7 +662,7 @@ components:
               ADT_QUERY: SELECT * FROM digitaltwins
               EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
           compatibility:
-            - simulatorKey: Brewery Simulator
+            - solutionKey: Brewery Solution
               minimumVersion: "1.0.0"
         - id: "2"
           name: Brewery ADT future
@@ -711,7 +711,7 @@ components:
             ADT_QUERY: SELECT * FROM digitaltwins
             EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
         compatibility:
-          - simulatorKey: Brewery Simulator
+          - solutionKey: Brewery Solution
             minimumVersion: "1.0.0"
     BreweryADTValidator:
       summary: Brewery ADT Dataset Validator

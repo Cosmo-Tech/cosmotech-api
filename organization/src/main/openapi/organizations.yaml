@@ -212,8 +212,8 @@ components:
         storage:
           description: the Organization file storage specific informations
           $ref: '#/components/schemas/OrganizationService'
-        simulatorsContainerRegistry:
-          description: the Container Registry for Organization Simulator images
+        solutionsContainerRegistry:
+          description: the Container Registry for Organization Solutions images
           $ref: '#/components/schemas/OrganizationService'
     OrganizationService:
       type: object
@@ -280,7 +280,7 @@ components:
           storage:
             platformService: storage
             resourceUri: organization-1/files
-          simulatorsContainerRegistry:
+          solutionsContainerRegistry:
             cloudService: AzureContainerRegistries
             baseUri: twinengines-1.azurecr.io
     CosmoOrganization:
@@ -309,7 +309,7 @@ components:
             cloudService: AzureStorage
             baseUri: https://csmphoenix.blob.core.windows.net
             resourceUri: organization-1/files
-          simulatorsContainerRegistry:
+          solutionsContainerRegistry:
             cloudService: AzureContainerRegistries
             baseUri: twinengines-1.azurecr.io
     CosmoThreeUsers:
@@ -342,7 +342,7 @@ components:
             cloudService: AzureStorage
             baseUri: https://csmphoenix.blob.core.windows.net
             resourceUri: organization-1/files
-          simulatorsContainerRegistry:
+          solutionsContainerRegistry:
             cloudService: AzureContainerRegistries
             baseUri: twinengines-1.azurecr.io
     TwoOrganizations:
@@ -371,7 +371,7 @@ components:
               cloudService: AzureStorage
               baseUri: https://csmphoenix.blob.core.windows.net
               resourceUri: organization-1/files
-            simulatorsContainerRegistry:
+            solutionsContainerRegistry:
               cloudService: AzureContainerRegistries
               baseUri: twinengines-1.azurecr.io
         - id: "2"
@@ -391,6 +391,6 @@ components:
               cloudService: AzureStorage
               baseUri: https://csmphoenix.blob.core.windows.net
               resourceUri: organization-2/files
-            simulatorsContainerRegistry:
+            solutionsContainerRegistry:
               cloudService: AzureContainerRegistries
               baseUri: twinengines-2.azurecr.io

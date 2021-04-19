@@ -44,13 +44,13 @@ Class | Method | HTTP request | Description
 *SimulationApi* | [**searchSimulations**](Apis/SimulationApi.md#searchsimulations) | **POST** /organizations/{organization_id}/simulations/search | Search Simulations
 *SimulationApi* | [**startSimulationContainers**](Apis/SimulationApi.md#startsimulationcontainers) | **POST** /organizations/{organization_id}/simulations/startcontainers | Start a new simulation with raw containers definition
 *SimulationApi* | [**startSimulationScenario**](Apis/SimulationApi.md#startsimulationscenario) | **POST** /organizations/{organization_id}/simulations/start | Start a new simulation for a Scenario
-*SimulationApi* | [**startSimulationSimulator**](Apis/SimulationApi.md#startsimulationsimulator) | **POST** /organizations/{organization_id}/simulations/startsimulator | Start a new simulation for a Simulator Analysis
-*SimulatorApi* | [**createSimulator**](Apis/SimulatorApi.md#createsimulator) | **POST** /organizations/{organization_id}/simulators | Register a new simulator
-*SimulatorApi* | [**deleteSimulator**](Apis/SimulatorApi.md#deletesimulator) | **DELETE** /organizations/{organization_id}/simulators/{simulator_id} | Delete a simulator
-*SimulatorApi* | [**findAllSimulators**](Apis/SimulatorApi.md#findallsimulators) | **GET** /organizations/{organization_id}/simulators | List all Simulators
-*SimulatorApi* | [**findSimulatorById**](Apis/SimulatorApi.md#findsimulatorbyid) | **GET** /organizations/{organization_id}/simulators/{simulator_id} | Get the details of a simulator
-*SimulatorApi* | [**updateSimulator**](Apis/SimulatorApi.md#updatesimulator) | **PATCH** /organizations/{organization_id}/simulators/{simulator_id} | Update a simulator
-*SimulatorApi* | [**upload**](Apis/SimulatorApi.md#upload) | **POST** /organizations/{organization_id}/simulators/upload | Upload and register a new simulator
+*SimulationApi* | [**startSimulationSolution**](Apis/SimulationApi.md#startsimulationsolution) | **POST** /organizations/{organization_id}/simulations/startsolution | Start a new simulation for a Solution Run Template
+*SolutionApi* | [**createSolution**](Apis/SolutionApi.md#createsolution) | **POST** /organizations/{organization_id}/solutions | Register a new solution
+*SolutionApi* | [**deleteSolution**](Apis/SolutionApi.md#deletesolution) | **DELETE** /organizations/{organization_id}/solutions/{solution_id} | Delete a solution
+*SolutionApi* | [**findAllSolutions**](Apis/SolutionApi.md#findallsolutions) | **GET** /organizations/{organization_id}/solutions | List all Solutions
+*SolutionApi* | [**findSolutionById**](Apis/SolutionApi.md#findsolutionbyid) | **GET** /organizations/{organization_id}/solutions/{solution_id} | Get the details of a solution
+*SolutionApi* | [**updateSolution**](Apis/SolutionApi.md#updatesolution) | **PATCH** /organizations/{organization_id}/solutions/{solution_id} | Update a solution
+*SolutionApi* | [**upload**](Apis/SolutionApi.md#upload) | **POST** /organizations/{organization_id}/solutions/upload | Upload and register a new solution
 *UserApi* | [**authorizeUser**](Apis/UserApi.md#authorizeuser) | **GET** /oauth2/authorize | Authorize an User with OAuth2. Delegated to configured OAuth2 service
 *UserApi* | [**findAllUsers**](Apis/UserApi.md#findallusers) | **GET** /users | List all Users
 *UserApi* | [**findUserById**](Apis/UserApi.md#finduserbyid) | **GET** /users/{user_id} | Get the details of an user
@@ -79,9 +79,6 @@ Class | Method | HTTP request | Description
 <a name="documentation-for-models"></a>
 ## Documentation for Models
 
- - [AnalysisParameter](./Models/AnalysisParameter.md)
- - [AnalysisParameterGroup](./Models/AnalysisParameterGroup.md)
- - [AnalysisResourceStorage](./Models/AnalysisResourceStorage.md)
  - [Connector](./Models/Connector.md)
  - [ConnectorParameter](./Models/ConnectorParameter.md)
  - [ConnectorParameterGroup](./Models/ConnectorParameterGroup.md)
@@ -96,17 +93,20 @@ Class | Method | HTTP request | Description
  - [Platform](./Models/Platform.md)
  - [PlatformService](./Models/PlatformService.md)
  - [PlatformServices](./Models/PlatformServices.md)
+ - [RunTemplate](./Models/RunTemplate.md)
+ - [RunTemplateParameter](./Models/RunTemplateParameter.md)
+ - [RunTemplateParameterGroup](./Models/RunTemplateParameterGroup.md)
+ - [RunTemplateParameterValue](./Models/RunTemplateParameterValue.md)
+ - [RunTemplateResourceStorage](./Models/RunTemplateResourceStorage.md)
  - [Scenario](./Models/Scenario.md)
  - [ScenarioAllOf](./Models/ScenarioAllOf.md)
- - [ScenarioAnalysis](./Models/ScenarioAnalysis.md)
- - [ScenarioAnalysisParameterValue](./Models/ScenarioAnalysisParameterValue.md)
  - [ScenarioBase](./Models/ScenarioBase.md)
  - [ScenarioChangedParameterValue](./Models/ScenarioChangedParameterValue.md)
  - [ScenarioComparisonResult](./Models/ScenarioComparisonResult.md)
+ - [ScenarioRunTemplateParameterValue](./Models/ScenarioRunTemplateParameterValue.md)
  - [ScenarioUser](./Models/ScenarioUser.md)
  - [Simulation](./Models/Simulation.md)
  - [SimulationAllOf](./Models/SimulationAllOf.md)
- - [SimulationAnalysisParameterValue](./Models/SimulationAnalysisParameterValue.md)
  - [SimulationBase](./Models/SimulationBase.md)
  - [SimulationContainerLog](./Models/SimulationContainerLog.md)
  - [SimulationContainerLogs](./Models/SimulationContainerLogs.md)
@@ -116,9 +116,8 @@ Class | Method | HTTP request | Description
  - [SimulationSearch](./Models/SimulationSearch.md)
  - [SimulationStartContainers](./Models/SimulationStartContainers.md)
  - [SimulationStartScenario](./Models/SimulationStartScenario.md)
- - [SimulationStartSimulator](./Models/SimulationStartSimulator.md)
- - [Simulator](./Models/Simulator.md)
- - [SimulatorAnalysis](./Models/SimulatorAnalysis.md)
+ - [SimulationStartSolution](./Models/SimulationStartSolution.md)
+ - [Solution](./Models/Solution.md)
  - [User](./Models/User.md)
  - [UserDetails](./Models/UserDetails.md)
  - [UserDetailsAllOf](./Models/UserDetailsAllOf.md)
@@ -129,7 +128,7 @@ Class | Method | HTTP request | Description
  - [Workspace](./Models/Workspace.md)
  - [WorkspaceService](./Models/WorkspaceService.md)
  - [WorkspaceServices](./Models/WorkspaceServices.md)
- - [WorkspaceSimulator](./Models/WorkspaceSimulator.md)
+ - [WorkspaceSolution](./Models/WorkspaceSolution.md)
  - [WorkspaceUser](./Models/WorkspaceUser.md)
  - [WorkspaceWebApp](./Models/WorkspaceWebApp.md)
 
