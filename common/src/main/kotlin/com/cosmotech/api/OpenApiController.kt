@@ -10,10 +10,10 @@ import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.servers.Server
 import io.swagger.v3.parser.OpenAPIV3Parser
 import io.swagger.v3.parser.core.models.SwaggerParseResult
+import java.io.BufferedReader
 import java.util.*
 import javax.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.core.io.ClassPathResource
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ResponseBody
@@ -21,11 +21,17 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder
 
 val openApiYamlParseResult: SwaggerParseResult by lazy {
-  val parseResult =
-      OpenAPIV3Parser().readContents(ClassPathResource("static/openapi.yaml").file.readText())
+  val openApiYamlInputStream =
+      OpenApiController::class.java.getResourceAsStream("/static/openapi.yaml")
+          ?: throw IllegalStateException(
+              "Unable to parse OpenAPI definition from 'classpath:/static/openapi.yaml'")
+  val openApiYamlContent =
+      openApiYamlInputStream.use { it.bufferedReader().use(BufferedReader::readText) }
+
+  val parseResult = OpenAPIV3Parser().readContents(openApiYamlContent)
   if (!parseResult.messages.isNullOrEmpty()) {
     throw IllegalStateException(
-        "Unable to parse OpenAPI definition from 'classpath:openapi.yaml' : ${parseResult.messages}")
+        "Unable to parse OpenAPI definition from 'classpath:/static/openapi.yaml' : ${parseResult.messages}")
   }
   parseResult
 }
