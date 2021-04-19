@@ -44,8 +44,10 @@ paths:
             schema:
               $ref: '#/components/schemas/Scenario'
             examples:
-              Scenario:
+              MasterScenario:
                 $ref: '#/components/examples/BreweryScenarioIn'
+              ChildScenario:
+                $ref: '#/components/examples/BreweryChildScenarioIn'
       responses:
         "201":
           description: the scenario details
@@ -412,6 +414,16 @@ components:
           - parameterId: prefix
             varType: string
             value: ""
+    BreweryChildScenarioIn:
+      summary: Brewery Child Scenario input example
+      description: Brewery Child Scenario input example
+      value:
+        name: Brewery Child Analysis
+        description: Brewery child reference analysis
+        tags:
+          - Brewery
+        runTemplateId: "1"
+        parentId: "1"
     BreweryScenario:
       summary: Brewery Scenario
       description: Brewery Scenario example
