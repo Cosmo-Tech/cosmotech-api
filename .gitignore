@@ -46,3 +46,6 @@ openapi/plantuml/.openapi-generator/
 ### Personal directory ###
 perso
 application-dev.properties
+
+### Personal directory ###
+**/logs/access_log.log
