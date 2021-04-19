@@ -4,7 +4,7 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
-plugins { id("com.rameshkp.openapi-merger-gradle-plugin") version "1.0.3" }
+plugins { id("com.rameshkp.openapi-merger-gradle-plugin") version "1.0.4" }
 
 dependencies {
   api(project(":cosmotech-api-common"))
