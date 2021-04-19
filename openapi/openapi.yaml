@@ -3404,8 +3404,8 @@ components:
       properties:
         fileName:
           type: string
-          description: the Workspace Web Application URL
-      description: a Workspace Web Application
+          description: the Workspace File name
+      description: a Workspace File resource
     WorkspaceService:
       type: object
       properties:

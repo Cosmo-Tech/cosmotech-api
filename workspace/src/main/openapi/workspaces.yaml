@@ -358,11 +358,11 @@ components:
         - roles
     WorkspaceFile:
       type: object
-      description: a Workspace Web Application
+      description: a Workspace File resource
       properties:
         fileName:
           type: string
-          description: the Workspace Web Application URL
+          description: the Workspace File name
     WorkspaceWebApp:
       type: object
       description: a Workspace Web Application
