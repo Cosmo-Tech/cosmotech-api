@@ -73,4 +73,4 @@ git push origin master 2>&1 | grep -v 'To https'
 
 popd
 # Cleaning release repository
-# rm -rf ../../release
+rm -rf ../../release
