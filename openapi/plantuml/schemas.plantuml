@@ -382,6 +382,10 @@ entity Workspace {
     sendInputToDataWarehouse: Boolean
 }
 
+entity WorkspaceFile { 
+    fileName: String
+}
+
 entity WorkspaceService { 
     cloudService: String
     baseUri: String

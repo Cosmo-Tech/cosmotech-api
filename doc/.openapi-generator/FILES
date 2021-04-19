@@ -55,6 +55,7 @@ Models/UserWorkspace.md
 Models/Validator.md
 Models/ValidatorRun.md
 Models/Workspace.md
+Models/WorkspaceFile.md
 Models/WorkspaceService.md
 Models/WorkspaceServices.md
 Models/WorkspaceSolution.md

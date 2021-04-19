@@ -148,6 +148,96 @@ paths:
           description: Bad request
         "404":
           description: the Workspace specified is unknown or you don't have access to it
+  /organizations/{organization_id}/workspaces/{workspace_id}/files:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: uploadWorkspaceFile
+      tags:
+        - workspace
+      summary: Upload a file for the Workspace
+      requestBody:
+        description: the file to upload
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                fileName:
+                  type: string
+                  format: binary
+      responses:
+        "201":
+          description: the file resource details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceFile'
+              examples:
+                BreweryWorkspaceFile:
+                  $ref: '#/components/examples/BreweryWorkspaceFile'
+        "400":
+          description: Bad request
+    get:
+      operationId: findAllWorkspaceFiles
+      tags:
+        - workspace
+      summary: List all Workspace files
+      responses:
+        "200":
+          description: the workspace files
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkspaceFile'
+              examples:
+                WorkspaceFiles:
+                  $ref: '#/components/examples/WorkspaceFiles'
+        "404":
+          description: the Workspace specified is unknown or you don't have access to it
+    delete:
+      operationId: deleteWorkspaceFile
+      tags:
+        - workspace
+      summary: Delete a workspace file
+      requestBody:
+        description: the file to upload
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkspaceFile'
+            examples:
+              WorkspaceFileToDeleteExample:
+                $ref: '#/components/examples/BreweryWorkspaceFile'
+      responses:
+        "200":
+          description: the file resource details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceFile'
+              examples:
+                BreweryWorkspaceFile:
+                  $ref: '#/components/examples/BreweryWorkspaceFile'
+        "400":
+          description: Bad request
+        "404":
+          description: the Workspace specified is unknown or you don't have access to it
 components:
   securitySchemes:
     oAuth2AuthCode:
@@ -266,6 +356,13 @@ components:
       required:
         - id
         - roles
+    WorkspaceFile:
+      type: object
+      description: a Workspace Web Application
+      properties:
+        fileName:
+          type: string
+          description: the Workspace Web Application URL
     WorkspaceWebApp:
       type: object
       description: a Workspace Web Application
@@ -515,3 +612,15 @@ components:
             platformService: storage
             baseUri: https://csmphoenix.blob.core.windows.net
             resourceUri: organization-1/workspaces/1
+    BreweryWorkspaceFile:
+      summary: Brewery Workspace file example
+      description: Brewery Workspace file uploaded return example
+      value:
+        fileName: myData.csv
+    WorkspaceFiles:
+      summary: Brewery Workspace files example
+      description: Brewery Workspace files example
+      value:
+        - fileName: myData.csv
+        - fileName: myData2.csv
+        - fileName: myData3.csv

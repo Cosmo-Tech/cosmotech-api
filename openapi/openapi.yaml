@@ -897,6 +897,102 @@ paths:
       explode: false
       schema:
         type: string
+  /organizations/{organization_id}/workspaces/{workspace_id}/files:
+    get:
+      tags:
+      - workspace
+      summary: List all Workspace files
+      operationId: findAllWorkspaceFiles
+      responses:
+        "200":
+          description: the workspace files
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkspaceFile'
+              examples:
+                WorkspaceFiles:
+                  $ref: '#/components/examples/WorkspaceFiles'
+        "404":
+          description: the Workspace specified is unknown or you don't have access
+            to it
+    post:
+      tags:
+      - workspace
+      summary: Upload a file for the Workspace
+      operationId: uploadWorkspaceFile
+      requestBody:
+        description: the file to upload
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                fileName:
+                  type: string
+                  format: binary
+        required: true
+      responses:
+        "201":
+          description: the file resource details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceFile'
+              examples:
+                BreweryWorkspaceFile:
+                  $ref: '#/components/examples/BreweryWorkspaceFile'
+        "400":
+          description: Bad request
+    delete:
+      tags:
+      - workspace
+      summary: Delete a workspace file
+      operationId: deleteWorkspaceFile
+      requestBody:
+        description: the file to upload
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkspaceFile'
+            examples:
+              WorkspaceFileToDeleteExample:
+                $ref: '#/components/examples/BreweryWorkspaceFile'
+        required: true
+      responses:
+        "200":
+          description: the file resource details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceFile'
+              examples:
+                BreweryWorkspaceFile:
+                  $ref: '#/components/examples/BreweryWorkspaceFile'
+        "400":
+          description: Bad request
+        "404":
+          description: the Workspace specified is unknown or you don't have access
+            to it
+    parameters:
+    - name: organization_id
+      in: path
+      description: the Organization identifier
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
+    - name: workspace_id
+      in: path
+      description: the Workspace identifier
+      required: true
+      style: simple
+      explode: false
+      schema:
+        type: string
   /connectors:
     get:
       tags:
@@ -3284,6 +3380,13 @@ components:
             send to the DataWarehouse prior to Simulation Run
           default: true
       description: a Workspace
+    WorkspaceFile:
+      type: object
+      properties:
+        fileName:
+          type: string
+          description: the Workspace Web Application URL
+      description: a Workspace Web Application
     WorkspaceService:
       type: object
       properties:
@@ -4319,6 +4422,11 @@ components:
           storage:
             platformService: storage
             resourceUri: organization-1/workspaces/1
+    BreweryWorkspaceFile:
+      summary: Brewery Workspace file example
+      description: Brewery Workspace file uploaded return example
+      value:
+        fileName: myData.csv
     BreweryWorkspaceUpdate:
       summary: Update the Brewery Workspace
       description: Update the Brewery Workspace by changing its name
@@ -5042,6 +5150,13 @@ components:
         name: Alice
         platformRoles:
         - User
+    WorkspaceFiles:
+      summary: Brewery Workspace files example
+      description: Brewery Workspace files example
+      value:
+      - fileName: myData.csv
+      - fileName: myData2.csv
+      - fileName: myData3.csv
   securitySchemes:
     oAuth2AuthCode:
       type: oauth2
