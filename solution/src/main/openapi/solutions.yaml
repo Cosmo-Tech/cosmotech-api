@@ -204,7 +204,7 @@ components:
           type: string
           readOnly: true
           description: the Solution version unique identifier
-        solutionKey:
+        key:
           type: string
           description: the Solution key which group Solution versions
         name:
@@ -216,9 +216,9 @@ components:
         repository:
           type: string
           description: the registry repository containing the image
-        simulator:
+        csmSimulator:
           type: string
-          description: the main simulator name used in standard Run Template
+          description: the main Cosmo Tech simulator name used in standard Run Template
         version:
           type: string
           description: the Solution version MAJOR.MINOR.PATCH. Must be aligned with an existing repository tag
@@ -240,7 +240,7 @@ components:
           items:
             $ref: '#/components/schemas/RunTemplate'
       required:
-        - solutionKey
+        - key
         - name
         - repository
         - version
@@ -257,13 +257,13 @@ components:
         description:
           type: string
           description: the Run Template description
-        isStandardSimulator:
+        useDirectCsmSimulator:
           type: boolean
           readOnly: true
-          description: whether or not the Run Template use the main standard Simulator directly. False if there is a Custom Simulator set
-        simulation:
+          description: whether or not the Run Template use the main standard csmSimulator directly. False if there is an Engine set
+        csmSimulation:
           type: string
-          description: the simulation name. This information is send to the Simulator
+          description: the Cosmo Tech simulation name. This information is send to the Engine. Mandatory information if no Engine is defined
         tags:
           type: array
           description: the list of Run Template tags
@@ -278,8 +278,8 @@ components:
         datasetValidatorResource:
           description: the dataset validator script resource. Default type is local and default path is run_templates/${CSM_RUNTEMPLATE_ID}/validator/. Ignored with warning if resource does not exist.
           $ref: '#/components/schemas/RunTemplateResourceStorage'
-        customSimulatorResource:
-          description: the Custom Simulator script resource. Default type is local and default path is run_templates/${CSM_RUNTEMPLATE_ID}/custom_simulator/. Ignored with warning if resource does not exist. A Custom Driver receives the Run Template information including all input parameters Key/Value. A Custom Driver has the responsibility to run the Run Template. It can use the main standard Simulator
+        engineResource:
+          description: the Engine script resource. Default type is local and default path is run_templates/${CSM_RUNTEMPLATE_ID}/engine/. Ignored with warning if resource does not exist, set automatically the useDirectCsmSimulator to true. An engine receives the Run Template information including all input parameters Key/Value. An engine has the responsibility to run the Run Template. It can use the main standard csmSimulator
           $ref: '#/components/schemas/RunTemplateResourceStorage'
         datasetSchemaResource:
           description: an optional schema Uri to validate the Dataset. Default type is local and default path is run_templates/${CSM_RUNTEMPLATE_ID}/schema. 
@@ -372,7 +372,7 @@ components:
       description: Brewery Solution example
       value:
         id: "1"
-        solutionKey: Brewery Solution
+        key: Brewery Solution
         name:  Brewery Solution
         description: A Brewery Supplier Solution Model which simulate stock, production, transport and customer satisfaction
         repository: brewery_solution
@@ -385,8 +385,8 @@ components:
           - id: hundred
             name: Full simulation 100 steps
             description: Run a full simulation with 100 steps
-            isStandardSimulator: false
-            simulation: DeployedSimulation
+            useDirectCsmSimulator: false
+            csmSimulation: DeployedSimulation
             tags:
               - Full
               - Supply
@@ -397,9 +397,9 @@ components:
             datasetValidatorResource:
               storageType: local
               resourcePath: run_templates/hundred/validator/
-            customSimulatorResource:
+            EngineResource:
               storageType: local
-              resourcePath: run_templates/hundred/custom_simulator/
+              resourcePath: run_templates/hundred/engine/
             datasetSchemaResource:
               storageType: local
               resourcePath: run_templates/hundred/schema
@@ -424,7 +424,7 @@ components:
       description: Brewery Solution example
       value:
         id: "1"
-        solutionKey: Brewery Solution
+        key: Brewery Solution
         name:  Brewery Solution 2021
         description: A Brewery Supplier Solution Model which simulate stock, production, transport and customer satisfaction
         repository: brewery_solution
@@ -437,8 +437,8 @@ components:
           - id: hundred
             name: Full simulation 100 steps
             description: Run a full simulation with 100 steps
-            isStandardSimulator: false
-            simulation: DeployedSimulation
+            useDirectCsmSimulator: false
+            csmSimulation: DeployedSimulation
             tags:
               - Full
               - Supply
@@ -449,9 +449,9 @@ components:
             datasetValidatorResource:
               storageType: local
               resourcePath: run_templates/hundred/validator/
-            customSimulatorResource:
+            engineResource:
               storageType: local
-              resourcePath: run_templates/hundred/custom_simulator/
+              resourcePath: run_templates/hundred/engine/
             datasetSchemaResource:
               storageType: local
               resourcePath: run_templates/hundred/schema
@@ -471,7 +471,7 @@ components:
       description: Brewery Solution example
       value:
         - id: "1"
-          solutionKey: Brewery Solution
+          key: Brewery Solution
           name:  Brewery Solution
           description: A Brewery Supplier Solution Model which simulate stock, production, transport and customer satisfaction
           repository: brewery_solution
@@ -484,8 +484,8 @@ components:
             - id: hundred
               name: Full simulation 100 steps
               description: Run a full simulation with 100 steps
-              isStandardSimulator: false
-              simulation: DeployedSimulation
+              useDirectCsmSimulator: false
+              csmSimulation: DeployedSimulation
               tags:
                 - Full
                 - Supply
@@ -496,9 +496,9 @@ components:
               datasetValidatorResource:
                 storageType: local
                 resourcePath: run_templates/hundred/validator/
-              customSimulatorResource:
+              engineResource:
                 storageType: local
-                resourcePath: run_templates/hundred/custom_simulator/
+                resourcePath: run_templates/hundred/engine/
               datasetSchemaResource:
                 storageType: local
                 resourcePath: run_templates/hundred/schema
@@ -516,8 +516,8 @@ components:
             - id: standard
               name: Standard Simulation
               description: Run the standard Simulation
-              isStandardSimulator: true
-              simulation: DeployedSimulation
+              useDirectCsmSimulator: true
+              csmSimulation: DeployedSimulation
               tags:
                 - Full
                 - Supply
