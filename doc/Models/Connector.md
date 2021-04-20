@@ -4,7 +4,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | [**String**](string.md) | the Connector version unique identifier | [optional] [default to null]
-**connectorKey** | [**String**](string.md) | the Connector key which group Connector versions | [default to null]
+**key** | [**String**](string.md) | the Connector key which group Connector versions | [default to null]
 **name** | [**String**](string.md) | the Connector name | [default to null]
 **description** | [**String**](string.md) | the Connector description | [optional] [default to null]
 **repository** | [**String**](string.md) | the registry repository containing the image | [default to null]

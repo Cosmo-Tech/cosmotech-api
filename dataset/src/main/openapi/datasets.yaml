@@ -634,7 +634,7 @@ components:
             AZURE_CLIENT_SECRET: "12345678"
             AZURE_DIGITAL_TWINS_URL: mydt.api.weu.digitaltwins.azure.net
             ADT_QUERY: SELECT * FROM digitaltwins
-            EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
+            EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/scenariorun-data
         compatibility:
           - solutionKey: Brewery Solution
             minimumVersion: "1.0.0"
@@ -660,7 +660,7 @@ components:
               AZURE_CLIENT_SECRET: "12345678"
               AZURE_DIGITAL_TWINS_URL: mydt.api.weu.digitaltwins.azure.net
               ADT_QUERY: SELECT * FROM digitaltwins
-              EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
+              EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/scenariorun-data
           compatibility:
             - solutionKey: Brewery Solution
               minimumVersion: "1.0.0"
@@ -681,7 +681,7 @@ components:
               AZURE_CLIENT_SECRET: "12345678"
               AZURE_DIGITAL_TWINS_URL: myotherdt.api.weu.digitaltwins.azure.net
               ADT_QUERY: SELECT * FROM digitaltwins
-              EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
+              EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/scenariorun-data
     BreweryADTUpdate:
       summary: Brewery ADT name update example
       description: Brewery ADT reference model name update example
@@ -709,7 +709,7 @@ components:
             AZURE_CLIENT_SECRET: "12345678"
             AZURE_DIGITAL_TWINS_URL: mydt.api.weu.digitaltwins.azure.net
             ADT_QUERY: SELECT * FROM digitaltwins
-            EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/simulation-data
+            EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/scenariorun-data
         compatibility:
           - solutionKey: Brewery Solution
             minimumVersion: "1.0.0"

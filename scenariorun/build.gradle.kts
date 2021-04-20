@@ -12,15 +12,15 @@ sourceSets {
 }
 
 tasks.getByName<ValidateTask>("openApiValidate") {
-  inputSpec.set("${projectDir}/src/main/openapi/simulations.yaml")
+  inputSpec.set("${projectDir}/src/main/openapi/scenarioruns.yaml")
 }
 
 tasks.getByName<GenerateTask>("openApiGenerate") {
-  inputSpec.set("${projectDir}/src/main/openapi/simulations.yaml")
+  inputSpec.set("${projectDir}/src/main/openapi/scenarioruns.yaml")
   outputDir.set("$buildDir/generated-sources/openapi")
   generatorName.set("kotlin-spring")
-  apiPackage.set("com.cosmotech.simulation.api")
-  modelPackage.set("com.cosmotech.simulation.domain")
+  apiPackage.set("com.cosmotech.scenariorun.api")
+  modelPackage.set("com.cosmotech.scenariorun.domain")
   globalProperties.set(
       mapOf(
           "apiDocs" to "true",
@@ -31,9 +31,9 @@ tasks.getByName<GenerateTask>("openApiGenerate") {
           "apiTests" to "false"))
   additionalProperties.set(
       mapOf(
-          "title" to "Cosmo Tech Simulation Manager API",
+          "title" to "Cosmo Tech ScenarioRun Manager API",
           "basePackage" to "com.cosmotech",
-          "configPackage" to "com.cosmotech.simulation.config",
+          "configPackage" to "com.cosmotech.scenariorun.config",
           "enumPropertyNaming" to "original",
           "exceptionHandler" to false,
           "serviceInterface" to true,

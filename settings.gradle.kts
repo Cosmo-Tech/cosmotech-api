@@ -18,7 +18,7 @@ include("workspace")
 
 include("scenario")
 
-include("simulation")
+include("scenariorun")
 
 include("platform")
 
@@ -40,6 +40,6 @@ project(":workspace").name = "cosmotech-workspace-api"
 
 project(":scenario").name = "cosmotech-scenario-api"
 
-project(":simulation").name = "cosmotech-simulation-api"
+project(":scenariorun").name = "cosmotech-scenariorun-api"
 
 project(":platform").name = "cosmotech-platform-api"

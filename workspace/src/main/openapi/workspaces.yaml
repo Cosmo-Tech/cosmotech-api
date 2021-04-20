@@ -289,7 +289,7 @@ components:
         sendInputToDataWarehouse:
           type: boolean
           default: true
-          description: default setting for all Scenarios and Run Templates to set whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to Simulation Run
+          description: default setting for all Scenarios and Run Templates to set whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to the ScenarioRun
       required:
         - name
         - solution
@@ -303,10 +303,10 @@ components:
           description: a freeform credentials object for the Organization tenant. Structure depends on cloud provider
           additionalProperties: true
         resultsEventBus:
-          description: the event bus which receive Workspace Simulation results messages
+          description: the event bus which receive Workspace ScenarioRun results messages
           $ref: '#/components/schemas/WorkspaceService'
-        simulationEventBus:
-          description: the event bus which receive Workspace Simulation events messages
+        scenariorunEventBus:
+          description: the event bus which receive Workspace ScenarioRun events messages
           $ref: '#/components/schemas/WorkspaceService'
         dataWarehouse:
           description: the Workspace DataWarehouse specific informations
@@ -430,9 +430,9 @@ components:
           resultsEventBus:
             platformService: eventBusCluster
             resourceUri: brewery
-          simulationEventBus:
+          scenariorunEventBus:
             platformService: eventBusCluster
-            resourceUri: brewery-simulation
+            resourceUri: brewery-scenariorun
           dataWarehouse:
             platformService: dataWarehouseCluster
             resourceUri: Brewery
@@ -480,11 +480,11 @@ components:
             platformService: eventBusCluster
             baseUri: csm-phoenix.servicebus.windows.net
             resourceUri: brewery
-          simulationEventBus:
+          scenariorunEventBus:
             cloudService: AzureEventHub
             platformService: eventBusCluster
             baseUri: csm-phoenix.servicebus.windows.net
-            resourceUri: brewery-simulation
+            resourceUri: brewery-scenariorun
           dataWarehouse:
             cloudService: AzureDataExplorer
             platformService: dataWarehouseCluster
@@ -536,11 +536,11 @@ components:
               platformService: eventBusCluster
               baseUri: csm-phoenix.servicebus.windows.net
               resourceUri: brewery
-            simulationEventBus:
+            scenariorunEventBus:
               cloudService: AzureEventHub
               platformService: eventBusCluster
               baseUri: csm-phoenix.servicebus.windows.net
-              resourceUri: brewery-simulation
+              resourceUri: brewery-scenariorun
             dataWarehouse:
               cloudService: AzureDataExplorer
               platformService: dataWarehouseCluster
@@ -597,11 +597,11 @@ components:
             platformService: eventBusCluster
             baseUri: csm-phoenix.servicebus.windows.net
             resourceUri: brewery
-          simulationEventBus:
+          scenariorunEventBus:
             cloudService: AzureEventHub
             platformService: eventBusCluster
             baseUri: csm-phoenix.servicebus.windows.net
-            resourceUri: brewery-simulation
+            resourceUri: brewery-scenariorun
           dataWarehouse:
             cloudService: AzureDataExplorer
             platformService: dataWarehouseCluster

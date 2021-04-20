@@ -155,7 +155,7 @@ components:
           type: string
           readOnly: true
           description: the Connector version unique identifier
-        connectorKey:
+        key:
           type: string
           description: the Connector key which group Connector versions
         name:
@@ -196,7 +196,7 @@ components:
           items:
             $ref: '#/components/schemas/ConnectorParameterGroup'
       required:
-        - connectorKey
+        - key
         - name
         - repository
         - version
@@ -254,9 +254,9 @@ components:
       description: ADT Connector example
       value:
         id: "1"
-        connectorKey: ADT Connector
+        key: ADT Connector
         name: ADT Connector
-        description: Connector for Azure Digital Twins. Read ADT and write the data in CSV for the Simulation
+        description: Connector for Azure Digital Twins. Read ADT and write the data in CSV for a ScenarioRun
         repository: azure-digital-twins-simulator-connector
         version: "1.0.0"
         tags:
@@ -296,16 +296,16 @@ components:
               - id: EXPORT_CSV_FILE_ABSOLUTE_PATH
                 label: CSV file export absolute path
                 valueType: string
-                default: /mnt/simulation-data
+                default: /mnt/scenariorun-data
                 envVar: EXPORT_CSV_FILE_ABSOLUTE_PATH
     OneConnector:
       summary: One Connector list
       description: One Connector list example
       value:
         - id: "1"
-          connectorKey: ADT Connector
+          key: ADT Connector
           name: ADT Connector
-          description: Connector for Azure Digital Twins. Read ADT and write the data in CSV for the Simulation
+          description: Connector for Azure Digital Twins. Read ADT and write the data in CSV for a ScenarioRun
           repository: azure-digital-twins-simulator-connector
           version: "1.0.0"
           tags:
@@ -345,5 +345,5 @@ components:
                 - id: EXPORT_CSV_FILE_ABSOLUTE_PATH
                   label: CSV file export absolute path
                   valueType: string
-                  default: /mnt/simulation-data
+                  default: /mnt/scenariorun-data
                   envVar: EXPORT_CSV_FILE_ABSOLUTE_PATH
