@@ -772,7 +772,7 @@ components:
         computeSize: highcpu
         parametersHandler: run_templates/hundred/parameters_handler/
         datasetValidator: run_templates/hundred/validator/
-        customDriver: run_templates/hundred/driver/
+        engine: run_templates/hundred/engine/
         datasetList:
           - "1"
         parametersValues:
@@ -847,11 +847,11 @@ components:
             AZURE_CLIENT_ID: "12345678"
             AZURE_CLIENT_SECRET: azertyuiop
             CSM_API_URL: https://api.comostech.com
-            CSM_CUSTOM_DRIVER_PROVIDER: local
-            CSM_CUSTOM_DRIVER_PATH: run_templates/hundred/driver/
+            CSM_ENGINE_PROVIDER: local
+            CSM_ENGINE_PATH: run_templates/hundred/engine/
             CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
             CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
-            CSM_CONTROL_PLANE_TOPIC: brewery-scenariorun
+            CSM_CONTROL_PLANE_TOPIC: amqps://csm-phoenix.servicebus.windows.net/brewery-scenariorun
           image: twinengines.azurecr.io/brewery_simulator:latest
           runArgs:
             - -i
@@ -873,7 +873,7 @@ components:
         computeSize: highcpu
         parametersHandler: run_templates/hundred/parameters_handler/
         datasetValidator: run_templates/hundred/validator/
-        customDriver: run_templates/hundred/driver/
+        engine: run_templates/hundred/engine/
         datasetList:
           - "1"
         parametersValues:
@@ -949,11 +949,11 @@ components:
             AZURE_CLIENT_ID: "12345678"
             AZURE_CLIENT_SECRET: azertyuiop
             CSM_API_URL: https://api.comostech.com
-            CSM_CUSTOM_DRIVER_PROVIDER: local
-            CSM_CUSTOM_DRIVER_PATH: run_templates/hundred/driver/
+            CSM_ENGINE_PROVIDER: local
+            CSM_ENGINE_PATH: run_templates/hundred/engine/
             CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
             CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
-            CSM_CONTROL_PLANE_TOPIC: brewery-scenariorun
+            CSM_CONTROL_PLANE_TOPIC: amqps://csm-phoenix.servicebus.windows.net/brewery-scenariorun
           image: twinengines.azurecr.io/brewery_simulator:latest
           runArgs:
             - -i
@@ -1033,11 +1033,11 @@ components:
             AZURE_CLIENT_ID: "12345678"
             AZURE_CLIENT_SECRET: azertyuiop
             CSM_API_URL: https://api.comostech.com
-            CSM_CUSTOM_DRIVER_PROVIDER: local
-            CSM_CUSTOM_DRIVER_PATH: run_templates/hundred/driver/
+            CSM_ENGINE_PROVIDER: local
+            CSM_ENGINE_PATH: run_templates/hundred/engine/
             CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
             CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
-            CSM_CONTROL_PLANE_TOPIC: brewery-scenariorun
+            CSM_CONTROL_PLANE_TOPIC: amqps://csm-phoenix.servicebus.windows.net/brewery-scenariorun
           image: twinengines.azurecr.io/brewery_simulator:latest
           runArgs:
             - -i
