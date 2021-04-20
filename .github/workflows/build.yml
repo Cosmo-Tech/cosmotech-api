@@ -57,4 +57,4 @@ jobs:
 
     - name: az storage command
       run: |
-        az storage blob upload --acount-name csmphoenix --container-name public --name openapi.yaml --file openapi.yaml
+        az storage blob upload --account-name csmphoenix --container-name public --name openapi.yaml --file openapi.yaml
