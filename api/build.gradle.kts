@@ -8,10 +8,15 @@ plugins { id("com.rameshkp.openapi-merger-gradle-plugin") version "1.0.4" }
 
 dependencies {
   api(project(":cosmotech-api-common"))
-  implementation(project(":cosmotech-organization-api"))
-  implementation(project(":cosmotech-user-api"))
   implementation(project(":cosmotech-connector-api"))
   implementation(project(":cosmotech-dataset-api"))
+  implementation(project(":cosmotech-organization-api"))
+  implementation(project(":cosmotech-platform-api"))
+  implementation(project(":cosmotech-scenario-api"))
+  implementation(project(":cosmotech-scenariorun-api"))
+  implementation(project(":cosmotech-solution-api"))
+  implementation(project(":cosmotech-user-api"))
+  implementation(project(":cosmotech-workspace-api"))
 }
 
 tasks.withType<JibTask> {
