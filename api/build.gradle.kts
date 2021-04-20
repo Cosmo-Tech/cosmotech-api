@@ -60,21 +60,31 @@ openApiMerger {
       title.set("Cosmo Tech Plaform API")
       description.set("Cosmo Tech Platform API")
       version.set(project.version.toString())
-      //			termsOfService.set("http://openapimerger.com/terms-of-service")
-      //			contact {
-      //				name.set("OpenApiMerger Team")
-      //				email.set("openapi@sample.com")
-      //				url.set("http://openapimerger.com")
-      //			}
-      //			license {
-      //				name.set("Apache License v2.0")
-      //				url.set("http://apache.org/v2")
-      //			}
+      //      termsOfService.set("http://openapimerger.com/terms-of-service")
+      contact {
+        name.set("Repository")
+        // email.set("openapi@sample.com")
+        url.set("https://github.com/Cosmo-Tech/cosmotech-api")
+      }
+      license {
+        name.set("MIT License")
+        url.set("https://github.com/Cosmo-Tech/cosmotech-api/blob/main/LICENSE")
+      }
     }
-    //		externalDocs {
-    //			description.set("External docs description")
-    //			url.set("http://external-docs.com/uri")
-    //		}
+    servers {
+      register("production") {
+        url.set("https://api.azure.cosmo-platform.com")
+        description.set("Production")
+      }
+      register("dev") {
+        url.set("http://localhost:8080")
+        description.set("Local dev environment")
+      }
+    }
+    externalDocs {
+      description.set("Portal")
+      url.set("https://portal.cosmotech.com/")
+    }
   }
 }
 
