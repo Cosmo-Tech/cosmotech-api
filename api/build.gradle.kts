@@ -63,7 +63,7 @@ gradle.projectsEvaluated {
       into("$buildDir/tmp/openapi")
     } else {
       logger.warn(
-          "Unable to find OpenAPI defitions in parent sub-projects => 'copySubProjectsOpenAPIFiles' not configured ! ")
+          "Unable to find OpenAPI definitions in project dependencies => 'copySubProjectsOpenAPIFiles' not configured!")
     }
   }
 }
