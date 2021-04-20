@@ -35,11 +35,11 @@ jobs:
       run: ./gradlew build -x test -x spotlessCheck -x openApiValidate --info
 
     - name: Archive openapi.yaml
-        uses: actions/upload-artifact@v2
-        with:
-          name: openapi
-          path: openapi/openapi.yaml
-          retention-days: 3
+      uses: actions/upload-artifact@v2
+      with:
+        name: openapi
+        path: openapi/openapi.yaml
+        retention-days: 3
 
   openapi:
     runs-on: ubuntu-latest
