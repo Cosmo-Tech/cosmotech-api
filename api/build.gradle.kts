@@ -28,28 +28,38 @@ tasks.withType<JibTask> {
   }
 }
 
-tasks.register<Copy>("copySubProjectsOpenAPIFiles") {
-  // By convention, we expect OpenAPI files for sub-projects to be named and placed as follows:
-  // <subproject>/src/main/openapi/<subproject>s.yaml
-  // For example: organization/src/main/openapi/organizations.yaml
-  val sourcePaths =
-      parent
-          ?.subprojects
-          ?.map {
-            file("${it.projectDir}/src/main/openapi/${it.projectDir.relativeTo(rootDir)}s.yaml")
-          }
-          ?.filter { it.exists() }
-          ?.map { it.absolutePath }
-          ?.toMutableList()
-  // If you need to reference a non-conventional path, feel free to add it below to the
-  // sourcePaths local variable, like so: sourcePaths.add("my/path/to/another/openapi.yaml")
+gradle.projectsEvaluated {
+  tasks.register<Copy>("copySubProjectsOpenAPIFiles") {
+    // By convention, we expect OpenAPI files for sub-projects to be named and placed as follows:
+    // <subproject>/src/main/openapi/<subproject>s.yaml
+    // For example: organization/src/main/openapi/organizations.yaml
+    val sourcePaths =
+        configurations
+            .implementation
+            .get()
+            .allDependencies
+            .withType<ProjectDependency>()
+            .asSequence()
+            .filter {
+              logger.debug("Found project dependency: $it")
+              it.name.matches("^cosmotech-[a-zA-Z]+-api$".toRegex())
+            }
+            .map { it.dependencyProject.projectDir }
+            .map { file("${it}/src/main/openapi/${it.relativeTo(rootDir)}s.yaml") }
+            .filter { it.exists() }
+            .map { it.absolutePath }
+            .toMutableList()
+    // If you need to reference a non-conventional path, feel free to add it below to the
+    // sourcePaths local variable, like so: sourcePaths.add("my/path/to/another/openapi.yaml")
 
-  if (sourcePaths?.isNotEmpty() == true) {
-    from(*sourcePaths.toTypedArray())
-    into("$buildDir/tmp/openapi")
-  } else {
-    logger.warn(
-        "Unable to find OpenAPI defitions in parent sub-projects => 'copySubProjectsOpenAPIFiles' not configured ! ")
+    logger.debug("sourcePaths for 'copySubProjectsOpenAPIFiles' task: $sourcePaths")
+    if (sourcePaths.isNotEmpty()) {
+      from(*sourcePaths.toTypedArray())
+      into("$buildDir/tmp/openapi")
+    } else {
+      logger.warn(
+          "Unable to find OpenAPI defitions in parent sub-projects => 'copySubProjectsOpenAPIFiles' not configured ! ")
+    }
   }
 }
 
