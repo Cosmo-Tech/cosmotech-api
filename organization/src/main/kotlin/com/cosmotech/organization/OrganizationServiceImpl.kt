@@ -3,7 +3,7 @@
 package com.cosmotech.organization
 
 import com.azure.cosmos.models.CosmosContainerProperties
-import com.cosmotech.api.AbstractPhoenixService
+import com.cosmotech.api.AbstractCosmosBackedService
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.utils.changed
@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 @Service
-class OrganizationServiceImpl : AbstractPhoenixService(), OrganizationApiService {
+class OrganizationServiceImpl : AbstractCosmosBackedService(), OrganizationApiService {
 
   private val logger = LoggerFactory.getLogger(OrganizationServiceImpl::class.java)
 
