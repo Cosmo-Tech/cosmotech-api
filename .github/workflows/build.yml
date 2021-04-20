@@ -33,3 +33,27 @@ jobs:
 
     - name: Build with Gradle
       run: ./gradlew build -x test -x spotlessCheck -x openApiValidate --info
+
+    - name: Archive openapi.yaml
+        uses: actions/upload-artifact@v2
+        with:
+          name: openapi
+          path: openapi/openapi.yaml
+          retention-days: 3
+
+  openapi:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download openapi artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: openapi
+
+    - name: azure login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: az storage command
+      run: |
+        az storage blob upload --acount-name csmphoenix --container-name public --name openapi.yaml --file openapi.yaml
