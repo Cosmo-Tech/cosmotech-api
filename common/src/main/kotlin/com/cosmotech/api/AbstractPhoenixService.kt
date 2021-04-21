@@ -2,10 +2,10 @@
 // Licensed under the MIT license.
 package com.cosmotech.api
 
+import com.cosmotech.api.events.CsmEventPublisher
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.ApplicationEventPublisher
 
 abstract class AbstractPhoenixService {
 
-  @Autowired protected lateinit var eventPublisher: ApplicationEventPublisher
+  @Autowired protected lateinit var eventPublisher: CsmEventPublisher
 }
