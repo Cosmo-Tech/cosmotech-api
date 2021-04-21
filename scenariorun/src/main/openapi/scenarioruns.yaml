@@ -765,7 +765,7 @@ components:
           description: logs for the containers which fetch the Scenario Datasets
           items:
             $ref: '#/components/schemas/ScenarioRunContainerLogs'
-        fetchScenarioParametersLogs:
+        fetchScenarioParametersLog:
           readOnly: true
           description: logs for the container which fetch the Scenario Parameters
           $ref: '#/components/schemas/ScenarioRunContainerLogs'
@@ -799,7 +799,7 @@ components:
       properties:
         container:
           readOnly: true
-          description: the container definition
+          description: container for the logs
           $ref: '#/components/schemas/ScenarioRunContainer'
         computer:
           type: string
@@ -1115,33 +1115,6 @@ components:
           computeSize: highcpu
           state: Running
           starTime: 4/15/2021, 10:52:18.593 AM
-          id: "1"
-          jobId: "1"
-          ownerId: "1"
-          workspaceId: "1"
-          workspaceName: Brewery Analysis
-          scenarioId: "1"
-          scenarioName: Brewery Master Analysis
-          solutionId: "1"
-          solutionName: Brewery Solution
-          solutionVersion: "1.0.0"
-          runTemplateId: hundred
-          runTemplateName: Full scenariorun 100 steps
-          computeSize: highcpu
-          parametersHandler: run_templates/hundred/parameters_handler/
-          datasetValidator: run_templates/hundred/validator/
-          engine: run_templates/hundred/engine/
-          datasetList:
-            - "1"
-          parametersValues:
-            - parameterId: prefix
-              value: new
-          sendInputToDataWarehouse: true
-          dataWarehouseDB: Brewery
-          resultsEventBusResourceUri: brewery
-          scenariorunEventBusResourceUri: brewery-scenariorun
-          state: Running
-          starTime: 4/15/2021, 10:52:18.593 AM
           nodeLabel: highcpupool
           fetchDatasetContainers:
             - id: azertyuiop
@@ -1311,7 +1284,7 @@ components:
             - azertyuiop
             - wxcvbn
           plainText: false
-        fetchDatasetLogs:
+        fetchDatasetContainers:
           - container:
               id: azertyuiop
               envVars:
@@ -1331,7 +1304,7 @@ components:
               - timeGenerated: 4/15/2021, 10:52:21.593 AM
                 entrySource: stderr
                 logEntry: stopping stream
-        runContainer:
+        runLogs:
           container:
             id: wxcvbn
             envVars:

@@ -31,12 +31,9 @@ Models/Scenario.md
 Models/ScenarioChangedParameterValue.md
 Models/ScenarioComparisonResult.md
 Models/ScenarioRun.md
-Models/ScenarioRunAllOf.md
-Models/ScenarioRunBase.md
 Models/ScenarioRunContainer.md
 Models/ScenarioRunContainerLog.md
 Models/ScenarioRunContainerLogs.md
-Models/ScenarioRunContainerLogsAllOf.md
 Models/ScenarioRunLogs.md
 Models/ScenarioRunLogsOptions.md
 Models/ScenarioRunSearch.md

@@ -5,7 +5,6 @@ package com.cosmotech.scenariorun
 import com.cosmotech.api.AbstractPhoenixService
 import com.cosmotech.scenariorun.api.ScenariorunApiService
 import com.cosmotech.scenariorun.domain.ScenarioRun
-import com.cosmotech.scenariorun.domain.ScenarioRunBase
 import com.cosmotech.scenariorun.domain.ScenarioRunLogs
 import com.cosmotech.scenariorun.domain.ScenarioRunLogsOptions
 import com.cosmotech.scenariorun.domain.ScenarioRunSearch
@@ -53,14 +52,14 @@ class ScenariorunServiceImpl : AbstractPhoenixService(), ScenariorunApiService {
       organizationId: kotlin.String,
       workspaceId: kotlin.String,
       scenarioId: kotlin.String
-  ): List<ScenarioRunBase> {
+  ): List<ScenarioRun> {
     TODO("Not implemented yet")
   }
 
   override fun getWorkspaceScenarioRuns(
       organizationId: kotlin.String,
       workspaceId: kotlin.String
-  ): List<ScenarioRunBase> {
+  ): List<ScenarioRun> {
     TODO("Not implemented yet")
   }
 
@@ -68,7 +67,7 @@ class ScenariorunServiceImpl : AbstractPhoenixService(), ScenariorunApiService {
       organizationId: kotlin.String,
       workspaceId: kotlin.String,
       scenarioId: kotlin.String
-  ): ScenarioRunBase {
+  ): ScenarioRun {
     TODO("Not implemented yet")
   }
 
@@ -83,7 +82,7 @@ class ScenariorunServiceImpl : AbstractPhoenixService(), ScenariorunApiService {
   override fun searchScenarioRuns(
       organizationId: kotlin.String,
       scenarioRunSearch: ScenarioRunSearch
-  ): List<ScenarioRunBase> {
+  ): List<ScenarioRun> {
     TODO("Not implemented yet")
   }
 

@@ -142,7 +142,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**List**](../Models/ScenarioRunBase.md)
+[**List**](../Models/ScenarioRun.md)
 
 ### Authorization
 
@@ -168,7 +168,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**List**](../Models/ScenarioRunBase.md)
+[**List**](../Models/ScenarioRun.md)
 
 ### Authorization
 
@@ -181,7 +181,7 @@ Name | Type | Description  | Notes
 
 <a name="runScenario"></a>
 # **runScenario**
-> ScenarioRunBase runScenario(organization\_id, workspace\_id, scenario\_id)
+> ScenarioRun runScenario(organization\_id, workspace\_id, scenario\_id)
 
 run a ScenarioRun for the Scenario
 
@@ -195,7 +195,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**ScenarioRunBase**](../Models/ScenarioRunBase.md)
+[**ScenarioRun**](../Models/ScenarioRun.md)
 
 ### Authorization
 
@@ -248,7 +248,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**List**](../Models/ScenarioRunBase.md)
+[**List**](../Models/ScenarioRun.md)
 
 ### Authorization
 
