@@ -19,9 +19,7 @@ dependencies {
   implementation(project(":cosmotech-workspace-api"))
 }
 
-tasks.getByName<Delete>("clean") {
-  delete("$rootDir/openapi/openapi.yaml")
-}
+tasks.getByName<Delete>("clean") { delete("$rootDir/openapi/openapi.yaml") }
 
 tasks.withType<JibTask> {
   // Need to depend on all sub-projects Jar tasks
