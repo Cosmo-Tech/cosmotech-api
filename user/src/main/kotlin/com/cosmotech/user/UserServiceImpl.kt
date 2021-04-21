@@ -4,8 +4,11 @@ package com.cosmotech.user
 
 import com.azure.cosmos.models.CosmosContainerProperties
 import com.cosmotech.api.AbstractCosmosBackedService
+import com.cosmotech.api.events.UserRegistered
+import com.cosmotech.api.events.UserUnregistered
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
+import java.lang.IllegalStateException
 import java.util.*
 import javax.annotation.PostConstruct
 import org.springframework.beans.factory.annotation.Value
@@ -55,17 +58,28 @@ class UserServiceImpl : AbstractCosmosBackedService(), UserApiService {
     TODO("Not yet implemented")
   }
 
-  override fun registerUser(user: User): User =
-      cosmosTemplate.insert(coreUserContainer, user.copy(id = UUID.randomUUID().toString()))
+  override fun registerUser(user: User): User {
+    val userRegistered =
+        cosmosTemplate.insert(coreUserContainer, user.copy(id = UUID.randomUUID().toString()))
+    val userId =
+        userRegistered.id
+            ?: throw IllegalStateException(
+                "No ID returned for organization registered: $userRegistered")
+    this.eventPublisher.publishEvent(UserRegistered(this, userId))
+    return userRegistered
+  }
 
   override fun unregisterUser(userId: String): User {
     // TODO Why is UserDetails.platformRoles # User.platformRoles ??
     val user = findUserById(userId)
     cosmosTemplate.deleteEntity(coreUserContainer, user)
-    return User(
-        id = userId,
-        name = user.name,
-        platformRoles = user.platformRoles.map { User.PlatformRoles.valueOf(it.toString()) })
+    val userData =
+        User(
+            id = userId,
+            name = user.name,
+            platformRoles = user.platformRoles.map { User.PlatformRoles.valueOf(it.toString()) })
+    this.eventPublisher.publishEvent(UserUnregistered(this, userId))
+    return userData
   }
 
   override fun updateUser(userId: String, user: User): User {

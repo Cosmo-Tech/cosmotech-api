@@ -4,22 +4,18 @@ package com.cosmotech.api.events
 
 import org.springframework.context.ApplicationEvent
 
-sealed class CsmEvent(open val publisher: Any) : ApplicationEvent(publisher)
+sealed class CsmEvent(publisher: Any) : ApplicationEvent(publisher)
 
-class OrganizationRegistered(override val publisher: Any, val organizationId: String) :
+class OrganizationRegistered(publisher: Any, val organizationId: String) : CsmEvent(publisher)
+
+class OrganizationUnregistered(publisher: Any, val organizationId: String) : CsmEvent(publisher)
+
+class UserAddedToOrganization(publisher: Any, val organizationId: String, val userId: String) :
     CsmEvent(publisher)
 
-class OrganizationUnregistered(override val publisher: Any, val organizationId: String) :
+class UserRemovedFromOrganization(publisher: Any, val organizationId: String, val userId: String) :
     CsmEvent(publisher)
 
-class UserAddedToOrganization(
-    override val publisher: Any,
-    val organizationId: String,
-    val userId: String
-) : CsmEvent(publisher)
+class UserRegistered(publisher: Any, val userId: String) : CsmEvent(publisher)
 
-class UserRemovedFromOrganization(
-    override val publisher: Any,
-    val organizationId: String,
-    val userId: String
-) : CsmEvent(publisher)
+class UserUnregistered(publisher: Any, val userId: String) : CsmEvent(publisher)
