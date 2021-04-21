@@ -48,7 +48,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ScenarioRunBase'
+                  $ref: '#/components/schemas/ScenarioRun'
               examples:
                 OneScenarioRun:
                   $ref: '#/components/examples/OneScenarioRun'
@@ -283,7 +283,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ScenarioRunBase'
+                  $ref: '#/components/schemas/ScenarioRun'
               examples:
                 OneScenarioRun:
                   $ref: '#/components/examples/OneScenarioRun'
@@ -320,7 +320,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ScenarioRunBase'
+                  $ref: '#/components/schemas/ScenarioRun'
               examples:
                 OneScenarioRun:
                   $ref: '#/components/examples/OneScenarioRun'
@@ -437,10 +437,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ScenarioRunBase'
+                $ref: '#/components/schemas/ScenarioRun'
               examples:
                 ScenarioRun:
-                  $ref: '#/components/examples/BreweryScenarioRunBase'
+                  $ref: '#/components/examples/BreweryScenarioRun'
 components:
   securitySchemes:
     oAuth2AuthCode:
@@ -560,7 +560,7 @@ components:
           readOnly: true
           description: the container which execute the post-run
           $ref: '#/components/schemas/ScenarioRunContainer'
-    ScenarioRunBase:
+    ScenarioRun:
       type: object
       description: a ScenarioRun with only base properties
       properties:
@@ -637,75 +637,69 @@ components:
           type: string
           readOnly: true
           description: the ScenarioRun end Date Time
-    ScenarioRun:
-      allOf:
-        - $ref: '#/components/schemas/ScenarioRunBase'
-        - type: object
-          description: a ScenarioRun
-          properties:
-            datasetList:
-              type: array
-              readOnly: true
-              description: the list of Dataset Id associated to this Analysis
-              items:
-                type: string
-            parametersValues:
-              type: array
-              readOnly: true
-              description: the list of Run Template parameters values
-              items:
-                $ref: '#/components/schemas/RunTemplateParameterValue'
-            sendInputToDataWarehouse:
-              type: boolean
-              readOnly: true
-              description: whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to ScenarioRun Run
-            dataWarehouseDB:
-              type: string
-              description: the DataWarehouse database name to send data if sendInputToDataWarehouse is set
-            resultsEventBusResourceUri:
-              type: string
-              description: the event bus which receive Workspace ScenarioRun results messages. Message won't be send if this is not set
-            scenariorunEventBusResourceUri:
-              type: string
-              description: the event bus which receive Workspace ScenarioRun events messages. Message won't be send if this is not set
-            nodeLabel:
-              type: string
-              readOnly: true
-              description: the node label request
-            fetchDatasetContainers:
-              type: array
-              readOnly: true
-              description: the containers which fetch the Scenario Datasets
-              items:
-                $ref: '#/components/schemas/ScenarioRunContainer'
-            fetchScenarioParametersContainer:
-              readOnly: true
-              description: the container which fetch the Scenario Parameters
-              $ref: '#/components/schemas/ScenarioRunContainer'
-            applyParametersContainer:
-              readOnly: true
-              description: the container which apply the Scenario Parameters
-              $ref: '#/components/schemas/ScenarioRunContainer'
-            validateDataContainer:
-              readOnly: true
-              description: the container which validate the Scenario data
-              $ref: '#/components/schemas/ScenarioRunContainer'
-            sendDataWarehouseContainer:
-              readOnly: true
-              description: the container which send data to the Data Warehouse
-              $ref: '#/components/schemas/ScenarioRunContainer'
-            preRunContainer:
-              readOnly: true
-              description: the container which execute the pre-run
-              $ref: '#/components/schemas/ScenarioRunContainer'
-            runContainer:
-              readOnly: true
-              description: the main run container which execute the engine
-              $ref: '#/components/schemas/ScenarioRunContainer'
-            postRunContainer:
-              readOnly: true
-              description: the container which execute the post-run
-              $ref: '#/components/schemas/ScenarioRunContainer'
+        datasetList:
+          type: array
+          readOnly: true
+          description: the list of Dataset Id associated to this Analysis
+          items:
+            type: string
+        parametersValues:
+          type: array
+          readOnly: true
+          description: the list of Run Template parameters values
+          items:
+            $ref: '#/components/schemas/RunTemplateParameterValue'
+        sendInputToDataWarehouse:
+          type: boolean
+          readOnly: true
+          description: whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to ScenarioRun Run
+        dataWarehouseDB:
+          type: string
+          description: the DataWarehouse database name to send data if sendInputToDataWarehouse is set
+        resultsEventBusResourceUri:
+          type: string
+          description: the event bus which receive Workspace ScenarioRun results messages. Message won't be send if this is not set
+        scenariorunEventBusResourceUri:
+          type: string
+          description: the event bus which receive Workspace ScenarioRun events messages. Message won't be send if this is not set
+        nodeLabel:
+          type: string
+          readOnly: true
+          description: the node label request
+        fetchDatasetContainers:
+          type: array
+          readOnly: true
+          description: the containers which fetch the Scenario Datasets
+          items:
+            $ref: '#/components/schemas/ScenarioRunContainer'
+        fetchScenarioParametersContainer:
+          readOnly: true
+          description: the container which fetch the Scenario Parameters
+          $ref: '#/components/schemas/ScenarioRunContainer'
+        applyParametersContainer:
+          readOnly: true
+          description: the container which apply the Scenario Parameters
+          $ref: '#/components/schemas/ScenarioRunContainer'
+        validateDataContainer:
+          readOnly: true
+          description: the container which validate the Scenario data
+          $ref: '#/components/schemas/ScenarioRunContainer'
+        sendDataWarehouseContainer:
+          readOnly: true
+          description: the container which send data to the Data Warehouse
+          $ref: '#/components/schemas/ScenarioRunContainer'
+        preRunContainer:
+          readOnly: true
+          description: the container which execute the pre-run
+          $ref: '#/components/schemas/ScenarioRunContainer'
+        runContainer:
+          readOnly: true
+          description: the main run container which execute the engine
+          $ref: '#/components/schemas/ScenarioRunContainer'
+        postRunContainer:
+          readOnly: true
+          description: the container which execute the post-run
+          $ref: '#/components/schemas/ScenarioRunContainer'
     RunTemplateParameterValue:
       type: object
       description: the value of Analysis parameter for a Scenario for this ScenarioRun
@@ -765,59 +759,61 @@ components:
           description: the ScenarioRun Id
         options:
           $ref: '#/components/schemas/ScenarioRunLogsOptions'
-        fetchDatasetContainers:
+        fetchDatasetLogs:
           type: array
           readOnly: true
           description: logs for the containers which fetch the Scenario Datasets
           items:
             $ref: '#/components/schemas/ScenarioRunContainerLogs'
-        fetchScenarioParametersContainer:
+        fetchScenarioParametersLogs:
           readOnly: true
           description: logs for the container which fetch the Scenario Parameters
           $ref: '#/components/schemas/ScenarioRunContainerLogs'
-        applyParametersContainer:
+        applyParametersLogs:
           readOnly: true
           description: logs for the container which apply the Scenario Parameters
           $ref: '#/components/schemas/ScenarioRunContainerLogs'
-        validateDataContainer:
+        validateDataLogs:
           readOnly: true
           description: logs for the container which validate the Scenario data
           $ref: '#/components/schemas/ScenarioRunContainerLogs'
-        sendDataWarehouseContainer:
+        sendDataWarehouseLogs:
           readOnly: true
           description: logs for the container which send data to the Data Warehouse
           $ref: '#/components/schemas/ScenarioRunContainerLogs'
-        preRunContainer:
+        preRunLogs:
           readOnly: true
           description: logs for the container which execute the pre-run
           $ref: '#/components/schemas/ScenarioRunContainerLogs'
-        runContainer:
+        runLogs:
           readOnly: true
           description: logs for the main run container which execute the engine
           $ref: '#/components/schemas/ScenarioRunContainerLogs'
-        postRunContainer:
+        postRunLogs:
           readOnly: true
           description: logs for the container which execute the post-run
           $ref: '#/components/schemas/ScenarioRunContainerLogs'
     ScenarioRunContainerLogs:
-      allOf:
-      - $ref: '#/components/schemas/ScenarioRunContainer'
-      - type: object
-        description: logs for a given container
-        properties:
-          computer:
-            type: string
-            readOnly: true
-            description: computer/node that's generating the log
-          logs:
-            type: array
-            readOnly: true
-            description: the list of container logs in structured format
-            items:
-              $ref: '#/components/schemas/ScenarioRunContainerLog'
-          textLog:
-            type: string
-            description: the plain text log if plainText option has been set
+      type: object
+      description: logs for a given container
+      properties:
+        container:
+          readOnly: true
+          description: the container definition
+          $ref: '#/components/schemas/ScenarioRunContainer'
+        computer:
+          type: string
+          readOnly: true
+          description: computer/node that's generating the log
+        logs:
+          type: array
+          readOnly: true
+          description: the list of container logs in structured format
+          items:
+            $ref: '#/components/schemas/ScenarioRunContainerLog'
+        textLog:
+          type: string
+          description: the plain text log if plainText option has been set
     ScenarioRunContainerLog:
       type: object
       description: a container log line
@@ -1100,25 +1096,6 @@ components:
             - DeployedScenarioRun
             - --amqp-consumer
             - amqps://csm-phoenix.servicebus.windows.net/brewery
-    BreweryScenarioRunBase:
-      summary: Brewery ScenarioRun base example
-      description: Brewery ScenarioRun base example
-      value:
-        id: "1"
-        jobId: "1"
-        ownerId: "1"
-        workspaceId: "1"
-        workspaceName: Brewery Analysis
-        scenarioId: "1"
-        scenarioName: Brewery Master Analysis
-        solutionId: "1"
-        solutionName: Brewery Solution
-        solutionVersion: "1.0.0"
-        runTemplateId: hundred
-        runTemplateName: Full scenariorun 100 steps
-        computeSize: highcpu
-        state: Running
-        starTime: 4/15/2021, 10:52:18.593 AM
     OneScenarioRun:
       summary: Brewery ScenarioRun list example
       description: Brewery ScenarioRun list example
@@ -1138,6 +1115,111 @@ components:
           computeSize: highcpu
           state: Running
           starTime: 4/15/2021, 10:52:18.593 AM
+          id: "1"
+          jobId: "1"
+          ownerId: "1"
+          workspaceId: "1"
+          workspaceName: Brewery Analysis
+          scenarioId: "1"
+          scenarioName: Brewery Master Analysis
+          solutionId: "1"
+          solutionName: Brewery Solution
+          solutionVersion: "1.0.0"
+          runTemplateId: hundred
+          runTemplateName: Full scenariorun 100 steps
+          computeSize: highcpu
+          parametersHandler: run_templates/hundred/parameters_handler/
+          datasetValidator: run_templates/hundred/validator/
+          engine: run_templates/hundred/engine/
+          datasetList:
+            - "1"
+          parametersValues:
+            - parameterId: prefix
+              value: new
+          sendInputToDataWarehouse: true
+          dataWarehouseDB: Brewery
+          resultsEventBusResourceUri: brewery
+          scenariorunEventBusResourceUri: brewery-scenariorun
+          state: Running
+          starTime: 4/15/2021, 10:52:18.593 AM
+          nodeLabel: highcpupool
+          fetchDatasetContainers:
+            - id: azertyuiop
+              envVars:
+                AZURE_TENANT_ID: "12345678"
+                AZURE_CLIENT_ID: "12345678"
+                AZURE_CLIENT_SECRET: azertyuiop
+                CSM_API_URL: https://api.comostech.com
+                ADT_INSTANCE_URL: https://supply.api.weu.digitaltwins.azure.net
+                ADT_QUERY: SELECT * FROM digitaltwins
+                EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/scenariorun-data
+              image: csmphoenix.azurecr.io/azure-digital-twins-simulator-connector:latest
+          fetchScenarioParametersContainer:
+            id: aqwzsx
+            envVars:
+              AZURE_TENANT_ID: "12345678"
+              AZURE_CLIENT_ID: "12345678"
+              AZURE_CLIENT_SECRET: azertyuiop
+              CSM_API_URL: https://api.comostech.com
+              CSM_SCENARIO_ID: "1"
+              CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
+            image: csmphoenix.azurecr.io/cosmotech-scenario-parameters-loader:latest
+          applyParametersContainer:
+            id: yhnujki
+            envVars:
+              AZURE_TENANT_ID: "12345678"
+              AZURE_CLIENT_ID: "12345678"
+              AZURE_CLIENT_SECRET: azertyuiop
+              CSM_API_URL: https://api.comostech.com
+              CSM_PARAMETERS_HANDLER_PROVIDER: local
+              CSM_PARAMETERS_HANDLER_PATH: run_templates/hundred/parameters_handler/
+              CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
+            image: twinengines.azurecr.io/brewery_simulator:latest
+            runArgs:
+              - handle-parameters
+          validateDataContainer:
+            id: rfvtgb
+            envVars:
+              AZURE_TENANT_ID: "12345678"
+              AZURE_CLIENT_ID: "12345678"
+              AZURE_CLIENT_SECRET: azertyuiop
+              CSM_API_URL: https://api.comostech.com
+              CSM_DATASET_VALIDATOR_PROVIDER: local
+              CSM_DATASET_VALIDATOR_PATH: run_templates/hundred/validator/
+              CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
+            image: twinengines.azurecr.io/brewery_simulator:latest
+            runArgs:
+              - validate
+          sendDataWarehouseContainer:
+            id: qsdfghjklm
+            envVars:
+              AZURE_TENANT_ID: "12345678"
+              AZURE_CLIENT_ID: "12345678"
+              AZURE_CLIENT_SECRET: azertyuiop
+              CSM_API_URL: https://api.comostech.com
+              CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
+              CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
+              ADX_DATA_INGESTION_URI: https://ingest-phoenix.westeurope.kusto.windows.net
+              ADX_DATABASE: Brewery
+            image: csmphoenix.azurecr.io/azure-data-explorer-scenariorun-sender:latest
+          runContainer:
+            id: wxcvbn
+            envVars:
+              AZURE_TENANT_ID: "12345678"
+              AZURE_CLIENT_ID: "12345678"
+              AZURE_CLIENT_SECRET: azertyuiop
+              CSM_API_URL: https://api.comostech.com
+              CSM_ENGINE_PROVIDER: local
+              CSM_ENGINE_PATH: run_templates/hundred/engine/
+              CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
+              CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
+              CSM_CONTROL_PLANE_TOPIC: amqps://csm-phoenix.servicebus.windows.net/brewery-scenariorun
+            image: twinengines.azurecr.io/brewery_simulator:latest
+            runArgs:
+              - -i
+              - DeployedScenarioRun
+              - --amqp-consumer
+              - amqps://csm-phoenix.servicebus.windows.net/brewery
     BrewerySearch:
       summary: Brewery search ScenarioRun example
       description: Brewery search ScenarioRun of Workspace 1 in Running state example
@@ -1229,17 +1311,18 @@ components:
             - azertyuiop
             - wxcvbn
           plainText: false
-        fetchDatasetContainers:
-          - id: azertyuiop
-            envVars:
-              AZURE_TENANT_ID: "12345678"
-              AZURE_CLIENT_ID: "12345678"
-              AZURE_CLIENT_SECRET: azertyuiop
-              CSM_API_URL: https://api.comostech.com
-              ADT_INSTANCE_URL: https://supply.api.weu.digitaltwins.azure.net
-              ADT_QUERY: SELECT * FROM digitaltwins
-              EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/scenariorun-data
-            image: csmphoenix.azurecr.io/azure-digital-twins-simulator-connector:latest
+        fetchDatasetLogs:
+          - container:
+              id: azertyuiop
+              envVars:
+                AZURE_TENANT_ID: "12345678"
+                AZURE_CLIENT_ID: "12345678"
+                AZURE_CLIENT_SECRET: azertyuiop
+                CSM_API_URL: https://api.comostech.com
+                ADT_INSTANCE_URL: https://supply.api.weu.digitaltwins.azure.net
+                ADT_QUERY: SELECT * FROM digitaltwins
+                EXPORT_CSV_FILE_ABSOLUTE_PATH: /mnt/scenariorun-data
+              image: csmphoenix.azurecr.io/azure-digital-twins-simulator-connector:latest
             computer: aks-highcpupool-30630301-vmss000000 
             logs:
               - timeGenerated: 4/15/2021, 10:52:20.593 AM
@@ -1249,23 +1332,24 @@ components:
                 entrySource: stderr
                 logEntry: stopping stream
         runContainer:
-          id: wxcvbn
-          envVars:
-            AZURE_TENANT_ID: "12345678"
-            AZURE_CLIENT_ID: "12345678"
-            AZURE_CLIENT_SECRET: azertyuiop
-            CSM_API_URL: https://api.comostech.com
-            CSM_ENGINE_PROVIDER: local
-            CSM_ENGINE_PATH: run_templates/hundred/engine/
-            CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
-            CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
-            CSM_CONTROL_PLANE_TOPIC: amqps://csm-phoenix.servicebus.windows.net/brewery-scenariorun
-          image: twinengines.azurecr.io/brewery_simulator:latest
-          runArgs:
-            - -i
-            - DeployedScenarioRun
-            - --amqp-consumer
-            - amqps://csm-phoenix.servicebus.windows.net/brewery
+          container:
+            id: wxcvbn
+            envVars:
+              AZURE_TENANT_ID: "12345678"
+              AZURE_CLIENT_ID: "12345678"
+              AZURE_CLIENT_SECRET: azertyuiop
+              CSM_API_URL: https://api.comostech.com
+              CSM_ENGINE_PROVIDER: local
+              CSM_ENGINE_PATH: run_templates/hundred/engine/
+              CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
+              CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
+              CSM_CONTROL_PLANE_TOPIC: amqps://csm-phoenix.servicebus.windows.net/brewery-scenariorun
+            image: twinengines.azurecr.io/brewery_simulator:latest
+            runArgs:
+              - -i
+              - DeployedScenarioRun
+              - --amqp-consumer
+              - amqps://csm-phoenix.servicebus.windows.net/brewery
           computer: aks-highcpupool-30630301-vmss000000 
           logs:
             - timeGenerated: 4/15/2021, 10:52:22.593 AM
