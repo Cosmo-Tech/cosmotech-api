@@ -6,6 +6,7 @@ import com.azure.cosmos.models.CosmosContainerProperties
 import com.cosmotech.api.AbstractCosmosBackedService
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
+import com.cosmotech.api.events.UserUnregistered
 import com.cosmotech.api.utils.changed
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
@@ -14,6 +15,7 @@ import java.util.*
 import javax.annotation.PostConstruct
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
 
 @Service
@@ -104,5 +106,12 @@ class OrganizationServiceImpl : AbstractCosmosBackedService(), OrganizationApiSe
     } else {
       existingOrganization
     }
+  }
+
+  @EventListener(UserUnregistered::class)
+  fun onUserUnregistered(userUnregisteredEvent: UserUnregistered) {
+    logger.info(
+        "User ${userUnregisteredEvent.userId} unregistered => removing them from all organizations they belong to..")
+    // TODO
   }
 }
