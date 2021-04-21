@@ -20,7 +20,7 @@ dependencies {
 }
 
 tasks.getByName<Delete>("clean") {
-  delete("$rootDir/openapi/openapi.yaml", "$rootDir/openapi/plantuml")
+  delete("$rootDir/openapi/openapi.yaml")
 }
 
 tasks.withType<JibTask> {
