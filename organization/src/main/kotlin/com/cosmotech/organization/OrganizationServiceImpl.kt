@@ -11,6 +11,7 @@ import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import java.lang.IllegalStateException
 import java.util.*
+import javax.annotation.PostConstruct
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -24,6 +25,13 @@ class OrganizationServiceImpl : AbstractCosmosBackedService(), OrganizationApiSe
 
   @Value("\${csm.azure.cosmosdb.database.core.organizations.container}")
   private lateinit var coreOrganizationContainer: String
+
+  @PostConstruct
+  fun initService() {
+    cosmosClient
+        .getDatabase(databaseName)
+        .createContainerIfNotExists(CosmosContainerProperties(coreOrganizationContainer, "/id"))
+  }
 
   override fun findAllOrganizations() =
       cosmosTemplate.findAll(coreOrganizationContainer, Organization::class.java).toList()
