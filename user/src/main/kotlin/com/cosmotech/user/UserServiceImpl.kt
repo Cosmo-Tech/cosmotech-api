@@ -5,7 +5,6 @@ package com.cosmotech.user
 import com.cosmotech.api.AbstractPhoenixService
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
-import com.cosmotech.user.domain.UserDetails
 import org.springframework.stereotype.Service
 
 @Service
@@ -18,22 +17,22 @@ class UserServiceImpl : AbstractPhoenixService(), UserApiService {
     TODO("Not yet implemented")
   }
 
-  override fun findUserById(userId: kotlin.String): UserDetails {
+  override fun findUserById(userId: kotlin.String): User {
     TODO("Not yet implemented")
   }
 
-  override fun getCurrentUser(): UserDetails {
+  override fun getCurrentUser(): User {
     TODO("Not yet implemented")
   }
 
-  override fun getOrganizationCurrentUser(organizationId: kotlin.String): UserDetails {
+  override fun getOrganizationCurrentUser(organizationId: kotlin.String): User {
     TODO("Not yet implemented")
   }
 
   override fun getWorkspaceCurrentUser(
       organizationId: kotlin.String,
       workspaceId: kotlin.String
-  ): UserDetails {
+  ): User {
     TODO("Not yet implemented")
   }
 

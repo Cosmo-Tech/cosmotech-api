@@ -1,6 +1,6 @@
 # UserApi
 
-All URIs are relative to *https://api.azure.cosmo-platform.com*
+All URIs are relative to *http://localhost:8080*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -61,7 +61,7 @@ This endpoint does not need any parameter.
 
 <a name="findUserById"></a>
 # **findUserById**
-> UserDetails findUserById(user\_id)
+> User findUserById(user\_id)
 
 Get the details of an user
 
@@ -73,7 +73,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**UserDetails**](../Models/UserDetails.md)
+[**User**](../Models/User.md)
 
 ### Authorization
 
@@ -86,7 +86,7 @@ Name | Type | Description  | Notes
 
 <a name="getCurrentUser"></a>
 # **getCurrentUser**
-> UserDetails getCurrentUser()
+> User getCurrentUser()
 
 Get the details of an user
 
@@ -95,7 +95,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**UserDetails**](../Models/UserDetails.md)
+[**User**](../Models/User.md)
 
 ### Authorization
 
@@ -108,7 +108,7 @@ This endpoint does not need any parameter.
 
 <a name="getOrganizationCurrentUser"></a>
 # **getOrganizationCurrentUser**
-> UserDetails getOrganizationCurrentUser(organization\_id)
+> User getOrganizationCurrentUser(organization\_id)
 
 Get the details of an user with roles for an Organization
 
@@ -120,7 +120,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**UserDetails**](../Models/UserDetails.md)
+[**User**](../Models/User.md)
 
 ### Authorization
 
@@ -133,7 +133,7 @@ Name | Type | Description  | Notes
 
 <a name="getWorkspaceCurrentUser"></a>
 # **getWorkspaceCurrentUser**
-> UserDetails getWorkspaceCurrentUser(organization\_id, workspace\_id)
+> User getWorkspaceCurrentUser(organization\_id, workspace\_id)
 
 Get the details of an user with roles for a Workspace
 
@@ -146,7 +146,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**UserDetails**](../Models/UserDetails.md)
+[**User**](../Models/User.md)
 
 ### Authorization
 

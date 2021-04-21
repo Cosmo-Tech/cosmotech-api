@@ -17,6 +17,8 @@ Name | Type | Description | Notes
 **runTemplateName** | [**String**](string.md) | the Run Template name | [optional] [default to null]
 **computeSize** | [**String**](string.md) | the compute size needed for this Analysis. Standard sizes are basic and highcpu. Default is basic | [optional] [default to null]
 **state** | [**String**](string.md) | the ScenarioRun state | [optional] [default to null]
+**failedStep** | [**String**](string.md) | the failed step if state is Failed | [optional] [default to null]
+**failedContainerId** | [**String**](string.md) | the failed container Id if state is Failed | [optional] [default to null]
 **startTime** | [**String**](string.md) | the ScenarioRun start Date Time | [optional] [default to null]
 **endTime** | [**String**](string.md) | the ScenarioRun end Date Time | [optional] [default to null]
 

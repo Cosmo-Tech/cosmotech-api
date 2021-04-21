@@ -82,10 +82,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserDetails'
+                $ref: '#/components/schemas/User'
               examples:
                 Bob:
-                  $ref: '#/components/examples/BobDetails'
+                  $ref: '#/components/examples/Bob'
         "404":
           description: the User specified is unknown or you don't have access to it
     patch:
@@ -148,10 +148,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserDetails'
+                $ref: '#/components/schemas/User'
               examples:
                 Bob:
-                  $ref: '#/components/examples/BobDetails'
+                  $ref: '#/components/examples/Bob'
         "404":
           description: the User specified is unknown or you don't have access to it
   /organizations/{organization_id}/me:
@@ -173,10 +173,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserDetails'
+                $ref: '#/components/schemas/User'
               examples:
                 Bob:
-                  $ref: '#/components/examples/BobDetailsOrganization'
+                  $ref: '#/components/examples/BobOrganization'
         "404":
           description: the User specified is unknown or you don't have access to it
   /organizations/{organization_id}/workspaces/{workspace_id}/me:
@@ -204,10 +204,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserDetails'
+                $ref: '#/components/schemas/User'
               examples:
                 Bob:
-                  $ref: '#/components/examples/BobDetailsWorkspace'
+                  $ref: '#/components/examples/BobWorkspace'
         "404":
           description: the User specified is unknown or you don't have access to it
   /oauth2/authorize:
@@ -253,20 +253,14 @@ components:
           items:
             type: string
             enum: ["Admin","User","ConnectorDeveloper"]
+        organizations:
+          type: array
+          readOnly: true
+          items:
+            $ref: '#/components/schemas/UserOrganization'
       required:
         - name
         - platformRoles
-    UserDetails:
-      allOf:
-        - $ref: '#/components/schemas/User'
-        - type: object
-          description: a User with Organization details
-          properties:
-            organizations:
-              type: array
-              readOnly: true
-              items:
-                $ref: '#/components/schemas/UserOrganization'
     UserOrganization:
       type: object
       description: The organization of the user
@@ -322,14 +316,6 @@ components:
         name: Bob
         platformRoles:
           - Admin
-    BobDetails:
-      summary: Bob User
-      description: Bob User example
-      value:
-        id: "1"
-        name: Bob
-        platformRoles:
-          - Admin
         organizations:
           - id: "1"
             name: Cosmo Tech
@@ -358,6 +344,20 @@ components:
         name: Boby
         platformRoles:
           - Admin
+        organizations:
+          - id: "1"
+            name: Cosmo Tech
+            roles:
+              - Admin
+            workspaces:
+              - id: "1"
+                name: Brewery Analysis 
+                roles:
+                  - Admin
+          - id: "2"
+            name: Phoenix
+            roles:
+              - Admin
     TwoUsers:
       summary: Two Users example
       description: Two Users example
@@ -366,11 +366,39 @@ components:
           name: Bob
           platformRoles:
             - Admin
+          organizations:
+            - id: "1"
+              name: Cosmo Tech
+              roles:
+                - Admin
+              workspaces:
+                - id: "1"
+                  name: Brewery Analysis 
+                  roles:
+                    - Admin
+            - id: "2"
+              name: Phoenix
+              roles:
+                - Admin
         - id: "2"
           name: Alice
           platformRoles:
             - User
-    BobDetailsOrganization:
+          organizations:
+            - id: "1"
+              name: Cosmo Tech
+              roles:
+                - Admin
+              workspaces:
+                - id: "1"
+                  name: Brewery Analysis 
+                  roles:
+                    - Admin
+            - id: "2"
+              name: Phoenix
+              roles:
+                - Admin
+    BobOrganization:
       summary: Bob User for an Organization example
       description: Bob User for Organization 1 example
       value:
@@ -388,7 +416,7 @@ components:
                 name: Brewery Analysis 
                 roles:
                   - Admin
-    BobDetailsWorkspace:
+    BobWorkspace:
       summary: Bob User for a Workspace example
       description: Bob User for Organization 1 and Workspace 1 example
       value:

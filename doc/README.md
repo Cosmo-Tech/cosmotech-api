@@ -3,7 +3,7 @@
 <a name="documentation-for-api-endpoints"></a>
 ## Documentation for API Endpoints
 
-All URIs are relative to *https://api.azure.cosmo-platform.com*
+All URIs are relative to *http://localhost:8080*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
@@ -102,16 +102,15 @@ Class | Method | HTTP request | Description
  - [RunTemplateParameterValue](./Models/RunTemplateParameterValue.md)
  - [RunTemplateResourceStorage](./Models/RunTemplateResourceStorage.md)
  - [Scenario](./Models/Scenario.md)
- - [ScenarioAllOf](./Models/ScenarioAllOf.md)
- - [ScenarioBase](./Models/ScenarioBase.md)
  - [ScenarioChangedParameterValue](./Models/ScenarioChangedParameterValue.md)
  - [ScenarioComparisonResult](./Models/ScenarioComparisonResult.md)
  - [ScenarioRun](./Models/ScenarioRun.md)
  - [ScenarioRunAllOf](./Models/ScenarioRunAllOf.md)
  - [ScenarioRunBase](./Models/ScenarioRunBase.md)
+ - [ScenarioRunContainer](./Models/ScenarioRunContainer.md)
  - [ScenarioRunContainerLog](./Models/ScenarioRunContainerLog.md)
  - [ScenarioRunContainerLogs](./Models/ScenarioRunContainerLogs.md)
- - [ScenarioRunContainers](./Models/ScenarioRunContainers.md)
+ - [ScenarioRunContainerLogsAllOf](./Models/ScenarioRunContainerLogsAllOf.md)
  - [ScenarioRunLogs](./Models/ScenarioRunLogs.md)
  - [ScenarioRunLogsOptions](./Models/ScenarioRunLogsOptions.md)
  - [ScenarioRunSearch](./Models/ScenarioRunSearch.md)
@@ -122,8 +121,6 @@ Class | Method | HTTP request | Description
  - [ScenarioUser](./Models/ScenarioUser.md)
  - [Solution](./Models/Solution.md)
  - [User](./Models/User.md)
- - [UserDetails](./Models/UserDetails.md)
- - [UserDetailsAllOf](./Models/UserDetailsAllOf.md)
  - [UserOrganization](./Models/UserOrganization.md)
  - [UserWorkspace](./Models/UserWorkspace.md)
  - [Validator](./Models/Validator.md)

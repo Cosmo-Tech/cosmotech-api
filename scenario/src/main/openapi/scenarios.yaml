@@ -104,7 +104,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ScenarioBase'
+                  $ref: '#/components/schemas/Scenario'
               examples:
                 ScenariosTree:
                   $ref: '#/components/examples/ScenariosTree'
@@ -247,7 +247,7 @@ components:
           authorizationUrl: oauth2/authorize
           scopes: {}
   schemas:
-    ScenarioBase:
+    Scenario:
       type: object
       description: a Scenario with base information
       properties:
@@ -294,39 +294,30 @@ components:
           type: string
           readOnly: true
           description: the Scenario creation date
+        ownerName:
+          type: string
+          readOnly: true
+          description: the name of the owner
+        solutionName:
+          type: string
+          readOnly: true
+          description: the Solution name
+        runTemplateName:
+          type: string
+          readOnly: true
+          description: the Solution Run Template name associated with this Scenario
+        datasetList:
+          type: array
+          description: the list of Dataset Id associated to this Scenario Run Template
+          items:
+            type: string
+        parametersValues:
+          type: array
+          description: the list of Solution Run Template parameters values
+          items:
+            $ref: '#/components/schemas/ScenarioRunTemplateParameterValue'
       required:
         - name
-    Scenario:
-      allOf:
-        - $ref: '#/components/schemas/ScenarioBase'
-        - type: object
-          description: a Scenario with detailed information
-          properties:
-            ownerName:
-              type: string
-              readOnly: true
-              description: the name of the owner
-            solutionName:
-              type: string
-              readOnly: true
-              description: the Solution name
-            runTemplateName:
-              type: string
-              readOnly: true
-              description: the Solution Run Template name associated with this Scenario
-            datasetList:
-              type: array
-              description: the list of Dataset Id associated to this Scenario Run Template
-              items:
-                type: string
-            parametersValues:
-              type: array
-              description: the list of Solution Run Template parameters values
-              items:
-                $ref: '#/components/schemas/ScenarioRunTemplateParameterValue'
-            sendInputToDataWarehouse:
-              type: boolean
-              description: whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to Simulation Run
     ScenarioRunTemplateParameterValue:
       type: object
       description: the value of a Solution Run Template parameter for a Scenario
@@ -624,6 +615,16 @@ components:
               roles: Viewer 
           state: Created
           creationDate: 4/15/2021, 10:52:21.593 AM
+          ownerName: Alice
+          runTemplateName: Full simulation 100 steps
+          solutionName: Brewery Solution
+          datasetList:
+            - "1"
+          parametersValues:
+            - parameterId: prefix
+              varType: string
+              value: ""
+              inherited: true
         - id: "2"
           name: Brewery Analysis name example
           description: Brewery analysis with example as name prefix
@@ -641,6 +642,16 @@ components:
               roles: Viewer 
           state: Running
           creationDate: 4/15/2021, 11:52:21.593 AM
+          ownerName: Alice
+          runTemplateName: Full simulation 100 steps
+          solutionName: Brewery Solution
+          datasetList:
+            - "1"
+          parametersValues:
+            - parameterId: prefix
+              varType: string
+              value: ""
+              inherited: true
         - id: "3"
           name: Brewery Analysis name no change
           description: Brewery analysis with no change on name prefix
@@ -657,3 +668,13 @@ components:
               roles: Editor 
           state: Failed
           creationDate: 4/16/2021, 10:52:21.593 AM
+          ownerName: Alice
+          runTemplateName: Full simulation 100 steps
+          solutionName: Brewery Solution
+          datasetList:
+            - "1"
+          parametersValues:
+            - parameterId: prefix
+              varType: string
+              value: ""
+              inherited: true

@@ -12,8 +12,10 @@ Name | Type | Description | Notes
 **computeSize** | [**String**](string.md) | the compute size needed for this Run Template. Standard sizes are basic and highcpu. Default is basic | [optional] [default to null]
 **parametersHandlerResource** | [**RunTemplateResourceStorage**](RunTemplateResourceStorage.md) |  | [optional] [default to null]
 **datasetValidatorResource** | [**RunTemplateResourceStorage**](RunTemplateResourceStorage.md) |  | [optional] [default to null]
+**preRunResource** | [**RunTemplateResourceStorage**](RunTemplateResourceStorage.md) |  | [optional] [default to null]
 **engineResource** | [**RunTemplateResourceStorage**](RunTemplateResourceStorage.md) |  | [optional] [default to null]
-**datasetSchemaResource** | [**RunTemplateResourceStorage**](RunTemplateResourceStorage.md) |  | [optional] [default to null]
+**postRunResource** | [**RunTemplateResourceStorage**](RunTemplateResourceStorage.md) |  | [optional] [default to null]
+**sendInputToDataWarehouse** | [**Boolean**](boolean.md) | whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to Simulation Run | [optional] [default to true]
 **parameterGroups** | [**List**](RunTemplateParameterGroup.md) | the list of parameters groups for the Run Template | [optional] [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

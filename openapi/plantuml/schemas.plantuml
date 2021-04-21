@@ -133,8 +133,10 @@ entity RunTemplate {
     computeSize: String
     parametersHandlerResource: RunTemplateResourceStorage
     datasetValidatorResource: RunTemplateResourceStorage
+    preRunResource: RunTemplateResourceStorage
     engineResource: RunTemplateResourceStorage
-    datasetSchemaResource: RunTemplateResourceStorage
+    postRunResource: RunTemplateResourceStorage
+    sendInputToDataWarehouse: Boolean
     parameterGroups: List<RunTemplateParameterGroup>
 }
 
@@ -169,15 +171,6 @@ entity RunTemplateResourceStorage {
 }
 
 entity Scenario { 
-    ownerName: String
-    solutionName: String
-    runTemplateName: String
-    datasetList: List<String>
-    parametersValues: List<ScenarioRunTemplateParameterValue>
-    sendInputToDataWarehouse: Boolean
-}
-
-entity ScenarioBase { 
     id: String
     * name: String
     description: String
@@ -189,6 +182,11 @@ entity ScenarioBase {
     users: List<ScenarioUser>
     state: String
     creationDate: String
+    ownerName: String
+    solutionName: String
+    runTemplateName: String
+    datasetList: List<String>
+    parametersValues: List<ScenarioRunTemplateParameterValue>
 }
 
 entity ScenarioChangedParameterValue { 
@@ -212,8 +210,14 @@ entity ScenarioRun {
     resultsEventBusResourceUri: String
     scenariorunEventBusResourceUri: String
     nodeLabel: String
-    initContainers: List<ScenarioRunContainers>
-    mainContainer: ScenarioRunContainers
+    fetchDatasetContainers: List<ScenarioRunContainer>
+    fetchScenarioParametersContainer: ScenarioRunContainer
+    applyParametersContainer: ScenarioRunContainer
+    validateDataContainer: ScenarioRunContainer
+    sendDataWarehouseContainer: ScenarioRunContainer
+    preRunContainer: ScenarioRunContainer
+    runContainer: ScenarioRunContainer
+    postRunContainer: ScenarioRunContainer
 }
 
 entity ScenarioRunBase { 
@@ -231,8 +235,17 @@ entity ScenarioRunBase {
     runTemplateName: String
     computeSize: String
     state: String
+    failedStep: String
+    failedContainerId: String
     startTime: String
     endTime: String
+}
+
+entity ScenarioRunContainer { 
+    id: String
+    envVars: Map
+    image: String
+    runArgs: List<String>
 }
 
 entity ScenarioRunContainerLog { 
@@ -242,24 +255,22 @@ entity ScenarioRunContainerLog {
 }
 
 entity ScenarioRunContainerLogs { 
-    containerId: String
     computer: String
     logs: List<ScenarioRunContainerLog>
     textLog: String
 }
 
-entity ScenarioRunContainers { 
-    id: String
-    envVars: Map
-    image: String
-    runArgs: List<String>
-}
-
 entity ScenarioRunLogs { 
     scenariorunId: String
     options: ScenarioRunLogsOptions
-    initLogs: List<ScenarioRunContainerLogs>
-    mainLogs: ScenarioRunContainerLogs
+    fetchDatasetContainers: List<ScenarioRunContainerLogs>
+    fetchScenarioParametersContainer: ScenarioRunContainerLogs
+    applyParametersContainer: ScenarioRunContainerLogs
+    validateDataContainer: ScenarioRunContainerLogs
+    sendDataWarehouseContainer: ScenarioRunContainerLogs
+    preRunContainer: ScenarioRunContainerLogs
+    runContainer: ScenarioRunContainerLogs
+    postRunContainer: ScenarioRunContainerLogs
 }
 
 entity ScenarioRunLogsOptions { 
@@ -284,8 +295,14 @@ entity ScenarioRunStart {
 
 entity ScenarioRunStartContainers { 
     nodeLabel: String
-    initContainers: List<ScenarioRunContainers>
-    mainContainer: ScenarioRunContainers
+    fetchDatasetContainers: List<ScenarioRunContainer>
+    fetchScenarioParametersContainer: ScenarioRunContainer
+    applyParametersContainer: ScenarioRunContainer
+    validateDataContainer: ScenarioRunContainer
+    sendDataWarehouseContainer: ScenarioRunContainer
+    preRunContainer: ScenarioRunContainer
+    runContainer: ScenarioRunContainer
+    postRunContainer: ScenarioRunContainer
 }
 
 entity ScenarioRunStartSolution { 
@@ -330,9 +347,6 @@ entity User {
     id: String
     * name: String
     * platformRoles: List<String>
-}
-
-entity UserDetails { 
     organizations: List<UserOrganization>
 }
 
@@ -423,35 +437,33 @@ entity WorkspaceWebApp {
     options: Map
 }
 
-ScenarioBase <|--- Scenario
 ScenarioRunBase <|--- ScenarioRun
-User <|--- UserDetails
+ScenarioRunContainer <|--- ScenarioRunContainerLogs
 
-Platform -- PlatformServices : services
-RunTemplateParameterGroup -- "0..*" RunTemplateParameter : parameters
-ScenarioBase -- "0..*" ScenarioUser : users
-UserDetails -- "0..*" UserOrganization : organizations
-ScenarioRunLogs -- ScenarioRunLogsOptions : options
-ScenarioRunLogs -- "0..*" ScenarioRunContainerLogs : initLogs
-ScenarioRunLogs -- ScenarioRunContainerLogs : mainLogs
-ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
-OrganizationServices -- OrganizationService : storage
-OrganizationServices -- OrganizationService : solutionsContainerRegistry
-Scenario -- "0..*" ScenarioRunTemplateParameterValue : parametersValues
-ScenarioRun -- "0..*" RunTemplateParameterValue : parametersValues
-ScenarioRun -- "0..*" ScenarioRunContainers : initContainers
-ScenarioRun -- ScenarioRunContainers : mainContainer
 Connector -- "0..*" ConnectorParameterGroup : parameterGroups
 Organization -- "0..*" OrganizationUser : users
 Organization -- OrganizationServices : services
+User -- "0..*" UserOrganization : organizations
+Platform -- PlatformServices : services
+RunTemplateParameterGroup -- "0..*" RunTemplateParameter : parameters
 ScenarioRunStartSolution -- "0..*" RunTemplateParameterValue : parametersValues
 RunTemplate -- RunTemplateResourceStorage : parametersHandlerResource
 RunTemplate -- RunTemplateResourceStorage : datasetValidatorResource
+RunTemplate -- RunTemplateResourceStorage : preRunResource
 RunTemplate -- RunTemplateResourceStorage : engineResource
-RunTemplate -- RunTemplateResourceStorage : datasetSchemaResource
+RunTemplate -- RunTemplateResourceStorage : postRunResource
 RunTemplate -- "0..*" RunTemplateParameterGroup : parameterGroups
 ScenarioRunContainerLogs -- "0..*" ScenarioRunContainerLog : logs
 UserOrganization -- "0..*" UserWorkspace : workspaces
+ScenarioRunLogs -- ScenarioRunLogsOptions : options
+ScenarioRunLogs -- "0..*" ScenarioRunContainerLogs : fetchDatasetContainers
+ScenarioRunLogs -- ScenarioRunContainerLogs : fetchScenarioParametersContainer
+ScenarioRunLogs -- ScenarioRunContainerLogs : applyParametersContainer
+ScenarioRunLogs -- ScenarioRunContainerLogs : validateDataContainer
+ScenarioRunLogs -- ScenarioRunContainerLogs : sendDataWarehouseContainer
+ScenarioRunLogs -- ScenarioRunContainerLogs : preRunContainer
+ScenarioRunLogs -- ScenarioRunContainerLogs : runContainer
+ScenarioRunLogs -- ScenarioRunContainerLogs : postRunContainer
 Solution -- "0..*" RunTemplate : run_templates
 ScenarioComparisonResult -- "0..*" ScenarioChangedParameterValue : changedValues
 Dataset -- DatasetConnector : connector
@@ -460,6 +472,20 @@ WorkspaceServices -- WorkspaceService : resultsEventBus
 WorkspaceServices -- WorkspaceService : scenariorunEventBus
 WorkspaceServices -- WorkspaceService : dataWarehouse
 WorkspaceServices -- WorkspaceService : storage
+ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
+OrganizationServices -- OrganizationService : storage
+OrganizationServices -- OrganizationService : solutionsContainerRegistry
+Scenario -- "0..*" ScenarioUser : users
+Scenario -- "0..*" ScenarioRunTemplateParameterValue : parametersValues
+ScenarioRun -- "0..*" RunTemplateParameterValue : parametersValues
+ScenarioRun -- "0..*" ScenarioRunContainer : fetchDatasetContainers
+ScenarioRun -- ScenarioRunContainer : fetchScenarioParametersContainer
+ScenarioRun -- ScenarioRunContainer : applyParametersContainer
+ScenarioRun -- ScenarioRunContainer : validateDataContainer
+ScenarioRun -- ScenarioRunContainer : sendDataWarehouseContainer
+ScenarioRun -- ScenarioRunContainer : preRunContainer
+ScenarioRun -- ScenarioRunContainer : runContainer
+ScenarioRun -- ScenarioRunContainer : postRunContainer
 PlatformServices -- PlatformService : storage
 PlatformServices -- PlatformService : coreContainerRegistry
 PlatformServices -- PlatformService : solutionsContainerRegistry
@@ -471,8 +497,14 @@ PlatformServices -- PlatformService : kubernetesCluster
 PlatformServices -- PlatformService : directory
 PlatformServices -- PlatformService : monitoring
 PlatformServices -- PlatformService : analytic
-ScenarioRunStartContainers -- "0..*" ScenarioRunContainers : initContainers
-ScenarioRunStartContainers -- ScenarioRunContainers : mainContainer
+ScenarioRunStartContainers -- "0..*" ScenarioRunContainer : fetchDatasetContainers
+ScenarioRunStartContainers -- ScenarioRunContainer : fetchScenarioParametersContainer
+ScenarioRunStartContainers -- ScenarioRunContainer : applyParametersContainer
+ScenarioRunStartContainers -- ScenarioRunContainer : validateDataContainer
+ScenarioRunStartContainers -- ScenarioRunContainer : sendDataWarehouseContainer
+ScenarioRunStartContainers -- ScenarioRunContainer : preRunContainer
+ScenarioRunStartContainers -- ScenarioRunContainer : runContainer
+ScenarioRunStartContainers -- ScenarioRunContainer : postRunContainer
 Workspace -- WorkspaceSolution : solution
 Workspace -- "0..*" WorkspaceUser : users
 Workspace -- WorkspaceWebApp : webApp

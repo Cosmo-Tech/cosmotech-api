@@ -28,16 +28,15 @@ Models/RunTemplateParameterGroup.md
 Models/RunTemplateParameterValue.md
 Models/RunTemplateResourceStorage.md
 Models/Scenario.md
-Models/ScenarioAllOf.md
-Models/ScenarioBase.md
 Models/ScenarioChangedParameterValue.md
 Models/ScenarioComparisonResult.md
 Models/ScenarioRun.md
 Models/ScenarioRunAllOf.md
 Models/ScenarioRunBase.md
+Models/ScenarioRunContainer.md
 Models/ScenarioRunContainerLog.md
 Models/ScenarioRunContainerLogs.md
-Models/ScenarioRunContainers.md
+Models/ScenarioRunContainerLogsAllOf.md
 Models/ScenarioRunLogs.md
 Models/ScenarioRunLogsOptions.md
 Models/ScenarioRunSearch.md
@@ -48,8 +47,6 @@ Models/ScenarioRunTemplateParameterValue.md
 Models/ScenarioUser.md
 Models/Solution.md
 Models/User.md
-Models/UserDetails.md
-Models/UserDetailsAllOf.md
 Models/UserOrganization.md
 Models/UserWorkspace.md
 Models/Validator.md

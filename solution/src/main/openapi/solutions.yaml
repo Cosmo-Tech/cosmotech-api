@@ -278,12 +278,19 @@ components:
         datasetValidatorResource:
           description: the dataset validator script resource. Default type is local and default path is run_templates/${CSM_RUNTEMPLATE_ID}/validator/. Ignored with warning if resource does not exist.
           $ref: '#/components/schemas/RunTemplateResourceStorage'
+        preRunResource:
+          description: the Engine pre-run script resource. Default type is local and default path is run_templates/${CSM_RUNTEMPLATE_ID}/prerun/. Ignored with if resource does not exist.
+          $ref: '#/components/schemas/RunTemplateResourceStorage'
         engineResource:
           description: the Engine script resource. Default type is local and default path is run_templates/${CSM_RUNTEMPLATE_ID}/engine/. Ignored with warning if resource does not exist, set automatically the useDirectCsmSimulator to true. An engine receives the Run Template information including all input parameters Key/Value. An engine has the responsibility to run the Run Template. It can use the main standard csmSimulator
           $ref: '#/components/schemas/RunTemplateResourceStorage'
-        datasetSchemaResource:
-          description: an optional schema Uri to validate the Dataset. Default type is local and default path is run_templates/${CSM_RUNTEMPLATE_ID}/schema. 
+        postRunResource:
+          description: the Engine post-run script resource. Default type is local and default path is run_templates/${CSM_RUNTEMPLATE_ID}/prerun/. Ignored with if resource does not exist.
           $ref: '#/components/schemas/RunTemplateResourceStorage'
+        sendInputToDataWarehouse:
+          type: boolean
+          default: true
+          description: whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to Simulation Run
         parameterGroups:
           type: array
           description: the list of parameters groups for the Run Template
@@ -397,7 +404,7 @@ components:
             datasetValidatorResource:
               storageType: local
               resourcePath: run_templates/hundred/validator/
-            EngineResource:
+            engineResource:
               storageType: local
               resourcePath: run_templates/hundred/engine/
             datasetSchemaResource:

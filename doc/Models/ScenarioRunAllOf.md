@@ -10,8 +10,14 @@ Name | Type | Description | Notes
 **resultsEventBusResourceUri** | [**String**](string.md) | the event bus which receive Workspace ScenarioRun results messages. Message won&#39;t be send if this is not set | [optional] [default to null]
 **scenariorunEventBusResourceUri** | [**String**](string.md) | the event bus which receive Workspace ScenarioRun events messages. Message won&#39;t be send if this is not set | [optional] [default to null]
 **nodeLabel** | [**String**](string.md) | the node label request | [optional] [default to null]
-**initContainers** | [**List**](ScenarioRunContainers.md) | the list of init containers | [optional] [default to null]
-**mainContainer** | [**ScenarioRunContainers**](ScenarioRunContainers.md) |  | [optional] [default to null]
+**fetchDatasetContainers** | [**List**](ScenarioRunContainer.md) | the containers which fetch the Scenario Datasets | [optional] [default to null]
+**fetchScenarioParametersContainer** | [**ScenarioRunContainer**](ScenarioRunContainer.md) |  | [optional] [default to null]
+**applyParametersContainer** | [**ScenarioRunContainer**](ScenarioRunContainer.md) |  | [optional] [default to null]
+**validateDataContainer** | [**ScenarioRunContainer**](ScenarioRunContainer.md) |  | [optional] [default to null]
+**sendDataWarehouseContainer** | [**ScenarioRunContainer**](ScenarioRunContainer.md) |  | [optional] [default to null]
+**preRunContainer** | [**ScenarioRunContainer**](ScenarioRunContainer.md) |  | [optional] [default to null]
+**runContainer** | [**ScenarioRunContainer**](ScenarioRunContainer.md) |  | [optional] [default to null]
+**postRunContainer** | [**ScenarioRunContainer**](ScenarioRunContainer.md) |  | [optional] [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

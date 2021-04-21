@@ -17,6 +17,8 @@ Name | Type | Description | Notes
 **runTemplateName** | [**String**](string.md) | the Run Template name | [optional] [default to null]
 **computeSize** | [**String**](string.md) | the compute size needed for this Analysis. Standard sizes are basic and highcpu. Default is basic | [optional] [default to null]
 **state** | [**String**](string.md) | the ScenarioRun state | [optional] [default to null]
+**failedStep** | [**String**](string.md) | the failed step if state is Failed | [optional] [default to null]
+**failedContainerId** | [**String**](string.md) | the failed container Id if state is Failed | [optional] [default to null]
 **startTime** | [**String**](string.md) | the ScenarioRun start Date Time | [optional] [default to null]
 **endTime** | [**String**](string.md) | the ScenarioRun end Date Time | [optional] [default to null]
 **datasetList** | [**List**](string.md) | the list of Dataset Id associated to this Analysis | [optional] [default to null]
@@ -26,8 +28,14 @@ Name | Type | Description | Notes
 **resultsEventBusResourceUri** | [**String**](string.md) | the event bus which receive Workspace ScenarioRun results messages. Message won&#39;t be send if this is not set | [optional] [default to null]
 **scenariorunEventBusResourceUri** | [**String**](string.md) | the event bus which receive Workspace ScenarioRun events messages. Message won&#39;t be send if this is not set | [optional] [default to null]
 **nodeLabel** | [**String**](string.md) | the node label request | [optional] [default to null]
-**initContainers** | [**List**](ScenarioRunContainers.md) | the list of init containers | [optional] [default to null]
-**mainContainer** | [**ScenarioRunContainers**](ScenarioRunContainers.md) |  | [optional] [default to null]
+**fetchDatasetContainers** | [**List**](ScenarioRunContainer.md) | the containers which fetch the Scenario Datasets | [optional] [default to null]
+**fetchScenarioParametersContainer** | [**ScenarioRunContainer**](ScenarioRunContainer.md) |  | [optional] [default to null]
+**applyParametersContainer** | [**ScenarioRunContainer**](ScenarioRunContainer.md) |  | [optional] [default to null]
+**validateDataContainer** | [**ScenarioRunContainer**](ScenarioRunContainer.md) |  | [optional] [default to null]
+**sendDataWarehouseContainer** | [**ScenarioRunContainer**](ScenarioRunContainer.md) |  | [optional] [default to null]
+**preRunContainer** | [**ScenarioRunContainer**](ScenarioRunContainer.md) |  | [optional] [default to null]
+**runContainer** | [**ScenarioRunContainer**](ScenarioRunContainer.md) |  | [optional] [default to null]
+**postRunContainer** | [**ScenarioRunContainer**](ScenarioRunContainer.md) |  | [optional] [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 
