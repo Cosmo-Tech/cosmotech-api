@@ -36,7 +36,7 @@ class UserServiceImpl : AbstractCosmosBackedService(), UserApiService {
   override fun findAllUsers() = cosmosTemplate.findAll(coreUserContainer, User::class.java).toList()
 
   override fun findUserById(userId: String) =
-      cosmosTemplate.findById(coreUserContainer, userId, UserDetails::class.java)
+      cosmosTemplate.findById(coreUserContainer, userId, User::class.java)
           ?: throw IllegalArgumentException("User not found: $userId")
 
   override fun getCurrentUser(): User {
@@ -55,10 +55,6 @@ class UserServiceImpl : AbstractCosmosBackedService(), UserApiService {
   }
 
   override fun registerUser(user: User): User {
-    TODO("Not yet implemented")
-  }
-
-  override fun registerUser(user: User): User {
     val userRegistered =
         cosmosTemplate.insert(coreUserContainer, user.copy(id = UUID.randomUUID().toString()))
     val userId =
@@ -70,16 +66,10 @@ class UserServiceImpl : AbstractCosmosBackedService(), UserApiService {
   }
 
   override fun unregisterUser(userId: String): User {
-    // TODO Why is UserDetails.platformRoles # User.platformRoles ??
     val user = findUserById(userId)
     cosmosTemplate.deleteEntity(coreUserContainer, user)
-    val userData =
-        User(
-            id = userId,
-            name = user.name,
-            platformRoles = user.platformRoles.map { User.PlatformRoles.valueOf(it.toString()) })
     this.eventPublisher.publishEvent(UserUnregistered(this, userId))
-    return userData
+    return user
   }
 
   override fun updateUser(userId: String, user: User): User {
