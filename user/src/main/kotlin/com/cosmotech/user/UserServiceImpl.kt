@@ -4,6 +4,8 @@ package com.cosmotech.user
 
 import com.azure.cosmos.models.CosmosContainerProperties
 import com.cosmotech.api.AbstractCosmosBackedService
+import com.cosmotech.api.events.OrganizationRegistered
+import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.events.UserRegistered
 import com.cosmotech.api.events.UserUnregistered
 import com.cosmotech.user.api.UserApiService
@@ -12,6 +14,7 @@ import java.lang.IllegalStateException
 import java.util.*
 import javax.annotation.PostConstruct
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
 
 @Service
@@ -73,5 +76,20 @@ class UserServiceImpl : AbstractCosmosBackedService(), UserApiService {
 
   override fun updateUser(userId: String, user: User): User {
     TODO("Not yet implemented")
+  }
+
+  @EventListener(OrganizationRegistered::class)
+  fun onOrganizationRegistered(organizationRegistered: OrganizationRegistered) {
+    cosmosClient
+        .getDatabase(databaseName)
+        .createContainerIfNotExists(
+            CosmosContainerProperties(
+                "${organizationRegistered.organizationId}_user-data", "/userId"))
+  }
+
+  @EventListener(OrganizationUnregistered::class)
+  fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
+    // TODO Handle deletion asynchronously
+    cosmosTemplate.deleteContainer("${organizationUnregistered.organizationId}_user-data")
   }
 }

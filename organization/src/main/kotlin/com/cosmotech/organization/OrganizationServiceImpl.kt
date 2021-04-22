@@ -56,14 +56,6 @@ class OrganizationServiceImpl : AbstractCosmosBackedService(), OrganizationApiSe
             ?: throw IllegalStateException(
                 "No ID returned for organization registered: $organizationRegistered")
 
-    val database = cosmosClient.getDatabase(databaseName)
-
-    database.createContainerIfNotExists(
-        CosmosContainerProperties("${organizationId}_user-data", "/userId"))
-
-    database.createContainerIfNotExists(
-        CosmosContainerProperties("${organizationId}_workspaces", "/workspaceId"))
-
     this.eventPublisher.publishEvent(OrganizationRegistered(this, organizationId))
 
     // TODO Handle rollbacks in case of errors
@@ -73,8 +65,6 @@ class OrganizationServiceImpl : AbstractCosmosBackedService(), OrganizationApiSe
 
   override fun unregisterOrganization(organizationId: String): Organization {
     val organization = findOrganizationById(organizationId)
-    cosmosTemplate.deleteContainer("${organizationId}_user-data")
-    cosmosTemplate.deleteContainer("${organizationId}_workspaces")
     cosmosTemplate.deleteEntity(coreOrganizationContainer, organization)
 
     this.eventPublisher.publishEvent(OrganizationUnregistered(this, organizationId))

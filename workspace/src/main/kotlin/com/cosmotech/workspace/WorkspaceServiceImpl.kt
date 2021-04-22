@@ -2,14 +2,20 @@
 // Licensed under the MIT license.
 package com.cosmotech.workspace
 
-import com.cosmotech.api.AbstractPhoenixService
+import com.azure.cosmos.models.CosmosContainerProperties
+import com.cosmotech.api.AbstractCosmosBackedService
+import com.cosmotech.api.events.OrganizationRegistered
+import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceFile
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
 
 @Service
-class WorkspaceServiceImpl : AbstractPhoenixService(), WorkspaceApiService {
+@ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
+class WorkspaceServiceImpl : AbstractCosmosBackedService(), WorkspaceApiService {
   override fun findAllWorkspaces(organizationId: String): List<Workspace> {
     TODO("Not yet implemented")
   }
@@ -54,5 +60,20 @@ class WorkspaceServiceImpl : AbstractPhoenixService(), WorkspaceApiService {
       workspaceId: kotlin.String
   ): List<WorkspaceFile> {
     TODO("Not yet implemented")
+  }
+
+  @EventListener(OrganizationRegistered::class)
+  fun onOrganizationRegistered(organizationRegistered: OrganizationRegistered) {
+    cosmosClient
+        .getDatabase(databaseName)
+        .createContainerIfNotExists(
+            CosmosContainerProperties(
+                "${organizationRegistered.organizationId}_workspace_data", "/workspaceId"))
+  }
+
+  @EventListener(OrganizationUnregistered::class)
+  fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
+    // TODO Handle deletion asynchronously
+    cosmosTemplate.deleteContainer("${organizationUnregistered.organizationId}_workspace_data")
   }
 }
