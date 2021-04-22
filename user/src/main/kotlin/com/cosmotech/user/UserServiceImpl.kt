@@ -11,9 +11,11 @@ import com.cosmotech.user.domain.User
 import java.lang.IllegalStateException
 import java.util.*
 import javax.annotation.PostConstruct
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Service
 
 @Service
+@ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 class UserServiceImpl : AbstractCosmosBackedService(), UserApiService {
 
   private lateinit var coreUserContainer: String

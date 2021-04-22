@@ -14,10 +14,12 @@ import java.lang.IllegalStateException
 import java.util.*
 import javax.annotation.PostConstruct
 import org.slf4j.LoggerFactory
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
 
 @Service
+@ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 class OrganizationServiceImpl : AbstractCosmosBackedService(), OrganizationApiService {
 
   private val logger = LoggerFactory.getLogger(OrganizationServiceImpl::class.java)
