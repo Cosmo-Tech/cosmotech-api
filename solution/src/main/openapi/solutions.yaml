@@ -319,9 +319,6 @@ components:
           description: the Parameter Group id
         labels:
           $ref: '#/components/schemas/TranslatedLabels'
-        order:
-          type: integer
-          description: the Parameter Group order
         isTable:
           type: boolean
           description: does the group define a table
@@ -354,9 +351,6 @@ components:
         varType:
           type: string
           description: the variable type for the parameter. Basic types or special type %DATASETID%
-        order:
-          type: integer
-          description: the Parameter Group order
         options:
           type: object
           description: freeform options
