@@ -10,6 +10,7 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 plugins {
   val kotlinVersion = "1.4.32"
   kotlin("jvm") version kotlinVersion
+  kotlin("kapt") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion apply false
 
   id("com.diffplug.spotless") version "5.12.4"
@@ -25,6 +26,7 @@ plugins {
 allprojects {
   apply(plugin = "com.diffplug.spotless")
   apply(plugin = "org.jetbrains.kotlin.jvm")
+  apply(plugin = "org.jetbrains.kotlin.kapt")
 
   repositories { mavenCentral() }
 
@@ -82,6 +84,9 @@ subprojects {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("javax.validation:validation-api:2.0.1.Final")
 
+    kapt("org.springframework.boot:spring-boot-configuration-processor")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+
     implementation("org.springframework.cloud:spring-cloud-starter-kubernetes-fabric8-config:2.0.2")
 
     val springDocVersion = "1.5.8"
@@ -111,7 +116,7 @@ subprojects {
     kotlinOptions {
       languageVersion = "1.4"
       freeCompilerArgs = listOf("-Xjsr305=strict")
-      jvmTarget = "15"
+      jvmTarget = "11"
     }
   }
 
