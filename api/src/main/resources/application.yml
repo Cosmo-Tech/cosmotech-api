@@ -20,12 +20,39 @@ server:
 
 csm:
   platform:
+    summary: Cosmo Tech Platform
+    description: Cosmo Tech Digital Twins Simulation Platform
+    version: "1.0.0"
     api:
       # API Base Path for OpenAPI-generated controllers.
       # Might conflict with the SpringBoot context path, hence leaving it at the root
       base-path: /
       version: latest
+    event-publisher:
+      type: in_process
+    vendor: azure
     azure:
+      credentials:
+        tenantId:
+        clientId:
+        clientSecret:
+      storage:
+        baseUri:
+        resourceUri:
+      containerRegistries:
+        core:
+        solutions:
+      eventBus:
+        baseUri:
+      dataWarehouseCluster:
+        baseUri:
+        options:
+          ingestionUri:
+      keyVault:
+      analytics:
+        resourceUri:
+        instrumentationKey:
+        connectionString: "InstrumentationKey=${csm.platform.azure.analytics.instrumentationKey};IngestionEndpoint=https://francecentral-0.in.applicationinsights.azure.com/"
       cosmos:
         allowTelemetry: false
         connectionMode:
@@ -39,9 +66,6 @@ csm:
         key:
         populateQueryMetrics: true
         uri:
-    event-publisher:
-      type: in_process
-    vendor: azure
 
 springdoc:
   swagger-ui:

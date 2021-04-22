@@ -12,6 +12,15 @@ import org.springframework.boot.context.properties.ConstructorBinding
 @ConfigurationProperties(prefix = "csm.platform")
 data class CsmPlatformProperties(
 
+    /** the Platform summary */
+    val summary: String?,
+
+    /** the Platform description */
+    val description: String?,
+
+    /** the Platform version (MAJOR.MINOR.PATCH). */
+    val version: String?,
+
     /** API Configuration */
     val api: Api,
 
@@ -44,9 +53,45 @@ data class CsmPlatformProperties(
   }
 
   data class CsmPlatformAzure(
+      /** Azure Credentials */
+      val credentials: CsmPlatformAzureCredentials,
+      val storage: CsmPlatformAzureStorage,
+      val containerRegistries: CsmPlatformAzureContainerRegistries,
+      val eventBus: CsmPlatformAzureEventBus,
+      val dataWarehouseCluster: CsmPlatformAzureDataWarehouseCluster,
+      val keyVault: String,
+      val analytics: CsmPlatformAzureAnalytics,
       /** Azure Cosmos DB */
       val cosmos: CsmPlatformAzureCosmos
   ) {
+
+    data class CsmPlatformAzureCredentials(
+        /** The Azure Tenant ID (core App) */
+        val tenantId: String,
+
+        /** The Azure Client ID (core App) */
+        val clientId: String,
+
+        /** The Azure Client Secret (core App) */
+        val clientSecret: String
+    )
+
+    data class CsmPlatformAzureStorage(val baseUri: String, val resourceUri: String)
+
+    data class CsmPlatformAzureContainerRegistries(val core: String, val solutions: String)
+
+    data class CsmPlatformAzureEventBus(val baseUri: String)
+
+    data class CsmPlatformAzureDataWarehouseCluster(val baseUri: String, val options: Options) {
+      data class Options(val ingestionUri: String)
+    }
+
+    data class CsmPlatformAzureAnalytics(
+        val resourceUri: String,
+        val instrumentationKey: String,
+        val connectionString: String
+    )
+
     data class CsmPlatformAzureCosmos(
 
         /** DNS URI of the Azure Cosmos DB account */
