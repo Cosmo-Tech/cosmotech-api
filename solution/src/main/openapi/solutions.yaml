@@ -257,10 +257,6 @@ components:
         description:
           type: string
           description: the Run Template description
-        useDirectCsmSimulator:
-          type: boolean
-          readOnly: true
-          description: whether or not the Run Template use the main standard csmSimulator directly. False if there is an Engine set
         csmSimulation:
           type: string
           description: the Cosmo Tech simulation name. This information is send to the Engine. Mandatory information if no Engine is defined
@@ -273,19 +269,19 @@ components:
           type: string
           description: the compute size needed for this Run Template. Standard sizes are basic and highcpu. Default is basic
         parametersHandlerResource:
-          description: the parameters handler script resource. Default type is local and default path is run_templates/${CSM_RUNTEMPLATE_ID}/parameters_handler/. Ignored with warning if resource does not exist. A Parameters Handler receives the Run Template information including all input parameters Key/Value.
+          description: the parameters handler script resource. Default type is local and default path is run_templates/%CSM_RUNTEMPLATE_ID%/parameters_handler/. Ignored with warning if resource does not exist. A Parameters Handler receives the Run Template information including all input parameters Key/Value.
           $ref: '#/components/schemas/RunTemplateResourceStorage'
         datasetValidatorResource:
-          description: the dataset validator script resource. Default type is local and default path is run_templates/${CSM_RUNTEMPLATE_ID}/validator/. Ignored with warning if resource does not exist.
+          description: the dataset validator script resource. Default type is local and default path is run_templates/%CSM_RUNTEMPLATE_ID%/validator/. Ignored with warning if resource does not exist.
           $ref: '#/components/schemas/RunTemplateResourceStorage'
         preRunResource:
-          description: the Engine pre-run script resource. Default type is local and default path is run_templates/${CSM_RUNTEMPLATE_ID}/prerun/. Ignored with if resource does not exist.
+          description: the Engine pre-run script resource. Default type is local and default path is run_templates/%CSM_RUNTEMPLATE_ID%/prerun/. Ignored with if resource does not exist.
           $ref: '#/components/schemas/RunTemplateResourceStorage'
         engineResource:
-          description: the Engine script resource. Default type is local and default path is run_templates/${CSM_RUNTEMPLATE_ID}/engine/. Ignored with warning if resource does not exist, set automatically the useDirectCsmSimulator to true. An engine receives the Run Template information including all input parameters Key/Value. An engine has the responsibility to run the Run Template. It can use the main standard csmSimulator
+          description: the Engine script resource. Default type is local and default path is run_templates/%CSM_RUNTEMPLATE_ID%/engine/. Ignored with warning if resource does not exist. An engine receives the Run Template information including all input parameters Key/Value. An engine has the responsibility to run the Run Template. It can use the main standard csmSimulator
           $ref: '#/components/schemas/RunTemplateResourceStorage'
         postRunResource:
-          description: the Engine post-run script resource. Default type is local and default path is run_templates/${CSM_RUNTEMPLATE_ID}/prerun/. Ignored with if resource does not exist.
+          description: the Engine post-run script resource. Default type is local and default path is run_templates/%CSM_RUNTEMPLATE_ID%/prerun/. Ignored with if resource does not exist.
           $ref: '#/components/schemas/RunTemplateResourceStorage'
         sendInputToDataWarehouse:
           type: boolean
@@ -341,7 +337,7 @@ components:
           $ref: '#/components/schemas/TranslatedLabels'
         varType:
           type: string
-          description: the variable type for the parameter. Basic types or special type $DATASETID, $DATAPATH
+          description: the variable type for the parameter. Basic types or special type %DATASETID%
         order:
           type: integer
           description: the Parameter Group order
@@ -392,7 +388,6 @@ components:
           - id: hundred
             name: Full simulation 100 steps
             description: Run a full simulation with 100 steps
-            useDirectCsmSimulator: false
             csmSimulation: DeployedSimulation
             tags:
               - Full
@@ -444,7 +439,6 @@ components:
           - id: hundred
             name: Full simulation 100 steps
             description: Run a full simulation with 100 steps
-            useDirectCsmSimulator: false
             csmSimulation: DeployedSimulation
             tags:
               - Full
@@ -491,7 +485,6 @@ components:
             - id: hundred
               name: Full simulation 100 steps
               description: Run a full simulation with 100 steps
-              useDirectCsmSimulator: false
               csmSimulation: DeployedSimulation
               tags:
                 - Full
@@ -523,7 +516,6 @@ components:
             - id: standard
               name: Standard Simulation
               description: Run the standard Simulation
-              useDirectCsmSimulator: true
               csmSimulation: DeployedSimulation
               tags:
                 - Full

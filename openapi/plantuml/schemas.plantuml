@@ -1,5 +1,4 @@
 @startuml
-scale 0.75
 
 title Cosmo Tech Plaform API Schemas Diagram
 
@@ -128,7 +127,6 @@ entity RunTemplate {
     * id: String
     * name: String
     description: String
-    useDirectCsmSimulator: Boolean
     csmSimulation: String
     tags: List<String>
     computeSize: String
