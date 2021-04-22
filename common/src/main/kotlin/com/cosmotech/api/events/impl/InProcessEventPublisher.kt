@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service
 
 @Service
 @ConditionalOnProperty(
-    name = ["csm.event-publisher"], havingValue = "in-process", matchIfMissing = true)
+    name = ["csm.platform.event-publisher.type"], havingValue = "in_process", matchIfMissing = true)
 class InProcessEventPublisher : CsmEventPublisher {
 
   @Autowired protected lateinit var eventPublisher: ApplicationEventPublisher

@@ -11,12 +11,37 @@ import org.springframework.boot.context.properties.ConstructorBinding
 @ConstructorBinding
 @ConfigurationProperties(prefix = "csm.platform")
 data class CsmPlatformProperties(
+
+    /** API Configuration */
+    val api: Api,
+
     /** Platform vendor */
     val vendor: Vendor,
+
+    /** Event Publisher */
+    val eventPublisher: EventPublisher,
 
     /** Azure Platform */
     val azure: CsmPlatformAzure?
 ) {
+
+  data class Api(
+      /** API Version, e.g.: latest, or v1 */
+      val version: String,
+
+      /**
+       * Base path under which the API is exposed at root, e.g.: /cosmotech-api/. Typically when
+       * served behind a reverse-proxy under a dedicated path, this would be such path.
+       */
+      val basePath: String
+  )
+
+  data class EventPublisher(val type: Type) {
+    enum class Type {
+      /** In-process, via Spring Application Events */
+      in_process
+    }
+  }
 
   data class CsmPlatformAzure(
       /** Azure Cosmos DB */
@@ -70,6 +95,7 @@ data class CsmPlatformProperties(
   }
 
   enum class Vendor {
+    /** Microsoft Azure : https://azure.microsoft.com/en-us/ */
     azure
   }
 }
