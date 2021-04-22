@@ -14,7 +14,6 @@ import java.lang.IllegalStateException
 import java.util.*
 import javax.annotation.PostConstruct
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
 
@@ -23,13 +22,12 @@ class OrganizationServiceImpl : AbstractCosmosBackedService(), OrganizationApiSe
 
   private val logger = LoggerFactory.getLogger(OrganizationServiceImpl::class.java)
 
-  @Value("\${azure.cosmos.database}") private lateinit var databaseName: String
-
-  @Value("\${csm.azure.cosmosdb.database.core.organizations.container}")
   private lateinit var coreOrganizationContainer: String
 
   @PostConstruct
   fun initService() {
+    this.coreOrganizationContainer =
+        csmPlatformProperties.azure!!.cosmos.coreDatabase.organizations.container
     cosmosClient
         .getDatabase(databaseName)
         .createContainerIfNotExists(CosmosContainerProperties(coreOrganizationContainer, "/id"))

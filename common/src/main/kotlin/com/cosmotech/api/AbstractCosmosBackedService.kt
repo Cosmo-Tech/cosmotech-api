@@ -18,9 +18,11 @@ abstract class AbstractCosmosBackedService : AbstractPhoenixService() {
 
   protected lateinit var cosmosClient: CosmosClient
   protected lateinit var cosmosAsyncClient: CosmosAsyncClient
+  protected lateinit var databaseName: String
 
   @PostConstruct
   fun init() {
+    this.databaseName = csmPlatformProperties.azure!!.cosmos.coreDatabase.name
     this.cosmosClient = cosmosClientBuilder.buildClient()
     this.cosmosAsyncClient = cosmosClientBuilder.buildAsyncClient()
   }

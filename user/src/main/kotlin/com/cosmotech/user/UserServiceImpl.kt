@@ -11,19 +11,16 @@ import com.cosmotech.user.domain.User
 import java.lang.IllegalStateException
 import java.util.*
 import javax.annotation.PostConstruct
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 @Service
 class UserServiceImpl : AbstractCosmosBackedService(), UserApiService {
 
-  @Value("\${csm.azure.cosmosdb.database.core.users.container}")
   private lateinit var coreUserContainer: String
-
-  @Value("\${azure.cosmos.database}") private lateinit var databaseName: String
 
   @PostConstruct
   fun initService() {
+    this.coreUserContainer = csmPlatformProperties.azure!!.cosmos.coreDatabase.users.container
     cosmosClient
         .getDatabase(databaseName)
         .createContainerIfNotExists(CosmosContainerProperties(coreUserContainer, "/id"))
