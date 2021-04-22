@@ -13,6 +13,8 @@ Name | Type | Description | Notes
 **ownerId** | [**String**](string.md) | the User id which own this Solution | [optional] [default to null]
 **url** | [**String**](string.md) | an optional URL link to solution page | [optional] [default to null]
 **tags** | [**List**](string.md) | the list of tags | [optional] [default to null]
+**parameters** | [**List**](RunTemplateParameter.md) | the list of Run Template Parameters | [optional] [default to null]
+**parameterGroups** | [**List**](RunTemplateParameterGroup.md) | the list of parameters groups for the Run Templates | [optional] [default to null]
 **run\_templates** | [**List**](RunTemplate.md) | list of Run Template | [optional] [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

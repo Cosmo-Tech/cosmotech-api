@@ -234,6 +234,16 @@ components:
           description: the list of tags
           items:
             type: string
+        parameters:
+          type: array
+          description: the list of Run Template Parameters
+          items:
+            $ref: '#/components/schemas/RunTemplateParameter'
+        parameterGroups:
+          type: array
+          description: the list of parameters groups for the Run Templates
+          items:
+            $ref: '#/components/schemas/RunTemplateParameterGroup'
         run_templates:
           type: array
           description: list of Run Template
@@ -283,15 +293,20 @@ components:
         postRunResource:
           description: the Engine post-run script resource. Default type is local and default path is run_templates/%CSM_RUNTEMPLATE_ID%/prerun/. Ignored with if resource does not exist.
           $ref: '#/components/schemas/RunTemplateResourceStorage'
-        sendInputToDataWarehouse:
+        sendDatasetsToDataWarehouse:
           type: boolean
           default: true
-          description: whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to Simulation Run
+          description: whether or not the Datasets values are send to the DataWarehouse prior to Simulation Run
+        sendInputParametersToDataWarehouse:
+          type: boolean
+          default: true
+          description: whether or not the input parameters values are send to the DataWarehouse prior to Simulation Run
         parameterGroups:
           type: array
-          description: the list of parameters groups for the Run Template
+          description: the ordered list of parameters groups for the Run Template
           items:
-            $ref: '#/components/schemas/RunTemplateParameterGroup'
+            type: string
+            description: a Run Template Group Parameter id
       required:
         - id
         - name
@@ -319,9 +334,10 @@ components:
           description: the Run Template Group parent Id
         parameters:
           type: array
-          description: a list of Run Template Parameters
+          description: an ordered list of Run Template Parameters
           items:
-            $ref: '#/components/schemas/RunTemplateParameter'
+            type: string
+            description: a Run Template Parameter id
       required:
         - id
         - labels
@@ -384,6 +400,19 @@ components:
         url: https://github.com/Cosm-Tech/brewery.git
         tags:
           - Brewery
+        parameters:
+          - id: prefix
+            labels:
+              fr: Prefix des noms
+              en: Names prefix
+            varType: string
+        parameterGroups:
+          - id: consumers
+            labels:
+              fr: Consommateurs
+              en: Consumers
+            parameters:
+              - prefix
         run_templates:
           - id: hundred
             name: Full simulation 100 steps
@@ -406,16 +435,7 @@ components:
               storageType: local
               resourcePath: run_templates/hundred/schema
             parameterGroups:
-              - id: consumers
-                labels:
-                  fr: Consommateurs
-                  en: Consumers
-                parameters:
-                  - id: prefix
-                    labels:
-                      fr: Prefix des noms
-                      en: Names prefix
-                    varType: string
+              - consumers
     BreweryUpdate:
       summary: Brewery Solution update
       description: Brewery Solution update example
@@ -435,6 +455,19 @@ components:
         url: https://github.com/Cosm-Tech/brewery.git
         tags:
           - Brewery
+        parameters:
+          - id: prefix
+            labels:
+              fr: Prefix des noms
+              en: Names prefix
+            varType: string
+        parameterGroups:
+          - id: consumers
+            labels:
+              fr: Consommateurs
+              en: Consumers
+            parameters:
+              - prefix
         run_templates:
           - id: hundred
             name: Full simulation 100 steps
@@ -457,16 +490,7 @@ components:
               storageType: local
               resourcePath: run_templates/hundred/schema
             parameterGroups:
-              - id: consumers
-                labels:
-                  fr: Consommateurs
-                  en: Consumers
-                parameters:
-                  - id: prefix
-                    labels:
-                      fr: Prefix des noms
-                      en: Names prefix
-                    varType: string
+              - consumers
     OneSolution:
       summary: Brewery Solution
       description: Brewery Solution example
@@ -481,6 +505,19 @@ components:
           url: https://github.com/Cosm-Tech/brewery.git
           tags:
             - Brewery
+          parameters:
+            - id: prefix
+              labels:
+                fr: Prefix des noms
+                en: Names prefix
+              varType: string
+          parameterGroups:
+          - id: consumers
+            labels:
+              fr: Consommateurs
+              en: Consumers
+            parameters:
+              - prefix
           run_templates:
             - id: hundred
               name: Full simulation 100 steps
@@ -503,16 +540,7 @@ components:
                 storageType: local
                 resourcePath: run_templates/hundred/schema
               parameterGroups:
-                - id: consumers
-                  labels:
-                    fr: Consommateurs
-                    en: Consumers
-                  parameters:
-                    - id: prefix
-                      labels:
-                        fr: Prefix des noms
-                        en: Names prefix
-                      varType: string
+                - consumers
             - id: standard
               name: Standard Simulation
               description: Run the standard Simulation

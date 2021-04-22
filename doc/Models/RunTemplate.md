@@ -14,8 +14,9 @@ Name | Type | Description | Notes
 **preRunResource** | [**RunTemplateResourceStorage**](RunTemplateResourceStorage.md) |  | [optional] [default to null]
 **engineResource** | [**RunTemplateResourceStorage**](RunTemplateResourceStorage.md) |  | [optional] [default to null]
 **postRunResource** | [**RunTemplateResourceStorage**](RunTemplateResourceStorage.md) |  | [optional] [default to null]
-**sendInputToDataWarehouse** | [**Boolean**](boolean.md) | whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to Simulation Run | [optional] [default to true]
-**parameterGroups** | [**List**](RunTemplateParameterGroup.md) | the list of parameters groups for the Run Template | [optional] [default to null]
+**sendDatasetsToDataWarehouse** | [**Boolean**](boolean.md) | whether or not the Datasets values are send to the DataWarehouse prior to Simulation Run | [optional] [default to true]
+**sendInputParametersToDataWarehouse** | [**Boolean**](boolean.md) | whether or not the input parameters values are send to the DataWarehouse prior to Simulation Run | [optional] [default to true]
+**parameterGroups** | [**List**](string.md) | the ordered list of parameters groups for the Run Template | [optional] [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

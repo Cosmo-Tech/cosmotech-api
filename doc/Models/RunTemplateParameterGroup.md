@@ -9,7 +9,7 @@ Name | Type | Description | Notes
 **isTable** | [**Boolean**](boolean.md) | does the group define a table | [optional] [default to null]
 **options** | [**Map**](object.md) | freeform options | [optional] [default to null]
 **parentId** | [**String**](string.md) | the Run Template Group parent Id | [optional] [default to null]
-**parameters** | [**List**](RunTemplateParameter.md) | a list of Run Template Parameters | [default to null]
+**parameters** | [**List**](string.md) | an ordered list of Run Template Parameters | [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

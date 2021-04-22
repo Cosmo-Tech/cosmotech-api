@@ -135,8 +135,9 @@ entity RunTemplate {
     preRunResource: RunTemplateResourceStorage
     engineResource: RunTemplateResourceStorage
     postRunResource: RunTemplateResourceStorage
-    sendInputToDataWarehouse: Boolean
-    parameterGroups: List<RunTemplateParameterGroup>
+    sendDatasetsToDataWarehouse: Boolean
+    sendInputParametersToDataWarehouse: Boolean
+    parameterGroups: List<String>
 }
 
 entity RunTemplateParameter { 
@@ -154,7 +155,7 @@ entity RunTemplateParameterGroup {
     isTable: Boolean
     options: Map
     parentId: String
-    * parameters: List<RunTemplateParameter>
+    * parameters: List<String>
 }
 
 entity RunTemplateParameterValue { 
@@ -337,6 +338,8 @@ entity Solution {
     ownerId: String
     url: String
     tags: List<String>
+    parameters: List<RunTemplateParameter>
+    parameterGroups: List<RunTemplateParameterGroup>
     run_templates: List<RunTemplate>
 }
 
@@ -440,14 +443,12 @@ Organization -- "0..*" OrganizationUser : users
 Organization -- OrganizationServices : services
 User -- "0..*" UserOrganization : organizations
 Platform -- PlatformServices : services
-RunTemplateParameterGroup -- "0..*" RunTemplateParameter : parameters
 ScenarioRunStartSolution -- "0..*" RunTemplateParameterValue : parametersValues
 RunTemplate -- RunTemplateResourceStorage : parametersHandlerResource
 RunTemplate -- RunTemplateResourceStorage : datasetValidatorResource
 RunTemplate -- RunTemplateResourceStorage : preRunResource
 RunTemplate -- RunTemplateResourceStorage : engineResource
 RunTemplate -- RunTemplateResourceStorage : postRunResource
-RunTemplate -- "0..*" RunTemplateParameterGroup : parameterGroups
 ScenarioRunContainerLogs -- ScenarioRunContainer : container
 ScenarioRunContainerLogs -- "0..*" ScenarioRunContainerLog : logs
 UserOrganization -- "0..*" UserWorkspace : workspaces
@@ -460,6 +461,8 @@ ScenarioRunLogs -- ScenarioRunContainerLogs : sendDataWarehouseLogs
 ScenarioRunLogs -- ScenarioRunContainerLogs : preRunLogs
 ScenarioRunLogs -- ScenarioRunContainerLogs : runLogs
 ScenarioRunLogs -- ScenarioRunContainerLogs : postRunLogs
+Solution -- "0..*" RunTemplateParameter : parameters
+Solution -- "0..*" RunTemplateParameterGroup : parameterGroups
 Solution -- "0..*" RunTemplate : run_templates
 ScenarioComparisonResult -- "0..*" ScenarioChangedParameterValue : changedValues
 Dataset -- DatasetConnector : connector

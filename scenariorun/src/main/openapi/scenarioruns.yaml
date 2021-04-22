@@ -927,6 +927,8 @@ components:
             CSM_API_TOKEN: azertyuiopqsdfghjklm
             CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
             CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
+            CSM_SEND_DATAWAREHOUSE_PARAMETERS: true
+            CSM_SEND_DATAWAREHOUSE_DATASETS: true
             ADX_DATA_INGESTION_URI: https://ingest-phoenix.westeurope.kusto.windows.net
             ADX_DATABASE: Brewery
           image: csmphoenix.azurecr.io/azure-data-explorer-scenariorun-sender:latest
@@ -1040,6 +1042,8 @@ components:
             CSM_API_TOKEN: azertyuiopqsdfghjklm
             CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
             CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
+            CSM_SEND_DATAWAREHOUSE_PARAMETERS: true
+            CSM_SEND_DATAWAREHOUSE_DATASETS: true
             ADX_DATA_INGESTION_URI: https://ingest-phoenix.westeurope.kusto.windows.net
             ADX_DATABASE: Brewery
           image: csmphoenix.azurecr.io/azure-data-explorer-scenariorun-sender:latest
@@ -1094,6 +1098,8 @@ components:
             CSM_API_TOKEN: azertyuiopqsdfghjklm
             CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
             CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
+            CSM_SEND_DATAWAREHOUSE_PARAMETERS: true
+            CSM_SEND_DATAWAREHOUSE_DATASETS: true
             ADX_DATA_INGESTION_URI: https://ingest-phoenix.westeurope.kusto.windows.net
             ADX_DATABASE: Brewery
           image: csmphoenix.azurecr.io/azure-data-explorer-scenariorun-sender:latest
@@ -1198,6 +1204,8 @@ components:
               CSM_API_TOKEN: azertyuiopqsdfghjklm
               CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
               CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
+              CSM_SEND_DATAWAREHOUSE_PARAMETERS: true
+              CSM_SEND_DATAWAREHOUSE_DATASETS: true
               ADX_DATA_INGESTION_URI: https://ingest-phoenix.westeurope.kusto.windows.net
               ADX_DATABASE: Brewery
             image: csmphoenix.azurecr.io/azure-data-explorer-scenariorun-sender:latest
@@ -1275,6 +1283,8 @@ components:
             CSM_API_TOKEN: azertyuiopqsdfghjklm
             CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
             CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
+            CSM_SEND_DATAWAREHOUSE_PARAMETERS: true
+            CSM_SEND_DATAWAREHOUSE_DATASETS: true
             ADX_DATA_INGESTION_URI: https://ingest-phoenix.westeurope.kusto.windows.net
             ADX_DATABASE: Brewery
           image: csmphoenix.azurecr.io/azure-data-explorer-scenariorun-sender:latest
