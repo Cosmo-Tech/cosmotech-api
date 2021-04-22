@@ -1,0 +1,66 @@
+management:
+  endpoint:
+    health:
+      probes:
+        # This exposes the following endpoints for Kubernetes: /actuator/health/{live,readi}ness
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  server:
+    port: 8081
+
+server:
+  jetty:
+    accesslog:
+      enabled: true
+  servlet:
+    context-path:
+
+csm:
+  platform:
+    api:
+      # API Base Path for OpenAPI-generated controllers.
+      # Might conflict with the SpringBoot context path, hence leaving it at the root
+      base-path: /
+      version: latest
+    azure:
+      cosmos:
+        allowTelemetry: false
+        connectionMode:
+        consistencyLevel:
+        core-database:
+          name: phoenix-core
+          organizations:
+            container: organizations
+          users:
+            container: users
+        key:
+        populateQueryMetrics: true
+        uri:
+    event-publisher:
+      type: in_process
+    vendor: azure
+
+springdoc:
+  swagger-ui:
+    # Disable the swagger-ui default petstore url
+    disable-swagger-default-url: true
+
+# Aliases
+api:
+  base-path: ${csm.platform.api.base-path}
+  swagger-ui:
+    base-path: ${server.servlet.context-path}
+  version: ${csm.platform.api.version}
+azure:
+  # Required to auto-configure the beans provided by the Azure CosmosDB Spring Boot AutoConfiguration
+  cosmos:
+    allowTelemetry: ${csm.platform.azure.cosmos.allowTelemetry}
+    connectionMode: ${csm.platform.azure.cosmos.connectionMode}
+    consistencyLevel: ${csm.platform.azure.cosmos.consistencyLevel}
+    database: ${csm.platform.azure.cosmos.core-database.name}
+    key: ${csm.platform.azure.cosmos.key}
+    populateQueryMetrics: ${csm.platform.azure.cosmos.populateQueryMetrics}
+    uri: ${csm.platform.azure.cosmos.uri}
