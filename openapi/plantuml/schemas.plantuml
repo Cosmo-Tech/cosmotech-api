@@ -144,14 +144,12 @@ entity RunTemplateParameter {
     * id: String
     * labels: Map
     * varType: String
-    order: Integer
     options: Map
 }
 
 entity RunTemplateParameterGroup { 
     * id: String
     * labels: Map
-    order: Integer
     isTable: Boolean
     options: Map
     parentId: String
