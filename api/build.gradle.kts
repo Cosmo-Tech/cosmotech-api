@@ -11,7 +11,6 @@ dependencies {
   implementation(project(":cosmotech-connector-api"))
   implementation(project(":cosmotech-dataset-api"))
   implementation(project(":cosmotech-organization-api"))
-  implementation(project(":cosmotech-platform-api"))
   implementation(project(":cosmotech-scenario-api"))
   implementation(project(":cosmotech-scenariorun-api"))
   implementation(project(":cosmotech-solution-api"))
