@@ -5,9 +5,11 @@ package com.cosmotech.connector
 import com.cosmotech.api.AbstractPhoenixService
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.springframework.stereotype.Service
-import org.yaml.snakeyaml.Yaml
-import org.yaml.snakeyaml.introspector.BeanAccess
 
 @Service
 class ConnectorServiceImpl : AbstractPhoenixService(), ConnectorApiService {
@@ -23,12 +25,15 @@ class ConnectorServiceImpl : AbstractPhoenixService(), ConnectorApiService {
     TODO("Not yet implemented")
   }
 
-  override fun uploadConnector(body: org.springframework.core.io.Resource): Connector {
-    val yaml = Yaml()
-    yaml.setBeanAccess(BeanAccess.FIELD)
-    val connector = yaml.loadAs(body.getInputStream(), Connector::class.java)
-    return connector
-  }
+  override fun uploadConnector(body: org.springframework.core.io.Resource) =
+      body.inputStream.use {
+        val connector =
+            ObjectMapper(YAMLFactory())
+                .registerKotlinModule()
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .readValue(it, Connector::class.java)
+        registerConnector(connector)
+      }
 
   override fun unregisterConnector(connectorId: String): Connector {
     TODO("Not yet implemented")

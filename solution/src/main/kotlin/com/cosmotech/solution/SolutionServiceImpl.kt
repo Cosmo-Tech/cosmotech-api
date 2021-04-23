@@ -49,12 +49,12 @@ class SolutionServiceImpl : AbstractCosmosBackedService(), SolutionApiService {
   }
 
   override fun upload(organizationId: String, body: org.springframework.core.io.Resource) =
-      body.inputStream.use { inputStream ->
+      body.inputStream.use {
         val solution =
             ObjectMapper(YAMLFactory())
                 .registerKotlinModule()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                .readValue(inputStream, Solution::class.java)
+                .readValue(it, Solution::class.java)
         createSolution(organizationId, solution)
       }
 
