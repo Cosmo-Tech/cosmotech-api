@@ -1,5 +1,5 @@
 @startuml
-
+scale 0.75
 title Cosmo Tech Plaform API Schemas Diagram
 
 entity Connector { 
