@@ -291,7 +291,7 @@ components:
           description: the Engine script resource. Default type is local and default path is run_templates/%CSM_RUNTEMPLATE_ID%/engine/. Ignored with warning if resource does not exist. An engine receives the Run Template information including all input parameters Key/Value. An engine has the responsibility to run the Run Template. It can use the main standard csmSimulator
           $ref: '#/components/schemas/RunTemplateResourceStorage'
         postRunResource:
-          description: the Engine post-run script resource. Default type is local and default path is run_templates/%CSM_RUNTEMPLATE_ID%/prerun/. Ignored with if resource does not exist.
+          description: the Engine post-run script resource. Default type is local and default path is run_templates/%CSM_RUNTEMPLATE_ID%/postrun/. Ignored with if resource does not exist.
           $ref: '#/components/schemas/RunTemplateResourceStorage'
         sendDatasetsToDataWarehouse:
           type: boolean
