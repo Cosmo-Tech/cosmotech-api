@@ -91,9 +91,9 @@ subprojects {
 
     implementation("org.springframework.cloud:spring-cloud-starter-kubernetes-fabric8-config:2.0.2")
 
-    val springfoxVersion = "3.0.0"
-    implementation("io.springfox:springfox-boot-starter:${springfoxVersion}")
-    implementation("io.springfox:springfox-swagger-ui:${springfoxVersion}")
+    val springDocVersion = "1.5.7"
+    implementation("org.springdoc:springdoc-openapi-ui:${springDocVersion}")
+    implementation("org.springdoc:springdoc-openapi-kotlin:${springDocVersion}")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
