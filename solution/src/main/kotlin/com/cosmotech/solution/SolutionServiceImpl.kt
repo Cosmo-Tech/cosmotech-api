@@ -8,10 +8,6 @@ import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.Solution
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import java.util.*
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
@@ -49,14 +45,7 @@ class SolutionServiceImpl : AbstractCosmosBackedService(), SolutionApiService {
   }
 
   override fun upload(organizationId: String, body: org.springframework.core.io.Resource) =
-      body.inputStream.use {
-        val solution =
-            ObjectMapper(YAMLFactory())
-                .registerKotlinModule()
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                .readValue(it, Solution::class.java)
-        createSolution(organizationId, solution)
-      }
+      createSolution(organizationId, readYaml(body.inputStream))
 
   @EventListener(OrganizationRegistered::class)
   fun onOrganizationRegistered(organizationRegistered: OrganizationRegistered) {
