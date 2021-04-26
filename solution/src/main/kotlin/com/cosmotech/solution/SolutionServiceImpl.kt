@@ -6,6 +6,8 @@ import com.azure.cosmos.models.CosmosContainerProperties
 import com.cosmotech.api.AbstractCosmosBackedService
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
+import com.cosmotech.api.utils.findAll
+import com.cosmotech.api.utils.findByIdOrError
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.Solution
 import java.util.*
@@ -18,12 +20,13 @@ import org.springframework.stereotype.Service
 class SolutionServiceImpl : AbstractCosmosBackedService(), SolutionApiService {
 
   override fun findAllSolutions(organizationId: String) =
-      cosmosTemplate.findAll("${organizationId}_solutions", Solution::class.java).toList()
+      cosmosTemplate.findAll<Solution>("${organizationId}_solutions")
 
-  override fun findSolutionById(organizationId: String, solutionId: String) =
-      cosmosTemplate.findById("${organizationId}_solutions", solutionId, Solution::class.java)
-          ?: throw IllegalArgumentException(
-              "Solution $solutionId not found in organization $organizationId")
+  override fun findSolutionById(organizationId: String, solutionId: String): Solution =
+      cosmosTemplate.findByIdOrError(
+          "${organizationId}_solutions",
+          solutionId,
+          "Solution $solutionId not found in organization $organizationId")
 
   override fun createSolution(organizationId: String, solution: Solution) =
       cosmosTemplate.insert(
