@@ -267,9 +267,11 @@ components:
         name: Cosmo Tech
         users:
           - id: "1"
+            name: "admin"
             roles:
               - Admin
           - id: "2"
+            name: "user"
             roles:
               - User
         services:
