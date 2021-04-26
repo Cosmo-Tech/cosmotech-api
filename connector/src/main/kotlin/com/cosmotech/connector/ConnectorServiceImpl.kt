@@ -2,29 +2,50 @@
 // Licensed under the MIT license.
 package com.cosmotech.connector
 
-import com.cosmotech.api.AbstractPhoenixService
+import com.azure.cosmos.models.CosmosContainerProperties
+import com.cosmotech.api.AbstractCosmosBackedService
+import com.cosmotech.api.events.ConnectorRemoved
+import com.cosmotech.api.utils.findAll
+import com.cosmotech.api.utils.findByIdOrError
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
+import java.util.*
+import javax.annotation.PostConstruct
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Service
 
 @Service
-class ConnectorServiceImpl : AbstractPhoenixService(), ConnectorApiService {
-  override fun findAllConnectors(): List<Connector> {
-    TODO("Not yet implemented")
+@ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
+class ConnectorServiceImpl : AbstractCosmosBackedService(), ConnectorApiService {
+
+  private lateinit var coreConnectorContainer: String
+
+  @PostConstruct
+  fun initService() {
+    this.coreConnectorContainer =
+        csmPlatformProperties.azure!!.cosmos.coreDatabase.connectors.container
+    cosmosClient
+        .getDatabase(databaseName)
+        .createContainerIfNotExists(CosmosContainerProperties(coreConnectorContainer, "/id"))
   }
 
-  override fun findConnectorById(connectorId: String): Connector {
-    TODO("Not yet implemented")
-  }
+  override fun findAllConnectors() = cosmosTemplate.findAll<Connector>(coreConnectorContainer)
 
-  override fun registerConnector(connector: Connector): Connector {
-    TODO("Not yet implemented")
-  }
+  override fun findConnectorById(connectorId: String): Connector =
+      cosmosTemplate.findByIdOrError(coreConnectorContainer, connectorId)
+
+  override fun registerConnector(connector: Connector): Connector =
+      cosmosTemplate.insert(
+          coreConnectorContainer, connector.copy(id = UUID.randomUUID().toString()))
+          ?: throw IllegalArgumentException("No connector returned in response: $connector")
 
   override fun uploadConnector(body: org.springframework.core.io.Resource) =
       registerConnector(readYaml(body.inputStream))
 
   override fun unregisterConnector(connectorId: String): Connector {
-    TODO("Not yet implemented")
+    val connector = this.findConnectorById(connectorId)
+    cosmosTemplate.deleteEntity(coreConnectorContainer, connector)
+    this.eventPublisher.publishEvent(ConnectorRemoved(this, connectorId))
+    return connector
   }
 }

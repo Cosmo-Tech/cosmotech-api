@@ -119,12 +119,20 @@ data class CsmPlatformProperties(
           /** The core database name in Azure Cosmos DB. Must already exist there. */
           val name: String,
 
+          /** The Connectors configuration */
+          val connectors: Connectors,
+
           /** The Organizations configuration */
           val organizations: Organizations,
 
           /** The Users configuration */
           val users: Users
       ) {
+        data class Connectors(
+
+            /** Container name for storing all Connectors */
+            val container: String
+        )
         data class Organizations(
 
             /** Container name for storing all Organizations */

@@ -59,6 +59,8 @@ csm:
         consistencyLevel:
         core-database:
           name: phoenix-core
+          connectors:
+            container: connectors
           organizations:
             container: organizations
           users:
