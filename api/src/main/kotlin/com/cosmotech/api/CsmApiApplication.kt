@@ -16,8 +16,6 @@ import org.springframework.context.annotation.FilterType
                 type = FilterType.REGEX, pattern = ["com\\.cosmotech\\.\\w+\\.Application"])])
 class CsmApiApplication
 
-// TODO Add Controller Advice for all sub-projects exceptions
-
 fun main(args: Array<String>) {
   runApplication<CsmApiApplication>(*args)
 }

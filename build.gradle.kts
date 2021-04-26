@@ -95,6 +95,8 @@ subprojects {
     implementation("org.springdoc:springdoc-openapi-ui:${springDocVersion}")
     implementation("org.springdoc:springdoc-openapi-kotlin:${springDocVersion}")
 
+    implementation("org.zalando:problem-spring-web-starter:0.27.0-RC.0")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
     val developmentOnly = configurations.getByName("developmentOnly")
