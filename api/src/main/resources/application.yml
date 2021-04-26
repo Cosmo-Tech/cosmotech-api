@@ -68,9 +68,18 @@ csm:
         uri:
 
 springdoc:
+  # See https://springdoc.org/#properties
+  api-docs:
+    path: /openapi
+  pre-loading-enabled: true
+  remove-broken-reference-definitions: false
   swagger-ui:
     # Disable the swagger-ui default petstore url
     disable-swagger-default-url: true
+    display-request-duration: true
+    filter: true
+    tags-sorter: alpha
+  writer-with-default-pretty-printer: true
 
 # Aliases
 api:
