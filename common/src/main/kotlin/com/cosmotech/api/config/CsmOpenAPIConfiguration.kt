@@ -2,10 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.api.config
 
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.util.TokenBuffer
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.parser.OpenAPIV3Parser
 import java.io.BufferedReader
@@ -38,18 +34,12 @@ class CsmOpenAPIConfiguration {
             ?: throw IllegalStateException(
                 "Couldn't parse resource 'classpath:openapi.yaml' : ${openApiYamlParseResult.messages}")
 
-    // Copy parsed OpenAPI to have the base URL auto-generated based on the incoming requests,
-    // by removing any set of servers already defined in the input openapi.yml
-    val objectMapper =
-        ObjectMapper()
-            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-    val tokenBuffer = TokenBuffer(objectMapper, false)
-    objectMapper.writeValue(tokenBuffer, openAPI)
-    val openAPICopy = objectMapper.readValue(tokenBuffer.asParser(), OpenAPI::class.java)
-    openAPICopy.info.version = apiVersion
-    openAPICopy.servers = listOf()
+    openAPI.info.version = apiVersion
 
-    return openAPICopy
+    // Remove any set of servers already defined in the input openapi.yaml,
+    // so as to have the base URL auto-generated based on the incoming requests
+    openAPI.servers = listOf()
+
+    return openAPI
   }
 }
