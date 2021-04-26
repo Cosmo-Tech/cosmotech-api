@@ -279,19 +279,19 @@ components:
           type: string
           description: the compute size needed for this Run Template. Standard sizes are basic and highcpu. Default is basic
         parametersHandlerResource:
-          description: the parameters handler script resource. Default type is local and default path is run_templates/%CSM_RUNTEMPLATE_ID%/parameters_handler/. Ignored with warning if resource does not exist. A Parameters Handler receives the Run Template information including all input parameters Key/Value.
+          description: the parameters handler script resource. Default type is local and default path is run_templates/%CSM_RUN_TEMPLATE_ID%/parameters_handler/. Ignored with warning if resource does not exist. A Parameters Handler receives the Run Template information including all input parameters Key/Value.
           $ref: '#/components/schemas/RunTemplateResourceStorage'
         datasetValidatorResource:
-          description: the dataset validator script resource. Default type is local and default path is run_templates/%CSM_RUNTEMPLATE_ID%/validator/. Ignored with warning if resource does not exist.
+          description: the dataset validator script resource. Default type is local and default path is run_templates/%CSM_RUN_TEMPLATE_ID%/validator/. Ignored with warning if resource does not exist.
           $ref: '#/components/schemas/RunTemplateResourceStorage'
         preRunResource:
-          description: the Engine pre-run script resource. Default type is local and default path is run_templates/%CSM_RUNTEMPLATE_ID%/prerun/. Ignored with if resource does not exist.
+          description: the Engine pre-run script resource. Default type is local and default path is run_templates/%CSM_RUN_TEMPLATE_ID%/prerun/. Ignored with if resource does not exist.
           $ref: '#/components/schemas/RunTemplateResourceStorage'
         engineResource:
-          description: the Engine script resource. Default type is local and default path is run_templates/%CSM_RUNTEMPLATE_ID%/engine/. Ignored with warning if resource does not exist. An engine receives the Run Template information including all input parameters Key/Value. An engine has the responsibility to run the Run Template. It can use the main standard csmSimulator
+          description: the Engine script resource. Default type is local and default path is run_templates/%CSM_RUN_TEMPLATE_ID%/engine/. Ignored with warning if resource does not exist. An engine receives the Run Template information including all input parameters Key/Value. An engine has the responsibility to run the Run Template. It can use the main standard csmSimulator
           $ref: '#/components/schemas/RunTemplateResourceStorage'
         postRunResource:
-          description: the Engine post-run script resource. Default type is local and default path is run_templates/%CSM_RUNTEMPLATE_ID%/postrun/. Ignored with if resource does not exist.
+          description: the Engine post-run script resource. Default type is local and default path is run_templates/%CSM_RUN_TEMPLATE_ID%/postrun/. Ignored with if resource does not exist.
           $ref: '#/components/schemas/RunTemplateResourceStorage'
         sendDatasetsToDataWarehouse:
           type: boolean
@@ -365,13 +365,14 @@ components:
         storageType:
           type: string
           description: the storage type. Use ${CSM_PROJECT_PATH} or ${CSM_STORAGE_SIMULATOR} behind the scene
-          enum: ["local","cloud","customUri"]
+          enum: ["local","azureStorage"]
         resourcePath:
           type: string
           description: the resource path
-        customUri:
-          type: string
-          description: a custom Uri to provide the resource in resourcePath
+        storageOptions:
+          type: object
+          description: freeform options for storage
+          additionalProperties: true
       required:
         - storageType
         - resourcePath
