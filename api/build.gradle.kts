@@ -93,10 +93,6 @@ openApiMerger {
         url.set("https://api.azure.cosmo-platform.com")
         description.set("Production")
       }
-      register("dev") {
-        url.set("http://localhost:8080")
-        description.set("Local dev environment")
-      }
     }
     externalDocs {
       description.set("Portal")
