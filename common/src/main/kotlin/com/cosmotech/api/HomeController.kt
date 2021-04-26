@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping
 @Controller
 class HomeController {
 
-  @Value("\${api.swagger-ui.base-path}") private lateinit var swaggerUiBasePath: String
+  @Value("\${api.swagger-ui.base-path:}") private lateinit var swaggerUiBasePath: String
 
   @GetMapping("/")
   fun redirectHomeToSwaggerUi(httpServletResponse: HttpServletResponse) {

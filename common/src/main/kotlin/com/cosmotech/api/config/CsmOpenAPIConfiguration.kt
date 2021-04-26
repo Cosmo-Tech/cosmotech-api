@@ -17,7 +17,7 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class CsmOpenAPIConfiguration {
 
-  @Value("\${api.version}") private lateinit var apiVersion: String
+  @Value("\${api.version:?}") private lateinit var apiVersion: String
 
   @Bean
   fun csmOpenAPI(): OpenAPI {
