@@ -86,7 +86,7 @@ class UserServiceImpl : AbstractCosmosBackedService(), UserApiService {
         .getDatabase(databaseName)
         .createContainerIfNotExists(
             CosmosContainerProperties(
-                "${organizationRegistered.organizationId}_user-data", "/userId"))
+                "${organizationRegistered.organizationId}_user-data", "/ownerId"))
   }
 
   @EventListener(OrganizationUnregistered::class)
