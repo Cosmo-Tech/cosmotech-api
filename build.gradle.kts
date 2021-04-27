@@ -82,13 +82,6 @@ subprojects {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("javax.validation:validation-api:2.0.1.Final")
 
-    val swaggerParserVersion = "2.0.25"
-    if (name == "cosmotech-api-common") {
-      implementation("io.swagger.parser.v3:swagger-parser-v3:${swaggerParserVersion}")
-    } else {
-      testImplementation("io.swagger.parser.v3:swagger-parser-v3:${swaggerParserVersion}")
-    }
-
     implementation("org.springframework.cloud:spring-cloud-starter-kubernetes-fabric8-config:2.0.2")
 
     val springDocVersion = "1.5.8"
