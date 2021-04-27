@@ -7,7 +7,7 @@ import com.cosmotech.api.AbstractCosmosBackedService
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.utils.findAll
-import com.cosmotech.api.utils.findByIdOrError
+import com.cosmotech.api.utils.findByIdOrThrow
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.Solution
 import java.util.*
@@ -23,7 +23,7 @@ class SolutionServiceImpl : AbstractCosmosBackedService(), SolutionApiService {
       cosmosTemplate.findAll<Solution>("${organizationId}_solutions")
 
   override fun findSolutionById(organizationId: String, solutionId: String): Solution =
-      cosmosTemplate.findByIdOrError(
+      cosmosTemplate.findByIdOrThrow(
           "${organizationId}_solutions",
           solutionId,
           "Solution $solutionId not found in organization $organizationId")

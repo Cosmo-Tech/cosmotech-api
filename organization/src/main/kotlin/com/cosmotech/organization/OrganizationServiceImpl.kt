@@ -9,7 +9,7 @@ import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.events.UserUnregistered
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.findAll
-import com.cosmotech.api.utils.findByIdOrError
+import com.cosmotech.api.utils.findByIdOrThrow
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import java.lang.IllegalStateException
@@ -41,7 +41,7 @@ class OrganizationServiceImpl : AbstractCosmosBackedService(), OrganizationApiSe
       cosmosTemplate.findAll<Organization>(coreOrganizationContainer)
 
   override fun findOrganizationById(organizationId: String): Organization =
-      cosmosTemplate.findByIdOrError(coreOrganizationContainer, organizationId)
+      cosmosTemplate.findByIdOrThrow(coreOrganizationContainer, organizationId)
 
   override fun registerOrganization(organization: Organization): Organization {
     logger.trace("Registering organization : $organization")

@@ -6,7 +6,7 @@ import com.azure.cosmos.models.CosmosContainerProperties
 import com.cosmotech.api.AbstractCosmosBackedService
 import com.cosmotech.api.events.ConnectorRemoved
 import com.cosmotech.api.utils.findAll
-import com.cosmotech.api.utils.findByIdOrError
+import com.cosmotech.api.utils.findByIdOrThrow
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
 import java.util.*
@@ -32,7 +32,7 @@ class ConnectorServiceImpl : AbstractCosmosBackedService(), ConnectorApiService 
   override fun findAllConnectors() = cosmosTemplate.findAll<Connector>(coreConnectorContainer)
 
   override fun findConnectorById(connectorId: String): Connector =
-      cosmosTemplate.findByIdOrError(coreConnectorContainer, connectorId)
+      cosmosTemplate.findByIdOrThrow(coreConnectorContainer, connectorId)
 
   override fun registerConnector(connector: Connector): Connector =
       cosmosTemplate.insert(

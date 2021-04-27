@@ -10,7 +10,7 @@ inline fun <reified T> CosmosTemplate.findAll(container: String): List<T> =
 inline fun <reified T, ID> CosmosTemplate.findById(container: String, id: ID): T? =
     this.findById(container, id, T::class.java)
 
-inline fun <reified T, ID> CosmosTemplate.findByIdOrError(
+inline fun <reified T, ID> CosmosTemplate.findByIdOrThrow(
     container: String,
     id: ID,
     errorMessage: String? = null

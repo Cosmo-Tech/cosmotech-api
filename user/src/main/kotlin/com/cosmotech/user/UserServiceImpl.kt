@@ -9,7 +9,7 @@ import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.events.UserRegistered
 import com.cosmotech.api.events.UserUnregistered
 import com.cosmotech.api.utils.findAll
-import com.cosmotech.api.utils.findByIdOrError
+import com.cosmotech.api.utils.findByIdOrThrow
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
 import java.lang.IllegalStateException
@@ -40,7 +40,7 @@ class UserServiceImpl : AbstractCosmosBackedService(), UserApiService {
   override fun findAllUsers() = cosmosTemplate.findAll<User>(coreUserContainer)
 
   override fun findUserById(userId: String): User =
-      cosmosTemplate.findByIdOrError(coreUserContainer, userId)
+      cosmosTemplate.findByIdOrThrow(coreUserContainer, userId)
 
   override fun getCurrentUser(): User {
     TODO("Not yet implemented")
