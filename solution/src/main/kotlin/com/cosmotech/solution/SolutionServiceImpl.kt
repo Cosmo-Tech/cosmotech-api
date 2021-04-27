@@ -53,10 +53,8 @@ class SolutionServiceImpl : AbstractCosmosBackedService(), SolutionApiService {
 
   @EventListener(OrganizationRegistered::class)
   fun onOrganizationRegistered(organizationRegistered: OrganizationRegistered) {
-    cosmosClient
-        .getDatabase(databaseName)
-        .createContainerIfNotExists(
-            CosmosContainerProperties("${organizationRegistered.organizationId}_solutions", "/id"))
+    cosmosCoreDatabase.createContainerIfNotExists(
+        CosmosContainerProperties("${organizationRegistered.organizationId}_solutions", "/id"))
   }
 
   @EventListener(OrganizationUnregistered::class)

@@ -5,6 +5,7 @@ package com.cosmotech.api
 import com.azure.cosmos.CosmosAsyncClient
 import com.azure.cosmos.CosmosClient
 import com.azure.cosmos.CosmosClientBuilder
+import com.azure.cosmos.CosmosDatabase
 import com.azure.spring.data.cosmos.core.CosmosTemplate
 import javax.annotation.PostConstruct
 import javax.annotation.PreDestroy
@@ -18,13 +19,14 @@ abstract class AbstractCosmosBackedService : AbstractPhoenixService() {
 
   protected lateinit var cosmosClient: CosmosClient
   protected lateinit var cosmosAsyncClient: CosmosAsyncClient
-  protected lateinit var databaseName: String
+  protected lateinit var cosmosCoreDatabase: CosmosDatabase
 
   @PostConstruct
   fun init() {
-    this.databaseName = csmPlatformProperties.azure!!.cosmos.coreDatabase.name
     this.cosmosClient = cosmosClientBuilder.buildClient()
     this.cosmosAsyncClient = cosmosClientBuilder.buildAsyncClient()
+    this.cosmosCoreDatabase =
+        cosmosClient.getDatabase(csmPlatformProperties.azure!!.cosmos.coreDatabase.name)
   }
 
   @PreDestroy

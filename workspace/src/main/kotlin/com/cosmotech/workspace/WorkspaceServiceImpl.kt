@@ -72,10 +72,8 @@ class WorkspaceServiceImpl : AbstractCosmosBackedService(), WorkspaceApiService 
 
   @EventListener(OrganizationRegistered::class)
   fun onOrganizationRegistered(organizationRegistered: OrganizationRegistered) {
-    cosmosClient
-        .getDatabase(databaseName)
-        .createContainerIfNotExists(
-            CosmosContainerProperties("${organizationRegistered.organizationId}_workspaces", "/id"))
+    cosmosCoreDatabase.createContainerIfNotExists(
+        CosmosContainerProperties("${organizationRegistered.organizationId}_workspaces", "/id"))
   }
 
   @EventListener(OrganizationUnregistered::class)

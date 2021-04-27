@@ -46,8 +46,7 @@ class ScenarioServiceImpl : AbstractCosmosBackedService(), ScenarioApiService {
     val scenarioAsMapWithWorkspaceId = scenarioToSave.asMapWithWorkspaceId(workspaceId)
     // We cannot use cosmosTemplate as it expects the Domain object to contain a field named 'id'
     // or annotated with @Id
-    if (cosmosClient
-        .getDatabase(databaseName)
+    if (cosmosCoreDatabase
         .getContainer("${organizationId}_scenarios")
         .createItem(
             scenarioAsMapWithWorkspaceId,
@@ -71,8 +70,7 @@ class ScenarioServiceImpl : AbstractCosmosBackedService(), ScenarioApiService {
   }
 
   override fun findAllScenarios(organizationId: String, workspaceId: String): List<Scenario> =
-      cosmosClient
-          .getDatabase(databaseName)
+      cosmosCoreDatabase
           .getContainer("${organizationId}_scenarios")
           .queryItems(
               SqlQuerySpec(
@@ -92,8 +90,7 @@ class ScenarioServiceImpl : AbstractCosmosBackedService(), ScenarioApiService {
       workspaceId: String,
       scenarioId: String
   ): Scenario =
-      cosmosClient
-          .getDatabase(databaseName)
+      cosmosCoreDatabase
           .getContainer("${organizationId}_scenarios")
           .queryItems(
               SqlQuerySpec(
@@ -127,10 +124,8 @@ class ScenarioServiceImpl : AbstractCosmosBackedService(), ScenarioApiService {
 
   @EventListener(OrganizationRegistered::class)
   fun onOrganizationRegistered(organizationRegistered: OrganizationRegistered) {
-    cosmosClient
-        .getDatabase(databaseName)
-        .createContainerIfNotExists(
-            CosmosContainerProperties("${organizationRegistered.organizationId}_scenarios", "/id"))
+    cosmosCoreDatabase.createContainerIfNotExists(
+        CosmosContainerProperties("${organizationRegistered.organizationId}_scenarios", "/id"))
   }
 
   @EventListener(OrganizationUnregistered::class)

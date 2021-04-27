@@ -53,10 +53,8 @@ class DatasetServiceImpl : AbstractCosmosBackedService(), DatasetApiService {
 
   @EventListener(OrganizationRegistered::class)
   fun onOrganizationRegistered(organizationRegistered: OrganizationRegistered) {
-    cosmosClient
-        .getDatabase(databaseName)
-        .createContainerIfNotExists(
-            CosmosContainerProperties("${organizationRegistered.organizationId}_datasets", "/id"))
+    cosmosCoreDatabase.createContainerIfNotExists(
+        CosmosContainerProperties("${organizationRegistered.organizationId}_datasets", "/id"))
   }
 
   @EventListener(OrganizationUnregistered::class)

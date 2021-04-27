@@ -24,9 +24,8 @@ class ConnectorServiceImpl : AbstractCosmosBackedService(), ConnectorApiService 
   fun initService() {
     this.coreConnectorContainer =
         csmPlatformProperties.azure!!.cosmos.coreDatabase.connectors.container
-    cosmosClient
-        .getDatabase(databaseName)
-        .createContainerIfNotExists(CosmosContainerProperties(coreConnectorContainer, "/id"))
+    cosmosCoreDatabase.createContainerIfNotExists(
+        CosmosContainerProperties(coreConnectorContainer, "/id"))
   }
 
   override fun findAllConnectors() = cosmosTemplate.findAll<Connector>(coreConnectorContainer)

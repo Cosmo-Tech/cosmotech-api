@@ -30,9 +30,8 @@ class OrganizationServiceImpl : AbstractCosmosBackedService(), OrganizationApiSe
   fun initService() {
     this.coreOrganizationContainer =
         csmPlatformProperties.azure!!.cosmos.coreDatabase.organizations.container
-    cosmosClient
-        .getDatabase(databaseName)
-        .createContainerIfNotExists(CosmosContainerProperties(coreOrganizationContainer, "/id"))
+    cosmosCoreDatabase.createContainerIfNotExists(
+        CosmosContainerProperties(coreOrganizationContainer, "/id"))
   }
 
   override fun findAllOrganizations() =

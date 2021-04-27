@@ -29,9 +29,8 @@ class UserServiceImpl : AbstractCosmosBackedService(), UserApiService {
   @PostConstruct
   fun initService() {
     this.coreUserContainer = csmPlatformProperties.azure!!.cosmos.coreDatabase.users.container
-    cosmosClient
-        .getDatabase(databaseName)
-        .createContainerIfNotExists(CosmosContainerProperties(coreUserContainer, "/id"))
+    cosmosCoreDatabase.createContainerIfNotExists(
+        CosmosContainerProperties(coreUserContainer, "/id"))
   }
 
   override fun authorizeUser() {
@@ -82,11 +81,8 @@ class UserServiceImpl : AbstractCosmosBackedService(), UserApiService {
 
   @EventListener(OrganizationRegistered::class)
   fun onOrganizationRegistered(organizationRegistered: OrganizationRegistered) {
-    cosmosClient
-        .getDatabase(databaseName)
-        .createContainerIfNotExists(
-            CosmosContainerProperties(
-                "${organizationRegistered.organizationId}_user-data", "/ownerId"))
+    cosmosCoreDatabase.createContainerIfNotExists(
+        CosmosContainerProperties("${organizationRegistered.organizationId}_user-data", "/ownerId"))
   }
 
   @EventListener(OrganizationUnregistered::class)
