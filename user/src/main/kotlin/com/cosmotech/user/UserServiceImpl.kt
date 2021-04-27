@@ -17,6 +17,7 @@ import java.util.*
 import javax.annotation.PostConstruct
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
 @Service
@@ -89,8 +90,8 @@ class UserServiceImpl : AbstractCosmosBackedService(), UserApiService {
   }
 
   @EventListener(OrganizationUnregistered::class)
+  @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
-    // TODO Handle deletion asynchronously
     cosmosTemplate.deleteContainer("${organizationUnregistered.organizationId}_user-data")
   }
 }

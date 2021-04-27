@@ -11,6 +11,7 @@ import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceFile
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
 @Service
@@ -72,8 +73,8 @@ class WorkspaceServiceImpl : AbstractCosmosBackedService(), WorkspaceApiService 
   }
 
   @EventListener(OrganizationUnregistered::class)
+  @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
-    // TODO Handle deletion asynchronously
     cosmosTemplate.deleteContainer("${organizationUnregistered.organizationId}_workspace_data")
   }
 }

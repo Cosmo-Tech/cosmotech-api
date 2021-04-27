@@ -18,6 +18,7 @@ import javax.annotation.PostConstruct
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
 @Service
@@ -100,6 +101,7 @@ class OrganizationServiceImpl : AbstractCosmosBackedService(), OrganizationApiSe
   }
 
   @EventListener(UserUnregistered::class)
+  @Async("csm-in-process-event-executor")
   fun onUserUnregistered(userUnregisteredEvent: UserUnregistered) {
     logger.info(
         "User ${userUnregisteredEvent.userId} unregistered => removing them from all organizations they belong to..")

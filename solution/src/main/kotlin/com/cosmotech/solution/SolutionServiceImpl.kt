@@ -13,6 +13,7 @@ import com.cosmotech.solution.domain.Solution
 import java.util.*
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
 @Service
@@ -59,6 +60,7 @@ class SolutionServiceImpl : AbstractCosmosBackedService(), SolutionApiService {
   }
 
   @EventListener(OrganizationUnregistered::class)
+  @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
     cosmosTemplate.deleteContainer("${organizationUnregistered.organizationId}_solutions")
   }
