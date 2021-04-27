@@ -103,6 +103,7 @@ subprojects {
 
   tasks.withType<KotlinCompile> {
     kotlinOptions {
+      languageVersion = "1.4"
       freeCompilerArgs = listOf("-Xjsr305=strict")
       jvmTarget = "15"
     }
