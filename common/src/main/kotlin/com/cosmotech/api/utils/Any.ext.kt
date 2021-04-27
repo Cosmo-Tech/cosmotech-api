@@ -2,6 +2,9 @@
 // Licensed under the MIT license.
 package com.cosmotech.api.utils
 
+import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+
 /**
  * Extension function that checks whether the specified member has changed between [this] receiver
  * and the given [old] one, even if not of the same types.
@@ -20,3 +23,9 @@ inline fun <reified T, U, R> T.changed(old: U?, memberAccessBlock: T.() -> R): B
   val oldValue = with(old, memberAccessBlock)
   return currentValue != oldValue
 }
+
+/**
+ * Convert any object as a Map, using the Jackson Object Mapper
+ */
+fun <T> T.convertToMap(): Map<String, Any> =
+        jacksonObjectMapper().convertValue(this, object: TypeReference<Map<String, Any>>() {})
