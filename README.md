@@ -84,9 +84,17 @@ helm upgrade --install cosmotech-api-${API_VERSION} \
 #### Local Kubernetes Cluster
 
 * Spawn a local cluster. Skip if you already have configured a local cluster.
+
 Otherwise, you may want to leverage the [scripts/kubernetes/create-local-k8s-cluster.sh](scripts/kubernetes/create-local-k8s-cluster.sh) script,
   which provisions a local [Kind](https://kind.sigs.k8s.io/) cluster, along with a private local container 
 registry and an [NGINX Ingress Controller](https://kubernetes.github.io/ingress-nginx/).
+
+To use it, simply [install Kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation), and run the script, like so (`<cluster_name>` is optional and defaults to `local-k8s-cluster`):
+
+```shell
+/bin/sh -c scripts/kubernetes/create-local-k8s-cluster.sh [<cluster_name>]
+```
+This creates a Kubernetes context named `kind-<cluster_name>`.
   
 * Build and push the container image to the local registry, e.g.:
 
