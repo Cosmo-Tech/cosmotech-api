@@ -51,7 +51,7 @@ class ScenarioServiceImpl : AbstractCosmosBackedService(), ScenarioApiService {
         .getContainer("${organizationId}_scenario_data")
         .createItem(scenarioAsMap, PartitionKey(scenarioToSave.ownerId), CosmosItemRequestOptions())
         .item == null) {
-      throw IllegalArgumentException("No Dataset returned in response: $scenarioAsMap")
+      throw IllegalArgumentException("No Scenario returned in response: $scenarioAsMap")
     }
     return scenarioToSave
   }
