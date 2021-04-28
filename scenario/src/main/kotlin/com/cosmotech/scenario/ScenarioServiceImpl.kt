@@ -22,8 +22,9 @@ import org.springframework.stereotype.Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 class ScenarioServiceImpl : AbstractCosmosBackedService(), ScenarioApiService {
 
-  protected fun Scenario.asMapWithWorkspaceId(workspaceId: String): Map<String, Any> {
+  protected fun Scenario.asMapWithAdditionalData(workspaceId: String): Map<String, Any> {
     val scenarioAsMap = this.convertToMap().toMutableMap()
+    scenarioAsMap["type"] = "Scenario"
     scenarioAsMap["workspaceId"] = workspaceId
     return scenarioAsMap
   }
@@ -43,18 +44,14 @@ class ScenarioServiceImpl : AbstractCosmosBackedService(), ScenarioApiService {
       scenario: Scenario
   ): Scenario {
     val scenarioToSave = scenario.copy(id = UUID.randomUUID().toString())
-    val scenarioAsMapWithWorkspaceId = scenarioToSave.asMapWithWorkspaceId(workspaceId)
+    val scenarioAsMap = scenarioToSave.asMapWithAdditionalData(workspaceId)
     // We cannot use cosmosTemplate as it expects the Domain object to contain a field named 'id'
     // or annotated with @Id
     if (cosmosCoreDatabase
-        .getContainer("${organizationId}_scenarios")
-        .createItem(
-            scenarioAsMapWithWorkspaceId,
-            PartitionKey(scenarioToSave.id),
-            CosmosItemRequestOptions())
+        .getContainer("${organizationId}_scenario_data")
+        .createItem(scenarioAsMap, PartitionKey(scenarioToSave.ownerId), CosmosItemRequestOptions())
         .item == null) {
-      throw IllegalArgumentException(
-          "No Dataset returned in response: $scenarioAsMapWithWorkspaceId")
+      throw IllegalArgumentException("No Dataset returned in response: $scenarioAsMap")
     }
     return scenarioToSave
   }
@@ -65,16 +62,16 @@ class ScenarioServiceImpl : AbstractCosmosBackedService(), ScenarioApiService {
       scenarioId: String
   ): Scenario {
     val scenario = this.findScenarioById(organizationId, workspaceId, scenarioId)
-    cosmosTemplate.deleteEntity("${organizationId}_scenarios", scenario)
+    cosmosTemplate.deleteEntity("${organizationId}_scenario_data", scenario)
     return scenario
   }
 
   override fun findAllScenarios(organizationId: String, workspaceId: String): List<Scenario> =
       cosmosCoreDatabase
-          .getContainer("${organizationId}_scenarios")
+          .getContainer("${organizationId}_scenario_data")
           .queryItems(
               SqlQuerySpec(
-                  "SELECT * FROM c WHERE c.workspaceId = @WORKSPACE_ID",
+                  "SELECT * FROM c WHERE c.type = 'Scenario' AND c.workspaceId = @WORKSPACE_ID",
                   listOf(SqlParameter("@WORKSPACE_ID", workspaceId))),
               CosmosQueryRequestOptions(),
               // It would be much better to specify the Domain Type right away and
@@ -91,10 +88,10 @@ class ScenarioServiceImpl : AbstractCosmosBackedService(), ScenarioApiService {
       scenarioId: String
   ): Scenario =
       cosmosCoreDatabase
-          .getContainer("${organizationId}_scenarios")
+          .getContainer("${organizationId}_scenario_data")
           .queryItems(
               SqlQuerySpec(
-                  "SELECT * FROM c WHERE c.id = @SCENARIO_ID AND c.workspaceId = @WORKSPACE_ID",
+                  "SELECT * FROM c WHERE c.type = 'Scenario' AND c.id = @SCENARIO_ID AND c.workspaceId = @WORKSPACE_ID",
                   listOf(
                       SqlParameter("@SCENARIO_ID", scenarioId),
                       SqlParameter("@WORKSPACE_ID", workspaceId))),
@@ -125,12 +122,13 @@ class ScenarioServiceImpl : AbstractCosmosBackedService(), ScenarioApiService {
   @EventListener(OrganizationRegistered::class)
   fun onOrganizationRegistered(organizationRegistered: OrganizationRegistered) {
     cosmosCoreDatabase.createContainerIfNotExists(
-        CosmosContainerProperties("${organizationRegistered.organizationId}_scenarios", "/id"))
+        CosmosContainerProperties(
+            "${organizationRegistered.organizationId}_scenario_data", "/ownerId"))
   }
 
   @EventListener(OrganizationUnregistered::class)
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
-    cosmosTemplate.deleteContainer("${organizationUnregistered.organizationId}_scenarios")
+    cosmosTemplate.deleteContainer("${organizationUnregistered.organizationId}_scenario_data")
   }
 }
