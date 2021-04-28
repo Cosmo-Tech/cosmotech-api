@@ -185,6 +185,49 @@ paths:
           description: Bad request
         "404":
           description: the Solution specified is unknown or you don't have access to it
+  /organizations/{organization_id}/solutions/{solution_id}/runtemplates/{run_template_id}/handler/{handler_id}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: solution_id
+        in: path
+        description: the Solution identifier
+        required: true
+        schema:
+          type: string
+      - name: run_template_id
+        in: path
+        description: the Run Template identifier
+        required: true
+        schema:
+          type: string
+      - name: handler_id
+        in: path
+        description: the Handler id identifier
+        required: true
+        schema:
+          type: string
+          enum: ["parameters_handler","validator","prerun","engine","postrun"]
+    post:
+      operationId: uploadRunTemplateHandler
+      tags:
+        - solution
+      summary: Upload a Run Template step handler zip file
+      requestBody:
+        content:
+          image/zip:
+            schema:
+              type: string
+              format: binary
+      responses:
+        "201":
+          description: zip file uploaded
+        "400":
+          description: Bad request
 
 components:
   securitySchemes:

@@ -1,5 +1,5 @@
 @startuml
-scale 0.75
+
 title Cosmo Tech Plaform API Schemas Diagram
 
 entity Connector { 
@@ -165,7 +165,7 @@ entity RunTemplateParameterValue {
 entity RunTemplateResourceStorage { 
     * storageType: String
     * resourcePath: String
-    customUri: String
+    storageOptions: Map
 }
 
 entity Scenario { 

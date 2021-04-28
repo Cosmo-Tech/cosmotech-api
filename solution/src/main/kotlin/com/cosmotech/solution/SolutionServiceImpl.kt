@@ -39,4 +39,14 @@ class SolutionServiceImpl : AbstractPhoenixService(), SolutionApiService {
   ): Solution {
     TODO("Not yet implemented")
   }
+
+  override fun uploadRunTemplateHandler(
+      organizationId: kotlin.String,
+      solutionId: kotlin.String,
+      runTemplateId: kotlin.String,
+      handlerId: kotlin.String,
+      body: org.springframework.core.io.Resource?
+  ): Unit {
+    TODO("Not yet implemented")
+  }
 }

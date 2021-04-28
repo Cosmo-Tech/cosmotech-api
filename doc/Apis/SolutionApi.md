@@ -1,6 +1,6 @@
 # SolutionApi
 
-All URIs are relative to *http://localhost:8080*
+All URIs are relative to *https://api.azure.cosmo-platform.com*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -10,6 +10,7 @@ Method | HTTP request | Description
 [**findSolutionById**](SolutionApi.md#findSolutionById) | **GET** /organizations/{organization_id}/solutions/{solution_id} | Get the details of a solution
 [**updateSolution**](SolutionApi.md#updateSolution) | **PATCH** /organizations/{organization_id}/solutions/{solution_id} | Update a solution
 [**upload**](SolutionApi.md#upload) | **POST** /organizations/{organization_id}/solutions/upload | Upload and register a new solution
+[**uploadRunTemplateHandler**](SolutionApi.md#uploadRunTemplateHandler) | **POST** /organizations/{organization_id}/solutions/{solution_id}/runtemplates/{run_template_id}/handler/{handler_id} | Upload a Run Template step handler zip file
 
 
 <a name="createSolution"></a>
@@ -167,4 +168,33 @@ Name | Type | Description  | Notes
 
 - **Content-Type**: application/yaml
 - **Accept**: application/json
+
+<a name="uploadRunTemplateHandler"></a>
+# **uploadRunTemplateHandler**
+> uploadRunTemplateHandler(organization\_id, solution\_id, run\_template\_id, handler\_id, body)
+
+Upload a Run Template step handler zip file
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **solution\_id** | **String**| the Solution identifier | [default to null]
+ **run\_template\_id** | **String**| the Run Template identifier | [default to null]
+ **handler\_id** | **String**| the Handler id identifier | [default to null] [enum: parameters_handler, validator, prerun, engine, postrun]
+ **body** | **File**|  | [optional]
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: image/zip
+- **Accept**: Not defined
 
