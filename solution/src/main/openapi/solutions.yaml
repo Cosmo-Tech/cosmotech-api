@@ -233,7 +233,7 @@ components:
   securitySchemes:
     oAuth2AuthCode:
       type: oauth2
-      description: Azure Active Directory authentication
+      description: OAuth2 authentication
       flows:
         implicit:
           authorizationUrl: oauth2/authorize
@@ -407,8 +407,8 @@ components:
       properties:
         storageType:
           type: string
-          description: the storage type. Use ${CSM_PROJECT_PATH} or ${CSM_STORAGE_SIMULATOR} behind the scene
-          enum: ["local","azureStorage"]
+          description: the storage type
+          enum: ["local","cloudStorage"]
         resourcePath:
           type: string
           description: the resource path

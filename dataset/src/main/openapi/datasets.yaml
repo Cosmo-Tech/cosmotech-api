@@ -447,7 +447,7 @@ components:
   securitySchemes:
     oAuth2AuthCode:
       type: oauth2
-      description: Azure Active Directory authentication
+      description: OAuth2 authentication
       flows:
         implicit:
           authorizationUrl: oauth2/authorize
