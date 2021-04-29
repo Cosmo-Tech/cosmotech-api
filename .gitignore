@@ -46,7 +46,8 @@ openapi/openapi.yaml
 
 ### Personal directory ###
 perso
-application-dev.properties
+config/application-dev.properties
+config/application-dev.yml
 
 ### Personal directory ###
 **/logs/access_log.log

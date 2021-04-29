@@ -140,6 +140,7 @@ subprojects {
 
     tasks.getByName<BootRun>("bootRun") {
       args = listOf("--spring.profiles.active=dev")
+      workingDir = rootDir
       if (project.hasProperty("jvmArgs")) {
         jvmArgs = project.property("jvmArgs")?.toString()?.split("\\s+".toRegex()) ?: listOf()
       }
