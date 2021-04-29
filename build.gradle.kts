@@ -158,6 +158,11 @@ subprojects {
             mapOf(
                 "JAVA_TOOL_OPTIONS" to
                     "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=localhost:5005")
+        jvmFlags =
+            listOf(
+                // Make sure Spring DevTools is disabled in production as running it is a
+                // security risk
+                "-Dspring.devtools.restart.enabled=false")
         ports = listOf("5005", "8080", "8081")
       }
     }
