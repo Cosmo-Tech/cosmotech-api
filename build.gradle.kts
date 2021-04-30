@@ -1,6 +1,7 @@
 import com.diffplug.gradle.spotless.SpotlessExtension
 import com.google.cloud.tools.jib.api.buildplan.ImageFormat.OCI
 import com.google.cloud.tools.jib.gradle.JibExtension
+import org.apache.tools.ant.filters.ReplaceTokens
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.springframework.boot.gradle.dsl.SpringBootExtension
@@ -158,7 +159,12 @@ subprojects {
       rename { if (it != "openapi.yaml") "openapi.yaml" else it }
     }
 
-    tasks.getByName<Copy>("processResources") { dependsOn("copyOpenApiYamlToMainResources") }
+    tasks.getByName<Copy>("processResources") {
+      dependsOn("copyOpenApiYamlToMainResources")
+      filesMatching("**/banner.txt") {
+        filter<ReplaceTokens>("tokens" to mapOf("projectVersion" to project.version))
+      }
+    }
 
     tasks.getByName<Copy>("processTestResources") { dependsOn("copyOpenApiYamlToTestResources") }
 

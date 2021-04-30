@@ -1,0 +1,8 @@
+-------------------------------------
+${AnsiColor.BRIGHT_GREEN}Cosmo Tech API${AnsiColor.DEFAULT}
+
+.: Version : ${AnsiColor.BRIGHT_YELLOW}@projectVersion@${AnsiColor.DEFAULT} :.
+.: Spring Boot : ${AnsiColor.BRIGHT_YELLOW}${spring-boot.formatted-version}${AnsiColor.DEFAULT} :.
+
+Copyright 2021 Cosmo Tech
+-------------------------------------
