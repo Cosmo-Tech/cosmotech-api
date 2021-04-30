@@ -15,11 +15,10 @@ import com.cosmotech.scenariorun.domain.ScenarioRunStart
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
 import com.cosmotech.scenariorun.domain.ScenarioRunStartSolution
 import com.fasterxml.jackson.databind.JsonNode
-import io.argoproj.workflow.ApiClient
 import io.argoproj.workflow.ApiException
 import io.argoproj.workflow.Configuration
+import io.argoproj.workflow.apis.WorkflowServiceApi
 import io.argoproj.workflow.models.*
-import io.argoproj.workflow.apis.ArchivedWorkflowServiceApi
 import java.util.*
 import kotlin.reflect.full.memberProperties
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -237,23 +236,42 @@ class ScenariorunServiceImpl : AbstractCosmosBackedService(), ScenariorunApiServ
   ): ScenarioRun {
 
     val defaultClient = Configuration.getDefaultApiClient()
+    defaultClient.setVerifyingSsl(false)
     defaultClient.setBasePath("https://argo-server.argo.svc.cluster.local:2746")
 
-    val apiInstance = ArchivedWorkflowServiceApi(defaultClient)
-    val uid = "hello-world-2dpbd"
+    val apiInstance = WorkflowServiceApi(defaultClient)
+    val namespace = "phoenix"
+    val body = WorkflowCreateRequest()
+
+    body.workflow(
+        Workflow()
+            .metadata(
+                io.kubernetes.client.openapi.models.V1ObjectMeta().generateName("hello-world-"))
+            .spec(
+                WorkflowSpec()
+                    .serviceAccountName("workflow")
+                    .entrypoint("whalesay")
+                    .addTemplatesItem(
+                        Template()
+                            .name("whalesay")
+                            .container(
+                                io.kubernetes.client.openapi.models.V1Container()
+                                    .image("docker/whalesay")
+                                    .command(listOf("cowsay"))
+                                    .args(listOf("hello world"))))))
     try {
-      val result = apiInstance.archivedWorkflowServiceDeleteArchivedWorkflow(uid)
-      println(result)
-    } catch (e: ApiException ) {
-      println("Exception when calling ArchivedWorkflowServiceApi#archivedWorkflowServiceDeleteArchivedWorkflow")
+      val result = apiInstance.workflowServiceCreateWorkflow(namespace, body)
+      var scenarioRun = ScenarioRun(id=result.metadata.name, startTime=result.status?.startedAt?.toString())
+      return scenarioRun
+    } catch (e: ApiException) {
+      println("Exception when calling WorkflowServiceApi#workflowServiceCreateWorkflow")
       println("Status code: " + e.getCode())
       println("Reason: " + e.getResponseBody())
       println("Response headers: " + e.getResponseHeaders())
       e.printStackTrace()
+      throw IllegalStateException(e)
     }
-
-    TODO("Not implemented yet")
-}
+  }
 
   override fun startScenarioRunScenario(
       organizationId: String,
