@@ -1,7 +1,6 @@
 Apis/ConnectorApi.md
 Apis/DatasetApi.md
 Apis/OrganizationApi.md
-Apis/PlatformApi.md
 Apis/ScenarioApi.md
 Apis/ScenariorunApi.md
 Apis/SolutionApi.md
@@ -19,9 +18,6 @@ Models/Organization.md
 Models/OrganizationService.md
 Models/OrganizationServices.md
 Models/OrganizationUser.md
-Models/Platform.md
-Models/PlatformService.md
-Models/PlatformServices.md
 Models/RunTemplate.md
 Models/RunTemplateParameter.md
 Models/RunTemplateParameterGroup.md

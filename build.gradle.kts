@@ -73,7 +73,22 @@ subprojects {
 
   java { toolchain { languageVersion.set(JavaLanguageVersion.of(16)) } }
 
+  repositories {
+      mavenLocal()
+      maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/argoproj-labs/argo-client-java")
+            credentials {
+                username = project.findProperty("gpr.user")?.toString() ?: System.getenv("GPR_API_COMMON_USER")
+                password = project.findProperty("gpr.key")?.toString() ?: System.getenv("GPR_API_COMMON_KEY")
+            }
+      }
+      mavenCentral()
+  }
+
+
   dependencies {
+    implementation("io.argoproj.workflow:argo-client-java:v3.0.1")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.springframework.boot:spring-boot-starter-actuator")

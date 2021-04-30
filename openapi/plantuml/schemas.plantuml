@@ -89,40 +89,6 @@ entity OrganizationUser {
     * roles: List<String>
 }
 
-entity Platform { 
-    * name: String
-    description: String
-    * version: String
-    * ownerId: String
-    apiHost: String
-    webAppUrl: String
-    * services: PlatformServices
-}
-
-entity PlatformService { 
-    cloudService: String
-    baseUri: String
-    resourceUri: String
-    credentials: Map
-    options: Map
-}
-
-entity PlatformServices { 
-    * provider: String
-    credentials: Map
-    storage: PlatformService
-    coreContainerRegistry: PlatformService
-    solutionsContainerRegistry: PlatformService
-    eventBusCluster: PlatformService
-    dataWarehouseCluster: PlatformService
-    databaseCluster: PlatformService
-    keyVault: PlatformService
-    kubernetesCluster: PlatformService
-    directory: PlatformService
-    monitoring: PlatformService
-    analytic: PlatformService
-}
-
 entity RunTemplate { 
     * id: String
     * name: String
@@ -440,7 +406,6 @@ Connector -- "0..*" ConnectorParameterGroup : parameterGroups
 Organization -- "0..*" OrganizationUser : users
 Organization -- OrganizationServices : services
 User -- "0..*" UserOrganization : organizations
-Platform -- PlatformServices : services
 ScenarioRunStartSolution -- "0..*" RunTemplateParameterValue : parametersValues
 RunTemplate -- RunTemplateResourceStorage : parametersHandlerResource
 RunTemplate -- RunTemplateResourceStorage : datasetValidatorResource
@@ -483,17 +448,6 @@ ScenarioRun -- ScenarioRunContainer : sendDataWarehouseContainer
 ScenarioRun -- ScenarioRunContainer : preRunContainer
 ScenarioRun -- ScenarioRunContainer : runContainer
 ScenarioRun -- ScenarioRunContainer : postRunContainer
-PlatformServices -- PlatformService : storage
-PlatformServices -- PlatformService : coreContainerRegistry
-PlatformServices -- PlatformService : solutionsContainerRegistry
-PlatformServices -- PlatformService : eventBusCluster
-PlatformServices -- PlatformService : dataWarehouseCluster
-PlatformServices -- PlatformService : databaseCluster
-PlatformServices -- PlatformService : keyVault
-PlatformServices -- PlatformService : kubernetesCluster
-PlatformServices -- PlatformService : directory
-PlatformServices -- PlatformService : monitoring
-PlatformServices -- PlatformService : analytic
 ScenarioRunStartContainers -- "0..*" ScenarioRunContainer : fetchDatasetContainers
 ScenarioRunStartContainers -- ScenarioRunContainer : fetchScenarioParametersContainer
 ScenarioRunStartContainers -- ScenarioRunContainer : applyParametersContainer

@@ -23,9 +23,6 @@ Class | Method | HTTP request | Description
 *OrganizationApi* | [**registerOrganization**](Apis/OrganizationApi.md#registerorganization) | **POST** /organizations | Register a new organization
 *OrganizationApi* | [**unregisterOrganization**](Apis/OrganizationApi.md#unregisterorganization) | **DELETE** /organizations/{organization_id} | Unregister an organization
 *OrganizationApi* | [**updateOrganization**](Apis/OrganizationApi.md#updateorganization) | **PATCH** /organizations/{organization_id} | Update an organization
-*PlatformApi* | [**createPlatform**](Apis/PlatformApi.md#createplatform) | **POST** /platform | Create a new platform
-*PlatformApi* | [**getPlatform**](Apis/PlatformApi.md#getplatform) | **GET** /platform | Get the details of the platform
-*PlatformApi* | [**updatePlatform**](Apis/PlatformApi.md#updateplatform) | **PATCH** /platform | Update a platform
 *ScenarioApi* | [**compareScenarios**](Apis/ScenarioApi.md#comparescenarios) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/compare/{compared_scenario_id} | Compare the Scenario with another one and returns the difference for parameters values
 *ScenarioApi* | [**createScenario**](Apis/ScenarioApi.md#createscenario) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios | Create a new scenario
 *ScenarioApi* | [**deleteScenario**](Apis/ScenarioApi.md#deletescenario) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id} | Delete a scenario
@@ -94,9 +91,6 @@ Class | Method | HTTP request | Description
  - [OrganizationService](./Models/OrganizationService.md)
  - [OrganizationServices](./Models/OrganizationServices.md)
  - [OrganizationUser](./Models/OrganizationUser.md)
- - [Platform](./Models/Platform.md)
- - [PlatformService](./Models/PlatformService.md)
- - [PlatformServices](./Models/PlatformServices.md)
  - [RunTemplate](./Models/RunTemplate.md)
  - [RunTemplateParameter](./Models/RunTemplateParameter.md)
  - [RunTemplateParameterGroup](./Models/RunTemplateParameterGroup.md)
