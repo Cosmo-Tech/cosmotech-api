@@ -38,6 +38,7 @@ allprojects {
         username = project.findProperty("gpr.user")?.toString() ?: System.getenv("GITHUB_ACTOR")
         password = project.findProperty("gpr.key")?.toString() ?: System.getenv("GITHUB_TOKEN")
       }
+      content { includeModule("io.argoproj.workflow", "argo-client-java") }
     }
     mavenCentral()
   }
