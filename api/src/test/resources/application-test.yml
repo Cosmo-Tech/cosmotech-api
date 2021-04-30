@@ -1,0 +1,13 @@
+spring:
+  main:
+    lazy-initialization: true
+
+#csm:
+#  platform:
+#    # TODO ASO : use a dedicated 'test' value, with specific test implementations for services
+#    vendor: azure
+#    azure:
+#      cosmos:
+#        # Base64
+#        key: "ZmFrZS1rZXkK"
+#        uri: "https://faketestaccount.documents.azure.com:443/"

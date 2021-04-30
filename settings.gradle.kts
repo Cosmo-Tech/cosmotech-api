@@ -6,7 +6,6 @@ include(
     "connector",
     "dataset",
     "organization",
-    "platform",
     "scenario",
     "scenariorun",
     "solution",
@@ -24,8 +23,6 @@ project(":connector").name = "cosmotech-connector-api"
 project(":dataset").name = "cosmotech-dataset-api"
 
 project(":organization").name = "cosmotech-organization-api"
-
-project(":platform").name = "cosmotech-platform-api"
 
 project(":scenario").name = "cosmotech-scenario-api"
 

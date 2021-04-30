@@ -2,27 +2,42 @@
 // Licensed under the MIT license.
 package com.cosmotech.solution
 
-import com.cosmotech.api.AbstractPhoenixService
+import com.azure.cosmos.models.CosmosContainerProperties
+import com.cosmotech.api.AbstractCosmosBackedService
+import com.cosmotech.api.events.OrganizationRegistered
+import com.cosmotech.api.events.OrganizationUnregistered
+import com.cosmotech.api.utils.findAll
+import com.cosmotech.api.utils.findByIdOrThrow
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.Solution
+import java.util.*
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.context.event.EventListener
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
 @Service
-class SolutionServiceImpl : AbstractPhoenixService(), SolutionApiService {
-  override fun findAllSolutions(organizationId: String): List<Solution> {
-    TODO("Not yet implemented")
-  }
+@ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
+class SolutionServiceImpl : AbstractCosmosBackedService(), SolutionApiService {
 
-  override fun findSolutionById(organizationId: String, solutionId: String): Solution {
-    TODO("Not yet implemented")
-  }
+  override fun findAllSolutions(organizationId: String) =
+      cosmosTemplate.findAll<Solution>("${organizationId}_solutions")
 
-  override fun createSolution(organizationId: String, solution: Solution): Solution {
-    TODO("Not yet implemented")
-  }
+  override fun findSolutionById(organizationId: String, solutionId: String): Solution =
+      cosmosTemplate.findByIdOrThrow(
+          "${organizationId}_solutions",
+          solutionId,
+          "Solution $solutionId not found in organization $organizationId")
+
+  override fun createSolution(organizationId: String, solution: Solution) =
+      cosmosTemplate.insert(
+          "${organizationId}_solutions", solution.copy(id = UUID.randomUUID().toString()))
+          ?: throw IllegalArgumentException("No solution returned in response: $solution")
 
   override fun deleteSolution(organizationId: String, solutionId: String): Solution {
-    TODO("Not yet implemented")
+    val solution = findSolutionById(organizationId, solutionId)
+    cosmosTemplate.deleteEntity("${organizationId}_solutions", solution)
+    return solution
   }
 
   override fun updateSolution(
@@ -33,11 +48,19 @@ class SolutionServiceImpl : AbstractPhoenixService(), SolutionApiService {
     TODO("Not yet implemented")
   }
 
-  override fun upload(
-      organizationId: kotlin.String,
-      body: org.springframework.core.io.Resource
-  ): Solution {
-    TODO("Not yet implemented")
+  override fun upload(organizationId: String, body: org.springframework.core.io.Resource) =
+      createSolution(organizationId, readYaml(body.inputStream))
+
+  @EventListener(OrganizationRegistered::class)
+  fun onOrganizationRegistered(organizationRegistered: OrganizationRegistered) {
+    cosmosCoreDatabase.createContainerIfNotExists(
+        CosmosContainerProperties("${organizationRegistered.organizationId}_solutions", "/id"))
+  }
+
+  @EventListener(OrganizationUnregistered::class)
+  @Async("csm-in-process-event-executor")
+  fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
+    cosmosTemplate.deleteContainer("${organizationUnregistered.organizationId}_solutions")
   }
 
   override fun uploadRunTemplateHandler(

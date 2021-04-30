@@ -1,0 +1,126 @@
+logging:
+  level:
+    com:
+      azure:
+        cosmos:
+          implementation: warn
+
+spring:
+  output:
+    ansi:
+      enabled: ALWAYS
+  cloud:
+    kubernetes:
+      # TODO For some still obscure reason, enabling this prevents the application
+      #  from starting within a Kubernetes Cluster, because Spring attempts to use
+      # interface-based JDK proxies, which is not supposed to work since
+      # we make an extensive usage of EventListener in target classes.
+      # Forcing the use of Target Classes proxies surprisingly has no effect, perhaps due to
+      # the activation of the Kubernetes Profile.
+      # Consequences when disabling this:
+      # - No watchers for ConfigMap / Secret changes
+      # - But we still benefit from ConfigMap/Secret to Properties mapping, which is great.
+      # Plus, some other useful beans (e.g., KubernetesClient) are available for us to use.
+      enabled: false
+
+management:
+  endpoint:
+    health:
+      probes:
+        # This exposes the following endpoints for Kubernetes: /actuator/health/{live,readi}ness
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  server:
+    port: 8081
+
+server:
+  jetty:
+    accesslog:
+      enabled: true
+  servlet:
+    context-path:
+
+csm:
+  platform:
+    summary: Cosmo Tech Platform
+    description: Cosmo Tech Digital Twins Simulation Platform
+    version: "1.0.0"
+    api:
+      # API Base Path for OpenAPI-generated controllers.
+      # Might conflict with the SpringBoot context path, hence leaving it at the root
+      base-path: /
+      version: latest
+    event-publisher:
+      type: in_process
+    vendor: azure
+    azure:
+      credentials:
+        tenantId:
+        clientId:
+        clientSecret:
+      storage:
+        baseUri:
+        resourceUri:
+      containerRegistries:
+        core:
+        solutions:
+      eventBus:
+        baseUri:
+      dataWarehouseCluster:
+        baseUri:
+        options:
+          ingestionUri:
+      keyVault:
+      analytics:
+        resourceUri:
+        instrumentationKey:
+        connectionString: "InstrumentationKey=${csm.platform.azure.analytics.instrumentationKey};IngestionEndpoint=https://francecentral-0.in.applicationinsights.azure.com/"
+      cosmos:
+        allowTelemetry: false
+        connectionMode:
+        consistencyLevel:
+        core-database:
+          name: phoenix-core
+          connectors:
+            container: connectors
+          organizations:
+            container: organizations
+          users:
+            container: users
+        key:
+        populateQueryMetrics: true
+        uri:
+
+springdoc:
+  # See https://springdoc.org/#properties
+  api-docs:
+    path: /openapi
+  pre-loading-enabled: true
+  remove-broken-reference-definitions: false
+  swagger-ui:
+    # Disable the swagger-ui default petstore url
+    disable-swagger-default-url: true
+    display-request-duration: true
+    filter: true
+    tags-sorter: alpha
+  writer-with-default-pretty-printer: true
+
+# Aliases
+api:
+  base-path: ${csm.platform.api.base-path}
+  swagger-ui:
+    base-path: ${server.servlet.context-path}
+  version: ${csm.platform.api.version}
+azure:
+  # Required to auto-configure the beans provided by the Azure CosmosDB Spring Boot AutoConfiguration
+  cosmos:
+    allowTelemetry: ${csm.platform.azure.cosmos.allowTelemetry}
+    connectionMode: ${csm.platform.azure.cosmos.connectionMode}
+    consistencyLevel: ${csm.platform.azure.cosmos.consistencyLevel}
+    database: ${csm.platform.azure.cosmos.core-database.name}
+    key: ${csm.platform.azure.cosmos.key}
+    populateQueryMetrics: ${csm.platform.azure.cosmos.populateQueryMetrics}
+    uri: ${csm.platform.azure.cosmos.uri}
