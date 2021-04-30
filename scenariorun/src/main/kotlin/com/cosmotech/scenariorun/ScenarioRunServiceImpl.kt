@@ -15,6 +15,11 @@ import com.cosmotech.scenariorun.domain.ScenarioRunStart
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
 import com.cosmotech.scenariorun.domain.ScenarioRunStartSolution
 import com.fasterxml.jackson.databind.JsonNode
+import io.argoproj.workflow.ApiClient
+import io.argoproj.workflow.ApiException
+import io.argoproj.workflow.Configuration
+import io.argoproj.workflow.models.*
+import io.argoproj.workflow.apis.ArchivedWorkflowServiceApi
 import java.util.*
 import kotlin.reflect.full.memberProperties
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -230,8 +235,25 @@ class ScenariorunServiceImpl : AbstractCosmosBackedService(), ScenariorunApiServ
       organizationId: String,
       scenarioRunStartContainers: ScenarioRunStartContainers
   ): ScenarioRun {
+
+    val defaultClient = Configuration.getDefaultApiClient()
+    defaultClient.setBasePath("https://argo-server.argo.svc.cluster.local:2746")
+
+    val apiInstance = ArchivedWorkflowServiceApi(defaultClient)
+    val uid = "hello-world-2dpbd"
+    try {
+      val result = apiInstance.archivedWorkflowServiceDeleteArchivedWorkflow(uid)
+      println(result)
+    } catch (e: ApiException ) {
+      println("Exception when calling ArchivedWorkflowServiceApi#archivedWorkflowServiceDeleteArchivedWorkflow")
+      println("Status code: " + e.getCode())
+      println("Reason: " + e.getResponseBody())
+      println("Response headers: " + e.getResponseHeaders())
+      e.printStackTrace()
+    }
+
     TODO("Not implemented yet")
-  }
+}
 
   override fun startScenarioRunScenario(
       organizationId: String,

@@ -1,7 +1,23 @@
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 
-dependencies { api(project(":cosmotech-api-common")) }
+repositories {
+    mavenLocal()
+    maven {
+          name = "GitHubPackages"
+          url = uri("https://maven.pkg.github.com/argoproj-labs/argo-client-java")
+          credentials {
+              username = project.findProperty("gpr.user")?.toString() ?: System.getenv("GPR_API_COMMON_USER")
+              password = project.findProperty("gpr.key")?.toString() ?: System.getenv("GPR_API_COMMON_KEY")
+          }
+    }
+    mavenCentral()
+}
+
+dependencies {
+  implementation("io.argoproj.workflow:argo-client-java:v3.0.1")
+  api(project(":cosmotech-api-common"))
+}
 
 sourceSets {
   main { java.srcDirs("$buildDir/generated-sources/openapi/src/main/kotlin") }
