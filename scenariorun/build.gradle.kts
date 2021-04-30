@@ -2,6 +2,7 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 
 dependencies {
+  implementation("io.argoproj.workflow:argo-client-java:v3.0.1")
   api(project(":cosmotech-api-common"))
 }
 
