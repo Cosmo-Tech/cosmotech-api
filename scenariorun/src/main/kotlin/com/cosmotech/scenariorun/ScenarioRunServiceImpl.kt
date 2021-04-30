@@ -261,7 +261,7 @@ class ScenariorunServiceImpl : AbstractCosmosBackedService(), ScenariorunApiServ
                                     .args(listOf("hello world"))))))
     try {
       val result = apiInstance.workflowServiceCreateWorkflow(namespace, body)
-      var scenarioRun = ScenarioRun(id=result.metadata.name, startTime=result.status?.startedAt?.toString())
+      var scenarioRun = ScenarioRun(id=result.metadata.name, startTime=result.status?.startedAt.toString())
       return scenarioRun
     } catch (e: ApiException) {
       println("Exception when calling WorkflowServiceApi#workflowServiceCreateWorkflow")

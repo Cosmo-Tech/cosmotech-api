@@ -36,9 +36,9 @@ allprojects {
       url = uri("https://maven.pkg.github.com/argoproj-labs/argo-client-java")
       credentials {
         username =
-            project.findProperty("gpr.user")?.toString() ?: System.getenv("GPR_API_COMMON_USER")
+            project.findProperty("gpr.user")?.toString() ?: System.getenv("GITHUB_ACTOR")
         password =
-            project.findProperty("gpr.key")?.toString() ?: System.getenv("GPR_API_COMMON_KEY")
+            project.findProperty("gpr.key")?.toString() ?: System.getenv("GITHUB_TOKEN")
       }
     }
     mavenCentral()
