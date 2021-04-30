@@ -4,5 +4,5 @@ package com.cosmotech.api.events
 
 interface CsmEventPublisher {
 
-  fun publishEvent(event: CsmEvent)
+  fun <T : CsmEvent> publishEvent(event: T)
 }

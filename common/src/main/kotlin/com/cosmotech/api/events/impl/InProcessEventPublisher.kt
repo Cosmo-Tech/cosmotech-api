@@ -16,7 +16,7 @@ class InProcessEventPublisher : CsmEventPublisher {
 
   @Autowired protected lateinit var eventPublisher: ApplicationEventPublisher
 
-  override fun publishEvent(event: CsmEvent) {
+  override fun <T : CsmEvent> publishEvent(event: T) {
     this.eventPublisher.publishEvent(event)
   }
 }
