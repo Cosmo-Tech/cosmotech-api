@@ -6,6 +6,9 @@ logging:
           implementation: warn
 
 spring:
+  output:
+    ansi:
+      enabled: ALWAYS
   cloud:
     kubernetes:
       # TODO For some still obscure reason, enabling this prevents the application
