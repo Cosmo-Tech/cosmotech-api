@@ -32,4 +32,6 @@ jobs:
           ${{ runner.os }}-gradle-
 
     - name: Run tests
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: ./gradlew test -x spotlessCheck -x openApiValidate --info
