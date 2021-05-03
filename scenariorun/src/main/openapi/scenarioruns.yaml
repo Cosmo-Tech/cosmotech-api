@@ -471,9 +471,12 @@ components:
           type: string
           description: the state to search
           enum: ["FetchingDatasets","FetchingScenarioParameters","ApplyingScenarioParameters","ValidatingScenarioData","SendingScenarioDataToDataWarehouse","PreRun","Running","PostRun","Success","Failed"]
-        jobId:
+        workflowId:
           type: string
-          description: the Cosmo Tech compute cluster Job Id to search
+          description: the Cosmo Tech compute cluster Argo Workflow Id to search
+        workflowName:
+          type: string
+          description: the Cosmo Tech compute cluster Argo Workflow Name
         ownerId:
           type: string
           description: the owner Id to search
@@ -568,10 +571,12 @@ components:
           type: string
           readOnly: true
           description: the ScenarioRun
-        jobId:
+        workflowId:
           type: string
-          readOnly: true
-          description: the Platform compute cluster Job Id
+          description: the Cosmo Tech compute cluster Argo Workflow Id to search
+        workflowName:
+          type: string
+          description: the Cosmo Tech compute cluster Argo Workflow Name
         ownerId:
           type: string
           readOnly: true
@@ -836,7 +841,8 @@ components:
       description: Brewery ScenarioRun example
       value:
         id: "1"
-        jobId: "1"
+        workflowId: "1"
+        workflowName: "w1"
         ownerId: "1"
         workspaceId: "1"
         workspaceName: Brewery Analysis
@@ -953,7 +959,8 @@ components:
       description: Brewery ScenarioRun ran with Solution information example
       value:
         id: "1"
-        jobId: "1"
+        workflowId: "1"
+        workflowName: "w1"
         ownerId: "1"
         solutionId: "1"
         solutionName: Brewery Solution
@@ -1064,7 +1071,8 @@ components:
       description: Brewery ScenarioRun ran with containers information example
       value:
         id: "1"
-        jobId: "1"
+        workflowId: "1"
+        workflowName: "w1"
         ownerId: "1"
         state: Running
         startTime: 4/15/2021, 10:52:18.593 AM
@@ -1118,7 +1126,8 @@ components:
       description: Brewery ScenarioRun list example
       value:
         - id: "1"
-          jobId: "1"
+          workflowId: "1"
+          workflowName: "w1"
           ownerId: "1"
           workspaceId: "1"
           workspaceName: Brewery Analysis

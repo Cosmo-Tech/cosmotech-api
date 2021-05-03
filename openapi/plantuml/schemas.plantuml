@@ -168,7 +168,8 @@ entity ScenarioComparisonResult {
 
 entity ScenarioRun { 
     id: String
-    jobId: String
+    workflowId: String
+    workflowName: String
     ownerId: String
     workspaceId: String
     workspaceName: String
@@ -246,7 +247,8 @@ entity ScenarioRunSearch {
     workspaceId: String
     scenarioId: String
     state: String
-    jobId: String
+    workflowId: String
+    workflowName: String
     ownerId: String
 }
 

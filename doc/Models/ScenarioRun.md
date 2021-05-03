@@ -4,7 +4,8 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | [**String**](string.md) | the ScenarioRun | [optional] [default to null]
-**jobId** | [**String**](string.md) | the Platform compute cluster Job Id | [optional] [default to null]
+**workflowId** | [**String**](string.md) | the Cosmo Tech compute cluster Argo Workflow Id to search | [optional] [default to null]
+**workflowName** | [**String**](string.md) | the Cosmo Tech compute cluster Argo Workflow Name | [optional] [default to null]
 **ownerId** | [**String**](string.md) | the user id which own this scenariorun | [optional] [default to null]
 **workspaceId** | [**String**](string.md) | the Workspace Id | [optional] [default to null]
 **workspaceName** | [**String**](string.md) | the Workspace name | [optional] [default to null]

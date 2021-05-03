@@ -18,6 +18,7 @@ import com.cosmotech.scenariorun.domain.ScenarioRunStartSolution
 import com.fasterxml.jackson.databind.JsonNode
 import io.argoproj.workflow.ApiException
 import io.argoproj.workflow.Configuration
+import io.argoproj.workflow.apis.ArchivedWorkflowServiceApi
 import io.argoproj.workflow.apis.WorkflowServiceApi
 import io.argoproj.workflow.models.*
 import java.security.cert.X509Certificate
@@ -123,19 +124,33 @@ class ScenariorunServiceImpl : AbstractCosmosBackedService(), ScenariorunApiServ
       scenarioId: String,
       scenariorunId: String
   ): ScenarioRunLogs {
-    val okHttpClient = getUnsafeOkHttpClient()
-    val retrofit =
-        Retrofit.Builder()
-            .addConverterFactory(ScalarsConverterFactory.create())
-            .baseUrl("https://argo-server.argo.svc.cluster.local:2746")
-            .client(okHttpClient)
-            .build()
-    val artifactsService = retrofit.create(ArgoArtifactsService::class.java)
-    val call =
-        artifactsService.returnArtifact(
-            "phoenix", "hello-world-xl8d5", "hello-world-xl8d5", "main-logs")
-    val result = call.execute().body()
-    val logs = ScenarioRunLogs(runLogs = ScenarioRunContainerLogs(textLog = result))
+    // Get Workflow Id from scenariorunId
+    val scenario = getScenarioScenarioRun(organizationId, workspaceId, scenarioId, scenariorunId)
+    val workflowId = scenario.workflowId
+
+    // Get artifact from Archived Workflow
+    val defaultClient = Configuration.getDefaultApiClient()
+    defaultClient.setVerifyingSsl(false)
+    defaultClient.setBasePath("https://argo-server.argo.svc.cluster.local:2746")
+
+    val apiInstance = ArchivedWorkflowServiceApi(defaultClient)
+    val workflow = apiInstance.archivedWorkflowServiceGetArchivedWorkflow(workflowId)
+    val namespace = "phoenix"
+    val workflowName = workflow.metadata.name ?: ""
+    // Cumulated logs for now
+    var cumulatedLogs = ""
+    workflow.status?.nodes?.forEach { (nodeKey, nodeValue) ->
+      val nodeName = nodeValue.name ?: ""
+      nodeValue.outputs?.artifacts?.forEach {
+        if (it.s3 != null) {
+          val artifactName = it.name ?: ""
+          val artifactLogs = this.getLogArtifact(namespace, workflowName, nodeName, artifactName)
+          cumulatedLogs += artifactLogs
+        }
+      }
+    }
+
+    val logs = ScenarioRunLogs(runLogs = ScenarioRunContainerLogs(textLog = cumulatedLogs))
     return logs
   }
 
@@ -282,8 +297,14 @@ class ScenariorunServiceImpl : AbstractCosmosBackedService(), ScenariorunApiServ
                                     .args(listOf("hello world"))))))
     try {
       val result = apiInstance.workflowServiceCreateWorkflow(namespace, body)
-      var scenarioRun =
-          ScenarioRun(id = result.metadata.name, startTime = result.status?.startedAt.toString())
+      if (result.metadata.uid == null)
+          throw IllegalStateException("Argo Workflow metadata.uid is null")
+      if (result.metadata.name == null)
+          throw IllegalStateException("Argo Workflow metadata.name is null")
+      val scenarioRun =
+          dbCreateScenarioRun(
+              organizationId, "None", "None", result.metadata.uid ?: "", result.metadata.name ?: "")
+
       return scenarioRun
     } catch (e: ApiException) {
       println("Exception when calling WorkflowServiceApi#workflowServiceCreateWorkflow")
@@ -307,6 +328,54 @@ class ScenariorunServiceImpl : AbstractCosmosBackedService(), ScenariorunApiServ
       scenarioRunStartSolution: ScenarioRunStartSolution
   ): ScenarioRun {
     TODO("Not implemented yet")
+  }
+
+  fun dbCreateScenarioRun(
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String,
+      workflowId: String,
+      workflowName: String,
+  ): ScenarioRun {
+
+    // TODO Implement logic to submit Kubernetes Job
+
+    val scenarioRun =
+        ScenarioRun(
+            id = UUID.randomUUID().toString(),
+            scenarioId = scenarioId,
+            workspaceId = workspaceId,
+            workflowId = workflowId,
+            workflowName = workflowName,
+            // TODO Set other parameters here
+            )
+
+    val scenarioRunAsMap = scenarioRun.asMapWithAdditionalData(workspaceId)
+    // We cannot use cosmosTemplate as it expects the Domain object to contain a field named 'id'
+    // or annotated with @Id
+    if (cosmosCoreDatabase
+        .getContainer("${organizationId}_scenario_data")
+        .createItem(scenarioRunAsMap, PartitionKey(scenarioRun.ownerId), CosmosItemRequestOptions())
+        .item == null) {
+      throw IllegalArgumentException("No ScenarioRun returned in response: $scenarioRunAsMap")
+    }
+
+    return scenarioRun
+  }
+
+  fun getLogArtifact(namespace: String, workflow: String, node: String, artifact: String): String {
+    // Get log artifact from Argo Artifact
+    val okHttpClient = getUnsafeOkHttpClient()
+    val retrofit =
+        Retrofit.Builder()
+            .addConverterFactory(ScalarsConverterFactory.create())
+            .baseUrl("https://argo-server.argo.svc.cluster.local:2746")
+            .client(okHttpClient)
+            .build()
+    val artifactsService = retrofit.create(ArgoArtifactsService::class.java)
+    val call = artifactsService.returnArtifact(namespace, workflow, node, artifact)
+    val result = call.execute().body()
+    return result ?: ""
   }
 }
 
