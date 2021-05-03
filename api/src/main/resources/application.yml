@@ -4,6 +4,7 @@ logging:
       azure:
         cosmos:
           implementation: warn
+        spring: warn
 
 spring:
   output:
