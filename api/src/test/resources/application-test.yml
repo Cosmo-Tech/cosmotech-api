@@ -2,6 +2,10 @@ spring:
   main:
     lazy-initialization: true
 
+management:
+  endpoints:
+    enabled-by-default: false
+
 #csm:
 #  platform:
 #    # TODO ASO : use a dedicated 'test' value, with specific test implementations for services
