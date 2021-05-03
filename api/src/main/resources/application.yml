@@ -10,6 +10,8 @@ spring:
     ansi:
       enabled: ALWAYS
   cloud:
+    discovery:
+      enabled: false
     kubernetes:
       # TODO For some still obscure reason, enabling this prevents the application
       #  from starting within a Kubernetes Cluster, because Spring attempts to use
