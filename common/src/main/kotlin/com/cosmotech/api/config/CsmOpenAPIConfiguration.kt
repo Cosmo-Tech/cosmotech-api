@@ -6,6 +6,7 @@ import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.parser.OpenAPIV3Parser
 import java.io.BufferedReader
 import java.util.*
+import org.springdoc.core.customizers.OperationCustomizer
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -14,6 +15,18 @@ import org.springframework.context.annotation.Configuration
 class CsmOpenAPIConfiguration {
 
   @Value("\${api.version:?}") private lateinit var apiVersion: String
+
+  // TODO For some reason, all operation IDs exposed are suffixed with "_1" by SpringDoc.
+  // This removes such suffix dynamically, until we find a better strategy
+  @Bean
+  fun csmOpenAPIOperationCustomizer(): OperationCustomizer {
+    return OperationCustomizer { operation, _ ->
+      if (operation.operationId?.endsWith("_1") == true) {
+        operation.operationId = operation.operationId.substringBefore("_1")
+      }
+      operation
+    }
+  }
 
   @Bean
   fun csmOpenAPI(): OpenAPI {
