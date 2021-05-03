@@ -100,6 +100,7 @@ springdoc:
     path: /openapi
   pre-loading-enabled: true
   remove-broken-reference-definitions: false
+  show-actuator: false
   swagger-ui:
     # Disable the swagger-ui default petstore url
     disable-swagger-default-url: true
