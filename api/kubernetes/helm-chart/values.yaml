@@ -100,3 +100,6 @@ config:
     version: "latest"
     swagger-ui:
       base-path: /
+  csm:
+    platform:
+      vendor: azure

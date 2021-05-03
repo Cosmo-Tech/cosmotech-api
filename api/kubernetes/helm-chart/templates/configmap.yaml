@@ -21,4 +21,14 @@ data:
           # - But we still benefit from ConfigMap/Secret to Properties mapping, which is great.
           # Plus, some other useful beans (e.g., KubernetesClient) are available for us to use.
           enabled: false
+    management:
+      endpoint:
+        health:
+          group:
+            readiness:
+              {{- if eq .Values.config.csm.platform.vendor "azure" }}
+              include: "readinessState,cosmos"
+              {{- else }}
+              include: "readinessState"
+              {{- end }}
     {{- toYaml .Values.config | nindent 4 }}
