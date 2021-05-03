@@ -8,6 +8,7 @@ import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.scenariorun.api.ScenariorunApiService
 import com.cosmotech.scenariorun.domain.ScenarioRun
+import com.cosmotech.scenariorun.domain.ScenarioRunContainerLogs
 import com.cosmotech.scenariorun.domain.ScenarioRunLogs
 import com.cosmotech.scenariorun.domain.ScenarioRunLogsOptions
 import com.cosmotech.scenariorun.domain.ScenarioRunSearch
@@ -19,10 +20,17 @@ import io.argoproj.workflow.ApiException
 import io.argoproj.workflow.Configuration
 import io.argoproj.workflow.apis.WorkflowServiceApi
 import io.argoproj.workflow.models.*
+import java.security.cert.X509Certificate
 import java.util.*
+import javax.net.ssl.SSLContext
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
 import kotlin.reflect.full.memberProperties
+import okhttp3.OkHttpClient
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Service
+import retrofit2.Retrofit
+import retrofit2.converter.scalars.ScalarsConverterFactory
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
@@ -115,7 +123,20 @@ class ScenariorunServiceImpl : AbstractCosmosBackedService(), ScenariorunApiServ
       scenarioId: String,
       scenariorunId: String
   ): ScenarioRunLogs {
-    TODO("Not implemented yet")
+    val okHttpClient = getUnsafeOkHttpClient()
+    val retrofit =
+        Retrofit.Builder()
+            .addConverterFactory(ScalarsConverterFactory.create())
+            .baseUrl("https://argo-server.argo.svc.cluster.local:2746")
+            .client(okHttpClient)
+            .build()
+    val artifactsService = retrofit.create(ArgoArtifactsService::class.java)
+    val call =
+        artifactsService.returnArtifact(
+            "phoenix", "hello-world-xl8d5", "hello-world-xl8d5", "main-logs")
+    val result = call.execute().body()
+    val logs = ScenarioRunLogs(runLogs = ScenarioRunContainerLogs(textLog = result))
+    return logs
   }
 
   override fun getScenarioScenarioRuns(
@@ -287,4 +308,34 @@ class ScenariorunServiceImpl : AbstractCosmosBackedService(), ScenariorunApiServ
   ): ScenarioRun {
     TODO("Not implemented yet")
   }
+}
+
+private fun getUnsafeOkHttpClient(): OkHttpClient {
+  // Create a trust manager that does not validate certificate chains
+  val trustAllCerts =
+      arrayOf<TrustManager>(
+          object : X509TrustManager {
+            override fun checkClientTrusted(
+                chain: Array<out X509Certificate>?,
+                authType: String?
+            ) {}
+
+            override fun checkServerTrusted(
+                chain: Array<out X509Certificate>?,
+                authType: String?
+            ) {}
+
+            override fun getAcceptedIssuers() = arrayOf<X509Certificate>()
+          })
+
+  // Install the all-trusting trust manager
+  val sslContext = SSLContext.getInstance("SSL")
+  sslContext.init(null, trustAllCerts, java.security.SecureRandom())
+  // Create an ssl socket factory with our all-trusting manager
+  val sslSocketFactory = sslContext.socketFactory
+
+  return OkHttpClient.Builder()
+      .sslSocketFactory(sslSocketFactory, trustAllCerts[0] as X509TrustManager)
+      .hostnameVerifier { _, _ -> true }
+      .build()
 }
