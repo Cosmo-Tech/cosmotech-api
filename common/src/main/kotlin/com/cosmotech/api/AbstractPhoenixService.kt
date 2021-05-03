@@ -4,6 +4,7 @@ package com.cosmotech.api
 
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEventPublisher
+import com.cosmotech.api.id.CsmIdGenerator
 import com.cosmotech.api.utils.buildYamlObjectMapper
 import com.cosmotech.api.utils.readYaml
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -17,6 +18,8 @@ abstract class AbstractPhoenixService {
   protected val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
   @Autowired protected lateinit var csmPlatformProperties: CsmPlatformProperties
+
+  @Autowired protected lateinit var idGenerator: CsmIdGenerator
 
   @Autowired protected lateinit var eventPublisher: CsmEventPublisher
 

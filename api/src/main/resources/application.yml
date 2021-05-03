@@ -46,6 +46,8 @@ csm:
       # Might conflict with the SpringBoot context path, hence leaving it at the root
       base-path: /
       version: latest
+    id-generator:
+      type: hashid
     event-publisher:
       type: in_process
     vendor: azure

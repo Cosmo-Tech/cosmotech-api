@@ -31,7 +31,7 @@ class DatasetServiceImpl : AbstractCosmosBackedService(), DatasetApiService {
 
   override fun createDataset(organizationId: String, dataset: Dataset) =
       cosmosTemplate.insert(
-          "${organizationId}_datasets", dataset.copy(id = UUID.randomUUID().toString()))
+          "${organizationId}_datasets", dataset.copy(id = idGenerator.generate("dataset")))
           ?: throw IllegalArgumentException("No Dataset returned in response: $dataset")
 
   override fun deleteDataset(organizationId: String, datasetId: String): Dataset {

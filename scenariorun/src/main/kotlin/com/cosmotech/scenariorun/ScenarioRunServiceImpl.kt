@@ -214,7 +214,7 @@ class ScenariorunServiceImpl : AbstractCosmosBackedService(), ScenariorunApiServ
 
     val scenarioRun =
         ScenarioRun(
-            id = UUID.randomUUID().toString(),
+            id = idGenerator.generate("scenariorun", prependPrefix = "SR-"),
             scenarioId = scenarioId,
             workspaceId = workspaceId,
             // TODO Set other parameters here
@@ -342,7 +342,7 @@ class ScenariorunServiceImpl : AbstractCosmosBackedService(), ScenariorunApiServ
 
     val scenarioRun =
         ScenarioRun(
-            id = UUID.randomUUID().toString(),
+            id = idGenerator.generate("scenariorun", prependPrefix = "SR-"),
             scenarioId = scenarioId,
             workspaceId = workspaceId,
             workflowId = workflowId,

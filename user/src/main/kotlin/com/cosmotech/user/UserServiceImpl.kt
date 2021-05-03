@@ -59,7 +59,7 @@ class UserServiceImpl : AbstractCosmosBackedService(), UserApiService {
 
   override fun registerUser(user: User): User {
     val userRegistered =
-        cosmosTemplate.insert(coreUserContainer, user.copy(id = UUID.randomUUID().toString()))
+        cosmosTemplate.insert(coreUserContainer, user.copy(id = idGenerator.generate("user")))
     val userId =
         userRegistered.id
             ?: throw IllegalStateException(

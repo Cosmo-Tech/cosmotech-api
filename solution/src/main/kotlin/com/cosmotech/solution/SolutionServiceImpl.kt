@@ -31,7 +31,8 @@ class SolutionServiceImpl : AbstractCosmosBackedService(), SolutionApiService {
 
   override fun createSolution(organizationId: String, solution: Solution) =
       cosmosTemplate.insert(
-          "${organizationId}_solutions", solution.copy(id = UUID.randomUUID().toString()))
+          "${organizationId}_solutions",
+          solution.copy(id = idGenerator.generate("solution", prependPrefix = "SOL-")))
           ?: throw IllegalArgumentException("No solution returned in response: $solution")
 
   override fun deleteSolution(organizationId: String, solutionId: String): Solution {

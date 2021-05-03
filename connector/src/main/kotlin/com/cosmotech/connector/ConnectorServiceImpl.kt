@@ -35,7 +35,7 @@ class ConnectorServiceImpl : AbstractCosmosBackedService(), ConnectorApiService 
 
   override fun registerConnector(connector: Connector): Connector =
       cosmosTemplate.insert(
-          coreConnectorContainer, connector.copy(id = UUID.randomUUID().toString()))
+          coreConnectorContainer, connector.copy(id = idGenerator.generate("connector")))
           ?: throw IllegalArgumentException("No connector returned in response: $connector")
 
   override fun uploadConnector(body: org.springframework.core.io.Resource) =

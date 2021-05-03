@@ -27,6 +27,9 @@ data class CsmPlatformProperties(
     /** Platform vendor */
     val vendor: Vendor,
 
+    /** Id Generator */
+    val idGenerator: IdGenerator,
+
     /** Event Publisher */
     val eventPublisher: EventPublisher,
 
@@ -45,10 +48,20 @@ data class CsmPlatformProperties(
       val basePath: String
   )
 
+  data class IdGenerator(val type: Type) {
+    enum class Type {
+      /** short unique UIDs */
+      HASHID,
+
+      /** UUIDs */
+      UUID
+    }
+  }
+
   data class EventPublisher(val type: Type) {
     enum class Type {
       /** In-process, via Spring Application Events */
-      in_process
+      IN_PROCESS
     }
   }
 
@@ -149,6 +162,6 @@ data class CsmPlatformProperties(
 
   enum class Vendor {
     /** Microsoft Azure : https://azure.microsoft.com/en-us/ */
-    azure
+    AZURE
   }
 }

@@ -31,7 +31,7 @@ class WorkspaceServiceImpl : AbstractCosmosBackedService(), WorkspaceApiService 
 
   override fun createWorkspace(organizationId: String, workspace: Workspace): Workspace =
       cosmosTemplate.insert(
-          "${organizationId}_workspaces", workspace.copy(id = UUID.randomUUID().toString()))
+          "${organizationId}_workspaces", workspace.copy(id = idGenerator.generate("workspace")))
           ?: throw IllegalArgumentException("No Workspace returned in response: $workspace")
 
   override fun updateWorkspace(

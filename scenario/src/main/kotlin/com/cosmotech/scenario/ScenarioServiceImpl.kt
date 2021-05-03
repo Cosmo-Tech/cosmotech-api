@@ -43,7 +43,7 @@ class ScenarioServiceImpl : AbstractCosmosBackedService(), ScenarioApiService {
       workspaceId: String,
       scenario: Scenario
   ): Scenario {
-    val scenarioToSave = scenario.copy(id = UUID.randomUUID().toString())
+    val scenarioToSave = scenario.copy(id = idGenerator.generate("scenario"))
     val scenarioAsMap = scenarioToSave.asMapWithAdditionalData(workspaceId)
     // We cannot use cosmosTemplate as it expects the Domain object to contain a field named 'id'
     // or annotated with @Id

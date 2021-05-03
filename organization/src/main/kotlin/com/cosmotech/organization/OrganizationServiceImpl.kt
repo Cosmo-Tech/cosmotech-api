@@ -47,7 +47,7 @@ class OrganizationServiceImpl : AbstractCosmosBackedService(), OrganizationApiSe
 
     val organizationRegistered =
         cosmosTemplate.insert(
-            coreOrganizationContainer, organization.copy(id = UUID.randomUUID().toString()))
+            coreOrganizationContainer, organization.copy(id = idGenerator.generate("organization")))
 
     val organizationId =
         organizationRegistered.id
