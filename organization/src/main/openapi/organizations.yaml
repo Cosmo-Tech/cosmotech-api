@@ -195,6 +195,37 @@ paths:
                   $ref: '#/components/examples/TwoOrganizationUsers'
         "404":
           description: the Organization specified is unknown or you don't have access to it
+    post:
+      operationId: addUsersToOrganization
+      tags:
+        - organization
+      summary: Add users to the Organization specified
+      requestBody:
+        description: the Users to add. Any User with the same ID is overwritten
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/OrganizationUser'
+            examples:
+              TwoOrganizationToAddOrReplace:
+                $ref: '#/components/examples/TwoOrganizationToAddOrReplace'
+      responses:
+        "200":
+          description: the Organization Users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrganizationUser'
+              examples:
+                TwoOrganizationUsers:
+                  $ref: '#/components/examples/TwoOrganizationUsers'
+        "404":
+          description: the Organization specified is unknown or you don't have access to it
 
 components:
   securitySchemes:
@@ -435,5 +466,15 @@ components:
             - Admin
         - id: "2"
           name: Alice
+          roles:
+            - User
+    TwoOrganizationToAddOrReplace:
+      summary: Two users of an Organization
+      description: Two Users of an Organization example
+      value:
+        - id: "1"
+          roles:
+            - Admin
+        - id: "2"
           roles:
             - User

@@ -35,6 +35,13 @@ class OrganizationServiceImpl : AbstractCosmosBackedService(), OrganizationApiSe
         CosmosContainerProperties(coreOrganizationContainer, "/id"))
   }
 
+  override fun addUsersToOrganization(
+      organizationId: String,
+      organizationUser: List<OrganizationUser>
+  ): List<OrganizationUser> {
+    TODO("Not yet implemented")
+  }
+
   override fun findAllOrganizations() =
       cosmosTemplate.findAll<Organization>(coreOrganizationContainer)
 
