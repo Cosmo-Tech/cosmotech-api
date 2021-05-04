@@ -9,6 +9,9 @@ import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.utils.findAll
 import com.cosmotech.api.utils.findByIdOrThrow
 import com.cosmotech.solution.api.SolutionApiService
+import com.cosmotech.solution.domain.RunTemplate
+import com.cosmotech.solution.domain.RunTemplateParameter
+import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.Solution
 import java.util.*
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -28,6 +31,42 @@ class SolutionServiceImpl : AbstractCosmosBackedService(), SolutionApiService {
           "${organizationId}_solutions",
           solutionId,
           "Solution $solutionId not found in organization $organizationId")
+
+  override fun removeAllRunTemplates(organizationId: String, solutionId: String) {
+    TODO("Not yet implemented")
+  }
+
+  override fun removeAllSolutionParameterGroups(organizationId: String, solutionId: String) {
+    TODO("Not yet implemented")
+  }
+
+  override fun removeAllSolutionParameters(organizationId: String, solutionId: String) {
+    TODO("Not yet implemented")
+  }
+
+  override fun addOrReplaceParameters(
+      organizationId: String,
+      solutionId: String,
+      runTemplateParameter: List<RunTemplateParameter>
+  ): List<RunTemplateParameter> {
+    TODO("Not yet implemented")
+  }
+
+  override fun addOrReplaceRunTemplates(
+      organizationId: String,
+      solutionId: String,
+      runTemplate: List<RunTemplate>
+  ): List<RunTemplate> {
+    TODO("Not yet implemented")
+  }
+
+  override fun addParameterGroups(
+      organizationId: String,
+      solutionId: String,
+      runTemplateParameterGroup: List<RunTemplateParameterGroup>
+  ): List<RunTemplateParameterGroup> {
+    TODO("Not yet implemented")
+  }
 
   override fun createSolution(organizationId: String, solution: Solution) =
       cosmosTemplate.insert(

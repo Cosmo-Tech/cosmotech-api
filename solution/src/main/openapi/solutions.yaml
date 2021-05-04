@@ -156,6 +156,157 @@ paths:
           description: Bad request
         "404":
           description: the Solution specified is unknown or you don't have access to it
+
+  /organizations/{organization_id}/solutions/{solution_id}/parameters:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: solution_id
+        in: path
+        description: the Solution identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: addOrReplaceParameters
+      tags:
+        - solution
+      summary: Add Parameters. Any item with the same ID will be overwritten
+      requestBody:
+        description: the Parameters
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/RunTemplateParameter"
+      responses:
+        "201":
+          description: the Parameters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RunTemplateParameter'
+        "404":
+          description: the Solution specified is unknown or you don't have access to it
+    delete:
+      operationId: removeAllSolutionParameters
+      tags:
+        - solution
+      summary: Remove all Parameters from the Solution specified
+      responses:
+        "204":
+          description: the operation succeeded
+        "404":
+          description: the Solution specified is unknown or you don't have access to it
+
+  /organizations/{organization_id}/solutions/{solution_id}/parameterGroups:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: solution_id
+        in: path
+        description: the Solution identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: addParameterGroups
+      tags:
+        - solution
+      summary: Add Parameter Groups. Any item with the same ID will be overwritten
+      requestBody:
+        description: the Parameter Groups
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/RunTemplateParameterGroup"
+      responses:
+        "201":
+          description: the Parameter Groups
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RunTemplateParameterGroup'
+        "404":
+          description: the Solution specified is unknown or you don't have access to it
+    delete:
+      operationId: removeAllSolutionParameterGroups
+      tags:
+        - solution
+      summary: Remove all Parameter Groups from the Solution specified
+      responses:
+        "204":
+          description: the operation succeeded
+        "404":
+          description: the Solution specified is unknown or you don't have access to it
+
+  /organizations/{organization_id}/solutions/{solution_id}/runTemplates:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: solution_id
+        in: path
+        description: the Solution identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: addOrReplaceRunTemplates
+      tags:
+        - solution
+      summary: Add Run Templates. Any item with the same ID will be overwritten
+      requestBody:
+        description: the Run Templates
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/RunTemplate"
+      responses:
+        "201":
+          description: the Parameters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RunTemplate'
+        "404":
+          description: the Solution specified is unknown or you don't have access to it
+    delete:
+      operationId: removeAllRunTemplates
+      tags:
+        - solution
+      summary: Remove all Run Templates from the Solution specified
+      responses:
+        "204":
+          description: the operation succeeded
+        "404":
+          description: the Solution specified is unknown or you don't have access to it
+
   /organizations/{organization_id}/solutions/{solution_id}/runtemplates/{run_template_id}/handler/{handler_id}:
     parameters:
       - name: organization_id
