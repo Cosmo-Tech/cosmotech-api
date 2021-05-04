@@ -1,6 +1,6 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.scenariorun
+package com.cosmotech.api.retrofit
 
 import retrofit2.Call
 import retrofit2.http.GET

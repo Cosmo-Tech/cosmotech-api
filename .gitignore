@@ -39,6 +39,7 @@ out/
 ### VIM ###
 *~
 *.swp
+*.swo
 
 # generated plantuml
 openapi/plantuml/.openapi-generator/
@@ -48,6 +49,7 @@ openapi/openapi.yaml
 perso
 config/application-dev.properties
 config/application-dev.yml
+api/kubernetes/helm-chart/values-vcr.yaml
 
 ### Personal directory ###
 **/logs/access_log.log
