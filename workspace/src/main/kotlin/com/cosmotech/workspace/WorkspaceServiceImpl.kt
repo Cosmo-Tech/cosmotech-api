@@ -11,6 +11,7 @@ import com.cosmotech.api.utils.findByIdOrThrow
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceFile
+import com.cosmotech.workspace.domain.WorkspaceUser
 import java.util.*
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
@@ -28,6 +29,18 @@ class WorkspaceServiceImpl : AbstractCosmosBackedService(), WorkspaceApiService 
           "${organizationId}_workspaces",
           workspaceId,
           "Workspace $workspaceId not found in organization $organizationId")
+
+  override fun removeAllUsersOfWorkspace(organizationId: String, workspaceId: String) {
+    TODO("Not yet implemented")
+  }
+
+  override fun addUsersToOrganizationWorkspace(
+      organizationId: String,
+      workspaceId: String,
+      workspaceUser: List<WorkspaceUser>
+  ): List<WorkspaceUser> {
+    TODO("Not yet implemented")
+  }
 
   override fun createWorkspace(organizationId: String, workspace: Workspace): Workspace =
       cosmosTemplate.insert(

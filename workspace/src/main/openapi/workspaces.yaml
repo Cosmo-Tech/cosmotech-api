@@ -238,6 +238,63 @@ paths:
           description: Bad request
         "404":
           description: the Workspace specified is unknown or you don't have access to it
+
+  /organizations/{organization_id}/workspaces/{workspace_id}/users:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: addUsersToOrganizationWorkspace
+      tags:
+        - workspace
+      summary: Add (or replace) users to the Workspace specified
+      requestBody:
+        description: the Users to add. Any User with the same ID is overwritten
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/WorkspaceUser'
+            examples:
+              TwoOrganizationToAddOrReplace:
+                $ref: '#/components/examples/TwoOrganizationToAddOrReplace'
+      responses:
+        "200":
+          description: the Workspace Users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkspaceUser'
+              examples:
+                TwoWorkspaceUsers:
+                  $ref: '#/components/examples/TwoWorkspaceUsers'
+        "404":
+          description: the Workspace specified is unknown or you don't have access to it
+    delete:
+      operationId: removeAllUsersOfWorkspace
+      tags:
+        - workspace
+      summary: Remove all users from the Workspace specified
+      responses:
+        "204":
+          description: the operation succeeded
+        "404":
+          description: the Workspace specified is unknown or you don't have access to it
+
 components:
   securitySchemes:
     oAuth2AuthCode:
@@ -624,3 +681,25 @@ components:
         - fileName: myData.csv
         - fileName: myData2.csv
         - fileName: myData3.csv
+    TwoWorkspaceUsers:
+      summary: Two users of a Workspace
+      description: Two Users of a Workspace example
+      value:
+        - id: "1"
+          name: Bob
+          roles:
+            - Admin
+        - id: "2"
+          name: Alice
+          roles:
+            - User
+    TwoWorkspaceToAddOrReplace:
+      summary: Two users of a Workspace
+      description: Two Users of a Workspace example
+      value:
+        - id: "1"
+          roles:
+            - Admin
+        - id: "2"
+          roles:
+            - User
