@@ -12,6 +12,7 @@ import com.cosmotech.api.utils.findAll
 import com.cosmotech.api.utils.findByIdOrThrow
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
+import com.cosmotech.organization.domain.OrganizationService
 import com.cosmotech.organization.domain.OrganizationUser
 import java.lang.IllegalStateException
 import java.util.*
@@ -106,6 +107,27 @@ class OrganizationServiceImpl : AbstractCosmosBackedService(), OrganizationApiSe
     } else {
       existingOrganization
     }
+  }
+
+  override fun updateSolutionsContainerRegistryByOrganizationId(
+      organizationId: String,
+      organizationService: OrganizationService
+  ): OrganizationService {
+    TODO("Not yet implemented")
+  }
+
+  override fun updateStorageByOrganizationId(
+      organizationId: String,
+      organizationService: OrganizationService
+  ): OrganizationService {
+    TODO("Not yet implemented")
+  }
+
+  override fun updateTenantCredentialsByOrganizationId(
+      organizationId: String,
+      requestBody: Map<String, Any>
+  ): Map<String, Any> {
+    TODO("Not yet implemented")
   }
 
   @EventListener(UserUnregistered::class)

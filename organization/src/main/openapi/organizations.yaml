@@ -218,6 +218,133 @@ paths:
         "404":
           description: the Organization specified is unknown or you don't have access to it
 
+  /organizations/{organization_id}/services/tenantCredentials:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    put:
+      operationId: updateTenantCredentialsByOrganizationId
+      tags:
+        - organization
+      summary: Update tenant credentials for the Organization specified
+      requestBody:
+        description: the new Tenant Credentials to use
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: a freeform credentials object for the Organization tenant. Structure depends on cloud provider
+              additionalProperties: true
+            examples:
+              OrganizationTenantCredentials:
+                value:
+                  azureTenantId: "<my_azure_tenant_id>"
+                  azureClientId: "<my_azure_client_id>"
+                  azureClientSecret: "<my_azure_client_secret>"
+      responses:
+        "200":
+          description: the Organization Tenant Credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                description: a freeform credentials object for the Organization tenant. Structure depends on cloud provider
+                additionalProperties: true
+              examples:
+                OrganizationTenantCredentials:
+                  value:
+                    azureTenantId: "<my_azure_tenant_id>"
+                    azureClientId: "<my_azure_client_id>"
+                    azureClientSecret: "<my_azure_client_secret>"
+        "404":
+          description: the Organization specified is unknown or you don't have access to it
+
+
+  /organizations/{organization_id}/services/storage:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    patch:
+      operationId: updateStorageByOrganizationId
+      tags:
+        - organization
+      summary: Update storage configuration for the Organization specified
+      requestBody:
+        description: the new Storage configuration to use
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizationService'
+            examples:
+              OrganizationTenantCredentials:
+                value:
+                  baseUri: https://csmphoenixcontainer.blob.core.windows.net
+      responses:
+        "200":
+          description: the Organization Storage configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationService'
+              examples:
+                OrganizationTenantCredentials:
+                  value:
+                    platformService: storage
+                    cloudService: AzureStorage
+                    baseUri: https://csmphoenixcontainer.blob.core.windows.net
+                    resourceUri: organization-2/files
+        "404":
+          description: the Organization specified is unknown or you don't have access to it
+
+  /organizations/{organization_id}/services/solutionsContainerRegistry:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    patch:
+      operationId: updateSolutionsContainerRegistryByOrganizationId
+      tags:
+        - organization
+      summary: Update the solutions container registry configuration for the Organization specified
+      requestBody:
+        description: the new solutions container registry configuration to use
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizationService'
+            examples:
+              OrganizationSolutionContainerRegistry:
+                value:
+                  baseUri: mysolutiontwinengines.azurecr.io
+      responses:
+        "200":
+          description: the Organization solutions container registry configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationService'
+              examples:
+                OrganizationSolutionContainerRegistry:
+                  value:
+                    cloudService: AzureStorage
+                    baseUri: mysolutiontwinengines.azurecr.io
+        "404":
+          description: the Organization specified is unknown or you don't have access to it
+
 components:
   securitySchemes:
     oAuth2AuthCode:
