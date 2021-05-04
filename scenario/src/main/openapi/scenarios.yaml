@@ -237,6 +237,130 @@ paths:
         "404":
           description: the Scenario specified is unknown or you don't have access to it
 
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/users:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: scenario_id
+        in: path
+        description: the Scenario identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: addUsersToScenario
+      tags:
+        - scenario
+      summary: Add (or replace) users to the Scenario specified
+      requestBody:
+        description: the Users to add. Any User with the same ID is overwritten
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/ScenarioUser'
+            examples:
+              TwoOrganizationToAddOrReplace:
+                $ref: '#/components/examples/TwoScenarioToAddOrReplace'
+      responses:
+        "200":
+          description: the Scenario Users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScenarioUser'
+              examples:
+                TwoWorkspaceUsers:
+                  $ref: '#/components/examples/TwoScenarioUsers'
+        "404":
+          description: the Scenario specified is unknown or you don't have access to it
+    delete:
+      operationId: removeAllUsersOfScenario
+      tags:
+        - scenario
+      summary: Remove all users from the Scenario specified
+      responses:
+        "204":
+          description: the operation succeeded
+        "404":
+          description: the Scenario specified is unknown or you don't have access to it
+
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/parameterValues:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: scenario_id
+        in: path
+        description: the Scenario identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: addOrReplaceScenarioParameterValues
+      tags:
+        - scenario
+      summary: Add (or replace) Parameter Values for the Scenario specified
+      requestBody:
+        description: the Parameter Value to add. Any Parameter Value with the same ID is overwritten
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/ScenarioRunTemplateParameterValue'
+            examples:
+              TwoScenarioRunTemplateParameterValueToAddOrReplace:
+                $ref: '#/components/examples/TwoScenarioRunTemplateParameterValueToAddOrReplace'
+      responses:
+        "200":
+          description: the Parameter values
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScenarioRunTemplateParameterValue'
+              examples:
+                TwoWorkspaceUsers:
+                  $ref: '#/components/examples/TwoScenarioRunTemplateParameterValueUsers'
+        "404":
+          description: the Scenario specified is unknown or you don't have access to it
+    delete:
+      operationId: removeAllParameterValuesOfScenario
+      tags:
+        - scenario
+      summary: Remove all Parameter Values from the Scenario specified
+      responses:
+        "204":
+          description: the operation succeeded
+        "404":
+          description: the Scenario specified is unknown or you don't have access to it
+
 components:
   securitySchemes:
     oAuth2AuthCode:

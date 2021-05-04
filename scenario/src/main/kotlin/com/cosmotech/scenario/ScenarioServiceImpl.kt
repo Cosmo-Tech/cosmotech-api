@@ -11,6 +11,8 @@ import com.cosmotech.api.utils.toDomain
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioComparisonResult
+import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
+import com.cosmotech.scenario.domain.ScenarioUser
 import com.fasterxml.jackson.databind.JsonNode
 import java.util.*
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -27,6 +29,24 @@ class ScenarioServiceImpl : AbstractCosmosBackedService(), ScenarioApiService {
     scenarioAsMap["type"] = "Scenario"
     scenarioAsMap["workspaceId"] = workspaceId
     return scenarioAsMap
+  }
+
+  override fun addOrReplaceScenarioParameterValues(
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String,
+      scenarioRunTemplateParameterValue: List<ScenarioRunTemplateParameterValue>
+  ): List<ScenarioRunTemplateParameterValue> {
+    TODO("Not yet implemented")
+  }
+
+  override fun addUsersToScenario(
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String,
+      scenarioUser: List<ScenarioUser>
+  ): List<ScenarioUser> {
+    TODO("Not yet implemented")
   }
 
   override fun compareScenarios(
@@ -107,6 +127,22 @@ class ScenarioServiceImpl : AbstractCosmosBackedService(), ScenarioApiService {
               "Scenario #$scenarioId not found in workspace #$workspaceId in organization #$organizationId")
 
   override fun getScenariosTree(organizationId: String, workspaceId: String): List<Scenario> {
+    TODO("Not yet implemented")
+  }
+
+  override fun removeAllParameterValuesOfScenario(
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String
+  ) {
+    TODO("Not yet implemented")
+  }
+
+  override fun removeAllUsersOfScenario(
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String
+  ) {
     TODO("Not yet implemented")
   }
 
