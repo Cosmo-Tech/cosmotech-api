@@ -167,6 +167,35 @@ paths:
           description: Bad request
         "404":
           description: the Organization specified is unknown or you don't have access to it
+
+  /organizations/{organization_id}/users:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: findUsersByOrganizationId
+      tags:
+        - organization
+      summary: Get all users member of the Organization specified
+      responses:
+        "200":
+          description: the Organization Users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrganizationUser'
+              examples:
+                TwoOrganizationUsers:
+                  $ref: '#/components/examples/TwoOrganizationUsers'
+        "404":
+          description: the Organization specified is unknown or you don't have access to it
+
 components:
   securitySchemes:
     oAuth2AuthCode:
@@ -396,3 +425,15 @@ components:
             solutionsContainerRegistry:
               cloudService: AzureContainerRegistries
               baseUri: twinengines-2.azurecr.io
+    TwoOrganizationUsers:
+      summary: Two users of an Organization
+      description: Two Users of an Organization example
+      value:
+        - id: "1"
+          name: Bob
+          roles:
+            - Admin
+        - id: "2"
+          name: Alice
+          roles:
+            - User

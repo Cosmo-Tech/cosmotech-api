@@ -12,6 +12,7 @@ import com.cosmotech.api.utils.findAll
 import com.cosmotech.api.utils.findByIdOrThrow
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
+import com.cosmotech.organization.domain.OrganizationUser
 import java.lang.IllegalStateException
 import java.util.*
 import javax.annotation.PostConstruct
@@ -39,6 +40,10 @@ class OrganizationServiceImpl : AbstractCosmosBackedService(), OrganizationApiSe
 
   override fun findOrganizationById(organizationId: String): Organization =
       cosmosTemplate.findByIdOrThrow(coreOrganizationContainer, organizationId)
+
+  override fun findUsersByOrganizationId(organizationId: String): List<OrganizationUser> {
+    TODO("Not yet implemented")
+  }
 
   override fun registerOrganization(organization: Organization): Organization {
     logger.trace("Registering organization : $organization")
