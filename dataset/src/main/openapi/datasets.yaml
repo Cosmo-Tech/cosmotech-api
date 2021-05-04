@@ -185,6 +185,60 @@ paths:
           description: Bad request
         "404":
           description: the Dataset specified is unknown or you don't have access to it
+
+  /organizations/{organization_id}/datasets/{dataset_id}/compatibility:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: dataset_id
+        in: path
+        description: the Dataset identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: addDatasetCompabilityElements
+      tags:
+        - dataset
+      summary: Add Dataset Compatibility elements. Any item with the same solutionKey will be overwritten
+      requestBody:
+        description: the Dataset Compatibility elements
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/DatasetCompatibility"
+      responses:
+        "201":
+          description: the Dataset compatibility elements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DatasetCompatibility'
+              examples:
+                TwoDatasetCompatibility:
+                  $ref: '#/components/examples/TwoDatasetCompatibility'
+        "404":
+          description: the Dataset specified is unknown or you don't have access to it
+    delete:
+      operationId: removeAllDatasetCompatibility
+      tags:
+        - dataset
+      summary: Remove all Dataset Compatibilities from the Scenario specified
+      responses:
+        "204":
+          description: the operation succeeded
+        "404":
+          description: the Dataset specified is unknown or you don't have access to it
+
   /organizations/{organization_id}/datasets/validators:
     parameters:
       - name: organization_id

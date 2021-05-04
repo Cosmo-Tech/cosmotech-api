@@ -10,6 +10,7 @@ import com.cosmotech.api.utils.findAll
 import com.cosmotech.api.utils.findByIdOrThrow
 import com.cosmotech.dataset.api.DatasetApiService
 import com.cosmotech.dataset.domain.Dataset
+import com.cosmotech.dataset.domain.DatasetCompatibility
 import com.cosmotech.dataset.domain.DatasetCopyParameters
 import java.util.*
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -29,6 +30,10 @@ class DatasetServiceImpl : AbstractCosmosBackedService(), DatasetApiService {
           datasetId,
           "Dataset $datasetId not found in organization $organizationId")
 
+  override fun removeAllDatasetCompatibility(organizationId: String, datasetId: String) {
+    TODO("Not yet implemented")
+  }
+
   override fun createDataset(organizationId: String, dataset: Dataset) =
       cosmosTemplate.insert(
           "${organizationId}_datasets", dataset.copy(id = idGenerator.generate("dataset")))
@@ -41,6 +46,14 @@ class DatasetServiceImpl : AbstractCosmosBackedService(), DatasetApiService {
   }
 
   override fun updateDataset(organizationId: String, datasetId: String, dataset: Dataset): Dataset {
+    TODO("Not yet implemented")
+  }
+
+  override fun addDatasetCompabilityElements(
+      organizationId: String,
+      datasetId: String,
+      datasetCompatibility: List<DatasetCompatibility>
+  ): List<DatasetCompatibility> {
     TODO("Not yet implemented")
   }
 
