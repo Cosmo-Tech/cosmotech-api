@@ -176,30 +176,11 @@ paths:
         required: true
         schema:
           type: string
-    get:
-      operationId: findUsersByOrganizationId
-      tags:
-        - organization
-      summary: Get all users member of the Organization specified
-      responses:
-        "200":
-          description: the Organization Users
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/OrganizationUser'
-              examples:
-                TwoOrganizationUsers:
-                  $ref: '#/components/examples/TwoOrganizationUsers'
-        "404":
-          description: the Organization specified is unknown or you don't have access to it
     post:
       operationId: addUsersToOrganization
       tags:
         - organization
-      summary: Add users to the Organization specified
+      summary: Add (or replace) users to the Organization specified
       requestBody:
         description: the Users to add. Any User with the same ID is overwritten
         required: true
@@ -224,6 +205,16 @@ paths:
               examples:
                 TwoOrganizationUsers:
                   $ref: '#/components/examples/TwoOrganizationUsers'
+        "404":
+          description: the Organization specified is unknown or you don't have access to it
+    delete:
+      operationId: removeAllUsersOfOrganization
+      tags:
+        - organization
+      summary: Remove all users from the Organization specified
+      responses:
+        "204":
+          description: the operation succeeded
         "404":
           description: the Organization specified is unknown or you don't have access to it
 

@@ -48,10 +48,6 @@ class OrganizationServiceImpl : AbstractCosmosBackedService(), OrganizationApiSe
   override fun findOrganizationById(organizationId: String): Organization =
       cosmosTemplate.findByIdOrThrow(coreOrganizationContainer, organizationId)
 
-  override fun findUsersByOrganizationId(organizationId: String): List<OrganizationUser> {
-    TODO("Not yet implemented")
-  }
-
   override fun registerOrganization(organization: Organization): Organization {
     logger.trace("Registering organization : $organization")
 
@@ -71,6 +67,10 @@ class OrganizationServiceImpl : AbstractCosmosBackedService(), OrganizationApiSe
     // TODO Handle rollbacks in case of errors
 
     return organizationRegistered
+  }
+
+  override fun removeAllUsersOfOrganization(organizationId: String) {
+    TODO("Not yet implemented")
   }
 
   override fun unregisterOrganization(organizationId: String): Organization {
