@@ -68,11 +68,9 @@ class UserServiceImpl : AbstractCosmosBackedService(), UserApiService {
     return userRegistered
   }
 
-  override fun unregisterUser(userId: String): User {
-    val user = findUserById(userId)
-    cosmosTemplate.deleteEntity(coreUserContainer, user)
+  override fun unregisterUser(userId: String) {
+    cosmosTemplate.deleteEntity(coreUserContainer, findUserById(userId))
     this.eventPublisher.publishEvent(UserUnregistered(this, userId))
-    return user
   }
 
   override fun updateUser(userId: String, user: User): User {

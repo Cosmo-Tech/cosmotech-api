@@ -40,7 +40,7 @@ class ScenarioServiceImpl : AbstractCosmosBackedService(), ScenarioApiService {
     TODO("Not yet implemented")
   }
 
-  override fun addUsersToScenario(
+  override fun addOrReplaceUsersInScenario(
       organizationId: String,
       workspaceId: String,
       scenarioId: String,
@@ -76,14 +76,10 @@ class ScenarioServiceImpl : AbstractCosmosBackedService(), ScenarioApiService {
     return scenarioToSave
   }
 
-  override fun deleteScenario(
-      organizationId: String,
-      workspaceId: String,
-      scenarioId: String
-  ): Scenario {
-    val scenario = this.findScenarioById(organizationId, workspaceId, scenarioId)
-    cosmosTemplate.deleteEntity("${organizationId}_scenario_data", scenario)
-    return scenario
+  override fun deleteScenario(organizationId: String, workspaceId: String, scenarioId: String) {
+    cosmosTemplate.deleteEntity(
+        "${organizationId}_scenario_data",
+        this.findScenarioById(organizationId, workspaceId, scenarioId))
   }
 
   override fun findAllScenarios(organizationId: String, workspaceId: String): List<Scenario> =
@@ -130,7 +126,7 @@ class ScenarioServiceImpl : AbstractCosmosBackedService(), ScenarioApiService {
     TODO("Not yet implemented")
   }
 
-  override fun removeAllParameterValuesOfScenario(
+  override fun removeAllScenarioParameterValues(
       organizationId: String,
       workspaceId: String,
       scenarioId: String

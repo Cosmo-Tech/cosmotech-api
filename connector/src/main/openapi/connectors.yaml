@@ -59,7 +59,7 @@ paths:
       summary: List all Connectors
       responses:
         "200":
-          description: the connector details
+          description: the list of Connectors
           content:
             application/json:
               schema:
@@ -82,7 +82,7 @@ paths:
       operationId: findConnectorById
       tags:
         - connector
-      summary: Get the details of an connector
+      summary: Get the details of a connector
       responses:
         "200":
           description: the Connector details
@@ -99,19 +99,10 @@ paths:
       operationId: unregisterConnector
       tags:
         - connector
-      summary: Unregister an connector
+      summary: Unregister a connector
       responses:
-        "200":
-          description: the connector details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Connector'
-              examples:
-                ADTConnector:
-                  $ref: '#/components/examples/ADTConnector'
-        "400":
-          description: Bad request
+        "204":
+          description: Request successful
         "404":
           description: the Connector specified is unknown or you don't have access to it
 components:

@@ -200,15 +200,8 @@ paths:
         - scenariorun
       summary: Delete a scenariorun
       responses:
-        "200":
-          description: the scenariorun details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ScenarioRun'
-              examples:
-                ScenarioRun:
-                  $ref: '#/components/examples/BreweryScenarioRun'
+        "204":
+          description: Request succeeded
         "400":
           description: Bad request
         "404":

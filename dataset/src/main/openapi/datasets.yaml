@@ -29,7 +29,7 @@ paths:
       operationId: createDataset
       tags:
         - dataset
-      summary: Create a new dataset
+      summary: Create a new Dataset
       requestBody:
         description: the Dataset to create
         required: true
@@ -59,7 +59,7 @@ paths:
       summary: List all Datasets
       responses:
         "200":
-          description: the dataset details
+          description: the list of Datasets
           content:
             application/json:
               schema:
@@ -93,7 +93,7 @@ paths:
               BreweryDatasetCopyParameters:
                 $ref: '#/components/examples/BreweryDatasetCopyParameters'
       responses:
-        "200":
+        "201":
           description: the Dataset copy operation parameters
           content:
             application/json:
@@ -105,7 +105,7 @@ paths:
         "400":
           description: Bad request
         "404":
-          description: the Dataset specified is unknown or you don't have access to it
+          description: the Dataset specified as Source or Target is unknown or you don't have access to it
   /organizations/{organization_id}/datasets/{dataset_id}:
     parameters:
       - name: organization_id
@@ -124,7 +124,7 @@ paths:
       operationId: findDatasetById
       tags:
         - dataset
-      summary: Get the details of a dataset
+      summary: Get the details of a Dataset
       responses:
         "200":
           description: the Dataset details
@@ -172,17 +172,8 @@ paths:
         - dataset
       summary: Delete a dataset
       responses:
-        "200":
-          description: the dataset details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Dataset'
-              examples:
-                BreweryADT:
-                  $ref: '#/components/examples/BreweryADT'
-        "400":
-          description: Bad request
+        "204":
+          description: Request successful
         "404":
           description: the Dataset specified is unknown or you don't have access to it
 
@@ -201,7 +192,7 @@ paths:
         schema:
           type: string
     post:
-      operationId: addDatasetCompabilityElements
+      operationId: addOrReplaceDatasetCompatibilityElements
       tags:
         - dataset
       summary: Add Dataset Compatibility elements. Any item with the same solutionKey will be overwritten
@@ -216,7 +207,7 @@ paths:
                 $ref: "#/components/schemas/DatasetCompatibility"
       responses:
         "201":
-          description: the Dataset compatibility elements
+          description: the Dataset Compatibility elements
           content:
             application/json:
               schema:
@@ -226,13 +217,15 @@ paths:
               examples:
                 TwoDatasetCompatibility:
                   $ref: '#/components/examples/TwoDatasetCompatibility'
+        "400":
+          description: Bad request
         "404":
           description: the Dataset specified is unknown or you don't have access to it
     delete:
-      operationId: removeAllDatasetCompatibility
+      operationId: removeAllDatasetCompatibilityElements
       tags:
         - dataset
-      summary: Remove all Dataset Compatibilities from the Scenario specified
+      summary: Remove all Dataset Compatibility elements from the Dataset specified
       responses:
         "204":
           description: the operation succeeded
@@ -329,17 +322,8 @@ paths:
         - validator
       summary: Delete a validator
       responses:
-        "200":
-          description: the validator details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Validator'
-              examples:
-                BreweryADTValidator:
-                  $ref: '#/components/examples/BreweryADTValidator'
-        "400":
-          description: Bad request
+        "204":
+          description: Request succeeded
         "404":
           description: the Validator specified is unknown or you don't have access to it
   /organizations/{organization_id}/datasets/validators/{validator_id}/run:
@@ -484,17 +468,8 @@ paths:
         - validator
       summary: Delete a validator run
       responses:
-        "200":
-          description: the validator run details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ValidatorRun'
-              examples:
-                BreweryADTValidatorRun:
-                  $ref: '#/components/examples/BreweryADTValidatorRun'
-        "400":
-          description: Bad request
+        "204":
+          description: Request succeeded
         "404":
           description: the ValidatorRun specified is unknown or you don't have access to it
 components:

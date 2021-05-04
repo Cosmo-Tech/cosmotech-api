@@ -19,12 +19,12 @@ tags:
 paths:
   /platform:
     post:
-      operationId: createPlatform
+      operationId: registerPlatform
       tags:
         - platform
-      summary: Create a new platform
+      summary: Register a new platform
       requestBody:
-        description: the Platform to create
+        description: the Platform to register
         required: true
         content:
           application/json:

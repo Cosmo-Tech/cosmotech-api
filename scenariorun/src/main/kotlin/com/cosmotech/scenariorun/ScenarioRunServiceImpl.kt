@@ -62,10 +62,9 @@ class ScenariorunServiceImpl : AbstractCosmosBackedService(), ScenariorunApiServ
         queryPredicateComponents.values.toList()
   }
 
-  override fun deleteScenarioRun(organizationId: String, scenariorunId: String): ScenarioRun {
-    val scenarioRun = this.findScenarioRunById(organizationId, scenariorunId)
-    cosmosTemplate.deleteEntity("${organizationId}_scenario_data", scenarioRun)
-    return scenarioRun
+  override fun deleteScenarioRun(organizationId: String, scenariorunId: String) {
+    cosmosTemplate.deleteEntity(
+        "${organizationId}_scenario_data", this.findScenarioRunById(organizationId, scenariorunId))
   }
 
   override fun findScenarioRunById(organizationId: String, scenariorunId: String): ScenarioRun =

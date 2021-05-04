@@ -35,7 +35,7 @@ paths:
       operationId: createScenario
       tags:
         - scenario
-      summary: Create a new scenario
+      summary: Create a new Scenario
       requestBody:
         description: the Scenario to create
         required: true
@@ -67,7 +67,7 @@ paths:
       summary: List all Scenarios
       responses:
         "200":
-          description: the scenario details
+          description: the list of Scenarios
           content:
             application/json:
               schema:
@@ -180,17 +180,8 @@ paths:
         - scenario
       summary: Delete a scenario
       responses:
-        "200":
-          description: the scenario details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Scenario'
-              examples:
-                Scenario:
-                  $ref: '#/components/examples/BreweryScenario'
-        "400":
-          description: Bad request
+        "204":
+          description: Request succeeded
         "404":
           description: the Scenario specified is unknown or you don't have access to it
   /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/compare/{compared_scenario_id}:
@@ -235,7 +226,7 @@ paths:
                 BreweryScenarioComparisonResult:
                   $ref: '#/components/examples/BreweryScenarioComparison'
         "404":
-          description: the Scenario specified is unknown or you don't have access to it
+          description: one of the Scenarios specified is unknown or you don't have access to it
 
   /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/users:
     parameters:
@@ -258,10 +249,10 @@ paths:
         schema:
           type: string
     post:
-      operationId: addUsersToScenario
+      operationId: addOrReplaceUsersInScenario
       tags:
         - scenario
-      summary: Add (or replace) users to the Scenario specified
+      summary: Add (or replace) users in the Scenario specified
       requestBody:
         description: the Users to add. Any User with the same ID is overwritten
         required: true
@@ -275,7 +266,7 @@ paths:
               TwoOrganizationToAddOrReplace:
                 $ref: '#/components/examples/TwoScenarioToAddOrReplace'
       responses:
-        "200":
+        "201":
           description: the Scenario Users
           content:
             application/json:
@@ -286,6 +277,8 @@ paths:
               examples:
                 TwoWorkspaceUsers:
                   $ref: '#/components/examples/TwoScenarioUsers'
+        "400":
+          description: Bad request
         "404":
           description: the Scenario specified is unknown or you don't have access to it
     delete:
@@ -298,6 +291,43 @@ paths:
           description: the operation succeeded
         "404":
           description: the Scenario specified is unknown or you don't have access to it
+
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/users/{user_id}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: scenario_id
+        in: path
+        description: the Scenario identifier
+        required: true
+        schema:
+          type: string
+      - name: user_id
+        in: path
+        description: the User identifier
+        required: true
+        schema:
+          type: string
+    delete:
+      operationId: removeUserFromScenario
+      tags:
+        - scenario
+      summary: Remove the specified user from the given Scenario
+      responses:
+        "204":
+          description: Request succeeded
+        "404":
+          description: the Scenario or the User specified is unknown or you don't have access to them
 
   /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/parameterValues:
     parameters:
@@ -337,7 +367,7 @@ paths:
               TwoScenarioRunTemplateParameterValueToAddOrReplace:
                 $ref: '#/components/examples/TwoScenarioRunTemplateParameterValueToAddOrReplace'
       responses:
-        "200":
+        "201":
           description: the Parameter values
           content:
             application/json:
@@ -348,10 +378,12 @@ paths:
               examples:
                 TwoWorkspaceUsers:
                   $ref: '#/components/examples/TwoScenarioRunTemplateParameterValueUsers'
+        "400":
+          description: Bad request
         "404":
           description: the Scenario specified is unknown or you don't have access to it
     delete:
-      operationId: removeAllParameterValuesOfScenario
+      operationId: removeAllScenarioParameterValues
       tags:
         - scenario
       summary: Remove all Parameter Values from the Scenario specified

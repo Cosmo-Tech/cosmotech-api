@@ -92,9 +92,9 @@ paths:
       operationId: updateUser
       tags:
         - user
-      summary: Update an user
+      summary: Update a User
       requestBody:
-        description: the new User details. Organization membership is handled in Organzation service.
+        description: the new User details. Organization membership is handled via the /organizations endpoint.
         required: true
         content:
           application/json:
@@ -123,17 +123,8 @@ paths:
         - user
       summary: Unregister an user
       responses:
-        "200":
-          description: the user details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-              examples:
-                Bob:
-                  $ref: '#/components/examples/Bob'
-        "400":
-          description: Bad request
+        "204":
+          description: Request succeeded
         "404":
           description: the User specified is unknown or you don't have access to it
   /users/me:
@@ -141,7 +132,7 @@ paths:
       operationId: getCurrentUser
       tags:
         - user
-      summary: Get the details of an user
+      summary: Get the details of the logged-in User
       responses:
         "200":
           description: the User details
@@ -152,8 +143,6 @@ paths:
               examples:
                 Bob:
                   $ref: '#/components/examples/Bob'
-        "404":
-          description: the User specified is unknown or you don't have access to it
   /organizations/{organization_id}/me:
     parameters:
       - name: organization_id
@@ -166,7 +155,7 @@ paths:
       operationId: getOrganizationCurrentUser
       tags:
         - user
-      summary: Get the details of an user with roles for an Organization
+      summary: Get the details of a logged-in User with roles for an Organization
       responses:
         "200":
           description: the User details
@@ -177,8 +166,6 @@ paths:
               examples:
                 Bob:
                   $ref: '#/components/examples/BobOrganization'
-        "404":
-          description: the User specified is unknown or you don't have access to it
   /organizations/{organization_id}/workspaces/{workspace_id}/me:
     parameters:
       - name: organization_id
@@ -197,7 +184,7 @@ paths:
       operationId: getWorkspaceCurrentUser
       tags:
         - user
-      summary: Get the details of an user with roles for a Workspace
+      summary: Get the details of the logged-in user with roles for a Workspace
       responses:
         "200":
           description: the User details
@@ -208,8 +195,6 @@ paths:
               examples:
                 Bob:
                   $ref: '#/components/examples/BobWorkspace'
-        "404":
-          description: the User specified is unknown or you don't have access to it
   /oauth2/authorize:
     get:
       operationId: authorizeUser

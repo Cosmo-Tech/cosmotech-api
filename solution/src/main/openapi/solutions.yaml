@@ -143,17 +143,8 @@ paths:
         - solution
       summary: Delete a solution
       responses:
-        "200":
-          description: the solution details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Solution'
-              examples:
-                Brewery:
-                  $ref: '#/components/examples/Brewery'
-        "400":
-          description: Bad request
+        "204":
+          description: Request succeeded
         "404":
           description: the Solution specified is unknown or you don't have access to it
 
@@ -194,6 +185,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/RunTemplateParameter'
+        "400":
+          description: Bad request
         "404":
           description: the Solution specified is unknown or you don't have access to it
     delete:
@@ -222,7 +215,7 @@ paths:
         schema:
           type: string
     post:
-      operationId: addParameterGroups
+      operationId: addOrReplaceParameterGroups
       tags:
         - solution
       summary: Add Parameter Groups. Any item with the same ID will be overwritten
@@ -244,6 +237,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/RunTemplateParameterGroup'
+        "400":
+          description: Bad request
         "404":
           description: the Solution specified is unknown or you don't have access to it
     delete:
@@ -294,6 +289,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/RunTemplate'
+        "400":
+          description: Bad request
         "404":
           description: the Solution specified is unknown or you don't have access to it
     delete:
@@ -307,7 +304,7 @@ paths:
         "404":
           description: the Solution specified is unknown or you don't have access to it
 
-  /organizations/{organization_id}/solutions/{solution_id}/runtemplates/{run_template_id}/handler/{handler_id}:
+  /organizations/{organization_id}/solutions/{solution_id}/runtemplates/{run_template_id}/handlers/{handler_id}/upload:
     parameters:
       - name: organization_id
         in: path

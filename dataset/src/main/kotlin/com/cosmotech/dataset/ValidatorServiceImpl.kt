@@ -22,7 +22,7 @@ class ValidatorServiceImpl : AbstractPhoenixService(), ValidatorApiService {
     TODO("Not yet implemented")
   }
 
-  override fun deleteValidator(organizationId: String, validatorId: String): Validator {
+  override fun deleteValidator(organizationId: String, validatorId: String) {
     TODO("Not yet implemented")
   }
 
@@ -61,7 +61,7 @@ class ValidatorServiceImpl : AbstractPhoenixService(), ValidatorApiService {
       organizationId: String,
       validatorId: String,
       validatorrunId: String
-  ): ValidatorRun {
+  ) {
     TODO("Not yet implemented")
   }
 }

@@ -35,7 +35,7 @@ paths:
                 $ref: '#/components/examples/NewOrganizationIn'
       responses:
         "201":
-          description: the organization details
+          description: the Organization details
           content:
             application/json:
               schema:
@@ -52,7 +52,7 @@ paths:
       summary: List all Organizations
       responses:
         "200":
-          description: the organization details
+          description: the list of Organizations
           content:
             application/json:
               schema:
@@ -75,7 +75,7 @@ paths:
       operationId: findOrganizationById
       tags:
         - organization
-      summary: Get the details of an organization
+      summary: Get the details of an Organization
       responses:
         "200":
           description: the Organization details
@@ -92,7 +92,7 @@ paths:
       operationId: updateOrganization
       tags:
         - organization
-      summary: Update an organization
+      summary: Update an Organization
       requestBody:
         description: the new Organization details
         required: true
@@ -106,34 +106,6 @@ paths:
                 description: Change the name of Organization 1 to CosmoTech Digital Twins Engine
                 value:
                   name: "CosmoTech Digital Twins Engine"
-              AddUser:
-                summary: Add a user
-                description: Add the user Charles to organization Cosmo Tech
-                value:
-                  users:
-                    - name: "Charles"
-                      roles:
-                        - Developer
-              RenameUser:
-                summary: Rename a user
-                description: Rename the user Charles to Xavier
-                value:
-                  users:
-                    - id: "3"
-                      name: "Xavier"
-              RemoveUser:
-                summary: Remove a user
-                description: Remove the user Charles from organization Cosmo Tech
-                value:
-                  users:
-                    - id: "1"
-                      name: "Bob"
-                      roles:
-                        - Admin
-                    - id: "2"
-                      name: "Alice"
-                      roles:
-                        - User
       responses:
         "200":
           description: the organization details
@@ -154,17 +126,8 @@ paths:
         - organization
       summary: Unregister an organization
       responses:
-        "200":
-          description: the organization details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Organization'
-              examples:
-                CosmoOrganization:
-                  $ref: '#/components/examples/CosmoOrganization'
-        "400":
-          description: Bad request
+        "204":
+          description: Request succeeded
         "404":
           description: the Organization specified is unknown or you don't have access to it
 
@@ -177,10 +140,10 @@ paths:
         schema:
           type: string
     post:
-      operationId: addUsersToOrganization
+      operationId: addOrReplaceUsersInOrganization
       tags:
         - organization
-      summary: Add (or replace) users to the Organization specified
+      summary: Add (or replace) users in the Organization specified
       requestBody:
         description: the Users to add. Any User with the same ID is overwritten
         required: true
@@ -191,10 +154,26 @@ paths:
               items:
                 $ref: '#/components/schemas/OrganizationUser'
             examples:
-              TwoOrganizationToAddOrReplace:
-                $ref: '#/components/examples/TwoOrganizationToAddOrReplace'
+              AddUser:
+                summary: Add a user
+                description: Add the user Charles to organization Cosmo Tech
+                value:
+                  - name: "Charles"
+                    id: "3"
+                    roles:
+                      - User
+                  - name: "Alice"
+                    id: "3"
+                    roles:
+                      - Developer
+              RenameUser:
+                summary: Rename a user
+                description: Rename the user Charles to Xavier
+                value:
+                  - id: "3"
+                    name: "Xavier"
       responses:
-        "200":
+        "201":
           description: the Organization Users
           content:
             application/json:
@@ -205,10 +184,12 @@ paths:
               examples:
                 TwoOrganizationUsers:
                   $ref: '#/components/examples/TwoOrganizationUsers'
+        "400":
+          description: Bad request
         "404":
           description: the Organization specified is unknown or you don't have access to it
     delete:
-      operationId: removeAllUsersOfOrganization
+      operationId: removeAllUsersInOrganization
       tags:
         - organization
       summary: Remove all users from the Organization specified
@@ -217,6 +198,31 @@ paths:
           description: the operation succeeded
         "404":
           description: the Organization specified is unknown or you don't have access to it
+
+  /organizations/{organization_id}/users/{user_id}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: user_id
+        in: path
+        description: the User identifier
+        required: true
+        schema:
+          type: string
+    delete:
+      operationId: removeUserFromOrganization
+      tags:
+        - organization
+      summary: Remove the specified user from the given Organization
+      responses:
+        "204":
+          description: Request succeeded
+        "404":
+          description: the Organization or the User specified is unknown or you don't have access to them
 
   /organizations/{organization_id}/services/tenantCredentials:
     parameters:
@@ -584,15 +590,5 @@ components:
             - Admin
         - id: "2"
           name: Alice
-          roles:
-            - User
-    TwoOrganizationToAddOrReplace:
-      summary: Two users of an Organization
-      description: Two Users of an Organization example
-      value:
-        - id: "1"
-          roles:
-            - Admin
-        - id: "2"
           roles:
             - User

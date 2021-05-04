@@ -30,7 +30,7 @@ class DatasetServiceImpl : AbstractCosmosBackedService(), DatasetApiService {
           datasetId,
           "Dataset $datasetId not found in organization $organizationId")
 
-  override fun removeAllDatasetCompatibility(organizationId: String, datasetId: String) {
+  override fun removeAllDatasetCompatibilityElements(organizationId: String, datasetId: String) {
     TODO("Not yet implemented")
   }
 
@@ -39,17 +39,16 @@ class DatasetServiceImpl : AbstractCosmosBackedService(), DatasetApiService {
           "${organizationId}_datasets", dataset.copy(id = idGenerator.generate("dataset")))
           ?: throw IllegalArgumentException("No Dataset returned in response: $dataset")
 
-  override fun deleteDataset(organizationId: String, datasetId: String): Dataset {
-    val dataset = findDatasetById(organizationId, datasetId)
-    cosmosTemplate.deleteEntity("${organizationId}_datasets", dataset)
-    return dataset
+  override fun deleteDataset(organizationId: String, datasetId: String) {
+    cosmosTemplate.deleteEntity(
+        "${organizationId}_datasets", findDatasetById(organizationId, datasetId))
   }
 
   override fun updateDataset(organizationId: String, datasetId: String, dataset: Dataset): Dataset {
     TODO("Not yet implemented")
   }
 
-  override fun addDatasetCompabilityElements(
+  override fun addOrReplaceDatasetCompatibilityElements(
       organizationId: String,
       datasetId: String,
       datasetCompatibility: List<DatasetCompatibility>

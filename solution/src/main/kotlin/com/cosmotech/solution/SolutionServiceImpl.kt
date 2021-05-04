@@ -44,6 +44,14 @@ class SolutionServiceImpl : AbstractCosmosBackedService(), SolutionApiService {
     TODO("Not yet implemented")
   }
 
+  override fun addOrReplaceParameterGroups(
+      organizationId: String,
+      solutionId: String,
+      runTemplateParameterGroup: List<RunTemplateParameterGroup>
+  ): List<RunTemplateParameterGroup> {
+    TODO("Not yet implemented")
+  }
+
   override fun addOrReplaceParameters(
       organizationId: String,
       solutionId: String,
@@ -60,24 +68,15 @@ class SolutionServiceImpl : AbstractCosmosBackedService(), SolutionApiService {
     TODO("Not yet implemented")
   }
 
-  override fun addParameterGroups(
-      organizationId: String,
-      solutionId: String,
-      runTemplateParameterGroup: List<RunTemplateParameterGroup>
-  ): List<RunTemplateParameterGroup> {
-    TODO("Not yet implemented")
-  }
-
   override fun createSolution(organizationId: String, solution: Solution) =
       cosmosTemplate.insert(
           "${organizationId}_solutions",
           solution.copy(id = idGenerator.generate("solution", prependPrefix = "SOL-")))
           ?: throw IllegalArgumentException("No solution returned in response: $solution")
 
-  override fun deleteSolution(organizationId: String, solutionId: String): Solution {
-    val solution = findSolutionById(organizationId, solutionId)
-    cosmosTemplate.deleteEntity("${organizationId}_solutions", solution)
-    return solution
+  override fun deleteSolution(organizationId: String, solutionId: String) {
+    cosmosTemplate.deleteEntity(
+        "${organizationId}_solutions", findSolutionById(organizationId, solutionId))
   }
 
   override fun updateSolution(

@@ -38,10 +38,8 @@ class ConnectorServiceImpl : AbstractCosmosBackedService(), ConnectorApiService 
           coreConnectorContainer, connector.copy(id = idGenerator.generate("connector")))
           ?: throw IllegalArgumentException("No connector returned in response: $connector")
 
-  override fun unregisterConnector(connectorId: String): Connector {
-    val connector = this.findConnectorById(connectorId)
-    cosmosTemplate.deleteEntity(coreConnectorContainer, connector)
+  override fun unregisterConnector(connectorId: String) {
+    cosmosTemplate.deleteEntity(coreConnectorContainer, this.findConnectorById(connectorId))
     this.eventPublisher.publishEvent(ConnectorRemoved(this, connectorId))
-    return connector
   }
 }

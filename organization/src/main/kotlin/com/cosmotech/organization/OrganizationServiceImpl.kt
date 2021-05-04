@@ -36,7 +36,7 @@ class OrganizationServiceImpl : AbstractCosmosBackedService(), OrganizationApiSe
         CosmosContainerProperties(coreOrganizationContainer, "/id"))
   }
 
-  override fun addUsersToOrganization(
+  override fun addOrReplaceUsersInOrganization(
       organizationId: String,
       organizationUser: List<OrganizationUser>
   ): List<OrganizationUser> {
@@ -70,19 +70,20 @@ class OrganizationServiceImpl : AbstractCosmosBackedService(), OrganizationApiSe
     return organizationRegistered
   }
 
-  override fun removeAllUsersOfOrganization(organizationId: String) {
+  override fun removeAllUsersInOrganization(organizationId: String) {
     TODO("Not yet implemented")
   }
 
-  override fun unregisterOrganization(organizationId: String): Organization {
-    val organization = findOrganizationById(organizationId)
-    cosmosTemplate.deleteEntity(coreOrganizationContainer, organization)
+  override fun removeUserFromOrganization(organizationId: String, userId: String) {
+    TODO("Not yet implemented")
+  }
+
+  override fun unregisterOrganization(organizationId: String) {
+    cosmosTemplate.deleteEntity(coreOrganizationContainer, findOrganizationById(organizationId))
 
     this.eventPublisher.publishEvent(OrganizationUnregistered(this, organizationId))
 
     // TODO Handle rollbacks in case of errors
-
-    return organization
   }
 
   override fun updateOrganization(
