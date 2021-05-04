@@ -40,6 +40,13 @@ paths:
             examples:
               BreweryADT:
                 $ref: '#/components/examples/BreweryADT'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            examples:
+              BreweryADT:
+                $ref: '#/components/examples/BreweryADT'
       responses:
         "201":
           description: the dataset details
@@ -89,6 +96,13 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/DatasetCopyParameters'
+            examples:
+              BreweryDatasetCopyParameters:
+                $ref: '#/components/examples/BreweryDatasetCopyParameters'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
             examples:
               BreweryDatasetCopyParameters:
                 $ref: '#/components/examples/BreweryDatasetCopyParameters'
@@ -149,6 +163,13 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Dataset'
+            examples:
+              BreweryADTUpdate:
+                $ref: '#/components/examples/BreweryADTUpdate'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
             examples:
               BreweryADTUpdate:
                 $ref: '#/components/examples/BreweryADTUpdate'
@@ -255,6 +276,13 @@ paths:
             examples:
               BreweryADTValidator:
                 $ref: '#/components/examples/BreweryADTValidator'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            examples:
+              BreweryADTValidator:
+                $ref: '#/components/examples/BreweryADTValidator'
       responses:
         "201":
           description: the validator details
@@ -355,6 +383,13 @@ paths:
             examples:
               BreweryADTRunValidator:
                 $ref: '#/components/examples/BreweryADTRunValidator'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            examples:
+              BreweryADTRunValidator:
+                $ref: '#/components/examples/BreweryADTRunValidator'
       responses:
         "201":
           description: the validator run details
@@ -393,6 +428,13 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ValidatorRun'
+            examples:
+              BreweryADTValidatorRun:
+                $ref: '#/components/examples/BreweryADTValidatorRun'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
             examples:
               BreweryADTValidatorRun:
                 $ref: '#/components/examples/BreweryADTValidatorRun'

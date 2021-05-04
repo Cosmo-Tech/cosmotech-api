@@ -40,6 +40,13 @@ paths:
             examples:
               Workspace:
                 $ref: '#/components/examples/BreweryWorkspaceCreateIn'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            examples:
+              Workspace:
+                $ref: '#/components/examples/BreweryWorkspaceCreateIn'
       responses:
         "201":
           description: the workspace details
@@ -112,6 +119,13 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Workspace'
+            examples:
+              BreweryUpdate:
+                $ref: '#/components/examples/BreweryWorkspaceUpdate'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
             examples:
               BreweryUpdate:
                 $ref: '#/components/examples/BreweryWorkspaceUpdate'

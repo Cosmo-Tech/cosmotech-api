@@ -142,6 +142,15 @@ class ScenarioServiceImpl : AbstractCosmosBackedService(), ScenarioApiService {
     TODO("Not yet implemented")
   }
 
+  override fun removeUserFromScenario(
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String,
+      userId: String
+  ) {
+    TODO("Not yet implemented")
+  }
+
   override fun updateScenario(
       organizationId: String,
       workspaceId: String,

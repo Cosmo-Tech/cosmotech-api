@@ -48,6 +48,15 @@ paths:
                 $ref: '#/components/examples/BreweryScenarioIn'
               ChildScenario:
                 $ref: '#/components/examples/BreweryChildScenarioIn'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            examples:
+              MasterScenario:
+                $ref: '#/components/examples/BreweryScenarioIn'
+              ChildScenario:
+                $ref: '#/components/examples/BreweryChildScenarioIn'
       responses:
         "201":
           description: the scenario details
@@ -157,6 +166,13 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Scenario'
+            examples:
+              BreweryUpdate:
+                $ref: '#/components/examples/BreweryScenarioUpdate'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
             examples:
               BreweryUpdate:
                 $ref: '#/components/examples/BreweryScenarioUpdate'

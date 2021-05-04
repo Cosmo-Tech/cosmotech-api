@@ -40,6 +40,13 @@ paths:
             examples:
               BrewerySearch:
                 $ref: '#/components/examples/BrewerySearch'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            examples:
+              BrewerySearch:
+                $ref: '#/components/examples/BrewerySearch'
       responses:
         "200":
           description: the scenariorun details
@@ -72,6 +79,13 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ScenarioRunStart'
+            examples:
+              ScenarioRunStart:
+                $ref: '#/components/examples/BreweryScenarioRunStart'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
             examples:
               ScenarioRunStart:
                 $ref: '#/components/examples/BreweryScenarioRunStart'
@@ -112,6 +126,13 @@ paths:
             examples:
               ScenarioRunStartSolution:
                 $ref: '#/components/examples/BreweryScenarioRunStartSolution'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            examples:
+              ScenarioRunStartSolution:
+                $ref: '#/components/examples/BreweryScenarioRunStartSolution'
       responses:
         "202":
           description: the scenariorun details
@@ -146,6 +167,13 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ScenarioRunStartContainers'
+            examples:
+              ScenarioRunStartContainers:
+                $ref: '#/components/examples/BreweryScenarioRunStartContainers'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
             examples:
               ScenarioRunStartContainers:
                 $ref: '#/components/examples/BreweryScenarioRunStartContainers'
@@ -232,6 +260,13 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ScenarioRunLogsOptions'
+            examples:
+              ScenarioRunLogsOptions:
+                $ref: '#/components/examples/BreweryScenarioRunLogsOptions'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
             examples:
               ScenarioRunLogsOptions:
                 $ref: '#/components/examples/BreweryScenarioRunLogsOptions'

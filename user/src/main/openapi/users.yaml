@@ -33,6 +33,13 @@ paths:
             examples:
               BobCreateIn:
                 $ref: '#/components/examples/BobCreateIn'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            examples:
+              BobCreateIn:
+                $ref: '#/components/examples/BobCreateIn'
       responses:
         "201":
           description: the user details
@@ -100,6 +107,13 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/User'
+            examples:
+              BobyUpdateIn:
+                $ref: '#/components/examples/BobyUpdateIn'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
             examples:
               BobyUpdateIn:
                 $ref: '#/components/examples/BobyUpdateIn'

@@ -75,6 +75,13 @@ paths:
             examples:
               CosmoTechPlatformUpdate:
                 $ref: '#/components/examples/CosmoTechPlatformUpdate'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            examples:
+              CosmoTechPlatformUpdate:
+                $ref: '#/components/examples/CosmoTechPlatformUpdate'
       responses:
         "200":
           description: the platform details

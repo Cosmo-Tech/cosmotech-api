@@ -123,6 +123,13 @@ paths:
             examples:
               BreweryUpdate:
                 $ref: '#/components/examples/BreweryUpdate'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            examples:
+              BreweryUpdate:
+                $ref: '#/components/examples/BreweryUpdate'
       responses:
         "200":
           description: the solution details

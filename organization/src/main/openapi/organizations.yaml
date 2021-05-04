@@ -33,6 +33,13 @@ paths:
             examples:
               NewOrganizationIn:
                 $ref: '#/components/examples/NewOrganizationIn'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            examples:
+              NewOrganizationIn:
+                $ref: '#/components/examples/NewOrganizationIn'
       responses:
         "201":
           description: the Organization details
@@ -100,6 +107,16 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Organization'
+            examples:
+              ChangeName:
+                summary: Change Name of Organization
+                description: Change the name of Organization 1 to CosmoTech Digital Twins Engine
+                value:
+                  name: "CosmoTech Digital Twins Engine"
+          application/yaml:
+            schema:
+              type: string
+              format: binary
             examples:
               ChangeName:
                 summary: Change Name of Organization
@@ -295,6 +312,14 @@ paths:
               OrganizationTenantCredentials:
                 value:
                   baseUri: https://csmphoenixcontainer.blob.core.windows.net
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            examples:
+              OrganizationTenantCredentials:
+                value:
+                  baseUri: https://csmphoenixcontainer.blob.core.windows.net
       responses:
         "200":
           description: the Organization Storage configuration
@@ -332,6 +357,14 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/OrganizationService'
+            examples:
+              OrganizationSolutionContainerRegistry:
+                value:
+                  baseUri: mysolutiontwinengines.azurecr.io
+          application/yaml:
+            schema:
+              type: string
+              format: binary
             examples:
               OrganizationSolutionContainerRegistry:
                 value:
