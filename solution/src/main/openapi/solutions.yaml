@@ -40,6 +40,13 @@ paths:
             examples:
               Brewery:
                 $ref: '#/components/examples/Brewery'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            examples:
+              ADTConnector:
+                $ref: '#/components/examples/Brewery'
       responses:
         "201":
           description: the solution details
@@ -69,42 +76,6 @@ paths:
               examples:
                 Two:
                   $ref: '#/components/examples/OneSolution'
-  /organizations/{organization_id}/solutions/upload:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-    post:
-      operationId: upload
-      tags:
-        - solution
-      summary: Upload and register a new solution
-      requestBody:
-        description: the Solution to upload and register
-        required: true
-        content:
-          application/yaml:
-            schema:
-              type: string
-              format: binary
-            examples:
-              ADTConnector:
-                $ref: '#/components/examples/Brewery'
-      responses:
-        "201":
-          description: the solution details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Solution'
-              examples:
-                ADTConnector:
-                  $ref: '#/components/examples/Brewery'
-        "400":
-          description: Bad request
 
   /organizations/{organization_id}/solutions/{solution_id}:
     parameters:

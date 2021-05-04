@@ -49,9 +49,6 @@ class SolutionServiceImpl : AbstractCosmosBackedService(), SolutionApiService {
     TODO("Not yet implemented")
   }
 
-  override fun upload(organizationId: String, body: org.springframework.core.io.Resource) =
-      createSolution(organizationId, readYaml(body.inputStream))
-
   @EventListener(OrganizationRegistered::class)
   fun onOrganizationRegistered(organizationRegistered: OrganizationRegistered) {
     cosmosCoreDatabase.createContainerIfNotExists(
