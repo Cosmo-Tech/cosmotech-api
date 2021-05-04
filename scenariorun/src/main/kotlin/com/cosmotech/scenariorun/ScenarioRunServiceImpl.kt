@@ -4,7 +4,7 @@ package com.cosmotech.scenariorun
 
 import com.azure.cosmos.models.*
 import com.cosmotech.api.AbstractCosmosBackedService
-import com.cosmotech.api.argo.getCumulatedLogsById
+import com.cosmotech.api.argo.getCumulatedLogs
 import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.scenariorun.api.ScenariorunApiService
@@ -78,7 +78,7 @@ class ScenariorunServiceImpl : AbstractCosmosBackedService(), ScenariorunApiServ
           ?: throw java.lang.IllegalArgumentException(
               "ScenarioRun #$scenariorunId not found in organization #$organizationId")
 
-  override fun getScenarioScenarioRun(
+  override fun getScenarioRun(
       organizationId: String,
       workspaceId: String,
       scenarioId: String,
@@ -110,20 +110,23 @@ class ScenariorunServiceImpl : AbstractCosmosBackedService(), ScenariorunApiServ
           ?: throw java.lang.IllegalArgumentException(
               "ScenarioRun #$scenariorunId not found in organization #$organizationId")
 
-  override fun getScenarioScenarioRunLogs(
+  override fun getScenarioRunLogs(
       organizationId: String,
       workspaceId: String,
       scenarioId: String,
       scenariorunId: String
   ): ScenarioRunLogs {
-    val scenario = getScenarioScenarioRun(organizationId, workspaceId, scenarioId, scenariorunId)
+    val scenario = getScenarioRun(organizationId, workspaceId, scenarioId, scenariorunId)
     val workflowId = scenario.workflowId
-    var cumulatedLogs = if (workflowId != null) getCumulatedLogsById(workflowId) else ""
+    val workflowName = scenario.workflowName
+    var cumulatedLogs =
+        if (workflowId != null && workflowName != null) getCumulatedLogs(workflowId, workflowName)
+        else ""
     val logs = ScenarioRunLogs(runLogs = ScenarioRunContainerLogs(textLog = cumulatedLogs))
     return logs
   }
 
-  override fun getScenarioScenarioRuns(
+  override fun getScenarioRuns(
       organizationId: String,
       workspaceId: String,
       scenarioId: String

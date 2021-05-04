@@ -336,7 +336,7 @@ paths:
         schema:
           type: string
     get:
-      operationId: getScenarioScenarioRuns
+      operationId: getScenarioRuns
       tags:
         - scenariorun
       summary: get the list of ScenarioRuns for the Scenario
@@ -379,7 +379,7 @@ paths:
         schema:
           type: string
     get:
-      operationId: getScenarioScenarioRun
+      operationId: getScenarioRun
       tags:
         - scenariorun
       summary: get the ScenarioRun for the Scenario
@@ -420,7 +420,7 @@ paths:
         schema:
           type: string
     get:
-      operationId: getScenarioScenarioRunLogs
+      operationId: getScenarioRunLogs
       tags:
         - scenariorun
       summary: get the logs for the ScenarioRun

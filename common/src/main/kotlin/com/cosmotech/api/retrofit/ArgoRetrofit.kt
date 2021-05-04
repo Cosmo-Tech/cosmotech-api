@@ -27,3 +27,11 @@ fun getArgoLogArtifact(
   val result = call.execute().body()
   return result ?: ""
 }
+
+fun getArgoLogArtifactByUid(workflowId: String, node: String, artifact: String): String {
+  val retrofit = getArgoUnsafeScalarRetrofit()
+  val artifactsService = retrofit.create(ArgoArtifactsByUidService::class.java)
+  val call = artifactsService.returnArtifact(workflowId, node, artifact)
+  val result = call.execute().body()
+  return result ?: ""
+}

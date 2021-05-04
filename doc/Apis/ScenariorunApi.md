@@ -6,9 +6,9 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**deleteScenarioRun**](ScenariorunApi.md#deleteScenarioRun) | **DELETE** /organizations/{organization_id}/scenarioruns/{scenariorun_id} | Delete a scenariorun
 [**findScenarioRunById**](ScenariorunApi.md#findScenarioRunById) | **GET** /organizations/{organization_id}/scenarioruns/{scenariorun_id} | Get the details of a scenariorun
-[**getScenarioScenarioRun**](ScenariorunApi.md#getScenarioScenarioRun) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/scenarioruns/{scenariorun_id} | get the ScenarioRun for the Scenario
-[**getScenarioScenarioRunLogs**](ScenariorunApi.md#getScenarioScenarioRunLogs) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/scenarioruns/{scenariorun_id}/logs | get the logs for the ScenarioRun
-[**getScenarioScenarioRuns**](ScenariorunApi.md#getScenarioScenarioRuns) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/scenarioruns | get the list of ScenarioRuns for the Scenario
+[**getScenarioRun**](ScenariorunApi.md#getScenarioRun) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/scenarioruns/{scenariorun_id} | get the ScenarioRun for the Scenario
+[**getScenarioRunLogs**](ScenariorunApi.md#getScenarioRunLogs) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/scenarioruns/{scenariorun_id}/logs | get the logs for the ScenarioRun
+[**getScenarioRuns**](ScenariorunApi.md#getScenarioRuns) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/scenarioruns | get the list of ScenarioRuns for the Scenario
 [**getWorkspaceScenarioRuns**](ScenariorunApi.md#getWorkspaceScenarioRuns) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarioruns | get the list of ScenarioRuns for the Workspace
 [**runScenario**](ScenariorunApi.md#runScenario) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/run | run a ScenarioRun for the Scenario
 [**searchScenarioRunLogs**](ScenariorunApi.md#searchScenarioRunLogs) | **POST** /organizations/{organization_id}/scenarioruns/{scenariorun_id}/logs/search | Search the logs of a scenariorun
@@ -70,9 +70,9 @@ Name | Type | Description  | Notes
 - **Content-Type**: Not defined
 - **Accept**: application/json
 
-<a name="getScenarioScenarioRun"></a>
-# **getScenarioScenarioRun**
-> ScenarioRun getScenarioScenarioRun(organization\_id, workspace\_id, scenario\_id, scenariorun\_id)
+<a name="getScenarioRun"></a>
+# **getScenarioRun**
+> ScenarioRun getScenarioRun(organization\_id, workspace\_id, scenario\_id, scenariorun\_id)
 
 get the ScenarioRun for the Scenario
 
@@ -98,9 +98,9 @@ Name | Type | Description  | Notes
 - **Content-Type**: Not defined
 - **Accept**: application/json
 
-<a name="getScenarioScenarioRunLogs"></a>
-# **getScenarioScenarioRunLogs**
-> ScenarioRunLogs getScenarioScenarioRunLogs(organization\_id, workspace\_id, scenario\_id, scenariorun\_id)
+<a name="getScenarioRunLogs"></a>
+# **getScenarioRunLogs**
+> ScenarioRunLogs getScenarioRunLogs(organization\_id, workspace\_id, scenario\_id, scenariorun\_id)
 
 get the logs for the ScenarioRun
 
@@ -126,9 +126,9 @@ Name | Type | Description  | Notes
 - **Content-Type**: Not defined
 - **Accept**: application/json
 
-<a name="getScenarioScenarioRuns"></a>
-# **getScenarioScenarioRuns**
-> List getScenarioScenarioRuns(organization\_id, workspace\_id, scenario\_id)
+<a name="getScenarioRuns"></a>
+# **getScenarioRuns**
+> List getScenarioRuns(organization\_id, workspace\_id, scenario\_id)
 
 get the list of ScenarioRuns for the Scenario
 
