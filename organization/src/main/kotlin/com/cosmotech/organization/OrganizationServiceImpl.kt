@@ -14,6 +14,7 @@ import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationService
 import com.cosmotech.organization.domain.OrganizationUser
+import com.cosmotech.user.api.UserApiService
 import java.lang.IllegalStateException
 import java.util.*
 import javax.annotation.PostConstruct
@@ -24,7 +25,8 @@ import org.springframework.stereotype.Service
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
-class OrganizationServiceImpl : AbstractCosmosBackedService(), OrganizationApiService {
+class OrganizationServiceImpl(val userService: UserApiService) :
+    AbstractCosmosBackedService(), OrganizationApiService {
 
   private lateinit var coreOrganizationContainer: String
 
@@ -52,11 +54,28 @@ class OrganizationServiceImpl : AbstractCosmosBackedService(), OrganizationApiSe
   override fun registerOrganization(organization: Organization): Organization {
     logger.trace("Registering organization : $organization")
 
-    // TODO Validate list of users passed
+    // TODO It would be better to have UserService expose a findUsersByIds...
+    //   Here, we are performing a network call for each user id, which has a performance impact
+    val usersLoaded =
+        organization
+            .users
+            ?.mapNotNull { it.id }
+            ?.map { userService.findUserById(it) }
+            ?.associateBy { it.id }
+
+    val newOrganizationId = idGenerator.generate("organization")
+
+    val usersWithNames =
+        usersLoaded?.let {
+          organization.users?.map {
+            it.copy(name = usersLoaded[it.id]!!.name, organizationId = newOrganizationId)
+          }
+        }
 
     val organizationRegistered =
         cosmosTemplate.insert(
-            coreOrganizationContainer, organization.copy(id = idGenerator.generate("organization")))
+            coreOrganizationContainer,
+            organization.copy(id = newOrganizationId, users = usersWithNames))
 
     val organizationId =
         organizationRegistered.id
