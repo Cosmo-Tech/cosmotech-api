@@ -35,6 +35,7 @@ server:
   jetty:
     accesslog:
       enabled: true
+      format: extended_ncsa
   servlet:
     context-path:
 
