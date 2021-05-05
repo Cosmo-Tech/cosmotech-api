@@ -4,15 +4,13 @@ package com.cosmotech.user
 
 import com.azure.cosmos.models.CosmosContainerProperties
 import com.cosmotech.api.AbstractCosmosBackedService
-import com.cosmotech.api.events.OrganizationRegistered
-import com.cosmotech.api.events.OrganizationUnregistered
-import com.cosmotech.api.events.UserRegistered
-import com.cosmotech.api.events.UserUnregistered
+import com.cosmotech.api.events.*
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.findAll
 import com.cosmotech.api.utils.findByIdOrThrow
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
+import com.cosmotech.user.domain.UserOrganization
 import java.lang.IllegalStateException
 import java.util.*
 import javax.annotation.PostConstruct
@@ -106,5 +104,32 @@ class UserServiceImpl : AbstractCosmosBackedService(), UserApiService {
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
     cosmosTemplate.deleteContainer("${organizationUnregistered.organizationId}_user-data")
+    // TODO Remove organization from all users that reference it
+  }
+
+  @EventListener(UserAddedToOrganization::class)
+  @Async("csm-in-process-event-executor")
+  fun onUserAddedToOrganization(userAddedToOrganization: UserAddedToOrganization) {
+    val user = this.findUserById(userAddedToOrganization.userId)
+    val organizationMap =
+        user.organizations?.associateBy { it.id }?.toMutableMap() ?: mutableMapOf()
+    organizationMap[userAddedToOrganization.organizationId] =
+        UserOrganization(
+            id = userAddedToOrganization.organizationId,
+            name = userAddedToOrganization.organizationName,
+            roles = userAddedToOrganization.roles)
+    user.organizations = organizationMap.values.toList()
+    cosmosTemplate.upsert(coreUserContainer, user)
+  }
+
+  @EventListener(UserRemovedFromOrganization::class)
+  @Async("csm-in-process-event-executor")
+  fun onUserUserRemovedFromOrganization(userRemovedFromOrganization: UserRemovedFromOrganization) {
+    val user = this.findUserById(userRemovedFromOrganization.userId)
+    val organizationMap =
+        user.organizations?.associateBy { it.id }?.toMutableMap() ?: mutableMapOf()
+    organizationMap.remove(userRemovedFromOrganization.organizationId)
+    user.organizations = organizationMap.values.toList()
+    cosmosTemplate.upsert(coreUserContainer, user)
   }
 }

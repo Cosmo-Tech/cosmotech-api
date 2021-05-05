@@ -4,9 +4,7 @@ package com.cosmotech.organization
 
 import com.azure.cosmos.models.CosmosContainerProperties
 import com.cosmotech.api.AbstractCosmosBackedService
-import com.cosmotech.api.events.OrganizationRegistered
-import com.cosmotech.api.events.OrganizationUnregistered
-import com.cosmotech.api.events.UserUnregistered
+import com.cosmotech.api.events.*
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.findAll
 import com.cosmotech.api.utils.findByIdOrThrow
@@ -17,7 +15,6 @@ import com.cosmotech.organization.domain.OrganizationUser
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
 import java.lang.IllegalStateException
-import java.util.*
 import javax.annotation.PostConstruct
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
@@ -87,6 +84,15 @@ class OrganizationServiceImpl(val userService: UserApiService) :
                 "No ID returned for organization registered: $organizationRegistered")
 
     this.eventPublisher.publishEvent(OrganizationRegistered(this, organizationId))
+    organization.users?.forEach { user ->
+      this.eventPublisher.publishEvent(
+          UserAddedToOrganization(
+              this,
+              organizationId,
+              organizationRegistered.name!!,
+              user.id!!,
+              user.roles.map { role -> role.value }))
+    }
 
     // TODO Handle rollbacks in case of errors
 
@@ -94,11 +100,28 @@ class OrganizationServiceImpl(val userService: UserApiService) :
   }
 
   override fun removeAllUsersInOrganization(organizationId: String) {
-    TODO("Not yet implemented")
+    val organization = findOrganizationById(organizationId)
+    if (!organization.users.isNullOrEmpty()) {
+      val userIds = organization.users!!.mapNotNull { it.id }
+      organization.users = listOf()
+      cosmosTemplate.upsert(coreOrganizationContainer, organization)
+
+      userIds.forEach {
+        this.eventPublisher.publishEvent(UserRemovedFromOrganization(this, organizationId, it))
+      }
+    }
   }
 
   override fun removeUserFromOrganization(organizationId: String, userId: String) {
-    TODO("Not yet implemented")
+    val organization = findOrganizationById(organizationId)
+    val organizationUserMap =
+        organization.users?.associateBy { it.id!! }?.toMutableMap() ?: mutableMapOf()
+    if (organizationUserMap.containsKey(userId)) {
+      organizationUserMap.remove(userId)
+      organization.users = organizationUserMap.values.toList()
+      cosmosTemplate.upsert(coreOrganizationContainer, organization)
+      this.eventPublisher.publishEvent(UserRemovedFromOrganization(this, organizationId, userId))
+    }
   }
 
   override fun unregisterOrganization(organizationId: String) {
@@ -114,19 +137,20 @@ class OrganizationServiceImpl(val userService: UserApiService) :
       organization: Organization
   ): Organization {
     val existingOrganization = findOrganizationById(organizationId)
+
     var hasChanged = false
     if (organization.name != null && organization.changed(existingOrganization) { name }) {
       existingOrganization.name = organization.name
       hasChanged = true
     }
     // TODO Allow to change the ownerId as well, but only the owner can transfer the ownership
+
+    var usersToSet = mapOf<String, User>()
     if (organization.users != null) {
       // Specifying a list of users here overrides the previous list
-      val usersLoaded = fetchUsers(organization.users!!.mapNotNull { it.id })
+      usersToSet = fetchUsers(organization.users!!.mapNotNull { it.id })
       val usersWithNames =
-          usersLoaded.let {
-            organization.users!!.map { it.copy(name = usersLoaded[it.id]!!.name!!) }
-          }
+          usersToSet.let { organization.users!!.map { it.copy(name = usersToSet[it.id]!!.name!!) } }
       existingOrganization.users = usersWithNames
       hasChanged = true
     }
@@ -135,7 +159,21 @@ class OrganizationServiceImpl(val userService: UserApiService) :
       hasChanged = true
     }
     return if (hasChanged) {
-      cosmosTemplate.upsertAndReturnEntity(coreOrganizationContainer, existingOrganization)
+      val responseEntity =
+          cosmosTemplate.upsertAndReturnEntity(coreOrganizationContainer, existingOrganization)
+      usersToSet.mapNotNull { it.value.id }.forEach {
+        this.eventPublisher.publishEvent(UserRemovedFromOrganization(this, organizationId, it))
+      }
+      organization.users?.forEach { user ->
+        this.eventPublisher.publishEvent(
+            UserAddedToOrganization(
+                this,
+                organizationId,
+                responseEntity.name!!,
+                user.id!!,
+                user.roles.map { role -> role.value }))
+      }
+      responseEntity
     } else {
       existingOrganization
     }
