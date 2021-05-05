@@ -207,6 +207,7 @@ entity ScenarioRunContainer {
     id: String
     envVars: Map
     image: String
+    entrypoint: String
     runArgs: List<String>
 }
 

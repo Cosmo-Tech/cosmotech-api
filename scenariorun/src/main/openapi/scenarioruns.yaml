@@ -765,6 +765,9 @@ components:
         image:
           type: string
           description: the container image URI
+        entrypoint:
+          type: string
+          description: the container entry point
         runArgs:
           type: array
           description: the list of run arguments for the container
@@ -937,6 +940,7 @@ components:
             CSM_RUN_TEMPLATE_ID: hundred
             CSM_CONTAINER_MODE: handle-parameters
           image: twinengines.azurecr.io/brewery_simulator:latest
+          entrypoint: entrypoint.py
         validateDataContainer:
           id: rfvtgb
           envVars:
@@ -950,6 +954,7 @@ components:
             CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
             CSM_CONTAINER_MODE: validate
           image: twinengines.azurecr.io/brewery_simulator:latest
+          entrypoint: entrypoint.py
         sendDataWarehouseContainer:
           id: qsdfghjklm
           envVars:
@@ -982,6 +987,7 @@ components:
             CSM_CONTAINER_MODE: engine
             CSM_SIMULATION: DeployedScenarioRun
           image: twinengines.azurecr.io/brewery_simulator:latest
+          entrypoint: entrypoint.py
     BreweryScenarioRunSolution:
       summary: Brewery ScenarioRun Solution example
       description: Brewery ScenarioRun ran with Solution information example
@@ -1049,6 +1055,7 @@ components:
             CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
             CSM_CONTAINER_MODE: handle-parameters
           image: twinengines.azurecr.io/brewery_simulator:latest
+          entrypoint: entrypoint.py
         validateDataContainer:
           id: rfvtgb
           envVars:
@@ -1062,6 +1069,7 @@ components:
             CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
             CSM_CONTAINER_MODE: validate
           image: twinengines.azurecr.io/brewery_simulator:latest
+          entrypoint: entrypoint.py
         sendDataWarehouseContainer:
           id: qsdfghjklm
           envVars:
@@ -1094,6 +1102,7 @@ components:
             CSM_CONTAINER_MODE: engine
             CSM_SIMULATION: DeployedScenarioRun
           image: twinengines.azurecr.io/brewery_simulator:latest
+          entrypoint: entrypoint.py
     BreweryScenarioRunContainer:
       summary: Brewery ScenarioRun Containers example
       description: Brewery ScenarioRun ran with containers information example
@@ -1149,6 +1158,7 @@ components:
             CSM_CONTAINER_MODE: engine
             CSM_SIMULATION: DeployedScenarioRun
           image: twinengines.azurecr.io/brewery_simulator:latest
+          entrypoint: entrypoint.py
     OneScenarioRun:
       summary: Brewery ScenarioRun list example
       description: Brewery ScenarioRun list example
@@ -1207,6 +1217,7 @@ components:
               CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
               CSM_CONTAINER_MODE: handle-parameters
             image: twinengines.azurecr.io/brewery_simulator:latest
+            entrypoint: entrypoint.py
           validateDataContainer:
             id: rfvtgb
             envVars:
@@ -1220,6 +1231,7 @@ components:
               CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
               CSM_CONTAINER_MODE: validate
             image: twinengines.azurecr.io/brewery_simulator:latest
+            entrypoint: entrypoint.py
           sendDataWarehouseContainer:
             id: qsdfghjklm
             envVars:
@@ -1252,6 +1264,7 @@ components:
               CSM_CONTAINER_MODE: engine
               CSM_SIMULATION: DeployedScenarioRun
             image: twinengines.azurecr.io/brewery_simulator:latest
+            entrypoint: entrypoint.py
     BrewerySearch:
       summary: Brewery search ScenarioRun example
       description: Brewery search ScenarioRun of Workspace 1 in Running state example
@@ -1329,6 +1342,7 @@ components:
             CSM_CONTAINER_MODE: engine
             CSM_SIMULATION: DeployedScenarioRun
           image: twinengines.azurecr.io/brewery_simulator:latest
+          entrypoint: entrypoint.py
     BreweryScenarioRunLogsOptions:
       summary: Brewery ScenarioRun logs options example
       description: Brewery ScenarioRun logs options with plain text example

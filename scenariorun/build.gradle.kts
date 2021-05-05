@@ -1,7 +1,7 @@
-import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
-import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 
 dependencies {
   implementation("io.argoproj.workflow:argo-client-java:v3.0.1")
@@ -44,55 +44,56 @@ tasks.getByName<GenerateTask>("openApiGenerate") {
 }
 
 tasks.test {
-    useJUnitPlatform()
+  useJUnitPlatform()
 
-    testLogging {
-        lifecycle {
-            events = mutableSetOf(TestLogEvent.FAILED, TestLogEvent.PASSED, TestLogEvent.SKIPPED)
-            exceptionFormat = TestExceptionFormat.FULL
-            showExceptions = true
-            showCauses = true
-            showStackTraces = true
-            showStandardStreams = true
-        }
-        info.events = lifecycle.events
-        info.exceptionFormat = lifecycle.exceptionFormat
+  testLogging {
+    lifecycle {
+      events = mutableSetOf(TestLogEvent.FAILED, TestLogEvent.PASSED, TestLogEvent.SKIPPED)
+      exceptionFormat = TestExceptionFormat.FULL
+      showExceptions = true
+      showCauses = true
+      showStackTraces = false
+      showStandardStreams = true
     }
+    info.events = lifecycle.events
+    info.exceptionFormat = lifecycle.exceptionFormat
+  }
 
-    val failedTests = mutableListOf<TestDescriptor>()
-    val skippedTests = mutableListOf<TestDescriptor>()
+  val failedTests = mutableListOf<TestDescriptor>()
+  val skippedTests = mutableListOf<TestDescriptor>()
 
-    // See https://github.com/gradle/kotlin-dsl/issues/836
-    addTestListener(object : TestListener {
+  // See https://github.com/gradle/kotlin-dsl/issues/836
+  addTestListener(
+      object : TestListener {
         override fun beforeSuite(suite: TestDescriptor) {}
         override fun beforeTest(testDescriptor: TestDescriptor) {}
         override fun afterTest(testDescriptor: TestDescriptor, result: TestResult) {
-            when (result.resultType) {
-                TestResult.ResultType.FAILURE -> failedTests.add(testDescriptor)
-                TestResult.ResultType.SKIPPED -> skippedTests.add(testDescriptor)
-                else -> Unit
-            }
+          when (result.resultType) {
+            TestResult.ResultType.FAILURE -> failedTests.add(testDescriptor)
+            TestResult.ResultType.SKIPPED -> skippedTests.add(testDescriptor)
+            else -> Unit
+          }
         }
 
         override fun afterSuite(suite: TestDescriptor, result: TestResult) {
-            if (suite.parent == null) { // root suite
-                logger.lifecycle("----")
-                logger.lifecycle("Test result: ${result.resultType}")
-                logger.lifecycle(
-                        "Test summary: ${result.testCount} tests, " +
-                        "${result.successfulTestCount} succeeded, " +
-                        "${result.failedTestCount} failed, " +
-                        "${result.skippedTestCount} skipped")
-                failedTests.takeIf { it.isNotEmpty() }?.prefixedSummary("\tFailed Tests")
-                skippedTests.takeIf { it.isNotEmpty() }?.prefixedSummary("\tSkipped Tests:")
-            }
+          if (suite.parent == null) { // root suite
+            logger.lifecycle("----")
+            logger.lifecycle("Test result: ${result.resultType}")
+            logger.lifecycle(
+                "Test summary: ${result.testCount} tests, " +
+                    "${result.successfulTestCount} succeeded, " +
+                    "${result.failedTestCount} failed, " +
+                    "${result.skippedTestCount} skipped")
+            failedTests.takeIf { it.isNotEmpty() }?.prefixedSummary("\tFailed Tests")
+            skippedTests.takeIf { it.isNotEmpty() }?.prefixedSummary("\tSkipped Tests:")
+          }
         }
 
         private infix fun List<TestDescriptor>.prefixedSummary(subject: String) {
-                logger.lifecycle(subject)
-                forEach { test -> logger.lifecycle("\t\t${test.displayName()}") }
+          logger.lifecycle(subject)
+          forEach { test -> logger.lifecycle("\t\t${test.displayName()}") }
         }
 
         private fun TestDescriptor.displayName() = parent?.let { "${it.name} - $name" } ?: "$name"
-    })
+      })
 }
