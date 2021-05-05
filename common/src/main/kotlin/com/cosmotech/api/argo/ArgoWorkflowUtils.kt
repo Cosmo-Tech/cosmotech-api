@@ -10,6 +10,12 @@ import io.argoproj.workflow.apis.ArchivedWorkflowServiceApi
 import io.argoproj.workflow.apis.WorkflowServiceApi
 import io.argoproj.workflow.models.Workflow
 
+/**
+@Component
+class Argocls(@Value("$csm.platform.argo.url") baseurl: String) {
+  private val logger = LoggerFactory.getLogger(Argocls::class.java)
+}**/
+
 fun getApiClient(): ApiClient {
   val apiClient = Configuration.getDefaultApiClient()
   apiClient.setVerifyingSsl(false)

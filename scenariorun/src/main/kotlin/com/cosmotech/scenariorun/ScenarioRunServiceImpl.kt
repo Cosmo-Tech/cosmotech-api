@@ -274,7 +274,7 @@ class ScenariorunServiceImpl : AbstractCosmosBackedService(), ScenariorunApiServ
       if (result.metadata.name == null)
           throw IllegalStateException("Argo Workflow metadata.name is null")
       val scenarioRun =
-          dbCreateScenarioRun(
+          this.dbCreateScenarioRun(
               organizationId, "None", "None", result.metadata.uid ?: "", result.metadata.name ?: "")
 
       return scenarioRun
@@ -302,7 +302,7 @@ class ScenariorunServiceImpl : AbstractCosmosBackedService(), ScenariorunApiServ
     TODO("Not implemented yet")
   }
 
-  fun dbCreateScenarioRun(
+  private fun dbCreateScenarioRun(
       organizationId: String,
       workspaceId: String,
       scenarioId: String,

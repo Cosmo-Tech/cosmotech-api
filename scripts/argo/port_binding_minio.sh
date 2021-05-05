@@ -1,1 +1,1 @@
-kubectl -n argo port-forward deployment/argo-server 9000:9000
+kubectl -n argo port-forward deployment/minio 9000:9000
