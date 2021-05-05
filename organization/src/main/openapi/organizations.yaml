@@ -416,8 +416,8 @@ components:
         services:
           descriptions: the list of Cloud services specific to the Organization
           $ref: '#/components/schemas/OrganizationServices'
-      required:
-        - name
+#      required:
+#        - name
     OrganizationServices:
       type: object
       description: the cloud service resources of the Organization

@@ -15,6 +15,7 @@ import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationService
 import com.cosmotech.organization.domain.OrganizationUser
 import com.cosmotech.user.api.UserApiService
+import com.cosmotech.user.domain.User
 import java.lang.IllegalStateException
 import java.util.*
 import javax.annotation.PostConstruct
@@ -51,17 +52,22 @@ class OrganizationServiceImpl(val userService: UserApiService) :
   override fun findOrganizationById(organizationId: String): Organization =
       cosmosTemplate.findByIdOrThrow(coreOrganizationContainer, organizationId)
 
+  /**
+   * Return list of users with the specified identifiers. TODO It would be better to have
+   * UserService expose a findUsersByIds, rather than performing a network call for each user id,
+   * which has a performance impact
+   */
+  private fun fetchUsers(userIds: Collection<String>): Map<String, User> =
+      userIds.toSet().map { userService.findUserById(it) }.associateBy { it.id!! }
+
   override fun registerOrganization(organization: Organization): Organization {
     logger.trace("Registering organization : $organization")
 
-    // TODO It would be better to have UserService expose a findUsersByIds...
-    //   Here, we are performing a network call for each user id, which has a performance impact
-    val usersLoaded =
-        organization
-            .users
-            ?.mapNotNull { it.id }
-            ?.map { userService.findUserById(it) }
-            ?.associateBy { it.id }
+    if (organization.name.isNullOrBlank()) {
+      throw IllegalArgumentException("Organization name must not be null or blank")
+    }
+
+    val usersLoaded = organization.users?.mapNotNull { it.id }?.let { fetchUsers(it) }
 
     val newOrganizationId = idGenerator.generate("organization")
 
@@ -71,6 +77,8 @@ class OrganizationServiceImpl(val userService: UserApiService) :
             it.copy(name = usersLoaded[it.id]!!.name!!, organizationId = newOrganizationId)
           }
         }
+
+    // TODO Set the ownerID to the logged-in user
 
     val organizationRegistered =
         cosmosTemplate.insert(
@@ -115,11 +123,21 @@ class OrganizationServiceImpl(val userService: UserApiService) :
       existingOrganization.name = organization.name
       hasChanged = true
     }
-    if (organization.users != null && organization.changed(existingOrganization) { users }) {
-      // TODO Find out which users to change or provide a separate endpoint for such updates
-      if (organization.users!!.isEmpty()) {
-        existingOrganization.users = listOf()
-      }
+    // TODO Allow to change the ownerId as well, but only the owner can transfer the ownership
+    if (organization.users != null) {
+      // Specifying a list of users here overrides the previous list
+      val usersLoaded = fetchUsers(organization.users!!.mapNotNull { it.id })
+      val usersWithNames =
+          usersLoaded.let {
+            organization.users!!.map {
+              it.copy(name = usersLoaded[it.id]!!.name!!, organizationId = organizationId)
+            }
+          }
+      existingOrganization.users = usersWithNames
+      hasChanged = true
+    }
+    if (organization.services != null && organization.changed(existingOrganization) { services }) {
+      existingOrganization.services = organization.services
       hasChanged = true
     }
     return if (hasChanged) {
