@@ -39,6 +39,10 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
+            - name: SERVER_JETTY_ACCESSLOG_ENABLED
+              value: "true"
+            - name: SERVER_JETTY_ACCESSLOG_IGNORE_PATHS
+              value: "/actuator/health/liveness,/actuator/health/readiness"
             - name: SPRING_CLOUD_KUBERNETES_CONFIG_NAME
               value: "{{ include "cosmotech-api.fullname" . }}"
             - name: SPRING_CLOUD_KUBERNETES_RELOAD_ENABLED
