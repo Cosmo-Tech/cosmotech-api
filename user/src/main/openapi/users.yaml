@@ -257,9 +257,9 @@ components:
           readOnly: true
           items:
             $ref: '#/components/schemas/UserOrganization'
-      required:
-        - name
-        - platformRoles
+#      required:
+#        - name
+#        - platformRoles
     UserOrganization:
       type: object
       description: The organization of the user
@@ -333,7 +333,6 @@ components:
       summary: Boby update User input example
       description: Bob User renamed to Boby input example
       value:
-        id: "1"
         name: Boby
     BobyUpdated:
       summary: Boby updated User

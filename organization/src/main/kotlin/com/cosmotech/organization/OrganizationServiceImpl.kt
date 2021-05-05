@@ -68,7 +68,7 @@ class OrganizationServiceImpl(val userService: UserApiService) :
     val usersWithNames =
         usersLoaded?.let {
           organization.users?.map {
-            it.copy(name = usersLoaded[it.id]!!.name, organizationId = newOrganizationId)
+            it.copy(name = usersLoaded[it.id]!!.name!!, organizationId = newOrganizationId)
           }
         }
 

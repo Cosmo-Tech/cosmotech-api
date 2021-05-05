@@ -8,6 +8,7 @@ import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.events.UserRegistered
 import com.cosmotech.api.events.UserUnregistered
+import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.findAll
 import com.cosmotech.api.utils.findByIdOrThrow
 import com.cosmotech.user.api.UserApiService
@@ -46,18 +47,18 @@ class UserServiceImpl : AbstractCosmosBackedService(), UserApiService {
     TODO("Not yet implemented")
   }
 
-  override fun getOrganizationCurrentUser(organizationId: kotlin.String): User {
+  override fun getOrganizationCurrentUser(organizationId: String): User {
     TODO("Not yet implemented")
   }
 
-  override fun getWorkspaceCurrentUser(
-      organizationId: kotlin.String,
-      workspaceId: kotlin.String
-  ): User {
+  override fun getWorkspaceCurrentUser(organizationId: String, workspaceId: String): User {
     TODO("Not yet implemented")
   }
 
   override fun registerUser(user: User): User {
+    if (user.name.isNullOrBlank()) {
+      throw IllegalArgumentException("User name must not be null or blank")
+    }
     val userRegistered =
         cosmosTemplate.insert(coreUserContainer, user.copy(id = idGenerator.generate("user")))
     val userId =
@@ -74,7 +75,25 @@ class UserServiceImpl : AbstractCosmosBackedService(), UserApiService {
   }
 
   override fun updateUser(userId: String, user: User): User {
-    TODO("Not yet implemented")
+    val existingUser = findUserById(userId)
+    var hasChanged = false
+    if (user.name != null && user.changed(existingUser) { name }) {
+      existingUser.name = user.name
+      hasChanged = true
+    }
+    if (user.platformRoles != null &&
+        user.platformRoles?.toSet() != existingUser.platformRoles?.toSet()) {
+      // A list preserves the order, but here we actually do not care that much about the order
+      existingUser.platformRoles = user.platformRoles
+      hasChanged = true
+    }
+    // Changing the list of Organizations a User is member of can be done via the
+    // '/organizations/:id/users' endpoint
+    return if (hasChanged) {
+      cosmosTemplate.upsertAndReturnEntity(coreUserContainer, existingUser)
+    } else {
+      existingUser
+    }
   }
 
   @EventListener(OrganizationRegistered::class)
