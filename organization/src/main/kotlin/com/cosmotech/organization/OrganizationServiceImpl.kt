@@ -72,11 +72,7 @@ class OrganizationServiceImpl(val userService: UserApiService) :
     val newOrganizationId = idGenerator.generate("organization")
 
     val usersWithNames =
-        usersLoaded?.let {
-          organization.users?.map {
-            it.copy(name = usersLoaded[it.id]!!.name!!, organizationId = newOrganizationId)
-          }
-        }
+        usersLoaded?.let { organization.users?.map { it.copy(name = usersLoaded[it.id]!!.name!!) } }
 
     // TODO Set the ownerID to the logged-in user
 
@@ -129,9 +125,7 @@ class OrganizationServiceImpl(val userService: UserApiService) :
       val usersLoaded = fetchUsers(organization.users!!.mapNotNull { it.id })
       val usersWithNames =
           usersLoaded.let {
-            organization.users!!.map {
-              it.copy(name = usersLoaded[it.id]!!.name!!, organizationId = organizationId)
-            }
+            organization.users!!.map { it.copy(name = usersLoaded[it.id]!!.name!!) }
           }
       existingOrganization.users = usersWithNames
       hasChanged = true

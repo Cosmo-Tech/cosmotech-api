@@ -463,10 +463,10 @@ components:
         name:
           type: string
           description: the User name
-        organizationId:
-          type: string
-          readOnly: true
-          description: the Organization Id context
+#        organizationId:
+#          type: string
+#          readOnly: true
+#          description: the Organization Id context
         roles:
           type: array
           description: the User's roles for the Organization
