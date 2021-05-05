@@ -1,6 +1,6 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.api.retrofit
+package com.cosmotech.api.argo
 
 import retrofit2.Call
 import retrofit2.http.GET

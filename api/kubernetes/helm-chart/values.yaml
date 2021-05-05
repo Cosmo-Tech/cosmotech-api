@@ -105,3 +105,5 @@ config:
         cosmos:
           key: "changeme"
           uri: "changeme"
+      argo:
+        base-url: "https://argo-server.argo.svc.cluster.local:2746"

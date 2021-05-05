@@ -4,7 +4,7 @@ package com.cosmotech.scenariorun
 
 import com.azure.cosmos.models.*
 import com.cosmotech.api.AbstractCosmosBackedService
-import com.cosmotech.api.argo.getCumulatedLogs
+import com.cosmotech.api.argo.WorkflowUtils
 import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.scenariorun.api.ScenariorunApiService
@@ -28,7 +28,8 @@ import org.springframework.stereotype.Service
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
-class ScenariorunServiceImpl : AbstractCosmosBackedService(), ScenariorunApiService {
+class ScenariorunServiceImpl(val workflowUtils: WorkflowUtils) :
+    AbstractCosmosBackedService(), ScenariorunApiService {
 
   protected fun ScenarioRun.asMapWithAdditionalData(workspaceId: String? = null): Map<String, Any> {
     val scenarioAsMap = this.convertToMap().toMutableMap()
@@ -120,7 +121,8 @@ class ScenariorunServiceImpl : AbstractCosmosBackedService(), ScenariorunApiServ
     val workflowId = scenario.workflowId
     val workflowName = scenario.workflowName
     var cumulatedLogs =
-        if (workflowId != null && workflowName != null) getCumulatedLogs(workflowId, workflowName)
+        if (workflowId != null && workflowName != null)
+            workflowUtils.getCumulatedLogs(workflowId, workflowName)
         else ""
     val logs = ScenarioRunLogs(runLogs = ScenarioRunContainerLogs(textLog = cumulatedLogs))
     return logs
