@@ -15,3 +15,7 @@ management:
 #        # Base64
 #        key: "ZmFrZS1rZXkK"
 #        uri: "https://faketestaccount.documents.azure.com:443/"
+csm:
+    vendor: azure
+    argo:
+      base-url: "https://argo-server.argo.svc.cluster.local:2746"

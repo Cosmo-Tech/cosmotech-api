@@ -8,6 +8,7 @@ plugins { id("com.rameshkp.openapi-merger-gradle-plugin") version "1.0.4" }
 
 dependencies {
   api(projects.cosmotechApiCommon)
+  implementation("io.argoproj.workflow:argo-client-java:v3.0.1")
   implementation(projects.cosmotechConnectorApi)
   implementation(projects.cosmotechDatasetApi)
   implementation(projects.cosmotechOrganizationApi)
