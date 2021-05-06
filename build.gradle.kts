@@ -5,7 +5,6 @@ import org.apache.tools.ant.filters.ReplaceTokens
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.springframework.boot.gradle.dsl.SpringBootExtension
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 import org.springframework.boot.gradle.tasks.run.BootRun
@@ -133,7 +132,6 @@ subprojects {
 
   if (name != "cosmotech-api-common") {
     tasks.withType<AbstractCompile> { dependsOn("openApiGenerate") }
-    tasks.withType<GenerateTask> { dependsOn("openApiValidate") }
   }
 
   tasks.withType<KotlinCompile> {
