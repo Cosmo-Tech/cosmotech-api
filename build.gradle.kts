@@ -2,6 +2,7 @@ import com.diffplug.gradle.spotless.SpotlessExtension
 import com.google.cloud.tools.jib.api.buildplan.ImageFormat.OCI
 import com.google.cloud.tools.jib.gradle.JibExtension
 import org.apache.tools.ant.filters.ReplaceTokens
+import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.springframework.boot.gradle.dsl.SpringBootExtension
@@ -129,7 +130,12 @@ subprojects {
     }
   }
 
-  tasks.withType<Test> { useJUnitPlatform() }
+  tasks.withType<Test> {
+    useJUnitPlatform()
+    testLogging {
+      events(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
+    }
+  }
 
   tasks.getByName<Jar>("jar") { enabled = true }
 
