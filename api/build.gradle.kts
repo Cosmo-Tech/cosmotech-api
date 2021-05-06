@@ -121,7 +121,7 @@ tasks.register<GenerateTask>("openApiJSGenerate") {
 tasks.register<Copy>("copyJSGitPushScript") {
   dependsOn("openApiJSGenerate")
   from("${rootDir}/scripts/clients/build_override/git_push.sh")
-  into("$buildDir/generated-sources/javascript")
+  into("$buildDir/generated-sources/javascript/scripts")
 }
 
 tasks.register<Copy>("copyJSLicense") {
@@ -144,7 +144,7 @@ tasks.register<GenerateTask>("openApiPythonGenerate") {
 tasks.register<Copy>("copyPythonGitPushScript") {
   dependsOn("openApiPythonGenerate")
   from("${rootDir}/scripts/clients/build_override/git_push.sh")
-  into("$buildDir/generated-sources/python")
+  into("$buildDir/generated-sources/python/scripts")
 }
 
 tasks.register<Copy>("copyPythonLicense") {
@@ -184,7 +184,7 @@ tasks.register<GenerateTask>("openApiJavaGenerate") {
 tasks.register<Copy>("copyJavaGitPushScript") {
   dependsOn("openApiJavaGenerate")
   from("${rootDir}/scripts/clients/build_override/git_push.sh")
-  into("$buildDir/generated-sources/java")
+  into("$buildDir/generated-sources/java/scripts")
 }
 
 tasks.register<Copy>("copyJavaLicense") {
@@ -206,7 +206,7 @@ tasks.register<GenerateTask>("openApiCSharpGenerate") {
 tasks.register<Copy>("copyCSharpGitPushScript") {
   dependsOn("openApiCSharpGenerate")
   from("${rootDir}/scripts/clients/build_override/git_push.sh")
-  into("$buildDir/generated-sources/csharp")
+  into("$buildDir/generated-sources/csharp/scripts")
 }
 
 tasks.register<Copy>("copyCSharpLicense") {
