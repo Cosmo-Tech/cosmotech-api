@@ -211,35 +211,15 @@ entity ScenarioRunContainer {
     runArgs: List<String>
 }
 
-entity ScenarioRunContainerLog { 
-    timeGenerated: String
-    entrySource: String
-    logEntry: String
-}
-
 entity ScenarioRunContainerLogs { 
-    container: ScenarioRunContainer
-    computer: String
-    logs: List<ScenarioRunContainerLog>
-    textLog: String
+    nodeId: String
+    children: List<String>
+    logs: String
 }
 
 entity ScenarioRunLogs { 
     scenariorunId: String
-    options: ScenarioRunLogsOptions
-    fetchDatasetLogs: List<ScenarioRunContainerLogs>
-    fetchScenarioParametersLog: ScenarioRunContainerLogs
-    applyParametersLogs: ScenarioRunContainerLogs
-    validateDataLogs: ScenarioRunContainerLogs
-    sendDataWarehouseLogs: ScenarioRunContainerLogs
-    preRunLogs: ScenarioRunContainerLogs
-    runLogs: ScenarioRunContainerLogs
-    postRunLogs: ScenarioRunContainerLogs
-}
-
-entity ScenarioRunLogsOptions { 
-    containerIds: List<String>
-    plainText: Boolean
+    containers: Map
 }
 
 entity ScenarioRunSearch { 
@@ -409,18 +389,7 @@ RunTemplate -- RunTemplateResourceStorage : datasetValidatorResource
 RunTemplate -- RunTemplateResourceStorage : preRunResource
 RunTemplate -- RunTemplateResourceStorage : engineResource
 RunTemplate -- RunTemplateResourceStorage : postRunResource
-ScenarioRunContainerLogs -- ScenarioRunContainer : container
-ScenarioRunContainerLogs -- "0..*" ScenarioRunContainerLog : logs
 UserOrganization -- "0..*" UserWorkspace : workspaces
-ScenarioRunLogs -- ScenarioRunLogsOptions : options
-ScenarioRunLogs -- "0..*" ScenarioRunContainerLogs : fetchDatasetLogs
-ScenarioRunLogs -- ScenarioRunContainerLogs : fetchScenarioParametersLog
-ScenarioRunLogs -- ScenarioRunContainerLogs : applyParametersLogs
-ScenarioRunLogs -- ScenarioRunContainerLogs : validateDataLogs
-ScenarioRunLogs -- ScenarioRunContainerLogs : sendDataWarehouseLogs
-ScenarioRunLogs -- ScenarioRunContainerLogs : preRunLogs
-ScenarioRunLogs -- ScenarioRunContainerLogs : runLogs
-ScenarioRunLogs -- ScenarioRunContainerLogs : postRunLogs
 Solution -- "0..*" RunTemplateParameter : parameters
 Solution -- "0..*" RunTemplateParameterGroup : parameterGroups
 Solution -- "0..*" RunTemplate : run_templates

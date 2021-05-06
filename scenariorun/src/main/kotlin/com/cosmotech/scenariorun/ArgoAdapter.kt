@@ -65,8 +65,8 @@ class ArgoAdapter {
     val nodeSelector = mutableMapOf("kubernetes.io/os" to "linux")
 
     if (startContainers.nodeLabel != null) {
-        nodeSelector.put(K8S_AGENT_POOL, startContainers.nodeLabel)
-      }
+      nodeSelector.put(K8S_AGENT_POOL, startContainers.nodeLabel)
+    }
 
     return nodeSelector
   }

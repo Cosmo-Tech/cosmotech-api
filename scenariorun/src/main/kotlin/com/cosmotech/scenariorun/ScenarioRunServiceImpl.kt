@@ -11,7 +11,6 @@ import com.cosmotech.scenariorun.api.ScenariorunApiService
 import com.cosmotech.scenariorun.domain.ScenarioRun
 import com.cosmotech.scenariorun.domain.ScenarioRunContainerLogs
 import com.cosmotech.scenariorun.domain.ScenarioRunLogs
-import com.cosmotech.scenariorun.domain.ScenarioRunLogsOptions
 import com.cosmotech.scenariorun.domain.ScenarioRunSearch
 import com.cosmotech.scenariorun.domain.ScenarioRunStart
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
@@ -130,11 +129,16 @@ class ScenariorunServiceImpl(
         if (workflowId != null && workflowName != null)
             workflowUtils.getCumulatedLogs(workflowId, workflowName)
         else ""
-    val logs = ScenarioRunLogs(containers = mapOf("cumulated" to ScenarioRunContainerLogs(logs = cumulatedLogs)))
+    val logs =
+        ScenarioRunLogs(
+            containers = mapOf("cumulated" to ScenarioRunContainerLogs(logs = cumulatedLogs)))
     return logs
   }
 
-  override fun getCumulatedLogs(organizationId: kotlin.String, scenariorunId: kotlin.String): kotlin.String {
+  override fun getCumulatedLogs(
+      organizationId: kotlin.String,
+      scenariorunId: kotlin.String
+  ): kotlin.String {
     val scenario = findScenarioRunById(organizationId, scenariorunId)
     val workflowId = scenario.workflowId
     val workflowName = scenario.workflowName

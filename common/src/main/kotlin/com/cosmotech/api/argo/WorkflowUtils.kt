@@ -7,8 +7,8 @@ import io.argoproj.workflow.ApiException
 import io.argoproj.workflow.Configuration
 import io.argoproj.workflow.apis.ArchivedWorkflowServiceApi
 import io.argoproj.workflow.apis.WorkflowServiceApi
-import io.argoproj.workflow.models.Workflow
 import io.argoproj.workflow.models.NodeStatus
+import io.argoproj.workflow.models.Workflow
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -81,8 +81,16 @@ class WorkflowUtils(
     TODO("Not implemented yet")
   }
 
-  private fun getCumulatedSortedLogs(nodes: Map<String, NodeStatus>, logsMap: Map<String, String>, child: String? = null): String {
-    val parents = nodes.filter { (key, node) -> if (child == null) node.children == null else node.children != null && child in node.children!! }
+  private fun getCumulatedSortedLogs(
+      nodes: Map<String, NodeStatus>,
+      logsMap: Map<String, String>,
+      child: String? = null
+  ): String {
+    val parents =
+        nodes.filter { (key, node) ->
+          if (child == null) node.children == null
+          else node.children != null && child in node.children!!
+        }
     var logs = ""
     parents.keys.forEach {
       logs += this.getCumulatedSortedLogs(nodes, logsMap, it)

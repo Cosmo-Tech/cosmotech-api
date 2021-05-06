@@ -296,7 +296,9 @@ class ArgoAdapterTests {
   }
 
   fun getStartContainersRunDefaultPool(): ScenarioRunStartContainers {
-    val sc = ScenarioRunStartContainers(nodeLabel = "basicpool", containers = listOf(getScenarioRunContainerEntrypoint()))
+    val sc =
+        ScenarioRunStartContainers(
+            nodeLabel = "basicpool", containers = listOf(getScenarioRunContainerEntrypoint()))
     return sc
   }
 
