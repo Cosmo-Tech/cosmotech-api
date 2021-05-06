@@ -2,6 +2,7 @@ import com.diffplug.gradle.spotless.SpotlessExtension
 import com.google.cloud.tools.jib.api.buildplan.ImageFormat.OCI
 import com.google.cloud.tools.jib.gradle.JibExtension
 import org.apache.tools.ant.filters.ReplaceTokens
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
@@ -131,9 +132,53 @@ subprojects {
   }
 
   tasks.withType<Test> {
+    val testWorkingDir = file("${buildDir}/run")
+    workingDir = testWorkingDir
+
+    doFirst { testWorkingDir.mkdirs() }
+
     useJUnitPlatform()
+
+    if (project.hasProperty("test.exclude")) {
+      exclude(project.property("test.exclude").toString())
+    }
+
+    ignoreFailures = System.getProperty("test.ignoreFailures")?.toBoolean() == true
+    failFast = System.getProperty("test.failFast")?.toBoolean() == true
+
+    System.getProperties()
+        .filterKeys { it.toString().startsWith("test.") }
+        .mapKeys { it.toString().substringAfter("test.") }
+        .forEach { (key, value) -> systemProperty(key, value) }
+
     testLogging {
-      events(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
+      events(TestLogEvent.FAILED)
+
+      exceptionFormat = TestExceptionFormat.FULL
+      showExceptions = true
+      showCauses = true
+      showStackTraces = true
+
+      debug {
+        events(
+            TestLogEvent.FAILED,
+            TestLogEvent.SKIPPED,
+            TestLogEvent.STANDARD_ERROR,
+            TestLogEvent.STANDARD_OUT)
+        exceptionFormat = TestExceptionFormat.FULL
+      }
+
+      // remove standard output/error logging from --info builds by assigning only 'failed' and
+      // 'skipped' events
+      info {
+        events(TestLogEvent.SKIPPED, TestLogEvent.FAILED)
+        exceptionFormat = TestExceptionFormat.FULL
+      }
+    }
+
+    reports {
+      junitXml.isEnabled = true
+      html.isEnabled = true
     }
   }
 
