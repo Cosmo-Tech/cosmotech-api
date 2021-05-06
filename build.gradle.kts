@@ -245,7 +245,14 @@ subprojects {
       }
     }
 
-    configure<SpringBootExtension> { buildInfo() }
+    configure<SpringBootExtension> {
+      buildInfo {
+        properties {
+          // Unsetting time so the task can be deterministic and cacheable, for performance reasons
+          time = null
+        }
+      }
+    }
 
     configure<JibExtension> {
       from { image = "openjdk:16-alpine" }
