@@ -40,7 +40,42 @@ class OrganizationServiceImpl(val userService: UserApiService) :
       organizationId: String,
       organizationUser: List<OrganizationUser>
   ): List<OrganizationUser> {
-    TODO("Not yet implemented")
+    if (organizationUser.isEmpty()) {
+      // Nothing to do
+      return organizationUser
+    }
+
+    val organization = findOrganizationById(organizationId)
+
+    val organizationUserWithoutNullIds = organizationUser.filter { it.id != null }
+    val newUsersLoaded = fetchUsers(organizationUserWithoutNullIds.mapNotNull { it.id })
+    val organizationUserWithRightNames =
+        organizationUserWithoutNullIds.map { it.copy(name = newUsersLoaded[it.id]!!.name!!) }
+    val organizationUserMap = organizationUserWithRightNames.associateBy { it.id!! }
+
+    val currentOrganizationUsers =
+        organization.users?.filter { it.id != null }?.associateBy { it.id!! }?.toMutableMap()
+            ?: mutableMapOf()
+
+    newUsersLoaded.forEach { (userId, _) ->
+      // Add or replace
+      currentOrganizationUsers[userId] = organizationUserMap[userId]!!
+    }
+    organization.users = currentOrganizationUsers.values.toList()
+
+    cosmosTemplate.upsert(coreOrganizationContainer, organization)
+
+    // Roles might have changed => notify all users so they can update their own items
+    organization.users?.forEach { user ->
+      this.eventPublisher.publishEvent(
+          UserAddedToOrganization(
+              this,
+              organizationId,
+              organization.name!!,
+              user.id!!,
+              user.roles.map { role -> role.value }))
+    }
+    return organizationUserWithRightNames
   }
 
   override fun findAllOrganizations() =
