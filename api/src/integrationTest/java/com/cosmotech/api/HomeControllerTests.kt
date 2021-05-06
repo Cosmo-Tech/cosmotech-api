@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
@@ -19,11 +18,9 @@ import org.springframework.web.context.WebApplicationContext
 
 @ActiveProfiles(profiles = ["test"])
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class HomeControllerTests {
+class HomeControllerTests(private val context: WebApplicationContext) {
 
   private val logger = LoggerFactory.getLogger(HomeControllerTests::class.java)
-
-  @Autowired protected lateinit var context: WebApplicationContext
 
   private lateinit var mvc: MockMvc
 

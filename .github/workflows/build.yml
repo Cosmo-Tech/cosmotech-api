@@ -34,7 +34,7 @@ jobs:
     - name: Build with Gradle
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: ./gradlew build -x test -x spotlessCheck -x openApiValidate --info
+      run: ./gradlew build -x test -x integrationTest -x spotlessCheck -x openApiValidate --info
 
     - name: Archive openapi.yaml
       uses: actions/upload-artifact@v2

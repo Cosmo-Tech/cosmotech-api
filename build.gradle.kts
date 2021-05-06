@@ -88,6 +88,19 @@ subprojects {
 
   java { toolchain { languageVersion.set(JavaLanguageVersion.of(16)) } }
 
+  sourceSets {
+    create("integrationTest") {
+      compileClasspath += sourceSets.main.get().output + sourceSets.test.get().output
+      runtimeClasspath += sourceSets.main.get().output + sourceSets.test.get().output
+    }
+  }
+  val integrationTestImplementation by configurations.getting {
+    extendsFrom(configurations.testImplementation.get())
+  }
+  val integrationTestRuntimeOnly by configurations.getting {
+    extendsFrom(configurations.testRuntime.get())
+  }
+
   dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
@@ -112,7 +125,10 @@ subprojects {
 
     implementation("com.azure.spring:azure-spring-boot-starter-cosmos:3.4.0")
 
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation(platform("org.junit:junit-bom:5.7.1"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+
+    integrationTestImplementation("org.springframework.boot:spring-boot-starter-test")
 
     val developmentOnly = configurations.getByName("developmentOnly")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
@@ -130,6 +146,18 @@ subprojects {
       jvmTarget = "11"
     }
   }
+
+  val integrationTest =
+      task<Test>("integrationTest") {
+        description = "Runs integration tests"
+        group = "verification"
+
+        shouldRunAfter("test")
+        classpath = sourceSets["integrationTest"].runtimeClasspath
+        testClassesDirs = sourceSets["integrationTest"].output.classesDirs
+      }
+
+  tasks.check { dependsOn(integrationTest) }
 
   tasks.withType<Test> {
     val testWorkingDir = file("${buildDir}/run")
