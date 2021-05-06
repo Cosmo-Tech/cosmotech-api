@@ -4,14 +4,100 @@ All URIs are relative to *https://api.azure.cosmo-platform.com*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**addOrReplaceParameterGroups**](SolutionApi.md#addOrReplaceParameterGroups) | **POST** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups | Add Parameter Groups. Any item with the same ID will be overwritten
+[**addOrReplaceParameters**](SolutionApi.md#addOrReplaceParameters) | **POST** /organizations/{organization_id}/solutions/{solution_id}/parameters | Add Parameters. Any item with the same ID will be overwritten
+[**addOrReplaceRunTemplates**](SolutionApi.md#addOrReplaceRunTemplates) | **POST** /organizations/{organization_id}/solutions/{solution_id}/runTemplates | Add Run Templates. Any item with the same ID will be overwritten
 [**createSolution**](SolutionApi.md#createSolution) | **POST** /organizations/{organization_id}/solutions | Register a new solution
 [**deleteSolution**](SolutionApi.md#deleteSolution) | **DELETE** /organizations/{organization_id}/solutions/{solution_id} | Delete a solution
 [**findAllSolutions**](SolutionApi.md#findAllSolutions) | **GET** /organizations/{organization_id}/solutions | List all Solutions
 [**findSolutionById**](SolutionApi.md#findSolutionById) | **GET** /organizations/{organization_id}/solutions/{solution_id} | Get the details of a solution
+[**removeAllRunTemplates**](SolutionApi.md#removeAllRunTemplates) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/runTemplates | Remove all Run Templates from the Solution specified
+[**removeAllSolutionParameterGroups**](SolutionApi.md#removeAllSolutionParameterGroups) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups | Remove all Parameter Groups from the Solution specified
+[**removeAllSolutionParameters**](SolutionApi.md#removeAllSolutionParameters) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/parameters | Remove all Parameters from the Solution specified
 [**updateSolution**](SolutionApi.md#updateSolution) | **PATCH** /organizations/{organization_id}/solutions/{solution_id} | Update a solution
-[**upload**](SolutionApi.md#upload) | **POST** /organizations/{organization_id}/solutions/upload | Upload and register a new solution
-[**uploadRunTemplateHandler**](SolutionApi.md#uploadRunTemplateHandler) | **POST** /organizations/{organization_id}/solutions/{solution_id}/runtemplates/{run_template_id}/handler/{handler_id} | Upload a Run Template step handler zip file
+[**uploadRunTemplateHandler**](SolutionApi.md#uploadRunTemplateHandler) | **POST** /organizations/{organization_id}/solutions/{solution_id}/runtemplates/{run_template_id}/handlers/{handler_id}/upload | Upload a Run Template step handler zip file
 
+
+<a name="addOrReplaceParameterGroups"></a>
+# **addOrReplaceParameterGroups**
+> List addOrReplaceParameterGroups(organization\_id, solution\_id, RunTemplateParameterGroup)
+
+Add Parameter Groups. Any item with the same ID will be overwritten
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **solution\_id** | **String**| the Solution identifier | [default to null]
+ **RunTemplateParameterGroup** | [**List**](../Models/RunTemplateParameterGroup.md)| the Parameter Groups |
+
+### Return type
+
+[**List**](../Models/RunTemplateParameterGroup.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+<a name="addOrReplaceParameters"></a>
+# **addOrReplaceParameters**
+> List addOrReplaceParameters(organization\_id, solution\_id, RunTemplateParameter)
+
+Add Parameters. Any item with the same ID will be overwritten
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **solution\_id** | **String**| the Solution identifier | [default to null]
+ **RunTemplateParameter** | [**List**](../Models/RunTemplateParameter.md)| the Parameters |
+
+### Return type
+
+[**List**](../Models/RunTemplateParameter.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+<a name="addOrReplaceRunTemplates"></a>
+# **addOrReplaceRunTemplates**
+> List addOrReplaceRunTemplates(organization\_id, solution\_id, RunTemplate)
+
+Add Run Templates. Any item with the same ID will be overwritten
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **solution\_id** | **String**| the Solution identifier | [default to null]
+ **RunTemplate** | [**List**](../Models/RunTemplate.md)| the Run Templates |
+
+### Return type
+
+[**List**](../Models/RunTemplate.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
 
 <a name="createSolution"></a>
 # **createSolution**
@@ -36,12 +122,12 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="deleteSolution"></a>
 # **deleteSolution**
-> Solution deleteSolution(organization\_id, solution\_id)
+> deleteSolution(organization\_id, solution\_id)
 
 Delete a solution
 
@@ -54,7 +140,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**Solution**](../Models/Solution.md)
+null (empty response body)
 
 ### Authorization
 
@@ -63,7 +149,7 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: Not defined
 
 <a name="findAllSolutions"></a>
 # **findAllSolutions**
@@ -116,6 +202,84 @@ Name | Type | Description  | Notes
 - **Content-Type**: Not defined
 - **Accept**: application/json
 
+<a name="removeAllRunTemplates"></a>
+# **removeAllRunTemplates**
+> removeAllRunTemplates(organization\_id, solution\_id)
+
+Remove all Run Templates from the Solution specified
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **solution\_id** | **String**| the Solution identifier | [default to null]
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
+
+<a name="removeAllSolutionParameterGroups"></a>
+# **removeAllSolutionParameterGroups**
+> removeAllSolutionParameterGroups(organization\_id, solution\_id)
+
+Remove all Parameter Groups from the Solution specified
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **solution\_id** | **String**| the Solution identifier | [default to null]
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
+
+<a name="removeAllSolutionParameters"></a>
+# **removeAllSolutionParameters**
+> removeAllSolutionParameters(organization\_id, solution\_id)
+
+Remove all Parameters from the Solution specified
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **solution\_id** | **String**| the Solution identifier | [default to null]
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
+
 <a name="updateSolution"></a>
 # **updateSolution**
 > Solution updateSolution(organization\_id, solution\_id, Solution)
@@ -140,33 +304,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
-- **Accept**: application/json
-
-<a name="upload"></a>
-# **upload**
-> Solution upload(organization\_id, body)
-
-Upload and register a new solution
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **body** | **File**| the Solution to upload and register |
-
-### Return type
-
-[**Solution**](../Models/Solution.md)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: application/yaml
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="uploadRunTemplateHandler"></a>

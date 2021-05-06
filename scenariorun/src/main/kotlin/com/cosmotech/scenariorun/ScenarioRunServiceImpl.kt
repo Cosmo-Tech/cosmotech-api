@@ -23,13 +23,19 @@ import io.argoproj.workflow.apis.WorkflowServiceApi
 import io.argoproj.workflow.models.*
 import java.util.*
 import kotlin.reflect.full.memberProperties
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Service
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
-class ScenariorunServiceImpl(val workflowUtils: WorkflowUtils) :
-    AbstractCosmosBackedService(), ScenariorunApiService {
+class ScenariorunServiceImpl(
+    val argoAdapter: ArgoAdapter,
+    @Value("\${csm.platform.argo.base-url:}") val argoBaseUrl: String,
+    val workflowUtils: WorkflowUtils
+) : AbstractCosmosBackedService(), ScenariorunApiService {
+
+  private val CSM_K8S_NAMESPACE = "phoenix"
 
   protected fun ScenarioRun.asMapWithAdditionalData(workspaceId: String? = null): Map<String, Any> {
     val scenarioAsMap = this.convertToMap().toMutableMap()
@@ -247,30 +253,15 @@ class ScenariorunServiceImpl(val workflowUtils: WorkflowUtils) :
 
     val defaultClient = Configuration.getDefaultApiClient()
     defaultClient.setVerifyingSsl(false)
-    defaultClient.setBasePath("https://argo-server.argo.svc.cluster.local:2746")
+    defaultClient.setBasePath(argoBaseUrl)
 
     val apiInstance = WorkflowServiceApi(defaultClient)
-    val namespace = "phoenix"
     val body = WorkflowCreateRequest()
 
-    body.workflow(
-        Workflow()
-            .metadata(
-                io.kubernetes.client.openapi.models.V1ObjectMeta().generateName("hello-world-"))
-            .spec(
-                WorkflowSpec()
-                    .serviceAccountName("workflow")
-                    .entrypoint("whalesay")
-                    .addTemplatesItem(
-                        Template()
-                            .name("whalesay")
-                            .container(
-                                io.kubernetes.client.openapi.models.V1Container()
-                                    .image("docker/whalesay")
-                                    .command(listOf("cowsay"))
-                                    .args(listOf("hello world"))))))
+    body.workflow(argoAdapter.buildWorkflow(scenarioRunStartContainers))
+
     try {
-      val result = apiInstance.workflowServiceCreateWorkflow(namespace, body)
+      val result = apiInstance.workflowServiceCreateWorkflow(CSM_K8S_NAMESPACE, body)
       if (result.metadata.uid == null)
           throw IllegalStateException("Argo Workflow metadata.uid is null")
       if (result.metadata.name == null)

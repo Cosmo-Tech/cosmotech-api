@@ -7,12 +7,12 @@ Method | HTTP request | Description
 [**authorizeUser**](UserApi.md#authorizeUser) | **GET** /oauth2/authorize | Authorize an User with OAuth2. Delegated to configured OAuth2 service
 [**findAllUsers**](UserApi.md#findAllUsers) | **GET** /users | List all Users
 [**findUserById**](UserApi.md#findUserById) | **GET** /users/{user_id} | Get the details of an user
-[**getCurrentUser**](UserApi.md#getCurrentUser) | **GET** /users/me | Get the details of an user
-[**getOrganizationCurrentUser**](UserApi.md#getOrganizationCurrentUser) | **GET** /organizations/{organization_id}/me | Get the details of an user with roles for an Organization
-[**getWorkspaceCurrentUser**](UserApi.md#getWorkspaceCurrentUser) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/me | Get the details of an user with roles for a Workspace
+[**getCurrentUser**](UserApi.md#getCurrentUser) | **GET** /users/me | Get the details of the logged-in User
+[**getOrganizationCurrentUser**](UserApi.md#getOrganizationCurrentUser) | **GET** /organizations/{organization_id}/me | Get the details of a logged-in User with roles for an Organization
+[**getWorkspaceCurrentUser**](UserApi.md#getWorkspaceCurrentUser) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/me | Get the details of the logged-in user with roles for a Workspace
 [**registerUser**](UserApi.md#registerUser) | **POST** /users | Register a new user
 [**unregisterUser**](UserApi.md#unregisterUser) | **DELETE** /users/{user_id} | Unregister an user
-[**updateUser**](UserApi.md#updateUser) | **PATCH** /users/{user_id} | Update an user
+[**updateUser**](UserApi.md#updateUser) | **PATCH** /users/{user_id} | Update a User
 
 
 <a name="authorizeUser"></a>
@@ -88,7 +88,7 @@ Name | Type | Description  | Notes
 # **getCurrentUser**
 > User getCurrentUser()
 
-Get the details of an user
+Get the details of the logged-in User
 
 ### Parameters
 This endpoint does not need any parameter.
@@ -110,7 +110,7 @@ This endpoint does not need any parameter.
 # **getOrganizationCurrentUser**
 > User getOrganizationCurrentUser(organization\_id)
 
-Get the details of an user with roles for an Organization
+Get the details of a logged-in User with roles for an Organization
 
 ### Parameters
 
@@ -135,7 +135,7 @@ Name | Type | Description  | Notes
 # **getWorkspaceCurrentUser**
 > User getWorkspaceCurrentUser(organization\_id, workspace\_id)
 
-Get the details of an user with roles for a Workspace
+Get the details of the logged-in user with roles for a Workspace
 
 ### Parameters
 
@@ -179,12 +179,12 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="unregisterUser"></a>
 # **unregisterUser**
-> User unregisterUser(user\_id)
+> unregisterUser(user\_id)
 
 Unregister an user
 
@@ -196,7 +196,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**User**](../Models/User.md)
+null (empty response body)
 
 ### Authorization
 
@@ -205,20 +205,20 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: Not defined
 
 <a name="updateUser"></a>
 # **updateUser**
 > User updateUser(user\_id, User)
 
-Update an user
+Update a User
 
 ### Parameters
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **user\_id** | **String**| the User identifier | [default to null]
- **User** | [**User**](../Models/User.md)| the new User details. Organization membership is handled in Organzation service. |
+ **User** | [**User**](../Models/User.md)| the new User details. Organization membership is handled via the /organizations endpoint. |
 
 ### Return type
 
@@ -230,6 +230,6 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 

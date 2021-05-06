@@ -554,6 +554,9 @@ components:
       type: object
       description: the parameters to run directly containers
       properties:
+        generateName:
+          type: string
+          description: the base name for workflow name generation
         nodeLabel:
           type: string
           description: the node label request

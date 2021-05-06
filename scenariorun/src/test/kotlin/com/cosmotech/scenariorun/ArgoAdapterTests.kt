@@ -4,7 +4,9 @@ package com.cosmotech.scenariorun
 
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
+import io.argoproj.workflow.models.DAGTask
 import io.kubernetes.client.openapi.models.V1EnvVar
+import io.kubernetes.client.openapi.models.V1ObjectMeta
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
@@ -103,11 +105,22 @@ class ArgoAdapterTests {
   }
 
   @Test
-  fun `Create Workflow Spec with StartContainers default agent pool`() {
+  fun `Create Workflow Spec with StartContainers basic agent pool`() {
     var sc = getStartContainersRunDefaultPool()
     val workflowSpec = argoAdapter.buildWorkflowSpec(sc)
     val expected = mapOf("kubernetes.io/os" to "linux", "agentpool" to "basicpool")
 
+    logger.info(workflowSpec.nodeSelector.toString())
+    assertTrue(expected.equals(workflowSpec.nodeSelector))
+  }
+
+  @Test
+  fun `Create Workflow Spec with StartContainers no pool`() {
+    var sc = getStartContainersRunNoPool()
+    val workflowSpec = argoAdapter.buildWorkflowSpec(sc)
+    val expected = mapOf("kubernetes.io/os" to "linux")
+
+    logger.info(workflowSpec.nodeSelector.toString())
     assertTrue(expected.equals(workflowSpec.nodeSelector))
   }
 
@@ -136,20 +149,121 @@ class ArgoAdapterTests {
   }
 
   @Test
-  fun `Create Workflow Spec with StartContainers entrypoint step not null`() {
+  fun `Create Workflow Spec with StartContainers entrypoint template not null`() {
     var sc = getStartContainers()
     val workflowSpec = argoAdapter.buildWorkflowSpec(sc)
 
-    val entrypointTemplate = workflowSpec.templates?.find {
-      template -> template.name.equals("entrypoint")
-    }
+    val entrypointTemplate =
+        workflowSpec.templates?.find { template -> template.name.equals("entrypoint") }
     assertNotNull(entrypointTemplate)
+  }
+
+  @Test
+  fun `Create Workflow Spec with StartContainers entrypoint dag not null`() {
+    var sc = getStartContainers()
+    val workflowSpec = argoAdapter.buildWorkflowSpec(sc)
+
+    val entrypointTemplate =
+        workflowSpec.templates?.find { template -> template.name.equals("entrypoint") }
+    val dag = entrypointTemplate?.dag
+    assertNotNull(dag)
+  }
+
+  @Test
+  fun `Create Workflow Spec with StartContainers entrypoint dag valid`() {
+    var sc = getStartContainers()
+    val workflowSpec = argoAdapter.buildWorkflowSpec(sc)
+
+    val entrypointTemplate =
+        workflowSpec.templates?.find { template -> template.name.equals("entrypoint") }
+    val expected =
+        listOf(
+            DAGTask().name("fetchDatasetContainer-1").template("fetchDatasetContainer-1"),
+            DAGTask()
+                .name("fetchScenarioParametersContainer")
+                .template("fetchScenarioParametersContainer")
+                .dependencies(listOf("fetchDatasetContainer-1")),
+            DAGTask()
+                .name("applyParametersContainer")
+                .template("applyParametersContainer")
+                .dependencies(listOf("fetchScenarioParametersContainer")),
+            DAGTask()
+                .name("validateDataContainer")
+                .template("validateDataContainer")
+                .dependencies(listOf("applyParametersContainer")),
+            DAGTask()
+                .name("sendDataWarehouseContainer")
+                .template("sendDataWarehouseContainer")
+                .dependencies(listOf("validateDataContainer")),
+            DAGTask()
+                .name("preRunContainer")
+                .template("preRunContainer")
+                .dependencies(listOf("sendDataWarehouseContainer")),
+            DAGTask()
+                .name("runContainer")
+                .template("runContainer")
+                .dependencies(listOf("preRunContainer")),
+            DAGTask()
+                .name("postRunContainer")
+                .template("postRunContainer")
+                .dependencies(listOf("runContainer")),
+        )
+
+    assertEquals(expected, entrypointTemplate?.dag?.tasks)
+  }
+
+  @Test
+  fun `Create Workflow Spec with StartContainers entrypoint dag dependencies valid`() {
+    var sc = getStartContainers()
+    val workflowSpec = argoAdapter.buildWorkflowSpec(sc)
+
+    val entrypointTemplate =
+        workflowSpec.templates?.find { template -> template.name.equals("entrypoint") }
+    val expected =
+        listOf(
+            null,
+            "fetchDatasetContainer-1",
+            "fetchScenarioParametersContainer",
+            "applyParametersContainer",
+            "validateDataContainer",
+            "sendDataWarehouseContainer",
+            "preRunContainer",
+            "runContainer",
+        )
+
+    val dependencies =
+        entrypointTemplate?.dag?.tasks?.map { task -> task.dependencies?.getOrNull(0) }
+
+    assertEquals(expected, dependencies)
+  }
+
+  @Test
+  fun `Create Workflow with StartContainers not null`() {
+    var sc = getStartContainers()
+    val workflow = argoAdapter.buildWorkflow(sc)
+    assertNotNull(workflow)
+  }
+
+  @Test
+  fun `Create Workflow with StartContainers generate name default`() {
+    var sc = getStartContainers()
+    val workflow = argoAdapter.buildWorkflow(sc)
+    val expected = V1ObjectMeta().generateName("default-workflow-")
+    assertEquals(expected, workflow.metadata)
+  }
+
+  @Test
+  fun `Create Workflow with StartContainers generate name Scenario`() {
+    var sc = getStartContainersNamed()
+    val workflow = argoAdapter.buildWorkflow(sc)
+    val expected = V1ObjectMeta().generateName("Scenario-1-")
+    assertEquals(expected, workflow.metadata)
   }
 
   fun getScenarioRunContainer(name: String = "default"): ScenarioRunContainer {
     var src =
         ScenarioRunContainer(
-           name = name, 
+            name = name,
             image = "cosmotech/testcontainer",
         )
     return src
@@ -158,23 +272,23 @@ class ArgoAdapterTests {
   fun getScenarioRunContainerArgs(name: String = "default"): ScenarioRunContainer {
     var src =
         ScenarioRunContainer(
-           name = name, 
-            image = "cosmotech/testcontainer", runArgs = listOf("arg1", "arg2", "arg3"))
+            name = name,
+            image = "cosmotech/testcontainer",
+            runArgs = listOf("arg1", "arg2", "arg3"))
     return src
   }
 
   fun getScenarioRunContainerEntrypoint(name: String = "default"): ScenarioRunContainer {
     var src =
         ScenarioRunContainer(
-           name = name, 
-          image = "cosmotech/testcontainer", entrypoint = DEFAULT_ENTRY_POINT)
+            name = name, image = "cosmotech/testcontainer", entrypoint = DEFAULT_ENTRY_POINT)
     return src
   }
 
   fun getScenarioRunContainerEnv(name: String = "default"): ScenarioRunContainer {
     var src =
         ScenarioRunContainer(
-           name = name, 
+            name = name,
             image = "cosmotech/testcontainer",
             envVars = mapOf("env1" to "envvar1", "env2" to "envvar2", "env3" to "envvar3"))
 
@@ -182,7 +296,7 @@ class ArgoAdapterTests {
   }
 
   fun getStartContainersRunDefaultPool(): ScenarioRunStartContainers {
-    val sc = ScenarioRunStartContainers(containers = listOf(getScenarioRunContainerEntrypoint()))
+    val sc = ScenarioRunStartContainers(nodeLabel = "basicpool", containers = listOf(getScenarioRunContainerEntrypoint()))
     return sc
   }
 
@@ -194,22 +308,47 @@ class ArgoAdapterTests {
     return sc
   }
 
+  fun getStartContainersRunNoPool(): ScenarioRunStartContainers {
+    val sc =
+        ScenarioRunStartContainers(
+            containers = listOf(getScenarioRunContainerEntrypoint("runContainer")))
+    return sc
+  }
+
   fun getStartContainers(): ScenarioRunStartContainers {
     val sc =
         ScenarioRunStartContainers(
             nodeLabel = "highcpupool",
-            containers = listOf(
-            getScenarioRunContainer("fetchDatasetContainer-1"),
-            getScenarioRunContainer("fetchScenarioParametersContainer"),
-            getScenarioRunContainerEntrypoint("applyParametersContainer"),
-            getScenarioRunContainerEntrypoint("validateDataContainer"),
-            getScenarioRunContainer("sendDataWarehouseContainer"),
-            getScenarioRunContainerEntrypoint("preRunContainer"),
-            getScenarioRunContainerEntrypoint("runContainer"),
-            getScenarioRunContainerEntrypoint("postRunContainer"),
-          )
-        )
+            containers =
+                listOf(
+                    getScenarioRunContainer("fetchDatasetContainer-1"),
+                    getScenarioRunContainer("fetchScenarioParametersContainer"),
+                    getScenarioRunContainerEntrypoint("applyParametersContainer"),
+                    getScenarioRunContainerEntrypoint("validateDataContainer"),
+                    getScenarioRunContainer("sendDataWarehouseContainer"),
+                    getScenarioRunContainerEntrypoint("preRunContainer"),
+                    getScenarioRunContainerEntrypoint("runContainer"),
+                    getScenarioRunContainerEntrypoint("postRunContainer"),
+                ))
     return sc
   }
 
+  fun getStartContainersNamed(): ScenarioRunStartContainers {
+    val sc =
+        ScenarioRunStartContainers(
+            generateName = "Scenario-1-",
+            nodeLabel = "highcpupool",
+            containers =
+                listOf(
+                    getScenarioRunContainer("fetchDatasetContainer-1"),
+                    getScenarioRunContainer("fetchScenarioParametersContainer"),
+                    getScenarioRunContainerEntrypoint("applyParametersContainer"),
+                    getScenarioRunContainerEntrypoint("validateDataContainer"),
+                    getScenarioRunContainer("sendDataWarehouseContainer"),
+                    getScenarioRunContainerEntrypoint("preRunContainer"),
+                    getScenarioRunContainerEntrypoint("runContainer"),
+                    getScenarioRunContainerEntrypoint("postRunContainer"),
+                ))
+    return sc
+  }
 }

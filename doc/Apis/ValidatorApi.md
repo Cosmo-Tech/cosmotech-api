@@ -38,7 +38,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="createValidatorRun"></a>
@@ -65,12 +65,12 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="deleteValidator"></a>
 # **deleteValidator**
-> Validator deleteValidator(organization\_id, validator\_id)
+> deleteValidator(organization\_id, validator\_id)
 
 Delete a validator
 
@@ -83,7 +83,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**Validator**](../Models/Validator.md)
+null (empty response body)
 
 ### Authorization
 
@@ -92,11 +92,11 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: Not defined
 
 <a name="deleteValidatorRun"></a>
 # **deleteValidatorRun**
-> ValidatorRun deleteValidatorRun(organization\_id, validator\_id, validatorrun\_id)
+> deleteValidatorRun(organization\_id, validator\_id, validatorrun\_id)
 
 Delete a validator run
 
@@ -110,7 +110,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**ValidatorRun**](../Models/ValidatorRun.md)
+null (empty response body)
 
 ### Authorization
 
@@ -119,7 +119,7 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: Not defined
 
 <a name="findAllValidatorRuns"></a>
 # **findAllValidatorRuns**
@@ -249,6 +249,6 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 

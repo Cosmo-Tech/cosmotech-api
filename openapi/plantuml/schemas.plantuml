@@ -62,7 +62,7 @@ entity DatasetCopyParameters {
 
 entity Organization { 
     id: String
-    * name: String
+    name: String
     ownerId: String
     users: List<OrganizationUser>
     services: OrganizationServices
@@ -84,8 +84,7 @@ entity OrganizationServices {
 
 entity OrganizationUser { 
     id: String
-    * name: String
-    organizationId: String
+    name: String
     * roles: List<String>
 }
 
@@ -205,8 +204,9 @@ entity ScenarioRun {
 
 entity ScenarioRunContainer { 
     id: String
+    * name: String
     envVars: Map
-    image: String
+    * image: String
     entrypoint: String
     runArgs: List<String>
 }
@@ -259,15 +259,9 @@ entity ScenarioRunStart {
 }
 
 entity ScenarioRunStartContainers { 
+    generateName: String
     nodeLabel: String
-    fetchDatasetContainers: List<ScenarioRunContainer>
-    fetchScenarioParametersContainer: ScenarioRunContainer
-    applyParametersContainer: ScenarioRunContainer
-    validateDataContainer: ScenarioRunContainer
-    sendDataWarehouseContainer: ScenarioRunContainer
-    preRunContainer: ScenarioRunContainer
-    runContainer: ScenarioRunContainer
-    postRunContainer: ScenarioRunContainer
+    * containers: List<ScenarioRunContainer>
 }
 
 entity ScenarioRunStartSolution { 
@@ -312,8 +306,8 @@ entity Solution {
 
 entity User { 
     id: String
-    * name: String
-    * platformRoles: List<String>
+    name: String
+    platformRoles: List<String>
     organizations: List<UserOrganization>
 }
 
@@ -451,14 +445,7 @@ ScenarioRun -- ScenarioRunContainer : sendDataWarehouseContainer
 ScenarioRun -- ScenarioRunContainer : preRunContainer
 ScenarioRun -- ScenarioRunContainer : runContainer
 ScenarioRun -- ScenarioRunContainer : postRunContainer
-ScenarioRunStartContainers -- "0..*" ScenarioRunContainer : fetchDatasetContainers
-ScenarioRunStartContainers -- ScenarioRunContainer : fetchScenarioParametersContainer
-ScenarioRunStartContainers -- ScenarioRunContainer : applyParametersContainer
-ScenarioRunStartContainers -- ScenarioRunContainer : validateDataContainer
-ScenarioRunStartContainers -- ScenarioRunContainer : sendDataWarehouseContainer
-ScenarioRunStartContainers -- ScenarioRunContainer : preRunContainer
-ScenarioRunStartContainers -- ScenarioRunContainer : runContainer
-ScenarioRunStartContainers -- ScenarioRunContainer : postRunContainer
+ScenarioRunStartContainers -- "0..*" ScenarioRunContainer : containers
 Workspace -- WorkspaceSolution : solution
 Workspace -- "0..*" WorkspaceUser : users
 Workspace -- WorkspaceWebApp : webApp

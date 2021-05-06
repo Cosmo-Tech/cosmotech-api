@@ -5,10 +5,9 @@ All URIs are relative to *https://api.azure.cosmo-platform.com*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**findAllConnectors**](ConnectorApi.md#findAllConnectors) | **GET** /connectors | List all Connectors
-[**findConnectorById**](ConnectorApi.md#findConnectorById) | **GET** /connectors/{connector_id} | Get the details of an connector
+[**findConnectorById**](ConnectorApi.md#findConnectorById) | **GET** /connectors/{connector_id} | Get the details of a connector
 [**registerConnector**](ConnectorApi.md#registerConnector) | **POST** /connectors | Register a new connector
-[**unregisterConnector**](ConnectorApi.md#unregisterConnector) | **DELETE** /connectors/{connector_id} | Unregister an connector
-[**uploadConnector**](ConnectorApi.md#uploadConnector) | **POST** /connectors/upload | Upload and register a new connector
+[**unregisterConnector**](ConnectorApi.md#unregisterConnector) | **DELETE** /connectors/{connector_id} | Unregister a connector
 
 
 <a name="findAllConnectors"></a>
@@ -37,7 +36,7 @@ This endpoint does not need any parameter.
 # **findConnectorById**
 > Connector findConnectorById(connector\_id)
 
-Get the details of an connector
+Get the details of a connector
 
 ### Parameters
 
@@ -80,14 +79,14 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="unregisterConnector"></a>
 # **unregisterConnector**
-> Connector unregisterConnector(connector\_id)
+> unregisterConnector(connector\_id)
 
-Unregister an connector
+Unregister a connector
 
 ### Parameters
 
@@ -97,7 +96,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**Connector**](../Models/Connector.md)
+null (empty response body)
 
 ### Authorization
 
@@ -106,30 +105,5 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
-
-<a name="uploadConnector"></a>
-# **uploadConnector**
-> Connector uploadConnector(body)
-
-Upload and register a new connector
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **body** | **File**| the Connector to upload and register |
-
-### Return type
-
-[**Connector**](../Models/Connector.md)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: application/yaml
-- **Accept**: application/json
+- **Accept**: Not defined
 

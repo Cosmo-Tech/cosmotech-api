@@ -20,7 +20,7 @@ Method | HTTP request | Description
 
 <a name="deleteScenarioRun"></a>
 # **deleteScenarioRun**
-> ScenarioRun deleteScenarioRun(organization\_id, scenariorun\_id)
+> deleteScenarioRun(organization\_id, scenariorun\_id)
 
 Delete a scenariorun
 
@@ -33,7 +33,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**ScenarioRun**](../Models/ScenarioRun.md)
+null (empty response body)
 
 ### Authorization
 
@@ -42,7 +42,7 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: Not defined
 
 <a name="findScenarioRunById"></a>
 # **findScenarioRunById**
@@ -230,7 +230,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="searchScenarioRuns"></a>
@@ -256,7 +256,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="startScenarioRunContainers"></a>
@@ -282,7 +282,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="startScenarioRunScenario"></a>
@@ -308,7 +308,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="startScenarioRunSolution"></a>
@@ -334,6 +334,6 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 

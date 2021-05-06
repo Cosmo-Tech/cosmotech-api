@@ -8,6 +8,7 @@ import io.argoproj.workflow.Configuration
 import io.argoproj.workflow.apis.ArchivedWorkflowServiceApi
 import io.argoproj.workflow.apis.WorkflowServiceApi
 import io.argoproj.workflow.models.Workflow
+import io.argoproj.workflow.models.NodeStatus
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -42,6 +43,7 @@ class WorkflowUtils(
     var workflow: Workflow? = null
     try {
       workflow = getWorkflow(workflowName)
+      logger.debug(workflow.toString())
     } catch (e: ApiException) {
       println("Workflow $workflowName not found, trying to find it in archive")
     }
@@ -54,18 +56,22 @@ class WorkflowUtils(
 
   fun getCumulatedWorkflowLogs(workflow: Workflow): String {
     val workflowId = workflow.metadata.uid
-    var cumulatedLogs = ""
+    var logsMap: MutableMap<String, String> = mutableMapOf()
     if (workflowId != null) {
       workflow.status?.nodes?.forEach { (nodeKey, nodeValue) ->
-        val nodeName = nodeValue.name ?: ""
         nodeValue.outputs?.artifacts?.forEach {
           if (it.s3 != null) {
             val artifactName = it.name ?: ""
-            val artifactLogs = argoRetrofit.getLogArtifactByUid(workflowId, nodeName, artifactName)
-            cumulatedLogs += artifactLogs
+            val artifactLogs = argoRetrofit.getLogArtifactByUid(workflowId, nodeKey, artifactName)
+            logsMap.put(nodeKey, artifactLogs)
           }
         }
       }
+    }
+    var cumulatedLogs = ""
+    val nodes = workflow.status?.nodes
+    if (nodes != null) {
+      cumulatedLogs = getCumulatedSortedLogs(nodes, logsMap)
     }
 
     return cumulatedLogs
@@ -73,5 +79,16 @@ class WorkflowUtils(
 
   fun getWorkflowLogs(workflow: Workflow): Map<String, String> {
     TODO("Not implemented yet")
+  }
+
+  private fun getCumulatedSortedLogs(nodes: Map<String, NodeStatus>, logsMap: Map<String, String>, child: String? = null): String {
+    val parents = nodes.filter { (key, node) -> if (child == null) node.children == null else node.children != null && child in node.children!! }
+    var logs = ""
+    parents.keys.forEach {
+      logs += this.getCumulatedSortedLogs(nodes, logsMap, it)
+      logs += logsMap.get(it) ?: ""
+    }
+
+    return logs
   }
 }
