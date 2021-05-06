@@ -142,6 +142,7 @@ class ScenariorunServiceImpl(
         if (workflowId != null && workflowName != null)
             workflowUtils.getCumulatedLogs(workflowId, workflowName)
         else ""
+    logger.debug(cumulatedLogs)
     return cumulatedLogs
   }
 
