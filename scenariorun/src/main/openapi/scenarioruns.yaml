@@ -557,40 +557,13 @@ components:
         nodeLabel:
           type: string
           description: the node label request
-        fetchDatasetContainers:
+        containers:
           type: array
-          readOnly: true
-          description: the containers which fetch the Scenario Datasets
+          description: the containers map with name and ScenarioRunContainer
           items:
             $ref: '#/components/schemas/ScenarioRunContainer'
-        fetchScenarioParametersContainer:
-          readOnly: true
-          description: the container which fetch the Scenario Parameters
-          $ref: '#/components/schemas/ScenarioRunContainer'
-        applyParametersContainer:
-          readOnly: true
-          description: the container which apply the Scenario Parameters
-          $ref: '#/components/schemas/ScenarioRunContainer'
-        validateDataContainer:
-          readOnly: true
-          description: the container which validate the Scenario data
-          $ref: '#/components/schemas/ScenarioRunContainer'
-        sendDataWarehouseContainer:
-          readOnly: true
-          description: the container which send data to the Data Warehouse
-          $ref: '#/components/schemas/ScenarioRunContainer'
-        preRunContainer:
-          readOnly: true
-          description: the container which execute the pre-run
-          $ref: '#/components/schemas/ScenarioRunContainer'
-        runContainer:
-          readOnly: true
-          description: the main run container which execute the engine
-          $ref: '#/components/schemas/ScenarioRunContainer'
-        postRunContainer:
-          readOnly: true
-          description: the container which execute the post-run
-          $ref: '#/components/schemas/ScenarioRunContainer'
+      required:
+        - containers
     ScenarioRun:
       type: object
       description: a ScenarioRun with only base properties
@@ -758,10 +731,14 @@ components:
           type: string
           readOnly: true
           description: the container Id
+        name:
+          type: string
+          description: the container name
         envVars:
           type: object
           description: a freeform environment variable map
-          additionalProperties: true
+          additionalProperties:
+            type: string
         image:
           type: string
           description: the container image URI
@@ -773,6 +750,9 @@ components:
           description: the list of run arguments for the container
           items:
             type: string
+      required:
+        - name
+        - image
     ScenarioRunLogsOptions:
       type: object
       description: the scenariorun logs options
