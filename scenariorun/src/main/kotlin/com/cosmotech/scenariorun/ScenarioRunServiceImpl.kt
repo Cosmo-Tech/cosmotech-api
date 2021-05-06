@@ -130,8 +130,19 @@ class ScenariorunServiceImpl(
         if (workflowId != null && workflowName != null)
             workflowUtils.getCumulatedLogs(workflowId, workflowName)
         else ""
-    val logs = ScenarioRunLogs(runLogs = ScenarioRunContainerLogs(textLog = cumulatedLogs))
+    val logs = ScenarioRunLogs(containers = mapOf("cumulated" to ScenarioRunContainerLogs(logs = cumulatedLogs)))
     return logs
+  }
+
+  override fun getCumulatedLogs(organizationId: kotlin.String, scenariorunId: kotlin.String): kotlin.String {
+    val scenario = findScenarioRunById(organizationId, scenariorunId)
+    val workflowId = scenario.workflowId
+    val workflowName = scenario.workflowName
+    var cumulatedLogs =
+        if (workflowId != null && workflowName != null)
+            workflowUtils.getCumulatedLogs(workflowId, workflowName)
+        else ""
+    return cumulatedLogs
   }
 
   override fun getScenarioRuns(
@@ -210,14 +221,6 @@ class ScenariorunServiceImpl(
       throw IllegalArgumentException("No ScenarioRun returned in response: $scenarioRunAsMap")
     }
 
-    TODO("Not implemented yet")
-  }
-
-  override fun searchScenarioRunLogs(
-      organizationId: String,
-      scenariorunId: String,
-      scenarioRunLogsOptions: ScenarioRunLogsOptions
-  ): ScenarioRunLogs {
     TODO("Not implemented yet")
   }
 

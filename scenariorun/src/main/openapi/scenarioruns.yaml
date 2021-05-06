@@ -234,7 +234,7 @@ paths:
           description: Bad request
         "404":
           description: the ScenarioRun specified is unknown or you don't have access to it
-  /organizations/{organization_id}/scenarioruns/{scenariorun_id}/logs/search:
+  /organizations/{organization_id}/scenarioruns/{scenariorun_id}/cumulatedlogs:
     parameters:
       - name: organization_id
         in: path
@@ -249,37 +249,17 @@ paths:
         schema:
           type: string
     post:
-      operationId: searchScenarioRunLogs
+      operationId: getCumulatedLogs
       tags:
         - scenariorun
-      summary: Search the logs of a scenariorun
-      requestBody:
-        description: the options to search logs
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ScenarioRunLogsOptions'
-            examples:
-              ScenarioRunLogsOptions:
-                $ref: '#/components/examples/BreweryScenarioRunLogsOptions'
-          application/yaml:
-            schema:
-              type: string
-              format: binary
-            examples:
-              ScenarioRunLogsOptions:
-                $ref: '#/components/examples/BreweryScenarioRunLogsOptions'
+      summary: Get the cumulated logs of a scenariorun
       responses:
         "200":
-          description: the ScenarioRun logs
+          description: the ScenarioRun cumulated logs
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ScenarioRunLogs'
-              examples:
-                ScenarioRun:
-                  $ref: '#/components/examples/BreweryScenarioRunLogs'
+                type: string
         "400":
           description: Bad request
         "404":
@@ -756,18 +736,6 @@ components:
       required:
         - name
         - image
-    ScenarioRunLogsOptions:
-      type: object
-      description: the scenariorun logs options
-      properties:
-        containerIds:
-          type: array
-          description: the list of container Id to get the log for
-          items:
-            type: string
-        plainText:
-          type: boolean
-          description: whether or not to return the log in plain text instead of structured form
     ScenarioRunLogs:
       type: object
       description: the scenariorun logs returned by all containers
@@ -776,79 +744,30 @@ components:
           type: string
           readOnly: true
           description: the ScenarioRun Id
-        options:
-          $ref: '#/components/schemas/ScenarioRunLogsOptions'
-        fetchDatasetLogs:
-          type: array
+        containers:
+          type: object
           readOnly: true
-          description: logs for the containers which fetch the Scenario Datasets
-          items:
+          description: the container map of logs
+          additionalProperties:
             $ref: '#/components/schemas/ScenarioRunContainerLogs'
-        fetchScenarioParametersLog:
-          readOnly: true
-          description: logs for the container which fetch the Scenario Parameters
-          $ref: '#/components/schemas/ScenarioRunContainerLogs'
-        applyParametersLogs:
-          readOnly: true
-          description: logs for the container which apply the Scenario Parameters
-          $ref: '#/components/schemas/ScenarioRunContainerLogs'
-        validateDataLogs:
-          readOnly: true
-          description: logs for the container which validate the Scenario data
-          $ref: '#/components/schemas/ScenarioRunContainerLogs'
-        sendDataWarehouseLogs:
-          readOnly: true
-          description: logs for the container which send data to the Data Warehouse
-          $ref: '#/components/schemas/ScenarioRunContainerLogs'
-        preRunLogs:
-          readOnly: true
-          description: logs for the container which execute the pre-run
-          $ref: '#/components/schemas/ScenarioRunContainerLogs'
-        runLogs:
-          readOnly: true
-          description: logs for the main run container which execute the engine
-          $ref: '#/components/schemas/ScenarioRunContainerLogs'
-        postRunLogs:
-          readOnly: true
-          description: logs for the container which execute the post-run
-          $ref: '#/components/schemas/ScenarioRunContainerLogs'
     ScenarioRunContainerLogs:
       type: object
       description: logs for a given container
       properties:
-        container:
-          readOnly: true
-          description: container for the logs
-          $ref: '#/components/schemas/ScenarioRunContainer'
-        computer:
+        nodeId:
           type: string
           readOnly: true
-          description: computer/node that's generating the log
-        logs:
+          description: the node Id which has executed this log
+        children:
           type: array
           readOnly: true
-          description: the list of container logs in structured format
+          description: the list of children node id
           items:
-            $ref: '#/components/schemas/ScenarioRunContainerLog'
-        textLog:
-          type: string
-          description: the plain text log if plainText option has been set
-    ScenarioRunContainerLog:
-      type: object
-      description: a container log line
-      properties:
-        timeGenerated:
+            type: string
+        logs:
           type: string
           readOnly: true
-          description: date and time the record was created
-        entrySource:
-          type: string
-          readOnly: true
-          description: source of the log line. Possible values are stdout or stderr
-        logEntry:
-          type: string
-          readOnly: true
-          description: actual log line
+          description: the node logs in plain text
   examples:
     BreweryScenarioRun:
       summary: Brewery ScenarioRun example
@@ -1280,9 +1199,11 @@ components:
       summary: Brewery start ScenarioRun directly with containers example
       description: Brewery start ScenarioRun directly with containers example
       value:
+        generateName: workflow-
         nodeLabel: highcpupool
-        fetchDatasetContainers:
-          - id: azertyuiop
+        containers:
+          fetchDatasetContainers:
+            name: azertyuiop
             envVars:
               AZURE_TENANT_ID: "12345678"
               AZURE_CLIENT_ID: "12345678"
@@ -1293,81 +1214,23 @@ components:
               ADT_QUERY: SELECT * FROM digitaltwins
               CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
             image: csmphoenix.azurecr.io/azure-digital-twins-simulator-connector:latest
-        sendDataWarehouseContainer:
-          id: qsdfghjklm
-          envVars:
-            AZURE_TENANT_ID: "12345678"
-            AZURE_CLIENT_ID: "12345678"
-            AZURE_CLIENT_SECRET: azertyuiop
-            CSM_API_URL: https://api.comostech.com
-            CSM_API_TOKEN: azertyuiopqsdfghjklm
-            CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
-            CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
-            CSM_SEND_DATAWAREHOUSE_PARAMETERS: true
-            CSM_SEND_DATAWAREHOUSE_DATASETS: true
-            ADX_DATA_INGESTION_URI: https://ingest-phoenix.westeurope.kusto.windows.net
-            ADX_DATABASE: Brewery
-          image: csmphoenix.azurecr.io/azure-data-explorer-scenariorun-sender:latest
-        runContainer:
-          id: wxcvbn
-          envVars:
-            AZURE_TENANT_ID: "12345678"
-            AZURE_CLIENT_ID: "12345678"
-            AZURE_CLIENT_SECRET: azertyuiop
-            CSM_API_URL: https://api.comostech.com
-            CSM_API_TOKEN: azertyuiopqsdfghjklm
-            CSM_ENGINE_PROVIDER: local
-            CSM_ENGINE_PATH: run_templates/hundred/engine/
-            CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
-            CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
-            CSM_CONTROL_PLANE_TOPIC: amqps://csm-phoenix.servicebus.windows.net/brewery-scenariorun
-            CSM_PROBES_MEASURES_TOPIC: amqps://csm-phoenix.servicebus.windows.net/brewery
-            CSM_CONTAINER_MODE: engine
-            CSM_SIMULATION: DeployedScenarioRun
-          image: twinengines.azurecr.io/brewery_simulator:latest
-          entrypoint: entrypoint.py
-    BreweryScenarioRunLogsOptions:
-      summary: Brewery ScenarioRun logs options example
-      description: Brewery ScenarioRun logs options with plain text example
-      value:
-        containerIds:
-          - azertyuiop
-          - wxcvbn
-        plainText: false
-    BreweryScenarioRunLogs:
-      summary: Brewery ScenarioRun logs  example
-      description: Brewery ScenarioRun logs with plain text example
-      value:
-        scenariorunId: "1"
-        options:
-          containerIds:
-            - azertyuiop
-            - wxcvbn
-          plainText: false
-        fetchDatasetContainers:
-          - container:
-              id: azertyuiop
-              envVars:
-                AZURE_TENANT_ID: "12345678"
-                AZURE_CLIENT_ID: "12345678"
-                AZURE_CLIENT_SECRET: azertyuiop
-                CSM_API_URL: https://api.comostech.com
-                CSM_API_TOKEN: azertyuiopqsdfghjklm
-                ADT_INSTANCE_URL: https://supply.api.weu.digitaltwins.azure.net
-                ADT_QUERY: SELECT * FROM digitaltwins
-                CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
-              image: csmphoenix.azurecr.io/azure-digital-twins-simulator-connector:latest
-            computer: aks-highcpupool-30630301-vmss000000 
-            logs:
-              - timeGenerated: 4/15/2021, 10:52:20.593 AM
-                entrySource: stderr
-                logEntry: cannot read source file
-              - timeGenerated: 4/15/2021, 10:52:21.593 AM
-                entrySource: stderr
-                logEntry: stopping stream
-        runLogs:
-          container:
-            id: wxcvbn
+          sendDataWarehouseContainer:
+            name: qsdfghjklm
+            envVars:
+              AZURE_TENANT_ID: "12345678"
+              AZURE_CLIENT_ID: "12345678"
+              AZURE_CLIENT_SECRET: azertyuiop
+              CSM_API_URL: https://api.comostech.com
+              CSM_API_TOKEN: azertyuiopqsdfghjklm
+              CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
+              CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
+              CSM_SEND_DATAWAREHOUSE_PARAMETERS: true
+              CSM_SEND_DATAWAREHOUSE_DATASETS: true
+              ADX_DATA_INGESTION_URI: https://ingest-phoenix.westeurope.kusto.windows.net
+              ADX_DATABASE: Brewery
+            image: csmphoenix.azurecr.io/azure-data-explorer-scenariorun-sender:latest
+          runContainer:
+            name: wxcvbn
             envVars:
               AZURE_TENANT_ID: "12345678"
               AZURE_CLIENT_ID: "12345678"
@@ -1383,11 +1246,18 @@ components:
               CSM_CONTAINER_MODE: engine
               CSM_SIMULATION: DeployedScenarioRun
             image: twinengines.azurecr.io/brewery_simulator:latest
-          computer: aks-highcpupool-30630301-vmss000000 
-          logs:
-            - timeGenerated: 4/15/2021, 10:52:22.593 AM
-              entrySource: stderr
-              logEntry: cannot run solution
-            - timeGenerated: 4/15/2021, 10:52:23.593 AM
-              entrySource: stderr
-              logEntry: critical error
+            entrypoint: entrypoint.py
+    BreweryScenarioRunLogs:
+      summary: Brewery ScenarioRun logs  example
+      description: Brewery ScenarioRun logs with plain text example
+      value:
+        scenariorunId: "1"
+        containers: 
+          fetchDatasetContainers:
+            nodeId: azertyuiop
+            children:
+              - wxcvbn
+            logs: cannot read source file
+          runLogs:
+            nodeid: wxcvbn
+            logs: cannot run solution
