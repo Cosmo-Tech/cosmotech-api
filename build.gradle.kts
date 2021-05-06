@@ -9,7 +9,7 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 import org.springframework.boot.gradle.tasks.run.BootRun
 
 plugins {
-  val kotlinVersion = "1.4.32"
+  val kotlinVersion = "1.5.0"
   kotlin("jvm") version kotlinVersion
   kotlin("kapt") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion apply false
@@ -123,7 +123,7 @@ subprojects {
 
   tasks.withType<KotlinCompile> {
     kotlinOptions {
-      languageVersion = "1.4"
+      languageVersion = "1.5"
       freeCompilerArgs = listOf("-Xjsr305=strict")
       jvmTarget = "11"
     }
