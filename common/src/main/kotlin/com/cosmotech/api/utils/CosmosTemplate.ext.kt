@@ -3,6 +3,7 @@
 package com.cosmotech.api.utils
 
 import com.azure.spring.data.cosmos.core.CosmosTemplate
+import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 
 inline fun <reified T> CosmosTemplate.findAll(container: String): List<T> =
     this.findAll(container, T::class.java).toList()
@@ -16,5 +17,6 @@ inline fun <reified T, ID> CosmosTemplate.findByIdOrThrow(
     errorMessage: String? = null
 ): T =
     this.findById<T, ID>(container, id)
-        ?: throw IllegalArgumentException(
-            errorMessage ?: "Resource of type ${T::class.java.simpleName} and ID $id not found")
+        ?: throw CsmResourceNotFoundException(
+            errorMessage
+                ?: "Resource of type '${T::class.java.simpleName}' and identifier '$id' not found")
