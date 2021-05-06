@@ -34,38 +34,36 @@ tasks.withType<JibTask> {
   }
 }
 
-gradle.projectsEvaluated {
-  tasks.register<Copy>("copySubProjectsOpenAPIFiles") {
-    // By convention, we expect OpenAPI files for sub-projects to be named and placed as follows:
-    // <subproject>/src/main/openapi/<subproject>s.yaml
-    // For example: organization/src/main/openapi/organizations.yaml
-    val sourcePaths =
-        configurations
-            .implementation
-            .get()
-            .allDependencies
-            .withType<ProjectDependency>()
-            .asSequence()
-            .filter {
-              logger.debug("Found project dependency: $it")
-              it.name.matches("^cosmotech-[a-zA-Z]+-api$".toRegex())
-            }
-            .map { it.dependencyProject.projectDir }
-            .map { file("${it}/src/main/openapi/${it.relativeTo(rootDir)}s.yaml") }
-            .filter { it.exists() }
-            .map { it.absolutePath }
-            .toMutableList()
-    // If you need to reference a non-conventional path, feel free to add it below to the
-    // sourcePaths local variable, like so: sourcePaths.add("my/path/to/another/openapi.yaml")
+tasks.register<Copy>("copySubProjectsOpenAPIFiles") {
+  // By convention, we expect OpenAPI files for sub-projects to be named and placed as follows:
+  // <subproject>/src/main/openapi/<subproject>s.yaml
+  // For example: organization/src/main/openapi/organizations.yaml
+  val sourcePaths =
+      configurations
+          .implementation
+          .get()
+          .allDependencies
+          .withType<ProjectDependency>()
+          .asSequence()
+          .filter {
+            logger.debug("Found project dependency: $it")
+            it.name.matches("^cosmotech-[a-zA-Z]+-api$".toRegex())
+          }
+          .map { it.dependencyProject.projectDir }
+          .map { file("${it}/src/main/openapi/${it.relativeTo(rootDir)}s.yaml") }
+          .filter { it.exists() }
+          .map { it.absolutePath }
+          .toMutableList()
+  // If you need to reference a non-conventional path, feel free to add it below to the
+  // sourcePaths local variable, like so: sourcePaths.add("my/path/to/another/openapi.yaml")
 
-    logger.debug("sourcePaths for 'copySubProjectsOpenAPIFiles' task: $sourcePaths")
-    if (sourcePaths.isNotEmpty()) {
-      from(*sourcePaths.toTypedArray())
-      into("$buildDir/tmp/openapi")
-    } else {
-      logger.warn(
-          "Unable to find OpenAPI definitions in project dependencies => 'copySubProjectsOpenAPIFiles' not configured!")
-    }
+  logger.debug("sourcePaths for 'copySubProjectsOpenAPIFiles' task: $sourcePaths")
+  if (sourcePaths.isNotEmpty()) {
+    from(*sourcePaths.toTypedArray())
+    into("$buildDir/tmp/openapi")
+  } else {
+    logger.warn(
+        "Unable to find OpenAPI definitions in project dependencies => 'copySubProjectsOpenAPIFiles' not configured!")
   }
 }
 
