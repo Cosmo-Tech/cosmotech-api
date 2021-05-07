@@ -249,7 +249,7 @@ paths:
         required: true
         schema:
           type: string
-    put:
+    patch:
       operationId: updateTenantCredentialsByOrganizationId
       tags:
         - organization
