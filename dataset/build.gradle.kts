@@ -1,7 +1,7 @@
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 
-dependencies { api(project(":cosmotech-api-common")) }
+dependencies { api(projects.cosmotechApiCommon) }
 
 sourceSets {
   main { java.srcDirs("$buildDir/generated-sources/openapi/src/main/kotlin") }

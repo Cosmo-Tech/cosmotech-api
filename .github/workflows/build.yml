@@ -20,7 +20,7 @@ jobs:
       uses: actions/setup-java@v2
       with:
         distribution: 'adopt'
-        java-version: '15'
+        java-version: '16'
 
     - uses: actions/cache@v2.1.5
       with:

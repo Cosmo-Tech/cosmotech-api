@@ -95,7 +95,7 @@ subprojects {
     extendsFrom(configurations.testImplementation.get())
   }
   val integrationTestRuntimeOnly by configurations.getting {
-    extendsFrom(configurations.testRuntime.get())
+    extendsFrom(configurations.testRuntimeOnly.get())
   }
 
   dependencies {
@@ -108,8 +108,6 @@ subprojects {
     implementation("org.springframework.boot:spring-boot-starter-jetty")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("javax.validation:validation-api:2.0.1.Final")
-
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     implementation("org.springframework.cloud:spring-cloud-starter-kubernetes-fabric8-config:2.0.2")
 
