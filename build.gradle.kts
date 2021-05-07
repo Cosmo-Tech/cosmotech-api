@@ -95,7 +95,7 @@ subprojects {
     extendsFrom(configurations.testImplementation.get())
   }
   val integrationTestRuntimeOnly by configurations.getting {
-    extendsFrom(configurations.testRuntime.get())
+    extendsFrom(configurations.testRuntimeOnly.get())
   }
 
   dependencies {
