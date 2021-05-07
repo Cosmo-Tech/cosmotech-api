@@ -44,7 +44,7 @@ class WorkflowUtils(
     return getCumulatedWorkflowLogs(workflow)
   }
 
-  fun getActiveWorkflow(workflowId: String, workflowName: String): Workflow  {
+  fun getActiveWorkflow(workflowId: String, workflowName: String): Workflow {
     var workflow: Workflow? = null
     try {
       workflow = this.getWorkflow(workflowName)

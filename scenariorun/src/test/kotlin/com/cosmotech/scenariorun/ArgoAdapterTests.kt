@@ -247,14 +247,8 @@ class ArgoAdapterTests {
     val expected =
         listOf(
             DAGTask().name("Diamond-A").template("Diamond-A"),
-            DAGTask()
-                .name("Diamond-B")
-                .template("Diamond-B")
-                .dependencies(listOf("Diamond-A")),
-            DAGTask()
-                .name("Diamond-C")
-                .template("Diamond-C")
-                .dependencies(listOf("Diamond-A")),
+            DAGTask().name("Diamond-B").template("Diamond-B").dependencies(listOf("Diamond-A")),
+            DAGTask().name("Diamond-C").template("Diamond-C").dependencies(listOf("Diamond-A")),
             DAGTask()
                 .name("Diamond-D")
                 .template("Diamond-D")
@@ -296,7 +290,10 @@ class ArgoAdapterTests {
     return src
   }
 
-  fun getScenarioRunContainerDependencies(name: String = "default", dependencies: List<String>? = null): ScenarioRunContainer {
+  fun getScenarioRunContainerDependencies(
+      name: String = "default",
+      dependencies: List<String>? = null
+  ): ScenarioRunContainer {
     var src =
         ScenarioRunContainer(
             name = name,
@@ -397,9 +394,12 @@ class ArgoAdapterTests {
             containers =
                 listOf(
                     getScenarioRunContainerDependencies("Diamond-A"),
-                    getScenarioRunContainerDependencies("Diamond-B", dependencies=listOf("Diamond-A")),
-                    getScenarioRunContainerDependencies("Diamond-C", dependencies=listOf("Diamond-A")),
-                    getScenarioRunContainerDependencies("Diamond-D", dependencies=listOf("Diamond-B", "Diamond-C")),
+                    getScenarioRunContainerDependencies(
+                        "Diamond-B", dependencies = listOf("Diamond-A")),
+                    getScenarioRunContainerDependencies(
+                        "Diamond-C", dependencies = listOf("Diamond-A")),
+                    getScenarioRunContainerDependencies(
+                        "Diamond-D", dependencies = listOf("Diamond-B", "Diamond-C")),
                 ))
     return sc
   }

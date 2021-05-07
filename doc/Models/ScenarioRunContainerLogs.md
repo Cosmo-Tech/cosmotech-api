@@ -4,6 +4,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **nodeId** | [**String**](string.md) | the node Id which has executed this log | [optional] [default to null]
+**containerName** | [**String**](string.md) | the container name | [optional] [default to null]
 **children** | [**List**](string.md) | the list of children node id | [optional] [default to null]
 **logs** | [**String**](string.md) | the node logs in plain text | [optional] [default to null]
 

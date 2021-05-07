@@ -84,7 +84,8 @@ class ArgoAdapter {
     var previousContainer: ScenarioRunContainer? = null
     for (container in startContainers.containers) {
       var dependencies: List<String>? = null
-      if (container.dependencies != null) dependencies = container.dependencies else {
+      if (container.dependencies != null) dependencies = container.dependencies
+      else {
         if (previousContainer != null) dependencies = listOf(previousContainer.name)
       }
       val task = DAGTask().name(container.name).template(container.name).dependencies(dependencies)

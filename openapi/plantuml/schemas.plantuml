@@ -19,7 +19,7 @@ entity Connector {
 entity ConnectorParameter { 
     * id: String
     * label: String
-    * valueType: String
+    valueType: String
     options: List<String>
     default: String
     envVar: String
@@ -209,10 +209,12 @@ entity ScenarioRunContainer {
     * image: String
     entrypoint: String
     runArgs: List<String>
+    dependencies: List<String>
 }
 
 entity ScenarioRunContainerLogs { 
     nodeId: String
+    containerName: String
     children: List<String>
     logs: String
 }
@@ -233,26 +235,10 @@ entity ScenarioRunSearch {
     ownerId: String
 }
 
-entity ScenarioRunStart { 
-    workspaceId: String
-    scenarioId: String
-}
-
 entity ScenarioRunStartContainers { 
     generateName: String
     nodeLabel: String
     * containers: List<ScenarioRunContainer>
-}
-
-entity ScenarioRunStartSolution { 
-    solutionId: String
-    runTemplateId: String
-    datasetList: List<String>
-    parametersValues: List<RunTemplateParameterValue>
-    sendInputToDataWarehouse: Boolean
-    dataWarehouseDB: String
-    resultsEventBusResourceUri: String
-    scenariorunEventBusResourceUri: String
 }
 
 entity ScenarioRunTemplateParameterValue { 
@@ -383,7 +369,6 @@ Connector -- "0..*" ConnectorParameterGroup : parameterGroups
 Organization -- "0..*" OrganizationUser : users
 Organization -- OrganizationServices : services
 User -- "0..*" UserOrganization : organizations
-ScenarioRunStartSolution -- "0..*" RunTemplateParameterValue : parametersValues
 RunTemplate -- RunTemplateResourceStorage : parametersHandlerResource
 RunTemplate -- RunTemplateResourceStorage : datasetValidatorResource
 RunTemplate -- RunTemplateResourceStorage : preRunResource

@@ -12,9 +12,7 @@ import com.cosmotech.scenariorun.domain.ScenarioRun
 import com.cosmotech.scenariorun.domain.ScenarioRunContainerLogs
 import com.cosmotech.scenariorun.domain.ScenarioRunLogs
 import com.cosmotech.scenariorun.domain.ScenarioRunSearch
-import com.cosmotech.scenariorun.domain.ScenarioRunStart
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
-import com.cosmotech.scenariorun.domain.ScenarioRunStartSolution
 import com.fasterxml.jackson.databind.JsonNode
 import io.argoproj.workflow.ApiException
 import io.argoproj.workflow.Configuration
@@ -84,32 +82,28 @@ class ScenariorunServiceImpl(
           ?: throw java.lang.IllegalArgumentException(
               "ScenarioRun #$scenariorunId not found in organization #$organizationId")
 
-  override fun getScenarioRunLogs(
-      organizationId: String,
-      scenariorunId: String
-  ): ScenarioRunLogs {
+  override fun getScenarioRunLogs(organizationId: String, scenariorunId: String): ScenarioRunLogs {
     val scenario = findScenarioRunById(organizationId, scenariorunId)
     val workflowId = scenario.workflowId
     val workflowName = scenario.workflowName
     var containersLogs: Map<String, ScenarioRunContainerLogs> = mapOf()
     if (workflowId != null && workflowName != null) {
       val workflow = workflowUtils.getActiveWorkflow(workflowId, workflowName)
-      var nodeLogs =
-            workflowUtils.getWorkflowLogs(workflow)
-      containersLogs = nodeLogs
-      .map {(nodeId, logs) ->
-        (workflow.status?.nodes?.get(nodeId)?.displayName ?: "") to ScenarioRunContainerLogs(
-          nodeId = nodeId,
-          containerName = workflow.status?.nodes?.get(nodeId)?.displayName,
-          children = workflow.status?.nodes?.get(nodeId)?.children,
-          logs = logs
-        )
-      }.toMap()
+      var nodeLogs = workflowUtils.getWorkflowLogs(workflow)
+      containersLogs =
+          nodeLogs
+              .map { (nodeId, logs) ->
+                (workflow.status?.nodes?.get(nodeId)?.displayName
+                    ?: "") to
+                    ScenarioRunContainerLogs(
+                        nodeId = nodeId,
+                        containerName = workflow.status?.nodes?.get(nodeId)?.displayName,
+                        children = workflow.status?.nodes?.get(nodeId)?.children,
+                        logs = logs)
+              }
+              .toMap()
     }
-    val logs = 
-        ScenarioRunLogs(
-          scenariorunId = scenariorunId,
-            containers = containersLogs)
+    val logs = ScenarioRunLogs(scenariorunId = scenariorunId, containers = containersLogs)
     return logs
   }
 

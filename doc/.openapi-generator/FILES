@@ -31,9 +31,7 @@ Models/ScenarioRunContainer.md
 Models/ScenarioRunContainerLogs.md
 Models/ScenarioRunLogs.md
 Models/ScenarioRunSearch.md
-Models/ScenarioRunStart.md
 Models/ScenarioRunStartContainers.md
-Models/ScenarioRunStartSolution.md
 Models/ScenarioRunTemplateParameterValue.md
 Models/ScenarioUser.md
 Models/Solution.md

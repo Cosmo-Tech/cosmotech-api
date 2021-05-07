@@ -596,9 +596,10 @@ components:
           description: the Connector version
         parametersValues:
           type: object
-          additionalProperties: true
+          additionalProperties:
+              type: string
 #      required:
-#        - id
+#       - id
     DatasetCompatibility:
       type: object
       description: a Dataset compatibility constraint to a Solution version open range
