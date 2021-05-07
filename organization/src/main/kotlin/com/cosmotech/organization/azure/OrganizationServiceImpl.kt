@@ -1,6 +1,6 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.organization
+package com.cosmotech.organization.azure
 
 import com.azure.cosmos.models.CosmosContainerProperties
 import com.cosmotech.api.AbstractCosmosBackedService
