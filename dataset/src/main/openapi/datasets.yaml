@@ -578,9 +578,9 @@ components:
           description: the list of compatible Solutions versions
           items:
             $ref: '#/components/schemas/DatasetCompatibility'
-      required:
-        - name
-        - connector
+#      required:
+#        - name
+#        - connector
     DatasetConnector:
       type: object
       description: a Connector setup
@@ -591,8 +591,8 @@ components:
         parametersValues:
           type: object
           additionalProperties: true
-      required:
-        - id
+#      required:
+#        - id
     DatasetCompatibility:
       type: object
       description: a Dataset compatibility constraint to a Solution version open range
