@@ -36,7 +36,7 @@ class ConnectorServiceImpl : AbstractCosmosBackedService(), ConnectorApiService 
   override fun registerConnector(connector: Connector): Connector =
       cosmosTemplate.insert(
           coreConnectorContainer, connector.copy(id = idGenerator.generate("connector")))
-          ?: throw IllegalArgumentException("No connector returned in response: $connector")
+          ?: throw IllegalStateException("No connector returned in response: $connector")
 
   override fun unregisterConnector(connectorId: String) {
     cosmosTemplate.deleteEntity(coreConnectorContainer, this.findConnectorById(connectorId))
