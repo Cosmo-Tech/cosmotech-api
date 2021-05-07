@@ -59,94 +59,6 @@ paths:
               examples:
                 OneScenarioRun:
                   $ref: '#/components/examples/OneScenarioRun'
-  /organizations/{organization_id}/scenarioruns/start:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-    post:
-      operationId: startScenarioRunScenario
-      tags:
-        - scenariorun
-      summary: Start a new scenariorun for a Scenario
-      requestBody:
-        description: the Scenario information to start
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ScenarioRunStart'
-            examples:
-              ScenarioRunStart:
-                $ref: '#/components/examples/BreweryScenarioRunStart'
-          application/yaml:
-            schema:
-              type: string
-              format: binary
-            examples:
-              ScenarioRunStart:
-                $ref: '#/components/examples/BreweryScenarioRunStart'
-      responses:
-        "202":
-          description: the scenariorun details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ScenarioRun'
-              examples:
-                ScenarioRun:
-                  $ref: '#/components/examples/BreweryScenarioRun'
-        "400":
-          description: Bad request
-        "404":
-          description: the Scenario specified is unknown or you don't have access to it
-  /organizations/{organization_id}/scenarioruns/startsolution:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-    post:
-      operationId: startScenarioRunSolution
-      tags:
-        - scenariorun
-      summary: Start a new scenariorun for a Solution Run Template
-      requestBody:
-        description: the Solution Run Template information to start
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ScenarioRunStartSolution'
-            examples:
-              ScenarioRunStartSolution:
-                $ref: '#/components/examples/BreweryScenarioRunStartSolution'
-          application/yaml:
-            schema:
-              type: string
-              format: binary
-            examples:
-              ScenarioRunStartSolution:
-                $ref: '#/components/examples/BreweryScenarioRunStartSolution'
-      responses:
-        "202":
-          description: the scenariorun details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ScenarioRun'
-              examples:
-                ScenarioRun:
-                  $ref: '#/components/examples/BreweryScenarioRunSolution'
-        "400":
-          description: Bad request
-        "404":
-          description: the Scenario specified is unknown or you don't have access to it
   /organizations/{organization_id}/scenarioruns/startcontainers:
     parameters:
       - name: organization_id
@@ -234,6 +146,35 @@ paths:
           description: Bad request
         "404":
           description: the ScenarioRun specified is unknown or you don't have access to it
+  /organizations/{organization_id}/scenarioruns/{scenariorun_id}/logs:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: scenariorun_id
+        in: path
+        description: the ScenarioRun identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getScenarioRunLogs
+      tags:
+        - scenariorun
+      summary: get the logs for the ScenarioRun
+      responses:
+        "200":
+          description: the scenariorun logs details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioRunLogs'
+              examples:
+                ScenarioRun:
+                  $ref: '#/components/examples/BreweryScenarioRunLogs'
   /organizations/{organization_id}/scenarioruns/{scenariorun_id}/cumulatedlogs:
     parameters:
       - name: organization_id
@@ -248,8 +189,8 @@ paths:
         required: true
         schema:
           type: string
-    post:
-      operationId: getCumulatedLogs
+    get:
+      operationId: getScenarioRunCumulatedLogs
       tags:
         - scenariorun
       summary: Get the cumulated logs of a scenariorun
@@ -332,88 +273,6 @@ paths:
               examples:
                 OneScenarioRun:
                   $ref: '#/components/examples/OneScenarioRun'
-  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/scenarioruns/{scenariorun_id}:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: scenario_id
-        in: path
-        description: the Scenario identifier
-        required: true
-        schema:
-          type: string
-      - name: scenariorun_id
-        in: path
-        description: the ScenarioRun identifier
-        required: true
-        schema:
-          type: string
-    get:
-      operationId: getScenarioRun
-      tags:
-        - scenariorun
-      summary: get the ScenarioRun for the Scenario
-      responses:
-        "200":
-          description: the scenariorun details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ScenarioRun'
-              examples:
-                BreweryScenarioRun:
-                  $ref: '#/components/examples/BreweryScenarioRun'
-  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/scenarioruns/{scenariorun_id}/logs:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: scenario_id
-        in: path
-        description: the Scenario identifier
-        required: true
-        schema:
-          type: string
-      - name: scenariorun_id
-        in: path
-        description: the ScenarioRun identifier
-        required: true
-        schema:
-          type: string
-    get:
-      operationId: getScenarioRunLogs
-      tags:
-        - scenariorun
-      summary: get the logs for the ScenarioRun
-      responses:
-        "200":
-          description: the scenariorun logs details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ScenarioRunLogs'
-              examples:
-                ScenarioRun:
-                  $ref: '#/components/examples/BreweryScenarioRunLogs'
   /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/run:
     parameters:
       - name: organization_id
@@ -488,48 +347,6 @@ components:
         ownerId:
           type: string
           description: the owner Id to search
-    ScenarioRunStart:
-      type: object
-      description: the parameters to run a Scenario
-      properties:
-        workspaceId:
-          type: string
-          description: the Workspace Id
-        scenarioId:
-          type: string
-          description: the Scenario Id
-    ScenarioRunStartSolution:
-      type: object
-      description: the parameters to run directly a Solution
-      properties:
-        solutionId:
-          type: string
-          description: the Solution Id
-        runTemplateId:
-          type: string
-          description: the Solution Run Template id
-        datasetList:
-          type: array
-          description: the list of Dataset Id associated to this Analysis
-          items:
-            type: string
-        parametersValues:
-          type: array
-          description: the list of Solution Run Template parameters values
-          items:
-            $ref: '#/components/schemas/RunTemplateParameterValue'
-        sendInputToDataWarehouse:
-          type: boolean
-          description: whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to ScenarioRun Run
-        dataWarehouseDB:
-          type: string
-          description: the DataWarehouse database name to send data if sendInputToDataWarehouse is set
-        resultsEventBusResourceUri:
-          type: string
-          description: the event bus which receive Workspace ScenarioRun results messages. Message won't be send if this is not set
-        scenariorunEventBusResourceUri:
-          type: string
-          description: the event bus which receive Workspace ScenarioRun events messages. Message won't be send if this is not set
     ScenarioRunStartContainers:
       type: object
       description: the parameters to run directly containers
@@ -1173,28 +990,6 @@ components:
       value:
         workspaceId: "1"
         state: "Running"
-    BreweryScenarioRunStart:
-      summary: Brewery start ScenarioRun for a Scenario example
-      description: Brewery start ScenarioRun for Scenario 1 example
-      value:
-        workspaceId: "1"
-        scenarioId: "1"
-    BreweryScenarioRunStartSolution:
-      summary: Brewery start ScenarioRun for a Solution example
-      description: Brewery start ScenarioRun for Solution 1 example
-      value:
-        solutionId: "1"
-        runTemplateId: "1"
-        datasetList:
-          - "1"
-        parametersValues:
-          - parameterId: prefix
-            varType: string
-            value: new
-        sendInputToDataWarehouse: true
-        dataWarehouseDB: Brewery
-        resultsEventBusResourceUri: brewery
-        scenariorunEventBusResourceUri: brewery-scenariorun
     BreweryScenarioRunStartContainers:
       summary: Brewery start ScenarioRun directly with containers example
       description: Brewery start ScenarioRun directly with containers example

@@ -84,45 +84,11 @@ class ScenariorunServiceImpl(
           ?: throw java.lang.IllegalArgumentException(
               "ScenarioRun #$scenariorunId not found in organization #$organizationId")
 
-  override fun getScenarioRun(
-      organizationId: String,
-      workspaceId: String,
-      scenarioId: String,
-      scenariorunId: String
-  ): ScenarioRun =
-      cosmosCoreDatabase
-          .getContainer("${organizationId}_scenario_data")
-          .queryItems(
-              SqlQuerySpec(
-                  """
-                            SELECT * FROM c 
-                              WHERE c.type = 'ScenarioRun' 
-                                AND c.id = @SCENARIORUN_ID 
-                                AND c.workspaceId = @WORKSPACE_ID 
-                                AND c.scenarioId = @SCENARIO_ID
-                          """.trimIndent(),
-                  listOf(
-                      SqlParameter("@SCENARIORUN_ID", scenariorunId),
-                      SqlParameter("@WORKSPACE_ID", workspaceId),
-                      SqlParameter("@SCENARIO_ID", scenarioId))),
-              CosmosQueryRequestOptions(),
-              // It would be much better to specify the Domain Type right away and
-              // avoid the map operation, but we can't due
-              // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
-              // https://github.com/Azure/azure-sdk-for-java/issues/12269
-              JsonNode::class.java)
-          .firstOrNull()
-          ?.toDomain<ScenarioRun>()
-          ?: throw java.lang.IllegalArgumentException(
-              "ScenarioRun #$scenariorunId not found in organization #$organizationId")
-
   override fun getScenarioRunLogs(
       organizationId: String,
-      workspaceId: String,
-      scenarioId: String,
       scenariorunId: String
   ): ScenarioRunLogs {
-    val scenario = getScenarioRun(organizationId, workspaceId, scenarioId, scenariorunId)
+    val scenario = findScenarioRunById(organizationId, scenariorunId)
     val workflowId = scenario.workflowId
     val workflowName = scenario.workflowName
     var cumulatedLogs =
@@ -135,7 +101,7 @@ class ScenariorunServiceImpl(
     return logs
   }
 
-  override fun getCumulatedLogs(
+  override fun getScenarioRunCumulatedLogs(
       organizationId: kotlin.String,
       scenariorunId: kotlin.String
   ): kotlin.String {
@@ -287,20 +253,6 @@ class ScenariorunServiceImpl(
       e.printStackTrace()
       throw IllegalStateException(e)
     }
-  }
-
-  override fun startScenarioRunScenario(
-      organizationId: String,
-      scenarioRunStart: ScenarioRunStart
-  ): ScenarioRun {
-    TODO("Not implemented yet")
-  }
-
-  override fun startScenarioRunSolution(
-      organizationId: String,
-      scenarioRunStartSolution: ScenarioRunStartSolution
-  ): ScenarioRun {
-    TODO("Not implemented yet")
   }
 
   private fun dbCreateScenarioRun(
