@@ -173,10 +173,10 @@ paths:
             examples:
               AddUser:
                 summary: Add a user
-                description: Add the user Charles to organization Cosmo Tech
+                description: Add the user Bob to organization Cosmo Tech
                 value:
-                  - name: "Charles"
-                    id: "3"
+                  - name: "Bob"
+                    id: "2"
                     roles:
                       - User
                   - name: "Alice"

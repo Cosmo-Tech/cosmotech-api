@@ -279,8 +279,8 @@ paths:
               items:
                 $ref: '#/components/schemas/ScenarioUser'
             examples:
-              TwoOrganizationToAddOrReplace:
-                $ref: '#/components/examples/TwoScenarioToAddOrReplace'
+              TwoScenarioUsersToAddOrReplace:
+                $ref: '#/components/examples/TwoScenarioUsers'
       responses:
         "201":
           description: the Scenario Users
@@ -291,7 +291,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/ScenarioUser'
               examples:
-                TwoWorkspaceUsers:
+                TwoScenarioUsers:
                   $ref: '#/components/examples/TwoScenarioUsers'
         "400":
           description: Bad request
@@ -392,8 +392,8 @@ paths:
                 items:
                   $ref: '#/components/schemas/ScenarioRunTemplateParameterValue'
               examples:
-                TwoWorkspaceUsers:
-                  $ref: '#/components/examples/TwoScenarioRunTemplateParameterValueUsers'
+                TwoScenarioRunTemplateParameterValueToAddOrReplace:
+                  $ref: '#/components/examples/TwoScenarioRunTemplateParameterValueToAddOrReplace'
         "400":
           description: Bad request
         "404":
@@ -850,3 +850,25 @@ components:
               varType: string
               value: ""
               inherited: true
+    TwoScenarioUsers:
+      summary: 2 scenario users
+      description: 2 scenario users
+      value:
+        - id: "1"
+          name: Bob
+          roles: Editor
+        - id: "2"
+          name: Alice
+          roles: Editor
+    TwoScenarioRunTemplateParameterValueToAddOrReplace:
+      summary: Scenarios Run Templates added
+      description: Scenarios Run Templates added
+      value:
+        - parameterId: prefix
+          varType: string
+          value: ""
+          inherited: true
+        - parameterId: prefix2
+          varType: string
+          value: ""
+          inherited: true

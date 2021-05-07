@@ -216,7 +216,7 @@ paths:
       operationId: addOrReplaceDatasetCompatibilityElements
       tags:
         - dataset
-      summary: Add Dataset Compatibility elements. Any item with the same solutionKey will be overwritten
+      summary: Add Dataset Compatibility elements.
       requestBody:
         description: the Dataset Compatibility elements
         required: true
@@ -226,6 +226,15 @@ paths:
               type: array
               items:
                 $ref: "#/components/schemas/DatasetCompatibility"
+              example:
+                TwoDatasetCompatibility:
+                  summary: 2 Dataset Compatibilities
+                  description: 2 Dataset Compatibilities
+                  value:
+                    - solutionKey: Brewery Solution
+                      minimumVersion: "1.0.0"
+                    - solutionKey: Brewery Solution
+                      minimumVersion: "1.0.1"
       responses:
         "201":
           description: the Dataset Compatibility elements
@@ -237,7 +246,13 @@ paths:
                   $ref: '#/components/schemas/DatasetCompatibility'
               examples:
                 TwoDatasetCompatibility:
-                  $ref: '#/components/examples/TwoDatasetCompatibility'
+                  summary: 2 Dataset Compatibilities
+                  description: 2 Dataset Compatibilities
+                  value:
+                    - solutionKey: Brewery Solution
+                      minimumVersion: "1.0.0"
+                    - solutionKey: Brewery Solution
+                      minimumVersion: "1.0.1"
         "400":
           description: Bad request
         "404":
@@ -863,4 +878,3 @@ components:
       value:
         sourceId: "1"
         targetId: "2"
-

@@ -282,8 +282,8 @@ paths:
               items:
                 $ref: '#/components/schemas/WorkspaceUser'
             examples:
-              TwoOrganizationToAddOrReplace:
-                $ref: '#/components/examples/TwoOrganizationToAddOrReplace'
+              TwoWorkspaceUsersToAddOrReplace:
+                $ref: '#/components/examples/TwoWorkspaceUsers'
       responses:
         "200":
           description: the Workspace Users
