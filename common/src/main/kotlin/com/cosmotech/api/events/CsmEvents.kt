@@ -26,3 +26,9 @@ class UserRegistered(publisher: Any, val userId: String) : CsmEvent(publisher)
 class UserUnregistered(publisher: Any, val userId: String) : CsmEvent(publisher)
 
 class ConnectorRemoved(publisher: Any, val connectorId: String) : CsmEvent(publisher)
+
+class ConnectorRemovedForOrganization(
+    publisher: Any,
+    val organizationId: String,
+    val connectorId: String
+) : CsmEvent(publisher)

@@ -151,4 +151,39 @@ class DatasetServiceImpl(
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
     cosmosTemplate.deleteContainer("${organizationUnregistered.organizationId}_datasets")
   }
+
+  @EventListener(ConnectorRemoved::class)
+  @Async("csm-in-process-event-executor")
+  fun onConnectorRemoved(connectorRemoved: ConnectorRemoved) {
+    organizationService.findAllOrganizations().forEach {
+      this.eventPublisher.publishEvent(
+          ConnectorRemovedForOrganization(this, it.id!!, connectorRemoved.connectorId))
+    }
+  }
+
+  @EventListener(ConnectorRemovedForOrganization::class)
+  @Async("csm-in-process-event-executor")
+  fun onConnectorRemovedForOrganization(
+      connectorRemovedForOrganization: ConnectorRemovedForOrganization
+  ) {
+    val organizationId = connectorRemovedForOrganization.organizationId
+    val connectorId = connectorRemovedForOrganization.connectorId
+    cosmosCoreDatabase
+        .getContainer("${organizationId}_datasets")
+        .queryItems(
+            SqlQuerySpec(
+                "SELECT * FROM c WHERE c.connector.id = @CONNECTOR_ID",
+                listOf(SqlParameter("@CONNECTOR_ID", connectorId))),
+            CosmosQueryRequestOptions(),
+            // It would be much better to specify the Domain Type right away and
+            // avoid the map operation, but we can't due
+            // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
+            // https://github.com/Azure/azure-sdk-for-java/issues/12269
+            JsonNode::class.java)
+        .mapNotNull { it.toDomain<Dataset>() }
+        .forEach { dataset ->
+          dataset.connector = null
+          cosmosTemplate.upsert("${organizationId}_datasets", dataset)
+        }
+  }
 }
