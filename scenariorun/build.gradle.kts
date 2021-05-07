@@ -7,7 +7,7 @@ dependencies {
   implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
   implementation("com.squareup.okhttp3:okhttp:4.9.1")
 
-  api(project(":cosmotech-api-common"))
+  api(projects.cosmotechApiCommon)
 }
 
 sourceSets {

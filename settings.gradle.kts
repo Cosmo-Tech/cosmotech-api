@@ -1,3 +1,6 @@
+// Gradle 7.0 feature previews
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 rootProject.name = "cosmotech-api-parent"
 
 include(

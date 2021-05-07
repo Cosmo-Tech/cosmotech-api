@@ -7,15 +7,15 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 plugins { id("com.rameshkp.openapi-merger-gradle-plugin") version "1.0.4" }
 
 dependencies {
-  api(project(":cosmotech-api-common"))
-  implementation(project(":cosmotech-connector-api"))
-  implementation(project(":cosmotech-dataset-api"))
-  implementation(project(":cosmotech-organization-api"))
-  implementation(project(":cosmotech-scenario-api"))
-  implementation(project(":cosmotech-scenariorun-api"))
-  implementation(project(":cosmotech-solution-api"))
-  implementation(project(":cosmotech-user-api"))
-  implementation(project(":cosmotech-workspace-api"))
+  api(projects.cosmotechApiCommon)
+  implementation(projects.cosmotechConnectorApi)
+  implementation(projects.cosmotechDatasetApi)
+  implementation(projects.cosmotechOrganizationApi)
+  implementation(projects.cosmotechScenarioApi)
+  implementation(projects.cosmotechScenariorunApi)
+  implementation(projects.cosmotechSolutionApi)
+  implementation(projects.cosmotechUserApi)
+  implementation(projects.cosmotechWorkspaceApi)
 }
 
 tasks.getByName<Delete>("clean") { delete("$rootDir/openapi/openapi.yaml") }

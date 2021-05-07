@@ -2,10 +2,10 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 
 dependencies {
-  api(project(":cosmotech-api-common"))
+  api(projects.cosmotechApiCommon)
   // In a more separated-services world, we could instead have a dedicated client project per
   // service
-  implementation(project(":cosmotech-user-api"))
+  implementation(projects.cosmotechUserApi)
 }
 
 sourceSets {
