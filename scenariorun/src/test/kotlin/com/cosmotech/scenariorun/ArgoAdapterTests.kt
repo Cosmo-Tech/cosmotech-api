@@ -238,6 +238,33 @@ class ArgoAdapterTests {
   }
 
   @Test
+  fun `Create Workflow Spec with StartContainers diamond`() {
+    var sc = getStartContainersDiamond()
+    val workflowSpec = argoAdapter.buildWorkflowSpec(sc)
+
+    val entrypointTemplate =
+        workflowSpec.templates?.find { template -> template.name.equals("entrypoint") }
+    val expected =
+        listOf(
+            DAGTask().name("Diamond-A").template("Diamond-A"),
+            DAGTask()
+                .name("Diamond-B")
+                .template("Diamond-B")
+                .dependencies(listOf("Diamond-A")),
+            DAGTask()
+                .name("Diamond-C")
+                .template("Diamond-C")
+                .dependencies(listOf("Diamond-A")),
+            DAGTask()
+                .name("Diamond-D")
+                .template("Diamond-D")
+                .dependencies(listOf("Diamond-B", "Diamond-C")),
+        )
+
+    assertEquals(expected, entrypointTemplate?.dag?.tasks)
+  }
+
+  @Test
   fun `Create Workflow with StartContainers not null`() {
     var sc = getStartContainers()
     val workflow = argoAdapter.buildWorkflow(sc)
@@ -265,6 +292,16 @@ class ArgoAdapterTests {
         ScenarioRunContainer(
             name = name,
             image = "cosmotech/testcontainer",
+        )
+    return src
+  }
+
+  fun getScenarioRunContainerDependencies(name: String = "default", dependencies: List<String>? = null): ScenarioRunContainer {
+    var src =
+        ScenarioRunContainer(
+            name = name,
+            image = "cosmotech/testcontainer",
+            dependencies = dependencies,
         )
     return src
   }
@@ -350,6 +387,19 @@ class ArgoAdapterTests {
                     getScenarioRunContainerEntrypoint("preRunContainer"),
                     getScenarioRunContainerEntrypoint("runContainer"),
                     getScenarioRunContainerEntrypoint("postRunContainer"),
+                ))
+    return sc
+  }
+
+  fun getStartContainersDiamond(): ScenarioRunStartContainers {
+    val sc =
+        ScenarioRunStartContainers(
+            containers =
+                listOf(
+                    getScenarioRunContainerDependencies("Diamond-A"),
+                    getScenarioRunContainerDependencies("Diamond-B", dependencies=listOf("Diamond-A")),
+                    getScenarioRunContainerDependencies("Diamond-C", dependencies=listOf("Diamond-A")),
+                    getScenarioRunContainerDependencies("Diamond-D", dependencies=listOf("Diamond-B", "Diamond-C")),
                 ))
     return sc
   }

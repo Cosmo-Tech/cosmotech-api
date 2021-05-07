@@ -550,6 +550,11 @@ components:
           description: the list of run arguments for the container
           items:
             type: string
+        dependencies:
+          type: array
+          description: the list of dependencies container name to run this container
+          items:
+            type: string
       required:
         - name
         - image
