@@ -96,8 +96,9 @@ class ScenariorunServiceImpl(
       val workflow = workflowUtils.getActiveWorkflow(workflowId, workflowName)
       var nodeLogs =
             workflowUtils.getWorkflowLogs(workflow)
-      containersLogs = nodeLogs.map {(nodeId, logs) ->
-        nodeId to ScenarioRunContainerLogs(
+      containersLogs = nodeLogs
+      .map {(nodeId, logs) ->
+        (workflow.status?.nodes?.get(nodeId)?.displayName ?: "") to ScenarioRunContainerLogs(
           nodeId = nodeId,
           containerName = workflow.status?.nodes?.get(nodeId)?.displayName,
           children = workflow.status?.nodes?.get(nodeId)?.children,
