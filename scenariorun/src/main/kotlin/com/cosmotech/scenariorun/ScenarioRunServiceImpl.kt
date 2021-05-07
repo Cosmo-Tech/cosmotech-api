@@ -91,13 +91,24 @@ class ScenariorunServiceImpl(
     val scenario = findScenarioRunById(organizationId, scenariorunId)
     val workflowId = scenario.workflowId
     val workflowName = scenario.workflowName
-    var cumulatedLogs =
-        if (workflowId != null && workflowName != null)
-            workflowUtils.getCumulatedLogs(workflowId, workflowName)
-        else ""
-    val logs =
+    var containersLogs: Map<String, ScenarioRunContainerLogs> = mapOf()
+    if (workflowId != null && workflowName != null) {
+      val workflow = workflowUtils.getActiveWorkflow(workflowId, workflowName)
+      var nodeLogs =
+            workflowUtils.getWorkflowLogs(workflow)
+      containersLogs = nodeLogs.map {(nodeId, logs) ->
+        nodeId to ScenarioRunContainerLogs(
+          nodeId = nodeId,
+          containerName = workflow.status?.nodes?.get(nodeId)?.displayName,
+          children = workflow.status?.nodes?.get(nodeId)?.children,
+          logs = logs
+        )
+      }.toMap()
+    }
+    val logs = 
         ScenarioRunLogs(
-            containers = mapOf("cumulated" to ScenarioRunContainerLogs(logs = cumulatedLogs)))
+          scenariorunId = scenariorunId,
+            containers = containersLogs)
     return logs
   }
 

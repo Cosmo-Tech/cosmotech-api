@@ -28,33 +28,49 @@ class WorkflowUtils(
   }
 
   fun getArchiveWorkflow(workflowId: String): Workflow {
-    val apiClient = getApiClient()
+    val apiClient = this.getApiClient()
     val apiInstance = ArchivedWorkflowServiceApi(apiClient)
     return apiInstance.archivedWorkflowServiceGetArchivedWorkflow(workflowId)
   }
 
   fun getWorkflow(workflowName: String): Workflow {
-    val apiClient = getApiClient()
+    val apiClient = this.getApiClient()
     val apiInstance = WorkflowServiceApi(apiClient)
     return apiInstance.workflowServiceGetWorkflow("phoenix", workflowName, "", "")
   }
 
   fun getCumulatedLogs(workflowId: String, workflowName: String): String {
+    val workflow = this.getActiveWorkflow(workflowId, workflowName)
+    return getCumulatedWorkflowLogs(workflow)
+  }
+
+  fun getActiveWorkflow(workflowId: String, workflowName: String): Workflow  {
     var workflow: Workflow? = null
     try {
-      workflow = getWorkflow(workflowName)
+      workflow = this.getWorkflow(workflowName)
       logger.debug(workflow.toString())
     } catch (e: ApiException) {
       println("Workflow $workflowName not found, trying to find it in archive")
     }
     if (workflow == null) {
-      workflow = getArchiveWorkflow(workflowId)
+      workflow = this.getArchiveWorkflow(workflowId)
     }
 
-    return getCumulatedWorkflowLogs(workflow)
+    return workflow
   }
 
   fun getCumulatedWorkflowLogs(workflow: Workflow): String {
+    val logsMap = this.getWorkflowLogs(workflow)
+    var cumulatedLogs = ""
+    val nodes = workflow.status?.nodes
+    if (nodes != null) {
+      cumulatedLogs = this.getCumulatedSortedLogs(nodes, logsMap)
+    }
+
+    return cumulatedLogs
+  }
+
+  fun getWorkflowLogs(workflow: Workflow): Map<String, String> {
     val workflowId = workflow.metadata.uid
     var logsMap: MutableMap<String, String> = mutableMapOf()
     if (workflowId != null) {
@@ -68,17 +84,7 @@ class WorkflowUtils(
         }
       }
     }
-    var cumulatedLogs = ""
-    val nodes = workflow.status?.nodes
-    if (nodes != null) {
-      cumulatedLogs = getCumulatedSortedLogs(nodes, logsMap)
-    }
-
-    return cumulatedLogs
-  }
-
-  fun getWorkflowLogs(workflow: Workflow): Map<String, String> {
-    TODO("Not implemented yet")
+    return logsMap
   }
 
   private fun getCumulatedSortedLogs(

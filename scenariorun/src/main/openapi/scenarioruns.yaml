@@ -575,6 +575,10 @@ components:
           type: string
           readOnly: true
           description: the node Id which has executed this log
+        containerName:
+          type: string
+          readOnly: true
+          description: the container name
         children:
           type: array
           readOnly: true
@@ -1049,10 +1053,12 @@ components:
         scenariorunId: "1"
         containers: 
           fetchDatasetContainers:
-            nodeId: azertyuiop
+            nodeId: azertyuiop-123
+            containerName: azertyuiop
             children:
               - wxcvbn
             logs: cannot read source file
           runLogs:
-            nodeid: wxcvbn
+            nodeid: wxcvbn-123
+            containerName: wxcvbn
             logs: cannot run solution
