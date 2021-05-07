@@ -109,8 +109,6 @@ subprojects {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("javax.validation:validation-api:2.0.1.Final")
 
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-
     implementation("org.springframework.cloud:spring-cloud-starter-kubernetes-fabric8-config:2.0.2")
 
     val springDocVersion = "1.5.8"
