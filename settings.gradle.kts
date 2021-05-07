@@ -10,9 +10,8 @@ include(
     "scenariorun",
     "solution",
     "user",
-    // TODO Upgrading to Gradle 7.0 will allow to use Kotlin 1.4 language features, such as trailing
-    // commas, which can be useful here
-    "workspace")
+    "workspace",
+)
 
 project(":api").name = "cosmotech-api"
 
