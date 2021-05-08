@@ -11,6 +11,7 @@ import com.cosmotech.api.utils.findByIdOrThrow
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationService
+import com.cosmotech.organization.domain.OrganizationServices
 import com.cosmotech.organization.domain.OrganizationUser
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
@@ -218,21 +219,108 @@ class OrganizationServiceImpl(private val userService: UserApiService) :
       organizationId: String,
       organizationService: OrganizationService
   ): OrganizationService {
-    TODO("Not yet implemented")
+    val existingOrganization = findOrganizationById(organizationId)
+    val existingServices = existingOrganization.services ?: OrganizationServices()
+    val solutionsContainerRegistry =
+        existingServices.solutionsContainerRegistry ?: OrganizationService()
+    var hasChanged = false
+    if (organizationService.baseUri != null &&
+        organizationService.baseUri != solutionsContainerRegistry.baseUri) {
+      solutionsContainerRegistry.baseUri = organizationService.baseUri
+      hasChanged = true
+    }
+    if (organizationService.cloudService != null &&
+        organizationService.cloudService != solutionsContainerRegistry.cloudService) {
+      solutionsContainerRegistry.cloudService = organizationService.cloudService
+      hasChanged = true
+    }
+    if (organizationService.platformService != null &&
+        organizationService.platformService != solutionsContainerRegistry.platformService) {
+      solutionsContainerRegistry.platformService = organizationService.platformService
+      hasChanged = true
+    }
+    if (organizationService.resourceUri != null &&
+        organizationService.resourceUri != solutionsContainerRegistry.resourceUri) {
+      solutionsContainerRegistry.resourceUri = organizationService.resourceUri
+      hasChanged = true
+    }
+    if (organizationService.credentials != null) {
+      val solutionsContainerRegistryCredentials =
+          solutionsContainerRegistry.credentials?.toMutableMap() ?: mutableMapOf()
+      solutionsContainerRegistryCredentials.clear()
+      solutionsContainerRegistryCredentials.putAll(organizationService.credentials ?: emptyMap())
+      hasChanged = true
+    }
+    return if (hasChanged) {
+      existingServices.solutionsContainerRegistry = solutionsContainerRegistry
+      existingOrganization.services = existingServices
+      cosmosTemplate.upsert(coreOrganizationContainer, existingOrganization)
+      solutionsContainerRegistry
+    } else {
+      solutionsContainerRegistry
+    }
   }
 
   override fun updateStorageByOrganizationId(
       organizationId: String,
       organizationService: OrganizationService
   ): OrganizationService {
-    TODO("Not yet implemented")
+    val existingOrganization = findOrganizationById(organizationId)
+    val existingServices = existingOrganization.services ?: OrganizationServices()
+    val storage = existingServices.storage ?: OrganizationService()
+    var hasChanged = false
+    if (organizationService.baseUri != null && organizationService.baseUri != storage.baseUri) {
+      storage.baseUri = organizationService.baseUri
+      hasChanged = true
+    }
+    if (organizationService.cloudService != null &&
+        organizationService.cloudService != storage.cloudService) {
+      storage.cloudService = organizationService.cloudService
+      hasChanged = true
+    }
+    if (organizationService.platformService != null &&
+        organizationService.platformService != storage.platformService) {
+      storage.platformService = organizationService.platformService
+      hasChanged = true
+    }
+    if (organizationService.resourceUri != null &&
+        organizationService.resourceUri != storage.resourceUri) {
+      storage.resourceUri = organizationService.resourceUri
+      hasChanged = true
+    }
+    if (organizationService.credentials != null) {
+      val storageCredentials = storage.credentials?.toMutableMap() ?: mutableMapOf()
+      storageCredentials.clear()
+      storageCredentials.putAll(organizationService.credentials ?: emptyMap())
+      hasChanged = true
+    }
+    return if (hasChanged) {
+      existingServices.storage = storage
+      existingOrganization.services = existingServices
+      cosmosTemplate.upsert(coreOrganizationContainer, existingOrganization)
+      storage
+    } else {
+      storage
+    }
   }
 
   override fun updateTenantCredentialsByOrganizationId(
       organizationId: String,
       requestBody: Map<String, Any>
   ): Map<String, Any> {
-    TODO("Not yet implemented")
+    val existingOrganization = findOrganizationById(organizationId)
+    if (requestBody.isEmpty()) {
+      return requestBody
+    }
+    val existingServices = existingOrganization.services ?: OrganizationServices()
+    val existingTenantCredentials = existingServices.tenantCredentials?.toMutableMap()
+    existingTenantCredentials?.putAll(requestBody)
+
+    existingServices.tenantCredentials = existingTenantCredentials
+    existingOrganization.services = existingServices
+
+    cosmosTemplate.upsert(coreOrganizationContainer, existingOrganization)
+    return existingTenantCredentials?.toMap() ?: mapOf()
   }
 
   @EventListener(UserUnregistered::class)
