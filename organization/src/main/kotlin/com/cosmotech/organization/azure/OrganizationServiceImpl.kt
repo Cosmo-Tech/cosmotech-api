@@ -3,11 +3,14 @@
 package com.cosmotech.organization.azure
 
 import com.azure.cosmos.models.CosmosContainerProperties
+import com.azure.cosmos.models.CosmosQueryRequestOptions
+import com.azure.cosmos.models.SqlQuerySpec
 import com.cosmotech.api.AbstractCosmosBackedService
 import com.cosmotech.api.events.*
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.findAll
 import com.cosmotech.api.utils.findByIdOrThrow
+import com.cosmotech.api.utils.toDomain
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationService
@@ -15,6 +18,7 @@ import com.cosmotech.organization.domain.OrganizationServices
 import com.cosmotech.organization.domain.OrganizationUser
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
+import com.fasterxml.jackson.databind.JsonNode
 import java.lang.IllegalStateException
 import javax.annotation.PostConstruct
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -326,8 +330,45 @@ class OrganizationServiceImpl(private val userService: UserApiService) :
   @EventListener(UserUnregistered::class)
   @Async("csm-in-process-event-executor")
   fun onUserUnregistered(userUnregisteredEvent: UserUnregistered) {
+    // FIXME Does not work yet !
+    val userId = userUnregisteredEvent.userId
     logger.info(
-        "User ${userUnregisteredEvent.userId} unregistered => removing them from all organizations they belong to..")
-    // TODO
+        "User $userId unregistered => removing them from all organizations they belong to..")
+    cosmosCoreDatabase
+        .getContainer(coreOrganizationContainer)
+        .queryItems(
+            SqlQuerySpec(
+                "SELECT * FROM c WHERE ARRAY_CONTAINS(c.users, {\"id\": \"$userId\"}, true)"),
+            CosmosQueryRequestOptions(),
+            // It would be much better to specify the Domain Type right away and
+            // avoid the map operation, but we can't due
+            // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
+            // https://github.com/Azure/azure-sdk-for-java/issues/12269
+            JsonNode::class.java)
+        .mapNotNull { it.toDomain<Organization>() }
+        .forEach { organization ->
+          this.eventPublisher.publishEvent(
+              UserUnregisteredForOrganization(
+                  this, organizationId = organization.id!!, userId = userId))
+        }
+  }
+
+  @EventListener(UserUnregisteredForOrganization::class)
+  @Async("csm-in-process-event-executor")
+  fun onUserUnregisteredForOrganization(
+      userUnregisteredForOrganization: UserUnregisteredForOrganization
+  ) {
+    val organization = findOrganizationById(userUnregisteredForOrganization.organizationId)
+    if (!organization.users.isNullOrEmpty()) {
+      val organizationUsersAsMutableList = organization.users?.toMutableList()
+      val removalResult =
+          organizationUsersAsMutableList?.toMutableList()?.removeIf {
+            it.id == userUnregisteredForOrganization.userId
+          }
+      if (removalResult == true) {
+        organization.users = organizationUsersAsMutableList.toList()
+        cosmosTemplate.upsert(coreOrganizationContainer, organization)
+      }
+    }
   }
 }
