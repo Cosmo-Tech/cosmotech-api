@@ -31,6 +31,24 @@ class UserUnregisteredForOrganization(
     val userId: String
 ) : CsmEvent(publisher)
 
+class UserAddedToScenario(
+    publisher: Any,
+    val organizationId: String,
+    val organizationName: String,
+    val workspaceId: String,
+    val workspaceName: String,
+    val userId: String,
+    val roles: List<String>? = null
+) : CsmEvent(publisher)
+
+class UserRemovedFromScenario(
+    publisher: Any,
+    val organizationId: String,
+    val workspaceId: String,
+    val scenarioId: String,
+    val userId: String
+) : CsmEvent(publisher)
+
 class ConnectorRemoved(publisher: Any, val connectorId: String) : CsmEvent(publisher)
 
 class ConnectorRemovedForOrganization(

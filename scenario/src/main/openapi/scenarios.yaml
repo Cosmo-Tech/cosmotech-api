@@ -488,8 +488,8 @@ components:
           description: the list of Solution Run Template parameters values
           items:
             $ref: '#/components/schemas/ScenarioRunTemplateParameterValue'
-      required:
-        - name
+#      required:
+#        - name
     ScenarioRunTemplateParameterValue:
       type: object
       description: the value of a Solution Run Template parameter for a Scenario
@@ -522,9 +522,11 @@ components:
           readOnly: true
           description: the User name
         roles:
-          type: string
+          type: array
           description: the User role
-          enum: ["Viewer","Editor"]
+          items:
+            type: string
+            enum: ["Viewer","Editor"]
       required:
         - id
         - roles
@@ -580,10 +582,12 @@ components:
         users:
           - id: "1"
             name: Bob
-            roles: Editor
+            roles:
+            - Editor
           - id: "2"
             name: Alice
-            roles: Viewer 
+            roles:
+            - Viewer
         datasetList:
           - "1"
         parametersValues:
@@ -618,10 +622,12 @@ components:
         users:
           - id: "1"
             name: Bob
-            roles: Editor
+            roles:
+            - Editor
           - id: "2"
             name: Alice
-            roles: Viewer 
+            roles:
+            - Viewer
         state: Created
         ownerName: Bob
         creationDate: 4/15/2021, 10:52:21.593 AM
@@ -638,7 +644,6 @@ components:
         - id: "1"
           name: Brewery Master Analysis
           description: Brewery master reference analysis
-          version: "1.0.0"
           tags:
             - Brewery
             - reference
@@ -650,10 +655,12 @@ components:
           users:
             - id: "1"
               name: Bob
-              roles: Editor
+              roles:
+              - Editor
             - id: "2"
               name: Alice
-              roles: Viewer 
+              roles:
+              - Viewer
           state: Created
           ownerName: Bob
           creationDate: 4/15/2021, 10:52:21.593 AM
@@ -678,10 +685,12 @@ components:
           users:
             - id: "1"
               name: Bob
-              roles: Editor
+              roles:
+              - Editor
             - id: "2"
               name: Alice
-              roles: Viewer 
+              roles:
+              - Viewer
           state: Running
           ownerName: Bob
           creationDate: 4/15/2021, 11:52:21.593 AM
@@ -705,10 +714,12 @@ components:
           users:
             - id: "1"
               name: Bob
-              roles: Editor
+              roles:
+              - Editor
             - id: "2"
               name: Alice
-              roles: Editor 
+              roles:
+              - Editor
           state: Failed
           ownerName: Alice
           creationDate: 4/16/2021, 11:52:21.593 AM
@@ -742,10 +753,12 @@ components:
         users:
           - id: "1"
             name: Bob
-            roles: Editor
+            roles:
+            - Editor
           - id: "2"
             name: Alice
-            roles: Viewer 
+            roles:
+            - Viewer
         state: Created
         ownerName: Bob
         creationDate: 4/15/2021, 10:52:21.593 AM
@@ -781,10 +794,12 @@ components:
           users:
             - id: "1"
               name: Bob
-              roles: Editor
+              roles:
+              - Editor
             - id: "2"
               name: Alice
-              roles: Viewer 
+              roles:
+              - Viewer
           state: Created
           creationDate: 4/15/2021, 10:52:21.593 AM
           ownerName: Alice
@@ -808,10 +823,12 @@ components:
           users:
             - id: "1"
               name: Bob
-              roles: Editor
+              roles:
+              - Editor
             - id: "2"
               name: Alice
-              roles: Viewer 
+              roles:
+              - Viewer
           state: Running
           creationDate: 4/15/2021, 11:52:21.593 AM
           ownerName: Alice
@@ -834,10 +851,12 @@ components:
           users:
             - id: "1"
               name: Bob
-              roles: Editor
+              roles:
+              - Editor
             - id: "2"
               name: Alice
-              roles: Editor 
+              roles:
+              - Editor
           state: Failed
           creationDate: 4/16/2021, 10:52:21.593 AM
           ownerName: Alice
@@ -856,10 +875,12 @@ components:
       value:
         - id: "1"
           name: Bob
-          roles: Editor
+          roles:
+          - Editor
         - id: "2"
           name: Alice
-          roles: Editor
+          roles:
+          - Editor
     TwoScenarioRunTemplateParameterValueToAddOrReplace:
       summary: Scenarios Run Templates added
       description: Scenarios Run Templates added
