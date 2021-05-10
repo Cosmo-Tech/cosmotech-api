@@ -1,6 +1,6 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.scenario
+package com.cosmotech.scenario.azure
 
 import com.azure.cosmos.models.*
 import com.cosmotech.api.AbstractCosmosBackedService
