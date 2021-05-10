@@ -137,25 +137,25 @@ class ContainerFactoryTests {
 
   @Test
   fun `Send DataWarehouse Container is not null`() {
-    val container = factory.buildSendDataWarehouseContainer(getWorkspace())
+    val container = factory.buildSendDataWarehouseContainer(getWorkspace(), getRunTemplate())
     assertNotNull(container)
   }
 
   @Test
   fun `Send DataWarehouseContainer name valid`() {
-    val container = factory.buildSendDataWarehouseContainer(getWorkspace())
+    val container = factory.buildSendDataWarehouseContainer(getWorkspace(), getRunTemplate())
     assertEquals("sendDataWarehouseContainer", container.name)
   }
 
   @Test
   fun `Send DataWarehouse Container image valid`() {
-    val container = factory.buildSendDataWarehouseContainer(getWorkspace())
+    val container = factory.buildSendDataWarehouseContainer(getWorkspace(), getRunTemplate())
     assertEquals("cosmotech/senddatawarehouse", container.image)
   }
 
   @Test
   fun `Send DataWarehouse Container env vars valid`() {
-    val container = factory.buildSendDataWarehouseContainer(getWorkspace())
+    val container = factory.buildSendDataWarehouseContainer(getWorkspace(), getRunTemplate())
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -166,6 +166,66 @@ class ContainerFactoryTests {
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "true",
+            "CSM_SEND_DATAWAREHOUSE_DATASETS" to "true",
+            "ADX_DATA_INGESTION_URI" to "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "ADX_DATABASE" to "test",
+        )
+    assertTrue(expected.equals(container.envVars))
+  }
+
+  @Test
+  fun `Send DataWarehouse Container no send env vars`() {
+    val container = factory.buildSendDataWarehouseContainer(getWorkspaceNoSend(), getRunTemplate())
+    val expected =
+        mapOf(
+            "AZURE_TENANT_ID" to "12345678",
+            "AZURE_CLIENT_ID" to "98765432",
+            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "CSM_API_URL" to "https://api.comostech.com",
+            "CSM_API_TOKEN" to "azertyuiopqsdfghjklm",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "false",
+            "CSM_SEND_DATAWAREHOUSE_DATASETS" to "false",
+            "ADX_DATA_INGESTION_URI" to "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "ADX_DATABASE" to "test",
+        )
+    assertTrue(expected.equals(container.envVars))
+  }
+
+  @Test
+  fun `Send DataWarehouse Container env vars send override dataset template`() {
+    val container = factory.buildSendDataWarehouseContainer(getWorkspace(), getRunTemplateNoDatasetsSend())
+    val expected =
+        mapOf(
+            "AZURE_TENANT_ID" to "12345678",
+            "AZURE_CLIENT_ID" to "98765432",
+            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "CSM_API_URL" to "https://api.comostech.com",
+            "CSM_API_TOKEN" to "azertyuiopqsdfghjklm",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "true",
+            "CSM_SEND_DATAWAREHOUSE_DATASETS" to "false",
+            "ADX_DATA_INGESTION_URI" to "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "ADX_DATABASE" to "test",
+        )
+    assertTrue(expected.equals(container.envVars))
+  }
+
+  @Test
+  fun `Send DataWarehouse Container env vars send override parameters template`() {
+    val container = factory.buildSendDataWarehouseContainer(getWorkspace(), getRunTemplateNoParametersSend())
+    val expected =
+        mapOf(
+            "AZURE_TENANT_ID" to "12345678",
+            "AZURE_CLIENT_ID" to "98765432",
+            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "CSM_API_URL" to "https://api.comostech.com",
+            "CSM_API_TOKEN" to "azertyuiopqsdfghjklm",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "false",
             "CSM_SEND_DATAWAREHOUSE_DATASETS" to "true",
             "ADX_DATA_INGESTION_URI" to "https://ingest-phoenix.westeurope.kusto.windows.net",
             "ADX_DATABASE" to "test",
@@ -399,6 +459,19 @@ class ContainerFactoryTests {
     )
   }
 
+  private fun getWorkspaceNoSend(): Workspace {
+    return Workspace(
+      key = "test",
+      name = "Test Workspace",
+      description = "Test Workspace Description",
+      version = "1.0.0",
+      solution = WorkspaceSolution(
+        solutionId = "1",
+      ),
+      sendInputToDataWarehouse = false,
+    )
+  }
+
   private fun getWorkspaceNoDB(): Workspace {
     return Workspace(
       key = "test",
@@ -424,6 +497,26 @@ class ContainerFactoryTests {
       id = "testruntemplate",
       name = "Test Run",
       csmSimulation = "TestSimulation",
+    )
+  }
+
+  private fun getRunTemplateNoDatasetsSend(): RunTemplate {
+
+    return RunTemplate(
+      id = "testruntemplate",
+      name = "Test Run",
+      csmSimulation = "TestSimulation",
+      sendDatasetsToDataWarehouse = false
+    )
+  }
+
+  private fun getRunTemplateNoParametersSend(): RunTemplate {
+
+    return RunTemplate(
+      id = "testruntemplate",
+      name = "Test Run",
+      csmSimulation = "TestSimulation",
+      sendInputParametersToDataWarehouse = false
     )
   }
 }

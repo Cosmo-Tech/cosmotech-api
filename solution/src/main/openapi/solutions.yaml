@@ -465,11 +465,9 @@ components:
           $ref: '#/components/schemas/RunTemplateResourceStorage'
         sendDatasetsToDataWarehouse:
           type: boolean
-          default: true
           description: whether or not the Datasets values are send to the DataWarehouse prior to Simulation Run
         sendInputParametersToDataWarehouse:
           type: boolean
-          default: true
           description: whether or not the input parameters values are send to the DataWarehouse prior to Simulation Run
         parameterGroups:
           type: array

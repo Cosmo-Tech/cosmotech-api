@@ -80,10 +80,10 @@ class ContainerFactory(
     )
   }
 
-  fun buildSendDataWarehouseContainer(workspace: Workspace): ScenarioRunContainer {
+  fun buildSendDataWarehouseContainer(workspace: Workspace, runTemplate: RunTemplate): ScenarioRunContainer {
     val envVars = getCommonEnvVars()
-    var sendParameters = workspace.sendInputToDataWarehouse
-    var sendDatasets = workspace.sendInputToDataWarehouse
+    val sendParameters = getSendOptionValue(workspace.sendInputToDataWarehouse, runTemplate.sendInputParametersToDataWarehouse)
+    val sendDatasets = getSendOptionValue(workspace.sendInputToDataWarehouse, runTemplate.sendDatasetsToDataWarehouse)
     envVars.put(sendDataWarehouseParametersVar, (sendParameters ?: true).toString())
     envVars.put(sendDataWarehouseDatasetsVar, (sendDatasets ?: true).toString())
     envVars.put(adxDataIngestionUriVar, adxDataIngestionUri)
@@ -113,6 +113,14 @@ class ContainerFactory(
 
   fun buildPostRunContainer(workspaceKey: String, solution: Solution, runTemplateId: String): ScenarioRunContainer {
     return this.buildSolutionContainer(workspaceKey, solution, runTemplateId, CONTAINER_POSTRUN, CONTAINER_POSTRUN_MODE)
+  }
+
+  private fun getSendOptionValue(workspaceOption: Boolean?, templateOption: Boolean?): Boolean {
+    if (templateOption != null) {
+      return templateOption
+    } else {
+      return workspaceOption ?: true
+    }
   }
 
   private fun buildSolutionContainer(workspaceKey: String, solution: Solution, runTemplateId: String, name: String, mode: String): ScenarioRunContainer {
