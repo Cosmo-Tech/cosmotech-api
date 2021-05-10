@@ -1,6 +1,6 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.user
+package com.cosmotech.user.azure
 
 import com.azure.cosmos.models.CosmosContainerProperties
 import com.cosmotech.api.AbstractCosmosBackedService
@@ -12,7 +12,6 @@ import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
 import com.cosmotech.user.domain.UserOrganization
 import java.lang.IllegalStateException
-import java.util.*
 import javax.annotation.PostConstruct
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
