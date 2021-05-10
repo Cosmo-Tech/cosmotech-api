@@ -1011,7 +1011,6 @@ components:
         nodeLabel: highcpupool
         containers:
           fetchDatasetContainers:
-            name: azertyuiop
             envVars:
               AZURE_TENANT_ID: "12345678"
               AZURE_CLIENT_ID: "12345678"
