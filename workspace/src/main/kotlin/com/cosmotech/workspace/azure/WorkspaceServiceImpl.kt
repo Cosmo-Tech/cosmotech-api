@@ -195,11 +195,7 @@ class WorkspaceServiceImpl(
     return workspace
   }
 
-  override fun deleteWorkspaceFile(
-      organizationId: kotlin.String,
-      workspaceId: kotlin.String,
-      workspaceFile: WorkspaceFile
-  ): WorkspaceFile {
+  override fun deleteWorkspaceFile(organizationId: String, workspaceId: String): WorkspaceFile {
     TODO("Not yet implemented")
   }
 
