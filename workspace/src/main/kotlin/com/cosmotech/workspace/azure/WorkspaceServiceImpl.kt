@@ -17,6 +17,7 @@ import com.cosmotech.workspace.domain.WorkspaceFile
 import com.cosmotech.workspace.domain.WorkspaceUser
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
+import org.springframework.core.io.Resource
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
@@ -121,6 +122,10 @@ class WorkspaceServiceImpl(
           "${organizationId}_workspaces", workspace.copy(id = idGenerator.generate("workspace")))
           ?: throw IllegalArgumentException("No Workspace returned in response: $workspace")
 
+  override fun deleteAllWorkspaceFiles(organizationId: String, workspaceId: String) {
+    TODO("Not yet implemented")
+  }
+
   override fun updateWorkspace(
       organizationId: String,
       workspaceId: String,
@@ -195,7 +200,15 @@ class WorkspaceServiceImpl(
     return workspace
   }
 
-  override fun deleteWorkspaceFile(organizationId: String, workspaceId: String): WorkspaceFile {
+  override fun deleteWorkspaceFile(organizationId: String, workspaceId: String, fileName: String) {
+    TODO("Not yet implemented")
+  }
+
+  override fun downloadWorkspaceFile(
+      organizationId: String,
+      workspaceId: String,
+      fileName: String
+  ): Resource {
     TODO("Not yet implemented")
   }
 

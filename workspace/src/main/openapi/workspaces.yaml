@@ -224,24 +224,61 @@ paths:
         "404":
           description: the Workspace specified is unknown or you don't have access to it
     delete:
+      operationId: deleteAllWorkspaceFiles
+      tags:
+        - workspace
+      summary: Delete all Workspace files
+      responses:
+        "204":
+          description: Request succeeded
+        "404":
+          description: the Workspace specified is unknown or you don't have access to them
+
+  /organizations/{organization_id}/workspaces/{workspace_id}/files/{file_name}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: file_name
+        in: path
+        description: the file name
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: downloadWorkspaceFile
+      tags:
+        - workspace
+      summary: Download the Workspace File specified
+      responses:
+        "200":
+          description: the workspace file as a resource
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: the Workspace file specified is unknown or you don't have access to it
+    delete:
       operationId: deleteWorkspaceFile
       tags:
         - workspace
       summary: Delete a workspace file
       responses:
-        "200":
-          description: the file resource details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WorkspaceFile'
-              examples:
-                BreweryWorkspaceFile:
-                  $ref: '#/components/examples/BreweryWorkspaceFile'
-        "400":
-          description: Bad request
+        "204":
+          description: Request succeeded
         "404":
-          description: the Workspace specified is unknown or you don't have access to it
+          description: the Workspace or the file specified is unknown or you don't have access to them
 
   /organizations/{organization_id}/workspaces/{workspace_id}/users:
     parameters:
