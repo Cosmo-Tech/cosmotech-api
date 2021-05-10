@@ -25,8 +25,8 @@ class ContainerFactoryTests {
           azureClientSecret = "azertyuiop",
           apiBaseUrl = "https://api.comostech.com",
           apiToken = "azertyuiopqsdfghjklm",
-          scenarioFetchParametersImage = "cosmotech/scenarioFetchParameters",
-          sendDataWarehouseImage = "cosmotech/sendDataWarehouse",
+          scenarioFetchParametersImage = "cosmotech/scenariofetchparameters",
+          sendDataWarehouseImage = "cosmotech/senddatawarehouse",
           adxDataIngestionUri = "https://ingest-phoenix.westeurope.kusto.windows.net",
       )
 
@@ -111,7 +111,7 @@ class ContainerFactoryTests {
   @Test
   fun `Fetch Scenario Parameters Container image valid`() {
     val container = factory.buildScenarioParametersFetchContainer("1")
-    assertEquals("cosmotech/scenarioFetchParameters", container.image)
+    assertEquals("cosmotech/scenariofetchparameters", container.image)
   }
 
   @Test
@@ -146,7 +146,7 @@ class ContainerFactoryTests {
   @Test
   fun `Send DataWarehouse Container image valid`() {
     val container = factory.buildSendDataWarehouseContainer(getWorkspace())
-    assertEquals("cosmotech/sendDataWarehouse", container.image)
+    assertEquals("cosmotech/senddatawarehouse", container.image)
   }
 
   @Test
