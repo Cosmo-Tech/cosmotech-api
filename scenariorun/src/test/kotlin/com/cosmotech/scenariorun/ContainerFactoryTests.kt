@@ -192,28 +192,6 @@ class ContainerFactoryTests {
   }
 
   @Test
-  fun `Parameters Handler Container env vars valid`() {
-    val container = this.buildApplyParametersContainer()
-    val expected =
-        mapOf(
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_API_URL" to "https://api.comostech.com",
-            "CSM_API_TOKEN" to "azertyuiopqsdfghjklm",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
-            "CSM_CONTAINER_MODE" to "handle-parameters",
-            "CSM_CONTROL_PLANE_TOPIC" to "amqps://csm-phoenix.servicebus.windows.net/test-scenariorun",
-            "CSM_PROBES_MEASURES_TOPIC" to "amqps://csm-phoenix.servicebus.windows.net/test",
-            "CSM_SIMULATION" to "TestSimulation"
-        )
-    logger.info(container.envVars.toString())
-    assertTrue(expected.equals(container.envVars))
-  }
-
-  @Test
   fun `Parameters Handler Container entrypoint valid`() {
     val container = this.buildApplyParametersContainer()
     assertEquals("entrypoint.py", container.entrypoint)
@@ -226,10 +204,122 @@ class ContainerFactoryTests {
     }
   }
 
+  @Test
+  fun `Parameters Handler Container env vars valid`() {
+    val container = this.buildApplyParametersContainer()
+    this.validateEnvVarsSolutionContainer(container, "handle-parameters")
+  }
+
+  @Test
+  fun `Validate Container is not null`() {
+    val container = this.buildValidateDataContainer()
+    assertNotNull(container)
+  }
+
+  @Test
+  fun `Validate Container name valid`() {
+    val container = this.buildValidateDataContainer()
+    assertEquals("validateDataContainer", container.name)
+  }
+
+  @Test
+  fun `Validate Container env vars valid`() {
+    val container = this.buildValidateDataContainer()
+    this.validateEnvVarsSolutionContainer(container, "validate")
+  }
+
+  @Test
+  fun `Prerun Container is not null`() {
+    val container = this.buildPreRunContainer()
+    assertNotNull(container)
+  }
+
+  @Test
+  fun `Prerun Container name valid`() {
+    val container = this.buildPreRunContainer()
+    assertEquals("preRunContainer", container.name)
+  }
+
+  @Test
+  fun `PreRun Container env vars valid`() {
+    val container = this.buildPreRunContainer()
+    this.validateEnvVarsSolutionContainer(container, "prerun")
+  }
+
+  @Test
+  fun `Run Container is not null`() {
+    val container = this.buildRunContainer()
+    assertNotNull(container)
+  }
+
+  @Test
+  fun `Run Container name valid`() {
+    val container = this.buildRunContainer()
+    assertEquals("runContainer", container.name)
+  }
+
+  @Test
+  fun `Run Container env vars valid`() {
+    val container = this.buildRunContainer()
+    this.validateEnvVarsSolutionContainer(container, "engine")
+  }
+
+  @Test
+  fun `Post Run Container is not null`() {
+    val container = this.buildPostRunContainer()
+    assertNotNull(container)
+  }
+
+  @Test
+  fun `Post Run Container name valid`() {
+    val container = this.buildPostRunContainer()
+    assertEquals("postRunContainer", container.name)
+  }
+
+  @Test
+  fun `Post Run Container env vars valid`() {
+    val container = this.buildPostRunContainer()
+    this.validateEnvVarsSolutionContainer(container, "postrun")
+  }
+
   private fun buildApplyParametersContainer(): ScenarioRunContainer {
     return factory.buildApplyParametersContainer("test", getSolution(), "testruntemplate")
   }
 
+  private fun buildValidateDataContainer(): ScenarioRunContainer {
+    return factory.buildValidateDataContainer("test", getSolution(), "testruntemplate")
+  }
+
+  private fun buildPreRunContainer(): ScenarioRunContainer {
+    return factory.buildPreRunContainer("test", getSolution(), "testruntemplate")
+  }
+
+  private fun buildRunContainer(): ScenarioRunContainer {
+    return factory.buildRunContainer("test", getSolution(), "testruntemplate")
+  }
+
+  private fun buildPostRunContainer(): ScenarioRunContainer {
+    return factory.buildPostRunContainer("test", getSolution(), "testruntemplate")
+  }
+
+  private fun validateEnvVarsSolutionContainer(container: ScenarioRunContainer, mode: String) {
+    val expected =
+        mapOf(
+            "AZURE_TENANT_ID" to "12345678",
+            "AZURE_CLIENT_ID" to "98765432",
+            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "CSM_API_URL" to "https://api.comostech.com",
+            "CSM_API_TOKEN" to "azertyuiopqsdfghjklm",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
+            "CSM_CONTAINER_MODE" to mode,
+            "CSM_CONTROL_PLANE_TOPIC" to "amqps://csm-phoenix.servicebus.windows.net/test-scenariorun",
+            "CSM_PROBES_MEASURES_TOPIC" to "amqps://csm-phoenix.servicebus.windows.net/test",
+            "CSM_SIMULATION" to "TestSimulation"
+        )
+    assertTrue(expected.equals(container.envVars))
+  }
 
   private fun getDataset(): Dataset {
     val connector = getDatasetConnector()

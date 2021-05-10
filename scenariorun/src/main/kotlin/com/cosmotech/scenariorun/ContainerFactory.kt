@@ -99,6 +99,22 @@ class ContainerFactory(
     return this.buildSolutionContainer(workspaceKey, solution, runTemplateId, CONTAINER_APPLY_PARAMETERS, CONTAINER_APPLY_PARAMETERS_MODE)
   }
 
+  fun buildValidateDataContainer(workspaceKey: String, solution: Solution, runTemplateId: String): ScenarioRunContainer {
+    return this.buildSolutionContainer(workspaceKey, solution, runTemplateId, CONTAINER_VALIDATE_DATA, CONTAINER_VALIDATE_DATA_MODE)
+  }
+
+  fun buildPreRunContainer(workspaceKey: String, solution: Solution, runTemplateId: String): ScenarioRunContainer {
+    return this.buildSolutionContainer(workspaceKey, solution, runTemplateId, CONTAINER_PRERUN, CONTAINER_PRERUN_MODE)
+  }
+
+  fun buildRunContainer(workspaceKey: String, solution: Solution, runTemplateId: String): ScenarioRunContainer {
+    return this.buildSolutionContainer(workspaceKey, solution, runTemplateId, CONTAINER_RUN, CONTAINER_RUN_MODE)
+  }
+
+  fun buildPostRunContainer(workspaceKey: String, solution: Solution, runTemplateId: String): ScenarioRunContainer {
+    return this.buildSolutionContainer(workspaceKey, solution, runTemplateId, CONTAINER_POSTRUN, CONTAINER_POSTRUN_MODE)
+  }
+
   private fun buildSolutionContainer(workspaceKey: String, solution: Solution, runTemplateId: String, name: String, mode: String): ScenarioRunContainer {
     var template: RunTemplate? = null
     for (runTemplate in solution.runTemplates) {
