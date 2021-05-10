@@ -228,16 +228,6 @@ paths:
       tags:
         - workspace
       summary: Delete a workspace file
-      requestBody:
-        description: the file to upload
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WorkspaceFile'
-            examples:
-              WorkspaceFileToDeleteExample:
-                $ref: '#/components/examples/BreweryWorkspaceFile'
       responses:
         "200":
           description: the file resource details
