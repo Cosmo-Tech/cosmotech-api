@@ -5,6 +5,7 @@
 [![Build](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/build.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/build.yml)
 [![Test](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/test.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/test.yml)
 [![Lint](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/lint.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/lint.yml)
+[![OpenAPI](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/openapi.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/openapi.yml)
 
 ## Building
 
