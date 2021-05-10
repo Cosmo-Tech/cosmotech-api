@@ -8,6 +8,8 @@ import com.cosmotech.connector.domain.ConnectorParameter
 import com.cosmotech.connector.domain.ConnectorParameterGroup
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetConnector
+import com.cosmotech.solution.domain.Solution
+import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceService
 import com.cosmotech.workspace.domain.WorkspaceServices
@@ -176,6 +178,47 @@ class ContainerFactoryTests {
     }
   }
 
+  @Test
+  fun `Parameters Handler Container is not null`() {
+    val container = factory.buildApplyParametersContainer(getSolution(), "testruntemplate")
+    assertNotNull(container)
+  }
+
+  @Test
+  fun `Parameters Handler Container name valid`() {
+    val container = factory.buildApplyParametersContainer(getSolution(), "testruntemplate")
+    assertEquals("applyParametersContainer", container.name)
+  }
+
+  @Test
+  fun `Parameters Handler Container image valid`() {
+    val container = factory.buildApplyParametersContainer(getSolution(), "testruntemplate")
+    assertEquals("cosmotech/testsolution_simulator:1.0.0", container.image)
+  }
+
+  @Test
+  fun `Parameters Handler Container env vars valid`() {
+    val container = factory.buildApplyParametersContainer(getSolution(), "testruntemplate")
+    val expected =
+        mapOf(
+            "AZURE_TENANT_ID" to "12345678",
+            "AZURE_CLIENT_ID" to "98765432",
+            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "CSM_API_URL" to "https://api.comostech.com",
+            "CSM_API_TOKEN" to "azertyuiopqsdfghjklm",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
+            "CSM_CONTAINER_MODE" to "handle-parameters",
+        )
+    assertTrue(expected.equals(container.envVars))
+  }
+
+  @Test
+  fun `Parameters Handler Container entrypoint valid`() {
+    val container = factory.buildApplyParametersContainer(getSolution(), "testruntemplate")
+    assertEquals("entrypoint.py", container.entrypoint)
+  }
 
   private fun getDataset(): Dataset {
     val connector = getDatasetConnector()
@@ -270,6 +313,22 @@ class ContainerFactoryTests {
       solution = WorkspaceSolution(
         solutionId = "1",
       ),
+    )
+  }
+
+  private fun getSolution(): Solution {
+    return Solution(
+      key = "TestSolution",
+      name = "Test Solution",
+      repository = "cosmotech/testsolution_simulator",
+      version = "1.0.0",
+    )
+  }
+
+  private fun getRunTemplate(): RunTemplate {
+    return RunTemplate(
+      id = "testruntemplate",
+      name = "Test Run"
     )
   }
 }
