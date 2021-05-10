@@ -10,6 +10,10 @@ interface CsmIdGenerator {
 abstract class AbstractCsmIdGenerator : CsmIdGenerator {
 
   final override fun generate(scope: String, prependPrefix: String?): String {
+    if (scope.isBlank()) {
+      throw IllegalArgumentException("scope must not be blank")
+    }
+
     val id = this.buildId(scope)
     return "${prependPrefix ?: "${scope[0].uppercaseChar()}-"}${id}"
   }

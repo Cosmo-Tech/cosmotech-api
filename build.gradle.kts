@@ -120,8 +120,14 @@ subprojects {
     implementation("com.azure.spring:azure-spring-boot-starter-cosmos:3.4.0")
 
     testImplementation(kotlin("test"))
+    testImplementation("io.mockk:mockk:1.11.0")
 
-    integrationTestImplementation("org.springframework.boot:spring-boot-starter-test")
+    integrationTestImplementation("org.springframework.boot:spring-boot-starter-test") {
+      // Drop legacy Junit < 5
+      exclude(module = "junit")
+      exclude(module = "mockito-core")
+    }
+    integrationTestImplementation("com.ninja-squad:springmockk:3.0.1")
 
     val developmentOnly = configurations.getByName("developmentOnly")
     developmentOnly("org.springframework.boot:spring-boot-devtools")

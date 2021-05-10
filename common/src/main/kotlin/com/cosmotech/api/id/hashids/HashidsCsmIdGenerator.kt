@@ -3,7 +3,6 @@
 package com.cosmotech.api.id.hashids
 
 import com.cosmotech.api.id.AbstractCsmIdGenerator
-import java.lang.IllegalArgumentException
 import java.util.*
 import org.hashids.Hashids
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
