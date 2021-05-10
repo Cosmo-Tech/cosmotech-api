@@ -6,6 +6,7 @@ import com.azure.cosmos.models.CosmosContainerProperties
 import com.cosmotech.api.AbstractCosmosBackedService
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
+import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.findAll
 import com.cosmotech.api.utils.findByIdOrThrow
 import com.cosmotech.solution.api.SolutionApiService
@@ -33,15 +34,27 @@ class SolutionServiceImpl : AbstractCosmosBackedService(), SolutionApiService {
           "Solution $solutionId not found in organization $organizationId")
 
   override fun removeAllRunTemplates(organizationId: String, solutionId: String) {
-    TODO("Not yet implemented")
+    val solution = findSolutionById(organizationId, solutionId)
+    if (!solution.runTemplates.isNullOrEmpty()) {
+      solution.runTemplates = listOf()
+      cosmosTemplate.upsert("${organizationId}_solutions", solution)
+    }
   }
 
   override fun removeAllSolutionParameterGroups(organizationId: String, solutionId: String) {
-    TODO("Not yet implemented")
+    val solution = findSolutionById(organizationId, solutionId)
+    if (!solution.parameterGroups.isNullOrEmpty()) {
+      solution.parameterGroups = listOf()
+      cosmosTemplate.upsert("${organizationId}_solutions", solution)
+    }
   }
 
   override fun removeAllSolutionParameters(organizationId: String, solutionId: String) {
-    TODO("Not yet implemented")
+    val solution = findSolutionById(organizationId, solutionId)
+    if (!solution.parameters.isNullOrEmpty()) {
+      solution.parameters = listOf()
+      cosmosTemplate.upsert("${organizationId}_solutions", solution)
+    }
   }
 
   override fun addOrReplaceParameterGroups(
@@ -49,7 +62,19 @@ class SolutionServiceImpl : AbstractCosmosBackedService(), SolutionApiService {
       solutionId: String,
       runTemplateParameterGroup: List<RunTemplateParameterGroup>
   ): List<RunTemplateParameterGroup> {
-    TODO("Not yet implemented")
+    if (runTemplateParameterGroup.isEmpty()) {
+      return runTemplateParameterGroup
+    }
+
+    val existingSolution = findSolutionById(organizationId, solutionId)
+    val runTemplateParameterGroupMap =
+        existingSolution.parameterGroups?.associateBy { it.id }?.toMutableMap() ?: mutableMapOf()
+    runTemplateParameterGroupMap.putAll(
+        runTemplateParameterGroup.filter { it.id.isNotBlank() }.associateBy { it.id })
+    existingSolution.parameterGroups = runTemplateParameterGroupMap.values.toList()
+    cosmosTemplate.upsert("${organizationId}_solutions", existingSolution)
+
+    return runTemplateParameterGroup
   }
 
   override fun addOrReplaceParameters(
@@ -57,7 +82,19 @@ class SolutionServiceImpl : AbstractCosmosBackedService(), SolutionApiService {
       solutionId: String,
       runTemplateParameter: List<RunTemplateParameter>
   ): List<RunTemplateParameter> {
-    TODO("Not yet implemented")
+    if (runTemplateParameter.isEmpty()) {
+      return runTemplateParameter
+    }
+
+    val existingSolution = findSolutionById(organizationId, solutionId)
+    val runTemplateParameterMap =
+        existingSolution.parameters?.associateBy { it.id }?.toMutableMap() ?: mutableMapOf()
+    runTemplateParameterMap.putAll(
+        runTemplateParameter.filter { it.id.isNotBlank() }.associateBy { it.id })
+    existingSolution.parameters = runTemplateParameterMap.values.toList()
+    cosmosTemplate.upsert("${organizationId}_solutions", existingSolution)
+
+    return runTemplateParameter
   }
 
   override fun addOrReplaceRunTemplates(
@@ -65,7 +102,18 @@ class SolutionServiceImpl : AbstractCosmosBackedService(), SolutionApiService {
       solutionId: String,
       runTemplate: List<RunTemplate>
   ): List<RunTemplate> {
-    TODO("Not yet implemented")
+    if (runTemplate.isEmpty()) {
+      return runTemplate
+    }
+
+    val existingSolution = findSolutionById(organizationId, solutionId)
+    val runTemplateMap =
+        existingSolution.runTemplates?.associateBy { it.id }?.toMutableMap() ?: mutableMapOf()
+    runTemplateMap.putAll(runTemplate.filter { it.id.isNotBlank() }.associateBy { it.id })
+    existingSolution.runTemplates = runTemplateMap.values.toList()
+    cosmosTemplate.upsert("${organizationId}_solutions", existingSolution)
+
+    return runTemplate
   }
 
   override fun createSolution(organizationId: String, solution: Solution) =
@@ -84,7 +132,59 @@ class SolutionServiceImpl : AbstractCosmosBackedService(), SolutionApiService {
       solutionId: String,
       solution: Solution
   ): Solution {
-    TODO("Not yet implemented")
+    val existingSolution = findSolutionById(organizationId, solutionId)
+
+    var hasChanged = false
+    if (solution.key != null && solution.changed(existingSolution) { key }) {
+      existingSolution.key = solution.key
+      hasChanged = true
+    }
+    if (solution.name != null && solution.changed(existingSolution) { name }) {
+      existingSolution.name = solution.name
+      hasChanged = true
+    }
+    if (solution.description != null && solution.changed(existingSolution) { description }) {
+      existingSolution.description = solution.description
+      hasChanged = true
+    }
+    if (solution.repository != null && solution.changed(existingSolution) { repository }) {
+      existingSolution.repository = solution.repository
+      hasChanged = true
+    }
+    // Version is not purposely not overridable
+
+    if (solution.url != null && solution.changed(existingSolution) { url }) {
+      existingSolution.url = solution.url
+      hasChanged = true
+    }
+
+    // TODO Allow to change the ownerId as well, but only the owner can transfer the ownership
+
+    if (solution.tags != null && solution.tags?.toSet() != existingSolution.tags?.toSet()) {
+      existingSolution.tags = solution.tags
+      hasChanged = true
+    }
+
+    if (solution.parameters != null) {
+      existingSolution.parameters = solution.parameters
+      hasChanged = true
+    }
+
+    if (solution.parameterGroups != null) {
+      existingSolution.parameterGroups = solution.parameterGroups
+      hasChanged = true
+    }
+
+    if (solution.runTemplates != null) {
+      existingSolution.runTemplates = solution.runTemplates
+      hasChanged = true
+    }
+
+    return if (hasChanged) {
+      cosmosTemplate.upsertAndReturnEntity("${organizationId}_solutions", existingSolution)
+    } else {
+      existingSolution
+    }
   }
 
   @EventListener(OrganizationRegistered::class)
@@ -100,10 +200,10 @@ class SolutionServiceImpl : AbstractCosmosBackedService(), SolutionApiService {
   }
 
   override fun uploadRunTemplateHandler(
-      organizationId: kotlin.String,
-      solutionId: kotlin.String,
-      runTemplateId: kotlin.String,
-      handlerId: kotlin.String,
+      organizationId: String,
+      solutionId: String,
+      runTemplateId: String,
+      handlerId: String,
       body: org.springframework.core.io.Resource?
   ): Unit {
     TODO("Not yet implemented")

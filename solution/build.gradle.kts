@@ -35,5 +35,6 @@ tasks.getByName<GenerateTask>("openApiGenerate") {
           "exceptionHandler" to false,
           "serviceInterface" to true,
           "swaggerAnnotations" to false,
-          "useTags" to true))
+          "useTags" to true,
+          "modelMutable" to true))
 }
