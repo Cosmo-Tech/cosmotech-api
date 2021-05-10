@@ -7,6 +7,11 @@ import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
 import io.argoproj.workflow.models.DAGTask
 import io.kubernetes.client.openapi.models.V1EnvVar
 import io.kubernetes.client.openapi.models.V1ObjectMeta
+import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim
+import io.kubernetes.client.openapi.models.V1PersistentVolumeClaimSpec
+import io.kubernetes.client.openapi.models.V1ResourceRequirements
+import io.kubernetes.client.openapi.models.V1VolumeMount
+import io.kubernetes.client.custom.Quantity
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
@@ -110,7 +115,6 @@ class ArgoAdapterTests {
     val workflowSpec = argoAdapter.buildWorkflowSpec(sc)
     val expected = mapOf("kubernetes.io/os" to "linux", "agentpool" to "basicpool")
 
-    logger.info(workflowSpec.nodeSelector.toString())
     assertTrue(expected.equals(workflowSpec.nodeSelector))
   }
 
@@ -120,7 +124,6 @@ class ArgoAdapterTests {
     val workflowSpec = argoAdapter.buildWorkflowSpec(sc)
     val expected = mapOf("kubernetes.io/os" to "linux")
 
-    logger.info(workflowSpec.nodeSelector.toString())
     assertTrue(expected.equals(workflowSpec.nodeSelector))
   }
 
@@ -281,11 +284,41 @@ class ArgoAdapterTests {
     assertEquals(expected, workflow.metadata)
   }
 
-  /**
   @Test
-  fun `Create Workflow spec with StartContainers dataset volume mount`() {
-    assertFalse(true)
-  }**/
+  fun `Create Workflow spec with StartContainers volume claim`() {
+    var sc = getStartContainersDiamond()
+    val workflowSpec = argoAdapter.buildWorkflowSpec(sc)
+    val datasetsdir = V1PersistentVolumeClaim()
+      .metadata(V1ObjectMeta().name("datasetsdir"))
+      .spec(V1PersistentVolumeClaimSpec()
+        .accessModes(listOf("ReadWriteOnce"))
+        .resources(
+          V1ResourceRequirements()
+            .requests(mapOf("storage" to Quantity("1Gi"))
+          )
+        )
+      )
+    val parametersdir = V1PersistentVolumeClaim()
+      .metadata(V1ObjectMeta().name("parametersdir"))
+      .spec(V1PersistentVolumeClaimSpec()
+        .accessModes(listOf("ReadWriteOnce"))
+        .resources(
+          V1ResourceRequirements()
+            .requests(mapOf("storage" to Quantity("1Gi"))
+          )
+        )
+      )
+    val expected = listOf(datasetsdir, parametersdir)
+    assertEquals(expected, workflowSpec.volumeClaimTemplates)
+  }
+
+  @Test
+  fun `Create Template with StartContainers volume mount`() {
+    val src = getScenarioRunContainer()
+    val template = argoAdapter.buildTemplate(src)
+    val expected = listOf(V1VolumeMount().name("datasetsdir").mountPath("/mnt/scenariorun-data"), V1VolumeMount().name("parametersdir").mountPath("/mnt/scenariorun-parameters"))
+    assertEquals(expected, template.container?.volumeMounts)
+  }
 
   fun getScenarioRunContainer(name: String = "default"): ScenarioRunContainer {
     var src =

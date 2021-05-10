@@ -11,6 +11,11 @@ import io.argoproj.workflow.models.Workflow
 import io.argoproj.workflow.models.WorkflowSpec
 import io.kubernetes.client.openapi.models.V1EnvVar
 import io.kubernetes.client.openapi.models.V1ObjectMeta
+import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim
+import io.kubernetes.client.openapi.models.V1PersistentVolumeClaimSpec
+import io.kubernetes.client.openapi.models.V1ResourceRequirements
+import io.kubernetes.client.openapi.models.V1VolumeMount
+import io.kubernetes.client.custom.Quantity
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
@@ -21,6 +26,10 @@ class ArgoAdapter {
   private val CSM_DEFAULT_ACCOUNT = "workflow"
   private val CSM_DAG_ENTRYPOINT = "entrypoint"
   private val CSM_DEFAULT_WORKFLOW_NAME = "default-workflow-"
+  private val VOLUME_CLAIM_DATASETS = "datasetsdir"
+  private val VOLUME_CLAIM_PARAMETERS = "parametersdir"
+  private val VOLUME_DATASETS_PATH = "/mnt/scenariorun-data"
+  private val VOLUME_PARAMETERS_PATH = "/mnt/scenariorun-parameters"
 
   fun buildTemplate(scenarioRunContainer: ScenarioRunContainer): Template {
     var envVars: MutableList<V1EnvVar>? = null
@@ -31,6 +40,14 @@ class ArgoAdapter {
         envVars.add(envVar)
       }
     }
+    val volumeMounts = listOf(
+      V1VolumeMount()
+        .name(VOLUME_CLAIM_DATASETS)
+        .mountPath(VOLUME_DATASETS_PATH),
+      V1VolumeMount()
+        .name(VOLUME_CLAIM_PARAMETERS)
+        .mountPath(VOLUME_PARAMETERS_PATH)
+      )
 
     return Template()
         .name(scenarioRunContainer.name)
@@ -39,7 +56,9 @@ class ArgoAdapter {
                 .image(scenarioRunContainer.image)
                 .command(listOf(scenarioRunContainer.entrypoint))
                 .env(envVars)
-                .args(scenarioRunContainer.runArgs))
+                .args(scenarioRunContainer.runArgs)
+                .volumeMounts(volumeMounts)
+              )
   }
 
   fun buildWorkflowSpec(startContainers: ScenarioRunStartContainers): WorkflowSpec {
@@ -47,12 +66,39 @@ class ArgoAdapter {
     val templates = buildContainersTemplates(startContainers)
     val entrypointTemplate = buildEntrypointTemplate(startContainers)
     templates.add(entrypointTemplate)
+    val volumeClaims = buildVolumeClaims(startContainers)
 
     return WorkflowSpec()
         .nodeSelector(nodeSelector)
         .serviceAccountName(CSM_DEFAULT_ACCOUNT)
         .entrypoint(CSM_DAG_ENTRYPOINT)
         .templates(templates)
+        .volumeClaimTemplates(volumeClaims)
+  }
+
+  fun buildVolumeClaims(startContainers: ScenarioRunStartContainers): List<V1PersistentVolumeClaim> {
+    val datasetsdir = V1PersistentVolumeClaim()
+      .metadata(V1ObjectMeta().name(VOLUME_CLAIM_DATASETS))
+      .spec(V1PersistentVolumeClaimSpec()
+        .accessModes(listOf("ReadWriteOnce"))
+        .resources(
+          V1ResourceRequirements()
+            .requests(mapOf("storage" to Quantity("1Gi"))
+          )
+        )
+      )
+    val parametersdir = V1PersistentVolumeClaim()
+      .metadata(V1ObjectMeta().name(VOLUME_CLAIM_PARAMETERS))
+      .spec(V1PersistentVolumeClaimSpec()
+        .accessModes(listOf("ReadWriteOnce"))
+        .resources(
+          V1ResourceRequirements()
+            .requests(mapOf("storage" to Quantity("1Gi"))
+          )
+        )
+      )
+
+    return listOf(datasetsdir, parametersdir)
   }
 
   fun buildWorkflow(startContainers: ScenarioRunStartContainers): Workflow {

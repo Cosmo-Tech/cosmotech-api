@@ -22,7 +22,7 @@ spec:
 ...
 ```
 Example
-`argo submit -f hello.yaml -n phoenix`
+`argo submit hello.yaml -n phoenix`
 
 ## Argo Web Server
 To access the web app server you must bind the port
