@@ -20,7 +20,5 @@ class CsmExceptionHandling : ProblemHandling {
   fun handleIllegalArgumentException(
       exception: IllegalArgumentException,
       request: NativeWebRequest
-  ): ResponseEntity<Problem> {
-    return create(Status.BAD_REQUEST, exception, request)
-  }
+  ): ResponseEntity<Problem> = create(Status.BAD_REQUEST, exception, request)
 }
