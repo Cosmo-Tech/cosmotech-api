@@ -16,9 +16,11 @@ class ContainerFactory(
     @Value("\${csm.platform.security.azure.client-secret:}") val azureClientSecret: String,
     @Value("\${csm.platform.base-url:}") val apiBaseUrl: String,
     @Value("\${csm.platform.security.token:}") val apiToken: String,
+    @Value("\${csm.platform.images.scenario-fetch-parameters:}") val scenarioFetchParametersImage: String,
 ) {
   private val logger = LoggerFactory.getLogger(ArgoAdapter::class.java)
   private val CONTAINER_FETCH_DATASET = "fetchDatasetContainers"
+  private val CONTAINER_FETCH_PARAMETERS = "fetchScenarioParametersContainer"
   private val azureTenantIdVar = "AZURE_TENANT_ID"
   private val azureClientIdVar = "AZURE_CLIENT_ID"
   private val azureClientSecretVar = "AZURE_CLIENT_SECRET"
@@ -28,6 +30,7 @@ class ContainerFactory(
   private val datasetPath = "/mnt/scenariorun-data"
   private val parametersPathVar = "CSM_PARAMETERS_ABSOLUTE_PATH"
   private val parametersPath = "/mnt/scenariorun-parameters"
+  private val parametersFetchContainerScenarioEnv = "CSM_SCENARIO_ID"
 
   fun buildFromDataset(dataset: Dataset, connector: Connector): ScenarioRunContainer {
     if (dataset.connector.id != connector.id)
@@ -37,6 +40,16 @@ class ContainerFactory(
         image = getConnectorImage(connector),
         envVars = getDatasetEnvVars(dataset, connector),
         runArgs = getDatasetRunArgs(dataset, connector))
+  }
+
+  fun buildScenarioParametersFetchContainer(scenarioId: String): ScenarioRunContainer {
+    val envVars = getCommonEnvVars()
+    envVars.put(parametersFetchContainerScenarioEnv, scenarioId)
+    return ScenarioRunContainer(
+      name = CONTAINER_FETCH_PARAMETERS,
+      image = scenarioFetchParametersImage,
+      envVars = envVars,
+    )
   }
 
   private fun getConnectorImage(connector: Connector): String {

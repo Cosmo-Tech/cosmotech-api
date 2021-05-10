@@ -21,6 +21,7 @@ class ContainerFactoryTests {
           azureClientSecret = "azertyuiop",
           apiBaseUrl = "https://api.comostech.com",
           apiToken = "azertyuiopqsdfghjklm",
+          scenarioFetchParametersImage = "cosmotech/scenarioFetchParameters"
       )
 
   @Test
@@ -79,7 +80,6 @@ class ContainerFactoryTests {
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters"
         )
-    logger.info(container.envVars.toString())
     assertTrue(expected.equals(container.envVars))
   }
 
@@ -89,6 +89,30 @@ class ContainerFactoryTests {
     val expected = listOf("param1_value", "param2_value", "param3_value")
     assertEquals(expected, container.runArgs)
   }
+
+  @Test
+  fun `Fetch Scenario Parameters Container is not null`() {
+    val container = factory.buildScenarioParametersFetchContainer("1")
+    assertNotNull(container)
+  }
+
+  @Test
+  fun `Fetch Scenario Parameters Container env vars valid`() {
+    val container = factory.buildScenarioParametersFetchContainer("1")
+    val expected =
+        mapOf(
+            "AZURE_TENANT_ID" to "12345678",
+            "AZURE_CLIENT_ID" to "98765432",
+            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "CSM_API_URL" to "https://api.comostech.com",
+            "CSM_API_TOKEN" to "azertyuiopqsdfghjklm",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "CSM_SCENARIO_ID" to "1"
+        )
+    assertTrue(expected.equals(container.envVars))
+  }
+
 
   private fun getDataset(): Dataset {
     val connector = getDatasetConnector()
