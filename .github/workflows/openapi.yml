@@ -63,49 +63,49 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Validate 'connector' definition
-        uses: char0n/swagger-editor-validate@v1
+        uses: char0n/swagger-editor-validate@v1.2.1
         with:
           swagger-editor-url: http://localhost/
           definition-file: connector/src/main/openapi/connectors.yaml
 
       - name: Validate 'dataset' definition
-        uses: char0n/swagger-editor-validate@v1
+        uses: char0n/swagger-editor-validate@v1.2.1
         with:
           swagger-editor-url: http://localhost/
           definition-file: dataset/src/main/openapi/datasets.yaml
 
       - name: Validate 'organization' definition
-        uses: char0n/swagger-editor-validate@v1
+        uses: char0n/swagger-editor-validate@v1.2.1
         with:
           swagger-editor-url: http://localhost/
           definition-file: organization/src/main/openapi/organizations.yaml
 
       - name: Validate 'scenario' definition
-        uses: char0n/swagger-editor-validate@v1
+        uses: char0n/swagger-editor-validate@v1.2.1
         with:
           swagger-editor-url: http://localhost/
           definition-file: scenario/src/main/openapi/scenarios.yaml
 
       - name: Validate 'scenariorun' definition
-        uses: char0n/swagger-editor-validate@v1
+        uses: char0n/swagger-editor-validate@v1.2.1
         with:
           swagger-editor-url: http://localhost/
           definition-file: scenariorun/src/main/openapi/scenarioruns.yaml
 
       - name: Validate 'solution' definition
-        uses: char0n/swagger-editor-validate@v1
+        uses: char0n/swagger-editor-validate@v1.2.1
         with:
           swagger-editor-url: http://localhost/
           definition-file: solution/src/main/openapi/solutions.yaml
 
       - name: Validate 'user' definition
-        uses: char0n/swagger-editor-validate@v1
+        uses: char0n/swagger-editor-validate@v1.2.1
         with:
           swagger-editor-url: http://localhost/
           definition-file: user/src/main/openapi/users.yaml
 
       - name: Validate 'workspace' definition
-        uses: char0n/swagger-editor-validate@v1
+        uses: char0n/swagger-editor-validate@v1.2.1
         with:
           swagger-editor-url: http://localhost/
           definition-file: workspace/src/main/openapi/workspaces.yaml
@@ -115,7 +115,7 @@ jobs:
         with:
           name: openapi
       - name: Validate merged OpenAPI definition
-        uses: char0n/swagger-editor-validate@v1
+        uses: char0n/swagger-editor-validate@v1.2.1
         with:
           swagger-editor-url: http://localhost/
           definition-file: openapi.yaml
