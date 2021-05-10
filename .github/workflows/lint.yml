@@ -18,7 +18,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Set up JDK 15
+    - name: Set up JDK
       uses: actions/setup-java@v2
       with:
         distribution: 'adopt'
@@ -36,8 +36,12 @@ jobs:
     - name: Check with Spotless
       run: ./gradlew spotlessCheck --info
 
-    - name: Validate OpenAPI spec definitions
-      run: ./gradlew openApiValidate --info
+    # The OpenAPI Generator Gradle Plugin exposes an 'openApiValidate' task,
+    # but at this time, it does not work with Gradle 7.0.
+    # See https://github.com/OpenAPITools/openapi-generator/issues/9328
+    # A separate dedicated job is available in the 'openapi.yml' Workflow
+  #    - name: Validate OpenAPI spec definitions
+#      run: ./gradlew openApiValidate --info
 
   lint_helm:
     runs-on: ubuntu-latest
