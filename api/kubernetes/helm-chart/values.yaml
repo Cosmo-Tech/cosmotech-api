@@ -112,3 +112,4 @@ config:
         send-datawarehouse: cosmotech/senddatawarehouse
       services:
         adx-dataingestion-uri: "https://ingest-phoenix.westeurope.kusto.windows.net"
+        eventhub-cluster-uri: "amqps://csm-phoenix.servicebus.windows.net"
