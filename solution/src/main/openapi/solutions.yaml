@@ -413,7 +413,7 @@ components:
           description: the list of parameters groups for the Run Templates
           items:
             $ref: '#/components/schemas/RunTemplateParameterGroup'
-        run_templates:
+        runTemplates:
           type: array
           description: list of Run Template
           items:
@@ -423,6 +423,7 @@ components:
         - name
         - repository
         - version
+        - runTemplates
     RunTemplate:
       type: object
       description: a Solution Run Template
@@ -577,7 +578,7 @@ components:
               en: Consumers
             parameters:
               - prefix
-        run_templates:
+        runTemplates:
           - id: hundred
             name: Full simulation 100 steps
             description: Run a full simulation with 100 steps
@@ -632,7 +633,7 @@ components:
               en: Consumers
             parameters:
               - prefix
-        run_templates:
+        runTemplates:
           - id: hundred
             name: Full simulation 100 steps
             description: Run a full simulation with 100 steps
@@ -682,7 +683,7 @@ components:
               en: Consumers
             parameters:
               - prefix
-          run_templates:
+          runTemplates:
             - id: hundred
               name: Full simulation 100 steps
               description: Run a full simulation with 100 steps

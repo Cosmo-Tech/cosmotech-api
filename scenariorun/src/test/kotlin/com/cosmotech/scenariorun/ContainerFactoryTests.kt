@@ -14,6 +14,7 @@ import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceService
 import com.cosmotech.workspace.domain.WorkspaceServices
 import com.cosmotech.workspace.domain.WorkspaceSolution
+import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
@@ -30,6 +31,7 @@ class ContainerFactoryTests {
           scenarioFetchParametersImage = "cosmotech/scenariofetchparameters",
           sendDataWarehouseImage = "cosmotech/senddatawarehouse",
           adxDataIngestionUri = "https://ingest-phoenix.westeurope.kusto.windows.net",
+          eventHubClusterUri = "amqps://csm-phoenix.servicebus.windows.net",
       )
 
   @Test
@@ -166,39 +168,32 @@ class ContainerFactoryTests {
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "true",
             "CSM_SEND_DATAWAREHOUSE_DATASETS" to "true",
             "ADX_DATA_INGESTION_URI" to "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "ADX_DATABASE" to "TestDB",
+            "ADX_DATABASE" to "test",
         )
     assertTrue(expected.equals(container.envVars))
   }
 
   @Test
-  fun `Send DataWarehouse Container exception if no DB`() {
-    assertThrows(IllegalStateException::class.java) {
-      factory.buildSendDataWarehouseContainer(getWorkspaceNoDB())
-    }
-  }
-
-  @Test
   fun `Parameters Handler Container is not null`() {
-    val container = factory.buildApplyParametersContainer(getSolution(), "testruntemplate")
+    val container = this.buildApplyParametersContainer()
     assertNotNull(container)
   }
 
   @Test
   fun `Parameters Handler Container name valid`() {
-    val container = factory.buildApplyParametersContainer(getSolution(), "testruntemplate")
+    val container = this.buildApplyParametersContainer()
     assertEquals("applyParametersContainer", container.name)
   }
 
   @Test
   fun `Parameters Handler Container image valid`() {
-    val container = factory.buildApplyParametersContainer(getSolution(), "testruntemplate")
+    val container = this.buildApplyParametersContainer()
     assertEquals("cosmotech/testsolution_simulator:1.0.0", container.image)
   }
 
   @Test
   fun `Parameters Handler Container env vars valid`() {
-    val container = factory.buildApplyParametersContainer(getSolution(), "testruntemplate")
+    val container = this.buildApplyParametersContainer()
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -210,15 +205,31 @@ class ContainerFactoryTests {
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to "handle-parameters",
+            "CSM_CONTROL_PLANE_TOPIC" to "amqps://csm-phoenix.servicebus.windows.net/test-scenariorun",
+            "CSM_PROBES_MEASURES_TOPIC" to "amqps://csm-phoenix.servicebus.windows.net/test",
+            "CSM_SIMULATION" to "TestSimulation"
         )
+    logger.info(container.envVars.toString())
     assertTrue(expected.equals(container.envVars))
   }
 
   @Test
   fun `Parameters Handler Container entrypoint valid`() {
-    val container = factory.buildApplyParametersContainer(getSolution(), "testruntemplate")
+    val container = this.buildApplyParametersContainer()
     assertEquals("entrypoint.py", container.entrypoint)
   }
+
+  @Test
+  fun `Parameters Handler Container bad template exception`() {
+    assertThrows(IllegalStateException::class.java) {
+      factory.buildApplyParametersContainer("test", getSolution(), "badTemplate")
+    }
+  }
+
+  private fun buildApplyParametersContainer(): ScenarioRunContainer {
+    return factory.buildApplyParametersContainer("test", getSolution(), "testruntemplate")
+  }
+
 
   private fun getDataset(): Dataset {
     val connector = getDatasetConnector()
@@ -288,27 +299,19 @@ class ContainerFactoryTests {
 
   private fun getWorkspace(): Workspace {
     return Workspace(
+      key = "test",
       name = "Test Workspace",
       description = "Test Workspace Description",
       version = "1.0.0",
       solution = WorkspaceSolution(
         solutionId = "1",
       ),
-      services = WorkspaceServices(
-        resultsEventBus = WorkspaceService(
-          platformService = "eventBusCluster",
-          resourceUri = "TestBus",
-        ),
-        dataWarehouse = WorkspaceService(
-            platformService = "dataWarehouseCluster",
-            resourceUri = "TestDB",
-        ),
-      )
     )
   }
 
   private fun getWorkspaceNoDB(): Workspace {
     return Workspace(
+      key = "test",
       name = "Test Workspace",
       solution = WorkspaceSolution(
         solutionId = "1",
@@ -322,13 +325,15 @@ class ContainerFactoryTests {
       name = "Test Solution",
       repository = "cosmotech/testsolution_simulator",
       version = "1.0.0",
+      runTemplates = listOf(getRunTemplate()),
     )
   }
 
   private fun getRunTemplate(): RunTemplate {
     return RunTemplate(
       id = "testruntemplate",
-      name = "Test Run"
+      name = "Test Run",
+      csmSimulation = "TestSimulation",
     )
   }
 }

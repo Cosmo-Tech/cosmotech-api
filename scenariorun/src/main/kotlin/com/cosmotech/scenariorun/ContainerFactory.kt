@@ -7,6 +7,7 @@ import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.solution.domain.Solution
+import com.cosmotech.solution.domain.RunTemplate
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -21,6 +22,7 @@ class ContainerFactory(
     @Value("\${csm.platform.images.scenario-fetch-parameters:}") val scenarioFetchParametersImage: String,
     @Value("\${csm.platform.images.send-datawarehouse:}") val sendDataWarehouseImage: String,
     @Value("\${csm.platform.services.adx-dataingestion-uri:}") val adxDataIngestionUri: String,
+    @Value("\${csm.platform.services.eventhub-cluster-uri:}") val eventHubClusterUri: String,
 ) {
   private val logger = LoggerFactory.getLogger(ArgoAdapter::class.java)
   private val CONTAINER_FETCH_DATASET = "fetchDatasetContainers"
@@ -53,6 +55,10 @@ class ContainerFactory(
   private val runTemplateIdVar = "CSM_RUN_TEMPLATE_ID"
   private val containerModeVar = "CSM_CONTAINER_MODE"
   private val entrypointName = "entrypoint.py"
+  private val eventHubControlPlaneVar = "CSM_CONTROL_PLANE_TOPIC"
+  private val controlPlaneSuffix = "-scenariorun"
+  private val eventHubMeasuresVar = "CSM_PROBES_MEASURES_TOPIC"
+  private val csmSimulationVar = "CSM_SIMULATION"
 
   fun buildFromDataset(dataset: Dataset, connector: Connector): ScenarioRunContainer {
     if (dataset.connector.id != connector.id)
@@ -75,16 +81,13 @@ class ContainerFactory(
   }
 
   fun buildSendDataWarehouseContainer(workspace: Workspace): ScenarioRunContainer {
-    if (workspace.services?.dataWarehouse?.resourceUri == null) {
-      throw IllegalStateException("DataWarehouse Database service Uri is not specified on Workspace")
-    }
     val envVars = getCommonEnvVars()
     var sendParameters = workspace.sendInputToDataWarehouse
     var sendDatasets = workspace.sendInputToDataWarehouse
     envVars.put(sendDataWarehouseParametersVar, (sendParameters ?: true).toString())
     envVars.put(sendDataWarehouseDatasetsVar, (sendDatasets ?: true).toString())
     envVars.put(adxDataIngestionUriVar, adxDataIngestionUri)
-    envVars.put(adxDatabase, workspace.services?.dataWarehouse?.resourceUri ?: "")
+    envVars.put(adxDatabase, workspace.key)
     return ScenarioRunContainer(
       name = CONTAINER_SEND_DATAWAREHOUSE,
       image = sendDataWarehouseImage,
@@ -92,15 +95,32 @@ class ContainerFactory(
     )
   }
 
-  fun buildApplyParametersContainer(solution: Solution, runTemplateId: String): ScenarioRunContainer {
-    return this.buildSolutionContainer(solution, runTemplateId, CONTAINER_APPLY_PARAMETERS, CONTAINER_APPLY_PARAMETERS_MODE)
+  fun buildApplyParametersContainer(workspaceKey: String, solution: Solution, runTemplateId: String): ScenarioRunContainer {
+    return this.buildSolutionContainer(workspaceKey, solution, runTemplateId, CONTAINER_APPLY_PARAMETERS, CONTAINER_APPLY_PARAMETERS_MODE)
   }
 
-  private fun buildSolutionContainer(solution: Solution, runTemplateId: String, name: String, mode: String): ScenarioRunContainer {
+  private fun buildSolutionContainer(workspaceKey: String, solution: Solution, runTemplateId: String, name: String, mode: String): ScenarioRunContainer {
+    var template: RunTemplate? = null
+    for (runTemplate in solution.runTemplates) {
+      if (runTemplate.id == runTemplateId) {
+        template = runTemplate
+        break
+      }
+    }
+    if (template == null) {
+      throw IllegalStateException("runTemplateId ${runTemplateId} not found in Solution ${solution.id}")
+    }
+
     val imageName = getImageName(solution.repository, solution.version)
     val envVars = getCommonEnvVars()
     envVars.put(runTemplateIdVar, runTemplateId)
     envVars.put(containerModeVar, mode)
+    envVars.put(eventHubControlPlaneVar, "${eventHubClusterUri}/${workspaceKey}${controlPlaneSuffix}")
+    envVars.put(eventHubMeasuresVar, "${eventHubClusterUri}/${workspaceKey}")
+    val csmSimulation = template.csmSimulation
+    if (csmSimulation != null) {
+      envVars.put(csmSimulationVar, csmSimulation)
+    }
     return ScenarioRunContainer(
       name = name,
       image = imageName,

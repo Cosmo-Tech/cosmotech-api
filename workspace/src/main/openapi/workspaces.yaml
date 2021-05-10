@@ -385,6 +385,9 @@ components:
           type: string
           readOnly: true
           description: the Workspace version unique identifier
+        key:
+          type: string
+          description: technical key for resource name convention and version grouping. Must be unique
         name:
           type: string
           description: the Workspace name
@@ -412,59 +415,14 @@ components:
             $ref: '#/components/schemas/WorkspaceUser'
         webApp:
           $ref: '#/components/schemas/WorkspaceWebApp'
-        services:
-          descriptions: the list of Cloud services specific to the Workspace
-          $ref: '#/components/schemas/WorkspaceServices'
         sendInputToDataWarehouse:
           type: boolean
           default: true
           description: default setting for all Scenarios and Run Templates to set whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to the ScenarioRun
       required:
+        - key
         - name
         - solution
-    WorkspaceServices:
-      type: object
-      description: the cloud service resources of the Workspace
-      properties:
-        tenantCredentials:
-          type: object
-          readOnly: true
-          description: a freeform credentials object for the Organization tenant. Structure depends on cloud provider
-          additionalProperties: true
-        resultsEventBus:
-          description: the event bus which receive Workspace ScenarioRun results messages
-          $ref: '#/components/schemas/WorkspaceService'
-        scenariorunEventBus:
-          description: the event bus which receive Workspace ScenarioRun events messages
-          $ref: '#/components/schemas/WorkspaceService'
-        dataWarehouse:
-          description: the Workspace DataWarehouse specific informations
-          $ref: '#/components/schemas/WorkspaceService'
-        storage:
-          description: the Workspace file storage specific informations
-          $ref: '#/components/schemas/WorkspaceService'
-    WorkspaceService:
-      type: object
-      description: a cloud service resource
-      properties:
-        cloudService:
-          type: string
-          readOnly: true
-          description: the cloud service name
-        baseUri:
-          type: string
-          readOnly: true
-          description: the platform base uri for this service
-        platformService:
-          type: string
-          description: the Platform service associated to the resource
-        resourceUri:
-          type: string
-          description: the workspace specific uri for this service resource
-        credentials:
-          type: object
-          description: a freeform credentials object. Structure depends on service
-          additionalProperties: true
     WorkspaceUser:
       type: object
       description: a Workspace user with roles
@@ -533,6 +491,7 @@ components:
       description: Brewery Workspace Create input parameters example
       value:
         name: Brewery Analysis
+        key: brewery
         description: Brewery analysis for stock, production, transport and customer satisfaction
         version: "1.0.0"
         tags:
@@ -574,6 +533,7 @@ components:
       value:
         id: "1"
         name: Brewery Analysis
+        key: brewery
         description: Brewery analysis for stock, production, transport and customer satisfaction
         version: "1.0.0"
         tags:
@@ -630,6 +590,7 @@ components:
       value:
         - id: "1"
           name: Brewery Analysis
+          key: brewery
           description: Brewery analysis for stock, production, transport and customer satisfaction
           version: "1.0.0"
           tags:
@@ -690,6 +651,7 @@ components:
       description: Brewery Workspace example
       value:
         id: "1"
+        key: brewery
         name: Brewery Analysis 2021
         description: Brewery analysis for stock, production, transport and customer satisfaction
         version: "1.0.0"
