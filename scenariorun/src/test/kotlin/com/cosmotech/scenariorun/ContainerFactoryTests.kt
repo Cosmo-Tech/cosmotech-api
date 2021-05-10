@@ -15,6 +15,7 @@ import com.cosmotech.workspace.domain.WorkspaceService
 import com.cosmotech.workspace.domain.WorkspaceServices
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
+import com.cosmotech.scenario.domain.Scenario
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
@@ -342,6 +343,51 @@ class ContainerFactoryTests {
     this.validateEnvVarsSolutionContainer(container, "postrun")
   }
 
+  @Test
+  fun `Build all containers for a Scenario count`() {
+    val scenario = getScenario()
+    val dataset = getDataset()
+    val connector = getConnector()
+    val workspace = getWorkspace()
+    val solution = getSolution()
+    val containers = factory.buildContainersPipeline(scenario, dataset, connector, workspace, solution)
+    assertEquals(containers.size, 8)
+  }
+
+  @Test
+  fun `Build start containers node Label`() {
+    val scenario = getScenario()
+    val dataset = getDataset()
+    val connector = getConnector()
+    val workspace = getWorkspace()
+    val solution = getSolution()
+    val startContainers = factory.buildContainersStart(scenario, dataset, connector, workspace, solution)
+    assertEquals("highcpupool", startContainers.nodeLabel)
+  }
+
+  @Test
+  fun `Build start containers node Label default`() {
+    val scenario = getScenario()
+    val dataset = getDataset()
+    val connector = getConnector()
+    val workspace = getWorkspace()
+    val solution = getSolutionNoPool()
+    val startContainers = factory.buildContainersStart(scenario, dataset, connector, workspace, solution)
+    assertEquals("basicpool", startContainers.nodeLabel)
+  }
+
+  @Test
+  fun `Build start containers generate name`() {
+    val scenario = getScenario()
+    val dataset = getDataset()
+    val connector = getConnector()
+    val workspace = getWorkspace()
+    val solution = getSolution()
+    val startContainers = factory.buildContainersStart(scenario, dataset, connector, workspace, solution)
+    logger.info(startContainers.toString())
+    assertEquals("workflow-aqwxsz-", startContainers.generateName)
+  }
+
   private fun buildApplyParametersContainer(): ScenarioRunContainer {
     return factory.buildApplyParametersContainer("test", getSolution(), "testruntemplate")
   }
@@ -444,11 +490,12 @@ class ContainerFactoryTests {
 
   private fun getDatasetNoVars(): Dataset {
     val connector = getDatasetConnectorNoVars()
-    return Dataset(name = "Test Dataset No Vars", connector = connector)
+    return Dataset(id = "1", name = "Test Dataset No Vars", connector = connector)
   }
 
   private fun getWorkspace(): Workspace {
     return Workspace(
+      id = "1",
       key = "test",
       name = "Test Workspace",
       description = "Test Workspace Description",
@@ -461,6 +508,7 @@ class ContainerFactoryTests {
 
   private fun getWorkspaceNoSend(): Workspace {
     return Workspace(
+      id = "1",
       key = "test",
       name = "Test Workspace",
       description = "Test Workspace Description",
@@ -474,6 +522,7 @@ class ContainerFactoryTests {
 
   private fun getWorkspaceNoDB(): Workspace {
     return Workspace(
+      id = "1",
       key = "test",
       name = "Test Workspace",
       solution = WorkspaceSolution(
@@ -484,6 +533,7 @@ class ContainerFactoryTests {
 
   private fun getSolution(): Solution {
     return Solution(
+      id = "1",
       key = "TestSolution",
       name = "Test Solution",
       repository = "cosmotech/testsolution_simulator",
@@ -492,7 +542,27 @@ class ContainerFactoryTests {
     )
   }
 
+  private fun getSolutionNoPool(): Solution {
+    return Solution(
+      id = "1",
+      key = "TestSolution",
+      name = "Test Solution",
+      repository = "cosmotech/testsolution_simulator",
+      version = "1.0.0",
+      runTemplates = listOf(getRunTemplateNoPool()),
+    )
+  }
+
   private fun getRunTemplate(): RunTemplate {
+    return RunTemplate(
+      id = "testruntemplate",
+      name = "Test Run",
+      csmSimulation = "TestSimulation",
+      computeSize = "highcpu",
+    )
+  }
+
+  private fun getRunTemplateNoPool(): RunTemplate {
     return RunTemplate(
       id = "testruntemplate",
       name = "Test Run",
@@ -517,6 +587,15 @@ class ContainerFactoryTests {
       name = "Test Run",
       csmSimulation = "TestSimulation",
       sendInputParametersToDataWarehouse = false
+    )
+  }
+
+  private fun getScenario(): Scenario {
+    return Scenario(
+      id = "aqwxsz",
+      name = "Test Scenario",
+      runTemplateId = "testruntemplate",
+      datasetList = listOf("1"),
     )
   }
 }

@@ -5,9 +5,11 @@ package com.cosmotech.scenariorun
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
+import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.RunTemplate
+import com.cosmotech.scenario.domain.Scenario
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -59,6 +61,46 @@ class ContainerFactory(
   private val controlPlaneSuffix = "-scenariorun"
   private val eventHubMeasuresVar = "CSM_PROBES_MEASURES_TOPIC"
   private val csmSimulationVar = "CSM_SIMULATION"
+  private val nodeLabelDefault = "basic"
+  private val nodeLabelSuffix = "pool"
+  private val generateNamePrefix = "workflow-"
+  private val generateNameSuffix = "-"
+
+  fun buildContainersStart(scenario: Scenario, dataset: Dataset, connector: Connector, workspace: Workspace, solution: Solution): ScenarioRunStartContainers {
+    val template = getRunTemplate(solution, scenario.runTemplateId)
+    val nodeLabel = if (template.computeSize != null) "${template.computeSize}${nodeLabelSuffix}" else "${nodeLabelDefault}${nodeLabelSuffix}"
+    val containers = buildContainersPipeline(scenario, dataset, connector, workspace, solution)
+    val generateName = "${generateNamePrefix}${scenario.id}${generateNameSuffix}"
+    return ScenarioRunStartContainers(
+      generateName = generateName,
+      nodeLabel = nodeLabel,
+      containers = containers,
+    )
+  }
+
+  fun buildContainersPipeline(scenario: Scenario, dataset: Dataset, connector: Connector, workspace: Workspace, solution: Solution): List<ScenarioRunContainer> {
+    val datasetContainer = this.buildFromDataset(dataset, connector)
+    if (scenario.id == null) throw IllegalStateException("Scenario Id cannot be null")
+    val parametersFetchContainer = this.buildScenarioParametersFetchContainer(scenario.id ?: "")
+    val applyParametersContainer = this.buildApplyParametersContainer(workspace.key, solution, scenario.runTemplateId)
+    val validateDataContainer = this.buildValidateDataContainer(workspace.key, solution, scenario.runTemplateId)
+    val runTemplate = getRunTemplate(solution, scenario.runTemplateId)
+    val sendToDataWarehouseContainer = this.buildSendDataWarehouseContainer(workspace, runTemplate)
+    val preRunContainer = this.buildPreRunContainer(workspace.key, solution, scenario.runTemplateId)
+    val runContainer = this.buildRunContainer(workspace.key, solution, scenario.runTemplateId)
+    val postRunContainer = this.buildPostRunContainer(workspace.key, solution, scenario.runTemplateId)
+
+    return listOf(
+      datasetContainer,
+      parametersFetchContainer,
+      applyParametersContainer,
+      validateDataContainer,
+      sendToDataWarehouseContainer,
+      preRunContainer,
+      runContainer,
+      postRunContainer,
+    )
+  }
 
   fun buildFromDataset(dataset: Dataset, connector: Connector): ScenarioRunContainer {
     if (dataset.connector.id != connector.id)
@@ -123,18 +165,18 @@ class ContainerFactory(
     }
   }
 
-  private fun buildSolutionContainer(workspaceKey: String, solution: Solution, runTemplateId: String, name: String, mode: String): ScenarioRunContainer {
-    var template: RunTemplate? = null
-    for (runTemplate in solution.runTemplates) {
-      if (runTemplate.id == runTemplateId) {
-        template = runTemplate
-        break
-      }
-    }
+  private fun getRunTemplate(solution: Solution, runTemplateId: String): RunTemplate {
+    val template = solution.runTemplates.find { runTemplate -> runTemplate.id == runTemplateId }
     if (template == null) {
       throw IllegalStateException("runTemplateId ${runTemplateId} not found in Solution ${solution.id}")
     }
 
+    return template
+  }
+
+  private fun buildSolutionContainer(workspaceKey: String, solution: Solution, runTemplateId: String, name: String, mode: String): ScenarioRunContainer {
+
+    val template = getRunTemplate(solution, runTemplateId)
     val imageName = getImageName(solution.repository, solution.version)
     val envVars = getCommonEnvVars()
     envVars.put(runTemplateIdVar, runTemplateId)
