@@ -5,6 +5,7 @@ package com.cosmotech.scenariorun
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
+import com.cosmotech.workspace.domain.Workspace
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -17,10 +18,13 @@ class ContainerFactory(
     @Value("\${csm.platform.base-url:}") val apiBaseUrl: String,
     @Value("\${csm.platform.security.token:}") val apiToken: String,
     @Value("\${csm.platform.images.scenario-fetch-parameters:}") val scenarioFetchParametersImage: String,
+    @Value("\${csm.platform.images.send-datawarehouse:}") val sendDataWarehouseImage: String,
+    @Value("\${csm.platform.services.adx-dataingestion-uri:}") val adxDataIngestionUri: String,
 ) {
   private val logger = LoggerFactory.getLogger(ArgoAdapter::class.java)
   private val CONTAINER_FETCH_DATASET = "fetchDatasetContainers"
   private val CONTAINER_FETCH_PARAMETERS = "fetchScenarioParametersContainer"
+  private val CONTAINER_SEND_DATAWAREHOUSE = "sendDataWarehouseContainer"
   private val azureTenantIdVar = "AZURE_TENANT_ID"
   private val azureClientIdVar = "AZURE_CLIENT_ID"
   private val azureClientSecretVar = "AZURE_CLIENT_SECRET"
@@ -30,7 +34,11 @@ class ContainerFactory(
   private val datasetPath = "/mnt/scenariorun-data"
   private val parametersPathVar = "CSM_PARAMETERS_ABSOLUTE_PATH"
   private val parametersPath = "/mnt/scenariorun-parameters"
-  private val parametersFetchContainerScenarioEnv = "CSM_SCENARIO_ID"
+  private val parametersFetchContainerScenarioVar = "CSM_SCENARIO_ID"
+  private val sendDataWarehouseParametersVar= "CSM_SEND_DATAWAREHOUSE_PARAMETERS"
+  private val sendDataWarehouseDatasetsVar= "CSM_SEND_DATAWAREHOUSE_DATASETS"
+  private val adxDataIngestionUriVar= "ADX_DATA_INGESTION_URI"
+  private val adxDatabase= "ADX_DATABASE"
 
   fun buildFromDataset(dataset: Dataset, connector: Connector): ScenarioRunContainer {
     if (dataset.connector.id != connector.id)
@@ -44,11 +52,29 @@ class ContainerFactory(
 
   fun buildScenarioParametersFetchContainer(scenarioId: String): ScenarioRunContainer {
     val envVars = getCommonEnvVars()
-    envVars.put(parametersFetchContainerScenarioEnv, scenarioId)
+    envVars.put(parametersFetchContainerScenarioVar, scenarioId)
     return ScenarioRunContainer(
       name = CONTAINER_FETCH_PARAMETERS,
       image = scenarioFetchParametersImage,
       envVars = envVars,
+    )
+  }
+
+  fun buildSendDataWarehouseContainer(workspace: Workspace): ScenarioRunContainer {
+    if (workspace.services?.dataWarehouse?.resourceUri == null) {
+      throw IllegalStateException("DataWarehouse Database service Uri is not specified on Workspace")
+    }
+    val envVars = getCommonEnvVars()
+    var sendParameters = workspace.sendInputToDataWarehouse
+    var sendDatasets = workspace.sendInputToDataWarehouse
+    envVars.put(sendDataWarehouseParametersVar, (sendParameters ?: true).toString())
+    envVars.put(sendDataWarehouseDatasetsVar, (sendDatasets ?: true).toString())
+    envVars.put(adxDataIngestionUriVar, adxDataIngestionUri)
+    envVars.put(adxDatabase, workspace.services?.dataWarehouse?.resourceUri ?: "")
+    return ScenarioRunContainer(
+      name = CONTAINER_SEND_DATAWAREHOUSE,
+      image = sendDataWarehouseImage,
+      envVars = envVars
     )
   }
 

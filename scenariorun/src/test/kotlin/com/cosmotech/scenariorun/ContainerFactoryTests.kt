@@ -8,6 +8,10 @@ import com.cosmotech.connector.domain.ConnectorParameter
 import com.cosmotech.connector.domain.ConnectorParameterGroup
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetConnector
+import com.cosmotech.workspace.domain.Workspace
+import com.cosmotech.workspace.domain.WorkspaceService
+import com.cosmotech.workspace.domain.WorkspaceServices
+import com.cosmotech.workspace.domain.WorkspaceSolution
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
@@ -21,7 +25,9 @@ class ContainerFactoryTests {
           azureClientSecret = "azertyuiop",
           apiBaseUrl = "https://api.comostech.com",
           apiToken = "azertyuiopqsdfghjklm",
-          scenarioFetchParametersImage = "cosmotech/scenarioFetchParameters"
+          scenarioFetchParametersImage = "cosmotech/scenarioFetchParameters",
+          sendDataWarehouseImage = "cosmotech/sendDataWarehouse",
+          adxDataIngestionUri = "https://ingest-phoenix.westeurope.kusto.windows.net",
       )
 
   @Test
@@ -97,6 +103,18 @@ class ContainerFactoryTests {
   }
 
   @Test
+  fun `Fetch Scenario Parameters Container name valid`() {
+    val container = factory.buildScenarioParametersFetchContainer("1")
+    assertEquals("fetchScenarioParametersContainer", container.name)
+  }
+
+  @Test
+  fun `Fetch Scenario Parameters Container image valid`() {
+    val container = factory.buildScenarioParametersFetchContainer("1")
+    assertEquals("cosmotech/scenarioFetchParameters", container.image)
+  }
+
+  @Test
   fun `Fetch Scenario Parameters Container env vars valid`() {
     val container = factory.buildScenarioParametersFetchContainer("1")
     val expected =
@@ -111,6 +129,51 @@ class ContainerFactoryTests {
             "CSM_SCENARIO_ID" to "1"
         )
     assertTrue(expected.equals(container.envVars))
+  }
+
+  @Test
+  fun `Send DataWarehouse Container is not null`() {
+    val container = factory.buildSendDataWarehouseContainer(getWorkspace())
+    assertNotNull(container)
+  }
+
+  @Test
+  fun `Send DataWarehouseContainer name valid`() {
+    val container = factory.buildSendDataWarehouseContainer(getWorkspace())
+    assertEquals("sendDataWarehouseContainer", container.name)
+  }
+
+  @Test
+  fun `Send DataWarehouse Container image valid`() {
+    val container = factory.buildSendDataWarehouseContainer(getWorkspace())
+    assertEquals("cosmotech/sendDataWarehouse", container.image)
+  }
+
+  @Test
+  fun `Send DataWarehouse Container env vars valid`() {
+    val container = factory.buildSendDataWarehouseContainer(getWorkspace())
+    val expected =
+        mapOf(
+            "AZURE_TENANT_ID" to "12345678",
+            "AZURE_CLIENT_ID" to "98765432",
+            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "CSM_API_URL" to "https://api.comostech.com",
+            "CSM_API_TOKEN" to "azertyuiopqsdfghjklm",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "true",
+            "CSM_SEND_DATAWAREHOUSE_DATASETS" to "true",
+            "ADX_DATA_INGESTION_URI" to "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "ADX_DATABASE" to "TestDB",
+        )
+    assertTrue(expected.equals(container.envVars))
+  }
+
+  @Test
+  fun `Send DataWarehouse Container exception if no DB`() {
+    assertThrows(IllegalStateException::class.java) {
+      factory.buildSendDataWarehouseContainer(getWorkspaceNoDB())
+    }
   }
 
 
@@ -178,5 +241,35 @@ class ContainerFactoryTests {
   private fun getDatasetNoVars(): Dataset {
     val connector = getDatasetConnectorNoVars()
     return Dataset(name = "Test Dataset No Vars", connector = connector)
+  }
+
+  private fun getWorkspace(): Workspace {
+    return Workspace(
+      name = "Test Workspace",
+      description = "Test Workspace Description",
+      version = "1.0.0",
+      solution = WorkspaceSolution(
+        solutionId = "1",
+      ),
+      services = WorkspaceServices(
+        resultsEventBus = WorkspaceService(
+          platformService = "eventBusCluster",
+          resourceUri = "TestBus",
+        ),
+        dataWarehouse = WorkspaceService(
+            platformService = "dataWarehouseCluster",
+            resourceUri = "TestDB",
+        ),
+      )
+    )
+  }
+
+  private fun getWorkspaceNoDB(): Workspace {
+    return Workspace(
+      name = "Test Workspace",
+      solution = WorkspaceSolution(
+        solutionId = "1",
+      ),
+    )
   }
 }
