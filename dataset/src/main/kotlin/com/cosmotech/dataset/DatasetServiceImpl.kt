@@ -128,7 +128,7 @@ class DatasetServiceImpl(
           "${it.solutionKey}-${it.minimumVersion}-${it.maximumVersion}"
         })
     existingDataset.compatibility = datasetCompatibilityMap.values.toList()
-    cosmosTemplate.upsertAndReturnEntity("${organizationId}_datasets", existingDataset)
+    cosmosTemplate.upsert("${organizationId}_datasets", existingDataset)
 
     return datasetCompatibility
   }
