@@ -1,7 +1,11 @@
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 
-dependencies { api(projects.cosmotechApiCommon) }
+dependencies {
+  api(projects.cosmotechApiCommon)
+  implementation(projects.cosmotechUserApi)
+  implementation(projects.cosmotechOrganizationApi)
+}
 
 sourceSets {
   main { java.srcDirs("$buildDir/generated-sources/openapi/src/main/kotlin") }
@@ -35,5 +39,6 @@ tasks.getByName<GenerateTask>("openApiGenerate") {
           "exceptionHandler" to false,
           "serviceInterface" to true,
           "swaggerAnnotations" to false,
-          "useTags" to true))
+          "useTags" to true,
+          "modelMutable" to true))
 }

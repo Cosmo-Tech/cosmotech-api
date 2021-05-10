@@ -268,7 +268,7 @@ paths:
         schema:
           type: string
     post:
-      operationId: addUsersToOrganizationWorkspace
+      operationId: addOrReplaceUsersInOrganizationWorkspace
       tags:
         - workspace
       summary: Add (or replace) users to the Workspace specified
@@ -308,6 +308,37 @@ paths:
           description: the operation succeeded
         "404":
           description: the Workspace specified is unknown or you don't have access to it
+
+  /organizations/{organization_id}/workspaces/{workspace_id}/users/{user_id}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: user_id
+        in: path
+        description: the User identifier
+        required: true
+        schema:
+          type: string
+    delete:
+      operationId: removeUserFromOrganizationWorkspace
+      tags:
+        - workspace
+      summary: Remove the specified user from the given Organization Workspace
+      responses:
+        "204":
+          description: Request succeeded
+        "404":
+          description: the Workspace or the User specified is unknown or you don't have access to them
 
 components:
   securitySchemes:
