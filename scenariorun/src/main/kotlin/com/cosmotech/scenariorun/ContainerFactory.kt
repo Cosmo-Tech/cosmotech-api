@@ -24,6 +24,10 @@ class ContainerFactory(
   private val azureClientSecretVar = "AZURE_CLIENT_SECRET"
   private val apiBaseUrlVar = "CSM_API_URL"
   private val apiTokenVar = "CSM_API_TOKEN"
+  private val datasetPathVar = "CSM_DATASET_ABSOLUTE_PATH"
+  private val datasetPath = "/mnt/scenariorun-data"
+  private val parametersPathVar = "CSM_PARAMETERS_ABSOLUTE_PATH"
+  private val parametersPath = "/mnt/scenariorun-parameters"
 
   fun buildFromDataset(dataset: Dataset, connector: Connector): ScenarioRunContainer {
     if (dataset.connector.id != connector.id)
@@ -66,6 +70,8 @@ class ContainerFactory(
         azureClientSecretVar to azureClientSecret,
         apiBaseUrlVar to apiBaseUrl,
         apiTokenVar to apiToken,
+        datasetPathVar to datasetPath,
+        parametersPathVar to parametersPath,
     )
   }
 }

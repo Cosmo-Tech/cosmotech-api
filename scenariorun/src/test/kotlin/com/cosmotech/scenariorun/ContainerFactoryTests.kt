@@ -58,6 +58,8 @@ class ContainerFactoryTests {
             "AZURE_CLIENT_SECRET" to "azertyuiop",
             "CSM_API_URL" to "https://api.comostech.com",
             "CSM_API_TOKEN" to "azertyuiopqsdfghjklm",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "ENV_PARAM_1" to "env_param1_value",
             "ENV_PARAM_2" to "env_param2_value",
             "ENV_PARAM_3" to "env_param3_value")
@@ -74,7 +76,10 @@ class ContainerFactoryTests {
             "AZURE_CLIENT_SECRET" to "azertyuiop",
             "CSM_API_URL" to "https://api.comostech.com",
             "CSM_API_TOKEN" to "azertyuiopqsdfghjklm",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters"
         )
+    logger.info(container.envVars.toString())
     assertTrue(expected.equals(container.envVars))
   }
 

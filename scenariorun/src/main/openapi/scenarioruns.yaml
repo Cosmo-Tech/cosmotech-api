@@ -641,7 +641,6 @@ components:
               ADT_QUERY: SELECT * FROM digitaltwins
               CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
             image: csmphoenix.azurecr.io/azure-digital-twins-simulator-connector:latest
-            name: fetchDatasetContainers
         fetchScenarioParametersContainer:
           id: aqwzsx
           envVars:
@@ -759,7 +758,6 @@ components:
               ADT_QUERY: SELECT * FROM digitaltwins
               CSM_DATASET_PATH: /mnt/scenariorun-data
             image: csmphoenix.azurecr.io/azure-digital-twins-simulator-connector:latest
-            name: fetchDatasetContainers
         fetchScenarioParametersContainer:
           id: aqwzsx
           envVars:
@@ -856,7 +854,6 @@ components:
               ADT_QUERY: SELECT * FROM digitaltwins
               CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
             image: csmphoenix.azurecr.io/azure-digital-twins-simulator-connector:latest
-            name: fetchDatasetContainers
         sendDataWarehouseContainer:
           id: qsdfghjklm
           envVars:
@@ -923,7 +920,6 @@ components:
                 ADT_QUERY: SELECT * FROM digitaltwins
                 CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
               image: csmphoenix.azurecr.io/azure-digital-twins-simulator-connector:latest
-              name: fetchDatasetContainers
           fetchScenarioParametersContainer:
             id: aqwzsx
             envVars:

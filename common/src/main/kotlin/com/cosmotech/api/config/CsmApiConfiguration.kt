@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.http.MediaType
 import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter
 import org.springframework.scheduling.annotation.EnableAsync
+import org.springframework.web.servlet.config.annotation.CorsRegistry
 
 @Configuration
 @ConfigurationPropertiesScan(basePackages = ["com.cosmotech"])
