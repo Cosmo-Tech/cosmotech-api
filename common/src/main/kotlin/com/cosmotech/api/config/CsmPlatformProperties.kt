@@ -48,7 +48,7 @@ data class CsmPlatformProperties(
       val scenarioFetchParameters: String,
 
       /** Container image to send data to DataWaregouse */
-      val sendDatawarehouse: String,
+      val sendDataWarehouse: String,
   )
 
   data class Argo(
@@ -90,12 +90,12 @@ data class CsmPlatformProperties(
   data class CsmPlatformAzure(
       /** Azure Credentials */
       val credentials: CsmPlatformAzureCredentials,
-      val storage: CsmPlatformAzureStorage,
-      val containerRegistries: CsmPlatformAzureContainerRegistries,
+      val storage: CsmPlatformAzureStorage?,
+      val containerRegistries: CsmPlatformAzureContainerRegistries?,
       val eventBus: CsmPlatformAzureEventBus,
       val dataWarehouseCluster: CsmPlatformAzureDataWarehouseCluster,
-      val keyVault: String,
-      val analytics: CsmPlatformAzureAnalytics,
+      val keyVault: String?,
+      val analytics: CsmPlatformAzureAnalytics?,
       /** Azure Cosmos DB */
       val cosmos: CsmPlatformAzureCosmos
   ) {

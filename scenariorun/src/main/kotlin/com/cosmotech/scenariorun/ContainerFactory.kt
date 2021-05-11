@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenariorun
 
+import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.scenario.domain.Scenario
@@ -13,20 +14,13 @@ import com.cosmotech.workspace.domain.Workspace
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
+import org.springframework.beans.factory.annotation.Autowired
 
 private const val PARAMETERS_DATASET_ID = "%DATASETID%"
 
 @Component
 class ContainerFactory(
-    @Value("\${csm.platform.security.azure.tenant-id:}") val azureTenantId: String,
-    @Value("\${csm.platform.security.azure.client-id:}") val azureClientId: String,
-    @Value("\${csm.platform.security.azure.client-secret:}") val azureClientSecret: String,
-    @Value("\${csm.platform.base-url:}") val apiBaseUrl: String,
-    @Value("\${csm.platform.images.scenario-fetch-parameters:}")
-    val scenarioFetchParametersImage: String,
-    @Value("\${csm.platform.images.send-datawarehouse:}") val sendDataWarehouseImage: String,
-    @Value("\${csm.platform.services.adx-dataingestion-uri:}") val adxDataIngestionUri: String,
-    @Value("\${csm.platform.services.eventhub-cluster-uri:}") val eventHubClusterUri: String,
+  @Autowired val csmPlatformProperties: CsmPlatformProperties
 ) {
   private val logger = LoggerFactory.getLogger(ArgoAdapter::class.java)
   private val CONTAINER_FETCH_DATASET = "fetchDatasetContainer"
@@ -211,7 +205,7 @@ class ContainerFactory(
     envVars.put(parametersFetchContainerScenarioVar, scenarioId)
     return ScenarioRunContainer(
         name = CONTAINER_FETCH_PARAMETERS,
-        image = scenarioFetchParametersImage,
+        image = csmPlatformProperties.images.scenarioFetchParameters,
         envVars = envVars,
     )
   }
@@ -229,10 +223,10 @@ class ContainerFactory(
             workspace.sendInputToDataWarehouse, runTemplate.sendDatasetsToDataWarehouse)
     envVars.put(sendDataWarehouseParametersVar, (sendParameters ?: true).toString())
     envVars.put(sendDataWarehouseDatasetsVar, (sendDatasets ?: true).toString())
-    envVars.put(adxDataIngestionUriVar, adxDataIngestionUri)
+    envVars.put(adxDataIngestionUriVar, csmPlatformProperties.azure?.dataWarehouseCluster?.options?.ingestionUri ?: "")
     envVars.put(adxDatabase, workspace.key)
     return ScenarioRunContainer(
-        name = CONTAINER_SEND_DATAWAREHOUSE, image = sendDataWarehouseImage, envVars = envVars)
+        name = CONTAINER_SEND_DATAWAREHOUSE, image = csmPlatformProperties.images.sendDataWarehouse, envVars = envVars)
   }
 
   fun buildApplyParametersContainer(
@@ -320,8 +314,8 @@ class ContainerFactory(
     envVars.put(runTemplateIdVar, runTemplateId)
     envVars.put(containerModeVar, mode)
     envVars.put(
-        eventHubControlPlaneVar, "${eventHubClusterUri}/${workspaceKey}${controlPlaneSuffix}")
-    envVars.put(eventHubMeasuresVar, "${eventHubClusterUri}/${workspaceKey}")
+        eventHubControlPlaneVar, "${csmPlatformProperties.azure?.eventBus?.baseUri}/${workspaceKey}${controlPlaneSuffix}")
+    envVars.put(eventHubMeasuresVar, "${csmPlatformProperties.azure?.eventBus?.baseUri}/${workspaceKey}")
     val csmSimulation = template.csmSimulation
     if (csmSimulation != null) {
       envVars.put(csmSimulationVar, csmSimulation)
@@ -366,10 +360,10 @@ class ContainerFactory(
 
   private fun getCommonEnvVars(): MutableMap<String, String> {
     return mutableMapOf(
-        azureTenantIdVar to azureTenantId,
-        azureClientIdVar to azureClientId,
-        azureClientSecretVar to azureClientSecret,
-        apiBaseUrlVar to apiBaseUrl,
+        azureTenantIdVar to (csmPlatformProperties.azure?.credentials?.tenantId ?: ""),
+        azureClientIdVar to (csmPlatformProperties.azure?.credentials?.clientId ?: ""),
+        azureClientSecretVar to (csmPlatformProperties.azure?.credentials?.clientSecret ?: ""),
+        apiBaseUrlVar to csmPlatformProperties.api.baseUrl,
         datasetPathVar to datasetPath,
         parametersPathVar to parametersPath,
     )
