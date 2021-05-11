@@ -4,15 +4,17 @@ package com.cosmotech.scenariorun
 
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.dataset.domain.Dataset
+import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
-import com.cosmotech.workspace.domain.Workspace
-import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.RunTemplate
-import com.cosmotech.scenario.domain.Scenario
+import com.cosmotech.solution.domain.Solution
+import com.cosmotech.workspace.domain.Workspace
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
+
+private const val PARAMETERS_DATASET_ID = "%DATASETID%"
 
 @Component
 class ContainerFactory(
@@ -21,14 +23,16 @@ class ContainerFactory(
     @Value("\${csm.platform.security.azure.client-secret:}") val azureClientSecret: String,
     @Value("\${csm.platform.base-url:}") val apiBaseUrl: String,
     @Value("\${csm.platform.security.token:}") val apiToken: String,
-    @Value("\${csm.platform.images.scenario-fetch-parameters:}") val scenarioFetchParametersImage: String,
+    @Value("\${csm.platform.images.scenario-fetch-parameters:}")
+    val scenarioFetchParametersImage: String,
     @Value("\${csm.platform.images.send-datawarehouse:}") val sendDataWarehouseImage: String,
     @Value("\${csm.platform.services.adx-dataingestion-uri:}") val adxDataIngestionUri: String,
     @Value("\${csm.platform.services.eventhub-cluster-uri:}") val eventHubClusterUri: String,
 ) {
   private val logger = LoggerFactory.getLogger(ArgoAdapter::class.java)
-  private val CONTAINER_FETCH_DATASET = "fetchDatasetContainers"
+  private val CONTAINER_FETCH_DATASET = "fetchDatasetContainer"
   private val CONTAINER_FETCH_PARAMETERS = "fetchScenarioParametersContainer"
+  private val CONTAINER_FETCH_DATASET_PARAMETERS = "fetchScenarioDatasetParametersContainer"
   private val CONTAINER_SEND_DATAWAREHOUSE = "sendDataWarehouseContainer"
   private val CONTAINER_APPLY_PARAMETERS = "applyParametersContainer"
   private val CONTAINER_APPLY_PARAMETERS_MODE = "handle-parameters"
@@ -49,11 +53,12 @@ class ContainerFactory(
   private val datasetPath = "/mnt/scenariorun-data"
   private val parametersPathVar = "CSM_PARAMETERS_ABSOLUTE_PATH"
   private val parametersPath = "/mnt/scenariorun-parameters"
+  private val fetchPathVar = "CSM_FETCH_ABSOLUTE_PATH"
   private val parametersFetchContainerScenarioVar = "CSM_SCENARIO_ID"
-  private val sendDataWarehouseParametersVar= "CSM_SEND_DATAWAREHOUSE_PARAMETERS"
-  private val sendDataWarehouseDatasetsVar= "CSM_SEND_DATAWAREHOUSE_DATASETS"
-  private val adxDataIngestionUriVar= "ADX_DATA_INGESTION_URI"
-  private val adxDatabase= "ADX_DATABASE"
+  private val sendDataWarehouseParametersVar = "CSM_SEND_DATAWAREHOUSE_PARAMETERS"
+  private val sendDataWarehouseDatasetsVar = "CSM_SEND_DATAWAREHOUSE_DATASETS"
+  private val adxDataIngestionUriVar = "ADX_DATA_INGESTION_URI"
+  private val adxDatabase = "ADX_DATABASE"
   private val runTemplateIdVar = "CSM_RUN_TEMPLATE_ID"
   private val containerModeVar = "CSM_CONTAINER_MODE"
   private val entrypointName = "entrypoint.py"
@@ -66,42 +71,77 @@ class ContainerFactory(
   private val generateNamePrefix = "workflow-"
   private val generateNameSuffix = "-"
 
-  fun buildContainersStart(scenario: Scenario, datasets: List<Dataset>?, connectors: List<Connector>?, workspace: Workspace, solution: Solution): ScenarioRunStartContainers {
+  fun buildContainersStart(
+      scenario: Scenario,
+      datasets: List<Dataset>?,
+      connectors: List<Connector>?,
+      workspace: Workspace,
+      solution: Solution
+  ): ScenarioRunStartContainers {
     val template = getRunTemplate(solution, scenario.runTemplateId)
-    val nodeLabel = if (template.computeSize != null) "${template.computeSize}${nodeLabelSuffix}" else "${nodeLabelDefault}${nodeLabelSuffix}"
+    val nodeLabel =
+        if (template.computeSize != null) "${template.computeSize}${nodeLabelSuffix}"
+        else "${nodeLabelDefault}${nodeLabelSuffix}"
     val containers = buildContainersPipeline(scenario, datasets, connectors, workspace, solution)
     val generateName = "${generateNamePrefix}${scenario.id}${generateNameSuffix}"
     return ScenarioRunStartContainers(
-      generateName = generateName,
-      nodeLabel = nodeLabel,
-      containers = containers,
+        generateName = generateName,
+        nodeLabel = nodeLabel,
+        containers = containers,
     )
   }
 
-  fun buildContainersPipeline(scenario: Scenario, datasets: List<Dataset>?, connectors: List<Connector>?, workspace: Workspace, solution: Solution): List<ScenarioRunContainer> {
+  fun buildContainersPipeline(
+      scenario: Scenario,
+      datasets: List<Dataset>?,
+      connectors: List<Connector>?,
+      workspace: Workspace,
+      solution: Solution
+  ): List<ScenarioRunContainer> {
     if (scenario.id == null) throw IllegalStateException("Scenario Id cannot be null")
     val template = getRunTemplate(solution, scenario.runTemplateId)
 
     var containers: MutableList<ScenarioRunContainer> = mutableListOf()
 
     if (testStep(template.fetchDatasets) && datasets != null && connectors != null) {
-    var datasetCount = 1
-    datasets.forEach {
-      val connector = connectors.find { connector -> connector.id == it.connector.id }
-      if (connector == null) throw IllegalStateException("Connector id ${it.connector.id} not found in connectors list")
-      containers.add(this.buildFromDataset(it, connector, datasetCount))
-      datasetCount++
+      var datasetCount = 1
+      scenario.datasetList?.forEach { datasetId ->
+        val dataset = datasets.find { it.id == datasetId }
+        if (dataset == null)
+            throw IllegalStateException("Dataset ${datasetId} not found in Datasets")
+        val connector = connectors.find { connector -> connector.id == dataset.connector.id }
+        if (connector == null)
+            throw IllegalStateException(
+                "Connector id ${dataset.connector.id} not found in connectors list")
+        containers.add(
+            this.buildFromDataset(dataset, connector, datasetCount, false, dataset.id ?: ""))
+        datasetCount++
+      }
     }
-  }
-    if (testStep(template.fetchScenarioParameters)) containers.add(this.buildScenarioParametersFetchContainer(scenario.id ?: ""))
-    if (testStep(template.applyParameters)) containers.add(this.buildApplyParametersContainer(workspace.key, solution, scenario.runTemplateId))
-    if (testStep(template.validateData)) containers.add(this.buildValidateDataContainer(workspace.key, solution, scenario.runTemplateId))
-    val sendParameters = getSendOptionValue(workspace.sendInputToDataWarehouse, template.sendInputParametersToDataWarehouse)
-    val sendDatasets = getSendOptionValue(workspace.sendInputToDataWarehouse, template.sendDatasetsToDataWarehouse)
-    if (sendParameters || sendDatasets) containers.add(this.buildSendDataWarehouseContainer(workspace, template))
-    if (testStep(template.preRun)) containers.add(this.buildPreRunContainer(workspace.key, solution, scenario.runTemplateId))
-    if (testStep(template.run)) containers.add(this.buildRunContainer(workspace.key, solution, scenario.runTemplateId))
-    if (testStep(template.postRun)) containers.add(this.buildPostRunContainer(workspace.key, solution, scenario.runTemplateId))
+    if (testStep(template.fetchScenarioParameters)) {
+      containers.add(this.buildScenarioParametersFetchContainer(scenario.id ?: ""))
+      containers.addAll(
+          buildScenarioParametersDatasetFetchContainers(scenario, solution, datasets, connectors))
+    }
+    if (testStep(template.applyParameters))
+        containers.add(
+            this.buildApplyParametersContainer(workspace.key, solution, scenario.runTemplateId))
+    if (testStep(template.validateData))
+        containers.add(
+            this.buildValidateDataContainer(workspace.key, solution, scenario.runTemplateId))
+    val sendParameters =
+        getSendOptionValue(
+            workspace.sendInputToDataWarehouse, template.sendInputParametersToDataWarehouse)
+    val sendDatasets =
+        getSendOptionValue(workspace.sendInputToDataWarehouse, template.sendDatasetsToDataWarehouse)
+    if (sendParameters || sendDatasets)
+        containers.add(this.buildSendDataWarehouseContainer(workspace, template))
+    if (testStep(template.preRun))
+        containers.add(this.buildPreRunContainer(workspace.key, solution, scenario.runTemplateId))
+    if (testStep(template.run))
+        containers.add(this.buildRunContainer(workspace.key, solution, scenario.runTemplateId))
+    if (testStep(template.postRun))
+        containers.add(this.buildPostRunContainer(workspace.key, solution, scenario.runTemplateId))
 
     return containers.toList()
   }
@@ -110,59 +150,144 @@ class ContainerFactory(
     return step ?: true
   }
 
-  fun buildFromDataset(dataset: Dataset, connector: Connector, datasetCount: Int): ScenarioRunContainer {
+  fun buildFromDataset(
+      dataset: Dataset,
+      connector: Connector,
+      datasetCount: Int,
+      parametersFetch: Boolean,
+      fetchId: String,
+  ): ScenarioRunContainer {
     if (dataset.connector.id != connector.id)
         throw IllegalStateException("Dataset connector id and Connector id do not match")
+    var nameBase = CONTAINER_FETCH_DATASET
+    var fetchPathBase = datasetPath
+    if (parametersFetch) {
+      nameBase = CONTAINER_FETCH_DATASET_PARAMETERS
+      fetchPathBase = parametersPath
+    }
     return ScenarioRunContainer(
-        name = "${CONTAINER_FETCH_DATASET}-${datasetCount.toString()}",
+        name = "${nameBase}-${datasetCount.toString()}",
         image = getImageName(connector.repository, connector.version),
-        envVars = getDatasetEnvVars(dataset, connector),
+        envVars = getDatasetEnvVars(dataset, connector, fetchPathBase, fetchId),
         runArgs = getDatasetRunArgs(dataset, connector))
   }
 
+  fun buildScenarioParametersDatasetFetchContainers(
+      scenario: Scenario,
+      solution: Solution,
+      datasets: List<Dataset>?,
+      connectors: List<Connector>?
+  ): List<ScenarioRunContainer> {
+    var containers: MutableList<ScenarioRunContainer> = mutableListOf()
+    var datasetParameterCount = 1
+    if (scenario.parametersValues != null) {
+      scenario.parametersValues?.forEach { parameterValue ->
+        val parameter =
+            solution.parameters?.find { solutionParameter ->
+              solutionParameter.id == parameterValue.parameterId
+            }
+        if (parameter == null)
+            throw IllegalStateException(
+                "Parameter ${parameterValue.parameterId} not found in Solution ${solution.id}")
+        if (parameter.varType == PARAMETERS_DATASET_ID) {
+          val dataset = datasets?.find { dataset -> dataset.id == parameterValue?.value }
+          if (dataset == null)
+              throw IllegalStateException(
+                  "Dataset ${parameterValue.value} cannot be found in Datasets")
+          val connector = connectors?.find { connector -> connector.id == dataset.connector?.id }
+          if (connector == null)
+              throw IllegalStateException(
+                  "Connector id ${dataset.connector.id} not found in connectors list")
+
+          containers.add(
+              buildFromDataset(dataset, connector, datasetParameterCount, true, parameter.id))
+          datasetParameterCount++
+        }
+      }
+    }
+
+    return containers.toList()
+  }
   fun buildScenarioParametersFetchContainer(scenarioId: String): ScenarioRunContainer {
     val envVars = getCommonEnvVars()
     envVars.put(parametersFetchContainerScenarioVar, scenarioId)
     return ScenarioRunContainer(
-      name = CONTAINER_FETCH_PARAMETERS,
-      image = scenarioFetchParametersImage,
-      envVars = envVars,
+        name = CONTAINER_FETCH_PARAMETERS,
+        image = scenarioFetchParametersImage,
+        envVars = envVars,
     )
   }
 
-  fun buildSendDataWarehouseContainer(workspace: Workspace, runTemplate: RunTemplate): ScenarioRunContainer {
+  fun buildSendDataWarehouseContainer(
+      workspace: Workspace,
+      runTemplate: RunTemplate
+  ): ScenarioRunContainer {
     val envVars = getCommonEnvVars()
-    val sendParameters = getSendOptionValue(workspace.sendInputToDataWarehouse, runTemplate.sendInputParametersToDataWarehouse)
-    val sendDatasets = getSendOptionValue(workspace.sendInputToDataWarehouse, runTemplate.sendDatasetsToDataWarehouse)
+    val sendParameters =
+        getSendOptionValue(
+            workspace.sendInputToDataWarehouse, runTemplate.sendInputParametersToDataWarehouse)
+    val sendDatasets =
+        getSendOptionValue(
+            workspace.sendInputToDataWarehouse, runTemplate.sendDatasetsToDataWarehouse)
     envVars.put(sendDataWarehouseParametersVar, (sendParameters ?: true).toString())
     envVars.put(sendDataWarehouseDatasetsVar, (sendDatasets ?: true).toString())
     envVars.put(adxDataIngestionUriVar, adxDataIngestionUri)
     envVars.put(adxDatabase, workspace.key)
     return ScenarioRunContainer(
-      name = CONTAINER_SEND_DATAWAREHOUSE,
-      image = sendDataWarehouseImage,
-      envVars = envVars
-    )
+        name = CONTAINER_SEND_DATAWAREHOUSE, image = sendDataWarehouseImage, envVars = envVars)
   }
 
-  fun buildApplyParametersContainer(workspaceKey: String, solution: Solution, runTemplateId: String): ScenarioRunContainer {
-    return this.buildSolutionContainer(workspaceKey, solution, runTemplateId, CONTAINER_APPLY_PARAMETERS, CONTAINER_APPLY_PARAMETERS_MODE)
+  fun buildApplyParametersContainer(
+      workspaceKey: String,
+      solution: Solution,
+      runTemplateId: String
+  ): ScenarioRunContainer {
+    return this.buildSolutionContainer(
+        workspaceKey,
+        solution,
+        runTemplateId,
+        CONTAINER_APPLY_PARAMETERS,
+        CONTAINER_APPLY_PARAMETERS_MODE)
   }
 
-  fun buildValidateDataContainer(workspaceKey: String, solution: Solution, runTemplateId: String): ScenarioRunContainer {
-    return this.buildSolutionContainer(workspaceKey, solution, runTemplateId, CONTAINER_VALIDATE_DATA, CONTAINER_VALIDATE_DATA_MODE)
+  fun buildValidateDataContainer(
+      workspaceKey: String,
+      solution: Solution,
+      runTemplateId: String
+  ): ScenarioRunContainer {
+    return this.buildSolutionContainer(
+        workspaceKey,
+        solution,
+        runTemplateId,
+        CONTAINER_VALIDATE_DATA,
+        CONTAINER_VALIDATE_DATA_MODE)
   }
 
-  fun buildPreRunContainer(workspaceKey: String, solution: Solution, runTemplateId: String): ScenarioRunContainer {
-    return this.buildSolutionContainer(workspaceKey, solution, runTemplateId, CONTAINER_PRERUN, CONTAINER_PRERUN_MODE)
+  fun buildPreRunContainer(
+      workspaceKey: String,
+      solution: Solution,
+      runTemplateId: String
+  ): ScenarioRunContainer {
+    return this.buildSolutionContainer(
+        workspaceKey, solution, runTemplateId, CONTAINER_PRERUN, CONTAINER_PRERUN_MODE)
   }
 
-  fun buildRunContainer(workspaceKey: String, solution: Solution, runTemplateId: String): ScenarioRunContainer {
-    return this.buildSolutionContainer(workspaceKey, solution, runTemplateId, CONTAINER_RUN, CONTAINER_RUN_MODE)
+  fun buildRunContainer(
+      workspaceKey: String,
+      solution: Solution,
+      runTemplateId: String
+  ): ScenarioRunContainer {
+    return this.buildSolutionContainer(
+        workspaceKey, solution, runTemplateId, CONTAINER_RUN, CONTAINER_RUN_MODE)
   }
 
-  fun buildPostRunContainer(workspaceKey: String, solution: Solution, runTemplateId: String): ScenarioRunContainer {
-    return this.buildSolutionContainer(workspaceKey, solution, runTemplateId, CONTAINER_POSTRUN, CONTAINER_POSTRUN_MODE)
+  fun buildPostRunContainer(
+      workspaceKey: String,
+      solution: Solution,
+      runTemplateId: String
+  ): ScenarioRunContainer {
+    return this.buildSolutionContainer(
+        workspaceKey, solution, runTemplateId, CONTAINER_POSTRUN, CONTAINER_POSTRUN_MODE)
   }
 
   private fun getSendOptionValue(workspaceOption: Boolean?, templateOption: Boolean?): Boolean {
@@ -176,30 +301,38 @@ class ContainerFactory(
   private fun getRunTemplate(solution: Solution, runTemplateId: String): RunTemplate {
     val template = solution.runTemplates.find { runTemplate -> runTemplate.id == runTemplateId }
     if (template == null) {
-      throw IllegalStateException("runTemplateId ${runTemplateId} not found in Solution ${solution.id}")
+      throw IllegalStateException(
+          "runTemplateId ${runTemplateId} not found in Solution ${solution.id}")
     }
 
     return template
   }
 
-  private fun buildSolutionContainer(workspaceKey: String, solution: Solution, runTemplateId: String, name: String, mode: String): ScenarioRunContainer {
+  private fun buildSolutionContainer(
+      workspaceKey: String,
+      solution: Solution,
+      runTemplateId: String,
+      name: String,
+      mode: String
+  ): ScenarioRunContainer {
 
     val template = getRunTemplate(solution, runTemplateId)
     val imageName = getImageName(solution.repository, solution.version)
     val envVars = getCommonEnvVars()
     envVars.put(runTemplateIdVar, runTemplateId)
     envVars.put(containerModeVar, mode)
-    envVars.put(eventHubControlPlaneVar, "${eventHubClusterUri}/${workspaceKey}${controlPlaneSuffix}")
+    envVars.put(
+        eventHubControlPlaneVar, "${eventHubClusterUri}/${workspaceKey}${controlPlaneSuffix}")
     envVars.put(eventHubMeasuresVar, "${eventHubClusterUri}/${workspaceKey}")
     val csmSimulation = template.csmSimulation
     if (csmSimulation != null) {
       envVars.put(csmSimulationVar, csmSimulation)
     }
     return ScenarioRunContainer(
-      name = name,
-      image = imageName,
-      envVars = envVars,
-      entrypoint = entrypointName,
+        name = name,
+        image = imageName,
+        envVars = envVars,
+        entrypoint = entrypointName,
     )
   }
 
@@ -207,8 +340,14 @@ class ContainerFactory(
     return "${repository}:${version}"
   }
 
-  private fun getDatasetEnvVars(dataset: Dataset, connector: Connector): Map<String, String> {
+  private fun getDatasetEnvVars(
+      dataset: Dataset,
+      connector: Connector,
+      fetchPathBase: String,
+      fetchId: String
+  ): Map<String, String> {
     val envVars = getCommonEnvVars()
+    envVars.put(fetchPathVar, "${fetchPathBase}/${fetchId}")
     val datasetEnvVars =
         connector
             .parameterGroups

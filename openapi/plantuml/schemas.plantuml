@@ -95,13 +95,20 @@ entity RunTemplate {
     csmSimulation: String
     tags: List<String>
     computeSize: String
-    parametersHandlerResource: RunTemplateResourceStorage
-    datasetValidatorResource: RunTemplateResourceStorage
-    preRunResource: RunTemplateResourceStorage
-    engineResource: RunTemplateResourceStorage
-    postRunResource: RunTemplateResourceStorage
+    fetchDatasets: Boolean
+    fetchScenarioParameters: Boolean
+    applyParameters: Boolean
+    validateData: Boolean
     sendDatasetsToDataWarehouse: Boolean
     sendInputParametersToDataWarehouse: Boolean
+    preRun: Boolean
+    run: Boolean
+    postRun: Boolean
+    parametersHandlerSource: RunTemplateStepSource
+    datasetValidatorSource: RunTemplateStepSource
+    preRunSource: RunTemplateStepSource
+    runSource: RunTemplateStepSource
+    postRunSource: RunTemplateStepSource
     parameterGroups: List<String>
 }
 
@@ -127,10 +134,7 @@ entity RunTemplateParameterValue {
     * value: String
 }
 
-entity RunTemplateResourceStorage { 
-    * storageType: String
-    * resourcePath: String
-    storageOptions: Map
+entity RunTemplateStepSource { 
 }
 
 entity Scenario { 
@@ -141,7 +145,8 @@ entity Scenario {
     parentId: String
     ownerId: String
     solutionId: String
-    runTemplateId: String
+    * runTemplateId: String
+    workspaceId: String
     users: List<ScenarioUser>
     state: String
     creationDate: String
@@ -267,7 +272,7 @@ entity Solution {
     tags: List<String>
     parameters: List<RunTemplateParameter>
     parameterGroups: List<RunTemplateParameterGroup>
-    run_templates: List<RunTemplate>
+    * runTemplates: List<RunTemplate>
 }
 
 entity User { 
@@ -314,6 +319,7 @@ entity ValidatorRun {
 
 entity Workspace { 
     id: String
+    * key: String
     * name: String
     description: String
     version: String
@@ -322,28 +328,11 @@ entity Workspace {
     * solution: WorkspaceSolution
     users: List<WorkspaceUser>
     webApp: WorkspaceWebApp
-    services: WorkspaceServices
     sendInputToDataWarehouse: Boolean
 }
 
 entity WorkspaceFile { 
     fileName: String
-}
-
-entity WorkspaceService { 
-    cloudService: String
-    baseUri: String
-    platformService: String
-    resourceUri: String
-    credentials: Map
-}
-
-entity WorkspaceServices { 
-    tenantCredentials: Map
-    resultsEventBus: WorkspaceService
-    scenariorunEventBus: WorkspaceService
-    dataWarehouse: WorkspaceService
-    storage: WorkspaceService
 }
 
 entity WorkspaceSolution { 
@@ -369,22 +358,13 @@ Connector -- "0..*" ConnectorParameterGroup : parameterGroups
 Organization -- "0..*" OrganizationUser : users
 Organization -- OrganizationServices : services
 User -- "0..*" UserOrganization : organizations
-RunTemplate -- RunTemplateResourceStorage : parametersHandlerResource
-RunTemplate -- RunTemplateResourceStorage : datasetValidatorResource
-RunTemplate -- RunTemplateResourceStorage : preRunResource
-RunTemplate -- RunTemplateResourceStorage : engineResource
-RunTemplate -- RunTemplateResourceStorage : postRunResource
 UserOrganization -- "0..*" UserWorkspace : workspaces
 Solution -- "0..*" RunTemplateParameter : parameters
 Solution -- "0..*" RunTemplateParameterGroup : parameterGroups
-Solution -- "0..*" RunTemplate : run_templates
+Solution -- "0..*" RunTemplate : runTemplates
 ScenarioComparisonResult -- "0..*" ScenarioChangedParameterValue : changedValues
 Dataset -- DatasetConnector : connector
 Dataset -- "0..*" DatasetCompatibility : compatibility
-WorkspaceServices -- WorkspaceService : resultsEventBus
-WorkspaceServices -- WorkspaceService : scenariorunEventBus
-WorkspaceServices -- WorkspaceService : dataWarehouse
-WorkspaceServices -- WorkspaceService : storage
 ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
 OrganizationServices -- OrganizationService : storage
 OrganizationServices -- OrganizationService : solutionsContainerRegistry
@@ -403,6 +383,5 @@ ScenarioRunStartContainers -- "0..*" ScenarioRunContainer : containers
 Workspace -- WorkspaceSolution : solution
 Workspace -- "0..*" WorkspaceUser : users
 Workspace -- WorkspaceWebApp : webApp
-Workspace -- WorkspaceServices : services
 
 @enduml

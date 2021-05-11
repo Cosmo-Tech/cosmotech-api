@@ -448,7 +448,6 @@ components:
         computeSize:
           type: string
           description: the compute size needed for this Run Template. Standard sizes are basic and highcpu. Default is basic
-        
         fetchDatasets:
           type: boolean
           default: true
@@ -559,7 +558,8 @@ components:
     TranslatedLabels:
       type: object
       description: a translated label with key as ISO 639-1 code
-      additionalProperties: true
+      additionalProperties:
+        type: string
   examples:
     Brewery:
       summary: Brewery Solution

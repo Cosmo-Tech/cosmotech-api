@@ -22,7 +22,7 @@ Models/RunTemplate.md
 Models/RunTemplateParameter.md
 Models/RunTemplateParameterGroup.md
 Models/RunTemplateParameterValue.md
-Models/RunTemplateResourceStorage.md
+Models/RunTemplateStepSource.md
 Models/Scenario.md
 Models/ScenarioChangedParameterValue.md
 Models/ScenarioComparisonResult.md
@@ -42,8 +42,6 @@ Models/Validator.md
 Models/ValidatorRun.md
 Models/Workspace.md
 Models/WorkspaceFile.md
-Models/WorkspaceService.md
-Models/WorkspaceServices.md
 Models/WorkspaceSolution.md
 Models/WorkspaceUser.md
 Models/WorkspaceWebApp.md
