@@ -22,7 +22,6 @@ class ContainerFactory(
     @Value("\${csm.platform.security.azure.client-id:}") val azureClientId: String,
     @Value("\${csm.platform.security.azure.client-secret:}") val azureClientSecret: String,
     @Value("\${csm.platform.base-url:}") val apiBaseUrl: String,
-    @Value("\${csm.platform.security.token:}") val apiToken: String,
     @Value("\${csm.platform.images.scenario-fetch-parameters:}")
     val scenarioFetchParametersImage: String,
     @Value("\${csm.platform.images.send-datawarehouse:}") val sendDataWarehouseImage: String,
@@ -48,7 +47,6 @@ class ContainerFactory(
   private val azureClientIdVar = "AZURE_CLIENT_ID"
   private val azureClientSecretVar = "AZURE_CLIENT_SECRET"
   private val apiBaseUrlVar = "CSM_API_URL"
-  private val apiTokenVar = "CSM_API_TOKEN"
   private val datasetPathVar = "CSM_DATASET_ABSOLUTE_PATH"
   private val datasetPath = "/mnt/scenariorun-data"
   private val parametersPathVar = "CSM_PARAMETERS_ABSOLUTE_PATH"
@@ -372,7 +370,6 @@ class ContainerFactory(
         azureClientIdVar to azureClientId,
         azureClientSecretVar to azureClientSecret,
         apiBaseUrlVar to apiBaseUrl,
-        apiTokenVar to apiToken,
         datasetPathVar to datasetPath,
         parametersPathVar to parametersPath,
     )

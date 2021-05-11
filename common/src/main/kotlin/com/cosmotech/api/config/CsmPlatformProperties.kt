@@ -34,12 +34,34 @@ data class CsmPlatformProperties(
     val eventPublisher: EventPublisher,
 
     /** Azure Platform */
-    val azure: CsmPlatformAzure?
+    val azure: CsmPlatformAzure?,
+
+    /** Argo Service */
+    val argo: Argo,
+
+    /** Cosmo Tech core images */
+    val images: CsmImages,
 ) {
+
+  data class CsmImages(
+      /** Container image to fetch Scenario Parameters */
+      val scenarioFetchParameters: String,
+
+      /** Container image to send data to DataWaregouse */
+      val sendDatawarehouse: String,
+  )
+
+  data class Argo(
+      /** Argo service base Uri */
+      val baseUri: String,
+  )
 
   data class Api(
       /** API Version, e.g.: latest, or v1 */
       val version: String,
+
+      /** API Base URL */
+      val baseUrl: String,
 
       /**
        * Base path under which the API is exposed at root, e.g.: /cosmotech-api/. Typically when
