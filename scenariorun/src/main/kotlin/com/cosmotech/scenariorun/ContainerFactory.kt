@@ -156,7 +156,7 @@ class ContainerFactory(@Autowired val csmPlatformProperties: CsmPlatformProperti
     }
     return ScenarioRunContainer(
         name = "${nameBase}-${datasetCount.toString()}",
-        image = getImageName(connector.repository, connector.version),
+        image = getImageName(csmPlatformProperties.azure?.containerRegistries?.core ?: "", connector.repository, connector.version),
         envVars = getDatasetEnvVars(dataset, connector, fetchPathBase, fetchId),
         runArgs = getDatasetRunArgs(dataset, connector))
   }
@@ -310,7 +310,7 @@ class ContainerFactory(@Autowired val csmPlatformProperties: CsmPlatformProperti
   ): ScenarioRunContainer {
 
     val template = getRunTemplate(solution, runTemplateId)
-    val imageName = getImageName(solution.repository, solution.version)
+    val imageName = getImageName(csmPlatformProperties.azure?.containerRegistries?.solutions ?: "", solution.repository, solution.version)
     val envVars = getCommonEnvVars()
     envVars.put(RUN_TEMPLATE_ID_VAR, runTemplateId)
     envVars.put(CONTAINER_MODE_VAR, mode)
@@ -331,8 +331,8 @@ class ContainerFactory(@Autowired val csmPlatformProperties: CsmPlatformProperti
     )
   }
 
-  private fun getImageName(repository: String, version: String): String {
-    return "${repository}:${version}"
+  private fun getImageName(registry: String, repository: String, version: String): String {
+    if (registry != "") return "${registry}/${repository}:${version}" else return "${repository}:${version}"
   }
 
   private fun getDatasetEnvVars(
@@ -366,7 +366,7 @@ class ContainerFactory(@Autowired val csmPlatformProperties: CsmPlatformProperti
         AZURE_TENANT_ID_VAR to (csmPlatformProperties.azure?.credentials?.tenantId ?: ""),
         AZURE_CLIENT_ID_VAR to (csmPlatformProperties.azure?.credentials?.clientId ?: ""),
         AZURE_CLIENT_SECRET_VAR to (csmPlatformProperties.azure?.credentials?.clientSecret ?: ""),
-        API_BASE_URL_VAR to csmPlatformProperties.api.baseUrl,
+        API_BASE_URL_VAR to "${csmPlatformProperties.api.baseUrl}/${csmPlatformProperties.api.basePath}/${csmPlatformProperties.api.version}",
         DATASET_PATH_VAR to DATASET_PATH,
         PARAMETERS_PATH_VAR to PARAMETERS_PATH,
     )

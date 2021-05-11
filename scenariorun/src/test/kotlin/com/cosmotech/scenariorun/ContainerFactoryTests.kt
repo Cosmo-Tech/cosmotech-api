@@ -93,9 +93,9 @@ class ContainerFactoryTests {
                           )),
               api =
                   CsmPlatformProperties.Api(
-                      baseUrl = "https://api.comostech.com",
-                      version = "Not Used",
-                      basePath = "v1",
+                      baseUrl = "https://api.cosmotech.com",
+                      version = "v1",
+                      basePath = "basepath",
                   ),
               images =
                   CsmPlatformProperties.CsmImages(
@@ -150,7 +150,7 @@ class ContainerFactoryTests {
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_API_URL" to "https://api.comostech.com",
+            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data/1",
@@ -169,7 +169,7 @@ class ContainerFactoryTests {
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_API_URL" to "https://api.comostech.com",
+            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data/1",
@@ -210,7 +210,7 @@ class ContainerFactoryTests {
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_API_URL" to "https://api.comostech.com",
+            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_SCENARIO_ID" to "1")
@@ -243,7 +243,7 @@ class ContainerFactoryTests {
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_API_URL" to "https://api.comostech.com",
+            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "true",
@@ -262,7 +262,7 @@ class ContainerFactoryTests {
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_API_URL" to "https://api.comostech.com",
+            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "false",
@@ -282,7 +282,7 @@ class ContainerFactoryTests {
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_API_URL" to "https://api.comostech.com",
+            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "true",
@@ -302,7 +302,7 @@ class ContainerFactoryTests {
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_API_URL" to "https://api.comostech.com",
+            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "false",
@@ -328,7 +328,7 @@ class ContainerFactoryTests {
   @Test
   fun `Parameters Handler Container image valid`() {
     val container = this.buildApplyParametersContainer()
-    assertEquals("cosmotech/testsolution_simulator:1.0.0", container.image)
+    assertEquals("twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0", container.image)
   }
 
   @Test
@@ -521,12 +521,12 @@ class ContainerFactoryTests {
             "cosmotech/test_connector2:1.0.0",
             "cosmotech/test_connector3:1.0.0",
             "cosmotech/scenariofetchparameters:1.0.0",
-            "cosmotech/testsolution_simulator:1.0.0",
-            "cosmotech/testsolution_simulator:1.0.0",
+            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
+            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
             "cosmotech/senddatawarehouse:1.0.0",
-            "cosmotech/testsolution_simulator:1.0.0",
-            "cosmotech/testsolution_simulator:1.0.0",
-            "cosmotech/testsolution_simulator:1.0.0",
+            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
+            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
+            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
         )
     assertEquals(expected, containers.map { container -> container.image })
   }
@@ -546,7 +546,7 @@ class ContainerFactoryTests {
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_API_URL" to "https://api.comostech.com",
+            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data/2",
@@ -650,12 +650,12 @@ class ContainerFactoryTests {
             "cosmotech/test_connector:1.0.0",
             "cosmotech/test_connector2:1.0.0",
             "cosmotech/test_connector3:1.0.0",
-            "cosmotech/testsolution_simulator:1.0.0",
-            "cosmotech/testsolution_simulator:1.0.0",
+            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
+            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
             "cosmotech/senddatawarehouse:1.0.0",
-            "cosmotech/testsolution_simulator:1.0.0",
-            "cosmotech/testsolution_simulator:1.0.0",
-            "cosmotech/testsolution_simulator:1.0.0",
+            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
+            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
+            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
         )
     assertEquals(expected, containers.map { container -> container.image })
   }
@@ -687,7 +687,7 @@ class ContainerFactoryTests {
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_API_URL" to "https://api.comostech.com",
+            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/${param}",
@@ -723,7 +723,7 @@ class ContainerFactoryTests {
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_API_URL" to "https://api.comostech.com",
+            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
