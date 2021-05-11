@@ -17,51 +17,51 @@ import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
 
 private const val PARAMETERS_DATASET_ID = "%DATASETID%"
+private const val CONTAINER_FETCH_DATASET = "fetchDatasetContainer"
+private const val CONTAINER_FETCH_PARAMETERS = "fetchScenarioParametersContainer"
+private const val CONTAINER_FETCH_DATASET_PARAMETERS = "fetchScenarioDatasetParametersContainer"
+private const val CONTAINER_SEND_DATAWAREHOUSE = "sendDataWarehouseContainer"
+private const val CONTAINER_APPLY_PARAMETERS = "applyParametersContainer"
+private const val CONTAINER_APPLY_PARAMETERS_MODE = "handle-parameters"
+private const val CONTAINER_VALIDATE_DATA = "validateDataContainer"
+private const val CONTAINER_VALIDATE_DATA_MODE = "validate"
+private const val CONTAINER_PRERUN = "preRunContainer"
+private const val CONTAINER_PRERUN_MODE = "prerun"
+private const val CONTAINER_RUN = "runContainer"
+private const val CONTAINER_RUN_MODE = "engine"
+private const val CONTAINER_POSTRUN = "postRunContainer"
+private const val CONTAINER_POSTRUN_MODE = "postrun"
+private const val AZURE_TENANT_ID_VAR = "AZURE_TENANT_ID"
+private const val AZURE_CLIENT_ID_VAR = "AZURE_CLIENT_ID"
+private const val AZURE_CLIENT_SECRET_VAR = "AZURE_CLIENT_SECRET"
+private const val API_BASE_URL_VAR = "CSM_API_URL"
+private const val DATASET_PATH_VAR = "CSM_DATASET_ABSOLUTE_PATH"
+private const val DATASET_PATH = "/mnt/scenariorun-data"
+private const val PARAMETERS_PATH_VAR = "CSM_PARAMETERS_ABSOLUTE_PATH"
+private const val PARAMETERS_PATH = "/mnt/scenariorun-parameters"
+private const val FETCH_PATH_VAR = "CSM_FETCH_ABSOLUTE_PATH"
+private const val PARAMETERS_FETCH_CONTAINER_SCENARIO_VAR = "CSM_SCENARIO_ID"
+private const val SEND_DATAWAREHOUSE_PARAMETERS_VAR = "CSM_SEND_DATAWAREHOUSE_PARAMETERS"
+private const val SEND_DATAWAREHOUSE_DATASETS_VAR = "CSM_SEND_DATAWAREHOUSE_DATASETS"
+private const val ADX_DATA_INGESTION_URI_VAR = "ADX_DATA_INGESTION_URI"
+private const val ADX_DATABASE = "ADX_DATABASE"
+private const val RUN_TEMPLATE_ID_VAR = "CSM_RUN_TEMPLATE_ID"
+private const val CONTAINER_MODE_VAR = "CSM_CONTAINER_MODE"
+private const val ENTRYPOINT_NAME = "entrypoint.py"
+private const val EVENT_HUB_CONTROL_PLANE_VAR = "CSM_CONTROL_PLANE_TOPIC"
+private const val CONTROL_PLANE_SUFFIX = "-scenariorun"
+private const val EVENT_HUB_MEASURES_VAR = "CSM_PROBES_MEASURES_TOPIC"
+private const val CSM_SIMULATION_VAR = "CSM_SIMULATION"
+private const val NODE_LABEL_DEFAULT = "basic"
+private const val NODE_LABEL_SUFFIX = "pool"
+private const val GENERATE_NAME_PREFIX = "workflow-"
+private const val GENERATE_NAME_SUFFIX = "-"
 
 @Component
 class ContainerFactory(
   @Autowired val csmPlatformProperties: CsmPlatformProperties
 ) {
   private val logger = LoggerFactory.getLogger(ArgoAdapter::class.java)
-  private val CONTAINER_FETCH_DATASET = "fetchDatasetContainer"
-  private val CONTAINER_FETCH_PARAMETERS = "fetchScenarioParametersContainer"
-  private val CONTAINER_FETCH_DATASET_PARAMETERS = "fetchScenarioDatasetParametersContainer"
-  private val CONTAINER_SEND_DATAWAREHOUSE = "sendDataWarehouseContainer"
-  private val CONTAINER_APPLY_PARAMETERS = "applyParametersContainer"
-  private val CONTAINER_APPLY_PARAMETERS_MODE = "handle-parameters"
-  private val CONTAINER_VALIDATE_DATA = "validateDataContainer"
-  private val CONTAINER_VALIDATE_DATA_MODE = "validate"
-  private val CONTAINER_PRERUN = "preRunContainer"
-  private val CONTAINER_PRERUN_MODE = "prerun"
-  private val CONTAINER_RUN = "runContainer"
-  private val CONTAINER_RUN_MODE = "engine"
-  private val CONTAINER_POSTRUN = "postRunContainer"
-  private val CONTAINER_POSTRUN_MODE = "postrun"
-  private val azureTenantIdVar = "AZURE_TENANT_ID"
-  private val azureClientIdVar = "AZURE_CLIENT_ID"
-  private val azureClientSecretVar = "AZURE_CLIENT_SECRET"
-  private val apiBaseUrlVar = "CSM_API_URL"
-  private val datasetPathVar = "CSM_DATASET_ABSOLUTE_PATH"
-  private val datasetPath = "/mnt/scenariorun-data"
-  private val parametersPathVar = "CSM_PARAMETERS_ABSOLUTE_PATH"
-  private val parametersPath = "/mnt/scenariorun-parameters"
-  private val fetchPathVar = "CSM_FETCH_ABSOLUTE_PATH"
-  private val parametersFetchContainerScenarioVar = "CSM_SCENARIO_ID"
-  private val sendDataWarehouseParametersVar = "CSM_SEND_DATAWAREHOUSE_PARAMETERS"
-  private val sendDataWarehouseDatasetsVar = "CSM_SEND_DATAWAREHOUSE_DATASETS"
-  private val adxDataIngestionUriVar = "ADX_DATA_INGESTION_URI"
-  private val adxDatabase = "ADX_DATABASE"
-  private val runTemplateIdVar = "CSM_RUN_TEMPLATE_ID"
-  private val containerModeVar = "CSM_CONTAINER_MODE"
-  private val entrypointName = "entrypoint.py"
-  private val eventHubControlPlaneVar = "CSM_CONTROL_PLANE_TOPIC"
-  private val controlPlaneSuffix = "-scenariorun"
-  private val eventHubMeasuresVar = "CSM_PROBES_MEASURES_TOPIC"
-  private val csmSimulationVar = "CSM_SIMULATION"
-  private val nodeLabelDefault = "basic"
-  private val nodeLabelSuffix = "pool"
-  private val generateNamePrefix = "workflow-"
-  private val generateNameSuffix = "-"
 
   fun buildContainersStart(
       scenario: Scenario,
@@ -72,10 +72,10 @@ class ContainerFactory(
   ): ScenarioRunStartContainers {
     val template = getRunTemplate(solution, scenario.runTemplateId)
     val nodeLabel =
-        if (template.computeSize != null) "${template.computeSize}${nodeLabelSuffix}"
-        else "${nodeLabelDefault}${nodeLabelSuffix}"
+        if (template.computeSize != null) "${template.computeSize}${NODE_LABEL_SUFFIX}"
+        else "${NODE_LABEL_DEFAULT}${NODE_LABEL_SUFFIX}"
     val containers = buildContainersPipeline(scenario, datasets, connectors, workspace, solution)
-    val generateName = "${generateNamePrefix}${scenario.id}${generateNameSuffix}"
+    val generateName = "${GENERATE_NAME_PREFIX}${scenario.id}${GENERATE_NAME_SUFFIX}"
     return ScenarioRunStartContainers(
         generateName = generateName,
         nodeLabel = nodeLabel,
@@ -152,10 +152,10 @@ class ContainerFactory(
     if (dataset.connector.id != connector.id)
         throw IllegalStateException("Dataset connector id and Connector id do not match")
     var nameBase = CONTAINER_FETCH_DATASET
-    var fetchPathBase = datasetPath
+    var fetchPathBase = DATASET_PATH
     if (parametersFetch) {
       nameBase = CONTAINER_FETCH_DATASET_PARAMETERS
-      fetchPathBase = parametersPath
+      fetchPathBase = PARAMETERS_PATH
     }
     return ScenarioRunContainer(
         name = "${nameBase}-${datasetCount.toString()}",
@@ -202,7 +202,7 @@ class ContainerFactory(
   }
   fun buildScenarioParametersFetchContainer(scenarioId: String): ScenarioRunContainer {
     val envVars = getCommonEnvVars()
-    envVars.put(parametersFetchContainerScenarioVar, scenarioId)
+    envVars.put(PARAMETERS_FETCH_CONTAINER_SCENARIO_VAR, scenarioId)
     return ScenarioRunContainer(
         name = CONTAINER_FETCH_PARAMETERS,
         image = csmPlatformProperties.images.scenarioFetchParameters,
@@ -221,10 +221,10 @@ class ContainerFactory(
     val sendDatasets =
         getSendOptionValue(
             workspace.sendInputToDataWarehouse, runTemplate.sendDatasetsToDataWarehouse)
-    envVars.put(sendDataWarehouseParametersVar, (sendParameters ?: true).toString())
-    envVars.put(sendDataWarehouseDatasetsVar, (sendDatasets ?: true).toString())
-    envVars.put(adxDataIngestionUriVar, csmPlatformProperties.azure?.dataWarehouseCluster?.options?.ingestionUri ?: "")
-    envVars.put(adxDatabase, workspace.key)
+    envVars.put(SEND_DATAWAREHOUSE_PARAMETERS_VAR, (sendParameters ?: true).toString())
+    envVars.put(SEND_DATAWAREHOUSE_DATASETS_VAR, (sendDatasets ?: true).toString())
+    envVars.put(ADX_DATA_INGESTION_URI_VAR, csmPlatformProperties.azure?.dataWarehouseCluster?.options?.ingestionUri ?: "")
+    envVars.put(ADX_DATABASE, workspace.key)
     return ScenarioRunContainer(
         name = CONTAINER_SEND_DATAWAREHOUSE, image = csmPlatformProperties.images.sendDataWarehouse, envVars = envVars)
   }
@@ -311,20 +311,20 @@ class ContainerFactory(
     val template = getRunTemplate(solution, runTemplateId)
     val imageName = getImageName(solution.repository, solution.version)
     val envVars = getCommonEnvVars()
-    envVars.put(runTemplateIdVar, runTemplateId)
-    envVars.put(containerModeVar, mode)
+    envVars.put(RUN_TEMPLATE_ID_VAR, runTemplateId)
+    envVars.put(CONTAINER_MODE_VAR, mode)
     envVars.put(
-        eventHubControlPlaneVar, "${csmPlatformProperties.azure?.eventBus?.baseUri}/${workspaceKey}${controlPlaneSuffix}")
-    envVars.put(eventHubMeasuresVar, "${csmPlatformProperties.azure?.eventBus?.baseUri}/${workspaceKey}")
+        EVENT_HUB_CONTROL_PLANE_VAR, "${csmPlatformProperties.azure?.eventBus?.baseUri}/${workspaceKey}${CONTROL_PLANE_SUFFIX}")
+    envVars.put(EVENT_HUB_MEASURES_VAR, "${csmPlatformProperties.azure?.eventBus?.baseUri}/${workspaceKey}")
     val csmSimulation = template.csmSimulation
     if (csmSimulation != null) {
-      envVars.put(csmSimulationVar, csmSimulation)
+      envVars.put(CSM_SIMULATION_VAR, csmSimulation)
     }
     return ScenarioRunContainer(
         name = name,
         image = imageName,
         envVars = envVars,
-        entrypoint = entrypointName,
+        entrypoint = ENTRYPOINT_NAME,
     )
   }
 
@@ -339,7 +339,7 @@ class ContainerFactory(
       fetchId: String
   ): Map<String, String> {
     val envVars = getCommonEnvVars()
-    envVars.put(fetchPathVar, "${fetchPathBase}/${fetchId}")
+    envVars.put(FETCH_PATH_VAR, "${fetchPathBase}/${fetchId}")
     val datasetEnvVars =
         connector
             .parameterGroups
@@ -360,12 +360,12 @@ class ContainerFactory(
 
   private fun getCommonEnvVars(): MutableMap<String, String> {
     return mutableMapOf(
-        azureTenantIdVar to (csmPlatformProperties.azure?.credentials?.tenantId ?: ""),
-        azureClientIdVar to (csmPlatformProperties.azure?.credentials?.clientId ?: ""),
-        azureClientSecretVar to (csmPlatformProperties.azure?.credentials?.clientSecret ?: ""),
-        apiBaseUrlVar to csmPlatformProperties.api.baseUrl,
-        datasetPathVar to datasetPath,
-        parametersPathVar to parametersPath,
+        AZURE_TENANT_ID_VAR to (csmPlatformProperties.azure?.credentials?.tenantId ?: ""),
+        AZURE_CLIENT_ID_VAR to (csmPlatformProperties.azure?.credentials?.clientId ?: ""),
+        AZURE_CLIENT_SECRET_VAR to (csmPlatformProperties.azure?.credentials?.clientSecret ?: ""),
+        API_BASE_URL_VAR to csmPlatformProperties.api.baseUrl,
+        DATASET_PATH_VAR to DATASET_PATH,
+        PARAMETERS_PATH_VAR to PARAMETERS_PATH,
     )
   }
 }
