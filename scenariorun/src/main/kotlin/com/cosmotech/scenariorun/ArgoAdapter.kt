@@ -71,29 +71,6 @@ class ArgoAdapter {
         .volumeClaimTemplates(volumeClaims)
   }
 
-  fun buildVolumeClaims(
-      startContainers: ScenarioRunStartContainers
-  ): List<V1PersistentVolumeClaim> {
-    val datasetsdir =
-        V1PersistentVolumeClaim()
-            .metadata(V1ObjectMeta().name(VOLUME_CLAIM_DATASETS))
-            .spec(
-                V1PersistentVolumeClaimSpec()
-                    .accessModes(listOf("ReadWriteOnce"))
-                    .resources(
-                        V1ResourceRequirements().requests(mapOf("storage" to Quantity("1Gi")))))
-    val parametersdir =
-        V1PersistentVolumeClaim()
-            .metadata(V1ObjectMeta().name(VOLUME_CLAIM_PARAMETERS))
-            .spec(
-                V1PersistentVolumeClaimSpec()
-                    .accessModes(listOf("ReadWriteOnce"))
-                    .resources(
-                        V1ResourceRequirements().requests(mapOf("storage" to Quantity("1Gi")))))
-
-    return listOf(datasetsdir, parametersdir)
-  }
-
   fun buildWorkflow(startContainers: ScenarioRunStartContainers): Workflow {
     val spec = buildWorkflowSpec(startContainers)
     val metadata = buildMetadata(startContainers)
@@ -135,6 +112,29 @@ class ArgoAdapter {
     dagTemplate.dag(DAGTemplate().tasks(dagTasks))
 
     return dagTemplate
+  }
+
+  private fun buildVolumeClaims(
+      startContainers: ScenarioRunStartContainers
+  ): List<V1PersistentVolumeClaim> {
+    val datasetsdir =
+        V1PersistentVolumeClaim()
+            .metadata(V1ObjectMeta().name(VOLUME_CLAIM_DATASETS))
+            .spec(
+                V1PersistentVolumeClaimSpec()
+                    .accessModes(listOf("ReadWriteOnce"))
+                    .resources(
+                        V1ResourceRequirements().requests(mapOf("storage" to Quantity("1Gi")))))
+    val parametersdir =
+        V1PersistentVolumeClaim()
+            .metadata(V1ObjectMeta().name(VOLUME_CLAIM_PARAMETERS))
+            .spec(
+                V1PersistentVolumeClaimSpec()
+                    .accessModes(listOf("ReadWriteOnce"))
+                    .resources(
+                        V1ResourceRequirements().requests(mapOf("storage" to Quantity("1Gi")))))
+
+    return listOf(datasetsdir, parametersdir)
   }
 
   private fun buildMetadata(startContainers: ScenarioRunStartContainers): V1ObjectMeta {
