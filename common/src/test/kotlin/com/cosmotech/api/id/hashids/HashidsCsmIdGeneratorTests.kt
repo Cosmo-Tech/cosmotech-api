@@ -3,10 +3,7 @@
 package com.cosmotech.api.id.hashids
 
 import java.lang.IllegalArgumentException
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.test.*
 import org.junit.jupiter.api.assertThrows
 
 class HashidsCsmIdGeneratorTests {
@@ -49,7 +46,7 @@ class HashidsCsmIdGeneratorTests {
     assertTrue { hashid1.startsWith("T-", ignoreCase = false) }
     assertFalse { hashid2.isBlank() }
     assertTrue { hashid2.startsWith("T-", ignoreCase = false) }
-    assertTrue { hashid2 != hashid1 }
+    assertNotEquals(hashid1, hashid2)
   }
 
   @Test
@@ -60,6 +57,6 @@ class HashidsCsmIdGeneratorTests {
     assertTrue { hashid1.startsWith("T-", ignoreCase = false) }
     assertFalse { hashid2.isBlank() }
     assertTrue { hashid2.startsWith("A-", ignoreCase = false) }
-    assertTrue { hashid2 != hashid1 }
+    assertNotEquals(hashid1, hashid2)
   }
 }

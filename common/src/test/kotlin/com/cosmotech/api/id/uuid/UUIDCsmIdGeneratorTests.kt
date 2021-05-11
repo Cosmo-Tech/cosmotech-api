@@ -47,7 +47,7 @@ class UUIDCsmIdGeneratorTests {
     assertTrue { uuidId1.startsWith("T-", ignoreCase = false) }
     assertFalse { uuidId2.isBlank() }
     assertTrue { uuidId2.startsWith("T-", ignoreCase = false) }
-    assertTrue { uuidId2 != uuidId1 }
+    assertNotEquals(uuidId2, uuidId1)
   }
 
   @Test
@@ -58,6 +58,6 @@ class UUIDCsmIdGeneratorTests {
     assertTrue { uuidId1.startsWith("T-", ignoreCase = false) }
     assertFalse { uuidId2.isBlank() }
     assertTrue { uuidId2.startsWith("A-", ignoreCase = false) }
-    assertTrue { uuidId2 != uuidId1 }
+    assertNotEquals(uuidId2, uuidId1)
   }
 }
