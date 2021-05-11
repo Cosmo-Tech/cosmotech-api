@@ -173,9 +173,11 @@ entity ScenarioComparisonResult {
 entity ScenarioRun { 
     id: String
     workflowId: String
+    generateName: String
     workflowName: String
     ownerId: String
     workspaceId: String
+    workspaceKey: String
     workspaceName: String
     scenarioId: String
     scenarioName: String
@@ -192,19 +194,10 @@ entity ScenarioRun {
     endTime: String
     datasetList: List<String>
     parametersValues: List<RunTemplateParameterValue>
-    sendInputToDataWarehouse: Boolean
-    dataWarehouseDB: String
-    resultsEventBusResourceUri: String
-    scenariorunEventBusResourceUri: String
+    sendDatasetsToDataWarehouse: Boolean
+    sendInputParametersToDataWarehouse: Boolean
     nodeLabel: String
-    fetchDatasetContainers: List<ScenarioRunContainer>
-    fetchScenarioParametersContainer: ScenarioRunContainer
-    applyParametersContainer: ScenarioRunContainer
-    validateDataContainer: ScenarioRunContainer
-    sendDataWarehouseContainer: ScenarioRunContainer
-    preRunContainer: ScenarioRunContainer
-    runContainer: ScenarioRunContainer
-    postRunContainer: ScenarioRunContainer
+    containers: List<ScenarioRunContainer>
 }
 
 entity ScenarioRunContainer { 
@@ -371,14 +364,7 @@ OrganizationServices -- OrganizationService : solutionsContainerRegistry
 Scenario -- "0..*" ScenarioUser : users
 Scenario -- "0..*" ScenarioRunTemplateParameterValue : parametersValues
 ScenarioRun -- "0..*" RunTemplateParameterValue : parametersValues
-ScenarioRun -- "0..*" ScenarioRunContainer : fetchDatasetContainers
-ScenarioRun -- ScenarioRunContainer : fetchScenarioParametersContainer
-ScenarioRun -- ScenarioRunContainer : applyParametersContainer
-ScenarioRun -- ScenarioRunContainer : validateDataContainer
-ScenarioRun -- ScenarioRunContainer : sendDataWarehouseContainer
-ScenarioRun -- ScenarioRunContainer : preRunContainer
-ScenarioRun -- ScenarioRunContainer : runContainer
-ScenarioRun -- ScenarioRunContainer : postRunContainer
+ScenarioRun -- "0..*" ScenarioRunContainer : containers
 ScenarioRunStartContainers -- "0..*" ScenarioRunContainer : containers
 Workspace -- WorkspaceSolution : solution
 Workspace -- "0..*" WorkspaceUser : users

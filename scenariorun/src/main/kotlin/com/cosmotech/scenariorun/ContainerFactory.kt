@@ -12,9 +12,8 @@ import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.domain.Workspace
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 
 private const val PARAMETERS_DATASET_ID = "%DATASETID%"
 private const val CONTAINER_FETCH_DATASET = "fetchDatasetContainer"
@@ -58,9 +57,7 @@ private const val GENERATE_NAME_PREFIX = "workflow-"
 private const val GENERATE_NAME_SUFFIX = "-"
 
 @Component
-class ContainerFactory(
-  @Autowired val csmPlatformProperties: CsmPlatformProperties
-) {
+class ContainerFactory(@Autowired val csmPlatformProperties: CsmPlatformProperties) {
   private val logger = LoggerFactory.getLogger(ArgoAdapter::class.java)
 
   fun buildContainersStart(
@@ -223,10 +220,14 @@ class ContainerFactory(
             workspace.sendInputToDataWarehouse, runTemplate.sendDatasetsToDataWarehouse)
     envVars.put(SEND_DATAWAREHOUSE_PARAMETERS_VAR, (sendParameters ?: true).toString())
     envVars.put(SEND_DATAWAREHOUSE_DATASETS_VAR, (sendDatasets ?: true).toString())
-    envVars.put(ADX_DATA_INGESTION_URI_VAR, csmPlatformProperties.azure?.dataWarehouseCluster?.options?.ingestionUri ?: "")
+    envVars.put(
+        ADX_DATA_INGESTION_URI_VAR,
+        csmPlatformProperties.azure?.dataWarehouseCluster?.options?.ingestionUri ?: "")
     envVars.put(ADX_DATABASE, workspace.key)
     return ScenarioRunContainer(
-        name = CONTAINER_SEND_DATAWAREHOUSE, image = csmPlatformProperties.images.sendDataWarehouse, envVars = envVars)
+        name = CONTAINER_SEND_DATAWAREHOUSE,
+        image = csmPlatformProperties.images.sendDataWarehouse,
+        envVars = envVars)
   }
 
   fun buildApplyParametersContainer(
@@ -314,8 +315,10 @@ class ContainerFactory(
     envVars.put(RUN_TEMPLATE_ID_VAR, runTemplateId)
     envVars.put(CONTAINER_MODE_VAR, mode)
     envVars.put(
-        EVENT_HUB_CONTROL_PLANE_VAR, "${csmPlatformProperties.azure?.eventBus?.baseUri}/${workspaceKey}${CONTROL_PLANE_SUFFIX}")
-    envVars.put(EVENT_HUB_MEASURES_VAR, "${csmPlatformProperties.azure?.eventBus?.baseUri}/${workspaceKey}")
+        EVENT_HUB_CONTROL_PLANE_VAR,
+        "${csmPlatformProperties.azure?.eventBus?.baseUri}/${workspaceKey}${CONTROL_PLANE_SUFFIX}")
+    envVars.put(
+        EVENT_HUB_MEASURES_VAR, "${csmPlatformProperties.azure?.eventBus?.baseUri}/${workspaceKey}")
     val csmSimulation = template.csmSimulation
     if (csmSimulation != null) {
       envVars.put(CSM_SIMULATION_VAR, csmSimulation)

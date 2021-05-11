@@ -26,71 +26,96 @@ class ContainerFactoryTests {
   private val logger = LoggerFactory.getLogger(ContainerFactoryTests::class.java)
   private val factory =
       ContainerFactory(
-        CsmPlatformProperties(
-          azure = CsmPlatformProperties.CsmPlatformAzure(
-            credentials = CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCredentials(
-              tenantId = "12345678",
-              clientId = "98765432",
-              clientSecret = "azertyuiop",
-            ),
-            eventBus = CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus(
-              baseUri = "amqps://csm-phoenix.servicebus.windows.net",
-            ),
-            dataWarehouseCluster = CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureDataWarehouseCluster(
-              options = CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureDataWarehouseCluster.Options(
-                ingestionUri = "https://ingest-phoenix.westeurope.kusto.windows.net",
-              ),
-              baseUri = "Not Used",
-            ),
-            storage = CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureStorage(
-              baseUri = "Not Used",
-              resourceUri = "Not Used",
-            ),
-            containerRegistries = CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureContainerRegistries(
-              core = "",
-              solutions = "twinengines.azurecr.io"
-            ),
-            keyVault = "Not Used",
-            analytics = CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureAnalytics(
-              resourceUri = "Not Used",
-              instrumentationKey = "Not Used",
-              connectionString = "Not Used",
-            ),
-            cosmos = CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCosmos(
-              uri = "Not Used",
-              coreDatabase = CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCosmos.CoreDatabase(
-                  name = "Not Used",
-                  connectors = CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCosmos.CoreDatabase.Connectors(container = "Not Used"),
-                  organizations = CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCosmos.CoreDatabase.Organizations(container = "Not Used"),
-                  users = CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCosmos.CoreDatabase.Users(container = "Not Used")
-              ),
-              key = "Not Used",
-              consistencyLevel = null,
-              populateQueryMetrics = false,
-              allowTelemetry = false,
-              connectionMode = null,
-            )
-          ),
-          api = CsmPlatformProperties.Api(
-            baseUrl = "https://api.comostech.com",
-            version = "Not Used",
-            basePath = "v1",
-          ),
-          images = CsmPlatformProperties.CsmImages(
-            scenarioFetchParameters = "cosmotech/scenariofetchparameters:1.0.0",
-            sendDataWarehouse = "cosmotech/senddatawarehouse:1.0.0",
-          ),
-          version = "Not Used",
-          vendor = CsmPlatformProperties.Vendor.AZURE,
-          idGenerator = CsmPlatformProperties.IdGenerator(CsmPlatformProperties.IdGenerator.Type.HASHID),
-          argo = CsmPlatformProperties.Argo(
-            baseUri = "Not Used",
-          ),
-          summary = "Not Used",
-          description = "Not Used",
-          eventPublisher = CsmPlatformProperties.EventPublisher(type = CsmPlatformProperties.EventPublisher.Type.IN_PROCESS),
-      )
-    )
+          CsmPlatformProperties(
+              azure =
+                  CsmPlatformProperties.CsmPlatformAzure(
+                      credentials =
+                          CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCredentials(
+                              tenantId = "12345678",
+                              clientId = "98765432",
+                              clientSecret = "azertyuiop",
+                          ),
+                      eventBus =
+                          CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus(
+                              baseUri = "amqps://csm-phoenix.servicebus.windows.net",
+                          ),
+                      dataWarehouseCluster =
+                          CsmPlatformProperties.CsmPlatformAzure
+                              .CsmPlatformAzureDataWarehouseCluster(
+                                  options =
+                                      CsmPlatformProperties.CsmPlatformAzure
+                                          .CsmPlatformAzureDataWarehouseCluster.Options(
+                                          ingestionUri =
+                                              "https://ingest-phoenix.westeurope.kusto.windows.net",
+                                      ),
+                                  baseUri = "Not Used",
+                              ),
+                      storage =
+                          CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureStorage(
+                              baseUri = "Not Used",
+                              resourceUri = "Not Used",
+                          ),
+                      containerRegistries =
+                          CsmPlatformProperties.CsmPlatformAzure
+                              .CsmPlatformAzureContainerRegistries(
+                                  core = "", solutions = "twinengines.azurecr.io"),
+                      keyVault = "Not Used",
+                      analytics =
+                          CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureAnalytics(
+                              resourceUri = "Not Used",
+                              instrumentationKey = "Not Used",
+                              connectionString = "Not Used",
+                          ),
+                      cosmos =
+                          CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCosmos(
+                              uri = "Not Used",
+                              coreDatabase =
+                                  CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCosmos
+                                      .CoreDatabase(
+                                          name = "Not Used",
+                                          connectors =
+                                              CsmPlatformProperties.CsmPlatformAzure
+                                                  .CsmPlatformAzureCosmos.CoreDatabase.Connectors(
+                                                  container = "Not Used"),
+                                          organizations =
+                                              CsmPlatformProperties.CsmPlatformAzure
+                                                  .CsmPlatformAzureCosmos.CoreDatabase
+                                                  .Organizations(container = "Not Used"),
+                                          users =
+                                              CsmPlatformProperties.CsmPlatformAzure
+                                                  .CsmPlatformAzureCosmos.CoreDatabase.Users(
+                                                  container = "Not Used")),
+                              key = "Not Used",
+                              consistencyLevel = null,
+                              populateQueryMetrics = false,
+                              allowTelemetry = false,
+                              connectionMode = null,
+                          )),
+              api =
+                  CsmPlatformProperties.Api(
+                      baseUrl = "https://api.comostech.com",
+                      version = "Not Used",
+                      basePath = "v1",
+                  ),
+              images =
+                  CsmPlatformProperties.CsmImages(
+                      scenarioFetchParameters = "cosmotech/scenariofetchparameters:1.0.0",
+                      sendDataWarehouse = "cosmotech/senddatawarehouse:1.0.0",
+                  ),
+              version = "Not Used",
+              vendor = CsmPlatformProperties.Vendor.AZURE,
+              idGenerator =
+                  CsmPlatformProperties.IdGenerator(CsmPlatformProperties.IdGenerator.Type.HASHID),
+              argo =
+                  CsmPlatformProperties.Argo(
+                      baseUri = "Not Used",
+                  ),
+              summary = "Not Used",
+              description = "Not Used",
+              eventPublisher =
+                  CsmPlatformProperties.EventPublisher(
+                      type = CsmPlatformProperties.EventPublisher.Type.IN_PROCESS),
+          ))
 
   @Test
   fun `Dataset Container not null`() {

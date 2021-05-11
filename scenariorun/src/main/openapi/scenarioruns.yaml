@@ -359,7 +359,7 @@ components:
           description: the node label request
         containers:
           type: array
-          description: the containers map with name and ScenarioRunContainer
+          description: the containerslist
           items:
             $ref: '#/components/schemas/ScenarioRunContainer'
       required:
@@ -375,6 +375,9 @@ components:
         workflowId:
           type: string
           description: the Cosmo Tech compute cluster Argo Workflow Id to search
+        generateName:
+          type: string
+          description: the base name for workflow name generation
         workflowName:
           type: string
           description: the Cosmo Tech compute cluster Argo Workflow Name
@@ -386,6 +389,10 @@ components:
           type: string
           readOnly: true
           description: the Workspace Id
+        workspaceKey:
+          type: string
+          readOnly: true
+          description: technical key for resource name convention and version grouping. Must be unique
         workspaceName:
           type: string
           readOnly: true
@@ -455,57 +462,23 @@ components:
           description: the list of Run Template parameters values
           items:
             $ref: '#/components/schemas/RunTemplateParameterValue'
-        sendInputToDataWarehouse:
+        sendDatasetsToDataWarehouse:
           type: boolean
           readOnly: true
-          description: whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to ScenarioRun Run
-        dataWarehouseDB:
-          type: string
-          description: the DataWarehouse database name to send data if sendInputToDataWarehouse is set
-        resultsEventBusResourceUri:
-          type: string
-          description: the event bus which receive Workspace ScenarioRun results messages. Message won't be send if this is not set
-        scenariorunEventBusResourceUri:
-          type: string
-          description: the event bus which receive Workspace ScenarioRun events messages. Message won't be send if this is not set
+          description: whether or not the Datasets values are send to the DataWarehouse prior to Simulation Run. If not set follow the Workspace setting
+        sendInputParametersToDataWarehouse:
+          type: boolean
+          readOnly: true
+          description: whether or not the input parameters values are send to the DataWarehouse prior to Simulation Run. If not set follow the Workspace setting
         nodeLabel:
           type: string
           readOnly: true
           description: the node label request
-        fetchDatasetContainers:
+        containers:
           type: array
-          readOnly: true
-          description: the containers which fetch the Scenario Datasets
+          description: the containers list
           items:
             $ref: '#/components/schemas/ScenarioRunContainer'
-        fetchScenarioParametersContainer:
-          readOnly: true
-          description: the container which fetch the Scenario Parameters
-          $ref: '#/components/schemas/ScenarioRunContainer'
-        applyParametersContainer:
-          readOnly: true
-          description: the container which apply the Scenario Parameters
-          $ref: '#/components/schemas/ScenarioRunContainer'
-        validateDataContainer:
-          readOnly: true
-          description: the container which validate the Scenario data
-          $ref: '#/components/schemas/ScenarioRunContainer'
-        sendDataWarehouseContainer:
-          readOnly: true
-          description: the container which send data to the Data Warehouse
-          $ref: '#/components/schemas/ScenarioRunContainer'
-        preRunContainer:
-          readOnly: true
-          description: the container which execute the pre-run
-          $ref: '#/components/schemas/ScenarioRunContainer'
-        runContainer:
-          readOnly: true
-          description: the main run container which execute the engine
-          $ref: '#/components/schemas/ScenarioRunContainer'
-        postRunContainer:
-          readOnly: true
-          description: the container which execute the post-run
-          $ref: '#/components/schemas/ScenarioRunContainer'
     RunTemplateParameterValue:
       type: object
       description: the value of Analysis parameter for a Scenario for this ScenarioRun
