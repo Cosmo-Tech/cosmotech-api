@@ -11,8 +11,6 @@ import com.cosmotech.dataset.domain.DatasetConnector
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.workspace.domain.Workspace
-import com.cosmotech.workspace.domain.WorkspaceService
-import com.cosmotech.workspace.domain.WorkspaceServices
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.scenario.domain.Scenario
@@ -355,6 +353,52 @@ class ContainerFactoryTests {
   }
 
   @Test
+  fun `Build all containers Only Run`() {
+    val scenario = getScenario()
+    val dataset = getDataset()
+    val connector = getConnector()
+    val workspace = getWorkspace()
+    val solution = getSolutionOnlyRun()
+    val containers = factory.buildContainersPipeline(scenario, dataset, connector, workspace, solution)
+    assertEquals(containers.size, 1)
+  }
+
+  @Test
+  fun `Build all containers for a Scenario containers name list`() {
+    val scenario = getScenario()
+    val dataset = getDataset()
+    val connector = getConnector()
+    val workspace = getWorkspace()
+    val solution = getSolution()
+    val containers = factory.buildContainersPipeline(scenario, dataset, connector, workspace, solution)
+    val expected = listOf(
+      "fetchDatasetContainers",
+      "fetchScenarioParametersContainer",
+      "applyParametersContainer",
+      "validateDataContainer",
+      "sendDataWarehouseContainer",
+      "preRunContainer",
+      "runContainer",
+      "postRunContainer",
+    )
+    assertEquals(expected, containers.map{container -> container.name})
+  }
+
+  @Test
+  fun `Build all containers for a Scenario containers name list Only Run`() {
+    val scenario = getScenario()
+    val dataset = getDataset()
+    val connector = getConnector()
+    val workspace = getWorkspace()
+    val solution = getSolutionOnlyRun()
+    val containers = factory.buildContainersPipeline(scenario, dataset, connector, workspace, solution)
+    val expected = listOf(
+      "runContainer",
+    )
+    assertEquals(expected, containers.map{container -> container.name})
+  }
+
+  @Test
   fun `Build start containers node Label`() {
     val scenario = getScenario()
     val dataset = getDataset()
@@ -553,6 +597,17 @@ class ContainerFactoryTests {
     )
   }
 
+  private fun getSolutionOnlyRun(): Solution {
+    return Solution(
+      id = "1",
+      key = "TestSolution",
+      name = "Test Solution",
+      repository = "cosmotech/testsolution_simulator",
+      version = "1.0.0",
+      runTemplates = listOf(getRunTemplateOnlyRun()),
+    )
+  }
+
   private fun getRunTemplate(): RunTemplate {
     return RunTemplate(
       id = "testruntemplate",
@@ -587,6 +642,23 @@ class ContainerFactoryTests {
       name = "Test Run",
       csmSimulation = "TestSimulation",
       sendInputParametersToDataWarehouse = false
+    )
+  }
+
+  private fun getRunTemplateOnlyRun(): RunTemplate {
+
+    return RunTemplate(
+      id = "testruntemplate",
+      name = "Test Run",
+      csmSimulation = "TestSimulation",
+        fetchDatasets = false,
+        fetchScenarioParameters = false,
+        applyParameters = false,
+        validateData = false,
+        sendDatasetsToDataWarehouse = false,
+        sendInputParametersToDataWarehouse = false,
+        preRun = false,
+        postRun = false,
     )
   }
 

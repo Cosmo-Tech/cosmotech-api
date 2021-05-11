@@ -66,7 +66,7 @@ class ContainerFactory(
   private val generateNamePrefix = "workflow-"
   private val generateNameSuffix = "-"
 
-  fun buildContainersStart(scenario: Scenario, dataset: Dataset, connector: Connector, workspace: Workspace, solution: Solution): ScenarioRunStartContainers {
+  fun buildContainersStart(scenario: Scenario, dataset: Dataset?, connector: Connector?, workspace: Workspace, solution: Solution): ScenarioRunStartContainers {
     val template = getRunTemplate(solution, scenario.runTemplateId)
     val nodeLabel = if (template.computeSize != null) "${template.computeSize}${nodeLabelSuffix}" else "${nodeLabelDefault}${nodeLabelSuffix}"
     val containers = buildContainersPipeline(scenario, dataset, connector, workspace, solution)
@@ -78,28 +78,28 @@ class ContainerFactory(
     )
   }
 
-  fun buildContainersPipeline(scenario: Scenario, dataset: Dataset, connector: Connector, workspace: Workspace, solution: Solution): List<ScenarioRunContainer> {
-    val datasetContainer = this.buildFromDataset(dataset, connector)
+  fun buildContainersPipeline(scenario: Scenario, dataset: Dataset?, connector: Connector?, workspace: Workspace, solution: Solution): List<ScenarioRunContainer> {
     if (scenario.id == null) throw IllegalStateException("Scenario Id cannot be null")
-    val parametersFetchContainer = this.buildScenarioParametersFetchContainer(scenario.id ?: "")
-    val applyParametersContainer = this.buildApplyParametersContainer(workspace.key, solution, scenario.runTemplateId)
-    val validateDataContainer = this.buildValidateDataContainer(workspace.key, solution, scenario.runTemplateId)
-    val runTemplate = getRunTemplate(solution, scenario.runTemplateId)
-    val sendToDataWarehouseContainer = this.buildSendDataWarehouseContainer(workspace, runTemplate)
-    val preRunContainer = this.buildPreRunContainer(workspace.key, solution, scenario.runTemplateId)
-    val runContainer = this.buildRunContainer(workspace.key, solution, scenario.runTemplateId)
-    val postRunContainer = this.buildPostRunContainer(workspace.key, solution, scenario.runTemplateId)
+    val template = getRunTemplate(solution, scenario.runTemplateId)
 
-    return listOf(
-      datasetContainer,
-      parametersFetchContainer,
-      applyParametersContainer,
-      validateDataContainer,
-      sendToDataWarehouseContainer,
-      preRunContainer,
-      runContainer,
-      postRunContainer,
-    )
+    var containers: MutableList<ScenarioRunContainer> = mutableListOf()
+
+    if (testStep(template.fetchDatasets) && dataset != null && connector != null) containers.add(this.buildFromDataset(dataset, connector))
+    if (testStep(template.fetchScenarioParameters)) containers.add(this.buildScenarioParametersFetchContainer(scenario.id ?: ""))
+    if (testStep(template.applyParameters)) containers.add(this.buildApplyParametersContainer(workspace.key, solution, scenario.runTemplateId))
+    if (testStep(template.validateData)) containers.add(this.buildValidateDataContainer(workspace.key, solution, scenario.runTemplateId))
+    val sendParameters = getSendOptionValue(workspace.sendInputToDataWarehouse, template.sendInputParametersToDataWarehouse)
+    val sendDatasets = getSendOptionValue(workspace.sendInputToDataWarehouse, template.sendDatasetsToDataWarehouse)
+    if (sendParameters || sendDatasets) containers.add(this.buildSendDataWarehouseContainer(workspace, template))
+    if (testStep(template.preRun)) containers.add(this.buildPreRunContainer(workspace.key, solution, scenario.runTemplateId))
+    if (testStep(template.run)) containers.add(this.buildRunContainer(workspace.key, solution, scenario.runTemplateId))
+    if (testStep(template.postRun)) containers.add(this.buildPostRunContainer(workspace.key, solution, scenario.runTemplateId))
+
+    return containers.toList()
+  }
+
+  private fun testStep(step: Boolean?): Boolean {
+    return step ?: true
   }
 
   fun buildFromDataset(dataset: Dataset, connector: Connector): ScenarioRunContainer {

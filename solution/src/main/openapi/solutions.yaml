@@ -448,27 +448,51 @@ components:
         computeSize:
           type: string
           description: the compute size needed for this Run Template. Standard sizes are basic and highcpu. Default is basic
-        parametersHandlerResource:
-          description: the parameters handler script resource. Default type is local and default path is run_templates/%CSM_RUN_TEMPLATE_ID%/parameters_handler/. Ignored with warning if resource does not exist. A Parameters Handler receives the Run Template information including all input parameters Key/Value.
-          $ref: '#/components/schemas/RunTemplateResourceStorage'
-        datasetValidatorResource:
-          description: the dataset validator script resource. Default type is local and default path is run_templates/%CSM_RUN_TEMPLATE_ID%/validator/. Ignored with warning if resource does not exist.
-          $ref: '#/components/schemas/RunTemplateResourceStorage'
-        preRunResource:
-          description: the Engine pre-run script resource. Default type is local and default path is run_templates/%CSM_RUN_TEMPLATE_ID%/prerun/. Ignored with if resource does not exist.
-          $ref: '#/components/schemas/RunTemplateResourceStorage'
-        engineResource:
-          description: the Engine script resource. Default type is local and default path is run_templates/%CSM_RUN_TEMPLATE_ID%/engine/. Ignored with warning if resource does not exist. An engine receives the Run Template information including all input parameters Key/Value. An engine has the responsibility to run the Run Template. It can use the main standard csmSimulator
-          $ref: '#/components/schemas/RunTemplateResourceStorage'
-        postRunResource:
-          description: the Engine post-run script resource. Default type is local and default path is run_templates/%CSM_RUN_TEMPLATE_ID%/postrun/. Ignored with if resource does not exist.
-          $ref: '#/components/schemas/RunTemplateResourceStorage'
+        
+        fetchDatasets:
+          type: boolean
+          default: true
+          description: whether or not the fetch dataset step is done
+        fetchScenarioParameters:
+          type: boolean
+          default: true
+          description: whether or not the fetch parameters step is done
+        applyParameters:
+          type: boolean
+          default: true
+          description: whether or not the apply parameter step is done
+        validateData:
+          type: boolean
+          default: true
+          description: whether or not the validate step is done
         sendDatasetsToDataWarehouse:
           type: boolean
-          description: whether or not the Datasets values are send to the DataWarehouse prior to Simulation Run
+          description: whether or not the Datasets values are send to the DataWarehouse prior to Simulation Run. If not set follow the Workspace setting
         sendInputParametersToDataWarehouse:
           type: boolean
-          description: whether or not the input parameters values are send to the DataWarehouse prior to Simulation Run
+          description: whether or not the input parameters values are send to the DataWarehouse prior to Simulation Run. If not set follow the Workspace setting
+        preRun:
+          type: boolean
+          default: true
+          description: whether or not the pre-run step is done
+        run:
+          type: boolean
+          default: true
+          description: whether or not the run step is done
+        postRun:
+          type: boolean
+          default: true
+          description: whether or not the post-run step is done
+        parametersHandlerSource:
+          $ref: "#/components/schemas/RunTemplateStepSource"
+        datasetValidatorSource:
+          $ref: "#/components/schemas/RunTemplateStepSource"
+        preRunSource:
+          $ref: "#/components/schemas/RunTemplateStepSource"
+        runSource:
+          $ref: "#/components/schemas/RunTemplateStepSource"
+        postRunSource:
+          $ref: "#/components/schemas/RunTemplateStepSource"
         parameterGroups:
           type: array
           description: the ordered list of parameters groups for the Run Template
@@ -478,6 +502,11 @@ components:
       required:
         - id
         - name
+    RunTemplateStepSource:
+      type: string
+      default: local
+      description: the source local or cloud
+      enum: ["local","cloud"]
     RunTemplateParameterGroup:
       type: object
       description: a Parameter Group for a Run Template
@@ -527,23 +556,6 @@ components:
         - id
         - labels
         - varType
-    RunTemplateResourceStorage:
-      type: object
-      properties:
-        storageType:
-          type: string
-          description: the storage type
-          enum: ["local","cloudStorage"]
-        resourcePath:
-          type: string
-          description: the resource path
-        storageOptions:
-          type: object
-          description: freeform options for storage
-          additionalProperties: true
-      required:
-        - storageType
-        - resourcePath
     TranslatedLabels:
       type: object
       description: a translated label with key as ISO 639-1 code
@@ -585,18 +597,6 @@ components:
               - Full
               - Supply
             computeSize: highcpu
-            parametersHandlerResource:
-              storageType: local
-              resourcePath: run_templates/hundred/parameters_handler/
-            datasetValidatorResource:
-              storageType: local
-              resourcePath: run_templates/hundred/validator/
-            engineResource:
-              storageType: local
-              resourcePath: run_templates/hundred/engine/
-            datasetSchemaResource:
-              storageType: local
-              resourcePath: run_templates/hundred/schema
             parameterGroups:
               - consumers
     BreweryUpdate:
@@ -640,18 +640,6 @@ components:
               - Full
               - Supply
             computeSize: highcpu
-            parametersHandlerResource:
-              storageType: local
-              resourcePath: run_templates/hundred/parameters_handler/
-            datasetValidatorResource:
-              storageType: local
-              resourcePath: run_templates/hundred/validator/
-            engineResource:
-              storageType: local
-              resourcePath: run_templates/hundred/engine/
-            datasetSchemaResource:
-              storageType: local
-              resourcePath: run_templates/hundred/schema
             parameterGroups:
               - consumers
     OneSolution:
@@ -690,18 +678,6 @@ components:
                 - Full
                 - Supply
               computeSize: highcpu
-              parametersHandlerResource:
-                storageType: local
-                resourcePath: run_templates/hundred/parameters_handler/
-              datasetValidatorResource:
-                storageType: local
-                resourcePath: run_templates/hundred/validator/
-              engineResource:
-                storageType: local
-                resourcePath: run_templates/hundred/engine/
-              datasetSchemaResource:
-                storageType: local
-                resourcePath: run_templates/hundred/schema
               parameterGroups:
                 - consumers
             - id: standard
