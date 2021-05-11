@@ -66,10 +66,10 @@ class ContainerFactory(
   private val generateNamePrefix = "workflow-"
   private val generateNameSuffix = "-"
 
-  fun buildContainersStart(scenario: Scenario, dataset: Dataset?, connector: Connector?, workspace: Workspace, solution: Solution): ScenarioRunStartContainers {
+  fun buildContainersStart(scenario: Scenario, datasets: List<Dataset>?, connectors: List<Connector>?, workspace: Workspace, solution: Solution): ScenarioRunStartContainers {
     val template = getRunTemplate(solution, scenario.runTemplateId)
     val nodeLabel = if (template.computeSize != null) "${template.computeSize}${nodeLabelSuffix}" else "${nodeLabelDefault}${nodeLabelSuffix}"
-    val containers = buildContainersPipeline(scenario, dataset, connector, workspace, solution)
+    val containers = buildContainersPipeline(scenario, datasets, connectors, workspace, solution)
     val generateName = "${generateNamePrefix}${scenario.id}${generateNameSuffix}"
     return ScenarioRunStartContainers(
       generateName = generateName,
@@ -78,13 +78,21 @@ class ContainerFactory(
     )
   }
 
-  fun buildContainersPipeline(scenario: Scenario, dataset: Dataset?, connector: Connector?, workspace: Workspace, solution: Solution): List<ScenarioRunContainer> {
+  fun buildContainersPipeline(scenario: Scenario, datasets: List<Dataset>?, connectors: List<Connector>?, workspace: Workspace, solution: Solution): List<ScenarioRunContainer> {
     if (scenario.id == null) throw IllegalStateException("Scenario Id cannot be null")
     val template = getRunTemplate(solution, scenario.runTemplateId)
 
     var containers: MutableList<ScenarioRunContainer> = mutableListOf()
 
-    if (testStep(template.fetchDatasets) && dataset != null && connector != null) containers.add(this.buildFromDataset(dataset, connector))
+    if (testStep(template.fetchDatasets) && datasets != null && connectors != null) {
+    var datasetCount = 1
+    datasets.forEach {
+      val connector = connectors.find { connector -> connector.id == it.connector.id }
+      if (connector == null) throw IllegalStateException("Connector id ${it.connector.id} not found in connectors list")
+      containers.add(this.buildFromDataset(it, connector, datasetCount))
+      datasetCount++
+    }
+  }
     if (testStep(template.fetchScenarioParameters)) containers.add(this.buildScenarioParametersFetchContainer(scenario.id ?: ""))
     if (testStep(template.applyParameters)) containers.add(this.buildApplyParametersContainer(workspace.key, solution, scenario.runTemplateId))
     if (testStep(template.validateData)) containers.add(this.buildValidateDataContainer(workspace.key, solution, scenario.runTemplateId))
@@ -102,11 +110,11 @@ class ContainerFactory(
     return step ?: true
   }
 
-  fun buildFromDataset(dataset: Dataset, connector: Connector): ScenarioRunContainer {
+  fun buildFromDataset(dataset: Dataset, connector: Connector, datasetCount: Int): ScenarioRunContainer {
     if (dataset.connector.id != connector.id)
         throw IllegalStateException("Dataset connector id and Connector id do not match")
     return ScenarioRunContainer(
-        name = CONTAINER_FETCH_DATASET,
+        name = "${CONTAINER_FETCH_DATASET}-${datasetCount.toString()}",
         image = getImageName(connector.repository, connector.version),
         envVars = getDatasetEnvVars(dataset, connector),
         runArgs = getDatasetRunArgs(dataset, connector))

@@ -108,8 +108,8 @@ config:
       argo:
         base-url: "https://argo-server.argo.svc.cluster.local:2746"
       images:
-        scenario-fetch-parameters: cosmotech/scenariofetchparameters
-        send-datawarehouse: cosmotech/senddatawarehouse
+        scenario-fetch-parameters: cosmotech/scenariofetchparameters:1.0.0
+        send-datawarehouse: cosmotech/senddatawarehouse:1.0.0
       services:
         adx-dataingestion-uri: "https://ingest-phoenix.westeurope.kusto.windows.net"
         eventhub-cluster-uri: "amqps://csm-phoenix.servicebus.windows.net"

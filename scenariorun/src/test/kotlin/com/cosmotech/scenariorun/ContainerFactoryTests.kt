@@ -27,40 +27,40 @@ class ContainerFactoryTests {
           azureClientSecret = "azertyuiop",
           apiBaseUrl = "https://api.comostech.com",
           apiToken = "azertyuiopqsdfghjklm",
-          scenarioFetchParametersImage = "cosmotech/scenariofetchparameters",
-          sendDataWarehouseImage = "cosmotech/senddatawarehouse",
+          scenarioFetchParametersImage = "cosmotech/scenariofetchparameters:1.0.0",
+          sendDataWarehouseImage = "cosmotech/senddatawarehouse:1.0.0",
           adxDataIngestionUri = "https://ingest-phoenix.westeurope.kusto.windows.net",
           eventHubClusterUri = "amqps://csm-phoenix.servicebus.windows.net",
       )
 
   @Test
   fun `Dataset Container not null`() {
-    val container = factory.buildFromDataset(getDataset(), getConnector())
+    val container = factory.buildFromDataset(getDataset(), getConnector(), 1)
     assertNotNull(container)
   }
 
   @Test
   fun `Dataset Container name valid`() {
-    val container = factory.buildFromDataset(getDataset(), getConnector())
-    assertEquals("fetchDatasetContainers", container.name)
+    val container = factory.buildFromDataset(getDataset(), getConnector(), 1)
+    assertEquals("fetchDatasetContainers-1", container.name)
   }
 
   @Test
   fun `Dataset Container image is valid`() {
-    val container = factory.buildFromDataset(getDataset(), getConnector())
+    val container = factory.buildFromDataset(getDataset(), getConnector(), 1)
     assertEquals("cosmotech/test_connector:1.0.0", container.image)
   }
 
   @Test
   fun `Dataset Container connector is valid`() {
     assertThrows(IllegalStateException::class.java) {
-      factory.buildFromDataset(getDataset(), getConnector("BadId"))
+      factory.buildFromDataset(getDataset(), getConnector("BadId"), 1)
     }
   }
 
   @Test
   fun `Dataset env vars valid`() {
-    val container = factory.buildFromDataset(getDataset(), getConnector())
+    val container = factory.buildFromDataset(getDataset(), getConnector(), 1)
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -78,7 +78,7 @@ class ContainerFactoryTests {
 
   @Test
   fun `Dataset no env vars valid`() {
-    val container = factory.buildFromDataset(getDatasetNoVars(), getConnectorNoVars())
+    val container = factory.buildFromDataset(getDatasetNoVars(), getConnectorNoVars(), 1)
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -94,7 +94,7 @@ class ContainerFactoryTests {
 
   @Test
   fun `Dataset args valid`() {
-    val container = factory.buildFromDataset(getDataset(), getConnector())
+    val container = factory.buildFromDataset(getDataset(), getConnector(), 1)
     val expected = listOf("param1_value", "param2_value", "param3_value")
     assertEquals(expected, container.runArgs)
   }
@@ -114,7 +114,7 @@ class ContainerFactoryTests {
   @Test
   fun `Fetch Scenario Parameters Container image valid`() {
     val container = factory.buildScenarioParametersFetchContainer("1")
-    assertEquals("cosmotech/scenariofetchparameters", container.image)
+    assertEquals("cosmotech/scenariofetchparameters:1.0.0", container.image)
   }
 
   @Test
@@ -149,7 +149,7 @@ class ContainerFactoryTests {
   @Test
   fun `Send DataWarehouse Container image valid`() {
     val container = factory.buildSendDataWarehouseContainer(getWorkspace(), getRunTemplate())
-    assertEquals("cosmotech/senddatawarehouse", container.image)
+    assertEquals("cosmotech/senddatawarehouse:1.0.0", container.image)
   }
 
   @Test
@@ -344,35 +344,23 @@ class ContainerFactoryTests {
   @Test
   fun `Build all containers for a Scenario count`() {
     val scenario = getScenario()
-    val dataset = getDataset()
-    val connector = getConnector()
+    val datasets = listOf(getDataset())
+    val connectors = listOf(getConnector())
     val workspace = getWorkspace()
     val solution = getSolution()
-    val containers = factory.buildContainersPipeline(scenario, dataset, connector, workspace, solution)
+    val containers = factory.buildContainersPipeline(scenario, datasets, connectors, workspace, solution)
     assertEquals(containers.size, 8)
   }
-
-  @Test
-  fun `Build all containers Only Run`() {
-    val scenario = getScenario()
-    val dataset = getDataset()
-    val connector = getConnector()
-    val workspace = getWorkspace()
-    val solution = getSolutionOnlyRun()
-    val containers = factory.buildContainersPipeline(scenario, dataset, connector, workspace, solution)
-    assertEquals(containers.size, 1)
-  }
-
   @Test
   fun `Build all containers for a Scenario containers name list`() {
     val scenario = getScenario()
-    val dataset = getDataset()
-    val connector = getConnector()
+    val datasets = listOf(getDataset())
+    val connectors = listOf(getConnector())
     val workspace = getWorkspace()
     val solution = getSolution()
-    val containers = factory.buildContainersPipeline(scenario, dataset, connector, workspace, solution)
+    val containers = factory.buildContainersPipeline(scenario, datasets, connectors, workspace, solution)
     val expected = listOf(
-      "fetchDatasetContainers",
+      "fetchDatasetContainers-1",
       "fetchScenarioParametersContainer",
       "applyParametersContainer",
       "validateDataContainer",
@@ -385,13 +373,81 @@ class ContainerFactoryTests {
   }
 
   @Test
-  fun `Build all containers for a Scenario containers name list Only Run`() {
+  fun `Build all containers Only Run`() {
     val scenario = getScenario()
-    val dataset = getDataset()
-    val connector = getConnector()
+    val datasets = listOf(getDataset())
+    val connectors = listOf(getConnector())
     val workspace = getWorkspace()
     val solution = getSolutionOnlyRun()
-    val containers = factory.buildContainersPipeline(scenario, dataset, connector, workspace, solution)
+    val containers = factory.buildContainersPipeline(scenario, datasets, connectors, workspace, solution)
+    assertEquals(containers.size, 1)
+  }
+
+  @Test
+  fun `Build all containers for a Scenario with 3 Datasets count`() {
+    val scenario = getScenarioThreeDatasets()
+    val datasets = listOf(getDataset(), getDataset2(), getDataset3())
+    val connectors = listOf(getConnector(), getConnector2(), getConnector3())
+    val workspace = getWorkspace()
+    val solution = getSolution()
+    val containers = factory.buildContainersPipeline(scenario, datasets, connectors, workspace, solution)
+    assertEquals(containers.size, 10)
+  }
+
+  @Test
+  fun `Build all containers for a Scenario 3 Datasets containers name list`() {
+    val scenario = getScenarioThreeDatasets()
+    val datasets = listOf(getDataset(), getDataset2(), getDataset3())
+    val connectors = listOf(getConnector(), getConnector2(), getConnector3())
+    val workspace = getWorkspace()
+    val solution = getSolution()
+    val containers = factory.buildContainersPipeline(scenario, datasets, connectors, workspace, solution)
+    val expected = listOf(
+      "fetchDatasetContainers-1",
+      "fetchDatasetContainers-2",
+      "fetchDatasetContainers-3",
+      "fetchScenarioParametersContainer",
+      "applyParametersContainer",
+      "validateDataContainer",
+      "sendDataWarehouseContainer",
+      "preRunContainer",
+      "runContainer",
+      "postRunContainer",
+    )
+    assertEquals(expected, containers.map{container -> container.name})
+  }
+
+  @Test
+  fun `Build all containers for a Scenario 3 Datasets containers image list`() {
+    val scenario = getScenarioThreeDatasets()
+    val datasets = listOf(getDataset(), getDataset2(), getDataset3())
+    val connectors = listOf(getConnector(), getConnector2(), getConnector3())
+    val workspace = getWorkspace()
+    val solution = getSolution()
+    val containers = factory.buildContainersPipeline(scenario, datasets, connectors, workspace, solution)
+    val expected = listOf(
+      "cosmotech/test_connector:1.0.0",
+      "cosmotech/test_connector2:1.0.0",
+      "cosmotech/test_connector3:1.0.0",
+      "cosmotech/scenariofetchparameters:1.0.0",
+      "cosmotech/testsolution_simulator:1.0.0",
+      "cosmotech/testsolution_simulator:1.0.0",
+      "cosmotech/senddatawarehouse:1.0.0",
+      "cosmotech/testsolution_simulator:1.0.0",
+      "cosmotech/testsolution_simulator:1.0.0",
+      "cosmotech/testsolution_simulator:1.0.0",
+    )
+    assertEquals(expected, containers.map{container -> container.image})
+  }
+
+  @Test
+  fun `Build all containers for a Scenario containers name list Only Run`() {
+    val scenario = getScenario()
+    val datasets = listOf(getDataset())
+    val connectors = listOf(getConnector())
+    val workspace = getWorkspace()
+    val solution = getSolutionOnlyRun()
+    val containers = factory.buildContainersPipeline(scenario, datasets, connectors, workspace, solution)
     val expected = listOf(
       "runContainer",
     )
@@ -401,33 +457,33 @@ class ContainerFactoryTests {
   @Test
   fun `Build start containers node Label`() {
     val scenario = getScenario()
-    val dataset = getDataset()
-    val connector = getConnector()
+    val datasets = listOf(getDataset())
+    val connectors = listOf(getConnector())
     val workspace = getWorkspace()
     val solution = getSolution()
-    val startContainers = factory.buildContainersStart(scenario, dataset, connector, workspace, solution)
+    val startContainers = factory.buildContainersStart(scenario, datasets, connectors, workspace, solution)
     assertEquals("highcpupool", startContainers.nodeLabel)
   }
 
   @Test
   fun `Build start containers node Label default`() {
     val scenario = getScenario()
-    val dataset = getDataset()
-    val connector = getConnector()
+    val datasets = listOf(getDataset())
+    val connectors = listOf(getConnector())
     val workspace = getWorkspace()
     val solution = getSolutionNoPool()
-    val startContainers = factory.buildContainersStart(scenario, dataset, connector, workspace, solution)
+    val startContainers = factory.buildContainersStart(scenario, datasets, connectors, workspace, solution)
     assertEquals("basicpool", startContainers.nodeLabel)
   }
 
   @Test
   fun `Build start containers generate name`() {
     val scenario = getScenario()
-    val dataset = getDataset()
-    val connector = getConnector()
+    val datasets = listOf(getDataset())
+    val connectors = listOf(getConnector())
     val workspace = getWorkspace()
     val solution = getSolution()
-    val startContainers = factory.buildContainersStart(scenario, dataset, connector, workspace, solution)
+    val startContainers = factory.buildContainersStart(scenario, datasets, connectors, workspace, solution)
     logger.info(startContainers.toString())
     assertEquals("workflow-aqwxsz-", startContainers.generateName)
   }
@@ -473,7 +529,17 @@ class ContainerFactoryTests {
 
   private fun getDataset(): Dataset {
     val connector = getDatasetConnector()
-    return Dataset(name = "Test Dataset", connector = connector)
+    return Dataset(id = "1", name = "Test Dataset", connector = connector)
+  }
+
+  private fun getDataset2(): Dataset {
+    val connector = getDatasetConnector2()
+    return Dataset(id = "2", name = "Test Dataset 2", connector = connector)
+  }
+
+  private fun getDataset3(): Dataset {
+    val connector = getDatasetConnector3()
+    return Dataset(id = "3", name = "Test Dataset 3", connector = connector)
   }
 
   private fun getDatasetConnector(): DatasetConnector {
@@ -490,11 +556,47 @@ class ContainerFactoryTests {
             ))
   }
 
+  private fun getDatasetConnector2(): DatasetConnector {
+    return DatasetConnector(
+        id = "AzErTyUiOp2",
+        parametersValues =
+            mapOf(
+                "EnvParam1" to "env_param1_value",
+                "EnvParam2" to "env_param2_value",
+                "EnvParam3" to "env_param3_value",
+                "Param1" to "param1_value",
+                "Param2" to "param2_value",
+                "Param3" to "param3_value",
+            ))
+  }
+
+  private fun getDatasetConnector3(): DatasetConnector {
+    return DatasetConnector(
+        id = "AzErTyUiOp3",
+        parametersValues =
+            mapOf(
+                "EnvParam1" to "env_param1_value",
+                "EnvParam2" to "env_param2_value",
+                "EnvParam3" to "env_param3_value",
+                "Param1" to "param1_value",
+                "Param2" to "param2_value",
+                "Param3" to "param3_value",
+            ))
+  }
+
   private fun getConnector(): Connector {
     return getConnector("AzErTyUiOp")
   }
 
-  private fun getConnector(id: String): Connector {
+  private fun getConnector2(): Connector {
+    return getConnector("AzErTyUiOp2", "TestConnector2", "cosmotech/test_connector2")
+  }
+
+  private fun getConnector3(): Connector {
+    return getConnector("AzErTyUiOp3", "TestConnector3", "cosmotech/test_connector3")
+  }
+
+  private fun getConnector(id: String, key: String = "TestConnector", repository: String = "cosmotech/test_connector"): Connector {
     val envparam1 =
         ConnectorParameter(id = "EnvParam1", label = "Env param 1", envVar = "ENV_PARAM_1")
     val envparam2 =
@@ -510,9 +612,9 @@ class ContainerFactoryTests {
             id = "ParamGroup1", label = "Parameter Group 1", parameters = parametersList)
     return Connector(
         id = id,
-        key = "TestConnector",
+        key = id,
         name = "Test Connector",
-        repository = "cosmotech/test_connector",
+        repository = repository,
         version = "1.0.0",
         ioTypes = listOf(IoTypes.read),
         parameterGroups = listOf(parameterGroup))
@@ -668,6 +770,15 @@ class ContainerFactoryTests {
       name = "Test Scenario",
       runTemplateId = "testruntemplate",
       datasetList = listOf("1"),
+    )
+  }
+
+  private fun getScenarioThreeDatasets(): Scenario {
+    return Scenario(
+      id = "aqwxsz",
+      name = "Test Scenario",
+      runTemplateId = "testruntemplate",
+      datasetList = listOf("1","2","3"),
     )
   }
 }
