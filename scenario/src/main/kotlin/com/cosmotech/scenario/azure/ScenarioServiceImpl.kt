@@ -146,7 +146,14 @@ class ScenarioServiceImpl(
       workspaceId: String,
       scenario: Scenario
   ): Scenario {
+    val organization = organizationService.findOrganizationById(organizationId)
+    val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     val (solutionId, solutionName) = fetchSolutionIdAndName(organizationId, scenario.solutionId)
+
+    val usersLoaded = scenario.users?.map { it.id }?.let { fetchUsers(it) }
+    val usersWithNames =
+        usersLoaded?.let { scenario.users?.map { it.copy(name = usersLoaded[it.id]!!.name!!) } }
+
     val now = OffsetDateTime.now()
     val scenarioToSave =
         scenario.copy(
@@ -155,6 +162,7 @@ class ScenarioServiceImpl(
             solutionName = solutionName,
             creationDate = now,
             lastUpdate = now,
+            users = usersWithNames,
         )
     val scenarioAsMap = scenarioToSave.asMapWithAdditionalData(workspaceId)
     // We cannot use cosmosTemplate as it expects the Domain object to contain a field named 'id'
@@ -165,6 +173,20 @@ class ScenarioServiceImpl(
         .item == null) {
       throw IllegalArgumentException("No Scenario returned in response: $scenarioAsMap")
     }
+
+    // Roles might have changed => notify all users so they can update their own items
+    scenario.users?.forEach { user ->
+      this.eventPublisher.publishEvent(
+          UserAddedToScenario(
+              this,
+              organizationId,
+              organization.name!!,
+              workspaceId,
+              workspace.name,
+              user.id!!,
+              user.roles.map { role -> role.value }))
+    }
+
     return scenarioToSave
   }
 
@@ -172,6 +194,7 @@ class ScenarioServiceImpl(
     cosmosTemplate.deleteEntity(
         "${organizationId}_scenario_data",
         this.findScenarioById(organizationId, workspaceId, scenarioId))
+    // TODO Notify users
   }
 
   override fun findAllScenarios(organizationId: String, workspaceId: String): List<Scenario> =
