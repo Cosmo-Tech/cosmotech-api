@@ -144,10 +144,12 @@ class WorkspaceServiceImpl(
     }
     // TODO Allow to change the ownerId as well, but only the owner can transfer the ownership
 
-    var usersToSet = mapOf<String, User>()
+    var userIdsRemoved: List<String>? = listOf()
     if (workspace.users != null) {
       // Specifying a list of users here overrides the previous list
-      usersToSet = fetchUsers(workspace.users!!.mapNotNull { it.id })
+      val usersToSet = fetchUsers(workspace.users!!.mapNotNull { it.id })
+      userIdsRemoved =
+          workspace.users?.mapNotNull { it.id }?.filterNot { usersToSet.containsKey(it) }
       val usersWithNames =
           usersToSet.let { workspace.users!!.map { it.copy(name = usersToSet[it.id]!!.name!!) } }
       existingWorkspace.users = usersWithNames
@@ -170,7 +172,7 @@ class WorkspaceServiceImpl(
     return if (hasChanged) {
       val responseEntity =
           cosmosTemplate.upsertAndReturnEntity("${organizationId}_workspaces", existingWorkspace)
-      usersToSet.mapNotNull { it.value.id }.forEach {
+      userIdsRemoved?.forEach {
         this.eventPublisher.publishEvent(UserRemovedFromOrganization(this, organizationId, it))
       }
       workspace.users?.forEach { user ->
