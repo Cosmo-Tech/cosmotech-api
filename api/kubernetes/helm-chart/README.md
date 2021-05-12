@@ -9,13 +9,15 @@ Cosmo Tech Platform API
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | affinity | object | `{}` |  |
+| api.servletContextPath | string | `"/"` |  |
+| api.version | string | `"latest"` |  |
 | autoscaling.enabled | bool | `false` |  |
 | autoscaling.maxReplicas | int | `100` |  |
 | autoscaling.minReplicas | int | `1` |  |
 | autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
-| config.api.swagger-ui.base-path | string | `"/"` |  |
-| config.api.version | string | `"latest"` |  |
-| config.logging.level.com.cosmotech | string | `"INFO"` |  |
+| config.csm.platform.azure.cosmos.key | string | `"changeme"` |  |
+| config.csm.platform.azure.cosmos.uri | string | `"changeme"` |  |
+| config.csm.platform.vendor | string | `"azure"` |  |
 | fullnameOverride | string | `""` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.repository | string | `"cosmotech-api"` |  |
@@ -26,8 +28,6 @@ Cosmo Tech Platform API
 | ingress.annotations | object | `{}` |  |
 | ingress.enabled | bool | `false` |  |
 | ingress.hosts[0].host | string | `"chart-example.local"` |  |
-| ingress.hosts[0].paths[0].backend.serviceName | string | `"chart-example.local"` |  |
-| ingress.hosts[0].paths[0].backend.servicePort | int | `8080` |  |
 | ingress.hosts[0].paths[0].path | string | `"/"` |  |
 | ingress.hosts[0].paths[0].pathType | string | `"Prefix"` |  |
 | ingress.tls | list | `[]` |  |
