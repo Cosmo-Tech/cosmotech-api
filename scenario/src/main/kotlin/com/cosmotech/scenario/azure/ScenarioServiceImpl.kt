@@ -301,6 +301,8 @@ class ScenarioServiceImpl(
       scenario: Scenario
   ): Scenario {
     val existingScenario = findScenarioById(organizationId, workspaceId, scenarioId)
+    val organization = organizationService.findOrganizationById(organizationId)
+    val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
 
     var hasChanged = false
     if (scenario.name != null && scenario.changed(existingScenario) { name }) {
@@ -309,6 +311,18 @@ class ScenarioServiceImpl(
     }
     if (scenario.description != null && scenario.changed(existingScenario) { description }) {
       existingScenario.description = scenario.description
+      hasChanged = true
+    }
+
+    var userIdsRemoved: List<String>? = listOf()
+    if (scenario.users != null) {
+      // Specifying a list of users here overrides the previous list
+      val usersToSet = fetchUsers(scenario.users!!.mapNotNull { it.id })
+      userIdsRemoved =
+          scenario.users?.mapNotNull { it.id }?.filterNot { usersToSet.containsKey(it) }
+      val usersWithNames =
+          usersToSet.let { scenario.users!!.map { it.copy(name = usersToSet[it.id]!!.name!!) } }
+      existingScenario.users = usersWithNames
       hasChanged = true
     }
 
@@ -349,13 +363,31 @@ class ScenarioServiceImpl(
       hasChanged = true
     }
 
-    if (hasChanged) {
+    return if (hasChanged) {
       scenario.lastUpdate = OffsetDateTime.now()
       cosmosTemplate.upsert(
           "${organizationId}_datasets", existingScenario.asMapWithAdditionalData(workspaceId))
-    }
 
-    return existingScenario
+      userIdsRemoved?.forEach {
+        this.eventPublisher.publishEvent(
+            UserRemovedFromScenario(this, organizationId, workspaceId, scenarioId, it))
+      }
+      scenario.users?.forEach { user ->
+        this.eventPublisher.publishEvent(
+            UserAddedToScenario(
+                this,
+                organizationId,
+                organization.name!!,
+                workspaceId,
+                workspace.name,
+                user.id!!,
+                user.roles.map { role -> role.value }))
+      }
+
+      scenario
+    } else {
+      existingScenario
+    }
   }
 
   @EventListener(OrganizationRegistered::class)
