@@ -1,0 +1,62 @@
+replicaCount: 2
+
+image:
+  repository: csmphoenix.azurecr.io/cosmotech-api
+
+api:
+  # A Cosmo Tech Helm Release (e.g., latest, vX) is linked to an API Version;
+  # so it must define its own path rules here.
+  # This corresponds to the path under which this service is exposed, if behind a reverse proxy or
+  # load balancer
+  servletContextPath: /
+  # Examples: latest, v1, v2
+  version: latest
+
+# Set image pull secrets (in case you're using a private container registry).
+imageCredentials:
+  registry: csmphoenix.azurecr.io
+  # az acr credential show -n csmphoenix --query="username" -o tsv
+  username: changeme
+  # az acr credential show -n csmphoenix --query="passwords[0].value" -o tsv
+  password: "changeme"
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: api.azure.cosmo-platform.com
+  tls:
+    - secretName: tls-secret
+      hosts:
+        - api.azure.cosmo-platform.com
+
+resources:
+  limits:
+    #   cpu: 100m
+    memory: 2048Mi
+  requests:
+    #   cpu: 100m
+    memory: 1024Mi
+
+autoscaling:
+  enabled: false
+
+config:
+  logging:
+    level:
+      com:
+        azure:
+          cosmos:
+            implementation: warn
+          spring:
+            autoconfigure:
+              cosmos: warn
+        cosmotech: INFO
+  csm:
+    platform:
+      azure:
+        cosmos:
+          key: "changeme"
+          uri: "changeme"
