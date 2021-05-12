@@ -185,10 +185,12 @@ class OrganizationServiceImpl(private val userService: UserApiService) :
     }
     // TODO Allow to change the ownerId as well, but only the owner can transfer the ownership
 
-    var usersToSet = mapOf<String, User>()
+    var userIdsRemoved: List<String>? = listOf()
     if (organization.users != null) {
       // Specifying a list of users here overrides the previous list
-      usersToSet = fetchUsers(organization.users!!.mapNotNull { it.id })
+      val usersToSet = fetchUsers(organization.users!!.mapNotNull { it.id })
+      userIdsRemoved =
+          organization.users?.mapNotNull { it.id }?.filterNot { usersToSet.containsKey(it) }
       val usersWithNames =
           usersToSet.let { organization.users!!.map { it.copy(name = usersToSet[it.id]!!.name!!) } }
       existingOrganization.users = usersWithNames
@@ -201,7 +203,7 @@ class OrganizationServiceImpl(private val userService: UserApiService) :
     return if (hasChanged) {
       val responseEntity =
           cosmosTemplate.upsertAndReturnEntity(coreOrganizationContainer, existingOrganization)
-      usersToSet.mapNotNull { it.value.id }.forEach {
+      userIdsRemoved?.forEach {
         this.eventPublisher.publishEvent(UserRemovedFromOrganization(this, organizationId, it))
       }
       organization.users?.forEach { user ->
