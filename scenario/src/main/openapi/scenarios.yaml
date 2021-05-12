@@ -468,6 +468,12 @@ components:
           format: date-time
           readOnly: true
           description: the Scenario creation date
+        lastUpdate:
+          type: string
+          # for example, 2017-07-21T17:32:28Z
+          format: date-time
+          readOnly: true
+          description: the last time a Scenario was updated
         ownerName:
           type: string
           readOnly: true
@@ -632,7 +638,8 @@ components:
             - Viewer
         state: Created
         ownerName: Bob
-        creationDate: 4/15/2021, 10:52:21.593 AM
+        creationDate: "2021-04-21T17:32:28Z"
+        lastUpdate: "2021-04-21T17:32:28Z"
         datasetList:
           - "1"
         parametersValues:
@@ -665,7 +672,8 @@ components:
               - Viewer
           state: Created
           ownerName: Bob
-          creationDate: 4/15/2021, 10:52:21.593 AM
+          creationDate: "2021-04-21T17:32:28Z"
+          lastUpdate: "2021-04-21T17:32:28Z"
           datasetList:
             - "1"
           parametersValues:
@@ -695,7 +703,8 @@ components:
               - Viewer
           state: Running
           ownerName: Bob
-          creationDate: 4/15/2021, 11:52:21.593 AM
+          creationDate: "2021-04-21T17:32:28Z"
+          lastUpdate: "2021-04-21T17:32:28Z"
           datasetList:
             - "1"
           parametersValues:
@@ -724,7 +733,8 @@ components:
               - Editor
           state: Failed
           ownerName: Alice
-          creationDate: 4/16/2021, 11:52:21.593 AM
+          creationDate: "2021-04-21T17:32:28Z"
+          lastUpdate: "2021-04-21T17:32:28Z"
           datasetList:
             - "1"
           parametersValues:
@@ -763,7 +773,8 @@ components:
             - Viewer
         state: Created
         ownerName: Bob
-        creationDate: 4/15/2021, 10:52:21.593 AM
+        creationDate: "2021-04-21T17:32:28Z"
+        lastUpdate: "2021-04-21T17:32:28Z"
         datasetList:
           - "1"
         parametersValues:
@@ -803,7 +814,8 @@ components:
               roles:
               - Viewer
           state: Created
-          creationDate: 4/15/2021, 10:52:21.593 AM
+          creationDate: "2021-04-21T17:32:28Z"
+          lastUpdate: "2021-04-21T17:32:28Z"
           ownerName: Alice
           runTemplateName: Full simulation 100 steps
           solutionName: Brewery Solution
@@ -832,7 +844,8 @@ components:
               roles:
               - Viewer
           state: Running
-          creationDate: 4/15/2021, 11:52:21.593 AM
+          creationDate: "2021-04-21T17:32:28Z"
+          lastUpdate: "2021-04-21T17:32:28Z"
           ownerName: Alice
           runTemplateName: Full simulation 100 steps
           solutionName: Brewery Solution
@@ -860,7 +873,8 @@ components:
               roles:
               - Editor
           state: Failed
-          creationDate: 4/16/2021, 10:52:21.593 AM
+          creationDate: "2021-04-21T17:32:28Z"
+          lastUpdate: "2021-04-21T17:32:28Z"
           ownerName: Alice
           runTemplateName: Full simulation 100 steps
           solutionName: Brewery Solution

@@ -57,6 +57,7 @@ class ScenarioServiceImpl(
             it.parameterId
           })
       scenario.parametersValues = parametersValuesMap.values.toList()
+      scenario.lastUpdate = OffsetDateTime.now()
       cosmosTemplate.upsert(
           "${organizationId}_scenario_data", scenario.asMapWithAdditionalData(workspaceId))
     }
@@ -96,6 +97,7 @@ class ScenarioServiceImpl(
       currentScenarioUsers[userId] = scenarioUserMap[userId]!!
     }
     scenario.users = currentScenarioUsers.values.toList()
+    scenario.lastUpdate = OffsetDateTime.now()
 
     cosmosTemplate.upsert(
         "${organizationId}_scenario_data", scenario.asMapWithAdditionalData(workspaceId))
@@ -152,6 +154,7 @@ class ScenarioServiceImpl(
             solutionId = solutionId,
             solutionName = solutionName,
             creationDate = now,
+            lastUpdate = now,
         )
     val scenarioAsMap = scenarioToSave.asMapWithAdditionalData(workspaceId)
     // We cannot use cosmosTemplate as it expects the Domain object to contain a field named 'id'
@@ -223,6 +226,7 @@ class ScenarioServiceImpl(
     val scenario = findScenarioById(organizationId, workspaceId, scenarioId)
     if (!scenario.parametersValues.isNullOrEmpty()) {
       scenario.parametersValues = listOf()
+      scenario.lastUpdate = OffsetDateTime.now()
       cosmosTemplate.upsert(
           "${organizationId}_scenario_data", scenario.asMapWithAdditionalData(workspaceId))
     }
@@ -237,6 +241,7 @@ class ScenarioServiceImpl(
     if (!scenario.users.isNullOrEmpty()) {
       val userIds = scenario.users!!.mapNotNull { it.id }
       scenario.users = listOf()
+      scenario.lastUpdate = OffsetDateTime.now()
       cosmosTemplate.upsert(
           "${organizationId}_scenario_data", scenario.asMapWithAdditionalData(workspaceId))
 
@@ -258,6 +263,7 @@ class ScenarioServiceImpl(
     if (scenarioUserMap.containsKey(userId)) {
       scenarioUserMap.remove(userId)
       scenario.users = scenarioUserMap.values.toList()
+      scenario.lastUpdate = OffsetDateTime.now()
       cosmosTemplate.upsert(
           "${organizationId}_scenario_data", scenario.asMapWithAdditionalData(workspaceId))
       this.eventPublisher.publishEvent(
@@ -321,6 +327,7 @@ class ScenarioServiceImpl(
     }
 
     if (hasChanged) {
+      scenario.lastUpdate = OffsetDateTime.now()
       cosmosTemplate.upsert(
           "${organizationId}_datasets", existingScenario.asMapWithAdditionalData(workspaceId))
     }
