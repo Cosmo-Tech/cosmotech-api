@@ -450,19 +450,15 @@ components:
           description: the compute size needed for this Run Template. Standard sizes are basic and highcpu. Default is basic
         fetchDatasets:
           type: boolean
-          default: true
           description: whether or not the fetch dataset step is done
         fetchScenarioParameters:
           type: boolean
-          default: true
           description: whether or not the fetch parameters step is done
         applyParameters:
           type: boolean
-          default: true
           description: whether or not the apply parameter step is done
         validateData:
           type: boolean
-          default: true
           description: whether or not the validate step is done
         sendDatasetsToDataWarehouse:
           type: boolean
@@ -472,15 +468,12 @@ components:
           description: whether or not the input parameters values are send to the DataWarehouse prior to Simulation Run. If not set follow the Workspace setting
         preRun:
           type: boolean
-          default: true
           description: whether or not the pre-run step is done
         run:
           type: boolean
-          default: true
           description: whether or not the run step is done
         postRun:
           type: boolean
-          default: true
           description: whether or not the post-run step is done
         parametersHandlerSource:
           $ref: "#/components/schemas/RunTemplateStepSource"
@@ -503,7 +496,6 @@ components:
         - name
     RunTemplateStepSource:
       type: string
-      default: local
       description: the source local or cloud
       enum: ["local","cloud"]
     RunTemplateParameterGroup:

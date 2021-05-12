@@ -90,12 +90,12 @@ data class CsmPlatformProperties(
   data class CsmPlatformAzure(
       /** Azure Credentials */
       val credentials: CsmPlatformAzureCredentials,
-      val storage: CsmPlatformAzureStorage?,
-      val containerRegistries: CsmPlatformAzureContainerRegistries?,
+      val storage: CsmPlatformAzureStorage,
+      val containerRegistries: CsmPlatformAzureContainerRegistries,
       val eventBus: CsmPlatformAzureEventBus,
       val dataWarehouseCluster: CsmPlatformAzureDataWarehouseCluster,
-      val keyVault: String?,
-      val analytics: CsmPlatformAzureAnalytics?,
+      val keyVault: String,
+      val analytics: CsmPlatformAzureAnalytics,
       /** Azure Cosmos DB */
       val cosmos: CsmPlatformAzureCosmos
   ) {
@@ -111,7 +111,7 @@ data class CsmPlatformProperties(
         val clientSecret: String
     )
 
-    data class CsmPlatformAzureStorage(val baseUri: String, val resourceUri: String)
+    data class CsmPlatformAzureStorage(val connectionString: String, val baseUri: String, val resourceUri: String)
 
     data class CsmPlatformAzureContainerRegistries(val core: String, val solutions: String)
 

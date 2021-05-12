@@ -8,6 +8,7 @@ dependencies {
   api(projects.cosmotechApiCommon)
   implementation(projects.cosmotechConnectorApi)
   implementation(projects.cosmotechDatasetApi)
+  implementation(projects.cosmotechOrganizationApi)
   implementation(projects.cosmotechScenarioApi)
   implementation(projects.cosmotechSolutionApi)
   implementation(projects.cosmotechWorkspaceApi)

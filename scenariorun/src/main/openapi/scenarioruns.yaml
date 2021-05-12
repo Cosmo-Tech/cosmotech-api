@@ -393,38 +393,18 @@ components:
           type: string
           readOnly: true
           description: technical key for resource name convention and version grouping. Must be unique
-        workspaceName:
-          type: string
-          readOnly: true
-          description: the Workspace name
         scenarioId:
           type: string
           readOnly: true
           description: the Scenario Id
-        scenarioName:
-          type: string
-          readOnly: true
-          description: the Scenario name
         solutionId:
           type: string
           readOnly: true
           description: the Solution Id
-        solutionName:
-          type: string
-          readOnly: true
-          description: the Solution name
-        solutionVersion:
-          type: string
-          readOnly: true
-          description: the Solution version
         runTemplateId:
           type: string
           readOnly: true
           description: the Solution Run Template id
-        runTemplateName:
-          type: string
-          readOnly: true
-          description: the Run Template name
         computeSize:
           type: string
           readOnly: true
