@@ -48,6 +48,15 @@ service:
   port: 8080
   managementPort: 8081
 
+api:
+  # A Cosmo Tech Helm Release (e.g., latest, vX) is linked to an API Version;
+  # so it must define its own path rules here.
+  # This corresponds to the path under which this service is exposed, if behind a reverse proxy or
+  # load balancer
+  servletContextPath: /
+  # Examples: latest, v1, v2
+  version: latest
+
 ingress:
   enabled: false
   annotations: {}
@@ -58,9 +67,6 @@ ingress:
       paths:
       - path: /
         pathType: Prefix # For Kubernetes >= 1.19.0
-        backend:
-          serviceName: chart-example.local
-          servicePort: 8080
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -92,14 +98,10 @@ tolerations: []
 affinity: {}
 
 config:
-  logging:
-    level:
-      com:
-        cosmotech: INFO
-  api:
-    version: "latest"
-    swagger-ui:
-      base-path: /
   csm:
     platform:
       vendor: azure
+      azure:
+        cosmos:
+          key: "changeme"
+          uri: "changeme"

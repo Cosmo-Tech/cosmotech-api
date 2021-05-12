@@ -61,17 +61,31 @@ kubectl create namespace phoenix
 
 This uses [Helm](https://helm.sh/); so make sure you have it installed.
 
+The [api/kubernetes/helm-chart/values-azure.yaml](api/kubernetes/helm-chart/values-azure.yaml) file 
+provides sensible defaults for deploying into AKS.
+For example, it expects both [cert-manager](https://cert-manager.io/docs/) and 
+[NGINX Ingress Controller](https://kubernetes.github.io/ingress-nginx/) to be available and 
+configured in the cluster, since it creates an Ingress Resource configured with TLS support and 
+a dedicated hostname: [api.azure.cosmo-platform.com](https://api.azure.cosmo-platform.com).
+
+Head to https://docs.microsoft.com/en-us/azure/aks/ingress-tls for further details.
+
 ```shell
 export API_VERSION=latest;
 helm upgrade --install cosmotech-api-${API_VERSION} \
   api/kubernetes/helm-chart \
   --namespace phoenix \
-  --set image.repository=csmphoenix.azurecr.io/cosmotech-api \
-  --set config.api.version=$API_VERSION \
-  --set image.tag=latest
+  --values api/kubernetes/helm-chart/values-azure.yaml \
+  --set api.version=$API_VERSION \
+  --set image.tag=latest \
+  --set imageCredentials.username=`az acr credential show -n csmphoenix --query="username" -o tsv` \
+  --set imageCredentials.password=`az acr credential show -n csmphoenix --query="passwords[0].value" -o tsv` \
+  --set config.csm.platform.azure.cosmos.uri="<COSMOSDB_HTTPS_ENDPOINT_URI>" \
+  --set config.csm.platform.azure.cosmos.key="<COSMOSDB_ACCOUNT_KEY>"
 ```
 
-Alternatively, it is recommended to use a dedicated `values.yaml` file instead, e.g.:
+Alternatively, it is recommended to use a dedicated `values.yaml` file instead, like below.
+Feel free to copy and customize this [values-azure.yaml](api/kubernetes/helm-chart/values-azure.yaml) file as needed.
 
 ```shell
 export API_VERSION=latest;
@@ -79,7 +93,7 @@ helm upgrade --install cosmotech-api-${API_VERSION} \
   api/kubernetes/helm-chart \
   --namespace phoenix \
   --values /path/to/my/values-azure.yaml \
-  --set config.api.version=$API_VERSION
+  --set api.version=$API_VERSION
 ```
 
 #### Local Kubernetes Cluster
@@ -117,24 +131,14 @@ This uses [Helm](https://helm.sh/); so make sure you have it installed.
 
 ```shell
 export API_VERSION=latest;
-helm upgrade --install cosmotech-api-latest \
+helm upgrade --install cosmotech-api-${API_VERSION} \
   api/kubernetes/helm-chart \
   --namespace phoenix \
   --values api/kubernetes/helm-chart/values-dev.yaml \
+  --set api.version=$API_VERSION \
   --set image.tag=latest \
-  --set config.api.version=latest
-```
-
-To deploy a `vX` version, you can use the [api/kubernetes/helm-chart/values-dev-vX.yaml](api/kubernetes/helm-chart/values-dev-vX.yaml) like so :
-
-```shell
-export API_VERSION=v1;
-envsubst < api/kubernetes/helm-chart/values-dev-vX.yaml | helm upgrade --install cosmotech-api-${API_VERSION} \
-  api/kubernetes/helm-chart \
-  --namespace phoenix \
-  --values - \
-  --set config.api.version=$API_VERSION \
-  --set image.tag=latest
+  --set config.csm.platform.azure.cosmos.uri="<COSMOSDB_HTTPS_ENDPOINT_URI>" \
+  --set config.csm.platform.azure.cosmos.key="<COSMOSDB_ACCOUNT_KEY>"
 ```
 
 ## Generated items

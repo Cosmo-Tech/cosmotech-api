@@ -21,6 +21,11 @@ data:
           # - But we still benefit from ConfigMap/Secret to Properties mapping, which is great.
           # Plus, some other useful beans (e.g., KubernetesClient) are available for us to use.
           enabled: false
+    api:
+      version: "{{ .Values.api.version }}"
+    server:
+      servlet:
+        context-path: {{ include "cosmotech-api.apiBaseUrl" . }}
     management:
       endpoint:
         health:

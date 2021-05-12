@@ -64,6 +64,17 @@ Create the name of the service account to use
 {{/*
 Create Docker secrets for pulling images from a private container registry.
 */}}
-{{- define "imagePullSecret" }}
+{{- define "cosmotech-api.imagePullSecret" -}}
 {{- printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"}}}" .Values.imageCredentials.registry (printf "%s:%s" .Values.imageCredentials.username .Values.imageCredentials.password | b64enc) | b64enc }}
+{{- end }}
+
+{{/*
+Default Ingress path
+*/}}
+{{- define "cosmotech-api.apiBaseUrl" -}}
+{{- if eq .Values.api.version "latest" }}
+{{- printf "%s/" (printf "%s" .Values.api.servletContextPath | trimSuffix "/" ) }}
+{{- else }}
+{{- printf "%s/%s/" (printf "%s" .Values.api.servletContextPath | trimSuffix "/" ) (printf "%s" .Values.api.version | trimSuffix "/" ) }}
+{{- end }}
 {{- end }}

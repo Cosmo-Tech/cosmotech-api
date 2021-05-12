@@ -2,6 +2,7 @@
 {{- $kubeVersion := .Capabilities.KubeVersion.GitVersion -}}
 {{- $fullName := include "cosmotech-api.fullname" . -}}
 {{- $svcPort := .Values.service.port -}}
+{{- $apiBaseUrl := include "cosmotech-api.apiBaseUrl" . -}}
 {{- if semverCompare ">=1.19-0" $kubeVersion -}}
 apiVersion: networking.k8s.io/v1
 {{- else if semverCompare ">=1.14-0" $kubeVersion -}}
@@ -34,6 +35,18 @@ spec:
     - host: {{ .host | quote }}
       http:
         paths:
+          - path: {{ $apiBaseUrl }}
+            pathType: Prefix
+            backend:
+              {{- if semverCompare ">=1.19-0" $kubeVersion }}
+              service:
+                name: {{ $fullName }}
+                port:
+                  number: {{ $svcPort }}
+              {{- else }}
+              serviceName: {{ $fullName }}
+              servicePort: {{ $svcPort }}
+              {{- end }}
           {{- range .paths }}
           - path: {{ .path }}
             {{- if .pathType }}
@@ -49,6 +62,6 @@ spec:
               serviceName: {{ $fullName }}
               servicePort: {{ $svcPort }}
               {{- end }}
-            {{- end }}
+          {{- end }}
     {{- end }}
   {{- end }}
