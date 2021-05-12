@@ -111,7 +111,11 @@ data class CsmPlatformProperties(
         val clientSecret: String
     )
 
-    data class CsmPlatformAzureStorage(val connectionString: String, val baseUri: String, val resourceUri: String)
+    data class CsmPlatformAzureStorage(
+        val connectionString: String,
+        val baseUri: String,
+        val resourceUri: String
+    )
 
     data class CsmPlatformAzureContainerRegistries(val core: String, val solutions: String)
 

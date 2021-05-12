@@ -5,15 +5,15 @@ package com.cosmotech.scenariorun
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.dataset.domain.Dataset
+import com.cosmotech.organization.domain.Organization
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
 import com.cosmotech.solution.domain.RunTemplate
-import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.RunTemplateStepSource
+import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.utils.*
-import com.cosmotech.organization.domain.Organization
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -64,59 +64,76 @@ private const val AZURE_STORAGE_CONNECTION_STRING = "AZURE_STORAGE_CONNECTION_ST
 
 @Component
 class ContainerFactory(
-  @Autowired val csmPlatformProperties: CsmPlatformProperties,
-  val steps: Map<String, SolutionContainerStepSpec> = mapOf(
-    "handle-parameters" to SolutionContainerStepSpec(
-      mode = "handle-parameters",
-      providerVar = "CSM_PARAMETERS_HANDLER_PROVIDER",
-      pathVar = "CSM_PARAMETERS_HANDLER_PATH",
-      source = fun(template):String? {
-        return ContainerFactory.getSource(template.parametersHandlerSource) },
-      path = fun(organizationId, workspaceId): String {
-        return getCloudPath(organizationId, workspaceId, StepResource.PARAMETERS_HANDLER)
-      }
-    ),
-    "validate" to SolutionContainerStepSpec(
-      mode = "validate",
-      providerVar = "CSM_DATASET_VALIDATOR_PROVIDER",
-      pathVar = "CSM_DATASET_VALIDATOR_PATH",
-      source = fun(template):String? {
-        return ContainerFactory.getSource(template.datasetValidatorSource) },
-      path = fun(organizationId, workspaceId): String {
-        return getCloudPath(organizationId, workspaceId, StepResource.VALIDATOR)
-      }
-    ),
-    "prerun" to SolutionContainerStepSpec(
-      mode = "prerun",
-      providerVar = "CSM_PRERUN_PROVIDER",
-      pathVar = "CSM_PRERUN_PATH",
-      source = fun(template):String? {
-        return ContainerFactory.getSource(template.preRunSource) },
-      path = fun(organizationId, workspaceId): String {
-        return getCloudPath(organizationId, workspaceId, StepResource.PRERUN)
-      }
-    ),
-    "engine" to SolutionContainerStepSpec(
-      mode = "engine",
-      providerVar = "CSM_ENGINE_PROVIDER",
-      pathVar = "CSM_ENGINE_PATH",
-      source = fun(template):String? {
-        return ContainerFactory.getSource(template.runSource) },
-      path = fun(organizationId, workspaceId): String {
-        return getCloudPath(organizationId, workspaceId, StepResource.ENGINE)
-      }
-    ),
-    "postrun" to SolutionContainerStepSpec(
-      mode = "postrun",
-      providerVar = "CSM_POSTRUN_PROVIDER",
-      pathVar = "CSM_POSTRUN_PATH",
-      source = fun(template):String? {
-        return ContainerFactory.getSource(template.postRunSource) },
-      path = fun(organizationId, workspaceId): String {
-        return getCloudPath(organizationId, workspaceId, StepResource.POSTRUN)
-      }
-    ),
-  )
+    @Autowired val csmPlatformProperties: CsmPlatformProperties,
+    val steps: Map<String, SolutionContainerStepSpec> =
+        mapOf(
+            "handle-parameters" to
+                SolutionContainerStepSpec(
+                    mode = "handle-parameters",
+                    providerVar = "CSM_PARAMETERS_HANDLER_PROVIDER",
+                    pathVar = "CSM_PARAMETERS_HANDLER_PATH",
+                    source =
+                        fun(template): String? {
+                          return ContainerFactory.getSource(template.parametersHandlerSource)
+                        },
+                    path =
+                        fun(organizationId, workspaceId): String {
+                          return getCloudPath(
+                              organizationId, workspaceId, StepResource.PARAMETERS_HANDLER)
+                        }),
+            "validate" to
+                SolutionContainerStepSpec(
+                    mode = "validate",
+                    providerVar = "CSM_DATASET_VALIDATOR_PROVIDER",
+                    pathVar = "CSM_DATASET_VALIDATOR_PATH",
+                    source =
+                        fun(template): String? {
+                          return ContainerFactory.getSource(template.datasetValidatorSource)
+                        },
+                    path =
+                        fun(organizationId, workspaceId): String {
+                          return getCloudPath(organizationId, workspaceId, StepResource.VALIDATOR)
+                        }),
+            "prerun" to
+                SolutionContainerStepSpec(
+                    mode = "prerun",
+                    providerVar = "CSM_PRERUN_PROVIDER",
+                    pathVar = "CSM_PRERUN_PATH",
+                    source =
+                        fun(template): String? {
+                          return ContainerFactory.getSource(template.preRunSource)
+                        },
+                    path =
+                        fun(organizationId, workspaceId): String {
+                          return getCloudPath(organizationId, workspaceId, StepResource.PRERUN)
+                        }),
+            "engine" to
+                SolutionContainerStepSpec(
+                    mode = "engine",
+                    providerVar = "CSM_ENGINE_PROVIDER",
+                    pathVar = "CSM_ENGINE_PATH",
+                    source =
+                        fun(template): String? {
+                          return ContainerFactory.getSource(template.runSource)
+                        },
+                    path =
+                        fun(organizationId, workspaceId): String {
+                          return getCloudPath(organizationId, workspaceId, StepResource.ENGINE)
+                        }),
+            "postrun" to
+                SolutionContainerStepSpec(
+                    mode = "postrun",
+                    providerVar = "CSM_POSTRUN_PROVIDER",
+                    pathVar = "CSM_POSTRUN_PATH",
+                    source =
+                        fun(template): String? {
+                          return ContainerFactory.getSource(template.postRunSource)
+                        },
+                    path =
+                        fun(organizationId, workspaceId): String {
+                          return getCloudPath(organizationId, workspaceId, StepResource.POSTRUN)
+                        }),
+        )
 ) {
   private val logger = LoggerFactory.getLogger(ArgoAdapter::class.java)
 
@@ -132,7 +149,8 @@ class ContainerFactory(
     val nodeLabel =
         if (template.computeSize != null) "${template.computeSize}${NODE_LABEL_SUFFIX}"
         else "${NODE_LABEL_DEFAULT}${NODE_LABEL_SUFFIX}"
-    val containers = buildContainersPipeline(scenario, datasets, connectors, workspace, organization, solution)
+    val containers =
+        buildContainersPipeline(scenario, datasets, connectors, workspace, organization, solution)
     val generateName = "${GENERATE_NAME_PREFIX}${scenario.id}${GENERATE_NAME_SUFFIX}"
     return ScenarioRunStartContainers(
         generateName = generateName,
@@ -176,10 +194,12 @@ class ContainerFactory(
     }
     if (testStep(template.applyParameters))
         containers.add(
-            this.buildApplyParametersContainer(organization, workspace, solution, scenario.runTemplateId))
+            this.buildApplyParametersContainer(
+                organization, workspace, solution, scenario.runTemplateId))
     if (testStep(template.validateData))
         containers.add(
-            this.buildValidateDataContainer(organization, workspace, solution, scenario.runTemplateId))
+            this.buildValidateDataContainer(
+                organization, workspace, solution, scenario.runTemplateId))
     val sendParameters =
         getSendOptionValue(
             workspace.sendInputToDataWarehouse, template.sendInputParametersToDataWarehouse)
@@ -188,11 +208,14 @@ class ContainerFactory(
     if (sendParameters || sendDatasets)
         containers.add(this.buildSendDataWarehouseContainer(workspace, template))
     if (testStep(template.preRun))
-        containers.add(this.buildPreRunContainer(organization, workspace, solution, scenario.runTemplateId))
+        containers.add(
+            this.buildPreRunContainer(organization, workspace, solution, scenario.runTemplateId))
     if (testStep(template.run))
-        containers.add(this.buildRunContainer(organization, workspace, solution, scenario.runTemplateId))
+        containers.add(
+            this.buildRunContainer(organization, workspace, solution, scenario.runTemplateId))
     if (testStep(template.postRun))
-        containers.add(this.buildPostRunContainer(organization, workspace, solution, scenario.runTemplateId))
+        containers.add(
+            this.buildPostRunContainer(organization, workspace, solution, scenario.runTemplateId))
 
     return containers.toList()
   }
@@ -335,7 +358,10 @@ class ContainerFactory(
     return this.buildSolutionContainer(
         organization,
         workspace,
- solution, runTemplateId, CONTAINER_PRERUN, steps.get(CONTAINER_PRERUN_MODE))
+        solution,
+        runTemplateId,
+        CONTAINER_PRERUN,
+        steps.get(CONTAINER_PRERUN_MODE))
   }
 
   fun buildRunContainer(
@@ -347,7 +373,10 @@ class ContainerFactory(
     return this.buildSolutionContainer(
         organization,
         workspace,
- solution, runTemplateId, CONTAINER_RUN, steps.get(CONTAINER_RUN_MODE))
+        solution,
+        runTemplateId,
+        CONTAINER_RUN,
+        steps.get(CONTAINER_RUN_MODE))
   }
 
   fun buildPostRunContainer(
@@ -359,7 +388,10 @@ class ContainerFactory(
     return this.buildSolutionContainer(
         organization,
         workspace,
- solution, runTemplateId, CONTAINER_POSTRUN, steps.get(CONTAINER_POSTRUN_MODE))
+        solution,
+        runTemplateId,
+        CONTAINER_POSTRUN,
+        steps.get(CONTAINER_POSTRUN_MODE))
   }
 
   private fun getSendOptionValue(workspaceOption: Boolean?, templateOption: Boolean?): Boolean {
@@ -403,7 +435,8 @@ class ContainerFactory(
         EVENT_HUB_CONTROL_PLANE_VAR,
         "${csmPlatformProperties.azure?.eventBus?.baseUri}/${workspace.key}${CONTROL_PLANE_SUFFIX}")
     envVars.put(
-        EVENT_HUB_MEASURES_VAR, "${csmPlatformProperties.azure?.eventBus?.baseUri}/${workspace.key}")
+        EVENT_HUB_MEASURES_VAR,
+        "${csmPlatformProperties.azure?.eventBus?.baseUri}/${workspace.key}")
     val csmSimulation = template.csmSimulation
     if (csmSimulation != null) {
       envVars.put(CSM_SIMULATION_VAR, csmSimulation)
@@ -411,10 +444,15 @@ class ContainerFactory(
     val source = step.source?.invoke(template)
     if (source != null) {
       envVars.put(step.providerVar, source)
-      envVars.put(AZURE_STORAGE_CONNECTION_STRING, csmPlatformProperties.azure?.storage?.connectionString ?: "")
+      envVars.put(
+          AZURE_STORAGE_CONNECTION_STRING,
+          csmPlatformProperties.azure?.storage?.connectionString ?: "")
       if (organization.id == null) throw IllegalStateException("Organization id cannot be null")
       if (workspace.id == null) throw IllegalStateException("Workspace id cannot be null")
-      envVars.put(step.pathVar, (step.path?.invoke(organization.id ?: "", workspace.id ?: "") ?: ""))
+      if (source != STEP_SOURCE_LOCAL) {
+        envVars.put(
+            step.pathVar, (step.path?.invoke(organization.id ?: "", workspace.id ?: "") ?: ""))
+      }
     }
     return ScenarioRunContainer(
         name = name,

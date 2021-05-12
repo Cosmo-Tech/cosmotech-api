@@ -178,14 +178,9 @@ entity ScenarioRun {
     ownerId: String
     workspaceId: String
     workspaceKey: String
-    workspaceName: String
     scenarioId: String
-    scenarioName: String
     solutionId: String
-    solutionName: String
-    solutionVersion: String
     runTemplateId: String
-    runTemplateName: String
     computeSize: String
     state: String
     failedStep: String

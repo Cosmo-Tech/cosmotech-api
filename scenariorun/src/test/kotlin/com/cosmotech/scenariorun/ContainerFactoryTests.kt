@@ -9,17 +9,17 @@ import com.cosmotech.connector.domain.ConnectorParameter
 import com.cosmotech.connector.domain.ConnectorParameterGroup
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetConnector
+import com.cosmotech.organization.domain.Organization
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.solution.domain.RunTemplate
-import com.cosmotech.solution.domain.RunTemplateStepSource
 import com.cosmotech.solution.domain.RunTemplateParameter
 import com.cosmotech.solution.domain.RunTemplateParameterGroup
+import com.cosmotech.solution.domain.RunTemplateStepSource
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
-import com.cosmotech.organization.domain.Organization
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
@@ -54,7 +54,8 @@ class ContainerFactoryTests {
                               ),
                       storage =
                           CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureStorage(
-                              connectionString = "DefaultEndpointsProtocol=https;AccountName=csmphoenix;AccountKey=42rmlBQ2IrxdIByLj79AecdIyYifSR04ZnGsBYt82tbM2clcP0QwJ9N+l/fLvyCzu9VZ8HPsQyM7jHe6CVSUig==;EndpointSuffix=core.windows.net",
+                              connectionString =
+                                  "DefaultEndpointsProtocol=https;AccountName=csmphoenix;AccountKey=42rmlBQ2IrxdIByLj79AecdIyYifSR04ZnGsBYt82tbM2clcP0QwJ9N+l/fLvyCzu9VZ8HPsQyM7jHe6CVSUig==;EndpointSuffix=core.windows.net",
                               baseUri = "Not Used",
                               resourceUri = "Not Used",
                           ),
@@ -343,7 +344,8 @@ class ContainerFactoryTests {
   @Test
   fun `Parameters Handler Container bad template exception`() {
     assertThrows(IllegalStateException::class.java) {
-      factory.buildApplyParametersContainer(getOrganization(), getWorkspace(), getSolution(), "badTemplate")
+      factory.buildApplyParametersContainer(
+          getOrganization(), getWorkspace(), getSolution(), "badTemplate")
     }
   }
 
@@ -354,36 +356,72 @@ class ContainerFactoryTests {
   }
 
   @Test
+  fun `Parameters Handler Container env vars source local defined valid`() {
+    val container =
+        factory.buildApplyParametersContainer(
+            getOrganization(), getWorkspace(), getSolutionLocalSources(), "testruntemplate")
+    envVarsWithSourceLocalValid(
+        container, "handle-parameters", "CSM_PARAMETERS_HANDLER_PROVIDER", "parameters_handler")
+  }
+
+  @Test
   fun `Parameters Handler Container env vars source defined valid`() {
-    val container = factory.buildApplyParametersContainer(getOrganization(), getWorkspace(), getSolutionCloudSources(), "testruntemplate")
-    envVarsWithSourceValid(container, "handle-parameters", "CSM_PARAMETERS_HANDLER_PROVIDER", "CSM_PARAMETERS_HANDLER_PATH", "parameters_handler")
+    val container =
+        factory.buildApplyParametersContainer(
+            getOrganization(), getWorkspace(), getSolutionCloudSources(), "testruntemplate")
+    envVarsWithSourceValid(
+        container,
+        "handle-parameters",
+        "CSM_PARAMETERS_HANDLER_PROVIDER",
+        "CSM_PARAMETERS_HANDLER_PATH",
+        "parameters_handler")
   }
 
   @Test
   fun `Validate Container env vars source defined valid`() {
-    val container = factory.buildValidateDataContainer(getOrganization(), getWorkspace(), getSolutionCloudSources(), "testruntemplate")
-    envVarsWithSourceValid(container, "validate", "CSM_DATASET_VALIDATOR_PROVIDER", "CSM_DATASET_VALIDATOR_PATH", "validator")
-}
+    val container =
+        factory.buildValidateDataContainer(
+            getOrganization(), getWorkspace(), getSolutionCloudSources(), "testruntemplate")
+    envVarsWithSourceValid(
+        container,
+        "validate",
+        "CSM_DATASET_VALIDATOR_PROVIDER",
+        "CSM_DATASET_VALIDATOR_PATH",
+        "validator")
+  }
 
   @Test
   fun `prerun Container env vars source defined valid`() {
-    val container = factory.buildPreRunContainer(getOrganization(), getWorkspace(), getSolutionCloudSources(), "testruntemplate")
+    val container =
+        factory.buildPreRunContainer(
+            getOrganization(), getWorkspace(), getSolutionCloudSources(), "testruntemplate")
     envVarsWithSourceValid(container, "prerun", "CSM_PRERUN_PROVIDER", "CSM_PRERUN_PATH", "prerun")
-}
+  }
 
   @Test
   fun `run Container env vars source defined valid`() {
-    val container = factory.buildRunContainer(getOrganization(), getWorkspace(), getSolutionCloudSources(), "testruntemplate")
+    val container =
+        factory.buildRunContainer(
+            getOrganization(), getWorkspace(), getSolutionCloudSources(), "testruntemplate")
     envVarsWithSourceValid(container, "engine", "CSM_ENGINE_PROVIDER", "CSM_ENGINE_PATH", "engine")
-}
+  }
 
   @Test
   fun `postrun Container env vars source defined valid`() {
-    val container = factory.buildPostRunContainer(getOrganization(), getWorkspace(), getSolutionCloudSources(), "testruntemplate")
-    envVarsWithSourceValid(container, "postrun", "CSM_POSTRUN_PROVIDER", "CSM_POSTRUN_PATH", "postrun")
-}
+    val container =
+        factory.buildPostRunContainer(
+            getOrganization(), getWorkspace(), getSolutionCloudSources(), "testruntemplate")
+    envVarsWithSourceValid(
+        container, "postrun", "CSM_POSTRUN_PROVIDER", "CSM_POSTRUN_PATH", "postrun")
+  }
 
-  private fun envVarsWithSourceValid(container: ScenarioRunContainer, mode: String, providerEnvVar: String, resourceEnvVar: String, resource: String) {
+  private fun envVarsWithSourceValid(
+      container: ScenarioRunContainer,
+      mode: String,
+      providerEnvVar: String,
+      resourceEnvVar: String,
+      resource: String
+  ) {
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -399,9 +437,37 @@ class ContainerFactoryTests {
             "CSM_PROBES_MEASURES_TOPIC" to "amqps://csm-phoenix.servicebus.windows.net/test",
             "CSM_SIMULATION" to "TestSimulation",
             providerEnvVar to "azureStorage",
-            "AZURE_STORAGE_CONNECTION_STRING" to "DefaultEndpointsProtocol=https;AccountName=csmphoenix;AccountKey=42rmlBQ2IrxdIByLj79AecdIyYifSR04ZnGsBYt82tbM2clcP0QwJ9N+l/fLvyCzu9VZ8HPsQyM7jHe6CVSUig==;EndpointSuffix=core.windows.net",
+            "AZURE_STORAGE_CONNECTION_STRING" to
+                "DefaultEndpointsProtocol=https;AccountName=csmphoenix;AccountKey=42rmlBQ2IrxdIByLj79AecdIyYifSR04ZnGsBYt82tbM2clcP0QwJ9N+l/fLvyCzu9VZ8HPsQyM7jHe6CVSUig==;EndpointSuffix=core.windows.net",
             resourceEnvVar to "organizationid/workspaceid/${resource}.zip",
-          )
+        )
+    assertEquals(expected, container.envVars)
+  }
+
+  private fun envVarsWithSourceLocalValid(
+      container: ScenarioRunContainer,
+      mode: String,
+      providerEnvVar: String,
+      resource: String
+  ) {
+    val expected =
+        mapOf(
+            "AZURE_TENANT_ID" to "12345678",
+            "AZURE_CLIENT_ID" to "98765432",
+            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
+            "CSM_CONTAINER_MODE" to mode,
+            "CSM_CONTROL_PLANE_TOPIC" to
+                "amqps://csm-phoenix.servicebus.windows.net/test-scenariorun",
+            "CSM_PROBES_MEASURES_TOPIC" to "amqps://csm-phoenix.servicebus.windows.net/test",
+            "CSM_SIMULATION" to "TestSimulation",
+            providerEnvVar to "local",
+            "AZURE_STORAGE_CONNECTION_STRING" to
+                "DefaultEndpointsProtocol=https;AccountName=csmphoenix;AccountKey=42rmlBQ2IrxdIByLj79AecdIyYifSR04ZnGsBYt82tbM2clcP0QwJ9N+l/fLvyCzu9VZ8HPsQyM7jHe6CVSUig==;EndpointSuffix=core.windows.net",
+        )
     assertEquals(expected, container.envVars)
   }
 
@@ -485,7 +551,8 @@ class ContainerFactoryTests {
     val workspace = getWorkspace()
     val solution = getSolution()
     val containers =
-        factory.buildContainersPipeline(scenario, datasets, connectors, workspace, getOrganization(), solution)
+        factory.buildContainersPipeline(
+            scenario, datasets, connectors, workspace, getOrganization(), solution)
     assertEquals(containers.size, 8)
   }
 
@@ -497,7 +564,8 @@ class ContainerFactoryTests {
     val workspace = getWorkspace()
     val solution = getSolution()
     val containers =
-        factory.buildContainersPipeline(scenario, datasets, connectors, workspace, getOrganization(), solution)
+        factory.buildContainersPipeline(
+            scenario, datasets, connectors, workspace, getOrganization(), solution)
     val expected =
         listOf(
             "fetchDatasetContainer-1",
@@ -520,7 +588,8 @@ class ContainerFactoryTests {
     val workspace = getWorkspace()
     val solution = getSolutionOnlyRun()
     val containers =
-        factory.buildContainersPipeline(scenario, datasets, connectors, workspace, getOrganization(), solution)
+        factory.buildContainersPipeline(
+            scenario, datasets, connectors, workspace, getOrganization(), solution)
     assertEquals(containers.size, 1)
   }
 
@@ -532,7 +601,8 @@ class ContainerFactoryTests {
     val workspace = getWorkspace()
     val solution = getSolution()
     val containers =
-        factory.buildContainersPipeline(scenario, datasets, connectors, workspace, getOrganization(), solution)
+        factory.buildContainersPipeline(
+            scenario, datasets, connectors, workspace, getOrganization(), solution)
     assertEquals(containers.size, 10)
   }
 
@@ -544,7 +614,8 @@ class ContainerFactoryTests {
     val workspace = getWorkspace()
     val solution = getSolution()
     val containers =
-        factory.buildContainersPipeline(scenario, datasets, connectors, workspace, getOrganization(), solution)
+        factory.buildContainersPipeline(
+            scenario, datasets, connectors, workspace, getOrganization(), solution)
     val expected =
         listOf(
             "fetchDatasetContainer-1",
@@ -569,7 +640,8 @@ class ContainerFactoryTests {
     val workspace = getWorkspace()
     val solution = getSolution()
     val containers =
-        factory.buildContainersPipeline(scenario, datasets, connectors, workspace, getOrganization(), solution)
+        factory.buildContainersPipeline(
+            scenario, datasets, connectors, workspace, getOrganization(), solution)
     val expected =
         listOf(
             "cosmotech/test_connector:1.0.0",
@@ -594,7 +666,8 @@ class ContainerFactoryTests {
     val workspace = getWorkspace()
     val solution = getSolution()
     val containers =
-        factory.buildContainersPipeline(scenario, datasets, connectors, workspace, getOrganization(), solution)
+        factory.buildContainersPipeline(
+            scenario, datasets, connectors, workspace, getOrganization(), solution)
     val container = containers.find { container -> container.name == "fetchDatasetContainer-2" }
     val expected =
         mapOf(
@@ -619,7 +692,8 @@ class ContainerFactoryTests {
     val workspace = getWorkspace()
     val solution = getSolutionOnlyRun()
     val containers =
-        factory.buildContainersPipeline(scenario, datasets, connectors, workspace, getOrganization(), solution)
+        factory.buildContainersPipeline(
+            scenario, datasets, connectors, workspace, getOrganization(), solution)
     val expected =
         listOf(
             "runContainer",
@@ -635,7 +709,8 @@ class ContainerFactoryTests {
     val workspace = getWorkspace()
     val solution = getSolution()
     val startContainers =
-        factory.buildContainersStart(scenario, datasets, connectors, workspace, getOrganization(), solution)
+        factory.buildContainersStart(
+            scenario, datasets, connectors, workspace, getOrganization(), solution)
     assertEquals("highcpupool", startContainers.nodeLabel)
   }
 
@@ -647,7 +722,8 @@ class ContainerFactoryTests {
     val workspace = getWorkspace()
     val solution = getSolutionNoPool()
     val startContainers =
-        factory.buildContainersStart(scenario, datasets, connectors, workspace, getOrganization(), solution)
+        factory.buildContainersStart(
+            scenario, datasets, connectors, workspace, getOrganization(), solution)
     assertEquals("basicpool", startContainers.nodeLabel)
   }
 
@@ -659,7 +735,8 @@ class ContainerFactoryTests {
     val workspace = getWorkspace()
     val solution = getSolution()
     val startContainers =
-        factory.buildContainersStart(scenario, datasets, connectors, workspace, getOrganization(), solution)
+        factory.buildContainersStart(
+            scenario, datasets, connectors, workspace, getOrganization(), solution)
     assertEquals("workflow-aqwxsz-", startContainers.generateName)
   }
 
@@ -671,7 +748,8 @@ class ContainerFactoryTests {
     val workspace = getWorkspace()
     val solution = getSolutionDatasetIds()
     val containers =
-        factory.buildContainersPipeline(scenario, datasets, connectors, workspace, getOrganization(), solution)
+        factory.buildContainersPipeline(
+            scenario, datasets, connectors, workspace, getOrganization(), solution)
     val expected =
         listOf(
             "fetchDatasetContainer-1",
@@ -697,7 +775,8 @@ class ContainerFactoryTests {
     val workspace = getWorkspace()
     val solution = getSolutionDatasetIds()
     val containers =
-        factory.buildContainersPipeline(scenario, datasets, connectors, workspace, getOrganization(), solution)
+        factory.buildContainersPipeline(
+            scenario, datasets, connectors, workspace, getOrganization(), solution)
     val expected =
         listOf(
             "cosmotech/test_connector:1.0.0",
@@ -732,7 +811,8 @@ class ContainerFactoryTests {
     val workspace = getWorkspace()
     val solution = getSolutionDatasetIds()
     val containers =
-        factory.buildContainersPipeline(scenario, datasets, connectors, workspace, getOrganization(), solution)
+        factory.buildContainersPipeline(
+            scenario, datasets, connectors, workspace, getOrganization(), solution)
     val container =
         containers.find { container ->
           container.name == "fetchScenarioDatasetParametersContainer-${nameId}"
@@ -753,23 +833,28 @@ class ContainerFactoryTests {
   }
 
   private fun buildApplyParametersContainer(): ScenarioRunContainer {
-    return factory.buildApplyParametersContainer(getOrganization(), getWorkspace(), getSolution(), "testruntemplate")
+    return factory.buildApplyParametersContainer(
+        getOrganization(), getWorkspace(), getSolution(), "testruntemplate")
   }
 
   private fun buildValidateDataContainer(): ScenarioRunContainer {
-    return factory.buildValidateDataContainer(getOrganization(), getWorkspace(), getSolution(), "testruntemplate")
+    return factory.buildValidateDataContainer(
+        getOrganization(), getWorkspace(), getSolution(), "testruntemplate")
   }
 
   private fun buildPreRunContainer(): ScenarioRunContainer {
-    return factory.buildPreRunContainer(getOrganization(), getWorkspace(), getSolution(), "testruntemplate")
+    return factory.buildPreRunContainer(
+        getOrganization(), getWorkspace(), getSolution(), "testruntemplate")
   }
 
   private fun buildRunContainer(): ScenarioRunContainer {
-    return factory.buildRunContainer(getOrganization(), getWorkspace(), getSolution(), "testruntemplate")
+    return factory.buildRunContainer(
+        getOrganization(), getWorkspace(), getSolution(), "testruntemplate")
   }
 
   private fun buildPostRunContainer(): ScenarioRunContainer {
-    return factory.buildPostRunContainer(getOrganization(), getWorkspace(), getSolution(), "testruntemplate")
+    return factory.buildPostRunContainer(
+        getOrganization(), getWorkspace(), getSolution(), "testruntemplate")
   }
 
   private fun validateEnvVarsSolutionContainer(container: ScenarioRunContainer, mode: String) {
@@ -1039,6 +1124,17 @@ class ContainerFactoryTests {
     )
   }
 
+  private fun getSolutionLocalSources(): Solution {
+    return Solution(
+        id = "1",
+        key = "TestSolution",
+        name = "Test Solution",
+        repository = "cosmotech/testsolution_simulator",
+        version = "1.0.0",
+        runTemplates = listOf(getRunTemplateLocalSources()),
+    )
+  }
+
   private fun getRunTemplate(): RunTemplate {
     return RunTemplate(
         id = "testruntemplate",
@@ -1115,6 +1211,20 @@ class ContainerFactoryTests {
     )
   }
 
+  private fun getRunTemplateLocalSources(): RunTemplate {
+
+    return RunTemplate(
+        id = "testruntemplate",
+        name = "Test Run",
+        csmSimulation = "TestSimulation",
+        parametersHandlerSource = RunTemplateStepSource.local,
+        datasetValidatorSource = RunTemplateStepSource.local,
+        preRunSource = RunTemplateStepSource.local,
+        runSource = RunTemplateStepSource.local,
+        postRunSource = RunTemplateStepSource.local,
+    )
+  }
+
   private fun getScenario(): Scenario {
     return Scenario(
         id = "aqwxsz",
@@ -1166,8 +1276,8 @@ class ContainerFactoryTests {
 
   private fun getOrganization(): Organization {
     return Organization(
-      id = "organizationid",
-      name = "Organization Test",
+        id = "organizationid",
+        name = "Organization Test",
     )
   }
 }
