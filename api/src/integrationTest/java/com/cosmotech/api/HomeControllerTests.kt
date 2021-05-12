@@ -44,8 +44,18 @@ class HomeControllerTests(private val context: WebApplicationContext) {
   @Test
   fun `redirects home to Swagger UI`() {
     this.mvc
-        .perform(get("/").accept(MediaType.TEXT_HTML))
-        .andExpect(status().is3xxRedirection)
-        .andExpect { result -> assertEquals("/swagger-ui.html", result.response.redirectedUrl) }
+        .perform(get("/index.html").accept(MediaType.TEXT_HTML))
+        .andExpect(status().isOk)
+        .andExpect { result ->
+          assertTrue(
+              result.response.contentAsString.contains(
+                  "<meta http-equiv = \"refresh\" content = \"2; url = swagger-ui.html\" />")) {
+            """
+                >>> Actual response <<<
+                 ${result.response.contentAsString}
+                =======================
+            """.trimIndent()
+          }
+        }
   }
 }
