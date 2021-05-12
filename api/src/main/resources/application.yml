@@ -1,12 +1,7 @@
 logging:
   level:
     com:
-      azure:
-        cosmos:
-          implementation: warn
-        spring:
-          autoconfigure:
-            cosmos: warn
+      cosmotech: INFO
 
 spring:
   output:
