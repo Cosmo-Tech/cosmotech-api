@@ -175,12 +175,10 @@ paths:
                 summary: Add a user
                 description: Add the user Bob to organization Cosmo Tech
                 value:
-                  - name: "Bob"
-                    id: "2"
+                  - id: "2"
                     roles:
                       - User
-                  - name: "Alice"
-                    id: "3"
+                  - id: "3"
                     roles:
                       - Developer
               RenameUser:
