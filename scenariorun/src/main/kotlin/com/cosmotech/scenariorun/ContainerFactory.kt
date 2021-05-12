@@ -90,16 +90,31 @@ class ContainerFactory(
       mode = "prerun",
       providerVar = "CSM_PRERUN_PROVIDER",
       pathVar = "CSM_PRERUN_PATH",
+      source = fun(template):String? {
+        return ContainerFactory.getSource(template.preRunSource) },
+      path = fun(organizationId, workspaceId): String {
+        return getCloudPath(organizationId, workspaceId, StepResource.PRERUN)
+      }
     ),
     "engine" to SolutionContainerStepSpec(
       mode = "engine",
       providerVar = "CSM_ENGINE_PROVIDER",
       pathVar = "CSM_ENGINE_PATH",
+      source = fun(template):String? {
+        return ContainerFactory.getSource(template.runSource) },
+      path = fun(organizationId, workspaceId): String {
+        return getCloudPath(organizationId, workspaceId, StepResource.ENGINE)
+      }
     ),
     "postrun" to SolutionContainerStepSpec(
       mode = "postrun",
       providerVar = "CSM_POSTRUN_PROVIDER",
       pathVar = "CSM_POSTRUN_PATH",
+      source = fun(template):String? {
+        return ContainerFactory.getSource(template.postRunSource) },
+      path = fun(organizationId, workspaceId): String {
+        return getCloudPath(organizationId, workspaceId, StepResource.POSTRUN)
+      }
     ),
   )
 ) {

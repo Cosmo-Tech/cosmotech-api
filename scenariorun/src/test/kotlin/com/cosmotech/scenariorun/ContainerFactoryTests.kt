@@ -356,31 +356,31 @@ class ContainerFactoryTests {
   @Test
   fun `Parameters Handler Container env vars source defined valid`() {
     val container = factory.buildApplyParametersContainer(getOrganization(), getWorkspace(), getSolutionCloudSources(), "testruntemplate")
-    val expected =
-        mapOf(
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
-            "CSM_CONTAINER_MODE" to "handle-parameters",
-            "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/test-scenariorun",
-            "CSM_PROBES_MEASURES_TOPIC" to "amqps://csm-phoenix.servicebus.windows.net/test",
-            "CSM_SIMULATION" to "TestSimulation",
-            "CSM_PARAMETERS_HANDLER_PROVIDER" to "azureStorage",
-            "AZURE_STORAGE_CONNECTION_STRING" to "DefaultEndpointsProtocol=https;AccountName=csmphoenix;AccountKey=42rmlBQ2IrxdIByLj79AecdIyYifSR04ZnGsBYt82tbM2clcP0QwJ9N+l/fLvyCzu9VZ8HPsQyM7jHe6CVSUig==;EndpointSuffix=core.windows.net",
-            "CSM_PARAMETERS_HANDLER_PATH" to "organizationid/workspaceid/parameters_handler.zip",
-          )
-    assertEquals(expected, container.envVars)
+    envVarsWithSourceValid(container, "handle-parameters", "CSM_PARAMETERS_HANDLER_PROVIDER", "CSM_PARAMETERS_HANDLER_PATH", "parameters_handler")
   }
 
   @Test
   fun `Validate Container env vars source defined valid`() {
     val container = factory.buildValidateDataContainer(getOrganization(), getWorkspace(), getSolutionCloudSources(), "testruntemplate")
     envVarsWithSourceValid(container, "validate", "CSM_DATASET_VALIDATOR_PROVIDER", "CSM_DATASET_VALIDATOR_PATH", "validator")
+}
+
+  @Test
+  fun `prerun Container env vars source defined valid`() {
+    val container = factory.buildPreRunContainer(getOrganization(), getWorkspace(), getSolutionCloudSources(), "testruntemplate")
+    envVarsWithSourceValid(container, "prerun", "CSM_PRERUN_PROVIDER", "CSM_PRERUN_PATH", "prerun")
+}
+
+  @Test
+  fun `run Container env vars source defined valid`() {
+    val container = factory.buildRunContainer(getOrganization(), getWorkspace(), getSolutionCloudSources(), "testruntemplate")
+    envVarsWithSourceValid(container, "engine", "CSM_ENGINE_PROVIDER", "CSM_ENGINE_PATH", "engine")
+}
+
+  @Test
+  fun `postrun Container env vars source defined valid`() {
+    val container = factory.buildPostRunContainer(getOrganization(), getWorkspace(), getSolutionCloudSources(), "testruntemplate")
+    envVarsWithSourceValid(container, "postrun", "CSM_POSTRUN_PROVIDER", "CSM_POSTRUN_PATH", "postrun")
 }
 
   private fun envVarsWithSourceValid(container: ScenarioRunContainer, mode: String, providerEnvVar: String, resourceEnvVar: String, resource: String) {
@@ -1109,6 +1109,7 @@ class ContainerFactoryTests {
         csmSimulation = "TestSimulation",
         parametersHandlerSource = RunTemplateStepSource.cloud,
         datasetValidatorSource = RunTemplateStepSource.cloud,
+        preRunSource = RunTemplateStepSource.cloud,
         runSource = RunTemplateStepSource.cloud,
         postRunSource = RunTemplateStepSource.cloud,
     )
