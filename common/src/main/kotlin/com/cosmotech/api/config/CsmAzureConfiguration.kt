@@ -6,8 +6,6 @@ import com.azure.cosmos.CosmosAsyncClient
 import com.azure.cosmos.CosmosClient
 import com.azure.cosmos.CosmosClientBuilder
 import com.azure.spring.autoconfigure.cosmos.CosmosHealthConfiguration
-import com.azure.spring.data.cosmos.Constants
-import com.cosmotech.api.utils.objectMapper
 import org.springframework.boot.actuate.health.HealthIndicator
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
@@ -17,9 +15,6 @@ import org.springframework.context.annotation.Primary
 @Configuration
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 class CsmAzureConfiguration(val cosmosClientBuilder: CosmosClientBuilder) {
-
-  // Override the default CosmosDB ObjectMapper to support Kotlin data classes
-  @Bean(name = [Constants.OBJECT_MAPPER_BEAN_NAME]) fun cosmosObjectMapper() = objectMapper()
 
   @Bean fun cosmosClient(): CosmosClient = cosmosClientBuilder.buildClient()
 }
