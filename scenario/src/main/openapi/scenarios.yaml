@@ -464,6 +464,8 @@ components:
           enum: ["Created","Running","Successful","Failed"]
         creationDate:
           type: string
+          # for example, 2017-07-21T17:32:28Z
+          format: date-time
           readOnly: true
           description: the Scenario creation date
         ownerName:

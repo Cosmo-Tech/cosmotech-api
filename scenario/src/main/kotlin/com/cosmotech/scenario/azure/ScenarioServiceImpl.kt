@@ -19,6 +19,7 @@ import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.fasterxml.jackson.databind.JsonNode
+import java.time.OffsetDateTime
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
@@ -144,11 +145,14 @@ class ScenarioServiceImpl(
       scenario: Scenario
   ): Scenario {
     val (solutionId, solutionName) = fetchSolutionIdAndName(organizationId, scenario.solutionId)
+    val now = OffsetDateTime.now()
     val scenarioToSave =
         scenario.copy(
             id = idGenerator.generate("scenario"),
             solutionId = solutionId,
-            solutionName = solutionName)
+            solutionName = solutionName,
+            creationDate = now,
+        )
     val scenarioAsMap = scenarioToSave.asMapWithAdditionalData(workspaceId)
     // We cannot use cosmosTemplate as it expects the Domain object to contain a field named 'id'
     // or annotated with @Id
