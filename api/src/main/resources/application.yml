@@ -38,6 +38,7 @@ server:
       format: extended_ncsa
   servlet:
     context-path:
+  forward-headers-strategy: native
 
 csm:
   platform:
