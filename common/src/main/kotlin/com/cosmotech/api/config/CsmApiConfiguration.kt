@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.api.config
 
-import com.cosmotech.api.utils.buildYamlObjectMapper
+import com.cosmotech.api.utils.yamlObjectMapper
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import java.lang.IllegalArgumentException
@@ -55,7 +55,7 @@ class YamlMessageConverter(objectMapper: ObjectMapper) :
         MediaType("text", "yml", StandardCharsets.UTF_8),
         MediaType("application", "*+yml", StandardCharsets.UTF_8)) {
 
-  constructor() : this(buildYamlObjectMapper())
+  constructor() : this(yamlObjectMapper())
 
   override fun setObjectMapper(objectMapper: ObjectMapper) {
     if (objectMapper.factory !is YAMLFactory) {

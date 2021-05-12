@@ -28,4 +28,4 @@ inline fun <reified T, U, R> T.changed(old: U?, memberAccessBlock: T.() -> R): B
  * Convert any object as a Map, using the Jackson Object Mapper
  */
 fun <T> T.convertToMap(): Map<String, Any> =
-        jacksonObjectMapper().convertValue(this, object: TypeReference<Map<String, Any>>() {})
+        objectMapper().convertValue(this, object: TypeReference<Map<String, Any>>() {})

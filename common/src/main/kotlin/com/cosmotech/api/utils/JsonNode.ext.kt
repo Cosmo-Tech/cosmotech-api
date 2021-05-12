@@ -2,10 +2,8 @@
 // Licensed under the MIT license.
 package com.cosmotech.api.utils
 
-import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 
 /**
  * Convert any JsonNode as an object of the domain type specified.
@@ -18,8 +16,5 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 inline fun <reified T> JsonNode?.toDomain(objectMapper: ObjectMapper? = null): T? =
     if (this == null) null
     else {
-      (objectMapper
-              ?: jacksonObjectMapper()
-                  .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false))
-          .treeToValue(this, T::class.java)
+      (objectMapper ?: objectMapper()).treeToValue(this, T::class.java)
     }
