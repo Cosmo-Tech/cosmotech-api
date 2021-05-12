@@ -588,6 +588,12 @@ components:
         id:
           type: string
           description: the Connector id
+        name:
+          type: string
+          description: the Connector name
+        version:
+          type: string
+          description: the Connector version
         parametersValues:
           type: object
           additionalProperties: true

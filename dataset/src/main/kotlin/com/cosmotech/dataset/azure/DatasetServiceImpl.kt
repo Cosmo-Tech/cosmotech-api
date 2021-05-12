@@ -60,8 +60,12 @@ class DatasetServiceImpl(
     val existingConnector = connectorService.findConnectorById(dataset.connector!!.id!!)
     logger.debug("Found connector: {}", existingConnector)
 
-    return cosmosTemplate.insert(
-        "${organizationId}_datasets", dataset.copy(id = idGenerator.generate("dataset")))
+    val datasetCopy = dataset.copy(id = idGenerator.generate("dataset"))
+    datasetCopy.connector!!.apply {
+      name = existingConnector.name
+      version = existingConnector.version
+    }
+    return cosmosTemplate.insert("${organizationId}_datasets", datasetCopy)
         ?: throw IllegalArgumentException("No Dataset returned in response: $dataset")
   }
 
