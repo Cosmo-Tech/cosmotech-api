@@ -181,12 +181,6 @@ paths:
                   - id: "3"
                     roles:
                       - Developer
-              RenameUser:
-                summary: Rename a user
-                description: Rename the user Charles to Xavier
-                value:
-                  - id: "3"
-                    name: "Xavier"
       responses:
         "201":
           description: the Organization Users
