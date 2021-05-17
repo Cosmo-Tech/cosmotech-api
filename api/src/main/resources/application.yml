@@ -58,6 +58,12 @@ csm:
       storage:
         baseUri:
         resourceUri:
+        # Storage account name length should be between 3 and 24 and use numbers and lower-case letters only
+        account-name: "[storage-account-name]"
+        # Fill storage account access key copied from portal
+        account-key: "[storage-account-access-key]"
+        # Fill storage endpoint URL copied from portal
+        blob-endpoint: "[storage-blob-endpoint-URL]"
       containerRegistries:
         core:
         solutions:
@@ -109,3 +115,14 @@ api:
   swagger-ui:
     base-path: ${server.servlet.context-path}
   version: ${csm.platform.api.version}
+
+#  azure.storage.account-name=[storage-account-name]
+#
+#
+#  azure.storage.account-key=[storage-account-access-key]
+#
+#
+#  azure.storage.blob-endpoint=[storage-blob-endpoint-URL]
+#
+#  # Change into your containerName and blobName
+#  blob=azure-blob://your-containerName/your-blobName

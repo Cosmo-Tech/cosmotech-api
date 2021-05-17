@@ -3,6 +3,8 @@
 package com.cosmotech.workspace.azure
 
 import com.azure.cosmos.models.CosmosContainerProperties
+import com.azure.spring.autoconfigure.storage.resource.AzureStorageResourcePatternResolver
+import com.azure.storage.blob.BlobServiceClient
 import com.cosmotech.api.AbstractCosmosBackedService
 import com.cosmotech.api.events.*
 import com.cosmotech.api.utils.changed
@@ -18,14 +20,18 @@ import com.cosmotech.workspace.domain.WorkspaceUser
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.core.io.Resource
+import org.springframework.core.io.ResourceLoader
+import org.springframework.core.io.WritableResource
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 class WorkspaceServiceImpl(
+    private val resourceLoader: ResourceLoader,
     private val userService: UserApiService,
-    private val organizationService: OrganizationApiService
+    private val organizationService: OrganizationApiService,
+    private val azureStorageBlobServiceClient: BlobServiceClient,
 ) : AbstractCosmosBackedService(), WorkspaceApiService {
 
   private fun fetchUsers(userIds: Collection<String>): Map<String, User> =
@@ -211,17 +217,34 @@ class WorkspaceServiceImpl(
   }
 
   override fun uploadWorkspaceFile(
-      organizationId: kotlin.String,
-      workspaceId: kotlin.String,
-      fileName: org.springframework.core.io.Resource?
+      organizationId: String,
+      workspaceId: String,
+      fileName: Resource?
   ): WorkspaceFile {
+    if (fileName == null) {
+      throw IllegalArgumentException("Missing resource to upload")
+    }
+    val resource =
+        resourceLoader.getResource(
+            "azure-blob://$organizationId/$workspaceId/${fileName.filename}".lowercase()) as
+            WritableResource
+    fileName.inputStream.use { inputStream ->
+      resource.outputStream.use { outputStream ->
+        inputStream.bufferedReader().useLines {
+          //          outputStream.write()
+        }
+      }
+    }
+    resource.outputStream.use { outputStream -> fileName.inputStream.bufferedReader().lines() }
     TODO("Not yet implemented")
   }
   override fun findAllWorkspaceFiles(
-      organizationId: kotlin.String,
-      workspaceId: kotlin.String
+      organizationId: String,
+      workspaceId: String
   ): List<WorkspaceFile> {
-    TODO("Not yet implemented")
+    return AzureStorageResourcePatternResolver(azureStorageBlobServiceClient)
+        .getResources("azure-blob://$organizationId/$workspaceId/*")
+        .map { WorkspaceFile(fileName = it.filename) }
   }
 
   @EventListener(OrganizationRegistered::class)

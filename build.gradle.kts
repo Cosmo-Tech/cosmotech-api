@@ -117,7 +117,10 @@ subprojects {
 
     implementation("org.zalando:problem-spring-web-starter:0.27.0-RC.0")
 
+    // TODO Extract those dependencies in a 'common/azure' sub-project,
+    //  included dynamically if the 'platform' build property is 'azure'
     implementation("com.azure.spring:azure-spring-boot-starter-cosmos:3.4.0")
+    implementation("com.azure.spring:azure-spring-boot-starter-storage:3.4.0")
 
     testImplementation(kotlin("test"))
     testImplementation("io.mockk:mockk:1.11.0")
