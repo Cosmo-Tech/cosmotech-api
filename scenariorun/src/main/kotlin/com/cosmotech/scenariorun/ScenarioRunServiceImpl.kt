@@ -7,12 +7,23 @@ import com.cosmotech.api.argo.WorkflowUtils
 import com.cosmotech.api.azure.AbstractCosmosBackedService
 import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.toDomain
+import com.cosmotech.connector.api.ConnectorApiService
+import com.cosmotech.dataset.api.DatasetApiService
+import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.scenario.api.ScenarioApiService
+import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenariorun.api.ScenariorunApiService
+import com.cosmotech.scenariorun.domain.RunTemplateParameterValue
 import com.cosmotech.scenariorun.domain.ScenarioRun
 import com.cosmotech.scenariorun.domain.ScenarioRunContainerLogs
 import com.cosmotech.scenariorun.domain.ScenarioRunLogs
 import com.cosmotech.scenariorun.domain.ScenarioRunSearch
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
+import com.cosmotech.solution.api.SolutionApiService
+import com.cosmotech.solution.domain.RunTemplate
+import com.cosmotech.solution.domain.Solution
+import com.cosmotech.workspace.api.WorkspaceApiService
+import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
 import io.argoproj.workflow.ApiException
 import io.argoproj.workflow.Configuration
@@ -26,9 +37,16 @@ import org.springframework.stereotype.Service
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 class ScenariorunServiceImpl(
-    val argoAdapter: ArgoAdapter,
-    @Value("\${csm.platform.argo.base-url:}") val argoBaseUrl: String,
-    val workflowUtils: WorkflowUtils
+    private val containerFactory: ContainerFactory,
+    private val argoAdapter: ArgoAdapter,
+    @Value("\${csm.platform.argo.base-url:}") private val argoBaseUrl: String,
+    private val workflowUtils: WorkflowUtils,
+    private val solutionService: SolutionApiService,
+    private val connectorService: ConnectorApiService,
+    private val datasetService: DatasetApiService,
+    private val organizationService: OrganizationApiService,
+    private val workspaceService: WorkspaceApiService,
+    private val scenarioService: ScenarioApiService,
 ) : AbstractCosmosBackedService(), ScenariorunApiService {
 
   private val CSM_K8S_NAMESPACE = "phoenix"
@@ -177,27 +195,32 @@ class ScenariorunServiceImpl(
       scenarioId: String
   ): ScenarioRun {
 
-    // TODO Implement logic to submit Kubernetes Job
-
+    val startInfo =
+        containerFactory.getStartInfo(
+            organizationId,
+            workspaceId,
+            scenarioId,
+            this,
+            scenarioService,
+            workspaceService,
+            solutionService,
+            organizationService,
+            connectorService,
+            datasetService)
+    val workflow = this.startWorkflow(startInfo.startContainers)
     val scenarioRun =
-        ScenarioRun(
-            id = idGenerator.generate("scenariorun", prependPrefix = "SR-"),
-            scenarioId = scenarioId,
-            workspaceId = workspaceId,
-            // TODO Set other parameters here
-            )
+        this.dbCreateScenarioRun(
+            organizationId,
+            workspaceId,
+            scenarioId,
+            startInfo.scenario,
+            startInfo.workspace,
+            startInfo.solution,
+            startInfo.runTemplate,
+            startInfo.startContainers,
+            workflow)
 
-    val scenarioRunAsMap = scenarioRun.asMapWithAdditionalData(workspaceId)
-    // We cannot use cosmosTemplate as it expects the Domain object to contain a field named 'id'
-    // or annotated with @Id
-    if (cosmosCoreDatabase
-        .getContainer("${organizationId}_scenario_data")
-        .createItem(scenarioRunAsMap, PartitionKey(scenarioRun.ownerId), CosmosItemRequestOptions())
-        .item == null) {
-      throw IllegalArgumentException("No ScenarioRun returned in response: $scenarioRunAsMap")
-    }
-
-    TODO("Not implemented yet")
+    return scenarioRun
   }
 
   override fun searchScenarioRuns(
@@ -229,6 +252,22 @@ class ScenariorunServiceImpl(
       organizationId: String,
       scenarioRunStartContainers: ScenarioRunStartContainers
   ): ScenarioRun {
+    val workflow = startWorkflow(scenarioRunStartContainers)
+    val scenarioRun =
+        this.dbCreateScenarioRun(
+            organizationId,
+            "None",
+            "None",
+            null,
+            null,
+            null,
+            null,
+            scenarioRunStartContainers,
+            workflow)
+    return scenarioRun
+  }
+
+  private fun startWorkflow(scenarioRunStartContainers: ScenarioRunStartContainers): Workflow {
 
     val defaultClient = Configuration.getDefaultApiClient()
     defaultClient.setVerifyingSsl(false)
@@ -245,11 +284,8 @@ class ScenariorunServiceImpl(
           throw IllegalStateException("Argo Workflow metadata.uid is null")
       if (result.metadata.name == null)
           throw IllegalStateException("Argo Workflow metadata.name is null")
-      val scenarioRun =
-          this.dbCreateScenarioRun(
-              organizationId, "None", "None", result.metadata.uid ?: "", result.metadata.name ?: "")
 
-      return scenarioRun
+      return result
     } catch (e: ApiException) {
       println("Exception when calling WorkflowServiceApi#workflowServiceCreateWorkflow")
       println("Status code: " + e.getCode())
@@ -264,21 +300,51 @@ class ScenariorunServiceImpl(
       organizationId: String,
       workspaceId: String,
       scenarioId: String,
-      workflowId: String,
-      workflowName: String,
+      scenario: Scenario?,
+      workspace: Workspace?,
+      solution: Solution?,
+      runTemplate: RunTemplate?,
+      startContainers: ScenarioRunStartContainers,
+      workflow: Workflow,
   ): ScenarioRun {
 
-    // TODO Implement logic to submit Kubernetes Job
-
+    val sendParameters =
+        containerFactory.getSendOptionValue(
+            workspace?.sendInputToDataWarehouse, runTemplate?.sendInputParametersToDataWarehouse)
+    val sendDatasets =
+        containerFactory.getSendOptionValue(
+            workspace?.sendInputToDataWarehouse, runTemplate?.sendDatasetsToDataWarehouse)
+    // Only send containers if admin
     val scenarioRun =
         ScenarioRun(
             id = idGenerator.generate("scenariorun", prependPrefix = "SR-"),
-            scenarioId = scenarioId,
+            organizationId = organizationId,
             workspaceId = workspaceId,
-            workflowId = workflowId,
-            workflowName = workflowName,
-            // TODO Set other parameters here
-            )
+            workspaceKey = workspace?.key,
+            scenarioId = scenarioId,
+            solutionId = solution?.id,
+            runTemplateId = runTemplate?.id,
+            generateName = startContainers.generateName,
+            workflowId = workflow.metadata.uid ?: "",
+            workflowName = workflow.metadata.name ?: "",
+            computeSize = runTemplate?.computeSize,
+            datasetList = scenario?.datasetList,
+            parametersValues =
+                (scenario?.parametersValues?.map { scenarioValue ->
+                      RunTemplateParameterValue(
+                          parameterId = scenarioValue.parameterId,
+                          varType = scenarioValue.varType,
+                          value = scenarioValue.value)
+                    })
+                    ?.toList()
+                    ?: null,
+            nodeLabel = startContainers.nodeLabel,
+            state = ScenarioRun.State.Queued,
+            containers = startContainers.containers,
+            sendDatasetsToDataWarehouse = sendDatasets,
+            sendInputParametersToDataWarehouse = sendParameters,
+            startTime = workflow.status?.startedAt?.toString(),
+        )
 
     val scenarioRunAsMap = scenarioRun.asMapWithAdditionalData(workspaceId)
     // We cannot use cosmosTemplate as it expects the Domain object to contain a field named 'id'

@@ -372,6 +372,9 @@ components:
           type: string
           readOnly: true
           description: the ScenarioRun
+        organizationId:
+          type: string
+          description: the Organization id
         workflowId:
           type: string
           description: the Cosmo Tech compute cluster Argo Workflow Id to search
@@ -413,7 +416,7 @@ components:
           type: string
           readOnly: true
           description: the ScenarioRun state
-          enum: ["FetchingDatasets","FetchingScenarioParameters","ApplyingScenarioParameters","ValidatingScenarioData","SendingScenarioDataToDataWarehouse","PreRun","Running","PostRun","Success","Failed"]
+          enum: ["Queued","FetchingDatasets","FetchingScenarioParameters","ApplyingScenarioParameters","ValidatingScenarioData","SendingScenarioDataToDataWarehouse","PreRun","Running","PostRun","Success","Failed"]
         failedStep:
           type: string
           readOnly: true

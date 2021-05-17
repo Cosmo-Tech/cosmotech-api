@@ -175,6 +175,7 @@ entity ScenarioComparisonResult {
 
 entity ScenarioRun { 
     id: String
+    organizationId: String
     workflowId: String
     generateName: String
     workflowName: String

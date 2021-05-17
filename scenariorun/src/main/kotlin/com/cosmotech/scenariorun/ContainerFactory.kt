@@ -3,17 +3,24 @@
 package com.cosmotech.scenariorun
 
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
+import com.cosmotech.dataset.api.DatasetApiService
 import com.cosmotech.dataset.domain.Dataset
+import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
+import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
+import com.cosmotech.scenariorun.api.ScenariorunApiService
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
+import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateStepSource
 import com.cosmotech.solution.domain.Solution
+import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
-import com.cosmotech.workspace.utils.*
+import com.cosmotech.solution.utils.*
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -77,9 +84,9 @@ class ContainerFactory(
                           return ContainerFactory.getSource(template.parametersHandlerSource)
                         },
                     path =
-                        fun(organizationId, workspaceId): String {
+                        fun(organizationId, solutionId): String {
                           return getCloudPath(
-                              organizationId, workspaceId, StepResource.PARAMETERS_HANDLER)
+                              organizationId, solutionId, StepResource.PARAMETERS_HANDLER)
                         }),
             "validate" to
                 SolutionContainerStepSpec(
@@ -91,8 +98,8 @@ class ContainerFactory(
                           return ContainerFactory.getSource(template.datasetValidatorSource)
                         },
                     path =
-                        fun(organizationId, workspaceId): String {
-                          return getCloudPath(organizationId, workspaceId, StepResource.VALIDATOR)
+                        fun(organizationId, solutionId): String {
+                          return getCloudPath(organizationId, solutionId, StepResource.VALIDATOR)
                         }),
             "prerun" to
                 SolutionContainerStepSpec(
@@ -104,8 +111,8 @@ class ContainerFactory(
                           return ContainerFactory.getSource(template.preRunSource)
                         },
                     path =
-                        fun(organizationId, workspaceId): String {
-                          return getCloudPath(organizationId, workspaceId, StepResource.PRERUN)
+                        fun(organizationId, solutionId): String {
+                          return getCloudPath(organizationId, solutionId, StepResource.PRERUN)
                         }),
             "engine" to
                 SolutionContainerStepSpec(
@@ -117,8 +124,8 @@ class ContainerFactory(
                           return ContainerFactory.getSource(template.runSource)
                         },
                     path =
-                        fun(organizationId, workspaceId): String {
-                          return getCloudPath(organizationId, workspaceId, StepResource.ENGINE)
+                        fun(organizationId, solutionId): String {
+                          return getCloudPath(organizationId, solutionId, StepResource.ENGINE)
                         }),
             "postrun" to
                 SolutionContainerStepSpec(
@@ -130,12 +137,115 @@ class ContainerFactory(
                           return ContainerFactory.getSource(template.postRunSource)
                         },
                     path =
-                        fun(organizationId, workspaceId): String {
-                          return getCloudPath(organizationId, workspaceId, StepResource.POSTRUN)
+                        fun(organizationId, solutionId): String {
+                          return getCloudPath(organizationId, solutionId, StepResource.POSTRUN)
                         }),
         )
 ) {
   private val logger = LoggerFactory.getLogger(ArgoAdapter::class.java)
+
+  fun getStartInfo(
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String,
+      scenarioRunService: ScenariorunApiService,
+      scenarioService: ScenarioApiService,
+      workspaceService: WorkspaceApiService,
+      solutionService: SolutionApiService,
+      organizationService: OrganizationApiService,
+      connectorService: ConnectorApiService,
+      datasetService: DatasetApiService
+  ): StartInfo {
+    val organization = organizationService.findOrganizationById(organizationId)
+    val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
+    val solution = solutionService.findSolutionById(organizationId, workspace.solution.solutionId)
+    val scenario = scenarioService.findScenarioById(organizationId, workspaceId, scenarioId)
+    val runTemplate = this.getRunTemplate(solution, (scenario.runTemplateId ?: ""))
+    val datasetsAndConnectors =
+        findDatasetsAndConnectors(
+            organizationId, scenario, solution, datasetService, connectorService, runTemplate)
+
+    return StartInfo(
+        startContainers =
+            buildContainersStart(
+                scenario,
+                datasetsAndConnectors.datasets,
+                datasetsAndConnectors.connectors,
+                workspace,
+                organization,
+                solution),
+        scenario = scenario,
+        workspace = workspace,
+        solution = solution,
+        runTemplate = runTemplate,
+    )
+  }
+
+  fun findDatasetsAndConnectors(
+      organizationId: String,
+      scenario: Scenario,
+      solution: Solution,
+      datasetService: DatasetApiService,
+      connectorService: ConnectorApiService,
+      runTemplate: RunTemplate
+  ): DatasetsConnectors {
+    var datasets: MutableMap<String, Dataset> = mutableMapOf()
+    var connectors: MutableMap<String, Connector> = mutableMapOf()
+    scenario.datasetList?.forEach { datasetId ->
+      addDatasetAndConnector(
+          organizationId, datasetId, datasets, connectors, datasetService, connectorService)
+    }
+    val parameterGroupIds = runTemplate.parameterGroups
+    if (parameterGroupIds != null) {
+      var parametersIds =
+          (solution.parameterGroups?.filter { it.id in parameterGroupIds }?.map { it.parameters })
+              ?.flatten()
+      if (parametersIds != null) {
+        solution
+            .parameters
+            ?.filter { it.id in parametersIds }
+            ?.filter { it.varType == PARAMETERS_DATASET_ID }
+            ?.forEach { parameter ->
+              val parameterValue =
+                  scenario.parametersValues?.find { it.parameterId == parameter.id }
+              if (parameterValue != null &&
+                  parameterValue.value != null &&
+                  parameterValue.value != "") {
+                addDatasetAndConnector(
+                    organizationId,
+                    parameterValue.value,
+                    datasets,
+                    connectors,
+                    datasetService,
+                    connectorService)
+              }
+            }
+      }
+    }
+    return DatasetsConnectors(
+        datasets = datasets.values.toList(), connectors = connectors.values.toList())
+  }
+
+  fun addDatasetAndConnector(
+      organizationId: String,
+      datasetId: String,
+      datasets: MutableMap<String, Dataset>,
+      connectors: MutableMap<String, Connector>,
+      datasetService: DatasetApiService,
+      connectorService: ConnectorApiService
+  ) {
+    if (datasetId !in datasets) {
+      val dataset = datasetService.findDatasetById(organizationId, datasetId)
+      datasets.put(datasetId, dataset)
+      val connectorId = dataset.connector?.id
+      if (connectorId == null)
+          throw IllegalStateException("Connector Id for Dataset ${datasetId} is null")
+      if (connectorId !in connectors) {
+        val connector = connectorService.findConnectorById(connectorId)
+        connectors.put(connectorId, connector)
+      }
+    }
+  }
 
   fun buildContainersStart(
       scenario: Scenario,
@@ -398,7 +508,7 @@ class ContainerFactory(
         steps.get(CONTAINER_POSTRUN_MODE))
   }
 
-  private fun getSendOptionValue(workspaceOption: Boolean?, templateOption: Boolean?): Boolean {
+  fun getSendOptionValue(workspaceOption: Boolean?, templateOption: Boolean?): Boolean {
     if (templateOption != null) {
       return templateOption
     } else {
@@ -455,7 +565,7 @@ class ContainerFactory(
       if (workspace.id == null) throw IllegalStateException("Workspace id cannot be null")
       if (source != STEP_SOURCE_LOCAL) {
         envVars.put(
-            step.pathVar, (step.path?.invoke(organization.id ?: "", workspace.id ?: "") ?: ""))
+            step.pathVar, (step.path?.invoke(organization.id ?: "", solution.id ?: "") ?: ""))
       }
     }
     return ScenarioRunContainer(
@@ -517,4 +627,14 @@ class ContainerFactory(
       return null
     }
   }
+
+  data class DatasetsConnectors(val datasets: List<Dataset>, val connectors: List<Connector>)
+
+  data class StartInfo(
+      val startContainers: ScenarioRunStartContainers,
+      val scenario: Scenario,
+      val workspace: Workspace,
+      val solution: Solution,
+      val runTemplate: RunTemplate
+  )
 }

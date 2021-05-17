@@ -3,21 +3,29 @@
 package com.cosmotech.scenariorun
 
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.connector.domain.Connector.IoTypes
 import com.cosmotech.connector.domain.ConnectorParameter
 import com.cosmotech.connector.domain.ConnectorParameterGroup
+import com.cosmotech.dataset.api.DatasetApiService
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetConnector
+import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
+import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
+import com.cosmotech.scenariorun.ContainerFactory.StartInfo
+import com.cosmotech.scenariorun.api.ScenariorunApiService
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
+import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateParameter
 import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.RunTemplateStepSource
 import com.cosmotech.solution.domain.Solution
+import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import io.mockk.*
@@ -440,7 +448,7 @@ class ContainerFactoryTests {
             providerEnvVar to "azureStorage",
             "AZURE_STORAGE_CONNECTION_STRING" to
                 "DefaultEndpointsProtocol=https;AccountName=csmphoenix;AccountKey=42rmlBQ2IrxdIByLj79AecdIyYifSR04ZnGsBYt82tbM2clcP0QwJ9N+l/fLvyCzu9VZ8HPsQyM7jHe6CVSUig==;EndpointSuffix=core.windows.net",
-            resourceEnvVar to "organizationid/workspaceid/${resource}.zip",
+            resourceEnvVar to "organizationid/1/${resource}.zip",
         )
     assertEquals(expected, container.envVars)
   }
@@ -803,6 +811,99 @@ class ContainerFactoryTests {
   @Test
   fun `Build all containers for a Scenario DATASETID containers env vars 2`() {
     parametersDatasetEnvTest("2", "param3")
+  }
+
+  @Test
+  fun `Full get Start Info name`() {
+    val startInfo = getStartInfoFromIds()
+    assertEquals("workflow-aqwxsz-", startInfo.startContainers.generateName)
+  }
+
+  @Test
+  fun `Full get Start Info pool`() {
+    val startInfo = getStartInfoFromIds()
+    assertEquals("highcpupool", startInfo.startContainers.nodeLabel)
+  }
+
+  @Test
+  fun `Full get Start Info containers name`() {
+    val startInfo = getStartInfoFromIds()
+    val expected =
+        listOf(
+            "fetchDatasetContainer-1",
+            "fetchDatasetContainer-2",
+            "fetchScenarioParametersContainer",
+            "fetchScenarioDatasetParametersContainer-1",
+            "fetchScenarioDatasetParametersContainer-2",
+            "fetchScenarioDatasetParametersContainer-3",
+            "applyParametersContainer",
+            "validateDataContainer",
+            "sendDataWarehouseContainer",
+            "preRunContainer",
+            "runContainer",
+            "postRunContainer",
+        )
+    assertEquals(expected, startInfo.startContainers.containers.map { container -> container.name })
+  }
+
+  @Test
+  fun `Full get Start Info images`() {
+    val startInfo = getStartInfoFromIds()
+    val expected =
+        listOf(
+            "cosmotech/test_connector:1.0.0",
+            "cosmotech/test_connector2:1.0.0",
+            "cosmotech/scenariofetchparameters:1.0.0",
+            "cosmotech/test_connector:1.0.0",
+            "cosmotech/test_connector2:1.0.0",
+            "cosmotech/test_connector3:1.0.0",
+            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
+            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
+            "cosmotech/senddatawarehouse:1.0.0",
+            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
+            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
+            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
+        )
+    assertEquals(
+        expected, startInfo.startContainers.containers.map { container -> container.image })
+  }
+
+  private fun getStartInfoFromIds(): StartInfo {
+    val organizationId = "organizationid"
+    val workspaceId = "workspaceid"
+    val scenarioId = "aqwxsz"
+
+    val scenarioRunService = mockk<ScenariorunApiService>()
+    val scenarioService = mockk<ScenarioApiService>()
+    val workspaceService = mockk<WorkspaceApiService>()
+    val solutionService = mockk<SolutionApiService>()
+    val organizationService = mockk<OrganizationApiService>()
+    val connectorService = mockk<ConnectorApiService>()
+    val datasetService = mockk<DatasetApiService>()
+
+    every { organizationService.findOrganizationById(organizationId) } returns getOrganization()
+    every { workspaceService.findWorkspaceById(organizationId, workspaceId) } returns getWorkspace()
+    every { solutionService.findSolutionById(organizationId, "1") } returns getSolutionDatasetIds()
+    every { scenarioService.findScenarioById(organizationId, workspaceId, scenarioId) } returns
+        getScenarioTwoDatasetsAndDatasetIds()
+    every { datasetService.findDatasetById(organizationId, "1") } returns getDataset()
+    every { datasetService.findDatasetById(organizationId, "2") } returns getDataset2()
+    every { datasetService.findDatasetById(organizationId, "3") } returns getDataset3()
+    every { connectorService.findConnectorById("AzErTyUiOp") } returns getConnector()
+    every { connectorService.findConnectorById("AzErTyUiOp2") } returns getConnector2()
+    every { connectorService.findConnectorById("AzErTyUiOp3") } returns getConnector3()
+
+    return factory.getStartInfo(
+        organizationId,
+        workspaceId,
+        scenarioId,
+        scenarioRunService,
+        scenarioService,
+        workspaceService,
+        solutionService,
+        organizationService,
+        connectorService,
+        datasetService)
   }
 
   private fun parametersDatasetEnvTest(nameId: String, param: String) {
@@ -1241,6 +1342,37 @@ class ContainerFactoryTests {
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
         datasetList = listOf("1"),
+        parametersValues =
+            listOf(
+                ScenarioRunTemplateParameterValue(
+                    parameterId = "param1",
+                    value = "valParam1",
+                ),
+                ScenarioRunTemplateParameterValue(
+                    parameterId = "param2",
+                    value = "1",
+                ),
+                ScenarioRunTemplateParameterValue(
+                    parameterId = "param3",
+                    value = "2",
+                ),
+                ScenarioRunTemplateParameterValue(
+                    parameterId = "param4",
+                    value = "3",
+                ),
+                ScenarioRunTemplateParameterValue(
+                    parameterId = "param5",
+                    value = "999",
+                ),
+            ))
+  }
+
+  private fun getScenarioTwoDatasetsAndDatasetIds(): Scenario {
+    return Scenario(
+        id = "aqwxsz",
+        name = "Test Scenario",
+        runTemplateId = "testruntemplate",
+        datasetList = listOf("1", "2"),
         parametersValues =
             listOf(
                 ScenarioRunTemplateParameterValue(

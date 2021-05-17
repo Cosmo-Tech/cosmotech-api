@@ -1,6 +1,6 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.workspace.utils
+package com.cosmotech.solution.utils
 
 enum class StepResource(val step: String) {
   PARAMETERS_HANDLER("parameters_handler"),
@@ -10,6 +10,6 @@ enum class StepResource(val step: String) {
   POSTRUN("postrun"),
 }
 
-fun getCloudPath(organizationId: String, workspaceId: String, stepResource: StepResource): String {
-  return "${organizationId}/${workspaceId}/${stepResource.step}.zip"
+fun getCloudPath(organizationId: String, solutionId: String, stepResource: StepResource): String {
+  return "${organizationId}/${solutionId}/${stepResource.step}.zip"
 }
