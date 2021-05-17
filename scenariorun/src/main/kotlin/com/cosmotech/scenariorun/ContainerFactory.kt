@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenariorun
 
+import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
@@ -18,13 +19,14 @@ import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateStepSource
 import com.cosmotech.solution.domain.Solution
+import com.cosmotech.solution.utils.*
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
-import com.cosmotech.solution.utils.*
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
+private const val PARAMETERS_WORKSPACE_FILE = "%WORKSPACE_FILE%"
 private const val PARAMETERS_DATASET_ID = "%DATASETID%"
 private const val CONTAINER_FETCH_DATASET = "fetchDatasetContainer"
 private const val CONTAINER_FETCH_PARAMETERS = "fetchScenarioParametersContainer"
@@ -299,14 +301,22 @@ class ContainerFactory(
             throw IllegalStateException(
                 "Connector id ${dataset.connector?.id} not found in connectors list")
         containers.add(
-            this.buildFromDataset(dataset, connector, datasetCount, false, dataset.id ?: ""))
+            this.buildFromDataset(
+                dataset,
+                connector,
+                datasetCount,
+                false,
+                dataset.id ?: "",
+                organization.id ?: "",
+                workspace.id ?: ""))
         datasetCount++
       }
     }
     if (testStep(template.fetchScenarioParameters)) {
       containers.add(this.buildScenarioParametersFetchContainer(scenario.id ?: ""))
       containers.addAll(
-          buildScenarioParametersDatasetFetchContainers(scenario, solution, datasets, connectors))
+          buildScenarioParametersDatasetFetchContainers(
+              scenario, solution, datasets, connectors, organization.id ?: "", workspace.id ?: ""))
     }
     if (testStep(template.applyParameters))
         containers.add(
@@ -341,6 +351,8 @@ class ContainerFactory(
       datasetCount: Int,
       parametersFetch: Boolean,
       fetchId: String,
+      organizationId: String,
+      workspaceId: String,
   ): ScenarioRunContainer {
     val dsConnectorId =
         dataset.connector?.id
@@ -360,15 +372,19 @@ class ContainerFactory(
                 csmPlatformProperties.azure?.containerRegistries?.core ?: "",
                 connector.repository,
                 connector.version),
-        envVars = getDatasetEnvVars(dataset, connector, fetchPathBase, fetchId),
-        runArgs = getDatasetRunArgs(dataset, connector))
+        envVars =
+            getDatasetEnvVars(
+                dataset, connector, fetchPathBase, fetchId, organizationId, workspaceId),
+        runArgs = getDatasetRunArgs(dataset, connector, organizationId, workspaceId))
   }
 
   fun buildScenarioParametersDatasetFetchContainers(
       scenario: Scenario,
       solution: Solution,
       datasets: List<Dataset>?,
-      connectors: List<Connector>?
+      connectors: List<Connector>?,
+      organizationId: String,
+      workspaceId: String,
   ): List<ScenarioRunContainer> {
     var containers: MutableList<ScenarioRunContainer> = mutableListOf()
     var datasetParameterCount = 1
@@ -392,7 +408,14 @@ class ContainerFactory(
                   "Connector id ${dataset.connector?.id} not found in connectors list")
 
           containers.add(
-              buildFromDataset(dataset, connector, datasetParameterCount, true, parameter.id))
+              buildFromDataset(
+                  dataset,
+                  connector,
+                  datasetParameterCount,
+                  true,
+                  parameter.id,
+                  organizationId,
+                  workspaceId))
           datasetParameterCount++
         }
       }
@@ -585,7 +608,9 @@ class ContainerFactory(
       dataset: Dataset,
       connector: Connector,
       fetchPathBase: String,
-      fetchId: String
+      fetchId: String,
+      organizationId: String,
+      workspaceId: String,
   ): Map<String, String> {
     val envVars = getCommonEnvVars()
     envVars.put(FETCH_PATH_VAR, "${fetchPathBase}/${fetchId}")
@@ -596,14 +621,33 @@ class ContainerFactory(
             ?.filter { it.envVar != null }
             ?.associateBy(
                 { it.envVar ?: "" },
-                { dataset.connector?.parametersValues?.getOrDefault(it.id, "") ?: "" })
+                {
+                  resolvePath(
+                      dataset.connector?.parametersValues?.getOrDefault(it.id, it.default ?: "")
+                          ?: "",
+                      organizationId,
+                      workspaceId)
+                })
     if (datasetEnvVars != null) envVars.putAll(datasetEnvVars)
     return envVars
   }
 
-  private fun getDatasetRunArgs(dataset: Dataset, connector: Connector): List<String>? {
+  private fun resolvePath(path: String, organizationId: String, workspaceId: String): String {
+    return path.replace(
+        PARAMETERS_WORKSPACE_FILE, "${organizationId}/${workspaceId}".sanitizeForAzureStorage())
+  }
+
+  private fun getDatasetRunArgs(
+      dataset: Dataset,
+      connector: Connector,
+      organizationId: String,
+      workspaceId: String
+  ): List<String>? {
     return connector.parameterGroups?.flatMap { it.parameters }?.filter { it.envVar == null }?.map {
-      dataset.connector?.parametersValues?.getOrDefault(it.id, "") ?: ""
+      resolvePath(
+          dataset.connector?.parametersValues?.getOrDefault(it.id, it.default ?: "") ?: "",
+          organizationId,
+          workspaceId)
     }
   }
 

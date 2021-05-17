@@ -132,32 +132,41 @@ class ContainerFactoryTests {
 
   @Test
   fun `Dataset Container not null`() {
-    val container = factory.buildFromDataset(getDataset(), getConnector(), 1, false, "1")
+    val container =
+        factory.buildFromDataset(
+            getDataset(), getConnector(), 1, false, "1", "organizationid", "workspaceid")
     assertNotNull(container)
   }
 
   @Test
   fun `Dataset Container name valid`() {
-    val container = factory.buildFromDataset(getDataset(), getConnector(), 1, false, "1")
+    val container =
+        factory.buildFromDataset(
+            getDataset(), getConnector(), 1, false, "1", "organizationid", "workspaceid")
     assertEquals("fetchDatasetContainer-1", container.name)
   }
 
   @Test
   fun `Dataset Container image is valid`() {
-    val container = factory.buildFromDataset(getDataset(), getConnector(), 1, false, "1")
+    val container =
+        factory.buildFromDataset(
+            getDataset(), getConnector(), 1, false, "1", "organizationid", "workspaceid")
     assertEquals("cosmotech/test_connector:1.0.0", container.image)
   }
 
   @Test
   fun `Dataset Container connector is valid`() {
     assertThrows(IllegalStateException::class.java) {
-      factory.buildFromDataset(getDataset(), getConnector("BadId"), 1, false, "1")
+      factory.buildFromDataset(
+          getDataset(), getConnector("BadId"), 1, false, "1", "organizationid", "workspaceid")
     }
   }
 
   @Test
   fun `Dataset env vars valid`() {
-    val container = factory.buildFromDataset(getDataset(), getConnector(), 1, false, "1")
+    val container =
+        factory.buildFromDataset(
+            getDataset(), getConnector(), 1, false, "1", "organizationid", "workspaceid")
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -174,9 +183,41 @@ class ContainerFactoryTests {
   }
 
   @Test
+  fun `Dataset env vars Workspace File valid`() {
+    val container =
+        factory.buildFromDataset(
+            getDatasetWorkspaceFile(),
+            getConnectorWorkspaceFile(),
+            1,
+            false,
+            "1",
+            "organizationid",
+            "workspaceid")
+    val expected =
+        mapOf(
+            "AZURE_TENANT_ID" to "12345678",
+            "AZURE_CLIENT_ID" to "98765432",
+            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data/1",
+            "ENV_PARAM_1" to "organizationid/workspaceid/workspace.env",
+        )
+    assertEquals(expected, container.envVars)
+  }
+
+  @Test
   fun `Dataset no env vars valid`() {
     val container =
-        factory.buildFromDataset(getDatasetNoVars(), getConnectorNoVars(), 1, false, "1")
+        factory.buildFromDataset(
+            getDatasetNoVars(),
+            getConnectorNoVars(),
+            1,
+            false,
+            "1",
+            "organizationid",
+            "workspaceid")
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -191,8 +232,25 @@ class ContainerFactoryTests {
   }
 
   @Test
+  fun `Dataset args Workspace File valid`() {
+    val container =
+        factory.buildFromDataset(
+            getDatasetWorkspaceFile(),
+            getConnectorWorkspaceFile(),
+            1,
+            false,
+            "1",
+            "organizationid",
+            "workspaceid")
+    val expected = listOf("organizationid/workspaceid/workspace.param")
+    assertEquals(expected, container.runArgs)
+  }
+
+  @Test
   fun `Dataset args valid`() {
-    val container = factory.buildFromDataset(getDataset(), getConnector(), 1, false, "1")
+    val container =
+        factory.buildFromDataset(
+            getDataset(), getConnector(), 1, false, "1", "organizationid", "workspaceid")
     val expected = listOf("param1_value", "param2_value", "param3_value")
     assertEquals(expected, container.runArgs)
   }
@@ -977,6 +1035,11 @@ class ContainerFactoryTests {
     assertEquals(expected, container.envVars)
   }
 
+  private fun getDatasetWorkspaceFile(): Dataset {
+    val connector = getDatasetConnectorWorkspaceFile()
+    return Dataset(id = "1", name = "Test Dataset", connector = connector)
+  }
+
   private fun getDataset(): Dataset {
     val connector = getDatasetConnector()
     return Dataset(id = "1", name = "Test Dataset", connector = connector)
@@ -990,6 +1053,16 @@ class ContainerFactoryTests {
   private fun getDataset3(): Dataset {
     val connector = getDatasetConnector3()
     return Dataset(id = "3", name = "Test Dataset 3", connector = connector)
+  }
+
+  private fun getDatasetConnectorWorkspaceFile(): DatasetConnector {
+    return DatasetConnector(
+        id = "AzErTyUiOp",
+        parametersValues =
+            mapOf(
+                "EnvParam1" to "%WORKSPACE_FILE%/workspace.env",
+                "Param1" to "%WORKSPACE_FILE%/workspace.param",
+            ))
   }
 
   private fun getDatasetConnector(): DatasetConnector {
@@ -1061,6 +1134,28 @@ class ContainerFactoryTests {
     val param2 = ConnectorParameter(id = "Param2", label = "Param 2")
     val param3 = ConnectorParameter(id = "Param3", label = "Param 3")
     val parametersList = listOf(envparam1, envparam2, envparam3, param1, param2, param3)
+    val parameterGroup =
+        ConnectorParameterGroup(
+            id = "ParamGroup1", label = "Parameter Group 1", parameters = parametersList)
+    return Connector(
+        id = id,
+        key = id,
+        name = "Test Connector",
+        repository = repository,
+        version = "1.0.0",
+        ioTypes = listOf(IoTypes.read),
+        parameterGroups = listOf(parameterGroup))
+  }
+
+  private fun getConnectorWorkspaceFile(
+      id: String = "AzErTyUiOp",
+      key: String = "TestConnector",
+      repository: String = "cosmotech/test_connector"
+  ): Connector {
+    val envparam1 =
+        ConnectorParameter(id = "EnvParam1", label = "Env param 1", envVar = "ENV_PARAM_1")
+    val param1 = ConnectorParameter(id = "Param1", label = "Param 1")
+    val parametersList = listOf(envparam1, param1)
     val parameterGroup =
         ConnectorParameterGroup(
             id = "ParamGroup1", label = "Parameter Group 1", parameters = parametersList)
