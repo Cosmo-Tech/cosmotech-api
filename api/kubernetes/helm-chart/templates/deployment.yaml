@@ -39,6 +39,8 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
+            - name: CSM_PLATFORM_VENDOR
+              value: "{{- default "azure" .Values.config.csm.platform.vendor }}"
             - name: SERVER_JETTY_ACCESSLOG_ENABLED
               value: "true"
             - name: SERVER_JETTY_ACCESSLOG_IGNORE_PATHS

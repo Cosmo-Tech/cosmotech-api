@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.api.config
 
+import com.cosmotech.api.config.CsmPlatformProperties.Vendor.AZURE
 import com.cosmotech.api.utils.yamlObjectMapper
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
@@ -10,10 +11,16 @@ import java.nio.charset.StandardCharsets
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import org.apache.commons.lang3.concurrent.BasicThreadFactory
+import org.apache.commons.logging.Log
+import org.springframework.boot.SpringApplication
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan
+import org.springframework.boot.env.EnvironmentPostProcessor
 import org.springframework.context.annotation.AdviceMode
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.Ordered
+import org.springframework.core.annotation.Order
+import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.http.MediaType
 import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter
 import org.springframework.scheduling.annotation.EnableAsync
@@ -30,6 +37,26 @@ class CsmApiConfiguration {
           BasicThreadFactory.Builder().namingPattern("csm-event-handler-%d").build())
 
   @Bean fun yamlHttpMessageConverter(): YamlMessageConverter = YamlMessageConverter()
+}
+
+@Order(Ordered.HIGHEST_PRECEDENCE)
+class CsmPlatformEnvironmentPostProcessor(private val log: Log) : EnvironmentPostProcessor {
+
+  override fun postProcessEnvironment(
+      environment: ConfigurableEnvironment,
+      application: SpringApplication
+  ) {
+    val platform = (System.getenv("CSM_PLATFORM_VENDOR") ?: AZURE.toString()).lowercase()
+    if (platform.isNotBlank()) {
+      // Automatically add the 'azure' Spring Profile before the application context is refreshed
+      if (environment.activeProfiles.none { platform.equals(it, ignoreCase = true) }) {
+        log.debug("Adding '$platform' as an active profile")
+        environment.addActiveProfile(platform)
+      } else {
+        log.debug("'$platform' is already an active profile")
+      }
+    }
+  }
 }
 
 /**

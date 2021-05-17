@@ -246,16 +246,10 @@ subprojects {
     tasks.getByName<BootRun>("bootRun") {
       workingDir = rootDir
 
-      val jvmProperties =
-          mutableListOf(
-              "-Dcsm.platform.vendor=${project.findProperty("platform")?.toString() ?: "azure"}")
-      project
-          .findProperty("jvmArgs")
-          ?.toString()
-          ?.split("\\s+".toRegex())
-          ?.let(jvmProperties::addAll)
-      if (jvmProperties.isNotEmpty()) {
-        jvmArgs = jvmProperties
+      environment("CSM_PLATFORM_VENDOR", project.findProperty("platform")?.toString() ?: "azure")
+
+      if (project.hasProperty("jvmArgs")) {
+        jvmArgs = project.property("jvmArgs").toString().split("\\s+".toRegex()).toList()
       }
 
       args = listOf("--spring.profiles.active=dev")
