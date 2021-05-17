@@ -1,0 +1,21 @@
+management:
+  health:
+    azure-cosmos:
+      enabled: true
+    azure-storage:
+      enabled: true
+
+azure:
+  # Required to auto-configure the beans provided by the Azure CosmosDB Spring Boot AutoConfiguration
+  cosmos:
+    allowTelemetry: ${csm.platform.azure.cosmos.allowTelemetry}
+    connectionMode: ${csm.platform.azure.cosmos.connectionMode}
+    consistencyLevel: ${csm.platform.azure.cosmos.consistencyLevel}
+    database: ${csm.platform.azure.cosmos.core-database.name}
+    key: ${csm.platform.azure.cosmos.key}
+    populateQueryMetrics: ${csm.platform.azure.cosmos.populateQueryMetrics}
+    uri: ${csm.platform.azure.cosmos.uri}
+  storage:
+    account-name: ${csm.platform.azure.storage.account-name}
+    account-key: ${csm.platform.azure.storage.account-key}
+    blob-endpoint: ${csm.platform.azure.storage.blob-endpoint}

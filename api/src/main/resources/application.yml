@@ -109,13 +109,3 @@ api:
   swagger-ui:
     base-path: ${server.servlet.context-path}
   version: ${csm.platform.api.version}
-azure:
-  # Required to auto-configure the beans provided by the Azure CosmosDB Spring Boot AutoConfiguration
-  cosmos:
-    allowTelemetry: ${csm.platform.azure.cosmos.allowTelemetry}
-    connectionMode: ${csm.platform.azure.cosmos.connectionMode}
-    consistencyLevel: ${csm.platform.azure.cosmos.consistencyLevel}
-    database: ${csm.platform.azure.cosmos.core-database.name}
-    key: ${csm.platform.azure.cosmos.key}
-    populateQueryMetrics: ${csm.platform.azure.cosmos.populateQueryMetrics}
-    uri: ${csm.platform.azure.cosmos.uri}

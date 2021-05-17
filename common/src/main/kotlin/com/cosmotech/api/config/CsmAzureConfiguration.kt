@@ -10,7 +10,29 @@ import org.springframework.boot.actuate.health.HealthIndicator
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Primary
+import org.springframework.core.Ordered
+import org.springframework.core.annotation.Order
+import org.springframework.core.env.ConfigurableEnvironment
+
+@Order(Ordered.HIGHEST_PRECEDENCE)
+class CsmAzureEnvironmentPostProcessor(private val log: Log) : EnvironmentPostProcessor {
+
+  override fun postProcessEnvironment(
+      environment: ConfigurableEnvironment,
+      application: SpringApplication
+  ) {
+    val csmPlatformVendor = System.getProperty("csm.platform.vendor")?.lowercase()
+    if (!csmPlatformVendor.isNullOrBlank()) {
+      // Automatically add the 'azure' Spring Profile before the application context is refreshed
+      if (environment.activeProfiles.none { csmPlatformVendor.equals(it, ignoreCase = true) }) {
+        log.debug("Adding '$csmPlatformVendor' as an active profile")
+        environment.addActiveProfile(csmPlatformVendor)
+      } else {
+        log.debug("'$csmPlatformVendor' is already an active profile")
+      }
+    }
+  }
+}
 
 @Configuration
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
