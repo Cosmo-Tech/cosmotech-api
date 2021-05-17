@@ -3,8 +3,8 @@
 package com.cosmotech.scenariorun
 
 import com.azure.cosmos.models.*
-import com.cosmotech.api.AbstractCosmosBackedService
 import com.cosmotech.api.argo.WorkflowUtils
+import com.cosmotech.api.azure.AbstractCosmosBackedService
 import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.scenariorun.api.ScenariorunApiService
@@ -18,7 +18,6 @@ import io.argoproj.workflow.ApiException
 import io.argoproj.workflow.Configuration
 import io.argoproj.workflow.apis.WorkflowServiceApi
 import io.argoproj.workflow.models.*
-import java.util.*
 import kotlin.reflect.full.memberProperties
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty

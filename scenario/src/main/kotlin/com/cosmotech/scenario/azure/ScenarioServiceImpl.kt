@@ -3,7 +3,7 @@
 package com.cosmotech.scenario.azure
 
 import com.azure.cosmos.models.*
-import com.cosmotech.api.AbstractCosmosBackedService
+import com.cosmotech.api.azure.AbstractCosmosBackedService
 import com.cosmotech.api.events.*
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.convertToMap

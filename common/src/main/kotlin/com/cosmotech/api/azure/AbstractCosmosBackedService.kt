@@ -1,10 +1,11 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.api
+package com.cosmotech.api.azure
 
 import com.azure.cosmos.CosmosClient
 import com.azure.cosmos.CosmosDatabase
 import com.azure.spring.data.cosmos.core.CosmosTemplate
+import com.cosmotech.api.AbstractPhoenixService
 import javax.annotation.PostConstruct
 import org.springframework.beans.factory.annotation.Autowired
 

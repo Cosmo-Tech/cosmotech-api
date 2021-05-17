@@ -1,6 +1,6 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.api.config
+package com.cosmotech.api.azure
 
 import com.azure.cosmos.CosmosClient
 import com.azure.cosmos.CosmosClientBuilder

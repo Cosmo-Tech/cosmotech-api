@@ -3,13 +3,12 @@
 package com.cosmotech.connector.azure
 
 import com.azure.cosmos.models.CosmosContainerProperties
-import com.cosmotech.api.AbstractCosmosBackedService
+import com.cosmotech.api.azure.AbstractCosmosBackedService
 import com.cosmotech.api.events.ConnectorRemoved
 import com.cosmotech.api.utils.findAll
 import com.cosmotech.api.utils.findByIdOrThrow
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
-import java.util.*
 import javax.annotation.PostConstruct
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Service

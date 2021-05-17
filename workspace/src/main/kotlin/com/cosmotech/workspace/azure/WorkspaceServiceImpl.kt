@@ -5,7 +5,7 @@ package com.cosmotech.workspace.azure
 import com.azure.cosmos.models.CosmosContainerProperties
 import com.azure.spring.autoconfigure.storage.resource.AzureStorageResourcePatternResolver
 import com.azure.storage.blob.BlobServiceClient
-import com.cosmotech.api.AbstractCosmosBackedService
+import com.cosmotech.api.azure.AbstractCosmosBackedService
 import com.cosmotech.api.events.*
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.findAll

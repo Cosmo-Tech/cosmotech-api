@@ -5,7 +5,7 @@ package com.cosmotech.organization.azure
 import com.azure.cosmos.models.CosmosContainerProperties
 import com.azure.cosmos.models.CosmosQueryRequestOptions
 import com.azure.cosmos.models.SqlQuerySpec
-import com.cosmotech.api.AbstractCosmosBackedService
+import com.cosmotech.api.azure.AbstractCosmosBackedService
 import com.cosmotech.api.events.*
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.findAll

@@ -3,7 +3,7 @@
 package com.cosmotech.solution.azure
 
 import com.azure.cosmos.models.CosmosContainerProperties
-import com.cosmotech.api.AbstractCosmosBackedService
+import com.cosmotech.api.azure.AbstractCosmosBackedService
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.utils.changed
