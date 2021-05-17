@@ -190,6 +190,7 @@ subprojects {
 
       debug {
         events(
+            TestLogEvent.PASSED,
             TestLogEvent.FAILED,
             TestLogEvent.SKIPPED,
             TestLogEvent.STANDARD_ERROR,
@@ -200,7 +201,7 @@ subprojects {
       // remove standard output/error logging from --info builds by assigning only 'failed' and
       // 'skipped' events
       info {
-        events(TestLogEvent.SKIPPED, TestLogEvent.FAILED)
+        events(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
         exceptionFormat = TestExceptionFormat.FULL
       }
     }
