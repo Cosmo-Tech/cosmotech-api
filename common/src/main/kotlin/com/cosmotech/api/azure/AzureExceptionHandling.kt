@@ -3,6 +3,8 @@
 package com.cosmotech.api.azure
 
 import com.azure.storage.blob.models.BlobStorageException
+import org.springframework.core.Ordered
+import org.springframework.core.annotation.Order
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -12,6 +14,7 @@ import org.zalando.problem.Status
 import org.zalando.problem.spring.web.advice.ProblemHandling
 
 @ControllerAdvice
+@Order(Ordered.HIGHEST_PRECEDENCE)
 class AzureExceptionHandling : ProblemHandling {
 
   override fun isCausalChainsEnabled() = true
