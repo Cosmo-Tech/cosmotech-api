@@ -145,7 +145,8 @@ class ContainerFactory(
       organization: Organization,
       solution: Solution
   ): ScenarioRunStartContainers {
-    if (scenario.runTemplateId == "") throw IllegalStateException("Scenario runTemplateId cannot be null")
+    if (scenario.runTemplateId == "")
+        throw IllegalStateException("Scenario runTemplateId cannot be null")
     val template = getRunTemplate(solution, (scenario.runTemplateId ?: ""))
     val nodeLabel =
         if (template.computeSize != null) "${template.computeSize}${NODE_LABEL_SUFFIX}"
@@ -169,7 +170,9 @@ class ContainerFactory(
       solution: Solution
   ): List<ScenarioRunContainer> {
     if (scenario.id == null) throw IllegalStateException("Scenario Id cannot be null")
-    val runTemplateId = scenario.runTemplateId ?: throw IllegalStateException("Scenario runTemplateId cannot be null")
+    val runTemplateId =
+        scenario.runTemplateId
+            ?: throw IllegalStateException("Scenario runTemplateId cannot be null")
     val template = getRunTemplate(solution, runTemplateId)
 
     var containers: MutableList<ScenarioRunContainer> = mutableListOf()
@@ -180,7 +183,8 @@ class ContainerFactory(
         val dataset = datasets.find { it.id == datasetId }
         if (dataset == null)
             throw IllegalStateException("Dataset ${datasetId} not found in Datasets")
-        val connector = connectors.find { connector -> connector.id == (dataset.connector?.id ?: "") }
+        val connector =
+            connectors.find { connector -> connector.id == (dataset.connector?.id ?: "") }
         if (connector == null)
             throw IllegalStateException(
                 "Connector id ${dataset.connector?.id} not found in connectors list")
@@ -196,12 +200,10 @@ class ContainerFactory(
     }
     if (testStep(template.applyParameters))
         containers.add(
-            this.buildApplyParametersContainer(
-                organization, workspace, solution, runTemplateId))
+            this.buildApplyParametersContainer(organization, workspace, solution, runTemplateId))
     if (testStep(template.validateData))
         containers.add(
-            this.buildValidateDataContainer(
-                organization, workspace, solution, runTemplateId))
+            this.buildValidateDataContainer(organization, workspace, solution, runTemplateId))
     val sendParameters =
         getSendOptionValue(
             workspace.sendInputToDataWarehouse, template.sendInputParametersToDataWarehouse)
@@ -210,14 +212,11 @@ class ContainerFactory(
     if (sendParameters || sendDatasets)
         containers.add(this.buildSendDataWarehouseContainer(workspace, template))
     if (testStep(template.preRun))
-        containers.add(
-            this.buildPreRunContainer(organization, workspace, solution, runTemplateId))
+        containers.add(this.buildPreRunContainer(organization, workspace, solution, runTemplateId))
     if (testStep(template.run))
-        containers.add(
-            this.buildRunContainer(organization, workspace, solution, runTemplateId))
+        containers.add(this.buildRunContainer(organization, workspace, solution, runTemplateId))
     if (testStep(template.postRun))
-        containers.add(
-            this.buildPostRunContainer(organization, workspace, solution, runTemplateId))
+        containers.add(this.buildPostRunContainer(organization, workspace, solution, runTemplateId))
 
     return containers.toList()
   }
@@ -233,7 +232,9 @@ class ContainerFactory(
       parametersFetch: Boolean,
       fetchId: String,
   ): ScenarioRunContainer {
-    val dsConnectorId = dataset.connector?.id ?: throw IllegalStateException("Dataset Connector cannot be null or have a null id")
+    val dsConnectorId =
+        dataset.connector?.id
+            ?: throw IllegalStateException("Dataset Connector cannot be null or have a null id")
     if (dsConnectorId != connector.id)
         throw IllegalStateException("Dataset connector id and Connector id do not match")
     var nameBase = CONTAINER_FETCH_DATASET
