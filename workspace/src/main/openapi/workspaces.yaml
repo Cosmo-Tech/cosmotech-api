@@ -189,9 +189,11 @@ paths:
             schema:
               type: object
               properties:
-                fileName:
+                file:
                   type: string
                   format: binary
+              required:
+                - file
       responses:
         "201":
           description: the file resource details

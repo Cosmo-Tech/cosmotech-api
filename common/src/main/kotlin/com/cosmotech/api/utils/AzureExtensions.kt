@@ -20,3 +20,5 @@ inline fun <reified T, ID> CosmosTemplate.findByIdOrThrow(
         ?: throw CsmResourceNotFoundException(
             errorMessage
                 ?: "Resource of type '${T::class.java.simpleName}' and identifier '$id' not found")
+
+fun String.sanitizeForAzureStorage() = this.lowercase()

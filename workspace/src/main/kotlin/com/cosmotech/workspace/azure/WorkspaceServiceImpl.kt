@@ -10,6 +10,7 @@ import com.cosmotech.api.events.*
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.findAll
 import com.cosmotech.api.utils.findByIdOrThrow
+import com.cosmotech.api.utils.sanitizeForAzureStorage
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
@@ -21,7 +22,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
-import org.springframework.core.io.WritableResource
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
@@ -200,12 +200,28 @@ class WorkspaceServiceImpl(
 
   override fun deleteWorkspace(organizationId: String, workspaceId: String): Workspace {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    cosmosTemplate.deleteEntity("${organizationId}_workspaces", workspace)
+    try {
+      azureStorageBlobServiceClient
+          .getBlobContainerClient(organizationId.sanitizeForAzureStorage())
+          .getBlobClient(workspaceId.sanitizeForAzureStorage())
+          .delete()
+    } finally {
+      cosmosTemplate.deleteEntity("${organizationId}_workspaces", workspace)
+    }
     return workspace
   }
 
   override fun deleteWorkspaceFile(organizationId: String, workspaceId: String, fileName: String) {
-    TODO("Not yet implemented")
+    val workspace = findWorkspaceById(organizationId, workspaceId)
+    logger.debug(
+        "Deleting file resource from workspace #{} ({}): {}",
+        workspace.id,
+        workspace.name,
+        fileName)
+    azureStorageBlobServiceClient
+        .getBlobContainerClient(organizationId.sanitizeForAzureStorage())
+        .getBlobClient("$workspaceId/${fileName}".sanitizeForAzureStorage())
+        .delete()
   }
 
   override fun downloadWorkspaceFile(
@@ -213,38 +229,44 @@ class WorkspaceServiceImpl(
       workspaceId: String,
       fileName: String
   ): Resource {
-    TODO("Not yet implemented")
+    val workspace = findWorkspaceById(organizationId, workspaceId)
+    logger.debug(
+        "Downloading file resource to workspace #{} ({}): {}",
+        workspace.id,
+        workspace.name,
+        fileName)
+    return resourceLoader.getResource(
+        "azure-blob://$organizationId/$workspaceId/${fileName}".sanitizeForAzureStorage())
   }
 
   override fun uploadWorkspaceFile(
       organizationId: String,
       workspaceId: String,
-      fileName: Resource?
+      file: Resource
   ): WorkspaceFile {
-    if (fileName == null) {
-      throw IllegalArgumentException("Missing resource to upload")
-    }
-    val resource =
-        resourceLoader.getResource(
-            "azure-blob://$organizationId/$workspaceId/${fileName.filename}".lowercase()) as
-            WritableResource
-    fileName.inputStream.use { inputStream ->
-      resource.outputStream.use { outputStream ->
-        inputStream.bufferedReader().useLines {
-          //          outputStream.write()
-        }
-      }
-    }
-    resource.outputStream.use { outputStream -> fileName.inputStream.bufferedReader().lines() }
-    TODO("Not yet implemented")
+    val workspace = findWorkspaceById(organizationId, workspaceId)
+    logger.debug(
+        "Uploading file resource to workspace #{} ({}): {}",
+        workspace.id,
+        workspace.name,
+        file.filename)
+    azureStorageBlobServiceClient
+        .getBlobContainerClient(organizationId.sanitizeForAzureStorage())
+        .getBlobClient("$workspaceId/${file.filename}".sanitizeForAzureStorage())
+        .upload(file.inputStream, file.contentLength())
+    return WorkspaceFile(fileName = file.filename)
   }
+
   override fun findAllWorkspaceFiles(
       organizationId: String,
       workspaceId: String
   ): List<WorkspaceFile> {
+    val workspace = findWorkspaceById(organizationId, workspaceId)
+    logger.debug("List all files for workspace #{} ({})", workspace.id, workspace.name)
     return AzureStorageResourcePatternResolver(azureStorageBlobServiceClient)
-        .getResources("azure-blob://$organizationId/$workspaceId/*")
-        .map { WorkspaceFile(fileName = it.filename) }
+        .getResources("azure-blob://$organizationId/$workspaceId/*".sanitizeForAzureStorage())
+        .mapNotNull { it.filename?.substringAfterLast("/") }
+        .map { WorkspaceFile(fileName = it) }
   }
 
   @EventListener(OrganizationRegistered::class)
@@ -256,6 +278,11 @@ class WorkspaceServiceImpl(
   @EventListener(OrganizationUnregistered::class)
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
-    cosmosTemplate.deleteContainer("${organizationUnregistered.organizationId}_workspaces")
+    val organizationId = organizationUnregistered.organizationId
+    try {
+      azureStorageBlobServiceClient.deleteBlobContainer(organizationId)
+    } finally {
+      cosmosTemplate.deleteContainer("${organizationId}_workspaces")
+    }
   }
 }
