@@ -189,6 +189,9 @@ paths:
             schema:
               type: object
               properties:
+                overwrite:
+                  type: boolean
+                  default: false
                 file:
                   type: string
                   format: binary

@@ -242,7 +242,8 @@ class WorkspaceServiceImpl(
   override fun uploadWorkspaceFile(
       organizationId: String,
       workspaceId: String,
-      file: Resource
+      file: Resource,
+      overwrite: Boolean
   ): WorkspaceFile {
     val workspace = findWorkspaceById(organizationId, workspaceId)
     logger.debug(
@@ -253,7 +254,7 @@ class WorkspaceServiceImpl(
     azureStorageBlobServiceClient
         .getBlobContainerClient(organizationId.sanitizeForAzureStorage())
         .getBlobClient("$workspaceId/${file.filename}".sanitizeForAzureStorage())
-        .upload(file.inputStream, file.contentLength())
+        .upload(file.inputStream, file.contentLength(), overwrite)
     return WorkspaceFile(fileName = file.filename)
   }
 
