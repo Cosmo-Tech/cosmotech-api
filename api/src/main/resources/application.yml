@@ -50,6 +50,11 @@ csm:
       type: hashid
     event-publisher:
       type: in_process
+    argo:
+      base-uri: ""
+    images:
+      scenario-fetch-parameters: ""
+      send-data-warehouse: ""
     vendor: azure
     azure:
       credentials:
