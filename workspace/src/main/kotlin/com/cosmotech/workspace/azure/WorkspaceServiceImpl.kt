@@ -166,10 +166,6 @@ class WorkspaceServiceImpl(
       existingWorkspace.webApp = workspace.webApp
       hasChanged = true
     }
-    if (workspace.services != null && workspace.changed(existingWorkspace) { services }) {
-      existingWorkspace.services = workspace.services
-      hasChanged = true
-    }
 
     return if (hasChanged) {
       val responseEntity =

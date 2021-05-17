@@ -33,11 +33,11 @@ entity ConnectorParameterGroup {
 
 entity Dataset { 
     id: String
-    * name: String
+    name: String
     description: String
     ownerId: String
     tags: List<String>
-    * connector: DatasetConnector
+    connector: DatasetConnector
     fragmentsIds: List<String>
     validatorId: String
     compatibility: List<DatasetCompatibility>
@@ -50,7 +50,9 @@ entity DatasetCompatibility {
 }
 
 entity DatasetConnector { 
-    * id: String
+    id: String
+    name: String
+    version: String
     parametersValues: Map
 }
 
@@ -139,17 +141,18 @@ entity RunTemplateStepSource {
 
 entity Scenario { 
     id: String
-    * name: String
+    name: String
     description: String
     tags: List<String>
     parentId: String
     ownerId: String
     solutionId: String
-    * runTemplateId: String
+    runTemplateId: String
     workspaceId: String
     users: List<ScenarioUser>
     state: String
-    creationDate: String
+    creationDate: Date
+    lastUpdate: Date
     ownerName: String
     solutionName: String
     runTemplateName: String
@@ -244,7 +247,7 @@ entity ScenarioRunTemplateParameterValue {
 entity ScenarioUser { 
     * id: String
     name: String
-    * roles: String
+    * roles: List<String>
 }
 
 entity Solution { 
