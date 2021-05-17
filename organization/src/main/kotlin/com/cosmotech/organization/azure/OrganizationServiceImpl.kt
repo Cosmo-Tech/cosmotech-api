@@ -6,10 +6,10 @@ import com.azure.cosmos.models.CosmosContainerProperties
 import com.azure.cosmos.models.CosmosQueryRequestOptions
 import com.azure.cosmos.models.SqlQuerySpec
 import com.cosmotech.api.azure.AbstractCosmosBackedService
+import com.cosmotech.api.azure.findAll
+import com.cosmotech.api.azure.findByIdOrThrow
 import com.cosmotech.api.events.*
 import com.cosmotech.api.utils.changed
-import com.cosmotech.api.utils.findAll
-import com.cosmotech.api.utils.findByIdOrThrow
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization

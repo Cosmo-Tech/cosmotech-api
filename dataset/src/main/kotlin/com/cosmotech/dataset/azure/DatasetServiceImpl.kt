@@ -7,13 +7,13 @@ import com.azure.cosmos.models.CosmosQueryRequestOptions
 import com.azure.cosmos.models.SqlParameter
 import com.azure.cosmos.models.SqlQuerySpec
 import com.cosmotech.api.azure.AbstractCosmosBackedService
+import com.cosmotech.api.azure.findAll
+import com.cosmotech.api.azure.findByIdOrThrow
 import com.cosmotech.api.events.ConnectorRemoved
 import com.cosmotech.api.events.ConnectorRemovedForOrganization
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.utils.changed
-import com.cosmotech.api.utils.findAll
-import com.cosmotech.api.utils.findByIdOrThrow
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.dataset.api.DatasetApiService

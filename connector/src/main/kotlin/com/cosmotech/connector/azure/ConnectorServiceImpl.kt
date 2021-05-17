@@ -4,9 +4,9 @@ package com.cosmotech.connector.azure
 
 import com.azure.cosmos.models.CosmosContainerProperties
 import com.cosmotech.api.azure.AbstractCosmosBackedService
+import com.cosmotech.api.azure.findAll
+import com.cosmotech.api.azure.findByIdOrThrow
 import com.cosmotech.api.events.ConnectorRemoved
-import com.cosmotech.api.utils.findAll
-import com.cosmotech.api.utils.findByIdOrThrow
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
 import javax.annotation.PostConstruct

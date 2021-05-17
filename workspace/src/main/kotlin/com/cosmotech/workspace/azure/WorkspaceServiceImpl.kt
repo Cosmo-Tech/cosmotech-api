@@ -6,11 +6,11 @@ import com.azure.cosmos.models.CosmosContainerProperties
 import com.azure.spring.autoconfigure.storage.resource.AzureStorageResourcePatternResolver
 import com.azure.storage.blob.BlobServiceClient
 import com.cosmotech.api.azure.AbstractCosmosBackedService
+import com.cosmotech.api.azure.findAll
+import com.cosmotech.api.azure.findByIdOrThrow
+import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.events.*
 import com.cosmotech.api.utils.changed
-import com.cosmotech.api.utils.findAll
-import com.cosmotech.api.utils.findByIdOrThrow
-import com.cosmotech.api.utils.sanitizeForAzureStorage
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User

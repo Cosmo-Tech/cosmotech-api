@@ -4,11 +4,11 @@ package com.cosmotech.solution.azure
 
 import com.azure.cosmos.models.CosmosContainerProperties
 import com.cosmotech.api.azure.AbstractCosmosBackedService
+import com.cosmotech.api.azure.findAll
+import com.cosmotech.api.azure.findByIdOrThrow
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.utils.changed
-import com.cosmotech.api.utils.findAll
-import com.cosmotech.api.utils.findByIdOrThrow
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateParameter

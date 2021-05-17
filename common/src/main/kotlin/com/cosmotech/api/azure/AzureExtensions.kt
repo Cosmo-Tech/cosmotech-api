@@ -1,6 +1,6 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.api.utils
+package com.cosmotech.api.azure
 
 import com.azure.spring.data.cosmos.core.CosmosTemplate
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
