@@ -337,7 +337,7 @@ Name | Type | Description  | Notes
 
 <a name="uploadWorkspaceFile"></a>
 # **uploadWorkspaceFile**
-> WorkspaceFile uploadWorkspaceFile(organization\_id, workspace\_id, fileName)
+> WorkspaceFile uploadWorkspaceFile(organization\_id, workspace\_id, file, overwrite)
 
 Upload a file for the Workspace
 
@@ -347,7 +347,8 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **workspace\_id** | **String**| the Workspace identifier | [default to null]
- **fileName** | **File**|  | [optional] [default to null]
+ **file** | **File**|  | [default to null]
+ **overwrite** | **Boolean**|  | [optional] [default to false]
 
 ### Return type
 

@@ -43,7 +43,7 @@ if [ "$release_note" = "" ]; then
 fi
 
 # Create the release directory
-mkdir -p ../../release
+mkdir -p ../../../release
 
 # Sets the new remote URI
 if [ "$GIT_TOKEN" = "" ]; then
@@ -54,15 +54,15 @@ else
 fi
 
 # Clone remote repository
-pushd ../../release
+pushd ../../../release
 git clone ${github_uri}
 # Delete all files to remove renamed or deleted files
 cd ${git_repo_id}
 rm -rf *
 popd
 # Adds the files in the local repository
-cp -r * ../../release/${git_repo_id}
-pushd ../../release/${git_repo_id}
+cp -r ../* ../../../release/${git_repo_id}
+pushd ../../../release/${git_repo_id}
 
 # Stages the new files for commit.
 git add .
@@ -76,4 +76,4 @@ git push origin master 2>&1 | grep -v 'To https'
 
 popd
 # Cleaning release repository
-rm -rf ../../release
+rm -rf ../../../release
