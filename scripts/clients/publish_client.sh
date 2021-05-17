@@ -15,7 +15,7 @@ then
   echo You must provide a github username
   exit 1
 fi
-if [ -z $3 ]
+if [ -z "$3" ]
 then
   echo You must provide a release note
   exit 1
@@ -23,6 +23,6 @@ fi
 if [ -n "$4" ]; then
   export GIT_TOKEN=$4
 fi
-pushd ../../api/build/generated-sources/$1
+pushd ../../api/build/generated-sources/$1/scripts
 ./git_push.sh $2 Cosmo-Tech cosmotech-api-$1-client "$3"
 popd
