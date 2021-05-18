@@ -253,7 +253,7 @@ entity ScenarioRunStatus {
 entity ScenarioRunStatusNode { 
     id: String
     name: String
-    displayName: String
+    containerName: String
     estimatedDuration: Integer
     hostNodeName: String
     message: String

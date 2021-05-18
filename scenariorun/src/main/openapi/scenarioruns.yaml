@@ -636,123 +636,114 @@ components:
       summary: Brewery ScenarioRun example
       description: Brewery ScenarioRun example
       value:
-        id: "1"
-        workflowId: "1"
-        workflowName: "w1"
-        ownerId: "1"
-        workspaceId: "1"
-        workspaceName: Brewery Analysis
-        scenarioId: "1"
-        scenarioName: Brewery Master Analysis
-        solutionId: "1"
-        solutionName: Brewery Solution
-        solutionVersion: "1.0.0"
+        id: SR-bDMr5lM9Vp
+        organizationId: O-x2QOMVXpjX
+        workflowId: 07193ced-9895-444f-b2be-31e8bfc3e768
+        generateName: workflow-s-eeypwem0kw-
+        workflowName: workflow-s-eeypwem0kw-lsczk
+        ownerId: null
+        workspaceId: W-OGNQqJ7wP0
+        workspaceKey: Brewery
+        scenarioId: S-EEYpWeM0kW
+        solutionId: SOL-w4Kn79JXKz
         runTemplateId: hundred
-        runTemplateName: Full scenariorun 100 steps
-        computeSize: highcpu
-        parametersHandler: run_templates/hundred/parameters_handler/
-        datasetValidator: run_templates/hundred/validator/
-        engine: run_templates/hundred/engine/
-        datasetList:
-          - "1"
-        parametersValues:
-          - parameterId: prefix
-            varType: string
-            value: new
-        sendInputToDataWarehouse: true
-        dataWarehouseDB: Brewery
-        resultsEventBusResourceUri: brewery
-        scenariorunEventBusResourceUri: brewery-scenariorun
-        state: Running
-        startTime: 4/15/2021, 10:52:18.593 AM
-        nodeLabel: highcpupool
-        fetchDatasetContainers:
-          - id: azertyuiop
+        computeSize: '%NONE%'
+        datasetList: null
+        parametersValues: null
+        sendDatasetsToDataWarehouse: false
+        sendInputParametersToDataWarehouse: false
+        nodeLabel: null
+        containers:
+          - name: applyParametersContainer
+            image: localhost:5000/vcrbrewery_simulator:0.0.5
+            id: null
             envVars:
-              AZURE_TENANT_ID: "12345678"
-              AZURE_CLIENT_ID: "12345678"
-              AZURE_CLIENT_SECRET: azertyuiop
-              CSM_API_URL: https://api.comostech.com
-              CSM_API_TOKEN: azertyuiopqsdfghjklm
-              ADT_INSTANCE_URL: https://supply.api.weu.digitaltwins.azure.net
-              ADT_QUERY: SELECT * FROM digitaltwins
+              AZURE_TENANT_ID: e9641c78-d0d6-4d09-af63-168922724e7f
+              AZURE_CLIENT_ID: 1d742f67-369a-444f-b0f3-ab37a9190c48
+              AZURE_CLIENT_SECRET: e_jXgwQicuE4l4Dyo4v.2_3aZxM5PL9V.P
+              CSM_API_URL: https://api.comostech.com///latest
               CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
-            image: csmphoenix.azurecr.io/azure-digital-twins-simulator-connector:latest
-        fetchScenarioParametersContainer:
-          id: aqwzsx
-          envVars:
-            AZURE_TENANT_ID: "12345678"
-            AZURE_CLIENT_ID: "12345678"
-            AZURE_CLIENT_SECRET: azertyuiop
-            CSM_API_URL: https://api.comostech.com
-            CSM_API_TOKEN: azertyuiopqsdfghjklm
-            CSM_SCENARIO_ID: "1"
-            CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
-            CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
-          image: csmphoenix.azurecr.io/cosmotech-scenario-parameters-loader:latest
-        applyParametersContainer:
-          id: yhnujki
-          envVars:
-            AZURE_TENANT_ID: "12345678"
-            AZURE_CLIENT_ID: "12345678"
-            AZURE_CLIENT_SECRET: azertyuiop
-            CSM_API_URL: https://api.comostech.com
-            CSM_API_TOKEN: azertyuiopqsdfghjklm
-            CSM_PARAMETERS_HANDLER_PROVIDER: local
-            CSM_PARAMETERS_HANDLER_PATH: run_templates/hundred/parameters_handler/
-            CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
-            CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
-            CSM_RUN_TEMPLATE_ID: hundred
-            CSM_CONTAINER_MODE: handle-parameters
-          image: twinengines.azurecr.io/brewery_simulator:latest
-          entrypoint: entrypoint.py
-        validateDataContainer:
-          id: rfvtgb
-          envVars:
-            AZURE_TENANT_ID: "12345678"
-            AZURE_CLIENT_ID: "12345678"
-            AZURE_CLIENT_SECRET: azertyuiop
-            CSM_API_URL: https://api.comostech.com
-            CSM_API_TOKEN: azertyuiopqsdfghjklm
-            CSM_DATASET_VALIDATOR_PROVIDER: local
-            CSM_DATASET_VALIDATOR_PATH: run_templates/hundred/validator/
-            CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
-            CSM_CONTAINER_MODE: validate
-          image: twinengines.azurecr.io/brewery_simulator:latest
-          entrypoint: entrypoint.py
-        sendDataWarehouseContainer:
-          id: qsdfghjklm
-          envVars:
-            AZURE_TENANT_ID: "12345678"
-            AZURE_CLIENT_ID: "12345678"
-            AZURE_CLIENT_SECRET: azertyuiop
-            CSM_API_URL: https://api.comostech.com
-            CSM_API_TOKEN: azertyuiopqsdfghjklm
-            CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
-            CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
-            CSM_SEND_DATAWAREHOUSE_PARAMETERS: true
-            CSM_SEND_DATAWAREHOUSE_DATASETS: true
-            ADX_DATA_INGESTION_URI: https://ingest-phoenix.westeurope.kusto.windows.net
-            ADX_DATABASE: Brewery
-          image: csmphoenix.azurecr.io/azure-data-explorer-scenariorun-sender:latest
-        runContainer:
-          id: wxcvbn
-          envVars:
-            AZURE_TENANT_ID: "12345678"
-            AZURE_CLIENT_ID: "12345678"
-            AZURE_CLIENT_SECRET: azertyuiop
-            CSM_API_URL: https://api.comostech.com
-            CSM_API_TOKEN: azertyuiopqsdfghjklm
-            CSM_ENGINE_PROVIDER: local
-            CSM_ENGINE_PATH: run_templates/hundred/engine/
-            CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
-            CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
-            CSM_CONTROL_PLANE_TOPIC: amqps://csm-phoenix.servicebus.windows.net/brewery-scenariorun
-            CSM_PROBES_MEASURES_TOPIC: amqps://csm-phoenix.servicebus.windows.net/brewery
-            CSM_CONTAINER_MODE: engine
-            CSM_SIMULATION: DeployedScenarioRun
-          image: twinengines.azurecr.io/brewery_simulator:latest
-          entrypoint: entrypoint.py
+              CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
+              CSM_RUN_TEMPLATE_ID: hundred
+              CSM_CONTAINER_MODE: handle-parameters
+              CSM_CONTROL_PLANE_TOPIC: amqps://csm-phoenix.servicebus.windows.net/o-x2qomvxpjx-brewery-scenariorun
+              CSM_PROBES_MEASURES_TOPIC: amqps://csm-phoenix.servicebus.windows.net/o-x2qomvxpjx-brewery
+              CSM_SIMULATION: DeployedSimulation
+            entrypoint: entrypoint.py
+            runArgs: null
+            dependencies: null
+          - name: validateDataContainer
+            image: localhost:5000/vcrbrewery_simulator:0.0.5
+            id: null
+            envVars:
+              AZURE_TENANT_ID: e9641c78-d0d6-4d09-af63-168922724e7f
+              AZURE_CLIENT_ID: 1d742f67-369a-444f-b0f3-ab37a9190c48
+              AZURE_CLIENT_SECRET: e_jXgwQicuE4l4Dyo4v.2_3aZxM5PL9V.P
+              CSM_API_URL: https://api.comostech.com///latest
+              CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
+              CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
+              CSM_RUN_TEMPLATE_ID: hundred
+              CSM_CONTAINER_MODE: validate
+              CSM_CONTROL_PLANE_TOPIC: amqps://csm-phoenix.servicebus.windows.net/o-x2qomvxpjx-brewery-scenariorun
+              CSM_PROBES_MEASURES_TOPIC: amqps://csm-phoenix.servicebus.windows.net/o-x2qomvxpjx-brewery
+              CSM_SIMULATION: DeployedSimulation
+            entrypoint: entrypoint.py
+            runArgs: null
+            dependencies: null
+          - name: preRunContainer
+            image: localhost:5000/vcrbrewery_simulator:0.0.5
+            id: null
+            envVars:
+              AZURE_TENANT_ID: e9641c78-d0d6-4d09-af63-168922724e7f
+              AZURE_CLIENT_ID: 1d742f67-369a-444f-b0f3-ab37a9190c48
+              AZURE_CLIENT_SECRET: e_jXgwQicuE4l4Dyo4v.2_3aZxM5PL9V.P
+              CSM_API_URL: https://api.comostech.com///latest
+              CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
+              CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
+              CSM_RUN_TEMPLATE_ID: hundred
+              CSM_CONTAINER_MODE: prerun
+              CSM_CONTROL_PLANE_TOPIC: amqps://csm-phoenix.servicebus.windows.net/o-x2qomvxpjx-brewery-scenariorun
+              CSM_PROBES_MEASURES_TOPIC: amqps://csm-phoenix.servicebus.windows.net/o-x2qomvxpjx-brewery
+              CSM_SIMULATION: DeployedSimulation
+            entrypoint: entrypoint.py
+            runArgs: null
+            dependencies: null
+          - name: runContainer
+            image: localhost:5000/vcrbrewery_simulator:0.0.5
+            id: null
+            envVars:
+              AZURE_TENANT_ID: e9641c78-d0d6-4d09-af63-168922724e7f
+              AZURE_CLIENT_ID: 1d742f67-369a-444f-b0f3-ab37a9190c48
+              AZURE_CLIENT_SECRET: e_jXgwQicuE4l4Dyo4v.2_3aZxM5PL9V.P
+              CSM_API_URL: https://api.comostech.com///latest
+              CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
+              CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
+              CSM_RUN_TEMPLATE_ID: hundred
+              CSM_CONTAINER_MODE: engine
+              CSM_CONTROL_PLANE_TOPIC: amqps://csm-phoenix.servicebus.windows.net/o-x2qomvxpjx-brewery-scenariorun
+              CSM_PROBES_MEASURES_TOPIC: amqps://csm-phoenix.servicebus.windows.net/o-x2qomvxpjx-brewery
+              CSM_SIMULATION: DeployedSimulation
+            entrypoint: entrypoint.py
+            runArgs: null
+            dependencies: null
+          - name: postRunContainer
+            image: localhost:5000/vcrbrewery_simulator:0.0.5
+            id: null
+            envVars:
+              AZURE_TENANT_ID: e9641c78-d0d6-4d09-af63-168922724e7f
+              AZURE_CLIENT_ID: 1d742f67-369a-444f-b0f3-ab37a9190c48
+              AZURE_CLIENT_SECRET: e_jXgwQicuE4l4Dyo4v.2_3aZxM5PL9V.P
+              CSM_API_URL: https://api.comostech.com///latest
+              CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
+              CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
+              CSM_RUN_TEMPLATE_ID: hundred
+              CSM_CONTAINER_MODE: postrun
+              CSM_CONTROL_PLANE_TOPIC: amqps://csm-phoenix.servicebus.windows.net/o-x2qomvxpjx-brewery-scenariorun
+              CSM_PROBES_MEASURES_TOPIC: amqps://csm-phoenix.servicebus.windows.net/o-x2qomvxpjx-brewery
+              CSM_SIMULATION: DeployedSimulation
+            entrypoint: entrypoint.py
+            runArgs: null
+            dependencies: null
     BreweryScenarioRunContainer:
       summary: Brewery ScenarioRun Containers example
       description: Brewery ScenarioRun ran with containers information example
@@ -803,8 +794,8 @@ components:
             CSM_ENGINE_PATH: run_templates/hundred/engine/
             CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
             CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
-            CSM_CONTROL_PLANE_TOPIC: amqps://csm-phoenix.servicebus.windows.net/brewery-scenariorun
-            CSM_PROBES_MEASURES_TOPIC: amqps://csm-phoenix.servicebus.windows.net/brewery
+            CSM_CONTROL_PLANE_TOPIC: amqps://csm-phoenix.servicebus.windows.net/organizationid-brewery-scenariorun
+            CSM_PROBES_MEASURES_TOPIC: amqps://csm-phoenix.servicebus.windows.net/organizationid-brewery
             CSM_CONTAINER_MODE: engine
             CSM_SIMULATION: DeployedScenarioRun
           image: twinengines.azurecr.io/brewery_simulator:latest
@@ -813,108 +804,114 @@ components:
       summary: Brewery ScenarioRun list example
       description: Brewery ScenarioRun list example
       value:
-        - id: "1"
-          workflowId: "1"
-          workflowName: "w1"
-          ownerId: "1"
-          workspaceId: "1"
-          workspaceName: Brewery Analysis
-          scenarioId: "1"
-          scenarioName: Brewery Master Analysis
-          solutionId: "1"
-          solutionName: Brewery Solution
-          solutionVersion: "1.0.0"
+        - id: SR-bDMr5lM9Vp
+          organizationId: O-x2QOMVXpjX
+          workflowId: 07193ced-9895-444f-b2be-31e8bfc3e768
+          generateName: workflow-s-eeypwem0kw-
+          workflowName: workflow-s-eeypwem0kw-lsczk
+          ownerId: null
+          workspaceId: W-OGNQqJ7wP0
+          workspaceKey: Brewery
+          scenarioId: S-EEYpWeM0kW
+          solutionId: SOL-w4Kn79JXKz
           runTemplateId: hundred
-          runTemplateName: Full scenariorun 100 steps
-          computeSize: highcpu
-          state: Running
-          startTime: 4/15/2021, 10:52:18.593 AM
-          nodeLabel: highcpupool
-          fetchDatasetContainers:
-            - id: azertyuiop
+          computeSize: '%NONE%'
+          datasetList: null
+          parametersValues: null
+          sendDatasetsToDataWarehouse: false
+          sendInputParametersToDataWarehouse: false
+          nodeLabel: null
+          containers:
+            - name: applyParametersContainer
+              image: localhost:5000/vcrbrewery_simulator:0.0.5
+              id: null
               envVars:
-                AZURE_TENANT_ID: "12345678"
-                AZURE_CLIENT_ID: "12345678"
-                AZURE_CLIENT_SECRET: azertyuiop
-                CSM_API_URL: https://api.comostech.com
-                CSM_API_TOKEN: azertyuiopqsdfghjklm
-                ADT_INSTANCE_URL: https://supply.api.weu.digitaltwins.azure.net
-                ADT_QUERY: SELECT * FROM digitaltwins
+                AZURE_TENANT_ID: e9641c78-d0d6-4d09-af63-168922724e7f
+                AZURE_CLIENT_ID: 1d742f67-369a-444f-b0f3-ab37a9190c48
+                AZURE_CLIENT_SECRET: e_jXgwQicuE4l4Dyo4v.2_3aZxM5PL9V.P
+                CSM_API_URL: https://api.comostech.com///latest
                 CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
-              image: csmphoenix.azurecr.io/azure-digital-twins-simulator-connector:latest
-          fetchScenarioParametersContainer:
-            id: aqwzsx
-            envVars:
-              AZURE_TENANT_ID: "12345678"
-              AZURE_CLIENT_ID: "12345678"
-              AZURE_CLIENT_SECRET: azertyuiop
-              CSM_API_URL: https://api.comostech.com
-              CSM_API_TOKEN: azertyuiopqsdfghjklm
-              CSM_SCENARIO_ID: "1"
-              CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
-            image: csmphoenix.azurecr.io/cosmotech-scenario-parameters-loader:latest
-          applyParametersContainer:
-            id: yhnujki
-            envVars:
-              AZURE_TENANT_ID: "12345678"
-              AZURE_CLIENT_ID: "12345678"
-              AZURE_CLIENT_SECRET: azertyuiop
-              CSM_API_URL: https://api.comostech.com
-              CSM_API_TOKEN: azertyuiopqsdfghjklm
-              CSM_PARAMETERS_HANDLER_PROVIDER: local
-              CSM_PARAMETERS_HANDLER_PATH: run_templates/hundred/parameters_handler/
-              CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
-              CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
-              CSM_CONTAINER_MODE: handle-parameters
-            image: twinengines.azurecr.io/brewery_simulator:latest
-            entrypoint: entrypoint.py
-          validateDataContainer:
-            id: rfvtgb
-            envVars:
-              AZURE_TENANT_ID: "12345678"
-              AZURE_CLIENT_ID: "12345678"
-              AZURE_CLIENT_SECRET: azertyuiop
-              CSM_API_URL: https://api.comostech.com
-              CSM_API_TOKEN: azertyuiopqsdfghjklm
-              CSM_DATASET_VALIDATOR_PROVIDER: local
-              CSM_DATASET_VALIDATOR_PATH: run_templates/hundred/validator/
-              CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
-              CSM_CONTAINER_MODE: validate
-            image: twinengines.azurecr.io/brewery_simulator:latest
-            entrypoint: entrypoint.py
-          sendDataWarehouseContainer:
-            id: qsdfghjklm
-            envVars:
-              AZURE_TENANT_ID: "12345678"
-              AZURE_CLIENT_ID: "12345678"
-              AZURE_CLIENT_SECRET: azertyuiop
-              CSM_API_URL: https://api.comostech.com
-              CSM_API_TOKEN: azertyuiopqsdfghjklm
-              CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
-              CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
-              CSM_SEND_DATAWAREHOUSE_PARAMETERS: true
-              CSM_SEND_DATAWAREHOUSE_DATASETS: true
-              ADX_DATA_INGESTION_URI: https://ingest-phoenix.westeurope.kusto.windows.net
-              ADX_DATABASE: Brewery
-            image: csmphoenix.azurecr.io/azure-data-explorer-scenariorun-sender:latest
-          runContainer:
-            id: wxcvbn
-            envVars:
-              AZURE_TENANT_ID: "12345678"
-              AZURE_CLIENT_ID: "12345678"
-              AZURE_CLIENT_SECRET: azertyuiop
-              CSM_API_URL: https://api.comostech.com
-              CSM_API_TOKEN: azertyuiopqsdfghjklm
-              CSM_ENGINE_PROVIDER: local
-              CSM_ENGINE_PATH: run_templates/hundred/engine/
-              CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
-              CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
-              CSM_CONTROL_PLANE_TOPIC: amqps://csm-phoenix.servicebus.windows.net/brewery-scenariorun
-              CSM_PROBES_MEASURES_TOPIC: amqps://csm-phoenix.servicebus.windows.net/brewery
-              CSM_CONTAINER_MODE: engine
-              CSM_SIMULATION: DeployedScenarioRun
-            image: twinengines.azurecr.io/brewery_simulator:latest
-            entrypoint: entrypoint.py
+                CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
+                CSM_RUN_TEMPLATE_ID: hundred
+                CSM_CONTAINER_MODE: handle-parameters
+                CSM_CONTROL_PLANE_TOPIC: amqps://csm-phoenix.servicebus.windows.net/o-x2qomvxpjx-brewery-scenariorun
+                CSM_PROBES_MEASURES_TOPIC: amqps://csm-phoenix.servicebus.windows.net/o-x2qomvxpjx-brewery
+                CSM_SIMULATION: DeployedSimulation
+              entrypoint: entrypoint.py
+              runArgs: null
+              dependencies: null
+            - name: validateDataContainer
+              image: localhost:5000/vcrbrewery_simulator:0.0.5
+              id: null
+              envVars:
+                AZURE_TENANT_ID: e9641c78-d0d6-4d09-af63-168922724e7f
+                AZURE_CLIENT_ID: 1d742f67-369a-444f-b0f3-ab37a9190c48
+                AZURE_CLIENT_SECRET: e_jXgwQicuE4l4Dyo4v.2_3aZxM5PL9V.P
+                CSM_API_URL: https://api.comostech.com///latest
+                CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
+                CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
+                CSM_RUN_TEMPLATE_ID: hundred
+                CSM_CONTAINER_MODE: validate
+                CSM_CONTROL_PLANE_TOPIC: amqps://csm-phoenix.servicebus.windows.net/o-x2qomvxpjx-brewery-scenariorun
+                CSM_PROBES_MEASURES_TOPIC: amqps://csm-phoenix.servicebus.windows.net/o-x2qomvxpjx-brewery
+                CSM_SIMULATION: DeployedSimulation
+              entrypoint: entrypoint.py
+              runArgs: null
+              dependencies: null
+            - name: preRunContainer
+              image: localhost:5000/vcrbrewery_simulator:0.0.5
+              id: null
+              envVars:
+                AZURE_TENANT_ID: e9641c78-d0d6-4d09-af63-168922724e7f
+                AZURE_CLIENT_ID: 1d742f67-369a-444f-b0f3-ab37a9190c48
+                AZURE_CLIENT_SECRET: e_jXgwQicuE4l4Dyo4v.2_3aZxM5PL9V.P
+                CSM_API_URL: https://api.comostech.com///latest
+                CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
+                CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
+                CSM_RUN_TEMPLATE_ID: hundred
+                CSM_CONTAINER_MODE: prerun
+                CSM_CONTROL_PLANE_TOPIC: amqps://csm-phoenix.servicebus.windows.net/o-x2qomvxpjx-brewery-scenariorun
+                CSM_PROBES_MEASURES_TOPIC: amqps://csm-phoenix.servicebus.windows.net/o-x2qomvxpjx-brewery
+                CSM_SIMULATION: DeployedSimulation
+              entrypoint: entrypoint.py
+              runArgs: null
+              dependencies: null
+            - name: runContainer
+              image: localhost:5000/vcrbrewery_simulator:0.0.5
+              id: null
+              envVars:
+                AZURE_TENANT_ID: e9641c78-d0d6-4d09-af63-168922724e7f
+                AZURE_CLIENT_ID: 1d742f67-369a-444f-b0f3-ab37a9190c48
+                AZURE_CLIENT_SECRET: e_jXgwQicuE4l4Dyo4v.2_3aZxM5PL9V.P
+                CSM_API_URL: https://api.comostech.com///latest
+                CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
+                CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
+                CSM_RUN_TEMPLATE_ID: hundred
+                CSM_CONTAINER_MODE: engine
+                CSM_CONTROL_PLANE_TOPIC: amqps://csm-phoenix.servicebus.windows.net/o-x2qomvxpjx-brewery-scenariorun
+                CSM_PROBES_MEASURES_TOPIC: amqps://csm-phoenix.servicebus.windows.net/o-x2qomvxpjx-brewery
+                CSM_SIMULATION: DeployedSimulation
+              entrypoint: entrypoint.py
+              runArgs: null
+              dependencies: null
+            - name: postRunContainer
+              image: localhost:5000/vcrbrewery_simulator:0.0.5
+              id: null
+              envVars:
+                AZURE_TENANT_ID: e9641c78-d0d6-4d09-af63-168922724e7f
+                AZURE_CLIENT_ID: 1d742f67-369a-444f-b0f3-ab37a9190c48
+                AZURE_CLIENT_SECRET: e_jXgwQicuE4l4Dyo4v.2_3aZxM5PL9V.P
+                CSM_API_URL: https://api.comostech.com///latest
+                CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
+                CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
+                CSM_RUN_TEMPLATE_ID: hundred
+                CSM_CONTAINER_MODE: postrun
+                CSM_CONTROL_PLANE_TOPIC: amqps://csm-phoenix.servicebus.windows.net/o-x2qomvxpjx-brewery-scenariorun
+                CSM_PROBES_MEASURES_TOPIC: amqps://csm-phoenix.servicebus.windows.net/o-x2qomvxpjx-brewery
+                CSM_SIMULATION: DeployedSimulation
+              entrypoint: entrypoint.py
+              runArgs: null
+              dependencies: null
     BrewerySearch:
       summary: Brewery search ScenarioRun example
       description: Brewery search ScenarioRun of Workspace 1 in Running state example
@@ -967,8 +964,8 @@ components:
               CSM_ENGINE_PATH: run_templates/hundred/engine/
               CSM_DATASET_ABSOLUTE_PATH: /mnt/scenariorun-data
               CSM_PARAMETERS_ABSOLUTE_PATH: /mnt/scenariorun-parameters
-              CSM_CONTROL_PLANE_TOPIC: amqps://csm-phoenix.servicebus.windows.net/brewery-scenariorun
-              CSM_PROBES_MEASURES_TOPIC: amqps://csm-phoenix.servicebus.windows.net/brewery
+              CSM_CONTROL_PLANE_TOPIC: amqps://csm-phoenix.servicebus.windows.net/organizationid-brewery-scenariorun
+              CSM_PROBES_MEASURES_TOPIC: amqps://csm-phoenix.servicebus.windows.net/organizationid-brewery
               CSM_CONTAINER_MODE: engine
               CSM_SIMULATION: DeployedScenarioRun
             image: twinengines.azurecr.io/brewery_simulator:latest
@@ -993,4 +990,74 @@ components:
       summary: Brewery status example
       description: Brewery Scenario Run status example
       value:
-        id: "1"
+        id: SR-bDMr5lM9Vp
+        organizationId: O-x2QOMVXpjX
+        workflowId: 07193ced-9895-444f-b2be-31e8bfc3e768
+        workflowName: workflow-s-eeypwem0kw-lsczk
+        startTime: "2021-05-18T16:15:29.000Z"
+        endTime: "2021-05-18T16:17:07.000Z"
+        phase: Succeeded
+        progress: 5/5
+        message: null
+        estimatedDuration: null
+        nodes:
+          - id: workflow-s-eeypwem0kw-lsczk
+            name: workflow-s-eeypwem0kw-lsczk
+            displayName: workflow-s-eeypwem0kw-lsczk
+            estimatedDuration: null
+            hostNodeName: null
+            message: null
+            phase: Succeeded
+            progress: 5/5
+            startTime: "2021-05-18T16:15:29.000Z"
+            endTime: "2021-05-18T16:17:07.000Z"
+          - id: workflow-s-eeypwem0kw-lsczk-1050490228
+            name: workflow-s-eeypwem0kw-lsczk.applyParametersContainer
+            displayName: applyParametersContainer
+            estimatedDuration: null
+            hostNodeName: phoenix-worker
+            message: null
+            phase: Succeeded
+            progress: 1/1
+            startTime: "2021-05-18T16:15:29.000Z"
+            endTime: "2021-05-18T16:15:43.000Z"
+          - id: workflow-s-eeypwem0kw-lsczk-1339592929
+            name: workflow-s-eeypwem0kw-lsczk.postRunContainer
+            displayName: postRunContainer
+            estimatedDuration: null
+            hostNodeName: phoenix-worker
+            message: null
+            phase: Succeeded
+            progress: 1/1
+            startTime: "2021-05-18T16:16:45.000Z"
+            endTime: "2021-05-18T16:16:57.000Z"
+          - id: workflow-s-eeypwem0kw-lsczk-2556449795
+            name: workflow-s-eeypwem0kw-lsczk.runContainer
+            displayName: runContainer
+            estimatedDuration: null
+            hostNodeName: null
+            message: null
+            phase: Succeeded
+            progress: 1/1
+            startTime: "2021-05-18T16:16:35.000Z"
+            endTime: "2021-05-18T16:16:42.000Z"
+          - id: workflow-s-eeypwem0kw-lsczk-545137412
+            name: workflow-s-eeypwem0kw-lsczk.preRunContainer
+            displayName: preRunContainer
+            estimatedDuration: null
+            hostNodeName: phoenix-worker
+            message: null
+            phase: Succeeded
+            progress: 1/1
+            startTime: "2021-05-18T16:16:13.000Z"
+            endTime: "2021-05-18T16:16:25.000Z"
+          - id: workflow-s-eeypwem0kw-lsczk-996178104
+            name: workflow-s-eeypwem0kw-lsczk.validateDataContainer
+            displayName: validateDataContainer
+            estimatedDuration: null
+            hostNodeName: phoenix-worker
+            message: null
+            phase: Succeeded
+            progress: 1/1
+            startTime: "2021-05-18T16:15:53.000Z"
+            endTime: "2021-05-18T16:16:03.000Z"

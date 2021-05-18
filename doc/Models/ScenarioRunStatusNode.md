@@ -5,7 +5,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | [**String**](string.md) | the node id | [optional] [default to null]
 **name** | [**String**](string.md) | the node unique name | [optional] [default to null]
-**displayName** | [**String**](string.md) | the display name, equivalent to ScenarioRun Container name | [optional] [default to null]
+**containerName** | [**String**](string.md) | the ScenarioRun container name | [optional] [default to null]
 **estimatedDuration** | [**Integer**](integer.md) | estimatedDuration in seconds | [optional] [default to null]
 **hostNodeName** | [**String**](string.md) | HostNodeName name of the Kubernetes node on which the Pod is running, if applicable | [optional] [default to null]
 **message** | [**String**](string.md) | a human readable message indicating details about why the node is in this condition | [optional] [default to null]
