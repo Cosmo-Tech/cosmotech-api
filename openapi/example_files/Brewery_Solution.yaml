@@ -21,7 +21,7 @@ parameterGroups:
       en: Consumers
     parameters:
       - prefix
-run_templates:
+runTemplates:
   - id: hundred
     name: Full simulation 100 steps
     description: Run a full simulation with 100 steps
