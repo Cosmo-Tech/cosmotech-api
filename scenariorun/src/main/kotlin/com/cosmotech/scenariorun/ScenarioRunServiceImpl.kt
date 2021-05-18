@@ -19,6 +19,7 @@ import com.cosmotech.scenariorun.domain.ScenarioRunContainerLogs
 import com.cosmotech.scenariorun.domain.ScenarioRunLogs
 import com.cosmotech.scenariorun.domain.ScenarioRunSearch
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
+import com.cosmotech.scenariorun.domain.ScenarioRunStatus
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
@@ -314,7 +315,7 @@ class ScenariorunServiceImpl(
     val sendDatasets =
         containerFactory.getSendOptionValue(
             workspace?.sendInputToDataWarehouse, runTemplate?.sendDatasetsToDataWarehouse)
-    // Only send containers if admin
+    // Only send containers if admin or special route
     val scenarioRun =
         ScenarioRun(
             id = idGenerator.generate("scenariorun", prependPrefix = "SR-"),
@@ -339,11 +340,9 @@ class ScenariorunServiceImpl(
                     ?.toList()
                     ?: null,
             nodeLabel = startContainers.nodeLabel,
-            state = ScenarioRun.State.Queued,
             containers = startContainers.containers,
             sendDatasetsToDataWarehouse = sendDatasets,
             sendInputParametersToDataWarehouse = sendParameters,
-            startTime = workflow.status?.startedAt?.toString(),
         )
 
     val scenarioRunAsMap = scenarioRun.asMapWithAdditionalData(workspaceId)
@@ -357,5 +356,12 @@ class ScenariorunServiceImpl(
     }
 
     return scenarioRun
+  }
+
+  override fun getScenarioRunStatus(
+      organizationId: kotlin.String,
+      scenariorunId: kotlin.String
+  ): ScenarioRunStatus {
+    TODO("No implemented yet")
   }
 }

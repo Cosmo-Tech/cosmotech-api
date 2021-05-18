@@ -146,6 +146,35 @@ paths:
           description: Bad request
         "404":
           description: the ScenarioRun specified is unknown or you don't have access to it
+  /organizations/{organization_id}/scenarioruns/{scenariorun_id}/status:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: scenariorun_id
+        in: path
+        description: the ScenarioRun identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getScenarioRunStatus
+      tags:
+        - scenariorun
+      summary: get the status for the ScenarioRun
+      responses:
+        "200":
+          description: the scenariorun status details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioRunStatus'
+              examples:
+                ScenarioRun:
+                  $ref: '#/components/examples/BreweryScenarioRunStatus'
   /organizations/{organization_id}/scenarioruns/{scenariorun_id}/logs:
     parameters:
       - name: organization_id
@@ -364,6 +393,40 @@ components:
             $ref: '#/components/schemas/ScenarioRunContainer'
       required:
         - containers
+    ScenarioRunStatus:
+      type: object
+      description: a ScenarioRun status
+      properties:
+        id:
+          type: string
+          readOnly: true
+          description: the ScenarioRun
+        workflowId:
+          type: string
+          description: the Cosmo Tech compute cluster Argo Workflow Id to search
+        workflowName:
+          type: string
+          description: the Cosmo Tech compute cluster Argo Workflow Name
+        startTime:
+          type: string
+          readOnly: true
+          description: the ScenarioRun start Date Time
+        endTime:
+          type: string
+          readOnly: true
+          description: the ScenarioRun end Date Time
+        phase:
+          type: string
+          description: high-level summary of where the workflow is in its lifecycle
+        progress:
+          type: string
+          description: progress to completion
+        message:
+          type: string
+          description: a  human readable message indicating details about why the workflow is in this condition
+        estimatedDuration:
+          type: integer
+          description: estimatedDuration in seconds
     ScenarioRun:
       type: object
       description: a ScenarioRun with only base properties
@@ -412,27 +475,6 @@ components:
           type: string
           readOnly: true
           description: the compute size needed for this Analysis. Standard sizes are basic and highcpu. Default is basic
-        state:
-          type: string
-          readOnly: true
-          description: the ScenarioRun state
-          enum: ["Queued","FetchingDatasets","FetchingScenarioParameters","ApplyingScenarioParameters","ValidatingScenarioData","SendingScenarioDataToDataWarehouse","PreRun","Running","PostRun","Success","Failed"]
-        failedStep:
-          type: string
-          readOnly: true
-          description: the failed step if state is Failed
-        failedContainerId:
-          type: string
-          readOnly: true
-          description: the failed container Id if state is Failed
-        startTime:
-          type: string
-          readOnly: true
-          description: the ScenarioRun start Date Time
-        endTime:
-          type: string
-          readOnly: true
-          description: the ScenarioRun end Date Time
         datasetList:
           type: array
           readOnly: true
@@ -908,3 +950,8 @@ components:
             nodeid: wxcvbn-123
             containerName: wxcvbn
             logs: cannot run solution
+    BreweryScenarioRunStatus:
+      summary: Brewery status example
+      description: Brewery Scenario Run status example
+      value:
+        id: "1"

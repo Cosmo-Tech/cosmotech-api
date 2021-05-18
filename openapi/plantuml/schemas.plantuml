@@ -186,11 +186,6 @@ entity ScenarioRun {
     solutionId: String
     runTemplateId: String
     computeSize: String
-    state: String
-    failedStep: String
-    failedContainerId: String
-    startTime: String
-    endTime: String
     datasetList: List<String>
     parametersValues: List<RunTemplateParameterValue>
     sendDatasetsToDataWarehouse: Boolean
@@ -236,6 +231,18 @@ entity ScenarioRunStartContainers {
     generateName: String
     nodeLabel: String
     * containers: List<ScenarioRunContainer>
+}
+
+entity ScenarioRunStatus { 
+    id: String
+    workflowId: String
+    workflowName: String
+    startTime: String
+    endTime: String
+    phase: String
+    progress: String
+    message: String
+    estimatedDuration: Integer
 }
 
 entity ScenarioRunTemplateParameterValue { 
