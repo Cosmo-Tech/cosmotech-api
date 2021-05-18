@@ -112,6 +112,7 @@ Class | Method | HTTP request | Description
  - [OrganizationServices](./Models/OrganizationServices.md)
  - [OrganizationUser](./Models/OrganizationUser.md)
  - [RunTemplate](./Models/RunTemplate.md)
+ - [RunTemplateHandlerId](./Models/RunTemplateHandlerId.md)
  - [RunTemplateParameter](./Models/RunTemplateParameter.md)
  - [RunTemplateParameterGroup](./Models/RunTemplateParameterGroup.md)
  - [RunTemplateParameterValue](./Models/RunTemplateParameterValue.md)

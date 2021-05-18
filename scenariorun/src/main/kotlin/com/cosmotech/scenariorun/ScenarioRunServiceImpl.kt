@@ -370,34 +370,34 @@ class ScenariorunServiceImpl(
         if (workflowId != null && workflowName != null) {
           val workflowStatus = workflowUtils.getWorkflowStatus(workflowId, workflowName)
           ScenarioRunStatus(
-            id = scenariorunId,
-            organizationId = organizationId,
-            workflowId = workflowId,
-            workflowName = workflowName,
-            startTime = workflowStatus?.startedAt?.toString(),
-            endTime = workflowStatus?.finishedAt?.toString(),
-            phase = workflowStatus?.phase,
-            progress = workflowStatus?.progress,
-            message = workflowStatus?.message,
-            estimatedDuration = workflowStatus?.estimatedDuration,
-            nodes = workflowStatus?.nodes?.values?.map { nodeStatus ->
-              ScenarioRunStatusNode(
-                id = nodeStatus.id,
-                name = nodeStatus.name,
-                displayName = nodeStatus.displayName,
-                estimatedDuration = nodeStatus.estimatedDuration,
-                hostNodeName = nodeStatus.hostNodeName,
-                message = nodeStatus.message,
-                phase = nodeStatus.phase,
-                progress = nodeStatus.progress,
-                startTime = nodeStatus.startedAt?.toString(),
-                endTime = nodeStatus.finishedAt?.toString(),
-              )
-            }
-          )
-        }
-        else
-          throw IllegalStateException("Scenario run ${scenariorunId} for Organization ${organizationId} contains a null workflowId or workflowName")
+              id = scenariorunId,
+              organizationId = organizationId,
+              workflowId = workflowId,
+              workflowName = workflowName,
+              startTime = workflowStatus?.startedAt?.toString(),
+              endTime = workflowStatus?.finishedAt?.toString(),
+              phase = workflowStatus?.phase,
+              progress = workflowStatus?.progress,
+              message = workflowStatus?.message,
+              estimatedDuration = workflowStatus?.estimatedDuration,
+              nodes =
+                  workflowStatus?.nodes?.values?.map { nodeStatus ->
+                    ScenarioRunStatusNode(
+                        id = nodeStatus.id,
+                        name = nodeStatus.name,
+                        displayName = nodeStatus.displayName,
+                        estimatedDuration = nodeStatus.estimatedDuration,
+                        hostNodeName = nodeStatus.hostNodeName,
+                        message = nodeStatus.message,
+                        phase = nodeStatus.phase,
+                        progress = nodeStatus.progress,
+                        startTime = nodeStatus.startedAt?.toString(),
+                        endTime = nodeStatus.finishedAt?.toString(),
+                    )
+                  })
+        } else
+            throw IllegalStateException(
+                "Scenario run ${scenariorunId} for Organization ${organizationId} contains a null workflowId or workflowName")
     return status
   }
 }

@@ -19,6 +19,7 @@ Models/OrganizationService.md
 Models/OrganizationServices.md
 Models/OrganizationUser.md
 Models/RunTemplate.md
+Models/RunTemplateHandlerId.md
 Models/RunTemplateParameter.md
 Models/RunTemplateParameterGroup.md
 Models/RunTemplateParameterValue.md

@@ -309,7 +309,7 @@ Name | Type | Description  | Notes
 
 <a name="uploadRunTemplateHandler"></a>
 # **uploadRunTemplateHandler**
-> uploadRunTemplateHandler(organization\_id, solution\_id, run\_template\_id, handler\_id, body)
+> uploadRunTemplateHandler(organization\_id, solution\_id, run\_template\_id, handler\_id, body, overwrite)
 
 Upload a Run Template step handler zip file
 
@@ -320,8 +320,9 @@ Name | Type | Description  | Notes
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **solution\_id** | **String**| the Solution identifier | [default to null]
  **run\_template\_id** | **String**| the Run Template identifier | [default to null]
- **handler\_id** | **String**| the Handler id identifier | [default to null] [enum: parameters_handler, validator, prerun, engine, postrun]
- **body** | **File**|  | [optional]
+ **handler\_id** | [**RunTemplateHandlerId**](../Models/.md)| the Handler identifier | [default to null] [enum: parameters_handler, validator, prerun, engine, postrun]
+ **body** | **File**|  |
+ **overwrite** | **Boolean**| whether to overwrite any existing handler resource | [optional] [default to false]
 
 ### Return type
 
@@ -333,6 +334,6 @@ null (empty response body)
 
 ### HTTP request headers
 
-- **Content-Type**: image/zip
+- **Content-Type**: application/octet-stream
 - **Accept**: Not defined
 

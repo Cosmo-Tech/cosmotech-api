@@ -114,6 +114,9 @@ entity RunTemplate {
     parameterGroups: List<String>
 }
 
+entity RunTemplateHandlerId { 
+}
+
 entity RunTemplateParameter { 
     * id: String
     * labels: Map
