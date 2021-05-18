@@ -1,40 +1,56 @@
-# Default values for cosmotech-api.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+# Copyright (c) Cosmo Tech.
+# Licensed under the MIT license.
 
+#
+# Default values for cosmotech-api.
+#
+
+# -- number of pods replicas
 replicaCount: 1
 
 image:
+  # -- container image to use for deployment
   repository: cosmotech-api
+  # -- [policy](https://kubernetes.io/docs/concepts/containers/images/#updating-images) for pulling the image
   pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
+  # -- container image tag. Defaults to the Chart `appVersion` if empty or missing
   tag: ""
 
 #imagePullSecrets: []
 
 # Set image pull secrets (in case you're using a private container registry).
 imageCredentials:
-  registry:
-  username:
-  password:
+  # -- container registry to use for pulling the Deployment image. Useful if you are using a private registry
+  registry: ""
+  # -- username for the container registry to use for pulling the Deployment image. Useful if you are using a private registry
+  username: ""
+  # -- password for registry to use for pulling the Deployment image. Useful if you are using a private registry
+  password: ""
 
+# -- value overriding the name of the Chart. Defaults to the Chart name.
+# Truncated at 63 chars because some Kubernetes name fields are limited to this.
 nameOverride: ""
+# -- value overriding the full name of the Chart. If not set, the value is computed from `nameOverride`.
+# Truncated at 63 chars because some Kubernetes name fields are limited to this.
 fullnameOverride: ""
 
 serviceAccount:
-  # Specifies whether a service account should be created
+  # -- whether a service account should be created
   create: true
-  # Annotations to add to the service account
+  # -- annotations to add to the service account
   annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
+  # -- the name of the service account to use.
+  # If not set and `serviceAccount.create` is `true`, a name is generated using the `fullname` template
   name: ""
 
+# -- annotations to set the Deployment pod
 podAnnotations: {}
 
+# -- the pod security context, i.e. applicable to all containers part of the pod
 podSecurityContext: {}
   # fsGroup: 2000
 
+# -- the security context at the pod container level
 securityContext: {}
   # capabilities:
   #   drop:
@@ -44,8 +60,11 @@ securityContext: {}
   # runAsUser: 1000
 
 service:
+  # -- service type. See [this page](https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types) for the possible values
   type: ClusterIP
+  # -- service port
   port: 8080
+  # -- service management port
   managementPort: 8081
 
 api:
@@ -72,6 +91,7 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
+# -- resources limits and requests for the pod placement
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
@@ -106,9 +126,9 @@ config:
           key: "changeme"
           uri: "changeme"
         storage:
-          # Storage account name length should be between 3 and 24 and use numbers and lower-case letters only
+          # -- Azure storage account name. Length should be between 3 and 24 and use numbers and lower-case letters only
           account-name: "changeme"
-          # Fill storage account access key copied from the Azure portal
+          # -- Azure storage account access key. Can be retrieved in the Azure portal
           account-key: "changeme"
       argo:
         base-url: "https://argo-server.argo.svc.cluster.local:2746"

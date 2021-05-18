@@ -15,35 +15,42 @@ Cosmo Tech Platform API
 | autoscaling.maxReplicas | int | `100` |  |
 | autoscaling.minReplicas | int | `1` |  |
 | autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
+| config.csm.platform.argo.base-url | string | `"https://argo-server.argo.svc.cluster.local:2746"` |  |
 | config.csm.platform.azure.cosmos.key | string | `"changeme"` |  |
 | config.csm.platform.azure.cosmos.uri | string | `"changeme"` |  |
+| config.csm.platform.azure.storage.account-key | string | `"changeme"` | Azure storage account access key. Can be retrieved in the Azure portal |
+| config.csm.platform.azure.storage.account-name | string | `"changeme"` | Azure storage account name. Length should be between 3 and 24 and use numbers and lower-case letters only |
+| config.csm.platform.images.scenario-fetch-parameters | string | `"cosmotech/scenariofetchparameters:1.0.0"` |  |
+| config.csm.platform.images.send-datawarehouse | string | `"cosmotech/senddatawarehouse:1.0.0"` |  |
+| config.csm.platform.services.adx-dataingestion-uri | string | `"https://ingest-phoenix.westeurope.kusto.windows.net"` |  |
+| config.csm.platform.services.eventhub-cluster-uri | string | `"amqps://csm-phoenix.servicebus.windows.net"` |  |
 | config.csm.platform.vendor | string | `"azure"` |  |
-| fullnameOverride | string | `""` |  |
-| image.pullPolicy | string | `"IfNotPresent"` |  |
-| image.repository | string | `"cosmotech-api"` |  |
-| image.tag | string | `""` |  |
-| imageCredentials.password | string | `nil` |  |
-| imageCredentials.registry | string | `nil` |  |
-| imageCredentials.username | string | `nil` |  |
+| fullnameOverride | string | `""` | value overriding the full name of the Chart. If not set, the value is computed from `nameOverride`. Truncated at 63 chars because some Kubernetes name fields are limited to this. |
+| image.pullPolicy | string | `"IfNotPresent"` | [policy](https://kubernetes.io/docs/concepts/containers/images/#updating-images) for pulling the image |
+| image.repository | string | `"cosmotech-api"` | container image to use for deployment |
+| image.tag | string | `""` | container image tag. Defaults to the Chart `appVersion` if empty or missing |
+| imageCredentials.password | string | `""` | password for registry to use for pulling the Deployment image. Useful if you are using a private registry |
+| imageCredentials.registry | string | `""` | container registry to use for pulling the Deployment image. Useful if you are using a private registry |
+| imageCredentials.username | string | `""` | username for the container registry to use for pulling the Deployment image. Useful if you are using a private registry |
 | ingress.annotations | object | `{}` |  |
 | ingress.enabled | bool | `false` |  |
 | ingress.hosts[0].host | string | `"chart-example.local"` |  |
 | ingress.hosts[0].paths[0].path | string | `"/"` |  |
 | ingress.hosts[0].paths[0].pathType | string | `"Prefix"` |  |
 | ingress.tls | list | `[]` |  |
-| nameOverride | string | `""` |  |
+| nameOverride | string | `""` | value overriding the name of the Chart. Defaults to the Chart name. Truncated at 63 chars because some Kubernetes name fields are limited to this. |
 | nodeSelector | object | `{}` |  |
-| podAnnotations | object | `{}` |  |
-| podSecurityContext | object | `{}` |  |
-| replicaCount | int | `1` |  |
-| resources | object | `{}` |  |
-| securityContext | object | `{}` |  |
-| service.managementPort | int | `8081` |  |
-| service.port | int | `8080` |  |
-| service.type | string | `"ClusterIP"` |  |
-| serviceAccount.annotations | object | `{}` |  |
-| serviceAccount.create | bool | `true` |  |
-| serviceAccount.name | string | `""` |  |
+| podAnnotations | object | `{}` | annotations to set the Deployment pod |
+| podSecurityContext | object | `{}` | the pod security context, i.e. applicable to all containers part of the pod |
+| replicaCount | int | `1` | number of pods replicas |
+| resources | object | `{}` | resources limits and requests for the pod placement |
+| securityContext | object | `{}` | the security context at the pod container level |
+| service.managementPort | int | `8081` | service management port |
+| service.port | int | `8080` | service port |
+| service.type | string | `"ClusterIP"` | service type. See [this page](https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types) for the possible values |
+| serviceAccount.annotations | object | `{}` | annotations to add to the service account |
+| serviceAccount.create | bool | `true` | whether a service account should be created |
+| serviceAccount.name | string | `""` | the name of the service account to use. If not set and `serviceAccount.create` is `true`, a name is generated using the `fullname` template |
 | tolerations | list | `[]` |  |
 
 ----------------------------------------------
