@@ -69,7 +69,7 @@ csm:
         # Fill storage account access key copied from portal
         account-key: "[storage-account-access-key]"
         # Fill storage endpoint URL copied from portal
-        blob-endpoint: "[storage-blob-endpoint-URL]"
+        blob-endpoint: "https://${csm.platform.azure.storage.account-name}.blob.core.windows.net"
         connection-string: "DefaultEndpointsProtocol=https;AccountName=${csm.platform.azure.storage.account-name};AccountKey=${csm.platform.azure.storage.account-key};EndpointSuffix=core.windows.net"
       containerRegistries:
         core:
