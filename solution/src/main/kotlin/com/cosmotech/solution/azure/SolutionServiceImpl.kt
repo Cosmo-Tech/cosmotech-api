@@ -3,25 +3,29 @@
 package com.cosmotech.solution.azure
 
 import com.azure.cosmos.models.CosmosContainerProperties
+import com.azure.storage.blob.BlobServiceClient
 import com.cosmotech.api.azure.AbstractCosmosBackedService
 import com.cosmotech.api.azure.findAll
 import com.cosmotech.api.azure.findByIdOrThrow
+import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.utils.changed
 import com.cosmotech.solution.api.SolutionApiService
-import com.cosmotech.solution.domain.RunTemplate
-import com.cosmotech.solution.domain.RunTemplateParameter
-import com.cosmotech.solution.domain.RunTemplateParameterGroup
-import com.cosmotech.solution.domain.Solution
+import com.cosmotech.solution.domain.*
+import org.apache.commons.compress.archivers.ArchiveException
+import org.apache.commons.compress.archivers.ArchiveStreamFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
+import org.springframework.core.io.Resource
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
-class SolutionServiceImpl : AbstractCosmosBackedService(), SolutionApiService {
+class SolutionServiceImpl(
+    private val azureStorageBlobServiceClient: BlobServiceClient,
+) : AbstractCosmosBackedService(), SolutionApiService {
 
   override fun findAllSolutions(organizationId: String) =
       cosmosTemplate.findAll<Solution>("${organizationId}_solutions")
@@ -202,9 +206,57 @@ class SolutionServiceImpl : AbstractCosmosBackedService(), SolutionApiService {
       organizationId: String,
       solutionId: String,
       runTemplateId: String,
-      handlerId: String,
-      body: org.springframework.core.io.Resource?
-  ): Unit {
-    TODO("Not yet implemented")
+      handlerId: RunTemplateHandlerId,
+      body: Resource,
+      overwrite: Boolean
+  ) {
+    val solution = findSolutionById(organizationId, solutionId)
+    logger.debug(
+        "Uploading run template handler to solution #{} ({} - {})",
+        solution.id,
+        solution.name,
+        solution.version)
+
+    val validRunTemplateIds = solution.runTemplates.map { it.id }.toSet()
+    if (validRunTemplateIds.isEmpty()) {
+      throw IllegalArgumentException(
+          "Solution $solutionId does not declare any run templates. " +
+              "It is therefore not possible to upload run template handlers. " +
+              "Either update the Solution or upload a new one with run templates.")
+    }
+    if (!validRunTemplateIds.contains(runTemplateId)) {
+      throw IllegalArgumentException(
+          "Invalid runTemplateId: [$runTemplateId]. Must be one of: $validRunTemplateIds")
+    }
+
+    // Security checks
+    // TODO Security-wise, we should also check the content of the archive for potential attack
+    // vectors, like upload of malicious files, zip bombing, path traversal attacks, ...
+    try {
+      val archiverType = ArchiveStreamFactory.detect(body.inputStream.buffered())
+      if (ArchiveStreamFactory.ZIP != archiverType) {
+        throw IllegalArgumentException(
+            "Invalid archive type: '$archiverType'. A Zip Archive is expected.")
+      }
+    } catch (ae: ArchiveException) {
+      throw IllegalArgumentException("A Zip Archive is expected.", ae)
+    }
+
+    azureStorageBlobServiceClient
+        .getBlobContainerClient(organizationId.sanitizeForAzureStorage())
+        .getBlobClient("$solutionId/$runTemplateId/${handlerId}.zip".sanitizeForAzureStorage())
+        .upload(body.inputStream, body.contentLength(), overwrite)
+
+    val runTemplate = solution.runTemplates.findLast { it.id == runTemplateId }!!
+    when (handlerId) {
+      RunTemplateHandlerId.parameters_handler ->
+          runTemplate.parametersHandlerSource = RunTemplateStepSource.cloud
+      RunTemplateHandlerId.validator ->
+          runTemplate.datasetValidatorSource = RunTemplateStepSource.cloud
+      RunTemplateHandlerId.prerun -> runTemplate.preRunSource = RunTemplateStepSource.cloud
+      RunTemplateHandlerId.engine -> runTemplate.runSource = RunTemplateStepSource.cloud
+      RunTemplateHandlerId.postrun -> runTemplate.postRunSource = RunTemplateStepSource.cloud
+    }
+    cosmosTemplate.upsert("${organizationId}_solutions", solution)
   }
 }

@@ -333,19 +333,28 @@ paths:
           type: string
       - name: handler_id
         in: path
-        description: the Handler id identifier
-        required: true
+        description: the Handler identifier
+        required: false
         schema:
-          type: string
-          enum: ["parameters_handler","validator","prerun","engine","postrun"]
+          $ref: '#/components/schemas/RunTemplateHandlerId'
+      - name: overwrite
+        in: query
+        description: whether to overwrite any existing handler resource
+        schema:
+          type: boolean
+          default: false
     post:
       operationId: uploadRunTemplateHandler
       tags:
         - solution
       summary: Upload a Run Template step handler zip file
       requestBody:
+        required: true
         content:
-          image/zip:
+          application/octet-stream:
+            # Using 'application/octet-stream' so Swagger UI can display a file upload button.
+            # See https://github.com/swagger-api/swagger-ui/issues/5636
+            # In any case, the request body mime type is enforced in the Service implementation.
             schema:
               type: string
               format: binary
@@ -494,6 +503,10 @@ components:
       required:
         - id
         - name
+    RunTemplateHandlerId:
+      type: string
+      description: the Run Template step handler identifier
+      enum: ["parameters_handler","validator","prerun","engine","postrun"]
     RunTemplateStepSource:
       type: string
       description: the source local or cloud

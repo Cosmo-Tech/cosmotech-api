@@ -1,7 +1,10 @@
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 
-dependencies { api(projects.cosmotechApiCommon) }
+dependencies {
+  api(projects.cosmotechApiCommon)
+  implementation("org.apache.commons:commons-compress:1.20")
+}
 
 sourceSets {
   main { java.srcDirs("$buildDir/generated-sources/openapi/src/main/kotlin") }
