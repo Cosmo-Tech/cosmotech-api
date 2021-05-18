@@ -1,6 +1,6 @@
 # cosmotech-api
 
-> Cosmo Tech Cloud Platform API (made up of Organization, User, Connector, Dataset, ... APIs)
+> Cosmo Tech Cloud Platform API
 
 [![Build](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/build.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/build.yml)
 [![Test](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/test.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/test.yml)
