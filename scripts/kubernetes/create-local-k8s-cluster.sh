@@ -16,7 +16,7 @@ fi
 
 cluster_name=${1:-local-k8s-cluster}
 
-kindest_node_image_tag='v1.20.2'
+kindest_node_image_tag='v1.21.1'
 
 cat <<EOF | kind create cluster --name "${cluster_name}" --config=-
 
