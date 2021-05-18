@@ -63,7 +63,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           ./gradlew :cosmotech-api:jib \
-            -Djib.to.image="ghcr.io/cosmotech/cosmotech-api:${{ steps.refvar.outputs.gitRefName }}" \
+            -Djib.to.image="ghcr.io/cosmo-tech/cosmotech-api:${{ steps.refvar.outputs.gitRefName }}" \
             -Djib.to.auth.username="${{ github.actor }}" \
             -Djib.to.auth.password="${GITHUB_TOKEN}"
 
@@ -71,6 +71,6 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           ./gradlew :cosmotech-api:jib \
-            -Djib.to.image="ghcr.io/cosmotech/cosmotech-api:latest" \
+            -Djib.to.image="ghcr.io/cosmo-tech/cosmotech-api:latest" \
             -Djib.to.auth.username="${{ github.actor }}" \
             -Djib.to.auth.password="${GITHUB_TOKEN}"
