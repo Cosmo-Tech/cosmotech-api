@@ -10,6 +10,7 @@ import com.cosmotech.api.azure.findByIdOrThrow
 import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
+import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.utils.changed
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.*
@@ -130,6 +131,20 @@ class SolutionServiceImpl(
         "${organizationId}_solutions", findSolutionById(organizationId, solutionId))
   }
 
+  override fun deleteSolutionRunTemplate(
+      organizationId: String,
+      solutionId: String,
+      runTemplateId: String
+  ) {
+    val existingSolution = findSolutionById(organizationId, solutionId)
+    val runTemplatesMutableList = existingSolution.runTemplates.toMutableList()
+    if (!runTemplatesMutableList.removeIf { it.id == runTemplateId }) {
+      throw CsmResourceNotFoundException("Run Template '$runTemplateId' *not* found")
+    }
+    existingSolution.runTemplates = runTemplatesMutableList.toList()
+    cosmosTemplate.upsert("${organizationId}_solutions", existingSolution)
+  }
+
   override fun updateSolution(
       organizationId: String,
       solutionId: String,
@@ -188,6 +203,123 @@ class SolutionServiceImpl(
     } else {
       existingSolution
     }
+  }
+
+  override fun updateSolutionRunTemplate(
+      organizationId: String,
+      solutionId: String,
+      runTemplateId: String,
+      runTemplate: RunTemplate
+  ): List<RunTemplate> {
+    val existingSolution = findSolutionById(organizationId, solutionId)
+    val runTemplates = existingSolution.runTemplates.filter { it.id == runTemplateId }
+    if (runTemplates.isEmpty()) {
+      throw CsmResourceNotFoundException("Run Template '$runTemplateId' *not* found")
+    }
+    var hasChanged = false
+    for (existingRunTemplate in runTemplates) {
+      if (runTemplate.name != null && runTemplate.changed(existingRunTemplate) { name }) {
+        existingRunTemplate.name = runTemplate.name
+        hasChanged = true
+      }
+      if (runTemplate.description != null &&
+          runTemplate.changed(existingRunTemplate) { description }) {
+        existingRunTemplate.description = runTemplate.description
+        hasChanged = true
+      }
+      if (runTemplate.tags != null &&
+          runTemplate.tags?.toSet() != existingRunTemplate.tags?.toSet()) {
+        existingRunTemplate.tags = runTemplate.tags
+        hasChanged = true
+      }
+      if (runTemplate.csmSimulation != null &&
+          runTemplate.changed(existingRunTemplate) { csmSimulation }) {
+        existingRunTemplate.csmSimulation = runTemplate.csmSimulation
+        hasChanged = true
+      }
+      if (runTemplate.computeSize != null &&
+          runTemplate.changed(existingRunTemplate) { computeSize }) {
+        existingRunTemplate.computeSize = runTemplate.computeSize
+        hasChanged = true
+      }
+      if (runTemplate.fetchDatasets != null &&
+          runTemplate.changed(existingRunTemplate) { fetchDatasets }) {
+        existingRunTemplate.fetchDatasets = runTemplate.fetchDatasets
+        hasChanged = true
+      }
+      if (runTemplate.fetchScenarioParameters != null &&
+          runTemplate.changed(existingRunTemplate) { fetchScenarioParameters }) {
+        existingRunTemplate.fetchScenarioParameters = runTemplate.fetchScenarioParameters
+        hasChanged = true
+      }
+      if (runTemplate.applyParameters != null &&
+          runTemplate.changed(existingRunTemplate) { applyParameters }) {
+        existingRunTemplate.applyParameters = runTemplate.applyParameters
+        hasChanged = true
+      }
+      if (runTemplate.validateData != null &&
+          runTemplate.changed(existingRunTemplate) { validateData }) {
+        existingRunTemplate.validateData = runTemplate.validateData
+        hasChanged = true
+      }
+      if (runTemplate.sendDatasetsToDataWarehouse != null &&
+          runTemplate.changed(existingRunTemplate) { sendDatasetsToDataWarehouse }) {
+        existingRunTemplate.sendDatasetsToDataWarehouse = runTemplate.sendDatasetsToDataWarehouse
+        hasChanged = true
+      }
+      if (runTemplate.sendInputParametersToDataWarehouse != null &&
+          runTemplate.changed(existingRunTemplate) { sendInputParametersToDataWarehouse }) {
+        existingRunTemplate.sendInputParametersToDataWarehouse =
+            runTemplate.sendInputParametersToDataWarehouse
+        hasChanged = true
+      }
+      if (runTemplate.preRun != null && runTemplate.changed(existingRunTemplate) { preRun }) {
+        existingRunTemplate.preRun = runTemplate.preRun
+        hasChanged = true
+      }
+      if (runTemplate.run != null && runTemplate.changed(existingRunTemplate) { run }) {
+        existingRunTemplate.run = runTemplate.run
+        hasChanged = true
+      }
+      if (runTemplate.postRun != null && runTemplate.changed(existingRunTemplate) { postRun }) {
+        existingRunTemplate.postRun = runTemplate.postRun
+        hasChanged = true
+      }
+      if (runTemplate.parametersHandlerSource != null &&
+          runTemplate.changed(existingRunTemplate) { parametersHandlerSource }) {
+        existingRunTemplate.parametersHandlerSource = runTemplate.parametersHandlerSource
+        hasChanged = true
+      }
+      if (runTemplate.datasetValidatorSource != null &&
+          runTemplate.changed(existingRunTemplate) { datasetValidatorSource }) {
+        existingRunTemplate.datasetValidatorSource = runTemplate.datasetValidatorSource
+        hasChanged = true
+      }
+      if (runTemplate.preRunSource != null &&
+          runTemplate.changed(existingRunTemplate) { preRunSource }) {
+        existingRunTemplate.preRunSource = runTemplate.preRunSource
+        hasChanged = true
+      }
+      if (runTemplate.runSource != null && runTemplate.changed(existingRunTemplate) { runSource }) {
+        existingRunTemplate.runSource = runTemplate.runSource
+        hasChanged = true
+      }
+      if (runTemplate.postRunSource != null && runTemplate.changed(existingRunTemplate) { name }) {
+        existingRunTemplate.name = runTemplate.name
+        hasChanged = true
+      }
+      if (runTemplate.parameterGroups != null &&
+          runTemplate.parameterGroups?.toSet() != existingRunTemplate.parameterGroups?.toSet()) {
+        existingRunTemplate.parameterGroups = runTemplate.parameterGroups
+        hasChanged = true
+      }
+    }
+
+    if (hasChanged) {
+      existingSolution.runTemplates = runTemplates
+      cosmosTemplate.upsert("${organizationId}_solutions", existingSolution)
+    }
+    return runTemplates
   }
 
   @EventListener(OrganizationRegistered::class)

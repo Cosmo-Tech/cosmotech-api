@@ -311,6 +311,67 @@ paths:
         "404":
           description: the Solution specified is unknown or you don't have access to it
 
+  /organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: solution_id
+        in: path
+        description: the Solution identifier
+        required: true
+        schema:
+          type: string
+      - name: run_template_id
+        in: path
+        description: the Run Template identifier
+        required: true
+        schema:
+          type: string
+
+    patch:
+      operationId: updateSolutionRunTemplate
+      tags:
+        - solution
+      summary: Update the specified Solution Run Template
+      requestBody:
+        description: the Run Templates
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RunTemplate"
+          application/yaml:
+            schema:
+              $ref: "#/components/schemas/RunTemplate"
+      responses:
+        "200":
+          description: the Parameters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RunTemplate'
+        "400":
+          description: Bad request
+        "404":
+          description: the Solution or Run Template specified is unknown or you don't have access to it
+
+    delete:
+      operationId: deleteSolutionRunTemplate
+      tags:
+        - solution
+      summary: Remove the specified Solution Run Template
+      responses:
+        "204":
+          description: the operation succeeded
+        "404":
+          description: the Solution specified is unknown or you don't have access to it
+
   /organizations/{organization_id}/solutions/{solution_id}/runtemplates/{run_template_id}/handlers/{handler_id}/upload:
     parameters:
       - name: organization_id
