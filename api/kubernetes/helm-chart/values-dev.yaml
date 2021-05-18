@@ -32,4 +32,7 @@ config:
         cosmos:
           key: "changeme"
           uri: "changeme"
+        storage:
+          account-name: "changeme"
+          account-key: "changeme"
 
