@@ -81,7 +81,9 @@ helm upgrade --install cosmotech-api-${API_VERSION} \
   --set imageCredentials.username=`az acr credential show -n csmphoenix --query="username" -o tsv` \
   --set imageCredentials.password=`az acr credential show -n csmphoenix --query="passwords[0].value" -o tsv` \
   --set config.csm.platform.azure.cosmos.uri="<COSMOSDB_HTTPS_ENDPOINT_URI>" \
-  --set config.csm.platform.azure.cosmos.key="<COSMOSDB_ACCOUNT_KEY>"
+  --set config.csm.platform.azure.cosmos.key="<COSMOSDB_ACCOUNT_KEY>" \
+  --set config.csm.platform.azure.storage.account-name="<AZURE_STORAGE_ACCOUNT>" \
+  --set config.csm.platform.azure.storage.account-key="<AZURE_STORAGE_ACCOUNT_ACCESS_KEY>"
 ```
 
 Alternatively, it is recommended to use a dedicated `values.yaml` file instead, like below.
@@ -95,6 +97,8 @@ helm upgrade --install cosmotech-api-${API_VERSION} \
   --values /path/to/my/values-azure.yaml \
   --set api.version=$API_VERSION
 ```
+
+See the dedicated [README](api/kubernetes/helm-chart/README.md) for more details about the different properties.
 
 #### Local Kubernetes Cluster
 
@@ -138,14 +142,17 @@ helm upgrade --install cosmotech-api-${API_VERSION} \
   --set api.version=$API_VERSION \
   --set image.tag=latest \
   --set config.csm.platform.azure.cosmos.uri="<COSMOSDB_HTTPS_ENDPOINT_URI>" \
-  --set config.csm.platform.azure.cosmos.key="<COSMOSDB_ACCOUNT_KEY>"
+  --set config.csm.platform.azure.cosmos.key="<COSMOSDB_ACCOUNT_KEY>" \
+  --set config.csm.platform.azure.storage.account-name="<AZURE_STORAGE_ACCOUNT>" \
+  --set config.csm.platform.azure.storage.account-key="<AZURE_STORAGE_ACCOUNT_ACCESS_KEY>"
 ```
+
+See the dedicated [README](api/kubernetes/helm-chart/README.md) for more details about the different properties.
 
 ## Generated items
 Some generated items are stored in GitHub:
-Documentation: in [doc/](doc/)
-Merged Open API specification:  [openapi/openapi.yaml](openapi/openapi.yaml)
-PlantUml file and image: in [openapi/plantuml](openapi/plantuml)
+- Documentation: in [doc/](doc/)
+- PlantUml file and image: in [openapi/plantuml](openapi/plantuml)
 
 ## Generated API clients
 Clients for the API are generated and available on GitHub:
