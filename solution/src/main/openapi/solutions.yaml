@@ -334,7 +334,7 @@ paths:
       - name: handler_id
         in: path
         description: the Handler identifier
-        required: false
+        required: true
         schema:
           $ref: '#/components/schemas/RunTemplateHandlerId'
       - name: overwrite
