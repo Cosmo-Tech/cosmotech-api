@@ -9,6 +9,7 @@ import io.argoproj.workflow.apis.ArchivedWorkflowServiceApi
 import io.argoproj.workflow.apis.WorkflowServiceApi
 import io.argoproj.workflow.models.NodeStatus
 import io.argoproj.workflow.models.Workflow
+import io.argoproj.workflow.models.WorkflowStatus
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -31,6 +32,11 @@ class WorkflowUtils(
     val apiClient = this.getApiClient()
     val apiInstance = ArchivedWorkflowServiceApi(apiClient)
     return apiInstance.archivedWorkflowServiceGetArchivedWorkflow(workflowId)
+  }
+
+  fun getWorkflowStatus(workflowId: String, workflowName: String): WorkflowStatus? {
+    val workflow = this.getActiveWorkflow(workflowId, workflowName)
+    if (workflow != null) return workflow.status else return null
   }
 
   fun getWorkflow(workflowName: String): Workflow {

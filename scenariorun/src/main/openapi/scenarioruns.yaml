@@ -399,8 +399,10 @@ components:
       properties:
         id:
           type: string
-          readOnly: true
-          description: the ScenarioRun
+          description: the ScenarioRun id
+        organizationId:
+          type: string
+          description: the ScenarioRun id
         workflowId:
           type: string
           description: the Cosmo Tech compute cluster Argo Workflow Id to search
@@ -409,11 +411,9 @@ components:
           description: the Cosmo Tech compute cluster Argo Workflow Name
         startTime:
           type: string
-          readOnly: true
           description: the ScenarioRun start Date Time
         endTime:
           type: string
-          readOnly: true
           description: the ScenarioRun end Date Time
         phase:
           type: string
@@ -427,6 +427,45 @@ components:
         estimatedDuration:
           type: integer
           description: estimatedDuration in seconds
+        nodes:
+          type: array
+          description: status of ScenarioRun nodes
+          items:
+            $ref: '#/components/schemas/ScenarioRunStatusNode'
+    ScenarioRunStatusNode:
+      type: object
+      description: status of a ScenarioRun Node
+      properties:
+        id:
+          type: string
+          description: the node id
+        name:
+          type: string
+          description: the node unique name
+        displayName:
+          type: string
+          description: the display name, equivalent to ScenarioRun Container name
+        estimatedDuration:
+          type: integer
+          description: estimatedDuration in seconds
+        hostNodeName:
+          type: string
+          description: HostNodeName name of the Kubernetes node on which the Pod is running, if applicable
+        message:
+          type: string
+          description: a human readable message indicating details about why the node is in this condition
+        phase:
+          type: string
+          description: high-level summary of where the node is in its lifecycle
+        progress:
+          type: string
+          description: progress to completion
+        startTime:
+          type: string
+          description: the node start time
+        endTime:
+          type: string
+          description: the node end time
     ScenarioRun:
       type: object
       description: a ScenarioRun with only base properties

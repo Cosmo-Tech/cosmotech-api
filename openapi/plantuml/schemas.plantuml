@@ -235,6 +235,7 @@ entity ScenarioRunStartContainers {
 
 entity ScenarioRunStatus { 
     id: String
+    organizationId: String
     workflowId: String
     workflowName: String
     startTime: String
@@ -243,6 +244,20 @@ entity ScenarioRunStatus {
     progress: String
     message: String
     estimatedDuration: Integer
+    nodes: List<ScenarioRunStatusNode>
+}
+
+entity ScenarioRunStatusNode { 
+    id: String
+    name: String
+    displayName: String
+    estimatedDuration: Integer
+    hostNodeName: String
+    message: String
+    phase: String
+    progress: String
+    startTime: String
+    endTime: String
 }
 
 entity ScenarioRunTemplateParameterValue { 
@@ -371,6 +386,7 @@ Scenario -- "0..*" ScenarioUser : users
 Scenario -- "0..*" ScenarioRunTemplateParameterValue : parametersValues
 ScenarioRun -- "0..*" RunTemplateParameterValue : parametersValues
 ScenarioRun -- "0..*" ScenarioRunContainer : containers
+ScenarioRunStatus -- "0..*" ScenarioRunStatusNode : nodes
 ScenarioRunStartContainers -- "0..*" ScenarioRunContainer : containers
 Workspace -- WorkspaceSolution : solution
 Workspace -- "0..*" WorkspaceUser : users

@@ -20,6 +20,7 @@ import com.cosmotech.scenariorun.domain.ScenarioRunLogs
 import com.cosmotech.scenariorun.domain.ScenarioRunSearch
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
 import com.cosmotech.scenariorun.domain.ScenarioRunStatus
+import com.cosmotech.scenariorun.domain.ScenarioRunStatusNode
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
@@ -362,6 +363,41 @@ class ScenariorunServiceImpl(
       organizationId: kotlin.String,
       scenariorunId: kotlin.String
   ): ScenarioRunStatus {
-    TODO("No implemented yet")
+    val scenarioRun = this.findScenarioRunById(organizationId, scenariorunId)
+    val workflowId = scenarioRun.workflowId
+    val workflowName = scenarioRun.workflowName
+    var status =
+        if (workflowId != null && workflowName != null) {
+          val workflowStatus = workflowUtils.getWorkflowStatus(workflowId, workflowName)
+          ScenarioRunStatus(
+            id = scenariorunId,
+            organizationId = organizationId,
+            workflowId = workflowId,
+            workflowName = workflowName,
+            startTime = workflowStatus?.startedAt?.toString(),
+            endTime = workflowStatus?.finishedAt?.toString(),
+            phase = workflowStatus?.phase,
+            progress = workflowStatus?.progress,
+            message = workflowStatus?.message,
+            estimatedDuration = workflowStatus?.estimatedDuration,
+            nodes = workflowStatus?.nodes?.values?.map { nodeStatus ->
+              ScenarioRunStatusNode(
+                id = nodeStatus.id,
+                name = nodeStatus.name,
+                displayName = nodeStatus.displayName,
+                estimatedDuration = nodeStatus.estimatedDuration,
+                hostNodeName = nodeStatus.hostNodeName,
+                message = nodeStatus.message,
+                phase = nodeStatus.phase,
+                progress = nodeStatus.progress,
+                startTime = nodeStatus.startedAt?.toString(),
+                endTime = nodeStatus.finishedAt?.toString(),
+              )
+            }
+          )
+        }
+        else
+          throw IllegalStateException("Scenario run ${scenariorunId} for Organization ${organizationId} contains a null workflowId or workflowName")
+    return status
   }
 }

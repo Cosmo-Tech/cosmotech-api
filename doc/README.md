@@ -126,6 +126,7 @@ Class | Method | HTTP request | Description
  - [ScenarioRunSearch](./Models/ScenarioRunSearch.md)
  - [ScenarioRunStartContainers](./Models/ScenarioRunStartContainers.md)
  - [ScenarioRunStatus](./Models/ScenarioRunStatus.md)
+ - [ScenarioRunStatusNode](./Models/ScenarioRunStatusNode.md)
  - [ScenarioRunTemplateParameterValue](./Models/ScenarioRunTemplateParameterValue.md)
  - [ScenarioUser](./Models/ScenarioUser.md)
  - [Solution](./Models/Solution.md)
