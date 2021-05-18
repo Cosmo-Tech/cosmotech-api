@@ -70,10 +70,10 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           ./gradlew :cosmotech-api:jib \
-            -Djib.to.image="ghcr.io/Cosmo-Tech/cosmotech-api:${{ steps.refvar.outputs.gitRefName }}"
+            -Djib.to.image="ghcr.io/cosmotech/cosmotech-api:${{ steps.refvar.outputs.gitRefName }}"
 
       - name: Push API Container Image (latest) to GitHub Container Registry
         if: github.ref == 'refs/heads/main'
         run: |
           ./gradlew :cosmotech-api:jib \
-            -Djib.to.image="ghcr.io/Cosmo-Tech/cosmotech-api:latest"
+            -Djib.to.image="ghcr.io/cosmotech/cosmotech-api:latest"
