@@ -506,42 +506,47 @@ subjects:
 ---
 apiVersion: v1
 data:
-  artifactRepository: |
-    archiveLogs: true
-    s3:
-      bucket: my-bucket
-      endpoint: minio.argo.svc.cluster.local:9000
-      insecure: true
-      accessKeySecret:
-        name: my-minio-cred
-        key: accesskey
-      secretKeySecret:
-        name: my-minio-cred
-        key: secretkey
-  containerRuntimeExecutor: k8sapi
-  metricsConfig: |
-    enabled: true
-    path: /metrics
-    port: 9090
-  persistence: |
-    connectionPool:
-      maxIdleConns: 100
-      maxOpenConns: 0
-      connMaxLifetime: 0s
-    nodeStatusOffLoad: true
-    archive: true
-    archiveTTL: 7d
-    postgresql:
-      host: postgres
-      port: 5432
-      database: postgres
-      tableName: argo_workflows
-      userNameSecret:
-        name: argo-postgres-config
-        key: username
-      passwordSecret:
-        name: argo-postgres-config
-        key: password
+  config: |
+    executor:
+      env:
+      - name: RESOURCE_STATE_CHECK_INTERVAL
+        value: 1s
+    artifactRepository:
+      archiveLogs: true
+      s3:
+        bucket: my-bucket
+        endpoint: minio.argo.svc.cluster.local:9000
+        insecure: true
+        accessKeySecret:
+          name: my-minio-cred
+          key: accesskey
+        secretKeySecret:
+          name: my-minio-cred
+          key: secretkey
+    containerRuntimeExecutor: k8sapi
+    metricsConfig:
+      enabled: true
+      path: /metrics
+      port: 9090
+    persistence:
+      connectionPool:
+        maxIdleConns: 100
+        maxOpenConns: 0
+        connMaxLifetime: 0s
+      nodeStatusOffLoad: true
+      archive: true
+      archiveTTL: 7d
+      postgresql:
+        host: postgres
+        port: 5432
+        database: postgres
+        tableName: argo_workflows
+        userNameSecret:
+          name: argo-postgres-config
+          key: username
+        passwordSecret:
+          name: argo-postgres-config
+          key: password
 kind: ConfigMap
 metadata:
   name: workflow-controller-configmap
@@ -779,7 +784,7 @@ spec:
         - --configmap
         - workflow-controller-configmap
         - --executor-image
-        - argoproj/argoexec:latest
+        - argoproj/argoexec:v3.1.0-rc5
         command:
         - workflow-controller
         env:
