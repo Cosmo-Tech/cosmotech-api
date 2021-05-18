@@ -209,6 +209,7 @@ class ScenariorunServiceImpl(
             organizationService,
             connectorService,
             datasetService)
+    logger.debug(startInfo.toString())
     val workflow = this.startWorkflow(startInfo.startContainers)
     val scenarioRun =
         this.dbCreateScenarioRun(
@@ -278,7 +279,9 @@ class ScenariorunServiceImpl(
     val apiInstance = WorkflowServiceApi(defaultClient)
     val body = WorkflowCreateRequest()
 
-    body.workflow(argoAdapter.buildWorkflow(scenarioRunStartContainers))
+    val workflow = argoAdapter.buildWorkflow(scenarioRunStartContainers)
+    logger.debug(workflow.toString())
+    body.workflow(workflow)
 
     try {
       val result = apiInstance.workflowServiceCreateWorkflow(CSM_K8S_NAMESPACE, body)

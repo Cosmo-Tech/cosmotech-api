@@ -63,6 +63,7 @@ private const val EVENT_HUB_CONTROL_PLANE_VAR = "CSM_CONTROL_PLANE_TOPIC"
 private const val CONTROL_PLANE_SUFFIX = "-scenariorun"
 private const val EVENT_HUB_MEASURES_VAR = "CSM_PROBES_MEASURES_TOPIC"
 private const val CSM_SIMULATION_VAR = "CSM_SIMULATION"
+private const val NODE_PARAM_NONE = "%NONE%"
 private const val NODE_LABEL_DEFAULT = "basic"
 private const val NODE_LABEL_SUFFIX = "pool"
 private const val GENERATE_NAME_PREFIX = "workflow-"
@@ -210,9 +211,7 @@ class ContainerFactory(
             ?.forEach { parameter ->
               val parameterValue =
                   scenario.parametersValues?.find { it.parameterId == parameter.id }
-              if (parameterValue != null &&
-                  parameterValue.value != null &&
-                  parameterValue.value != "") {
+              if (parameterValue != null && parameterValue.value != "") {
                 addDatasetAndConnector(
                     organizationId,
                     parameterValue.value,
@@ -261,11 +260,14 @@ class ContainerFactory(
         throw IllegalStateException("Scenario runTemplateId cannot be null")
     val template = getRunTemplate(solution, (scenario.runTemplateId ?: ""))
     val nodeLabel =
-        if (template.computeSize != null) "${template.computeSize}${NODE_LABEL_SUFFIX}"
-        else "${NODE_LABEL_DEFAULT}${NODE_LABEL_SUFFIX}"
+        if (template.computeSize == NODE_PARAM_NONE) null
+        else {
+          if (template.computeSize != null) "${template.computeSize}${NODE_LABEL_SUFFIX}"
+          else "${NODE_LABEL_DEFAULT}${NODE_LABEL_SUFFIX}"
+        }
     val containers =
         buildContainersPipeline(scenario, datasets, connectors, workspace, organization, solution)
-    val generateName = "${GENERATE_NAME_PREFIX}${scenario.id}${GENERATE_NAME_SUFFIX}"
+    val generateName = "${GENERATE_NAME_PREFIX}${scenario.id}${GENERATE_NAME_SUFFIX}".lowercase()
     return ScenarioRunStartContainers(
         generateName = generateName,
         nodeLabel = nodeLabel,
@@ -330,7 +332,7 @@ class ContainerFactory(
     val sendDatasets =
         getSendOptionValue(workspace.sendInputToDataWarehouse, template.sendDatasetsToDataWarehouse)
     if (sendParameters || sendDatasets)
-        containers.add(this.buildSendDataWarehouseContainer(workspace, template))
+        containers.add(this.buildSendDataWarehouseContainer(organization.id, workspace, template))
     if (testStep(template.preRun))
         containers.add(this.buildPreRunContainer(organization, workspace, solution, runTemplateId))
     if (testStep(template.run))
@@ -398,7 +400,7 @@ class ContainerFactory(
             throw IllegalStateException(
                 "Parameter ${parameterValue.parameterId} not found in Solution ${solution.id}")
         if (parameter.varType == PARAMETERS_DATASET_ID) {
-          val dataset = datasets?.find { dataset -> dataset.id == parameterValue?.value }
+          val dataset = datasets?.find { dataset -> dataset.id == parameterValue.value }
           if (dataset == null)
               throw IllegalStateException(
                   "Dataset ${parameterValue.value} cannot be found in Datasets")
@@ -434,9 +436,11 @@ class ContainerFactory(
   }
 
   fun buildSendDataWarehouseContainer(
+      organizationId: String?,
       workspace: Workspace,
       runTemplate: RunTemplate
   ): ScenarioRunContainer {
+    if (organizationId == null) throw IllegalStateException("Organization Id cannot be null")
     val envVars = getCommonEnvVars()
     val sendParameters =
         getSendOptionValue(
@@ -444,12 +448,12 @@ class ContainerFactory(
     val sendDatasets =
         getSendOptionValue(
             workspace.sendInputToDataWarehouse, runTemplate.sendDatasetsToDataWarehouse)
-    envVars.put(SEND_DATAWAREHOUSE_PARAMETERS_VAR, (sendParameters ?: true).toString())
-    envVars.put(SEND_DATAWAREHOUSE_DATASETS_VAR, (sendDatasets ?: true).toString())
+    envVars.put(SEND_DATAWAREHOUSE_PARAMETERS_VAR, (sendParameters).toString())
+    envVars.put(SEND_DATAWAREHOUSE_DATASETS_VAR, (sendDatasets).toString())
     envVars.put(
         ADX_DATA_INGESTION_URI_VAR,
         csmPlatformProperties.azure?.dataWarehouseCluster?.options?.ingestionUri ?: "")
-    envVars.put(ADX_DATABASE, workspace.key)
+    envVars.put(ADX_DATABASE, "${organizationId}-${workspace.key}")
     return ScenarioRunContainer(
         name = CONTAINER_SEND_DATAWAREHOUSE,
         image = csmPlatformProperties.images.sendDataWarehouse,
@@ -570,10 +574,10 @@ class ContainerFactory(
     envVars.put(CONTAINER_MODE_VAR, step.mode)
     envVars.put(
         EVENT_HUB_CONTROL_PLANE_VAR,
-        "${csmPlatformProperties.azure?.eventBus?.baseUri}/${workspace.key}${CONTROL_PLANE_SUFFIX}")
+        "${csmPlatformProperties.azure?.eventBus?.baseUri}/${organization.id}-${workspace.key}${CONTROL_PLANE_SUFFIX}".lowercase())
     envVars.put(
         EVENT_HUB_MEASURES_VAR,
-        "${csmPlatformProperties.azure?.eventBus?.baseUri}/${workspace.key}")
+        "${csmPlatformProperties.azure?.eventBus?.baseUri}/${organization.id}-${workspace.key}".lowercase())
     val csmSimulation = template.csmSimulation
     if (csmSimulation != null) {
       envVars.put(CSM_SIMULATION_VAR, csmSimulation)

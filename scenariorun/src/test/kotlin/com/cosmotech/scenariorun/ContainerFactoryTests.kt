@@ -134,7 +134,7 @@ class ContainerFactoryTests {
   fun `Dataset Container not null`() {
     val container =
         factory.buildFromDataset(
-            getDataset(), getConnector(), 1, false, "1", "organizationid", "workspaceid")
+            getDataset(), getConnector(), 1, false, "1", "Organizationid", "workspaceid")
     assertNotNull(container)
   }
 
@@ -142,7 +142,7 @@ class ContainerFactoryTests {
   fun `Dataset Container name valid`() {
     val container =
         factory.buildFromDataset(
-            getDataset(), getConnector(), 1, false, "1", "organizationid", "workspaceid")
+            getDataset(), getConnector(), 1, false, "1", "Organizationid", "workspaceid")
     assertEquals("fetchDatasetContainer-1", container.name)
   }
 
@@ -150,7 +150,7 @@ class ContainerFactoryTests {
   fun `Dataset Container image is valid`() {
     val container =
         factory.buildFromDataset(
-            getDataset(), getConnector(), 1, false, "1", "organizationid", "workspaceid")
+            getDataset(), getConnector(), 1, false, "1", "Organizationid", "workspaceid")
     assertEquals("cosmotech/test_connector:1.0.0", container.image)
   }
 
@@ -158,7 +158,7 @@ class ContainerFactoryTests {
   fun `Dataset Container connector is valid`() {
     assertThrows(IllegalStateException::class.java) {
       factory.buildFromDataset(
-          getDataset(), getConnector("BadId"), 1, false, "1", "organizationid", "workspaceid")
+          getDataset(), getConnector("BadId"), 1, false, "1", "Organizationid", "workspaceid")
     }
   }
 
@@ -166,7 +166,7 @@ class ContainerFactoryTests {
   fun `Dataset env vars valid`() {
     val container =
         factory.buildFromDataset(
-            getDataset(), getConnector(), 1, false, "1", "organizationid", "workspaceid")
+            getDataset(), getConnector(), 1, false, "1", "Organizationid", "workspaceid")
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -191,7 +191,7 @@ class ContainerFactoryTests {
             1,
             false,
             "1",
-            "organizationid",
+            "Organizationid",
             "workspaceid")
     val expected =
         mapOf(
@@ -216,7 +216,7 @@ class ContainerFactoryTests {
             1,
             false,
             "1",
-            "organizationid",
+            "Organizationid",
             "workspaceid")
     val expected =
         mapOf(
@@ -240,7 +240,7 @@ class ContainerFactoryTests {
             1,
             false,
             "1",
-            "organizationid",
+            "Organizationid",
             "workspaceid")
     val expected = listOf("organizationid/workspaceid/workspace.param")
     assertEquals(expected, container.runArgs)
@@ -250,7 +250,7 @@ class ContainerFactoryTests {
   fun `Dataset args valid`() {
     val container =
         factory.buildFromDataset(
-            getDataset(), getConnector(), 1, false, "1", "organizationid", "workspaceid")
+            getDataset(), getConnector(), 1, false, "1", "Organizationid", "workspaceid")
     val expected = listOf("param1_value", "param2_value", "param3_value")
     assertEquals(expected, container.runArgs)
   }
@@ -290,25 +290,29 @@ class ContainerFactoryTests {
 
   @Test
   fun `Send DataWarehouse Container is not null`() {
-    val container = factory.buildSendDataWarehouseContainer(getWorkspace(), getRunTemplate())
+    val container =
+        factory.buildSendDataWarehouseContainer("Organizationid", getWorkspace(), getRunTemplate())
     assertNotNull(container)
   }
 
   @Test
   fun `Send DataWarehouseContainer name valid`() {
-    val container = factory.buildSendDataWarehouseContainer(getWorkspace(), getRunTemplate())
+    val container =
+        factory.buildSendDataWarehouseContainer("Organizationid", getWorkspace(), getRunTemplate())
     assertEquals("sendDataWarehouseContainer", container.name)
   }
 
   @Test
   fun `Send DataWarehouse Container image valid`() {
-    val container = factory.buildSendDataWarehouseContainer(getWorkspace(), getRunTemplate())
+    val container =
+        factory.buildSendDataWarehouseContainer("Organizationid", getWorkspace(), getRunTemplate())
     assertEquals("cosmotech/senddatawarehouse:1.0.0", container.image)
   }
 
   @Test
   fun `Send DataWarehouse Container env vars valid`() {
-    val container = factory.buildSendDataWarehouseContainer(getWorkspace(), getRunTemplate())
+    val container =
+        factory.buildSendDataWarehouseContainer("Organizationid", getWorkspace(), getRunTemplate())
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -320,14 +324,16 @@ class ContainerFactoryTests {
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "true",
             "CSM_SEND_DATAWAREHOUSE_DATASETS" to "true",
             "ADX_DATA_INGESTION_URI" to "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "ADX_DATABASE" to "test",
+            "ADX_DATABASE" to "Organizationid-Test",
         )
     assertEquals(expected, container.envVars)
   }
 
   @Test
   fun `Send DataWarehouse Container no send env vars`() {
-    val container = factory.buildSendDataWarehouseContainer(getWorkspaceNoSend(), getRunTemplate())
+    val container =
+        factory.buildSendDataWarehouseContainer(
+            "Organizationid", getWorkspaceNoSend(), getRunTemplate())
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -339,7 +345,7 @@ class ContainerFactoryTests {
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "false",
             "CSM_SEND_DATAWAREHOUSE_DATASETS" to "false",
             "ADX_DATA_INGESTION_URI" to "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "ADX_DATABASE" to "test",
+            "ADX_DATABASE" to "Organizationid-Test",
         )
     assertEquals(expected, container.envVars)
   }
@@ -347,7 +353,8 @@ class ContainerFactoryTests {
   @Test
   fun `Send DataWarehouse Container env vars send override dataset template`() {
     val container =
-        factory.buildSendDataWarehouseContainer(getWorkspace(), getRunTemplateNoDatasetsSend())
+        factory.buildSendDataWarehouseContainer(
+            "Organizationid", getWorkspace(), getRunTemplateNoDatasetsSend())
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -359,7 +366,7 @@ class ContainerFactoryTests {
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "true",
             "CSM_SEND_DATAWAREHOUSE_DATASETS" to "false",
             "ADX_DATA_INGESTION_URI" to "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "ADX_DATABASE" to "test",
+            "ADX_DATABASE" to "Organizationid-Test",
         )
     assertEquals(expected, container.envVars)
   }
@@ -367,7 +374,8 @@ class ContainerFactoryTests {
   @Test
   fun `Send DataWarehouse Container env vars send override parameters template`() {
     val container =
-        factory.buildSendDataWarehouseContainer(getWorkspace(), getRunTemplateNoParametersSend())
+        factory.buildSendDataWarehouseContainer(
+            "Organizationid", getWorkspace(), getRunTemplateNoParametersSend())
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -379,7 +387,7 @@ class ContainerFactoryTests {
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "false",
             "CSM_SEND_DATAWAREHOUSE_DATASETS" to "true",
             "ADX_DATA_INGESTION_URI" to "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "ADX_DATABASE" to "test",
+            "ADX_DATABASE" to "Organizationid-Test",
         )
     assertEquals(expected, container.envVars)
   }
@@ -500,13 +508,14 @@ class ContainerFactoryTests {
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to mode,
             "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/test-scenariorun",
-            "CSM_PROBES_MEASURES_TOPIC" to "amqps://csm-phoenix.servicebus.windows.net/test",
+                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
+            "CSM_PROBES_MEASURES_TOPIC" to
+                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
             "CSM_SIMULATION" to "TestSimulation",
             providerEnvVar to "azureStorage",
             "AZURE_STORAGE_CONNECTION_STRING" to
                 "DefaultEndpointsProtocol=https;AccountName=csmphoenix;AccountKey=42rmlBQ2IrxdIByLj79AecdIyYifSR04ZnGsBYt82tbM2clcP0QwJ9N+l/fLvyCzu9VZ8HPsQyM7jHe6CVSUig==;EndpointSuffix=core.windows.net",
-            resourceEnvVar to "organizationid/1/${resource}.zip",
+            resourceEnvVar to "Organizationid/1/${resource}.zip",
         )
     assertEquals(expected, container.envVars)
   }
@@ -528,8 +537,9 @@ class ContainerFactoryTests {
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to mode,
             "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/test-scenariorun",
-            "CSM_PROBES_MEASURES_TOPIC" to "amqps://csm-phoenix.servicebus.windows.net/test",
+                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
+            "CSM_PROBES_MEASURES_TOPIC" to
+                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
             "CSM_SIMULATION" to "TestSimulation",
             providerEnvVar to "local",
             "AZURE_STORAGE_CONNECTION_STRING" to
@@ -782,7 +792,7 @@ class ContainerFactoryTests {
   }
 
   @Test
-  fun `Build start containers node Label default`() {
+  fun `Build start containers node Label %NONE%`() {
     val scenario = getScenario()
     val datasets = listOf(getDataset())
     val connectors = listOf(getConnector())
@@ -792,6 +802,19 @@ class ContainerFactoryTests {
         factory.buildContainersStart(
             scenario, datasets, connectors, workspace, getOrganization(), solution)
     assertEquals("basicpool", startContainers.nodeLabel)
+  }
+
+  @Test
+  fun `Build start containers node Label default`() {
+    val scenario = getScenario()
+    val datasets = listOf(getDataset())
+    val connectors = listOf(getConnector())
+    val workspace = getWorkspace()
+    val solution = getSolutionNonePool()
+    val startContainers =
+        factory.buildContainersStart(
+            scenario, datasets, connectors, workspace, getOrganization(), solution)
+    assertNull(startContainers.nodeLabel)
   }
 
   @Test
@@ -927,9 +950,9 @@ class ContainerFactoryTests {
   }
 
   private fun getStartInfoFromIds(): StartInfo {
-    val organizationId = "organizationid"
+    val organizationId = "Organizationid"
     val workspaceId = "workspaceid"
-    val scenarioId = "aqwxsz"
+    val scenarioId = "AQWXSZ"
 
     val scenarioRunService = mockk<ScenariorunApiService>()
     val scenarioService = mockk<ScenarioApiService>()
@@ -1029,8 +1052,9 @@ class ContainerFactoryTests {
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to mode,
             "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/test-scenariorun",
-            "CSM_PROBES_MEASURES_TOPIC" to "amqps://csm-phoenix.servicebus.windows.net/test",
+                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
+            "CSM_PROBES_MEASURES_TOPIC" to
+                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
             "CSM_SIMULATION" to "TestSimulation")
     assertEquals(expected, container.envVars)
   }
@@ -1191,7 +1215,7 @@ class ContainerFactoryTests {
   private fun getWorkspace(): Workspace {
     return Workspace(
         id = "workspaceid",
-        key = "test",
+        key = "Test",
         name = "Test Workspace",
         description = "Test Workspace Description",
         version = "1.0.0",
@@ -1205,7 +1229,7 @@ class ContainerFactoryTests {
   private fun getWorkspaceNoSend(): Workspace {
     return Workspace(
         id = "workspaceid",
-        key = "test",
+        key = "Test",
         name = "Test Workspace",
         description = "Test Workspace Description",
         version = "1.0.0",
@@ -1220,7 +1244,7 @@ class ContainerFactoryTests {
   private fun getWorkspaceNoDB(): Workspace {
     return Workspace(
         id = "workspaceid",
-        key = "test",
+        key = "Test",
         name = "Test Workspace",
         solution =
             WorkspaceSolution(
@@ -1299,6 +1323,17 @@ class ContainerFactoryTests {
     )
   }
 
+  private fun getSolutionNonePool(): Solution {
+    return Solution(
+        id = "1",
+        key = "TestSolution",
+        name = "Test Solution",
+        repository = "cosmotech/testsolution_simulator",
+        version = "1.0.0",
+        runTemplates = listOf(getRunTemplateNonePool()),
+    )
+  }
+
   private fun getSolutionOnlyRun(): Solution {
     return Solution(
         id = "1",
@@ -1356,6 +1391,15 @@ class ContainerFactoryTests {
         id = "testruntemplate",
         name = "Test Run",
         csmSimulation = "TestSimulation",
+    )
+  }
+
+  private fun getRunTemplateNonePool(): RunTemplate {
+    return RunTemplate(
+        id = "testruntemplate",
+        name = "Test Run",
+        csmSimulation = "TestSimulation",
+        computeSize = "%NONE%",
     )
   }
 
@@ -1424,7 +1468,7 @@ class ContainerFactoryTests {
 
   private fun getScenario(): Scenario {
     return Scenario(
-        id = "aqwxsz",
+        id = "AQWXSZ",
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
         datasetList = listOf("1"),
@@ -1433,7 +1477,7 @@ class ContainerFactoryTests {
 
   private fun getScenarioDatasetIds(): Scenario {
     return Scenario(
-        id = "aqwxsz",
+        id = "AQWXSZ",
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
         datasetList = listOf("1"),
@@ -1464,7 +1508,7 @@ class ContainerFactoryTests {
 
   private fun getScenarioTwoDatasetsAndDatasetIds(): Scenario {
     return Scenario(
-        id = "aqwxsz",
+        id = "AQWXSZ",
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
         datasetList = listOf("1", "2"),
@@ -1495,7 +1539,7 @@ class ContainerFactoryTests {
 
   private fun getScenarioThreeDatasets(): Scenario {
     return Scenario(
-        id = "aqwxsz",
+        id = "AQWXSZ",
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
         datasetList = listOf("1", "2", "3"),
@@ -1504,7 +1548,7 @@ class ContainerFactoryTests {
 
   private fun getOrganization(): Organization {
     return Organization(
-        id = "organizationid",
+        id = "Organizationid",
         name = "Organization Test",
     )
   }

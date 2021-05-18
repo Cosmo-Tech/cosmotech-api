@@ -11,6 +11,8 @@ Create service account `workflow` and bind workflow role on namespaces which wil
 Add minio secrets in namespaces which will run workflows with artifacts (phoenix)
 `kubectl -n phoenix -f minio-cred.yaml`
 
+Apply workflow rbac to ServiceAccount  default  phoenix for argo-wait sidecar container
+
 You can now submit workflow by precising the `workflow` service account
 ``` yaml
 ...
