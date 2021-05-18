@@ -442,9 +442,9 @@ components:
         name:
           type: string
           description: the node unique name
-        displayName:
+        containerName:
           type: string
-          description: the display name, equivalent to ScenarioRun Container name
+          description: the ScenarioRun container name
         estimatedDuration:
           type: integer
           description: estimatedDuration in seconds

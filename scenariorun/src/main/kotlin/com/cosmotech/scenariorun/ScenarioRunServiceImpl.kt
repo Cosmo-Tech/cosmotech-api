@@ -388,7 +388,7 @@ class ScenariorunServiceImpl(
                     ScenarioRunStatusNode(
                         id = nodeStatus.id,
                         name = nodeStatus.name,
-                        displayName = nodeStatus.displayName,
+                        containerName = nodeStatus.displayName,
                         estimatedDuration = nodeStatus.estimatedDuration,
                         hostNodeName = nodeStatus.hostNodeName,
                         message = nodeStatus.message,
