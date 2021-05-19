@@ -16,8 +16,6 @@ fi
 
 cluster_name=${1:-local-k8s-cluster}
 
-kindest_node_image_tag='v1.21.1'
-
 cat <<EOF | kind create cluster --name "${cluster_name}" --config=-
 
 kind: Cluster
@@ -30,7 +28,6 @@ containerdConfigPatches:
      endpoint = ["http://${registry_name}:${registry_port}"]
 nodes:
     - role: control-plane
-      image: kindest/node:${kindest_node_image_tag}
       kubeadmConfigPatches:
       - |
         kind: InitConfiguration
@@ -45,7 +42,6 @@ nodes:
         hostPort: 443
         protocol: TCP
     - role: worker
-      image: kindest/node:${kindest_node_image_tag}
 featureGates:
   # TTL Controller for finished resources is currently an opt-in alpha feature
   # https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/
