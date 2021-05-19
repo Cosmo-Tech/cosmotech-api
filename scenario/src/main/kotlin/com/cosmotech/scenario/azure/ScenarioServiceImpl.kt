@@ -366,7 +366,7 @@ class ScenarioServiceImpl(
     return if (hasChanged) {
       scenario.lastUpdate = OffsetDateTime.now()
       cosmosTemplate.upsert(
-          "${organizationId}_datasets", existingScenario.asMapWithAdditionalData(workspaceId))
+          "${organizationId}_scenario_data", existingScenario.asMapWithAdditionalData(workspaceId))
 
       userIdsRemoved?.forEach {
         this.eventPublisher.publishEvent(
