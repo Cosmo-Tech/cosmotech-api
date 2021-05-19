@@ -65,10 +65,17 @@ class ArgoAdapterTests {
   }
 
   @Test
+  fun `Template has simulator no entrypoint`() {
+    val src = getScenarioRunContainer()
+    val template = argoAdapter.buildTemplate(src)
+    assertNull(template.container?.command)
+  }
+
+  @Test
   fun `Template has default entrypoint if not defined`() {
     val src = getScenarioRunContainer()
     val template = argoAdapter.buildTemplate(src)
-    val expected: List<String?> = listOf(null)
+    val expected: String? = null
     assertEquals(expected, template.container?.command)
   }
 

@@ -29,7 +29,6 @@ allprojects {
   apply(plugin = "org.jetbrains.kotlin.jvm")
 
   repositories {
-    mavenLocal()
     maven {
       name = "Argo Client Java GitHub Packages"
       url = uri("https://maven.pkg.github.com/argoproj-labs/argo-client-java")
