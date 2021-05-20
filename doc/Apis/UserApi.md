@@ -203,7 +203,7 @@ This endpoint does not need any parameter.
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: text/plain
 
 <a name="unregisterUser"></a>
 # **unregisterUser**
