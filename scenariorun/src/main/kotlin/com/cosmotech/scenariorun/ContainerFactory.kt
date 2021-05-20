@@ -308,7 +308,7 @@ class ContainerFactory(
                 connector,
                 datasetCount,
                 false,
-                dataset.id ?: "",
+                null,
                 organization.id ?: "",
                 workspace.id ?: ""))
         datasetCount++
@@ -352,7 +352,7 @@ class ContainerFactory(
       connector: Connector,
       datasetCount: Int,
       parametersFetch: Boolean,
-      fetchId: String,
+      fetchId: String?,
       organizationId: String,
       workspaceId: String,
   ): ScenarioRunContainer {
@@ -612,12 +612,13 @@ class ContainerFactory(
       dataset: Dataset,
       connector: Connector,
       fetchPathBase: String,
-      fetchId: String,
+      fetchId: String?,
       organizationId: String,
       workspaceId: String,
   ): Map<String, String> {
     val envVars = getCommonEnvVars()
-    envVars.put(FETCH_PATH_VAR, "${fetchPathBase}/${fetchId}")
+    val fetchPath = if (fetchId == null) fetchPathBase else "${fetchPathBase}/${fetchId}"
+    envVars.put(FETCH_PATH_VAR, fetchPath)
     val datasetEnvVars =
         connector
             .parameterGroups

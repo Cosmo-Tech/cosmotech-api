@@ -166,7 +166,7 @@ class ContainerFactoryTests {
   fun `Dataset env vars valid`() {
     val container =
         factory.buildFromDataset(
-            getDataset(), getConnector(), 1, false, "1", "Organizationid", "workspaceid")
+            getDataset(), getConnector(), 1, false, null, "Organizationid", "workspaceid")
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -175,7 +175,7 @@ class ContainerFactoryTests {
             "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data/1",
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "ENV_PARAM_1" to "env_param1_value",
             "ENV_PARAM_2" to "env_param2_value",
             "ENV_PARAM_3" to "env_param3_value")
@@ -190,7 +190,7 @@ class ContainerFactoryTests {
             getConnectorWorkspaceFile(),
             1,
             false,
-            "1",
+            null,
             "Organizationid",
             "workspaceid")
     val expected =
@@ -201,7 +201,7 @@ class ContainerFactoryTests {
             "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data/1",
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "ENV_PARAM_1" to "organizationid/workspaceid/workspace.env",
         )
     assertEquals(expected, container.envVars)
@@ -215,7 +215,7 @@ class ContainerFactoryTests {
             getConnectorNoVars(),
             1,
             false,
-            "1",
+            null,
             "Organizationid",
             "workspaceid")
     val expected =
@@ -226,7 +226,7 @@ class ContainerFactoryTests {
             "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data/1",
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
         )
     assertEquals(expected, container.envVars)
   }
@@ -754,7 +754,7 @@ class ContainerFactoryTests {
             "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data/2",
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "ENV_PARAM_1" to "env_param1_value",
             "ENV_PARAM_2" to "env_param2_value",
             "ENV_PARAM_3" to "env_param3_value")
