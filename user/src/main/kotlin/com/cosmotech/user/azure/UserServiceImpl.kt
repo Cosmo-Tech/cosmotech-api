@@ -132,7 +132,7 @@ class UserServiceImpl : AbstractCosmosBackedService(), UserApiService {
     cosmosTemplate.upsert(coreUserContainer, user)
   }
 
-  override  fun testPlatform(): kotlin.String {
+  override fun testPlatform(): kotlin.String {
     return "TEST OK. Welcome to the Cosmo Tech Platform"
   }
 }

@@ -121,6 +121,10 @@ entity RunTemplateParameter {
     * id: String
     * labels: Map
     * varType: String
+    defaultValue: String
+    minValue: String
+    maxValue: String
+    regexValidation: String
     options: Map
 }
 

@@ -613,6 +613,18 @@ components:
         varType:
           type: string
           description: the variable type for the parameter. Basic types or special type %DATASETID%
+        defaultValue:
+          type: string
+          description: the default value for this parameter
+        minValue:
+          type: string
+          description: the minimum value for this parameter
+        maxValue:
+          type: string
+          description: the maximum value for this parameter
+        regexValidation:
+          type: string
+          description: a regex to validate the value
         options:
           type: object
           description: freeform options
