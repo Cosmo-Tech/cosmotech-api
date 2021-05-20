@@ -6,6 +6,7 @@ Name | Type | Description | Notes
 **id** | [**String**](string.md) | the ScenarioRun | [optional] [default to null]
 **organizationId** | [**String**](string.md) | the Organization id | [optional] [default to null]
 **workflowId** | [**String**](string.md) | the Cosmo Tech compute cluster Argo Workflow Id to search | [optional] [default to null]
+**csmSimulationRun** | [**String**](string.md) | the Cosmo Tech Simulation Run Id | [optional] [default to null]
 **generateName** | [**String**](string.md) | the base name for workflow name generation | [optional] [default to null]
 **workflowName** | [**String**](string.md) | the Cosmo Tech compute cluster Argo Workflow Name | [optional] [default to null]
 **ownerId** | [**String**](string.md) | the user id which own this scenariorun | [optional] [default to null]

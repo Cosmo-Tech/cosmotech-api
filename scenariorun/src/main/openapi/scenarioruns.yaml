@@ -383,6 +383,9 @@ components:
         generateName:
           type: string
           description: the base name for workflow name generation
+        csmSimulationId:
+          type: string
+          description: Cosmo Tech Simulation Run Id
         nodeLabel:
           type: string
           description: the node label request
@@ -392,6 +395,7 @@ components:
           items:
             $ref: '#/components/schemas/ScenarioRunContainer'
       required:
+        - csmSimulationId
         - containers
     ScenarioRunStatus:
       type: object
@@ -480,6 +484,10 @@ components:
         workflowId:
           type: string
           description: the Cosmo Tech compute cluster Argo Workflow Id to search
+        csmSimulationRun:
+          type: string
+          readOnly: true
+          description: the Cosmo Tech Simulation Run Id
         generateName:
           type: string
           description: the base name for workflow name generation

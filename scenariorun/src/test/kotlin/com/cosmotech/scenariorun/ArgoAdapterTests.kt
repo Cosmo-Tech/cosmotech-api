@@ -20,6 +20,7 @@ class ArgoAdapterTests {
   private val logger = LoggerFactory.getLogger(ArgoAdapterTests::class.java)
   private val argoAdapter = ArgoAdapter()
   private val DEFAULT_ENTRY_POINT = "entrypoint.py"
+  private val csmSimulationId = "simulationrunid"
 
   @Test
   fun `Template not null`() {
@@ -377,7 +378,9 @@ class ArgoAdapterTests {
   fun getStartContainersRunDefaultPool(): ScenarioRunStartContainers {
     val sc =
         ScenarioRunStartContainers(
-            nodeLabel = "basicpool", containers = listOf(getScenarioRunContainerEntrypoint()))
+            nodeLabel = "basicpool",
+            containers = listOf(getScenarioRunContainerEntrypoint()),
+            csmSimulationId = csmSimulationId)
     return sc
   }
 
@@ -385,14 +388,16 @@ class ArgoAdapterTests {
     val sc =
         ScenarioRunStartContainers(
             nodeLabel = "highcpupool",
-            containers = listOf(getScenarioRunContainerEntrypoint("runContainer")))
+            containers = listOf(getScenarioRunContainerEntrypoint("runContainer")),
+            csmSimulationId = csmSimulationId)
     return sc
   }
 
   fun getStartContainersRunNoPool(): ScenarioRunStartContainers {
     val sc =
         ScenarioRunStartContainers(
-            containers = listOf(getScenarioRunContainerEntrypoint("runContainer")))
+            containers = listOf(getScenarioRunContainerEntrypoint("runContainer")),
+            csmSimulationId = csmSimulationId)
     return sc
   }
 
@@ -410,7 +415,8 @@ class ArgoAdapterTests {
                     getScenarioRunContainerEntrypoint("preRunContainer"),
                     getScenarioRunContainerEntrypoint("runContainer"),
                     getScenarioRunContainerEntrypoint("postRunContainer"),
-                ))
+                ),
+            csmSimulationId = csmSimulationId)
     return sc
   }
 
@@ -429,7 +435,8 @@ class ArgoAdapterTests {
                     getScenarioRunContainerEntrypoint("preRunContainer"),
                     getScenarioRunContainerEntrypoint("runContainer"),
                     getScenarioRunContainerEntrypoint("postRunContainer"),
-                ))
+                ),
+            csmSimulationId = csmSimulationId)
     return sc
   }
 
@@ -445,7 +452,8 @@ class ArgoAdapterTests {
                         "Diamond-C", dependencies = listOf("Diamond-A")),
                     getScenarioRunContainerDependencies(
                         "Diamond-D", dependencies = listOf("Diamond-B", "Diamond-C")),
-                ))
+                ),
+            csmSimulationId = csmSimulationId)
     return sc
   }
 }

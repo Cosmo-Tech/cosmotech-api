@@ -45,18 +45,17 @@ class ArgoAdapter {
             V1VolumeMount().name(VOLUME_CLAIM_DATASETS).mountPath(VOLUME_DATASETS_PATH),
             V1VolumeMount().name(VOLUME_CLAIM_PARAMETERS).mountPath(VOLUME_PARAMETERS_PATH))
 
-    val container = io.kubernetes.client.openapi.models.V1Container()
-                .image(scenarioRunContainer.image)
-                .env(envVars)
-                .args(scenarioRunContainer.runArgs)
-                .volumeMounts(volumeMounts)
+    val container =
+        io.kubernetes.client.openapi.models.V1Container()
+            .image(scenarioRunContainer.image)
+            .env(envVars)
+            .args(scenarioRunContainer.runArgs)
+            .volumeMounts(volumeMounts)
     if (scenarioRunContainer.entrypoint != null) {
       container.command(listOf(scenarioRunContainer.entrypoint))
     }
 
-    return Template()
-        .name(scenarioRunContainer.name)
-        .container(container)
+    return Template().name(scenarioRunContainer.name).container(container)
   }
 
   fun buildWorkflowSpec(startContainers: ScenarioRunStartContainers): WorkflowSpec {

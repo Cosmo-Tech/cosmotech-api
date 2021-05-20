@@ -4,6 +4,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **generateName** | [**String**](string.md) | the base name for workflow name generation | [optional] [default to null]
+**csmSimulationId** | [**String**](string.md) | Cosmo Tech Simulation Run Id | [default to null]
 **nodeLabel** | [**String**](string.md) | the node label request | [optional] [default to null]
 **containers** | [**List**](ScenarioRunContainer.md) | the containerslist | [default to null]
 

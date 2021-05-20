@@ -216,6 +216,7 @@ class ScenariorunServiceImpl(
             organizationId,
             workspaceId,
             scenarioId,
+            startInfo.csmSimulationId,
             startInfo.scenario,
             startInfo.workspace,
             startInfo.solution,
@@ -261,6 +262,7 @@ class ScenariorunServiceImpl(
             organizationId,
             "None",
             "None",
+            scenarioRunStartContainers.csmSimulationId,
             null,
             null,
             null,
@@ -305,6 +307,7 @@ class ScenariorunServiceImpl(
       organizationId: String,
       workspaceId: String,
       scenarioId: String,
+      csmSimulationId: String,
       scenario: Scenario?,
       workspace: Workspace?,
       solution: Solution?,
@@ -323,6 +326,7 @@ class ScenariorunServiceImpl(
     val scenarioRun =
         ScenarioRun(
             id = idGenerator.generate("scenariorun", prependPrefix = "SR-"),
+            csmSimulationRun = csmSimulationId,
             organizationId = organizationId,
             workspaceId = workspaceId,
             workspaceKey = workspace?.key,
