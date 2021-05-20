@@ -41,8 +41,6 @@ spec:
           env:
             - name: CSM_PLATFORM_VENDOR
               value: "{{- default "azure" .Values.config.csm.platform.vendor }}"
-            - name: CSM_PLATFORM_ARGO_BASEURL
-              value: "https://{{ .Release.Name }}-argo-server.{{ .Release.Namespace }}.svc.cluster.local:2746"
             - name: SERVER_JETTY_ACCESSLOG_ENABLED
               value: "true"
             - name: SERVER_JETTY_ACCESSLOG_IGNORE_PATHS

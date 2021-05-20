@@ -131,76 +131,10 @@ config:
           # -- Azure storage account access key. Can be retrieved in the Azure portal
           account-key: "changeme"
       argo:
-        enabled: true
-        baseUrl: "https://argo-server.argo.svc.cluster.local:2746"
+        base-url: "https://argo-server.argo.svc.cluster.local:2746"
       images:
         scenario-fetch-parameters: cosmotech/scenariofetchparameters:1.0.0
         send-datawarehouse: cosmotech/senddatawarehouse:1.0.0
       services:
         adx-dataingestion-uri: "https://ingest-phoenix.westeurope.kusto.windows.net"
         eventhub-cluster-uri: "amqps://csm-phoenix.servicebus.windows.net"
-
-# Dependencies
-argo:
-  # https://github.com/argoproj/argo-helm/blob/master/charts/argo/values.yaml
-  images:
-    pullPolicy: IfNotPresent
-  workflow:
-    serviceAccount:
-      create: true
-      name: workflow
-    rbac:
-      create: true
-  minio:
-    nameOverride: argo-minio
-    install: true
-  executor:
-    env:
-      RESOURCE_STATE_CHECK_INTERVAL: "1s"
-  artifactRepository:
-    archiveLogs: true
-    s3:
-      bucket: my-bucket
-      # TODO : release name
-      endpoint: cosmotech-latest-argo-minio:9000
-      insecure: true
-      accessKeySecret:
-        # TODO : release name
-        name: cosmotech-api-latest-argo-minio
-        key: accesskey
-      secretKeySecret:
-        # TODO : release name
-        name: cosmotech-api-latest-argo-minio
-        key: secretkey
-  server:
-    name: argo-server
-  controller:
-    name: argo-workflow-controller
-    containerRuntimeExecutor: k8sapi
-    metricsConfig:
-      enabled: true
-    persistence:
-      archive: true
-      postgresql:
-        # TODO https://github.com/helm/helm/issues/2133
-        #   We cannot use the release name here => use envsubstr or gomtemplate ???
-#        host: "{{ .Release.Name }}-postgresql"
-        host: "cosmotech-api-latest-argo-postgresql"
-        port: 5432
-        database: argo_workflows
-        tableName: workflows
-        userNameSecret:
-#          name: "{{ .Release.Name }}-argo-secret"
-          name: "cosmotech-api-latest-argo-secret"
-          key: postgresql.username
-        passwordSecret:
-#          name: "{{ .Release.Name }}-argo-secret"
-          name: "cosmotech-api-latest-argo-secret"
-          key: postgresql.password
-
-postgresql:
-  # https://github.com/bitnami/charts/blob/master/bitnami/postgresql/values.yaml
-  nameOverride: argo-postgresql
-  postgresqlDatabase: argo_workflows
-  postgresqlUsername: argo
-  postgresqlPassword: "changeme"
