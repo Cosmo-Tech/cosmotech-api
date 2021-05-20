@@ -29,6 +29,7 @@ import org.springframework.stereotype.Component
 
 private const val PARAMETERS_WORKSPACE_FILE = "%WORKSPACE_FILE%"
 private const val PARAMETERS_DATASET_ID = "%DATASETID%"
+private const val PARAMETERS_STORAGE_CONNECTION_STRING = "%STORAGE_CONNECTION_STRING%"
 private const val CONTAINER_FETCH_DATASET = "fetchDatasetContainer"
 private const val CONTAINER_FETCH_PARAMETERS = "fetchScenarioParametersContainer"
 private const val CONTAINER_FETCH_DATASET_PARAMETERS = "fetchScenarioDatasetParametersContainer"
@@ -678,7 +679,7 @@ class ContainerFactory(
             ?.associateBy(
                 { it.envVar ?: "" },
                 {
-                  resolvePath(
+                  resolvePlatformVars(
                       dataset.connector?.parametersValues?.getOrDefault(it.id, it.default ?: "")
                           ?: "",
                       organizationId,
@@ -688,9 +689,19 @@ class ContainerFactory(
     return envVars
   }
 
-  private fun resolvePath(path: String, organizationId: String, workspaceId: String): String {
-    return path.replace(
-        PARAMETERS_WORKSPACE_FILE, "${organizationId}/${workspaceId}".sanitizeForAzureStorage())
+  private fun resolvePlatformVars(
+      path: String,
+      organizationId: String,
+      workspaceId: String
+  ): String {
+    var newValue =
+        path.replace(
+            PARAMETERS_WORKSPACE_FILE, "${organizationId}/${workspaceId}".sanitizeForAzureStorage())
+    newValue =
+        newValue.replace(
+            PARAMETERS_STORAGE_CONNECTION_STRING,
+            csmPlatformProperties.azure?.storage?.connectionString ?: "")
+    return newValue
   }
 
   private fun getDatasetRunArgs(
@@ -700,7 +711,7 @@ class ContainerFactory(
       workspaceId: String
   ): List<String>? {
     return connector.parameterGroups?.flatMap { it.parameters }?.filter { it.envVar == null }?.map {
-      resolvePath(
+      resolvePlatformVars(
           dataset.connector?.parametersValues?.getOrDefault(it.id, it.default ?: "") ?: "",
           organizationId,
           workspaceId)

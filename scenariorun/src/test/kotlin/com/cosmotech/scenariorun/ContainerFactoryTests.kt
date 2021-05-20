@@ -247,6 +247,34 @@ class ContainerFactoryTests {
   }
 
   @Test
+  fun `Dataset env vars Workspace Storage valid`() {
+    val container =
+        factory.buildFromDataset(
+            getDatasetWorkspaceStorage(),
+            getConnectorWorkspaceStorage(),
+            1,
+            false,
+            null,
+            "Organizationid",
+            "workspaceid",
+            csmSimulationId)
+    val expected =
+        mapOf(
+            "AZURE_TENANT_ID" to "12345678",
+            "AZURE_CLIENT_ID" to "98765432",
+            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "CSM_SIMULATION_ID" to "simulationrunid",
+            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "AZURE_STORAGE_CONNECTION_STRING" to
+                "DefaultEndpointsProtocol=https;AccountName=csmphoenix;AccountKey=42rmlBQ2IrxdIByLj79AecdIyYifSR04ZnGsBYt82tbM2clcP0QwJ9N+l/fLvyCzu9VZ8HPsQyM7jHe6CVSUig==;EndpointSuffix=core.windows.net",
+        )
+    assertEquals(expected, container.envVars)
+  }
+
+  @Test
   fun `Dataset no env vars valid`() {
     val container =
         factory.buildFromDataset(
@@ -324,6 +352,22 @@ class ContainerFactoryTests {
 
   @Test
   fun `Fetch Scenario Parameters Container env vars valid`() {
+    val container = factory.buildScenarioParametersFetchContainer("1", csmSimulationId)
+    val expected =
+        mapOf(
+            "AZURE_TENANT_ID" to "12345678",
+            "AZURE_CLIENT_ID" to "98765432",
+            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "CSM_SIMULATION_ID" to "simulationrunid",
+            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "CSM_SCENARIO_ID" to "1")
+    assertEquals(expected, container.envVars)
+  }
+
+  @Test
+  fun `Fetch Scenario Parameters Container env vars AZURE STORAGE valid`() {
     val container = factory.buildScenarioParametersFetchContainer("1", csmSimulationId)
     val expected =
         mapOf(
@@ -1157,6 +1201,11 @@ class ContainerFactoryTests {
     return Dataset(id = "1", name = "Test Dataset", connector = connector)
   }
 
+  private fun getDatasetWorkspaceStorage(): Dataset {
+    val connector = getDatasetConnectorWorkspaceStorage()
+    return Dataset(id = "1", name = "Test Dataset", connector = connector)
+  }
+
   private fun getDataset(): Dataset {
     val connector = getDatasetConnector()
     return Dataset(id = "1", name = "Test Dataset", connector = connector)
@@ -1179,6 +1228,15 @@ class ContainerFactoryTests {
             mapOf(
                 "EnvParam1" to "%WORKSPACE_FILE%/workspace.env",
                 "Param1" to "%WORKSPACE_FILE%/workspace.param",
+            ))
+  }
+
+  private fun getDatasetConnectorWorkspaceStorage(): DatasetConnector {
+    return DatasetConnector(
+        id = "AzErTyUiOp",
+        parametersValues =
+            mapOf(
+                "EnvParam1" to "%STORAGE_CONNECTION_STRING%",
             ))
   }
 
@@ -1273,6 +1331,28 @@ class ContainerFactoryTests {
         ConnectorParameter(id = "EnvParam1", label = "Env param 1", envVar = "ENV_PARAM_1")
     val param1 = ConnectorParameter(id = "Param1", label = "Param 1")
     val parametersList = listOf(envparam1, param1)
+    val parameterGroup =
+        ConnectorParameterGroup(
+            id = "ParamGroup1", label = "Parameter Group 1", parameters = parametersList)
+    return Connector(
+        id = id,
+        key = id,
+        name = "Test Connector",
+        repository = repository,
+        version = "1.0.0",
+        ioTypes = listOf(IoTypes.read),
+        parameterGroups = listOf(parameterGroup))
+  }
+
+  private fun getConnectorWorkspaceStorage(
+      id: String = "AzErTyUiOp",
+      key: String = "TestConnector",
+      repository: String = "cosmotech/test_connector"
+  ): Connector {
+    val envparam1 =
+        ConnectorParameter(
+            id = "EnvParam1", label = "Env param 1", envVar = "AZURE_STORAGE_CONNECTION_STRING")
+    val parametersList = listOf(envparam1)
     val parameterGroup =
         ConnectorParameterGroup(
             id = "ParamGroup1", label = "Parameter Group 1", parameters = parametersList)
