@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "csm-argo.fullname" . }}-test-connection"
+  labels:
+    {{- include "csm-argo.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  restartPolicy: Never
+  containers:
+    - name: argo-server
+      image: busybox
+      command: ['wget']
+      {{- if .Values.argo.server.secure }}
+      args: ['--no-check-certificate', 'https://{{ include "csm-argo.fullname" . }}-argo-server:2746/']
+      {{- else }}
+      args: ['http://{{ include "csm-argo.fullname" . }}-argo-server:2746/']
+      {{- end }}
+
+    # TODO Test both Minio and PostgreSQL are reachable ?

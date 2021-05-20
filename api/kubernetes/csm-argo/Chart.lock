@@ -1,0 +1,9 @@
+dependencies:
+- name: argo
+  repository: https://argoproj.github.io/argo-helm
+  version: 0.16.10
+- name: postgresql
+  repository: https://charts.bitnami.com/bitnami
+  version: 10.4.6
+digest: sha256:3be8dd14b77495a735f7c513cc2c3200e91e84c652fcbcf0898e7d6090465df0
+generated: "2021-05-20T17:24:13.910487391+02:00"

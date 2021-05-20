@@ -1,0 +1,58 @@
+# Default values for csm-argo.
+
+# Dependencies
+argo:
+  # https://github.com/argoproj/argo-helm/blob/master/charts/argo/values.yaml
+  images:
+    pullPolicy: IfNotPresent
+  workflow:
+    serviceAccount:
+      create: true
+      name: workflow
+    rbac:
+      create: true
+  minio:
+    install: true
+    defaultBucket:
+      enabled: true
+      name: argo-workflows
+  executor:
+    env:
+    - name: RESOURCE_STATE_CHECK_INTERVAL
+      value: 1s
+  artifactRepository:
+    archiveLogs: true
+    s3:
+      bucket: argo-workflows
+      endpoint: ${ARGO_RELEASE_NAME}-minio.${NAMESPACE}.svc.cluster.local:9000
+      insecure: true
+      accessKeySecret:
+        name: ${ARGO_RELEASE_NAME}-minio
+        key: accesskey
+      secretKeySecret:
+        name: ${ARGO_RELEASE_NAME}-minio
+        key: secretkey
+  server:
+    secure: false
+  controller:
+    containerRuntimeExecutor: k8sapi
+    metricsConfig:
+      enabled: true
+    persistence:
+      archive: true
+      postgresql:
+        host: "${ARGO_RELEASE_NAME}-postgresql"
+        database: argo_workflows
+        tableName: workflows
+        userNameSecret:
+          name: "${ARGO_RELEASE_NAME}-argo-postgresql-secret"
+          key: postgresql.username
+        passwordSecret:
+          name: "${ARGO_RELEASE_NAME}-argo-postgresql-secret"
+          key: postgresql.password
+
+postgresql:
+  # https://github.com/bitnami/charts/blob/master/bitnami/postgresql/values.yaml
+  postgresqlDatabase: argo_workflows
+  postgresqlUsername: argo
+  postgresqlPassword: "${ARGO_POSTGRESQL_PASSWORD}"
