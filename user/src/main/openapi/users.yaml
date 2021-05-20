@@ -209,6 +209,19 @@ paths:
               examples:
                 Bob:
                   $ref: '#/components/examples/BobWorkspace'
+  /test:
+    get:
+      operationId: testPlatform
+      tags:
+        - user
+      summary: test platform API call
+      responses:
+        "200":
+          description: test string
+          content:
+            text/plain:
+              schema:
+                type: string
   /oauth2/authorize:
     get:
       operationId: authorizeUser
