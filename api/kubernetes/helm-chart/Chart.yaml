@@ -1,6 +1,8 @@
 apiVersion: v2
 name: cosmotech-api
-description: Cosmo Tech Platform API
+description: |
+  Cosmo Tech Platform API.
+  https://github.com/Cosmo-Tech/cosmotech-api
 
 # A chart can be either an 'application' or a 'library' chart.
 #
@@ -22,3 +24,23 @@ version: 0.0.1
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
 appVersion: "0.0.1-SNAPSHOT"
+
+dependencies:
+  - name: postgresql
+    version: 10.4.6
+    # See https://github.com/bitnami/charts/tree/master/bitnami/postgresql
+    repository: https://charts.bitnami.com/bitnami
+    condition: config.csm.platform.argo.enabled
+    tags:
+      - argo
+      - workflow
+      - persistence
+      - postgresql
+  - name: argo
+    version: 0.16.10
+    # See https://github.com/argoproj/argo-helm
+    repository: https://argoproj.github.io/argo-helm
+    condition: config.csm.platform.argo.enabled
+    tags:
+      - argo
+      - workflow
