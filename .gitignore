@@ -53,3 +53,7 @@ api/kubernetes/helm-chart/values-vcr.yaml
 
 ### Personal directory ###
 **/logs/access_log.log
+
+### Helm ###
+# Chart dependencies
+**/charts/*.tgz
