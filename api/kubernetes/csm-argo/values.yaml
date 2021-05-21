@@ -24,7 +24,7 @@ argo:
     archiveLogs: true
     s3:
       bucket: argo-workflows
-      endpoint: ${ARGO_RELEASE_NAME}-minio.${NAMESPACE}.svc.cluster.local:9000
+      endpoint: ${ARGO_RELEASE_NAME}-minio.${ARGO_RELEASE_NAMESPACE}.svc.cluster.local:9000
       insecure: true
       accessKeySecret:
         name: ${ARGO_RELEASE_NAME}-minio
