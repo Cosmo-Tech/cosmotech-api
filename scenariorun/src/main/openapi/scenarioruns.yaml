@@ -647,6 +647,7 @@ components:
         id: SR-bDMr5lM9Vp
         organizationId: O-x2QOMVXpjX
         workflowId: 07193ced-9895-444f-b2be-31e8bfc3e768
+        csmSimulationRun: a2880d46-a60d-4215-a593-783452e0df8f
         generateName: workflow-s-eeypwem0kw-
         workflowName: workflow-s-eeypwem0kw-lsczk
         ownerId: null
@@ -815,6 +816,7 @@ components:
         - id: SR-bDMr5lM9Vp
           organizationId: O-x2QOMVXpjX
           workflowId: 07193ced-9895-444f-b2be-31e8bfc3e768
+          csmSimulationRun: a2880d46-a60d-4215-a593-783452e0df8f
           generateName: workflow-s-eeypwem0kw-
           workflowName: workflow-s-eeypwem0kw-lsczk
           ownerId: null
