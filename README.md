@@ -7,7 +7,7 @@
 [![Lint](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/lint.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/lint.yml)
 [![OpenAPI](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/openapi.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/openapi.yml)
 
-[comment]: <> ([![Packaging]&#40;https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/packaging.yml/badge.svg&#41;]&#40;https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/packaging.yml&#41;)
+[![Packaging](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/packaging.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/packaging.yml)
 
 ## Building
 
