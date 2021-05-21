@@ -108,6 +108,7 @@ jobs:
       - name: Push csm-argo Helm Chart (latest) to GitHub Container Registry
         if: github.ref == 'refs/heads/main'
         run: |
+          helm dependency update api/kubernetes/csm-argo/
           helm chart save api/kubernetes/csm-argo/ ghcr.io/cosmo-tech/csm-argo-chart:latest
           helm chart push ghcr.io/cosmo-tech/csm-argo-chart:latest
 
