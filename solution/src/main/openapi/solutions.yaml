@@ -545,6 +545,9 @@ components:
         postRun:
           type: boolean
           description: whether or not the post-run step is done
+        parametersJson:
+          type: boolean
+          description: whether or not to store the scenario parameters in json instead of csv
         parametersHandlerSource:
           $ref: "#/components/schemas/RunTemplateStepSource"
         datasetValidatorSource:

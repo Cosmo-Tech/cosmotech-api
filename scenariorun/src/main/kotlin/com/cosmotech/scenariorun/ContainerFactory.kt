@@ -54,7 +54,11 @@ private const val DATASET_PATH = "/mnt/scenariorun-data"
 private const val PARAMETERS_PATH_VAR = "CSM_PARAMETERS_ABSOLUTE_PATH"
 private const val PARAMETERS_PATH = "/mnt/scenariorun-parameters"
 private const val FETCH_PATH_VAR = "CSM_FETCH_ABSOLUTE_PATH"
+private const val PARAMETERS_FETCH_CONTAINER_ORGANIZATION_VAR = "CSM_ORGANIZATION_ID"
+private const val PARAMETERS_FETCH_CONTAINER_WORKSPACE_VAR = "CSM_WORKSPACE_ID"
 private const val PARAMETERS_FETCH_CONTAINER_SCENARIO_VAR = "CSM_SCENARIO_ID"
+private const val PARAMETERS_FETCH_CONTAINER_CSV_VAR = "WRITE_CSV"
+private const val PARAMETERS_FETCH_CONTAINER_JSON_VAR = "WRITE_JSON"
 private const val SEND_DATAWAREHOUSE_PARAMETERS_VAR = "CSM_SEND_DATAWAREHOUSE_PARAMETERS"
 private const val SEND_DATAWAREHOUSE_DATASETS_VAR = "CSM_SEND_DATAWAREHOUSE_DATASETS"
 private const val ADX_DATA_INGESTION_URI_VAR = "ADX_DATA_INGESTION_URI"
@@ -326,7 +330,13 @@ class ContainerFactory(
       }
     }
     if (testStep(template.fetchScenarioParameters)) {
-      containers.add(this.buildScenarioParametersFetchContainer(scenario.id ?: "", csmSimulationId))
+      containers.add(
+          this.buildScenarioParametersFetchContainer(
+              organization.id ?: "",
+              workspace.id ?: "",
+              scenario.id ?: "",
+              csmSimulationId,
+              template.parametersJson))
       containers.addAll(
           buildScenarioParametersDatasetFetchContainers(
               scenario,
@@ -462,14 +472,27 @@ class ContainerFactory(
     return containers.toList()
   }
   fun buildScenarioParametersFetchContainer(
+      organizationId: String,
+      workspaceId: String,
       scenarioId: String,
-      csmSimulationId: String
+      csmSimulationId: String,
+      jsonFile: Boolean? = null,
   ): ScenarioRunContainer {
     val envVars = getCommonEnvVars(csmSimulationId)
+    envVars.put(FETCH_PATH_VAR, PARAMETERS_PATH)
+    envVars.put(PARAMETERS_FETCH_CONTAINER_ORGANIZATION_VAR, organizationId)
+    envVars.put(PARAMETERS_FETCH_CONTAINER_WORKSPACE_VAR, workspaceId)
     envVars.put(PARAMETERS_FETCH_CONTAINER_SCENARIO_VAR, scenarioId)
+    if (jsonFile != null && jsonFile) {
+      envVars.put(PARAMETERS_FETCH_CONTAINER_CSV_VAR, "false")
+      envVars.put(PARAMETERS_FETCH_CONTAINER_JSON_VAR, "true")
+    }
     return ScenarioRunContainer(
         name = CONTAINER_FETCH_PARAMETERS,
-        image = csmPlatformProperties.images.scenarioFetchParameters,
+        image =
+            getImageName(
+                csmPlatformProperties.azure?.containerRegistries?.core ?: "",
+                csmPlatformProperties.images.scenarioFetchParameters),
         envVars = envVars,
     )
   }
@@ -496,7 +519,10 @@ class ContainerFactory(
     envVars.put(ADX_DATABASE, "${organizationId}-${workspace.key}")
     return ScenarioRunContainer(
         name = CONTAINER_SEND_DATAWAREHOUSE,
-        image = csmPlatformProperties.images.sendDataWarehouse,
+        image =
+            getImageName(
+                csmPlatformProperties.azure?.containerRegistries?.core ?: "",
+                csmPlatformProperties.images.sendDataWarehouse),
         envVars = envVars)
   }
 
@@ -654,9 +680,9 @@ class ContainerFactory(
     )
   }
 
-  private fun getImageName(registry: String, repository: String, version: String): String {
-    if (registry != "") return "${registry}/${repository}:${version}"
-    else return "${repository}:${version}"
+  private fun getImageName(registry: String, repository: String, version: String? = null): String {
+    val repoversion = if (version == null) repository else "${repository}:${version}"
+    return if (registry != "") "${registry}/${repoversion}" else repoversion
   }
 
   private fun getDatasetEnvVars(
@@ -724,8 +750,7 @@ class ContainerFactory(
         AZURE_CLIENT_ID_VAR to (csmPlatformProperties.azure?.credentials?.clientId ?: ""),
         AZURE_CLIENT_SECRET_VAR to (csmPlatformProperties.azure?.credentials?.clientSecret ?: ""),
         CSM_SIMULATION_ID to csmSimulationId,
-        API_BASE_URL_VAR to
-            "${csmPlatformProperties.api.baseUrl}/${csmPlatformProperties.api.basePath}/${csmPlatformProperties.api.version}",
+        API_BASE_URL_VAR to "${csmPlatformProperties.api.baseUrl}",
         DATASET_PATH_VAR to DATASET_PATH,
         PARAMETERS_PATH_VAR to PARAMETERS_PATH,
     )

@@ -72,7 +72,7 @@ class ContainerFactoryTests {
                       containerRegistries =
                           CsmPlatformProperties.CsmPlatformAzure
                               .CsmPlatformAzureContainerRegistries(
-                                  core = "", solutions = "twinengines.azurecr.io"),
+                                  core = "ghcr.io", solutions = "twinengines.azurecr.io"),
                       keyVault = "Not Used",
                       analytics =
                           CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureAnalytics(
@@ -173,7 +173,7 @@ class ContainerFactoryTests {
             "Organizationid",
             "workspaceid",
             csmSimulationId)
-    assertEquals("cosmotech/test_connector:1.0.0", container.image)
+    assertEquals("ghcr.io/cosmotech/test_connector:1.0.0", container.image)
   }
 
   @Test
@@ -209,7 +209,7 @@ class ContainerFactoryTests {
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
             "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
+            "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
@@ -237,7 +237,7 @@ class ContainerFactoryTests {
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
             "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
+            "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
@@ -264,7 +264,7 @@ class ContainerFactoryTests {
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
             "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
+            "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
@@ -292,7 +292,7 @@ class ContainerFactoryTests {
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
             "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
+            "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
@@ -334,51 +334,60 @@ class ContainerFactoryTests {
 
   @Test
   fun `Fetch Scenario Parameters Container is not null`() {
-    val container = factory.buildScenarioParametersFetchContainer("1", csmSimulationId)
+    val container = factory.buildScenarioParametersFetchContainer("1", "2", "3", csmSimulationId)
     assertNotNull(container)
   }
 
   @Test
   fun `Fetch Scenario Parameters Container name valid`() {
-    val container = factory.buildScenarioParametersFetchContainer("1", csmSimulationId)
+    val container = factory.buildScenarioParametersFetchContainer("1", "2", "3", csmSimulationId)
     assertEquals("fetchScenarioParametersContainer", container.name)
   }
 
   @Test
   fun `Fetch Scenario Parameters Container image valid`() {
-    val container = factory.buildScenarioParametersFetchContainer("1", csmSimulationId)
-    assertEquals("cosmotech/scenariofetchparameters:1.0.0", container.image)
+    val container = factory.buildScenarioParametersFetchContainer("1", "2", "3", csmSimulationId)
+    assertEquals("ghcr.io/cosmotech/scenariofetchparameters:1.0.0", container.image)
   }
 
   @Test
   fun `Fetch Scenario Parameters Container env vars valid`() {
-    val container = factory.buildScenarioParametersFetchContainer("1", csmSimulationId)
+    val container = factory.buildScenarioParametersFetchContainer("1", "2", "3", csmSimulationId)
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
             "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
+            "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "CSM_SCENARIO_ID" to "1")
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "CSM_ORGANIZATION_ID" to "1",
+            "CSM_WORKSPACE_ID" to "2",
+            "CSM_SCENARIO_ID" to "3")
     assertEquals(expected, container.envVars)
   }
 
   @Test
-  fun `Fetch Scenario Parameters Container env vars AZURE STORAGE valid`() {
-    val container = factory.buildScenarioParametersFetchContainer("1", csmSimulationId)
+  fun `Fetch Scenario Parameters Container env vars valid json`() {
+    val container =
+        factory.buildScenarioParametersFetchContainer("1", "2", "3", csmSimulationId, true)
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
             "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
+            "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "CSM_SCENARIO_ID" to "1")
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "CSM_ORGANIZATION_ID" to "1",
+            "CSM_WORKSPACE_ID" to "2",
+            "CSM_SCENARIO_ID" to "3",
+            "WRITE_CSV" to "false",
+            "WRITE_JSON" to "true")
     assertEquals(expected, container.envVars)
   }
 
@@ -403,7 +412,7 @@ class ContainerFactoryTests {
     val container =
         factory.buildSendDataWarehouseContainer(
             "Organizationid", getWorkspace(), getRunTemplate(), csmSimulationId)
-    assertEquals("cosmotech/senddatawarehouse:1.0.0", container.image)
+    assertEquals("ghcr.io/cosmotech/senddatawarehouse:1.0.0", container.image)
   }
 
   @Test
@@ -417,7 +426,7 @@ class ContainerFactoryTests {
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
             "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
+            "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "true",
@@ -439,7 +448,7 @@ class ContainerFactoryTests {
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
             "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
+            "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "false",
@@ -461,7 +470,7 @@ class ContainerFactoryTests {
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
             "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
+            "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "true",
@@ -483,7 +492,7 @@ class ContainerFactoryTests {
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
             "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
+            "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "false",
@@ -629,7 +638,7 @@ class ContainerFactoryTests {
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
             "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
+            "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
@@ -659,7 +668,7 @@ class ContainerFactoryTests {
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
             "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
+            "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
@@ -849,13 +858,13 @@ class ContainerFactoryTests {
             scenario, datasets, connectors, workspace, getOrganization(), solution, csmSimulationId)
     val expected =
         listOf(
-            "cosmotech/test_connector:1.0.0",
-            "cosmotech/test_connector2:1.0.0",
-            "cosmotech/test_connector3:1.0.0",
-            "cosmotech/scenariofetchparameters:1.0.0",
+            "ghcr.io/cosmotech/test_connector:1.0.0",
+            "ghcr.io/cosmotech/test_connector2:1.0.0",
+            "ghcr.io/cosmotech/test_connector3:1.0.0",
+            "ghcr.io/cosmotech/scenariofetchparameters:1.0.0",
             "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
             "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
-            "cosmotech/senddatawarehouse:1.0.0",
+            "ghcr.io/cosmotech/senddatawarehouse:1.0.0",
             "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
             "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
             "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
@@ -880,7 +889,7 @@ class ContainerFactoryTests {
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
             "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
+            "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
@@ -998,14 +1007,14 @@ class ContainerFactoryTests {
             scenario, datasets, connectors, workspace, getOrganization(), solution, csmSimulationId)
     val expected =
         listOf(
-            "cosmotech/test_connector:1.0.0",
-            "cosmotech/scenariofetchparameters:1.0.0",
-            "cosmotech/test_connector:1.0.0",
-            "cosmotech/test_connector2:1.0.0",
-            "cosmotech/test_connector3:1.0.0",
+            "ghcr.io/cosmotech/test_connector:1.0.0",
+            "ghcr.io/cosmotech/scenariofetchparameters:1.0.0",
+            "ghcr.io/cosmotech/test_connector:1.0.0",
+            "ghcr.io/cosmotech/test_connector2:1.0.0",
+            "ghcr.io/cosmotech/test_connector3:1.0.0",
             "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
             "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
-            "cosmotech/senddatawarehouse:1.0.0",
+            "ghcr.io/cosmotech/senddatawarehouse:1.0.0",
             "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
             "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
             "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
@@ -1067,15 +1076,15 @@ class ContainerFactoryTests {
     val startInfo = getStartInfoFromIds()
     val expected =
         listOf(
-            "cosmotech/test_connector:1.0.0",
-            "cosmotech/test_connector2:1.0.0",
-            "cosmotech/scenariofetchparameters:1.0.0",
-            "cosmotech/test_connector:1.0.0",
-            "cosmotech/test_connector2:1.0.0",
-            "cosmotech/test_connector3:1.0.0",
+            "ghcr.io/cosmotech/test_connector:1.0.0",
+            "ghcr.io/cosmotech/test_connector2:1.0.0",
+            "ghcr.io/cosmotech/scenariofetchparameters:1.0.0",
+            "ghcr.io/cosmotech/test_connector:1.0.0",
+            "ghcr.io/cosmotech/test_connector2:1.0.0",
+            "ghcr.io/cosmotech/test_connector3:1.0.0",
             "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
             "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
-            "cosmotech/senddatawarehouse:1.0.0",
+            "ghcr.io/cosmotech/senddatawarehouse:1.0.0",
             "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
             "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
             "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
@@ -1141,7 +1150,7 @@ class ContainerFactoryTests {
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
             "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
+            "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/${param}",
@@ -1183,7 +1192,7 @@ class ContainerFactoryTests {
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
             "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com/basepath/v1",
+            "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",

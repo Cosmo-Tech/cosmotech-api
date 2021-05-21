@@ -169,7 +169,11 @@ class SolutionServiceImpl(
       existingSolution.repository = solution.repository
       hasChanged = true
     }
-    // Version is not purposely not overridable
+    // Solution update must be done with care. Maybe limit to minor update?
+    if (solution.version != null && solution.changed(existingSolution) { version }) {
+      existingSolution.version = solution.version
+      hasChanged = true
+    }
 
     if (solution.url != null && solution.changed(existingSolution) { url }) {
       existingSolution.url = solution.url
