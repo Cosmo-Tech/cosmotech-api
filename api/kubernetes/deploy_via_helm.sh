@@ -3,7 +3,7 @@
 set -euo errexit
 
 #
-# Production version for deploying the Helm Charts rom the remote ghcr.io OCI registry
+# Production version for deploying the Helm Charts from the remote ghcr.io OCI registry
 #
 
 help() {
