@@ -1,0 +1,67 @@
+Argo is now installed, with cluster-wide capabilities for handling Workflows.
+
+1. Get Argo Server external IP/domain by running:
+
+kubectl --namespace {{ .Release.Namespace }} get services -o wide | grep {{ .Release.Name }}-{{ .Values.argo.server.name }}
+
+2. Submit the hello-world workflow by running:
+
+argo submit https://raw.githubusercontent.com/argoproj/argo/master/examples/hello-world.yaml --watch
+
+{{ if .Values.argo.minio.install }}
+3. Access Minio UI and create bucket '{{ .Values.argo.minio.defaultBucket.name }}'. Minio UI is available on port 9000 and available via external URL. URL might be retrieved using following
+command:
+
+kubectl --namespace {{ .Release.Namespace }} get services -o wide | grep {{ .Release.Name }}-minio
+
+{{ end }}
+
+NOTE:
+If you want to submit Workflows in a different Kubernetes namespace,
+please make sure you perform the following actions:
+
+{{ if .Values.argo.minio.install }}
+- Export the Minio Secret from this namespace ({{ .Release.Namespace }}) to your new namespace, like so:
+
+kubectl -n {{ .Release.Namespace }} get secret {{ .Release.Name }}-minio -o yaml | \
+  grep -v "namespace: " | \
+  kubectl -n <my_new_namespace> create -f -
+{{- end }}
+
+- You may need to create a dedicated service account when submitting Argo Workflows,
+ along with role and role bindings in your new workspace.
+ It is recommended that you submit your Argo Workflows using a dedicated service account.
+ But you can also augment the roles of the 'default' service account of your new namespace.
+
+{{- if .Values.argo.workflow.serviceAccount.create }}
+-- Copy the {{ .Values.argo.workflow.serviceAccount.name }} Service Account from
+this namespace ({{ .Release.Namespace }}) to your new namespace, using the following command:
+
+kubectl -n {{ .Release.Namespace }} get serviceaccount {{ .Values.argo.workflow.serviceAccount.name }} -o yaml | \
+  grep -v "namespace: " | \
+  kubectl -n <my_new_namespace> create -f -
+{{- end }}
+
+{{- if .Values.argo.workflow.rbac.create -}}
+-- Copy the {{ .Release.Name }}-workflow Role from
+this namespace ({{ .Release.Namespace }}) to your new namespace, using the following command:
+
+kubectl -n {{ .Release.Namespace }} get role {{ .Release.Name }}-workflow -o yaml | \
+  grep -v "namespace: " | \
+  kubectl -n <my_new_namespace> create -f -
+
+-- Copy the {{ .Release.Name }}-workflow RoleBinding from
+this namespace ({{ .Release.Namespace }}) to your new namespace, using the following command:
+
+kubectl -n {{ .Release.Namespace }} get rolebinding {{ .Release.Name }}-workflow -o yaml | \
+  grep -v "namespace: " | \
+  kubectl -n <my_new_namespace> create -f -
+
+{{- else }}
+-- See the following page to create a role that has the appropriate permissions :
+https://argoproj.github.io/argo-workflows/workflow-rbac/
+
+-- After you have created the role, you can create a RoleBinding linking this Role with the Service Account you created above.
+Once that is done, you can submit Argo Workflows in your new namespace with the new Service Account.
+
+{{- end }}

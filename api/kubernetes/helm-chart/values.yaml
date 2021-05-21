@@ -10,7 +10,7 @@ replicaCount: 1
 
 image:
   # -- container image to use for deployment
-  repository: ghcr.io/Cosmo-Tech/cosmotech-api
+  repository: ghcr.io/cosmo-tech/cosmotech-api
   # -- [policy](https://kubernetes.io/docs/concepts/containers/images/#updating-images) for pulling the image
   pullPolicy: IfNotPresent
   # -- container image tag. Defaults to the Chart `appVersion` if empty or missing
