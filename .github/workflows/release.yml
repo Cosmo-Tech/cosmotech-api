@@ -1,0 +1,40 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+
+  upload_deploy_helper_script:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2.3.4
+
+      - name: Compute API version from tag
+        id: apiVersionVar
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          export tagFirstPart=$(echo "${TAG}" | cut -d '.' -f1)
+          if [[ $tagFirstPart == "v*" ]]; then \
+            echo "::set-output name=apiVersion::${tagFirstPart}" ; \
+          else \
+            echo "::set-output name=apiVersion::v${tagFirstPart}" ; \
+          fi
+
+      - name: Generate deployment script
+        env:
+          IMAGE_TAG__: ${{ github.event.release.tag_name }}
+          API_VERSION__: ${{ steps.apiVersionVar.outputs.apiVersion }}
+        run: |
+          envsubst '$IMAGE_TAG__ $API_VERSION__' < api/kubernetes/deploy_release.template.sh > api/kubernetes/deploy.sh
+
+      - name: Upload deployment script to release
+        uses: xresloader/upload-to-github-release@v1
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: api/kubernetes/deploy.sh
+          asset_name: deploy.sh
+          overwrite: true
+          release_id: ${{ github.event.release.id }}
