@@ -24,7 +24,7 @@ export API_VERSION="$3"
 
 export COSMOTECH_API_RELEASE_NAME="cosmotech-api-${API_VERSION}"
 
-HELM_CHARTS_BASE_PATH=$(realpath "$(dirname "$0")/../../api/kubernetes/")
+HELM_CHARTS_BASE_PATH=$(realpath "$(dirname "$0")")
 
 # Create namespace if it does not exist
 kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
