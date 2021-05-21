@@ -16,9 +16,9 @@ Cosmo Tech Platform API
 | autoscaling.minReplicas | int | `1` |  |
 | autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
 | config.csm.platform.argo.base-url | string | `"https://argo-server.argo.svc.cluster.local:2746"` |  |
-| config.csm.platform.azure.cosmos.key | string | `"changeme"` |  |
-| config.csm.platform.azure.cosmos.uri | string | `"changeme"` |  |
-| config.csm.platform.azure.storage.account-key | string | `"changeme"` | Azure storage account access key. Can be retrieved in the Azure portal |
+| config.csm.platform.azure.cosmos.key | string | `"changeme"` | Cosmos DB Database Key. Can be retrieved from the Azure portal |
+| config.csm.platform.azure.cosmos.uri | string | `"changeme"` | Cosmos DB Database URI. Can be retrieved from the Azure portal |
+| config.csm.platform.azure.storage.account-key | string | `"changeme"` | Azure storage account access key. Can be retrieved from the Azure portal |
 | config.csm.platform.azure.storage.account-name | string | `"changeme"` | Azure storage account name. Length should be between 3 and 24 and use numbers and lower-case letters only |
 | config.csm.platform.images.scenario-fetch-parameters | string | `"cosmotech/scenariofetchparameters:1.0.0"` |  |
 | config.csm.platform.images.send-datawarehouse | string | `"cosmotech/senddatawarehouse:1.0.0"` |  |

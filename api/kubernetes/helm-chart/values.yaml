@@ -123,12 +123,14 @@ config:
       vendor: azure
       azure:
         cosmos:
-          key: "changeme"
+          # -- Cosmos DB Database URI. Can be retrieved from the Azure portal
           uri: "changeme"
+          # -- Cosmos DB Database Key. Can be retrieved from the Azure portal
+          key: "changeme"
         storage:
           # -- Azure storage account name. Length should be between 3 and 24 and use numbers and lower-case letters only
           account-name: "changeme"
-          # -- Azure storage account access key. Can be retrieved in the Azure portal
+          # -- Azure storage account access key. Can be retrieved from the Azure portal
           account-key: "changeme"
       argo:
         base-url: "https://argo-server.argo.svc.cluster.local:2746"
