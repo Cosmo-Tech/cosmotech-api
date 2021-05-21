@@ -27,7 +27,7 @@ Cosmo Tech Platform API
 | config.csm.platform.vendor | string | `"azure"` |  |
 | fullnameOverride | string | `""` | value overriding the full name of the Chart. If not set, the value is computed from `nameOverride`. Truncated at 63 chars because some Kubernetes name fields are limited to this. |
 | image.pullPolicy | string | `"IfNotPresent"` | [policy](https://kubernetes.io/docs/concepts/containers/images/#updating-images) for pulling the image |
-| image.repository | string | `"cosmotech-api"` | container image to use for deployment |
+| image.repository | string | `"ghcr.io/cosmo-tech/cosmotech-api"` | container image to use for deployment |
 | image.tag | string | `""` | container image tag. Defaults to the Chart `appVersion` if empty or missing |
 | imageCredentials.password | string | `""` | password for registry to use for pulling the Deployment image. Useful if you are using a private registry |
 | imageCredentials.registry | string | `""` | container registry to use for pulling the Deployment image. Useful if you are using a private registry |
