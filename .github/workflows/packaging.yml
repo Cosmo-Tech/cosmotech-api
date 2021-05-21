@@ -99,13 +99,13 @@ jobs:
       - name: Push csm-argo Helm Chart (tag) to GitHub Container Registry
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          helm chart save api/kubernetes/helm-chart/ ghcr.io/cosmo-tech/csm-argo-chart:${{ steps.refvar.outputs.gitRefName }}
+          helm chart save api/kubernetes/csm-argo/ ghcr.io/cosmo-tech/csm-argo-chart:${{ steps.refvar.outputs.gitRefName }}
           helm chart push ghcr.io/cosmo-tech/csm-argo-chart:${{ steps.refvar.outputs.gitRefName }}
 
       - name: Push csm-argo Helm Chart (latest) to GitHub Container Registry
         if: github.ref == 'refs/heads/main'
         run: |
-          helm chart save api/kubernetes/helm-chart/ ghcr.io/cosmo-tech/csm-argo-chart:latest
+          helm chart save api/kubernetes/csm-argo/ ghcr.io/cosmo-tech/csm-argo-chart:latest
           helm chart push ghcr.io/cosmo-tech/csm-argo-chart:latest
 
       - name: Logout from registry
