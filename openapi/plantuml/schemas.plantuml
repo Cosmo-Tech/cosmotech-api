@@ -106,6 +106,7 @@ entity RunTemplate {
     preRun: Boolean
     run: Boolean
     postRun: Boolean
+    parametersJson: Boolean
     parametersHandlerSource: RunTemplateStepSource
     datasetValidatorSource: RunTemplateStepSource
     preRunSource: RunTemplateStepSource

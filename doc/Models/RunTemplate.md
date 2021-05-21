@@ -18,6 +18,7 @@ Name | Type | Description | Notes
 **preRun** | [**Boolean**](boolean.md) | whether or not the pre-run step is done | [optional] [default to null]
 **run** | [**Boolean**](boolean.md) | whether or not the run step is done | [optional] [default to null]
 **postRun** | [**Boolean**](boolean.md) | whether or not the post-run step is done | [optional] [default to null]
+**parametersJson** | [**Boolean**](boolean.md) | whether or not to store the scenario parameters in json instead of csv | [optional] [default to null]
 **parametersHandlerSource** | [**RunTemplateStepSource**](RunTemplateStepSource.md) |  | [optional] [default to null]
 **datasetValidatorSource** | [**RunTemplateStepSource**](RunTemplateStepSource.md) |  | [optional] [default to null]
 **preRunSource** | [**RunTemplateStepSource**](RunTemplateStepSource.md) |  | [optional] [default to null]
