@@ -1,7 +1,7 @@
 replicaCount: 2
 
-image:
-  repository: csmphoenix.azurecr.io/cosmotech-api
+#image:
+#  repository: csmphoenix.azurecr.io/cosmotech-api
 
 api:
   # A Cosmo Tech Helm Release (e.g., latest, vX) is linked to an API Version;
@@ -13,12 +13,12 @@ api:
   version: latest
 
 # Set image pull secrets (in case you're using a private container registry).
-imageCredentials:
-  registry: csmphoenix.azurecr.io
-  # az acr credential show -n csmphoenix --query="username" -o tsv
-  username: changeme
-  # az acr credential show -n csmphoenix --query="passwords[0].value" -o tsv
-  password: "changeme"
+#imageCredentials:
+#  registry: csmphoenix.azurecr.io
+#  # az acr credential show -n csmphoenix --query="username" -o tsv
+#  username: changeme
+#  # az acr credential show -n csmphoenix --query="passwords[0].value" -o tsv
+#  password: "changeme"
 
 ingress:
   enabled: true
