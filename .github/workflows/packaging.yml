@@ -56,12 +56,13 @@ jobs:
             -Djib.to.auth.username="${{ github.actor }}" \
             -Djib.to.auth.password="${GITHUB_TOKEN}"
 
-  push_helm_charts_to_registries:
+  push_helm_charts_to_oci_registries:
     runs-on: ubuntu-latest
     permissions:
       packages: write
       contents: read
     env:
+      # OCI Support by Helm is considered experimental
       HELM_EXPERIMENTAL_OCI: 1
 
     steps:
