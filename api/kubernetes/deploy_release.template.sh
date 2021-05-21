@@ -46,7 +46,7 @@ kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply
 # Argo
 export ARGO_RELEASE_NAME=argo
 export ARGO_RELEASE_NAMESPACE="${NAMESPACE}"
-export ARGO_POSTGRESQL_PASSWORD="$3"
+export ARGO_POSTGRESQL_PASSWORD="$2"
 helm pull oci://ghcr.io/cosmo-tech/csm-argo-chart --version "${CHART_PACKAGE_VERSION}" --untar
 envsubst < ./csm-argo/values.yaml | \
     helm upgrade --install "${ARGO_RELEASE_NAME}" ./csm-argo \
