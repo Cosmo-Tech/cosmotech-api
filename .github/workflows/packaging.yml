@@ -99,6 +99,7 @@ jobs:
       - name: Push csm-argo Helm Chart (tag) to GitHub Container Registry
         if: startsWith(github.ref, 'refs/tags/')
         run: |
+          helm dependency update api/kubernetes/csm-argo/
           helm chart save api/kubernetes/csm-argo/ ghcr.io/cosmo-tech/csm-argo-chart:${{ steps.refvar.outputs.gitRefName }}
           helm chart push ghcr.io/cosmo-tech/csm-argo-chart:${{ steps.refvar.outputs.gitRefName }}
 
