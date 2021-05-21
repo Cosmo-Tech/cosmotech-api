@@ -29,11 +29,13 @@ jobs:
           API_VERSION__: ${{ steps.apiVersionVar.outputs.apiVersion }}
         run: |
           envsubst '$IMAGE_TAG__ $API_VERSION__' < api/kubernetes/deploy_release.template.sh > api/kubernetes/deploy.sh
+          cat api/kubernetes/deploy.sh
 
       - name: Upload deployment script to release
         uses: xresloader/upload-to-github-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: api/kubernetes/deploy.sh
           asset_name: deploy.sh
           overwrite: true
