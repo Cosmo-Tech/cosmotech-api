@@ -61,8 +61,9 @@ private const val PARAMETERS_FETCH_CONTAINER_CSV_VAR = "WRITE_CSV"
 private const val PARAMETERS_FETCH_CONTAINER_JSON_VAR = "WRITE_JSON"
 private const val SEND_DATAWAREHOUSE_PARAMETERS_VAR = "CSM_SEND_DATAWAREHOUSE_PARAMETERS"
 private const val SEND_DATAWAREHOUSE_DATASETS_VAR = "CSM_SEND_DATAWAREHOUSE_DATASETS"
-private const val ADX_DATA_INGESTION_URI_VAR = "ADX_DATA_INGESTION_URI"
-private const val ADX_DATABASE = "ADX_DATABASE"
+private const val AZURE_DATA_EXPLORER_RESOURCE_URI_VAR = "AZURE_DATA_EXPLORER_RESOURCE_URI"
+private const val AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI_VAR = "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI"
+private const val AZURE_DATA_EXPLORER_DATABASE_NAME = "AZURE_DATA_EXPLORER_DATABASE_NAME"
 private const val RUN_TEMPLATE_ID_VAR = "CSM_RUN_TEMPLATE_ID"
 private const val CONTAINER_MODE_VAR = "CSM_CONTAINER_MODE"
 private const val ENTRYPOINT_NAME = "entrypoint.py"
@@ -514,9 +515,12 @@ class ContainerFactory(
     envVars.put(SEND_DATAWAREHOUSE_PARAMETERS_VAR, (sendParameters).toString())
     envVars.put(SEND_DATAWAREHOUSE_DATASETS_VAR, (sendDatasets).toString())
     envVars.put(
-        ADX_DATA_INGESTION_URI_VAR,
+        AZURE_DATA_EXPLORER_RESOURCE_URI_VAR,
+        csmPlatformProperties.azure?.dataWarehouseCluster?.baseUri ?: "")
+    envVars.put(
+        AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI_VAR,
         csmPlatformProperties.azure?.dataWarehouseCluster?.options?.ingestionUri ?: "")
-    envVars.put(ADX_DATABASE, "${organizationId}-${workspace.key}")
+    envVars.put(AZURE_DATA_EXPLORER_DATABASE_NAME, "${organizationId}-${workspace.key}")
     return ScenarioRunContainer(
         name = CONTAINER_SEND_DATAWAREHOUSE,
         image =
