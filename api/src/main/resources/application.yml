@@ -44,17 +44,17 @@ csm:
       # API Base Path for OpenAPI-generated controllers.
       # Might conflict with the SpringBoot context path, hence leaving it at the root
       base-path: /
-      base-url: ""
+      base-url: "http://cosmotech-api-${csm.platform.api.version}:8080"
       version: latest
     id-generator:
       type: hashid
     event-publisher:
       type: in_process
     argo:
-      base-uri: ""
+      base-uri: "https://argo-server.argo.svc.cluster.local:2746"
     images:
-      scenario-fetch-parameters: ""
-      send-data-warehouse: ""
+      scenario-fetch-parameters: cosmo-tech/fetch-scenario-parameters
+      send-datawarehouse: cosmo-tech/azure-data-explorer-connector
     vendor: azure
     azure:
       credentials:
@@ -72,7 +72,7 @@ csm:
         blob-endpoint: "https://${csm.platform.azure.storage.account-name}.blob.core.windows.net"
         connection-string: "DefaultEndpointsProtocol=https;AccountName=${csm.platform.azure.storage.account-name};AccountKey=${csm.platform.azure.storage.account-key};EndpointSuffix=core.windows.net"
       containerRegistries:
-        core:
+        core: ghcr.io
         solutions:
       eventBus:
         baseUri:

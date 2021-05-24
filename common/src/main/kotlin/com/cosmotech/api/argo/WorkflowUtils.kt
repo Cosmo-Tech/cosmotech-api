@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component
 @Component
 class WorkflowUtils(
     val argoRetrofit: ArgoRetrofit,
-    @Value("\${csm.platform.argo.base-url:}") val baseUrl: String
+    @Value("\${csm.platform.argo.base-uri:}") val baseUrl: String
 ) {
   private val logger = LoggerFactory.getLogger(WorkflowUtils::class.java)
 

@@ -120,23 +120,26 @@ affinity: {}
 config:
   csm:
     platform:
-      vendor: azure
       azure:
+        credentials:
+          tenantId: "changeme"
+          clientId: "changeme"
+          clientSecret: "changeme"
         cosmos:
           # -- Cosmos DB Database URI. Can be retrieved from the Azure portal
           uri: "changeme"
           # -- Cosmos DB Database Key. Can be retrieved from the Azure portal
           key: "changeme"
+        dataWarehouseCluster:
+          baseUri: "changeme"
+          options:
+            ingestionUri: "changeme"
+        eventBus:
+          baseUri: "changeme"
         storage:
           # -- Azure storage account name. Length should be between 3 and 24 and use numbers and lower-case letters only
           account-name: "changeme"
           # -- Azure storage account access key. Can be retrieved from the Azure portal
           account-key: "changeme"
-      argo:
-        base-url: "https://argo-server.argo.svc.cluster.local:2746"
-      images:
-        scenario-fetch-parameters: cosmotech/scenariofetchparameters:1.0.0
-        send-datawarehouse: cosmotech/senddatawarehouse:1.0.0
-      services:
-        adx-dataingestion-uri: "https://ingest-phoenix.westeurope.kusto.windows.net"
-        eventhub-cluster-uri: "amqps://csm-phoenix.servicebus.windows.net"
+        containerRegistries:
+          solutions: "changeme"

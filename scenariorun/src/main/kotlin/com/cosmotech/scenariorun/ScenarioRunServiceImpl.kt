@@ -41,7 +41,7 @@ import org.springframework.stereotype.Service
 class ScenariorunServiceImpl(
     private val containerFactory: ContainerFactory,
     private val argoAdapter: ArgoAdapter,
-    @Value("\${csm.platform.argo.base-url:}") private val argoBaseUrl: String,
+    @Value("\${csm.platform.argo.base-uri:}") private val argoBaseUrl: String,
     private val workflowUtils: WorkflowUtils,
     private val solutionService: SolutionApiService,
     private val connectorService: ConnectorApiService,

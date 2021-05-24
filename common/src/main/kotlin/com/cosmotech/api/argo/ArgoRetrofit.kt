@@ -9,7 +9,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.scalars.ScalarsConverterFactory
 
 @Component
-class ArgoRetrofit(@Value("\${csm.platform.argo.base-url:}") val baseUrl: String) {
+class ArgoRetrofit(@Value("\${csm.platform.argo.base-uri:}") val baseUrl: String) {
   fun getUnsafeScalarRetrofit(): Retrofit {
     val okHttpClient = getUnsafeOkHttpClient()
     return Retrofit.Builder()
