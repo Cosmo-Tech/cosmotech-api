@@ -432,7 +432,8 @@ class ContainerFactoryTests {
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "true",
             "CSM_SEND_DATAWAREHOUSE_DATASETS" to "true",
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
         )
     assertEquals(expected, container.envVars)
@@ -455,7 +456,8 @@ class ContainerFactoryTests {
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "false",
             "CSM_SEND_DATAWAREHOUSE_DATASETS" to "false",
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
         )
     assertEquals(expected, container.envVars)
@@ -478,7 +480,8 @@ class ContainerFactoryTests {
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "true",
             "CSM_SEND_DATAWAREHOUSE_DATASETS" to "false",
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
         )
     assertEquals(expected, container.envVars)
@@ -501,7 +504,8 @@ class ContainerFactoryTests {
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "false",
             "CSM_SEND_DATAWAREHOUSE_DATASETS" to "true",
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
         )
     assertEquals(expected, container.envVars)
