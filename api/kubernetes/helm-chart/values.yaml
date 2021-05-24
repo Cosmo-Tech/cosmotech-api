@@ -120,6 +120,7 @@ affinity: {}
 config:
   csm:
     platform:
+      vendor: azure
       azure:
         credentials:
           tenantId: "changeme"
