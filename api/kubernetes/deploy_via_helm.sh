@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -euo errexit
+export HELM_EXPERIMENTAL_OCI=1
 
 #
 # Production version for deploying the Helm Charts from the remote ghcr.io OCI registry
@@ -55,5 +56,6 @@ helm pull oci://ghcr.io/cosmo-tech/cosmotech-api-chart --version "${CHART_PACKAG
 helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "cosmotech-api-chart-${CHART_PACKAGE_VERSION}.tgz" \
     --namespace "${NAMESPACE}" \
     "${@:5}" \
+    --set image.tag="$API_VERSION" \
     --set api.version="$API_VERSION" \
     --set config.csm.platform.argo.base-url="http://${ARGO_RELEASE_NAME}-server.${NAMESPACE}.svc.cluster.local:2746"
