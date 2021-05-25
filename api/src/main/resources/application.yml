@@ -2,6 +2,9 @@ logging:
   level:
     com:
       cosmotech: INFO
+    org:
+      springframework:
+        security: DEBUG
 
 spring:
   output:
@@ -12,6 +15,12 @@ spring:
       enabled: false
     kubernetes:
       enabled: false
+security:
+  oauth2:
+    resource:
+      # user-info-uri: https://graph.microsoft.com/oidc/userinfo
+      jwk:
+        key-set-uri: https://login.microsoftonline.com/common/discovery/v2.0/keys
 
 management:
   endpoint:
