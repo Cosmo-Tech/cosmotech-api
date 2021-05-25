@@ -119,7 +119,7 @@ subprojects {
     // TODO Extract those dependencies in a 'common/azure' sub-project,
     //  included dynamically if the 'platform' build property is 'azure'
     implementation("com.azure.spring:azure-spring-boot-starter-cosmos:3.5.0")
-    implementation("com.azure.spring:azure-spring-boot-starter-storage:3.4.0")
+    implementation("com.azure.spring:azure-spring-boot-starter-storage:3.5.0")
 
     testImplementation(kotlin("test"))
     testImplementation("io.mockk:mockk:1.11.0")
