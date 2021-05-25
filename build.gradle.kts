@@ -110,7 +110,7 @@ subprojects {
 
     implementation("org.springframework.cloud:spring-cloud-starter-kubernetes-fabric8-config:2.0.2")
 
-    val springDocVersion = "1.5.8"
+    val springDocVersion = "1.5.9"
     implementation("org.springdoc:springdoc-openapi-ui:${springDocVersion}")
     implementation("org.springdoc:springdoc-openapi-kotlin:${springDocVersion}")
 
