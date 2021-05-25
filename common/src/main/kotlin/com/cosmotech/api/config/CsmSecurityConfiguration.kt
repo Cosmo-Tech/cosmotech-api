@@ -24,6 +24,7 @@ class SecurityConfig: ResourceServerConfigurerAdapter() {
                 .antMatchers(HttpMethod.GET, "/openapi/*").permitAll()
                 .antMatchers(HttpMethod.GET, "/openapi").permitAll()
                 .antMatchers(HttpMethod.GET, "/error").permitAll()
+                .antMatchers("/connectors").access("hasRole('Platform.Admin')")
                 .anyRequest().authenticated()
     }
 
