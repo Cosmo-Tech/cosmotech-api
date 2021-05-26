@@ -17,6 +17,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
+import org.springframework.security.web.bind.annotation.AuthenticationPrincipal
+import org.springframework.security.core.context.SecurityContextHolder
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
@@ -41,7 +43,8 @@ class UserServiceImpl : AbstractCosmosBackedService(), UserApiService {
       cosmosTemplate.findByIdOrThrow(coreUserContainer, userId)
 
   override fun getCurrentUser(): User {
-    TODO("Not yet implemented")
+    val principal = SecurityContextHolder.getContext().getAuthentication()
+    return User(name=principal.toString() ?: "NONE", platformRoles = listOf())
   }
 
   override fun getOrganizationCurrentUser(organizationId: String): User {
