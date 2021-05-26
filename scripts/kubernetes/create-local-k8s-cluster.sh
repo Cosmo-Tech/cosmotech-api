@@ -55,6 +55,20 @@ docker network connect "kind" "${registry_name}" || true
 
 kubectl_ctx="kind-${cluster_name}"
 
+# Communicate the local registry to external local tools
+# https://github.com/kubernetes/enhancements/tree/master/keps/sig-cluster-lifecycle/generic/1755-communicating-a-local-registry
+cat <<EOF | kubectl --context="${kubectl_ctx}" apply -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: local-registry-hosting
+  namespace: kube-public
+data:
+  localRegistryHosting.v1: |
+    host: "localhost:${registry_port}"
+    help: "https://kind.sigs.k8s.io/docs/user/local-registry/"
+EOF
+
 # Annotate the cluster node to use the registry
 # https://docs.tilt.dev/choosing_clusters.html#discovering-the-registry
 for node in $(kind get nodes --name "${cluster_name}"); do
