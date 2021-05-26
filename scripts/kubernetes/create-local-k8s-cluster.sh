@@ -50,7 +50,8 @@ featureGates:
 EOF
 
 # connect the registry to the cluster network
-docker network connect "kind" "${registry_name}"
+# (the network may already be connected)
+docker network connect "kind" "${registry_name}" || true
 
 kubectl_ctx="kind-${cluster_name}"
 
