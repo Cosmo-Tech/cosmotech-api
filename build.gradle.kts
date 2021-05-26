@@ -126,6 +126,16 @@ subprojects {
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
     implementation("org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.4.5")
     implementation("org.springframework.security:spring-security-jwt:1.1.1.RELEASE")
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("com.azure.spring:azure-spring-boot-starter-active-directory:3.5.0")
+    // com.azure.spring:azure-spring-boot-starter-active-directory provides this dependency
+    // transitively,
+    // but its version is incompatible at runtime with what is expected by
+    // spring-security-oauth2-jose
+    implementation("com.nimbusds:nimbus-jose-jwt:9.9.3")
+
+    implementation("org.springframework.security:spring-security-oauth2-jose:5.5.0")
+    implementation("org.springframework.security:spring-security-oauth2-resource-server:5.5.0")
 
     testImplementation(kotlin("test"))
     testImplementation("io.mockk:mockk:1.11.0")

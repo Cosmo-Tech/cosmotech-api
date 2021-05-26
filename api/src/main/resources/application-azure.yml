@@ -11,7 +11,13 @@ management:
           include: "readinessState,cosmos,blobStorage"
 
 azure:
-  # Required to auto-configure the beans provided by the Azure CosmosDB Spring Boot AutoConfiguration
+  # Required to auto-configure the beans provided by the Azure Spring Boot AutoConfigurations
+  activedirectory:
+    tenant-id: ${csm.platform.azure.credentials.tenantId}
+    client-id: ${csm.platform.azure.credentials.clientId}
+    client-secret: ${csm.platform.azure.credentials.clientSecret}
+    session-stateless: true
+    app-id-uri: ${csm.platform.azure.appIdUri}
   cosmos:
     allowTelemetry: ${csm.platform.azure.cosmos.allowTelemetry}
     connectionMode: ${csm.platform.azure.cosmos.connectionMode}

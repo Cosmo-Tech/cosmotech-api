@@ -67,6 +67,7 @@ csm:
       send-datawarehouse: cosmo-tech/azure-data-explorer-connector
     vendor: azure
     azure:
+      appIdUri: "http://dev.api.cosmotech.com"
       credentials:
         tenantId:
         clientId:
