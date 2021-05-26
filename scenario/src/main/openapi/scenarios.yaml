@@ -593,7 +593,7 @@ components:
         tags:
           - Brewery
           - reference
-        runTemplateId: "1"
+        runTemplateId: "hundred"
         users:
           - id: "1"
             name: Bob
@@ -617,7 +617,7 @@ components:
         description: Brewery child reference analysis
         tags:
           - Brewery
-        runTemplateId: "1"
+        runTemplateId: "hundred"
         parentId: "1"
     BreweryScenario:
       summary: Brewery Scenario
@@ -633,7 +633,7 @@ components:
         worskspaceId: "1"
         solutionId: "1"
         solutionName: Brewery Solution
-        runTemplateId: "1"
+        runTemplateId: "hundred"
         runTemplateName: Full simulation 100 steps
         users:
           - id: "1"
@@ -668,7 +668,7 @@ components:
           worskspaceId: "1"
           solutionId: "1"
           solutionName: Brewery Solution
-          runTemplateId: "1"
+          runTemplateId: "hundred"
           runTemplateName: Full simulation 100 steps
           users:
             - id: "1"
@@ -700,7 +700,7 @@ components:
           worskspaceId: "1"
           solutionId: "1"
           solutionName: Brewery Solution
-          runTemplateId: "1"
+          runTemplateId: "hundred"
           runTemplateName: Full simulation 100 steps
           users:
             - id: "1"
@@ -731,7 +731,7 @@ components:
           worskspaceId: "1"
           solutionId: "1"
           solutionName: Brewery Solution
-          runTemplateId: "1"
+          runTemplateId: "hundred"
           runTemplateName: Full simulation 100 steps
           users:
             - id: "1"
@@ -772,7 +772,7 @@ components:
         worskspaceId: "1"
         solutionId: "1"
         solutionName: Brewery Solution
-        runTemplateId: "1"
+        runTemplateId: "hundred"
         runTemplateName: Full simulation 100 steps
         users:
           - id: "1"
