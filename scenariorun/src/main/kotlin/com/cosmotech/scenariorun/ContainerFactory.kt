@@ -17,6 +17,7 @@ import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
+import com.cosmotech.solution.domain.RunTemplateHandlerId
 import com.cosmotech.solution.domain.RunTemplateStepSource
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.utils.*
@@ -98,7 +99,7 @@ class ContainerFactory(
                     path =
                         fun(organizationId, solutionId): String {
                           return getCloudPath(
-                              organizationId, solutionId, StepResource.PARAMETERS_HANDLER)
+                              organizationId, solutionId, RunTemplateHandlerId.parameters_handler)
                         }),
             "validate" to
                 SolutionContainerStepSpec(
@@ -111,7 +112,7 @@ class ContainerFactory(
                         },
                     path =
                         fun(organizationId, solutionId): String {
-                          return getCloudPath(organizationId, solutionId, StepResource.VALIDATOR)
+                          return getCloudPath(organizationId, solutionId, RunTemplateHandlerId.validator)
                         }),
             "prerun" to
                 SolutionContainerStepSpec(
@@ -124,7 +125,7 @@ class ContainerFactory(
                         },
                     path =
                         fun(organizationId, solutionId): String {
-                          return getCloudPath(organizationId, solutionId, StepResource.PRERUN)
+                          return getCloudPath(organizationId, solutionId, RunTemplateHandlerId.prerun)
                         }),
             "engine" to
                 SolutionContainerStepSpec(
@@ -137,7 +138,7 @@ class ContainerFactory(
                         },
                     path =
                         fun(organizationId, solutionId): String {
-                          return getCloudPath(organizationId, solutionId, StepResource.ENGINE)
+                          return getCloudPath(organizationId, solutionId, RunTemplateHandlerId.engine)
                         }),
             "postrun" to
                 SolutionContainerStepSpec(
@@ -150,7 +151,7 @@ class ContainerFactory(
                         },
                     path =
                         fun(organizationId, solutionId): String {
-                          return getCloudPath(organizationId, solutionId, StepResource.POSTRUN)
+                          return getCloudPath(organizationId, solutionId, RunTemplateHandlerId.postrun)
                         }),
         )
 ) {

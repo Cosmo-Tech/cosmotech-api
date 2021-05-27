@@ -2,14 +2,9 @@
 // Licensed under the MIT license.
 package com.cosmotech.solution.utils
 
-enum class StepResource(val step: String) {
-  PARAMETERS_HANDLER("parameters_handler"),
-  VALIDATOR("validator"),
-  PRERUN("prerun"),
-  ENGINE("engine"),
-  POSTRUN("postrun"),
-}
+import com.cosmotech.api.azure.sanitizeForAzureStorage
+import com.cosmotech.solution.domain.RunTemplateHandlerId
 
-fun getCloudPath(organizationId: String, solutionId: String, stepResource: StepResource): String {
-  return "${organizationId}/${solutionId}/${stepResource.step}.zip"
+fun getCloudPath(organizationId: String, solutionId: String, handlerId: RunTemplateHandlerId): String {
+  return "${organizationId}/${solutionId}/${handlerId}.zip"
 }

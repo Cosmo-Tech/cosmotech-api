@@ -63,7 +63,7 @@ class ArgoAdapter {
     val templates = buildContainersTemplates(startContainers)
     val entrypointTemplate = buildEntrypointTemplate(startContainers)
     templates.add(entrypointTemplate)
-    val volumeClaims = buildVolumeClaims(startContainers)
+    val volumeClaims = buildVolumeClaims()
 
     return WorkflowSpec()
         .nodeSelector(nodeSelector)
@@ -116,9 +116,7 @@ class ArgoAdapter {
     return dagTemplate
   }
 
-  private fun buildVolumeClaims(
-      startContainers: ScenarioRunStartContainers
-  ): List<V1PersistentVolumeClaim> {
+  private fun buildVolumeClaims(): List<V1PersistentVolumeClaim> {
     val datasetsdir =
         V1PersistentVolumeClaim()
             .metadata(V1ObjectMeta().name(VOLUME_CLAIM_DATASETS))

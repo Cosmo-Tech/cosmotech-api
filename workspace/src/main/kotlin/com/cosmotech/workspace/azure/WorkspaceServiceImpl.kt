@@ -220,7 +220,7 @@ class WorkspaceServiceImpl(
         fileName)
     azureStorageBlobServiceClient
         .getBlobContainerClient(organizationId.sanitizeForAzureStorage())
-        .getBlobClient("$workspaceId/${fileName}".sanitizeForAzureStorage())
+        .getBlobClient("${workspaceId.sanitizeForAzureStorage()}/${fileName}")
         .delete()
   }
 
@@ -236,7 +236,7 @@ class WorkspaceServiceImpl(
         workspace.name,
         fileName)
     return resourceLoader.getResource(
-        "azure-blob://$organizationId/$workspaceId/${fileName}".sanitizeForAzureStorage())
+        "azure-blob://$organizationId/$workspaceId/".sanitizeForAzureStorage() + fileName)
   }
 
   override fun uploadWorkspaceFile(
@@ -253,7 +253,7 @@ class WorkspaceServiceImpl(
         file.filename)
     azureStorageBlobServiceClient
         .getBlobContainerClient(organizationId.sanitizeForAzureStorage())
-        .getBlobClient("$workspaceId/${file.filename}".sanitizeForAzureStorage())
+        .getBlobClient("${workspaceId.sanitizeForAzureStorage()}/${file.filename}")
         .upload(file.inputStream, file.contentLength(), overwrite)
     return WorkspaceFile(fileName = file.filename)
   }
