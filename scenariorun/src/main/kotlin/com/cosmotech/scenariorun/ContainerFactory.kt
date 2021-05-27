@@ -175,7 +175,8 @@ class ContainerFactory(
   ): StartInfo {
     val organization = organizationService.findOrganizationById(organizationId)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
-    val solution = solutionService.findSolutionById(organizationId, workspace.solution.solutionId)
+    if (workspace.solution.solutionId == null) throw IllegalStateException("You cannot start a workspace with no solutionId defined")
+    val solution = solutionService.findSolutionById(organizationId, workspace.solution.solutionId ?: "")
     val scenario = scenarioService.findScenarioById(organizationId, workspaceId, scenarioId)
     val runTemplate = this.getRunTemplate(solution, (scenario.runTemplateId ?: ""))
     val datasetsAndConnectors =

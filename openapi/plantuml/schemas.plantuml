@@ -360,7 +360,7 @@ entity WorkspaceFile {
 }
 
 entity WorkspaceSolution { 
-    * solutionId: String
+    solutionId: String
     runTemplateFilter: List<String>
     defaultRunTemplateDataset: Map
 }
