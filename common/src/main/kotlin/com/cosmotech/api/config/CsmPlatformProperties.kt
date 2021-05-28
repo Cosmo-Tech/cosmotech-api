@@ -47,8 +47,10 @@ data class CsmPlatformProperties(
 ) {
 
   data class Authorization(
+      val tenantIdJwtClaim: String = "iss",
+
       /**
-       * Comma-separated list of additional tenants allowed to register, besides the configured
+       * List of additional tenants allowed to register, besides the configured
        * `csm.platform.azure.credentials.tenantId`
        */
       val allowedTenants: List<String> = emptyList()

@@ -10,6 +10,11 @@ management:
         readiness:
           include: "readinessState,cosmos,blobStorage"
 
+csm:
+  platform:
+    authorization:
+      tenant-id-jwt-claim: "tid"
+
 azure:
   # Required to auto-configure the beans provided by the Azure Spring Boot AutoConfigurations
   activedirectory:
