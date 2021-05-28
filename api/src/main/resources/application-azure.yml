@@ -13,7 +13,9 @@ management:
 azure:
   # Required to auto-configure the beans provided by the Azure Spring Boot AutoConfigurations
   activedirectory:
-    tenant-id: ${csm.platform.azure.credentials.tenantId}
+    # tenantId is 'common' to use the login process of multi-tenant access
+    # See https://github.com/Azure/azure-sdk-for-java/blob/master/sdk/spring/azure-spring-boot-starter-active-directory/ACCESS_TO_MULTI_TENANT_APP.md
+    tenant-id: common
     client-id: ${csm.platform.azure.credentials.clientId}
     client-secret: ${csm.platform.azure.credentials.clientSecret}
     session-stateless: true
