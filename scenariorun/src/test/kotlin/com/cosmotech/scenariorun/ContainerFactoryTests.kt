@@ -142,6 +142,7 @@ class ContainerFactoryTests {
             "1",
             "Organizationid",
             "workspaceid",
+            "Test",
             csmSimulationId)
     assertNotNull(container)
   }
@@ -157,6 +158,7 @@ class ContainerFactoryTests {
             "1",
             "Organizationid",
             "workspaceid",
+            "Test",
             csmSimulationId)
     assertEquals("fetchDatasetContainer-1", container.name)
   }
@@ -171,6 +173,7 @@ class ContainerFactoryTests {
             false,
             "1",
             "Organizationid",
+            "Test",
             "workspaceid",
             csmSimulationId)
     assertEquals("ghcr.io/cosmotech/test_connector:1.0.0", container.image)
@@ -187,6 +190,7 @@ class ContainerFactoryTests {
           "1",
           "Organizationid",
           "workspaceid",
+          "Test",
           csmSimulationId)
     }
   }
@@ -202,6 +206,7 @@ class ContainerFactoryTests {
             null,
             "Organizationid",
             "workspaceid",
+            "Test",
             csmSimulationId)
     val expected =
         mapOf(
@@ -212,6 +217,10 @@ class ContainerFactoryTests {
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "ENV_PARAM_1" to "env_param1_value",
             "ENV_PARAM_2" to "env_param2_value",
@@ -230,6 +239,7 @@ class ContainerFactoryTests {
             null,
             "Organizationid",
             "workspaceid",
+            "Test",
             csmSimulationId)
     val expected =
         mapOf(
@@ -240,6 +250,10 @@ class ContainerFactoryTests {
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "ENV_PARAM_1" to "organizationid/workspaceid/workspace.env",
         )
@@ -257,6 +271,7 @@ class ContainerFactoryTests {
             null,
             "Organizationid",
             "workspaceid",
+            "Test",
             csmSimulationId)
     val expected =
         mapOf(
@@ -267,6 +282,10 @@ class ContainerFactoryTests {
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "AZURE_STORAGE_CONNECTION_STRING" to
                 "DefaultEndpointsProtocol=https;AccountName=csmphoenix;AccountKey=42rmlBQ2IrxdIByLj79AecdIyYifSR04ZnGsBYt82tbM2clcP0QwJ9N+l/fLvyCzu9VZ8HPsQyM7jHe6CVSUig==;EndpointSuffix=core.windows.net",
@@ -285,6 +304,7 @@ class ContainerFactoryTests {
             null,
             "Organizationid",
             "workspaceid",
+            "Test",
             csmSimulationId)
     val expected =
         mapOf(
@@ -295,6 +315,10 @@ class ContainerFactoryTests {
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
         )
     assertEquals(expected, container.envVars)
@@ -311,6 +335,7 @@ class ContainerFactoryTests {
             "1",
             "Organizationid",
             "workspaceid",
+            "Test",
             csmSimulationId)
     val expected = listOf("organizationid/workspaceid/workspace.param")
     assertEquals(expected, container.runArgs)
@@ -327,6 +352,7 @@ class ContainerFactoryTests {
             "1",
             "Organizationid",
             "workspaceid",
+            "Test",
             csmSimulationId)
     val expected = listOf("param1_value", "param2_value", "param3_value")
     assertEquals(expected, container.runArgs)
@@ -334,25 +360,29 @@ class ContainerFactoryTests {
 
   @Test
   fun `Fetch Scenario Parameters Container is not null`() {
-    val container = factory.buildScenarioParametersFetchContainer("1", "2", "3", csmSimulationId)
+    val container =
+        factory.buildScenarioParametersFetchContainer("1", "2", "3", "Test", csmSimulationId)
     assertNotNull(container)
   }
 
   @Test
   fun `Fetch Scenario Parameters Container name valid`() {
-    val container = factory.buildScenarioParametersFetchContainer("1", "2", "3", csmSimulationId)
+    val container =
+        factory.buildScenarioParametersFetchContainer("1", "2", "3", "Test", csmSimulationId)
     assertEquals("fetchScenarioParametersContainer", container.name)
   }
 
   @Test
   fun `Fetch Scenario Parameters Container image valid`() {
-    val container = factory.buildScenarioParametersFetchContainer("1", "2", "3", csmSimulationId)
+    val container =
+        factory.buildScenarioParametersFetchContainer("1", "2", "3", "Test", csmSimulationId)
     assertEquals("ghcr.io/cosmotech/scenariofetchparameters:1.0.0", container.image)
   }
 
   @Test
   fun `Fetch Scenario Parameters Container env vars valid`() {
-    val container = factory.buildScenarioParametersFetchContainer("1", "2", "3", csmSimulationId)
+    val container =
+        factory.buildScenarioParametersFetchContainer("1", "2", "Test", "3", csmSimulationId)
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -362,6 +392,10 @@ class ContainerFactoryTests {
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "1-Test",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_ORGANIZATION_ID" to "1",
             "CSM_WORKSPACE_ID" to "2",
@@ -372,7 +406,7 @@ class ContainerFactoryTests {
   @Test
   fun `Fetch Scenario Parameters Container env vars valid json`() {
     val container =
-        factory.buildScenarioParametersFetchContainer("1", "2", "3", csmSimulationId, true)
+        factory.buildScenarioParametersFetchContainer("1", "2", "Test", "3", csmSimulationId, true)
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -382,6 +416,10 @@ class ContainerFactoryTests {
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "1-Test",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_ORGANIZATION_ID" to "1",
             "CSM_WORKSPACE_ID" to "2",
@@ -429,12 +467,12 @@ class ContainerFactoryTests {
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "true",
-            "CSM_SEND_DATAWAREHOUSE_DATASETS" to "true",
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "true",
+            "CSM_SEND_DATAWAREHOUSE_DATASETS" to "true",
         )
     assertEquals(expected, container.envVars)
   }
@@ -453,12 +491,12 @@ class ContainerFactoryTests {
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "false",
-            "CSM_SEND_DATAWAREHOUSE_DATASETS" to "false",
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "false",
+            "CSM_SEND_DATAWAREHOUSE_DATASETS" to "false",
         )
     assertEquals(expected, container.envVars)
   }
@@ -477,6 +515,10 @@ class ContainerFactoryTests {
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "true",
             "CSM_SEND_DATAWAREHOUSE_DATASETS" to "false",
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
@@ -501,6 +543,10 @@ class ContainerFactoryTests {
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "false",
             "CSM_SEND_DATAWAREHOUSE_DATASETS" to "true",
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
@@ -649,6 +695,10 @@ class ContainerFactoryTests {
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to mode,
             "CSM_CONTROL_PLANE_TOPIC" to
@@ -679,6 +729,10 @@ class ContainerFactoryTests {
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to mode,
             "CSM_CONTROL_PLANE_TOPIC" to
@@ -900,6 +954,10 @@ class ContainerFactoryTests {
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "ENV_PARAM_1" to "env_param1_value",
             "ENV_PARAM_2" to "env_param2_value",
@@ -1161,6 +1219,10 @@ class ContainerFactoryTests {
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/${param}",
             "ENV_PARAM_1" to "env_param1_value",
             "ENV_PARAM_2" to "env_param2_value",
@@ -1203,6 +1265,10 @@ class ContainerFactoryTests {
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to mode,
             "CSM_CONTROL_PLANE_TOPIC" to
