@@ -38,7 +38,7 @@ class SecurityConfig : AADResourceServerWebSecurityConfigurerAdapter() {
           .permitAll()
           .antMatchers(HttpMethod.GET, "/error")
           .permitAll()
-          .antMatchers("/connectors")
+          .antMatchers("/connectors", "/connectors/**")
           .hasAuthority("APPROLE_Platform.Admin")
           .anyRequest()
           .authenticated()
