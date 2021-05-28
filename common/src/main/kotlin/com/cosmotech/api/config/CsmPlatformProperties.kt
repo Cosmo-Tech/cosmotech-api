@@ -41,7 +41,18 @@ data class CsmPlatformProperties(
 
     /** Cosmo Tech core images */
     val images: CsmImages,
+
+    /** Authorization Configuration */
+    val authorization: Authorization,
 ) {
+
+  data class Authorization(
+      /**
+       * Comma-separated list of additional tenants allowed to register, besides the configured
+       * `csm.platform.azure.credentials.tenantId`
+       */
+      val allowedTenants: List<String> = emptyList()
+  )
 
   data class CsmImages(
       /** Container image to fetch Scenario Parameters */
