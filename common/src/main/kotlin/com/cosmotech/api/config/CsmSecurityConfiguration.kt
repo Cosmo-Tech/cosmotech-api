@@ -2,46 +2,51 @@
 // Licensed under the MIT license.
 package com.cosmotech.api.config
 
-import com.azure.spring.aad.webapi.AADResourceServerWebSecurityConfigurerAdapter
+import com.azure.spring.aad.webapi.AADJwtBearerTokenAuthenticationConverter
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true, proxyTargetClass = true)
-class CsmSecurityConfiguration : AADResourceServerWebSecurityConfigurerAdapter() {
+class CsmSecurityConfiguration : WebSecurityConfigurerAdapter() {
 
   override fun configure(http: HttpSecurity) {
-    super.configure(http)
-    http.authorizeRequests { requests ->
-      requests
-          .antMatchers(HttpMethod.OPTIONS, "/**")
-          .permitAll()
-          .antMatchers(HttpMethod.GET, "/actuator/health/**")
-          .permitAll()
-          .antMatchers(HttpMethod.GET, "/actuator/info")
-          .permitAll()
-          .antMatchers(HttpMethod.GET, "/")
-          .permitAll()
-          .antMatchers(HttpMethod.GET, "/swagger-ui.html")
-          .permitAll()
-          .antMatchers(HttpMethod.GET, "/swagger-ui/**")
-          .permitAll()
-          .antMatchers(HttpMethod.GET, "/openapi.*")
-          .permitAll()
-          .antMatchers(HttpMethod.GET, "/openapi/*")
-          .permitAll()
-          .antMatchers(HttpMethod.GET, "/openapi")
-          .permitAll()
-          .antMatchers(HttpMethod.GET, "/error")
-          .permitAll()
-          .antMatchers("/connectors", "/connectors/**")
-          .hasAuthority("APPROLE_Platform.Admin")
-          .anyRequest()
-          .authenticated()
-    }
+    http
+        .authorizeRequests { requests ->
+          requests
+              .antMatchers(HttpMethod.OPTIONS, "/**")
+              .permitAll()
+              .antMatchers(HttpMethod.GET, "/actuator/health/**")
+              .permitAll()
+              .antMatchers(HttpMethod.GET, "/actuator/info")
+              .permitAll()
+              .antMatchers(HttpMethod.GET, "/")
+              .permitAll()
+              .antMatchers(HttpMethod.GET, "/swagger-ui.html")
+              .permitAll()
+              .antMatchers(HttpMethod.GET, "/swagger-ui/**")
+              .permitAll()
+              .antMatchers(HttpMethod.GET, "/openapi.*")
+              .permitAll()
+              .antMatchers(HttpMethod.GET, "/openapi/*")
+              .permitAll()
+              .antMatchers(HttpMethod.GET, "/openapi")
+              .permitAll()
+              .antMatchers(HttpMethod.GET, "/error")
+              .permitAll()
+              .antMatchers("/connectors", "/connectors/**")
+              .hasAuthority("APPROLE_Platform.Admin")
+              .anyRequest()
+              .authenticated()
+        }
+        .oauth2ResourceServer()
+        .jwt()
+        .jwtAuthenticationConverter(
+            AADJwtBearerTokenAuthenticationConverter().apply { setPrincipalClaimName("oid") })
   }
 }
