@@ -154,6 +154,7 @@ Class | Method | HTTP request | Description
 
 - **Type**: OAuth
 - **Flow**: implicit
-- **Authorization URL**: oauth2/authorize
-- **Scopes**: N/A
+- **Authorization URL**: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
+- **Scopes**: 
+  - http://dev.api.cosmotech.com/platform: Platform scope
 

@@ -7,6 +7,7 @@ import com.cosmotech.api.azure.AbstractCosmosBackedService
 import com.cosmotech.api.azure.findAll
 import com.cosmotech.api.azure.findByIdOrThrow
 import com.cosmotech.api.events.ConnectorRemoved
+import com.cosmotech.api.utils.getCurrentUserId
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
 import javax.annotation.PostConstruct
@@ -34,7 +35,8 @@ class ConnectorServiceImpl : AbstractCosmosBackedService(), ConnectorApiService 
 
   override fun registerConnector(connector: Connector): Connector =
       cosmosTemplate.insert(
-          coreConnectorContainer, connector.copy(id = idGenerator.generate("connector")))
+          coreConnectorContainer,
+          connector.copy(id = idGenerator.generate("connector"), ownerId = getCurrentUserId()))
           ?: throw IllegalStateException("No connector returned in response: $connector")
 
   override fun unregisterConnector(connectorId: String) {
