@@ -17,7 +17,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthentication
 import org.springframework.stereotype.Service
 
 @Service
@@ -43,7 +42,7 @@ class UserServiceImpl : AbstractCosmosBackedService(), UserApiService {
       cosmosTemplate.findByIdOrThrow(coreUserContainer, userId)
 
   override fun getCurrentUser(): User {
-    val principal = SecurityContextHolder.getContext().authentication as BearerTokenAuthentication
+    val principal = SecurityContextHolder.getContext().authentication
 
     logger.debug(
         "Principal (isAuthenticated={}) : '{}' - authorities={}",
