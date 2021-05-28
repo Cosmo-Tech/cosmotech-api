@@ -18,6 +18,8 @@ class SecurityConfig : AADResourceServerWebSecurityConfigurerAdapter() {
     super.configure(http)
     http.authorizeRequests { requests ->
       requests
+          .antMatchers(HttpMethod.OPTIONS, "/**")
+          .permitAll()
           .antMatchers(HttpMethod.GET, "/actuator/health/**")
           .permitAll()
           .antMatchers(HttpMethod.GET, "/actuator/info")
