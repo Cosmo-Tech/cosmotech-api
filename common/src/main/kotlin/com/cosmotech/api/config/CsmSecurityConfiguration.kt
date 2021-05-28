@@ -12,7 +12,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true, proxyTargetClass = true)
-class SecurityConfig : AADResourceServerWebSecurityConfigurerAdapter() {
+class CsmSecurityConfiguration : AADResourceServerWebSecurityConfigurerAdapter() {
 
   override fun configure(http: HttpSecurity) {
     super.configure(http)
