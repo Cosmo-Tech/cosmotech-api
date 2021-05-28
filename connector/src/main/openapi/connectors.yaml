@@ -112,8 +112,8 @@ components:
       description: OAuth2 authentication
       flows:
         implicit:
-          authorizationUrl: https://login.microsoftonline.com/e413b834-8be8-4822-a370-be619545cb49/oauth2/v2.0/authorize
-          tokenUrl: https://login.microsoftonline.com/e413b834-8be8-4822-a370-be619545cb49/oauth2/v2.0/token
+          authorizationUrl: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
+          tokenUrl: https://login.microsoftonline.com/common/oauth2/v2.0/token
           scopes:
             http://dev.api.cosmotech.com/platform: Platform scope
   schemas:
