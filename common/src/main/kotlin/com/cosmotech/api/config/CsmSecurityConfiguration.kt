@@ -77,7 +77,7 @@ class CsmSecurityConfiguration(
         (listOf(csmPlatformProperties.azure?.credentials?.tenantId) +
                 csmPlatformProperties.authorization.allowedTenants)
             .filterNotNull()
-            .filterNot(String::isNullOrBlank)
+            .filterNot(String::isBlank)
             .toSet()
     if (allowedTenants.isEmpty()) {
       throw IllegalStateException(
