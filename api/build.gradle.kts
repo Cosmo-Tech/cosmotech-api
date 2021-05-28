@@ -137,7 +137,10 @@ tasks.register<GenerateTask>("openApiPythonGenerate") {
   outputDir.set("$buildDir/generated-sources/python")
   generatorName.set("python")
   additionalProperties.set(
-      mapOf("projectName" to "cosmotech-api", "packageName" to "cosmotech_api"))
+      mapOf(
+          "projectName" to "cosmotech-api",
+          "packageName" to "cosmotech_api",
+          "pythonAttrNoneIfUnset" to true))
 }
 
 tasks.register<Copy>("copyPythonGitPushScript") {
