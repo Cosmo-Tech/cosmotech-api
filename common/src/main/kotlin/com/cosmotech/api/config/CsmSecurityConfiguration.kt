@@ -66,7 +66,9 @@ class CsmSecurityConfiguration(
         .oauth2ResourceServer()
         .jwt()
         .jwtAuthenticationConverter(
-            AADJwtBearerTokenAuthenticationConverter().apply { setPrincipalClaimName("oid") })
+            AADJwtBearerTokenAuthenticationConverter().apply {
+              setPrincipalClaimName(csmPlatformProperties.authorization.principalJwtClaim)
+            })
   }
 
   @Bean

@@ -13,6 +13,7 @@ management:
 csm:
   platform:
     authorization:
+      principal-jwt-claim: "oid"
       tenant-id-jwt-claim: "tid"
 
 azure:

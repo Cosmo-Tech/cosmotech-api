@@ -43,10 +43,15 @@ data class CsmPlatformProperties(
     val images: CsmImages,
 
     /** Authorization Configuration */
-    val authorization: Authorization,
+    val authorization: Authorization = Authorization(),
 ) {
 
   data class Authorization(
+
+      /** The JWT Claim to use to extract a unique identifier for the user account */
+      val principalJwtClaim: String = "sub",
+
+      /** The JWT Claim where the tenant id information is stored */
       val tenantIdJwtClaim: String = "iss",
 
       /**

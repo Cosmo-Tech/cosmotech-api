@@ -66,6 +66,7 @@ csm:
       scenario-fetch-parameters: cosmo-tech/fetch-scenario-parameters
       send-datawarehouse: cosmo-tech/azure-data-explorer-connector
     authorization:
+      principal-jwt-claim: "sub"
       tenant-id-jwt-claim: "iss"
       # Note that the way @Value works in Spring does not make it possible to inject this sole YAML list.
       # Use CsmPlatformProperties instead !
