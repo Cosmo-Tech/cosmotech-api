@@ -31,7 +31,7 @@ import org.springframework.scheduling.annotation.EnableAsync
 class CsmApiConfiguration {
 
   @Bean(name = ["csm-in-process-event-executor"])
-  fun taskExecutor(): Executor =
+  fun inProcessEventHandlerExecutor(): Executor =
       // TODO A better strategy could be with a limited core pool size off an unbounded queue ?
       Executors.newCachedThreadPool(
           BasicThreadFactory.Builder().namingPattern("csm-event-handler-%d").build())
