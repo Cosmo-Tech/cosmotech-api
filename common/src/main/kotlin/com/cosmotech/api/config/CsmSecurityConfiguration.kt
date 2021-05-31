@@ -73,9 +73,12 @@ class CsmSecurityConfiguration(
 
   @Bean
   fun jwtDecoder(): JwtDecoder {
-    val platformAllowedTenants = csmPlatformProperties.authorization.allowedTenants.toMutableSet()
-    csmPlatformProperties.azure?.credentials?.tenantId?.let { platformAllowedTenants.add(it) }
-    val allowedTenants = platformAllowedTenants.filterNot { it.isBlank() }
+    val allowedTenants =
+        (listOf(csmPlatformProperties.azure?.credentials?.tenantId) +
+                csmPlatformProperties.authorization.allowedTenants)
+            .filterNotNull()
+            .filterNot(String::isNullOrBlank)
+            .toSet()
     if (allowedTenants.isEmpty()) {
       throw IllegalStateException(
           "Could not determine list of tenants allowed. " +
@@ -92,13 +95,14 @@ class CsmSecurityConfiguration(
 
     if (allowedTenants.contains("*")) {
       logger.info(
-          "All tenants allowed to authenticate, since the following property contains a wildcard element: {}")
+          "All tenants allowed to authenticate, since the following property contains a wildcard " +
+              "element: csm.platform.authorization.allowed-tenants")
     } else {
       // Validate against the list of allowed tenants
       validators.add(
-          CsmJwtTenantIdValidator(
+          CsmJwtClaimValueInCollectionValidator(
               claimName = csmPlatformProperties.authorization.tenantIdJwtClaim,
-              allowedTenants = allowedTenants))
+              allowed = allowedTenants))
     }
 
     nimbusJwtDecoder.setJwtValidator(DelegatingOAuth2TokenValidator(validators))
@@ -106,13 +110,13 @@ class CsmSecurityConfiguration(
   }
 }
 
-internal class CsmJwtTenantIdValidator(
-    claimName: String = "iss",
-    private val allowedTenants: Collection<String>
+internal class CsmJwtClaimValueInCollectionValidator(
+    claimName: String,
+    private val allowed: Collection<String>
 ) : OAuth2TokenValidator<Jwt> {
 
   private val jwtClaimValidator: JwtClaimValidator<String> =
-      JwtClaimValidator(claimName, allowedTenants::contains)
+      JwtClaimValidator(claimName, allowed::contains)
 
   override fun validate(token: Jwt?): OAuth2TokenValidatorResult =
       this.jwtClaimValidator.validate(
