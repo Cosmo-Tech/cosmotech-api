@@ -21,6 +21,8 @@ import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceFile
 import com.cosmotech.workspace.domain.WorkspaceUser
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.core.io.Resource
@@ -136,27 +138,24 @@ class WorkspaceServiceImpl(
     val workspace = findWorkspaceById(organizationId, workspaceId)
     logger.debug("Deleting all files for workspace #{} ({})", workspace.id, workspace.name)
 
-    // TODO This is done synchronously for now, but we should definitely consider sending the
-    // response to the client faster.
-    // TODO Using a Kotlin Coroutine is a good candidate here (or at least an Async Azure Storage
-    // client)
-
-    val workspaceFiles =
-        getWorkspaceFileResources(organizationId, workspaceId).map { it.url }.map {
-          it.toExternalForm()
-        }
-    if (workspaceFiles.isEmpty()) {
-      logger.debug("No file to delete for workspace $workspaceId")
-      return
+    GlobalScope.launch {
+      // TODO Consider using a smaller coroutine scope
+      val workspaceFiles =
+          getWorkspaceFileResources(organizationId, workspaceId).map { it.url }.map {
+            it.toExternalForm()
+          }
+      if (workspaceFiles.isEmpty()) {
+        logger.debug("No file to delete for workspace $workspaceId")
+      } else {
+        azureStorageBlobBatchClient.deleteBlobs(workspaceFiles, DeleteSnapshotsOptionType.INCLUDE)
+            .forEach { response ->
+              logger.debug(
+                  "Deleting blob with URL {} completed with status code {}",
+                  response.request.url,
+                  response.statusCode)
+            }
+      }
     }
-
-    azureStorageBlobBatchClient.deleteBlobs(workspaceFiles, DeleteSnapshotsOptionType.INCLUDE)
-        .forEach { response ->
-          logger.debug(
-              "Deleting blob with URL {} completed with status code {}",
-              response.request.url,
-              response.statusCode)
-        }
   }
 
   override fun updateWorkspace(
