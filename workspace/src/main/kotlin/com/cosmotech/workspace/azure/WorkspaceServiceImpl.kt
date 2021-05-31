@@ -228,10 +228,7 @@ class WorkspaceServiceImpl(
   override fun deleteWorkspace(organizationId: String, workspaceId: String): Workspace {
     val workspace = findWorkspaceById(organizationId, workspaceId)
     try {
-      azureStorageBlobServiceClient
-          .getBlobContainerClient(organizationId.sanitizeForAzureStorage())
-          .getBlobClient(workspaceId.sanitizeForAzureStorage())
-          .delete()
+      deleteAllWorkspaceFiles(organizationId, workspaceId)
     } finally {
       cosmosTemplate.deleteEntity("${organizationId}_workspaces", workspace)
     }
