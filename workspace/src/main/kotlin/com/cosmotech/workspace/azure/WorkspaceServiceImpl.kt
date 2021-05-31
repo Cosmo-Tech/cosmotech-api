@@ -4,7 +4,10 @@ package com.cosmotech.workspace.azure
 
 import com.azure.cosmos.models.CosmosContainerProperties
 import com.azure.spring.autoconfigure.storage.resource.AzureStorageResourcePatternResolver
+import com.azure.spring.autoconfigure.storage.resource.BlobStorageResource
 import com.azure.storage.blob.BlobServiceClient
+import com.azure.storage.blob.batch.BlobBatchClient
+import com.azure.storage.blob.models.DeleteSnapshotsOptionType
 import com.cosmotech.api.azure.AbstractCosmosBackedService
 import com.cosmotech.api.azure.findAll
 import com.cosmotech.api.azure.findByIdOrThrow
@@ -32,6 +35,7 @@ class WorkspaceServiceImpl(
     private val userService: UserApiService,
     private val organizationService: OrganizationApiService,
     private val azureStorageBlobServiceClient: BlobServiceClient,
+    private val azureStorageBlobBatchClient: BlobBatchClient,
 ) : AbstractCosmosBackedService(), WorkspaceApiService {
 
   private fun fetchUsers(userIds: Collection<String>): Map<String, User> =
@@ -129,7 +133,30 @@ class WorkspaceServiceImpl(
           ?: throw IllegalArgumentException("No Workspace returned in response: $workspace")
 
   override fun deleteAllWorkspaceFiles(organizationId: String, workspaceId: String) {
-    TODO("Not yet implemented")
+    val workspace = findWorkspaceById(organizationId, workspaceId)
+    logger.debug("Deleting all files for workspace #{} ({})", workspace.id, workspace.name)
+
+    // TODO This is done synchronously for now, but we should definitely consider sending the
+    // response to the client faster.
+    // TODO Using a Kotlin Coroutine is a good candidate here (or at least an Async Azure Storage
+    // client)
+
+    val workspaceFiles =
+        getWorkspaceFileResources(organizationId, workspaceId).map { it.url }.map {
+          it.toExternalForm()
+        }
+    if (workspaceFiles.isEmpty()) {
+      logger.debug("No file to delete for workspace $workspaceId")
+      return
+    }
+
+    azureStorageBlobBatchClient.deleteBlobs(workspaceFiles, DeleteSnapshotsOptionType.INCLUDE)
+        .forEach { response ->
+          logger.debug(
+              "Deleting blob with URL {} completed with status code {}",
+              response.request.url,
+              response.statusCode)
+        }
   }
 
   override fun updateWorkspace(
@@ -264,8 +291,7 @@ class WorkspaceServiceImpl(
   ): List<WorkspaceFile> {
     val workspace = findWorkspaceById(organizationId, workspaceId)
     logger.debug("List all files for workspace #{} ({})", workspace.id, workspace.name)
-    return AzureStorageResourcePatternResolver(azureStorageBlobServiceClient)
-        .getResources("azure-blob://$organizationId/$workspaceId/*".sanitizeForAzureStorage())
+    return getWorkspaceFileResources(organizationId, workspaceId)
         .mapNotNull { it.filename?.substringAfterLast("/") }
         .map { WorkspaceFile(fileName = it) }
   }
@@ -286,4 +312,12 @@ class WorkspaceServiceImpl(
       cosmosTemplate.deleteContainer("${organizationId}_workspaces")
     }
   }
+
+  private fun getWorkspaceFileResources(
+      organizationId: String,
+      workspaceId: String
+  ): List<BlobStorageResource> =
+      AzureStorageResourcePatternResolver(azureStorageBlobServiceClient)
+          .getResources("azure-blob://$organizationId/$workspaceId/*".sanitizeForAzureStorage())
+          .map { it as BlobStorageResource }
 }
