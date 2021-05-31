@@ -58,8 +58,7 @@ class ScenarioServiceImpl(
           })
       scenario.parametersValues = parametersValuesMap.values.toList()
       scenario.lastUpdate = OffsetDateTime.now()
-      cosmosTemplate.upsert(
-          "${organizationId}_scenario_data", scenario.asMapWithAdditionalData(workspaceId))
+      upsertScenarioData(organizationId, scenario, workspaceId)
     }
     return scenarioRunTemplateParameterValue
   }
@@ -99,8 +98,7 @@ class ScenarioServiceImpl(
     scenario.users = currentScenarioUsers.values.toList()
     scenario.lastUpdate = OffsetDateTime.now()
 
-    cosmosTemplate.upsert(
-        "${organizationId}_scenario_data", scenario.asMapWithAdditionalData(workspaceId))
+    upsertScenarioData(organizationId, scenario, workspaceId)
 
     // Roles might have changed => notify all users so they can update their own items
     scenario.users?.forEach { user ->
@@ -250,8 +248,8 @@ class ScenarioServiceImpl(
     if (!scenario.parametersValues.isNullOrEmpty()) {
       scenario.parametersValues = listOf()
       scenario.lastUpdate = OffsetDateTime.now()
-      cosmosTemplate.upsert(
-          "${organizationId}_scenario_data", scenario.asMapWithAdditionalData(workspaceId))
+
+      upsertScenarioData(organizationId, scenario, workspaceId)
     }
   }
 
@@ -265,8 +263,8 @@ class ScenarioServiceImpl(
       val userIds = scenario.users!!.mapNotNull { it.id }
       scenario.users = listOf()
       scenario.lastUpdate = OffsetDateTime.now()
-      cosmosTemplate.upsert(
-          "${organizationId}_scenario_data", scenario.asMapWithAdditionalData(workspaceId))
+
+      upsertScenarioData(organizationId, scenario, workspaceId)
 
       userIds.forEach {
         this.eventPublisher.publishEvent(
@@ -287,8 +285,7 @@ class ScenarioServiceImpl(
       scenarioUserMap.remove(userId)
       scenario.users = scenarioUserMap.values.toList()
       scenario.lastUpdate = OffsetDateTime.now()
-      cosmosTemplate.upsert(
-          "${organizationId}_scenario_data", scenario.asMapWithAdditionalData(workspaceId))
+      upsertScenarioData(organizationId, scenario, workspaceId)
       this.eventPublisher.publishEvent(
           UserRemovedFromScenario(this, organizationId, workspaceId, scenarioId, userId))
     }
@@ -365,8 +362,7 @@ class ScenarioServiceImpl(
 
     return if (hasChanged) {
       scenario.lastUpdate = OffsetDateTime.now()
-      cosmosTemplate.upsert(
-          "${organizationId}_scenario_data", existingScenario.asMapWithAdditionalData(workspaceId))
+      upsertScenarioData(organizationId, scenario, workspaceId)
 
       userIdsRemoved?.forEach {
         this.eventPublisher.publishEvent(
@@ -388,6 +384,15 @@ class ScenarioServiceImpl(
     } else {
       existingScenario
     }
+  }
+
+  private fun upsertScenarioData(organizationId: String, scenario: Scenario, workspaceId: String) {
+    cosmosCoreDatabase
+        .getContainer("${organizationId}_scenario_data")
+        .upsertItem(
+            scenario.asMapWithAdditionalData(workspaceId),
+            PartitionKey(scenario.ownerId),
+            CosmosItemRequestOptions())
   }
 
   @EventListener(OrganizationRegistered::class)
