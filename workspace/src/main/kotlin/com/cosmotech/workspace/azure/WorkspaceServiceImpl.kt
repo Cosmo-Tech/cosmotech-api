@@ -304,7 +304,7 @@ class WorkspaceServiceImpl(
     val workspace = findWorkspaceById(organizationId, workspaceId)
     logger.debug("List all files for workspace #{} ({})", workspace.id, workspace.name)
     return getWorkspaceFileResources(organizationId, workspaceId)
-        .mapNotNull { it.filename?.substringAfterLast("/") }
+        .mapNotNull { it.filename?.removePrefix("${workspaceId.sanitizeForAzureStorage()}/") }
         .map { WorkspaceFile(fileName = it) }
   }
 
@@ -330,6 +330,6 @@ class WorkspaceServiceImpl(
       workspaceId: String
   ): List<BlobStorageResource> =
       AzureStorageResourcePatternResolver(azureStorageBlobServiceClient)
-          .getResources("azure-blob://$organizationId/$workspaceId/*".sanitizeForAzureStorage())
+          .getResources("azure-blob://$organizationId/$workspaceId/**/*".sanitizeForAzureStorage())
           .map { it as BlobStorageResource }
 }
