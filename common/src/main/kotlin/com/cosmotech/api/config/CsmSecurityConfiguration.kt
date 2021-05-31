@@ -51,6 +51,7 @@ const val ROLE_WORKSPACE_WRITER = "APPROLE_Workspace.Writer"
 
 // Endpoints paths
 const val PATH_CONNECTORS = "/connectors"
+const val PATH_DATASETS = "/organizations/*/datasets"
 const val PATH_ORGANIZATIONS = "/organizations"
 
 // Endpoints roles
@@ -78,11 +79,30 @@ val endpointSecurityReaders =
                 ROLE_ORGANIZATION_MODELER,
                 ROLE_ORGANIZATION_USER,
                 ROLE_ORGANIZATION_VIEWER),
+        PATH_DATASETS to
+            arrayOf(
+                ROLE_DATASET_READER,
+                ROLE_DATASET_WRITER,
+                ROLE_CONNECTOR_DEVELOPER,
+                ROLE_ORGANIZATION_ADMIN,
+                ROLE_ORGANIZATION_COLLABORATOR,
+                ROLE_ORGANIZATION_MODELER,
+                ROLE_ORGANIZATION_USER,
+                ROLE_ORGANIZATION_VIEWER),
     )
 
 val endpointSecurityWriters =
     mapOf(
         PATH_CONNECTORS to arrayOf(ROLE_CONNECTOR_WRITER, ROLE_CONNECTOR_DEVELOPER),
+        PATH_DATASETS to
+            arrayOf(
+                ROLE_DATASET_WRITER,
+                ROLE_CONNECTOR_DEVELOPER,
+                ROLE_ORGANIZATION_ADMIN,
+                ROLE_ORGANIZATION_COLLABORATOR,
+                ROLE_ORGANIZATION_MODELER,
+                ROLE_ORGANIZATION_USER,
+            ),
     )
 
 @Configuration
