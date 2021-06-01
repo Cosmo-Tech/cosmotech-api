@@ -76,6 +76,12 @@ const val PATH_SCENARIORUNS_WORKSPACES = "/organizations/*/workspaces/scenarioru
 const val PATH_SCENARIORUNS_SCENARIOS = "/organizations/*/workspaces/*/scenarios/*/scenarioruns"
 const val PATH_SCENARIORUNS_SCENARIOS_RUN = "/organizations/*/workspaces/*/scenarios/*/run"
 val PATHS_SCENARIORUNS = listOf(PATH_SCENARIORUNS, PATH_SCENARIORUNS_STATUS, PATH_SCENARIORUNS_LOGS, PATH_SCENARIORUNS_CUMULATEDLOGS, PATH_SCENARIORUNS_WORKSPACES, PATH_SCENARIORUNS_SCENARIOS)
+const val PATH_SOLUTIONS = "/organizations/*/solutions"
+const val PATH_SOLUTIONS_PARAMETERS = "/organizations/*/solutions/*/parameters"
+const val PATH_SOLUTIONS_PARAMETERGROUPS = "/organizations/*/solutions/*/parameterGroups"
+const val PATH_SOLUTIONS_RUNTEMPLATES = "/organizations/*/solutions/*/runTemplates"
+const val PATH_SOLUTIONS_RUNTEMPLATES_HANDLERS_UPLOAD = "/organizations/*/solutions/*/runTemplates/*/handlers/*/upload"
+val PATHS_SOLUTIONS = listOf(PATH_SOLUTIONS, PATH_SOLUTIONS_PARAMETERS, PATH_SOLUTIONS_PARAMETERGROUPS, PATH_SOLUTIONS_RUNTEMPLATES, PATH_SOLUTIONS_RUNTEMPLATES_HANDLERS_UPLOAD)
 
 // Endpoints roles
 val endpointSecurityPublic =
@@ -150,6 +156,18 @@ private val endpointSecurityReaders =
                     ROLE_ORGANIZATION_MODELER,
                     ROLE_ORGANIZATION_USER,
                 )),
+        CsmSecurityEndpointsRolesReader(
+            paths = PATHS_SOLUTIONS,
+            roles =
+                arrayOf(
+                    ROLE_SOLUTION_READER,
+                    ROLE_SOLUTION_WRITER,
+                    ROLE_CONNECTOR_DEVELOPER,
+                    ROLE_ORGANIZATION_ADMIN,
+                    ROLE_ORGANIZATION_COLLABORATOR,
+                    ROLE_ORGANIZATION_MODELER,
+                    ROLE_ORGANIZATION_USER,
+                    ROLE_ORGANIZATION_VIEWER)),
     )
 
 private val endpointSecurityWriters =
@@ -194,6 +212,15 @@ private val endpointSecurityWriters =
                     ROLE_ORGANIZATION_COLLABORATOR,
                     ROLE_ORGANIZATION_MODELER,
                     ROLE_ORGANIZATION_USER,
+                )),
+        CsmSecurityEndpointsRolesWriter(
+            paths = PATHS_SOLUTIONS,
+            roles =
+                arrayOf(
+                    ROLE_SOLUTION_WRITER,
+                    ROLE_ORGANIZATION_ADMIN,
+                    ROLE_ORGANIZATION_COLLABORATOR,
+                    ROLE_ORGANIZATION_MODELER,
                 )),
     )
 
