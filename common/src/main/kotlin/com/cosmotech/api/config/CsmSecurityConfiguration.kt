@@ -53,6 +53,21 @@ const val ROLE_WORKSPACE_WRITER = "APPROLE_Workspace.Writer"
 const val PATH_CONNECTORS = "/connectors"
 const val PATH_DATASETS = "/organizations/*/datasets"
 const val PATH_ORGANIZATIONS = "/organizations"
+const val PATH_ORGANIZATIONS_USERS = "/organizations/*/users"
+const val PATH_ORGANIZATIONS_SERVICES = "/organizations/*/services"
+val PATHS_ORGANIZATIONS =
+    listOf(PATH_ORGANIZATIONS, PATH_ORGANIZATIONS_USERS, PATH_ORGANIZATIONS_SERVICES)
+const val PATH_SCENARIOS = "/organizations/*/workspaces/*/scenarios"
+const val PATH_SCENARIOS_COMPARE = "/organizations/*/workspaces/*/scenarios/*/compare"
+const val PATH_SCENARIOS_USERS = "/organizations/*/workspaces/*/scenarios/*/users"
+const val PATH_SCENARIOS_PARAMETERVALUES =
+    "/organizations/*/workspaces/*/scenarios/*/parameterValues"
+val PATHS_SCENARIOS =
+    listOf(
+        PATH_SCENARIOS,
+        PATH_SCENARIOS_COMPARE,
+        PATH_SCENARIOS_USERS,
+        PATH_SCENARIOS_PARAMETERVALUES)
 
 // Endpoints roles
 val endpointSecurityPublic =
@@ -92,7 +107,31 @@ private val endpointSecurityReaders =
                     ROLE_ORGANIZATION_COLLABORATOR,
                     ROLE_ORGANIZATION_MODELER,
                     ROLE_ORGANIZATION_USER,
-                    ROLE_ORGANIZATION_VIEWER)))
+                    ROLE_ORGANIZATION_VIEWER)),
+        CsmSecurityEndpointsRolesReader(
+            paths = PATHS_ORGANIZATIONS,
+            roles =
+                arrayOf(
+                    ROLE_ORGANIZATION_READER,
+                    ROLE_ORGANIZATION_WRITER,
+                    ROLE_CONNECTOR_DEVELOPER,
+                    ROLE_ORGANIZATION_ADMIN,
+                    ROLE_ORGANIZATION_COLLABORATOR,
+                    ROLE_ORGANIZATION_MODELER,
+                    ROLE_ORGANIZATION_USER,
+                    ROLE_ORGANIZATION_VIEWER)),
+        CsmSecurityEndpointsRolesReader(
+            paths = PATHS_SCENARIOS,
+            roles =
+                arrayOf(
+                    ROLE_SCENARIO_READER,
+                    ROLE_SCENARIO_WRITER,
+                    ROLE_ORGANIZATION_ADMIN,
+                    ROLE_ORGANIZATION_COLLABORATOR,
+                    ROLE_ORGANIZATION_MODELER,
+                    ROLE_ORGANIZATION_USER,
+                )),
+    )
 
 private val endpointSecurityWriters =
     listOf(
@@ -109,7 +148,25 @@ private val endpointSecurityWriters =
                     ROLE_ORGANIZATION_COLLABORATOR,
                     ROLE_ORGANIZATION_MODELER,
                     ROLE_ORGANIZATION_USER,
-                )))
+                )),
+        CsmSecurityEndpointsRolesWriter(
+            paths = PATHS_ORGANIZATIONS,
+            roles =
+                arrayOf(
+                    ROLE_ORGANIZATION_WRITER,
+                    ROLE_ORGANIZATION_ADMIN,
+                )),
+        CsmSecurityEndpointsRolesWriter(
+            paths = PATHS_SCENARIOS,
+            roles =
+                arrayOf(
+                    ROLE_SCENARIO_WRITER,
+                    ROLE_ORGANIZATION_ADMIN,
+                    ROLE_ORGANIZATION_COLLABORATOR,
+                    ROLE_ORGANIZATION_MODELER,
+                    ROLE_ORGANIZATION_USER,
+                )),
+    )
 
 @Configuration
 @EnableWebSecurity
