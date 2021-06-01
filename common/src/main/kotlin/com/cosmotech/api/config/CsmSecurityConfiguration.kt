@@ -68,6 +68,14 @@ val PATHS_SCENARIOS =
         PATH_SCENARIOS_COMPARE,
         PATH_SCENARIOS_USERS,
         PATH_SCENARIOS_PARAMETERVALUES)
+const val PATH_SCENARIORUNS = "/organizations/*/scenarioruns"
+const val PATH_SCENARIORUNS_STATUS = "/organizations/*/scenarioruns/*/status"
+const val PATH_SCENARIORUNS_LOGS = "/organizations/*/scenarioruns/*/logs"
+const val PATH_SCENARIORUNS_CUMULATEDLOGS = "/organizations/*/scenarioruns/*/cumulatedlogs"
+const val PATH_SCENARIORUNS_WORKSPACES = "/organizations/*/workspaces/scenarioruns"
+const val PATH_SCENARIORUNS_SCENARIOS = "/organizations/*/workspaces/*/scenarios/*/scenarioruns"
+const val PATH_SCENARIORUNS_SCENARIOS_RUN = "/organizations/*/workspaces/*/scenarios/*/run"
+val PATHS_SCENARIORUNS = listOf(PATH_SCENARIORUNS, PATH_SCENARIORUNS_STATUS, PATH_SCENARIORUNS_LOGS, PATH_SCENARIORUNS_CUMULATEDLOGS, PATH_SCENARIORUNS_WORKSPACES, PATH_SCENARIORUNS_SCENARIOS)
 
 // Endpoints roles
 val endpointSecurityPublic =
@@ -131,6 +139,17 @@ private val endpointSecurityReaders =
                     ROLE_ORGANIZATION_MODELER,
                     ROLE_ORGANIZATION_USER,
                 )),
+        CsmSecurityEndpointsRolesReader(
+            paths = PATHS_SCENARIORUNS,
+            roles =
+                arrayOf(
+                    ROLE_SCENARIORUN_READER,
+                    ROLE_SCENARIORUN_WRITER,
+                    ROLE_ORGANIZATION_ADMIN,
+                    ROLE_ORGANIZATION_COLLABORATOR,
+                    ROLE_ORGANIZATION_MODELER,
+                    ROLE_ORGANIZATION_USER,
+                )),
     )
 
 private val endpointSecurityWriters =
@@ -161,6 +180,16 @@ private val endpointSecurityWriters =
             roles =
                 arrayOf(
                     ROLE_SCENARIO_WRITER,
+                    ROLE_ORGANIZATION_ADMIN,
+                    ROLE_ORGANIZATION_COLLABORATOR,
+                    ROLE_ORGANIZATION_MODELER,
+                    ROLE_ORGANIZATION_USER,
+                )),
+        CsmSecurityEndpointsRolesWriter(
+            paths = PATHS_SCENARIOS,
+            roles =
+                arrayOf(
+                    ROLE_SCENARIORUN_WRITER,
                     ROLE_ORGANIZATION_ADMIN,
                     ROLE_ORGANIZATION_COLLABORATOR,
                     ROLE_ORGANIZATION_MODELER,
