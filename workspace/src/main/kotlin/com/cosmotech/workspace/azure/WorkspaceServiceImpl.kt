@@ -252,6 +252,9 @@ class WorkspaceServiceImpl(
       workspaceId: String,
       fileName: String
   ): Resource {
+    if (fileName.contains("..")) {
+      throw IllegalArgumentException("Invalid filename: '$fileName'. '..' is not allowed")
+    }
     val workspace = findWorkspaceById(organizationId, workspaceId)
     logger.debug(
         "Downloading file resource to workspace #{} ({}): {}",
@@ -269,6 +272,10 @@ class WorkspaceServiceImpl(
       overwrite: Boolean,
       destination: String?
   ): WorkspaceFile {
+    if (destination?.contains("..") == true) {
+      throw IllegalArgumentException("Invalid destination: '$destination'. '..' is not allowed")
+    }
+
     val workspace = findWorkspaceById(organizationId, workspaceId)
     logger.debug(
         "Uploading file resource to workspace #{} ({}): {} => {}",

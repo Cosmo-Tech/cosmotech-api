@@ -14,7 +14,9 @@ import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import java.lang.IllegalArgumentException
 import kotlin.test.*
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
@@ -202,5 +204,38 @@ class WorkspaceServiceImplTests {
           "${WORKSPACE_ID.sanitizeForAzureStorage()}/my/other/destination/file")
     }
     confirmVerified(azureStorageBlobServiceClient, blobContainerClient)
+  }
+
+  @Test
+  fun `Calling uploadWorkspaceFile is not allowed when destination contains double-dot`() {
+    val blobContainerClient = mockk<BlobContainerClient>(relaxed = true)
+    every { azureStorageBlobServiceClient.getBlobContainerClient(any()) } returns
+        blobContainerClient
+
+    assertThrows<IllegalArgumentException> {
+      workspaceServiceImpl.uploadWorkspaceFile(
+          ORGANIZATION_ID, WORKSPACE_ID, mockk(), false, "my/../other/destination/../../file")
+    }
+
+    verify(exactly = 0) {
+      azureStorageBlobServiceClient.getBlobContainerClient(
+          ORGANIZATION_ID.sanitizeForAzureStorage())
+    }
+    verify(exactly = 0) {
+      blobContainerClient.getBlobClient(
+          "${WORKSPACE_ID.sanitizeForAzureStorage()}/my/other/destination/file")
+    }
+    confirmVerified(azureStorageBlobServiceClient, blobContainerClient)
+  }
+
+  @Test
+  fun `Calling downloadWorkspaceFile is not allowed when filename contains double-dot`() {
+    assertThrows<IllegalArgumentException> {
+      workspaceServiceImpl.downloadWorkspaceFile(
+          ORGANIZATION_ID, WORKSPACE_ID, "my/../../other/destination/file")
+    }
+
+    verify(exactly = 0) { resourceLoader.getResource(any()) }
+    confirmVerified(resourceLoader)
   }
 }
