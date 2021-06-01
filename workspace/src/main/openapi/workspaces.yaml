@@ -192,11 +192,45 @@ paths:
                 overwrite:
                   type: boolean
                   default: false
+                destination:
+                  # PROD-7601 : Allow clients to specify where the file should be uploaded
+                  type: string
+                  description: |
+                    Destination path. Must end with a '/' if specifying a folder.
+                    Note that paths may or may not start with a '/', but they are always treated
+                    as relative to the Workspace root location.
+                  example: "path/to/a/directory/"
                 file:
                   type: string
                   format: binary
               required:
                 - file
+            examples:
+              use_file_name_as_is:
+                summary: Use the file name as is as destination
+                value:
+                  file: "Lorem Ipsum Dolor Sit Amet"
+              upload_to_workspace_root_under_a_different_file_name:
+                summary: Upload to the Workspace root folder, but rename the target file
+                value:
+                  destination: "my_file_renamed.txt"
+                  file: "Lorem Ipsum Dolor Sit Amet"
+              upload_to_a_folder:
+                summary: |
+                  Upload to a sub-folder.
+                  Destination may or may not start with a '/', but must end with '/' to be treated as a directory.
+                  Final file path will always be relative to the Workspace root location.
+                value:
+                  destination: "path/to/a/directory/"
+                  file: "Lorem Ipsum Dolor Sit Amet"
+              upload_to_a_specific_folder_and_under_a_different_file_name:
+                summary: |
+                  Upload to a sub-folder.
+                  Destination may or may not start with a '/', but must not end with '/'.
+                  Final file path will always be relative to the Workspace root location.
+                value:
+                  destination: "/path/to/a/directory/my_file_renamed.txt"
+                  file: "Lorem Ipsum Dolor Sit Amet"
       responses:
         "201":
           description: the file resource details

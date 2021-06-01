@@ -252,6 +252,9 @@ class WorkspaceServiceImpl(
       workspaceId: String,
       fileName: String
   ): Resource {
+    if (fileName.contains("..")) {
+      throw IllegalArgumentException("Invalid filename: '$fileName'. '..' is not allowed")
+    }
     val workspace = findWorkspaceById(organizationId, workspaceId)
     logger.debug(
         "Downloading file resource to workspace #{} ({}): {}",
@@ -266,19 +269,39 @@ class WorkspaceServiceImpl(
       organizationId: String,
       workspaceId: String,
       file: Resource,
-      overwrite: Boolean
+      overwrite: Boolean,
+      destination: String?
   ): WorkspaceFile {
+    if (destination?.contains("..") == true) {
+      throw IllegalArgumentException("Invalid destination: '$destination'. '..' is not allowed")
+    }
+
     val workspace = findWorkspaceById(organizationId, workspaceId)
     logger.debug(
-        "Uploading file resource to workspace #{} ({}): {}",
+        "Uploading file resource to workspace #{} ({}): {} => {}",
         workspace.id,
         workspace.name,
-        file.filename)
+        file.filename,
+        destination)
+
+    val fileRelativeDestinationBuilder = StringBuilder()
+    if (destination.isNullOrBlank()) {
+      fileRelativeDestinationBuilder.append(file.filename)
+    } else {
+      // Using multiple consecutive '/' in the path results in Azure Storage creating
+      // weird <empty> names in-between two subsequent '/'
+      val destinationSanitized = destination.removePrefix("/").replace(Regex("(/)\\1+"), "/")
+      fileRelativeDestinationBuilder.append(destinationSanitized)
+      if (destinationSanitized.endsWith("/")) {
+        fileRelativeDestinationBuilder.append(file.filename)
+      }
+    }
+
     azureStorageBlobServiceClient
         .getBlobContainerClient(organizationId.sanitizeForAzureStorage())
-        .getBlobClient("${workspaceId.sanitizeForAzureStorage()}/${file.filename}")
+        .getBlobClient("${workspaceId.sanitizeForAzureStorage()}/$fileRelativeDestinationBuilder")
         .upload(file.inputStream, file.contentLength(), overwrite)
-    return WorkspaceFile(fileName = file.filename)
+    return WorkspaceFile(fileName = fileRelativeDestinationBuilder.toString())
   }
 
   override fun findAllWorkspaceFiles(
@@ -288,7 +311,7 @@ class WorkspaceServiceImpl(
     val workspace = findWorkspaceById(organizationId, workspaceId)
     logger.debug("List all files for workspace #{} ({})", workspace.id, workspace.name)
     return getWorkspaceFileResources(organizationId, workspaceId)
-        .mapNotNull { it.filename?.substringAfterLast("/") }
+        .mapNotNull { it.filename?.removePrefix("${workspaceId.sanitizeForAzureStorage()}/") }
         .map { WorkspaceFile(fileName = it) }
   }
 
@@ -314,6 +337,6 @@ class WorkspaceServiceImpl(
       workspaceId: String
   ): List<BlobStorageResource> =
       AzureStorageResourcePatternResolver(azureStorageBlobServiceClient)
-          .getResources("azure-blob://$organizationId/$workspaceId/*".sanitizeForAzureStorage())
+          .getResources("azure-blob://$organizationId/$workspaceId/**/*".sanitizeForAzureStorage())
           .map { it as BlobStorageResource }
 }
