@@ -69,6 +69,13 @@ Create Docker secrets for pulling images from a private container registry.
 {{- end }}
 
 {{/*
+Create Docker secrets so Argo Workflows can pull images from a private container registry.
+*/}}
+{{- define "cosmotech-api.argo.imagePullSecret" -}}
+{{- printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"}}}" .Values.argo.imageCredentials.registry (printf "%s:%s" .Values.argo.imageCredentials.username .Values.argo.imageCredentials.password | b64enc) | b64enc }}
+{{- end }}
+
+{{/*
 Default Ingress path
 */}}
 {{- define "cosmotech-api.apiBaseUrl" -}}
@@ -97,11 +104,14 @@ spring:
       # - But we still benefit from ConfigMap/Secret to Properties mapping, which is great.
       # Plus, some other useful beans (e.g., KubernetesClient) are available for us to use.
       enabled: false
+
 api:
   version: "{{ .Values.api.version }}"
+
 server:
   servlet:
     context-path: {{ include "cosmotech-api.apiBaseUrl" . }}
+
 management:
   endpoint:
     health:
@@ -112,4 +122,23 @@ management:
           {{- else }}
           include: "readinessState"
           {{- end }}
+
+csm:
+  platform:
+    api:
+      # API Base Path for OpenAPI-generated controllers.
+      # Might conflict with the SpringBoot context path, hence leaving it at the root
+      base-path: /
+    argo:
+      {{- if .Values.argo.imageCredentials.registry }}
+      image-pull-secrets:
+        - {{ include "cosmotech-api.fullname" . }}-workflow-registry
+      {{- else }}
+      image-pull-secrets: []
+      {{- end }}
+    {{- if eq .Values.config.csm.platform.vendor "azure" }}
+    azure:
+      containerRegistries:
+        solutions: "{{- default "" .Values.argo.imageCredentials.registry -}}"
+    {{- end }}
 {{- end }}

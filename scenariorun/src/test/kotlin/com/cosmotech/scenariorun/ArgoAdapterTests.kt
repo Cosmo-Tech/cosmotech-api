@@ -12,13 +12,12 @@ import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaimSpec
 import io.kubernetes.client.openapi.models.V1ResourceRequirements
 import io.kubernetes.client.openapi.models.V1VolumeMount
+import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import org.slf4j.LoggerFactory
 
 class ArgoAdapterTests {
-  private val logger = LoggerFactory.getLogger(ArgoAdapterTests::class.java)
-  private val argoAdapter = ArgoAdapter()
+  private val argoAdapter = ArgoAdapter(mockk(relaxed = true))
   private val DEFAULT_ENTRY_POINT = "entrypoint.py"
   private val csmSimulationId = "simulationrunid"
 

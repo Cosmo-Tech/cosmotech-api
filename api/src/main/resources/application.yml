@@ -51,7 +51,8 @@ csm:
     event-publisher:
       type: in_process
     argo:
-      base-uri: "https://argo-server.argo.svc.cluster.local:2746"
+      base-uri: "https://localhost:2746"
+      image-pull-secrets: []
     images:
       scenario-fetch-parameters: cosmo-tech/fetch-scenario-parameters
       send-datawarehouse: cosmo-tech/azure-data-explorer-connector

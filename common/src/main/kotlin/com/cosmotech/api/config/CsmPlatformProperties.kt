@@ -54,6 +54,9 @@ data class CsmPlatformProperties(
   data class Argo(
       /** Argo service base Uri */
       val baseUri: String,
+
+      /** Image Pull Secrets */
+      val imagePullSecrets: List<String>? = null
   )
 
   data class Api(

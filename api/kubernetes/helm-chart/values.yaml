@@ -117,6 +117,16 @@ tolerations: []
 
 affinity: {}
 
+argo:
+  # Set image pull secrets for Argo Workflows (in case you're using a private container registry).
+  imageCredentials:
+    # -- container registry to use for pulling the Workflow images. Useful if you are using a private registry
+    registry: ""
+    # -- username for the container registry to use for pulling the Workflow images. Useful if you are using a private registry
+    username: ""
+    # -- password for registry to use for pulling the Workflow images. Useful if you are using a private registry
+    password: ""
+
 config:
   csm:
     platform:

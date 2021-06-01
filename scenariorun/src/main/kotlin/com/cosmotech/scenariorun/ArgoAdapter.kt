@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenariorun
 
+import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
 import io.argoproj.workflow.models.DAGTask
@@ -10,17 +11,12 @@ import io.argoproj.workflow.models.Template
 import io.argoproj.workflow.models.Workflow
 import io.argoproj.workflow.models.WorkflowSpec
 import io.kubernetes.client.custom.Quantity
-import io.kubernetes.client.openapi.models.V1EnvVar
-import io.kubernetes.client.openapi.models.V1ObjectMeta
-import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim
-import io.kubernetes.client.openapi.models.V1PersistentVolumeClaimSpec
-import io.kubernetes.client.openapi.models.V1ResourceRequirements
-import io.kubernetes.client.openapi.models.V1VolumeMount
+import io.kubernetes.client.openapi.models.*
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
-class ArgoAdapter {
+class ArgoAdapter(private val csmPlatformProperties: CsmPlatformProperties) {
   private val logger = LoggerFactory.getLogger(ArgoAdapter::class.java)
   private val K8S_AGENT_POOL = "agentpool"
   private val CSM_DEFAULT_ACCOUNT = "workflow"
@@ -30,6 +26,13 @@ class ArgoAdapter {
   private val VOLUME_CLAIM_PARAMETERS = "parametersdir"
   private val VOLUME_DATASETS_PATH = "/mnt/scenariorun-data"
   private val VOLUME_PARAMETERS_PATH = "/mnt/scenariorun-parameters"
+
+  private val workflowImagePullSecrets =
+      csmPlatformProperties
+          .argo
+          .imagePullSecrets
+          ?.filterNot(String::isBlank)
+          ?.map(V1LocalObjectReference()::name)
 
   fun buildTemplate(scenarioRunContainer: ScenarioRunContainer): Template {
     var envVars: MutableList<V1EnvVar>? = null
@@ -66,6 +69,7 @@ class ArgoAdapter {
     val volumeClaims = buildVolumeClaims()
 
     return WorkflowSpec()
+        .imagePullSecrets(workflowImagePullSecrets?.ifEmpty { null })
         .nodeSelector(nodeSelector)
         .serviceAccountName(CSM_DEFAULT_ACCOUNT)
         .entrypoint(CSM_DAG_ENTRYPOINT)
