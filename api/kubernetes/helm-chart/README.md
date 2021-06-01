@@ -15,7 +15,7 @@ Cosmo Tech Platform API
 | autoscaling.maxReplicas | int | `100` |  |
 | autoscaling.minReplicas | int | `1` |  |
 | autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
-| config.csm.platform.argo.base-url | string | `"https://argo-server.argo.svc.cluster.local:2746"` |  |
+| config.csm.platform.argo.base-uri | string | `"https://argo-server.argo.svc.cluster.local:2746"` |  |
 | config.csm.platform.azure.cosmos.key | string | `"changeme"` | Cosmos DB Database Key. Can be retrieved from the Azure portal |
 | config.csm.platform.azure.cosmos.uri | string | `"changeme"` | Cosmos DB Database URI. Can be retrieved from the Azure portal |
 | config.csm.platform.azure.storage.account-key | string | `"changeme"` | Azure storage account access key. Can be retrieved from the Azure portal |

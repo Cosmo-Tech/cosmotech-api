@@ -18,4 +18,4 @@ management:
 csm:
     vendor: azure
     argo:
-      base-url: "https://argo-server.argo.svc.cluster.local:2746"
+      base-uri: "https://argo-server.argo.svc.cluster.local:2746"

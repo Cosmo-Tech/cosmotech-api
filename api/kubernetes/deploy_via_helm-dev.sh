@@ -47,4 +47,4 @@ helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "${HELM_CHARTS_BASE_PATH}
     "${@:4}" \
     --set api.version="$API_VERSION" \
     --set api.version="$API_VERSION" \
-    --set config.csm.platform.argo.base-url="http://${ARGO_RELEASE_NAME}-server.${NAMESPACE}.svc.cluster.local:2746"
+    --set config.csm.platform.argo.base-uri="http://${ARGO_RELEASE_NAME}-server.${NAMESPACE}.svc.cluster.local:2746"
