@@ -11,19 +11,25 @@ Cosmo Tech Platform API
 | affinity | object | `{}` |  |
 | api.servletContextPath | string | `"/"` |  |
 | api.version | string | `"latest"` |  |
+| argo.imageCredentials.password | string | `""` | password for registry to use for pulling the Workflow images. Useful if you are using a private registry |
+| argo.imageCredentials.registry | string | `""` | container registry to use for pulling the Workflow images. Useful if you are using a private registry |
+| argo.imageCredentials.username | string | `""` | username for the container registry to use for pulling the Workflow images. Useful if you are using a private registry |
 | autoscaling.enabled | bool | `false` |  |
 | autoscaling.maxReplicas | int | `100` |  |
 | autoscaling.minReplicas | int | `1` |  |
 | autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
-| config.csm.platform.argo.base-uri | string | `"https://argo-server.argo.svc.cluster.local:2746"` |  |
+| config.csm.platform.argo.base-uri | string | `"http://argo-server:2746"` |  |
+| config.csm.platform.azure.containerRegistries.solutions | string | `"changeme"` |  |
 | config.csm.platform.azure.cosmos.key | string | `"changeme"` | Cosmos DB Database Key. Can be retrieved from the Azure portal |
 | config.csm.platform.azure.cosmos.uri | string | `"changeme"` | Cosmos DB Database URI. Can be retrieved from the Azure portal |
+| config.csm.platform.azure.credentials.clientId | string | `"changeme"` |  |
+| config.csm.platform.azure.credentials.clientSecret | string | `"changeme"` |  |
+| config.csm.platform.azure.credentials.tenantId | string | `"changeme"` |  |
+| config.csm.platform.azure.dataWarehouseCluster.baseUri | string | `"changeme"` |  |
+| config.csm.platform.azure.dataWarehouseCluster.options.ingestionUri | string | `"changeme"` |  |
+| config.csm.platform.azure.eventBus.baseUri | string | `"changeme"` |  |
 | config.csm.platform.azure.storage.account-key | string | `"changeme"` | Azure storage account access key. Can be retrieved from the Azure portal |
 | config.csm.platform.azure.storage.account-name | string | `"changeme"` | Azure storage account name. Length should be between 3 and 24 and use numbers and lower-case letters only |
-| config.csm.platform.images.scenario-fetch-parameters | string | `"cosmotech/scenariofetchparameters:1.0.0"` |  |
-| config.csm.platform.images.send-datawarehouse | string | `"cosmotech/senddatawarehouse:1.0.0"` |  |
-| config.csm.platform.services.adx-dataingestion-uri | string | `"https://ingest-phoenix.westeurope.kusto.windows.net"` |  |
-| config.csm.platform.services.eventhub-cluster-uri | string | `"amqps://csm-phoenix.servicebus.windows.net"` |  |
 | config.csm.platform.vendor | string | `"azure"` |  |
 | fullnameOverride | string | `""` | value overriding the full name of the Chart. If not set, the value is computed from `nameOverride`. Truncated at 63 chars because some Kubernetes name fields are limited to this. |
 | image.pullPolicy | string | `"IfNotPresent"` | [policy](https://kubernetes.io/docs/concepts/containers/images/#updating-images) for pulling the image |
