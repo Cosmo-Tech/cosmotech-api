@@ -67,43 +67,49 @@ val endpointSecurityPublic =
         "/openapi",
         "/error",
     )
-val endpointSecurityReaders =
-    mapOf(
-        PATH_CONNECTORS to
-            arrayOf(
-                ROLE_CONNECTOR_READER,
-                ROLE_CONNECTOR_WRITER,
-                ROLE_CONNECTOR_DEVELOPER,
-                ROLE_ORGANIZATION_ADMIN,
-                ROLE_ORGANIZATION_COLLABORATOR,
-                ROLE_ORGANIZATION_MODELER,
-                ROLE_ORGANIZATION_USER,
-                ROLE_ORGANIZATION_VIEWER),
-        PATH_DATASETS to
-            arrayOf(
-                ROLE_DATASET_READER,
-                ROLE_DATASET_WRITER,
-                ROLE_CONNECTOR_DEVELOPER,
-                ROLE_ORGANIZATION_ADMIN,
-                ROLE_ORGANIZATION_COLLABORATOR,
-                ROLE_ORGANIZATION_MODELER,
-                ROLE_ORGANIZATION_USER,
-                ROLE_ORGANIZATION_VIEWER),
-    )
+private val endpointSecurityReaders =
+    listOf(
+        CsmSecurityEndpointsRolesReader(
+            paths = listOf(PATH_CONNECTORS),
+            roles =
+                arrayOf(
+                    ROLE_CONNECTOR_READER,
+                    ROLE_CONNECTOR_WRITER,
+                    ROLE_CONNECTOR_DEVELOPER,
+                    ROLE_ORGANIZATION_ADMIN,
+                    ROLE_ORGANIZATION_COLLABORATOR,
+                    ROLE_ORGANIZATION_MODELER,
+                    ROLE_ORGANIZATION_USER,
+                    ROLE_ORGANIZATION_VIEWER)),
+        CsmSecurityEndpointsRolesReader(
+            paths = listOf(PATH_DATASETS),
+            roles =
+                arrayOf(
+                    ROLE_DATASET_READER,
+                    ROLE_DATASET_WRITER,
+                    ROLE_CONNECTOR_DEVELOPER,
+                    ROLE_ORGANIZATION_ADMIN,
+                    ROLE_ORGANIZATION_COLLABORATOR,
+                    ROLE_ORGANIZATION_MODELER,
+                    ROLE_ORGANIZATION_USER,
+                    ROLE_ORGANIZATION_VIEWER)))
 
-val endpointSecurityWriters =
-    mapOf(
-        PATH_CONNECTORS to arrayOf(ROLE_CONNECTOR_WRITER, ROLE_CONNECTOR_DEVELOPER),
-        PATH_DATASETS to
-            arrayOf(
-                ROLE_DATASET_WRITER,
-                ROLE_CONNECTOR_DEVELOPER,
-                ROLE_ORGANIZATION_ADMIN,
-                ROLE_ORGANIZATION_COLLABORATOR,
-                ROLE_ORGANIZATION_MODELER,
-                ROLE_ORGANIZATION_USER,
-            ),
-    )
+private val endpointSecurityWriters =
+    listOf(
+        CsmSecurityEndpointsRolesWriter(
+            paths = listOf(PATH_CONNECTORS),
+            roles = arrayOf(ROLE_CONNECTOR_WRITER, ROLE_CONNECTOR_DEVELOPER)),
+        CsmSecurityEndpointsRolesWriter(
+            paths = listOf(PATH_DATASETS),
+            roles =
+                arrayOf(
+                    ROLE_DATASET_WRITER,
+                    ROLE_CONNECTOR_DEVELOPER,
+                    ROLE_ORGANIZATION_ADMIN,
+                    ROLE_ORGANIZATION_COLLABORATOR,
+                    ROLE_ORGANIZATION_MODELER,
+                    ROLE_ORGANIZATION_USER,
+                )))
 
 @Configuration
 @EnableWebSecurity
@@ -127,14 +133,10 @@ class CsmSecurityConfiguration(
           }
 
           // Endpoint security for reader roles
-          endpointSecurityReaders.forEach { (path, roles) ->
-            this.addReaderRoles(requests, path, *roles)
-          }
+          endpointSecurityReaders.forEach { endpointsRoles -> endpointsRoles.applyRoles(requests) }
 
           // Endpoint security for writer roles
-          endpointSecurityWriters.forEach { (path, roles) ->
-            this.addWriterRoles(requests, path, *roles)
-          }
+          endpointSecurityWriters.forEach { endpointsRoles -> endpointsRoles.applyRoles(requests) }
 
           requests.anyRequest().authenticated()
         }
@@ -144,32 +146,6 @@ class CsmSecurityConfiguration(
             AADJwtBearerTokenAuthenticationConverter().apply {
               setPrincipalClaimName(csmPlatformProperties.authorization.principalJwtClaim)
             })
-  }
-
-  private fun addReaderRoles(
-      requests: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry,
-      path: String,
-      vararg roles: String
-  ) {
-    requests
-        .antMatchers(HttpMethod.GET, path, "${path}/*")
-        .hasAnyAuthority(ROLE_PLATFORM_ADMIN, *roles)
-  }
-
-  private fun addWriterRoles(
-      requests: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry,
-      path: String,
-      vararg roles: String
-  ) {
-    requests
-        .antMatchers(HttpMethod.POST, path, "${path}/*")
-        .hasAnyAuthority(ROLE_PLATFORM_ADMIN, *roles)
-    requests
-        .antMatchers(HttpMethod.PATCH, path, "${path}/*")
-        .hasAnyAuthority(ROLE_PLATFORM_ADMIN, *roles)
-    requests
-        .antMatchers(HttpMethod.DELETE, path, "${path}/*")
-        .hasAnyAuthority(ROLE_PLATFORM_ADMIN, *roles)
   }
 
   @Bean
@@ -208,6 +184,41 @@ class CsmSecurityConfiguration(
 
     nimbusJwtDecoder.setJwtValidator(DelegatingOAuth2TokenValidator(validators))
     return nimbusJwtDecoder
+  }
+}
+
+internal class CsmSecurityEndpointsRolesReader(
+    val paths: List<String>,
+    val roles: Array<String>,
+) {
+  fun applyRoles(
+      requests: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry
+  ) {
+    this.paths.forEach { path ->
+      requests
+          .antMatchers(HttpMethod.GET, path, "${path}/*")
+          .hasAnyAuthority(ROLE_PLATFORM_ADMIN, *this.roles)
+    }
+  }
+}
+
+internal class CsmSecurityEndpointsRolesWriter(
+    val paths: List<String>,
+    val roles: Array<String>,
+) {
+
+  fun applyRoles(
+      requests: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry
+  ) {
+    this.paths.forEach { path ->
+      requests
+          .antMatchers(HttpMethod.POST, path, "${path}/*")
+          .hasAnyAuthority(ROLE_PLATFORM_ADMIN, *this.roles)
+          .antMatchers(HttpMethod.PATCH, path, "${path}/*")
+          .hasAnyAuthority(ROLE_PLATFORM_ADMIN, *this.roles)
+          .antMatchers(HttpMethod.DELETE, path, "${path}/*")
+          .hasAnyAuthority(ROLE_PLATFORM_ADMIN, *this.roles)
+    }
   }
 }
 
