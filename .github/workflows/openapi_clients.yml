@@ -1,0 +1,51 @@
+name: OpenAPI Clients
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  generate_openapi_clients:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: Java
+          - language: JS
+          - language: Python
+          - language: CSharp
+
+    env:
+      LANGUAGE: "${{ matrix.language }}"
+
+    steps:
+      - uses: actions/checkout@v2.3.4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '16'
+
+      - uses: actions/cache@v2.1.6
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Generate Client for ${{ matrix.language }}
+        env:
+          GRADLE_TASK: "generate${{ matrix.language }}Client"
+        run: ./gradlew --info "${GRADLE_TASK}"
+
+# TODO Investigate how we could automate pushing to each client repo when changes are pushed to the 'main' branch of this repo
