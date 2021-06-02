@@ -274,7 +274,8 @@ class CsmSecurityConfiguration(
   private val logger = LoggerFactory.getLogger(CsmSecurityConfiguration::class.java)
 
   override fun configure(http: HttpSecurity) {
-    http
+    http.cors()
+        .and()
         .authorizeRequests { requests ->
           requests.antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
