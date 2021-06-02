@@ -380,7 +380,8 @@ class SolutionServiceImpl(
 
     azureStorageBlobServiceClient
         .getBlobContainerClient(organizationId.sanitizeForAzureStorage())
-        .getBlobClient("$solutionId/$runTemplateId/${handlerId}.zip".sanitizeForAzureStorage())
+        .getBlobClient(
+            "${solutionId.sanitizeForAzureStorage()}/$runTemplateId/${handlerId.value}.zip")
         .upload(body.inputStream, body.contentLength(), overwrite)
 
     val runTemplate = solution.runTemplates.findLast { it.id == runTemplateId }!!
