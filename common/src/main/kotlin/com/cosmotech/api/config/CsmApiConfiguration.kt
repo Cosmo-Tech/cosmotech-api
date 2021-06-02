@@ -24,6 +24,10 @@ import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.http.MediaType
 import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter
 import org.springframework.scheduling.annotation.EnableAsync
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+import org.springframework.web.servlet.config.annotation.CorsRegistry
+import org.springframework.web.servlet.config.annotation.EnableWebMvc
+
 
 @Configuration
 @ConfigurationPropertiesScan(basePackages = ["com.cosmotech"])
@@ -90,4 +94,13 @@ class YamlMessageConverter(objectMapper: ObjectMapper) :
     }
     super.setObjectMapper(objectMapper)
   }
+}
+
+@Configuration
+@EnableWebMvc
+class WebConfig: WebMvcConfigurer {
+
+    override fun addCorsMappings(registry: CorsRegistry) {
+        registry.addMapping("/**")
+    }
 }
