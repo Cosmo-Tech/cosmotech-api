@@ -2,9 +2,6 @@ logging:
   level:
     com:
       cosmotech: INFO
-    org:
-      springframework:
-        security: DEBUG
 
 spring:
   output:
