@@ -337,7 +337,7 @@ Name | Type | Description  | Notes
 
 <a name="uploadWorkspaceFile"></a>
 # **uploadWorkspaceFile**
-> WorkspaceFile uploadWorkspaceFile(organization\_id, workspace\_id, file, overwrite)
+> WorkspaceFile uploadWorkspaceFile(organization\_id, workspace\_id, file, overwrite, destination)
 
 Upload a file for the Workspace
 
@@ -349,6 +349,7 @@ Name | Type | Description  | Notes
  **workspace\_id** | **String**| the Workspace identifier | [default to null]
  **file** | **File**|  | [default to null]
  **overwrite** | **Boolean**|  | [optional] [default to false]
+ **destination** | **String**| Destination path. Must end with a &#39;/&#39; if specifying a folder. Note that paths may or may not start with a &#39;/&#39;, but they are always treated as relative to the Workspace root location.  | [optional] [default to null]
 
 ### Return type
 
