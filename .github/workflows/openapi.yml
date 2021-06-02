@@ -41,11 +41,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2.3.4
 
-      - name: Validate '{{ matrix.project }}' definition
+      - name: Validate '${{ matrix.project }}' definition
         uses: char0n/swagger-editor-validate@v1.2.1
         with:
           swagger-editor-url: http://localhost/
-          definition-file: {{  matrix.project  }}/src/main/openapi/{{ matrix.project }}s.yaml
+          definition-file: ${{ matrix.project }}/src/main/openapi/${{ matrix.project }}s.yaml
 
   merge_openapi_specs:
     runs-on: ubuntu-latest
