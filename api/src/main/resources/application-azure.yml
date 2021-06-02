@@ -8,7 +8,7 @@ management:
     health:
       group:
         readiness:
-          include: "readinessState,cosmos"
+          include: "readinessState,cosmos,blobStorage"
 
 azure:
   # Required to auto-configure the beans provided by the Azure CosmosDB Spring Boot AutoConfiguration
