@@ -17,7 +17,7 @@ plugins {
   id("com.diffplug.spotless") version "5.12.5"
 
   id("org.springframework.boot") version "2.4.5" apply false
-  id("io.spring.dependency-management") version "1.0.11.RELEASE" apply false
+  id("io.spring.dependency-management") version "1.0.11.RELEASE"
 
   id("org.openapi.generator") version "5.1.1" apply false
 
@@ -76,6 +76,8 @@ subprojects {
   apply(plugin = "org.springframework.boot")
   apply(plugin = "io.spring.dependency-management")
 
+  dependencyManagement { imports { mavenBom("com.azure.spring:azure-spring-boot-bom:3.5.0") } }
+
   // Apply some plugins to all projects except 'common'
   if (name != "cosmotech-api-common") {
     apply(plugin = "org.openapi.generator")
@@ -119,9 +121,22 @@ subprojects {
 
     // TODO Extract those dependencies in a 'common/azure' sub-project,
     //  included dynamically if the 'platform' build property is 'azure'
-    implementation("com.azure.spring:azure-spring-boot-starter-cosmos:3.5.0")
-    implementation("com.azure.spring:azure-spring-boot-starter-storage:3.5.0")
     implementation("com.azure:azure-storage-blob-batch:12.9.1")
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation(
+        "org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.4.5")
+    implementation("org.springframework.security:spring-security-jwt:1.1.1.RELEASE")
+    implementation("com.azure.spring:azure-spring-boot-starter-cosmos")
+    implementation("com.azure.spring:azure-spring-boot-starter-storage")
+    implementation("com.azure.spring:azure-spring-boot-starter-active-directory")
+    // com.azure.spring:azure-spring-boot-starter-active-directory provides this dependency
+    // transitively,
+    // but its version is incompatible at runtime with what is expected by
+    // spring-security-oauth2-jose
+    implementation("com.nimbusds:nimbus-jose-jwt:9.9.3")
+    implementation("org.springframework.security:spring-security-oauth2-jose:5.5.0")
+    implementation("org.springframework.security:spring-security-oauth2-resource-server:5.5.0")
+    //    implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 
     testImplementation(kotlin("test"))
     testImplementation("io.mockk:mockk:1.11.0")

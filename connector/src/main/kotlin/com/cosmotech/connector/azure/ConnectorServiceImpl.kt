@@ -7,6 +7,8 @@ import com.cosmotech.api.azure.AbstractCosmosBackedService
 import com.cosmotech.api.azure.findAll
 import com.cosmotech.api.azure.findByIdOrThrow
 import com.cosmotech.api.events.ConnectorRemoved
+import com.cosmotech.api.exceptions.CsmAccessForbiddenException
+import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
 import javax.annotation.PostConstruct
@@ -34,11 +36,18 @@ class ConnectorServiceImpl : AbstractCosmosBackedService(), ConnectorApiService 
 
   override fun registerConnector(connector: Connector): Connector =
       cosmosTemplate.insert(
-          coreConnectorContainer, connector.copy(id = idGenerator.generate("connector")))
+          coreConnectorContainer,
+          connector.copy(
+              id = idGenerator.generate("connector"), ownerId = getCurrentAuthenticatedUserName()))
           ?: throw IllegalStateException("No connector returned in response: $connector")
 
   override fun unregisterConnector(connectorId: String) {
-    cosmosTemplate.deleteEntity(coreConnectorContainer, this.findConnectorById(connectorId))
+    val connector = this.findConnectorById(connectorId)
+    if (connector.ownerId != getCurrentAuthenticatedUserName()) {
+      // TODO Only the owner or an admin should be able to perform this operation
+      throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
+    }
+    cosmosTemplate.deleteEntity(coreConnectorContainer, connector)
     this.eventPublisher.publishEvent(ConnectorRemoved(this, connectorId))
   }
 }

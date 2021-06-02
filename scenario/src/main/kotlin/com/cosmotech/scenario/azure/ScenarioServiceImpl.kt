@@ -5,8 +5,10 @@ package com.cosmotech.scenario.azure
 import com.azure.cosmos.models.*
 import com.cosmotech.api.azure.AbstractCosmosBackedService
 import com.cosmotech.api.events.*
+import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.convertToMap
+import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.scenario.api.ScenarioApiService
@@ -156,6 +158,7 @@ class ScenarioServiceImpl(
     val scenarioToSave =
         scenario.copy(
             id = idGenerator.generate("scenario"),
+            ownerId = getCurrentAuthenticatedUserName(),
             solutionId = solutionId,
             solutionName = solutionName,
             creationDate = now,
@@ -189,9 +192,14 @@ class ScenarioServiceImpl(
   }
 
   override fun deleteScenario(organizationId: String, workspaceId: String, scenarioId: String) {
-    cosmosTemplate.deleteEntity(
-        "${organizationId}_scenario_data",
-        this.findScenarioById(organizationId, workspaceId, scenarioId))
+    val scenario = this.findScenarioById(organizationId, workspaceId, scenarioId)
+
+    if (scenario.ownerId != getCurrentAuthenticatedUserName()) {
+      // TODO Only the owner or an admin should be able to perform this operation
+      throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
+    }
+
+    cosmosTemplate.deleteEntity("${organizationId}_scenario_data", scenario)
     // TODO Notify users
   }
 
@@ -302,6 +310,18 @@ class ScenarioServiceImpl(
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
 
     var hasChanged = false
+
+    if (scenario.ownerId != null && scenario.changed(existingScenario) { ownerId }) {
+      // Allow to change the ownerId as well, but only the owner can transfer the ownership
+      if (existingScenario.ownerId != getCurrentAuthenticatedUserName()) {
+        // TODO Only the owner or an admin should be able to perform this operation
+        throw CsmAccessForbiddenException(
+            "You are not allowed to change the ownership of this Resource")
+      }
+      existingScenario.ownerId = scenario.ownerId
+      hasChanged = true
+    }
+
     if (scenario.name != null && scenario.changed(existingScenario) { name }) {
       existingScenario.name = scenario.name
       hasChanged = true

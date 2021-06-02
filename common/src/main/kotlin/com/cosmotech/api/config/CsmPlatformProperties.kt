@@ -41,7 +41,25 @@ data class CsmPlatformProperties(
 
     /** Cosmo Tech core images */
     val images: CsmImages,
+
+    /** Authorization Configuration */
+    val authorization: Authorization = Authorization(),
 ) {
+
+  data class Authorization(
+
+      /** The JWT Claim to use to extract a unique identifier for the user account */
+      val principalJwtClaim: String = "sub",
+
+      /** The JWT Claim where the tenant id information is stored */
+      val tenantIdJwtClaim: String = "iss",
+
+      /**
+       * List of additional tenants allowed to register, besides the configured
+       * `csm.platform.azure.credentials.tenantId`
+       */
+      val allowedTenants: List<String> = emptyList()
+  )
 
   data class CsmImages(
       /** Container image to fetch Scenario Parameters */

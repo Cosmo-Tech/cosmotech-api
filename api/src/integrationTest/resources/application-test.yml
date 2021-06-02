@@ -16,6 +16,12 @@ management:
 #        key: "ZmFrZS1rZXkK"
 #        uri: "https://faketestaccount.documents.azure.com:443/"
 csm:
+  platform:
+    authorization:
+      tenant-id-jwt-claim: "iss"
+      # Note that the way @Value works in Spring does not make it possible to inject this sole YAML list.
+      # Use CsmPlatformProperties instead !
+      allowed-tenants: ["test"]
     vendor: azure
     argo:
       base-uri: "https://argo-server.argo.svc.cluster.local:2746"

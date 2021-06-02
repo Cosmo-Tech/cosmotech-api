@@ -13,7 +13,9 @@ import com.cosmotech.api.events.ConnectorRemoved
 import com.cosmotech.api.events.ConnectorRemovedForOrganization
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
+import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.utils.changed
+import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.dataset.api.DatasetApiService
@@ -60,7 +62,9 @@ class DatasetServiceImpl(
     val existingConnector = connectorService.findConnectorById(dataset.connector!!.id!!)
     logger.debug("Found connector: {}", existingConnector)
 
-    val datasetCopy = dataset.copy(id = idGenerator.generate("dataset"))
+    val datasetCopy =
+        dataset.copy(
+            id = idGenerator.generate("dataset"), ownerId = getCurrentAuthenticatedUserName())
     datasetCopy.connector!!.apply {
       name = existingConnector.name
       version = existingConnector.version
@@ -70,14 +74,30 @@ class DatasetServiceImpl(
   }
 
   override fun deleteDataset(organizationId: String, datasetId: String) {
-    cosmosTemplate.deleteEntity(
-        "${organizationId}_datasets", findDatasetById(organizationId, datasetId))
+    val dataset = findDatasetById(organizationId, datasetId)
+    if (dataset.ownerId != getCurrentAuthenticatedUserName()) {
+      // TODO Only the owner or an admin should be able to perform this operation
+      throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
+    }
+    cosmosTemplate.deleteEntity("${organizationId}_datasets", dataset)
   }
 
   override fun updateDataset(organizationId: String, datasetId: String, dataset: Dataset): Dataset {
     val existingDataset = findDatasetById(organizationId, datasetId)
 
     var hasChanged = false
+
+    if (dataset.ownerId != null && dataset.changed(existingDataset) { ownerId }) {
+      // Allow to change the ownerId as well, but only the owner can transfer the ownership
+      if (existingDataset.ownerId != getCurrentAuthenticatedUserName()) {
+        // TODO Only the owner or an admin should be able to perform this operation
+        throw CsmAccessForbiddenException(
+            "You are not allowed to change the ownership of this Resource")
+      }
+      existingDataset.ownerId = dataset.ownerId
+      hasChanged = true
+    }
+
     if (dataset.name != null && dataset.changed(existingDataset) { name }) {
       existingDataset.name = dataset.name
       hasChanged = true
@@ -87,11 +107,20 @@ class DatasetServiceImpl(
       hasChanged = true
     }
     if (dataset.connector != null && dataset.changed(existingDataset) { connector }) {
-      // TODO Validate connector ID
+      // Validate connector ID
+      if (dataset.connector?.id.isNullOrBlank()) {
+        throw IllegalArgumentException("Connector ID is null or blank")
+      }
+      val existingConnector = connectorService.findConnectorById(dataset.connector!!.id!!)
+      logger.debug("Found connector: {}", existingConnector)
+
       existingDataset.connector = dataset.connector
+      existingDataset.connector!!.apply {
+        name = existingConnector.name
+        version = existingConnector.version
+      }
       hasChanged = true
     }
-    // TODO Allow to change the ownerId as well, but only the owner can transfer the ownership
 
     if (dataset.tags != null && dataset.tags?.toSet() != existingDataset.tags?.toSet()) {
       existingDataset.tags = dataset.tags

@@ -16,6 +16,7 @@ import javax.annotation.PostConstruct
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 
 @Service
@@ -41,7 +42,14 @@ class UserServiceImpl : AbstractCosmosBackedService(), UserApiService {
       cosmosTemplate.findByIdOrThrow(coreUserContainer, userId)
 
   override fun getCurrentUser(): User {
-    TODO("Not yet implemented")
+    val principal = SecurityContextHolder.getContext().authentication
+
+    logger.debug(
+        "Principal (isAuthenticated={}) : '{}' - authorities={}",
+        principal.isAuthenticated,
+        principal.name,
+        principal.authorities)
+    return User(name = principal.name, platformRoles = listOf())
   }
 
   override fun getOrganizationCurrentUser(organizationId: String): User {

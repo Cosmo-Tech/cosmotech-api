@@ -416,8 +416,10 @@ components:
       description: OAuth2 authentication
       flows:
         implicit:
-          authorizationUrl: oauth2/authorize
-          scopes: {}
+          authorizationUrl: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
+          tokenUrl: https://login.microsoftonline.com/common/oauth2/v2.0/token
+          scopes:
+            http://dev.api.cosmotech.com/platform: Platform scope
   schemas:
     Scenario:
       type: object
@@ -591,7 +593,7 @@ components:
         tags:
           - Brewery
           - reference
-        runTemplateId: "1"
+        runTemplateId: "hundred"
         users:
           - id: "1"
             name: Bob
@@ -615,7 +617,7 @@ components:
         description: Brewery child reference analysis
         tags:
           - Brewery
-        runTemplateId: "1"
+        runTemplateId: "hundred"
         parentId: "1"
     BreweryScenario:
       summary: Brewery Scenario
@@ -631,7 +633,7 @@ components:
         worskspaceId: "1"
         solutionId: "1"
         solutionName: Brewery Solution
-        runTemplateId: "1"
+        runTemplateId: "hundred"
         runTemplateName: Full simulation 100 steps
         users:
           - id: "1"
@@ -666,7 +668,7 @@ components:
           worskspaceId: "1"
           solutionId: "1"
           solutionName: Brewery Solution
-          runTemplateId: "1"
+          runTemplateId: "hundred"
           runTemplateName: Full simulation 100 steps
           users:
             - id: "1"
@@ -698,7 +700,7 @@ components:
           worskspaceId: "1"
           solutionId: "1"
           solutionName: Brewery Solution
-          runTemplateId: "1"
+          runTemplateId: "hundred"
           runTemplateName: Full simulation 100 steps
           users:
             - id: "1"
@@ -729,7 +731,7 @@ components:
           worskspaceId: "1"
           solutionId: "1"
           solutionName: Brewery Solution
-          runTemplateId: "1"
+          runTemplateId: "hundred"
           runTemplateName: Full simulation 100 steps
           users:
             - id: "1"
@@ -770,7 +772,7 @@ components:
         worskspaceId: "1"
         solutionId: "1"
         solutionName: Brewery Solution
-        runTemplateId: "1"
+        runTemplateId: "hundred"
         runTemplateName: Full simulation 100 steps
         users:
           - id: "1"

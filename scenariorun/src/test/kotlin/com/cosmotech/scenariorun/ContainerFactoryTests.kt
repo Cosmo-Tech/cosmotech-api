@@ -129,7 +129,7 @@ class ContainerFactoryTests {
               eventPublisher =
                   CsmPlatformProperties.EventPublisher(
                       type = CsmPlatformProperties.EventPublisher.Type.IN_PROCESS),
-          ))
+              authorization = CsmPlatformProperties.Authorization()))
 
   @Test
   fun `Dataset Container not null`() {

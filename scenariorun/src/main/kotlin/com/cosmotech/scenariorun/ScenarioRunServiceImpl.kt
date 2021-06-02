@@ -5,7 +5,9 @@ package com.cosmotech.scenariorun
 import com.azure.cosmos.models.*
 import com.cosmotech.api.argo.WorkflowUtils
 import com.cosmotech.api.azure.AbstractCosmosBackedService
+import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.utils.convertToMap
+import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.dataset.api.DatasetApiService
@@ -79,8 +81,12 @@ class ScenariorunServiceImpl(
   }
 
   override fun deleteScenarioRun(organizationId: String, scenariorunId: String) {
-    cosmosTemplate.deleteEntity(
-        "${organizationId}_scenario_data", this.findScenarioRunById(organizationId, scenariorunId))
+    val scenarioRun = this.findScenarioRunById(organizationId, scenariorunId)
+    if (scenarioRun.ownerId != getCurrentAuthenticatedUserName()) {
+      // TODO Only the owner or an admin should be able to perform this operation
+      throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
+    }
+    cosmosTemplate.deleteEntity("${organizationId}_scenario_data", scenarioRun)
   }
 
   override fun findScenarioRunById(organizationId: String, scenariorunId: String): ScenarioRun =
@@ -326,6 +332,7 @@ class ScenariorunServiceImpl(
     val scenarioRun =
         ScenarioRun(
             id = idGenerator.generate("scenariorun", prependPrefix = "SR-"),
+            ownerId = getCurrentAuthenticatedUserName(),
             csmSimulationRun = csmSimulationId,
             organizationId = organizationId,
             workspaceId = workspaceId,

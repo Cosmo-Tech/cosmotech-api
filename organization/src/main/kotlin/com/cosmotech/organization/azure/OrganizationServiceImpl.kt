@@ -9,7 +9,9 @@ import com.cosmotech.api.azure.AbstractCosmosBackedService
 import com.cosmotech.api.azure.findAll
 import com.cosmotech.api.azure.findByIdOrThrow
 import com.cosmotech.api.events.*
+import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.utils.changed
+import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
@@ -111,12 +113,13 @@ class OrganizationServiceImpl(private val userService: UserApiService) :
     val usersWithNames =
         usersLoaded?.let { organization.users?.map { it.copy(name = usersLoaded[it.id]!!.name!!) } }
 
-    // TODO Set the ownerID to the logged-in user
-
     val organizationRegistered =
         cosmosTemplate.insert(
             coreOrganizationContainer,
-            organization.copy(id = newOrganizationId, users = usersWithNames))
+            organization.copy(
+                id = newOrganizationId,
+                users = usersWithNames,
+                ownerId = getCurrentAuthenticatedUserName()))
 
     val organizationId =
         organizationRegistered.id
@@ -165,7 +168,13 @@ class OrganizationServiceImpl(private val userService: UserApiService) :
   }
 
   override fun unregisterOrganization(organizationId: String) {
-    cosmosTemplate.deleteEntity(coreOrganizationContainer, findOrganizationById(organizationId))
+    val organization = findOrganizationById(organizationId)
+    if (organization.ownerId != getCurrentAuthenticatedUserName()) {
+      // TODO Only the owner or an admin should be able to perform this operation
+      throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
+    }
+
+    cosmosTemplate.deleteEntity(coreOrganizationContainer, organization)
 
     this.eventPublisher.publishEvent(OrganizationUnregistered(this, organizationId))
 
@@ -179,11 +188,22 @@ class OrganizationServiceImpl(private val userService: UserApiService) :
     val existingOrganization = findOrganizationById(organizationId)
 
     var hasChanged = false
+
+    if (organization.ownerId != null && organization.changed(existingOrganization) { ownerId }) {
+      // Allow to change the ownerId as well, but only the owner can transfer the ownership
+      if (existingOrganization.ownerId != getCurrentAuthenticatedUserName()) {
+        // TODO Only the owner or an admin should be able to perform this operation
+        throw CsmAccessForbiddenException(
+            "You are not allowed to change the ownership of this Resource")
+      }
+      existingOrganization.ownerId = organization.ownerId
+      hasChanged = true
+    }
+
     if (organization.name != null && organization.changed(existingOrganization) { name }) {
       existingOrganization.name = organization.name
       hasChanged = true
     }
-    // TODO Allow to change the ownerId as well, but only the owner can transfer the ownership
 
     var userIdsRemoved: List<String>? = listOf()
     if (organization.users != null) {

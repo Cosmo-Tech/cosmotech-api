@@ -14,3 +14,9 @@ class CsmResourceNotFoundException(
     override val message: String,
     override val cause: Throwable? = null
 ) : CsmClientException(message, cause)
+
+@ResponseStatus(HttpStatus.FORBIDDEN)
+class CsmAccessForbiddenException(
+    override val message: String,
+    override val cause: Throwable? = null
+) : CsmClientException(message, cause)

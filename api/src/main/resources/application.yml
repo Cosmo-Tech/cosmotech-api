@@ -12,6 +12,12 @@ spring:
       enabled: false
     kubernetes:
       enabled: false
+security:
+  oauth2:
+    resource:
+      user-info-uri: https://graph.microsoft.com/oidc/userinfo
+      jwk:
+        key-set-uri: https://login.microsoftonline.com/common/discovery/v2.0/keys
 
 management:
   endpoint:
@@ -56,8 +62,15 @@ csm:
     images:
       scenario-fetch-parameters: cosmo-tech/fetch-scenario-parameters
       send-datawarehouse: cosmo-tech/azure-data-explorer-connector
+    authorization:
+      principal-jwt-claim: "sub"
+      tenant-id-jwt-claim: "iss"
+      # Note that the way @Value works in Spring does not make it possible to inject this sole YAML list.
+      # Use CsmPlatformProperties instead !
+      allowed-tenants: []
     vendor: azure
     azure:
+      appIdUri: "http://dev.api.cosmotech.com"
       credentials:
         tenantId:
         clientId:
