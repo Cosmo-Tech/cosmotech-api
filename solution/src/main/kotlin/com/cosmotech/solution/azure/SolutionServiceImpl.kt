@@ -10,8 +10,10 @@ import com.cosmotech.api.azure.findByIdOrThrow
 import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
+import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.utils.changed
+import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.*
 import org.apache.commons.compress.archivers.ArchiveException
@@ -123,12 +125,18 @@ class SolutionServiceImpl(
   override fun createSolution(organizationId: String, solution: Solution) =
       cosmosTemplate.insert(
           "${organizationId}_solutions",
-          solution.copy(id = idGenerator.generate("solution", prependPrefix = "SOL-")))
+          solution.copy(
+              id = idGenerator.generate("solution", prependPrefix = "SOL-"),
+              ownerId = getCurrentAuthenticatedUserName()))
           ?: throw IllegalArgumentException("No solution returned in response: $solution")
 
   override fun deleteSolution(organizationId: String, solutionId: String) {
-    cosmosTemplate.deleteEntity(
-        "${organizationId}_solutions", findSolutionById(organizationId, solutionId))
+    val solution = findSolutionById(organizationId, solutionId)
+    if (solution.ownerId != getCurrentAuthenticatedUserName()) {
+      // TODO Only the owner or an admin should be able to perform this operation
+      throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
+    }
+    cosmosTemplate.deleteEntity("${organizationId}_solutions", solution)
   }
 
   override fun deleteSolutionRunTemplate(
@@ -153,6 +161,16 @@ class SolutionServiceImpl(
     val existingSolution = findSolutionById(organizationId, solutionId)
 
     var hasChanged = false
+    if (solution.ownerId != null && solution.changed(existingSolution) { ownerId }) {
+      // Allow to change the ownerId as well, but only the owner can transfer the ownership
+      if (existingSolution.ownerId != getCurrentAuthenticatedUserName()) {
+        // TODO Only the owner or an admin should be able to perform this operation
+        throw CsmAccessForbiddenException(
+            "You are not allowed to change the ownership of this Resource")
+      }
+      existingSolution.ownerId = solution.ownerId
+      hasChanged = true
+    }
     if (solution.key != null && solution.changed(existingSolution) { key }) {
       existingSolution.key = solution.key
       hasChanged = true
@@ -179,8 +197,6 @@ class SolutionServiceImpl(
       existingSolution.url = solution.url
       hasChanged = true
     }
-
-    // TODO Allow to change the ownerId as well, but only the owner can transfer the ownership
 
     if (solution.tags != null && solution.tags?.toSet() != existingSolution.tags?.toSet()) {
       existingSolution.tags = solution.tags

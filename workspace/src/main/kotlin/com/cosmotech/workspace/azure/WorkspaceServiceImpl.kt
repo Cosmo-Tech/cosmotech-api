@@ -13,7 +13,9 @@ import com.cosmotech.api.azure.findAll
 import com.cosmotech.api.azure.findByIdOrThrow
 import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.events.*
+import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.utils.changed
+import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
@@ -131,7 +133,9 @@ class WorkspaceServiceImpl(
 
   override fun createWorkspace(organizationId: String, workspace: Workspace): Workspace =
       cosmosTemplate.insert(
-          "${organizationId}_workspaces", workspace.copy(id = idGenerator.generate("workspace")))
+          "${organizationId}_workspaces",
+          workspace.copy(
+              id = idGenerator.generate("workspace"), ownerId = getCurrentAuthenticatedUserName()))
           ?: throw IllegalArgumentException("No Workspace returned in response: $workspace")
 
   override fun deleteAllWorkspaceFiles(organizationId: String, workspaceId: String) {
@@ -166,6 +170,18 @@ class WorkspaceServiceImpl(
     val existingWorkspace = findWorkspaceById(organizationId, workspaceId)
 
     var hasChanged = false
+
+    if (workspace.ownerId != null && workspace.changed(existingWorkspace) { ownerId }) {
+      // Allow to change the ownerId as well, but only the owner can transfer the ownership
+      if (existingWorkspace.ownerId != getCurrentAuthenticatedUserName()) {
+        // TODO Only the owner or an admin should be able to perform this operation
+        throw CsmAccessForbiddenException(
+            "You are not allowed to change the ownership of this Resource")
+      }
+      existingWorkspace.ownerId = workspace.ownerId
+      hasChanged = true
+    }
+
     if (workspace.name != null && workspace.changed(existingWorkspace) { name }) {
       existingWorkspace.name = workspace.name
       hasChanged = true
@@ -174,7 +190,6 @@ class WorkspaceServiceImpl(
       existingWorkspace.description = workspace.description
       hasChanged = true
     }
-    // TODO Allow to change the ownerId as well, but only the owner can transfer the ownership
 
     var userIdsRemoved: List<String>? = listOf()
     if (workspace.users != null) {
@@ -226,6 +241,10 @@ class WorkspaceServiceImpl(
 
   override fun deleteWorkspace(organizationId: String, workspaceId: String): Workspace {
     val workspace = findWorkspaceById(organizationId, workspaceId)
+    if (workspace.ownerId != getCurrentAuthenticatedUserName()) {
+      // TODO Only the owner or an admin should be able to perform this operation
+      throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
+    }
     try {
       deleteAllWorkspaceFiles(organizationId, workspaceId)
     } finally {
