@@ -155,4 +155,4 @@ config:
           # -- Azure storage account access key. Can be retrieved from the Azure portal
           account-key: "changeme"
         containerRegistries:
-          solutions: "changeme"
+          solutions: ""
