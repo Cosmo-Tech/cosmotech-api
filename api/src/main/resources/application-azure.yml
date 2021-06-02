@@ -4,6 +4,11 @@ management:
       enabled: true
     azure-storage:
       enabled: true
+  endpoint:
+    health:
+      group:
+        readiness:
+          include: "readinessState,cosmos"
 
 azure:
   # Required to auto-configure the beans provided by the Azure CosmosDB Spring Boot AutoConfiguration

@@ -52,6 +52,8 @@ spec:
               value: "true"
             - name: SERVER_JETTY_ACCESSLOG_IGNORE_PATHS
               value: "/actuator/health/liveness,/actuator/health/readiness"
+            - name: SPRING_PROFILES_INCLUDE
+              value: "{{ .Values.config.csm.platform.vendor | lower }}-helm"
             - name: SPRING_CLOUD_KUBERNETES_CONFIG_NAME
               value: "{{ include "cosmotech-api.fullname" . }}"
             - name: SPRING_CLOUD_KUBERNETES_RELOAD_ENABLED

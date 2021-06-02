@@ -112,17 +112,6 @@ server:
   servlet:
     context-path: {{ include "cosmotech-api.apiBaseUrl" . }}
 
-management:
-  endpoint:
-    health:
-      group:
-        readiness:
-          {{- if eq .Values.config.csm.platform.vendor "azure" }}
-          include: "readinessState,cosmos"
-          {{- else }}
-          include: "readinessState"
-          {{- end }}
-
 csm:
   platform:
     api:
