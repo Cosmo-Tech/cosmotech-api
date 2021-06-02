@@ -5,7 +5,7 @@
 [![Build](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/build.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/build.yml)
 [![Test](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/test.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/test.yml)
 [![Lint](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/lint.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/lint.yml)
-[![OpenAPI](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/openapi.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/openapi.yml)
+[![OpenAPI](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/openapi.yml/badge.svg)](https://csmphoenix.blob.core.windows.net/public/openapi.yaml)
 [![OpenAPI Clients](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/openapi_clients.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/openapi_clients.yml)
 
 [![Packaging](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/packaging.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/packaging.yml)
@@ -153,6 +153,9 @@ helm upgrade --install cosmotech-api-${API_VERSION} \
 See the dedicated [README](api/kubernetes/helm-chart/README.md) for more details about the different properties.
 
 ## Generated items
+
+- [openapi.yaml](https://csmphoenix.blob.core.windows.net/public/openapi.yaml)
+
 Some generated items are stored in GitHub:
 - Documentation: in [doc/](doc/)
 - PlantUml file and image: in [openapi/plantuml](openapi/plantuml)
