@@ -26,7 +26,7 @@ class HashidsCsmIdGeneratorTests {
     val hashid = this.hashidsCsmIdGenerator.generate("fake_scope")
     assertFalse { hashid.isBlank() }
     assertTrue { hashid.startsWith("F-", ignoreCase = false) }
-    assertFalse { hashid.substringAfter("T-").isBlank() }
+    assertFalse { hashid.substringAfter("F-", missingDelimiterValue = "").isBlank() }
   }
 
   @Test
