@@ -104,13 +104,14 @@ class ContainerFactoryTests {
                               populateQueryMetrics = false,
                               allowTelemetry = false,
                               connectionMode = null,
-                          )),
+                          ),
+                      appIdUri = "http://dev.api.cosmotech.com",
+                  ),
               api =
                   CsmPlatformProperties.Api(
                       baseUrl = "https://api.cosmotech.com",
                       version = "v1",
                       basePath = "basepath",
-                      oauth2AppScope = "http://dev.api.cosmotech.com/.default",
                   ),
               images =
                   CsmPlatformProperties.CsmImages(

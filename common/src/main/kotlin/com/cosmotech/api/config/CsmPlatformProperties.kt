@@ -89,9 +89,6 @@ data class CsmPlatformProperties(
        * served behind a reverse-proxy under a dedicated path, this would be such path.
        */
       val basePath: String,
-
-      /** API OAuth2 scope for Applications */
-      var oauth2AppScope: String,
   )
 
   data class IdGenerator(val type: Type) {
@@ -121,7 +118,8 @@ data class CsmPlatformProperties(
       val keyVault: String,
       val analytics: CsmPlatformAzureAnalytics,
       /** Azure Cosmos DB */
-      val cosmos: CsmPlatformAzureCosmos
+      val cosmos: CsmPlatformAzureCosmos,
+      val appIdUri: String,
   ) {
 
     data class CsmPlatformAzureCredentials(
