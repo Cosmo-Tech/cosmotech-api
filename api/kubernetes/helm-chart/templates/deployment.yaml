@@ -44,6 +44,8 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
+            - name: SPRING_OUTPUT_ANSI_ENABLED
+              value: "NEVER"
             - name: CSM_PLATFORM_VENDOR
               value: "{{- default "azure" .Values.config.csm.platform.vendor }}"
             - name: CSM_PLATFORM_API_BASE_URL
