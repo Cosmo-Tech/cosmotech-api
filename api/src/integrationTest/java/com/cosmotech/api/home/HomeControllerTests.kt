@@ -1,10 +1,11 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.api
+package com.cosmotech.api.home
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.DynamicTest
+import org.junit.jupiter.api.TestFactory
 import org.slf4j.LoggerFactory
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
@@ -33,7 +34,10 @@ class HomeControllerTests(private val context: WebApplicationContext) {
                 val response = result.response
                 logger.trace(
                     """
-                 <<< Response : [${response.status}]
+                 <<< Response : 
+                 [${response.status}]
+                 ${response.headerNames.associateWith { response.getHeaderValues(it) }.entries.joinToString("\n")}}
+                    
                   ${response.contentAsString}
                 """.trimIndent())
               }
@@ -41,21 +45,27 @@ class HomeControllerTests(private val context: WebApplicationContext) {
             .build()
   }
 
-  @Test
-  fun `redirects home to Swagger UI`() {
-    this.mvc
-        .perform(get("/index.html").accept(MediaType.TEXT_HTML))
-        .andExpect(status().isOk)
-        .andExpect { result ->
-          assertTrue(
-              result.response.contentAsString.contains(
-                  "<meta http-equiv = \"refresh\" content = \"2; url = swagger-ui.html\" />")) {
-            """
-                >>> Actual response <<<
-                 ${result.response.contentAsString}
-                =======================
-            """.trimIndent()
-          }
+  @TestFactory
+  fun `redirects to Swagger UI from home if accepting HTML`(): Collection<DynamicTest> =
+      listOf("/", "/index.html").map { path ->
+        DynamicTest.dynamicTest(path) {
+          this.mvc
+              .perform(get(path).accept(MediaType.TEXT_HTML))
+              .andExpect(status().is3xxRedirection)
+              .andExpect { result ->
+                assertEquals("/swagger-ui.html", result.response.redirectedUrl)
+              }
         }
-  }
+      }
+
+  @TestFactory
+  fun `redirects to openapi if accepting JSON`(): Collection<DynamicTest> =
+      listOf("/", "/openapi.json").map { path ->
+        DynamicTest.dynamicTest(path) {
+          this.mvc
+              .perform(get("/").accept(MediaType.APPLICATION_JSON_VALUE))
+              .andExpect(status().is3xxRedirection)
+              .andExpect { result -> assertEquals("/openapi", result.response.redirectedUrl) }
+        }
+      }
 }
