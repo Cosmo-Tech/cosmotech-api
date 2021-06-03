@@ -115,6 +115,7 @@ server:
 csm:
   platform:
     api:
+      base-url: "http://{{ include "cosmotech-api.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}{{ include "cosmotech-api.apiBasePath" . | trimPrefix "/" }}"
       # API Base Path for OpenAPI-generated controllers.
       # Might conflict with the SpringBoot context path, hence leaving it at the root
       base-path: /

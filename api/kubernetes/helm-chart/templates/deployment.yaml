@@ -48,8 +48,6 @@ spec:
               value: "NEVER"
             - name: CSM_PLATFORM_VENDOR
               value: "{{- default "azure" .Values.config.csm.platform.vendor }}"
-            - name: CSM_PLATFORM_API_BASE_URL
-              value: "http://{{ include "cosmotech-api.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}{{ include "cosmotech-api.apiBasePath" . }}"
             - name: SERVER_JETTY_ACCESSLOG_ENABLED
               value: "true"
             - name: SERVER_JETTY_ACCESSLOG_IGNORE_PATHS
