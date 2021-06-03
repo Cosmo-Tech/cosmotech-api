@@ -85,6 +85,7 @@ spec:
               path: /actuator/health/liveness
               port: http-management
           readinessProbe:
+            timeoutSeconds: 5
             httpGet:
               path: /actuator/health/readiness
               port: http-management
