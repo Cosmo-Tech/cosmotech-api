@@ -104,6 +104,8 @@ spring:
       # - But we still benefit from ConfigMap/Secret to Properties mapping, which is great.
       # Plus, some other useful beans (e.g., KubernetesClient) are available for us to use.
       enabled: false
+      reload:
+        enabled: true
 
 api:
   version: "{{ .Values.api.version }}"
@@ -111,11 +113,16 @@ api:
 server:
   servlet:
     context-path: {{ include "cosmotech-api.apiBasePath" . }}
+{{/*  jetty:*/}}
+{{/*    accesslog:*/}}
+{{/*      ignore-paths:*/}}
+{{/*        - /actuator/health/liveness*/}}
+{{/*        - /actuator/health/readiness*/}}
 
 csm:
   platform:
     api:
-      base-url: "http://{{ include "cosmotech-api.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}{{ include "cosmotech-api.apiBasePath" . | trimPrefix "/" }}"
+      base-url: "http://{{ include "cosmotech-api.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}{{ include "cosmotech-api.apiBasePath" . | trimSuffix "/" }}"
       # API Base Path for OpenAPI-generated controllers.
       # Might conflict with the SpringBoot context path, hence leaving it at the root
       base-path: /

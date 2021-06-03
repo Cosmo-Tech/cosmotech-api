@@ -44,22 +44,21 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-            - name: SPRING_OUTPUT_ANSI_ENABLED
-              value: "NEVER"
+            #
+            # Some env vars here are properties that affect the way the Spring Application Context
+            # is configured.
+            # They need to be set here *before* the Application Context starts
+            #
             - name: CSM_PLATFORM_VENDOR
-              value: "{{- default "azure" .Values.config.csm.platform.vendor }}"
-            - name: SERVER_JETTY_ACCESSLOG_ENABLED
-              value: "true"
+              # Used to include a specific '{{ .Values.config.csm.platform.vendor }}' Spring profile
+              value: "{{ .Values.config.csm.platform.vendor }}"
+            - name: SPRING_PROFILES_INCLUDE
+              # The properties files for the '{{ .Values.config.csm.platform.vendor | lower }}-helm' profile
+              # is mounted as a Volume in the Container, using a configured Kubernetes Secret containing all
+              # csm.* properties
+              value: "{{ .Values.config.csm.platform.vendor | lower }}-helm"
             - name: SERVER_JETTY_ACCESSLOG_IGNORE_PATHS
               value: "/actuator/health/liveness,/actuator/health/readiness"
-            - name: SPRING_PROFILES_INCLUDE
-              value: "{{ .Values.config.csm.platform.vendor | lower }}-helm"
-            - name: SPRING_CLOUD_KUBERNETES_CONFIG_NAME
-              value: "{{ include "cosmotech-api.fullname" . }}"
-            - name: SPRING_CLOUD_KUBERNETES_RELOAD_ENABLED
-              value: "true"
-            - name: SPRING_CLOUD_KUBERNETES_RELOAD_STRATEGY
-              value: "refresh"
           volumeMounts:
             - mountPath: /config
               name: platform-config
