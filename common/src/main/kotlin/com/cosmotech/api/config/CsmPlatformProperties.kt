@@ -88,7 +88,10 @@ data class CsmPlatformProperties(
        * Base path under which the API is exposed at root, e.g.: /cosmotech-api/. Typically when
        * served behind a reverse-proxy under a dedicated path, this would be such path.
        */
-      val basePath: String
+      val basePath: String,
+
+      /** API OAuth2 scope for Applications */
+      var oauth2AppScope: String,
   )
 
   data class IdGenerator(val type: Type) {

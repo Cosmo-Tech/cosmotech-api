@@ -50,6 +50,7 @@ private const val AZURE_CLIENT_ID_VAR = "AZURE_CLIENT_ID"
 private const val AZURE_CLIENT_SECRET_VAR = "AZURE_CLIENT_SECRET"
 private const val CSM_SIMULATION_ID = "CSM_SIMULATION_ID"
 private const val API_BASE_URL_VAR = "CSM_API_URL"
+private const val API_BASE_SCOPE_VAR = "CSM_API_SCOPE"
 private const val DATASET_PATH_VAR = "CSM_DATASET_ABSOLUTE_PATH"
 private const val DATASET_PATH = "/mnt/scenariorun-data"
 private const val PARAMETERS_PATH_VAR = "CSM_PARAMETERS_ABSOLUTE_PATH"
@@ -770,6 +771,7 @@ class ContainerFactory(
         AZURE_CLIENT_SECRET_VAR to (csmPlatformProperties.azure?.credentials?.clientSecret ?: ""),
         CSM_SIMULATION_ID to csmSimulationId,
         API_BASE_URL_VAR to "${csmPlatformProperties.api.baseUrl}",
+        API_BASE_SCOPE_VAR to "${csmPlatformProperties.api.oauth2AppScope}",
         DATASET_PATH_VAR to DATASET_PATH,
         PARAMETERS_PATH_VAR to PARAMETERS_PATH,
         AZURE_DATA_EXPLORER_RESOURCE_URI_VAR to

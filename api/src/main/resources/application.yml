@@ -51,6 +51,7 @@ csm:
       # Might conflict with the SpringBoot context path, hence leaving it at the root
       base-path: /
       base-url: "http://cosmotech-api-${csm.platform.api.version}:8080"
+      oauth2-app-scope: "http://dev.api.cosmotech.com/.default"
       version: latest
     id-generator:
       type: hashid
