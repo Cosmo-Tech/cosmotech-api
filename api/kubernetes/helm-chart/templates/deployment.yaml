@@ -78,6 +78,9 @@ spec:
             tcpSocket:
               port: http
           livenessProbe:
+            timeoutSeconds: 5
+            periodSeconds: 5
+            failureThreshold: 2
             httpGet:
               path: /actuator/health/liveness
               port: http-management
