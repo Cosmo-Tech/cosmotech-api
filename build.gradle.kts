@@ -193,8 +193,8 @@ subprojects {
 
     System.getProperties()
         .filterKeys { it.toString().startsWith("test.") }
-        .mapKeys { it.toString().substringAfter("test.") }
-        .forEach { (key, value) -> systemProperty(key, value) }
+        .mapKeys { entry -> entry.key.toString().substringAfter("test.") }
+        .forEach(this::systemProperty)
 
     testLogging {
       events(TestLogEvent.FAILED)
