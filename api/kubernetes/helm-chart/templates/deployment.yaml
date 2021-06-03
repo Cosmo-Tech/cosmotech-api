@@ -71,6 +71,12 @@ spec:
             - name: http-management
               containerPort: 8081
               protocol: TCP
+          startupProbe:
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 2
+            tcpSocket:
+              port: http
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
