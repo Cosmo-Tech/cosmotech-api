@@ -14,7 +14,6 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
       {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
@@ -34,7 +33,7 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       volumes:
-        - name: platform-config
+        - name: helm-config
           secret:
             secretName: {{ include "cosmotech-api.fullname" . }}
       containers:
@@ -53,15 +52,12 @@ spec:
               # Used to include a specific '{{ .Values.config.csm.platform.vendor }}' Spring profile
               value: "{{ .Values.config.csm.platform.vendor }}"
             - name: SPRING_PROFILES_INCLUDE
-              # The properties files for the '{{ .Values.config.csm.platform.vendor | lower }}-helm' profile
-              # is mounted as a Volume in the Container, using a configured Kubernetes Secret containing all
-              # csm.* properties
-              value: "{{ .Values.config.csm.platform.vendor | lower }}-helm"
-            - name: SERVER_JETTY_ACCESSLOG_IGNORE_PATHS
-              value: "/actuator/health/liveness,/actuator/health/readiness"
+              # The properties file for the 'helm' profile is mounted as a Volume in the Container,
+              # using a configured Kubernetes Secret containing all the 'config.*' properties
+              value: "helm"
           volumeMounts:
             - mountPath: /config
-              name: platform-config
+              name: helm-config
               readOnly: true
           ports:
             - name: http

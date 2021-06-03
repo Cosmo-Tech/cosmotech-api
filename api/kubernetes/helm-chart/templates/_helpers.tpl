@@ -90,22 +90,9 @@ Default Ingress path
 spring:
   application:
     name: {{ include "cosmotech-api.fullname" . }}
-  cloud:
-    kubernetes:
-      # TODO This should be set to true, but for some still obscure reason,
-      # enabling this prevents the application
-      #  from starting within a Kubernetes Cluster, because Spring attempts to use
-      # interface-based JDK proxies, which is not supposed to work since
-      # we make an extensive usage of EventListener in target classes.
-      # Forcing the use of Target Classes proxies surprisingly has no effect, perhaps due to
-      # the activation of the Kubernetes Profile.
-      # Consequences when disabling this:
-      # - No watchers for ConfigMap / Secret changes
-      # - But we still benefit from ConfigMap/Secret to Properties mapping, which is great.
-      # Plus, some other useful beans (e.g., KubernetesClient) are available for us to use.
-      enabled: false
-      reload:
-        enabled: true
+  output:
+    ansi:
+      enabled: never
 
 api:
   version: "{{ .Values.api.version }}"
@@ -113,11 +100,11 @@ api:
 server:
   servlet:
     context-path: {{ include "cosmotech-api.apiBasePath" . }}
-{{/*  jetty:*/}}
-{{/*    accesslog:*/}}
-{{/*      ignore-paths:*/}}
-{{/*        - /actuator/health/liveness*/}}
-{{/*        - /actuator/health/readiness*/}}
+  jetty:
+    accesslog:
+      ignore-paths:
+        - /actuator/health/liveness
+        - /actuator/health/readiness
 
 csm:
   platform:
