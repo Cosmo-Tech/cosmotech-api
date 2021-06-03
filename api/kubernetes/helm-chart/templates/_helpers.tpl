@@ -78,7 +78,7 @@ Create Docker secrets so Argo Workflows can pull images from a private container
 {{/*
 Default Ingress path
 */}}
-{{- define "cosmotech-api.apiBaseUrl" -}}
+{{- define "cosmotech-api.apiBasePath" -}}
 {{- if eq .Values.api.version "latest" }}
 {{- printf "%s/" (printf "%s" .Values.api.servletContextPath | trimSuffix "/" ) }}
 {{- else }}
@@ -110,7 +110,7 @@ api:
 
 server:
   servlet:
-    context-path: {{ include "cosmotech-api.apiBaseUrl" . }}
+    context-path: {{ include "cosmotech-api.apiBasePath" . }}
 
 csm:
   platform:
