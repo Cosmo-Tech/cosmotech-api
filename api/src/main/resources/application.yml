@@ -65,19 +65,17 @@ csm:
     authorization:
       principal-jwt-claim: "sub"
       tenant-id-jwt-claim: "iss"
-      # Note that the way @Value works in Spring does not make it possible to inject this sole YAML list.
-      # Use CsmPlatformProperties instead !
       allowed-tenants: []
     vendor: azure
     azure:
       appIdUri: "http://dev.api.cosmotech.com"
       credentials:
-        tenantId:
-        clientId:
-        clientSecret:
+        tenantId: ""
+        clientId: ""
+        clientSecret: ""
       storage:
-        baseUri:
-        resourceUri:
+        baseUri: ""
+        resourceUri: ""
         # Storage account name length should be between 3 and 24 and use numbers and lower-case letters only
         account-name: "[storage-account-name]"
         # Fill storage account access key copied from portal
@@ -87,22 +85,22 @@ csm:
         connection-string: "DefaultEndpointsProtocol=https;AccountName=${csm.platform.azure.storage.account-name};AccountKey=${csm.platform.azure.storage.account-key};EndpointSuffix=core.windows.net"
       containerRegistries:
         core: ghcr.io
-        solutions:
+        solutions: ""
       eventBus:
-        baseUri:
+        baseUri: ""
       dataWarehouseCluster:
-        baseUri:
+        baseUri: ""
         options:
-          ingestionUri:
+          ingestionUri: ""
       keyVault:
       analytics:
-        resourceUri:
-        instrumentationKey:
+        resourceUri: ""
+        instrumentationKey: ""
         connectionString: "InstrumentationKey=${csm.platform.azure.analytics.instrumentationKey};IngestionEndpoint=https://francecentral-0.in.applicationinsights.azure.com/"
       cosmos:
         allowTelemetry: false
-        connectionMode:
-        consistencyLevel:
+        connectionMode: ""
+        consistencyLevel: ""
         core-database:
           name: phoenix-core
           connectors:
@@ -111,9 +109,9 @@ csm:
             container: organizations
           users:
             container: users
-        key:
+        key: ""
         populateQueryMetrics: true
-        uri:
+        uri: ""
 
 springdoc:
   # See https://springdoc.org/#properties

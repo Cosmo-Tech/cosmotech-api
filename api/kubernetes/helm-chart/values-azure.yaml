@@ -1,17 +1,5 @@
 replicaCount: 2
 
-#image:
-#  repository: csmphoenix.azurecr.io/cosmotech-api
-
-api:
-  # A Cosmo Tech Helm Release (e.g., latest, vX) is linked to an API Version;
-  # so it must define its own path rules here.
-  # This corresponds to the path under which this service is exposed, if behind a reverse proxy or
-  # load balancer
-  servletContextPath: /
-  # Examples: latest, v1, v2
-  version: latest
-
 # Set image pull secrets (in case you're using a private container registry).
 #imageCredentials:
 #  registry: csmphoenix.azurecr.io
@@ -33,6 +21,7 @@ ingress:
         - api.azure.cosmo-platform.com
 
 resources:
+  # Recommended in production environments
   limits:
     #   cpu: 100m
     memory: 2048Mi
@@ -40,26 +29,31 @@ resources:
     #   cpu: 100m
     memory: 1024Mi
 
-autoscaling:
-  enabled: false
+#argo:
+#  imageCredentials:
+#    registry: "csmenginesdev.azurecr.io"
+#    # az acr credential show -n csmengines --query="username" -o tsv
+#    username: "changeme"
+#    # az acr credential show -n csmengines --query="passwords[0].value" -o tsv
+#    password: "changeme"
 
 config:
-  logging:
-    level:
-      com:
-        azure:
-          cosmos:
-            implementation: warn
-          spring:
-            autoconfigure:
-              cosmos: warn
-        cosmotech: INFO
   csm:
     platform:
       azure:
+        credentials:
+          tenantId: "changeme"
+          clientId: "changeme"
+          clientSecret: "changeme"
         cosmos:
           key: "changeme"
-          uri: "changeme"
+          uri: "https://changeme.documents.azure.com:443/"
+        dataWarehouseCluster:
+          baseUri: "https://changeme.kusto.windows.net"
+          options:
+            ingestionUri: "https://changeme.kusto.windows.net"
+        eventBus:
+          baseUri: "amqps://changeme.servicebus.windows.net"
         storage:
           account-name: "changeme"
           account-key: "changeme"

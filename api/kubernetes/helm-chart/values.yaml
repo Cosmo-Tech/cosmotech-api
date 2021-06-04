@@ -109,7 +109,7 @@ autoscaling:
   minReplicas: 1
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
 
 nodeSelector: {}
 
@@ -133,6 +133,8 @@ config:
       vendor: azure
       argo:
         base-uri: "http://argo-server:2746"
+      authorization:
+        allowed-tenants: []
       azure:
         credentials:
           tenantId: "changeme"

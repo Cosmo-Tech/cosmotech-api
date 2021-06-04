@@ -1,8 +1,7 @@
-replicaCount: 1
-
 image:
   repository: localhost:5000/cosmotech-api
   pullPolicy: Always
+  tag: "latest"
 
 api:
   # A Cosmo Tech Helm Release (e.g., latest, vX) is linked to an API Version;
@@ -10,8 +9,6 @@ api:
   # This corresponds to the path under which this service is exposed, if behind a reverse proxy or
   # load balancer
   servletContextPath: /cosmotech-api
-  # Examples: latest, v1, v2
-  version: latest
 
 ingress:
   enabled: true
@@ -29,10 +26,21 @@ config:
   csm:
     platform:
       azure:
+        credentials:
+          tenantId: "changeme"
+          clientId: "changeme"
+          clientSecret: "changeme"
         cosmos:
           key: "changeme"
-          uri: "changeme"
+          uri: "https://changeme.documents.azure.com:443/"
+        dataWarehouseCluster:
+          baseUri: "https://changeme.kusto.windows.net"
+          options:
+            ingestionUri: "https://changeme.kusto.windows.net"
+        eventBus:
+          baseUri: "amqps://changeme.servicebus.windows.net"
         storage:
           account-name: "changeme"
           account-key: "changeme"
-
+        containerRegistries:
+          solutions: "localhost:5000"
