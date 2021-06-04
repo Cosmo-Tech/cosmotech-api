@@ -11,5 +11,6 @@ spec:
     - name: wget
       image: busybox
       command: ['wget']
-      args: ['{{ include "cosmotech-api.fullname" . }}:{{ .Values.service.port }}']
+      # TODO Test the access via the Ingress once an Ingress Controller is deployed
+      args: ['http://{{ include "cosmotech-api.fullname" . }}:{{ .Values.service.port }}{{ include "cosmotech-api.apiBasePath" . | trimSuffix "/" }}/swagger-ui/index.html?configUrl=/openapi/swagger-config&filter=true']
   restartPolicy: Never
