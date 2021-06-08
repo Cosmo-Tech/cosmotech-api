@@ -92,10 +92,6 @@ openApiMerger {
         description.set("Production")
       }
     }
-    externalDocs {
-      description.set("Portal")
-      url.set("https://portal.cosmotech.com/")
-    }
   }
 }
 
