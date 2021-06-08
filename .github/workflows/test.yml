@@ -13,7 +13,7 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
     branches: [ main ]
 
-  permissions: read-all
+permissions: read-all
 
 jobs:
   test:
