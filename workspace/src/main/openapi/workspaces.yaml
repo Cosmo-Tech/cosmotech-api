@@ -162,6 +162,7 @@ paths:
           description: Bad request
         "404":
           description: the Workspace specified is unknown or you don't have access to it
+
   /organizations/{organization_id}/workspaces/{workspace_id}/files:
     parameters:
       - name: organization_id
@@ -273,7 +274,7 @@ paths:
         "404":
           description: the Workspace specified is unknown or you don't have access to them
 
-  /organizations/{organization_id}/workspaces/{workspace_id}/files/{file_name}:
+  /organizations/{organization_id}/workspaces/{workspace_id}/files/download:
     parameters:
       - name: organization_id
         in: path
@@ -288,7 +289,7 @@ paths:
         schema:
           type: string
       - name: file_name
-        in: path
+        in: query
         description: the file name
         required: true
         schema:
@@ -308,6 +309,27 @@ paths:
                 format: binary
         "404":
           description: the Workspace file specified is unknown or you don't have access to it
+
+  /organizations/{organization_id}/workspaces/{workspace_id}/files/delete:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: file_name
+        in: query
+        description: the file name
+        required: true
+        schema:
+          type: string
     delete:
       operationId: deleteWorkspaceFile
       tags:
