@@ -5,14 +5,13 @@ package com.cosmotech.api.config
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.parser.OpenAPIV3Parser
 import java.io.BufferedReader
-import java.util.*
 import org.springdoc.core.customizers.OperationCustomizer
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-class CsmOpenAPIConfiguration {
+class CsmOpenAPIConfiguration(val csmPlatformProperties: CsmPlatformProperties) {
 
   @Value("\${api.version:?}") private lateinit var apiVersion: String
 
@@ -52,6 +51,12 @@ class CsmOpenAPIConfiguration {
     // Remove any set of servers already defined in the input openapi.yaml,
     // so as to have the base URL auto-generated based on the incoming requests
     openAPI.servers = listOf()
+
+    val oauth2Scopes = openAPI.components.securitySchemes["oAuth2AuthCode"]?.flows?.implicit?.scopes
+    if (csmPlatformProperties.azure != null) {
+      oauth2Scopes?.clear()
+      oauth2Scopes?.put("${csmPlatformProperties.azure!!.appIdUri}/platform", "Platform scope")
+    }
 
     return openAPI
   }
