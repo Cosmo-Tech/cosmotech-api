@@ -9,6 +9,11 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     branches: [ main ]
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches: [ main ]
+
+  permissions: read-all
 
 jobs:
   test:
@@ -43,11 +48,28 @@ jobs:
   test_helm:
     name: Test Helm Chart
     runs-on: ubuntu-latest
+
+    # If the PR is coming from a fork (pull_request_target), ensure it's opened by "dependabot[bot]".
+    # Otherwise, clone it normally.
+    if: |
+      (github.event_name == 'pull_request_target' && github.actor == 'dependabot[bot]') ||
+      (github.event_name != 'pull_request_target' && github.actor != 'dependabot[bot]')
+
     env:
       CHART_RELEASE_TEST_NAMESPACE: phoenix
 
     steps:
-    - uses: actions/checkout@v2.3.4
+
+    - name: Checkout
+      if: ${{ github.event_name != 'pull_request_target' }}
+      uses: actions/checkout@v2.3.4
+
+    - name: Checkout PR
+      if: ${{ github.event_name == 'pull_request_target' }}
+      uses: actions/checkout@v2.3.4
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Set up JDK
       uses: actions/setup-java@v2
