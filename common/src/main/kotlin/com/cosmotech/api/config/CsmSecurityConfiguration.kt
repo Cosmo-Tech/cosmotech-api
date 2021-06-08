@@ -23,6 +23,7 @@ import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.jwt.JwtClaimValidator
 import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
+import org.springframework.web.cors.CorsConfiguration
 
 // Business roles
 const val ROLE_PLATFORM_ADMIN = "APPROLE_Platform.Admin"
@@ -274,7 +275,15 @@ class CsmSecurityConfiguration(
   private val logger = LoggerFactory.getLogger(CsmSecurityConfiguration::class.java)
 
   override fun configure(http: HttpSecurity) {
+    val corsHttpMethodsAllowed =
+        HttpMethod.values().filterNot { it == HttpMethod.TRACE }.map(HttpMethod::name)
+
     http.cors()
+        .configurationSource {
+          CorsConfiguration().applyPermitDefaultValues().apply {
+            allowedMethods = corsHttpMethodsAllowed
+          }
+        }
         .and()
         .authorizeRequests { requests ->
           requests.antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
