@@ -158,6 +158,19 @@ class ScenarioServiceImpl(
     val usersWithNames =
         usersLoaded?.let { scenario.users?.map { it.copy(name = usersLoaded[it.id]!!.name!!) } }
 
+    var datasetList = scenario.datasetList
+    val parentId = scenario.parentId
+    var rootId: String? = null
+    if (parentId != null) {
+      logger.debug("Applying / Overwriting Dataset list from parent ${parentId}")
+      val parent = this.findScenarioByIdNoState(organizationId, workspaceId, parentId)
+      datasetList = parent.datasetList
+      rootId = parent.rootId
+      if (rootId == null) {
+        rootId = parentId
+      }
+    }
+
     val now = OffsetDateTime.now()
     val scenarioToSave =
         scenario.copy(
@@ -169,6 +182,8 @@ class ScenarioServiceImpl(
             lastUpdate = now,
             users = usersWithNames,
             state = State.Created,
+            datasetList = datasetList,
+            rootId = rootId,
         )
     val scenarioAsMap = scenarioToSave.asMapWithAdditionalData(workspaceId)
     // We cannot use cosmosTemplate as it expects the Domain object to contain a field named 'id'
@@ -210,11 +225,13 @@ class ScenarioServiceImpl(
 
   override fun deleteAllScenarios(organizationId: kotlin.String, workspaceId: kotlin.String) {
     // TODO Only the workspace owner should be able to do this
-    val scenarios = this.findAllScenarios(organizationId, workspaceId)
+    val scenarios = this.findAllScenariosStateOption(organizationId, workspaceId, false)
     scenarios.forEach { cosmosTemplate.deleteEntity("${organizationId}_scenario_data", it) }
   }
 
-  override fun findAllScenarios(organizationId: String, workspaceId: String): List<Scenario> =
+  override fun findAllScenarios(organizationId: String, workspaceId: String): List<Scenario> = this.findAllScenariosStateOption(organizationId, workspaceId, true)
+
+  private fun findAllScenariosStateOption(organizationId: String, workspaceId: String, addState: Boolean): List<Scenario> =
       cosmosCoreDatabase
           .getContainer("${organizationId}_scenario_data")
           .queryItems(
@@ -229,7 +246,28 @@ class ScenarioServiceImpl(
               JsonNode::class.java)
           .mapNotNull {
             val scenario = it.toDomain<Scenario>()
-            this.addStateToScenario(scenario)
+            if (addState) {
+              this.addStateToScenario(scenario)
+            }
+            return@mapNotNull scenario
+          }
+          .toList()
+
+  private fun findAllScenariosByRootId(organizationId: String, workspaceId: String, rootId: String): List<Scenario> =
+      cosmosCoreDatabase
+          .getContainer("${organizationId}_scenario_data")
+          .queryItems(
+              SqlQuerySpec(
+                  "SELECT * FROM c WHERE c.type = 'Scenario' AND c.workspaceId = @WORKSPACE_ID AND c.rootId = @ROOT_ID",
+                  listOf(SqlParameter("@WORKSPACE_ID", workspaceId), SqlParameter("@ROOT_ID", rootId))),
+              CosmosQueryRequestOptions(),
+              // It would be much better to specify the Domain Type right away and
+              // avoid the map operation, but we can't due
+              // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
+              // https://github.com/Azure/azure-sdk-for-java/issues/12269
+              JsonNode::class.java)
+          .mapNotNull {
+            val scenario = it.toDomain<Scenario>()
             return@mapNotNull scenario
           }
           .toList()
@@ -239,7 +277,16 @@ class ScenarioServiceImpl(
       workspaceId: String,
       scenarioId: String
   ): Scenario {
-    val scenario =
+    val scenario = this.findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
+    this.addStateToScenario(scenario)
+    return scenario
+  }
+
+  private fun findScenarioByIdNoState(
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String
+  ): Scenario =
         cosmosCoreDatabase
             .getContainer("${organizationId}_scenario_data")
             .queryItems(
@@ -259,9 +306,6 @@ class ScenarioServiceImpl(
             ?.toDomain<Scenario>()
             ?: throw java.lang.IllegalArgumentException(
                 "Scenario #$scenarioId not found in workspace #$workspaceId in organization #$organizationId")
-    this.addStateToScenario(scenario)
-    return scenario
-  }
 
   private fun addStateToScenario(scenario: Scenario?) {
     if (scenario != null && scenario.lastRun != null) {
@@ -396,11 +440,19 @@ class ScenarioServiceImpl(
       hasChanged = true
     }
 
+    var datasetListUpdated = false
     if (scenario.datasetList != null &&
         scenario.datasetList?.toSet() != existingScenario.datasetList?.toSet()) {
-      // TODO Need to validate those IDs too ?
-      existingScenario.datasetList = scenario.datasetList
-      hasChanged = true
+      // Only root Scenarios can update their Dataset list
+      if (scenario.parentId != null) {
+        logger.info("Cannot set Dataset list on child Scenario ${scenarioId}. Only root scenarios can be set.")
+      }
+      else {
+        // TODO Need to validate those IDs too ?
+        existingScenario.datasetList = scenario.datasetList
+        hasChanged = true
+        datasetListUpdated = true
+      }
     }
 
     // TODO Allow to change the ownerId and ownerName as well, but only the owner can transfer the
@@ -453,6 +505,10 @@ class ScenarioServiceImpl(
                 user.roles.map { role -> role.value }))
       }
 
+      if (datasetListUpdated) {
+        this.eventPublisher.publishEvent(ScenarioDatasetListChanged(this, organizationId, workspaceId, scenarioId, scenario.datasetList))
+      }
+
       existingScenario
     } else {
       existingScenario
@@ -496,5 +552,16 @@ class ScenarioServiceImpl(
                     scenarioRunStarted.workflowId,
                     scenarioRunStarted.workflowName,
                 )))
+  }
+
+  @EventListener(ScenarioDatasetListChanged::class)
+  fun onScenarioDatasetListChanged(scenarioDatasetListChanged: ScenarioDatasetListChanged) {
+    logger.debug("onScenarioDatasetListChanged ${scenarioDatasetListChanged}")
+    val children = this.findAllScenariosByRootId(scenarioDatasetListChanged.organizationId, scenarioDatasetListChanged.workspaceId, scenarioDatasetListChanged.scenarioId)
+    children?.forEach {
+      it.datasetList = scenarioDatasetListChanged.datasetList
+      it.lastUpdate = OffsetDateTime.now()
+      upsertScenarioData(scenarioDatasetListChanged.organizationId, it, scenarioDatasetListChanged.workspaceId)
+    }
   }
 }

@@ -9,6 +9,7 @@ Name | Type | Description | Notes
 **tags** | [**List**](string.md) | the list of tags | [optional] [default to null]
 **parentId** | [**String**](string.md) | the Scenario parent id | [optional] [default to null]
 **ownerId** | [**String**](string.md) | the user id which own this Scenario | [optional] [default to null]
+**rootId** | [**String**](string.md) | the scenario root id | [optional] [default to null]
 **solutionId** | [**String**](string.md) | the Solution Id associated with this Scenario | [optional] [default to null]
 **runTemplateId** | [**String**](string.md) | the Solution Run Template Id associated with this Scenario | [optional] [default to null]
 **workspaceId** | [**String**](string.md) | the associated Workspace Id | [optional] [default to null]
