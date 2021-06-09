@@ -123,6 +123,7 @@ Class | Method | HTTP request | Description
  - [Scenario](./Models/Scenario.md)
  - [ScenarioChangedParameterValue](./Models/ScenarioChangedParameterValue.md)
  - [ScenarioComparisonResult](./Models/ScenarioComparisonResult.md)
+ - [ScenarioLastRun](./Models/ScenarioLastRun.md)
  - [ScenarioRun](./Models/ScenarioRun.md)
  - [ScenarioRunContainer](./Models/ScenarioRunContainer.md)
  - [ScenarioRunContainerLogs](./Models/ScenarioRunContainerLogs.md)

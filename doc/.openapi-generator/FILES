@@ -27,6 +27,7 @@ Models/RunTemplateStepSource.md
 Models/Scenario.md
 Models/ScenarioChangedParameterValue.md
 Models/ScenarioComparisonResult.md
+Models/ScenarioLastRun.md
 Models/ScenarioRun.md
 Models/ScenarioRunContainer.md
 Models/ScenarioRunContainerLogs.md

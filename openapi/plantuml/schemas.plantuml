@@ -166,6 +166,7 @@ entity Scenario {
     runTemplateName: String
     datasetList: List<String>
     parametersValues: List<ScenarioRunTemplateParameterValue>
+    lastRun: ScenarioLastRun
 }
 
 entity ScenarioChangedParameterValue { 
@@ -179,6 +180,13 @@ entity ScenarioComparisonResult {
     scenarioId: String
     comparedScenarioId: String
     changedValues: List<ScenarioChangedParameterValue>
+}
+
+entity ScenarioLastRun { 
+    scenarioRunId: String
+    csmSimulationRun: String
+    workflowId: String
+    workflowName: String
 }
 
 entity ScenarioRun { 
@@ -394,6 +402,7 @@ OrganizationServices -- OrganizationService : storage
 OrganizationServices -- OrganizationService : solutionsContainerRegistry
 Scenario -- "0..*" ScenarioUser : users
 Scenario -- "0..*" ScenarioRunTemplateParameterValue : parametersValues
+Scenario -- ScenarioLastRun : lastRun
 ScenarioRun -- "0..*" RunTemplateParameterValue : parametersValues
 ScenarioRun -- "0..*" ScenarioRunContainer : containers
 ScenarioRunStatus -- "0..*" ScenarioRunStatusNode : nodes

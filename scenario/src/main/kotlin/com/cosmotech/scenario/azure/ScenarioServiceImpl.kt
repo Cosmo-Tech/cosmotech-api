@@ -3,6 +3,7 @@
 package com.cosmotech.scenario.azure
 
 import com.azure.cosmos.models.*
+import com.cosmotech.api.argo.WorkflowUtils
 import com.cosmotech.api.azure.AbstractCosmosBackedService
 import com.cosmotech.api.events.*
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
@@ -13,7 +14,9 @@ import com.cosmotech.api.utils.toDomain
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
+import com.cosmotech.scenario.domain.Scenario.State
 import com.cosmotech.scenario.domain.ScenarioComparisonResult
+import com.cosmotech.scenario.domain.ScenarioLastRun
 import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
 import com.cosmotech.scenario.domain.ScenarioUser
 import com.cosmotech.solution.api.SolutionApiService
@@ -33,7 +36,8 @@ class ScenarioServiceImpl(
     private val userService: UserApiService,
     private val solutionService: SolutionApiService,
     private val organizationService: OrganizationApiService,
-    private val workspaceService: WorkspaceApiService
+    private val workspaceService: WorkspaceApiService,
+    private val workflowUtils: WorkflowUtils,
 ) : AbstractCosmosBackedService(), ScenarioApiService {
 
   protected fun Scenario.asMapWithAdditionalData(workspaceId: String): Map<String, Any> {
@@ -164,6 +168,7 @@ class ScenarioServiceImpl(
             creationDate = now,
             lastUpdate = now,
             users = usersWithNames,
+            state = State.Created,
         )
     val scenarioAsMap = scenarioToSave.asMapWithAdditionalData(workspaceId)
     // We cannot use cosmosTemplate as it expects the Domain object to contain a field named 'id'
@@ -216,35 +221,72 @@ class ScenarioServiceImpl(
               // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
               // https://github.com/Azure/azure-sdk-for-java/issues/12269
               JsonNode::class.java)
-          .mapNotNull { it.toDomain<Scenario>() }
+          .mapNotNull {
+            val scenario = it.toDomain<Scenario>()
+            this.addStateToScenario(scenario)
+            return@mapNotNull scenario
+          }
           .toList()
 
   override fun findScenarioById(
       organizationId: String,
       workspaceId: String,
       scenarioId: String
-  ): Scenario =
-      cosmosCoreDatabase
-          .getContainer("${organizationId}_scenario_data")
-          .queryItems(
-              SqlQuerySpec(
-                  "SELECT * FROM c WHERE c.type = 'Scenario' AND c.id = @SCENARIO_ID AND c.workspaceId = @WORKSPACE_ID",
-                  listOf(
-                      SqlParameter("@SCENARIO_ID", scenarioId),
-                      SqlParameter("@WORKSPACE_ID", workspaceId))),
-              CosmosQueryRequestOptions(),
-              // It would be much better to specify the Domain Type right away and
-              // avoid the map operation, but we can't due
-              // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
-              // https://github.com/Azure/azure-sdk-for-java/issues/12269
-              JsonNode::class.java)
-          .firstOrNull()
-          ?.toDomain<Scenario>()
-          ?: throw java.lang.IllegalArgumentException(
-              "Scenario #$scenarioId not found in workspace #$workspaceId in organization #$organizationId")
+  ): Scenario {
+    val scenario =
+        cosmosCoreDatabase
+            .getContainer("${organizationId}_scenario_data")
+            .queryItems(
+                SqlQuerySpec(
+                    "SELECT * FROM c WHERE c.type = 'Scenario' AND c.id = @SCENARIO_ID AND c.workspaceId = @WORKSPACE_ID",
+                    listOf(
+                        SqlParameter("@SCENARIO_ID", scenarioId),
+                        SqlParameter("@WORKSPACE_ID", workspaceId))),
+                CosmosQueryRequestOptions(),
+                // It would be much better to specify the Domain Type right away and
+                // avoid the map operation, but we can't due
+                // to the lack of customization of the Cosmos Client Object Mapper, as reported here
+                // :
+                // https://github.com/Azure/azure-sdk-for-java/issues/12269
+                JsonNode::class.java)
+            .firstOrNull()
+            ?.toDomain<Scenario>()
+            ?: throw java.lang.IllegalArgumentException(
+                "Scenario #$scenarioId not found in workspace #$workspaceId in organization #$organizationId")
+    this.addStateToScenario(scenario)
+    return scenario
+  }
+
+  private fun addStateToScenario(scenario: Scenario?) {
+    if (scenario != null && scenario.lastRun != null) {
+      val workflowId = scenario.lastRun?.workflowId
+      val workflowName = scenario.lastRun?.workflowName
+      if (workflowId != null && workflowName != null) {
+        val workflowStatus = workflowUtils.getWorkflowStatus(workflowId, workflowName)
+        scenario.state = this.mapPhaseToState(workflowStatus?.phase)
+      } else {
+        throw IllegalStateException(
+            "Scenario has a last Scenario Run but workflowId or workflowName is null")
+      }
+    }
+  }
+
+  private fun mapPhaseToState(phase: String?): State {
+    logger.debug("Mapping phase ${phase}")
+    when (phase) {
+      "Pending" -> return State.Running
+      "Running" -> return State.Running
+      "Succeeded" -> return State.Successful
+      "Skipped" -> return State.Failed
+      "Failed" -> return State.Failed
+      "Error" -> return State.Failed
+      "Omitted" -> return State.Failed
+      else -> return State.Failed
+    }
+  }
 
   override fun getScenariosTree(organizationId: String, workspaceId: String): List<Scenario> {
-    TODO("Not yet implemented")
+    return this.findAllScenarios(organizationId, workspaceId)
   }
 
   override fun removeAllScenarioParameterValues(
@@ -380,9 +422,14 @@ class ScenarioServiceImpl(
       hasChanged = true
     }
 
+    if (scenario.lastRun != null && scenario.changed(existingScenario) { lastRun }) {
+      existingScenario.lastRun = scenario.lastRun
+      hasChanged = true
+    }
+
     return if (hasChanged) {
-      scenario.lastUpdate = OffsetDateTime.now()
-      upsertScenarioData(organizationId, scenario, workspaceId)
+      existingScenario.lastUpdate = OffsetDateTime.now()
+      upsertScenarioData(organizationId, existingScenario, workspaceId)
 
       userIdsRemoved?.forEach {
         this.eventPublisher.publishEvent(
@@ -426,5 +473,22 @@ class ScenarioServiceImpl(
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
     cosmosTemplate.deleteContainer("${organizationUnregistered.organizationId}_scenario_data")
+  }
+
+  @EventListener(ScenarioRunStartedForScenario::class)
+  fun onScenarioRunStartedForScenario(scenarioRunStarted: ScenarioRunStartedForScenario) {
+    logger.debug("onScenarioRunStartedForScenario ${scenarioRunStarted}")
+    this.updateScenario(
+        scenarioRunStarted.organizationId,
+        scenarioRunStarted.workspaceId,
+        scenarioRunStarted.scenarioId,
+        Scenario(
+            lastRun =
+                ScenarioLastRun(
+                    scenarioRunStarted.scenarioRunId,
+                    scenarioRunStarted.csmSimulationRun,
+                    scenarioRunStarted.workflowId,
+                    scenarioRunStarted.workflowName,
+                )))
   }
 }

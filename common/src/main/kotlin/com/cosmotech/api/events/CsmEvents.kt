@@ -73,3 +73,14 @@ class ConnectorRemovedForOrganization(
     val organizationId: String,
     val connectorId: String
 ) : CsmEvent(publisher)
+
+class ScenarioRunStartedForScenario(
+    publisher: Any,
+    val organizationId: String,
+    val workspaceId: String,
+    val scenarioId: String,
+    val scenarioRunId: String,
+    val csmSimulationRun: String,
+    val workflowId: String,
+    val workflowName: String,
+) : CsmEvent(publisher)
