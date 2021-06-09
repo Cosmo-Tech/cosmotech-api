@@ -21,6 +21,7 @@ Name | Type | Description | Notes
 **runTemplateName** | [**String**](string.md) | the Solution Run Template name associated with this Scenario | [optional] [default to null]
 **datasetList** | [**List**](string.md) | the list of Dataset Id associated to this Scenario Run Template | [optional] [default to null]
 **parametersValues** | [**List**](ScenarioRunTemplateParameterValue.md) | the list of Solution Run Template parameters values | [optional] [default to null]
+**lastRun** | [**Scenario_lastRun**](Scenario_lastRun.md) |  | [optional] [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

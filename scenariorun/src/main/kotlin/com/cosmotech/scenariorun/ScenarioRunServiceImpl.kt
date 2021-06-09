@@ -5,6 +5,7 @@ package com.cosmotech.scenariorun
 import com.azure.cosmos.models.*
 import com.cosmotech.api.argo.WorkflowUtils
 import com.cosmotech.api.azure.AbstractCosmosBackedService
+import com.cosmotech.api.events.*
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -230,6 +231,16 @@ class ScenariorunServiceImpl(
             startInfo.startContainers,
             workflow)
 
+    this.eventPublisher.publishEvent(
+        ScenarioRunStartedForScenario(
+            this,
+            scenarioRun.organizationId ?: "ERROR",
+            scenarioRun.workspaceId ?: "ERROR",
+            scenarioRun.scenarioId ?: "ERROR",
+            scenarioRun.id ?: "ERROR",
+            scenarioRun.csmSimulationRun ?: "ERROR",
+            scenarioRun.workflowId ?: "ERROR",
+            scenarioRun.workflowName ?: "ERROR"))
     return scenarioRun
   }
 

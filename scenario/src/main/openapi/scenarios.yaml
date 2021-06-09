@@ -501,6 +501,22 @@ components:
           description: the list of Solution Run Template parameters values
           items:
             $ref: '#/components/schemas/ScenarioRunTemplateParameterValue'
+        lastRun:
+          type: object
+          description: the last Scenarion Run for this Scenario
+          properties:
+            scenarioRunId:
+              type: string
+              description: the last Scenario Run id
+            csmSimulationRun:
+              type: string
+              description: the last Cosmo Tech Simulation Run id
+            workflowId:
+              type: string
+              description: the last Workflow Id
+            workflowName:
+              type: string
+              description: the last Workflow name
 #      required:
 #        - name
 #        - runTemplateId
