@@ -234,13 +234,13 @@ class ScenariorunServiceImpl(
     this.eventPublisher.publishEvent(
         ScenarioRunStartedForScenario(
             this,
-            scenarioRun.organizationId ?: "ERROR",
-            scenarioRun.workspaceId ?: "ERROR",
-            scenarioRun.scenarioId ?: "ERROR",
-            scenarioRun.id ?: "ERROR",
-            scenarioRun.csmSimulationRun ?: "ERROR",
-            scenarioRun.workflowId ?: "ERROR",
-            scenarioRun.workflowName ?: "ERROR"))
+            scenarioRun.organizationId!!,
+            scenarioRun.workspaceId!!,
+            scenarioRun.scenarioId!!,
+            scenarioRun.id!!,
+            scenarioRun.csmSimulationRun!!,
+            scenarioRun.workflowId!!,
+            scenarioRun.workflowName!!))
     return scenarioRun
   }
 

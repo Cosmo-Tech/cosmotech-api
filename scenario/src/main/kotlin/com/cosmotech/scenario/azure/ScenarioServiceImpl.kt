@@ -422,9 +422,14 @@ class ScenarioServiceImpl(
       hasChanged = true
     }
 
+    if (scenario.lastRun != null && scenario.changed(existingScenario) { lastRun }) {
+      existingScenario.lastRun = scenario.lastRun
+      hasChanged = true
+    }
+
     return if (hasChanged) {
-      scenario.lastUpdate = OffsetDateTime.now()
-      upsertScenarioData(organizationId, scenario, workspaceId)
+      existingScenario.lastUpdate = OffsetDateTime.now()
+      upsertScenarioData(organizationId, existingScenario, workspaceId)
 
       userIdsRemoved?.forEach {
         this.eventPublisher.publishEvent(
@@ -471,7 +476,8 @@ class ScenarioServiceImpl(
   }
 
   @EventListener(ScenarioRunStartedForScenario::class)
-  fun onScenarioRunStarterForScenario(scenarioRunStarted: ScenarioRunStartedForScenario) {
+  fun onScenarioRunStartedForScenario(scenarioRunStarted: ScenarioRunStartedForScenario) {
+    logger.debug("onScenarioRunStartedForScenario ${scenarioRunStarted}")
     this.updateScenario(
         scenarioRunStarted.organizationId,
         scenarioRunStarted.workspaceId,

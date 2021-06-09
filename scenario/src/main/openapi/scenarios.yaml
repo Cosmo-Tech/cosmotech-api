@@ -659,7 +659,7 @@ components:
             name: Alice
             roles:
             - Viewer
-        state: Created
+        state: Running
         ownerName: Bob
         creationDate: "2021-04-21T17:32:28Z"
         lastUpdate: "2021-04-21T17:32:28Z"
@@ -669,6 +669,11 @@ components:
           - parameterId: prefix
             varType: string
             value: ""
+        lastRun:
+          csmSimulationRun: "ae8d1959-7a71-48ec-9f33-3fae53358cf1"
+          scenarioRunId: "SR-V9EYbbOE0"
+          workflowId: "c7cd3f15-8a3b-4bcd-b3ca-62ee24c13d67"
+          workflowName: "workflow-s-dwpxbzmdxn-zkvd7"
     ThreeScenarios:
       summary: Three Scenarios with parent and children
       description: Three Scenarios with parent master Scenario and two children Scenarios
@@ -736,6 +741,11 @@ components:
             - parameterId: prefix
               varType: string
               value: example
+          lastRun:
+            csmSimulationRun: "ae8d1959-7a71-48ec-9f33-3fae53358cf1"
+            scenarioRunId: "SR-V9EYbbOE0"
+            workflowId: "c7cd3f15-8a3b-4bcd-b3ca-62ee24c13d67"
+            workflowName: "workflow-s-dwpxbzmdxn-zkvd7"
         - id: "3"
           name: Brewery Analysis name no change
           description: Brewery analysis with no change on name prefix
@@ -768,6 +778,11 @@ components:
               varType: string
               value: ""
               inherited: true
+          lastRun:
+            csmSimulationRun: "ae8d1959-7a71-48ec-9f33-3fae53358cf1"
+            scenarioRunId: "SR-V9EYbbOE0"
+            workflowId: "c7cd3f15-8a3b-4bcd-b3ca-62ee24c13d67"
+            workflowName: "workflow-s-dwpxbzmdxn-zkvd7"
     BreweryScenarioUpdate:
       summary: Update the Brewery Scenario
       description: Update the Brewery Scenario by changing its name
@@ -885,6 +900,11 @@ components:
               varType: string
               value: ""
               inherited: true
+          lastRun:
+            csmSimulationRun: "ae8d1959-7a71-48ec-9f33-3fae53358cf1"
+            scenarioRunId: "SR-V9EYbbOE0"
+            workflowId: "c7cd3f15-8a3b-4bcd-b3ca-62ee24c13d67"
+            workflowName: "workflow-s-dwpxbzmdxn-zkvd7"
         - id: "3"
           name: Brewery Analysis name no change
           description: Brewery analysis with no change on name prefix
@@ -915,6 +935,11 @@ components:
               varType: string
               value: ""
               inherited: true
+          lastRun:
+            csmSimulationRun: "ae8d1959-7a71-48ec-9f33-3fae53358cf1"
+            scenarioRunId: "SR-V9EYbbOE0"
+            workflowId: "c7cd3f15-8a3b-4bcd-b3ca-62ee24c13d67"
+            workflowName: "workflow-s-dwpxbzmdxn-zkvd7"
     TwoScenarioUsers:
       summary: 2 scenario users
       description: 2 scenario users

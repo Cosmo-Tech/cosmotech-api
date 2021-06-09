@@ -24,6 +24,12 @@
 java -jar api/build/libs/cosmotech-api-0.0.1-SNAPSHOT-uberjar.jar
 ```
 
+Spring boot run
+```shell
+./gradlew :cosmotech-api:bootRun
+```
+This activate dev profile which uses config/application-dev.yml.
+
 ### Kubernetes
 
 #### Azure Kubernetes Service (AKS)
