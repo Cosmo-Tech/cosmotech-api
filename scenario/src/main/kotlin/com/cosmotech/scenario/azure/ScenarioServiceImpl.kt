@@ -447,7 +447,7 @@ class ScenarioServiceImpl(
                 user.roles.map { role -> role.value }))
       }
 
-      scenario
+      existingScenario
     } else {
       existingScenario
     }
