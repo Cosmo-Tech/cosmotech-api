@@ -92,4 +92,3 @@ class ScenarioDatasetListChanged(
     val scenarioId: String,
     val datasetList: List<String>?
 ) : CsmEvent(publisher)
-

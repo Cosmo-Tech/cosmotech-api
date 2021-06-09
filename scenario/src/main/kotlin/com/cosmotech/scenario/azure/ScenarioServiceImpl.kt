@@ -229,9 +229,14 @@ class ScenarioServiceImpl(
     scenarios.forEach { cosmosTemplate.deleteEntity("${organizationId}_scenario_data", it) }
   }
 
-  override fun findAllScenarios(organizationId: String, workspaceId: String): List<Scenario> = this.findAllScenariosStateOption(organizationId, workspaceId, true)
+  override fun findAllScenarios(organizationId: String, workspaceId: String): List<Scenario> =
+      this.findAllScenariosStateOption(organizationId, workspaceId, true)
 
-  private fun findAllScenariosStateOption(organizationId: String, workspaceId: String, addState: Boolean): List<Scenario> =
+  private fun findAllScenariosStateOption(
+      organizationId: String,
+      workspaceId: String,
+      addState: Boolean
+  ): List<Scenario> =
       cosmosCoreDatabase
           .getContainer("${organizationId}_scenario_data")
           .queryItems(
@@ -253,13 +258,19 @@ class ScenarioServiceImpl(
           }
           .toList()
 
-  private fun findAllScenariosByRootId(organizationId: String, workspaceId: String, rootId: String): List<Scenario> =
+  private fun findAllScenariosByRootId(
+      organizationId: String,
+      workspaceId: String,
+      rootId: String
+  ): List<Scenario> =
       cosmosCoreDatabase
           .getContainer("${organizationId}_scenario_data")
           .queryItems(
               SqlQuerySpec(
                   "SELECT * FROM c WHERE c.type = 'Scenario' AND c.workspaceId = @WORKSPACE_ID AND c.rootId = @ROOT_ID",
-                  listOf(SqlParameter("@WORKSPACE_ID", workspaceId), SqlParameter("@ROOT_ID", rootId))),
+                  listOf(
+                      SqlParameter("@WORKSPACE_ID", workspaceId),
+                      SqlParameter("@ROOT_ID", rootId))),
               CosmosQueryRequestOptions(),
               // It would be much better to specify the Domain Type right away and
               // avoid the map operation, but we can't due
@@ -287,25 +298,25 @@ class ScenarioServiceImpl(
       workspaceId: String,
       scenarioId: String
   ): Scenario =
-        cosmosCoreDatabase
-            .getContainer("${organizationId}_scenario_data")
-            .queryItems(
-                SqlQuerySpec(
-                    "SELECT * FROM c WHERE c.type = 'Scenario' AND c.id = @SCENARIO_ID AND c.workspaceId = @WORKSPACE_ID",
-                    listOf(
-                        SqlParameter("@SCENARIO_ID", scenarioId),
-                        SqlParameter("@WORKSPACE_ID", workspaceId))),
-                CosmosQueryRequestOptions(),
-                // It would be much better to specify the Domain Type right away and
-                // avoid the map operation, but we can't due
-                // to the lack of customization of the Cosmos Client Object Mapper, as reported here
-                // :
-                // https://github.com/Azure/azure-sdk-for-java/issues/12269
-                JsonNode::class.java)
-            .firstOrNull()
-            ?.toDomain<Scenario>()
-            ?: throw java.lang.IllegalArgumentException(
-                "Scenario #$scenarioId not found in workspace #$workspaceId in organization #$organizationId")
+      cosmosCoreDatabase
+          .getContainer("${organizationId}_scenario_data")
+          .queryItems(
+              SqlQuerySpec(
+                  "SELECT * FROM c WHERE c.type = 'Scenario' AND c.id = @SCENARIO_ID AND c.workspaceId = @WORKSPACE_ID",
+                  listOf(
+                      SqlParameter("@SCENARIO_ID", scenarioId),
+                      SqlParameter("@WORKSPACE_ID", workspaceId))),
+              CosmosQueryRequestOptions(),
+              // It would be much better to specify the Domain Type right away and
+              // avoid the map operation, but we can't due
+              // to the lack of customization of the Cosmos Client Object Mapper, as reported here
+              // :
+              // https://github.com/Azure/azure-sdk-for-java/issues/12269
+              JsonNode::class.java)
+          .firstOrNull()
+          ?.toDomain<Scenario>()
+          ?: throw java.lang.IllegalArgumentException(
+              "Scenario #$scenarioId not found in workspace #$workspaceId in organization #$organizationId")
 
   private fun addStateToScenario(scenario: Scenario?) {
     if (scenario != null && scenario.lastRun != null) {
@@ -445,9 +456,9 @@ class ScenarioServiceImpl(
         scenario.datasetList?.toSet() != existingScenario.datasetList?.toSet()) {
       // Only root Scenarios can update their Dataset list
       if (scenario.parentId != null) {
-        logger.info("Cannot set Dataset list on child Scenario ${scenarioId}. Only root scenarios can be set.")
-      }
-      else {
+        logger.info(
+            "Cannot set Dataset list on child Scenario ${scenarioId}. Only root scenarios can be set.")
+      } else {
         // TODO Need to validate those IDs too ?
         existingScenario.datasetList = scenario.datasetList
         hasChanged = true
@@ -506,7 +517,9 @@ class ScenarioServiceImpl(
       }
 
       if (datasetListUpdated) {
-        this.eventPublisher.publishEvent(ScenarioDatasetListChanged(this, organizationId, workspaceId, scenarioId, scenario.datasetList))
+        this.eventPublisher.publishEvent(
+            ScenarioDatasetListChanged(
+                this, organizationId, workspaceId, scenarioId, scenario.datasetList))
       }
 
       existingScenario
@@ -557,11 +570,16 @@ class ScenarioServiceImpl(
   @EventListener(ScenarioDatasetListChanged::class)
   fun onScenarioDatasetListChanged(scenarioDatasetListChanged: ScenarioDatasetListChanged) {
     logger.debug("onScenarioDatasetListChanged ${scenarioDatasetListChanged}")
-    val children = this.findAllScenariosByRootId(scenarioDatasetListChanged.organizationId, scenarioDatasetListChanged.workspaceId, scenarioDatasetListChanged.scenarioId)
+    val children =
+        this.findAllScenariosByRootId(
+            scenarioDatasetListChanged.organizationId,
+            scenarioDatasetListChanged.workspaceId,
+            scenarioDatasetListChanged.scenarioId)
     children?.forEach {
       it.datasetList = scenarioDatasetListChanged.datasetList
       it.lastUpdate = OffsetDateTime.now()
-      upsertScenarioData(scenarioDatasetListChanged.organizationId, it, scenarioDatasetListChanged.workspaceId)
+      upsertScenarioData(
+          scenarioDatasetListChanged.organizationId, it, scenarioDatasetListChanged.workspaceId)
     }
   }
 }
