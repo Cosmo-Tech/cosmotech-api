@@ -86,6 +86,16 @@ paths:
               examples:
                 ThreeScenario:
                   $ref: '#/components/examples/ThreeScenarios'
+    delete:
+      operationId: deleteAllScenarios
+      tags:
+        - scenario
+      summary: Delete all Scenarios of the Workspace
+      responses:
+        "204":
+          description: Request succeeded
+        "404":
+          description: the Scenario specified is unknown or you don't have access to it
   /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/tree:
     parameters:
       - name: organization_id

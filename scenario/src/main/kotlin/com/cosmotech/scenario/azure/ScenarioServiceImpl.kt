@@ -208,6 +208,12 @@ class ScenarioServiceImpl(
     // TODO Notify users
   }
 
+  override fun deleteAllScenarios(organizationId: kotlin.String, workspaceId: kotlin.String) {
+    // TODO Only the workspace owner should be able to do this
+    val scenarios = this.findAllScenarios(organizationId, workspaceId)
+    scenarios.forEach { cosmosTemplate.deleteEntity("${organizationId}_scenario_data", it) }
+  }
+
   override fun findAllScenarios(organizationId: String, workspaceId: String): List<Scenario> =
       cosmosCoreDatabase
           .getContainer("${organizationId}_scenario_data")
