@@ -10,10 +10,6 @@ cat <<EOF > values-ci.yaml
 image:
   repository: kind-registry:5000/cosmotech-api
 
-ingress:
-  # TODO Ingress disabled for now, but will need to be set once we have an Ingress Controller deployed
-  enabled: false
-
 config:
   csm:
     platform:
@@ -51,6 +47,10 @@ echo "retVal=$retVal"
 
 echo "=== List all resources across all namespaces ==="
 kubectl get all --all-namespaces
+echo "=== ==="
+
+echo "=== Describe the NGINX Ingress Controller Deployment ==="
+kubectl -n ingress-nginx describe deployment ingress-nginx-controller
 echo "=== ==="
 
 echo "=== cosmotech-api Pod logs ==="

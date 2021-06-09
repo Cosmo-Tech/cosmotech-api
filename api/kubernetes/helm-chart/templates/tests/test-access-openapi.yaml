@@ -1,0 +1,24 @@
+{{- $apiBasePath := include "cosmotech-api.apiBasePath" . -}}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "cosmotech-api.fullname" . }}-test-connection-openapi"
+  labels:
+    {{- include "cosmotech-api.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args:
+        - '--tries'
+        - '60'
+        - '-S'
+        - '-O'
+        - '-'
+        - 'http://{{ include "cosmotech-api.fullname" . }}:{{ .Values.service.port }}{{ $apiBasePath | trimSuffix "/" }}/openapi'
+        - 'http://{{ include "cosmotech-api.fullname" . }}:{{ .Values.service.port }}{{ $apiBasePath | trimSuffix "/" }}/openapi.json'
+        - 'http://{{ include "cosmotech-api.fullname" . }}:{{ .Values.service.port }}{{ $apiBasePath | trimSuffix "/" }}/openapi.yaml'
+  restartPolicy: Never

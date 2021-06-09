@@ -94,6 +94,14 @@ jobs:
     - name: Provision Kubernetes KinD Cluster and local Container Registry
       uses: container-tools/kind-action@v1
 
+    - name: Deploy the NGINX Ingress Controller in the KinD Cluster
+      run: |
+        kubectl apply -f \
+          https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
+        kubectl -n ingress-nginx wait deploy/ingress-nginx-controller \
+          --for condition=available \
+          --timeout=60s
+
     - name: Make scripts executable
       run: |
         chmod +x .github/scripts/*.sh
