@@ -84,3 +84,11 @@ class ScenarioRunStartedForScenario(
     val workflowId: String,
     val workflowName: String,
 ) : CsmEvent(publisher)
+
+class ScenarioDatasetListChanged(
+    publisher: Any,
+    val organizationId: String,
+    val workspaceId: String,
+    val scenarioId: String,
+    val datasetList: List<String>?
+) : CsmEvent(publisher)

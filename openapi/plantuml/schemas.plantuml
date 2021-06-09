@@ -154,6 +154,7 @@ entity Scenario {
     tags: List<String>
     parentId: String
     ownerId: String
+    rootId: String
     solutionId: String
     runTemplateId: String
     workspaceId: String

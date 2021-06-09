@@ -456,6 +456,10 @@ components:
           type: string
           readOnly: true
           description: the user id which own this Scenario
+        rootId:
+          type: string
+          readOnly: true
+          description: the scenario root id
         solutionId:
           type: string
           readOnly: true
