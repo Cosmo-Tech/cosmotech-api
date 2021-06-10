@@ -58,6 +58,7 @@ COSMOTECH_API_POD=$(kubectl -n "${CHART_RELEASE_TEST_NAMESPACE}" get pods \
   -l "app.kubernetes.io/name=cosmotech-api,app.kubernetes.io/instance=cosmotech-api-latest" \
   -o jsonpath="{.items[0].metadata.name}")
 echo "COSMOTECH_API_POD=${COSMOTECH_API_POD}"
+kubectl -n "${CHART_RELEASE_TEST_NAMESPACE}" describe pod "${COSMOTECH_API_POD}"
 kubectl -n "${CHART_RELEASE_TEST_NAMESPACE}" logs "${COSMOTECH_API_POD}"
 
 echo "=== ==="
