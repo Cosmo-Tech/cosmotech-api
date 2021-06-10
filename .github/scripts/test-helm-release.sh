@@ -18,9 +18,11 @@ if [[ "${retVal}" != "0" ]]; then
 fi
 
 # Also test the access via the Ingress
-echo "==> Testing the access via the Ingress Resource (controlled by the NGINX Ingress Controller)"
-wget --no-check-certificate \
-  --tries 10 \
-  -S \
-  -O - \
-  https://localhost/cosmotech-api/swagger-ui/index.html
+for route in "/" "/openapi" "/openapi.json" "/openapi.yaml" ; do
+  echo "==> Testing the access (/${route}) via the Ingress Resource (controlled by the NGINX Ingress Controller)"
+  wget --no-check-certificate \
+    --tries 10 \
+    -S \
+    -O - \
+    "https://localhost/cosmotech-api${route}" || exit 1
+done
