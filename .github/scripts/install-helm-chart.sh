@@ -8,7 +8,7 @@ PASSWORD_FOR_ARGO_PASSWORD="a-super-secure-password-we-dont-care-about"
 # Generate a sample values-ci.yaml. We will also inherit configuration from values-dev.yaml
 cat <<EOF > values-ci.yaml
 image:
-  repository: kind-registry:5000/cosmotech-api
+  repository: localhost:5000/cosmotech-api
 
 config:
   csm:
@@ -59,6 +59,7 @@ COSMOTECH_API_POD=$(kubectl -n "${CHART_RELEASE_TEST_NAMESPACE}" get pods \
   -o jsonpath="{.items[0].metadata.name}")
 echo "COSMOTECH_API_POD=${COSMOTECH_API_POD}"
 kubectl -n "${CHART_RELEASE_TEST_NAMESPACE}" logs "${COSMOTECH_API_POD}"
+
 echo "=== ==="
 
 exit $retVal
