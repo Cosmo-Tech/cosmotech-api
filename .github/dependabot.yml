@@ -9,7 +9,7 @@ registries:
     type: maven-repository
     url: https://maven.pkg.github.com/argoproj-labs/argo-client-java
     username: "x-access-token"
-    password: ${{ secrets.GITHUB_TOKEN }}
+    password: ${{ secrets.GH_TOKEN_PACKAGES_READ }}
 updates:
 - package-ecosystem: "github-actions"
   directory: "/"
