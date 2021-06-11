@@ -58,7 +58,7 @@ jobs:
         continue-on-error: true
         uses: actions/upload-artifact@v2
         with:
-          name: openapi
+          name: container-image-scan-report
           path: ${{ steps.scan.outputs.scan-report-path }}
           retention-days: 3
 
