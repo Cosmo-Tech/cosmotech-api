@@ -4,6 +4,11 @@
 # https://help.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
 
 version: 2
+registries:
+  argo-maven-github:
+    type: maven-repository
+    url: https://maven.pkg.github.com/argoproj-labs/argo-client-java
+    password: ${{ secrets.GITHUB_TOKEN }}
 updates:
 - package-ecosystem: "github-actions"
   directory: "/"
@@ -16,6 +21,8 @@ updates:
   - dependencies
 - package-ecosystem: gradle
   directory: "/"
+  registries:
+  - argo-maven-github
   schedule:
     interval: weekly
   open-pull-requests-limit: 10
