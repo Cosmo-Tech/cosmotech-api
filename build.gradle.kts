@@ -284,7 +284,7 @@ subprojects {
       to { image = "${project.group}/${project.name}:${project.version}" }
       container {
         format = OCI
-        labels = mapOf("maintainer" to "Cosmo Tech")
+        labels.putAll(mapOf("maintainer" to "Cosmo Tech"))
         environment =
             mapOf(
                 "JAVA_TOOL_OPTIONS" to
