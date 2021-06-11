@@ -179,6 +179,51 @@ class ScenarioServiceImpl(
       if (rootId == null) {
         rootId = parentId
       }
+
+      logger.debug("Copying parent {$parentId} parameters values")
+      var solutionId =
+          scenario.solutionId ?: throw IllegalStateException("Scenario solutionId cannot bu null")
+      logger.debug("Getting solution ${solutionId}")
+      val solution = solutionService.findSolutionById(organizationId, solutionId)
+      logger.debug("Getting runTemplate ${scenario.runTemplateId}")
+      val runTemplate =
+          solution.runTemplates.find { runTemplate -> runTemplate.id == scenario.runTemplateId }
+      if (runTemplate == null)
+          throw IllegalStateException(
+              "Scenario runTemplateId ${scenario.runTemplateId} does not exist")
+      logger.debug("Getting runTemplate parameters ids")
+      val runTemplateParametersIds =
+          solution
+              .parameterGroups
+              ?.filter { parameterGroup ->
+                runTemplate.parameterGroups?.contains(parameterGroup.id) ?: false
+              }
+              ?.flatMap { parameterGroup -> parameterGroup.parameters }
+              ?.toList()
+      if (runTemplateParametersIds != null) {
+        val parentParameters = parent.parametersValues?.map { it.parameterId to it }?.toMap()
+        val scenarioParameters = scenario.parametersValues?.map { it.parameterId to it }?.toMap()
+        val newParametersValuesList = scenario.parametersValues?.toMutableList() ?: mutableListOf()
+        // TODO: Handle default value
+        runTemplateParametersIds.forEach { parameterId ->
+          if (!(scenarioParameters?.contains(parameterId) ?: false)) {
+            logger.debug("Parameter ${parameterId} is not defined in the Scenario")
+            if (parentParameters?.contains(parameterId) ?: false) {
+              logger.debug("Copying parameter value from parent for parameter ${parameterId}")
+              val parameterValue = parentParameters?.get(parameterId)
+              if (parameterValue != null) {
+                newParametersValuesList.add(parameterValue)
+              } else {
+                logger.error("Parameter ${parameterId} not found")
+              }
+            } else {
+              logger.debug("Parameter ${parameterId} is neither defined in the parent")
+            }
+          } else {
+            logger.debug("Parameter ${parameterId} is already defined in the Scenario")
+          }
+        }
+      }
     }
 
     val now = OffsetDateTime.now()
