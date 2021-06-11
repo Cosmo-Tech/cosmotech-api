@@ -8,11 +8,7 @@ PASSWORD_FOR_ARGO_PASSWORD="a-super-secure-password-we-dont-care-about"
 # Generate a sample values-ci.yaml. We will also inherit configuration from values-dev.yaml
 cat <<EOF > values-ci.yaml
 image:
-  repository: kind-registry:5000/cosmotech-api
-
-ingress:
-  # TODO Ingress disabled for now, but will need to be set once we have an Ingress Controller deployed
-  enabled: false
+  repository: localhost:5000/cosmotech-api
 
 config:
   csm:
@@ -53,12 +49,18 @@ echo "=== List all resources across all namespaces ==="
 kubectl get all --all-namespaces
 echo "=== ==="
 
+echo "=== Describe the NGINX Ingress Controller Deployment ==="
+kubectl -n ingress-nginx describe deployment ingress-nginx-controller
+echo "=== ==="
+
 echo "=== cosmotech-api Pod logs ==="
 COSMOTECH_API_POD=$(kubectl -n "${CHART_RELEASE_TEST_NAMESPACE}" get pods \
   -l "app.kubernetes.io/name=cosmotech-api,app.kubernetes.io/instance=cosmotech-api-latest" \
   -o jsonpath="{.items[0].metadata.name}")
 echo "COSMOTECH_API_POD=${COSMOTECH_API_POD}"
+kubectl -n "${CHART_RELEASE_TEST_NAMESPACE}" describe pod "${COSMOTECH_API_POD}"
 kubectl -n "${CHART_RELEASE_TEST_NAMESPACE}" logs "${COSMOTECH_API_POD}"
+
 echo "=== ==="
 
 exit $retVal

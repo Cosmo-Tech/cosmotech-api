@@ -91,8 +91,54 @@ jobs:
       with:
         version: v3.6.0
 
+    - name: Generate KinD Config
+      run: |
+        cat <<EOF > /tmp/csm-kind-config.yaml
+
+        kind: Cluster
+        apiVersion: kind.x-k8s.io/v1alpha4
+        containerdConfigPatches:
+        -  |-
+           [plugins."io.containerd.grpc.v1.cri".containerd]
+             disable_snapshot_annotations = true
+           [plugins."io.containerd.grpc.v1.cri".registry.mirrors."localhost:5000"]
+             endpoint = ["http://kind-registry:5000"]
+        nodes:
+            - role: control-plane
+              kubeadmConfigPatches:
+              - |
+                kind: InitConfiguration
+                nodeRegistration:
+                  kubeletExtraArgs:
+                    node-labels: "ingress-ready=true"
+              extraPortMappings:
+              - containerPort: 80
+                hostPort: 80
+                protocol: TCP
+              - containerPort: 443
+                hostPort: 443
+                protocol: TCP
+            - role: worker
+        featureGates:
+          # TTL Controller for finished resources is currently an opt-in alpha feature
+          # https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/
+          TTLAfterFinished: true
+
+        EOF
+
     - name: Provision Kubernetes KinD Cluster and local Container Registry
       uses: container-tools/kind-action@v1
+      with:
+        config: /tmp/csm-kind-config.yaml
+
+    - name: Deploy the NGINX Ingress Controller in the KinD Cluster
+      run: |
+        kubectl apply -f \
+          https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
+        kubectl -n ingress-nginx wait deploy/ingress-nginx-controller \
+          --for condition=available \
+          --timeout=60s
+        kubectl -n ingress-nginx describe deployment ingress-nginx-controller
 
     - name: Make scripts executable
       run: |
@@ -105,7 +151,7 @@ jobs:
       run: |
         ./gradlew --info \
           :cosmotech-api:jib \
-          -Djib.to.image=kind-registry:5000/cosmotech-api:latest \
+          -Djib.to.image=localhost:5000/cosmotech-api:latest \
           -Djib.allowInsecureRegistries=true
 
     - name: Install the Helm Chart
