@@ -21,7 +21,7 @@ plugins {
 
   id("org.openapi.generator") version "5.1.1" apply false
 
-  id("com.google.cloud.tools.jib") version "3.0.0" apply false
+  id("com.google.cloud.tools.jib") version "3.1.1" apply false
 }
 
 allprojects {
@@ -284,7 +284,7 @@ subprojects {
       to { image = "${project.group}/${project.name}:${project.version}" }
       container {
         format = OCI
-        labels = mapOf("maintainer" to "Cosmo Tech")
+        labels.putAll(mapOf("maintainer" to "Cosmo Tech"))
         environment =
             mapOf(
                 "JAVA_TOOL_OPTIONS" to
