@@ -1,6 +1,7 @@
 import com.diffplug.gradle.spotless.SpotlessExtension
 import com.google.cloud.tools.jib.api.buildplan.ImageFormat.OCI
 import com.google.cloud.tools.jib.gradle.JibExtension
+import io.gitlab.arturbosch.detekt.Detekt
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
@@ -22,11 +23,14 @@ plugins {
   id("org.openapi.generator") version "5.1.1" apply false
 
   id("com.google.cloud.tools.jib") version "3.1.1" apply false
+
+  id("io.gitlab.arturbosch.detekt") version "1.17.0"
 }
 
 allprojects {
   apply(plugin = "com.diffplug.spotless")
   apply(plugin = "org.jetbrains.kotlin.jvm")
+  apply(plugin = "io.gitlab.arturbosch.detekt")
 
   repositories {
     maven {
@@ -99,6 +103,39 @@ subprojects {
     extendsFrom(configurations.testRuntimeOnly.get())
   }
 
+  val kotlinJvmTarget = "11"
+
+  tasks.withType<Detekt> {
+    buildUponDefaultConfig = true // preconfigure defaults
+    allRules = false // activate all available (even unstable) rules.
+    config.from(file("$rootDir/.detekt/detekt.yaml"))
+    jvmTarget = kotlinJvmTarget
+    ignoreFailures = project.findProperty("detekt.ignoreFailures")?.toString()?.toBoolean() ?: true
+    reports {
+      html {
+        // observe findings in your browser with structure and code snippets
+        enabled = true
+        destination = file("$buildDir/reports/detekt/${project.name}-detekt.html")
+      }
+      xml {
+        // checkstyle like format mainly for integrations like Jenkins
+        enabled = false
+        destination = file("$buildDir/reports/detekt/${project.name}-detekt.xml")
+      }
+      txt {
+        // similar to the console output, contains issue signature to manually edit baseline files
+        enabled = true
+        destination = file("$buildDir/reports/detekt/${project.name}-detekt.txt")
+      }
+      sarif {
+        // standardized SARIF format (https://sarifweb.azurewebsites.net/) to support integrations
+        // with Github Code Scanning
+        enabled = true
+        destination = file("$buildDir/reports/detekt/${project.name}-detekt.sarif")
+      }
+    }
+  }
+
   dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
@@ -158,7 +195,7 @@ subprojects {
     kotlinOptions {
       languageVersion = "1.5"
       freeCompilerArgs = listOf("-Xjsr305=strict")
-      jvmTarget = "11"
+      jvmTarget = kotlinJvmTarget
     }
   }
 

@@ -35,4 +35,12 @@ jobs:
     - name: Build with Gradle
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: ./gradlew build -x generateClients -x test -x integrationTest -x spotlessCheck -x openApiValidate --info
+      run: |
+        ./gradlew --info \
+          build \
+          -x generateClients \
+          -x test\
+          -x integrationTest \
+          -x spotlessCheck \
+          -x openApiValidate \
+          -x detekt

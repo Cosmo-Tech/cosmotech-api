@@ -89,7 +89,6 @@ jobs:
     # as suggested here : https://swagger.io/blog/api-design/validate-openapi-definitions-swagger-editor/
     runs-on: ubuntu-latest
     needs: merge_openapi_specs
-    name: OpenAPI Validator Service
 
     services:
       swagger-editor:

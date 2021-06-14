@@ -11,7 +11,7 @@ on:
     branches: [ main ]
 
 jobs:
-  lint_gradle:
+  formatting:
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -35,7 +35,7 @@ jobs:
           ${{ runner.os }}-gradle-
 
     - name: Check with Spotless
-      run: ./gradlew spotlessCheck --info
+      run: ./gradlew --info spotlessCheck
 
     # The OpenAPI Generator Gradle Plugin exposes an 'openApiValidate' task,
     # but at this time, it does not work with Gradle 7.0.
@@ -43,6 +43,32 @@ jobs:
     # A separate dedicated job is available in the 'openapi.yml' Workflow
   #    - name: Validate OpenAPI spec definitions
 #      run: ./gradlew openApiValidate --info
+
+  detekt:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v2.3.4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '16'
+
+      - uses: actions/cache@v2.1.6
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Check with Detekt
+        run: ./gradlew --info detekt
 
   lint_helm:
     runs-on: ubuntu-latest
