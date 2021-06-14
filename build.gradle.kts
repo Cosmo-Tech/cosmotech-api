@@ -336,3 +336,22 @@ subprojects {
     }
   }
 }
+
+val copySubProjectsDetektReportsTasks =
+    listOf("html", "xml", "txt", "sarif").map { format ->
+      tasks.register<Copy>("copySubProjects${format.capitalize()}DetektReports") {
+        subprojects.forEach { dependsOn(it.tasks.getByName("detekt")) }
+        val detektReports =
+            subprojects.map {
+              file("${it.projectDir}/build/reports/detekt/${it.name}-detekt.$format")
+            }
+        from(*detektReports.toTypedArray())
+        into("${rootProject.buildDir}/reports/detekt/$format")
+      }
+    }
+
+tasks.register<Copy>("copySubProjectsDetektReports") {
+  dependsOn(*copySubProjectsDetektReportsTasks.toTypedArray())
+}
+
+tasks.getByName("detekt") { finalizedBy("copySubProjectsDetektReports") }
