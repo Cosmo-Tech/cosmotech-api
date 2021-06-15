@@ -348,7 +348,7 @@ class ScenarioServiceImpl(
     return scenario
   }
 
-  private fun findScenarioByIdNoState(
+  internal fun findScenarioByIdNoState(
       organizationId: String,
       workspaceId: String,
       scenarioId: String
