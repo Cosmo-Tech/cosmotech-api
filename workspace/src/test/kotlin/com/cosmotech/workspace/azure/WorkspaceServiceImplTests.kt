@@ -7,9 +7,12 @@ import com.azure.storage.blob.BlobContainerClient
 import com.azure.storage.blob.BlobServiceClient
 import com.azure.storage.blob.batch.BlobBatchClient
 import com.cosmotech.api.azure.sanitizeForAzureStorage
+import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.workspace.domain.Workspace
+import com.cosmotech.workspace.domain.WorkspaceSolution
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
@@ -29,6 +32,7 @@ class WorkspaceServiceImplTests {
 
   @MockK private lateinit var resourceLoader: ResourceLoader
   @MockK private lateinit var userService: UserApiService
+  @MockK private lateinit var solutionService: SolutionApiService
   @MockK private lateinit var organizationService: OrganizationApiService
   @MockK private lateinit var azureStorageBlobServiceClient: BlobServiceClient
 
@@ -41,12 +45,14 @@ class WorkspaceServiceImplTests {
   @BeforeTest
   fun setUp() {
     this.workspaceServiceImpl =
-        WorkspaceServiceImpl(
-            resourceLoader,
-            userService,
-            organizationService,
-            azureStorageBlobServiceClient,
-            azureStorageBlobBatchClient)
+        spyk(
+            WorkspaceServiceImpl(
+                resourceLoader,
+                userService,
+                organizationService,
+                solutionService,
+                azureStorageBlobServiceClient,
+                azureStorageBlobBatchClient))
     MockKAnnotations.init(this, relaxUnitFun = true)
   }
 
@@ -237,5 +243,50 @@ class WorkspaceServiceImplTests {
 
     verify(exactly = 0) { resourceLoader.getResource(any()) }
     confirmVerified(resourceLoader)
+  }
+
+  @Test
+  fun `should reject creation request if solution ID is not valid`() {
+    every { solutionService.findSolutionById(ORGANIZATION_ID, any()) } throws
+        CsmResourceNotFoundException("Solution not found")
+    assertThrows<CsmResourceNotFoundException> {
+      workspaceServiceImpl.createWorkspace(
+          ORGANIZATION_ID,
+          Workspace(
+              key = "my-workspace-key",
+              name = "my workspace name",
+              solution = WorkspaceSolution(solutionId = "SOL-my-solution-id")))
+    }
+    verify(exactly = 0) {
+      cosmosTemplate.insert("${ORGANIZATION_ID}_workspaces", ofType(Workspace::class))
+    }
+    confirmVerified(cosmosTemplate)
+  }
+
+  @Test
+  fun `should reject update request if solution ID is not valid`() {
+    every { workspaceServiceImpl.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns
+        Workspace(
+            id = WORKSPACE_ID,
+            key = "my-workspace-key",
+            name = "my workspace name",
+            solution = WorkspaceSolution(solutionId = "SOL-my-solution-id"))
+    every { solutionService.findSolutionById(ORGANIZATION_ID, any()) } throws
+        CsmResourceNotFoundException("Solution not found")
+    assertThrows<CsmResourceNotFoundException> {
+      workspaceServiceImpl.updateWorkspace(
+          ORGANIZATION_ID,
+          WORKSPACE_ID,
+          Workspace(
+              key = "my-workspace-key-renamed",
+              name = "my workspace name (renamed)",
+              solution = WorkspaceSolution(solutionId = "SOL-my-new-solution-id")))
+    }
+
+    verify(exactly = 0) {
+      cosmosTemplate.upsertAndReturnEntity(
+          "${ORGANIZATION_ID}_workspaces", ofType(Workspace::class))
+    }
+    confirmVerified(cosmosTemplate)
   }
 }

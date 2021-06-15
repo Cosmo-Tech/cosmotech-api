@@ -5,6 +5,7 @@ dependencies {
   api(projects.cosmotechApiCommon)
   implementation(projects.cosmotechUserApi)
   implementation(projects.cosmotechOrganizationApi)
+  implementation(projects.cosmotechSolutionApi)
 }
 
 sourceSets {

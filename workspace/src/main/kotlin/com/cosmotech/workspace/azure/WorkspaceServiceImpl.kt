@@ -17,6 +17,7 @@ import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
 import com.cosmotech.workspace.api.WorkspaceApiService
@@ -38,6 +39,7 @@ class WorkspaceServiceImpl(
     private val resourceLoader: ResourceLoader,
     private val userService: UserApiService,
     private val organizationService: OrganizationApiService,
+    private val solutionService: SolutionApiService,
     private val azureStorageBlobServiceClient: BlobServiceClient,
     private val azureStorageBlobBatchClient: BlobBatchClient,
 ) : AbstractCosmosBackedService(), WorkspaceApiService {
@@ -131,12 +133,15 @@ class WorkspaceServiceImpl(
     return workspaceUserWithRightNames
   }
 
-  override fun createWorkspace(organizationId: String, workspace: Workspace): Workspace =
-      cosmosTemplate.insert(
-          "${organizationId}_workspaces",
-          workspace.copy(
-              id = idGenerator.generate("workspace"), ownerId = getCurrentAuthenticatedUserName()))
-          ?: throw IllegalArgumentException("No Workspace returned in response: $workspace")
+  override fun createWorkspace(organizationId: String, workspace: Workspace): Workspace {
+    // Validate Solution ID
+    workspace.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
+    return cosmosTemplate.insert(
+        "${organizationId}_workspaces",
+        workspace.copy(
+            id = idGenerator.generate("workspace"), ownerId = getCurrentAuthenticatedUserName()))
+        ?: throw IllegalArgumentException("No Workspace returned in response: $workspace")
+  }
 
   override fun deleteAllWorkspaceFiles(organizationId: String, workspaceId: String) {
     val workspace = findWorkspaceById(organizationId, workspaceId)
@@ -208,6 +213,8 @@ class WorkspaceServiceImpl(
       hasChanged = true
     }
     if (workspace.solution != null) {
+      // Validate solution ID
+      workspace.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
       existingWorkspace.solution = workspace.solution
       hasChanged = true
     }
