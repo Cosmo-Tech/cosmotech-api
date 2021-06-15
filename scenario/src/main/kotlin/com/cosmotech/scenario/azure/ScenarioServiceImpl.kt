@@ -162,7 +162,13 @@ class ScenarioServiceImpl(
   ): Scenario {
     val organization = organizationService.findOrganizationById(organizationId)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
-    val (solutionId, solutionName) = fetchSolutionIdAndName(organizationId, scenario.solutionId)
+    val solution =
+        workspace.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
+    val runTemplate =
+        solution?.runTemplates?.find { runTemplate -> runTemplate.id == scenario.runTemplateId }
+    if (scenario.runTemplateId != null && runTemplate == null) {
+      throw IllegalArgumentException("Run Template not found: ${scenario.runTemplateId}")
+    }
 
     val usersLoaded = scenario.users?.map { it.id }?.let { fetchUsers(it) }
     val usersWithNames =
@@ -231,8 +237,9 @@ class ScenarioServiceImpl(
         scenario.copy(
             id = idGenerator.generate("scenario"),
             ownerId = getCurrentAuthenticatedUserName(),
-            solutionId = solutionId,
-            solutionName = solutionName,
+            solutionId = solution?.id,
+            solutionName = solution?.name,
+            runTemplateName = runTemplate?.name,
             creationDate = now,
             lastUpdate = now,
             users = usersWithNames,
@@ -525,18 +532,21 @@ class ScenarioServiceImpl(
     // ownership
 
     if (scenario.solutionId != null && scenario.changed(existingScenario) { solutionId }) {
-      val (solutionId, solutionName) = fetchSolutionIdAndName(organizationId, scenario.solutionId)
-      existingScenario.solutionId = solutionId
-      existingScenario.solutionName = solutionName
-      hasChanged = true
+      logger.debug("solutionId is a read-only property => ignored ! ")
     }
     if (scenario.runTemplateId != null && scenario.changed(existingScenario) { runTemplateId }) {
+      // Validate the runTemplateId
+      val solution =
+          workspace.solution.solutionId?.let {
+            solutionService.findSolutionById(organizationId, it)
+          }
+      val newRunTemplateId = scenario.runTemplateId
+      val runTemplate =
+          solution?.runTemplates?.find { it.id == newRunTemplateId }
+              ?: throw IllegalArgumentException(
+                  "No run template '${newRunTemplateId}' in solution ${solution?.id}")
       existingScenario.runTemplateId = scenario.runTemplateId
-      hasChanged = true
-    }
-    if (scenario.runTemplateName != null &&
-        scenario.changed(existingScenario) { runTemplateName }) {
-      existingScenario.runTemplateName = scenario.runTemplateName
+      existingScenario.runTemplateName = runTemplate.name
       hasChanged = true
     }
 
@@ -584,6 +594,7 @@ class ScenarioServiceImpl(
   }
 
   private fun upsertScenarioData(organizationId: String, scenario: Scenario, workspaceId: String) {
+    scenario.lastUpdate = OffsetDateTime.now()
     cosmosCoreDatabase
         .getContainer("${organizationId}_scenario_data")
         .upsertItem(
