@@ -69,11 +69,11 @@ class ScenarioServiceImpl(
           scenario.parametersValues?.associateBy { it.parameterId }?.toMutableMap()
               ?: mutableMapOf()
       parametersValuesMap.putAll(
-          scenarioRunTemplateParameterValue.filter { it.parameterId.isNotBlank() }.associateBy {
-            it.parameterId
-          })
+          scenarioRunTemplateParameterValue
+              .filter { it.parameterId.isNotBlank() }
+              .map { it.copy(isInherited = false) }
+              .associateBy { it.parameterId })
       scenario.parametersValues = parametersValuesMap.values.toList()
-      scenario.lastUpdate = OffsetDateTime.now()
       upsertScenarioData(organizationId, scenario, workspaceId)
     }
     return scenarioRunTemplateParameterValue
@@ -140,21 +140,6 @@ class ScenarioServiceImpl(
     TODO("Not yet implemented")
   }
 
-  private fun fetchSolutionIdAndName(
-      organizationId: String,
-      solutionId: String?
-  ): Pair<String?, String?> {
-    var solutionId: String? = null
-    var solutionName: String? = null
-    if (!solutionId.isNullOrBlank()) {
-      // Validate
-      val solution = solutionService.findSolutionById(organizationId, solutionId)
-      solutionId = solution.id
-      solutionName = solution.name
-    }
-    return solutionId to solutionName
-  }
-
   override fun createScenario(
       organizationId: String,
       workspaceId: String,
@@ -177,6 +162,8 @@ class ScenarioServiceImpl(
     var datasetList = scenario.datasetList
     val parentId = scenario.parentId
     var rootId: String? = null
+    val newParametersValuesList = scenario.parametersValues?.toMutableList() ?: mutableListOf()
+
     if (parentId != null) {
       logger.debug("Applying / Overwriting Dataset list from parent ${parentId}")
       val parent = this.findScenarioByIdNoState(organizationId, workspaceId, parentId)
@@ -186,47 +173,41 @@ class ScenarioServiceImpl(
         rootId = parentId
       }
 
-      logger.debug("Copying parent {$parentId} parameters values")
-      var solutionId =
-          scenario.solutionId ?: throw IllegalStateException("Scenario solutionId cannot bu null")
-      logger.debug("Getting solution ${solutionId}")
-      val solution = solutionService.findSolutionById(organizationId, solutionId)
-      logger.debug("Getting runTemplate ${scenario.runTemplateId}")
-      val runTemplate =
-          solution.runTemplates.find { runTemplate -> runTemplate.id == scenario.runTemplateId }
-      if (runTemplate == null)
-          throw IllegalStateException(
-              "Scenario runTemplateId ${scenario.runTemplateId} does not exist")
+      logger.debug("Copying parameters values from parent $parentId")
+
       logger.debug("Getting runTemplate parameters ids")
       val runTemplateParametersIds =
-          solution
-              .parameterGroups
+          solution?.parameterGroups
               ?.filter { parameterGroup ->
-                runTemplate.parameterGroups?.contains(parameterGroup.id) ?: false
+                runTemplate?.parameterGroups?.contains(parameterGroup.id) == true
               }
               ?.flatMap { parameterGroup -> parameterGroup.parameters }
-              ?.toList()
-      if (runTemplateParametersIds != null) {
-        val parentParameters = parent.parametersValues?.map { it.parameterId to it }?.toMap()
-        val scenarioParameters = scenario.parametersValues?.map { it.parameterId to it }?.toMap()
-        val newParametersValuesList = scenario.parametersValues?.toMutableList() ?: mutableListOf()
+      if (!runTemplateParametersIds.isNullOrEmpty()) {
+        val parentParameters = parent.parametersValues?.associate { it.parameterId to it }
+        val scenarioParameters = scenario.parametersValues?.associate { it.parameterId to it }
         // TODO: Handle default value
         runTemplateParametersIds.forEach { parameterId ->
-          if (!(scenarioParameters?.contains(parameterId) ?: false)) {
-            logger.debug("Parameter ${parameterId} is not defined in the Scenario")
-            if (parentParameters?.contains(parameterId) ?: false) {
-              logger.debug("Copying parameter value from parent for parameter ${parameterId}")
-              val parameterValue = parentParameters?.get(parameterId)
+          if (scenarioParameters?.contains(parameterId) != true) {
+            logger.debug(
+                "Parameter $parameterId is not defined in the Scenario. " +
+                    "Checking if it is defined in its parent $parentId")
+            if (parentParameters?.contains(parameterId) == true) {
+              logger.debug("Copying parameter value from parent for parameter $parameterId")
+              val parameterValue = parentParameters[parameterId]
               if (parameterValue != null) {
+                parameterValue.isInherited = true
                 newParametersValuesList.add(parameterValue)
               } else {
-                logger.error("Parameter ${parameterId} not found")
+                logger.warn(
+                    "Parameter $parameterId not found in parent ($parentId) parameters values")
               }
             } else {
-              logger.debug("Parameter ${parameterId} is neither defined in the parent")
+              logger.debug(
+                  "Skipping parameter ${parameterId}, defined neither in the parent nor in this Scenario")
             }
           } else {
-            logger.debug("Parameter ${parameterId} is already defined in the Scenario")
+            logger.debug(
+                "Skipping parameter $parameterId since it is already defined in this Scenario")
           }
         }
       }
@@ -246,6 +227,7 @@ class ScenarioServiceImpl(
             state = State.Created,
             datasetList = datasetList,
             rootId = rootId,
+            parametersValues = newParametersValuesList,
         )
     val scenarioAsMap = scenarioToSave.asMapWithAdditionalData(workspaceId)
     // We cannot use cosmosTemplate as it expects the Domain object to contain a field named 'id'
@@ -553,6 +535,7 @@ class ScenarioServiceImpl(
     if (scenario.parametersValues != null &&
         scenario.parametersValues?.toSet() != existingScenario.parametersValues?.toSet()) {
       existingScenario.parametersValues = scenario.parametersValues
+      existingScenario.parametersValues?.forEach { it.isInherited = false }
       hasChanged = true
     }
 
