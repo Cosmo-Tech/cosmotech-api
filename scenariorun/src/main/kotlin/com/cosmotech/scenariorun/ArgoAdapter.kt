@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
-class ArgoAdapter(private val csmPlatformProperties: CsmPlatformProperties) {
+class ArgoAdapter(csmPlatformProperties: CsmPlatformProperties) {
   private val logger = LoggerFactory.getLogger(ArgoAdapter::class.java)
   private val K8S_AGENT_POOL = "agentpool"
   private val CSM_DEFAULT_ACCOUNT = "workflow"
@@ -61,7 +61,7 @@ class ArgoAdapter(private val csmPlatformProperties: CsmPlatformProperties) {
     return Template().name(scenarioRunContainer.name).container(container)
   }
 
-  fun buildWorkflowSpec(startContainers: ScenarioRunStartContainers): WorkflowSpec {
+  internal fun buildWorkflowSpec(startContainers: ScenarioRunStartContainers): WorkflowSpec {
     val nodeSelector = buildNodeSelector(startContainers)
     val templates = buildContainersTemplates(startContainers)
     val entrypointTemplate = buildEntrypointTemplate(startContainers)

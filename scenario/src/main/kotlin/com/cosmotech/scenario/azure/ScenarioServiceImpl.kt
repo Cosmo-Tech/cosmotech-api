@@ -319,7 +319,7 @@ class ScenarioServiceImpl(
               "Scenario #$scenarioId not found in workspace #$workspaceId in organization #$organizationId")
 
   private fun addStateToScenario(scenario: Scenario?) {
-    if (scenario != null && scenario.lastRun != null) {
+    if (scenario?.lastRun != null) {
       val workflowId = scenario.lastRun?.workflowId
       val workflowName = scenario.lastRun?.workflowName
       if (workflowId != null && workflowName != null) {

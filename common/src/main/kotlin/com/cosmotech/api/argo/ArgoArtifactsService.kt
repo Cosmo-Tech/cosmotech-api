@@ -6,12 +6,12 @@ import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Path
 
-interface ArgoArtifactsService {
+internal interface ArgoArtifactsService {
   @GET("artifacts/{namespace}/{workflow}/{node}/{artifact}")
   fun returnArtifact(
       @Path("namespace") namespace: String,
       @Path("workflow") workflow: String,
       @Path("node") node: String,
       @Path("artifact") artifact: String
-  ): Call<kotlin.String>
+  ): Call<String>
 }

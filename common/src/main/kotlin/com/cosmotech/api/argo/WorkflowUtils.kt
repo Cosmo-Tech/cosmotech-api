@@ -54,9 +54,9 @@ class WorkflowUtils(
     var workflow: Workflow? = null
     try {
       workflow = this.getWorkflow(workflowName)
-      logger.debug(workflow.toString())
+      logger.trace("Workflow: {}", workflow)
     } catch (e: ApiException) {
-      println("Workflow $workflowName not found, trying to find it in archive")
+      logger.debug("Workflow $workflowName not found, trying to find it in archive", e)
     }
     if (workflow == null) {
       workflow = this.getArchiveWorkflow(workflowId)

@@ -311,11 +311,13 @@ class ScenariorunServiceImpl(
 
       return result
     } catch (e: ApiException) {
-      println("Exception when calling WorkflowServiceApi#workflowServiceCreateWorkflow")
-      println("Status code: " + e.getCode())
-      println("Reason: " + e.getResponseBody())
-      println("Response headers: " + e.getResponseHeaders())
-      e.printStackTrace()
+      logger.warn(
+          """
+        Exception when calling WorkflowServiceApi#workflowServiceCreateWorkflow.
+        Status code: ${e.code}
+        Reason: ${e.responseBody}
+      """.trimIndent())
+      logger.debug("Response headers: {}", e.responseHeaders)
       throw IllegalStateException(e)
     }
   }
