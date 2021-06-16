@@ -284,6 +284,9 @@ class WorkspaceServiceImplTests {
     }
 
     verify(exactly = 0) {
+      cosmosTemplate.insert("${ORGANIZATION_ID}_workspaces", ofType(Workspace::class))
+    }
+    verify(exactly = 0) {
       cosmosTemplate.upsertAndReturnEntity(
           "${ORGANIZATION_ID}_workspaces", ofType(Workspace::class))
     }
