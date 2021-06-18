@@ -68,6 +68,10 @@ csm:
     argo:
       base-uri: "https://localhost:2746"
       image-pull-secrets: []
+      workflows:
+        namespace: phoenix
+        node-pool-label: agentpool
+        service-account-name: workflow
     images:
       scenario-fetch-parameters: cosmo-tech/fetch-scenario-parameters
       send-datawarehouse: cosmo-tech/azure-data-explorer-connector

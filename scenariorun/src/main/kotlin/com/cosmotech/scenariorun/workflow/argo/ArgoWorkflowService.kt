@@ -29,9 +29,6 @@ import retrofit2.converter.scalars.ScalarsConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Path
 
-private const val CSM_K8S_NAMESPACE = "phoenix"
-private const val K8S_AGENT_POOL = "agentpool"
-private const val CSM_DEFAULT_ACCOUNT = "workflow"
 private const val CSM_DAG_ENTRYPOINT = "entrypoint"
 private const val CSM_DEFAULT_WORKFLOW_NAME = "default-workflow-"
 private const val VOLUME_CLAIM_DATASETS = "datasetsdir"
@@ -129,7 +126,7 @@ internal class ArgoWorkflowService(
     try {
       val result =
           newServiceApiInstance<WorkflowServiceApi>()
-              .workflowServiceCreateWorkflow(CSM_K8S_NAMESPACE, body)
+              .workflowServiceCreateWorkflow(csmPlatformProperties.argo.workflows.namespace, body)
       if (result.metadata.uid == null)
           throw IllegalStateException("Argo Workflow metadata.uid is null")
       if (result.metadata.name == null)
@@ -151,11 +148,7 @@ internal class ArgoWorkflowService(
   private fun getWorkflow(workflowName: String): Workflow {
     return newServiceApiInstance<WorkflowServiceApi>()
         .workflowServiceGetWorkflow(
-            // TODO Make this namespace configurable
-            CSM_K8S_NAMESPACE,
-            workflowName,
-            "",
-            "")
+            csmPlatformProperties.argo.workflows.namespace, workflowName, "", "")
   }
 
   private fun getCumulatedLogs(workflowId: String, workflowName: String): String {
@@ -262,7 +255,7 @@ internal class ArgoWorkflowService(
     return WorkflowSpec()
         .imagePullSecrets(workflowImagePullSecrets?.ifEmpty { null })
         .nodeSelector(nodeSelector)
-        .serviceAccountName(CSM_DEFAULT_ACCOUNT)
+        .serviceAccountName(csmPlatformProperties.argo.workflows.serviceAccountName)
         .entrypoint(CSM_DAG_ENTRYPOINT)
         .templates(templates)
         .volumeClaimTemplates(volumeClaims)
@@ -361,8 +354,7 @@ internal class ArgoWorkflowService(
     val nodeSelector = mutableMapOf("kubernetes.io/os" to "linux")
 
     if (startContainers.nodeLabel != null) {
-      //TODO Make this configurable as well
-      nodeSelector[K8S_AGENT_POOL] = startContainers.nodeLabel
+      nodeSelector[csmPlatformProperties.argo.workflows.nodePoolLabel] = startContainers.nodeLabel
     }
 
     return nodeSelector
