@@ -6,8 +6,9 @@ import com.cosmotech.scenariorun.domain.ScenarioRun
 import com.cosmotech.scenariorun.domain.ScenarioRunLogs
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
 import com.cosmotech.scenariorun.domain.ScenarioRunStatus
+import org.springframework.boot.actuate.health.HealthIndicator
 
-interface WorkflowService {
+interface WorkflowService : HealthIndicator {
 
   /**
    * Launch a new Scenario run, using the request specified

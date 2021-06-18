@@ -16,6 +16,7 @@ import io.argoproj.workflow.ApiClient
 import io.argoproj.workflow.ApiException
 import io.argoproj.workflow.Configuration
 import io.argoproj.workflow.apis.ArchivedWorkflowServiceApi
+import io.argoproj.workflow.apis.InfoServiceApi
 import io.argoproj.workflow.apis.WorkflowServiceApi
 import io.argoproj.workflow.models.DAGTask
 import io.argoproj.workflow.models.DAGTemplate
@@ -40,6 +41,7 @@ import javax.net.ssl.X509TrustManager
 import okhttp3.OkHttpClient
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.actuate.health.Health
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
@@ -56,7 +58,7 @@ private const val VOLUME_CLAIM_PARAMETERS = "parametersdir"
 private const val VOLUME_DATASETS_PATH = "/mnt/scenariorun-data"
 private const val VOLUME_PARAMETERS_PATH = "/mnt/scenariorun-parameters"
 
-@Service
+@Service("argo")
 @ConditionalOnExpression("#{! '\${csm.platform.argo.base-uri}'.trim().isEmpty()}")
 internal class ArgoWorkflowService(
     @Value("\${api.version:?}") private val apiVersion: String,
@@ -368,6 +370,21 @@ internal class ArgoWorkflowService(
     return if (workflowId != null && workflowName != null)
         getCumulatedLogs(workflowId, workflowName)
     else ""
+  }
+
+  override fun health(): Health {
+    val healthBuilder =
+        try {
+          if (newServiceApiInstance<InfoServiceApi>().infoServiceGetInfo() != null) {
+            Health.up()
+          } else {
+            Health.unknown().withDetail("detail", "Unknown Argo Server Info Response")
+          }
+        } catch (exception: Exception) {
+          logger.debug("Error in health-check: {}", exception.message, exception)
+          Health.down(exception)
+        }
+    return healthBuilder.withDetail("url", apiClient.basePath).build()
   }
 
   private fun buildNodeSelector(startContainers: ScenarioRunStartContainers): Map<String, String> {
