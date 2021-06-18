@@ -3,7 +3,7 @@
 package com.cosmotech.api.id.uuid
 
 import com.cosmotech.api.id.AbstractCsmIdGenerator
-import java.util.*
+import java.util.UUID
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 

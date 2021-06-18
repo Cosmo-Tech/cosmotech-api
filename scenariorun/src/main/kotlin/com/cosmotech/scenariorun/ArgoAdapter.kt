@@ -11,7 +11,13 @@ import io.argoproj.workflow.models.Template
 import io.argoproj.workflow.models.Workflow
 import io.argoproj.workflow.models.WorkflowSpec
 import io.kubernetes.client.custom.Quantity
-import io.kubernetes.client.openapi.models.*
+import io.kubernetes.client.openapi.models.V1EnvVar
+import io.kubernetes.client.openapi.models.V1LocalObjectReference
+import io.kubernetes.client.openapi.models.V1ObjectMeta
+import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim
+import io.kubernetes.client.openapi.models.V1PersistentVolumeClaimSpec
+import io.kubernetes.client.openapi.models.V1ResourceRequirements
+import io.kubernetes.client.openapi.models.V1VolumeMount
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 

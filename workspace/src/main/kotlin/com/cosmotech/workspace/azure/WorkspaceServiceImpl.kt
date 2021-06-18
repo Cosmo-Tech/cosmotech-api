@@ -12,7 +12,11 @@ import com.cosmotech.api.azure.AbstractCosmosBackedService
 import com.cosmotech.api.azure.findAll
 import com.cosmotech.api.azure.findByIdOrThrow
 import com.cosmotech.api.azure.sanitizeForAzureStorage
-import com.cosmotech.api.events.*
+import com.cosmotech.api.events.OrganizationRegistered
+import com.cosmotech.api.events.OrganizationUnregistered
+import com.cosmotech.api.events.UserAddedToWorkspace
+import com.cosmotech.api.events.UserRemovedFromOrganization
+import com.cosmotech.api.events.UserRemovedFromWorkspace
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName

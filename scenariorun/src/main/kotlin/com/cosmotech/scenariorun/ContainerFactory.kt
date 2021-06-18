@@ -20,7 +20,7 @@ import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateHandlerId
 import com.cosmotech.solution.domain.RunTemplateStepSource
 import com.cosmotech.solution.domain.Solution
-import com.cosmotech.solution.utils.*
+import com.cosmotech.solution.utils.getCloudPath
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import java.util.UUID

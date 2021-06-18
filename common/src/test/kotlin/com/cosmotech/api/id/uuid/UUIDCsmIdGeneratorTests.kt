@@ -3,8 +3,12 @@
 package com.cosmotech.api.id.uuid
 
 import java.lang.IllegalArgumentException
-import java.util.*
-import kotlin.test.*
+import java.util.UUID
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 

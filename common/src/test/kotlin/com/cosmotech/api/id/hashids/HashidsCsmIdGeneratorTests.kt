@@ -3,7 +3,11 @@
 package com.cosmotech.api.id.hashids
 
 import java.lang.IllegalArgumentException
-import kotlin.test.*
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.assertThrows
 
 class HashidsCsmIdGeneratorTests {

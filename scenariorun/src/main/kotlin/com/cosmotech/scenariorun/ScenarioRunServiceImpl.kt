@@ -2,10 +2,14 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenariorun
 
-import com.azure.cosmos.models.*
+import com.azure.cosmos.models.CosmosItemRequestOptions
+import com.azure.cosmos.models.CosmosQueryRequestOptions
+import com.azure.cosmos.models.PartitionKey
+import com.azure.cosmos.models.SqlParameter
+import com.azure.cosmos.models.SqlQuerySpec
 import com.cosmotech.api.argo.WorkflowUtils
 import com.cosmotech.api.azure.AbstractCosmosBackedService
-import com.cosmotech.api.events.*
+import com.cosmotech.api.events.ScenarioRunStartedForScenario
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -33,7 +37,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.argoproj.workflow.ApiException
 import io.argoproj.workflow.Configuration
 import io.argoproj.workflow.apis.WorkflowServiceApi
-import io.argoproj.workflow.models.*
+import io.argoproj.workflow.models.Workflow
+import io.argoproj.workflow.models.WorkflowCreateRequest
 import kotlin.reflect.full.memberProperties
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty

@@ -2,10 +2,20 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenario.azure
 
-import com.azure.cosmos.models.*
+import com.azure.cosmos.models.CosmosContainerProperties
+import com.azure.cosmos.models.CosmosItemRequestOptions
+import com.azure.cosmos.models.CosmosQueryRequestOptions
+import com.azure.cosmos.models.PartitionKey
+import com.azure.cosmos.models.SqlParameter
+import com.azure.cosmos.models.SqlQuerySpec
 import com.cosmotech.api.argo.WorkflowUtils
 import com.cosmotech.api.azure.AbstractCosmosBackedService
-import com.cosmotech.api.events.*
+import com.cosmotech.api.events.OrganizationRegistered
+import com.cosmotech.api.events.OrganizationUnregistered
+import com.cosmotech.api.events.ScenarioDatasetListChanged
+import com.cosmotech.api.events.ScenarioRunStartedForScenario
+import com.cosmotech.api.events.UserAddedToScenario
+import com.cosmotech.api.events.UserRemovedFromScenario
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.convertToMap

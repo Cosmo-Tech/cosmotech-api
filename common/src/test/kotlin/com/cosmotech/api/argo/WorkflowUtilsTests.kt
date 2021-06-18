@@ -2,15 +2,14 @@
 // Licensed under the MIT license.
 package com.cosmotech.api.argo
 
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertAll
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.function.Executable
-import org.slf4j.LoggerFactory
+
+private const val ARGO_SERVER = "https://argo-server:2746"
 
 class WorkflowUtilsTests {
-  private val logger = LoggerFactory.getLogger(WorkflowUtilsTests::class.java)
-
-  val ARGO_SERVER = "https://argo-server:2746"
 
   @Test
   fun `Constructor return valid object`() {

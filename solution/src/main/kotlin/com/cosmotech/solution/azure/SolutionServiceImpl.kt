@@ -15,7 +15,12 @@ import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.solution.api.SolutionApiService
-import com.cosmotech.solution.domain.*
+import com.cosmotech.solution.domain.RunTemplate
+import com.cosmotech.solution.domain.RunTemplateHandlerId
+import com.cosmotech.solution.domain.RunTemplateParameter
+import com.cosmotech.solution.domain.RunTemplateParameterGroup
+import com.cosmotech.solution.domain.RunTemplateStepSource
+import com.cosmotech.solution.domain.Solution
 import org.apache.commons.compress.archivers.ArchiveException
 import org.apache.commons.compress.archivers.ArchiveStreamFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty

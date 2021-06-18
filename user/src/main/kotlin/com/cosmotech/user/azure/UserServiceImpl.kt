@@ -6,7 +6,12 @@ import com.azure.cosmos.models.CosmosContainerProperties
 import com.cosmotech.api.azure.AbstractCosmosBackedService
 import com.cosmotech.api.azure.findAll
 import com.cosmotech.api.azure.findByIdOrThrow
-import com.cosmotech.api.events.*
+import com.cosmotech.api.events.OrganizationRegistered
+import com.cosmotech.api.events.OrganizationUnregistered
+import com.cosmotech.api.events.UserAddedToOrganization
+import com.cosmotech.api.events.UserRegistered
+import com.cosmotech.api.events.UserRemovedFromOrganization
+import com.cosmotech.api.events.UserUnregistered
 import com.cosmotech.api.utils.changed
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
