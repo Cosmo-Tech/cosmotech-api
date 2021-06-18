@@ -1,6 +1,6 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.scenariorun
+package com.cosmotech.scenariorun.azure
 
 import com.azure.cosmos.models.*
 import com.cosmotech.api.azure.AbstractCosmosBackedService
@@ -10,6 +10,7 @@ import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.scenario.domain.Scenario
+import com.cosmotech.scenariorun.ContainerFactory
 import com.cosmotech.scenariorun.api.ScenariorunApiService
 import com.cosmotech.scenariorun.domain.RunTemplateParameterValue
 import com.cosmotech.scenariorun.domain.ScenarioRun
