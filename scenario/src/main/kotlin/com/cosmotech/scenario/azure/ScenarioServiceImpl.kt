@@ -8,7 +8,6 @@ import com.azure.cosmos.models.CosmosQueryRequestOptions
 import com.azure.cosmos.models.PartitionKey
 import com.azure.cosmos.models.SqlParameter
 import com.azure.cosmos.models.SqlQuerySpec
-import com.cosmotech.api.argo.WorkflowUtils
 import com.cosmotech.api.azure.AbstractCosmosBackedService
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
@@ -47,7 +46,6 @@ class ScenarioServiceImpl(
     private val solutionService: SolutionApiService,
     private val organizationService: OrganizationApiService,
     private val workspaceService: WorkspaceApiService,
-    private val workflowUtils: WorkflowUtils,
 ) : AbstractCosmosBackedService(), ScenarioApiService {
 
   protected fun Scenario.asMapWithAdditionalData(workspaceId: String): Map<String, Any> {
@@ -366,27 +364,27 @@ class ScenarioServiceImpl(
     if (scenario?.lastRun != null) {
       val workflowId = scenario.lastRun?.workflowId
       val workflowName = scenario.lastRun?.workflowName
-      if (workflowId != null && workflowName != null) {
-        val workflowStatus = workflowUtils.getWorkflowStatus(workflowId, workflowName)
-        scenario.state = this.mapPhaseToState(workflowStatus?.phase)
-      } else {
+      if (workflowId == null || workflowName == null) {
         throw IllegalStateException(
             "Scenario has a last Scenario Run but workflowId or workflowName is null")
       }
+      val workflowStatusRequest = WorkflowStatusRequest(this, workflowId, workflowName)
+      this.eventPublisher.publishEvent(workflowStatusRequest)
+      scenario.state = this.mapPhaseToState(workflowStatusRequest.response)
     }
   }
 
   private fun mapPhaseToState(phase: String?): State {
-    logger.debug("Mapping phase ${phase}")
-    when (phase) {
-      "Pending" -> return State.Running
-      "Running" -> return State.Running
-      "Succeeded" -> return State.Successful
-      "Skipped" -> return State.Failed
-      "Failed" -> return State.Failed
-      "Error" -> return State.Failed
-      "Omitted" -> return State.Failed
-      else -> return State.Failed
+    logger.debug("Mapping phase $phase")
+    return when (phase) {
+      "Pending" -> State.Running
+      "Running" -> State.Running
+      "Succeeded" -> State.Successful
+      "Skipped" -> State.Failed
+      "Failed" -> State.Failed
+      "Error" -> State.Failed
+      "Omitted" -> State.Failed
+      else -> State.Failed
     }
   }
 

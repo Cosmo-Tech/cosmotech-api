@@ -8,7 +8,6 @@ import com.azure.cosmos.CosmosDatabase
 import com.azure.cosmos.models.CosmosItemResponse
 import com.azure.cosmos.models.PartitionKey
 import com.azure.spring.data.cosmos.core.CosmosTemplate
-import com.cosmotech.api.argo.WorkflowUtils
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.id.CsmIdGenerator
 import com.cosmotech.api.utils.getCurrentAuthentication
@@ -44,8 +43,6 @@ class ScenarioServiceImplTests {
   @MockK private lateinit var workspaceService: WorkspaceApiService
   @MockK private lateinit var idGenerator: CsmIdGenerator
 
-  @MockK private lateinit var workflowUtils: WorkflowUtils
-
   @Suppress("unused") @MockK private lateinit var cosmosTemplate: CosmosTemplate
   @Suppress("unused") @MockK private lateinit var cosmosClient: CosmosClient
   @Suppress("unused") @MockK private lateinit var cosmosCoreDatabase: CosmosDatabase
@@ -60,7 +57,7 @@ class ScenarioServiceImplTests {
     this.scenarioServiceImpl =
         spyk(
             ScenarioServiceImpl(
-                userService, solutionService, organizationService, workspaceService, workflowUtils),
+                userService, solutionService, organizationService, workspaceService),
             recordPrivateCalls = true)
 
     every { scenarioServiceImpl getProperty "cosmosClient" } returns cosmosClient

@@ -1,98 +1,103 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.scenariorun
+package com.cosmotech.scenariorun.workflow.argo
 
+import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
 import io.argoproj.workflow.models.DAGTask
 import io.kubernetes.client.custom.Quantity
-import io.kubernetes.client.openapi.models.V1EnvVar
-import io.kubernetes.client.openapi.models.V1ObjectMeta
-import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim
-import io.kubernetes.client.openapi.models.V1PersistentVolumeClaimSpec
-import io.kubernetes.client.openapi.models.V1ResourceRequirements
-import io.kubernetes.client.openapi.models.V1VolumeMount
+import io.kubernetes.client.openapi.models.*
 import io.mockk.mockk
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import org.junit.jupiter.api.Assertions
 
-class ArgoAdapterTests {
-  private val argoAdapter = ArgoAdapter(mockk(relaxed = true))
-  private val DEFAULT_ENTRY_POINT = "entrypoint.py"
-  private val csmSimulationId = "simulationrunid"
+private const val API_VERSION = "v1"
+private const val DEFAULT_ENTRY_POINT = "entrypoint.py"
+private const val csmSimulationId = "simulationrunid"
+
+class ArgoWorkflowServiceTests {
+
+  private lateinit var csmPlatformProperties: CsmPlatformProperties
+
+  private lateinit var argoWorkflowService: ArgoWorkflowService
+
+  @BeforeTest
+  fun setUp() {
+    this.csmPlatformProperties = mockk(relaxed = true)
+    this.argoWorkflowService = ArgoWorkflowService(API_VERSION, csmPlatformProperties)
+  }
 
   @Test
   fun `Template not null`() {
     val src = getScenarioRunContainer()
-    val template = argoAdapter.buildTemplate(src)
-    assertNotNull(template)
+    val template = argoWorkflowService.buildTemplate(src)
+    Assertions.assertNotNull(template)
   }
 
   @Test
   fun `Template has image`() {
     val src = getScenarioRunContainer()
-    val template = argoAdapter.buildTemplate(src)
-    assertEquals(src.image, template.container?.image)
+    val template = argoWorkflowService.buildTemplate(src)
+    Assertions.assertEquals(src.image, template.container?.image)
   }
 
   @Test
   fun `Template has name`() {
     val name = "template name"
     val src = getScenarioRunContainer(name)
-    val template = argoAdapter.buildTemplate(src)
-    assertEquals(name, template.name)
+    val template = argoWorkflowService.buildTemplate(src)
+    Assertions.assertEquals(name, template.name)
   }
 
   @Test
   fun `Template has args`() {
     val src = getScenarioRunContainerArgs()
-    val template = argoAdapter.buildTemplate(src)
-    assertEquals(src.runArgs, template.container?.args)
+    val template = argoWorkflowService.buildTemplate(src)
+    Assertions.assertEquals(src.runArgs, template.container?.args)
   }
 
   @Test
   fun `Template has no args`() {
     val src = getScenarioRunContainer()
-    val template = argoAdapter.buildTemplate(src)
-    assertEquals(src.runArgs, template.container?.args)
+    val template = argoWorkflowService.buildTemplate(src)
+    Assertions.assertEquals(src.runArgs, template.container?.args)
   }
 
   @Test
   fun `Template has simulator default entrypoint`() {
     val src = getScenarioRunContainerEntrypoint()
-    val template = argoAdapter.buildTemplate(src)
-    assertEquals(listOf(DEFAULT_ENTRY_POINT), template.container?.command)
+    val template = argoWorkflowService.buildTemplate(src)
+    Assertions.assertEquals(listOf(DEFAULT_ENTRY_POINT), template.container?.command)
   }
 
   @Test
   fun `Template has simulator no entrypoint`() {
     val src = getScenarioRunContainer()
-    val template = argoAdapter.buildTemplate(src)
-    assertNull(template.container?.command)
+    val template = argoWorkflowService.buildTemplate(src)
+    Assertions.assertNull(template.container?.command)
   }
 
   @Test
   fun `Template has default entrypoint if not defined`() {
     val src = getScenarioRunContainer()
-    val template = argoAdapter.buildTemplate(src)
+    val template = argoWorkflowService.buildTemplate(src)
     val expected: String? = null
-    assertEquals(expected, template.container?.command)
+    Assertions.assertEquals(expected, template.container?.command)
   }
 
   @Test
   fun `Template has default env var`() {
     val src = getScenarioRunContainer()
-    val template = argoAdapter.buildTemplate(src)
-    assertNull(template.container?.env)
+    val template = argoWorkflowService.buildTemplate(src)
+    Assertions.assertNull(template.container?.env)
   }
 
   @Test
   fun `Template has env var`() {
     val src = getScenarioRunContainerEnv()
-    val template = argoAdapter.buildTemplate(src)
+    val template = argoWorkflowService.buildTemplate(src)
     val expected =
         listOf(
             V1EnvVar().name("env1").value("envvar1"),
@@ -100,92 +105,92 @@ class ArgoAdapterTests {
             V1EnvVar().name("env3").value("envvar3"),
         )
 
-    assertEquals(expected, template.container?.env)
+    Assertions.assertEquals(expected, template.container?.env)
   }
 
   @Test
   fun `Create Workflow Spec with StartContainers not null`() {
-    var sc = getStartContainersRun()
-    val workflowSpec = argoAdapter.buildWorkflowSpec(sc)
-    assertNotNull(workflowSpec)
+    val sc = getStartContainersRun()
+    val workflowSpec = argoWorkflowService.buildWorkflowSpec(sc)
+    Assertions.assertNotNull(workflowSpec)
   }
 
   @Test
   fun `Create Workflow Spec with StartContainers agent pool`() {
-    var sc = getStartContainersRun()
-    val workflowSpec = argoAdapter.buildWorkflowSpec(sc)
+    val sc = getStartContainersRun()
+    val workflowSpec = argoWorkflowService.buildWorkflowSpec(sc)
     val expected = mapOf("kubernetes.io/os" to "linux", "agentpool" to "highcpupool")
 
-    assertTrue(expected.equals(workflowSpec.nodeSelector))
+    Assertions.assertTrue(expected.equals(workflowSpec.nodeSelector))
   }
 
   @Test
   fun `Create Workflow Spec with StartContainers basic agent pool`() {
-    var sc = getStartContainersRunDefaultPool()
-    val workflowSpec = argoAdapter.buildWorkflowSpec(sc)
+    val sc = getStartContainersRunDefaultPool()
+    val workflowSpec = argoWorkflowService.buildWorkflowSpec(sc)
     val expected = mapOf("kubernetes.io/os" to "linux", "agentpool" to "basicpool")
 
-    assertTrue(expected.equals(workflowSpec.nodeSelector))
+    Assertions.assertTrue(expected.equals(workflowSpec.nodeSelector))
   }
 
   @Test
   fun `Create Workflow Spec with StartContainers no pool`() {
-    var sc = getStartContainersRunNoPool()
-    val workflowSpec = argoAdapter.buildWorkflowSpec(sc)
+    val sc = getStartContainersRunNoPool()
+    val workflowSpec = argoWorkflowService.buildWorkflowSpec(sc)
     val expected = mapOf("kubernetes.io/os" to "linux")
 
-    assertTrue(expected.equals(workflowSpec.nodeSelector))
+    Assertions.assertTrue(expected.equals(workflowSpec.nodeSelector))
   }
 
   @Test
   fun `Create Workflow Spec with StartContainers Service Account`() {
-    var sc = getStartContainersRun()
-    val workflowSpec = argoAdapter.buildWorkflowSpec(sc)
+    val sc = getStartContainersRun()
+    val workflowSpec = argoWorkflowService.buildWorkflowSpec(sc)
 
-    assertEquals("workflow", workflowSpec.serviceAccountName)
+    Assertions.assertEquals("workflow", workflowSpec.serviceAccountName)
   }
 
   @Test
   fun `Create Workflow Spec with StartContainers Run name`() {
-    var sc = getStartContainersRun()
-    val workflowSpec = argoAdapter.buildWorkflowSpec(sc)
+    val sc = getStartContainersRun()
+    val workflowSpec = argoWorkflowService.buildWorkflowSpec(sc)
 
-    assertEquals("runContainer", workflowSpec.templates?.getOrNull(0)?.name)
+    Assertions.assertEquals("runContainer", workflowSpec.templates?.getOrNull(0)?.name)
   }
 
   @Test
   fun `Create Workflow Spec with StartContainers Entrypoint FetchDataset`() {
-    var sc = getStartContainers()
-    val workflowSpec = argoAdapter.buildWorkflowSpec(sc)
+    val sc = getStartContainers()
+    val workflowSpec = argoWorkflowService.buildWorkflowSpec(sc)
 
-    assertEquals("entrypoint", workflowSpec.entrypoint)
+    Assertions.assertEquals("entrypoint", workflowSpec.entrypoint)
   }
 
   @Test
   fun `Create Workflow Spec with StartContainers entrypoint template not null`() {
-    var sc = getStartContainers()
-    val workflowSpec = argoAdapter.buildWorkflowSpec(sc)
+    val sc = getStartContainers()
+    val workflowSpec = argoWorkflowService.buildWorkflowSpec(sc)
 
     val entrypointTemplate =
         workflowSpec.templates?.find { template -> template.name.equals("entrypoint") }
-    assertNotNull(entrypointTemplate)
+    Assertions.assertNotNull(entrypointTemplate)
   }
 
   @Test
   fun `Create Workflow Spec with StartContainers entrypoint dag not null`() {
-    var sc = getStartContainers()
-    val workflowSpec = argoAdapter.buildWorkflowSpec(sc)
+    val sc = getStartContainers()
+    val workflowSpec = argoWorkflowService.buildWorkflowSpec(sc)
 
     val entrypointTemplate =
         workflowSpec.templates?.find { template -> template.name.equals("entrypoint") }
     val dag = entrypointTemplate?.dag
-    assertNotNull(dag)
+    Assertions.assertNotNull(dag)
   }
 
   @Test
   fun `Create Workflow Spec with StartContainers entrypoint dag valid`() {
-    var sc = getStartContainers()
-    val workflowSpec = argoAdapter.buildWorkflowSpec(sc)
+    val sc = getStartContainers()
+    val workflowSpec = argoWorkflowService.buildWorkflowSpec(sc)
 
     val entrypointTemplate =
         workflowSpec.templates?.find { template -> template.name.equals("entrypoint") }
@@ -222,13 +227,13 @@ class ArgoAdapterTests {
                 .dependencies(listOf("runContainer")),
         )
 
-    assertEquals(expected, entrypointTemplate?.dag?.tasks)
+    Assertions.assertEquals(expected, entrypointTemplate?.dag?.tasks)
   }
 
   @Test
   fun `Create Workflow Spec with StartContainers entrypoint dag dependencies valid`() {
-    var sc = getStartContainers()
-    val workflowSpec = argoAdapter.buildWorkflowSpec(sc)
+    val sc = getStartContainers()
+    val workflowSpec = argoWorkflowService.buildWorkflowSpec(sc)
 
     val entrypointTemplate =
         workflowSpec.templates?.find { template -> template.name.equals("entrypoint") }
@@ -247,13 +252,13 @@ class ArgoAdapterTests {
     val dependencies =
         entrypointTemplate?.dag?.tasks?.map { task -> task.dependencies?.getOrNull(0) }
 
-    assertEquals(expected, dependencies)
+    Assertions.assertEquals(expected, dependencies)
   }
 
   @Test
   fun `Create Workflow Spec with StartContainers diamond`() {
-    var sc = getStartContainersDiamond()
-    val workflowSpec = argoAdapter.buildWorkflowSpec(sc)
+    val sc = getStartContainersDiamond()
+    val workflowSpec = argoWorkflowService.buildWorkflowSpec(sc)
 
     val entrypointTemplate =
         workflowSpec.templates?.find { template -> template.name.equals("entrypoint") }
@@ -268,36 +273,36 @@ class ArgoAdapterTests {
                 .dependencies(listOf("Diamond-B", "Diamond-C")),
         )
 
-    assertEquals(expected, entrypointTemplate?.dag?.tasks)
+    Assertions.assertEquals(expected, entrypointTemplate?.dag?.tasks)
   }
 
   @Test
   fun `Create Workflow with StartContainers not null`() {
-    var sc = getStartContainers()
-    val workflow = argoAdapter.buildWorkflow(sc)
-    assertNotNull(workflow)
+    val sc = getStartContainers()
+    val workflow = argoWorkflowService.buildWorkflow(sc)
+    Assertions.assertNotNull(workflow)
   }
 
   @Test
   fun `Create Workflow with StartContainers generate name default`() {
-    var sc = getStartContainers()
-    val workflow = argoAdapter.buildWorkflow(sc)
+    val sc = getStartContainers()
+    val workflow = argoWorkflowService.buildWorkflow(sc)
     val expected = V1ObjectMeta().generateName("default-workflow-")
-    assertEquals(expected, workflow.metadata)
+    Assertions.assertEquals(expected, workflow.metadata)
   }
 
   @Test
   fun `Create Workflow with StartContainers generate name Scenario`() {
-    var sc = getStartContainersNamed()
-    val workflow = argoAdapter.buildWorkflow(sc)
+    val sc = getStartContainersNamed()
+    val workflow = argoWorkflowService.buildWorkflow(sc)
     val expected = V1ObjectMeta().generateName("Scenario-1-")
-    assertEquals(expected, workflow.metadata)
+    Assertions.assertEquals(expected, workflow.metadata)
   }
 
   @Test
   fun `Create Workflow spec with StartContainers volume claim`() {
-    var sc = getStartContainersDiamond()
-    val workflowSpec = argoAdapter.buildWorkflowSpec(sc)
+    val sc = getStartContainersDiamond()
+    val workflowSpec = argoWorkflowService.buildWorkflowSpec(sc)
     val datasetsdir =
         V1PersistentVolumeClaim()
             .metadata(V1ObjectMeta().name("datasetsdir"))
@@ -315,22 +320,22 @@ class ArgoAdapterTests {
                     .resources(
                         V1ResourceRequirements().requests(mapOf("storage" to Quantity("1Gi")))))
     val expected = listOf(datasetsdir, parametersdir)
-    assertEquals(expected, workflowSpec.volumeClaimTemplates)
+    Assertions.assertEquals(expected, workflowSpec.volumeClaimTemplates)
   }
 
   @Test
   fun `Create Template with StartContainers volume mount`() {
     val src = getScenarioRunContainer()
-    val template = argoAdapter.buildTemplate(src)
+    val template = argoWorkflowService.buildTemplate(src)
     val expected =
         listOf(
             V1VolumeMount().name("datasetsdir").mountPath("/mnt/scenariorun-data"),
             V1VolumeMount().name("parametersdir").mountPath("/mnt/scenariorun-parameters"))
-    assertEquals(expected, template.container?.volumeMounts)
+    Assertions.assertEquals(expected, template.container?.volumeMounts)
   }
 
   fun getScenarioRunContainer(name: String = "default"): ScenarioRunContainer {
-    var src =
+    val src =
         ScenarioRunContainer(
             name = name,
             image = "cosmotech/testcontainer",
@@ -342,7 +347,7 @@ class ArgoAdapterTests {
       name: String = "default",
       dependencies: List<String>? = null
   ): ScenarioRunContainer {
-    var src =
+    val src =
         ScenarioRunContainer(
             name = name,
             image = "cosmotech/testcontainer",
@@ -352,7 +357,7 @@ class ArgoAdapterTests {
   }
 
   fun getScenarioRunContainerArgs(name: String = "default"): ScenarioRunContainer {
-    var src =
+    val src =
         ScenarioRunContainer(
             name = name,
             image = "cosmotech/testcontainer",
@@ -361,14 +366,14 @@ class ArgoAdapterTests {
   }
 
   fun getScenarioRunContainerEntrypoint(name: String = "default"): ScenarioRunContainer {
-    var src =
+    val src =
         ScenarioRunContainer(
             name = name, image = "cosmotech/testcontainer", entrypoint = DEFAULT_ENTRY_POINT)
     return src
   }
 
   fun getScenarioRunContainerEnv(name: String = "default"): ScenarioRunContainer {
-    var src =
+    val src =
         ScenarioRunContainer(
             name = name,
             image = "cosmotech/testcontainer",

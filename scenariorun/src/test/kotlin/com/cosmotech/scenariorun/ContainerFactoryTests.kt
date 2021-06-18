@@ -16,8 +16,6 @@ import com.cosmotech.organization.domain.Organization
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
-import com.cosmotech.scenariorun.ContainerFactory.StartInfo
-import com.cosmotech.scenariorun.api.ScenariorunApiService
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
@@ -28,115 +26,78 @@ import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
-import io.mockk.every
-import io.mockk.mockk
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertThrows
+import io.mockk.*
+import io.mockk.impl.annotations.InjectMockKs
+import io.mockk.impl.annotations.MockK
+import io.mockk.junit5.MockKExtension
+import kotlin.test.BeforeTest
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import org.slf4j.LoggerFactory
+import org.junit.jupiter.api.extension.ExtendWith
 
+private const val CSM_SIMULATION_ID = "simulationrunid"
+
+@ExtendWith(MockKExtension::class)
 class ContainerFactoryTests {
-  private val logger = LoggerFactory.getLogger(ContainerFactoryTests::class.java)
-  private val csmSimulationId = "simulationrunid"
-  private val factory =
-      ContainerFactory(
-          CsmPlatformProperties(
-              azure =
-                  CsmPlatformProperties.CsmPlatformAzure(
-                      credentials =
-                          CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCredentials(
-                              tenantId = "12345678",
-                              clientId = "98765432",
-                              clientSecret = "azertyuiop",
-                          ),
-                      eventBus =
-                          CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus(
-                              baseUri = "amqps://csm-phoenix.servicebus.windows.net",
-                          ),
-                      dataWarehouseCluster =
-                          CsmPlatformProperties.CsmPlatformAzure
-                              .CsmPlatformAzureDataWarehouseCluster(
-                                  options =
-                                      CsmPlatformProperties.CsmPlatformAzure
-                                          .CsmPlatformAzureDataWarehouseCluster.Options(
-                                          ingestionUri =
-                                              "https://ingest-phoenix.westeurope.kusto.windows.net",
-                                      ),
-                                  baseUri = "https://phoenix.westeurope.kusto.windows.net",
-                              ),
-                      storage =
-                          CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureStorage(
-                              connectionString =
-                                  "DefaultEndpointsProtocol=https;AccountName=csmphoenix;AccountKey=42rmlBQ2IrxdIByLj79AecdIyYifSR04ZnGsBYt82tbM2clcP0QwJ9N+l/fLvyCzu9VZ8HPsQyM7jHe6CVSUig==;EndpointSuffix=core.windows.net",
-                              baseUri = "Not Used",
-                              resourceUri = "Not Used",
-                          ),
-                      containerRegistries =
-                          CsmPlatformProperties.CsmPlatformAzure
-                              .CsmPlatformAzureContainerRegistries(
-                                  core = "ghcr.io", solutions = "twinengines.azurecr.io"),
-                      keyVault = "Not Used",
-                      analytics =
-                          CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureAnalytics(
-                              resourceUri = "Not Used",
-                              instrumentationKey = "Not Used",
-                              connectionString = "Not Used",
-                          ),
-                      cosmos =
-                          CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCosmos(
-                              uri = "Not Used",
-                              coreDatabase =
-                                  CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCosmos
-                                      .CoreDatabase(
-                                          name = "Not Used",
-                                          connectors =
-                                              CsmPlatformProperties.CsmPlatformAzure
-                                                  .CsmPlatformAzureCosmos.CoreDatabase.Connectors(
-                                                  container = "Not Used"),
-                                          organizations =
-                                              CsmPlatformProperties.CsmPlatformAzure
-                                                  .CsmPlatformAzureCosmos.CoreDatabase
-                                                  .Organizations(container = "Not Used"),
-                                          users =
-                                              CsmPlatformProperties.CsmPlatformAzure
-                                                  .CsmPlatformAzureCosmos.CoreDatabase.Users(
-                                                  container = "Not Used")),
-                              key = "Not Used",
-                              consistencyLevel = null,
-                              populateQueryMetrics = false,
-                              allowTelemetry = false,
-                              connectionMode = null,
-                          ),
-                      appIdUri = "http://dev.api.cosmotech.com",
-                  ),
-              api =
-                  CsmPlatformProperties.Api(
-                      baseUrl = "https://api.cosmotech.com",
-                      version = "v1",
-                      basePath = "basepath",
-                  ),
-              images =
-                  CsmPlatformProperties.CsmImages(
-                      scenarioFetchParameters = "cosmotech/scenariofetchparameters:1.0.0",
-                      sendDataWarehouse = "cosmotech/senddatawarehouse:1.0.0",
-                  ),
-              version = "Not Used",
-              vendor = CsmPlatformProperties.Vendor.AZURE,
-              idGenerator =
-                  CsmPlatformProperties.IdGenerator(CsmPlatformProperties.IdGenerator.Type.HASHID),
-              argo =
-                  CsmPlatformProperties.Argo(
-                      baseUri = "Not Used",
-                  ),
-              summary = "Not Used",
-              description = "Not Used",
-              eventPublisher =
-                  CsmPlatformProperties.EventPublisher(
-                      type = CsmPlatformProperties.EventPublisher.Type.IN_PROCESS),
-              authorization = CsmPlatformProperties.Authorization()))
+
+  @MockK(relaxed = true) private lateinit var csmPlatformProperties: CsmPlatformProperties
+
+  @MockK private lateinit var scenarioService: ScenarioApiService
+  @MockK private lateinit var workspaceService: WorkspaceApiService
+  @MockK private lateinit var solutionService: SolutionApiService
+  @MockK private lateinit var organizationService: OrganizationApiService
+  @MockK private lateinit var connectorService: ConnectorApiService
+  @MockK private lateinit var datasetService: DatasetApiService
+
+  @InjectMockKs private lateinit var factory: ContainerFactory
+
+  @BeforeTest
+  fun setUp() {
+    MockKAnnotations.init(this)
+
+    val azure = mockk<CsmPlatformProperties.CsmPlatformAzure>(relaxed = true)
+    every { azure.appIdUri } returns "http://dev.api.cosmotech.com"
+    every { azure.credentials } returns
+        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCredentials(
+            tenantId = "12345678",
+            clientId = "98765432",
+            clientSecret = "azertyuiop",
+        )
+    every { azure.eventBus } returns
+        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus(
+            baseUri = "amqps://csm-phoenix.servicebus.windows.net",
+        )
+    every { azure.dataWarehouseCluster } returns
+        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureDataWarehouseCluster(
+            options =
+                CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureDataWarehouseCluster.Options(
+                    ingestionUri = "https://ingest-phoenix.westeurope.kusto.windows.net",
+                ),
+            baseUri = "https://phoenix.westeurope.kusto.windows.net",
+        )
+    every { azure.storage } returns
+        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureStorage(
+            connectionString =
+                "DefaultEndpointsProtocol=https;AccountName=csmphoenix;AccountKey=42rmlBQ2IrxdIByLj79AecdIyYifSR04ZnGsBYt82tbM2clcP0QwJ9N+l/fLvyCzu9VZ8HPsQyM7jHe6CVSUig==;EndpointSuffix=core.windows.net",
+            baseUri = "Not Used",
+            resourceUri = "Not Used",
+        )
+    every { azure.containerRegistries } returns
+        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureContainerRegistries(
+            core = "ghcr.io", solutions = "twinengines.azurecr.io")
+    every { csmPlatformProperties.azure } returns azure
+    every { csmPlatformProperties.api } returns
+        CsmPlatformProperties.Api(
+            baseUrl = "https://api.cosmotech.com",
+            version = "v1",
+            basePath = "basepath",
+        )
+    every { csmPlatformProperties.images } returns
+        CsmPlatformProperties.CsmImages(
+            scenarioFetchParameters = "cosmotech/scenariofetchparameters:1.0.0",
+            sendDataWarehouse = "cosmotech/senddatawarehouse:1.0.0",
+        )
+  }
 
   @Test
   fun `Dataset Container not null`() {
@@ -150,7 +111,7 @@ class ContainerFactoryTests {
             "Organizationid",
             "workspaceid",
             "Test",
-            csmSimulationId)
+            CSM_SIMULATION_ID)
     assertNotNull(container)
   }
 
@@ -166,7 +127,7 @@ class ContainerFactoryTests {
             "Organizationid",
             "workspaceid",
             "Test",
-            csmSimulationId)
+            CSM_SIMULATION_ID)
     assertEquals("fetchDatasetContainer-1", container.name)
   }
 
@@ -182,7 +143,7 @@ class ContainerFactoryTests {
             "Organizationid",
             "Test",
             "workspaceid",
-            csmSimulationId)
+            CSM_SIMULATION_ID)
     assertEquals("ghcr.io/cosmotech/test_connector:1.0.0", container.image)
   }
 
@@ -198,7 +159,7 @@ class ContainerFactoryTests {
           "Organizationid",
           "workspaceid",
           "Test",
-          csmSimulationId)
+          CSM_SIMULATION_ID)
     }
   }
 
@@ -214,7 +175,7 @@ class ContainerFactoryTests {
             "Organizationid",
             "workspaceid",
             "Test",
-            csmSimulationId)
+            CSM_SIMULATION_ID)
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -248,7 +209,7 @@ class ContainerFactoryTests {
             "Organizationid",
             "workspaceid",
             "Test",
-            csmSimulationId)
+            CSM_SIMULATION_ID)
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -281,7 +242,7 @@ class ContainerFactoryTests {
             "Organizationid",
             "workspaceid",
             "Test",
-            csmSimulationId)
+            CSM_SIMULATION_ID)
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -315,7 +276,7 @@ class ContainerFactoryTests {
             "Organizationid",
             "workspaceid",
             "Test",
-            csmSimulationId)
+            CSM_SIMULATION_ID)
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -347,7 +308,7 @@ class ContainerFactoryTests {
             "Organizationid",
             "workspaceid",
             "Test",
-            csmSimulationId)
+            CSM_SIMULATION_ID)
     val expected = listOf("organizationid/workspaceid/workspace.param")
     assertEquals(expected, container.runArgs)
   }
@@ -364,7 +325,7 @@ class ContainerFactoryTests {
             "Organizationid",
             "workspaceid",
             "Test",
-            csmSimulationId)
+            CSM_SIMULATION_ID)
     val expected = listOf("param1_value", "param2_value", "param3_value")
     assertEquals(expected, container.runArgs)
   }
@@ -372,28 +333,28 @@ class ContainerFactoryTests {
   @Test
   fun `Fetch Scenario Parameters Container is not null`() {
     val container =
-        factory.buildScenarioParametersFetchContainer("1", "2", "3", "Test", csmSimulationId)
+        factory.buildScenarioParametersFetchContainer("1", "2", "3", "Test", CSM_SIMULATION_ID)
     assertNotNull(container)
   }
 
   @Test
   fun `Fetch Scenario Parameters Container name valid`() {
     val container =
-        factory.buildScenarioParametersFetchContainer("1", "2", "3", "Test", csmSimulationId)
+        factory.buildScenarioParametersFetchContainer("1", "2", "3", "Test", CSM_SIMULATION_ID)
     assertEquals("fetchScenarioParametersContainer", container.name)
   }
 
   @Test
   fun `Fetch Scenario Parameters Container image valid`() {
     val container =
-        factory.buildScenarioParametersFetchContainer("1", "2", "3", "Test", csmSimulationId)
+        factory.buildScenarioParametersFetchContainer("1", "2", "3", "Test", CSM_SIMULATION_ID)
     assertEquals("ghcr.io/cosmotech/scenariofetchparameters:1.0.0", container.image)
   }
 
   @Test
   fun `Fetch Scenario Parameters Container env vars valid`() {
     val container =
-        factory.buildScenarioParametersFetchContainer("1", "2", "Test", "3", csmSimulationId)
+        factory.buildScenarioParametersFetchContainer("1", "2", "Test", "3", CSM_SIMULATION_ID)
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -418,7 +379,8 @@ class ContainerFactoryTests {
   @Test
   fun `Fetch Scenario Parameters Container env vars valid json`() {
     val container =
-        factory.buildScenarioParametersFetchContainer("1", "2", "Test", "3", csmSimulationId, true)
+        factory.buildScenarioParametersFetchContainer(
+            "1", "2", "Test", "3", CSM_SIMULATION_ID, true)
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -446,7 +408,7 @@ class ContainerFactoryTests {
   fun `Send DataWarehouse Container is not null`() {
     val container =
         factory.buildSendDataWarehouseContainer(
-            "Organizationid", getWorkspace(), getRunTemplate(), csmSimulationId)
+            "Organizationid", getWorkspace(), getRunTemplate(), CSM_SIMULATION_ID)
     assertNotNull(container)
   }
 
@@ -454,7 +416,7 @@ class ContainerFactoryTests {
   fun `Send DataWarehouseContainer name valid`() {
     val container =
         factory.buildSendDataWarehouseContainer(
-            "Organizationid", getWorkspace(), getRunTemplate(), csmSimulationId)
+            "Organizationid", getWorkspace(), getRunTemplate(), CSM_SIMULATION_ID)
     assertEquals("sendDataWarehouseContainer", container.name)
   }
 
@@ -462,7 +424,7 @@ class ContainerFactoryTests {
   fun `Send DataWarehouse Container image valid`() {
     val container =
         factory.buildSendDataWarehouseContainer(
-            "Organizationid", getWorkspace(), getRunTemplate(), csmSimulationId)
+            "Organizationid", getWorkspace(), getRunTemplate(), CSM_SIMULATION_ID)
     assertEquals("ghcr.io/cosmotech/senddatawarehouse:1.0.0", container.image)
   }
 
@@ -470,7 +432,7 @@ class ContainerFactoryTests {
   fun `Send DataWarehouse Container env vars valid`() {
     val container =
         factory.buildSendDataWarehouseContainer(
-            "Organizationid", getWorkspace(), getRunTemplate(), csmSimulationId)
+            "Organizationid", getWorkspace(), getRunTemplate(), CSM_SIMULATION_ID)
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -495,7 +457,7 @@ class ContainerFactoryTests {
   fun `Send DataWarehouse Container no send env vars`() {
     val container =
         factory.buildSendDataWarehouseContainer(
-            "Organizationid", getWorkspaceNoSend(), getRunTemplate(), csmSimulationId)
+            "Organizationid", getWorkspaceNoSend(), getRunTemplate(), CSM_SIMULATION_ID)
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -520,7 +482,7 @@ class ContainerFactoryTests {
   fun `Send DataWarehouse Container env vars send override dataset template`() {
     val container =
         factory.buildSendDataWarehouseContainer(
-            "Organizationid", getWorkspace(), getRunTemplateNoDatasetsSend(), csmSimulationId)
+            "Organizationid", getWorkspace(), getRunTemplateNoDatasetsSend(), CSM_SIMULATION_ID)
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -549,7 +511,7 @@ class ContainerFactoryTests {
   fun `Send DataWarehouse Container env vars send override parameters template`() {
     val container =
         factory.buildSendDataWarehouseContainer(
-            "Organizationid", getWorkspace(), getRunTemplateNoParametersSend(), csmSimulationId)
+            "Organizationid", getWorkspace(), getRunTemplateNoParametersSend(), CSM_SIMULATION_ID)
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -602,7 +564,7 @@ class ContainerFactoryTests {
   fun `Parameters Handler Container bad template exception`() {
     assertThrows(IllegalStateException::class.java) {
       factory.buildApplyParametersContainer(
-          getOrganization(), getWorkspace(), getSolution(), "badTemplate", csmSimulationId)
+          getOrganization(), getWorkspace(), getSolution(), "badTemplate", CSM_SIMULATION_ID)
     }
   }
 
@@ -620,7 +582,7 @@ class ContainerFactoryTests {
             getWorkspace(),
             getSolutionLocalSources(),
             "testruntemplate",
-            csmSimulationId)
+            CSM_SIMULATION_ID)
     envVarsWithSourceLocalValid(
         container, "handle-parameters", "CSM_PARAMETERS_HANDLER_PROVIDER", "parameters_handler")
   }
@@ -633,7 +595,7 @@ class ContainerFactoryTests {
             getWorkspace(),
             getSolutionCloudSources(),
             "testruntemplate",
-            csmSimulationId)
+            CSM_SIMULATION_ID)
     envVarsWithSourceValid(
         container,
         "handle-parameters",
@@ -651,7 +613,7 @@ class ContainerFactoryTests {
             getWorkspace(),
             getSolutionCloudSources(),
             "testruntemplate",
-            csmSimulationId)
+            CSM_SIMULATION_ID)
     envVarsWithSourceValid(
         container,
         "validate",
@@ -669,7 +631,7 @@ class ContainerFactoryTests {
             getWorkspace(),
             getSolutionCloudSources(),
             "testruntemplate",
-            csmSimulationId)
+            CSM_SIMULATION_ID)
     envVarsWithSourceValid(
         container, "prerun", "CSM_PRERUN_PROVIDER", "CSM_PRERUN_PATH", "prerun", "testruntemplate")
   }
@@ -682,7 +644,7 @@ class ContainerFactoryTests {
             getWorkspace(),
             getSolutionCloudSources(),
             "testruntemplate",
-            csmSimulationId)
+            CSM_SIMULATION_ID)
     envVarsWithSourceValid(
         container, "engine", "CSM_ENGINE_PROVIDER", "CSM_ENGINE_PATH", "engine", "testruntemplate")
   }
@@ -695,7 +657,7 @@ class ContainerFactoryTests {
             getWorkspace(),
             getSolutionCloudSources(),
             "testruntemplate",
-            csmSimulationId)
+            CSM_SIMULATION_ID)
     envVarsWithSourceValid(
         container,
         "postrun",
@@ -857,7 +819,13 @@ class ContainerFactoryTests {
     val solution = getSolution()
     val containers =
         factory.buildContainersPipeline(
-            scenario, datasets, connectors, workspace, getOrganization(), solution, csmSimulationId)
+            scenario,
+            datasets,
+            connectors,
+            workspace,
+            getOrganization(),
+            solution,
+            CSM_SIMULATION_ID)
     assertEquals(containers.size, 8)
   }
 
@@ -870,7 +838,13 @@ class ContainerFactoryTests {
     val solution = getSolution()
     val containers =
         factory.buildContainersPipeline(
-            scenario, datasets, connectors, workspace, getOrganization(), solution, csmSimulationId)
+            scenario,
+            datasets,
+            connectors,
+            workspace,
+            getOrganization(),
+            solution,
+            CSM_SIMULATION_ID)
     val expected =
         listOf(
             "fetchDatasetContainer-1",
@@ -894,7 +868,13 @@ class ContainerFactoryTests {
     val solution = getSolutionOnlyRun()
     val containers =
         factory.buildContainersPipeline(
-            scenario, datasets, connectors, workspace, getOrganization(), solution, csmSimulationId)
+            scenario,
+            datasets,
+            connectors,
+            workspace,
+            getOrganization(),
+            solution,
+            CSM_SIMULATION_ID)
     assertEquals(containers.size, 1)
   }
 
@@ -907,7 +887,13 @@ class ContainerFactoryTests {
     val solution = getSolution()
     val containers =
         factory.buildContainersPipeline(
-            scenario, datasets, connectors, workspace, getOrganization(), solution, csmSimulationId)
+            scenario,
+            datasets,
+            connectors,
+            workspace,
+            getOrganization(),
+            solution,
+            CSM_SIMULATION_ID)
     assertEquals(containers.size, 10)
   }
 
@@ -920,7 +906,13 @@ class ContainerFactoryTests {
     val solution = getSolution()
     val containers =
         factory.buildContainersPipeline(
-            scenario, datasets, connectors, workspace, getOrganization(), solution, csmSimulationId)
+            scenario,
+            datasets,
+            connectors,
+            workspace,
+            getOrganization(),
+            solution,
+            CSM_SIMULATION_ID)
     val expected =
         listOf(
             "fetchDatasetContainer-1",
@@ -946,7 +938,13 @@ class ContainerFactoryTests {
     val solution = getSolution()
     val containers =
         factory.buildContainersPipeline(
-            scenario, datasets, connectors, workspace, getOrganization(), solution, csmSimulationId)
+            scenario,
+            datasets,
+            connectors,
+            workspace,
+            getOrganization(),
+            solution,
+            CSM_SIMULATION_ID)
     val expected =
         listOf(
             "ghcr.io/cosmotech/test_connector:1.0.0",
@@ -972,7 +970,13 @@ class ContainerFactoryTests {
     val solution = getSolution()
     val containers =
         factory.buildContainersPipeline(
-            scenario, datasets, connectors, workspace, getOrganization(), solution, csmSimulationId)
+            scenario,
+            datasets,
+            connectors,
+            workspace,
+            getOrganization(),
+            solution,
+            CSM_SIMULATION_ID)
     val container = containers.find { container -> container.name == "fetchDatasetContainer-2" }
     val expected =
         mapOf(
@@ -1004,7 +1008,13 @@ class ContainerFactoryTests {
     val solution = getSolutionOnlyRun()
     val containers =
         factory.buildContainersPipeline(
-            scenario, datasets, connectors, workspace, getOrganization(), solution, csmSimulationId)
+            scenario,
+            datasets,
+            connectors,
+            workspace,
+            getOrganization(),
+            solution,
+            CSM_SIMULATION_ID)
     val expected =
         listOf(
             "runContainer",
@@ -1021,7 +1031,13 @@ class ContainerFactoryTests {
     val solution = getSolution()
     val startContainers =
         factory.buildContainersStart(
-            scenario, datasets, connectors, workspace, getOrganization(), solution, csmSimulationId)
+            scenario,
+            datasets,
+            connectors,
+            workspace,
+            getOrganization(),
+            solution,
+            CSM_SIMULATION_ID)
     assertEquals("highcpupool", startContainers.nodeLabel)
   }
 
@@ -1034,7 +1050,13 @@ class ContainerFactoryTests {
     val solution = getSolutionNoPool()
     val startContainers =
         factory.buildContainersStart(
-            scenario, datasets, connectors, workspace, getOrganization(), solution, csmSimulationId)
+            scenario,
+            datasets,
+            connectors,
+            workspace,
+            getOrganization(),
+            solution,
+            CSM_SIMULATION_ID)
     assertEquals("basicpool", startContainers.nodeLabel)
   }
 
@@ -1047,7 +1069,13 @@ class ContainerFactoryTests {
     val solution = getSolutionNonePool()
     val startContainers =
         factory.buildContainersStart(
-            scenario, datasets, connectors, workspace, getOrganization(), solution, csmSimulationId)
+            scenario,
+            datasets,
+            connectors,
+            workspace,
+            getOrganization(),
+            solution,
+            CSM_SIMULATION_ID)
     assertNull(startContainers.nodeLabel)
   }
 
@@ -1060,7 +1088,13 @@ class ContainerFactoryTests {
     val solution = getSolution()
     val startContainers =
         factory.buildContainersStart(
-            scenario, datasets, connectors, workspace, getOrganization(), solution, csmSimulationId)
+            scenario,
+            datasets,
+            connectors,
+            workspace,
+            getOrganization(),
+            solution,
+            CSM_SIMULATION_ID)
     assertEquals("workflow-aqwxsz-", startContainers.generateName)
   }
 
@@ -1073,7 +1107,13 @@ class ContainerFactoryTests {
     val solution = getSolutionDatasetIds()
     val containers =
         factory.buildContainersPipeline(
-            scenario, datasets, connectors, workspace, getOrganization(), solution, csmSimulationId)
+            scenario,
+            datasets,
+            connectors,
+            workspace,
+            getOrganization(),
+            solution,
+            CSM_SIMULATION_ID)
     val expected =
         listOf(
             "fetchDatasetContainer-1",
@@ -1100,7 +1140,13 @@ class ContainerFactoryTests {
     val solution = getSolutionDatasetIds()
     val containers =
         factory.buildContainersPipeline(
-            scenario, datasets, connectors, workspace, getOrganization(), solution, csmSimulationId)
+            scenario,
+            datasets,
+            connectors,
+            workspace,
+            getOrganization(),
+            solution,
+            CSM_SIMULATION_ID)
     val expected =
         listOf(
             "ghcr.io/cosmotech/test_connector:1.0.0",
@@ -1194,14 +1240,6 @@ class ContainerFactoryTests {
     val workspaceId = "workspaceid"
     val scenarioId = "AQWXSZ"
 
-    val scenarioRunService = mockk<ScenariorunApiService>()
-    val scenarioService = mockk<ScenarioApiService>()
-    val workspaceService = mockk<WorkspaceApiService>()
-    val solutionService = mockk<SolutionApiService>()
-    val organizationService = mockk<OrganizationApiService>()
-    val connectorService = mockk<ConnectorApiService>()
-    val datasetService = mockk<DatasetApiService>()
-
     every { organizationService.findOrganizationById(organizationId) } returns getOrganization()
     every { workspaceService.findWorkspaceById(organizationId, workspaceId) } returns getWorkspace()
     every { solutionService.findSolutionById(organizationId, "1") } returns getSolutionDatasetIds()
@@ -1218,13 +1256,7 @@ class ContainerFactoryTests {
         organizationId,
         workspaceId,
         scenarioId,
-        scenarioRunService,
-        scenarioService,
-        workspaceService,
-        solutionService,
-        organizationService,
-        connectorService,
-        datasetService)
+    )
   }
 
   private fun parametersDatasetEnvTest(nameId: String, param: String) {
@@ -1235,7 +1267,13 @@ class ContainerFactoryTests {
     val solution = getSolutionDatasetIds()
     val containers =
         factory.buildContainersPipeline(
-            scenario, datasets, connectors, workspace, getOrganization(), solution, csmSimulationId)
+            scenario,
+            datasets,
+            connectors,
+            workspace,
+            getOrganization(),
+            solution,
+            CSM_SIMULATION_ID)
     val container =
         containers.find { container ->
           container.name == "fetchScenarioDatasetParametersContainer-${nameId}"
@@ -1263,27 +1301,27 @@ class ContainerFactoryTests {
 
   private fun buildApplyParametersContainer(): ScenarioRunContainer {
     return factory.buildApplyParametersContainer(
-        getOrganization(), getWorkspace(), getSolution(), "testruntemplate", csmSimulationId)
+        getOrganization(), getWorkspace(), getSolution(), "testruntemplate", CSM_SIMULATION_ID)
   }
 
   private fun buildValidateDataContainer(): ScenarioRunContainer {
     return factory.buildValidateDataContainer(
-        getOrganization(), getWorkspace(), getSolution(), "testruntemplate", csmSimulationId)
+        getOrganization(), getWorkspace(), getSolution(), "testruntemplate", CSM_SIMULATION_ID)
   }
 
   private fun buildPreRunContainer(): ScenarioRunContainer {
     return factory.buildPreRunContainer(
-        getOrganization(), getWorkspace(), getSolution(), "testruntemplate", csmSimulationId)
+        getOrganization(), getWorkspace(), getSolution(), "testruntemplate", CSM_SIMULATION_ID)
   }
 
   private fun buildRunContainer(): ScenarioRunContainer {
     return factory.buildRunContainer(
-        getOrganization(), getWorkspace(), getSolution(), "testruntemplate", csmSimulationId)
+        getOrganization(), getWorkspace(), getSolution(), "testruntemplate", CSM_SIMULATION_ID)
   }
 
   private fun buildPostRunContainer(): ScenarioRunContainer {
     return factory.buildPostRunContainer(
-        getOrganization(), getWorkspace(), getSolution(), "testruntemplate", csmSimulationId)
+        getOrganization(), getWorkspace(), getSolution(), "testruntemplate", CSM_SIMULATION_ID)
   }
 
   private fun validateEnvVarsSolutionContainer(container: ScenarioRunContainer, mode: String) {

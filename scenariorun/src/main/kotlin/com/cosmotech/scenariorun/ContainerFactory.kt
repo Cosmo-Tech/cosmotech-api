@@ -12,7 +12,6 @@ import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
-import com.cosmotech.scenariorun.api.ScenariorunApiService
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
 import com.cosmotech.solution.api.SolutionApiService
@@ -24,7 +23,6 @@ import com.cosmotech.solution.utils.getCloudPath
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import java.util.UUID
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 private const val PARAMETERS_WORKSPACE_FILE = "%WORKSPACE_FILE%"
@@ -84,9 +82,20 @@ private const val STEP_SOURCE_CLOUD = "azureStorage"
 private const val AZURE_STORAGE_CONNECTION_STRING = "AZURE_STORAGE_CONNECTION_STRING"
 
 @Component
-class ContainerFactory(
-    @Autowired val csmPlatformProperties: CsmPlatformProperties,
-    val steps: Map<String, SolutionContainerStepSpec> =
+internal class ContainerFactory(
+    private val csmPlatformProperties: CsmPlatformProperties,
+    private val scenarioService: ScenarioApiService,
+    private val workspaceService: WorkspaceApiService,
+    private val solutionService: SolutionApiService,
+    private val organizationService: OrganizationApiService,
+    private val connectorService: ConnectorApiService,
+    private val datasetService: DatasetApiService
+) {
+
+  private val steps: Map<String, SolutionContainerStepSpec>
+
+  init {
+    this.steps =
         mapOf(
             "handle-parameters" to
                 SolutionContainerStepSpec(
@@ -142,19 +151,12 @@ class ContainerFactory(
                           organizationId, solutionId, runTemplateId, RunTemplateHandlerId.postrun)
                     }),
         )
-) {
+  }
 
   fun getStartInfo(
       organizationId: String,
       workspaceId: String,
       scenarioId: String,
-      scenarioRunService: ScenariorunApiService,
-      scenarioService: ScenarioApiService,
-      workspaceService: WorkspaceApiService,
-      solutionService: SolutionApiService,
-      organizationService: OrganizationApiService,
-      connectorService: ConnectorApiService,
-      datasetService: DatasetApiService
   ): StartInfo {
     val organization = organizationService.findOrganizationById(organizationId)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
@@ -165,8 +167,7 @@ class ContainerFactory(
     val scenario = scenarioService.findScenarioById(organizationId, workspaceId, scenarioId)
     val runTemplate = this.getRunTemplate(solution, (scenario.runTemplateId ?: ""))
     val datasetsAndConnectors =
-        findDatasetsAndConnectors(
-            organizationId, scenario, solution, datasetService, connectorService, runTemplate)
+        findDatasetsAndConnectors(organizationId, scenario, solution, runTemplate)
     val csmSimulationId = UUID.randomUUID().toString()
 
     return StartInfo(
@@ -187,19 +188,16 @@ class ContainerFactory(
     )
   }
 
-  fun findDatasetsAndConnectors(
+  private fun findDatasetsAndConnectors(
       organizationId: String,
       scenario: Scenario,
       solution: Solution,
-      datasetService: DatasetApiService,
-      connectorService: ConnectorApiService,
       runTemplate: RunTemplate
   ): DatasetsConnectors {
     val datasets: MutableMap<String, Dataset> = mutableMapOf()
     val connectors: MutableMap<String, Connector> = mutableMapOf()
     scenario.datasetList?.forEach { datasetId ->
-      addDatasetAndConnector(
-          organizationId, datasetId, datasets, connectors, datasetService, connectorService)
+      addDatasetAndConnector(organizationId, datasetId, datasets, connectors)
     }
     val parameterGroupIds = runTemplate.parameterGroups
     if (parameterGroupIds != null) {
@@ -220,8 +218,7 @@ class ContainerFactory(
                     parameterValue.value,
                     datasets,
                     connectors,
-                    datasetService,
-                    connectorService)
+                )
               }
             }
       }
@@ -230,13 +227,11 @@ class ContainerFactory(
         datasets = datasets.values.toList(), connectors = connectors.values.toList())
   }
 
-  fun addDatasetAndConnector(
+  private fun addDatasetAndConnector(
       organizationId: String,
       datasetId: String,
       datasets: MutableMap<String, Dataset>,
       connectors: MutableMap<String, Connector>,
-      datasetService: DatasetApiService,
-      connectorService: ConnectorApiService
   ) {
     if (datasetId !in datasets) {
       val dataset = datasetService.findDatasetById(organizationId, datasetId)
@@ -251,7 +246,7 @@ class ContainerFactory(
     }
   }
 
-  fun buildContainersStart(
+  internal fun buildContainersStart(
       scenario: Scenario,
       datasets: List<Dataset>?,
       connectors: List<Connector>?,
@@ -281,7 +276,7 @@ class ContainerFactory(
     )
   }
 
-  fun buildContainersPipeline(
+  internal fun buildContainersPipeline(
       scenario: Scenario,
       datasets: List<Dataset>?,
       connectors: List<Connector>?,
@@ -379,7 +374,7 @@ class ContainerFactory(
     return step ?: true
   }
 
-  fun buildFromDataset(
+  internal fun buildFromDataset(
       dataset: Dataset,
       connector: Connector,
       datasetCount: Int,
@@ -421,7 +416,7 @@ class ContainerFactory(
         runArgs = getDatasetRunArgs(dataset, connector, organizationId, workspaceId))
   }
 
-  fun buildScenarioParametersDatasetFetchContainers(
+  private fun buildScenarioParametersDatasetFetchContainers(
       scenario: Scenario,
       solution: Solution,
       datasets: List<Dataset>?,
@@ -469,7 +464,8 @@ class ContainerFactory(
 
     return containers.toList()
   }
-  fun buildScenarioParametersFetchContainer(
+
+  internal fun buildScenarioParametersFetchContainer(
       organizationId: String,
       workspaceId: String,
       workspaceKey: String,
@@ -496,7 +492,7 @@ class ContainerFactory(
     )
   }
 
-  fun buildSendDataWarehouseContainer(
+  internal fun buildSendDataWarehouseContainer(
       organizationId: String?,
       workspace: Workspace,
       runTemplate: RunTemplate,
@@ -521,7 +517,7 @@ class ContainerFactory(
         envVars = envVars)
   }
 
-  fun buildApplyParametersContainer(
+  internal fun buildApplyParametersContainer(
       organization: Organization,
       workspace: Workspace,
       solution: Solution,
@@ -538,7 +534,7 @@ class ContainerFactory(
         csmSimulationId)
   }
 
-  fun buildValidateDataContainer(
+  internal fun buildValidateDataContainer(
       organization: Organization,
       workspace: Workspace,
       solution: Solution,
@@ -555,7 +551,7 @@ class ContainerFactory(
         csmSimulationId)
   }
 
-  fun buildPreRunContainer(
+  internal fun buildPreRunContainer(
       organization: Organization,
       workspace: Workspace,
       solution: Solution,
@@ -572,7 +568,7 @@ class ContainerFactory(
         csmSimulationId)
   }
 
-  fun buildRunContainer(
+  internal fun buildRunContainer(
       organization: Organization,
       workspace: Workspace,
       solution: Solution,
@@ -589,7 +585,7 @@ class ContainerFactory(
         csmSimulationId)
   }
 
-  fun buildPostRunContainer(
+  internal fun buildPostRunContainer(
       organization: Organization,
       workspace: Workspace,
       solution: Solution,
@@ -606,7 +602,7 @@ class ContainerFactory(
         csmSimulationId)
   }
 
-  fun getSendOptionValue(workspaceOption: Boolean?, templateOption: Boolean?): Boolean {
+  internal fun getSendOptionValue(workspaceOption: Boolean?, templateOption: Boolean?): Boolean {
     return templateOption ?: (workspaceOption ?: true)
   }
 
@@ -750,24 +746,31 @@ class ContainerFactory(
         AZURE_DATA_EXPLORER_DATABASE_NAME to "${organizationId}-${workspaceKey}",
     )
   }
-
-  companion object {
-    private fun getSource(source: RunTemplateStepSource?): String? {
-      if (source == null) return null
-      if (source == RunTemplateStepSource.local) return STEP_SOURCE_LOCAL
-      if (source == RunTemplateStepSource.cloud) return STEP_SOURCE_CLOUD
-      return null
-    }
-  }
-
-  data class DatasetsConnectors(val datasets: List<Dataset>, val connectors: List<Connector>)
-
-  data class StartInfo(
-      val startContainers: ScenarioRunStartContainers,
-      val scenario: Scenario,
-      val workspace: Workspace,
-      val solution: Solution,
-      val runTemplate: RunTemplate,
-      val csmSimulationId: String,
-  )
 }
+
+private fun getSource(source: RunTemplateStepSource?): String? {
+  if (source == null) return null
+  if (source == RunTemplateStepSource.local) return STEP_SOURCE_LOCAL
+  if (source == RunTemplateStepSource.cloud) return STEP_SOURCE_CLOUD
+  return null
+}
+
+private data class DatasetsConnectors(val datasets: List<Dataset>, val connectors: List<Connector>)
+
+internal data class StartInfo(
+    val startContainers: ScenarioRunStartContainers,
+    val scenario: Scenario,
+    val workspace: Workspace,
+    val solution: Solution,
+    val runTemplate: RunTemplate,
+    val csmSimulationId: String,
+)
+
+private class SolutionContainerStepSpec(
+    val mode: String,
+    val providerVar: String,
+    val pathVar: String,
+    val source: ((template: RunTemplate) -> String?)? = null,
+    val path: ((organizationId: String, solutionId: String, runTemplateId: String) -> String)? =
+        null,
+)
