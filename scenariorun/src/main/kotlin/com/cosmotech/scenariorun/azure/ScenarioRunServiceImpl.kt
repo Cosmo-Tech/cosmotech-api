@@ -2,9 +2,13 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenariorun.azure
 
-import com.azure.cosmos.models.*
+import com.azure.cosmos.models.CosmosItemRequestOptions
+import com.azure.cosmos.models.CosmosQueryRequestOptions
+import com.azure.cosmos.models.PartitionKey
+import com.azure.cosmos.models.SqlParameter
+import com.azure.cosmos.models.SqlQuerySpec
 import com.cosmotech.api.azure.AbstractCosmosBackedService
-import com.cosmotech.api.events.*
+import com.cosmotech.api.events.ScenarioRunStartedForScenario
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName

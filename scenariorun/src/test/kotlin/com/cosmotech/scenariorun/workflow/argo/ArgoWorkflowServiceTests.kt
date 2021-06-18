@@ -7,12 +7,19 @@ import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
 import io.argoproj.workflow.models.DAGTask
 import io.kubernetes.client.custom.Quantity
-import io.kubernetes.client.openapi.models.*
+import io.kubernetes.client.openapi.models.V1EnvVar
+import io.kubernetes.client.openapi.models.V1ObjectMeta
+import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim
+import io.kubernetes.client.openapi.models.V1PersistentVolumeClaimSpec
+import io.kubernetes.client.openapi.models.V1ResourceRequirements
+import io.kubernetes.client.openapi.models.V1VolumeMount
 import io.mockk.every
 import io.mockk.mockk
 import kotlin.test.BeforeTest
 import kotlin.test.Test
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 
 private const val API_VERSION = "v1"
 private const val DEFAULT_ENTRY_POINT = "entrypoint.py"

@@ -15,6 +15,7 @@ import com.cosmotech.api.events.ScenarioDatasetListChanged
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
 import com.cosmotech.api.events.UserAddedToScenario
 import com.cosmotech.api.events.UserRemovedFromScenario
+import com.cosmotech.api.events.WorkflowStatusRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.convertToMap
