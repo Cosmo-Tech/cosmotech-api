@@ -24,7 +24,7 @@ plugins {
 
   id("com.google.cloud.tools.jib") version "3.1.1" apply false
 
-  id("io.gitlab.arturbosch.detekt") version "1.17.0"
+  id("io.gitlab.arturbosch.detekt") version "1.17.1"
 }
 
 allprojects {
