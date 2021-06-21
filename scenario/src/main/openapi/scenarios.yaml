@@ -549,7 +549,7 @@ components:
           type: string
           description: the parameter value
         isInherited:
-          type: string
+          type: boolean
           description: whether or not the value is inherited from parent or has been changed
       required:
         - parameterId

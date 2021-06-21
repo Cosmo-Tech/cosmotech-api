@@ -69,11 +69,11 @@ class ScenarioServiceImpl(
           scenario.parametersValues?.associateBy { it.parameterId }?.toMutableMap()
               ?: mutableMapOf()
       parametersValuesMap.putAll(
-          scenarioRunTemplateParameterValue.filter { it.parameterId.isNotBlank() }.associateBy {
-            it.parameterId
-          })
+          scenarioRunTemplateParameterValue
+              .filter { it.parameterId.isNotBlank() }
+              .map { it.copy(isInherited = false) }
+              .associateBy { it.parameterId })
       scenario.parametersValues = parametersValuesMap.values.toList()
-      scenario.lastUpdate = OffsetDateTime.now()
       upsertScenarioData(organizationId, scenario, workspaceId)
     }
     return scenarioRunTemplateParameterValue
@@ -140,21 +140,6 @@ class ScenarioServiceImpl(
     TODO("Not yet implemented")
   }
 
-  private fun fetchSolutionIdAndName(
-      organizationId: String,
-      solutionId: String?
-  ): Pair<String?, String?> {
-    var solutionId: String? = null
-    var solutionName: String? = null
-    if (!solutionId.isNullOrBlank()) {
-      // Validate
-      val solution = solutionService.findSolutionById(organizationId, solutionId)
-      solutionId = solution.id
-      solutionName = solution.name
-    }
-    return solutionId to solutionName
-  }
-
   override fun createScenario(
       organizationId: String,
       workspaceId: String,
@@ -162,7 +147,13 @@ class ScenarioServiceImpl(
   ): Scenario {
     val organization = organizationService.findOrganizationById(organizationId)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
-    val (solutionId, solutionName) = fetchSolutionIdAndName(organizationId, scenario.solutionId)
+    val solution =
+        workspace.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
+    val runTemplate =
+        solution?.runTemplates?.find { runTemplate -> runTemplate.id == scenario.runTemplateId }
+    if (scenario.runTemplateId != null && runTemplate == null) {
+      throw IllegalArgumentException("Run Template not found: ${scenario.runTemplateId}")
+    }
 
     val usersLoaded = scenario.users?.map { it.id }?.let { fetchUsers(it) }
     val usersWithNames =
@@ -171,6 +162,8 @@ class ScenarioServiceImpl(
     var datasetList = scenario.datasetList
     val parentId = scenario.parentId
     var rootId: String? = null
+    val newParametersValuesList = scenario.parametersValues?.toMutableList() ?: mutableListOf()
+
     if (parentId != null) {
       logger.debug("Applying / Overwriting Dataset list from parent ${parentId}")
       val parent = this.findScenarioByIdNoState(organizationId, workspaceId, parentId)
@@ -179,6 +172,45 @@ class ScenarioServiceImpl(
       if (rootId == null) {
         rootId = parentId
       }
+
+      logger.debug("Copying parameters values from parent $parentId")
+
+      logger.debug("Getting runTemplate parameters ids")
+      val runTemplateParametersIds =
+          solution?.parameterGroups
+              ?.filter { parameterGroup ->
+                runTemplate?.parameterGroups?.contains(parameterGroup.id) == true
+              }
+              ?.flatMap { parameterGroup -> parameterGroup.parameters }
+      if (!runTemplateParametersIds.isNullOrEmpty()) {
+        val parentParameters = parent.parametersValues?.associate { it.parameterId to it }
+        val scenarioParameters = scenario.parametersValues?.associate { it.parameterId to it }
+        // TODO: Handle default value
+        runTemplateParametersIds.forEach { parameterId ->
+          if (scenarioParameters?.contains(parameterId) != true) {
+            logger.debug(
+                "Parameter $parameterId is not defined in the Scenario. " +
+                    "Checking if it is defined in its parent $parentId")
+            if (parentParameters?.contains(parameterId) == true) {
+              logger.debug("Copying parameter value from parent for parameter $parameterId")
+              val parameterValue = parentParameters[parameterId]
+              if (parameterValue != null) {
+                parameterValue.isInherited = true
+                newParametersValuesList.add(parameterValue)
+              } else {
+                logger.warn(
+                    "Parameter $parameterId not found in parent ($parentId) parameters values")
+              }
+            } else {
+              logger.debug(
+                  "Skipping parameter ${parameterId}, defined neither in the parent nor in this Scenario")
+            }
+          } else {
+            logger.debug(
+                "Skipping parameter $parameterId since it is already defined in this Scenario")
+          }
+        }
+      }
     }
 
     val now = OffsetDateTime.now()
@@ -186,14 +218,16 @@ class ScenarioServiceImpl(
         scenario.copy(
             id = idGenerator.generate("scenario"),
             ownerId = getCurrentAuthenticatedUserName(),
-            solutionId = solutionId,
-            solutionName = solutionName,
+            solutionId = solution?.id,
+            solutionName = solution?.name,
+            runTemplateName = runTemplate?.name,
             creationDate = now,
             lastUpdate = now,
             users = usersWithNames,
             state = State.Created,
             datasetList = datasetList,
             rootId = rootId,
+            parametersValues = newParametersValuesList,
         )
     val scenarioAsMap = scenarioToSave.asMapWithAdditionalData(workspaceId)
     // We cannot use cosmosTemplate as it expects the Domain object to contain a field named 'id'
@@ -303,7 +337,7 @@ class ScenarioServiceImpl(
     return scenario
   }
 
-  private fun findScenarioByIdNoState(
+  internal fun findScenarioByIdNoState(
       organizationId: String,
       workspaceId: String,
       scenarioId: String
@@ -480,24 +514,28 @@ class ScenarioServiceImpl(
     // ownership
 
     if (scenario.solutionId != null && scenario.changed(existingScenario) { solutionId }) {
-      val (solutionId, solutionName) = fetchSolutionIdAndName(organizationId, scenario.solutionId)
-      existingScenario.solutionId = solutionId
-      existingScenario.solutionName = solutionName
-      hasChanged = true
+      logger.debug("solutionId is a read-only property => ignored ! ")
     }
     if (scenario.runTemplateId != null && scenario.changed(existingScenario) { runTemplateId }) {
+      // Validate the runTemplateId
+      val solution =
+          workspace.solution.solutionId?.let {
+            solutionService.findSolutionById(organizationId, it)
+          }
+      val newRunTemplateId = scenario.runTemplateId
+      val runTemplate =
+          solution?.runTemplates?.find { it.id == newRunTemplateId }
+              ?: throw IllegalArgumentException(
+                  "No run template '${newRunTemplateId}' in solution ${solution?.id}")
       existingScenario.runTemplateId = scenario.runTemplateId
-      hasChanged = true
-    }
-    if (scenario.runTemplateName != null &&
-        scenario.changed(existingScenario) { runTemplateName }) {
-      existingScenario.runTemplateName = scenario.runTemplateName
+      existingScenario.runTemplateName = runTemplate.name
       hasChanged = true
     }
 
     if (scenario.parametersValues != null &&
         scenario.parametersValues?.toSet() != existingScenario.parametersValues?.toSet()) {
       existingScenario.parametersValues = scenario.parametersValues
+      existingScenario.parametersValues?.forEach { it.isInherited = false }
       hasChanged = true
     }
 
@@ -539,6 +577,7 @@ class ScenarioServiceImpl(
   }
 
   private fun upsertScenarioData(organizationId: String, scenario: Scenario, workspaceId: String) {
+    scenario.lastUpdate = OffsetDateTime.now()
     cosmosCoreDatabase
         .getContainer("${organizationId}_scenario_data")
         .upsertItem(
