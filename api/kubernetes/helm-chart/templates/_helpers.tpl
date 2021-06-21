@@ -106,6 +106,25 @@ server:
         - /actuator/health/liveness
         - /actuator/health/readiness
 
+management:
+  endpoint:
+    health:
+      group:
+        readiness:
+          {{- if eq .Values.config.csm.platform.vendor "azure" }}
+          {{- if index .Values.config.csm.platform.argo "base-uri" }}
+          include: "readinessState,argo,cosmos,blobStorage"
+          {{- else }}
+          include: "readinessState,cosmos,blobStorage"
+          {{- end }}
+          {{- else }}
+          {{- if index .Values.config.csm.platform.argo "base-uri" }}
+          include: "readinessState,argo"
+          {{- else }}
+          include: "readinessState"
+          {{- end }}
+          {{- end }}
+
 csm:
   platform:
     api:

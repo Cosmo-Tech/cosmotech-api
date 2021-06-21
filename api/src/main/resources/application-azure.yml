@@ -13,7 +13,7 @@ management:
     health:
       group:
         readiness:
-          include: "readinessState,cosmos,blobStorage"
+          include: "readinessState,argo,cosmos,blobStorage"
 
 csm:
   platform:
