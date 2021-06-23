@@ -1,0 +1,88 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows:
+      - Build
+      - Lint
+      - OpenAPI
+      - Packaging
+      - Test
+    branches:
+      - main
+    types:
+      - completed
+
+jobs:
+
+  deploy_to_dev_environment:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - uses: actions/checkout@v2.3.4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v1.1
+        with:
+          version: v3.6.0
+
+      - name: Retrieve branch or tag name
+        id: refvar
+        run: echo "::set-output name=gitRefName::${GITHUB_REF#refs/*/}"
+
+      - name: Compute API version
+        id: apiVersionVar
+        run: |
+          export gitRefName="${{ steps.refvar.outputs.gitRefName }}"
+          if [[ "$gitRefName" == "main" ]]; then \
+            echo "::set-output name=apiVersion::latest" ; \
+          else \
+            export tagFirstPart=$(echo "${{ steps.refvar.outputs.gitRefName }}" | cut -d '.' -f1)
+            if [[ $tagFirstPart == "v*" ]]; then \
+              echo "::set-output name=apiVersion::${tagFirstPart}" ; \
+            else \
+              echo "::set-output name=apiVersion::v${tagFirstPart}" ; \
+            fi ; \
+          fi
+
+      - name: Prepare values.yaml
+        env:
+          VALUES_YAML: "${{ secrets.DEV_ENV_VALUES_YAML }}"
+        run: |
+          echo "${VALUES_YAML}" > values_for_environment.yaml
+
+      - name: Prepare values.yaml with build information
+        run: |
+          export deployTimestamp=$(date +%s)
+          cat <<EOF > values_for_environment_with_build_info.yaml
+
+          podAnnotations:
+            "com.cosmotech/deploy-timestamp": "${deployTimestamp}"
+            "com.cosmotech/commit-id": "${GITHUB_SHA}"
+            "com.cosmotech/vcs-url": "https://github.com/Cosmo-Tech/cosmotech-api.git"
+
+          EOF
+
+      - uses: Azure/aks-set-context@v1
+        with:
+          # Secret created with: az ad sp create-for-rbac -n "github-actions" --sdk-auth
+          creds: '${{ secrets.AZURE_CREDENTIALS }}'
+          cluster-name: ${{ secrets.DEV_ENV_CLUSTER_NAME }}
+          resource-group: ${{ secrets.DEV_ENV_CLUSTER_RESOURCE_GROUP }}
+
+      - name: Deploy
+        env:
+          NAMESPACE: phoenix
+          ARGO_POSTGRESQL_PASSSORD: "${{ secrets.DEV_ENV_ARGO_POSTGRESQL_PASSSORD }}"
+        run: |
+          ./api/kubernetes/deploy_via_helm.sh \
+            "${{ steps.refvar.outputs.gitRefName }}" \
+            "${NAMESPACE}" \
+            "${ARGO_POSTGRESQL_PASSSORD}" \
+            "${{ steps.apiVersionVar.outputs.apiVersion }}" \
+            --values ./values_for_environment.yaml \
+            --values ./values_for_environment_with_build_info.yaml \
+            --atomic \
+            --wait \
+            --timeout 5m
