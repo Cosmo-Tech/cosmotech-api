@@ -16,8 +16,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2.3.4
-        with:
-          ref: ${{ github.event.workflow_run.head_branch }}
 
       - name: Set up Helm
         uses: azure/setup-helm@v1.1
