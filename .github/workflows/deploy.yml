@@ -47,12 +47,12 @@ jobs:
         env:
           VALUES_YAML: "${{ secrets.DEV_ENV_VALUES_YAML }}"
         run: |
-          echo "${VALUES_YAML}" > values_for_environment.yaml
+          echo "${VALUES_YAML}" > /tmp/values_for_environment.yaml
 
       - name: Prepare values.yaml with build information
         run: |
           export deployTimestamp=$(date +%s)
-          cat <<EOF > values_for_environment_with_build_info.yaml
+          cat <<EOF > /tmp/values_for_environment_with_build_info.yaml
 
           podAnnotations:
             "com.cosmotech/deploy-timestamp": "${deployTimestamp}"
@@ -84,8 +84,8 @@ jobs:
             "${NAMESPACE}" \
             "${ARGO_POSTGRESQL_PASSSORD}" \
             "${{ steps.apiVersionVar.outputs.apiVersion }}" \
-            --values ./values_for_environment.yaml \
-            --values ./values_for_environment_with_build_info.yaml \
+            --values /tmp/values_for_environment.yaml \
+            --values /tmp/values_for_environment_with_build_info.yaml \
             --atomic \
             --wait \
             --timeout 5m
