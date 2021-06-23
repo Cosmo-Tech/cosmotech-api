@@ -2,12 +2,7 @@ name: Deploy
 
 on:
   workflow_run:
-    workflows:
-      - Build
-      - Lint
-      - OpenAPI
-      - Packaging
-      - Test
+    workflows: ["Build, Test and Package"]
     branches:
       - main
     types:
@@ -21,6 +16,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2.3.4
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
 
       - name: Set up Helm
         uses: azure/setup-helm@v1.1
@@ -76,8 +73,14 @@ jobs:
           NAMESPACE: phoenix
           ARGO_POSTGRESQL_PASSSORD: "${{ secrets.DEV_ENV_ARGO_POSTGRESQL_PASSSORD }}"
         run: |
+          export gitRefName="${{ steps.refvar.outputs.gitRefName }}"
+          if [[ "$gitRefName" == "main" ]]; then \
+            export chartVersion="latest"; \
+          else \
+            export chartVersion="${{ steps.refvar.outputs.gitRefName }}"; \
+          fi; \
           ./api/kubernetes/deploy_via_helm.sh \
-            "${{ steps.refvar.outputs.gitRefName }}" \
+            "${chartVersion}" \
             "${NAMESPACE}" \
             "${ARGO_POSTGRESQL_PASSSORD}" \
             "${{ steps.apiVersionVar.outputs.apiVersion }}" \
