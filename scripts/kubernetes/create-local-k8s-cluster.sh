@@ -77,6 +77,7 @@ for node in $(kind get nodes --name "${cluster_name}"); do
 done
 
 # cf. https://kind.sigs.k8s.io/docs/user/ingress/#ingress-nginx
+ingress_nginx_controller_tag="controller-v0.47.0"
 kubectl --context="${kubectl_ctx}" \
   apply -f \
-  https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
+  "https://raw.githubusercontent.com/kubernetes/ingress-nginx/${ingress_nginx_controller_tag}/deploy/static/provider/kind/deploy.yaml"
