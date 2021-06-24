@@ -49,13 +49,15 @@ jobs:
 
       - name: Prepare values.yaml with build information
         run: |
+          export deployDateTime=$(date)
           export deployTimestamp=$(date +%s)
           export gitShaShort=$(git rev-parse --short HEAD)
 
           cat <<EOF > /tmp/values_for_environment_with_build_info.yaml
 
           podAnnotations:
-            "com.cosmotech/deploy-timestamp": "${deployTimestamp}"
+            "com.cosmotech/deployed-at": "${deployDateTime}"
+            "com.cosmotech/deployed-at-timestamp": "${deployTimestamp}"
             "com.cosmotech/commit-id": "${GITHUB_SHA}"
             "com.cosmotech/vcs-ref": "${GITHUB_REF}"
             "com.cosmotech/vcs-url": "https://github.com/Cosmo-Tech/cosmotech-api.git"
