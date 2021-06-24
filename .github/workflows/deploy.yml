@@ -80,14 +80,8 @@ jobs:
           NAMESPACE: phoenix
           ARGO_POSTGRESQL_PASSSORD: "${{ secrets.DEV_ENV_ARGO_POSTGRESQL_PASSSORD }}"
         run: |
-          export gitRefName="${{ steps.refvar.outputs.gitRefName }}"
-          if [[ "$gitRefName" == "main" ]]; then \
-            export chartVersion="latest"; \
-          else \
-            export chartVersion="${{ steps.refvar.outputs.gitRefName }}"; \
-          fi; \
           ./api/kubernetes/deploy_via_helm.sh \
-            "${chartVersion}" \
+            "${GITHUB_SHA}" \
             "${NAMESPACE}" \
             "${ARGO_POSTGRESQL_PASSSORD}" \
             "${{ steps.apiVersionVar.outputs.apiVersion }}" \
