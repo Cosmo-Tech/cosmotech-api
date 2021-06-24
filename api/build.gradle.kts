@@ -88,7 +88,7 @@ openApiMerger {
     }
     servers {
       register("production") {
-        url.set("https://api.azure.cosmo-platform.com")
+        url.set("https://api.cosmotech.com")
         description.set("Production")
       }
     }
