@@ -176,7 +176,7 @@ jobs:
       - name: Deploy the NGINX Ingress Controller in the KinD Cluster
         run: |
           kubectl apply -f \
-            https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
+            https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.47.0/deploy/static/provider/kind/deploy.yaml
           kubectl -n ingress-nginx wait deploy/ingress-nginx-controller \
             --for condition=available \
             --timeout=60s
