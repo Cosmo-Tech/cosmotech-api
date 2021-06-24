@@ -22,10 +22,10 @@ data class CsmPlatformProperties(
     val version: String?,
 
     /** the Platform exact commit ID. */
-    val commitId: String?,
+    val commitId: String? = null,
 
     /** the Platform exact Version-Control System reference. */
-    val vcsRef: String?,
+    val vcsRef: String? = null,
 
     /** API Configuration */
     val api: Api,
