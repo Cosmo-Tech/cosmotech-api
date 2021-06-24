@@ -48,6 +48,10 @@ IMAGE_TAG="${IMAGE_TAG__}"
 CHART_PACKAGE_VERSION="${IMAGE_TAG}"
 # shellcheck disable=SC2153
 export API_VERSION="${API_VERSION__}"
+# shellcheck disable=SC2153
+export VCS_COMMIT_ID="${VCS_COMMIT_ID__}"
+# shellcheck disable=SC2153
+export VCS_REF="${VCS_REF__}"
 
 export NAMESPACE="$1"
 
@@ -186,6 +190,8 @@ api:
 config:
   csm:
     platform:
+      commit-id: "${VCS_COMMIT_ID}"
+      vcs-ref: "${VCS_REF}"
       argo:
         base-uri: "http://${ARGO_RELEASE_NAME}-server.${NAMESPACE}.svc.cluster.local:2746"
 

@@ -46,6 +46,10 @@ csm:
     summary: Cosmo Tech Platform
     description: Cosmo Tech Digital Twins Simulation Platform
     version: "1.0.0"
+    # Commit ID and Ref have to be set in the config, but a better approach could be to
+    # generate such info at build time
+    commit-id: ""
+    vcs-ref: ""
     api:
       # API Base Path for OpenAPI-generated controllers.
       # Might conflict with the SpringBoot context path, hence leaving it at the root

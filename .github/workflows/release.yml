@@ -28,7 +28,9 @@ jobs:
           IMAGE_TAG__: ${{ github.event.release.tag_name }}
           API_VERSION__: ${{ steps.apiVersionVar.outputs.apiVersion }}
         run: |
-          envsubst '$IMAGE_TAG__ $API_VERSION__' < api/kubernetes/deploy_release.template.sh > api/kubernetes/deploy.sh
+          export VCS_COMMIT_ID__=$(git rev-parse --short HEAD) && \
+            export VCS_REF__=$(git rev-parse --abbrev-ref HEAD) && \
+            envsubst '$IMAGE_TAG__ $API_VERSION__ $VCS_COMMIT_ID__ $VCS_REF__' < api/kubernetes/deploy_release.template.sh > api/kubernetes/deploy.sh
           cat api/kubernetes/deploy.sh
 
       - name: Upload deployment script to release

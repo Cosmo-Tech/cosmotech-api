@@ -48,6 +48,22 @@ class CsmOpenAPIConfiguration(val csmPlatformProperties: CsmPlatformProperties) 
 
     openAPI.info.version = apiVersion
 
+    if (openAPI.info.description.isNullOrBlank()) {
+      openAPI.info.description = "Cosmo Tech Platform API"
+    }
+    if (!csmPlatformProperties.commitId.isNullOrBlank()) {
+      if (csmPlatformProperties.vcsRef.isNullOrBlank()) {
+        openAPI.info.description += " (${csmPlatformProperties.commitId})"
+      } else {
+        openAPI.info.description +=
+            " (${csmPlatformProperties.vcsRef} / ${csmPlatformProperties.commitId})"
+      }
+    } else {
+      if (!csmPlatformProperties.vcsRef.isNullOrBlank()) {
+        openAPI.info.description += " (${csmPlatformProperties.vcsRef})"
+      }
+    }
+
     // Remove any set of servers already defined in the input openapi.yaml,
     // so as to have the base URL auto-generated based on the incoming requests
     openAPI.servers = listOf()

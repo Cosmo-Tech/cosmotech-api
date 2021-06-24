@@ -21,6 +21,12 @@ data class CsmPlatformProperties(
     /** the Platform version (MAJOR.MINOR.PATCH). */
     val version: String?,
 
+    /** the Platform exact commit ID. */
+    val commitId: String?,
+
+    /** the Platform exact Version-Control System reference. */
+    val vcsRef: String?,
+
     /** API Configuration */
     val api: Api,
 
