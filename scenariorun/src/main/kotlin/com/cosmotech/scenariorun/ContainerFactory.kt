@@ -94,9 +94,12 @@ class ContainerFactory(
                     providerVar = "CSM_PARAMETERS_HANDLER_PROVIDER",
                     pathVar = "CSM_PARAMETERS_HANDLER_PATH",
                     source = { template -> getSource(template.parametersHandlerSource) },
-                    path = { organizationId, solutionId ->
+                    path = { organizationId, solutionId, runTemplateId ->
                       getCloudPath(
-                          organizationId, solutionId, RunTemplateHandlerId.parameters_handler)
+                          organizationId,
+                          solutionId,
+                          runTemplateId,
+                          RunTemplateHandlerId.parameters_handler)
                     }),
             "validate" to
                 SolutionContainerStepSpec(
@@ -104,8 +107,9 @@ class ContainerFactory(
                     providerVar = "CSM_DATASET_VALIDATOR_PROVIDER",
                     pathVar = "CSM_DATASET_VALIDATOR_PATH",
                     source = { template -> getSource(template.datasetValidatorSource) },
-                    path = { organizationId, solutionId ->
-                      getCloudPath(organizationId, solutionId, RunTemplateHandlerId.validator)
+                    path = { organizationId, solutionId, runTemplateId ->
+                      getCloudPath(
+                          organizationId, solutionId, runTemplateId, RunTemplateHandlerId.validator)
                     }),
             "prerun" to
                 SolutionContainerStepSpec(
@@ -113,8 +117,9 @@ class ContainerFactory(
                     providerVar = "CSM_PRERUN_PROVIDER",
                     pathVar = "CSM_PRERUN_PATH",
                     source = { template -> getSource(template.preRunSource) },
-                    path = { organizationId, solutionId ->
-                      getCloudPath(organizationId, solutionId, RunTemplateHandlerId.prerun)
+                    path = { organizationId, solutionId, runTemplateId ->
+                      getCloudPath(
+                          organizationId, solutionId, runTemplateId, RunTemplateHandlerId.prerun)
                     }),
             "engine" to
                 SolutionContainerStepSpec(
@@ -122,8 +127,9 @@ class ContainerFactory(
                     providerVar = "CSM_ENGINE_PROVIDER",
                     pathVar = "CSM_ENGINE_PATH",
                     source = { template -> getSource(template.runSource) },
-                    path = { organizationId, solutionId ->
-                      getCloudPath(organizationId, solutionId, RunTemplateHandlerId.engine)
+                    path = { organizationId, solutionId, runTemplateId ->
+                      getCloudPath(
+                          organizationId, solutionId, runTemplateId, RunTemplateHandlerId.engine)
                     }),
             "postrun" to
                 SolutionContainerStepSpec(
@@ -131,8 +137,9 @@ class ContainerFactory(
                     providerVar = "CSM_POSTRUN_PROVIDER",
                     pathVar = "CSM_POSTRUN_PATH",
                     source = { template -> getSource(template.postRunSource) },
-                    path = { organizationId, solutionId ->
-                      getCloudPath(organizationId, solutionId, RunTemplateHandlerId.postrun)
+                    path = { organizationId, solutionId, runTemplateId ->
+                      getCloudPath(
+                          organizationId, solutionId, runTemplateId, RunTemplateHandlerId.postrun)
                     }),
         )
 ) {
@@ -645,7 +652,8 @@ class ContainerFactory(
       if (organization.id == null) throw IllegalStateException("Organization id cannot be null")
       if (workspace.id == null) throw IllegalStateException("Workspace id cannot be null")
       if (source != STEP_SOURCE_LOCAL) {
-        envVars[step.pathVar] = (step.path?.invoke(organization.id ?: "", solution.id ?: "") ?: "")
+        envVars[step.pathVar] =
+            (step.path?.invoke(organization.id ?: "", solution.id ?: "", runTemplateId) ?: "")
       }
     }
     return ScenarioRunContainer(
