@@ -639,7 +639,8 @@ class ContainerFactoryTests {
         "handle-parameters",
         "CSM_PARAMETERS_HANDLER_PROVIDER",
         "CSM_PARAMETERS_HANDLER_PATH",
-        "parameters_handler")
+        "parameters_handler",
+        "testruntemplate")
   }
 
   @Test
@@ -656,7 +657,8 @@ class ContainerFactoryTests {
         "validate",
         "CSM_DATASET_VALIDATOR_PROVIDER",
         "CSM_DATASET_VALIDATOR_PATH",
-        "validator")
+        "validator",
+        "testruntemplate")
   }
 
   @Test
@@ -668,7 +670,8 @@ class ContainerFactoryTests {
             getSolutionCloudSources(),
             "testruntemplate",
             csmSimulationId)
-    envVarsWithSourceValid(container, "prerun", "CSM_PRERUN_PROVIDER", "CSM_PRERUN_PATH", "prerun")
+    envVarsWithSourceValid(
+        container, "prerun", "CSM_PRERUN_PROVIDER", "CSM_PRERUN_PATH", "prerun", "testruntemplate")
   }
 
   @Test
@@ -680,7 +683,8 @@ class ContainerFactoryTests {
             getSolutionCloudSources(),
             "testruntemplate",
             csmSimulationId)
-    envVarsWithSourceValid(container, "engine", "CSM_ENGINE_PROVIDER", "CSM_ENGINE_PATH", "engine")
+    envVarsWithSourceValid(
+        container, "engine", "CSM_ENGINE_PROVIDER", "CSM_ENGINE_PATH", "engine", "testruntemplate")
   }
 
   @Test
@@ -693,7 +697,12 @@ class ContainerFactoryTests {
             "testruntemplate",
             csmSimulationId)
     envVarsWithSourceValid(
-        container, "postrun", "CSM_POSTRUN_PROVIDER", "CSM_POSTRUN_PATH", "postrun")
+        container,
+        "postrun",
+        "CSM_POSTRUN_PROVIDER",
+        "CSM_POSTRUN_PATH",
+        "postrun",
+        "testruntemplate")
   }
 
   private fun envVarsWithSourceValid(
@@ -701,7 +710,8 @@ class ContainerFactoryTests {
       mode: String,
       providerEnvVar: String,
       resourceEnvVar: String,
-      resource: String
+      resource: String,
+      runTemplate: String,
   ) {
     val expected =
         mapOf(
@@ -727,7 +737,7 @@ class ContainerFactoryTests {
             providerEnvVar to "azureStorage",
             "AZURE_STORAGE_CONNECTION_STRING" to
                 "DefaultEndpointsProtocol=https;AccountName=csmphoenix;AccountKey=42rmlBQ2IrxdIByLj79AecdIyYifSR04ZnGsBYt82tbM2clcP0QwJ9N+l/fLvyCzu9VZ8HPsQyM7jHe6CVSUig==;EndpointSuffix=core.windows.net",
-            resourceEnvVar to "Organizationid/1/${resource}.zip",
+            resourceEnvVar to "Organizationid/1/${runTemplate}/${resource}.zip",
         )
     assertEquals(expected, container.envVars)
   }

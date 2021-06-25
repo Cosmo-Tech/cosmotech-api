@@ -7,7 +7,8 @@ import com.cosmotech.solution.domain.RunTemplateHandlerId
 fun getCloudPath(
     organizationId: String,
     solutionId: String,
-    handlerId: RunTemplateHandlerId
+    runTemplateId: String,
+    handlerId: RunTemplateHandlerId,
 ): String {
-  return "${organizationId}/${solutionId}/${handlerId}.zip"
+  return "${organizationId}/${solutionId}/${runTemplateId}/${handlerId}.zip"
 }

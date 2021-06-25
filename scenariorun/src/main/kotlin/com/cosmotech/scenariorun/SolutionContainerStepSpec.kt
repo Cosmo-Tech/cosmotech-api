@@ -9,5 +9,6 @@ class SolutionContainerStepSpec(
     val providerVar: String,
     val pathVar: String,
     val source: ((template: RunTemplate) -> String?)? = null,
-    val path: ((organizationId: String, workspaceId: String) -> String)? = null,
+    val path: ((organizationId: String, solutionId: String, runTemplateId: String) -> String)? =
+        null,
 )
