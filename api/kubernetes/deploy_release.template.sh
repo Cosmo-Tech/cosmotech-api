@@ -219,5 +219,5 @@ EOF
 
 helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "cosmotech-api-chart-${CHART_PACKAGE_VERSION}.tgz" \
     --namespace "${NAMESPACE}" \
-    "${@:3}" \
-    --values values-cosmotech-api-deploy.yaml
+    --values values-cosmotech-api-deploy.yaml \
+    "${@:3}"
