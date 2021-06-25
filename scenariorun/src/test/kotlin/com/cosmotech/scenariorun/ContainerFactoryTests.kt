@@ -737,7 +737,7 @@ class ContainerFactoryTests {
             providerEnvVar to "azureStorage",
             "AZURE_STORAGE_CONNECTION_STRING" to
                 "DefaultEndpointsProtocol=https;AccountName=csmphoenix;AccountKey=42rmlBQ2IrxdIByLj79AecdIyYifSR04ZnGsBYt82tbM2clcP0QwJ9N+l/fLvyCzu9VZ8HPsQyM7jHe6CVSUig==;EndpointSuffix=core.windows.net",
-            resourceEnvVar to "Organizationid/1/${runTemplate}/${resource}.zip",
+            resourceEnvVar to "organizationid/1/${runTemplate}/${resource}.zip",
         )
     assertEquals(expected, container.envVars)
   }

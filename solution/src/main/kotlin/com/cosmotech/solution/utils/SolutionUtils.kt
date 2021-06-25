@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.solution.utils
 
+import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.solution.domain.RunTemplateHandlerId
 
 fun getCloudPath(
@@ -10,5 +11,5 @@ fun getCloudPath(
     runTemplateId: String,
     handlerId: RunTemplateHandlerId,
 ): String {
-  return "${organizationId}/${solutionId}/${runTemplateId}/${handlerId}.zip"
+  return "${organizationId.sanitizeForAzureStorage()}/${solutionId.sanitizeForAzureStorage()}/${runTemplateId}/${handlerId}.zip"
 }
