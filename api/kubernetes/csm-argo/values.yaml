@@ -16,6 +16,13 @@ argo:
     defaultBucket:
       enabled: true
       name: argo-workflows
+    DeploymentUpdate:
+      # As Minio uses a ReadWriteOnce PVC by default, using a RollingUpdate strategy will not
+      # work if the new pod is scheduled on a different node.
+      # It is possible to force the replicas scheduling on a same node, but this requires that node
+      # to have a minimum of 4Gi additional memory available, which is the default memory request
+      # set by Argo.
+      type: Recreate
   executor:
     env:
     - name: RESOURCE_STATE_CHECK_INTERVAL
