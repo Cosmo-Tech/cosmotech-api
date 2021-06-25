@@ -89,6 +89,7 @@ jobs:
             "${{ steps.apiVersionVar.outputs.apiVersion }}" \
             --values /tmp/values_for_environment.yaml \
             --values /tmp/values_for_environment_with_build_info.yaml \
+            --set image.tag="${GITHUB_SHA}" \
             --atomic \
             --wait \
             --timeout 5m
