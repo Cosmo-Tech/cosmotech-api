@@ -56,11 +56,15 @@ jobs:
           cat <<EOF > /tmp/values_for_environment_with_build_info.yaml
 
           podAnnotations:
+            "com.cosmotech/deployed-by": "${GITHUB_ACTOR}"
             "com.cosmotech/deployed-at": "${deployDateTime}"
             "com.cosmotech/deployed-at-timestamp": "${deployTimestamp}"
             "com.cosmotech/commit-id": "${GITHUB_SHA}"
             "com.cosmotech/vcs-ref": "${GITHUB_REF}"
             "com.cosmotech/vcs-url": "https://github.com/Cosmo-Tech/cosmotech-api.git"
+            "com.cosmotech/run-id": "${GITHUB_RUN_ID}"
+            "com.cosmotech/run-number": "${GITHUB_RUN_NUMBER}"
+            "com.cosmotech/job-id": "${GITHUB_JOB}"
 
           config:
             csm:
