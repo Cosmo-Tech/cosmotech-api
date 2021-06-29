@@ -89,7 +89,7 @@ EOF
     --namespace "${NAMESPACE}" \
     --version 3.32.0 \
     --values values-ingress-nginx.yaml \
-    "${NGINX_INGRESS_CONTROLLER_HELM_ADDITIONAL_OPTIONS:-}"
+    ${NGINX_INGRESS_CONTROLLER_HELM_ADDITIONAL_OPTIONS:-}
 fi
 
 # cert-manager
