@@ -16,6 +16,7 @@ help() {
   echo "- NGINX_INGRESS_CONTROLLER_ENABLED | boolean (default is false) | indicating whether an NGINX Ingress Controller should be deployed and an Ingress resource created too"
   echo "- NGINX_INGRESS_CONTROLLER_REPLICA_COUNT | int (default is 1) | number of pods for the NGINX Ingress Controller"
   echo "- NGINX_INGRESS_CONTROLLER_LOADBALANCER_IP | IP Address String | optional public IP Address to use as LoadBalancer IP. You can create one with this Azure CLI command: az network public-ip create --resource-group <my-rg>> --name <a-name> --sku Standard --allocation-method static --query publicIp.ipAddress -o tsv "
+  echo "- NGINX_INGRESS_CONTROLLER_HELM_ADDITIONAL_OPTIONS | Additional Helm options for the NGINX Ingress Controller | Additional options to pass to Helm when creating the Ingress Controller, e.g.: --set controller.service.annotations.\"service.beta.kubernetes.io/azure-load-balancer-resource-group\"=my-azure-resource-group"
   echo "- CERT_MANAGER_ENABLED  | boolean (default is false) | indicating whether cert-manager should be deployed. It is in charge of requesting and managing renewal of Let's Encrypt certificates"
   echo "- CERT_MANAGER_INSTALL_WAIT_TIMEOUT | string (default is 3m) | how much time to wait for the cert-manager Helm Chart to be successfully deployed"
   echo "- CERT_MANAGER_USE_ACME_PROD | boolean (default is false) | whether to use the Let's Encrypt Production server. Note that this is subject to rate limiting"
@@ -69,10 +70,6 @@ controller:
   nodeSelector:
     beta.kubernetes.io/os: "linux"
   service:
-    # annotations:
-    #  # TODO Parameterize resource group name => but AKS RG needs the permissions to
-    #  # access the resource group in which the static IP is present
-    #  service.beta.kubernetes.io/azure-load-balancer-resource-group: "static-ip-rg"
     loadBalancerIP: "${NGINX_INGRESS_CONTROLLER_LOADBALANCER_IP}"
 
 defaultBackend:
@@ -84,7 +81,8 @@ EOF
   helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
     --namespace "${NAMESPACE}" \
     --version 3.32.0 \
-    --values values-ingress-nginx.yaml
+    --values values-ingress-nginx.yaml \
+    "${NGINX_INGRESS_CONTROLLER_HELM_ADDITIONAL_OPTIONS:-}"
 fi
 
 # cert-manager
