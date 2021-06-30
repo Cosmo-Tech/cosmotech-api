@@ -49,8 +49,8 @@ echo "=== List all resources across all namespaces ==="
 kubectl get all --all-namespaces
 echo "=== ==="
 
-echo "=== Describe all resources across all namespaces ==="
-kubectl describe all --all-namespaces
+echo "=== Get all events across all namespaces ==="
+kubectl get events --all-namespaces --sort-by='{.lastTimestamp}'
 echo "=== ==="
 
 echo "=== Describe all resources across all namespaces ==="
