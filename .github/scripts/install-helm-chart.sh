@@ -53,8 +53,8 @@ echo "=== Describe all resources across all namespaces ==="
 kubectl describe all --all-namespaces
 echo "=== ==="
 
-echo "=== Describe the NGINX Ingress Controller Deployment ==="
-kubectl -n ingress-nginx describe deployment ingress-nginx-controller
+echo "=== Describe all resources across all namespaces ==="
+kubectl describe all --all-namespaces
 echo "=== ==="
 
 echo "=== cosmotech-api Pod logs ==="
