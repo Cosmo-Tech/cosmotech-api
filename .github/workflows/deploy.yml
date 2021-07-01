@@ -43,7 +43,7 @@ jobs:
 
       - name: Prepare values.yaml
         env:
-          VALUES_YAML: "${{ secrets.DEV_ENV_VALUES_YAML_070121 }}"
+          VALUES_YAML: "${{ secrets.DEV_ENV_VALUES_YAML_070121_2 }}"
         run: |
           echo "${VALUES_YAML}" > /tmp/values_for_environment.yaml
 
