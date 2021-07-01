@@ -16,6 +16,7 @@ spring:
       enabled: false
     kubernetes:
       enabled: false
+
 security:
   oauth2:
     resource:
