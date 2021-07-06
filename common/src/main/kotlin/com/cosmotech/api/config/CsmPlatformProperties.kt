@@ -80,8 +80,22 @@ data class CsmPlatformProperties(
       val baseUri: String,
 
       /** Image Pull Secrets */
-      val imagePullSecrets: List<String>? = null
-  )
+      val imagePullSecrets: List<String>? = null,
+
+      /** Workflow Management */
+      val workflows: Workflows,
+  ) {
+    data class Workflows(
+        /** The Kubernetes namespace in which Argo Workflows should be submitted */
+        val namespace: String,
+
+        /** The node label to look for Workflows placement requests */
+        val nodePoolLabel: String,
+
+        /** The Kubernetes service account name */
+        val serviceAccountName: String
+    )
+  }
 
   data class Api(
       /** API Version, e.g.: latest, or v1 */

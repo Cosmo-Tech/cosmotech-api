@@ -1,65 +1,43 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.scenariorun
+package com.cosmotech.scenariorun.azure
 
 import com.azure.cosmos.models.CosmosItemRequestOptions
 import com.azure.cosmos.models.CosmosQueryRequestOptions
 import com.azure.cosmos.models.PartitionKey
 import com.azure.cosmos.models.SqlParameter
 import com.azure.cosmos.models.SqlQuerySpec
-import com.cosmotech.api.argo.WorkflowUtils
 import com.cosmotech.api.azure.AbstractCosmosBackedService
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
-import com.cosmotech.connector.api.ConnectorApiService
-import com.cosmotech.dataset.api.DatasetApiService
-import com.cosmotech.organization.api.OrganizationApiService
-import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
+import com.cosmotech.scenariorun.ContainerFactory
 import com.cosmotech.scenariorun.api.ScenariorunApiService
 import com.cosmotech.scenariorun.domain.RunTemplateParameterValue
 import com.cosmotech.scenariorun.domain.ScenarioRun
-import com.cosmotech.scenariorun.domain.ScenarioRunContainerLogs
 import com.cosmotech.scenariorun.domain.ScenarioRunLogs
 import com.cosmotech.scenariorun.domain.ScenarioRunSearch
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
-import com.cosmotech.scenariorun.domain.ScenarioRunStatus
-import com.cosmotech.scenariorun.domain.ScenarioRunStatusNode
-import com.cosmotech.solution.api.SolutionApiService
+import com.cosmotech.scenariorun.workflow.WorkflowService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
-import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
-import io.argoproj.workflow.ApiException
-import io.argoproj.workflow.Configuration
-import io.argoproj.workflow.apis.WorkflowServiceApi
-import io.argoproj.workflow.models.Workflow
-import io.argoproj.workflow.models.WorkflowCreateRequest
 import kotlin.reflect.full.memberProperties
-import org.springframework.beans.factory.annotation.Value
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Service
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 class ScenariorunServiceImpl(
-    private val containerFactory: ContainerFactory,
-    private val argoAdapter: ArgoAdapter,
-    @Value("\${csm.platform.argo.base-uri:}") private val argoBaseUrl: String,
-    private val workflowUtils: WorkflowUtils,
-    private val solutionService: SolutionApiService,
-    private val connectorService: ConnectorApiService,
-    private val datasetService: DatasetApiService,
-    private val organizationService: OrganizationApiService,
-    private val workspaceService: WorkspaceApiService,
-    private val scenarioService: ScenarioApiService,
+    private val workflowService: WorkflowService,
 ) : AbstractCosmosBackedService(), ScenariorunApiService {
 
-  private val CSM_K8S_NAMESPACE = "phoenix"
+  @Autowired private lateinit var containerFactory: ContainerFactory
 
   protected fun ScenarioRun.asMapWithAdditionalData(workspaceId: String? = null): Map<String, Any> {
     val scenarioAsMap = this.convertToMap().toMutableMap()
@@ -114,43 +92,15 @@ class ScenariorunServiceImpl(
               "ScenarioRun #$scenariorunId not found in organization #$organizationId")
 
   override fun getScenarioRunLogs(organizationId: String, scenariorunId: String): ScenarioRunLogs {
-    val scenario = findScenarioRunById(organizationId, scenariorunId)
-    val workflowId = scenario.workflowId
-    val workflowName = scenario.workflowName
-    var containersLogs: Map<String, ScenarioRunContainerLogs> = mapOf()
-    if (workflowId != null && workflowName != null) {
-      val workflow = workflowUtils.getActiveWorkflow(workflowId, workflowName)
-      var nodeLogs = workflowUtils.getWorkflowLogs(workflow)
-      containersLogs =
-          nodeLogs
-              .map { (nodeId, logs) ->
-                (workflow.status?.nodes?.get(nodeId)?.displayName
-                    ?: "") to
-                    ScenarioRunContainerLogs(
-                        nodeId = nodeId,
-                        containerName = workflow.status?.nodes?.get(nodeId)?.displayName,
-                        children = workflow.status?.nodes?.get(nodeId)?.children,
-                        logs = logs)
-              }
-              .toMap()
-    }
-    val logs = ScenarioRunLogs(scenariorunId = scenariorunId, containers = containersLogs)
-    return logs
+    val scenarioRun = findScenarioRunById(organizationId, scenariorunId)
+    return workflowService.getScenarioRunLogs(scenarioRun)
   }
 
-  override fun getScenarioRunCumulatedLogs(
-      organizationId: kotlin.String,
-      scenariorunId: kotlin.String
-  ): kotlin.String {
-    val scenario = findScenarioRunById(organizationId, scenariorunId)
-    val workflowId = scenario.workflowId
-    val workflowName = scenario.workflowName
-    var cumulatedLogs =
-        if (workflowId != null && workflowName != null)
-            workflowUtils.getCumulatedLogs(workflowId, workflowName)
-        else ""
-    logger.debug(cumulatedLogs)
-    return cumulatedLogs
+  override fun getScenarioRunCumulatedLogs(organizationId: String, scenariorunId: String): String {
+    val scenarioRun = findScenarioRunById(organizationId, scenariorunId)
+    val scenarioRunCumulatedLogs = workflowService.getScenarioRunCumulatedLogs(scenarioRun)
+    logger.trace(scenarioRunCumulatedLogs)
+    return scenarioRunCumulatedLogs
   }
 
   override fun getScenarioRuns(
@@ -214,17 +164,12 @@ class ScenariorunServiceImpl(
             organizationId,
             workspaceId,
             scenarioId,
-            this,
-            scenarioService,
-            workspaceService,
-            solutionService,
-            organizationService,
-            connectorService,
-            datasetService)
+        )
     logger.debug(startInfo.toString())
-    val workflow = this.startWorkflow(startInfo.startContainers)
+    val scenarioRunRequest = workflowService.launchScenarioRun(startInfo.startContainers)
     val scenarioRun =
         this.dbCreateScenarioRun(
+            scenarioRunRequest,
             organizationId,
             workspaceId,
             scenarioId,
@@ -234,7 +179,7 @@ class ScenariorunServiceImpl(
             startInfo.solution,
             startInfo.runTemplate,
             startInfo.startContainers,
-            workflow)
+        )
 
     this.eventPublisher.publishEvent(
         ScenarioRunStartedForScenario(
@@ -278,56 +223,23 @@ class ScenariorunServiceImpl(
       organizationId: String,
       scenarioRunStartContainers: ScenarioRunStartContainers
   ): ScenarioRun {
-    val workflow = startWorkflow(scenarioRunStartContainers)
-    val scenarioRun =
-        this.dbCreateScenarioRun(
-            organizationId,
-            "None",
-            "None",
-            scenarioRunStartContainers.csmSimulationId,
-            null,
-            null,
-            null,
-            null,
-            scenarioRunStartContainers,
-            workflow)
-    return scenarioRun
-  }
-
-  private fun startWorkflow(scenarioRunStartContainers: ScenarioRunStartContainers): Workflow {
-
-    val defaultClient = Configuration.getDefaultApiClient()
-    defaultClient.setVerifyingSsl(false)
-    defaultClient.setBasePath(argoBaseUrl)
-
-    val apiInstance = WorkflowServiceApi(defaultClient)
-    val body = WorkflowCreateRequest()
-
-    val workflow = argoAdapter.buildWorkflow(scenarioRunStartContainers)
-    logger.debug(workflow.toString())
-    body.workflow(workflow)
-
-    try {
-      val result = apiInstance.workflowServiceCreateWorkflow(CSM_K8S_NAMESPACE, body)
-      if (result.metadata.uid == null)
-          throw IllegalStateException("Argo Workflow metadata.uid is null")
-      if (result.metadata.name == null)
-          throw IllegalStateException("Argo Workflow metadata.name is null")
-
-      return result
-    } catch (e: ApiException) {
-      logger.warn(
-          """
-        Exception when calling WorkflowServiceApi#workflowServiceCreateWorkflow.
-        Status code: ${e.code}
-        Reason: ${e.responseBody}
-      """.trimIndent())
-      logger.debug("Response headers: {}", e.responseHeaders)
-      throw IllegalStateException(e)
-    }
+    val scenarioRunRequest = workflowService.launchScenarioRun(scenarioRunStartContainers)
+    return this.dbCreateScenarioRun(
+        scenarioRunRequest,
+        organizationId,
+        "None",
+        "None",
+        scenarioRunStartContainers.csmSimulationId,
+        null,
+        null,
+        null,
+        null,
+        scenarioRunStartContainers,
+    )
   }
 
   private fun dbCreateScenarioRun(
+      scenarioRunRequest: ScenarioRun,
       organizationId: String,
       workspaceId: String,
       scenarioId: String,
@@ -337,7 +249,6 @@ class ScenariorunServiceImpl(
       solution: Solution?,
       runTemplate: RunTemplate?,
       startContainers: ScenarioRunStartContainers,
-      workflow: Workflow,
   ): ScenarioRun {
 
     val sendParameters =
@@ -348,7 +259,7 @@ class ScenariorunServiceImpl(
             workspace?.sendInputToDataWarehouse, runTemplate?.sendDatasetsToDataWarehouse)
     // Only send containers if admin or special route
     val scenarioRun =
-        ScenarioRun(
+        scenarioRunRequest.copy(
             id = idGenerator.generate("scenariorun", prependPrefix = "SR-"),
             ownerId = getCurrentAuthenticatedUserName(),
             csmSimulationRun = csmSimulationId,
@@ -359,8 +270,6 @@ class ScenariorunServiceImpl(
             solutionId = solution?.id,
             runTemplateId = runTemplate?.id,
             generateName = startContainers.generateName,
-            workflowId = workflow.metadata.uid ?: "",
-            workflowName = workflow.metadata.name ?: "",
             computeSize = runTemplate?.computeSize,
             datasetList = scenario?.datasetList,
             parametersValues =
@@ -370,8 +279,7 @@ class ScenariorunServiceImpl(
                           varType = scenarioValue.varType,
                           value = scenarioValue.value)
                     })
-                    ?.toList()
-                    ?: null,
+                    ?.toList(),
             nodeLabel = startContainers.nodeLabel,
             containers = startContainers.containers,
             sendDatasetsToDataWarehouse = sendDatasets,
@@ -391,45 +299,7 @@ class ScenariorunServiceImpl(
     return scenarioRun
   }
 
-  override fun getScenarioRunStatus(
-      organizationId: kotlin.String,
-      scenariorunId: kotlin.String
-  ): ScenarioRunStatus {
-    val scenarioRun = this.findScenarioRunById(organizationId, scenariorunId)
-    val workflowId = scenarioRun.workflowId
-    val workflowName = scenarioRun.workflowName
-    var status =
-        if (workflowId != null && workflowName != null) {
-          val workflowStatus = workflowUtils.getWorkflowStatus(workflowId, workflowName)
-          ScenarioRunStatus(
-              id = scenariorunId,
-              organizationId = organizationId,
-              workflowId = workflowId,
-              workflowName = workflowName,
-              startTime = workflowStatus?.startedAt?.toString(),
-              endTime = workflowStatus?.finishedAt?.toString(),
-              phase = workflowStatus?.phase,
-              progress = workflowStatus?.progress,
-              message = workflowStatus?.message,
-              estimatedDuration = workflowStatus?.estimatedDuration,
-              nodes =
-                  workflowStatus?.nodes?.values?.map { nodeStatus ->
-                    ScenarioRunStatusNode(
-                        id = nodeStatus.id,
-                        name = nodeStatus.name,
-                        containerName = nodeStatus.displayName,
-                        estimatedDuration = nodeStatus.estimatedDuration,
-                        hostNodeName = nodeStatus.hostNodeName,
-                        message = nodeStatus.message,
-                        phase = nodeStatus.phase,
-                        progress = nodeStatus.progress,
-                        startTime = nodeStatus.startedAt?.toString(),
-                        endTime = nodeStatus.finishedAt?.toString(),
-                    )
-                  })
-        } else
-            throw IllegalStateException(
-                "Scenario run ${scenariorunId} for Organization ${organizationId} contains a null workflowId or workflowName")
-    return status
-  }
+  override fun getScenarioRunStatus(organizationId: String, scenariorunId: String) =
+      this.workflowService.getScenarioRunStatus(
+          this.findScenarioRunById(organizationId, scenariorunId))
 }

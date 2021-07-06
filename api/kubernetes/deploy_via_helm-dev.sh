@@ -50,9 +50,10 @@ export COSMOTECH_API_RELEASE_NAME="cosmotech-api-${API_VERSION}"
 helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "${HELM_CHARTS_BASE_PATH}/helm-chart" \
     --namespace "${NAMESPACE}" \
     --values "${HELM_CHARTS_BASE_PATH}/helm-chart/values-dev.yaml" \
+    --set config.csm.platform.commit-id="$(git rev-parse --short HEAD || "")" \
+    --set config.csm.platform.vcs-ref="$(git rev-parse --abbrev-ref HEAD || "")" \
     --set image.tag="$API_VERSION" \
     --set api.version="$API_VERSION" \
     --set config.csm.platform.argo.base-uri="http://${ARGO_RELEASE_NAME}-server.${NAMESPACE}.svc.cluster.local:2746" \
-    --set config.csm.platform.commit-id="$(git rev-parse --short HEAD || "")" \
-    --set config.csm.platform.vcs-ref="$(git rev-parse --abbrev-ref HEAD || "")" \
+    --set config.csm.platform.argo.workflows.namespace="${NAMESPACE}" \
     "${@:4}"

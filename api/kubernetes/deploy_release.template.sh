@@ -192,6 +192,8 @@ config:
       vcs-ref: "${VCS_REF}"
       argo:
         base-uri: "http://${ARGO_RELEASE_NAME}-server.${NAMESPACE}.svc.cluster.local:2746"
+        workflows:
+          namespace: ${NAMESPACE}
 
 ingress:
   enabled: ${COSMOTECH_API_INGRESS_ENABLED}
