@@ -116,7 +116,7 @@ internal class ArgoWorkflowService(
       isVerifyingSsl = false
       basePath = csmPlatformProperties.argo.baseUri
       httpClient = unsafeOkHttpClient
-      isDebugging = logger.isDebugEnabled
+      isDebugging = logger.isTraceEnabled
       setUserAgent("com.cosmotech/cosmotech-api $apiVersion")
     }
   }
