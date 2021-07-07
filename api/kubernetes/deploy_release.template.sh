@@ -16,11 +16,16 @@ help() {
   echo "- NGINX_INGRESS_CONTROLLER_REPLICA_COUNT | int (default is 1) | number of pods for the NGINX Ingress Controller"
   echo "- NGINX_INGRESS_CONTROLLER_LOADBALANCER_IP | IP Address String | optional public IP Address to use as LoadBalancer IP. You can create one with this Azure CLI command: az network public-ip create --resource-group <my-rg>> --name <a-name> --sku Standard --allocation-method static --query publicIp.ipAddress -o tsv "
   echo "- NGINX_INGRESS_CONTROLLER_HELM_ADDITIONAL_OPTIONS | Additional Helm options for the NGINX Ingress Controller | Additional options to pass to Helm when creating the Ingress Controller, e.g.: --set controller.service.annotations.\"service.beta.kubernetes.io/azure-load-balancer-resource-group\"=my-azure-resource-group"
-  echo "- CERT_MANAGER_ENABLED  | boolean (default is false) | indicating whether cert-manager should be deployed. It is in charge of requesting and managing renewal of Let's Encrypt certificates"
+  echo "- CERT_MANAGER_ENABLED  | boolean (default is false). Deprecated - use TLS_CERTIFICATE_TYPE instead | indicating whether cert-manager should be deployed. It is in charge of requesting and managing renewal of Let's Encrypt certificates"
   echo "- CERT_MANAGER_INSTALL_WAIT_TIMEOUT | string (default is 3m) | how much time to wait for the cert-manager Helm Chart to be successfully deployed"
   echo "- CERT_MANAGER_USE_ACME_PROD | boolean (default is false) | whether to use the Let's Encrypt Production server. Note that this is subject to rate limiting"
-  echo "- CERT_MANAGER_COSMOTECH_API_DNS_NAME | FQDN String | DNS name, used for Let's Encrypt certificate requests, e.g.: dev.api.cosmotech.com"
-  echo "- CERT_MANAGER_ACME_CONTACT_EMAIL | Email String | contact email, used for Let's Encrypt certificate requests"
+  echo "- CERT_MANAGER_COSMOTECH_API_DNS_NAME | FQDN String. Deprecated - use COSMOTECH_API_DNS_NAME instead | DNS name, used for Let's Encrypt certificate requests, e.g.: dev.api.cosmotech.com"
+  echo "- COSMOTECH_API_DNS_NAME | FQDN String | DNS name, used for configuring the Ingress resource, e.g.: dev.api.cosmotech.com"
+  echo "- CERT_MANAGER_ACME_CONTACT_EMAIL | Email String. Deprecated - use TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL instead | contact email, used for Let's Encrypt certificate requests"
+  echo "- TLS_CERTIFICATE_TYPE | one of 'none', 'custom', 'let_s_encrypt' | strategy for TLS certificates"
+  echo "- TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL | Email String | contact email, used for Let's Encrypt certificate requests"
+  echo "- TLS_CERTIFICATE_CUSTOM_CERTIFICATE_PATH | File path | path to a file containing the custom TLS certificate to use for HTTPS"
+  echo "- TLS_CERTIFICATE_CUSTOM_KEY_PATH | File path | path to a file containing the key for the custom TLS certificate to use for HTTPS"
   echo
   echo "Usage: ./$(basename "$0") NAMESPACE ARGO_POSTGRESQL_PASSWORD [any additional options to pass as is to the cosmotech-api Helm Chart]"
   echo
@@ -63,6 +68,10 @@ cd "${WORKING_DIR}"
 # Create namespace if it does not exist
 kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
 
+if [[ "${COSMOTECH_API_DNS_NAME:-}" == "" ]]; then
+  export COSMOTECH_API_DNS_NAME="${CERT_MANAGER_COSMOTECH_API_DNS_NAME:-}"
+fi
+
 # NGINX Ingress Controller
 if [[ "${NGINX_INGRESS_CONTROLLER_ENABLED:-false}" == "true" ]]; then
   helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
@@ -93,12 +102,36 @@ EOF
 fi
 
 # cert-manager
+if [[ "${TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL:-}" == "" ]]; then
+  export TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL="${CERT_MANAGER_ACME_CONTACT_EMAIL:-}"
+fi
 if [[ "${CERT_MANAGER_USE_ACME_PROD:-false}" == "true" ]]; then
   export CERT_MANAGER_ACME="prod"
   export CERT_MANAGER_ACME_SERVER="https://acme-v02.api.letsencrypt.org/directory"
 else
   export CERT_MANAGER_ACME="staging"
   export CERT_MANAGER_ACME_SERVER="https://acme-staging-v02.api.letsencrypt.org/directory"
+fi
+if [[ "${TLS_CERTIFICATE_TYPE:-}" == "" ]]; then
+  if [[ "${CERT_MANAGER_ENABLED:-}" == "true" ]]; then
+    export TLS_CERTIFICATE_TYPE="let_s_encrypt"
+  else
+    export TLS_CERTIFICATE_TYPE="none"
+  fi
+fi
+if [[ "${TLS_CERTIFICATE_TYPE:-let_s_encrypt}" != "let_s_encrypt" ]]; then
+  export CERT_MANAGER_ENABLED="false"
+  if [[ "${TLS_CERTIFICATE_TYPE:-}" == "custom" ]]; then
+    export TLS_SECRET_NAME="custom-tls-secret"
+    kubectl -n "${NAMESPACE}" create secret tls "${TLS_SECRET_NAME}" \
+      --cert "${TLS_CERTIFICATE_CUSTOM_CERTIFICATE_PATH}" \
+      --key "${TLS_CERTIFICATE_CUSTOM_KEY_PATH}" \
+      --dry-run=client \
+      -o yaml | kubectl -n "${NAMESPACE}" apply -f -
+  fi
+else
+  export CERT_MANAGER_ENABLED="true"
+  export TLS_SECRET_NAME="letsencrypt-${CERT_MANAGER_ACME}"
 fi
 if [[ "${CERT_MANAGER_ENABLED:-false}" == "true" ]]; then
   helm repo add jetstack https://charts.jetstack.io
@@ -113,7 +146,7 @@ if [[ "${CERT_MANAGER_ENABLED:-false}" == "true" ]]; then
     --set installCRDs=true \
     --set nodeSelector."beta\.kubernetes\.io/os"=linux
 
-  if [[ "${CERT_MANAGER_COSMOTECH_API_DNS_NAME:-}" != "" && "${CERT_MANAGER_ACME_CONTACT_EMAIL:-}" != "" ]]; then
+  if [[ "${COSMOTECH_API_DNS_NAME:-}" != "" && "${TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL:-}" != "" ]]; then
 cat <<EOF | kubectl --namespace "${NAMESPACE}" apply --validate=false -f -
 apiVersion: cert-manager.io/v1alpha2
 kind: ClusterIssuer
@@ -122,7 +155,7 @@ metadata:
 spec:
   acme:
     server: "${CERT_MANAGER_ACME_SERVER}"
-    email: "${CERT_MANAGER_ACME_CONTACT_EMAIL}"
+    email: "${TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL}"
     privateKeySecretRef:
       name: letsencrypt-${CERT_MANAGER_ACME}
     solvers:
@@ -139,17 +172,17 @@ spec:
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
-  name: tls-secret-${CERT_MANAGER_ACME}
+  name: ${TLS_SECRET_NAME}
 spec:
-  secretName: tls-secret-${CERT_MANAGER_ACME}
+  secretName: ${TLS_SECRET_NAME}
   dnsNames:
-    - ${CERT_MANAGER_COSMOTECH_API_DNS_NAME}
+    - ${COSMOTECH_API_DNS_NAME}
   acme:
     config:
       - http01:
           ingressClass: nginx
         domains:
-          - ${CERT_MANAGER_COSMOTECH_API_DNS_NAME}
+          - ${COSMOTECH_API_DNS_NAME}
   issuerRef:
     name: letsencrypt-${CERT_MANAGER_ACME}
     kind: ClusterIssuer
@@ -173,7 +206,7 @@ envsubst < ./csm-argo/values.yaml | \
 export COSMOTECH_API_RELEASE_NAME="cosmotech-api-${API_VERSION}"
 helm pull oci://ghcr.io/cosmo-tech/cosmotech-api-chart --version "${CHART_PACKAGE_VERSION}"
 
-if [[ "${CERT_MANAGER_COSMOTECH_API_DNS_NAME:-}" != "" && "${CERT_MANAGER_ACME:-}" != "" ]]; then
+if [[ "${COSMOTECH_API_DNS_NAME:-}" != "" && "${CERT_MANAGER_ACME:-}" != "" ]]; then
   export COSMOTECH_API_INGRESS_ENABLED=true
 else
   export COSMOTECH_API_INGRESS_ENABLED=false
@@ -199,12 +232,11 @@ ingress:
   enabled: ${COSMOTECH_API_INGRESS_ENABLED}
   annotations:
     kubernetes.io/ingress.class: nginx
-    cert-manager.io/cluster-issuer: "letsencrypt-${CERT_MANAGER_ACME}"
   hosts:
-    - host: "${CERT_MANAGER_COSMOTECH_API_DNS_NAME}"
+    - host: "${COSMOTECH_API_DNS_NAME}"
   tls:
-    - secretName: tls-secret-${CERT_MANAGER_ACME}
-      hosts: [${CERT_MANAGER_COSMOTECH_API_DNS_NAME}]
+    - secretName: ${TLS_SECRET_NAME}
+      hosts: [${COSMOTECH_API_DNS_NAME}]
 
 resources:
   # Recommended in production environments
@@ -217,7 +249,14 @@ resources:
 
 EOF
 
+if [[ "${CERT_MANAGER_ENABLED:-false}" == "true" ]]; then
+  export CERT_MANAGER_INGRESS_ANNOTATION_SET="--set ingress.annotations.cert-manager\.io/cluster-issuer=letsencrypt-${CERT_MANAGER_ACME}"
+else
+  export CERT_MANAGER_INGRESS_ANNOTATION_SET=""
+fi
+
 helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "cosmotech-api-chart-${CHART_PACKAGE_VERSION}.tgz" \
     --namespace "${NAMESPACE}" \
     --values values-cosmotech-api-deploy.yaml \
+    ${CERT_MANAGER_INGRESS_ANNOTATION_SET} \
     "${@:3}"
