@@ -64,6 +64,8 @@ popd
 cp -r ../* ../../../release/${git_repo_id}
 pushd ../../../release/${git_repo_id}
 
+git status 2>&1
+
 if [[ $(git status --porcelain) ]]; then
 
   # Stages the new files for commit.
@@ -75,6 +77,7 @@ if [[ $(git status --porcelain) ]]; then
   for additional_commit_msg in ${@:6}; do
     commit_msg_body="$commit_msg_body -m \"$additional_commit_msg\""
   done
+  echo "commit_msg_body: $commit_msg_body"
   git commit -m "$release_note" "$commit_msg_body"
 
   # Pushes (Forces) the changes in the local repository up to the remote repository
