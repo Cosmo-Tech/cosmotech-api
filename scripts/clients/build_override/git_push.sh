@@ -64,8 +64,10 @@ popd
 cp -r ../* ../../../release/${git_repo_id}
 pushd ../../../release/${git_repo_id}
 
+git status
+
 # Stages the new files for commit.
-git add .
+git add --all .
 
 # Commits the tracked changes and prepares them to be pushed to a remote repository.
 commit_msg_body=""
