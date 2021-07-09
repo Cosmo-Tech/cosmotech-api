@@ -57,7 +57,7 @@ jobs:
         env:
           GIT_TOKEN: ${{ secrets.OPENAPI_CLIENTS_GITHUB_PAT }}
         run: |
-          commits=${{ join(github.event.commits.\*.message, ' _SEP_ ') }}
+          commits=${{ join(github.event.commits.*.message, ' _SEP_ ') }}
           echo "commits=[${commits}]"
           IFS=' _SEP_ ' read -a commitsArray <<< "$commitMsg"
           additionalGitMessages=""
