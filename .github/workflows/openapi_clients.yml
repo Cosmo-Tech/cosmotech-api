@@ -53,26 +53,28 @@ jobs:
         run: ./gradlew --info ${{ matrix.gradle_task }}
 
       - name: Set Git identity
+        if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
         run: |
           git config --global user.email csmplatform@users.noreply.github.com
           git config --global user.name "csmplatform"
+
+      - name: Generate commit file
+        if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
+        run: |
+          commits="${{ join(github.event.commits.*.message, '\n\n') }}"
+          echo "commits=[${commits}]"
+          echo "Automatically update ${{ matrix.language }} client (ref: ${{ github.repository }}@${{ github.sha }})" > /tmp/commit-file.txt
+          echo "\n\n" >> /tmp/commit-file.txt
+          echo "$commits" >> /tmp/commit-file.txt
+          echo "\n\n" >> /tmp/commit-file.txt
+          echo "Co-authored-by: $GITHUB_ACTOR <$GITHUB_ACTOR@users.noreply.github.com>" >> /tmp/commit-file.txt
 
       - name: Push ${{ matrix.language }} Client to ${{ matrix.repo }}
         if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
         env:
           GIT_TOKEN: ${{ secrets.OPENAPI_CLIENTS_GITHUB_PAT }}
         run: |
-          commits="${{ join(github.event.commits.*.message, ' _SEP_ ') }}"
-          echo "commits=[${commits}]"
-          IFS=' _SEP_ ' read -a commitsArray <<< "$commitMsg"
-          additionalGitMessages=""
-          for commit in "${commitsArray[@]}"; do
-            echo "Commit messge: [$commit]"
-            if [[ "$commit" != "" ]]; then
-              additionalGitMessages="${additionalGitMessages} ${commit}"
-            fi
-          done
-          export ADDITIONAL_GIT_MESSAGES="$additionalGitMessages"
+          export GIT_COMMIT_MESSAGE_FILE=/tmp/commit-file.txt
           ./scripts/clients/publish_client.sh \
             ${{ matrix.language }} \
             ${{ github.actor }} \
