@@ -3,7 +3,7 @@
 <a name="documentation-for-api-endpoints"></a>
 ## Documentation for API Endpoints
 
-All URIs are relative to *https://api.cosmotech.com*
+All URIs are relative to *https://dev.api.cosmotech.com*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------

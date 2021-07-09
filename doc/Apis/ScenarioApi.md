@@ -1,6 +1,6 @@
 # ScenarioApi
 
-All URIs are relative to *https://api.cosmotech.com*
+All URIs are relative to *https://dev.api.cosmotech.com*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
