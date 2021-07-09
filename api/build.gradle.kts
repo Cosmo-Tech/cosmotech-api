@@ -78,7 +78,7 @@ openApiMerger {
       //      termsOfService.set("http://openapimerger.com/terms-of-service")
       contact {
         name.set("Repository")
-        // email.set("openapi@sample.com")
+        email.set("platform@cosmotech.com")
         url.set("https://github.com/Cosmo-Tech/cosmotech-api")
       }
       license {
@@ -87,6 +87,10 @@ openApiMerger {
       }
     }
     servers {
+      register("development") {
+        url.set("https://dev.api.cosmotech.com")
+        description.set("Development")
+      }
       register("production") {
         url.set("https://api.cosmotech.com")
         description.set("Production")
