@@ -64,23 +64,26 @@ popd
 cp -r ../* ../../../release/${git_repo_id}
 pushd ../../../release/${git_repo_id}
 
-git status
+if [[ $(git status --porcelain) ]]; then
 
-# Stages the new files for commit.
-git add --all .
+  # Stages the new files for commit.
+  git add --all .
 
-# Commits the tracked changes and prepares them to be pushed to a remote repository.
-commit_msg_body=""
-# shellcheck disable=SC2068
-for additional_commit_msg in ${@:6}; do
-  commit_msg_body="$commit_msg_body -m \"$additional_commit_msg\""
-done
-git commit -m "$release_note" "$commit_msg_body"
+  # Commits the tracked changes and prepares them to be pushed to a remote repository.
+  commit_msg_body=""
+  # shellcheck disable=SC2068
+  for additional_commit_msg in ${@:6}; do
+    commit_msg_body="$commit_msg_body -m \"$additional_commit_msg\""
+  done
+  git commit -m "$release_note" "$commit_msg_body"
 
-# Pushes (Forces) the changes in the local repository up to the remote repository
-echo "Git pushing to https://${git_host}/${git_organization_id}/${git_repo_id}.git"
-git push origin master 2>&1 | grep -v 'To https'
+  # Pushes (Forces) the changes in the local repository up to the remote repository
+  echo "Git pushing to https://${git_host}/${git_organization_id}/${git_repo_id}.git"
+  git push origin master 2>&1 | grep -v 'To https'
+
+fi
 
 popd
+
 # Cleaning release repository
 rm -rf ../../../release
