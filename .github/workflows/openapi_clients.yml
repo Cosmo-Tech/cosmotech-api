@@ -68,4 +68,7 @@ jobs:
             fi
           done
           export ADDITIONAL_GIT_MESSAGES="$additionalGitMessages"
-          ./scripts/clients/publish_client.sh ${{ matrix.language }} ${{ github.actor }}
+          ./scripts/clients/publish_client.sh \
+            ${{ matrix.language }} \
+            ${{ github.actor }} \
+            "Automatically update ${{ matrix.language }} client (ref: ${{ github.repository }}@${{ github.sha }})"
