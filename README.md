@@ -1,6 +1,4 @@
-# cosmotech-api
-
-> Cosmo Tech Cloud Platform API
+# Cosmo Tech Cloud Platform API
 
 [![Build, Test and Package](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/build_test_package.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/build_test_package.yml)
 [![Lint](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/lint.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/lint.yml)
@@ -18,14 +16,18 @@
 ### Locally
 
 ```shell
-java -jar api/build/libs/cosmotech-api-0.0.1-SNAPSHOT-uberjar.jar
+java -jar api/build/libs/cosmotech-api-<VERSION>-uberjar.jar
 ```
 
-Spring boot run
+You can also run via Spring Boot, like so:
 ```shell
 ./gradlew :cosmotech-api:bootRun
 ```
-This activate dev profile which uses config/application-dev.yml.
+
+This activates an `dev` Spring profile, the configuration of which can be overridden through a `config/application-dev.yml` file.
+
+See the [default configuration](api/src/main/resources/application.yml).
+Also note that the `azure` profile is also activated by default.
 
 ### Kubernetes
 
@@ -41,7 +43,7 @@ az acr login --name csmphoenix
 
 ```shell
 ./gradlew :cosmotech-api:jib \
-  -Djib.to.image=csmphoenix.azurecr.io/cosmotech-api:latest
+  -Djib.to.image=csmphoenixdev.azurecr.io/cosmotech-api:latest
 ```
 
 * Configure the cluster
@@ -54,7 +56,7 @@ Otherwise, run `az aks get-credentials`, e.g.:
 ```shell
 az aks get-credentials \
   --resource-group phoenix \
-  --name phoenixAKS
+  --name phoenixAKSdev
 ```
 
 * Create the namespace if needed
@@ -63,45 +65,46 @@ az aks get-credentials \
 kubectl create namespace phoenix
 ```
 
-* Install the Helm Chart
+* Run the deployment script
 
-This uses [Helm](https://helm.sh/); so make sure you have it installed.
+```
+ ./api/kubernetes/deploy_via_helm.sh --help                                                                                                                                       
 
-The [api/kubernetes/helm-chart/values-azure.yaml](api/kubernetes/helm-chart/values-azure.yaml) file 
-provides sensible defaults for deploying into AKS.
-For example, it expects both [cert-manager](https://cert-manager.io/docs/) and 
-[NGINX Ingress Controller](https://kubernetes.github.io/ingress-nginx/) to be available and 
-configured in the cluster, since it creates an Ingress Resource configured with TLS support and 
-a dedicated hostname: [api.azure.cosmo-platform.com](https://api.azure.cosmo-platform.com).
+This script takes at least 4 parameters.
 
-Head to https://docs.microsoft.com/en-us/azure/aks/ingress-tls for further details.
+The following optional environment variables can be set to alter this script behavior:
+- ARGO_MINIO_REQUESTS_MEMORY | units of bytes (default is 4Gi) | Memory requests for the Argo MinIO server
+- NGINX_INGRESS_CONTROLLER_ENABLED | boolean (default is false) | indicating whether an NGINX Ingress Controller should be deployed and an Ingress resource created too
+- NGINX_INGRESS_CONTROLLER_REPLICA_COUNT | int (default is 1) | number of pods for the NGINX Ingress Controller
+- NGINX_INGRESS_CONTROLLER_LOADBALANCER_IP | IP Address String | optional public IP Address to use as LoadBalancer IP. You can create one with this Azure CLI command: az network public-ip create --resource-group <my-rg>> --name <a-name> --sku Standard --allocation-method static --query publicIp.ipAddress -o tsv 
+- NGINX_INGRESS_CONTROLLER_HELM_ADDITIONAL_OPTIONS | Additional Helm options for the NGINX Ingress Controller | Additional options to pass to Helm when creating the Ingress Controller, e.g.: --set controller.service.annotations."service.beta.kubernetes.io/azure-load-balancer-resource-group"=my-azure-resource-group
+- CERT_MANAGER_ENABLED  | boolean (default is false). Deprecated - use TLS_CERTIFICATE_TYPE instead | indicating whether cert-manager should be deployed. It is in charge of requesting and managing renewal of Let's Encrypt certificates
+- CERT_MANAGER_INSTALL_WAIT_TIMEOUT | string (default is 3m) | how much time to wait for the cert-manager Helm Chart to be successfully deployed
+- CERT_MANAGER_USE_ACME_PROD | boolean (default is false) | whether to use the Let's Encrypt Production server. Note that this is subject to rate limiting
+- CERT_MANAGER_COSMOTECH_API_DNS_NAME | FQDN String. Deprecated - use COSMOTECH_API_DNS_NAME instead | DNS name, used for Let's Encrypt certificate requests, e.g.: dev.api.cosmotech.com
+- COSMOTECH_API_DNS_NAME | FQDN String | DNS name, used for configuring the Ingress resource, e.g.: dev.api.cosmotech.com
+- CERT_MANAGER_ACME_CONTACT_EMAIL | Email String. Deprecated - use TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL instead | contact email, used for Let's Encrypt certificate requests
+- TLS_CERTIFICATE_TYPE | one of 'none', 'custom', 'let_s_encrypt' | strategy for TLS certificates
+- TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL | Email String | contact email, used for Let's Encrypt certificate requests
+- TLS_CERTIFICATE_CUSTOM_CERTIFICATE_PATH | File path | path to a file containing the custom TLS certificate to use for HTTPS
+- TLS_CERTIFICATE_CUSTOM_KEY_PATH | File path | path to a file containing the key for the custom TLS certificate to use for HTTPS
 
-```shell
-export API_VERSION=latest;
-helm upgrade --install cosmotech-api-${API_VERSION} \
-  api/kubernetes/helm-chart \
-  --namespace phoenix \
-  --values api/kubernetes/helm-chart/values-azure.yaml \
-  --set api.version=$API_VERSION \
-  --set image.tag=latest \
-  --set imageCredentials.username=`az acr credential show -n csmphoenix --query="username" -o tsv` \
-  --set imageCredentials.password=`az acr credential show -n csmphoenix --query="passwords[0].value" -o tsv` \
-  --set config.csm.platform.azure.cosmos.uri="<COSMOSDB_HTTPS_ENDPOINT_URI>" \
-  --set config.csm.platform.azure.cosmos.key="<COSMOSDB_ACCOUNT_KEY>" \
-  --set config.csm.platform.azure.storage.account-name="<AZURE_STORAGE_ACCOUNT>" \
-  --set config.csm.platform.azure.storage.account-key="<AZURE_STORAGE_ACCOUNT_ACCESS_KEY>"
+Usage: ./deploy_via_helm.sh CHART_PACKAGE_VERSION NAMESPACE ARGO_POSTGRESQL_PASSWORD API_VERSION [any additional options to pass as is to the cosmotech-api Helm Chart]
+
+Examples:
+
+- ./deploy_via_helm.sh latest phoenix "a-super-secret-password-for-postgresql" latest \
+    --values /path/to/my/cosmotech-api-values.yaml \
+    --set image.pullPolicy=Always
+
+- ./deploy_via_helm.sh 1.0.1 phoenix "change-me" v1 --values /path/to/my/cosmotech-api-values.yaml
 ```
 
-Alternatively, it is recommended to use a dedicated `values.yaml` file instead, like below.
+You may want to use a dedicated `values.yaml` file instead, like below.
 Feel free to copy and customize this [values-azure.yaml](api/kubernetes/helm-chart/values-azure.yaml) file as needed.
 
 ```shell
-export API_VERSION=latest;
-helm upgrade --install cosmotech-api-${API_VERSION} \
-  api/kubernetes/helm-chart \
-  --namespace phoenix \
-  --values /path/to/my/values-azure.yaml \
-  --set api.version=$API_VERSION
+./api/kubernetes/deploy_via_helm.sh latest phoenix "a-secret" latest --values /path/to/my/values-azure-dev.yaml
 ```
 
 See the dedicated [README](api/kubernetes/helm-chart/README.md) for more details about the different properties.
@@ -135,22 +138,28 @@ This creates a Kubernetes context named `kind-<cluster_name>`.
 kubectl create namespace phoenix
 ```
 
-* Install the Helm Chart
+* Run the dev deployment script
 
-This uses [Helm](https://helm.sh/); so make sure you have it installed.
+** Example
 
-```shell
-export API_VERSION=latest;
-helm upgrade --install cosmotech-api-${API_VERSION} \
-  api/kubernetes/helm-chart \
-  --namespace phoenix \
-  --values api/kubernetes/helm-chart/values-dev.yaml \
-  --set api.version=$API_VERSION \
-  --set image.tag=latest \
-  --set config.csm.platform.azure.cosmos.uri="<COSMOSDB_HTTPS_ENDPOINT_URI>" \
-  --set config.csm.platform.azure.cosmos.key="<COSMOSDB_ACCOUNT_KEY>" \
-  --set config.csm.platform.azure.storage.account-name="<AZURE_STORAGE_ACCOUNT>" \
-  --set config.csm.platform.azure.storage.account-key="<AZURE_STORAGE_ACCOUNT_ACCESS_KEY>"
+```
+./api/kubernetes/deploy_via_helm-dev.sh latest phoenix "a-super-secret-password" latest --values /path/to/my/values-dev.yaml
+```
+
+This uses the default [values-dev.yaml](api/kubernetes/helm-chart/values-dev.yaml).
+
+** Usage
+
+```
+❯ ./api/kubernetes/deploy_via_helm-dev.sh --help                                                                                         
+                                             
+This script takes at least 3 parameters.
+
+The following optional environment variables can be set to alter this script behavior:
+- ARGO_MINIO_REQUESTS_MEMORY | units of bytes (default is 4Gi) | Memory requests for the Argo MinIO server
+
+Usage: ./deploy_via_helm-dev.sh NAMESPACE ARGO_POSTGRESQL_PASSWORD API_VERSION [any additional options to pass as is to the cosmotech-api Helm Chart]
+
 ```
 
 See the dedicated [README](api/kubernetes/helm-chart/README.md) for more details about the different properties.
@@ -160,11 +169,14 @@ See the dedicated [README](api/kubernetes/helm-chart/README.md) for more details
 - [openapi.yaml](https://csmphoenixdev.blob.core.windows.net/public/openapi.yaml)
 
 Some generated items are stored in GitHub:
+
 - Documentation: in [doc/](doc/)
 - PlantUml file and image: in [openapi/plantuml](openapi/plantuml)
 
 ## Generated API clients
+
 Clients for the API are generated and available on GitHub:
+
 * [Javascript](https://github.com/Cosmo-Tech/cosmotech-api-javascript-client)
 * [Python](https://github.com/Cosmo-Tech/cosmotech-api-python-client)
 * [Java](https://github.com/Cosmo-Tech/cosmotech-api-java-client)
