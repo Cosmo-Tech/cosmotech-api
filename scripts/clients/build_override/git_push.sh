@@ -79,6 +79,9 @@ if [[ $(git status --porcelain) ]]; then
   for additional_commit_msg in ${@:6}; do
     commit_msg_body="$commit_msg_body -m \"$additional_commit_msg\""
   done
+  if [[ "$GITHUB_ACTOR" != "" ]]; then
+    commit_msg_body="$commit_msg_body -m \"Co-authored-by: $GITHUB_ACTOR <$GITHUB_ACTOR@users.noreply.github.com>\""
+  fi
   echo "commit_msg_body: $commit_msg_body"
   if [[ "$commit_msg_body" == "" ]]; then
     git commit -m "$release_note"
