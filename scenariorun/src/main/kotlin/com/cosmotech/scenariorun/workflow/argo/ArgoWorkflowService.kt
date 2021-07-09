@@ -133,8 +133,16 @@ internal class ArgoWorkflowService(
   }
 
   private fun getWorkflowStatus(workflowId: String, workflowName: String): WorkflowStatus? {
-    val workflow = this.getActiveWorkflow(workflowId, workflowName)
-    return workflow.status
+    return try {
+      this.getActiveWorkflow(workflowId, workflowName).status
+    } catch (apiException: ApiException) {
+      logger.warn(
+          "Could not retrieve status for workflow '{}' ({})",
+          workflowName,
+          workflowId,
+          apiException)
+      null
+    }
   }
 
   private fun startWorkflow(scenarioRunStartContainers: ScenarioRunStartContainers): Workflow {
