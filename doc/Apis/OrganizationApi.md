@@ -1,6 +1,6 @@
 # OrganizationApi
 
-All URIs are relative to *https://api.azure.cosmo-platform.com*
+All URIs are relative to *https://api.cosmotech.com*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

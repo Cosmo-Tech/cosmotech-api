@@ -283,7 +283,7 @@ entity ScenarioRunTemplateParameterValue {
     * parameterId: String
     varType: String
     * value: String
-    isInherited: String
+    isInherited: Boolean
 }
 
 entity ScenarioUser { 
