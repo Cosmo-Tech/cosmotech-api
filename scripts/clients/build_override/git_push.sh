@@ -71,6 +71,8 @@ if [[ $(git status --porcelain) ]]; then
   # Stages the new files for commit.
   git add --all .
 
+  git status 2>&1
+
   # Commits the tracked changes and prepares them to be pushed to a remote repository.
   commit_msg_body=""
   # shellcheck disable=SC2068
@@ -78,7 +80,13 @@ if [[ $(git status --porcelain) ]]; then
     commit_msg_body="$commit_msg_body -m \"$additional_commit_msg\""
   done
   echo "commit_msg_body: $commit_msg_body"
-  git commit -m "$release_note" "$commit_msg_body"
+  if [[ "$commit_msg_body" == "" ]]; then
+    git commit -m "$release_note"
+  else
+    # shellcheck disable=SC2090
+    # shellcheck disable=SC2086
+    git commit -m "$release_note" $commit_msg_body
+  fi
 
   # Pushes (Forces) the changes in the local repository up to the remote repository
   echo "Git pushing to https://${git_host}/${git_organization_id}/${git_repo_id}.git"
