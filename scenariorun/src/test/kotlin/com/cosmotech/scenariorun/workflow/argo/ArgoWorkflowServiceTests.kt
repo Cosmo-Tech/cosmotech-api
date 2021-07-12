@@ -367,13 +367,13 @@ class ArgoWorkflowServiceTests {
     val labeledTemplate =
         workflow.templates?.find { template -> template.name.equals("fetchDatasetContainer-1") }
 
-    val expected = mapOf(
-                      "label1" to "valLabel1",
-                      "label2" to "valLabel2",
-                    )
+    val expected =
+        mapOf(
+            "label1" to "valLabel1",
+            "label2" to "valLabel2",
+        )
     assertEquals(expected, labeledTemplate?.metadata?.labels)
   }
-
 
   private fun getScenarioRunContainer(name: String = "default"): ScenarioRunContainer {
     val src =
@@ -389,10 +389,11 @@ class ArgoWorkflowServiceTests {
         ScenarioRunContainer(
             name = name,
             image = "cosmotech/testcontainer",
-            labels = mapOf(
-                      "label1" to "valLabel1",
-                      "label2" to "valLabel2",
-                    ),
+            labels =
+                mapOf(
+                    "label1" to "valLabel1",
+                    "label2" to "valLabel2",
+                ),
         )
     return src
   }

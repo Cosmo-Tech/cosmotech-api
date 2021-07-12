@@ -303,7 +303,6 @@ class ContainerFactoryTests {
     assertEquals(expected, container.envVars)
   }
 
-
   @Test
   fun `Dataset managed identity env vars valid`() {
     val container =
@@ -346,10 +345,7 @@ class ContainerFactoryTests {
             "workspaceid",
             "Test",
             CSM_SIMULATION_ID)
-    val expected =
-        mapOf(
-          "aadpodidbinding" to "phoenixdev-pod-identity"
-        )
+    val expected = mapOf("aadpodidbinding" to "phoenixdev-pod-identity")
     assertEquals(expected, container.labels)
   }
 

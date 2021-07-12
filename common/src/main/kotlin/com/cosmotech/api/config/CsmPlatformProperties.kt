@@ -152,8 +152,10 @@ data class CsmPlatformProperties(
         /** The Azure Client Secret (core App) */
         val clientSecret: String,
 
-        /** The Azure Active Directory Pod Id binding
-        bound to an AKS pod identity linked to a managed identity */
+        /**
+         * The Azure Active Directory Pod Id binding bound to an AKS pod identity linked to a
+         * managed identity
+         */
         val aadPodIdBinding: String,
     )
 

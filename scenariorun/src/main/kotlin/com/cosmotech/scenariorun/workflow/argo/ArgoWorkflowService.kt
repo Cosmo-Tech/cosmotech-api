@@ -274,9 +274,9 @@ internal class ArgoWorkflowService(
     }
 
     return Template()
-            .name(scenarioRunContainer.name)
-            .metadata(Metadata().labels(scenarioRunContainer.labels))
-            .container(container)
+        .name(scenarioRunContainer.name)
+        .metadata(Metadata().labels(scenarioRunContainer.labels))
+        .container(container)
   }
 
   internal fun buildWorkflowSpec(startContainers: ScenarioRunStartContainers): WorkflowSpec {
