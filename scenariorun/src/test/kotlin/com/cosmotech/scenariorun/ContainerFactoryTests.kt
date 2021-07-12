@@ -350,7 +350,7 @@ class ContainerFactoryTests {
         mapOf(
           "aadpodidbinding" to "phoenixdev-pod-identity"
         )
-    // assertEquals(expected, container.labels)
+    assertEquals(expected, container.labels)
   }
 
   @Test
@@ -1593,7 +1593,8 @@ class ContainerFactoryTests {
         name = "Test Connector",
         repository = "cosmotech/test_connector",
         version = "1.0.0",
-        ioTypes = listOf(IoTypes.read))
+        ioTypes = listOf(IoTypes.read),
+        azureManagedIdentity = true)
   }
 
   private fun getDatasetConnectorNoVars(): DatasetConnector {

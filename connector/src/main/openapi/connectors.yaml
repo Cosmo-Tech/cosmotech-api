@@ -151,6 +151,9 @@ components:
         url:
           type: string
           description: an optional URL link to connector page
+        azureManagedIdentity:
+          type: boolean
+          description: whether or not the connector uses Azure Managed Identity
         ioTypes:
           type: array
           items:

@@ -675,7 +675,7 @@ internal class ContainerFactory(
       workspaceKey: String,
       csmSimulationId: String
   ): Map<String, String> {
-    val envVars = getCommonEnvVars(csmSimulationId, organizationId, workspaceKey)
+    val envVars = getCommonEnvVars(csmSimulationId, organizationId, workspaceKey, connector.azureManagedIdentity)
     val fetchPath = if (fetchId == null) fetchPathBase else "${fetchPathBase}/${fetchId}"
     envVars[FETCH_PATH_VAR] = fetchPath
     val datasetEnvVars =
@@ -728,12 +728,15 @@ internal class ContainerFactory(
   private fun getCommonEnvVars(
       csmSimulationId: String,
       organizationId: String,
-      workspaceKey: String
+      workspaceKey: String,
+      azureManagedIdentity: Boolean? = null,
   ): MutableMap<String, String> {
-    return mutableMapOf(
+    val identityEnvVars = if (azureManagedIdentity == true) mutableMapOf() else mutableMapOf(
         AZURE_TENANT_ID_VAR to (csmPlatformProperties.azure?.credentials?.tenantId ?: ""),
         AZURE_CLIENT_ID_VAR to (csmPlatformProperties.azure?.credentials?.clientId ?: ""),
         AZURE_CLIENT_SECRET_VAR to (csmPlatformProperties.azure?.credentials?.clientSecret ?: ""),
+      )
+    val commonEnvVars = mutableMapOf(
         CSM_SIMULATION_ID to csmSimulationId,
         API_BASE_URL_VAR to csmPlatformProperties.api.baseUrl,
         API_BASE_SCOPE_VAR to "${csmPlatformProperties.azure?.appIdUri}${API_SCOPE_SUFFIX}",
@@ -745,6 +748,8 @@ internal class ContainerFactory(
             (csmPlatformProperties.azure?.dataWarehouseCluster?.options?.ingestionUri ?: ""),
         AZURE_DATA_EXPLORER_DATABASE_NAME to "${organizationId}-${workspaceKey}",
     )
+
+    return (identityEnvVars + commonEnvVars).toMutableMap()
   }
 }
 
