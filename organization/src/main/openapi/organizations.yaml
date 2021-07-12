@@ -3,7 +3,7 @@ openapi: 3.0.3
 info:
   title: Cosmo Tech Organization Manager API
   description: Cosmo Tech Organization Manager API
-  version: 1.0.0
+  version: 0.0.8-SNAPSHOT
 
 servers:
 - url: 'https://api.azure.cosmo-platform.com'
