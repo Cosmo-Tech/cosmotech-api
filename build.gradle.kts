@@ -22,7 +22,7 @@ plugins {
 
   id("org.openapi.generator") version "5.1.1" apply false
 
-  id("com.google.cloud.tools.jib") version "3.1.1" apply false
+  id("com.google.cloud.tools.jib") version "3.1.2" apply false
 
   id("io.gitlab.arturbosch.detekt") version "1.17.1"
 }
