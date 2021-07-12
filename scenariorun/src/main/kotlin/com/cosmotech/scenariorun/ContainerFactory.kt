@@ -402,7 +402,7 @@ internal class ContainerFactory(
         if (connector.azureManagedIdentity == true)
             mapOf(
                 AZURE_AAD_POD_ID_BINDING_LABEL to
-                    (csmPlatformProperties.azure?.credentials?.aadPodIdBinding ?: "unset"))
+                    (csmPlatformProperties.azure?.credentials?.aadPodIdBinding!!))
         else null
     return ScenarioRunContainer(
         name = "${nameBase}-$datasetCount",

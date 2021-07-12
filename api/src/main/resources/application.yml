@@ -89,7 +89,7 @@ csm:
         tenantId: ""
         clientId: ""
         clientSecret: ""
-        aadPodIdBinding: "phoenixdev-pod-identity"
+        aadPodIdBinding: "phoenix-pod-identity"
       storage:
         baseUri: ""
         resourceUri: ""
