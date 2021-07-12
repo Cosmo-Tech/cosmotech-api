@@ -303,6 +303,56 @@ class ContainerFactoryTests {
     assertEquals(expected, container.envVars)
   }
 
+
+  @Test
+  fun `Dataset managed identity env vars valid`() {
+    val container =
+        factory.buildFromDataset(
+            getDatasetNoVars(),
+            getConnectorNoVarsManagedIdentity(),
+            1,
+            false,
+            null,
+            "Organizationid",
+            "workspaceid",
+            "Test",
+            CSM_SIMULATION_ID)
+    val expected =
+        mapOf(
+            "CSM_SIMULATION_ID" to "simulationrunid",
+            "CSM_API_URL" to "https://api.cosmotech.com",
+            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+        )
+    assertEquals(expected, container.envVars)
+  }
+
+  @Test
+  fun `Dataset managed identity labels valid`() {
+    val container =
+        factory.buildFromDataset(
+            getDatasetNoVars(),
+            getConnectorNoVarsManagedIdentity(),
+            1,
+            false,
+            null,
+            "Organizationid",
+            "workspaceid",
+            "Test",
+            CSM_SIMULATION_ID)
+    val expected =
+        mapOf(
+          "aadpodidbinding" to "phoenixdev-pod-identity"
+        )
+    // assertEquals(expected, container.labels)
+  }
+
   @Test
   fun `Dataset args Workspace File valid`() {
     val container =
@@ -1527,6 +1577,16 @@ class ContainerFactoryTests {
   }
 
   private fun getConnectorNoVars(): Connector {
+    return Connector(
+        id = "QsDfGhJk",
+        key = "TestConnector",
+        name = "Test Connector",
+        repository = "cosmotech/test_connector",
+        version = "1.0.0",
+        ioTypes = listOf(IoTypes.read))
+  }
+
+  private fun getConnectorNoVarsManagedIdentity(): Connector {
     return Connector(
         id = "QsDfGhJk",
         key = "TestConnector",

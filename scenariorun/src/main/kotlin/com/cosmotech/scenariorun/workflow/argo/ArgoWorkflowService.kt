@@ -20,6 +20,7 @@ import io.argoproj.workflow.apis.InfoServiceApi
 import io.argoproj.workflow.apis.WorkflowServiceApi
 import io.argoproj.workflow.models.DAGTask
 import io.argoproj.workflow.models.DAGTemplate
+import io.argoproj.workflow.models.Metadata
 import io.argoproj.workflow.models.NodeStatus
 import io.argoproj.workflow.models.Template
 import io.argoproj.workflow.models.Workflow
@@ -272,7 +273,10 @@ internal class ArgoWorkflowService(
       container.command(listOf(scenarioRunContainer.entrypoint))
     }
 
-    return Template().name(scenarioRunContainer.name).container(container)
+    return Template()
+            .name(scenarioRunContainer.name)
+            .metadata(Metadata().labels(scenarioRunContainer.labels))
+            .container(container)
   }
 
   internal fun buildWorkflowSpec(startContainers: ScenarioRunStartContainers): WorkflowSpec {
@@ -455,7 +459,7 @@ internal class ArgoWorkflowService(
 
   private fun buildMetadata(startContainers: ScenarioRunStartContainers): V1ObjectMeta {
     val generateName = startContainers.generateName ?: CSM_DEFAULT_WORKFLOW_NAME
-    return V1ObjectMeta().generateName(generateName).labels(startContainers.labels)
+    return V1ObjectMeta().generateName(generateName)
   }
 
   // Should be handled synchronously
