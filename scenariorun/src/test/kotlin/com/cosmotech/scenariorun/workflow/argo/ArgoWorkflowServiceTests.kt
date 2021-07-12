@@ -360,6 +360,21 @@ class ArgoWorkflowServiceTests {
     assertEquals(expected, template.container?.volumeMounts)
   }
 
+  @Test
+  fun `Create Workflow with metadata labels`() {
+    val sc = getStartContainersWithLabels()
+    val workflow = argoWorkflowService.buildWorkflow(sc)
+
+    val expected = V1ObjectMeta()
+                    .generateName("default-workflow-")
+                    .labels(mapOf(
+                      "label1" to "valLabel1",
+                      "label2" to "valLabel2",
+                    ))
+    assertEquals(expected, workflow.metadata)
+  }
+
+
   private fun getScenarioRunContainer(name: String = "default"): ScenarioRunContainer {
     val src =
         ScenarioRunContainer(
@@ -438,6 +453,29 @@ class ArgoWorkflowServiceTests {
     val sc =
         ScenarioRunStartContainers(
             nodeLabel = "highcpupool",
+            containers =
+                listOf(
+                    getScenarioRunContainer("fetchDatasetContainer-1"),
+                    getScenarioRunContainer("fetchScenarioParametersContainer"),
+                    getScenarioRunContainerEntrypoint("applyParametersContainer"),
+                    getScenarioRunContainerEntrypoint("validateDataContainer"),
+                    getScenarioRunContainer("sendDataWarehouseContainer"),
+                    getScenarioRunContainerEntrypoint("preRunContainer"),
+                    getScenarioRunContainerEntrypoint("runContainer"),
+                    getScenarioRunContainerEntrypoint("postRunContainer"),
+                ),
+            csmSimulationId = csmSimulationId)
+    return sc
+  }
+
+  private fun getStartContainersWithLabels(): ScenarioRunStartContainers {
+    val sc =
+        ScenarioRunStartContainers(
+            nodeLabel = "highcpupool",
+            labels = mapOf(
+                      "label1" to "valLabel1",
+                      "label2" to "valLabel2",
+                    ),
             containers =
                 listOf(
                     getScenarioRunContainer("fetchDatasetContainer-1"),

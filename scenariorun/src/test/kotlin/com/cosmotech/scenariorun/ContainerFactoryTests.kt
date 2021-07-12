@@ -68,6 +68,7 @@ class ContainerFactoryTests {
             tenantId = "12345678",
             clientId = "98765432",
             clientSecret = "azertyuiop",
+            aadPodIdBinding = "phoenixdev-pod-identity",
         )
     every { azure.eventBus } returns
         CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus(

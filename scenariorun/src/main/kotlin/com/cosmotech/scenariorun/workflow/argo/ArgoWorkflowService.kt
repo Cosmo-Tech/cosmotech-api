@@ -455,7 +455,7 @@ internal class ArgoWorkflowService(
 
   private fun buildMetadata(startContainers: ScenarioRunStartContainers): V1ObjectMeta {
     val generateName = startContainers.generateName ?: CSM_DEFAULT_WORKFLOW_NAME
-    return V1ObjectMeta().generateName(generateName)
+    return V1ObjectMeta().generateName(generateName).labels(startContainers.labels)
   }
 
   // Should be handled synchronously

@@ -390,6 +390,11 @@ components:
         nodeLabel:
           type: string
           description: the node label request
+        labels:
+          type: object
+          description: the metadata labels
+          additionalProperties:
+            type: string
         containers:
           type: array
           description: the containerslist
