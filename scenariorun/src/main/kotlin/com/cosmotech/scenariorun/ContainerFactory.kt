@@ -45,6 +45,7 @@ private const val CONTAINER_POSTRUN_MODE = "postrun"
 private const val AZURE_TENANT_ID_VAR = "AZURE_TENANT_ID"
 private const val AZURE_CLIENT_ID_VAR = "AZURE_CLIENT_ID"
 private const val AZURE_CLIENT_SECRET_VAR = "AZURE_CLIENT_SECRET"
+private const val CSM_AZURE_MANAGED_IDENTITY_VAR = "CSM_AZURE_MANAGED_IDENTITY"
 private const val CSM_SIMULATION_ID = "CSM_SIMULATION_ID"
 private const val API_BASE_URL_VAR = "CSM_API_URL"
 private const val API_BASE_SCOPE_VAR = "CSM_API_SCOPE"
@@ -742,7 +743,7 @@ internal class ContainerFactory(
       azureManagedIdentity: Boolean? = null,
   ): MutableMap<String, String> {
     val identityEnvVars =
-        if (azureManagedIdentity == true) mutableMapOf()
+        if (azureManagedIdentity == true) mutableMapOf(CSM_AZURE_MANAGED_IDENTITY_VAR to "true")
         else
             mutableMapOf(
                 AZURE_TENANT_ID_VAR to (csmPlatformProperties.azure?.credentials?.tenantId ?: ""),

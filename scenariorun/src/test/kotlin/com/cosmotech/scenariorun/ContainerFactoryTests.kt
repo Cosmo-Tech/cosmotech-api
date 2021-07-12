@@ -318,6 +318,7 @@ class ContainerFactoryTests {
             CSM_SIMULATION_ID)
     val expected =
         mapOf(
+            "CSM_AZURE_MANAGED_IDENTITY" to "true",
             "CSM_SIMULATION_ID" to "simulationrunid",
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
