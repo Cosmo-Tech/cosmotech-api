@@ -360,11 +360,40 @@ class ArgoWorkflowServiceTests {
     assertEquals(expected, template.container?.volumeMounts)
   }
 
+  @Test
+  fun `Create Workflow with metadata labels`() {
+    val sc = getStartContainersWithLabels()
+    val workflow = argoWorkflowService.buildWorkflowSpec(sc)
+    val labeledTemplate =
+        workflow.templates?.find { template -> template.name.equals("fetchDatasetContainer-1") }
+
+    val expected =
+        mapOf(
+            "label1" to "valLabel1",
+            "label2" to "valLabel2",
+        )
+    assertEquals(expected, labeledTemplate?.metadata?.labels)
+  }
+
   private fun getScenarioRunContainer(name: String = "default"): ScenarioRunContainer {
     val src =
         ScenarioRunContainer(
             name = name,
             image = "cosmotech/testcontainer",
+        )
+    return src
+  }
+
+  private fun getScenarioRunContainerWithLabels(name: String = "default"): ScenarioRunContainer {
+    val src =
+        ScenarioRunContainer(
+            name = name,
+            image = "cosmotech/testcontainer",
+            labels =
+                mapOf(
+                    "label1" to "valLabel1",
+                    "label2" to "valLabel2",
+                ),
         )
     return src
   }
@@ -441,6 +470,25 @@ class ArgoWorkflowServiceTests {
             containers =
                 listOf(
                     getScenarioRunContainer("fetchDatasetContainer-1"),
+                    getScenarioRunContainer("fetchScenarioParametersContainer"),
+                    getScenarioRunContainerEntrypoint("applyParametersContainer"),
+                    getScenarioRunContainerEntrypoint("validateDataContainer"),
+                    getScenarioRunContainer("sendDataWarehouseContainer"),
+                    getScenarioRunContainerEntrypoint("preRunContainer"),
+                    getScenarioRunContainerEntrypoint("runContainer"),
+                    getScenarioRunContainerEntrypoint("postRunContainer"),
+                ),
+            csmSimulationId = csmSimulationId)
+    return sc
+  }
+
+  private fun getStartContainersWithLabels(): ScenarioRunStartContainers {
+    val sc =
+        ScenarioRunStartContainers(
+            nodeLabel = "highcpupool",
+            containers =
+                listOf(
+                    getScenarioRunContainerWithLabels("fetchDatasetContainer-1"),
                     getScenarioRunContainer("fetchScenarioParametersContainer"),
                     getScenarioRunContainerEntrypoint("applyParametersContainer"),
                     getScenarioRunContainerEntrypoint("validateDataContainer"),

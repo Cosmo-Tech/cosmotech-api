@@ -580,6 +580,11 @@ components:
         name:
           type: string
           description: the container name
+        labels:
+          type: object
+          description: the metadata labels
+          additionalProperties:
+            type: string
         envVars:
           type: object
           description: environment variable map
