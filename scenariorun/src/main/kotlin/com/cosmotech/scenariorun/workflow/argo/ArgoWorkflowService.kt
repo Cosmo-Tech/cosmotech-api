@@ -154,10 +154,12 @@ internal class ArgoWorkflowService(
       val result =
           newServiceApiInstance<WorkflowServiceApi>()
               .workflowServiceCreateWorkflow(csmPlatformProperties.argo.workflows.namespace, body)
-      if (result.metadata.uid == null)
-          throw IllegalStateException("Argo Workflow metadata.uid is null")
-      if (result.metadata.name == null)
-          throw IllegalStateException("Argo Workflow metadata.name is null")
+      if (result.metadata.uid == null) {
+        throw IllegalStateException("Argo Workflow metadata.uid is null")
+      }
+      if (result.metadata.name == null) {
+        throw IllegalStateException("Argo Workflow metadata.name is null")
+      }
 
       return result
     } catch (e: ApiException) {
