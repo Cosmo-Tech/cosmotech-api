@@ -39,7 +39,7 @@ class ScenarioRunServiceImpl(
 
   @Autowired private lateinit var containerFactory: ContainerFactory
 
-  protected fun ScenarioRun.asMapWithAdditionalData(workspaceId: String? = null): Map<String, Any> {
+  private fun ScenarioRun.asMapWithAdditionalData(workspaceId: String? = null): Map<String, Any> {
     val scenarioAsMap = this.convertToMap().toMutableMap()
     scenarioAsMap["type"] = "ScenarioRun"
     if (workspaceId != null) {
@@ -48,7 +48,7 @@ class ScenarioRunServiceImpl(
     return scenarioAsMap
   }
 
-  protected fun ScenarioRunSearch.toQueryPredicate(): Pair<String, List<SqlParameter>> {
+  private fun ScenarioRunSearch.toQueryPredicate(): Pair<String, List<SqlParameter>> {
     val queryPredicateComponents =
         this::class
             .memberProperties
