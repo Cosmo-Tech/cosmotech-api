@@ -356,6 +356,8 @@ internal class CsmSecurityEndpointsRolesReader(
     val paths: List<String>,
     val roles: Array<String>,
 ) {
+
+  @Suppress("SpreadOperator")
   fun applyRoles(
       requests: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry
   ) {
@@ -372,6 +374,7 @@ internal class CsmSecurityEndpointsRolesWriter(
     val roles: Array<String>,
 ) {
 
+  @Suppress("SpreadOperator")
   fun applyRoles(
       requests: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry
   ) {
