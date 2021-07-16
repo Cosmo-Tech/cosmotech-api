@@ -13,6 +13,8 @@ import org.zalando.problem.Problem
 import org.zalando.problem.Status
 import org.zalando.problem.spring.web.advice.ProblemHandling
 
+private const val HTTP_STATUS_CODE_CONFLICT = 409
+
 @ControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
 class AzureExceptionHandling : ProblemHandling {
@@ -26,7 +28,7 @@ class AzureExceptionHandling : ProblemHandling {
   ): ResponseEntity<Problem> {
     val status =
         when (exception.statusCode) {
-          409 -> Status.CONFLICT
+          HTTP_STATUS_CODE_CONFLICT -> Status.CONFLICT
           else -> Status.INTERNAL_SERVER_ERROR
         }
     return create(status, exception, request)
