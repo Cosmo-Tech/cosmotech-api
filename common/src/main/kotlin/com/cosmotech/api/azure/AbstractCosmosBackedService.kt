@@ -9,6 +9,7 @@ import com.cosmotech.api.AbstractPhoenixService
 import javax.annotation.PostConstruct
 import org.springframework.beans.factory.annotation.Autowired
 
+@Suppress("UnnecessaryAbstractClass")
 abstract class AbstractCosmosBackedService : AbstractPhoenixService() {
 
   @Autowired protected lateinit var cosmosTemplate: CosmosTemplate
