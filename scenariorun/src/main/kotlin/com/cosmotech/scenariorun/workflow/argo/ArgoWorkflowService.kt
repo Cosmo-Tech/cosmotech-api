@@ -106,10 +106,6 @@ internal class ArgoWorkflowService(
         .build()
   }
 
-  private val artifactsService: ArgoArtifactsService by lazy {
-    this.unsafeScalarRetrofit.create(ArgoArtifactsService::class.java)
-  }
-
   private val artifactsByUidService: ArgoArtifactsByUidService by lazy {
     this.unsafeScalarRetrofit.create(ArgoArtifactsByUidService::class.java)
   }
@@ -123,9 +119,6 @@ internal class ArgoWorkflowService(
       setUserAgent("com.cosmotech/cosmotech-api $apiVersion")
     }
   }
-
-  private fun getLogArtifact(namespace: String, workflow: String, node: String, artifact: String) =
-      artifactsService.getArtifact(namespace, workflow, node, artifact).execute().body() ?: ""
 
   private fun getLogArtifactByUid(workflowId: String, node: String, artifact: String) =
       artifactsByUidService.getArtifactByUid(workflowId, node, artifact).execute().body() ?: ""
