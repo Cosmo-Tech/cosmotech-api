@@ -9,10 +9,14 @@ import com.azure.cosmos.models.CosmosItemResponse
 import com.azure.cosmos.models.PartitionKey
 import com.azure.spring.data.cosmos.core.CosmosTemplate
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.api.events.CsmEvent
+import com.cosmotech.api.events.CsmEventPublisher
+import com.cosmotech.api.events.WorkflowStatusRequest
 import com.cosmotech.api.id.CsmIdGenerator
 import com.cosmotech.api.utils.getCurrentAuthentication
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.scenario.domain.Scenario
+import com.cosmotech.scenario.domain.ScenarioLastRun
 import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
@@ -26,6 +30,9 @@ import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import kotlin.test.*
+import org.junit.jupiter.api.DynamicTest
+import org.junit.jupiter.api.TestFactory
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.security.core.Authentication
 
@@ -48,6 +55,10 @@ class ScenarioServiceImplTests {
   @Suppress("unused") @MockK private lateinit var cosmosCoreDatabase: CosmosDatabase
   @Suppress("unused") @MockK private lateinit var csmPlatformProperties: CsmPlatformProperties
 
+  @Suppress("unused")
+  @MockK(relaxUnitFun = true)
+  private lateinit var eventPublisher: CsmEventPublisher
+
   private lateinit var scenarioServiceImpl: ScenarioServiceImpl
 
   @BeforeTest
@@ -62,6 +73,7 @@ class ScenarioServiceImplTests {
 
     every { scenarioServiceImpl getProperty "cosmosClient" } returns cosmosClient
     every { scenarioServiceImpl getProperty "idGenerator" } returns idGenerator
+    every { scenarioServiceImpl getProperty "eventPublisher" } returns eventPublisher
 
     val csmPlatformPropertiesAzure = mockk<CsmPlatformProperties.CsmPlatformAzure>()
     val csmPlatformPropertiesAzureCosmos =
@@ -360,4 +372,85 @@ class ScenarioServiceImplTests {
     assertEquals("parameter_group_11_parameter1_value_from_child", parametersValues[0].value)
     assertNull(parametersValues[0].isInherited)
   }
+
+  @Test
+  fun `findScenarioById should throw an error if scenario has a last run but neither its workflow id nor name are set`() {
+    val scenarioId = "S-myScenarioId"
+    val scenario =
+        Scenario(
+            id = scenarioId,
+            lastRun =
+                ScenarioLastRun(
+                    scenarioRunId = "SR-myScenarioRunId", workflowId = null, workflowName = null))
+    every {
+      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
+    } returns scenario
+
+    assertThrows<IllegalStateException> {
+      scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
+    }
+  }
+
+  @Test
+  fun `scenario state should be null if scenario has no last run`() {
+    val scenarioId = "S-myScenarioId"
+    val scenario = Scenario(id = scenarioId, lastRun = null)
+    every {
+      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
+    } returns scenario
+
+    scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
+
+    assertNull(scenario.state)
+  }
+
+  @TestFactory
+  fun `scenario state should be set to Running when needed`() =
+      buildDynamicTestsForWorkflowPhases(Scenario.State.Running, "Pending", "Running")
+
+  @TestFactory
+  fun `scenario state should be set to Successful when needed`() =
+      buildDynamicTestsForWorkflowPhases(Scenario.State.Successful, "Succeeded")
+
+  @TestFactory
+  fun `scenario state should be set to Failed when needed`() =
+      buildDynamicTestsForWorkflowPhases(
+          Scenario.State.Failed, "Skipped", "Failed", "Error", "Omitted", null, "an-unknown-status")
+
+  private fun buildDynamicTestsForWorkflowPhases(
+      expectedState: Scenario.State?,
+      vararg phases: String?
+  ) =
+      phases.toList().map { phase ->
+        DynamicTest.dynamicTest("Workflow Phase: $phase") {
+          val scenarioId = "S-myScenarioId"
+          val scenario =
+              Scenario(
+                  id = scenarioId,
+                  lastRun =
+                      ScenarioLastRun(
+                          scenarioRunId = "SR-myScenarioRunId",
+                          workflowId = "workflowId",
+                          workflowName = "workflowName"))
+          every {
+            scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
+          } returns scenario
+
+          every { scenarioServiceImpl getProperty "eventPublisher" } returns
+              object : CsmEventPublisher {
+                override fun <T : CsmEvent> publishEvent(event: T) {
+                  when (event) {
+                    is WorkflowStatusRequest -> event.response = phase
+                    else ->
+                        throw UnsupportedOperationException(
+                            "This test event publisher purposely supports events of type WorkflowStatusRequest only")
+                  }
+                }
+              }
+
+          scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
+
+          assertEquals(expectedState, scenario.state)
+        }
+      }
 }
