@@ -390,6 +390,7 @@ internal class ArgoWorkflowService(
     else ""
   }
 
+  @Suppress("TooGenericExceptionCaught")
   override fun health(): Health {
     val healthBuilder =
         try {
