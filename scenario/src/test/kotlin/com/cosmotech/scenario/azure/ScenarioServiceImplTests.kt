@@ -415,7 +415,11 @@ class ScenarioServiceImplTests {
   @TestFactory
   fun `scenario state should be set to Failed when needed`() =
       buildDynamicTestsForWorkflowPhases(
-          Scenario.State.Failed, "Skipped", "Failed", "Error", "Omitted", null, "an-unknown-status")
+          Scenario.State.Failed, "Skipped", "Failed", "Error", "Omitted")
+
+  @TestFactory
+  fun `PROD-7888 - scenario state should be Unknown (rather than Failed) if workflow phase is null or not known to us`() =
+      buildDynamicTestsForWorkflowPhases(Scenario.State.Unknown, null, "an-unknown-status")
 
   private fun buildDynamicTestsForWorkflowPhases(
       expectedState: Scenario.State?,

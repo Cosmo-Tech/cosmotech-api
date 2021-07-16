@@ -371,21 +371,28 @@ class ScenarioServiceImpl(
       }
       val workflowStatusRequest = WorkflowStatusRequest(this, workflowId, workflowName)
       this.eventPublisher.publishEvent(workflowStatusRequest)
-      scenario.state = this.mapPhaseToState(workflowStatusRequest.response)
+      scenario.state = this.mapPhaseToState(scenario.lastRun, workflowStatusRequest)
     }
   }
 
-  private fun mapPhaseToState(phase: String?): State {
-    logger.debug("Mapping phase $phase")
+  private fun mapPhaseToState(
+      scenarioLastRun: ScenarioLastRun?,
+      workflowStatusRequest: WorkflowStatusRequest
+  ): State {
+    val scenarioRunId = scenarioLastRun?.scenarioRunId
+    val phase = workflowStatusRequest.response
+    logger.debug("Mapping phase $phase for scenario run $scenarioRunId")
     return when (phase) {
-      "Pending" -> State.Running
-      "Running" -> State.Running
+      "Pending", "Running" -> State.Running
       "Succeeded" -> State.Successful
-      "Skipped" -> State.Failed
-      "Failed" -> State.Failed
-      "Error" -> State.Failed
-      "Omitted" -> State.Failed
-      else -> State.Failed
+      "Skipped", "Failed", "Error", "Omitted" -> State.Failed
+      else -> {
+        logger.warn(
+            "Unhandled state response for scenario run {}: {} => returning Unknown as state",
+            scenarioRunId,
+            phase)
+        State.Unknown
+      }
     }
   }
 
