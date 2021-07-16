@@ -126,13 +126,7 @@ class WorkspaceServiceImpl(
     workspace.users?.forEach { user ->
       this.eventPublisher.publishEvent(
           UserAddedToWorkspace(
-              this,
-              organizationId,
-              organization.name!!,
-              workspaceId,
-              workspace.name,
-              user.id!!,
-              user.roles.map { role -> role.value }))
+              this, organizationId, user.id!!, user.roles.map { role -> role.value }))
     }
     return workspaceUserWithRightNames
   }
@@ -236,13 +230,7 @@ class WorkspaceServiceImpl(
       workspace.users?.forEach { user ->
         this.eventPublisher.publishEvent(
             UserAddedToWorkspace(
-                this,
-                organizationId,
-                responseEntity.name!!,
-                workspaceId,
-                workspace.name,
-                user.id!!,
-                user.roles.map { role -> role.value }))
+                this, organizationId, user.id!!, user.roles.map { role -> role.value }))
       }
       responseEntity
     } else {

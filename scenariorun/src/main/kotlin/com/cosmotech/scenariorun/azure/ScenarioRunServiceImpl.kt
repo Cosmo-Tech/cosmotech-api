@@ -187,10 +187,12 @@ class ScenariorunServiceImpl(
             scenarioRun.organizationId!!,
             scenarioRun.workspaceId!!,
             scenarioRun.scenarioId!!,
-            scenarioRun.id!!,
-            scenarioRun.csmSimulationRun!!,
-            scenarioRun.workflowId!!,
-            scenarioRun.workflowName!!))
+            ScenarioRunStartedForScenario.ScenarioRunData(
+                scenarioRun.id!!,
+                scenarioRun.csmSimulationRun!!,
+            ),
+            ScenarioRunStartedForScenario.WorkflowData(
+                scenarioRun.workflowId!!, scenarioRun.workflowName!!)))
     return scenarioRun
   }
 

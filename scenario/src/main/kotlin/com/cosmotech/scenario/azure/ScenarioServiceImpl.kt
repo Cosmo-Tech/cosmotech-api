@@ -123,13 +123,7 @@ class ScenarioServiceImpl(
     scenario.users?.forEach { user ->
       this.eventPublisher.publishEvent(
           UserAddedToScenario(
-              this,
-              organizationId,
-              organization.name!!,
-              workspaceId,
-              workspace.name,
-              user.id!!,
-              user.roles.map { role -> role.value }))
+              this, organizationId, user.id!!, user.roles.map { role -> role.value }))
     }
     return scenarioUserWithRightNames
   }
@@ -246,13 +240,7 @@ class ScenarioServiceImpl(
     scenario.users?.forEach { user ->
       this.eventPublisher.publishEvent(
           UserAddedToScenario(
-              this,
-              organizationId,
-              organization.name!!,
-              workspaceId,
-              workspace.name,
-              user.id!!,
-              user.roles.map { role -> role.value }))
+              this, organizationId, user.id!!, user.roles.map { role -> role.value }))
     }
 
     return scenarioToSave
@@ -618,13 +606,7 @@ class ScenarioServiceImpl(
       scenario.users?.forEach { user ->
         this.eventPublisher.publishEvent(
             UserAddedToScenario(
-                this,
-                organizationId,
-                organization.name!!,
-                workspaceId,
-                workspace.name,
-                user.id!!,
-                user.roles.map { role -> role.value }))
+                this, organizationId, user.id!!, user.roles.map { role -> role.value }))
       }
 
       if (datasetListUpdated) {
@@ -672,10 +654,10 @@ class ScenarioServiceImpl(
         Scenario(
             lastRun =
                 ScenarioLastRun(
-                    scenarioRunStarted.scenarioRunId,
-                    scenarioRunStarted.csmSimulationRun,
-                    scenarioRunStarted.workflowId,
-                    scenarioRunStarted.workflowName,
+                    scenarioRunStarted.scenarioRunData.scenarioRunId,
+                    scenarioRunStarted.scenarioRunData.csmSimulationRun,
+                    scenarioRunStarted.workflowData.workflowId,
+                    scenarioRunStarted.workflowData.workflowName,
                 )))
   }
 
