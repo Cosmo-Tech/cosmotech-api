@@ -480,7 +480,17 @@ components:
           type: string
           readOnly: true
           description: the Scenario state
-          enum: ["Created","Running","Successful","Failed"]
+          enum:
+            - Created
+            - Running
+            - Successful
+            - Failed
+            # PROD-7888 : When requesting the scenario state right after a run has been submitted,
+            # the scenario run service (e.g., Argo Workflow) might not have scheduled the run
+            # effectively yet.
+            # Furthermore, temporary communication errors might occur anytime when remotely
+            # fetching last scenario run statuses.
+            - Unknown
         creationDate:
           type: string
           # for example, 2017-07-21T17:32:28Z
