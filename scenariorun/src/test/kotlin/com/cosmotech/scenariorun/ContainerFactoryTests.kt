@@ -646,8 +646,7 @@ class ContainerFactoryTests {
             getSolutionLocalSources(),
             "testruntemplate",
             CSM_SIMULATION_ID)
-    envVarsWithSourceLocalValid(
-        container, "handle-parameters", "CSM_PARAMETERS_HANDLER_PROVIDER", "parameters_handler")
+    envVarsWithSourceLocalValid(container, "handle-parameters", "CSM_PARAMETERS_HANDLER_PROVIDER")
   }
 
   @Test
@@ -770,8 +769,7 @@ class ContainerFactoryTests {
   private fun envVarsWithSourceLocalValid(
       container: ScenarioRunContainer,
       mode: String,
-      providerEnvVar: String,
-      resource: String
+      providerEnvVar: String
   ) {
     val expected =
         mapOf(
