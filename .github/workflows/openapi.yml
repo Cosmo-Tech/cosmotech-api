@@ -22,7 +22,7 @@ jobs:
 
     services:
       swagger-editor:
-        image: swaggerapi/swagger-editor:v3.16.1
+        image: swaggerapi/swagger-editor:v3.16.5
         ports:
           - 80:8080
 
