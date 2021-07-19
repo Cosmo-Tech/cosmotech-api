@@ -3,7 +3,7 @@ import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 
 dependencies {
   api(projects.cosmotechApiCommon)
-  implementation("org.apache.commons:commons-compress:1.20")
+  implementation("org.apache.commons:commons-compress:1.21")
 }
 
 sourceSets {
