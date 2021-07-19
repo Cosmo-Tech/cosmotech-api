@@ -40,6 +40,7 @@ import org.springframework.stereotype.Service
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
+@Suppress("TooManyFunctions")
 class WorkspaceServiceImpl(
     private val resourceLoader: ResourceLoader,
     private val userService: UserApiService,

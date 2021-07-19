@@ -13,6 +13,11 @@ import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
+import com.cosmotech.scenariorun.container.SolutionContainerStepSpec
+import com.cosmotech.scenariorun.container.StartInfo
+import com.cosmotech.scenariorun.dataset.PARAMETERS_DATASET_ID
+import com.cosmotech.scenariorun.dataset.findDatasetsAndConnectors
+import com.cosmotech.scenariorun.dataset.getDatasetEnvVars
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
 import com.cosmotech.solution.api.SolutionApiService
@@ -23,11 +28,11 @@ import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.utils.getCloudPath
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
+import java.lang.StringBuilder
 import java.util.UUID
 import org.springframework.stereotype.Component
 
 private const val PARAMETERS_WORKSPACE_FILE = "%WORKSPACE_FILE%"
-private const val PARAMETERS_DATASET_ID = "%DATASETID%"
 private const val PARAMETERS_STORAGE_CONNECTION_STRING = "%STORAGE_CONNECTION_STRING%"
 internal const val CONTAINER_FETCH_DATASET = "fetchDatasetContainer"
 private const val CONTAINER_FETCH_PARAMETERS = "fetchScenarioParametersContainer"
@@ -55,7 +60,7 @@ private const val DATASET_PATH_VAR = "CSM_DATASET_ABSOLUTE_PATH"
 private const val DATASET_PATH = "/mnt/scenariorun-data"
 private const val PARAMETERS_PATH_VAR = "CSM_PARAMETERS_ABSOLUTE_PATH"
 private const val PARAMETERS_PATH = "/mnt/scenariorun-parameters"
-private const val FETCH_PATH_VAR = "CSM_FETCH_ABSOLUTE_PATH"
+internal const val FETCH_PATH_VAR = "CSM_FETCH_ABSOLUTE_PATH"
 private const val PARAMETERS_FETCH_CONTAINER_ORGANIZATION_VAR = "CSM_ORGANIZATION_ID"
 private const val PARAMETERS_FETCH_CONTAINER_WORKSPACE_VAR = "CSM_WORKSPACE_ID"
 private const val PARAMETERS_FETCH_CONTAINER_SCENARIO_VAR = "CSM_SCENARIO_ID"
@@ -88,6 +93,7 @@ internal const val AZURE_AAD_POD_ID_BINDING_LABEL = "aadpodidbinding"
 public const val CSM_DAG_ROOT = "DAG_ROOT"
 
 @Component
+@Suppress("LargeClass", "TooManyFunctions")
 internal class ContainerFactory(
     private val csmPlatformProperties: CsmPlatformProperties,
     private val scenarioService: ScenarioApiService,
@@ -173,7 +179,8 @@ internal class ContainerFactory(
     val scenario = scenarioService.findScenarioById(organizationId, workspaceId, scenarioId)
     val runTemplate = this.getRunTemplate(solution, (scenario.runTemplateId ?: ""))
     val datasetsAndConnectors =
-        findDatasetsAndConnectors(organizationId, scenario, solution, runTemplate)
+        findDatasetsAndConnectors(
+            datasetService, connectorService, organizationId, scenario, solution, runTemplate)
     val csmSimulationId = UUID.randomUUID().toString()
 
     return StartInfo(
@@ -192,64 +199,6 @@ internal class ContainerFactory(
         runTemplate = runTemplate,
         csmSimulationId = csmSimulationId,
     )
-  }
-
-  private fun findDatasetsAndConnectors(
-      organizationId: String,
-      scenario: Scenario,
-      solution: Solution,
-      runTemplate: RunTemplate
-  ): DatasetsConnectors {
-    val datasets: MutableMap<String, Dataset> = mutableMapOf()
-    val connectors: MutableMap<String, Connector> = mutableMapOf()
-    scenario.datasetList?.forEach { datasetId ->
-      addDatasetAndConnector(organizationId, datasetId, datasets, connectors)
-    }
-    val parameterGroupIds = runTemplate.parameterGroups
-    if (parameterGroupIds != null) {
-      val parametersIds =
-          (solution.parameterGroups?.filter { it.id in parameterGroupIds }?.map { it.parameters })
-              ?.flatten()
-      if (parametersIds != null) {
-        solution
-            .parameters
-            ?.filter { it.id in parametersIds }
-            ?.filter { it.varType == PARAMETERS_DATASET_ID }
-            ?.forEach { parameter ->
-              val parameterValue =
-                  scenario.parametersValues?.find { it.parameterId == parameter.id }
-              if (parameterValue != null && parameterValue.value != "") {
-                addDatasetAndConnector(
-                    organizationId,
-                    parameterValue.value,
-                    datasets,
-                    connectors,
-                )
-              }
-            }
-      }
-    }
-    return DatasetsConnectors(
-        datasets = datasets.values.toList(), connectors = connectors.values.toList())
-  }
-
-  private fun addDatasetAndConnector(
-      organizationId: String,
-      datasetId: String,
-      datasets: MutableMap<String, Dataset>,
-      connectors: MutableMap<String, Connector>,
-  ) {
-    if (datasetId !in datasets) {
-      val dataset = datasetService.findDatasetById(organizationId, datasetId)
-      datasets[datasetId] = dataset
-      val connectorId =
-          dataset.connector?.id
-              ?: throw IllegalStateException("Connector Id for Dataset $datasetId is null")
-      if (connectorId !in connectors) {
-        val connector = connectorService.findConnectorById(connectorId)
-        connectors[connectorId] = connector
-      }
-    }
   }
 
   internal fun buildContainersStart(
@@ -302,32 +251,191 @@ internal class ContainerFactory(
 
     var currentDependencies: MutableList<String>? = mutableListOf()
 
-    if (testStep(template.fetchDatasets) && datasets != null && connectors != null) {
-      var datasetCount = 1
-      scenario.datasetList?.forEach { datasetId ->
-        val dataset =
-            datasets.find { it.id == datasetId }
-                ?: throw IllegalStateException("Dataset $datasetId not found in Datasets")
-        val connector =
-            connectors.find { connector -> connector.id == (dataset.connector?.id ?: "") }
-                ?: throw IllegalStateException(
-                    "Connector id ${dataset.connector?.id} not found in connectors list")
-        val container =
-            this.buildFromDataset(
-                dataset,
-                connector,
-                datasetCount,
-                false,
-                null,
-                organization.id ?: "",
-                workspace.id ?: "",
-                workspace.key,
-                csmSimulationId)
-        containers.add(container)
-        currentDependencies?.add(container.name)
-        datasetCount++
-      }
+    containers.addAll(
+        buildFetchDatasetsContainersPipeline(
+            template, datasets, connectors, scenario, organization, workspace, csmSimulationId))
+
+    containers.addAll(
+        buildFetchScenarioParametersContainersPipeline(
+            template,
+            organization,
+            workspace,
+            scenario,
+            csmSimulationId,
+            solution,
+            datasets,
+            connectors))
+
+    if (currentDependencies.isNullOrEmpty()) {
+      currentDependencies = null
     }
+
+    if (testStep(template.applyParameters)) {
+      containers.addAll(
+          buildApplyParametersContainersPipeline(
+              template, organization, workspace, solution, runTemplateId, csmSimulationId))
+      currentDependencies = mutableListOf(CONTAINER_APPLY_PARAMETERS)
+    }
+    if (testStep(template.validateData)) {
+      containers.addAll(
+          buildValidateDataContainersPipeline(
+              template, organization, workspace, solution, runTemplateId, csmSimulationId))
+      currentDependencies = mutableListOf(CONTAINER_VALIDATE_DATA)
+    }
+
+    containers.addAll(
+        buildSendDataWarehouseContainersPipeline(
+            workspace, template, organization, csmSimulationId))
+
+    if (testStep(template.preRun)) {
+      containers.addAll(
+          buildPreRunContainersPipeline(
+              template, organization, workspace, solution, runTemplateId, csmSimulationId))
+      currentDependencies = mutableListOf(CONTAINER_PRERUN)
+    }
+
+    if (testStep(template.run)) {
+      containers.addAll(
+          buildRunContainersPipeline(
+              template, organization, workspace, solution, runTemplateId, csmSimulationId))
+      currentDependencies = mutableListOf(CONTAINER_RUN)
+    }
+
+    if (testStep(template.postRun)) {
+      containers.addAll(
+          buildPostRunContainersPipeline(
+              template, organization, workspace, solution, runTemplateId, csmSimulationId))
+    }
+
+    if (template.stackSteps == true) {
+      containers = stackSolutionContainers(containers)
+    }
+
+    return containers.toList()
+  }
+
+  private fun buildPostRunContainersPipeline(
+      template: RunTemplate,
+      organization: Organization,
+      workspace: Workspace,
+      solution: Solution,
+      runTemplateId: String,
+      csmSimulationId: String,
+      currentDependencies: MutableList<String>? = null
+  ) =
+      listOf(
+          this.buildPostRunContainer(
+              organization,
+              workspace,
+              solution,
+              runTemplateId,
+              csmSimulationId,
+              currentDependencies))
+
+  private fun buildRunContainersPipeline(
+      template: RunTemplate,
+      organization: Organization,
+      workspace: Workspace,
+      solution: Solution,
+      runTemplateId: String,
+      csmSimulationId: String,
+      currentDependencies: MutableList<String>? = null
+  ) =
+      listOf(
+          this.buildRunContainer(
+              organization,
+              workspace,
+              solution,
+              runTemplateId,
+              csmSimulationId,
+              currentDependencies))
+
+  private fun buildPreRunContainersPipeline(
+      template: RunTemplate,
+      organization: Organization,
+      workspace: Workspace,
+      solution: Solution,
+      runTemplateId: String,
+      csmSimulationId: String,
+      currentDependencies: MutableList<String>? = null
+  ) =
+      listOf(
+          this.buildPreRunContainer(
+              organization,
+              workspace,
+              solution,
+              runTemplateId,
+              csmSimulationId,
+              currentDependencies))
+
+  private fun buildSendDataWarehouseContainersPipeline(
+      workspace: Workspace,
+      template: RunTemplate,
+      organization: Organization,
+      csmSimulationId: String,
+      currentDependencies: MutableList<String>? = null
+  ): List<ScenarioRunContainer> {
+    val containers: MutableList<ScenarioRunContainer> = mutableListOf()
+    val sendParameters =
+        getSendOptionValue(
+            workspace.sendInputToDataWarehouse, template.sendInputParametersToDataWarehouse)
+    val sendDatasets =
+        getSendOptionValue(workspace.sendInputToDataWarehouse, template.sendDatasetsToDataWarehouse)
+    if (sendParameters || sendDatasets)
+        containers.add(
+            this.buildSendDataWarehouseContainer(
+                organization.id, workspace, template, csmSimulationId, currentDependencies))
+    return containers.toList()
+  }
+
+  private fun buildValidateDataContainersPipeline(
+      template: RunTemplate,
+      organization: Organization,
+      workspace: Workspace,
+      solution: Solution,
+      runTemplateId: String,
+      csmSimulationId: String,
+      currentDependencies: MutableList<String>? = null
+  ) =
+      listOf(
+          this.buildValidateDataContainer(
+              organization,
+              workspace,
+              solution,
+              runTemplateId,
+              csmSimulationId,
+              currentDependencies))
+
+  private fun buildApplyParametersContainersPipeline(
+      template: RunTemplate,
+      organization: Organization,
+      workspace: Workspace,
+      solution: Solution,
+      runTemplateId: String,
+      csmSimulationId: String,
+      currentDependencies: MutableList<String>? = null
+  ) =
+      listOf(
+          this.buildApplyParametersContainer(
+              organization,
+              workspace,
+              solution,
+              runTemplateId,
+              csmSimulationId,
+              currentDependencies))
+
+  private fun buildFetchScenarioParametersContainersPipeline(
+      template: RunTemplate,
+      organization: Organization,
+      workspace: Workspace,
+      scenario: Scenario,
+      csmSimulationId: String,
+      solution: Solution,
+      datasets: List<Dataset>?,
+      connectors: List<Connector>?,
+      currentDependencies: MutableList<String>? = null
+  ): List<ScenarioRunContainer> {
+    val containers: MutableList<ScenarioRunContainer> = mutableListOf()
     if (testStep(template.fetchScenarioParameters)) {
       val container =
           this.buildScenarioParametersFetchContainer(
@@ -352,79 +460,44 @@ internal class ContainerFactory(
       containers.addAll(datasetParamContainers)
       currentDependencies?.addAll(datasetParamContainers.map { dsContainer -> dsContainer.name })
     }
+    return containers.toList()
+  }
 
-    if (currentDependencies?.size == 0) {
-      currentDependencies = null
+  private fun buildFetchDatasetsContainersPipeline(
+      template: RunTemplate,
+      datasets: List<Dataset>?,
+      connectors: List<Connector>?,
+      scenario: Scenario,
+      organization: Organization,
+      workspace: Workspace,
+      csmSimulationId: String,
+      currentDependencies: MutableList<String>? = null
+  ): List<ScenarioRunContainer> {
+    val containers: MutableList<ScenarioRunContainer> = mutableListOf()
+    var datasetCount = 1
+    scenario.datasetList?.forEach { datasetId ->
+      val dataset =
+          datasets?.find { it.id == datasetId }
+              ?: throw IllegalStateException("Dataset $datasetId not found in Datasets")
+      val connector =
+          connectors?.find { connector -> connector.id == (dataset.connector?.id ?: "") }
+              ?: throw IllegalStateException(
+                  "Connector id ${dataset.connector?.id} not found in connectors list")
+      val container =
+          this.buildFromDataset(
+              dataset,
+              connector,
+              datasetCount,
+              false,
+              null,
+              organization.id ?: "",
+              workspace.id ?: "",
+              workspace.key,
+              csmSimulationId)
+      containers.add(container)
+      currentDependencies?.add(container.name)
+      datasetCount++
     }
-
-    if (testStep(template.applyParameters)) {
-      containers.add(
-          this.buildApplyParametersContainer(
-              organization,
-              workspace,
-              solution,
-              runTemplateId,
-              csmSimulationId,
-              currentDependencies))
-      currentDependencies = mutableListOf(CONTAINER_APPLY_PARAMETERS)
-    }
-    if (testStep(template.validateData)) {
-      containers.add(
-          this.buildValidateDataContainer(
-              organization,
-              workspace,
-              solution,
-              runTemplateId,
-              csmSimulationId,
-              currentDependencies))
-      currentDependencies = mutableListOf(CONTAINER_VALIDATE_DATA)
-    }
-
-    val sendParameters =
-        getSendOptionValue(
-            workspace.sendInputToDataWarehouse, template.sendInputParametersToDataWarehouse)
-    val sendDatasets =
-        getSendOptionValue(workspace.sendInputToDataWarehouse, template.sendDatasetsToDataWarehouse)
-    if (sendParameters || sendDatasets)
-        containers.add(
-            this.buildSendDataWarehouseContainer(
-                organization.id, workspace, template, csmSimulationId, currentDependencies))
-    if (testStep(template.preRun)) {
-      containers.add(
-          this.buildPreRunContainer(
-              organization,
-              workspace,
-              solution,
-              runTemplateId,
-              csmSimulationId,
-              currentDependencies))
-      currentDependencies = mutableListOf(CONTAINER_PRERUN)
-    }
-    if (testStep(template.run)) {
-      containers.add(
-          this.buildRunContainer(
-              organization,
-              workspace,
-              solution,
-              runTemplateId,
-              csmSimulationId,
-              currentDependencies))
-      currentDependencies = mutableListOf(CONTAINER_RUN)
-    }
-    if (testStep(template.postRun))
-        containers.add(
-            this.buildPostRunContainer(
-                organization,
-                workspace,
-                solution,
-                runTemplateId,
-                csmSimulationId,
-                currentDependencies))
-
-    if (template.stackSteps == true) {
-      containers = this.stackSolutionContainers(containers)
-    }
-
     return containers.toList()
   }
 
@@ -471,6 +544,7 @@ internal class ContainerFactory(
         dependencies = listOf(CSM_DAG_ROOT),
         envVars =
             getDatasetEnvVars(
+                csmPlatformProperties,
                 dataset,
                 connector,
                 fetchPathBase,
@@ -479,7 +553,9 @@ internal class ContainerFactory(
                 workspaceId,
                 workspaceKey,
                 csmSimulationId),
-        runArgs = getDatasetRunArgs(dataset, connector, organizationId, workspaceId))
+        runArgs =
+            getDatasetRunArgs(
+                csmPlatformProperties, dataset, connector, organizationId, workspaceId))
   }
 
   private fun buildScenarioParametersDatasetFetchContainers(
@@ -539,7 +615,8 @@ internal class ContainerFactory(
       csmSimulationId: String,
       jsonFile: Boolean? = null,
   ): ScenarioRunContainer {
-    val envVars = getCommonEnvVars(csmSimulationId, organizationId, workspaceKey)
+    val envVars =
+        getCommonEnvVars(csmPlatformProperties, csmSimulationId, organizationId, workspaceKey)
     envVars[FETCH_PATH_VAR] = PARAMETERS_PATH
     envVars[PARAMETERS_FETCH_CONTAINER_ORGANIZATION_VAR] = organizationId
     envVars[PARAMETERS_FETCH_CONTAINER_WORKSPACE_VAR] = workspaceId
@@ -567,7 +644,8 @@ internal class ContainerFactory(
       dependencies: List<String>? = null,
   ): ScenarioRunContainer {
     if (organizationId == null) throw IllegalStateException("Organization Id cannot be null")
-    val envVars = getCommonEnvVars(csmSimulationId, organizationId, workspace.key)
+    val envVars =
+        getCommonEnvVars(csmPlatformProperties, csmSimulationId, organizationId, workspace.key)
     val sendParameters =
         getSendOptionValue(
             workspace.sendInputToDataWarehouse, runTemplate.sendInputParametersToDataWarehouse)
@@ -714,11 +792,20 @@ internal class ContainerFactory(
             csmPlatformProperties.azure?.containerRegistries?.solutions ?: "",
             solution.repository,
             solution.version)
-    val envVars = getCommonEnvVars(csmSimulationId, organization.id ?: "", workspace.key)
+    val envVars =
+        getCommonEnvVars(
+            csmPlatformProperties, csmSimulationId, organization.id ?: "", workspace.key)
     envVars[RUN_TEMPLATE_ID_VAR] = runTemplateId
     envVars[CONTAINER_MODE_VAR] = step.mode
     envVars[EVENT_HUB_CONTROL_PLANE_VAR] =
-        "${csmPlatformProperties.azure?.eventBus?.baseUri}/${organization.id}-${workspace.key}${CONTROL_PLANE_SUFFIX}".lowercase()
+        StringBuilder(csmPlatformProperties.azure?.eventBus?.baseUri)
+            .append("/")
+            .append(organization.id)
+            .append("-")
+            .append(workspace.key)
+            .append(CONTROL_PLANE_SUFFIX)
+            .toString()
+            .lowercase()
     envVars[EVENT_HUB_MEASURES_VAR] =
         "${csmPlatformProperties.azure?.eventBus?.baseUri}/${organization.id}-${workspace.key}".lowercase()
     val csmSimulation = template.csmSimulation
@@ -751,194 +838,138 @@ internal class ContainerFactory(
     val repoVersion = if (version == null) repository else "${repository}:${version}"
     return if (registry != "") "${registry}/${repoVersion}" else repoVersion
   }
+}
 
-  private fun getDatasetEnvVars(
-      dataset: Dataset,
-      connector: Connector,
-      fetchPathBase: String,
-      fetchId: String?,
-      organizationId: String,
-      workspaceId: String,
-      workspaceKey: String,
-      csmSimulationId: String
-  ): Map<String, String> {
-    val envVars =
-        getCommonEnvVars(
-            csmSimulationId,
-            organizationId,
-            workspaceKey,
-            azureManagedIdentity = connector.azureManagedIdentity,
-            azureAuthenticationWithCustomerAppRegistration =
-                connector.azureAuthenticationWithCustomerAppRegistration)
-    val fetchPath = if (fetchId == null) fetchPathBase else "${fetchPathBase}/${fetchId}"
-    envVars[FETCH_PATH_VAR] = fetchPath
-    val datasetEnvVars =
-        connector
-            .parameterGroups
-            ?.flatMap { it.parameters }
-            ?.filter { it.envVar != null }
-            ?.associateBy(
-                { it.envVar ?: "" },
-                {
-                  resolvePlatformVars(
-                      dataset.connector?.parametersValues?.getOrDefault(it.id, it.default ?: "")
-                          ?: "",
-                      organizationId,
-                      workspaceId)
-                })
-    if (datasetEnvVars != null) envVars.putAll(datasetEnvVars)
-    return envVars
+internal fun getCommonEnvVars(
+    csmPlatformProperties: CsmPlatformProperties,
+    csmSimulationId: String,
+    organizationId: String,
+    workspaceKey: String,
+    azureManagedIdentity: Boolean? = null,
+    azureAuthenticationWithCustomerAppRegistration: Boolean? = null,
+): MutableMap<String, String> {
+  if (azureManagedIdentity == true && azureAuthenticationWithCustomerAppRegistration == true) {
+    throw IllegalArgumentException(
+        "Don't know which authentication mechanism to use to connect " +
+            "against Azure services. Both azureManagedIdentity and " +
+            "azureAuthenticationWithCustomerAppRegistration cannot be set to true")
   }
-
-  private fun resolvePlatformVars(
-      path: String,
-      organizationId: String,
-      workspaceId: String
-  ): String {
-    var newValue =
-        path.replace(
-            PARAMETERS_WORKSPACE_FILE, "${organizationId}/${workspaceId}".sanitizeForAzureStorage())
-    newValue =
-        newValue.replace(
-            PARAMETERS_STORAGE_CONNECTION_STRING,
-            csmPlatformProperties.azure?.storage?.connectionString ?: "")
-    return newValue
-  }
-
-  private fun getDatasetRunArgs(
-      dataset: Dataset,
-      connector: Connector,
-      organizationId: String,
-      workspaceId: String
-  ): List<String>? {
-    return connector.parameterGroups?.flatMap { it.parameters }?.filter { it.envVar == null }?.map {
-      resolvePlatformVars(
-          dataset.connector?.parametersValues?.getOrDefault(it.id, it.default ?: "") ?: "",
-          organizationId,
-          workspaceId)
-    }
-  }
-
-  private fun getCommonEnvVars(
-      csmSimulationId: String,
-      organizationId: String,
-      workspaceKey: String,
-      azureManagedIdentity: Boolean? = null,
-      azureAuthenticationWithCustomerAppRegistration: Boolean? = null,
-  ): MutableMap<String, String> {
-    if (azureManagedIdentity == true && azureAuthenticationWithCustomerAppRegistration == true) {
-      throw IllegalArgumentException(
-          "Don't know which authentication mechanism to use to connect " +
-              "against Azure services. Both azureManagedIdentity and " +
-              "azureAuthenticationWithCustomerAppRegistration cannot be set to true")
-    }
-    val identityEnvVars =
-        if (azureManagedIdentity == true) {
-          mapOf(CSM_AZURE_MANAGED_IDENTITY_VAR to "true")
-        } else if (azureAuthenticationWithCustomerAppRegistration == true) {
-          mapOf(
-              AZURE_TENANT_ID_VAR to
-                  (csmPlatformProperties.azure?.credentials?.customer?.tenantId!!),
-              AZURE_CLIENT_ID_VAR to
-                  (csmPlatformProperties.azure?.credentials?.customer?.clientId!!),
-              AZURE_CLIENT_SECRET_VAR to
-                  (csmPlatformProperties.azure?.credentials?.customer?.clientSecret!!),
-          )
-        } else {
-          mapOf(
-              AZURE_TENANT_ID_VAR to (csmPlatformProperties.azure?.credentials?.core?.tenantId!!),
-              AZURE_CLIENT_ID_VAR to (csmPlatformProperties.azure?.credentials?.core?.clientId!!),
-              AZURE_CLIENT_SECRET_VAR to
-                  (csmPlatformProperties.azure?.credentials?.core?.clientSecret!!),
-          )
-        }
-    val commonEnvVars =
+  val identityEnvVars =
+      if (azureManagedIdentity == true) {
+        mapOf(CSM_AZURE_MANAGED_IDENTITY_VAR to "true")
+      } else if (azureAuthenticationWithCustomerAppRegistration == true) {
         mapOf(
-            CSM_SIMULATION_ID to csmSimulationId,
-            API_BASE_URL_VAR to csmPlatformProperties.api.baseUrl,
-            API_BASE_SCOPE_VAR to "${csmPlatformProperties.azure?.appIdUri}${API_SCOPE_SUFFIX}",
-            DATASET_PATH_VAR to DATASET_PATH,
-            PARAMETERS_PATH_VAR to PARAMETERS_PATH,
-            AZURE_DATA_EXPLORER_RESOURCE_URI_VAR to
-                (csmPlatformProperties.azure?.dataWarehouseCluster?.baseUri ?: ""),
-            AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI_VAR to
-                (csmPlatformProperties.azure?.dataWarehouseCluster?.options?.ingestionUri ?: ""),
-            AZURE_DATA_EXPLORER_DATABASE_NAME to "${organizationId}-${workspaceKey}",
+            AZURE_TENANT_ID_VAR to (csmPlatformProperties.azure?.credentials?.customer?.tenantId!!),
+            AZURE_CLIENT_ID_VAR to (csmPlatformProperties.azure?.credentials?.customer?.clientId!!),
+            AZURE_CLIENT_SECRET_VAR to
+                (csmPlatformProperties.azure?.credentials?.customer?.clientSecret!!),
         )
-
-    return (identityEnvVars + commonEnvVars).toMutableMap()
-  }
-
-  private fun stackSolutionContainers(
-      containers: MutableList<ScenarioRunContainer>
-  ): MutableList<ScenarioRunContainer> {
-    var stackedContainers: MutableList<ScenarioRunContainer> = mutableListOf()
-    var stackedContainer: ScenarioRunContainer? = null
-    var stackedIndex = 1
-    for (container in containers) {
-      if (container.solutionContainer != true) {
-        if (stackedContainer != null) {
-          stackedContainers.add(stackedContainer)
-          stackedIndex++
-        }
-        stackedContainer = null
-        stackedContainers.add(container)
       } else {
-        if (stackedContainer == null) {
-          stackedContainer = container
-        } else {
-          stackedContainer = this.mergeSolutionContainer(stackedIndex, stackedContainer, container)
-        }
+        mapOf(
+            AZURE_TENANT_ID_VAR to (csmPlatformProperties.azure?.credentials?.core?.tenantId!!),
+            AZURE_CLIENT_ID_VAR to (csmPlatformProperties.azure?.credentials?.core?.clientId!!),
+            AZURE_CLIENT_SECRET_VAR to
+                (csmPlatformProperties.azure?.credentials?.core?.clientSecret!!),
+        )
+      }
+  val commonEnvVars =
+      mapOf(
+          CSM_SIMULATION_ID to csmSimulationId,
+          API_BASE_URL_VAR to csmPlatformProperties.api.baseUrl,
+          API_BASE_SCOPE_VAR to "${csmPlatformProperties.azure?.appIdUri}${API_SCOPE_SUFFIX}",
+          DATASET_PATH_VAR to DATASET_PATH,
+          PARAMETERS_PATH_VAR to PARAMETERS_PATH,
+          AZURE_DATA_EXPLORER_RESOURCE_URI_VAR to
+              (csmPlatformProperties.azure?.dataWarehouseCluster?.baseUri ?: ""),
+          AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI_VAR to
+              (csmPlatformProperties.azure?.dataWarehouseCluster?.options?.ingestionUri ?: ""),
+          AZURE_DATA_EXPLORER_DATABASE_NAME to "${organizationId}-${workspaceKey}",
+      )
+
+  return (identityEnvVars + commonEnvVars).toMutableMap()
+}
+
+private fun stackSolutionContainers(
+    containers: MutableList<ScenarioRunContainer>
+): MutableList<ScenarioRunContainer> {
+  var stackedContainers: MutableList<ScenarioRunContainer> = mutableListOf()
+  var stackedContainer: ScenarioRunContainer? = null
+  var stackedIndex = 1
+  for (container in containers) {
+    if (container.solutionContainer != true) {
+      if (stackedContainer != null) {
+        stackedContainers.add(stackedContainer)
+        stackedIndex++
+      }
+      stackedContainer = null
+      stackedContainers.add(container)
+    } else {
+      if (stackedContainer == null) {
+        stackedContainer = container
+      } else {
+        stackedContainer = mergeSolutionContainer(stackedIndex, stackedContainer, container)
       }
     }
-
-    if (stackedContainer != null) stackedContainers.add(stackedContainer)
-
-    return stackedContainers
   }
 
-  private fun mergeSolutionContainer(
-      stackedIndex: Int,
-      stackedContainer: ScenarioRunContainer,
-      container: ScenarioRunContainer
-  ): ScenarioRunContainer {
-    var stackedMode = stackedContainer.envVars?.getOrDefault(CONTAINER_MODE_VAR, "") ?: ""
-    var containerMode = container.envVars?.getOrDefault(CONTAINER_MODE_VAR, "") ?: ""
-    val modes = "${stackedMode},${containerMode}"
-    val envVars = stackedContainer.envVars?.toMutableMap()
+  if (stackedContainer != null) stackedContainers.add(stackedContainer)
 
-    envVars?.put(CONTAINER_MODE_VAR, modes)
+  return stackedContainers
+}
 
-    return stackedContainer.copy(
-        name = MULTIPLE_STEPS_NAME + stackedIndex.toString(),
-        envVars = envVars,
-    )
+private fun mergeSolutionContainer(
+    stackedIndex: Int,
+    stackedContainer: ScenarioRunContainer,
+    container: ScenarioRunContainer
+): ScenarioRunContainer {
+  var stackedMode = stackedContainer.envVars?.getOrDefault(CONTAINER_MODE_VAR, "") ?: ""
+  var containerMode = container.envVars?.getOrDefault(CONTAINER_MODE_VAR, "") ?: ""
+  val modes = "${stackedMode},${containerMode}"
+  val envVars = stackedContainer.envVars?.toMutableMap()
+
+  envVars?.put(CONTAINER_MODE_VAR, modes)
+
+  return stackedContainer.copy(
+      name = MULTIPLE_STEPS_NAME + stackedIndex.toString(),
+      envVars = envVars,
+  )
+}
+
+internal fun resolvePlatformVars(
+    csmPlatformProperties: CsmPlatformProperties,
+    path: String,
+    organizationId: String,
+    workspaceId: String
+): String {
+  var newValue =
+      path.replace(
+          PARAMETERS_WORKSPACE_FILE, "${organizationId}/${workspaceId}".sanitizeForAzureStorage())
+  newValue =
+      newValue.replace(
+          PARAMETERS_STORAGE_CONNECTION_STRING,
+          csmPlatformProperties.azure?.storage?.connectionString ?: "")
+  return newValue
+}
+
+private fun getDatasetRunArgs(
+    csmPlatformProperties: CsmPlatformProperties,
+    dataset: Dataset,
+    connector: Connector,
+    organizationId: String,
+    workspaceId: String
+): List<String>? {
+  return connector.parameterGroups?.flatMap { it.parameters }?.filter { it.envVar == null }?.map {
+    resolvePlatformVars(
+        csmPlatformProperties,
+        dataset.connector?.parametersValues?.getOrDefault(it.id, it.default ?: "") ?: "",
+        organizationId,
+        workspaceId)
   }
 }
 
-private fun getSource(source: RunTemplateStepSource?): String? {
-  if (source == null) return null
-  if (source == RunTemplateStepSource.local) return STEP_SOURCE_LOCAL
-  if (source == RunTemplateStepSource.cloud) return STEP_SOURCE_CLOUD
-  return null
-}
-
-private data class DatasetsConnectors(val datasets: List<Dataset>, val connectors: List<Connector>)
-
-internal data class StartInfo(
-    val startContainers: ScenarioRunStartContainers,
-    val scenario: Scenario,
-    val workspace: Workspace,
-    val solution: Solution,
-    val runTemplate: RunTemplate,
-    val csmSimulationId: String,
-)
-
-private class SolutionContainerStepSpec(
-    val mode: String,
-    val providerVar: String,
-    val pathVar: String,
-    val source: ((template: RunTemplate) -> String?)? = null,
-    val path: ((organizationId: String, solutionId: String, runTemplateId: String) -> String)? =
-        null,
-)
+private fun getSource(source: RunTemplateStepSource?) =
+    when (source) {
+      RunTemplateStepSource.local -> STEP_SOURCE_LOCAL
+      RunTemplateStepSource.cloud -> STEP_SOURCE_CLOUD
+      else -> null
+    }

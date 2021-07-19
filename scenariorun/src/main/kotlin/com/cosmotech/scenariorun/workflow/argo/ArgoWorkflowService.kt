@@ -4,39 +4,24 @@ package com.cosmotech.scenariorun.workflow.argo
 
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.WorkflowStatusRequest
-import com.cosmotech.scenariorun.CSM_DAG_ROOT
 import com.cosmotech.scenariorun.domain.ScenarioRun
-import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.scenariorun.domain.ScenarioRunContainerLogs
 import com.cosmotech.scenariorun.domain.ScenarioRunLogs
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
 import com.cosmotech.scenariorun.domain.ScenarioRunStatus
 import com.cosmotech.scenariorun.domain.ScenarioRunStatusNode
 import com.cosmotech.scenariorun.workflow.WorkflowService
+import com.cosmotech.scenariorun.workflow.argo.api.ArgoArtifactsByUidService
 import io.argoproj.workflow.ApiClient
 import io.argoproj.workflow.ApiException
 import io.argoproj.workflow.Configuration
 import io.argoproj.workflow.apis.ArchivedWorkflowServiceApi
 import io.argoproj.workflow.apis.InfoServiceApi
 import io.argoproj.workflow.apis.WorkflowServiceApi
-import io.argoproj.workflow.models.DAGTask
-import io.argoproj.workflow.models.DAGTemplate
-import io.argoproj.workflow.models.Metadata
 import io.argoproj.workflow.models.NodeStatus
-import io.argoproj.workflow.models.Template
 import io.argoproj.workflow.models.Workflow
 import io.argoproj.workflow.models.WorkflowCreateRequest
-import io.argoproj.workflow.models.WorkflowSpec
 import io.argoproj.workflow.models.WorkflowStatus
-import io.kubernetes.client.custom.Quantity
-import io.kubernetes.client.openapi.models.V1Container
-import io.kubernetes.client.openapi.models.V1EnvVar
-import io.kubernetes.client.openapi.models.V1LocalObjectReference
-import io.kubernetes.client.openapi.models.V1ObjectMeta
-import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim
-import io.kubernetes.client.openapi.models.V1PersistentVolumeClaimSpec
-import io.kubernetes.client.openapi.models.V1ResourceRequirements
-import io.kubernetes.client.openapi.models.V1VolumeMount
 import java.security.cert.X509Certificate
 import javax.net.ssl.SSLContext
 import javax.net.ssl.X509TrustManager
@@ -47,19 +32,8 @@ import org.springframework.boot.actuate.health.Health
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
-import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.scalars.ScalarsConverterFactory
-import retrofit2.http.GET
-import retrofit2.http.Path
-
-private const val CSM_DAG_ENTRYPOINT = "entrypoint"
-private const val CSM_DEFAULT_WORKFLOW_NAME = "default-workflow-"
-internal const val VOLUME_CLAIM = "datadir"
-internal const val VOLUME_CLAIM_DATASETS_SUBPATH = "datasetsdir"
-internal const val VOLUME_CLAIM_PARAMETERS_SUBPATH = "parametersdir"
-private const val VOLUME_DATASETS_PATH = "/mnt/scenariorun-data"
-private const val VOLUME_PARAMETERS_PATH = "/mnt/scenariorun-parameters"
 
 @Service("argo")
 @ConditionalOnExpression("#{! '\${csm.platform.argo.base-uri}'.trim().isEmpty()}")
@@ -70,20 +44,17 @@ internal class ArgoWorkflowService(
 
   private val logger = LoggerFactory.getLogger(ArgoWorkflowService::class.java)
 
-  private val workflowImagePullSecrets =
-      csmPlatformProperties
-          .argo
-          .imagePullSecrets
-          ?.filterNot(String::isBlank)
-          ?.map(V1LocalObjectReference()::name)
-
   private val unsafeOkHttpClient: OkHttpClient by lazy {
     // Create a trust manager that does not validate certificate chains
     val trustAllCerts =
         object : X509TrustManager {
-          override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
+          override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {
+            logger.trace("checkClientTrusted($authType)")
+          }
 
-          override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
+          override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {
+            logger.trace("checkServerTrusted($authType)")
+          }
 
           override fun getAcceptedIssuers() = arrayOf<X509Certificate>()
         }
@@ -120,14 +91,6 @@ internal class ArgoWorkflowService(
     }
   }
 
-  private fun getLogArtifactByUid(workflowId: String, node: String, artifact: String) =
-      artifactsByUidService.getArtifactByUid(workflowId, node, artifact).execute().body() ?: ""
-
-  private fun getArchiveWorkflow(workflowId: String): Workflow {
-    return newServiceApiInstance<ArchivedWorkflowServiceApi>()
-        .archivedWorkflowServiceGetArchivedWorkflow(workflowId)
-  }
-
   private fun getWorkflowStatus(workflowId: String, workflowName: String): WorkflowStatus? {
     return try {
       this.getActiveWorkflow(workflowId, workflowName).status
@@ -142,74 +105,25 @@ internal class ArgoWorkflowService(
     }
   }
 
-  private fun startWorkflow(scenarioRunStartContainers: ScenarioRunStartContainers): Workflow {
-
-    val body = WorkflowCreateRequest()
-
-    val workflow = buildWorkflow(scenarioRunStartContainers)
-    logger.trace("Workflow: {}", workflow)
-    body.workflow(workflow)
-
-    try {
-      val result =
-          newServiceApiInstance<WorkflowServiceApi>()
-              .workflowServiceCreateWorkflow(csmPlatformProperties.argo.workflows.namespace, body)
-      if (result.metadata.uid == null) {
-        throw IllegalStateException("Argo Workflow metadata.uid is null")
-      }
-      if (result.metadata.name == null) {
-        throw IllegalStateException("Argo Workflow metadata.name is null")
-      }
-
-      return result
-    } catch (e: ApiException) {
-      logger.warn(
-          """
-        Exception when calling WorkflowServiceApi#workflowServiceCreateWorkflow.
-        Status code: ${e.code}
-        Reason: ${e.responseBody}
-      """.trimIndent())
-      logger.debug("Response headers: {}", e.responseHeaders)
-      throw IllegalStateException(e)
-    }
-  }
-
-  private fun getWorkflow(workflowName: String): Workflow {
-    return newServiceApiInstance<WorkflowServiceApi>()
-        .workflowServiceGetWorkflow(
-            csmPlatformProperties.argo.workflows.namespace, workflowName, "", "")
-  }
-
-  private fun getCumulatedLogs(workflowId: String, workflowName: String): String {
-    val workflow = this.getActiveWorkflow(workflowId, workflowName)
-    return getCumulatedWorkflowLogs(workflow)
-  }
-
   private fun getActiveWorkflow(workflowId: String, workflowName: String): Workflow {
     var workflow: Workflow? = null
     try {
-      workflow = this.getWorkflow(workflowName)
+      workflow =
+          newServiceApiInstance<WorkflowServiceApi>(this.apiClient)
+              .workflowServiceGetWorkflow(
+                  csmPlatformProperties.argo.workflows.namespace, workflowName, "", "")
       logger.trace("Workflow: {}", workflow)
     } catch (e: ApiException) {
       logger.debug("Workflow $workflowName not found, trying to find it in the archived ones")
       logger.trace("Workflow $workflowName not found, trying to find it in archive", e)
     }
     if (workflow == null) {
-      workflow = this.getArchiveWorkflow(workflowId)
+      workflow =
+          newServiceApiInstance<ArchivedWorkflowServiceApi>(this.apiClient)
+              .archivedWorkflowServiceGetArchivedWorkflow(workflowId)!!
     }
 
     return workflow
-  }
-
-  private fun getCumulatedWorkflowLogs(workflow: Workflow): String {
-    val logsMap = this.getWorkflowLogs(workflow)
-    var cumulatedLogs = ""
-    val nodes = workflow.status?.nodes
-    if (nodes != null) {
-      cumulatedLogs = this.getCumulatedSortedLogs(nodes, logsMap)
-    }
-
-    return cumulatedLogs
   }
 
   private fun getWorkflowLogs(workflow: Workflow): Map<String, String> {
@@ -220,7 +134,12 @@ internal class ArgoWorkflowService(
         nodeValue.outputs?.artifacts?.forEach {
           if (it.s3 != null) {
             val artifactName = it.name ?: ""
-            val artifactLogs = getLogArtifactByUid(workflowId, nodeKey, artifactName)
+            val artifactLogs =
+                artifactsByUidService
+                    .getArtifactByUid(workflowId, nodeKey, artifactName)
+                    .execute()
+                    .body()
+                    ?: ""
             logsMap[nodeKey] = artifactLogs
           }
         }
@@ -248,77 +167,44 @@ internal class ArgoWorkflowService(
     return logs
   }
 
-  internal fun buildTemplate(scenarioRunContainer: ScenarioRunContainer): Template {
-    var envVars: MutableList<V1EnvVar>? = null
-    if (scenarioRunContainer.envVars != null) {
-      envVars = mutableListOf()
-      scenarioRunContainer.envVars.forEach { (key, value) ->
-        val envVar = V1EnvVar().name(key).value(value)
-        envVars.add(envVar)
-      }
-    }
-    val volumeMounts =
-        listOf(
-            V1VolumeMount()
-                .name(VOLUME_CLAIM)
-                .mountPath(VOLUME_DATASETS_PATH)
-                .subPath(VOLUME_CLAIM_DATASETS_SUBPATH),
-            V1VolumeMount()
-                .name(VOLUME_CLAIM)
-                .mountPath(VOLUME_PARAMETERS_PATH)
-                .subPath(VOLUME_CLAIM_PARAMETERS_SUBPATH))
-
-    val container =
-        V1Container()
-            .image(scenarioRunContainer.image)
-            .imagePullPolicy("Always")
-            .env(envVars)
-            .args(scenarioRunContainer.runArgs)
-            .volumeMounts(volumeMounts)
-    if (scenarioRunContainer.entrypoint != null) {
-      container.command(listOf(scenarioRunContainer.entrypoint))
-    }
-
-    return Template()
-        .name(scenarioRunContainer.name)
-        .metadata(Metadata().labels(scenarioRunContainer.labels))
-        .container(container)
-  }
-
-  internal fun buildWorkflowSpec(startContainers: ScenarioRunStartContainers): WorkflowSpec {
-    val nodeSelector = buildNodeSelector(startContainers)
-    val templates = buildContainersTemplates(startContainers)
-    val entrypointTemplate = buildEntrypointTemplate(startContainers)
-    templates.add(entrypointTemplate)
-    val volumeClaims = buildVolumeClaims()
-
-    return WorkflowSpec()
-        .imagePullSecrets(workflowImagePullSecrets?.ifEmpty { null })
-        .nodeSelector(nodeSelector)
-        .serviceAccountName(csmPlatformProperties.argo.workflows.serviceAccountName)
-        .entrypoint(CSM_DAG_ENTRYPOINT)
-        .templates(templates)
-        .volumeClaimTemplates(volumeClaims)
-  }
-
-  internal fun buildWorkflow(startContainers: ScenarioRunStartContainers): Workflow {
-    val spec = buildWorkflowSpec(startContainers)
-    val metadata = buildMetadata(startContainers)
-    return Workflow().metadata(metadata).spec(spec)
-  }
-
   override fun launchScenarioRun(
       scenarioRunStartContainers: ScenarioRunStartContainers
   ): ScenarioRun {
-    val workflow = startWorkflow(scenarioRunStartContainers)
-    return ScenarioRun(
-        csmSimulationRun = scenarioRunStartContainers.csmSimulationId,
-        generateName = scenarioRunStartContainers.generateName,
-        workflowId = workflow.metadata.uid,
-        workflowName = workflow.metadata.name,
-        nodeLabel = scenarioRunStartContainers.nodeLabel,
-        containers = scenarioRunStartContainers.containers,
-    )
+    val body =
+        WorkflowCreateRequest()
+            .workflow(buildWorkflow(csmPlatformProperties, scenarioRunStartContainers))
+
+    logger.trace("Workflow: {}", body.workflow)
+
+    try {
+      val workflow =
+          newServiceApiInstance<WorkflowServiceApi>(this.apiClient)
+              .workflowServiceCreateWorkflow(csmPlatformProperties.argo.workflows.namespace, body)
+      if (workflow.metadata.uid == null) {
+        throw IllegalStateException("Argo Workflow metadata.uid is null")
+      }
+      if (workflow.metadata.name == null) {
+        throw IllegalStateException("Argo Workflow metadata.name is null")
+      }
+
+      return ScenarioRun(
+          csmSimulationRun = scenarioRunStartContainers.csmSimulationId,
+          generateName = scenarioRunStartContainers.generateName,
+          workflowId = workflow.metadata.uid,
+          workflowName = workflow.metadata.name,
+          nodeLabel = scenarioRunStartContainers.nodeLabel,
+          containers = scenarioRunStartContainers.containers,
+      )
+    } catch (e: ApiException) {
+      logger.warn(
+          """
+        Exception when calling WorkflowServiceApi#workflowServiceCreateWorkflow.
+        Status code: ${e.code}
+        Reason: ${e.responseBody}
+      """.trimIndent())
+      logger.debug("Response headers: {}", e.responseHeaders)
+      throw IllegalStateException(e)
+    }
   }
 
   override fun getScenarioRunStatus(scenarioRun: ScenarioRun): ScenarioRunStatus {
@@ -385,16 +271,23 @@ internal class ArgoWorkflowService(
   override fun getScenarioRunCumulatedLogs(scenarioRun: ScenarioRun): String {
     val workflowId = scenarioRun.workflowId
     val workflowName = scenarioRun.workflowName
-    return if (workflowId != null && workflowName != null)
-        getCumulatedLogs(workflowId, workflowName)
-    else ""
+    return if (workflowId != null && workflowName != null) {
+      val workflow = this.getActiveWorkflow(workflowId, workflowName)
+      val logsMap = this.getWorkflowLogs(workflow)
+      var cumulatedLogs = ""
+      val nodes = workflow.status?.nodes
+      if (nodes != null) {
+        cumulatedLogs = this.getCumulatedSortedLogs(nodes, logsMap)
+      }
+      cumulatedLogs
+    } else ""
   }
 
   @Suppress("TooGenericExceptionCaught")
   override fun health(): Health {
     val healthBuilder =
         try {
-          if (newServiceApiInstance<InfoServiceApi>().infoServiceGetInfo() != null) {
+          if (newServiceApiInstance<InfoServiceApi>(this.apiClient).infoServiceGetInfo() != null) {
             Health.up()
           } else {
             Health.unknown().withDetail("detail", "Unknown Argo Server Info Response")
@@ -406,93 +299,14 @@ internal class ArgoWorkflowService(
     return healthBuilder.withDetail("url", apiClient.basePath).build()
   }
 
-  private fun buildNodeSelector(startContainers: ScenarioRunStartContainers): Map<String, String> {
-    val nodeSelector = mutableMapOf("kubernetes.io/os" to "linux")
-
-    if (startContainers.nodeLabel != null) {
-      nodeSelector[csmPlatformProperties.argo.workflows.nodePoolLabel] = startContainers.nodeLabel
-    }
-
-    return nodeSelector
-  }
-
-  private fun buildContainersTemplates(
-      startContainers: ScenarioRunStartContainers
-  ): MutableList<Template> {
-    val list = startContainers.containers.map { container -> buildTemplate(container) }
-    return list.toMutableList()
-  }
-
-  private fun buildEntrypointTemplate(startContainers: ScenarioRunStartContainers): Template {
-    val dagTemplate = Template().name(CSM_DAG_ENTRYPOINT)
-    val dagTasks: MutableList<DAGTask> = mutableListOf()
-    var previousContainer: ScenarioRunContainer? = null
-    for (container in startContainers.containers) {
-      var dependencies: List<String>? = null
-      if (container.dependencies != null) {
-        if (CSM_DAG_ROOT !in container.dependencies) {
-          dependencies = container.dependencies
-        }
-      } else {
-        if (previousContainer != null) dependencies = listOf(previousContainer.name)
-      }
-      val task = DAGTask().name(container.name).template(container.name).dependencies(dependencies)
-      dagTasks.add(task)
-      previousContainer = container
-    }
-
-    dagTemplate.dag(DAGTemplate().tasks(dagTasks))
-
-    return dagTemplate
-  }
-
-  private fun buildVolumeClaims(): List<V1PersistentVolumeClaim> {
-    // Azure file storage minimal claim is 100Gi for Premium classes
-    val dataDir =
-        V1PersistentVolumeClaim()
-            .metadata(V1ObjectMeta().name(VOLUME_CLAIM))
-            .spec(
-                V1PersistentVolumeClaimSpec()
-                    .accessModes(listOf("ReadWriteMany"))
-                    .storageClassName("phoenix-azurefile")
-                    .resources(
-                        V1ResourceRequirements().requests(mapOf("storage" to Quantity("100Gi")))))
-    return listOf(dataDir)
-  }
-
-  private fun buildMetadata(startContainers: ScenarioRunStartContainers): V1ObjectMeta {
-    val generateName = startContainers.generateName ?: CSM_DEFAULT_WORKFLOW_NAME
-    return V1ObjectMeta().generateName(generateName)
-  }
-
   // Should be handled synchronously
   @EventListener(WorkflowStatusRequest::class)
   fun onWorkflowStatusRequest(workflowStatusRequest: WorkflowStatusRequest) {
-    val phase =
+    workflowStatusRequest.response =
         getWorkflowStatus(workflowStatusRequest.workflowId, workflowStatusRequest.workflowName)
             ?.phase
-    workflowStatusRequest.response = phase
   }
-
-  private inline fun <reified T> newServiceApiInstance() =
-      T::class.java.getDeclaredConstructor(ApiClient::class.java).newInstance(this.apiClient)
 }
 
-internal interface ArgoArtifactsService {
-  @GET("artifacts/{namespace}/{workflow}/{node}/{artifact}")
-  fun getArtifact(
-      @Path("namespace") namespace: String,
-      @Path("workflow") workflow: String,
-      @Path("node") node: String,
-      @Path("artifact") artifact: String
-  ): Call<String>
-}
-
-internal interface ArgoArtifactsByUidService {
-  @GET("artifacts-by-uid/{uid}/{node}/{artifact}")
-  fun getArtifactByUid(
-      @Path("uid") uid: String,
-      @Path("node") node: String,
-      @Path("artifact") artifact: String
-  ): Call<String>
-}
+private inline fun <reified T> newServiceApiInstance(apiClient: ApiClient) =
+    T::class.java.getDeclaredConstructor(ApiClient::class.java).newInstance(apiClient)

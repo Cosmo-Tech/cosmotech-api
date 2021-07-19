@@ -46,6 +46,7 @@ const val SOLUTION_ID = "SOL-AbCdEf123"
 const val AUTHENTICATED_USERNAME = "authenticated-user"
 
 @ExtendWith(MockKExtension::class)
+@Suppress("LongMethod")
 class ScenarioServiceImplTests {
 
   @MockK private lateinit var userService: UserApiService
@@ -109,7 +110,7 @@ class ScenarioServiceImplTests {
   }
 
   @Test
-  fun `PROD-7687 - createScenario should initialize Child Scenario Parameters values with parent ones`() {
+  fun `PROD-7687 - should initialize Child Scenario Parameters values with parent ones`() {
     every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns mockk()
     val workspace = mockk<Workspace>()
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
@@ -286,7 +287,7 @@ class ScenarioServiceImplTests {
   }
 
   @Test
-  fun `PROD-7687 - in createScenario, Child Scenario Parameters values take precedence over the parent ones`() {
+  fun `PROD-7687 - Child Scenario Parameters values take precedence over the parent ones`() {
     every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns mockk()
     val workspace = mockk<Workspace>()
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
@@ -379,7 +380,7 @@ class ScenarioServiceImplTests {
   }
 
   @Test
-  fun `findScenarioById should throw an error if scenario has a last run but neither its workflow id nor name are set`() {
+  fun `findScenarioById should throw an error if scenario has a last run but no workflow `() {
     val scenarioId = "S-myScenarioId"
     val scenario =
         Scenario(
@@ -608,7 +609,7 @@ class ScenarioServiceImplTests {
           Scenario.State.Failed, "Skipped", "Failed", "Error", "Omitted")
 
   @TestFactory
-  fun `PROD-7888 - scenario state should be Unknown (rather than Failed) if workflow phase is null or not known to us`() =
+  fun `PROD-7888 - scenario state should be Unknown if workflow phase is null or not known to us`() =
       buildDynamicTestsForWorkflowPhases(Scenario.State.Unknown, null, "an-unknown-status")
 
   private fun buildDynamicTestsForWorkflowPhases(

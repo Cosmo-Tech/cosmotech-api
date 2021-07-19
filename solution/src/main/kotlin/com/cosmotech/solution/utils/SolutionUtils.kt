@@ -10,6 +10,13 @@ fun getCloudPath(
     solutionId: String,
     runTemplateId: String,
     handlerId: RunTemplateHandlerId,
-): String {
-  return "${organizationId.sanitizeForAzureStorage()}/${solutionId.sanitizeForAzureStorage()}/${runTemplateId}/${handlerId}.zip"
-}
+) =
+    StringBuilder(organizationId.sanitizeForAzureStorage())
+        .append("/")
+        .append(solutionId.sanitizeForAzureStorage())
+        .append("/")
+        .append(runTemplateId)
+        .append("/")
+        .append(handlerId)
+        .append(".zip")
+        .toString()

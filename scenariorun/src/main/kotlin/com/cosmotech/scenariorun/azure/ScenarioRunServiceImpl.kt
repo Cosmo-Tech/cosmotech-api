@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
+@Suppress("TooManyFunctions")
 class ScenarioRunServiceImpl(
     private val workflowService: WorkflowService,
 ) : AbstractCosmosBackedService(), ScenariorunApiService {
@@ -201,6 +202,12 @@ class ScenarioRunServiceImpl(
       scenarioRunSearch: ScenarioRunSearch
   ): List<ScenarioRun> {
     val scenarioRunSearchPredicatePair = scenarioRunSearch.toQueryPredicate()
+    val andExpr =
+        if (scenarioRunSearchPredicatePair.first.isNotBlank()) {
+          " AND ( ${scenarioRunSearchPredicatePair.first} )"
+        } else {
+          ""
+        }
     return cosmosCoreDatabase
         .getContainer("${organizationId}_scenario_data")
         .queryItems(
@@ -208,7 +215,7 @@ class ScenarioRunServiceImpl(
                 """
                             SELECT * FROM c 
                               WHERE c.type = 'ScenarioRun' 
-                              ${if (scenarioRunSearchPredicatePair.first.isNotBlank()) " AND ( ${scenarioRunSearchPredicatePair.first} )" else ""}
+                              $andExpr
                           """.trimIndent(),
                 scenarioRunSearchPredicatePair.second),
             CosmosQueryRequestOptions(),
