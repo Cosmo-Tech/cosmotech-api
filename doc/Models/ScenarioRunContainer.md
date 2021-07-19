@@ -5,6 +5,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | [**String**](string.md) | the container Id | [optional] [default to null]
 **name** | [**String**](string.md) | the container name | [default to null]
+**labels** | [**Map**](string.md) | the metadata labels | [optional] [default to null]
 **envVars** | [**Map**](string.md) | environment variable map | [optional] [default to null]
 **image** | [**String**](string.md) | the container image URI | [default to null]
 **entrypoint** | [**String**](string.md) | the container entry point | [optional] [default to null]

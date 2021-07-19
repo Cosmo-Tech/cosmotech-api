@@ -12,6 +12,7 @@ entity Connector {
     tags: List<String>
     ownerId: String
     url: String
+    azureManagedIdentity: Boolean
     * ioTypes: List<String>
     parameterGroups: List<ConnectorParameterGroup>
 }
@@ -215,6 +216,7 @@ entity ScenarioRun {
 entity ScenarioRunContainer { 
     id: String
     * name: String
+    labels: Map
     envVars: Map
     * image: String
     entrypoint: String
