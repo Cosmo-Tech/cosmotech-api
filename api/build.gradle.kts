@@ -114,7 +114,8 @@ tasks.register<GenerateTask>("openApiJSGenerate") {
       mapOf(
           "projectName" to "@cosmotech/api",
           "projectDescription" to "Cosmo Tech Platform API client",
-          "moduleName" to "CosmotechApi"))
+          "moduleName" to "CosmotechApi",
+          "usePromises" to "true"))
 }
 
 tasks.register<Copy>("copyJSGitPushScript") {
