@@ -15,6 +15,7 @@ import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.utils.changed
+import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.connector.api.ConnectorApiService
@@ -85,7 +86,10 @@ class DatasetServiceImpl(
   override fun updateDataset(organizationId: String, datasetId: String, dataset: Dataset): Dataset {
     val existingDataset = findDatasetById(organizationId, datasetId)
 
-    var hasChanged = false
+    var hasChanged =
+        existingDataset
+            .compareToAndMutateIfNeeded(dataset, excludedFields = arrayOf("ownerId", "connector"))
+            .isNotEmpty()
 
     if (dataset.ownerId != null && dataset.changed(existingDataset) { ownerId }) {
       // Allow to change the ownerId as well, but only the owner can transfer the ownership
@@ -98,14 +102,6 @@ class DatasetServiceImpl(
       hasChanged = true
     }
 
-    if (dataset.name != null && dataset.changed(existingDataset) { name }) {
-      existingDataset.name = dataset.name
-      hasChanged = true
-    }
-    if (dataset.description != null && dataset.changed(existingDataset) { description }) {
-      existingDataset.description = dataset.description
-      hasChanged = true
-    }
     if (dataset.connector != null && dataset.changed(existingDataset) { connector }) {
       // Validate connector ID
       if (dataset.connector?.id.isNullOrBlank()) {
@@ -119,17 +115,6 @@ class DatasetServiceImpl(
         name = existingConnector.name
         version = existingConnector.version
       }
-      hasChanged = true
-    }
-
-    if (dataset.tags != null && dataset.tags?.toSet() != existingDataset.tags?.toSet()) {
-      existingDataset.tags = dataset.tags
-      hasChanged = true
-    }
-
-    if (dataset.compatibility != null &&
-        dataset.compatibility?.toSet() != existingDataset.compatibility?.toSet()) {
-      existingDataset.compatibility = dataset.compatibility
       hasChanged = true
     }
 

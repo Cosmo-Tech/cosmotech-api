@@ -18,6 +18,7 @@ import com.cosmotech.api.events.UserRemovedFromScenario
 import com.cosmotech.api.events.WorkflowStatusRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.utils.changed
+import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
@@ -507,7 +508,18 @@ class ScenarioServiceImpl(
     val organization = organizationService.findOrganizationById(organizationId)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
 
-    var hasChanged = false
+    var hasChanged =
+        existingScenario
+            .compareToAndMutateIfNeeded(
+                scenario,
+                excludedFields =
+                    arrayOf(
+                        "ownerId",
+                        "datasetList",
+                        "solutionId",
+                        "runTemplateId",
+                        "parametersValues"))
+            .isNotEmpty()
 
     if (scenario.ownerId != null && scenario.changed(existingScenario) { ownerId }) {
       // Allow to change the ownerId as well, but only the owner can transfer the ownership
@@ -520,15 +532,6 @@ class ScenarioServiceImpl(
       hasChanged = true
     }
 
-    if (scenario.name != null && scenario.changed(existingScenario) { name }) {
-      existingScenario.name = scenario.name
-      hasChanged = true
-    }
-    if (scenario.description != null && scenario.changed(existingScenario) { description }) {
-      existingScenario.description = scenario.description
-      hasChanged = true
-    }
-
     var userIdsRemoved: List<String>? = listOf()
     if (scenario.users != null) {
       // Specifying a list of users here overrides the previous list
@@ -538,11 +541,6 @@ class ScenarioServiceImpl(
       val usersWithNames =
           usersToSet.let { scenario.users!!.map { it.copy(name = usersToSet[it.id]!!.name!!) } }
       existingScenario.users = usersWithNames
-      hasChanged = true
-    }
-
-    if (scenario.tags != null && scenario.tags?.toSet() != existingScenario.tags?.toSet()) {
-      existingScenario.tags = scenario.tags
       hasChanged = true
     }
 
@@ -587,11 +585,6 @@ class ScenarioServiceImpl(
         scenario.parametersValues?.toSet() != existingScenario.parametersValues?.toSet()) {
       existingScenario.parametersValues = scenario.parametersValues
       existingScenario.parametersValues?.forEach { it.isInherited = false }
-      hasChanged = true
-    }
-
-    if (scenario.lastRun != null && scenario.changed(existingScenario) { lastRun }) {
-      existingScenario.lastRun = scenario.lastRun
       hasChanged = true
     }
 
