@@ -11,6 +11,8 @@ help() {
   echo "This script takes at least 3 parameters."
   echo
   echo "The following optional environment variables can be set to alter this script behavior:"
+  echo "- ARGO_MINIO_ACCESS_KEY | string | AccessKey for MinIO. Generated when not set"
+  echo "- ARGO_MINIO_SECRET_KEY | string | SecretKey for MinIO. Generated when not set"
   echo "- ARGO_MINIO_REQUESTS_MEMORY | units of bytes (default is 4Gi) | Memory requests for the Argo MinIO server"
   echo
   echo "Usage: ./$(basename "$0") NAMESPACE ARGO_POSTGRESQL_PASSWORD API_VERSION [any additional options to pass as is to the cosmotech-api Helm Chart]"
@@ -43,7 +45,9 @@ envsubst < "${HELM_CHARTS_BASE_PATH}/csm-argo/values.yaml" | \
     helm upgrade --install "${ARGO_RELEASE_NAME}" "${HELM_CHARTS_BASE_PATH}/csm-argo" \
         --namespace "${NAMESPACE}" \
         --values - \
-        --set argo.minio.resources.requests.memory="${ARGO_MINIO_REQUESTS_MEMORY:-512Mi}"
+        --set argo.minio.resources.requests.memory="${ARGO_MINIO_REQUESTS_MEMORY:-512Mi}" \
+        --set argo.minio.accessKey="${ARGO_MINIO_ACCESS_KEY:-}" \
+        --set argo.minio.secretKey="${ARGO_MINIO_SECRET_KEY:-}"
 
 # cosmotech-api
 export COSMOTECH_API_RELEASE_NAME="cosmotech-api-${API_VERSION}"

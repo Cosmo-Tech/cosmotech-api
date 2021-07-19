@@ -11,6 +11,8 @@ help() {
   echo "This script takes at least 2 parameters."
   echo
   echo "The following optional environment variables can be set to alter this script behavior:"
+  echo "- ARGO_MINIO_ACCESS_KEY | string | AccessKey for MinIO. Generated when not set"
+  echo "- ARGO_MINIO_SECRET_KEY | string | SecretKey for MinIO. Generated when not set"
   echo "- ARGO_MINIO_REQUESTS_MEMORY | units of bytes (default is 4Gi) | Memory requests for the Argo MinIO server"
   echo "- NGINX_INGRESS_CONTROLLER_ENABLED | boolean (default is false) | indicating whether an NGINX Ingress Controller should be deployed and an Ingress resource created too"
   echo "- NGINX_INGRESS_CONTROLLER_REPLICA_COUNT | int (default is 1) | number of pods for the NGINX Ingress Controller"
@@ -200,7 +202,9 @@ envsubst < ./csm-argo/values.yaml | \
     helm upgrade --install "${ARGO_RELEASE_NAME}" ./csm-argo \
         --namespace "${NAMESPACE}" \
         --values - \
-        --set argo.minio.resources.requests.memory="${ARGO_MINIO_REQUESTS_MEMORY:-4Gi}"
+        --set argo.minio.resources.requests.memory="${ARGO_MINIO_REQUESTS_MEMORY:-4Gi}" \
+        --set argo.minio.accessKey="${ARGO_MINIO_ACCESS_KEY:-}" \
+        --set argo.minio.secretKey="${ARGO_MINIO_SECRET_KEY:-}"
 
 # cosmotech-api
 export COSMOTECH_API_RELEASE_NAME="cosmotech-api-${API_VERSION}"

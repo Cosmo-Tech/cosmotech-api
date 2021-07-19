@@ -84,7 +84,9 @@ jobs:
       - name: Deploy
         env:
           NAMESPACE: phoenix
-          ARGO_POSTGRESQL_PASSSORD: "${{ secrets.DEV_ENV_ARGO_POSTGRESQL_PASSSORD }}"
+          ARGO_MINIO_ACCESS_KEY: ${{ secrets.DEV_ENV_ARGO_MINIO_ACCESS_KEY }}
+          ARGO_MINIO_SECRET_KEY: ${{ secrets.DEV_ENV_ARGO_MINIO_SECRET_KEY }}
+          ARGO_POSTGRESQL_PASSSORD: ${{ secrets.DEV_ENV_ARGO_POSTGRESQL_PASSSORD }}
         run: |
           ./api/kubernetes/deploy_via_helm.sh \
             "${GITHUB_SHA}" \
