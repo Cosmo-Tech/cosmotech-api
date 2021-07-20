@@ -3,6 +3,8 @@
 package com.cosmotech.scenariorun
 
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCredentials
+import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCredentials.CsmPlatformAzureCredentialsCore
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.connector.domain.Connector.IoTypes
@@ -64,12 +66,19 @@ class ContainerFactoryTests {
     val azure = mockk<CsmPlatformProperties.CsmPlatformAzure>(relaxed = true)
     every { azure.appIdUri } returns "http://dev.api.cosmotech.com"
     every { azure.credentials } returns
-        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCredentials(
-            tenantId = "12345678",
-            clientId = "98765432",
-            clientSecret = "azertyuiop",
-            aadPodIdBinding = "phoenixdev-pod-identity",
-        )
+        CsmPlatformAzureCredentials(
+            core =
+                CsmPlatformAzureCredentialsCore(
+                    tenantId = "12345678",
+                    clientId = "98765432",
+                    clientSecret = "azertyuiop",
+                    aadPodIdBinding = "phoenixdev-pod-identity",
+                ),
+            customer =
+                CsmPlatformAzureCredentials.CsmPlatformAzureCredentialsCustomer(
+                    tenantId = "customer-app-registration-tenantId",
+                    clientId = "customer-app-registration-clientId",
+                    clientSecret = "customer-app-registration-clientSecret"))
     every { azure.eventBus } returns
         CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus(
             baseUri = "amqps://csm-phoenix.servicebus.windows.net",

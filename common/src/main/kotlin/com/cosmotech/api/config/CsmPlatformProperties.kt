@@ -144,20 +144,63 @@ data class CsmPlatformProperties(
 
     data class CsmPlatformAzureCredentials(
         /** The Azure Tenant ID (core App) */
-        val tenantId: String,
+        @Deprecated(message = "use csm.platform.azure.credentials.core.tenantId instead")
+        val tenantId: String? = null,
 
         /** The Azure Client ID (core App) */
-        val clientId: String,
+        @Deprecated(message = "use csm.platform.azure.credentials.core.clientId instead")
+        val clientId: String? = null,
 
         /** The Azure Client Secret (core App) */
-        val clientSecret: String,
+        @Deprecated(message = "use csm.platform.azure.credentials.core.clientSecret instead")
+        val clientSecret: String? = null,
 
         /**
          * The Azure Active Directory Pod Id binding bound to an AKS pod identity linked to a
          * managed identity
          */
-        val aadPodIdBinding: String,
-    )
+        @Deprecated(message = "use csm.platform.azure.credentials.core.aadPodIdBinding instead")
+        val aadPodIdBinding: String? = null,
+
+        /** The core App Registration credentials - provided by Cosmo Tech */
+        val core: CsmPlatformAzureCredentialsCore,
+
+        /**
+         * Any customer-provided app registration. Useful for example when calling Azure Digital
+         * Twins, because of security enforcement preventing from assigning permissions in the
+         * context of a managed app, deployed via the Azure Marketplace
+         */
+        val customer: CsmPlatformAzureCredentialsCustomer? = null,
+    ) {
+
+      data class CsmPlatformAzureCredentialsCore(
+          /** The Azure Tenant ID (core App) */
+          val tenantId: String,
+
+          /** The Azure Client ID (core App) */
+          val clientId: String,
+
+          /** The Azure Client Secret (core App) */
+          val clientSecret: String,
+
+          /**
+           * The Azure Active Directory Pod Id binding bound to an AKS pod identity linked to a
+           * managed identity
+           */
+          val aadPodIdBinding: String? = null,
+      )
+
+      data class CsmPlatformAzureCredentialsCustomer(
+          /** The Azure Tenant ID (customer App Registration) */
+          val tenantId: String?,
+
+          /** The Azure Client ID (customer App Registration) */
+          val clientId: String?,
+
+          /** The Azure Client Secret (customer App Registration) */
+          val clientSecret: String?,
+      )
+    }
 
     data class CsmPlatformAzureStorage(
         val connectionString: String,
