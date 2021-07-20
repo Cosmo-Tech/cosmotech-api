@@ -34,12 +34,21 @@ class ConnectorServiceImpl : AbstractCosmosBackedService(), ConnectorApiService 
   override fun findConnectorById(connectorId: String): Connector =
       cosmosTemplate.findByIdOrThrow(coreConnectorContainer, connectorId)
 
-  override fun registerConnector(connector: Connector): Connector =
-      cosmosTemplate.insert(
-          coreConnectorContainer,
-          connector.copy(
-              id = idGenerator.generate("connector"), ownerId = getCurrentAuthenticatedUserName()))
-          ?: throw IllegalStateException("No connector returned in response: $connector")
+  override fun registerConnector(connector: Connector): Connector {
+    if (connector.azureManagedIdentity == true &&
+        connector.azureAuthenticationWithCustomerAppRegistration == true) {
+      throw IllegalArgumentException(
+          "Don't know which authentication mechanism to use to connect " +
+              "against Azure services. " +
+              "Both azureManagedIdentity and azureAuthenticationWithCustomerAppRegistration " +
+              "cannot be set to true")
+    }
+    return cosmosTemplate.insert(
+        coreConnectorContainer,
+        connector.copy(
+            id = idGenerator.generate("connector"), ownerId = getCurrentAuthenticatedUserName()))
+        ?: throw IllegalStateException("No connector returned in response: $connector")
+  }
 
   override fun unregisterConnector(connectorId: String) {
     val connector = this.findConnectorById(connectorId)

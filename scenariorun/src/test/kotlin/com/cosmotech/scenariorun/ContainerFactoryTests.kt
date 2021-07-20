@@ -1277,6 +1277,23 @@ class ContainerFactoryTests {
   }
 
   @Test
+  fun `buildFromDataset - error if activating both managed identity and customer credentials`() {
+    val connector = mockk<Connector>(relaxed = true)
+    every { connector.azureManagedIdentity } returns true
+    every { connector.azureAuthenticationWithCustomerAppRegistration } returns true
+    every { connector.id } returns "C-id"
+    val datasetConnector = mockk<DatasetConnector>()
+    every { datasetConnector.id } returns "C-id"
+    val dataset = mockk<Dataset>()
+    every { dataset.connector } returns datasetConnector
+
+    assertThrows(IllegalArgumentException::class.java) {
+      factory.buildFromDataset(
+          dataset, connector, 1, true, "fetchId", "O-id", "W-id", "W-key", "csmSimulationId")
+    }
+  }
+
+  @Test
   fun `Full get Start Info images`() {
     val startInfo = getStartInfoFromIds()
     val expected =

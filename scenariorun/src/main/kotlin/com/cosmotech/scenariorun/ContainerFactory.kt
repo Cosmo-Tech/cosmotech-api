@@ -748,6 +748,12 @@ internal class ContainerFactory(
       azureManagedIdentity: Boolean? = null,
       azureAuthenticationWithCustomerAppRegistration: Boolean? = null,
   ): MutableMap<String, String> {
+    if (azureManagedIdentity == true && azureAuthenticationWithCustomerAppRegistration == true) {
+      throw IllegalArgumentException(
+          "Don't know which authentication mechanism to use to connect " +
+              "against Azure services. Both azureManagedIdentity and " +
+              "azureAuthenticationWithCustomerAppRegistration cannot be set to true")
+    }
     val identityEnvVars =
         if (azureManagedIdentity == true) {
           mapOf(CSM_AZURE_MANAGED_IDENTITY_VAR to "true")
