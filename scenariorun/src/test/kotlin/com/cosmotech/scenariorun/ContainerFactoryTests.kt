@@ -1289,6 +1289,210 @@ class ContainerFactoryTests {
         expected, startInfo.startContainers.containers.map { container -> container.image })
   }
 
+  @Test
+  fun `buildFromDataset - no labels and core credentials if azureManagedIdentity is null`() {
+    val connector = mockk<Connector>(relaxed = true)
+    every { connector.azureManagedIdentity } returns null
+    every { connector.id } returns "C-id"
+    val datasetConnector = mockk<DatasetConnector>()
+    every { datasetConnector.id } returns "C-id"
+    val dataset = mockk<Dataset>()
+    every { dataset.connector } returns datasetConnector
+
+    val scenarioRunContainer =
+        factory.buildFromDataset(
+            dataset, connector, 1, true, "fetchId", "O-id", "W-id", "W-key", "csmSimulationId")
+
+    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
+    assertNull(scenarioRunContainer.labels)
+    assertEquals(
+        mapOf(
+            "AZURE_TENANT_ID" to "12345678",
+            "AZURE_CLIENT_ID" to "98765432",
+            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "CSM_SIMULATION_ID" to "csmSimulationId",
+            "CSM_API_URL" to "https://api.cosmotech.com",
+            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId"),
+        scenarioRunContainer.envVars)
+  }
+
+  @Test
+  fun `buildFromDataset - no labels and core credentials if azureManagedIdentity is false`() {
+    val connector = mockk<Connector>(relaxed = true)
+    every { connector.azureManagedIdentity } returns false
+    every { connector.id } returns "C-id"
+    val datasetConnector = mockk<DatasetConnector>()
+    every { datasetConnector.id } returns "C-id"
+    val dataset = mockk<Dataset>()
+    every { dataset.connector } returns datasetConnector
+
+    val scenarioRunContainer =
+        factory.buildFromDataset(
+            dataset, connector, 1, true, "fetchId", "O-id", "W-id", "W-key", "csmSimulationId")
+
+    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
+    assertNull(scenarioRunContainer.labels)
+    assertEquals(
+        mapOf(
+            "AZURE_TENANT_ID" to "12345678",
+            "AZURE_CLIENT_ID" to "98765432",
+            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "CSM_SIMULATION_ID" to "csmSimulationId",
+            "CSM_API_URL" to "https://api.cosmotech.com",
+            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId"),
+        scenarioRunContainer.envVars)
+  }
+
+  @Test
+  fun `buildFromDataset - labels and managed identity env var if azureManagedIdentity is true`() {
+    val connector = mockk<Connector>(relaxed = true)
+    every { connector.azureManagedIdentity } returns true
+    every { connector.id } returns "C-id"
+    val datasetConnector = mockk<DatasetConnector>()
+    every { datasetConnector.id } returns "C-id"
+    val dataset = mockk<Dataset>()
+    every { dataset.connector } returns datasetConnector
+
+    val scenarioRunContainer =
+        factory.buildFromDataset(
+            dataset, connector, 1, true, "fetchId", "O-id", "W-id", "W-key", "csmSimulationId")
+
+    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
+    assertEquals(
+        mapOf(AZURE_AAD_POD_ID_BINDING_LABEL to "phoenixdev-pod-identity"),
+        scenarioRunContainer.labels)
+    assertEquals(
+        mapOf(
+            "CSM_AZURE_MANAGED_IDENTITY" to "true",
+            "CSM_SIMULATION_ID" to "csmSimulationId",
+            "CSM_API_URL" to "https://api.cosmotech.com",
+            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId"),
+        scenarioRunContainer.envVars)
+  }
+
+  @Test
+  fun `buildFromDataset - core creds if azureAuthenticationWithCustomerAppRegistration is null`() {
+    val connector = mockk<Connector>(relaxed = true)
+    every { connector.azureAuthenticationWithCustomerAppRegistration } returns false
+    every { connector.id } returns "C-id"
+    val datasetConnector = mockk<DatasetConnector>()
+    every { datasetConnector.id } returns "C-id"
+    val dataset = mockk<Dataset>()
+    every { dataset.connector } returns datasetConnector
+
+    val scenarioRunContainer =
+        factory.buildFromDataset(
+            dataset, connector, 1, true, "fetchId", "O-id", "W-id", "W-key", "csmSimulationId")
+
+    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
+    assertNull(scenarioRunContainer.labels)
+    assertEquals(
+        mapOf(
+            "AZURE_TENANT_ID" to "12345678",
+            "AZURE_CLIENT_ID" to "98765432",
+            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "CSM_SIMULATION_ID" to "csmSimulationId",
+            "CSM_API_URL" to "https://api.cosmotech.com",
+            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId"),
+        scenarioRunContainer.envVars)
+  }
+
+  @Test
+  fun `buildFromDataset - core creds if azureAuthenticationWithCustomerAppRegistration is false`() {
+    val connector = mockk<Connector>(relaxed = true)
+    every { connector.azureAuthenticationWithCustomerAppRegistration } returns false
+    every { connector.id } returns "C-id"
+    val datasetConnector = mockk<DatasetConnector>()
+    every { datasetConnector.id } returns "C-id"
+    val dataset = mockk<Dataset>()
+    every { dataset.connector } returns datasetConnector
+
+    val scenarioRunContainer =
+        factory.buildFromDataset(
+            dataset, connector, 1, true, "fetchId", "O-id", "W-id", "W-key", "csmSimulationId")
+
+    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
+    assertNull(scenarioRunContainer.labels)
+    assertEquals(
+        mapOf(
+            "AZURE_TENANT_ID" to "12345678",
+            "AZURE_CLIENT_ID" to "98765432",
+            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "CSM_SIMULATION_ID" to "csmSimulationId",
+            "CSM_API_URL" to "https://api.cosmotech.com",
+            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId"),
+        scenarioRunContainer.envVars)
+  }
+
+  @Test
+  fun `buildFromDataset - customer creds as envvar if azureAuthenticationWithCustomerAppRegistration is true`() {
+    val connector = mockk<Connector>(relaxed = true)
+    every { connector.azureAuthenticationWithCustomerAppRegistration } returns true
+    every { connector.id } returns "C-id"
+    val datasetConnector = mockk<DatasetConnector>()
+    every { datasetConnector.id } returns "C-id"
+    val dataset = mockk<Dataset>()
+    every { dataset.connector } returns datasetConnector
+
+    val scenarioRunContainer =
+        factory.buildFromDataset(
+            dataset, connector, 1, true, "fetchId", "O-id", "W-id", "W-key", "csmSimulationId")
+
+    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
+    assertNull(scenarioRunContainer.labels)
+    assertEquals(
+        mapOf(
+            "AZURE_TENANT_ID" to "customer-app-registration-tenantId",
+            "AZURE_CLIENT_ID" to "customer-app-registration-clientId",
+            "AZURE_CLIENT_SECRET" to "customer-app-registration-clientSecret",
+            "CSM_SIMULATION_ID" to "csmSimulationId",
+            "CSM_API_URL" to "https://api.cosmotech.com",
+            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId"),
+        scenarioRunContainer.envVars)
+  }
+
   private fun getStartInfoFromIds(): StartInfo {
     val organizationId = "Organizationid"
     val workspaceId = "workspaceid"
