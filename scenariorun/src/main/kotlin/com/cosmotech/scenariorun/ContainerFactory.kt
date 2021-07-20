@@ -232,6 +232,7 @@ internal class ContainerFactory(
     )
   }
 
+  @Suppress("LongMethod") // Exception for this method - too tedious to update
   internal fun buildContainersPipeline(
       scenario: Scenario,
       datasets: List<Dataset>?,
@@ -253,10 +254,18 @@ internal class ContainerFactory(
 
     containers.addAll(
         buildFetchDatasetsContainersPipeline(
-            template, datasets, connectors, scenario, organization, workspace, csmSimulationId))
+            currentDependencies,
+            template,
+            datasets,
+            connectors,
+            scenario,
+            organization,
+            workspace,
+            csmSimulationId))
 
     containers.addAll(
         buildFetchScenarioParametersContainersPipeline(
+            currentDependencies,
             template,
             organization,
             workspace,
@@ -273,38 +282,64 @@ internal class ContainerFactory(
     if (testStep(template.applyParameters)) {
       containers.addAll(
           buildApplyParametersContainersPipeline(
-              template, organization, workspace, solution, runTemplateId, csmSimulationId))
+              currentDependencies,
+              organization,
+              workspace,
+              solution,
+              runTemplateId,
+              csmSimulationId))
       currentDependencies = mutableListOf(CONTAINER_APPLY_PARAMETERS)
     }
     if (testStep(template.validateData)) {
       containers.addAll(
           buildValidateDataContainersPipeline(
-              template, organization, workspace, solution, runTemplateId, csmSimulationId))
+              currentDependencies,
+              organization,
+              workspace,
+              solution,
+              runTemplateId,
+              csmSimulationId))
       currentDependencies = mutableListOf(CONTAINER_VALIDATE_DATA)
     }
 
     containers.addAll(
         buildSendDataWarehouseContainersPipeline(
-            workspace, template, organization, csmSimulationId))
+            currentDependencies, workspace, template, organization, csmSimulationId))
 
     if (testStep(template.preRun)) {
       containers.addAll(
           buildPreRunContainersPipeline(
-              template, organization, workspace, solution, runTemplateId, csmSimulationId))
+              currentDependencies,
+              organization,
+              workspace,
+              solution,
+              runTemplateId,
+              csmSimulationId))
       currentDependencies = mutableListOf(CONTAINER_PRERUN)
     }
 
     if (testStep(template.run)) {
       containers.addAll(
           buildRunContainersPipeline(
-              template, organization, workspace, solution, runTemplateId, csmSimulationId))
+              currentDependencies,
+              organization,
+              workspace,
+              solution,
+              runTemplateId,
+              csmSimulationId))
       currentDependencies = mutableListOf(CONTAINER_RUN)
     }
 
     if (testStep(template.postRun)) {
       containers.addAll(
           buildPostRunContainersPipeline(
-              template, organization, workspace, solution, runTemplateId, csmSimulationId))
+              currentDependencies,
+              organization,
+              workspace,
+              solution,
+              runTemplateId,
+              csmSimulationId,
+          ))
     }
 
     if (template.stackSteps == true) {
@@ -315,13 +350,12 @@ internal class ContainerFactory(
   }
 
   private fun buildPostRunContainersPipeline(
-      template: RunTemplate,
+      currentDependencies: MutableList<String>?,
       organization: Organization,
       workspace: Workspace,
       solution: Solution,
       runTemplateId: String,
       csmSimulationId: String,
-      currentDependencies: MutableList<String>? = null
   ) =
       listOf(
           this.buildPostRunContainer(
@@ -333,13 +367,12 @@ internal class ContainerFactory(
               currentDependencies))
 
   private fun buildRunContainersPipeline(
-      template: RunTemplate,
+      currentDependencies: MutableList<String>?,
       organization: Organization,
       workspace: Workspace,
       solution: Solution,
       runTemplateId: String,
       csmSimulationId: String,
-      currentDependencies: MutableList<String>? = null
   ) =
       listOf(
           this.buildRunContainer(
@@ -351,13 +384,12 @@ internal class ContainerFactory(
               currentDependencies))
 
   private fun buildPreRunContainersPipeline(
-      template: RunTemplate,
+      currentDependencies: MutableList<String>?,
       organization: Organization,
       workspace: Workspace,
       solution: Solution,
       runTemplateId: String,
       csmSimulationId: String,
-      currentDependencies: MutableList<String>? = null
   ) =
       listOf(
           this.buildPreRunContainer(
@@ -369,11 +401,11 @@ internal class ContainerFactory(
               currentDependencies))
 
   private fun buildSendDataWarehouseContainersPipeline(
+      currentDependencies: MutableList<String>?,
       workspace: Workspace,
       template: RunTemplate,
       organization: Organization,
       csmSimulationId: String,
-      currentDependencies: MutableList<String>? = null
   ): List<ScenarioRunContainer> {
     val containers: MutableList<ScenarioRunContainer> = mutableListOf()
     val sendParameters =
@@ -389,13 +421,12 @@ internal class ContainerFactory(
   }
 
   private fun buildValidateDataContainersPipeline(
-      template: RunTemplate,
+      currentDependencies: MutableList<String>?,
       organization: Organization,
       workspace: Workspace,
       solution: Solution,
       runTemplateId: String,
       csmSimulationId: String,
-      currentDependencies: MutableList<String>? = null
   ) =
       listOf(
           this.buildValidateDataContainer(
@@ -407,13 +438,12 @@ internal class ContainerFactory(
               currentDependencies))
 
   private fun buildApplyParametersContainersPipeline(
-      template: RunTemplate,
+      currentDependencies: MutableList<String>?,
       organization: Organization,
       workspace: Workspace,
       solution: Solution,
       runTemplateId: String,
       csmSimulationId: String,
-      currentDependencies: MutableList<String>? = null
   ) =
       listOf(
           this.buildApplyParametersContainer(
@@ -425,6 +455,7 @@ internal class ContainerFactory(
               currentDependencies))
 
   private fun buildFetchScenarioParametersContainersPipeline(
+      currentDependencies: MutableList<String>?,
       template: RunTemplate,
       organization: Organization,
       workspace: Workspace,
@@ -432,8 +463,7 @@ internal class ContainerFactory(
       csmSimulationId: String,
       solution: Solution,
       datasets: List<Dataset>?,
-      connectors: List<Connector>?,
-      currentDependencies: MutableList<String>? = null
+      connectors: List<Connector>?
   ): List<ScenarioRunContainer> {
     val containers: MutableList<ScenarioRunContainer> = mutableListOf()
     if (testStep(template.fetchScenarioParameters)) {
@@ -464,39 +494,41 @@ internal class ContainerFactory(
   }
 
   private fun buildFetchDatasetsContainersPipeline(
+      currentDependencies: MutableList<String>?,
       template: RunTemplate,
       datasets: List<Dataset>?,
       connectors: List<Connector>?,
       scenario: Scenario,
       organization: Organization,
       workspace: Workspace,
-      csmSimulationId: String,
-      currentDependencies: MutableList<String>? = null
+      csmSimulationId: String
   ): List<ScenarioRunContainer> {
     val containers: MutableList<ScenarioRunContainer> = mutableListOf()
-    var datasetCount = 1
-    scenario.datasetList?.forEach { datasetId ->
-      val dataset =
-          datasets?.find { it.id == datasetId }
-              ?: throw IllegalStateException("Dataset $datasetId not found in Datasets")
-      val connector =
-          connectors?.find { connector -> connector.id == (dataset.connector?.id ?: "") }
-              ?: throw IllegalStateException(
-                  "Connector id ${dataset.connector?.id} not found in connectors list")
-      val container =
-          this.buildFromDataset(
-              dataset,
-              connector,
-              datasetCount,
-              false,
-              null,
-              organization.id ?: "",
-              workspace.id ?: "",
-              workspace.key,
-              csmSimulationId)
-      containers.add(container)
-      currentDependencies?.add(container.name)
-      datasetCount++
+    if (testStep(template.fetchDatasets) && datasets != null && connectors != null) {
+      var datasetCount = 1
+      scenario.datasetList?.forEach { datasetId ->
+        val dataset =
+            datasets.find { it.id == datasetId }
+                ?: throw IllegalStateException("Dataset $datasetId not found in Datasets")
+        val connector =
+            connectors.find { connector -> connector.id == (dataset.connector?.id ?: "") }
+                ?: throw IllegalStateException(
+                    "Connector id ${dataset.connector?.id} not found in connectors list")
+        val container =
+            this.buildFromDataset(
+                dataset,
+                connector,
+                datasetCount,
+                false,
+                null,
+                organization.id ?: "",
+                workspace.id ?: "",
+                workspace.key,
+                csmSimulationId)
+        containers.add(container)
+        currentDependencies?.add(container.name)
+        datasetCount++
+      }
     }
     return containers.toList()
   }
@@ -892,7 +924,7 @@ internal fun getCommonEnvVars(
 private fun stackSolutionContainers(
     containers: MutableList<ScenarioRunContainer>
 ): MutableList<ScenarioRunContainer> {
-  var stackedContainers: MutableList<ScenarioRunContainer> = mutableListOf()
+  val stackedContainers: MutableList<ScenarioRunContainer> = mutableListOf()
   var stackedContainer: ScenarioRunContainer? = null
   var stackedIndex = 1
   for (container in containers) {
@@ -922,8 +954,8 @@ private fun mergeSolutionContainer(
     stackedContainer: ScenarioRunContainer,
     container: ScenarioRunContainer
 ): ScenarioRunContainer {
-  var stackedMode = stackedContainer.envVars?.getOrDefault(CONTAINER_MODE_VAR, "") ?: ""
-  var containerMode = container.envVars?.getOrDefault(CONTAINER_MODE_VAR, "") ?: ""
+  val stackedMode = stackedContainer.envVars?.getOrDefault(CONTAINER_MODE_VAR, "") ?: ""
+  val containerMode = container.envVars?.getOrDefault(CONTAINER_MODE_VAR, "") ?: ""
   val modes = "${stackedMode},${containerMode}"
   val envVars = stackedContainer.envVars?.toMutableMap()
 

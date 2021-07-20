@@ -131,7 +131,7 @@ class WorkflowBuildersTests {
   fun `Create Workflow Spec with StartContainers agent pool`() {
     val workflows = mockk<CsmPlatformProperties.Argo.Workflows>(relaxed = true)
     every { workflows.nodePoolLabel } returns "agentpool"
-    val argo = mockk<CsmPlatformProperties.Argo>()
+    val argo = mockk<CsmPlatformProperties.Argo>(relaxed = true)
     every { argo.workflows } returns workflows
     every { csmPlatformProperties.argo } returns argo
 
@@ -146,7 +146,7 @@ class WorkflowBuildersTests {
   fun `Create Workflow Spec with StartContainers basic agent pool`() {
     val workflows = mockk<CsmPlatformProperties.Argo.Workflows>(relaxed = true)
     every { workflows.nodePoolLabel } returns "agentpool"
-    val argo = mockk<CsmPlatformProperties.Argo>()
+    val argo = mockk<CsmPlatformProperties.Argo>(relaxed = true)
     every { argo.workflows } returns workflows
     every { csmPlatformProperties.argo } returns argo
 
@@ -170,7 +170,7 @@ class WorkflowBuildersTests {
   fun `Create Workflow Spec with StartContainers Service Account`() {
     val workflows = mockk<CsmPlatformProperties.Argo.Workflows>(relaxed = true)
     every { workflows.serviceAccountName } returns "workflow"
-    val argo = mockk<CsmPlatformProperties.Argo>()
+    val argo = mockk<CsmPlatformProperties.Argo>(relaxed = true)
     every { argo.workflows } returns workflows
     every { csmPlatformProperties.argo } returns argo
 
@@ -220,7 +220,7 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow Spec with StartContainers entrypoint with dependencies dag valid`() {
     val sc = getStartContainersWithDependencies()
-    val workflowSpec = argoWorkflowService.buildWorkflowSpec(sc)
+    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc)
 
     val entrypointTemplate =
         workflowSpec.templates?.find { template -> template.name.equals("entrypoint") }

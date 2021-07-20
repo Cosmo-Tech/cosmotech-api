@@ -1047,7 +1047,7 @@ class ContainerFactoryTests {
             getOrganization(),
             solution,
             CSM_SIMULATION_ID)
-    assertEquals(containers.size, 1)
+    assertEquals(1, containers.size)
   }
 
   @Test
