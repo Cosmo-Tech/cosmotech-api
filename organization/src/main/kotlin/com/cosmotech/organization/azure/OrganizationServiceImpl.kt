@@ -37,7 +37,7 @@ import org.springframework.stereotype.Service
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions")
-class OrganizationServiceImpl(private val userService: UserApiService) :
+internal class OrganizationServiceImpl(private val userService: UserApiService) :
     AbstractCosmosBackedService(), OrganizationApiService {
 
   private lateinit var coreOrganizationContainer: String

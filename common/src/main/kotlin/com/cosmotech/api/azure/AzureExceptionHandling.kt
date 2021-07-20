@@ -17,7 +17,7 @@ private const val HTTP_STATUS_CODE_CONFLICT = 409
 
 @ControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
-class AzureExceptionHandling : ProblemHandling {
+internal class AzureExceptionHandling : ProblemHandling {
 
   override fun isCausalChainsEnabled() = true
 

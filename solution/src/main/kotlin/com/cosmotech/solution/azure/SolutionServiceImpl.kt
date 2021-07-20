@@ -33,7 +33,7 @@ import org.springframework.stereotype.Service
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions")
-class SolutionServiceImpl(
+internal class SolutionServiceImpl(
     private val azureStorageBlobServiceClient: BlobServiceClient,
 ) : AbstractCosmosBackedService(), SolutionApiService {
 

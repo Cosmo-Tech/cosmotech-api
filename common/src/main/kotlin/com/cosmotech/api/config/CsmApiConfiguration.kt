@@ -30,7 +30,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 @Configuration
 @ConfigurationPropertiesScan(basePackages = ["com.cosmotech"])
 @EnableAsync(mode = AdviceMode.PROXY, proxyTargetClass = true)
-class CsmApiConfiguration {
+internal class CsmApiConfiguration {
 
   @Bean(name = ["csm-in-process-event-executor"])
   fun inProcessEventHandlerExecutor(): Executor =
@@ -42,7 +42,8 @@ class CsmApiConfiguration {
 }
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
-class CsmPlatformEnvironmentPostProcessor(private val log: Log) : EnvironmentPostProcessor {
+internal class CsmPlatformEnvironmentPostProcessor(private val log: Log) :
+    EnvironmentPostProcessor {
 
   override fun postProcessEnvironment(
       environment: ConfigurableEnvironment,
@@ -74,7 +75,7 @@ class CsmPlatformEnvironmentPostProcessor(private val log: Log) : EnvironmentPos
  * This can be overridden by setting the {@link #setSupportedMediaTypes supportedMediaTypes}
  * property.
  */
-class YamlMessageConverter(objectMapper: ObjectMapper) :
+internal class YamlMessageConverter(objectMapper: ObjectMapper) :
     AbstractJackson2HttpMessageConverter(
         objectMapper,
         MediaType("application", "yaml", StandardCharsets.UTF_8),
@@ -95,7 +96,7 @@ class YamlMessageConverter(objectMapper: ObjectMapper) :
 }
 
 @Configuration
-class WebConfig : WebMvcConfigurer {
+internal class WebConfig : WebMvcConfigurer {
 
   override fun addCorsMappings(registry: CorsRegistry) {
     registry.addMapping("/**")

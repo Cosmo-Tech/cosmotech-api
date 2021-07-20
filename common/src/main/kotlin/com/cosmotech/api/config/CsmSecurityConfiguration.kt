@@ -266,7 +266,7 @@ private val endpointSecurityWriters =
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true, proxyTargetClass = true)
-class CsmSecurityConfiguration(
+internal class CsmSecurityConfiguration(
     private val csmPlatformProperties: CsmPlatformProperties,
     private val aadResourceServerConfiguration: AADResourceServerConfiguration,
     private val aadAuthenticationProperties: AADAuthenticationProperties

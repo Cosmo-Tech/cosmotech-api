@@ -34,7 +34,7 @@ import org.springframework.stereotype.Service
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions")
-class ScenarioRunServiceImpl(
+internal class ScenarioRunServiceImpl(
     private val workflowService: WorkflowService,
 ) : AbstractCosmosBackedService(), ScenariorunApiService {
 

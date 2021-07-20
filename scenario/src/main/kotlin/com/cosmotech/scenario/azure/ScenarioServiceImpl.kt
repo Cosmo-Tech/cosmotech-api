@@ -51,7 +51,7 @@ import org.springframework.stereotype.Service
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions")
-class ScenarioServiceImpl(
+internal class ScenarioServiceImpl(
     private val userService: UserApiService,
     private val solutionService: SolutionApiService,
     private val organizationService: OrganizationApiService,

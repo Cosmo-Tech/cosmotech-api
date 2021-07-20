@@ -7,7 +7,7 @@ interface CsmIdGenerator {
   fun generate(scope: String, prependPrefix: String? = null): String
 }
 
-abstract class AbstractCsmIdGenerator : CsmIdGenerator {
+internal abstract class AbstractCsmIdGenerator : CsmIdGenerator {
 
   final override fun generate(scope: String, prependPrefix: String?): String {
     if (scope.isBlank()) {

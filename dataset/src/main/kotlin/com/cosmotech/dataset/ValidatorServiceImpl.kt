@@ -9,7 +9,7 @@ import com.cosmotech.dataset.domain.ValidatorRun
 import org.springframework.stereotype.Service
 
 @Service
-class ValidatorServiceImpl : AbstractPhoenixService(), ValidatorApiService {
+internal class ValidatorServiceImpl : AbstractPhoenixService(), ValidatorApiService {
   override fun findAllValidators(organizationId: String): List<Validator> {
     TODO("Not yet implemented")
   }
