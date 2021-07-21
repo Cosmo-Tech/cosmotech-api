@@ -312,7 +312,9 @@ class CsmSecurityConfiguration(
   @Bean
   fun jwtDecoder(): JwtDecoder {
     val allowedTenants =
-        (listOf(csmPlatformProperties.azure?.credentials?.tenantId) +
+        (listOf(
+                csmPlatformProperties.azure?.credentials?.core?.tenantId,
+                csmPlatformProperties.azure?.credentials?.customer?.tenantId) +
                 csmPlatformProperties.authorization.allowedTenants)
             .filterNotNull()
             .filterNot(String::isBlank)
@@ -321,7 +323,9 @@ class CsmSecurityConfiguration(
       throw IllegalStateException(
           "Could not determine list of tenants allowed. " +
               "Please configure any of the following properties: " +
-              "'csm.platform.azure.credentials.tenantId' or 'csm.platform.authorization.allowed-tenants'")
+              "'csm.platform.azure.credentials.core.tenantId' " +
+              "or 'csm.platform.authorization.allowed-tenants'" +
+              " or 'csm.platform.azure.credentials.customer.tenantId' ")
     }
 
     val identityEndpoints =

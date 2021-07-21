@@ -154,6 +154,9 @@ components:
         azureManagedIdentity:
           type: boolean
           description: whether or not the connector uses Azure Managed Identity
+        azureAuthenticationWithCustomerAppRegistration:
+          type: boolean
+          description: whether to authenticate against Azure using the app registration credentials provided by the customer
         ioTypes:
           type: array
           items:

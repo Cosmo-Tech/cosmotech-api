@@ -28,9 +28,9 @@ import org.springframework.stereotype.Component
 private const val PARAMETERS_WORKSPACE_FILE = "%WORKSPACE_FILE%"
 private const val PARAMETERS_DATASET_ID = "%DATASETID%"
 private const val PARAMETERS_STORAGE_CONNECTION_STRING = "%STORAGE_CONNECTION_STRING%"
-private const val CONTAINER_FETCH_DATASET = "fetchDatasetContainer"
+internal const val CONTAINER_FETCH_DATASET = "fetchDatasetContainer"
 private const val CONTAINER_FETCH_PARAMETERS = "fetchScenarioParametersContainer"
-private const val CONTAINER_FETCH_DATASET_PARAMETERS = "fetchScenarioDatasetParametersContainer"
+internal const val CONTAINER_FETCH_DATASET_PARAMETERS = "fetchScenarioDatasetParametersContainer"
 private const val CONTAINER_SEND_DATAWAREHOUSE = "sendDataWarehouseContainer"
 private const val CONTAINER_APPLY_PARAMETERS = "applyParametersContainer"
 private const val CONTAINER_APPLY_PARAMETERS_MODE = "handle-parameters"
@@ -81,7 +81,7 @@ private const val GENERATE_NAME_SUFFIX = "-"
 private const val STEP_SOURCE_LOCAL = "local"
 private const val STEP_SOURCE_CLOUD = "azureStorage"
 private const val AZURE_STORAGE_CONNECTION_STRING = "AZURE_STORAGE_CONNECTION_STRING"
-private const val AZURE_AAD_POD_ID_BINDING_LABEL = "aadpodidbinding"
+internal const val AZURE_AAD_POD_ID_BINDING_LABEL = "aadpodidbinding"
 
 @Component
 internal class ContainerFactory(
@@ -402,7 +402,7 @@ internal class ContainerFactory(
         if (connector.azureManagedIdentity == true)
             mapOf(
                 AZURE_AAD_POD_ID_BINDING_LABEL to
-                    (csmPlatformProperties.azure?.credentials?.aadPodIdBinding!!))
+                    (csmPlatformProperties.azure?.credentials?.core?.aadPodIdBinding!!))
         else null
     return ScenarioRunContainer(
         name = "${nameBase}-$datasetCount",
@@ -686,7 +686,12 @@ internal class ContainerFactory(
   ): Map<String, String> {
     val envVars =
         getCommonEnvVars(
-            csmSimulationId, organizationId, workspaceKey, connector.azureManagedIdentity)
+            csmSimulationId,
+            organizationId,
+            workspaceKey,
+            azureManagedIdentity = connector.azureManagedIdentity,
+            azureAuthenticationWithCustomerAppRegistration =
+                connector.azureAuthenticationWithCustomerAppRegistration)
     val fetchPath = if (fetchId == null) fetchPathBase else "${fetchPathBase}/${fetchId}"
     envVars[FETCH_PATH_VAR] = fetchPath
     val datasetEnvVars =
@@ -741,18 +746,36 @@ internal class ContainerFactory(
       organizationId: String,
       workspaceKey: String,
       azureManagedIdentity: Boolean? = null,
+      azureAuthenticationWithCustomerAppRegistration: Boolean? = null,
   ): MutableMap<String, String> {
+    if (azureManagedIdentity == true && azureAuthenticationWithCustomerAppRegistration == true) {
+      throw IllegalArgumentException(
+          "Don't know which authentication mechanism to use to connect " +
+              "against Azure services. Both azureManagedIdentity and " +
+              "azureAuthenticationWithCustomerAppRegistration cannot be set to true")
+    }
     val identityEnvVars =
-        if (azureManagedIdentity == true) mutableMapOf(CSM_AZURE_MANAGED_IDENTITY_VAR to "true")
-        else
-            mutableMapOf(
-                AZURE_TENANT_ID_VAR to (csmPlatformProperties.azure?.credentials?.tenantId ?: ""),
-                AZURE_CLIENT_ID_VAR to (csmPlatformProperties.azure?.credentials?.clientId ?: ""),
-                AZURE_CLIENT_SECRET_VAR to
-                    (csmPlatformProperties.azure?.credentials?.clientSecret ?: ""),
-            )
+        if (azureManagedIdentity == true) {
+          mapOf(CSM_AZURE_MANAGED_IDENTITY_VAR to "true")
+        } else if (azureAuthenticationWithCustomerAppRegistration == true) {
+          mapOf(
+              AZURE_TENANT_ID_VAR to
+                  (csmPlatformProperties.azure?.credentials?.customer?.tenantId!!),
+              AZURE_CLIENT_ID_VAR to
+                  (csmPlatformProperties.azure?.credentials?.customer?.clientId!!),
+              AZURE_CLIENT_SECRET_VAR to
+                  (csmPlatformProperties.azure?.credentials?.customer?.clientSecret!!),
+          )
+        } else {
+          mapOf(
+              AZURE_TENANT_ID_VAR to (csmPlatformProperties.azure?.credentials?.core?.tenantId!!),
+              AZURE_CLIENT_ID_VAR to (csmPlatformProperties.azure?.credentials?.core?.clientId!!),
+              AZURE_CLIENT_SECRET_VAR to
+                  (csmPlatformProperties.azure?.credentials?.core?.clientSecret!!),
+          )
+        }
     val commonEnvVars =
-        mutableMapOf(
+        mapOf(
             CSM_SIMULATION_ID to csmSimulationId,
             API_BASE_URL_VAR to csmPlatformProperties.api.baseUrl,
             API_BASE_SCOPE_VAR to "${csmPlatformProperties.azure?.appIdUri}${API_SCOPE_SUFFIX}",

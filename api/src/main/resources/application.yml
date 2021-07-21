@@ -86,10 +86,23 @@ csm:
     azure:
       appIdUri: "http://dev.api.cosmotech.com"
       credentials:
+        # Deprecated - use csm.platform.azure.credentials.core.tenantId instead
         tenantId: ""
+        # Deprecated - use csm.platform.azure.credentials.core.clientId instead
         clientId: ""
+        # Deprecated - use csm.platform.azure.credentials.core.clientSecret instead
         clientSecret: ""
+        # Deprecated - use csm.platform.azure.credentials.core.aadPodIdBinding instead
         aadPodIdBinding: "phoenix-pod-identity"
+        core:
+          tenantId: "${csm.platform.azure.credentials.tenantId}"
+          clientId: "${csm.platform.azure.credentials.clientId}"
+          clientSecret: "${csm.platform.azure.credentials.clientSecret}"
+          aadPodIdBinding: "${csm.platform.azure.credentials.aadPodIdBinding}"
+        customer:
+          tenantId: null
+          clientId: null
+          clientSecret: null
       storage:
         baseUri: ""
         resourceUri: ""
