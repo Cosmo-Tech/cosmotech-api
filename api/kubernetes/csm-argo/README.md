@@ -36,6 +36,7 @@ Meta-Chart allowing to deploy both Argo and PostgreSQL (for Workflows archival)
 | argo.executor.env[0].name | string | `"RESOURCE_STATE_CHECK_INTERVAL"` |  |
 | argo.executor.env[0].value | string | `"1s"` |  |
 | argo.images.pullPolicy | string | `"IfNotPresent"` |  |
+| argo.minio.DeploymentUpdate.type | string | `"Recreate"` |  |
 | argo.minio.defaultBucket.enabled | bool | `true` |  |
 | argo.minio.defaultBucket.name | string | `"argo-workflows"` |  |
 | argo.minio.install | bool | `true` |  |

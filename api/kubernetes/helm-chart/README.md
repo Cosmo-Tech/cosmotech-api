@@ -18,12 +18,17 @@ Cosmo Tech Platform API
 | autoscaling.maxReplicas | int | `100` |  |
 | autoscaling.minReplicas | int | `1` |  |
 | autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
+| autoscaling.targetMemoryUtilizationPercentage | int | `80` |  |
 | config.csm.platform.argo.base-uri | string | `"http://argo-server:2746"` |  |
-| config.csm.platform.azure.containerRegistries.solutions | string | `"changeme"` |  |
+| config.csm.platform.authorization.allowed-tenants | list | `[]` |  |
+| config.csm.platform.azure.containerRegistries.solutions | string | `""` |  |
 | config.csm.platform.azure.cosmos.key | string | `"changeme"` | Cosmos DB Database Key. Can be retrieved from the Azure portal |
 | config.csm.platform.azure.cosmos.uri | string | `"changeme"` | Cosmos DB Database URI. Can be retrieved from the Azure portal |
-| config.csm.platform.azure.credentials.clientId | string | `"changeme"` |  |
-| config.csm.platform.azure.credentials.clientSecret | string | `"changeme"` |  |
+| config.csm.platform.azure.credentials.clientId | string | `"changeme"` | Core App Registration Client ID |
+| config.csm.platform.azure.credentials.clientSecret | string | `"changeme"` | Core App Registration Client Secret |
+| config.csm.platform.azure.credentials.customer.clientId | string | `"changeme"` | Customer-provided App Registration Client ID. Workaround for connecting to Azure Digital Twins in the context of a Managed App |
+| config.csm.platform.azure.credentials.customer.clientSecret | string | `"changeme"` | Customer-provided App Registration Client Secret. Workaround for connecting to Azure Digital Twins in the context of a Managed App |
+| config.csm.platform.azure.credentials.customer.tenantId | string | `"changeme"` | Customer-provided App Registration Tenant ID. Workaround for connecting to Azure Digital Twins in the context of a Managed App |
 | config.csm.platform.azure.credentials.tenantId | string | `"changeme"` |  |
 | config.csm.platform.azure.dataWarehouseCluster.baseUri | string | `"changeme"` |  |
 | config.csm.platform.azure.dataWarehouseCluster.options.ingestionUri | string | `"changeme"` |  |
