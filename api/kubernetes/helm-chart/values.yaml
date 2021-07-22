@@ -137,9 +137,20 @@ config:
         allowed-tenants: []
       azure:
         credentials:
+          # TODO Breaking change: Move deprecated tenantId, clientId and clientSecret under the new 'core' field
+          # -- Core App Registration Tenant ID
           tenantId: "changeme"
+          # -- Core App Registration Client ID
           clientId: "changeme"
+          # -- Core App Registration Client Secret
           clientSecret: "changeme"
+          customer:
+            # -- Customer-provided App Registration Tenant ID. Workaround for connecting to Azure Digital Twins in the context of a Managed App
+            tenantId: "changeme"
+            # -- Customer-provided App Registration Client ID. Workaround for connecting to Azure Digital Twins in the context of a Managed App
+            clientId: "changeme"
+            # -- Customer-provided App Registration Client Secret. Workaround for connecting to Azure Digital Twins in the context of a Managed App
+            clientSecret: "changeme"
         cosmos:
           # -- Cosmos DB Database URI. Can be retrieved from the Azure portal
           uri: "changeme"

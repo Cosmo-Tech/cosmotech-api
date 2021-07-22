@@ -42,9 +42,14 @@ config:
     platform:
       azure:
         credentials:
+          # TODO Breaking change: Move deprecated tenantId, clientId and clientSecret under the new 'core' field
           tenantId: "changeme"
           clientId: "changeme"
           clientSecret: "changeme"
+          customer:
+            tenantId: "changeme"
+            clientId: "changeme"
+            clientSecret: "changeme"
         cosmos:
           key: "changeme"
           uri: "https://changeme.documents.azure.com:443/"

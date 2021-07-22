@@ -27,9 +27,10 @@ config:
     platform:
       azure:
         credentials:
-          tenantId: "changeme"
-          clientId: "changeme"
-          clientSecret: "changeme"
+          core:
+            tenantId: "changeme"
+            clientId: "changeme"
+            clientSecret: "changeme"
         cosmos:
           key: "changeme"
           uri: "https://changeme.documents.azure.com:443/"

@@ -15,9 +15,10 @@ config:
     platform:
       azure:
         credentials:
-          tenantId: "${PHOENIXAKSDEV_TENANT_ID}"
-          clientId: "${PHOENIXAKSDEV_CLIENT_ID}"
-          clientSecret: "${PHOENIXAKSDEV_CLIENT_SECRET}"
+          core:
+            tenantId: "${PHOENIXAKSDEV_TENANT_ID}"
+            clientId: "${PHOENIXAKSDEV_CLIENT_ID}"
+            clientSecret: "${PHOENIXAKSDEV_CLIENT_SECRET}"
         cosmos:
           key: "${PHOENIXAKSDEV_COSMOS_KEY}"
           uri: "${PHOENIXAKSDEV_COSMOS_URI}"
