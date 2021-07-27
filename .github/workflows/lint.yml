@@ -70,6 +70,25 @@ jobs:
       - name: Check with Detekt
         run: ./gradlew --info detekt
 
+      # Modifies the SARIF outputs produced by Detekt so that absolute URIs are relative.
+      # This is so we can easily map results onto their source files
+      # This can be removed once relative URI support lands in Detekt: https://github.com/detekt/detekt/pull/2492
+      - name: Make artifact location URIs relative in the SARIF reports
+        continue-on-error: true
+        run: |
+          for file in $(ls build/reports/detekt/sarif/*.sarif); do
+            echo "$(
+              jq \
+                --arg github_workspace ${{ github.workspace }} \
+                '. | ( .runs[].results[].locations[].physicalLocation.artifactLocation.uri |= if test($github_workspace) then .[($github_workspace | length | . + 1):] else . end )' \
+                ${{ github.workspace }}/${file}
+            )" > ${{ github.workspace }}/${file}
+            echo "**** ${{ github.workspace }}/${file} ***"
+            cat ${{ github.workspace }}/${file}
+            echo "************"
+            echo
+          done
+
       - name: Upload SARIF reports to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v1
         with:
