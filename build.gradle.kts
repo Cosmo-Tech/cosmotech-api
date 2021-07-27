@@ -112,7 +112,7 @@ subprojects {
     allRules = false // activate all available (even unstable) rules.
     config.from(file("$rootDir/.detekt/detekt.yaml"))
     jvmTarget = kotlinJvmTarget
-    ignoreFailures = project.findProperty("detekt.ignoreFailures")?.toString()?.toBoolean() ?: true
+    ignoreFailures = project.findProperty("detekt.ignoreFailures")?.toString()?.toBoolean() ?: false
     reports {
       html {
         // observe findings in your browser with structure and code snippets
