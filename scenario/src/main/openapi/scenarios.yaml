@@ -202,6 +202,14 @@ paths:
           description: the Scenario specified is unknown or you don't have access to it
     delete:
       operationId: deleteScenario
+      parameters:
+        - name: wait_relationship_propagation
+          in: query
+          description: whether to wait until child scenarios are effectively updated
+          required: false
+          schema:
+            type: boolean
+            default: false
       tags:
         - scenario
       summary: Delete a scenario
