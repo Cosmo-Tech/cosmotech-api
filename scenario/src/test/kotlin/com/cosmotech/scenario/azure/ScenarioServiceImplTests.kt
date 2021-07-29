@@ -29,7 +29,11 @@ import com.cosmotech.workspace.domain.WorkspaceSolution
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import java.time.Duration
 import kotlin.test.*
+import org.awaitility.kotlin.atMost
+import org.awaitility.kotlin.await
+import org.awaitility.kotlin.untilAsserted
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.assertThrows
@@ -50,9 +54,9 @@ class ScenarioServiceImplTests {
   @MockK private lateinit var workspaceService: WorkspaceApiService
   @MockK private lateinit var idGenerator: CsmIdGenerator
 
-  @Suppress("unused") @MockK private lateinit var cosmosTemplate: CosmosTemplate
+  @Suppress("unused") @MockK(relaxed = true) private lateinit var cosmosTemplate: CosmosTemplate
   @Suppress("unused") @MockK private lateinit var cosmosClient: CosmosClient
-  @Suppress("unused") @MockK private lateinit var cosmosCoreDatabase: CosmosDatabase
+  @Suppress("unused") @MockK(relaxed = true) private lateinit var cosmosCoreDatabase: CosmosDatabase
   @Suppress("unused") @MockK private lateinit var csmPlatformProperties: CsmPlatformProperties
 
   @Suppress("unused")
@@ -71,6 +75,7 @@ class ScenarioServiceImplTests {
                 userService, solutionService, organizationService, workspaceService),
             recordPrivateCalls = true)
 
+    every { scenarioServiceImpl getProperty "cosmosTemplate" } returns cosmosTemplate
     every { scenarioServiceImpl getProperty "cosmosClient" } returns cosmosClient
     every { scenarioServiceImpl getProperty "idGenerator" } returns idGenerator
     every { scenarioServiceImpl getProperty "eventPublisher" } returns eventPublisher
@@ -402,6 +407,191 @@ class ScenarioServiceImplTests {
     scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
 
     assertNull(scenario.state)
+  }
+
+  @Test
+  fun `PROD-7939 - deleting a child has no effect on siblings nor its parent`() {
+    /* Given the following tree: M1 -- (P11 -- (C111, C112) | P12 -- C121) and M2 -- C21 ,
+     * deleting C111 has no effect on the other scenarios */
+    val m1 = Scenario(id = "M1", parentId = null, ownerId = AUTHENTICATED_USERNAME)
+    val p11 = Scenario(id = "P11", parentId = m1.id, ownerId = AUTHENTICATED_USERNAME)
+    val c111 = Scenario(id = "C111", parentId = p11.id, ownerId = AUTHENTICATED_USERNAME)
+    val c112 = Scenario(id = "C112", parentId = p11.id, ownerId = AUTHENTICATED_USERNAME)
+    val p12 = Scenario(id = "P12", parentId = m1.id, ownerId = AUTHENTICATED_USERNAME)
+    val c121 = Scenario(id = "C121", parentId = p12.id, ownerId = AUTHENTICATED_USERNAME)
+    val m2 = Scenario(id = "M2", parentId = null, ownerId = AUTHENTICATED_USERNAME)
+    val c21 = Scenario(id = "C21", parentId = m2.id, ownerId = AUTHENTICATED_USERNAME)
+
+    every {
+      scenarioServiceImpl.findScenarioChildrenById(ORGANIZATION_ID, WORKSPACE_ID, m1.id!!)
+    } returns listOf(p11, p12)
+    every {
+      scenarioServiceImpl.findScenarioChildrenById(ORGANIZATION_ID, WORKSPACE_ID, p11.id!!)
+    } returns listOf(c111, c112)
+    every {
+      scenarioServiceImpl.findScenarioChildrenById(ORGANIZATION_ID, WORKSPACE_ID, p12.id!!)
+    } returns listOf(c121)
+    every {
+      scenarioServiceImpl.findScenarioChildrenById(ORGANIZATION_ID, WORKSPACE_ID, m2.id!!)
+    } returns listOf(c21)
+    sequenceOf(m1, p11, p12, c111, c112, p12, c121, m2, c21).forEach {
+      every { scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, it.id!!) } returns
+          it
+    }
+    val cosmosContainer = mockk<CosmosContainer>(relaxed = true)
+    every { cosmosCoreDatabase.getContainer("${ORGANIZATION_ID}_scenario_data") } returns
+        cosmosContainer
+
+    this.scenarioServiceImpl.deleteScenario(ORGANIZATION_ID, WORKSPACE_ID, c111.id!!, false)
+
+    verify(exactly = 1) { cosmosTemplate.deleteEntity("${ORGANIZATION_ID}_scenario_data", c111) }
+    sequenceOf(m1, p11, c112, p12, c121, m2, c21).forEach {
+      verify(exactly = 0) { cosmosTemplate.deleteEntity("${ORGANIZATION_ID}_scenario_data", it) }
+    }
+    verify(exactly = 0) {
+      cosmosContainer.upsertItem(ofType(Map::class), PartitionKey(AUTHENTICATED_USERNAME), any())
+    }
+    confirmVerified(cosmosTemplate)
+
+    assertNull(m1.parentId)
+    assertNotNull(m1.id)
+    assertEquals(m1.id, p11.parentId)
+    assertEquals(m1.id, p12.parentId)
+    assertNotNull(p11.id)
+    assertEquals(p11.id, c112.parentId)
+    assertNotNull(p12.id)
+    assertEquals(p12.id, c121.parentId)
+    assertNull(m2.parentId)
+    assertNotNull(m2.id)
+    assertEquals(m2.id, c21.parentId)
+  }
+
+  @Test
+  fun `PROD-7939 - deleting a master parent makes direct children masters`() {
+    /* Given the following tree: M1 -- (P11 -- (C111, C112) | P12 -- C121) and M2 -- C21 ,
+     * deleting M1 makes P11 and P12 become master scenarios */
+    val m1 = Scenario(id = "M1", parentId = null, ownerId = AUTHENTICATED_USERNAME)
+    val p11 = Scenario(id = "P11", parentId = m1.id, ownerId = AUTHENTICATED_USERNAME)
+    val c111 = Scenario(id = "C111", parentId = p11.id, ownerId = AUTHENTICATED_USERNAME)
+    val c112 = Scenario(id = "C112", parentId = p11.id, ownerId = AUTHENTICATED_USERNAME)
+    val p12 = Scenario(id = "P12", parentId = m1.id, ownerId = AUTHENTICATED_USERNAME)
+    val c121 = Scenario(id = "C121", parentId = p12.id, ownerId = AUTHENTICATED_USERNAME)
+    val m2 = Scenario(id = "M2", parentId = null, ownerId = AUTHENTICATED_USERNAME)
+    val c21 = Scenario(id = "C21", parentId = m2.id, ownerId = AUTHENTICATED_USERNAME)
+
+    every {
+      scenarioServiceImpl.findScenarioChildrenById(ORGANIZATION_ID, WORKSPACE_ID, m1.id!!)
+    } returns listOf(p11, p12)
+    every {
+      scenarioServiceImpl.findScenarioChildrenById(ORGANIZATION_ID, WORKSPACE_ID, p11.id!!)
+    } returns listOf(c111, c112)
+    every {
+      scenarioServiceImpl.findScenarioChildrenById(ORGANIZATION_ID, WORKSPACE_ID, p12.id!!)
+    } returns listOf(c121)
+    every {
+      scenarioServiceImpl.findScenarioChildrenById(ORGANIZATION_ID, WORKSPACE_ID, m2.id!!)
+    } returns listOf(c21)
+    sequenceOf(m1, p11, p12, c111, c112, p12, c121, m2, c21).forEach {
+      every { scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, it.id!!) } returns
+          it
+    }
+    val cosmosContainer = mockk<CosmosContainer>(relaxed = true)
+    every { cosmosCoreDatabase.getContainer("${ORGANIZATION_ID}_scenario_data") } returns
+        cosmosContainer
+
+    this.scenarioServiceImpl.deleteScenario(ORGANIZATION_ID, WORKSPACE_ID, m1.id!!, true)
+
+    verify(exactly = 1) { cosmosTemplate.deleteEntity("${ORGANIZATION_ID}_scenario_data", m1) }
+    sequenceOf(p11, c111, c112, p12, c121, m2, c21).forEach {
+      verify(exactly = 0) { cosmosTemplate.deleteEntity("${ORGANIZATION_ID}_scenario_data", it) }
+    }
+    sequenceOf(p11, p12).forEach {
+      verify(exactly = 1) {
+        scenarioServiceImpl.upsertScenarioData(ORGANIZATION_ID, it, WORKSPACE_ID)
+      }
+    }
+    verify(exactly = 2) {
+      cosmosContainer.upsertItem(ofType(Map::class), PartitionKey(AUTHENTICATED_USERNAME), any())
+    }
+    confirmVerified(cosmosTemplate)
+
+    assertNull(p11.parentId)
+    assertNull(p12.parentId)
+    assertNotNull(p11.id)
+    assertEquals(p11.id, c112.parentId)
+    assertNotNull(p12.id)
+    assertEquals(p12.id, c121.parentId)
+    assertNull(m2.parentId)
+    assertNotNull(m2.id)
+    assertEquals(m2.id, c21.parentId)
+  }
+
+  @Test
+  fun `PROD-7939 - deleting a non-master parent assigns the parent's parent as new parent`() {
+    /* Given the following tree: M1 -- (P11 -- (C111, C112) | P12 -- C121) and M2 -- C21 ,
+     * deleting P11 results in assigning M1 as the new parent for C111 qnd C112  */
+    val m1 = Scenario(id = "M1", parentId = null, ownerId = AUTHENTICATED_USERNAME)
+    val p11 = Scenario(id = "P11", parentId = m1.id, ownerId = AUTHENTICATED_USERNAME)
+    val c111 = Scenario(id = "C111", parentId = p11.id, ownerId = AUTHENTICATED_USERNAME)
+    val c112 = Scenario(id = "C112", parentId = p11.id, ownerId = AUTHENTICATED_USERNAME)
+    val p12 = Scenario(id = "P12", parentId = m1.id, ownerId = AUTHENTICATED_USERNAME)
+    val c121 = Scenario(id = "C121", parentId = p12.id, ownerId = AUTHENTICATED_USERNAME)
+    val m2 = Scenario(id = "M2", parentId = null, ownerId = AUTHENTICATED_USERNAME)
+    val c21 = Scenario(id = "C21", parentId = m2.id, ownerId = AUTHENTICATED_USERNAME)
+
+    every {
+      scenarioServiceImpl.findScenarioChildrenById(ORGANIZATION_ID, WORKSPACE_ID, m1.id!!)
+    } returns listOf(p11, p12)
+    every {
+      scenarioServiceImpl.findScenarioChildrenById(ORGANIZATION_ID, WORKSPACE_ID, p11.id!!)
+    } returns listOf(c111, c112)
+    every {
+      scenarioServiceImpl.findScenarioChildrenById(ORGANIZATION_ID, WORKSPACE_ID, p12.id!!)
+    } returns listOf(c121)
+    every {
+      scenarioServiceImpl.findScenarioChildrenById(ORGANIZATION_ID, WORKSPACE_ID, m2.id!!)
+    } returns listOf(c21)
+    sequenceOf(m1, p11, p12, c111, c112, p12, c121, m2, c21).forEach {
+      every { scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, it.id!!) } returns
+          it
+    }
+    val cosmosContainer = mockk<CosmosContainer>(relaxed = true)
+    every { cosmosCoreDatabase.getContainer("${ORGANIZATION_ID}_scenario_data") } returns
+        cosmosContainer
+
+    this.scenarioServiceImpl.deleteScenario(ORGANIZATION_ID, WORKSPACE_ID, p11.id!!, false)
+
+    verify(exactly = 1) { cosmosTemplate.deleteEntity("${ORGANIZATION_ID}_scenario_data", p11) }
+
+    await atMost
+        Duration.ofSeconds(5) untilAsserted
+        {
+          verify(exactly = 2) {
+            cosmosContainer.upsertItem(
+                ofType(Map::class), PartitionKey(AUTHENTICATED_USERNAME), any())
+          }
+        }
+
+    sequenceOf(c111, c112).forEach {
+      verify(exactly = 1) {
+        scenarioServiceImpl.upsertScenarioData(ORGANIZATION_ID, it, WORKSPACE_ID)
+      }
+    }
+    sequenceOf(m1, c111, c112, p12, c121, m2, c21).forEach {
+      verify(exactly = 0) { cosmosTemplate.deleteEntity("${ORGANIZATION_ID}_scenario_data", it) }
+    }
+    confirmVerified(cosmosTemplate)
+
+    assertNull(m1.parentId)
+    assertNotNull(m1.id)
+    assertEquals(m1.id, c111.parentId)
+    assertEquals(m1.id, c112.parentId)
+    assertEquals(m1.id, p12.parentId)
+    assertNotNull(p12.id)
+    assertEquals(p12.id, c121.parentId)
+    assertNull(m2.parentId)
+    assertNotNull(m2.id)
+    assertEquals(m2.id, c21.parentId)
   }
 
   @TestFactory

@@ -175,6 +175,7 @@ subprojects {
 
     testImplementation(kotlin("test"))
     testImplementation("io.mockk:mockk:1.12.0")
+    testImplementation("org.awaitility:awaitility-kotlin:4.1.0")
 
     integrationTestImplementation("org.springframework.boot:spring-boot-starter-test") {
       // Drop legacy Junit < 5

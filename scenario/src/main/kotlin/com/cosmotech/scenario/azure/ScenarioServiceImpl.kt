@@ -35,6 +35,10 @@ import com.cosmotech.user.domain.User
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.fasterxml.jackson.databind.JsonNode
 import java.time.OffsetDateTime
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
@@ -254,7 +258,12 @@ class ScenarioServiceImpl(
     return scenarioToSave
   }
 
-  override fun deleteScenario(organizationId: String, workspaceId: String, scenarioId: String) {
+  override fun deleteScenario(
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String,
+      waitRelationshipPropagation: Boolean
+  ) {
     val scenario = this.findScenarioById(organizationId, workspaceId, scenarioId)
 
     if (scenario.ownerId != getCurrentAuthenticatedUserName()) {
@@ -264,12 +273,36 @@ class ScenarioServiceImpl(
 
     cosmosTemplate.deleteEntity("${organizationId}_scenario_data", scenario)
     // TODO Notify users
+
+    this.handleScenarioDeletion(organizationId, workspaceId, scenario, waitRelationshipPropagation)
   }
 
   override fun deleteAllScenarios(organizationId: kotlin.String, workspaceId: kotlin.String) {
     // TODO Only the workspace owner should be able to do this
     val scenarios = this.findAllScenariosStateOption(organizationId, workspaceId, false)
     scenarios.forEach { cosmosTemplate.deleteEntity("${organizationId}_scenario_data", it) }
+  }
+
+  /** See https://spaceport.cosmotech.com/jira/browse/PROD-7939 */
+  private fun handleScenarioDeletion(
+      organizationId: String,
+      workspaceId: String,
+      scenario: Scenario,
+      waitRelationshipPropagation: Boolean
+  ) {
+    val parentId = scenario.parentId
+    val children = this.findScenarioChildrenById(organizationId, workspaceId, scenario.id!!)
+    val childrenUpdatesCoroutines =
+        children.map { child ->
+          GlobalScope.launch {
+            // TODO Consider using a smaller coroutine scope
+            child.parentId = parentId
+            this@ScenarioServiceImpl.upsertScenarioData(organizationId, child, workspaceId)
+          }
+        }
+    if (waitRelationshipPropagation) {
+      runBlocking { childrenUpdatesCoroutines.joinAll() }
+    }
   }
 
   override fun findAllScenarios(organizationId: String, workspaceId: String): List<Scenario> =
@@ -335,6 +368,30 @@ class ScenarioServiceImpl(
     this.addStateToScenario(scenario)
     return scenario
   }
+
+  internal fun findScenarioChildrenById(
+      organizationId: String,
+      workspaceId: String,
+      parentId: String
+  ) =
+      cosmosCoreDatabase
+          .getContainer("${organizationId}_scenario_data")
+          .queryItems(
+              SqlQuerySpec(
+                  "SELECT * FROM c WHERE c.type = 'Scenario' " +
+                      "AND c.workspaceId = @WORKSPACE_ID " +
+                      "AND c.parentId = @PARENT_ID",
+                  listOf(
+                      SqlParameter("@WORKSPACE_ID", workspaceId),
+                      SqlParameter("@PARENT_ID", parentId))),
+              CosmosQueryRequestOptions(),
+              // It would be much better to specify the Domain Type right away and
+              // avoid the map operation, but we can't due
+              // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
+              // https://github.com/Azure/azure-sdk-for-java/issues/12269
+              JsonNode::class.java)
+          .mapNotNull { it.toDomain<Scenario>() }
+          .toList()
 
   internal fun findScenarioByIdNoState(
       organizationId: String,
@@ -582,7 +639,7 @@ class ScenarioServiceImpl(
     }
   }
 
-  private fun upsertScenarioData(organizationId: String, scenario: Scenario, workspaceId: String) {
+  internal fun upsertScenarioData(organizationId: String, scenario: Scenario, workspaceId: String) {
     scenario.lastUpdate = OffsetDateTime.now()
     cosmosCoreDatabase
         .getContainer("${organizationId}_scenario_data")
