@@ -236,6 +236,11 @@ ingress:
   enabled: ${COSMOTECH_API_INGRESS_ENABLED}
   annotations:
     kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "30"
+    nginx.org/client-max-body-size: "0"
   hosts:
     - host: "${COSMOTECH_API_DNS_NAME}"
   tls:
