@@ -445,7 +445,7 @@ internal class ArgoWorkflowService(
                     .accessModes(listOf("ReadWriteMany"))
                     .storageClassName("phoenix-azurefile")
                     .resources(
-                        V1ResourceRequirements().requests(mapOf("storage" to Quantity("1Gi")))))
+                        V1ResourceRequirements().requests(mapOf("storage" to Quantity("100Gi")))))
     val parametersdir =
         V1PersistentVolumeClaim()
             .metadata(V1ObjectMeta().name(VOLUME_CLAIM_PARAMETERS))
@@ -454,7 +454,7 @@ internal class ArgoWorkflowService(
                     .accessModes(listOf("ReadWriteMany"))
                     .storageClassName("phoenix-azurefile")
                     .resources(
-                        V1ResourceRequirements().requests(mapOf("storage" to Quantity("1Gi")))))
+                        V1ResourceRequirements().requests(mapOf("storage" to Quantity("100Gi")))))
 
     return listOf(datasetsdir, parametersdir)
   }
