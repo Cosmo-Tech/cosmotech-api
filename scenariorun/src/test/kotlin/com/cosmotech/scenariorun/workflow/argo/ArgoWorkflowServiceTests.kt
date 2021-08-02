@@ -214,6 +214,49 @@ class ArgoWorkflowServiceTests {
   }
 
   @Test
+  fun `Create Workflow Spec with StartContainers entrypoint with dependencies dag valid`() {
+    val sc = getStartContainersWithDependencies()
+    val workflowSpec = argoWorkflowService.buildWorkflowSpec(sc)
+
+    val entrypointTemplate =
+        workflowSpec.templates?.find { template -> template.name.equals("entrypoint") }
+    val expected =
+        listOf(
+            DAGTask().name("fetchDatasetContainer-1").template("fetchDatasetContainer-1"),
+            DAGTask()
+                .name("fetchScenarioParametersContainer")
+                .template("fetchScenarioParametersContainer"),
+            DAGTask()
+                .name("applyParametersContainer")
+                .template("applyParametersContainer")
+                .dependencies(
+                    listOf("fetchDatasetContainer-1", "fetchScenarioParametersContainer")),
+            DAGTask()
+                .name("validateDataContainer")
+                .template("validateDataContainer")
+                .dependencies(listOf("applyParametersContainer")),
+            DAGTask()
+                .name("sendDataWarehouseContainer")
+                .template("sendDataWarehouseContainer")
+                .dependencies(listOf("validateDataContainer")),
+            DAGTask()
+                .name("preRunContainer")
+                .template("preRunContainer")
+                .dependencies(listOf("validateDataContainer")),
+            DAGTask()
+                .name("runContainer")
+                .template("runContainer")
+                .dependencies(listOf("preRunContainer")),
+            DAGTask()
+                .name("postRunContainer")
+                .template("postRunContainer")
+                .dependencies(listOf("runContainer")),
+        )
+
+    assertEquals(expected, entrypointTemplate?.dag?.tasks)
+  }
+
+  @Test
   fun `Create Workflow Spec with StartContainers entrypoint dag valid`() {
     val sc = getStartContainers()
     val workflowSpec = argoWorkflowService.buildWorkflowSpec(sc)
@@ -429,6 +472,19 @@ class ArgoWorkflowServiceTests {
     return src
   }
 
+  private fun getScenarioRunContainerEntrypointDependencies(
+      name: String = "default",
+      dependencies: List<String>? = null
+  ): ScenarioRunContainer {
+    val src =
+        ScenarioRunContainer(
+            name = name,
+            image = "cosmotech/testcontainer",
+            entrypoint = DEFAULT_ENTRY_POINT,
+            dependencies = dependencies)
+    return src
+  }
+
   private fun getScenarioRunContainerEnv(name: String = "default"): ScenarioRunContainer {
     val src =
         ScenarioRunContainer(
@@ -477,6 +533,32 @@ class ArgoWorkflowServiceTests {
                     getScenarioRunContainerEntrypoint("validateDataContainer"),
                     getScenarioRunContainer("sendDataWarehouseContainer"),
                     getScenarioRunContainerEntrypoint("preRunContainer"),
+                    getScenarioRunContainerEntrypoint("runContainer"),
+                    getScenarioRunContainerEntrypoint("postRunContainer"),
+                ),
+            csmSimulationId = csmSimulationId)
+    return sc
+  }
+
+  private fun getStartContainersWithDependencies(): ScenarioRunStartContainers {
+    val sc =
+        ScenarioRunStartContainers(
+            nodeLabel = "highcpupool",
+            containers =
+                listOf(
+                    getScenarioRunContainerDependencies(
+                        "fetchDatasetContainer-1", listOf("DAG_ROOT")),
+                    getScenarioRunContainerDependencies(
+                        "fetchScenarioParametersContainer", listOf("DAG_ROOT")),
+                    getScenarioRunContainerEntrypointDependencies(
+                        "applyParametersContainer",
+                        listOf("fetchDatasetContainer-1", "fetchScenarioParametersContainer")),
+                    getScenarioRunContainerEntrypointDependencies(
+                        "validateDataContainer", listOf("applyParametersContainer")),
+                    getScenarioRunContainerDependencies(
+                        "sendDataWarehouseContainer", listOf("validateDataContainer")),
+                    getScenarioRunContainerEntrypointDependencies(
+                        "preRunContainer", listOf("validateDataContainer")),
                     getScenarioRunContainerEntrypoint("runContainer"),
                     getScenarioRunContainerEntrypoint("postRunContainer"),
                 ),

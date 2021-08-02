@@ -83,6 +83,8 @@ private const val STEP_SOURCE_CLOUD = "azureStorage"
 private const val AZURE_STORAGE_CONNECTION_STRING = "AZURE_STORAGE_CONNECTION_STRING"
 internal const val AZURE_AAD_POD_ID_BINDING_LABEL = "aadpodidbinding"
 
+public const val CSM_DAG_ROOT = "DAG_ROOT"
+
 @Component
 internal class ContainerFactory(
     private val csmPlatformProperties: CsmPlatformProperties,
@@ -295,6 +297,8 @@ internal class ContainerFactory(
 
     val containers: MutableList<ScenarioRunContainer> = mutableListOf()
 
+    var currentDependencies: MutableList<String>? = mutableListOf()
+
     if (testStep(template.fetchDatasets) && datasets != null && connectors != null) {
       var datasetCount = 1
       scenario.datasetList?.forEach { datasetId ->
@@ -305,7 +309,7 @@ internal class ContainerFactory(
             connectors.find { connector -> connector.id == (dataset.connector?.id ?: "") }
                 ?: throw IllegalStateException(
                     "Connector id ${dataset.connector?.id} not found in connectors list")
-        containers.add(
+        val container =
             this.buildFromDataset(
                 dataset,
                 connector,
@@ -315,20 +319,24 @@ internal class ContainerFactory(
                 organization.id ?: "",
                 workspace.id ?: "",
                 workspace.key,
-                csmSimulationId))
+                csmSimulationId)
+        containers.add(container)
+        currentDependencies?.add(container.name)
         datasetCount++
       }
     }
     if (testStep(template.fetchScenarioParameters)) {
-      containers.add(
+      val container =
           this.buildScenarioParametersFetchContainer(
               organization.id ?: "",
               workspace.id ?: "",
               workspace.key,
               scenario.id ?: "",
               csmSimulationId,
-              template.parametersJson))
-      containers.addAll(
+              template.parametersJson)
+      containers.add(container)
+      currentDependencies?.add(container.name)
+      val datasetParamContainers =
           buildScenarioParametersDatasetFetchContainers(
               scenario,
               solution,
@@ -337,16 +345,37 @@ internal class ContainerFactory(
               organization.id ?: "",
               workspace.id ?: "",
               workspace.key,
-              csmSimulationId))
+              csmSimulationId)
+      containers.addAll(datasetParamContainers)
+      currentDependencies?.addAll(datasetParamContainers.map { dsContainer -> dsContainer.name })
     }
-    if (testStep(template.applyParameters))
-        containers.add(
-            this.buildApplyParametersContainer(
-                organization, workspace, solution, runTemplateId, csmSimulationId))
-    if (testStep(template.validateData))
-        containers.add(
-            this.buildValidateDataContainer(
-                organization, workspace, solution, runTemplateId, csmSimulationId))
+
+    if (currentDependencies?.size == 0) {
+      currentDependencies = null
+    }
+
+    if (testStep(template.applyParameters)) {
+      containers.add(
+          this.buildApplyParametersContainer(
+              organization,
+              workspace,
+              solution,
+              runTemplateId,
+              csmSimulationId,
+              currentDependencies))
+      currentDependencies = mutableListOf(CONTAINER_APPLY_PARAMETERS)
+    }
+    if (testStep(template.validateData)) {
+      containers.add(
+          this.buildValidateDataContainer(
+              organization,
+              workspace,
+              solution,
+              runTemplateId,
+              csmSimulationId,
+              currentDependencies))
+      currentDependencies = mutableListOf(CONTAINER_VALIDATE_DATA)
+    }
     val sendParameters =
         getSendOptionValue(
             workspace.sendInputToDataWarehouse, template.sendInputParametersToDataWarehouse)
@@ -355,19 +384,38 @@ internal class ContainerFactory(
     if (sendParameters || sendDatasets)
         containers.add(
             this.buildSendDataWarehouseContainer(
-                organization.id, workspace, template, csmSimulationId))
-    if (testStep(template.preRun))
-        containers.add(
-            this.buildPreRunContainer(
-                organization, workspace, solution, runTemplateId, csmSimulationId))
-    if (testStep(template.run))
-        containers.add(
-            this.buildRunContainer(
-                organization, workspace, solution, runTemplateId, csmSimulationId))
+                organization.id, workspace, template, csmSimulationId, currentDependencies))
+    if (testStep(template.preRun)) {
+      containers.add(
+          this.buildPreRunContainer(
+              organization,
+              workspace,
+              solution,
+              runTemplateId,
+              csmSimulationId,
+              currentDependencies))
+      currentDependencies = mutableListOf(CONTAINER_PRERUN)
+    }
+    if (testStep(template.run)) {
+      containers.add(
+          this.buildRunContainer(
+              organization,
+              workspace,
+              solution,
+              runTemplateId,
+              csmSimulationId,
+              currentDependencies))
+      currentDependencies = mutableListOf(CONTAINER_RUN)
+    }
     if (testStep(template.postRun))
         containers.add(
             this.buildPostRunContainer(
-                organization, workspace, solution, runTemplateId, csmSimulationId))
+                organization,
+                workspace,
+                solution,
+                runTemplateId,
+                csmSimulationId,
+                currentDependencies))
 
     return containers.toList()
   }
@@ -412,6 +460,7 @@ internal class ContainerFactory(
                 connector.repository,
                 connector.version),
         labels = labels,
+        dependencies = listOf(CSM_DAG_ROOT),
         envVars =
             getDatasetEnvVars(
                 dataset,
@@ -497,6 +546,7 @@ internal class ContainerFactory(
             getImageName(
                 csmPlatformProperties.azure?.containerRegistries?.core ?: "",
                 csmPlatformProperties.images.scenarioFetchParameters),
+        dependencies = listOf(CSM_DAG_ROOT),
         envVars = envVars,
     )
   }
@@ -505,7 +555,8 @@ internal class ContainerFactory(
       organizationId: String?,
       workspace: Workspace,
       runTemplate: RunTemplate,
-      csmSimulationId: String
+      csmSimulationId: String,
+      dependencies: List<String>? = null,
   ): ScenarioRunContainer {
     if (organizationId == null) throw IllegalStateException("Organization Id cannot be null")
     val envVars = getCommonEnvVars(csmSimulationId, organizationId, workspace.key)
@@ -523,6 +574,7 @@ internal class ContainerFactory(
             getImageName(
                 csmPlatformProperties.azure?.containerRegistries?.core ?: "",
                 csmPlatformProperties.images.sendDataWarehouse),
+        dependencies = dependencies,
         envVars = envVars)
   }
 
@@ -531,7 +583,8 @@ internal class ContainerFactory(
       workspace: Workspace,
       solution: Solution,
       runTemplateId: String,
-      csmSimulationId: String
+      csmSimulationId: String,
+      dependencies: List<String>? = null,
   ): ScenarioRunContainer {
     return this.buildSolutionContainer(
         organization,
@@ -540,7 +593,9 @@ internal class ContainerFactory(
         runTemplateId,
         CONTAINER_APPLY_PARAMETERS,
         steps[CONTAINER_APPLY_PARAMETERS_MODE],
-        csmSimulationId)
+        csmSimulationId,
+        dependencies,
+    )
   }
 
   internal fun buildValidateDataContainer(
@@ -548,7 +603,8 @@ internal class ContainerFactory(
       workspace: Workspace,
       solution: Solution,
       runTemplateId: String,
-      csmSimulationId: String
+      csmSimulationId: String,
+      dependencies: List<String>? = null,
   ): ScenarioRunContainer {
     return this.buildSolutionContainer(
         organization,
@@ -557,7 +613,9 @@ internal class ContainerFactory(
         runTemplateId,
         CONTAINER_VALIDATE_DATA,
         steps[CONTAINER_VALIDATE_DATA_MODE],
-        csmSimulationId)
+        csmSimulationId,
+        dependencies,
+    )
   }
 
   internal fun buildPreRunContainer(
@@ -565,7 +623,8 @@ internal class ContainerFactory(
       workspace: Workspace,
       solution: Solution,
       runTemplateId: String,
-      csmSimulationId: String
+      csmSimulationId: String,
+      dependencies: List<String>? = null,
   ): ScenarioRunContainer {
     return this.buildSolutionContainer(
         organization,
@@ -574,7 +633,9 @@ internal class ContainerFactory(
         runTemplateId,
         CONTAINER_PRERUN,
         steps[CONTAINER_PRERUN_MODE],
-        csmSimulationId)
+        csmSimulationId,
+        dependencies,
+    )
   }
 
   internal fun buildRunContainer(
@@ -582,7 +643,8 @@ internal class ContainerFactory(
       workspace: Workspace,
       solution: Solution,
       runTemplateId: String,
-      csmSimulationId: String
+      csmSimulationId: String,
+      dependencies: List<String>? = null,
   ): ScenarioRunContainer {
     return this.buildSolutionContainer(
         organization,
@@ -591,7 +653,9 @@ internal class ContainerFactory(
         runTemplateId,
         CONTAINER_RUN,
         steps[CONTAINER_RUN_MODE],
-        csmSimulationId)
+        csmSimulationId,
+        dependencies,
+    )
   }
 
   internal fun buildPostRunContainer(
@@ -599,7 +663,8 @@ internal class ContainerFactory(
       workspace: Workspace,
       solution: Solution,
       runTemplateId: String,
-      csmSimulationId: String
+      csmSimulationId: String,
+      dependencies: List<String>? = null,
   ): ScenarioRunContainer {
     return this.buildSolutionContainer(
         organization,
@@ -608,7 +673,9 @@ internal class ContainerFactory(
         runTemplateId,
         CONTAINER_POSTRUN,
         steps[CONTAINER_POSTRUN_MODE],
-        csmSimulationId)
+        csmSimulationId,
+        dependencies,
+    )
   }
 
   internal fun getSendOptionValue(workspaceOption: Boolean?, templateOption: Boolean?): Boolean {
@@ -628,7 +695,8 @@ internal class ContainerFactory(
       runTemplateId: String,
       name: String,
       step: SolutionContainerStepSpec?,
-      csmSimulationId: String
+      csmSimulationId: String,
+      dependencies: List<String>? = null,
   ): ScenarioRunContainer {
 
     if (step == null) throw IllegalStateException("Solution Container Step Spec is not defined")
@@ -665,6 +733,7 @@ internal class ContainerFactory(
         name = name,
         image = imageName,
         envVars = envVars,
+        dependencies = dependencies,
         entrypoint = ENTRYPOINT_NAME,
     )
   }

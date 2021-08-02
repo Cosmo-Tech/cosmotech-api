@@ -993,6 +993,42 @@ class ContainerFactoryTests {
   }
 
   @Test
+  fun `Build all containers for a Scenario 3 Datasets containers dag dependency list`() {
+    val scenario = getScenarioThreeDatasets()
+    val datasets = listOf(getDataset(), getDataset2(), getDataset3())
+    val connectors = listOf(getConnector(), getConnector2(), getConnector3())
+    val workspace = getWorkspace()
+    val solution = getSolution()
+    val containers =
+        factory.buildContainersPipeline(
+            scenario,
+            datasets,
+            connectors,
+            workspace,
+            getOrganization(),
+            solution,
+            CSM_SIMULATION_ID)
+    val expected =
+        listOf(
+            listOf("DAG_ROOT"),
+            listOf("DAG_ROOT"),
+            listOf("DAG_ROOT"),
+            listOf("DAG_ROOT"),
+            listOf(
+                "fetchDatasetContainer-1",
+                "fetchDatasetContainer-2",
+                "fetchDatasetContainer-3",
+                "fetchScenarioParametersContainer"),
+            listOf("applyParametersContainer"),
+            listOf("validateDataContainer"),
+            listOf("validateDataContainer"),
+            listOf("preRunContainer"),
+            listOf("runContainer"),
+        )
+    assertEquals(expected, containers.map { container -> container.dependencies })
+  }
+
+  @Test
   fun `Build all containers for a Scenario 3 Datasets containers image list`() {
     val scenario = getScenarioThreeDatasets()
     val datasets = listOf(getDataset(), getDataset2(), getDataset3())
