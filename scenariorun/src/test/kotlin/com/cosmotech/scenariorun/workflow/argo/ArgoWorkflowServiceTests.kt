@@ -334,7 +334,8 @@ class ArgoWorkflowServiceTests {
             .metadata(V1ObjectMeta().name("datasetsdir"))
             .spec(
                 V1PersistentVolumeClaimSpec()
-                    .accessModes(listOf("ReadWriteOnce"))
+                    .accessModes(listOf("ReadWriteMany"))
+                    .storageClassName("phoenix-azurefile")
                     .resources(
                         V1ResourceRequirements().requests(mapOf("storage" to Quantity("1Gi")))))
     val parametersdir =
@@ -342,7 +343,8 @@ class ArgoWorkflowServiceTests {
             .metadata(V1ObjectMeta().name("parametersdir"))
             .spec(
                 V1PersistentVolumeClaimSpec()
-                    .accessModes(listOf("ReadWriteOnce"))
+                    .accessModes(listOf("ReadWriteMany"))
+                    .storageClassName("phoenix-azurefile")
                     .resources(
                         V1ResourceRequirements().requests(mapOf("storage" to Quantity("1Gi")))))
     val expected = listOf(datasetsdir, parametersdir)

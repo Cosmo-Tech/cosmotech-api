@@ -158,7 +158,7 @@ null (empty response body)
 
 <a name="deleteScenario"></a>
 # **deleteScenario**
-> deleteScenario(organization\_id, workspace\_id, scenario\_id)
+> deleteScenario(organization\_id, workspace\_id, scenario\_id, wait\_relationship\_propagation)
 
 Delete a scenario
 
@@ -169,6 +169,7 @@ Name | Type | Description  | Notes
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **workspace\_id** | **String**| the Workspace identifier | [default to null]
  **scenario\_id** | **String**| the Scenario identifier | [default to null]
+ **wait\_relationship\_propagation** | **Boolean**| whether to wait until child scenarios are effectively updated | [optional] [default to false]
 
 ### Return type
 

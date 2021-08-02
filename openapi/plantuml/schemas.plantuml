@@ -13,6 +13,7 @@ entity Connector {
     ownerId: String
     url: String
     azureManagedIdentity: Boolean
+    azureAuthenticationWithCustomerAppRegistration: Boolean
     * ioTypes: List<String>
     parameterGroups: List<ConnectorParameterGroup>
 }

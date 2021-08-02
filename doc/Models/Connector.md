@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **ownerId** | [**String**](string.md) | the user id which own this connector version | [optional] [default to null]
 **url** | [**String**](string.md) | an optional URL link to connector page | [optional] [default to null]
 **azureManagedIdentity** | [**Boolean**](boolean.md) | whether or not the connector uses Azure Managed Identity | [optional] [default to null]
+**azureAuthenticationWithCustomerAppRegistration** | [**Boolean**](boolean.md) | whether to authenticate against Azure using the app registration credentials provided by the customer | [optional] [default to null]
 **ioTypes** | [**List**](string.md) |  | [default to null]
 **parameterGroups** | [**List**](ConnectorParameterGroup.md) | the list of connector parameters groups | [optional] [default to null]
 
