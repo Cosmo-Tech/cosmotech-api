@@ -132,6 +132,32 @@ tasks.register<Copy>("copyJSLicense") {
 
 tasks.register("generateJSClient") { dependsOn("copyJSGitPushScript", "copyJSLicense") }
 
+tasks.register<GenerateTask>("openApiTypescriptGenerate") {
+  dependsOn("mergeOpenApiFiles")
+  inputSpec.set("${rootDir}/openapi/openapi.yaml")
+  outputDir.set("$buildDir/generated-sources/typescript")
+  generatorName.set("typescript-axios")
+  additionalProperties.set(
+      mapOf(
+          "npmName" to "@cosmotech/api-ts",
+        )
+      )
+}
+
+tasks.register<Copy>("copyTypescriptGitPushScript") {
+  dependsOn("openApiTypescriptGenerate")
+  from("${rootDir}/scripts/clients/build_override/git_push.sh")
+  into("$buildDir/generated-sources/typescript/scripts")
+}
+
+tasks.register<Copy>("copyTypescriptLicense") {
+  dependsOn("openApiTypescriptGenerate")
+  from("${rootDir}/scripts/clients/build_override/LICENSE")
+  into("$buildDir/generated-sources/typescript")
+}
+
+tasks.register("generateTypescriptClient") { dependsOn("copyTypescriptGitPushScript", "copyTypescriptLicense") }
+
 tasks.register<GenerateTask>("openApiPythonGenerate") {
   dependsOn("mergeOpenApiFiles")
   inputSpec.set("${rootDir}/openapi/openapi.yaml")
