@@ -893,6 +893,51 @@ class ContainerFactoryTests {
   }
 
   @Test
+  fun `Build all containers for a Stacked Scenario no DWH containers name list`() {
+    val scenario = getScenario()
+    val datasets = listOf(getDataset())
+    val connectors = listOf(getConnector())
+    val workspace = getWorkspace()
+    val solution = getSolutionStackNoDWH()
+    val containers =
+        factory.buildContainersPipeline(
+            scenario,
+            datasets,
+            connectors,
+            workspace,
+            getOrganization(),
+            solution,
+            CSM_SIMULATION_ID)
+    val expected =
+        listOf(
+            "fetchDatasetContainer-1",
+            "fetchScenarioParametersContainer",
+            "multipleStepsContainer-1",
+        )
+    assertEquals(expected, containers.map { container -> container.name })
+  }
+
+  @Test
+  fun `Build all containers for a Stacked Scenario no DWH containers env var 1 list`() {
+    val scenario = getScenario()
+    val datasets = listOf(getDataset())
+    val connectors = listOf(getConnector())
+    val workspace = getWorkspace()
+    val solution = getSolutionStackNoDWH()
+    val containers =
+        factory.buildContainersPipeline(
+            scenario,
+            datasets,
+            connectors,
+            workspace,
+            getOrganization(),
+            solution,
+            CSM_SIMULATION_ID)
+    val container = containers.find { container -> container.name == "multipleStepsContainer-1" }
+    this.validateEnvVarsSolutionContainer(container, "handle-parameters,validate,prerun,engine,postrun")
+  }
+
+  @Test
   fun `Build all containers for a Stacked Scenario containers name list`() {
     val scenario = getScenario()
     val datasets = listOf(getDataset())
@@ -1999,6 +2044,17 @@ class ContainerFactoryTests {
     )
   }
 
+  private fun getSolutionStackNoDWH(): Solution {
+    return Solution(
+        id = "1",
+        key = "TestSolution",
+        name = "Test Solution",
+        repository = "cosmotech/testsolution_simulator",
+        version = "1.0.0",
+        runTemplates = listOf(getRunTemplateStackNoDWH()),
+    )
+  }
+
   private fun getSolutionDatasetIds(): Solution {
     return Solution(
         id = "1",
@@ -2118,6 +2174,18 @@ class ContainerFactoryTests {
         csmSimulation = "TestSimulation",
         computeSize = "highcpu",
         stackSteps = true,
+    )
+  }
+
+  private fun getRunTemplateStackNoDWH(): RunTemplate {
+    return RunTemplate(
+        id = "testruntemplate",
+        name = "Test Run",
+        csmSimulation = "TestSimulation",
+        computeSize = "highcpu",
+        stackSteps = true,
+        sendDatasetsToDataWarehouse = false,
+        sendInputParametersToDataWarehouse = false,
     )
   }
 
