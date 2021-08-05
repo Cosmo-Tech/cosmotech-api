@@ -934,7 +934,8 @@ class ContainerFactoryTests {
             solution,
             CSM_SIMULATION_ID)
     val container = containers.find { container -> container.name == "multipleStepsContainer-1" }
-    this.validateEnvVarsSolutionContainer(container, "handle-parameters,validate,prerun,engine,postrun")
+    this.validateEnvVarsSolutionContainer(
+        container, "handle-parameters,validate,prerun,engine,postrun")
   }
 
   @Test

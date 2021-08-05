@@ -867,7 +867,9 @@ internal class ContainerFactory(
     return (identityEnvVars + commonEnvVars).toMutableMap()
   }
 
-  private fun stackSolutionContainers(containers: MutableList<ScenarioRunContainer>): MutableList<ScenarioRunContainer> {
+  private fun stackSolutionContainers(
+      containers: MutableList<ScenarioRunContainer>
+  ): MutableList<ScenarioRunContainer> {
     var stackedContainers: MutableList<ScenarioRunContainer> = mutableListOf()
     var stackedContainer: ScenarioRunContainer? = null
     var stackedIndex = 1
@@ -893,7 +895,11 @@ internal class ContainerFactory(
     return stackedContainers
   }
 
-  private fun mergeSolutionContainer(stackedIndex: Int, stackedContainer: ScenarioRunContainer, container: ScenarioRunContainer): ScenarioRunContainer {
+  private fun mergeSolutionContainer(
+      stackedIndex: Int,
+      stackedContainer: ScenarioRunContainer,
+      container: ScenarioRunContainer
+  ): ScenarioRunContainer {
     var stackedMode = stackedContainer.envVars?.getOrDefault(CONTAINER_MODE_VAR, "") ?: ""
     var containerMode = container.envVars?.getOrDefault(CONTAINER_MODE_VAR, "") ?: ""
     val modes = "${stackedMode},${containerMode}"
@@ -902,8 +908,8 @@ internal class ContainerFactory(
     envVars?.put(CONTAINER_MODE_VAR, modes)
 
     return stackedContainer.copy(
-      name = MULTIPLE_STEPS_NAME + stackedIndex.toString(),
-      envVars = envVars,
+        name = MULTIPLE_STEPS_NAME + stackedIndex.toString(),
+        envVars = envVars,
     )
   }
 }
