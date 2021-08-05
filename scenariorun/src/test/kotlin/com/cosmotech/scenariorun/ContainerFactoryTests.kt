@@ -920,6 +920,46 @@ class ContainerFactoryTests {
   }
 
   @Test
+  fun `Build all containers for a Stacked Scenario containers env var 1 list`() {
+    val scenario = getScenario()
+    val datasets = listOf(getDataset())
+    val connectors = listOf(getConnector())
+    val workspace = getWorkspace()
+    val solution = getSolutionStack()
+    val containers =
+        factory.buildContainersPipeline(
+            scenario,
+            datasets,
+            connectors,
+            workspace,
+            getOrganization(),
+            solution,
+            CSM_SIMULATION_ID)
+    val container = containers.find { container -> container.name == "multipleStepsContainer-1" }
+    this.validateEnvVarsSolutionContainer(container, "handle-parameters,validate")
+  }
+
+  @Test
+  fun `Build all containers for a Stacked Scenario containers env var 2 list`() {
+    val scenario = getScenario()
+    val datasets = listOf(getDataset())
+    val connectors = listOf(getConnector())
+    val workspace = getWorkspace()
+    val solution = getSolutionStack()
+    val containers =
+        factory.buildContainersPipeline(
+            scenario,
+            datasets,
+            connectors,
+            workspace,
+            getOrganization(),
+            solution,
+            CSM_SIMULATION_ID)
+    val container = containers.find { container -> container.name == "multipleStepsContainer-2" }
+    this.validateEnvVarsSolutionContainer(container, "prerun,engine,postrun")
+  }
+
+  @Test
   fun `Build all containers for a Scenario containers name list`() {
     val scenario = getScenario()
     val datasets = listOf(getDataset())
@@ -1671,7 +1711,7 @@ class ContainerFactoryTests {
         getOrganization(), getWorkspace(), getSolution(), "testruntemplate", CSM_SIMULATION_ID)
   }
 
-  private fun validateEnvVarsSolutionContainer(container: ScenarioRunContainer, mode: String) {
+  private fun validateEnvVarsSolutionContainer(container: ScenarioRunContainer?, mode: String) {
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -1693,7 +1733,7 @@ class ContainerFactoryTests {
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
             "CSM_SIMULATION" to "TestSimulation")
-    assertEquals(expected, container.envVars)
+    assertEquals(expected, container?.envVars)
   }
 
   private fun getDatasetWorkspaceFile(): Dataset {

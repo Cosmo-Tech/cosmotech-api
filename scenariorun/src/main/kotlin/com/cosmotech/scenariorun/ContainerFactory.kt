@@ -894,7 +894,17 @@ internal class ContainerFactory(
   }
 
   private fun mergeSolutionContainer(stackedIndex: Int, stackedContainer: ScenarioRunContainer, container: ScenarioRunContainer): ScenarioRunContainer {
-    return stackedContainer.copy(name = MULTIPLE_STEPS_NAME + stackedIndex.toString())
+    var stackedMode = stackedContainer.envVars?.getOrDefault(CONTAINER_MODE_VAR, "") ?: ""
+    var containerMode = container.envVars?.getOrDefault(CONTAINER_MODE_VAR, "") ?: ""
+    val modes = "${stackedMode},${containerMode}"
+    val envVars = stackedContainer.envVars?.toMutableMap()
+
+    envVars?.put(CONTAINER_MODE_VAR, modes)
+
+    return stackedContainer.copy(
+      name = MULTIPLE_STEPS_NAME + stackedIndex.toString(),
+      envVars = envVars,
+    )
   }
 }
 
