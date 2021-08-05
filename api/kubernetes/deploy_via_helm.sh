@@ -152,7 +152,7 @@ spec:
     server: "${CERT_MANAGER_ACME_SERVER}"
     email: "${TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL}"
     privateKeySecretRef:
-      name: letsencrypt-${CERT_MANAGER_ACME}
+      name: letsencrypt-${CERT_MANAGER_ACME}-private-key
     solvers:
       - http01:
           ingress:
