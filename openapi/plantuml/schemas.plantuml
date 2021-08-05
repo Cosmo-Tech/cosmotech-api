@@ -115,6 +115,7 @@ entity RunTemplate {
     runSource: RunTemplateStepSource
     postRunSource: RunTemplateStepSource
     parameterGroups: List<String>
+    stackSteps: Boolean
 }
 
 entity RunTemplateHandlerId { 
@@ -223,6 +224,7 @@ entity ScenarioRunContainer {
     entrypoint: String
     runArgs: List<String>
     dependencies: List<String>
+    solutionContainer: Boolean
 }
 
 entity ScenarioRunContainerLogs { 

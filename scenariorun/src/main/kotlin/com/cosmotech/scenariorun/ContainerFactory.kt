@@ -81,6 +81,7 @@ private const val GENERATE_NAME_SUFFIX = "-"
 private const val STEP_SOURCE_LOCAL = "local"
 private const val STEP_SOURCE_CLOUD = "azureStorage"
 private const val AZURE_STORAGE_CONNECTION_STRING = "AZURE_STORAGE_CONNECTION_STRING"
+private const val MULTIPLE_STEPS_NAME = "multipleStepsContainer-"
 internal const val AZURE_AAD_POD_ID_BINDING_LABEL = "aadpodidbinding"
 
 public const val CSM_DAG_ROOT = "DAG_ROOT"
@@ -295,7 +296,7 @@ internal class ContainerFactory(
             ?: throw IllegalStateException("Scenario runTemplateId cannot be null")
     val template = getRunTemplate(solution, runTemplateId)
 
-    val containers: MutableList<ScenarioRunContainer> = mutableListOf()
+    var containers: MutableList<ScenarioRunContainer> = mutableListOf()
 
     var currentDependencies: MutableList<String>? = mutableListOf()
 
@@ -376,6 +377,7 @@ internal class ContainerFactory(
               currentDependencies))
       currentDependencies = mutableListOf(CONTAINER_VALIDATE_DATA)
     }
+
     val sendParameters =
         getSendOptionValue(
             workspace.sendInputToDataWarehouse, template.sendInputParametersToDataWarehouse)
@@ -416,6 +418,10 @@ internal class ContainerFactory(
                 runTemplateId,
                 csmSimulationId,
                 currentDependencies))
+
+    if (template.stackSteps == true) {
+      containers = this.stackSolutionContainers(containers)
+    }
 
     return containers.toList()
   }
@@ -735,6 +741,7 @@ internal class ContainerFactory(
         envVars = envVars,
         dependencies = dependencies,
         entrypoint = ENTRYPOINT_NAME,
+        solutionContainer = true,
     )
   }
 
@@ -858,6 +865,36 @@ internal class ContainerFactory(
         )
 
     return (identityEnvVars + commonEnvVars).toMutableMap()
+  }
+
+  private fun stackSolutionContainers(containers: MutableList<ScenarioRunContainer>): MutableList<ScenarioRunContainer> {
+    var stackedContainers: MutableList<ScenarioRunContainer> = mutableListOf()
+    var stackedContainer: ScenarioRunContainer? = null
+    var stackedIndex = 1
+    for (container in containers) {
+      if (container.solutionContainer != true) {
+        if (stackedContainer != null) {
+          stackedContainers.add(stackedContainer)
+          stackedIndex++
+        }
+        stackedContainer = null
+        stackedContainers.add(container)
+      } else {
+        if (stackedContainer == null) {
+          stackedContainer = container
+        } else {
+          stackedContainer = this.mergeSolutionContainer(stackedIndex, stackedContainer, container)
+        }
+      }
+    }
+
+    if (stackedContainer != null) stackedContainers.add(stackedContainer)
+
+    return stackedContainers
+  }
+
+  private fun mergeSolutionContainer(stackedIndex: Int, stackedContainer: ScenarioRunContainer, container: ScenarioRunContainer): ScenarioRunContainer {
+    return stackedContainer.copy(name = MULTIPLE_STEPS_NAME + stackedIndex.toString())
   }
 }
 

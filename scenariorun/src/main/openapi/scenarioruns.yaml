@@ -606,6 +606,10 @@ components:
           description: the list of dependencies container name to run this container
           items:
             type: string
+        solutionContainer:
+          type: boolean
+          readOnly: true
+          description: whether or not this container is a Cosmo Tech solution container
       required:
         - name
         - image

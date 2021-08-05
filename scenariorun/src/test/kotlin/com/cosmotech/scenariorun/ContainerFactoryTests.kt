@@ -893,6 +893,33 @@ class ContainerFactoryTests {
   }
 
   @Test
+  fun `Build all containers for a Stacked Scenario containers name list`() {
+    val scenario = getScenario()
+    val datasets = listOf(getDataset())
+    val connectors = listOf(getConnector())
+    val workspace = getWorkspace()
+    val solution = getSolutionStack()
+    val containers =
+        factory.buildContainersPipeline(
+            scenario,
+            datasets,
+            connectors,
+            workspace,
+            getOrganization(),
+            solution,
+            CSM_SIMULATION_ID)
+    val expected =
+        listOf(
+            "fetchDatasetContainer-1",
+            "fetchScenarioParametersContainer",
+            "multipleStepsContainer-1",
+            "sendDataWarehouseContainer",
+            "multipleStepsContainer-2",
+        )
+    assertEquals(expected, containers.map { container -> container.name })
+  }
+
+  @Test
   fun `Build all containers for a Scenario containers name list`() {
     val scenario = getScenario()
     val datasets = listOf(getDataset())
@@ -1921,6 +1948,17 @@ class ContainerFactoryTests {
     )
   }
 
+  private fun getSolutionStack(): Solution {
+    return Solution(
+        id = "1",
+        key = "TestSolution",
+        name = "Test Solution",
+        repository = "cosmotech/testsolution_simulator",
+        version = "1.0.0",
+        runTemplates = listOf(getRunTemplateStack()),
+    )
+  }
+
   private fun getSolutionDatasetIds(): Solution {
     return Solution(
         id = "1",
@@ -2030,6 +2068,16 @@ class ContainerFactoryTests {
         name = "Test Run",
         csmSimulation = "TestSimulation",
         computeSize = "highcpu",
+    )
+  }
+
+  private fun getRunTemplateStack(): RunTemplate {
+    return RunTemplate(
+        id = "testruntemplate",
+        name = "Test Run",
+        csmSimulation = "TestSimulation",
+        computeSize = "highcpu",
+        stackSteps = true,
     )
   }
 

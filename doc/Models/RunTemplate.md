@@ -25,6 +25,7 @@ Name | Type | Description | Notes
 **runSource** | [**RunTemplateStepSource**](RunTemplateStepSource.md) |  | [optional] [default to null]
 **postRunSource** | [**RunTemplateStepSource**](RunTemplateStepSource.md) |  | [optional] [default to null]
 **parameterGroups** | [**List**](string.md) | the ordered list of parameters groups for the Run Template | [optional] [default to null]
+**stackSteps** | [**Boolean**](boolean.md) | whether or not to stack adjacent scenario run steps in one container run which will chain steps | [optional] [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

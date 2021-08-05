@@ -565,6 +565,9 @@ components:
           items:
             type: string
             description: a Run Template Group Parameter id
+        stackSteps:
+          type: boolean
+          description: whether or not to stack adjacent scenario run steps in one container run which will chain steps
       required:
         - id
         - name
