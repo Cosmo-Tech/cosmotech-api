@@ -21,6 +21,7 @@ ingress:
     nginx.org/client-max-body-size: "0"
   hosts:
     - host: localhost
+  argoEnabled: false
 
 config:
   logging:
