@@ -63,7 +63,7 @@ spec:
               servicePort: {{ $svcPort }}
               {{- end }}
           {{- end }}
-    - host: "argo.{{ .host | quote }}"
+    - host: argo.{{ .host | quote }}
       http:
         paths:
           - path: {{ $apiBasePath }}
