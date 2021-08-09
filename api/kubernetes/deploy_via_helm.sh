@@ -240,7 +240,7 @@ ingress:
   tls:
     - secretName: ${TLS_SECRET_NAME}
       hosts: [${COSMOTECH_API_DNS_NAME}]
-  argo-enabled: ${COSMOTECH_ARGO_INGRESS_ENABLED}
+  argoEnabled: ${COSMOTECH_ARGO_INGRESS_ENABLED}
 
 resources:
   # Recommended in production environments
