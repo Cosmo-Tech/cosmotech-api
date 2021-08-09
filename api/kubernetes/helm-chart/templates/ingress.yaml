@@ -63,5 +63,20 @@ spec:
               servicePort: {{ $svcPort }}
               {{- end }}
           {{- end }}
+    - host: "argo.{{ .host | quote }}"
+      http:
+        paths:
+          - path: {{ $apiBasePath }}
+            pathType: Prefix
+            backend:
+              {{- if semverCompare ">=1.19-0" $kubeVersion }}
+              service:
+                name: argo-server
+                port:
+                  number: 2746
+              {{- else }}
+              serviceName: argo-server
+              servicePort: 2746
+              {{- end }}
     {{- end }}
   {{- end }}
