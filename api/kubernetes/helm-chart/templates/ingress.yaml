@@ -63,5 +63,21 @@ spec:
               servicePort: {{ $svcPort }}
               {{- end }}
           {{- end }}
+          {{- range .extrapaths }}
+          - path: {{ .path }}
+            {{- if .pathType }}
+            pathType: {{ .pathType }}
+            {{- end }}
+            backend:
+              {{- if semverCompare ">=1.19-0" $kubeVersion }}
+              service:
+                name: {{ $serviceName }}
+                port:
+                  number: {{ $servicePort }}
+              {{- else }}
+              serviceName: {{ $serviceName }}
+              servicePort: {{ $servicePort }}
+              {{- end }}
+          {{- end }}
     {{- end }}
   {{- end }}

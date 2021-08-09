@@ -1,1 +1,1 @@
-kubectl -n argo port-forward deployment/minio 9000:9000
+kubectl -n phoenix port-forward deployment/argo-minio 9000:9000
