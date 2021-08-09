@@ -90,7 +90,6 @@ ingress:
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
-  argoEnabled: false
 
 # -- resources limits and requests for the pod placement
 resources: {}
