@@ -215,6 +215,9 @@ if [[ "${COSMOTECH_API_DNS_NAME:-}" != "" && "${CERT_MANAGER_ACME:-}" != "" ]]; 
 else
   export COSMOTECH_API_INGRESS_ENABLED=false
 fi
+if [[ "${COSMOTECH_ARGO_INGRESS_ENABLED:-}" == "" ]]; then
+  export COSMOTECH_ARGO_INGRESS_ENABLED="false"
+fi
 cat <<EOF > values-cosmotech-api-deploy.yaml
 image:
   tag: "${IMAGE_TAG}"
@@ -246,6 +249,7 @@ ingress:
   tls:
     - secretName: ${TLS_SECRET_NAME}
       hosts: [${COSMOTECH_API_DNS_NAME}]
+  argoEnabled: ${COSMOTECH_ARGO_INGRESS_ENABLED}
 
 resources:
   # Recommended in production environments
