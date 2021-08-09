@@ -71,12 +71,12 @@ spec:
             backend:
               {{- if semverCompare ">=1.19-0" $kubeVersion }}
               service:
-                name: {{ $serviceName }}
+                name: {{ .serviceName }}
                 port:
-                  number: {{ $servicePort }}
+                  number: {{ .servicePort }}
               {{- else }}
-              serviceName: {{ $serviceName }}
-              servicePort: {{ $servicePort }}
+              serviceName: {{ .serviceName }}
+              servicePort: {{ .servicePort }}
               {{- end }}
           {{- end }}
     {{- end }}
