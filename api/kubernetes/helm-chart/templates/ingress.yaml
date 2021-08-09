@@ -63,7 +63,6 @@ spec:
               servicePort: {{ $svcPort }}
               {{- end }}
           {{- end }}
-    {{- if .Values.ingress.argoEnabled -}}
     - host: "argo.{{ .host | quote }}"
       http:
         paths:
@@ -79,6 +78,5 @@ spec:
               serviceName: argo-server
               servicePort: 2746
               {{- end }}
-    {{- end }}
     {{- end }}
   {{- end }}
