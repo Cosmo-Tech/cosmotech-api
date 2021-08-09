@@ -208,7 +208,7 @@ if [[ "${COSMOTECH_API_DNS_NAME:-}" != "" && "${CERT_MANAGER_ACME:-}" != "" ]]; 
 else
   export COSMOTECH_API_INGRESS_ENABLED=false
 fi
-if [[ "${COSMOTECH_ARGO_INGRESS_ENABLED:-}" == "" ]]; then
+if [[ -z "${COSMOTECH_ARGO_INGRESS_ENABLED}" ]]; then
   export COSMOTECH_ARGO_INGRESS_ENABLED="false"
 fi
 cat <<EOF > values-cosmotech-api-deploy.yaml
