@@ -10,6 +10,9 @@ cat <<EOF > values-ci.yaml
 image:
   repository: localhost:5000/cosmotech-api
 
+ingress:
+  argoEnabled: false
+
 config:
   csm:
     platform:
