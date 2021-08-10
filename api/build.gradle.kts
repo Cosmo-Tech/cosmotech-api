@@ -269,6 +269,7 @@ tasks.getByName<ValidateTask>("openApiValidate") {
 
 tasks.register("generateClients") {
   dependsOn(
+      "generateTypescriptClient",
       "generateJSClient",
       "generatePythonClient",
       "generateJavaClient",

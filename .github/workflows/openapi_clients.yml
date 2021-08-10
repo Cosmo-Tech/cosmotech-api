@@ -30,6 +30,9 @@ jobs:
           - language: csharp
             gradle_task: generateCSharpClient
             repo: cosmotech-api-csharp-client
+          - language: typescript
+            gradle_task: generateTypescriptClient
+            repo: cosmotech-api-typescript-client
 
     steps:
       - uses: actions/checkout@v2.3.4
