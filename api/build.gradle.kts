@@ -140,8 +140,7 @@ tasks.register<GenerateTask>("openApiTypescriptGenerate") {
   additionalProperties.set(
       mapOf(
           "npmName" to "@cosmotech/api-ts",
-        )
-      )
+      ))
 }
 
 tasks.register<Copy>("copyTypescriptGitPushScript") {
@@ -156,7 +155,9 @@ tasks.register<Copy>("copyTypescriptLicense") {
   into("$buildDir/generated-sources/typescript")
 }
 
-tasks.register("generateTypescriptClient") { dependsOn("copyTypescriptGitPushScript", "copyTypescriptLicense") }
+tasks.register("generateTypescriptClient") {
+  dependsOn("copyTypescriptGitPushScript", "copyTypescriptLicense")
+}
 
 tasks.register<GenerateTask>("openApiPythonGenerate") {
   dependsOn("mergeOpenApiFiles")
