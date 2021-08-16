@@ -372,25 +372,16 @@ class ArgoWorkflowServiceTests {
   fun `Create Workflow spec with StartContainers volume claim`() {
     val sc = getStartContainersDiamond()
     val workflowSpec = argoWorkflowService.buildWorkflowSpec(sc)
-    val datasetsdir =
+    val dataDir =
         V1PersistentVolumeClaim()
-            .metadata(V1ObjectMeta().name("datasetsdir"))
+            .metadata(V1ObjectMeta().name(VOLUME_CLAIM))
             .spec(
                 V1PersistentVolumeClaimSpec()
                     .accessModes(listOf("ReadWriteMany"))
                     .storageClassName("phoenix-azurefile")
                     .resources(
                         V1ResourceRequirements().requests(mapOf("storage" to Quantity("100Gi")))))
-    val parametersdir =
-        V1PersistentVolumeClaim()
-            .metadata(V1ObjectMeta().name("parametersdir"))
-            .spec(
-                V1PersistentVolumeClaimSpec()
-                    .accessModes(listOf("ReadWriteMany"))
-                    .storageClassName("phoenix-azurefile")
-                    .resources(
-                        V1ResourceRequirements().requests(mapOf("storage" to Quantity("100Gi")))))
-    val expected = listOf(datasetsdir, parametersdir)
+    val expected = listOf(dataDir)
     assertEquals(expected, workflowSpec.volumeClaimTemplates)
   }
 
@@ -400,8 +391,14 @@ class ArgoWorkflowServiceTests {
     val template = argoWorkflowService.buildTemplate(src)
     val expected =
         listOf(
-            V1VolumeMount().name("datasetsdir").mountPath("/mnt/scenariorun-data"),
-            V1VolumeMount().name("parametersdir").mountPath("/mnt/scenariorun-parameters"))
+            V1VolumeMount()
+                .name(VOLUME_CLAIM)
+                .mountPath("/mnt/scenariorun-data")
+                .subPath(VOLUME_CLAIM_DATASETS_SUBPATH),
+            V1VolumeMount()
+                .name(VOLUME_CLAIM)
+                .mountPath("/mnt/scenariorun-parameters")
+                .subPath(VOLUME_CLAIM_PARAMETERS_SUBPATH))
     assertEquals(expected, template.container?.volumeMounts)
   }
 

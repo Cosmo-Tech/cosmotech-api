@@ -55,8 +55,9 @@ import retrofit2.http.Path
 
 private const val CSM_DAG_ENTRYPOINT = "entrypoint"
 private const val CSM_DEFAULT_WORKFLOW_NAME = "default-workflow-"
-private const val VOLUME_CLAIM_DATASETS = "datasetsdir"
-private const val VOLUME_CLAIM_PARAMETERS = "parametersdir"
+internal const val VOLUME_CLAIM = "datadir"
+internal const val VOLUME_CLAIM_DATASETS_SUBPATH = "datasetsdir"
+internal const val VOLUME_CLAIM_PARAMETERS_SUBPATH = "parametersdir"
 private const val VOLUME_DATASETS_PATH = "/mnt/scenariorun-data"
 private const val VOLUME_PARAMETERS_PATH = "/mnt/scenariorun-parameters"
 
@@ -261,8 +262,14 @@ internal class ArgoWorkflowService(
     }
     val volumeMounts =
         listOf(
-            V1VolumeMount().name(VOLUME_CLAIM_DATASETS).mountPath(VOLUME_DATASETS_PATH),
-            V1VolumeMount().name(VOLUME_CLAIM_PARAMETERS).mountPath(VOLUME_PARAMETERS_PATH))
+            V1VolumeMount()
+                .name(VOLUME_CLAIM)
+                .mountPath(VOLUME_DATASETS_PATH)
+                .subPath(VOLUME_CLAIM_DATASETS_SUBPATH),
+            V1VolumeMount()
+                .name(VOLUME_CLAIM)
+                .mountPath(VOLUME_PARAMETERS_PATH)
+                .subPath(VOLUME_CLAIM_PARAMETERS_SUBPATH))
 
     val container =
         V1Container()
@@ -441,27 +448,17 @@ internal class ArgoWorkflowService(
   }
 
   private fun buildVolumeClaims(): List<V1PersistentVolumeClaim> {
-    // Azure file storage minimal claim is 100Gi
-    val datasetsdir =
+    // Azure file storage minimal claim is 100Gi for Premium classes
+    val dataDir =
         V1PersistentVolumeClaim()
-            .metadata(V1ObjectMeta().name(VOLUME_CLAIM_DATASETS))
+            .metadata(V1ObjectMeta().name(VOLUME_CLAIM))
             .spec(
                 V1PersistentVolumeClaimSpec()
                     .accessModes(listOf("ReadWriteMany"))
                     .storageClassName("phoenix-azurefile")
                     .resources(
                         V1ResourceRequirements().requests(mapOf("storage" to Quantity("100Gi")))))
-    val parametersdir =
-        V1PersistentVolumeClaim()
-            .metadata(V1ObjectMeta().name(VOLUME_CLAIM_PARAMETERS))
-            .spec(
-                V1PersistentVolumeClaimSpec()
-                    .accessModes(listOf("ReadWriteMany"))
-                    .storageClassName("phoenix-azurefile")
-                    .resources(
-                        V1ResourceRequirements().requests(mapOf("storage" to Quantity("100Gi")))))
-
-    return listOf(datasetsdir, parametersdir)
+    return listOf(dataDir)
   }
 
   private fun buildMetadata(startContainers: ScenarioRunStartContainers): V1ObjectMeta {
