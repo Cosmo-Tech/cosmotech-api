@@ -100,7 +100,7 @@ fi
 if [[ "${TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL:-}" == "" ]]; then
   export TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL="${CERT_MANAGER_ACME_CONTACT_EMAIL:-}"
 fi
-if [[ "${CERT_MANAGER_USE_ACME_PROD:-false}" == "true" ]] || [[ "${CERT_MANAGER_USE_ACME_PROD:-false}" == "True" ]]; then
+if [[ "${CERT_MANAGER_USE_ACME_PROD:-false}" == "true" ]]; then
   export CERT_MANAGER_ACME="prod"
   export CERT_MANAGER_ACME_SERVER="https://acme-v02.api.letsencrypt.org/directory"
 else
