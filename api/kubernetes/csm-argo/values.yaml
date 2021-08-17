@@ -45,6 +45,25 @@ argo:
     containerRuntimeExecutor: k8sapi
     metricsConfig:
       enabled: true
+    workflowDefaults:
+      spec:
+        # make sure workflows do not run forever. Hard limit set is 7 days (604800 seconds)
+        activeDeadlineSeconds: 604800
+        ttlStrategy:
+          # keep workflows that succeeded for 1d (86400 seconds).
+          # We can still view them since they are archived.
+          secondsAfterSuccess: 86400
+        podGC:
+          # Delete pods when workflows are successful.
+          # We can still access their logs and artifacts since they are archived.
+          strategy: OnWorkflowSuccess
+        volumeClaimGC:
+          # Delete PVCs when workflows are successful. However, due to Kubernetes PVC Protection,
+          # such PVCs will just be marked as Terminating, until no pods is using them.
+          # Pod deletion (either via the Pod GC strategy or the TTL strategy) will allow to free up
+          # attached PVCs.
+          # One of "OnWorkflowCompletion", "OnWorkflowSuccess"
+          strategy: OnWorkflowSuccess
     persistence:
       archive: true
       postgresql:
