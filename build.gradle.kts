@@ -20,7 +20,7 @@ plugins {
   id("org.springframework.boot") version "2.5.3" apply false
   id("io.spring.dependency-management") version "1.0.11.RELEASE"
 
-  id("org.openapi.generator") version "5.2.0" apply false
+  id("org.openapi.generator") version "5.2.1" apply false
 
   id("com.google.cloud.tools.jib") version "3.1.3" apply false
 
