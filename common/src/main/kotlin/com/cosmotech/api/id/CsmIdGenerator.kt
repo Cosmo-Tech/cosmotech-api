@@ -15,7 +15,7 @@ abstract class AbstractCsmIdGenerator : CsmIdGenerator {
     }
 
     val id = this.buildId(scope)
-    return "${prependPrefix ?: "${scope[0].uppercaseChar()}-"}${id}"
+    return "${prependPrefix ?: "${scope[0].lowercaseChar()}_"}${id}"
   }
 
   protected abstract fun buildId(scope: String): String
