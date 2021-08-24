@@ -239,9 +239,6 @@ data class CsmPlatformProperties(
         /** Whether to populate Diagnostics Strings and Query metrics */
         val populateQueryMetrics: Boolean,
 
-        /** Whether to allow Microsoft to collect telemetry data. */
-        val allowTelemetry: Boolean,
-
         /** The connection mode to be used by the clients to Azure Cosmos DB. */
         val connectionMode: ConnectionMode?
     ) {

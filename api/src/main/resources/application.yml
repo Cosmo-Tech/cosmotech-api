@@ -128,7 +128,6 @@ csm:
         instrumentationKey: ""
         connectionString: "InstrumentationKey=${csm.platform.azure.analytics.instrumentationKey};IngestionEndpoint=https://francecentral-0.in.applicationinsights.azure.com/"
       cosmos:
-        allowTelemetry: false
         connectionMode: ""
         consistencyLevel: ""
         core-database:

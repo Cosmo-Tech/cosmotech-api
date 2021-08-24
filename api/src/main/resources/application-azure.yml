@@ -32,7 +32,6 @@ azure:
     session-stateless: true
     app-id-uri: ${csm.platform.azure.appIdUri}
   cosmos:
-    allowTelemetry: ${csm.platform.azure.cosmos.allowTelemetry}
     connectionMode: ${csm.platform.azure.cosmos.connectionMode}
     consistencyLevel: ${csm.platform.azure.cosmos.consistencyLevel}
     database: ${csm.platform.azure.cosmos.core-database.name}
