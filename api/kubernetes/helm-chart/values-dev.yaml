@@ -25,9 +25,8 @@ ingress:
 config:
   logging:
     level:
-      com:
-        azure: INFO
-        cosmotech: DEBUG
+      com.azure: INFO
+      com.cosmotech: DEBUG
   csm:
     platform:
       azure:

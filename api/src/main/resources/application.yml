@@ -1,7 +1,6 @@
 logging:
   level:
-    com:
-      cosmotech: INFO
+    com.cosmotech: INFO
 
 spring:
   servlet:
