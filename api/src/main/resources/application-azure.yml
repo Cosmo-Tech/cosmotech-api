@@ -6,14 +6,16 @@ logging:
 management:
   health:
     azure-cosmos:
-      enabled: true
+      # Due to too much logging via the default CosmosHealthIndicator,
+      # we use our own Health Indicator (csmCosmos)
+      enabled: false
     azure-storage:
       enabled: true
   endpoint:
     health:
       group:
         readiness:
-          include: "readinessState,argo,cosmos,blobStorage"
+          include: "readinessState,argo,csmCosmos,blobStorage"
 
 csm:
   platform:
