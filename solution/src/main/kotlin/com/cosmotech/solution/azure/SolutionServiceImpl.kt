@@ -131,7 +131,7 @@ class SolutionServiceImpl(
       cosmosTemplate.insert(
           "${organizationId}_solutions",
           solution.copy(
-              id = idGenerator.generate("solution", prependPrefix = "SOL-"),
+              id = idGenerator.generate("solution", prependPrefix = "sol_"),
               ownerId = getCurrentAuthenticatedUserName()))
           ?: throw IllegalArgumentException("No solution returned in response: $solution")
 

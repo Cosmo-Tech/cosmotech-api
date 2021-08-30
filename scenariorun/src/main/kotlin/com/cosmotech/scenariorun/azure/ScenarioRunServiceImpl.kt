@@ -260,7 +260,7 @@ class ScenariorunServiceImpl(
     // Only send containers if admin or special route
     val scenarioRun =
         scenarioRunRequest.copy(
-            id = idGenerator.generate("scenariorun", prependPrefix = "SR-"),
+            id = idGenerator.generate("scenariorun", prependPrefix = "sr_"),
             ownerId = getCurrentAuthenticatedUserName(),
             csmSimulationRun = csmSimulationId,
             organizationId = organizationId,
