@@ -33,6 +33,11 @@ Meta-Chart allowing to deploy both Argo and PostgreSQL (for Workflows archival)
 | argo.controller.persistence.postgresql.tableName | string | `"workflows"` |  |
 | argo.controller.persistence.postgresql.userNameSecret.key | string | `"postgresql.username"` |  |
 | argo.controller.persistence.postgresql.userNameSecret.name | string | `"${ARGO_RELEASE_NAME}-argo-postgresql-secret"` |  |
+| argo.controller.workflowDefaults.spec.activeDeadlineSeconds | int | `604800` |  |
+| argo.controller.workflowDefaults.spec.podGC.strategy | string | `"OnWorkflowSuccess"` |  |
+| argo.controller.workflowDefaults.spec.ttlStrategy.secondsAfterCompletion | int | `259200` |  |
+| argo.controller.workflowDefaults.spec.ttlStrategy.secondsAfterSuccess | int | `86400` |  |
+| argo.controller.workflowDefaults.spec.volumeClaimGC.strategy | string | `"OnWorkflowCompletion"` |  |
 | argo.executor.env[0].name | string | `"RESOURCE_STATE_CHECK_INTERVAL"` |  |
 | argo.executor.env[0].value | string | `"1s"` |  |
 | argo.images.pullPolicy | string | `"IfNotPresent"` |  |
