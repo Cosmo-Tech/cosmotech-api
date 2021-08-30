@@ -12,7 +12,7 @@ image:
   # -- container image to use for deployment
   repository: ghcr.io/cosmo-tech/cosmotech-api
   # -- [policy](https://kubernetes.io/docs/concepts/containers/images/#updating-images) for pulling the image
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   # -- container image tag. Defaults to the Chart `appVersion` if empty or missing
   tag: ""
 
