@@ -195,7 +195,8 @@ internal class ArgoWorkflowService(
       workflow = this.getWorkflow(workflowName)
       logger.trace("Workflow: {}", workflow)
     } catch (e: ApiException) {
-      logger.debug("Workflow $workflowName not found, trying to find it in archive", e)
+      logger.debug("Workflow $workflowName not found, trying to find it in the archived ones")
+      logger.trace("Workflow $workflowName not found, trying to find it in archive", e)
     }
     if (workflow == null) {
       workflow = this.getArchiveWorkflow(workflowId)
