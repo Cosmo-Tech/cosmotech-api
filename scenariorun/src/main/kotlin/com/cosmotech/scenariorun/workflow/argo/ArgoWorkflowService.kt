@@ -139,7 +139,8 @@ internal class ArgoWorkflowService(
     return try {
       this.getActiveWorkflow(workflowId, workflowName).status
     } catch (apiException: ApiException) {
-      logger.warn(
+      logger.warn("Could not retrieve status for workflow '{}' ({})", workflowName, workflowId)
+      logger.trace(
           "Could not retrieve status for workflow '{}' ({})",
           workflowName,
           workflowId,
