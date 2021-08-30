@@ -4,6 +4,7 @@ package com.cosmotech.scenariorun
 
 import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.api.utils.sanitizeForKubernetes
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.dataset.api.DatasetApiService
@@ -272,7 +273,8 @@ internal class ContainerFactory(
     val containers =
         buildContainersPipeline(
             scenario, datasets, connectors, workspace, organization, solution, csmSimulationId)
-    val generateName = "${GENERATE_NAME_PREFIX}${scenario.id}${GENERATE_NAME_SUFFIX}".lowercase()
+    val generateName =
+        "${GENERATE_NAME_PREFIX}${scenario.id}${GENERATE_NAME_SUFFIX}".sanitizeForKubernetes()
     return ScenarioRunStartContainers(
         generateName = generateName,
         nodeLabel = nodeLabel,
