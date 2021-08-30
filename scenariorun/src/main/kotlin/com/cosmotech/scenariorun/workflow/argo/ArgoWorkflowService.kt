@@ -276,6 +276,7 @@ internal class ArgoWorkflowService(
     val container =
         V1Container()
             .image(scenarioRunContainer.image)
+            .imagePullPolicy("Always")
             .env(envVars)
             .args(scenarioRunContainer.runArgs)
             .volumeMounts(volumeMounts)

@@ -52,6 +52,14 @@ class ArgoWorkflowServiceTests {
   }
 
   @Test
+  fun `Template has image pull policy set to Always`() {
+    val src = getScenarioRunContainer()
+    val template = argoWorkflowService.buildTemplate(src)
+    assertNotNull(template.container)
+    assertEquals("Always", template.container!!.imagePullPolicy)
+  }
+
+  @Test
   fun `Template has name`() {
     val name = "template name"
     val src = getScenarioRunContainer(name)
