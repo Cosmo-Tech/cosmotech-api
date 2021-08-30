@@ -1,6 +1,6 @@
 logging:
   level:
-    com.azure: INFO
+    com.azure: WARN
 
 management:
   health:
