@@ -50,7 +50,7 @@ class WorkflowBuildersTests {
   @Test
   fun `Template has image pull policy set to Always`() {
     val src = getScenarioRunContainer()
-    val template = argoWorkflowService.buildTemplate(src)
+    val template = buildTemplate(src)
     assertNotNull(template.container)
     assertEquals("Always", template.container!!.imagePullPolicy)
   }
