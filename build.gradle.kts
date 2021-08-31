@@ -27,6 +27,8 @@ plugins {
   id("io.gitlab.arturbosch.detekt") version "1.18.1"
 }
 
+val javaToolchainVersion = 16
+
 allprojects {
   apply(plugin = "com.diffplug.spotless")
   apply(plugin = "org.jetbrains.kotlin.jvm")
@@ -88,7 +90,7 @@ subprojects {
     apply(plugin = "com.google.cloud.tools.jib")
   }
 
-  java { toolchain { languageVersion.set(JavaLanguageVersion.of(16)) } }
+  java { toolchain { languageVersion.set(JavaLanguageVersion.of(javaToolchainVersion)) } }
 
   sourceSets {
     create("integrationTest") {
@@ -197,6 +199,7 @@ subprojects {
       languageVersion = "1.5"
       freeCompilerArgs = listOf("-Xjsr305=strict")
       jvmTarget = kotlinJvmTarget
+      java { toolchain { languageVersion.set(JavaLanguageVersion.of(javaToolchainVersion)) } }
     }
   }
 
