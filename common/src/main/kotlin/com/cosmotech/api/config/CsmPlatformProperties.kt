@@ -210,7 +210,32 @@ data class CsmPlatformProperties(
 
     data class CsmPlatformAzureContainerRegistries(val core: String, val solutions: String)
 
-    data class CsmPlatformAzureEventBus(val baseUri: String)
+    data class CsmPlatformAzureEventBus(
+        val baseUri: String,
+        val authentication: Authentication = Authentication()
+    ) {
+      data class Authentication(
+          val strategy: Strategy = Strategy.TENANT_CLIENT_CREDENTIALS,
+          val sharedAccessPolicy: SharedAccessPolicyDetails? = null,
+          val tenantClientCredentials: TenantClientCredentials? = null
+      ) {
+        enum class Strategy {
+          TENANT_CLIENT_CREDENTIALS,
+          SHARED_ACCESS_POLICY
+        }
+
+        data class SharedAccessPolicyDetails(
+            val namespace: SharedAccessPolicyCredentials? = null,
+        )
+
+        data class SharedAccessPolicyCredentials(val name: String, val key: String)
+        data class TenantClientCredentials(
+            val tenantId: String,
+            val clientId: String,
+            val clientSecret: String
+        )
+      }
+    }
 
     data class CsmPlatformAzureDataWarehouseCluster(val baseUri: String, val options: Options) {
       data class Options(val ingestionUri: String)

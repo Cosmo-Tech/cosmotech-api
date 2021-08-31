@@ -5,6 +5,11 @@ package com.cosmotech.scenariorun
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCredentials
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCredentials.CsmPlatformAzureCredentialsCore
+import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication
+import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.SharedAccessPolicyCredentials
+import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.SharedAccessPolicyDetails
+import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
+import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.connector.domain.Connector.IoTypes
@@ -36,6 +41,7 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import kotlin.test.BeforeTest
+import kotlin.test.assertFalse
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -50,6 +56,7 @@ private const val CSM_SIMULATION_ID = "simulationrunid"
 @ExtendWith(MockKExtension::class)
 class ContainerFactoryTests {
 
+  @MockK(relaxed = true) private lateinit var azure: CsmPlatformProperties.CsmPlatformAzure
   @MockK(relaxed = true) private lateinit var csmPlatformProperties: CsmPlatformProperties
 
   @MockK private lateinit var scenarioService: ScenarioApiService
@@ -65,7 +72,6 @@ class ContainerFactoryTests {
   fun setUp() {
     MockKAnnotations.init(this)
 
-    val azure = mockk<CsmPlatformProperties.CsmPlatformAzure>(relaxed = true)
     every { azure.appIdUri } returns "http://dev.api.cosmotech.com"
     every { azure.credentials } returns
         CsmPlatformAzureCredentials(
@@ -1662,6 +1668,133 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId"),
         scenarioRunContainer.envVars)
+  }
+
+  @Test
+  fun `PROD-8072- Tenant credentials are set as env vars to solution container by default`() {
+    every { azure.eventBus } returns
+        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus(
+            baseUri = "amqps://csm-phoenix.servicebus.windows.net",
+        )
+
+    val container = buildApplyParametersContainer()
+
+    assertNotNull(container.envVars)
+    assertFalse { container.envVars!!.containsKey(AZURE_EVENT_HUB_SHARED_ACCESS_POLICY_ENV_VAR) }
+    assertFalse { container.envVars!!.containsKey(AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR) }
+    assertEquals(
+        mapOf(
+            "AZURE_TENANT_ID" to "12345678",
+            "AZURE_CLIENT_ID" to "98765432",
+            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "CSM_SIMULATION_ID" to "simulationrunid",
+            "CSM_API_URL" to "https://api.cosmotech.com",
+            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
+            "CSM_CONTAINER_MODE" to "handle-parameters",
+            "CSM_CONTROL_PLANE_TOPIC" to
+                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
+            "CSM_PROBES_MEASURES_TOPIC" to
+                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
+            "CSM_SIMULATION" to "TestSimulation"),
+        container.envVars)
+  }
+
+  @Test
+  fun `PROD-8072- Tenant credentials are set as env vars to solution container if told so`() {
+    every { azure.eventBus } returns
+        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus(
+            baseUri = "amqps://csm-phoenix.servicebus.windows.net",
+            authentication = Authentication(strategy = TENANT_CLIENT_CREDENTIALS))
+
+    val container = buildPreRunContainer()
+
+    assertNotNull(container.envVars)
+    assertFalse { container.envVars!!.containsKey(AZURE_EVENT_HUB_SHARED_ACCESS_POLICY_ENV_VAR) }
+    assertFalse { container.envVars!!.containsKey(AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR) }
+
+    assertEquals(
+        mapOf(
+            "AZURE_TENANT_ID" to "12345678",
+            "AZURE_CLIENT_ID" to "98765432",
+            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "CSM_SIMULATION_ID" to "simulationrunid",
+            "CSM_API_URL" to "https://api.cosmotech.com",
+            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
+            "CSM_CONTAINER_MODE" to "prerun",
+            "CSM_CONTROL_PLANE_TOPIC" to
+                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
+            "CSM_PROBES_MEASURES_TOPIC" to
+                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
+            "CSM_SIMULATION" to "TestSimulation"),
+        container.envVars)
+  }
+
+  @Test
+  fun `PROD-8072- Shared Access key set as env vars to solution container if told so`() {
+    every { azure.eventBus } returns
+        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus(
+            baseUri = "amqps://csm-phoenix.servicebus.windows.net",
+            authentication =
+                Authentication(
+                    strategy = SHARED_ACCESS_POLICY,
+                    sharedAccessPolicy =
+                        SharedAccessPolicyDetails(
+                            namespace =
+                                SharedAccessPolicyCredentials(
+                                    name = "my-eventhub-access-policy", key = "a1b2c3d4e5=="))))
+
+    val container = buildRunContainer()
+
+    assertNotNull(container.envVars)
+
+    assertEquals(
+        mapOf(
+            "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to "my-eventhub-access-policy",
+            "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to "a1b2c3d4e5==",
+            "AZURE_TENANT_ID" to "12345678",
+            "AZURE_CLIENT_ID" to "98765432",
+            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "CSM_SIMULATION_ID" to "simulationrunid",
+            "CSM_API_URL" to "https://api.cosmotech.com",
+            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
+            "CSM_CONTAINER_MODE" to "engine",
+            "CSM_CONTROL_PLANE_TOPIC" to
+                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
+            "CSM_PROBES_MEASURES_TOPIC" to
+                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
+            "CSM_SIMULATION" to "TestSimulation"),
+        container.envVars)
+  }
+
+  @Test
+  fun `PROD-8072- Exception if Shared Access Policy strategy but no credentials configured`() {
+    every { azure.eventBus } returns
+        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus(
+            baseUri = "amqps://csm-phoenix.servicebus.windows.net",
+            authentication = Authentication(strategy = SHARED_ACCESS_POLICY))
+
+    assertThrows(IllegalStateException::class.java) { buildRunContainer() }
   }
 
   private fun getStartInfoFromIds(): StartInfo {
