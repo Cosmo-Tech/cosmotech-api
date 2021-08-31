@@ -33,13 +33,14 @@ import org.springframework.stereotype.Service
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
-class ScenariorunServiceImpl(
+@Suppress("TooManyFunctions")
+internal class ScenarioRunServiceImpl(
     private val workflowService: WorkflowService,
 ) : AbstractCosmosBackedService(), ScenariorunApiService {
 
   @Autowired private lateinit var containerFactory: ContainerFactory
 
-  protected fun ScenarioRun.asMapWithAdditionalData(workspaceId: String? = null): Map<String, Any> {
+  private fun ScenarioRun.asMapWithAdditionalData(workspaceId: String? = null): Map<String, Any> {
     val scenarioAsMap = this.convertToMap().toMutableMap()
     scenarioAsMap["type"] = "ScenarioRun"
     if (workspaceId != null) {
@@ -48,7 +49,7 @@ class ScenariorunServiceImpl(
     return scenarioAsMap
   }
 
-  protected fun ScenarioRunSearch.toQueryPredicate(): Pair<String, List<SqlParameter>> {
+  private fun ScenarioRunSearch.toQueryPredicate(): Pair<String, List<SqlParameter>> {
     val queryPredicateComponents =
         this::class
             .memberProperties
@@ -187,10 +188,12 @@ class ScenariorunServiceImpl(
             scenarioRun.organizationId!!,
             scenarioRun.workspaceId!!,
             scenarioRun.scenarioId!!,
-            scenarioRun.id!!,
-            scenarioRun.csmSimulationRun!!,
-            scenarioRun.workflowId!!,
-            scenarioRun.workflowName!!))
+            ScenarioRunStartedForScenario.ScenarioRunData(
+                scenarioRun.id!!,
+                scenarioRun.csmSimulationRun!!,
+            ),
+            ScenarioRunStartedForScenario.WorkflowData(
+                scenarioRun.workflowId!!, scenarioRun.workflowName!!)))
     return scenarioRun
   }
 
@@ -199,6 +202,12 @@ class ScenariorunServiceImpl(
       scenarioRunSearch: ScenarioRunSearch
   ): List<ScenarioRun> {
     val scenarioRunSearchPredicatePair = scenarioRunSearch.toQueryPredicate()
+    val andExpr =
+        if (scenarioRunSearchPredicatePair.first.isNotBlank()) {
+          " AND ( ${scenarioRunSearchPredicatePair.first} )"
+        } else {
+          ""
+        }
     return cosmosCoreDatabase
         .getContainer("${organizationId}_scenario_data")
         .queryItems(
@@ -206,7 +215,7 @@ class ScenariorunServiceImpl(
                 """
                             SELECT * FROM c 
                               WHERE c.type = 'ScenarioRun' 
-                              ${if (scenarioRunSearchPredicatePair.first.isNotBlank()) " AND ( ${scenarioRunSearchPredicatePair.first} )" else ""}
+                              $andExpr
                           """.trimIndent(),
                 scenarioRunSearchPredicatePair.second),
             CosmosQueryRequestOptions(),

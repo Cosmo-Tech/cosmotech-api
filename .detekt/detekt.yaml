@@ -85,7 +85,7 @@ complexity:
     includePrivateDeclarations: false
   ComplexMethod:
     active: true
-    threshold: 15
+    threshold: 16
     ignoreSingleWhenExpression: false
     ignoreSimpleWhenEntries: false
     ignoreNestingFunctions: false
@@ -101,8 +101,8 @@ complexity:
     threshold: 60
   LongParameterList:
     active: true
-    functionThreshold: 6
-    constructorThreshold: 7
+    functionThreshold: 11
+    constructorThreshold: 11
     ignoreDefaultParameters: false
     ignoreDataClasses: true
     ignoreAnnotated: []
@@ -114,7 +114,7 @@ complexity:
     threshold: 3
   NestedBlockDepth:
     active: true
-    threshold: 4
+    threshold: 5
   ReplaceSafeCallChainWithRun:
     active: false
   StringLiteralDuplication:

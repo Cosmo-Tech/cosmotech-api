@@ -19,6 +19,7 @@ import com.cosmotech.api.events.UserRemovedFromOrganization
 import com.cosmotech.api.events.UserRemovedFromWorkspace
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.utils.changed
+import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.solution.api.SolutionApiService
@@ -39,7 +40,8 @@ import org.springframework.stereotype.Service
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
-class WorkspaceServiceImpl(
+@Suppress("TooManyFunctions")
+internal class WorkspaceServiceImpl(
     private val resourceLoader: ResourceLoader,
     private val userService: UserApiService,
     private val organizationService: OrganizationApiService,
@@ -126,13 +128,7 @@ class WorkspaceServiceImpl(
     workspace.users?.forEach { user ->
       this.eventPublisher.publishEvent(
           UserAddedToWorkspace(
-              this,
-              organizationId,
-              organization.name!!,
-              workspaceId,
-              workspace.name,
-              user.id!!,
-              user.roles.map { role -> role.value }))
+              this, organizationId, user.id!!, user.roles.map { role -> role.value }))
     }
     return workspaceUserWithRightNames
   }
@@ -178,7 +174,11 @@ class WorkspaceServiceImpl(
   ): Workspace {
     val existingWorkspace = findWorkspaceById(organizationId, workspaceId)
 
-    var hasChanged = false
+    var hasChanged =
+        existingWorkspace
+            .compareToAndMutateIfNeeded(
+                workspace, excludedFields = arrayOf("ownerId", "users", "solution"))
+            .isNotEmpty()
 
     if (workspace.ownerId != null && workspace.changed(existingWorkspace) { ownerId }) {
       // Allow to change the ownerId as well, but only the owner can transfer the ownership
@@ -188,15 +188,6 @@ class WorkspaceServiceImpl(
             "You are not allowed to change the ownership of this Resource")
       }
       existingWorkspace.ownerId = workspace.ownerId
-      hasChanged = true
-    }
-
-    if (workspace.name != null && workspace.changed(existingWorkspace) { name }) {
-      existingWorkspace.name = workspace.name
-      hasChanged = true
-    }
-    if (workspace.description != null && workspace.changed(existingWorkspace) { description }) {
-      existingWorkspace.description = workspace.description
       hasChanged = true
     }
 
@@ -212,18 +203,10 @@ class WorkspaceServiceImpl(
       hasChanged = true
     }
 
-    if (workspace.tags != null && workspace.tags?.toSet() != existingWorkspace.tags?.toSet()) {
-      existingWorkspace.tags = workspace.tags
-      hasChanged = true
-    }
     if (workspace.solution != null) {
       // Validate solution ID
       workspace.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
       existingWorkspace.solution = workspace.solution
-      hasChanged = true
-    }
-    if (workspace.webApp != null && workspace.changed(existingWorkspace) { webApp }) {
-      existingWorkspace.webApp = workspace.webApp
       hasChanged = true
     }
 
@@ -236,13 +219,7 @@ class WorkspaceServiceImpl(
       workspace.users?.forEach { user ->
         this.eventPublisher.publishEvent(
             UserAddedToWorkspace(
-                this,
-                organizationId,
-                responseEntity.name!!,
-                workspaceId,
-                workspace.name,
-                user.id!!,
-                user.roles.map { role -> role.value }))
+                this, organizationId, user.id!!, user.roles.map { role -> role.value }))
       }
       responseEntity
     } else {

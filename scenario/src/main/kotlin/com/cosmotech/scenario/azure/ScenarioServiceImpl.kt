@@ -18,6 +18,7 @@ import com.cosmotech.api.events.UserRemovedFromScenario
 import com.cosmotech.api.events.WorkflowStatusRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.utils.changed
+import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
@@ -30,9 +31,12 @@ import com.cosmotech.scenario.domain.ScenarioLastRun
 import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
 import com.cosmotech.scenario.domain.ScenarioUser
 import com.cosmotech.solution.api.SolutionApiService
+import com.cosmotech.solution.domain.RunTemplate
+import com.cosmotech.solution.domain.Solution
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
 import com.cosmotech.workspace.api.WorkspaceApiService
+import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
 import java.time.OffsetDateTime
 import kotlinx.coroutines.GlobalScope
@@ -46,14 +50,15 @@ import org.springframework.stereotype.Service
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
-class ScenarioServiceImpl(
+@Suppress("TooManyFunctions")
+internal class ScenarioServiceImpl(
     private val userService: UserApiService,
     private val solutionService: SolutionApiService,
     private val organizationService: OrganizationApiService,
     private val workspaceService: WorkspaceApiService,
 ) : AbstractCosmosBackedService(), ScenarioApiService {
 
-  protected fun Scenario.asMapWithAdditionalData(workspaceId: String): Map<String, Any> {
+  private fun Scenario.asMapWithAdditionalData(workspaceId: String): Map<String, Any> {
     val scenarioAsMap = this.convertToMap().toMutableMap()
     scenarioAsMap["type"] = "Scenario"
     scenarioAsMap["workspaceId"] = workspaceId
@@ -123,13 +128,7 @@ class ScenarioServiceImpl(
     scenario.users?.forEach { user ->
       this.eventPublisher.publishEvent(
           UserAddedToScenario(
-              this,
-              organizationId,
-              organization.name!!,
-              workspaceId,
-              workspace.name,
-              user.id!!,
-              user.roles.map { role -> role.value }))
+              this, organizationId, user.id!!, user.roles.map { role -> role.value }))
     }
     return scenarioUserWithRightNames
   }
@@ -168,7 +167,7 @@ class ScenarioServiceImpl(
     val newParametersValuesList = scenario.parametersValues?.toMutableList() ?: mutableListOf()
 
     if (parentId != null) {
-      logger.debug("Applying / Overwriting Dataset list from parent ${parentId}")
+      logger.debug("Applying / Overwriting Dataset list from parent $parentId")
       val parent = this.findScenarioByIdNoState(organizationId, workspaceId, parentId)
       datasetList = parent.datasetList
       rootId = parent.rootId
@@ -176,44 +175,8 @@ class ScenarioServiceImpl(
         rootId = parentId
       }
 
-      logger.debug("Copying parameters values from parent $parentId")
-
-      logger.debug("Getting runTemplate parameters ids")
-      val runTemplateParametersIds =
-          solution?.parameterGroups
-              ?.filter { parameterGroup ->
-                runTemplate?.parameterGroups?.contains(parameterGroup.id) == true
-              }
-              ?.flatMap { parameterGroup -> parameterGroup.parameters }
-      if (!runTemplateParametersIds.isNullOrEmpty()) {
-        val parentParameters = parent.parametersValues?.associate { it.parameterId to it }
-        val scenarioParameters = scenario.parametersValues?.associate { it.parameterId to it }
-        // TODO: Handle default value
-        runTemplateParametersIds.forEach { parameterId ->
-          if (scenarioParameters?.contains(parameterId) != true) {
-            logger.debug(
-                "Parameter $parameterId is not defined in the Scenario. " +
-                    "Checking if it is defined in its parent $parentId")
-            if (parentParameters?.contains(parameterId) == true) {
-              logger.debug("Copying parameter value from parent for parameter $parameterId")
-              val parameterValue = parentParameters[parameterId]
-              if (parameterValue != null) {
-                parameterValue.isInherited = true
-                newParametersValuesList.add(parameterValue)
-              } else {
-                logger.warn(
-                    "Parameter $parameterId not found in parent ($parentId) parameters values")
-              }
-            } else {
-              logger.debug(
-                  "Skipping parameter ${parameterId}, defined neither in the parent nor in this Scenario")
-            }
-          } else {
-            logger.debug(
-                "Skipping parameter $parameterId since it is already defined in this Scenario")
-          }
-        }
-      }
+      handleScenarioRunTemplateParametersValues(
+          parentId, solution, runTemplate, parent, scenario, newParametersValuesList)
     }
 
     val now = OffsetDateTime.now()
@@ -246,16 +209,59 @@ class ScenarioServiceImpl(
     scenario.users?.forEach { user ->
       this.eventPublisher.publishEvent(
           UserAddedToScenario(
-              this,
-              organizationId,
-              organization.name!!,
-              workspaceId,
-              workspace.name,
-              user.id!!,
-              user.roles.map { role -> role.value }))
+              this, organizationId, user.id!!, user.roles.map { role -> role.value }))
     }
 
     return scenarioToSave
+  }
+
+  @Suppress("NestedBlockDepth")
+  private fun handleScenarioRunTemplateParametersValues(
+      parentId: String?,
+      solution: Solution?,
+      runTemplate: RunTemplate?,
+      parent: Scenario,
+      scenario: Scenario,
+      newParametersValuesList: MutableList<ScenarioRunTemplateParameterValue>
+  ) {
+    logger.debug("Copying parameters values from parent $parentId")
+
+    logger.debug("Getting runTemplate parameters ids")
+    val runTemplateParametersIds =
+        solution?.parameterGroups
+            ?.filter { parameterGroup ->
+              runTemplate?.parameterGroups?.contains(parameterGroup.id) == true
+            }
+            ?.flatMap { parameterGroup -> parameterGroup.parameters }
+    if (!runTemplateParametersIds.isNullOrEmpty()) {
+      val parentParameters = parent.parametersValues?.associate { it.parameterId to it }
+      val scenarioParameters = scenario.parametersValues?.associate { it.parameterId to it }
+      // TODO Handle default value
+      runTemplateParametersIds.forEach { parameterId ->
+        if (scenarioParameters?.contains(parameterId) != true) {
+          logger.debug(
+              "Parameter $parameterId is not defined in the Scenario. " +
+                  "Checking if it is defined in its parent $parentId")
+          if (parentParameters?.contains(parameterId) == true) {
+            logger.debug("Copying parameter value from parent for parameter $parameterId")
+            val parameterValue = parentParameters[parameterId]
+            if (parameterValue != null) {
+              parameterValue.isInherited = true
+              newParametersValuesList.add(parameterValue)
+            } else {
+              logger.warn(
+                  "Parameter $parameterId not found in parent ($parentId) parameters values")
+            }
+          } else {
+            logger.debug(
+                "Skipping parameter ${parameterId}, defined neither in the parent nor in this Scenario")
+          }
+        } else {
+          logger.debug(
+              "Skipping parameter $parameterId since it is already defined in this Scenario")
+        }
+      }
+    }
   }
 
   override fun deleteScenario(
@@ -516,45 +522,29 @@ class ScenarioServiceImpl(
       scenario: Scenario
   ): Scenario {
     val existingScenario = findScenarioById(organizationId, workspaceId, scenarioId)
-    val organization = organizationService.findOrganizationById(organizationId)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
 
-    var hasChanged = false
+    var hasChanged =
+        existingScenario
+            .compareToAndMutateIfNeeded(
+                scenario,
+                excludedFields =
+                    arrayOf(
+                        "ownerId",
+                        "datasetList",
+                        "solutionId",
+                        "runTemplateId",
+                        "parametersValues"))
+            .isNotEmpty()
 
     if (scenario.ownerId != null && scenario.changed(existingScenario) { ownerId }) {
-      // Allow to change the ownerId as well, but only the owner can transfer the ownership
-      if (existingScenario.ownerId != getCurrentAuthenticatedUserName()) {
-        // TODO Only the owner or an admin should be able to perform this operation
-        throw CsmAccessForbiddenException(
-            "You are not allowed to change the ownership of this Resource")
-      }
-      existingScenario.ownerId = scenario.ownerId
+      updateScenarioOwner(existingScenario, scenario)
       hasChanged = true
     }
 
-    if (scenario.name != null && scenario.changed(existingScenario) { name }) {
-      existingScenario.name = scenario.name
-      hasChanged = true
-    }
-    if (scenario.description != null && scenario.changed(existingScenario) { description }) {
-      existingScenario.description = scenario.description
-      hasChanged = true
-    }
-
-    var userIdsRemoved: List<String>? = listOf()
+    var userIdsRemoved = listOf<String>()
     if (scenario.users != null) {
-      // Specifying a list of users here overrides the previous list
-      val usersToSet = fetchUsers(scenario.users!!.mapNotNull { it.id })
-      userIdsRemoved =
-          scenario.users?.mapNotNull { it.id }?.filterNot { usersToSet.containsKey(it) }
-      val usersWithNames =
-          usersToSet.let { scenario.users!!.map { it.copy(name = usersToSet[it.id]!!.name!!) } }
-      existingScenario.users = usersWithNames
-      hasChanged = true
-    }
-
-    if (scenario.tags != null && scenario.tags?.toSet() != existingScenario.tags?.toSet()) {
-      existingScenario.tags = scenario.tags
+      userIdsRemoved = updateScenarioUsers(scenario, existingScenario)
       hasChanged = true
     }
 
@@ -562,81 +552,124 @@ class ScenarioServiceImpl(
     if (scenario.datasetList != null &&
         scenario.datasetList?.toSet() != existingScenario.datasetList?.toSet()) {
       // Only root Scenarios can update their Dataset list
-      if (scenario.parentId != null) {
-        logger.info(
-            "Cannot set Dataset list on child Scenario ${scenarioId}. Only root scenarios can be set.")
-      } else {
-        // TODO Need to validate those IDs too ?
-        existingScenario.datasetList = scenario.datasetList
+      datasetListUpdated = updateDatasetList(scenario, existingScenario)
+      if (datasetListUpdated) {
         hasChanged = true
-        datasetListUpdated = true
       }
     }
-
-    // TODO Allow to change the ownerId and ownerName as well, but only the owner can transfer the
-    // ownership
 
     if (scenario.solutionId != null && scenario.changed(existingScenario) { solutionId }) {
       logger.debug("solutionId is a read-only property => ignored ! ")
     }
+
     if (scenario.runTemplateId != null && scenario.changed(existingScenario) { runTemplateId }) {
-      // Validate the runTemplateId
-      val solution =
-          workspace.solution.solutionId?.let {
-            solutionService.findSolutionById(organizationId, it)
-          }
-      val newRunTemplateId = scenario.runTemplateId
-      val runTemplate =
-          solution?.runTemplates?.find { it.id == newRunTemplateId }
-              ?: throw IllegalArgumentException(
-                  "No run template '${newRunTemplateId}' in solution ${solution?.id}")
-      existingScenario.runTemplateId = scenario.runTemplateId
-      existingScenario.runTemplateName = runTemplate.name
+      updateScenarioRunTemplate(workspace, organizationId, scenario, existingScenario)
       hasChanged = true
     }
 
     if (scenario.parametersValues != null &&
         scenario.parametersValues?.toSet() != existingScenario.parametersValues?.toSet()) {
-      existingScenario.parametersValues = scenario.parametersValues
-      existingScenario.parametersValues?.forEach { it.isInherited = false }
+      updateScenarioParametersValues(existingScenario, scenario)
       hasChanged = true
     }
 
-    if (scenario.lastRun != null && scenario.changed(existingScenario) { lastRun }) {
-      existingScenario.lastRun = scenario.lastRun
-      hasChanged = true
-    }
-
-    return if (hasChanged) {
+    if (hasChanged) {
       existingScenario.lastUpdate = OffsetDateTime.now()
       upsertScenarioData(organizationId, existingScenario, workspaceId)
 
-      userIdsRemoved?.forEach {
-        this.eventPublisher.publishEvent(
-            UserRemovedFromScenario(this, organizationId, workspaceId, scenarioId, it))
-      }
-      scenario.users?.forEach { user ->
-        this.eventPublisher.publishEvent(
-            UserAddedToScenario(
-                this,
-                organizationId,
-                organization.name!!,
-                workspaceId,
-                workspace.name,
-                user.id!!,
-                user.roles.map { role -> role.value }))
-      }
+      publishUserRelatedEvents(userIdsRemoved, organizationId, workspaceId, scenarioId, scenario)
 
       if (datasetListUpdated) {
-        this.eventPublisher.publishEvent(
-            ScenarioDatasetListChanged(
-                this, organizationId, workspaceId, scenarioId, scenario.datasetList))
+        publishDatasetListChangedEvent(organizationId, workspaceId, scenarioId, scenario)
       }
-
-      existingScenario
-    } else {
-      existingScenario
     }
+
+    return existingScenario
+  }
+
+  private fun updateDatasetList(scenario: Scenario, existingScenario: Scenario): Boolean {
+    if (scenario.parentId != null) {
+      logger.info(
+          "Cannot set Dataset list on child Scenario ${scenario.id}. Only root scenarios can be set.")
+      return false
+    }
+    // TODO Need to validate those IDs too ?
+    existingScenario.datasetList = scenario.datasetList
+    return true
+  }
+
+  private fun updateScenarioOwner(existingScenario: Scenario, scenario: Scenario) {
+    // Allow to change the ownerId as well, but only the owner can transfer the ownership
+    if (existingScenario.ownerId != getCurrentAuthenticatedUserName()) {
+      // TODO Only the owner or an admin should be able to perform this operation
+      throw CsmAccessForbiddenException(
+          "You are not allowed to change the ownership of this Resource")
+    }
+    existingScenario.ownerId = scenario.ownerId
+  }
+
+  private fun publishDatasetListChangedEvent(
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String,
+      scenario: Scenario
+  ) {
+    this.eventPublisher.publishEvent(
+        ScenarioDatasetListChanged(
+            this, organizationId, workspaceId, scenarioId, scenario.datasetList))
+  }
+
+  private fun publishUserRelatedEvents(
+      userIdsRemoved: List<String>,
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String,
+      scenario: Scenario
+  ) {
+    userIdsRemoved?.forEach {
+      this.eventPublisher.publishEvent(
+          UserRemovedFromScenario(this, organizationId, workspaceId, scenarioId, it))
+    }
+    scenario.users?.forEach { user ->
+      this.eventPublisher.publishEvent(
+          UserAddedToScenario(
+              this, organizationId, user.id!!, user.roles.map { role -> role.value }))
+    }
+  }
+
+  private fun updateScenarioParametersValues(existingScenario: Scenario, scenario: Scenario) {
+    existingScenario.parametersValues = scenario.parametersValues
+    existingScenario.parametersValues?.forEach { it.isInherited = false }
+  }
+
+  private fun updateScenarioRunTemplate(
+      workspace: Workspace,
+      organizationId: String,
+      scenario: Scenario,
+      existingScenario: Scenario
+  ) {
+    // Validate the runTemplateId
+    val solution =
+        workspace.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
+    val newRunTemplateId = scenario.runTemplateId
+    val runTemplate =
+        solution?.runTemplates?.find { it.id == newRunTemplateId }
+            ?: throw IllegalArgumentException(
+                "No run template '${newRunTemplateId}' in solution ${solution?.id}")
+    existingScenario.runTemplateId = scenario.runTemplateId
+    existingScenario.runTemplateName = runTemplate.name
+  }
+
+  private fun updateScenarioUsers(scenario: Scenario, existingScenario: Scenario): List<String> {
+    // Specifying a list of users here overrides the previous list
+    val usersToSet = fetchUsers(scenario.users!!.mapNotNull { it.id })
+    val userIdsRemoved =
+        scenario.users?.mapNotNull { it.id }?.filterNot { usersToSet.containsKey(it) }
+            ?: emptyList()
+    val usersWithNames =
+        usersToSet.let { scenario.users!!.map { it.copy(name = usersToSet[it.id]!!.name!!) } }
+    existingScenario.users = usersWithNames
+    return userIdsRemoved
   }
 
   internal fun upsertScenarioData(organizationId: String, scenario: Scenario, workspaceId: String) {
@@ -672,10 +705,10 @@ class ScenarioServiceImpl(
         Scenario(
             lastRun =
                 ScenarioLastRun(
-                    scenarioRunStarted.scenarioRunId,
-                    scenarioRunStarted.csmSimulationRun,
-                    scenarioRunStarted.workflowId,
-                    scenarioRunStarted.workflowName,
+                    scenarioRunStarted.scenarioRunData.scenarioRunId,
+                    scenarioRunStarted.scenarioRunData.csmSimulationRun,
+                    scenarioRunStarted.workflowData.workflowId,
+                    scenarioRunStarted.workflowData.workflowName,
                 )))
   }
 

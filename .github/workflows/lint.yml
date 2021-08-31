@@ -11,7 +11,7 @@ on:
     branches: [ main ]
 
 jobs:
-  formatting:
+  spotless:
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -74,6 +74,7 @@ jobs:
       # This is so we can easily map results onto their source files
       # This can be removed once relative URI support lands in Detekt: https://github.com/detekt/detekt/pull/2492
       - name: Make artifact location URIs relative in the SARIF reports
+        if: ${{ always() }}
         continue-on-error: true
         run: |
           for file in $(ls build/reports/detekt/sarif/*.sarif); do
@@ -91,6 +92,7 @@ jobs:
 
       - name: Upload SARIF reports to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v1
+        if: ${{ always() }}
         with:
           sarif_file: 'build/reports/detekt/sarif/'
 

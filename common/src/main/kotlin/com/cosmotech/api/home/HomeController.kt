@@ -9,7 +9,7 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 
 @Controller
-class HomeController(
+internal class HomeController(
     @Value("\${server.servlet.context-path:}") private val servletContextPath: String
 ) {
 

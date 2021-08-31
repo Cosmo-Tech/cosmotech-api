@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component
 
 @Component
 @ConditionalOnProperty(name = ["csm.platform.id-generator.type"], havingValue = "uuid")
-class UUIDCsmIdGenerator : AbstractCsmIdGenerator() {
+internal class UUIDCsmIdGenerator : AbstractCsmIdGenerator() {
 
   override fun buildId(scope: String) = UUID.randomUUID().toString()
 }

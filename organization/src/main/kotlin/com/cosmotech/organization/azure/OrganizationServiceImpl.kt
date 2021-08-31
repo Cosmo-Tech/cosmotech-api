@@ -16,6 +16,7 @@ import com.cosmotech.api.events.UserUnregistered
 import com.cosmotech.api.events.UserUnregisteredForOrganization
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.utils.changed
+import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.organization.api.OrganizationApiService
@@ -35,7 +36,8 @@ import org.springframework.stereotype.Service
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
-class OrganizationServiceImpl(private val userService: UserApiService) :
+@Suppress("TooManyFunctions")
+internal class OrganizationServiceImpl(private val userService: UserApiService) :
     AbstractCosmosBackedService(), OrganizationApiService {
 
   private lateinit var coreOrganizationContainer: String
@@ -249,89 +251,45 @@ class OrganizationServiceImpl(private val userService: UserApiService) :
   override fun updateSolutionsContainerRegistryByOrganizationId(
       organizationId: String,
       organizationService: OrganizationService
-  ): OrganizationService {
-    val existingOrganization = findOrganizationById(organizationId)
-    val existingServices = existingOrganization.services ?: OrganizationServices()
-    val solutionsContainerRegistry =
-        existingServices.solutionsContainerRegistry ?: OrganizationService()
-    var hasChanged = false
-    if (organizationService.baseUri != null &&
-        organizationService.baseUri != solutionsContainerRegistry.baseUri) {
-      solutionsContainerRegistry.baseUri = organizationService.baseUri
-      hasChanged = true
-    }
-    if (organizationService.cloudService != null &&
-        organizationService.cloudService != solutionsContainerRegistry.cloudService) {
-      solutionsContainerRegistry.cloudService = organizationService.cloudService
-      hasChanged = true
-    }
-    if (organizationService.platformService != null &&
-        organizationService.platformService != solutionsContainerRegistry.platformService) {
-      solutionsContainerRegistry.platformService = organizationService.platformService
-      hasChanged = true
-    }
-    if (organizationService.resourceUri != null &&
-        organizationService.resourceUri != solutionsContainerRegistry.resourceUri) {
-      solutionsContainerRegistry.resourceUri = organizationService.resourceUri
-      hasChanged = true
-    }
-    if (organizationService.credentials != null) {
-      val solutionsContainerRegistryCredentials =
-          solutionsContainerRegistry.credentials?.toMutableMap() ?: mutableMapOf()
-      solutionsContainerRegistryCredentials.clear()
-      solutionsContainerRegistryCredentials.putAll(organizationService.credentials ?: emptyMap())
-      hasChanged = true
-    }
-    return if (hasChanged) {
-      existingServices.solutionsContainerRegistry = solutionsContainerRegistry
-      existingOrganization.services = existingServices
-      cosmosTemplate.upsert(coreOrganizationContainer, existingOrganization)
-      solutionsContainerRegistry
-    } else {
-      solutionsContainerRegistry
-    }
-  }
+  ) =
+      updateOrganizationServiceByOrganizationId(organizationId, organizationService) {
+        solutionsContainerRegistry
+      }
 
   override fun updateStorageByOrganizationId(
       organizationId: String,
       organizationService: OrganizationService
+  ) = updateOrganizationServiceByOrganizationId(organizationId, organizationService) { storage }
+
+  private fun updateOrganizationServiceByOrganizationId(
+      organizationId: String,
+      organizationService: OrganizationService,
+      memberAccessBlock: OrganizationServices.() -> OrganizationService?
   ): OrganizationService {
     val existingOrganization = findOrganizationById(organizationId)
     val existingServices = existingOrganization.services ?: OrganizationServices()
-    val storage = existingServices.storage ?: OrganizationService()
-    var hasChanged = false
-    if (organizationService.baseUri != null && organizationService.baseUri != storage.baseUri) {
-      storage.baseUri = organizationService.baseUri
-      hasChanged = true
-    }
-    if (organizationService.cloudService != null &&
-        organizationService.cloudService != storage.cloudService) {
-      storage.cloudService = organizationService.cloudService
-      hasChanged = true
-    }
-    if (organizationService.platformService != null &&
-        organizationService.platformService != storage.platformService) {
-      storage.platformService = organizationService.platformService
-      hasChanged = true
-    }
-    if (organizationService.resourceUri != null &&
-        organizationService.resourceUri != storage.resourceUri) {
-      storage.resourceUri = organizationService.resourceUri
-      hasChanged = true
-    }
+    val existingOrganizationService =
+        with(existingServices, memberAccessBlock) ?: OrganizationService()
+
+    var hasChanged =
+        existingOrganizationService
+            .compareToAndMutateIfNeeded(
+                organizationService, excludedFields = arrayOf("credentials"))
+            .isNotEmpty()
     if (organizationService.credentials != null) {
-      val storageCredentials = storage.credentials?.toMutableMap() ?: mutableMapOf()
-      storageCredentials.clear()
-      storageCredentials.putAll(organizationService.credentials ?: emptyMap())
+      val existingOrganizationServiceCredentials =
+          existingOrganizationService.credentials?.toMutableMap() ?: mutableMapOf()
+      existingOrganizationServiceCredentials.clear()
+      existingOrganizationServiceCredentials.putAll(organizationService.credentials ?: emptyMap())
       hasChanged = true
     }
     return if (hasChanged) {
-      existingServices.storage = storage
+      //      existingServices.existingOrganizationService = existingOrganizationService
       existingOrganization.services = existingServices
       cosmosTemplate.upsert(coreOrganizationContainer, existingOrganization)
-      storage
+      existingOrganizationService
     } else {
-      storage
+      existingOrganizationService
     }
   }
 

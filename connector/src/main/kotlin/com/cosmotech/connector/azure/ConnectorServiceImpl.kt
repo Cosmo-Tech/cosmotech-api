@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
-class ConnectorServiceImpl : AbstractCosmosBackedService(), ConnectorApiService {
+internal class ConnectorServiceImpl : AbstractCosmosBackedService(), ConnectorApiService {
 
   private lateinit var coreConnectorContainer: String
 

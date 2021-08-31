@@ -17,5 +17,5 @@ import org.springframework.context.annotation.FilterType
 class CsmApiApplication
 
 fun main(args: Array<String>) {
-  runApplication<CsmApiApplication>(*args)
+  runApplication<CsmApiApplication>(args = args)
 }

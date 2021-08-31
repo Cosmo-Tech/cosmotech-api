@@ -8,7 +8,7 @@ import com.cosmotech.platform.domain.Platform
 import org.springframework.stereotype.Service
 
 @Service
-class PlatformServiceImpl : AbstractPhoenixService(), PlatformApiService {
+internal class PlatformServiceImpl : AbstractPhoenixService(), PlatformApiService {
   override fun createPlatform(platform: Platform): Platform {
     TODO("Not yet implemented")
   }

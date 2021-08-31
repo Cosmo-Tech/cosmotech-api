@@ -18,6 +18,7 @@ import com.cosmotech.organization.domain.Organization
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
+import com.cosmotech.scenariorun.container.StartInfo
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
@@ -45,6 +46,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 
 private const val CSM_SIMULATION_ID = "simulationrunid"
 
+@Suppress("TooManyFunctions", "LargeClass")
 @ExtendWith(MockKExtension::class)
 class ContainerFactoryTests {
 
@@ -93,8 +95,7 @@ class ContainerFactoryTests {
         )
     every { azure.storage } returns
         CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureStorage(
-            connectionString =
-                "DefaultEndpointsProtocol=https;AccountName=csmphoenix;AccountKey=42rmlBQ2IrxdIByLj79AecdIyYifSR04ZnGsBYt82tbM2clcP0QwJ9N+l/fLvyCzu9VZ8HPsQyM7jHe6CVSUig==;EndpointSuffix=core.windows.net",
+            connectionString = "csmphoenix_storage_connection_string",
             baseUri = "Not Used",
             resourceUri = "Not Used",
         )
@@ -274,8 +275,7 @@ class ContainerFactoryTests {
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "AZURE_STORAGE_CONNECTION_STRING" to
-                "DefaultEndpointsProtocol=https;AccountName=csmphoenix;AccountKey=42rmlBQ2IrxdIByLj79AecdIyYifSR04ZnGsBYt82tbM2clcP0QwJ9N+l/fLvyCzu9VZ8HPsQyM7jHe6CVSUig==;EndpointSuffix=core.windows.net",
+            "AZURE_STORAGE_CONNECTION_STRING" to "csmphoenix_storage_connection_string",
         )
     assertEquals(expected, container.envVars)
   }
@@ -646,8 +646,7 @@ class ContainerFactoryTests {
             getSolutionLocalSources(),
             "testruntemplate",
             CSM_SIMULATION_ID)
-    envVarsWithSourceLocalValid(
-        container, "handle-parameters", "CSM_PARAMETERS_HANDLER_PROVIDER", "parameters_handler")
+    envVarsWithSourceLocalValid(container, "handle-parameters", "CSM_PARAMETERS_HANDLER_PROVIDER")
   }
 
   @Test
@@ -760,8 +759,7 @@ class ContainerFactoryTests {
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
             "CSM_SIMULATION" to "TestSimulation",
             providerEnvVar to "azureStorage",
-            "AZURE_STORAGE_CONNECTION_STRING" to
-                "DefaultEndpointsProtocol=https;AccountName=csmphoenix;AccountKey=42rmlBQ2IrxdIByLj79AecdIyYifSR04ZnGsBYt82tbM2clcP0QwJ9N+l/fLvyCzu9VZ8HPsQyM7jHe6CVSUig==;EndpointSuffix=core.windows.net",
+            "AZURE_STORAGE_CONNECTION_STRING" to "csmphoenix_storage_connection_string",
             resourceEnvVar to "organizationid/1/${runTemplate}/${resource}.zip",
         )
     assertEquals(expected, container.envVars)
@@ -770,8 +768,7 @@ class ContainerFactoryTests {
   private fun envVarsWithSourceLocalValid(
       container: ScenarioRunContainer,
       mode: String,
-      providerEnvVar: String,
-      resource: String
+      providerEnvVar: String
   ) {
     val expected =
         mapOf(
@@ -795,8 +792,7 @@ class ContainerFactoryTests {
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
             "CSM_SIMULATION" to "TestSimulation",
             providerEnvVar to "local",
-            "AZURE_STORAGE_CONNECTION_STRING" to
-                "DefaultEndpointsProtocol=https;AccountName=csmphoenix;AccountKey=42rmlBQ2IrxdIByLj79AecdIyYifSR04ZnGsBYt82tbM2clcP0QwJ9N+l/fLvyCzu9VZ8HPsQyM7jHe6CVSUig==;EndpointSuffix=core.windows.net",
+            "AZURE_STORAGE_CONNECTION_STRING" to "csmphoenix_storage_connection_string",
         )
     assertEquals(expected, container.envVars)
   }
@@ -1051,7 +1047,7 @@ class ContainerFactoryTests {
             getOrganization(),
             solution,
             CSM_SIMULATION_ID)
-    assertEquals(containers.size, 1)
+    assertEquals(1, containers.size)
   }
 
   @Test
@@ -2008,18 +2004,6 @@ class ContainerFactoryTests {
                 solutionId = "1",
             ),
         sendInputToDataWarehouse = false,
-    )
-  }
-
-  private fun getWorkspaceNoDB(): Workspace {
-    return Workspace(
-        id = "workspaceid",
-        key = "Test",
-        name = "Test Workspace",
-        solution =
-            WorkspaceSolution(
-                solutionId = "1",
-            ),
     )
   }
 

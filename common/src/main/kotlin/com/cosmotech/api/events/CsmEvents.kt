@@ -34,9 +34,6 @@ class UserUnregisteredForOrganization(
 class UserAddedToScenario(
     publisher: Any,
     val organizationId: String,
-    val organizationName: String,
-    val workspaceId: String,
-    val workspaceName: String,
     val userId: String,
     val roles: List<String>? = null
 ) : CsmEvent(publisher)
@@ -52,9 +49,6 @@ class UserRemovedFromScenario(
 class UserAddedToWorkspace(
     publisher: Any,
     val organizationId: String,
-    val organizationName: String,
-    val workspaceId: String,
-    val workspaceName: String,
     val userId: String,
     val roles: List<String>? = null
 ) : CsmEvent(publisher)
@@ -79,11 +73,12 @@ class ScenarioRunStartedForScenario(
     val organizationId: String,
     val workspaceId: String,
     val scenarioId: String,
-    val scenarioRunId: String,
-    val csmSimulationRun: String,
-    val workflowId: String,
-    val workflowName: String,
-) : CsmEvent(publisher)
+    val scenarioRunData: ScenarioRunData,
+    val workflowData: WorkflowData
+) : CsmEvent(publisher) {
+  data class ScenarioRunData(val scenarioRunId: String, val csmSimulationRun: String)
+  data class WorkflowData(val workflowId: String, val workflowName: String)
+}
 
 class ScenarioDatasetListChanged(
     publisher: Any,

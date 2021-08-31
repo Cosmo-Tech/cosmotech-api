@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
-class CsmAzureConfiguration(
+internal class CsmAzureConfiguration(
     private val cosmosClientBuilder: CosmosClientBuilder,
     private val blobServiceClientBuilder: BlobServiceClientBuilder,
 ) {

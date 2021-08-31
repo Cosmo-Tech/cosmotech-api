@@ -14,7 +14,7 @@ private const val ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789"
 @Component
 @ConditionalOnProperty(
     name = ["csm.platform.id-generator.type"], havingValue = "hashid", matchIfMissing = true)
-class HashidsCsmIdGenerator : AbstractCsmIdGenerator() {
+internal class HashidsCsmIdGenerator : AbstractCsmIdGenerator() {
 
   override fun buildId(scope: String): String {
     if (scope.isBlank()) {

@@ -266,7 +266,7 @@ private val endpointSecurityWriters =
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true, proxyTargetClass = true)
-class CsmSecurityConfiguration(
+internal class CsmSecurityConfiguration(
     private val csmPlatformProperties: CsmPlatformProperties,
     private val aadResourceServerConfiguration: AADResourceServerConfiguration,
     private val aadAuthenticationProperties: AADAuthenticationProperties
@@ -356,6 +356,8 @@ internal class CsmSecurityEndpointsRolesReader(
     val paths: List<String>,
     val roles: Array<String>,
 ) {
+
+  @Suppress("SpreadOperator")
   fun applyRoles(
       requests: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry
   ) {
@@ -372,6 +374,7 @@ internal class CsmSecurityEndpointsRolesWriter(
     val roles: Array<String>,
 ) {
 
+  @Suppress("SpreadOperator")
   fun applyRoles(
       requests: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry
   ) {

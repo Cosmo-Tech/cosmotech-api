@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-class CsmOpenAPIConfiguration(val csmPlatformProperties: CsmPlatformProperties) {
+internal class CsmOpenAPIConfiguration(val csmPlatformProperties: CsmPlatformProperties) {
 
   @Value("\${api.version:?}") private lateinit var apiVersion: String
 
@@ -39,7 +39,8 @@ class CsmOpenAPIConfiguration(val csmPlatformProperties: CsmPlatformProperties) 
     val openApiYamlParseResult = OpenAPIV3Parser().readContents(openApiYamlContent)
     if (!openApiYamlParseResult.messages.isNullOrEmpty()) {
       throw IllegalStateException(
-          "Unable to parse OpenAPI definition from 'classpath:/static/openapi.yaml' : ${openApiYamlParseResult.messages}")
+          "Unable to parse OpenAPI definition from 'classpath:/static/openapi.yaml' : " +
+              openApiYamlParseResult.messages)
     }
     val openAPI =
         openApiYamlParseResult.openAPI
