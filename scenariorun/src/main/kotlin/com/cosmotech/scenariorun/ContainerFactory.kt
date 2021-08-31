@@ -4,6 +4,8 @@ package com.cosmotech.scenariorun
 
 import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
+import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
 import com.cosmotech.api.utils.sanitizeForKubernetes
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
@@ -30,6 +32,7 @@ import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import java.lang.StringBuilder
 import java.util.UUID
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 private const val PARAMETERS_WORKSPACE_FILE = "%WORKSPACE_FILE%"
@@ -48,9 +51,9 @@ private const val CONTAINER_RUN = "runContainer"
 private const val CONTAINER_RUN_MODE = "engine"
 private const val CONTAINER_POSTRUN = "postRunContainer"
 private const val CONTAINER_POSTRUN_MODE = "postrun"
-private const val AZURE_TENANT_ID_VAR = "AZURE_TENANT_ID"
-private const val AZURE_CLIENT_ID_VAR = "AZURE_CLIENT_ID"
-private const val AZURE_CLIENT_SECRET_VAR = "AZURE_CLIENT_SECRET"
+internal const val AZURE_TENANT_ID_VAR = "AZURE_TENANT_ID"
+internal const val AZURE_CLIENT_ID_VAR = "AZURE_CLIENT_ID"
+internal const val AZURE_CLIENT_SECRET_VAR = "AZURE_CLIENT_SECRET"
 private const val CSM_AZURE_MANAGED_IDENTITY_VAR = "CSM_AZURE_MANAGED_IDENTITY"
 private const val CSM_SIMULATION_ID = "CSM_SIMULATION_ID"
 private const val API_BASE_URL_VAR = "CSM_API_URL"
@@ -88,6 +91,9 @@ private const val STEP_SOURCE_LOCAL = "local"
 private const val STEP_SOURCE_CLOUD = "azureStorage"
 private const val AZURE_STORAGE_CONNECTION_STRING = "AZURE_STORAGE_CONNECTION_STRING"
 private const val MULTIPLE_STEPS_NAME = "multipleStepsContainer-"
+internal const val AZURE_EVENT_HUB_SHARED_ACCESS_POLICY_ENV_VAR =
+    "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY"
+internal const val AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR = "AZURE_EVENT_HUB_SHARED_ACCESS_KEY"
 internal const val AZURE_AAD_POD_ID_BINDING_LABEL = "aadpodidbinding"
 
 public const val CSM_DAG_ROOT = "DAG_ROOT"
@@ -103,6 +109,8 @@ internal class ContainerFactory(
     private val connectorService: ConnectorApiService,
     private val datasetService: DatasetApiService
 ) {
+
+  private val logger = LoggerFactory.getLogger(ContainerFactory::class.java)
 
   private val steps: Map<String, SolutionContainerStepSpec>
 
@@ -840,6 +848,9 @@ internal class ContainerFactory(
             .lowercase()
     envVars[EVENT_HUB_MEASURES_VAR] =
         "${csmPlatformProperties.azure?.eventBus?.baseUri}/${organization.id}-${workspace.key}".lowercase()
+
+    envVars.putAll(getSpecificEventBusAuthenticationEnvVars())
+
     val csmSimulation = template.csmSimulation
     if (csmSimulation != null) {
       envVars[CSM_SIMULATION_VAR] = csmSimulation
@@ -865,6 +876,51 @@ internal class ContainerFactory(
         solutionContainer = true,
     )
   }
+
+  private fun getSpecificEventBusAuthenticationEnvVars(): Map<String, String> =
+      when (csmPlatformProperties.azure?.eventBus?.authentication?.strategy
+          ?: TENANT_CLIENT_CREDENTIALS) {
+        SHARED_ACCESS_POLICY -> {
+          // PROD-8071, PROD-8072 : support for shared access policies in the context of a platform
+          // deployed in the customer tenant.
+          // PROD-8074: In the AMQP Consumers, Shared Access Policy credentials take precedence over
+          // the tenant client credentials => we can therefore safely append the former to the
+          // existing env vars.
+          mapOf(
+              AZURE_EVENT_HUB_SHARED_ACCESS_POLICY_ENV_VAR to
+                  (csmPlatformProperties
+                      .azure
+                      ?.eventBus
+                      ?.authentication
+                      ?.sharedAccessPolicy
+                      ?.namespace
+                      ?.name
+                      ?: throw IllegalStateException(
+                          "Missing configuration property: " +
+                              "csm.platform.azure.eventBus.authentication.sharedAccessPolicy" +
+                              ".namespace.name")),
+              AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR to
+                  (csmPlatformProperties
+                      .azure
+                      ?.eventBus
+                      ?.authentication
+                      ?.sharedAccessPolicy
+                      ?.namespace
+                      ?.key
+                      ?: throw IllegalStateException(
+                          "Missing configuration property: " +
+                              "csm.platform.azure.eventBus.authentication.sharedAccessPolicy" +
+                              ".namespace.key")))
+        }
+        TENANT_CLIENT_CREDENTIALS -> {
+          logger.debug(
+              "csm.platform.azure.eventBus.authentication.strategy set to " +
+                  "TENANT_CLIENT_CREDENTIALS => " +
+                  "using tenant id, client id and client secret already put in the " +
+                  "common env vars")
+          mapOf()
+        }
+      }
 
   private fun getImageName(registry: String, repository: String, version: String? = null): String {
     val repoVersion = if (version == null) repository else "${repository}:${version}"
