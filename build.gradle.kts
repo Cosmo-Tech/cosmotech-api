@@ -262,8 +262,8 @@ subprojects {
     }
 
     reports {
-      junitXml.isEnabled = true
-      html.isEnabled = true
+      junitXml.required.set(true)
+      html.required.set(true)
     }
   }
 
