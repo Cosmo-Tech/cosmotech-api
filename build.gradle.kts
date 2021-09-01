@@ -233,7 +233,7 @@ subprojects {
     System.getProperties()
         .filterKeys { it.toString().startsWith("test.") }
         .mapKeys { entry -> entry.key.toString().substringAfter("test.") }
-        .forEach(this::systemProperty)
+        .forEach { systemProperty(it.key, it.value) }
 
     testLogging {
       events(TestLogEvent.FAILED)
