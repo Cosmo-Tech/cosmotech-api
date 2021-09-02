@@ -31,8 +31,8 @@ class UUIDCsmIdGeneratorTests {
   fun `generate with no prepend prefix`() {
     val uuidId = this.uuidCsmIdGenerator.generate("test_scope")
     assertFalse { uuidId.isBlank() }
-    assertTrue { uuidId.startsWith("t_", ignoreCase = false) }
-    assertDoesNotThrow { UUID.fromString(uuidId.substringAfter("t_")) }
+    assertTrue { uuidId.startsWith("t-", ignoreCase = false) }
+    assertDoesNotThrow { UUID.fromString(uuidId.substringAfter("t-")) }
   }
 
   @Test
@@ -48,9 +48,9 @@ class UUIDCsmIdGeneratorTests {
     val uuidId1 = this.uuidCsmIdGenerator.generate("test_scope")
     val uuidId2 = this.uuidCsmIdGenerator.generate("test_scope")
     assertFalse { uuidId1.isBlank() }
-    assertTrue { uuidId1.startsWith("t_", ignoreCase = false) }
+    assertTrue { uuidId1.startsWith("t-", ignoreCase = false) }
     assertFalse { uuidId2.isBlank() }
-    assertTrue { uuidId2.startsWith("t_", ignoreCase = false) }
+    assertTrue { uuidId2.startsWith("t-", ignoreCase = false) }
     assertNotEquals(uuidId2, uuidId1)
   }
 
@@ -59,9 +59,9 @@ class UUIDCsmIdGeneratorTests {
     val uuidId1 = this.uuidCsmIdGenerator.generate("test scope")
     val uuidId2 = this.uuidCsmIdGenerator.generate("another scope")
     assertFalse { uuidId1.isBlank() }
-    assertTrue { uuidId1.startsWith("t_", ignoreCase = false) }
+    assertTrue { uuidId1.startsWith("t-", ignoreCase = false) }
     assertFalse { uuidId2.isBlank() }
-    assertTrue { uuidId2.startsWith("a_", ignoreCase = false) }
+    assertTrue { uuidId2.startsWith("a-", ignoreCase = false) }
     assertNotEquals(uuidId2, uuidId1)
   }
 }

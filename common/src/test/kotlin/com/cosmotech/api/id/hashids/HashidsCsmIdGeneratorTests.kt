@@ -29,8 +29,8 @@ class HashidsCsmIdGeneratorTests {
   fun `generate with no prepend prefix`() {
     val hashid = this.hashidsCsmIdGenerator.generate("fake_scope")
     assertFalse { hashid.isBlank() }
-    assertTrue { hashid.startsWith("f_", ignoreCase = false) }
-    assertFalse { hashid.substringAfter("f_", missingDelimiterValue = "").isBlank() }
+    assertTrue { hashid.startsWith("f-", ignoreCase = false) }
+    assertFalse { hashid.substringAfter("f-", missingDelimiterValue = "").isBlank() }
   }
 
   @Test
@@ -47,9 +47,9 @@ class HashidsCsmIdGeneratorTests {
     val hashid1 = this.hashidsCsmIdGenerator.generate("test_scope")
     val hashid2 = this.hashidsCsmIdGenerator.generate("test_scope")
     assertFalse { hashid1.isBlank() }
-    assertTrue { hashid1.startsWith("t_", ignoreCase = false) }
+    assertTrue { hashid1.startsWith("t-", ignoreCase = false) }
     assertFalse { hashid2.isBlank() }
-    assertTrue { hashid2.startsWith("t_", ignoreCase = false) }
+    assertTrue { hashid2.startsWith("t-", ignoreCase = false) }
     assertNotEquals(hashid1, hashid2)
   }
 
@@ -58,9 +58,9 @@ class HashidsCsmIdGeneratorTests {
     val hashid1 = this.hashidsCsmIdGenerator.generate("test scope")
     val hashid2 = this.hashidsCsmIdGenerator.generate("another scope")
     assertFalse { hashid1.isBlank() }
-    assertTrue { hashid1.startsWith("t_", ignoreCase = false) }
+    assertTrue { hashid1.startsWith("t-", ignoreCase = false) }
     assertFalse { hashid2.isBlank() }
-    assertTrue { hashid2.startsWith("a_", ignoreCase = false) }
+    assertTrue { hashid2.startsWith("a-", ignoreCase = false) }
     assertNotEquals(hashid1, hashid2)
   }
 }
