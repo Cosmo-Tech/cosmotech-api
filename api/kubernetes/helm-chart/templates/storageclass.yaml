@@ -2,14 +2,12 @@ kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
   name: phoenix-azurefile
-provisioner: kubernetes.io/azure-file
+provisioner: {{ .Values.argo.storage.class.provisioner }}
 mountOptions:
-  - dir_mode=0777
-  - file_mode=0777
-  - uid=0
-  - gid=0
-  - mfsymlinks
-  - cache=strict
-  - actimeo=30
+  {{- range .Values.argo.storage.class.mountOptions }}
+  - {{ . }}
+  {{- end }}
 parameters:
-  skuName: Premium_LRS
+  {{- with .Values.argo.storage.class.parameters }}
+    {{- toYaml . | nindent 2 }}
+  {{- end }}
