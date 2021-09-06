@@ -82,7 +82,7 @@ subprojects {
   apply(plugin = "org.springframework.boot")
   apply(plugin = "io.spring.dependency-management")
 
-  dependencyManagement { imports { mavenBom("com.azure.spring:azure-spring-boot-bom:3.7.0") } }
+  dependencyManagement { imports { mavenBom("com.azure.spring:azure-spring-boot-bom:3.8.0") } }
 
   // Apply some plugins to all projects except 'common'
   if (name != "cosmotech-api-common") {
