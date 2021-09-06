@@ -26,15 +26,7 @@ jobs:
         with:
           distribution: 'adopt'
           java-version: '16'
-
-      - uses: actions/cache@v2.1.6
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+          cache: 'gradle'
 
       - name: Build with Gradle
         env:
@@ -67,15 +59,7 @@ jobs:
         with:
           distribution: 'adopt'
           java-version: '16'
-
-      - uses: actions/cache@v2.1.6
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+          cache: 'gradle'
 
       - name: Run unit tests
         run: ./gradlew test -x spotlessCheck -x openApiValidate --info
@@ -118,15 +102,7 @@ jobs:
         with:
           distribution: 'adopt'
           java-version: '16'
-
-      - uses: actions/cache@v2.1.6
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+          cache: 'gradle'
 
       - name: Set up Helm
         uses: azure/setup-helm@v1.1
@@ -234,15 +210,7 @@ jobs:
         with:
           distribution: 'adopt'
           java-version: '16'
-
-      - uses: actions/cache@v2.1.6
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+          cache: 'gradle'
 
       - name: Retrieve branch or tag name
         id: refvar
