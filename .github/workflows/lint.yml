@@ -24,15 +24,7 @@ jobs:
       with:
         distribution: 'adopt'
         java-version: '16'
-
-    - uses: actions/cache@v2.1.6
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-
+        cache: 'gradle'
 
     - name: Check with Spotless
       run: ./gradlew --info spotlessCheck
@@ -57,15 +49,7 @@ jobs:
         with:
           distribution: 'adopt'
           java-version: '16'
-
-      - uses: actions/cache@v2.1.6
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+          cache: 'gradle'
 
       - name: Check with Detekt
         run: ./gradlew --info detekt
