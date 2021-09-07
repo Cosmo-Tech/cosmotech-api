@@ -336,6 +336,9 @@ subprojects {
                 // security risk
                 "-Dspring.devtools.restart.enabled=false")
         ports = listOf("5005", "8080", "8081")
+        // Docker Best Practice : run as non-root.
+        // These are the 'nobody' UID and GID inside the image
+        user = "65534:65534"
       }
     }
   }
