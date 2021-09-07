@@ -118,17 +118,30 @@ csm:
         core: ghcr.io
         solutions: ""
       eventBus:
-        baseUri: ""
-        # One of 'tenant_client_credentials' or 'shared_access_policy'.
-        # Due to PROD-8071, shared_access_policy is needed when the platform is deployed in a tenant
-        # different from the core Platform one. This is applicable to managed applications
-        # provisioned via the Azure Marketplace
-        authentication:
-          strategy: tenant_client_credentials
-          sharedAccessPolicy:
-            namespace:
-              name: RootManageSharedAccessKey
-              key: null
+        probesmeasures:
+          baseUri: ""
+          # One of 'tenant_client_credentials' or 'shared_access_policy'.
+          # Due to PROD-8071, shared_access_policy is needed when the platform is deployed in a tenant
+          # different from the core Platform one. This is applicable to managed applications
+          # provisioned via the Azure Marketplace
+          authentication:
+            strategy: tenant_client_credentials
+            sharedAccessPolicy:
+              namespace:
+                name: RootManageSharedAccessKey
+                key: null
+        scenarioruns:
+          baseUri: ""
+          # One of 'tenant_client_credentials' or 'shared_access_policy'.
+          # Due to PROD-8071, shared_access_policy is needed when the platform is deployed in a tenant
+          # different from the core Platform one. This is applicable to managed applications
+          # provisioned via the Azure Marketplace
+          authentication:
+            strategy: tenant_client_credentials
+            sharedAccessPolicy:
+              namespace:
+                name: RootManageSharedAccessKey
+                key: null
       dataWarehouseCluster:
         baseUri: ""
         options:
