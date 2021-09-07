@@ -47,8 +47,8 @@ serviceAccount:
 podAnnotations: {}
 
 # -- the pod security context, i.e. applicable to all containers part of the pod
-podSecurityContext: {}
-  # fsGroup: 2000
+podSecurityContext:
+  runAsNonRoot: true
 
 # -- the security context at the pod container level
 securityContext: {}
