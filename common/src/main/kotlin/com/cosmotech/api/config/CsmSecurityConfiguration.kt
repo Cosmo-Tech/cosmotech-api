@@ -5,6 +5,7 @@ package com.cosmotech.api.config
 import com.azure.spring.aad.AADAuthorizationServerEndpoints
 import com.azure.spring.aad.webapi.AADJwtBearerTokenAuthenticationConverter
 import com.azure.spring.aad.webapi.AADResourceServerConfiguration
+import com.azure.spring.aad.webapi.AADResourceServerProperties
 import com.azure.spring.autoconfigure.aad.AADAuthenticationProperties
 import java.lang.IllegalArgumentException
 import org.slf4j.LoggerFactory
@@ -304,9 +305,9 @@ internal class CsmSecurityConfiguration(
         .oauth2ResourceServer()
         .jwt()
         .jwtAuthenticationConverter(
-            AADJwtBearerTokenAuthenticationConverter().apply {
-              setPrincipalClaimName(csmPlatformProperties.authorization.principalJwtClaim)
-            })
+            AADJwtBearerTokenAuthenticationConverter(
+                csmPlatformProperties.authorization.principalJwtClaim,
+                AADResourceServerProperties.DEFAULT_CLAIM_TO_AUTHORITY_PREFIX_MAP))
   }
 
   @Bean
