@@ -118,6 +118,8 @@ jobs:
 
       - run: kube-linter version
 
+      - run: mkdir -p api/kubernetes/.sarif
+
       - name: Lint Helm Chart (api) with KubeLinter
         # TODO Errors purposely ignored for now.
         run: |
