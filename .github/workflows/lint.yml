@@ -91,8 +91,24 @@ jobs:
         with:
           version: v3.6.0
 
-      - name: Lint Helm Chart (api)
+      - name: Lint Helm Chart (api) with helm
         run: helm lint api/kubernetes/helm-chart
+
+      - name: Lint Helm Chart (api) with KubeLinter
+        uses: stackrox/kube-linter-action@v1
+        # TODO Errors purposely ignored for now.
+        continue-on-error: true
+        with:
+          directory: api/kubernetes/helm-chart
+          config: api/kubernetes/.kube-linter.yaml
 
       - name: Lint Helm Chart (csm-argo)
         run: helm lint api/kubernetes/csm-argo
+
+      - name: Lint Helm Chart (csm-argo) with KubeLinter
+        uses: stackrox/kube-linter-action@v1
+        # TODO Errors purposely ignored for now.
+        continue-on-error: true
+        with:
+          directory: api/kubernetes/csm-argo
+          config: api/kubernetes/.kube-linter.yaml
