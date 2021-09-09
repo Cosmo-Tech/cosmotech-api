@@ -111,6 +111,8 @@ jobs:
 
       - run: go version
 
+      # Needed as the SARIF format is not supported via the KubeLinter GitHub Action
+      # Maybe open an issue in KubeLinter Action ?
       - name: Download KubeLinter
         env:
           GO111MODULE: 'on'
@@ -128,7 +130,15 @@ jobs:
             lint \
             --format sarif \
             api/kubernetes/helm-chart \
-          | tee api/kubernetes/.sarif/helm-chart.sarif || true
+          | jq | tee api/kubernetes/.sarif/helm-chart.sarif || true
+
+      # This is needed because the Helm Chart name does not match the folder name.
+      # Maybe open an issue in KubeLinter ?
+      - name: Fix artifact location URI in the SARIF reports (api)
+        if: ${{ always() }}
+        run: |
+          sed -i 's/api\/kubernetes\/cosmotech-api\//api\/kubernetes\/helm-chart\//g' \
+            api/kubernetes/.sarif/helm-chart.sarif
 
       - name: Lint Helm Chart (csm-argo) with KubeLinter
         # TODO Errors purposely ignored for now.
@@ -138,7 +148,7 @@ jobs:
             lint \
             --format sarif \
             api/kubernetes/csm-argo \
-          | tee api/kubernetes/.sarif/csm-argo.sarif || true
+          | jq | tee api/kubernetes/.sarif/csm-argo.sarif || true
 
       - name: Upload SARIF reports to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v1
