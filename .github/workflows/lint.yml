@@ -93,3 +93,6 @@ jobs:
 
       - name: Lint Helm Chart (api)
         run: helm lint api/kubernetes/helm-chart
+
+      - name: Lint Helm Chart (csm-argo)
+        run: helm lint api/kubernetes/csm-argo
