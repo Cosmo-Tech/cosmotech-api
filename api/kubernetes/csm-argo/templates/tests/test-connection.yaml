@@ -6,6 +6,7 @@ metadata:
   labels:
     {{- include "csm-argo.labels" . | nindent 4 }}
   annotations:
+    email: "platform@cosmotech.com"
     "helm.sh/hook": test
 spec:
   restartPolicy: Never
