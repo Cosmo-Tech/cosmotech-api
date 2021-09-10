@@ -37,5 +37,12 @@ spec:
         {{- end }}
       securityContext:
         readOnlyRootFilesystem: true
+      resources:
+        limits:
+          cpu: 100m
+          memory: 10Mi
+        requests:
+          cpu: 100m
+          memory: 1Mi
 
     # TODO Test both Minio and PostgreSQL are reachable ?

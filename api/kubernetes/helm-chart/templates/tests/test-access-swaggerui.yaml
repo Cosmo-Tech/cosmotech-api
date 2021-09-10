@@ -32,4 +32,11 @@ spec:
         - 'http://{{ include "cosmotech-api.fullname" . }}:{{ .Values.service.port }}{{ $apiBasePath | trimSuffix "/" }}/swagger-ui/index.html'
       securityContext:
         readOnlyRootFilesystem: true
+      resources:
+        limits:
+          cpu: 100m
+          memory: 10Mi
+        requests:
+          cpu: 100m
+          memory: 1Mi
   restartPolicy: Never
