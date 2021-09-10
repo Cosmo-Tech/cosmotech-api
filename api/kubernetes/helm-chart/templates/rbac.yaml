@@ -2,6 +2,10 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: {{ include "cosmotech-api.fullname" . }}-role
+  labels:
+  {{- include "cosmotech-api.labels" . | nindent 4 }}
+  annotations:
+    email: "platform@cosmotech.com"
 rules:
   - apiGroups: [""]
     resources: ["services", "pods", "configmaps", "endpoints", "secrets"]
@@ -11,6 +15,11 @@ kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: {{ include "cosmotech-api.fullname" . }}-role
+  namespace: {{ .Release.Namespace }}
+  labels:
+  {{- include "cosmotech-api.labels" . | nindent 4 }}
+  annotations:
+    email: "platform@cosmotech.com"
 subjects:
   - kind: ServiceAccount
     name: {{ include "cosmotech-api.serviceAccountName" . }}

@@ -1,4 +1,16 @@
 apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: "{{ include "csm-argo.fullname" . }}-test-connection-serviceaccount"
+  namespace: {{ .Release.Namespace }}
+  labels:
+  {{- include "csm-argo.labels" . | nindent 4 }}
+  annotations:
+    email: "platform@cosmotech.com"
+    "helm.sh/hook": test
+
+---
+apiVersion: v1
 kind: Pod
 metadata:
   name: "{{ include "csm-argo.fullname" . }}-test-connection"
