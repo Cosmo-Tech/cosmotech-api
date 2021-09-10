@@ -3,6 +3,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: "{{ include "cosmotech-api.fullname" . }}-test-connection-swaggerui"
+  namespace: {{ .Release.Namespace }}
   labels:
   {{- include "cosmotech-api.labels" . | nindent 4 }}
   annotations:
