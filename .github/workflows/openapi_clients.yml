@@ -1,6 +1,7 @@
 name: OpenAPI Clients
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
