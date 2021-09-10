@@ -11,7 +11,14 @@ metadata:
     "helm.sh/hook": test
     "ignore-check.kube-linter.io/no-liveness-probe": "This is a one-shot pod for testing. It is not supposed to run forever."
     "ignore-check.kube-linter.io/no-readiness-probe": "This is a one-shot pod for testing. It is not supposed to run forever."
+    "ignore-check.kube-linter.io/default-service-account": "This is a one-shot pod for testing."
 spec:
+  securityContext:
+    runAsNonRoot: true
+    # nobody
+    runAsUser: 65534
+    # nobody
+    runAsGroup: 65534
   containers:
     - name: wget
       image: busybox
