@@ -25,4 +25,6 @@ spec:
         - 'http://{{ include "cosmotech-api.fullname" . }}:{{ .Values.service.port }}{{ $apiBasePath | trimSuffix "/" }}/openapi'
         - 'http://{{ include "cosmotech-api.fullname" . }}:{{ .Values.service.port }}{{ $apiBasePath | trimSuffix "/" }}/openapi.json'
         - 'http://{{ include "cosmotech-api.fullname" . }}:{{ .Values.service.port }}{{ $apiBasePath | trimSuffix "/" }}/openapi.yaml'
+      securityContext:
+        readOnlyRootFilesystem: true
   restartPolicy: Never

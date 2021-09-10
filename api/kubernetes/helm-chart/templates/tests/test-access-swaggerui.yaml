@@ -23,4 +23,6 @@ spec:
         - '-O'
         - '-'
         - 'http://{{ include "cosmotech-api.fullname" . }}:{{ .Values.service.port }}{{ $apiBasePath | trimSuffix "/" }}/swagger-ui/index.html'
+      securityContext:
+        readOnlyRootFilesystem: true
   restartPolicy: Never
