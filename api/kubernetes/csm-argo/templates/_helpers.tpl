@@ -30,6 +30,7 @@ Create chart name and version as used by the chart label.
 Common labels
 */}}
 {{- define "csm-argo.labels" -}}
+owner: csm-platform
 helm.sh/chart: {{ include "csm-argo.chart" . }}
 {{ include "csm-argo.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
