@@ -43,6 +43,15 @@ serviceAccount:
   # If not set and `serviceAccount.create` is `true`, a name is generated using the `fullname` template
   name: ""
 
+# -- Deployment strategy
+deploymentStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    # -- maximum number of Pods that can be created over the desired number of Pods
+    maxSurge: 1
+    # -- maximum number of Pods that can be unavailable during the update process
+    maxUnavailable: 50%
+
 # -- annotations to set the Deployment pod
 podAnnotations: {}
 

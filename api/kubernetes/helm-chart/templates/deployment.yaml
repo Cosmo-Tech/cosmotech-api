@@ -11,6 +11,10 @@ spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
+  strategy:
+  {{- with .Values.deploymentStrategy }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   selector:
     matchLabels:
       {{- include "cosmotech-api.selectorLabels" . | nindent 6 }}
