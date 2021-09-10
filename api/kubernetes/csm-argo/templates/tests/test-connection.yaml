@@ -8,6 +8,8 @@ metadata:
   annotations:
     email: "platform@cosmotech.com"
     "helm.sh/hook": test
+    "ignore-check.kube-linter.io/no-liveness-probe": "This is a one-shot pod for testing. It is not supposed to run forever."
+    "ignore-check.kube-linter.io/no-readiness-probe": "This is a one-shot pod for testing. It is not supposed to run forever."
 spec:
   restartPolicy: Never
   containers:
