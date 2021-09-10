@@ -108,19 +108,26 @@ internal class ArgoWorkflowService(
   private fun getActiveWorkflow(workflowId: String, workflowName: String): Workflow {
     var workflow: Workflow? = null
     try {
+      // Workflows are auto-archived and auto-deleted more frequently
+      // (as soon as they succeed or after a TTL).
+      // Therefore, it is more likely to have more archived workflows.
+      // So we are calling the ArchivedWorkflow API first, to reduce the number of round trips to
+      // Argo
       workflow =
-          newServiceApiInstance<WorkflowServiceApi>(this.apiClient)
-              .workflowServiceGetWorkflow(
-                  csmPlatformProperties.argo.workflows.namespace, workflowName, "", "")
+          newServiceApiInstance<ArchivedWorkflowServiceApi>(this.apiClient)
+              .archivedWorkflowServiceGetArchivedWorkflow(workflowId)
       logger.trace("Workflow: {}", workflow)
     } catch (e: ApiException) {
-      logger.debug("Workflow $workflowName not found, trying to find it in the archived ones")
-      logger.trace("Workflow $workflowName not found, trying to find it in archive", e)
+      val logMessage =
+          "Workflow $workflowName not found in the archived workflows - trying to find it in the active ones"
+      logger.debug(logMessage)
+      logger.trace(logMessage, e)
     }
     if (workflow == null) {
       workflow =
-          newServiceApiInstance<ArchivedWorkflowServiceApi>(this.apiClient)
-              .archivedWorkflowServiceGetArchivedWorkflow(workflowId)!!
+          newServiceApiInstance<WorkflowServiceApi>(this.apiClient)
+              .workflowServiceGetWorkflow(
+                  csmPlatformProperties.argo.workflows.namespace, workflowName, "", "")!!
     }
 
     return workflow
