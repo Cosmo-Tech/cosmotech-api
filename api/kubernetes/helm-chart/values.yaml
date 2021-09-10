@@ -6,7 +6,7 @@
 #
 
 # -- number of pods replicas
-replicaCount: 1
+replicaCount: 3
 
 image:
   # -- container image to use for deployment
