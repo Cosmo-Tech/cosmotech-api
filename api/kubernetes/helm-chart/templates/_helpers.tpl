@@ -34,6 +34,7 @@ Create chart name and version as used by the chart label.
 Common labels
 */}}
 {{- define "cosmotech-api.labels" -}}
+owner: csm-platform
 helm.sh/chart: {{ include "cosmotech-api.chart" . }}
 {{ include "cosmotech-api.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
