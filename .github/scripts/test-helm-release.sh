@@ -1,5 +1,7 @@
 #!/bin/bash
 
+helm -n "${CHART_RELEASE_TEST_NAMESPACE}" test argo || exit 1
+
 helm -n "${CHART_RELEASE_TEST_NAMESPACE}" test cosmotech-api-latest
 
 retVal=$?
