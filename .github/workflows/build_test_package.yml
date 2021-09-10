@@ -1,6 +1,8 @@
 name: Build, Test and Package
 
 on:
+  workflow_dispatch:
+
   push:
     branches:
       - main
