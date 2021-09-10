@@ -13,9 +13,9 @@ spec:
       image: busybox
       command: ['wget']
       {{- if .Values.argo.server.secure }}
-      args: ['--no-check-certificate', 'https://{{ include "csm-argo.fullname" . }}-argo-server:2746/']
+      args: ['--no-check-certificate', 'https://argo-server.{{ .Release.Namespace }}.svc.cluster.local:2746/']
       {{- else }}
-      args: ['http://{{ include "csm-argo.fullname" . }}-argo-server:2746/']
+      args: ['http://argo-server.{{ .Release.Namespace }}.svc.cluster.local:2746/']
       {{- end }}
 
     # TODO Test both Minio and PostgreSQL are reachable ?
