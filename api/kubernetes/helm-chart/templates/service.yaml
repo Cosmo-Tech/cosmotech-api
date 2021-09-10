@@ -4,7 +4,9 @@ metadata:
   name: {{ include "cosmotech-api.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "cosmotech-api.labels" . | nindent 4 }}
+  {{- include "cosmotech-api.labels" . | nindent 4 }}
+  annotations:
+    email: "platform@cosmotech.com"
 spec:
   type: {{ .Values.service.type }}
   ports:

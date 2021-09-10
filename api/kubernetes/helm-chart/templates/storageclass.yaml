@@ -3,6 +3,10 @@ kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
   name: {{ include "cosmotech-api.fullname" . }}-{{ .Release.Namespace }}
+  labels:
+  {{- include "cosmotech-api.labels" . | nindent 4 }}
+  annotations:
+    email: "platform@cosmotech.com"
 provisioner: {{ .Values.argo.storage.class.provisioner }}
 mountOptions:
   {{- range .Values.argo.storage.class.mountOptions }}
