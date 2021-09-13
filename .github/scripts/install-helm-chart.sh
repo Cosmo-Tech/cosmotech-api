@@ -10,6 +10,8 @@ PASSWORD_FOR_ARGO_PASSWORD="a-super-secure-password-we-dont-care-about"
 
 # Generate a sample values-ci.yaml. We will also inherit configuration from values-dev.yaml
 cat <<EOF > values-ci.yaml
+replicaCount: 1
+
 image:
   repository: localhost:5000/cosmotech-api
 
