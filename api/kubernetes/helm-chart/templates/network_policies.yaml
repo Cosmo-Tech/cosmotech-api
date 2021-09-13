@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "cosmotech-api.fullname" . }}-deny-all
+  namespace: {{ .Release.Namespace }}
+  labels:
+  {{- include "cosmotech-api.labels" . | nindent 4 }}
+  annotations:
+    email: "platform@cosmotech.com"
+    "com.cosmotech/description": "DENY all traffic from other namespaces"
+spec:
+  policyTypes:
+    - Ingress
+  podSelector: {}
+  ingress: []
+
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: {{ include "cosmotech-api.fullname" . }}-allow-whitelisted
+  namespace: {{ .Release.Namespace }}
+spec:
+  podSelector:
+    matchLabels:
+      networking/traffic-allowed: "yes"
+  ingress:
+  - {}

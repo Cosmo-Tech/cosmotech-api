@@ -23,6 +23,13 @@ argo:
       # to have a minimum of 4Gi additional memory available, which is the default memory request
       # set by Argo.
       type: Recreate
+    networkPolicy:
+      # Enabling networking policy returns the following error: unable to recognize "": no matches for kind "NetworkPolicy" in version "networking.k8s.io/v1beta1"
+      # => will use the 'networking/traffic-allowed: "yes"' label instead to allow traffic.
+      enabled: false
+      allowExternal: true
+    podLabels:
+      networking/traffic-allowed: "yes"
   executor:
     env:
     - name: RESOURCE_STATE_CHECK_INTERVAL
@@ -41,7 +48,11 @@ argo:
         key: secretkey
   server:
     secure: false
+    podLabels:
+      networking/traffic-allowed: "yes"
   controller:
+    podLabels:
+      networking/traffic-allowed: "yes"
     containerRuntimeExecutor: k8sapi
     metricsConfig:
       enabled: true
@@ -86,3 +97,22 @@ postgresql:
   postgresqlDatabase: argo_workflows
   postgresqlUsername: argo
   postgresqlPassword: "${ARGO_POSTGRESQL_PASSWORD}"
+  networkPolicy:
+    enabled: true
+    explicitNamespacesSelector:
+      matchExpressions:
+        - key: app
+          operator: In
+          values:
+          - argo-server
+          - argo-workflow-controller
+  # primary:
+  #   labels:
+  #     networking/traffic-allowed: "yes"
+  #   podLabels:
+  #     networking/traffic-allowed: "yes"
+  # readReplicas:
+  #   labels:
+  #     networking/traffic-allowed: "yes"
+  #   podLabels:
+  #     networking/traffic-allowed: "yes"
