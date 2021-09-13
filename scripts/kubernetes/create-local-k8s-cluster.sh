@@ -109,3 +109,14 @@ ingress_nginx_controller_tag="controller-v0.47.0"
 kubectl --context="${kubectl_ctx}" \
   apply -f \
   "https://raw.githubusercontent.com/kubernetes/ingress-nginx/${ingress_nginx_controller_tag}/deploy/static/provider/kind/deploy.yaml"
+
+kubectl --context="${kubectl_ctx}" \
+  -n ingress-nginx \
+  label pods \
+  -l "app.kubernetes.io/instance=ingress-nginx,app.kubernetes.io/component=controller" \
+  "networking/traffic-allowed=yes"
+kubectl --context="${kubectl_ctx}" \
+  -n ingress-nginx \
+  label services \
+  -l "app.kubernetes.io/instance=ingress-nginx,app.kubernetes.io/component=controller" \
+  "networking/traffic-allowed=yes"
