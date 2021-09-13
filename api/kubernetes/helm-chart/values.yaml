@@ -120,6 +120,7 @@ nodeSelector: {}
 
 tolerations: []
 
+# -- default behavior is a pod anti-affinity, which prevents pods from co-locating on a same node
 affinity: {}
 
 argo:
