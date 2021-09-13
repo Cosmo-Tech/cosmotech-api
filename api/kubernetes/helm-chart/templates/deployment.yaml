@@ -41,6 +41,8 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       volumes:
+        - name: tmp-dir
+          emptyDir: {}
         - name: helm-config
           secret:
             secretName: {{ include "cosmotech-api.fullname" . }}
@@ -64,6 +66,9 @@ spec:
               # using a configured Kubernetes Secret containing all the 'config.*' properties
               value: "helm"
           volumeMounts:
+            - mountPath: /tmp
+              name: tmp-dir
+              readOnly: false
             - mountPath: /config
               name: helm-config
               readOnly: true

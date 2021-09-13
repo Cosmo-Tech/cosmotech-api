@@ -60,11 +60,11 @@ podSecurityContext:
   runAsNonRoot: true
 
 # -- the security context at the pod container level
-securityContext: {}
+securityContext:
   # capabilities:
   #   drop:
   #   - ALL
-  # readOnlyRootFilesystem: true
+  readOnlyRootFilesystem: true
   # runAsNonRoot: true
   # runAsUser: 1000
 
