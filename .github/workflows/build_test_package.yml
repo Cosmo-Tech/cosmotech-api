@@ -159,6 +159,9 @@ jobs:
                   nodeRegistration:
                     kubeletExtraArgs:
                       node-labels: "kubernetes.io/os=linux,agentpool=basicpool"
+          networking:
+            disableDefaultCNI: true
+            podSubnet: 192.168.0.0/16
           featureGates:
             # TTL Controller for finished resources is currently an opt-in alpha feature
             # https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/
@@ -171,6 +174,16 @@ jobs:
         with:
           version: v0.11.1
           config: /tmp/csm-kind-config.yaml
+
+      - name: Deploy Calico
+        run: |
+          helm repo add projectcalico https://docs.projectcalico.org/charts
+          helm \
+            install calico \
+            projectcalico/tigera-operator \
+            --version v3.21.2 \
+            --wait \
+            --timeout 2m
 
       - name: Deploy the NGINX Ingress Controller in the KinD Cluster
         run: |
