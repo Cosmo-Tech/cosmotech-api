@@ -98,9 +98,25 @@ spec:
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.affinity }}
       affinity:
+      {{- if .Values.affinity}}
+      {{- with .Values.affinity }}
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- else }}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: "app.kubernetes.io/name"
+                    operator: In
+                    values:
+                      - {{ include "cosmotech-api.name" . }}
+                  - key: "app.kubernetes.io/instance"
+                    operator: In
+                    values:
+                      - {{ .Release.Name }}
+              topologyKey: "kubernetes.io/hostname"
       {{- end }}
       {{- with .Values.tolerations }}
       tolerations:
