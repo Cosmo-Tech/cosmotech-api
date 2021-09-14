@@ -7,6 +7,18 @@ helm -n "${CHART_RELEASE_TEST_NAMESPACE}" test cosmotech-api-latest
 retVal=$?
 echo "retVal=$retVal"
 
+echo "=== List all resources across all namespaces ==="
+kubectl get all --all-namespaces
+echo "=== ==="
+
+echo "=== Get all events across all namespaces ==="
+kubectl get events --all-namespaces --sort-by='{.lastTimestamp}'
+echo "=== ==="
+
+echo "=== Describe all resources across all namespaces ==="
+kubectl describe all --all-namespaces
+echo "=== ==="
+
 for test in openapi swaggerui; do
   echo ">>> Logs for cosmotech-api-latest-test-connection-${test} <<<"
   kubectl -n "${CHART_RELEASE_TEST_NAMESPACE}" logs "cosmotech-api-latest-test-connection-${test}"
