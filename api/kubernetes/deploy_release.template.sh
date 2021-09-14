@@ -147,6 +147,11 @@ if [[ "${CERT_MANAGER_ENABLED:-false}" == "true" ]]; then
     --set nodeSelector."beta\.kubernetes\.io/os"=linux
 
   if [[ "${COSMOTECH_API_DNS_NAME:-}" != "" && "${TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL:-}" != "" ]]; then
+    # Wait few seconds until the CertManager WebHook pod is ready.
+    # Otherwise, we might run into the following issue :
+    # Error from server: error when creating "STDIN": conversion webhook for cert-manager.io/v1alpha2,
+    # Kind=Certificate failed: Post "https://cert-manager-webhook.${NAMESPACE}.svc:443/convert?timeout=30s"
+    sleep 25
 cat <<EOF | kubectl --namespace "${NAMESPACE}" apply --validate=false -f -
 apiVersion: cert-manager.io/v1alpha2
 kind: ClusterIssuer
