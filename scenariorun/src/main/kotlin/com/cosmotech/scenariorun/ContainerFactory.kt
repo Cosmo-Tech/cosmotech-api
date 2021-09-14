@@ -30,7 +30,6 @@ import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.utils.getCloudPath
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
-import java.lang.StringBuilder
 import java.util.UUID
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
