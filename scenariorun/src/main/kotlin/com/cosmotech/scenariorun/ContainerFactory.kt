@@ -4,8 +4,8 @@ package com.cosmotech.scenariorun
 
 import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.config.CsmPlatformProperties
-import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
-import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
+import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBusNamespaces.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
+import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBusNamespaces.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
 import com.cosmotech.api.utils.sanitizeForKubernetes
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
@@ -967,8 +967,8 @@ internal class ContainerFactory(
             csmPlatformProperties, csmSimulationId, organization.id ?: "", workspace.key)
     envVars[RUN_TEMPLATE_ID_VAR] = runTemplateId
     envVars[CONTAINER_MODE_VAR] = step.mode
-    /*envVars[EVENT_HUB_CONTROL_PLANE_VAR] =
-        StringBuilder(csmPlatformProperties.azure?.eventBus?.baseUri)
+    envVars[EVENT_HUB_CONTROL_PLANE_VAR] =
+        StringBuilder(csmPlatformProperties.azure?.eventBus?.scenarioruns?.baseUri)
             .append("/")
             .append(organization.id)
             .append("-")
@@ -978,8 +978,9 @@ internal class ContainerFactory(
             .lowercase()
     */
     envVars[EVENT_HUB_MEASURES_VAR] =
-        "${csmPlatformProperties.azure?.eventBus?.baseUri}/${organization.id}-${workspace.key}".lowercase()
+        "${csmPlatformProperties.azure?.eventBus?.probesmeasures?.baseUri}/${organization.id}-${workspace.key}".lowercase()
 
+    // TODO: VCAR SPLIT AUTH FOR EVENT BUS NAMESPACES
     envVars.putAll(getSpecificEventBusAuthenticationEnvVars())
 
     val csmSimulation = template.csmSimulation
@@ -1008,8 +1009,8 @@ internal class ContainerFactory(
     )
   }
 
-  private fun getSpecificEventBusAuthenticationEnvVars(): Map<String, String> =
-      when (csmPlatformProperties.azure?.eventBus?.authentication?.strategy
+  private fun getSpecificEventBusAuthenticationEnvVars(CsmPlatformAzureEventBus: eventBus): Map<String, String> =
+      when (eventBus.authentication?.strategy
           ?: TENANT_CLIENT_CREDENTIALS) {
         SHARED_ACCESS_POLICY -> {
           // PROD-8071, PROD-8072 : support for shared access policies in the context of a platform
@@ -1019,9 +1020,7 @@ internal class ContainerFactory(
           // existing env vars.
           mapOf(
               AZURE_EVENT_HUB_SHARED_ACCESS_POLICY_ENV_VAR to
-                  (csmPlatformProperties
-                      .azure
-                      ?.eventBus
+                  (eventBus
                       ?.authentication
                       ?.sharedAccessPolicy
                       ?.namespace
@@ -1031,9 +1030,7 @@ internal class ContainerFactory(
                               "csm.platform.azure.eventBus.authentication.sharedAccessPolicy" +
                               ".namespace.name")),
               AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR to
-                  (csmPlatformProperties
-                      .azure
-                      ?.eventBus
+                  (eventBus
                       ?.authentication
                       ?.sharedAccessPolicy
                       ?.namespace
