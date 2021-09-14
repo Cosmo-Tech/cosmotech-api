@@ -759,8 +759,6 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to mode,
-            "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
             "CSM_SIMULATION" to "TestSimulation",
@@ -792,8 +790,6 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to mode,
-            "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
             "CSM_SIMULATION" to "TestSimulation",
@@ -1698,8 +1694,6 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to "handle-parameters",
-            "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
             "CSM_SIMULATION" to "TestSimulation"),
@@ -1735,8 +1729,6 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to "prerun",
-            "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
             "CSM_SIMULATION" to "TestSimulation"),
@@ -1779,8 +1771,6 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to "engine",
-            "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
             "CSM_SIMULATION" to "TestSimulation"),
@@ -1903,8 +1893,6 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to mode,
-            "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
             "CSM_SIMULATION" to "TestSimulation")
