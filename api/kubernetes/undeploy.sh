@@ -8,6 +8,10 @@ help() {
   echo
   echo "This script takes at least 2 parameters."
   echo
+  echo "The following optional environment variables can be set to alter this script behavior:"
+  echo "- DELETE_NAMESPACE | boolean (default is true) | whether to delete the provided namespace"
+  echo "- DELETE_CERTMANAGER_CLUSTERISSUERS | boolean (default is false) | whether to delete the ClusterIssuer resources, which cluster-scoped resources, not scoped to the provided namespace"
+  echo
   echo "Usage: ./$(basename "$0") NAMESPACE API_VERSION [any additional options to pass as is to the Chart uninstallation command]"
   echo
   echo "Examples:"
@@ -47,6 +51,27 @@ argoUninstallReturnValue=$?
 echo "-> Uninstalling Helm release: '${COSMOTECH_API_RELEASE_NAME}'..."
 helm -n "${NAMESPACE}" uninstall "${COSMOTECH_API_RELEASE_NAME}" "${@:3}"
 cosmotechApiUninstallReturnValue=$?
+
+kubectl -n "${NAMESPACE}" delete secrets \
+  custom-tls-secret \
+  letsencrypt-prod \
+  letsencrypt-prod-private-key \
+  letsencrypt-staging \
+  letsencrypt-staging-private-key \
+  || true
+
+if [[ "${DELETE_CERTMANAGER_CLUSTERISSUERS:-false}" == "true" ]]; then
+  kubectl -n "${NAMESPACE}" delete clusterissuers letsencrypt-staging letsencrypt-prod || true
+else
+  echo "Skipping ClusterIssuers deletion. You may want to remove them afterwards, using the following command: "
+  echo "kubectl -n \"${NAMESPACE}\" delete clusterissuers letsencrypt-staging letsencrypt-prod || true"
+fi
+
+if [[ "${DELETE_NAMESPACE:-true}" == "true" ]]; then
+  kubectl delete namespace "${NAMESPACE}"
+else
+  echo "Skipping namespace deletion as requested through the DELETE_NAMESPACE environment variable"
+fi
 
 if [[ "${argoUninstallReturnValue}" != "0" ]]; then
   echo
