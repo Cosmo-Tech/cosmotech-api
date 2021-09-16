@@ -54,3 +54,14 @@ jobs:
           overwrite: true
           tag_name: ${{ github.event.release.tag_name }}
           release_id: ${{ github.event.release.id }}
+
+      - name: Upload upgrade script to release
+        uses: xresloader/upload-to-github-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          file: api/kubernetes/upgrade.sh
+          draft: false
+          overwrite: true
+          tag_name: ${{ github.event.release.tag_name }}
+          release_id: ${{ github.event.release.id }}
