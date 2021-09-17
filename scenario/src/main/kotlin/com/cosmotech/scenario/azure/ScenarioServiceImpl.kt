@@ -19,7 +19,6 @@ import com.cosmotech.api.events.WorkflowStatusRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
-import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.organization.api.OrganizationApiService
@@ -57,13 +56,6 @@ internal class ScenarioServiceImpl(
     private val organizationService: OrganizationApiService,
     private val workspaceService: WorkspaceApiService,
 ) : AbstractCosmosBackedService(), ScenarioApiService {
-
-  private fun Scenario.asMapWithAdditionalData(workspaceId: String): Map<String, Any> {
-    val scenarioAsMap = this.convertToMap().toMutableMap()
-    scenarioAsMap["type"] = "Scenario"
-    scenarioAsMap["workspaceId"] = workspaceId
-    return scenarioAsMap
-  }
 
   override fun addOrReplaceScenarioParameterValues(
       organizationId: String,
@@ -313,8 +305,9 @@ internal class ScenarioServiceImpl(
 
   override fun findAllScenarios(organizationId: String, workspaceId: String): List<Scenario> =
       this.findAllScenariosStateOption(organizationId, workspaceId, true)
+          .addLastRunsInfo(this, organizationId, workspaceId)
 
-  private fun findAllScenariosStateOption(
+  internal fun findAllScenariosStateOption(
       organizationId: String,
       workspaceId: String,
       addState: Boolean
@@ -338,7 +331,6 @@ internal class ScenarioServiceImpl(
             }
             return@mapNotNull scenario
           }
-          .toList()
 
   private fun findAllScenariosByRootId(
       organizationId: String,
@@ -359,10 +351,7 @@ internal class ScenarioServiceImpl(
               // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
               // https://github.com/Azure/azure-sdk-for-java/issues/12269
               JsonNode::class.java)
-          .mapNotNull {
-            val scenario = it.toDomain<Scenario>()
-            return@mapNotNull scenario
-          }
+          .mapNotNull { it.toDomain<Scenario>() }
           .toList()
 
   override fun findScenarioById(
@@ -370,7 +359,9 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       scenarioId: String
   ): Scenario {
-    val scenario = this.findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
+    val scenario =
+        this.findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
+            .addLastRunsInfo(this, organizationId, workspaceId)
     this.addStateToScenario(scenario)
     return scenario
   }
