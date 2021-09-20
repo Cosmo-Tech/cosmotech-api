@@ -158,7 +158,7 @@ subprojects {
 
     // TODO Extract those dependencies in a 'common/azure' sub-project,
     //  included dynamically if the 'platform' build property is 'azure'
-    implementation("com.azure:azure-storage-blob-batch:12.10.0")
+    implementation("com.azure:azure-storage-blob-batch:12.11.0")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation(
         "org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.5.2")
