@@ -154,7 +154,7 @@ subprojects {
     implementation("org.springdoc:springdoc-openapi-ui:${springDocVersion}")
     implementation("org.springdoc:springdoc-openapi-kotlin:${springDocVersion}")
 
-    implementation("org.zalando:problem-spring-web-starter:0.27.0-RC.0")
+    implementation("org.zalando:problem-spring-web-starter:0.27.0")
 
     // TODO Extract those dependencies in a 'common/azure' sub-project,
     //  included dynamically if the 'platform' build property is 'azure'
