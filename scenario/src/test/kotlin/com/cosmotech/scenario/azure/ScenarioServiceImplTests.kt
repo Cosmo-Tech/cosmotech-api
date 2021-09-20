@@ -30,6 +30,7 @@ import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import java.time.Duration
+import java.util.stream.Stream
 import kotlin.test.*
 import org.awaitility.kotlin.atMost
 import org.awaitility.kotlin.await
@@ -38,6 +39,11 @@ import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.api.extension.ExtensionContext
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.ArgumentsProvider
+import org.junit.jupiter.params.provider.ArgumentsSource
 import org.springframework.security.core.Authentication
 
 const val ORGANIZATION_ID = "O-AbCdEf123"
@@ -46,7 +52,7 @@ const val SOLUTION_ID = "SOL-AbCdEf123"
 const val AUTHENTICATED_USERNAME = "authenticated-user"
 
 @ExtendWith(MockKExtension::class)
-@Suppress("LongMethod")
+@Suppress("LongMethod", "LargeClass")
 class ScenarioServiceImplTests {
 
   @MockK private lateinit var userService: UserApiService
@@ -648,4 +654,155 @@ class ScenarioServiceImplTests {
           assertEquals(expectedState, scenario.state)
         }
       }
+
+  @Test
+  fun `PROD-8051 - findAllScenarios add info about parent and master lastRuns`() {
+    /* Scenario tree: M1 (run) -- (P11 (never run) -- C111 (run) */
+    val m1 =
+        Scenario(
+            id = "M1",
+            parentId = null,
+            rootId = null,
+            lastRun =
+                ScenarioLastRun(
+                    scenarioRunId = "sr-m1",
+                    workflowName = "m1-workflowName",
+                    workflowId = "m1-workflowId",
+                    csmSimulationRun = "m1-csmSimulationRun"))
+    val p11 = Scenario(id = "P11", parentId = m1.id, rootId = m1.id, lastRun = null)
+    val c111 =
+        Scenario(
+            id = "C111",
+            parentId = p11.id,
+            rootId = m1.id,
+            lastRun =
+                ScenarioLastRun(
+                    scenarioRunId = "sr-c111",
+                    workflowName = "c111-workflowName",
+                    workflowId = "c111-workflowId",
+                    csmSimulationRun = "c111-csmSimulationRun"))
+
+    every {
+      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, m1.id!!)
+    } returns m1
+    every {
+      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, p11.id!!)
+    } returns p11
+    every {
+      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, c111.id!!)
+    } returns c111
+    every {
+      scenarioServiceImpl.findAllScenariosStateOption(ORGANIZATION_ID, WORKSPACE_ID, true)
+    } returns listOf(m1, p11, c111)
+
+    val allScenariosById =
+        scenarioServiceImpl
+            .findAllScenarios(ORGANIZATION_ID, WORKSPACE_ID)
+            .associateBy(Scenario::id)
+    assertEquals(3, allScenariosById.size)
+    assertTrue { allScenariosById.containsKey(m1.id) }
+    assertTrue { allScenariosById.containsKey(p11.id) }
+    assertTrue { allScenariosById.containsKey(c111.id) }
+
+    val m1Found = allScenariosById[m1.id]!!
+    assertNull(m1Found.parentLastRun)
+    assertNull(m1Found.rootLastRun)
+
+    val p11Found = allScenariosById[p11.id]!!
+    assertEquals(m1Found.lastRun, p11Found.parentLastRun)
+    assertEquals(m1Found.lastRun, p11Found.rootLastRun)
+
+    val c111Found = allScenariosById[c111.id]!!
+    assertNull(c111Found.parentLastRun)
+    assertEquals(m1Found.lastRun, c111Found.rootLastRun)
+  }
+
+  @Test
+  fun `PROD-8051 - findScenarioById adds null parent and master lastRuns if they don't exist`() {
+    val parentId = "s-no-longer-existing-parent"
+    val rootId = "s-no-longer-existing-root"
+    every {
+      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, parentId)
+    } throws IllegalArgumentException()
+    every {
+      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, rootId)
+    } throws IllegalArgumentException()
+
+    val scenarioId = "s-c1"
+    Scenario(id = scenarioId, parentId = parentId, rootId = rootId)
+    val scenario = Scenario(id = scenarioId, parentId = parentId, rootId = rootId)
+    every {
+      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
+    } returns scenario
+
+    val scenarioReturned =
+        scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
+
+    assertNull(scenarioReturned.parentLastRun)
+    assertNull(scenarioReturned.rootLastRun)
+  }
+
+  @ParameterizedTest(name = "(parentId, rootId) = ({0}, {1})")
+  @ArgumentsSource(ParentRootScenarioIdsCartesianProductArgumentsProvider::class)
+  fun `PROD-8051 - findScenarioById adds info about parent and master lastRuns`(
+      parentScenarioId: String?,
+      rootScenarioId: String?
+  ) {
+    val parentLastRun: ScenarioLastRun?
+    if (!parentScenarioId.isNullOrBlank()) {
+      parentLastRun =
+          ScenarioLastRun(
+              scenarioRunId = "sr-parentScenarioRunId",
+              workflowName = "parent-workflowName",
+              workflowId = "parent-workflowId",
+              csmSimulationRun = "parent-csmSimulationRun")
+      val parent = Scenario(id = parentScenarioId, lastRun = parentLastRun)
+      every {
+        scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, parentScenarioId)
+      } returns parent
+    } else {
+      parentLastRun = null
+    }
+
+    val rootLastRun: ScenarioLastRun?
+    if (!rootScenarioId.isNullOrBlank()) {
+      rootLastRun =
+          ScenarioLastRun(
+              scenarioRunId = "sr-rootScenarioRunId",
+              workflowName = "root-workflowName",
+              workflowId = "root-workflowId",
+              csmSimulationRun = "root-csmSimulationRun")
+      val root = Scenario(id = rootScenarioId, lastRun = rootLastRun)
+      every {
+        scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, rootScenarioId)
+      } returns root
+    } else {
+      rootLastRun = null
+    }
+
+    val scenarioId = "S-myScenarioId"
+    val scenario = Scenario(id = scenarioId, parentId = parentScenarioId, rootId = rootScenarioId)
+    every {
+      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
+    } returns scenario
+
+    val scenarioReturned =
+        scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
+
+    assertEquals(parentLastRun, scenarioReturned.parentLastRun)
+    assertEquals(rootLastRun, scenarioReturned.rootLastRun)
+  }
+}
+
+private fun <T, U> List<T>.cartesianProduct(otherList: List<U>): List<Pair<T, U>> =
+    this.flatMap { elementInThisList ->
+      otherList.map { elementInOtherList -> elementInThisList to elementInOtherList }
+    }
+
+private class ParentRootScenarioIdsCartesianProductArgumentsProvider : ArgumentsProvider {
+  override fun provideArguments(context: ExtensionContext?): Stream<out Arguments> =
+      listOf(null, "", "s-parentId")
+          .cartesianProduct(listOf(null, "", "s-rootId"))
+          .map { (parentId, rootId) -> Arguments.of(parentId, rootId) }
+          .stream()
 }

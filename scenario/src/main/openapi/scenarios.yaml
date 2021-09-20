@@ -534,24 +534,38 @@ components:
           items:
             $ref: '#/components/schemas/ScenarioRunTemplateParameterValue'
         lastRun:
-          type: object
-          description: the last Scenarion Run for this Scenario
-          properties:
-            scenarioRunId:
-              type: string
-              description: the last Scenario Run id
-            csmSimulationRun:
-              type: string
-              description: the last Cosmo Tech Simulation Run id
-            workflowId:
-              type: string
-              description: the last Workflow Id
-            workflowName:
-              type: string
-              description: the last Workflow name
+          allOf:
+            - $ref: '#/components/schemas/ScenarioLastRun'
+            - type: object
+              description: the last Scenario Run for this Scenario
+        parentLastRun:
+          allOf:
+            - $ref: '#/components/schemas/ScenarioLastRun'
+            - type: object
+              description: the last Scenario Run for the parent of this Scenario
+        rootLastRun:
+          allOf:
+            - $ref: '#/components/schemas/ScenarioLastRun'
+            - type: object
+              description: the last Scenario Run for the root (master) of Scenario
 #      required:
 #        - name
 #        - runTemplateId
+    ScenarioLastRun:
+      type: object
+      properties:
+        scenarioRunId:
+          type: string
+          description: the last Scenario Run id
+        csmSimulationRun:
+          type: string
+          description: the last Cosmo Tech Simulation Run id
+        workflowId:
+          type: string
+          description: the last Workflow Id
+        workflowName:
+          type: string
+          description: the last Workflow name
     ScenarioRunTemplateParameterValue:
       type: object
       description: the value of a Solution Run Template parameter for a Scenario
