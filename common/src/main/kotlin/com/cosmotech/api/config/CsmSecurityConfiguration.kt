@@ -99,9 +99,9 @@ val PATHS_SOLUTIONS =
         PATH_SOLUTIONS_RUNTEMPLATES,
         PATH_SOLUTIONS_RUNTEMPLATES_HANDLERS_UPLOAD)
 const val PATH_WORKSPACES = "/organizations/*/workspaces"
-const val PATH_WORKSPACES_FILES = "/organizations/*/workspaces/*/files"
 const val PATH_WORKSPACES_USERS = "/organizations/*/workspaces/*/users"
-val PATHS_WORKSPACES = listOf(PATH_WORKSPACES, PATH_WORKSPACES_FILES, PATH_WORKSPACES_USERS)
+val PATHS_WORKSPACES = listOf(PATH_WORKSPACES, PATH_WORKSPACES_USERS)
+const val PATH_WORKSPACES_FILES = "/organizations/*/workspaces/*/files"
 
 // Endpoints roles
 val endpointSecurityPublic =
@@ -236,7 +236,7 @@ private val endpointSecurityWriters =
                     ROLE_ORGANIZATION_USER,
                 )),
         CsmSecurityEndpointsRolesWriter(
-            paths = PATHS_SCENARIOS,
+            paths = PATHS_SCENARIORUNS,
             roles =
                 arrayOf(
                     ROLE_SCENARIORUN_WRITER,
@@ -261,6 +261,16 @@ private val endpointSecurityWriters =
                     ROLE_WORKSPACE_WRITER,
                     ROLE_ORGANIZATION_ADMIN,
                     ROLE_ORGANIZATION_COLLABORATOR,
+                )),
+        CsmSecurityEndpointsRolesWriter(
+            paths = listOf(PATH_WORKSPACES_FILES),
+            roles =
+                arrayOf(
+                    ROLE_WORKSPACE_WRITER,
+                    ROLE_ORGANIZATION_ADMIN,
+                    ROLE_ORGANIZATION_COLLABORATOR,
+                    ROLE_ORGANIZATION_MODELER,
+                    ROLE_ORGANIZATION_USER,
                 )),
     )
 
