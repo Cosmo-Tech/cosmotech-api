@@ -171,6 +171,8 @@ entity Scenario {
     datasetList: List<String>
     parametersValues: List<ScenarioRunTemplateParameterValue>
     lastRun: ScenarioLastRun
+    parentLastRun: ScenarioLastRun
+    rootLastRun: ScenarioLastRun
 }
 
 entity ScenarioChangedParameterValue { 
@@ -409,6 +411,8 @@ OrganizationServices -- OrganizationService : solutionsContainerRegistry
 Scenario -- "0..*" ScenarioUser : users
 Scenario -- "0..*" ScenarioRunTemplateParameterValue : parametersValues
 Scenario -- ScenarioLastRun : lastRun
+Scenario -- ScenarioLastRun : parentLastRun
+Scenario -- ScenarioLastRun : rootLastRun
 ScenarioRun -- "0..*" RunTemplateParameterValue : parametersValues
 ScenarioRun -- "0..*" ScenarioRunContainer : containers
 ScenarioRunStatus -- "0..*" ScenarioRunStatusNode : nodes
