@@ -134,7 +134,7 @@ jobs:
           git pull --rebase --autostash
           if [[ `git status --porcelain` ]]; then
             git add doc/ openapi/plantuml/
-            git commit -am "chore(docs): Update generated documentation" \
+            git commit -m "chore(docs): Update generated documentation" \
               -m "[skip ci]" \
               -m "Co-authored-by: csmplatform <csmplatform@users.noreply.github.com>"
             git pull --rebase
