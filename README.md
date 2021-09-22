@@ -4,6 +4,7 @@
 [![Lint](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/lint.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/lint.yml)
 [![OpenAPI](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/openapi.yml/badge.svg)](https://csmphoenixdev.blob.core.windows.net/public/openapi.yaml)
 [![OpenAPI Clients](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/openapi_clients.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/openapi_clients.yml)
+[![Deploy](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/deploy.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/deploy.yml)
 
 ## Building
 
@@ -68,7 +69,7 @@ kubectl create namespace phoenix
 * Run the deployment script
 
 ```
- ./api/kubernetes/deploy_via_helm.sh --help                                                                                                                                       
+ ./api/kubernetes/deploy_via_helm.sh --help
 
 This script takes at least 4 parameters.
 
@@ -168,10 +169,10 @@ See the dedicated [README](api/kubernetes/helm-chart/README.md) for more details
 
 - [openapi.yaml](https://csmphoenixdev.blob.core.windows.net/public/openapi.yaml)
 
-Some generated items are stored in GitHub:
+Some generated items are stored in GitHub. There is no need to manually push them. They are automatically pushed if needed:
 
-- Documentation: in [doc/](doc/)
-- PlantUml file and image: in [openapi/plantuml](openapi/plantuml)
+- Documentation: [doc](doc)
+- PlantUML file and image: [openapi/plantuml](openapi/plantuml)
 
 ## Generated API clients
 
