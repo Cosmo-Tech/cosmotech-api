@@ -130,6 +130,7 @@ jobs:
             --format sarif \
             api/kubernetes/helm-chart \
           | jq | tee api/kubernetes/.sarif/helm-chart.sarif
+          exit "${PIPESTATUS[0]}"
 
       # This is needed because the Helm Chart name does not match the folder name.
       # Issue reported here : https://github.com/stackrox/kube-linter/issues/212
@@ -148,6 +149,7 @@ jobs:
             --format sarif \
             api/kubernetes/csm-argo \
           | jq | tee api/kubernetes/.sarif/csm-argo.sarif
+          exit "${PIPESTATUS[0]}"
 
       - name: Upload SARIF reports to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v1
