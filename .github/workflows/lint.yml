@@ -100,8 +100,6 @@ jobs:
 
   kube-linter:
     runs-on: ubuntu-latest
-    # TODO Errors purposely ignored for now.
-    continue-on-error: true
 
     steps:
       - uses: actions/checkout@v2.3.4
