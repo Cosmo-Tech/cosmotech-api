@@ -14,21 +14,17 @@ import com.cosmotech.api.azure.findByIdOrThrow
 import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
-import com.cosmotech.api.events.UserAddedToWorkspace
-import com.cosmotech.api.events.UserRemovedFromOrganization
-import com.cosmotech.api.events.UserRemovedFromWorkspace
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.api.utils.getCurrentAuthenticatedUserUPN
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.user.api.UserApiService
-import com.cosmotech.user.domain.User
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceFile
-import com.cosmotech.workspace.domain.WorkspaceUser
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -50,87 +46,96 @@ internal class WorkspaceServiceImpl(
     private val azureStorageBlobBatchClient: BlobBatchClient,
 ) : AbstractCosmosBackedService(), WorkspaceApiService {
 
-  private fun fetchUsers(userIds: Collection<String>): Map<String, User> =
-      userIds.toSet().map { userService.findUserById(it) }.associateBy { it.id!! }
+  private fun validateUser(workspace: Workspace) {
+    // Owner is always a valid user
+    if (workspace.ownerId == getCurrentAuthenticatedUserName()) {
+      logger.debug(
+          "Owner {} is authorized on Workspace {} - {}",
+          workspace.ownerId,
+          workspace.name,
+          workspace.id)
+      return
+    }
+    // User mail must be the same as upn attribute in token
+    val currentUserUPN = getCurrentAuthenticatedUserUPN()
+    logger.debug("Validating user with UPN: {}", currentUserUPN)
+    val workspaceUsers = workspace.users
+    if (workspaceUsers != null && !workspaceUsers.contains(currentUserUPN))
+        throw CsmAccessForbiddenException("You are not allowed to access this workspace")
+    if (workspaceUsers == null) {
+      logger.warn("No users list set on Workspace: {} - {}", workspace.name, workspace.id)
+    } else {
+      logger.debug(
+          "User {} is authorized on Workspace {} - {}",
+          currentUserUPN,
+          workspace.name,
+          workspace.id)
+    }
+  }
 
   override fun findAllWorkspaces(organizationId: String) =
       cosmosTemplate.findAll<Workspace>("${organizationId}_workspaces")
 
-  override fun findWorkspaceById(organizationId: String, workspaceId: String): Workspace =
-      cosmosTemplate.findByIdOrThrow(
-          "${organizationId}_workspaces",
-          workspaceId,
-          "Workspace $workspaceId not found in organization $organizationId")
+  override fun findWorkspaceById(organizationId: String, workspaceId: String): Workspace {
+    val workspace: Workspace =
+        cosmosTemplate.findByIdOrThrow(
+            "${organizationId}_workspaces",
+            workspaceId,
+            "Workspace $workspaceId not found in organization $organizationId")
+    this.validateUser(workspace)
+    return workspace
+  }
 
   override fun removeAllUsersOfWorkspace(organizationId: String, workspaceId: String) {
     val workspace = findWorkspaceById(organizationId, workspaceId)
+    if (workspace.ownerId != getCurrentAuthenticatedUserName()) {
+      // TODO Only the owner or an admin should be able to perform this operation
+      throw CsmAccessForbiddenException("You are not allowed to update this Resource")
+    }
     if (!workspace.users.isNullOrEmpty()) {
-      val userIds = workspace.users!!.mapNotNull { it.id }
       workspace.users = listOf()
       cosmosTemplate.upsert("${organizationId}_workspaces", workspace)
-
-      userIds.forEach {
-        this.eventPublisher.publishEvent(
-            UserRemovedFromWorkspace(this, organizationId, workspaceId, it))
-      }
     }
   }
 
-  override fun removeUserFromOrganizationWorkspace(
+  override fun removeUserFromWorkspace(
       organizationId: String,
       workspaceId: String,
-      userId: String
+      userMail: String
   ) {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    val workspaceUserMap =
-        workspace.users?.associateBy { it.id!! }?.toMutableMap() ?: mutableMapOf()
-    if (workspaceUserMap.containsKey(userId)) {
-      workspaceUserMap.remove(userId)
-      workspace.users = workspaceUserMap.values.toList()
-      cosmosTemplate.upsert("${organizationId}_workspaces", workspace)
-      this.eventPublisher.publishEvent(
-          UserRemovedFromWorkspace(this, organizationId, workspaceId, userId))
+    if (workspace.ownerId != getCurrentAuthenticatedUserName()) {
+      // TODO Only the owner or an admin should be able to perform this operation
+      throw CsmAccessForbiddenException("You are not allowed to update this Resource")
     }
+    workspace.users = workspace.users?.filter { it != userMail }
+
+    cosmosTemplate.upsert("${organizationId}_workspaces", workspace)
   }
 
-  override fun addOrReplaceUsersInOrganizationWorkspace(
-      organizationId: String,
-      workspaceId: String,
-      workspaceUser: List<WorkspaceUser>
-  ): List<WorkspaceUser> {
-    if (workspaceUser.isEmpty()) {
-      // Nothing to do
-      return workspaceUser
-    }
-
-    val organization = organizationService.findOrganizationById(organizationId)
+  override fun addUsersInWorkspace(
+      organizationId: kotlin.String,
+      workspaceId: kotlin.String,
+      requestBody: kotlin.collections.List<kotlin.String>
+  ): List<kotlin.String> {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-
-    val workspaceUserWithoutNullIds = workspaceUser.filter { it.id != null }
-    val newUsersLoaded = fetchUsers(workspaceUserWithoutNullIds.mapNotNull { it.id })
-    val workspaceUserWithRightNames =
-        workspaceUserWithoutNullIds.map { it.copy(name = newUsersLoaded[it.id]!!.name!!) }
-    val workspaceUserMap = workspaceUserWithRightNames.associateBy { it.id!! }
-
-    val currentWorkspaceUsers =
-        workspace.users?.filter { it.id != null }?.associateBy { it.id!! }?.toMutableMap()
-            ?: mutableMapOf()
-
-    newUsersLoaded.forEach { (userId, _) ->
-      // Add or replace
-      currentWorkspaceUsers[userId] = workspaceUserMap[userId]!!
+    if (workspace.ownerId != getCurrentAuthenticatedUserName()) {
+      // TODO Only the owner or an admin should be able to perform this operation
+      throw CsmAccessForbiddenException("You are not allowed to update this Resource")
     }
-    workspace.users = currentWorkspaceUsers.values.toList()
+
+    if (requestBody.isEmpty()) {
+      // Nothing to do
+      return workspace.users ?: listOf()
+    }
+
+    val userList = requestBody.toMutableList()
+    userList.addAll(workspace.users ?: listOf())
+    workspace.users = userList.toSet().toList()
 
     cosmosTemplate.upsert("${organizationId}_workspaces", workspace)
 
-    // Roles might have changed => notify all users so they can update their own items
-    workspace.users?.forEach { user ->
-      this.eventPublisher.publishEvent(
-          UserAddedToWorkspace(
-              this, organizationId, user.id!!, user.roles.map { role -> role.value }))
-    }
-    return workspaceUserWithRightNames
+    return workspace.users ?: listOf()
   }
 
   override fun createWorkspace(organizationId: String, workspace: Workspace): Workspace {
@@ -173,6 +178,10 @@ internal class WorkspaceServiceImpl(
       workspace: Workspace
   ): Workspace {
     val existingWorkspace = findWorkspaceById(organizationId, workspaceId)
+    if (existingWorkspace.ownerId != getCurrentAuthenticatedUserName()) {
+      // TODO Only the owner or an admin should be able to perform this operation
+      throw CsmAccessForbiddenException("You are not allowed to update this Resource")
+    }
 
     var hasChanged =
         existingWorkspace
@@ -191,18 +200,6 @@ internal class WorkspaceServiceImpl(
       hasChanged = true
     }
 
-    var userIdsRemoved: List<String>? = listOf()
-    if (workspace.users != null) {
-      // Specifying a list of users here overrides the previous list
-      val usersToSet = fetchUsers(workspace.users!!.mapNotNull { it.id })
-      userIdsRemoved =
-          workspace.users?.mapNotNull { it.id }?.filterNot { usersToSet.containsKey(it) }
-      val usersWithNames =
-          usersToSet.let { workspace.users!!.map { it.copy(name = usersToSet[it.id]!!.name!!) } }
-      existingWorkspace.users = usersWithNames
-      hasChanged = true
-    }
-
     if (workspace.solution != null) {
       // Validate solution ID
       workspace.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
@@ -211,17 +208,7 @@ internal class WorkspaceServiceImpl(
     }
 
     return if (hasChanged) {
-      val responseEntity =
-          cosmosTemplate.upsertAndReturnEntity("${organizationId}_workspaces", existingWorkspace)
-      userIdsRemoved?.forEach {
-        this.eventPublisher.publishEvent(UserRemovedFromOrganization(this, organizationId, it))
-      }
-      workspace.users?.forEach { user ->
-        this.eventPublisher.publishEvent(
-            UserAddedToWorkspace(
-                this, organizationId, user.id!!, user.roles.map { role -> role.value }))
-      }
-      responseEntity
+      cosmosTemplate.upsertAndReturnEntity("${organizationId}_workspaces", existingWorkspace)
     } else {
       existingWorkspace
     }

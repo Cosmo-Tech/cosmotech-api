@@ -105,6 +105,8 @@ paths:
               examples:
                 Workspace:
                   $ref: '#/components/examples/BreweryWorkspace'
+        "403":
+          description: Forbidden
         "404":
           description: the Workspace specified is unknown or you don't have access to it
     patch:
@@ -141,6 +143,8 @@ paths:
                   $ref: '#/components/examples/BreweryWorkspaceUpdated'
         "400":
           description: Bad request
+        "403":
+          description: Forbidden
         "404":
           description: the Workspace specified is unknown or you don't have access to it
     delete:
@@ -160,6 +164,8 @@ paths:
                   $ref: '#/components/examples/BreweryWorkspace'
         "400":
           description: Bad request
+        "403":
+          description: Forbidden
         "404":
           description: the Workspace specified is unknown or you don't have access to it
 
@@ -244,6 +250,8 @@ paths:
                   $ref: '#/components/examples/BreweryWorkspaceFile'
         "400":
           description: Bad request
+        "403":
+          description: Forbidden
     get:
       operationId: findAllWorkspaceFiles
       tags:
@@ -271,6 +279,8 @@ paths:
       responses:
         "204":
           description: Request succeeded
+        "403":
+          description: Forbidden
         "404":
           description: the Workspace specified is unknown or you don't have access to them
 
@@ -307,6 +317,8 @@ paths:
               schema:
                 type: string
                 format: binary
+        "403":
+          description: Forbidden
         "404":
           description: the Workspace file specified is unknown or you don't have access to it
 
@@ -338,6 +350,8 @@ paths:
       responses:
         "204":
           description: Request succeeded
+        "403":
+          description: Forbidden
         "404":
           description: the Workspace or the file specified is unknown or you don't have access to them
 
@@ -356,22 +370,29 @@ paths:
         schema:
           type: string
     post:
-      operationId: addOrReplaceUsersInOrganizationWorkspace
+      operationId: addUsersInWorkspace
       tags:
         - workspace
-      summary: Add (or replace) users to the Workspace specified
+      summary: Add users to the Workspace specified
       requestBody:
-        description: the Users to add. Any User with the same ID is overwritten
+        description: the users mails list to add
         required: true
         content:
           application/json:
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/WorkspaceUser'
+                type: string
             examples:
               TwoWorkspaceUsersToAddOrReplace:
-                $ref: '#/components/examples/TwoWorkspaceUsers'
+                $ref: '#/components/examples/TwoWorkspaceUsersMails'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            examples:
+              TwoWorkspaceUsersToAddOrReplace:
+                $ref: '#/components/examples/TwoWorkspaceUsersMails'
       responses:
         "200":
           description: the Workspace Users
@@ -380,10 +401,12 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/WorkspaceUser'
+                  type: string
               examples:
                 TwoWorkspaceUsers:
-                  $ref: '#/components/examples/TwoWorkspaceUsers'
+                  $ref: '#/components/examples/TwoWorkspaceUsersMails'
+        "403":
+          description: Forbidden
         "404":
           description: the Workspace specified is unknown or you don't have access to it
     delete:
@@ -394,10 +417,12 @@ paths:
       responses:
         "204":
           description: the operation succeeded
+        "403":
+          description: Forbidden
         "404":
           description: the Workspace specified is unknown or you don't have access to it
 
-  /organizations/{organization_id}/workspaces/{workspace_id}/users/{user_id}:
+  /organizations/{organization_id}/workspaces/{workspace_id}/users/{user_mail}:
     parameters:
       - name: organization_id
         in: path
@@ -411,22 +436,24 @@ paths:
         required: true
         schema:
           type: string
-      - name: user_id
+      - name: user_mail
         in: path
-        description: the User identifier
+        description: the User mail
         required: true
         schema:
           type: string
     delete:
-      operationId: removeUserFromOrganizationWorkspace
+      operationId: removeUserFromWorkspace
       tags:
         - workspace
       summary: Remove the specified user from the given Organization Workspace
       responses:
         "204":
           description: Request succeeded
+        "403":
+          description: Forbidden
         "404":
-          description: the Workspace or the User specified is unknown or you don't have access to them
+          description: the Workspace or the user specified is unknown or you don't have access to them
 
 components:
   securitySchemes:
@@ -472,9 +499,9 @@ components:
           $ref: '#/components/schemas/WorkspaceSolution'
         users:
           type: array
-          description: the list of users Id with their role
+          description: the list of users mails
           items:
-            $ref: '#/components/schemas/WorkspaceUser'
+            type: string
         webApp:
           $ref: '#/components/schemas/WorkspaceWebApp'
         sendInputToDataWarehouse:
@@ -484,26 +511,6 @@ components:
         - key
         - name
         - solution
-    WorkspaceUser:
-      type: object
-      description: a Workspace user with roles
-      properties:
-        id:
-          type: string
-          description: the User id
-        name:
-          type: string
-          readOnly: true
-          description: the User name
-        roles:
-          type: array
-          description: the User roles
-          items:
-            type: string
-            enum: ["Admin","User","Viewer"]
-      required:
-        - id
-        - roles
     WorkspaceFile:
       type: object
       description: a Workspace File resource
@@ -564,12 +571,8 @@ components:
           defaultRunTemplateDataset:
             1: "1"
         users:
-          - id: "1"
-            roles:
-              - Admin
-          - id: "2"
-            roles:
-              - Viewer
+          - bob@cosmotech.com
+          - alice@customer.com
         webApp:
           url: https://brewery.app.cosmotech.com
           iframes:
@@ -594,14 +597,8 @@ components:
           defaultRunTemplateDataset:
             1: "1"
         users:
-          - id: "1"
-            name: Bob
-            roles:
-              - Admin
-          - id: "2"
-            name: Alice
-            roles:
-              - Viewer
+          - bob@cosmotech.com
+          - alice@customer.com
         webApp:
           url: https://brewery.app.cosmotech.com
           iframes:
@@ -626,14 +623,8 @@ components:
             defaultRunTemplateDataset:
               1: "1"
           users:
-            - id: "1"
-              name: Bob
-              roles:
-                - Admin
-            - id: "2"
-              name: Alice
-              roles:
-                - Viewer
+            - bob@cosmotech.com
+            - alice@customer.com
           webApp:
             url: https://brewery.app.cosmotech.com
             iframes:
@@ -663,14 +654,8 @@ components:
           defaultRunTemplateDataset:
             1: "1"
         users:
-          - id: "1"
-            name: Bob
-            roles:
-              - Admin
-          - id: "2"
-            name: Alice
-            roles:
-              - Viewer
+          - bob@cosmotech.com
+          - alice@customer.com
         webApp:
           url: https://brewery.app.cosmotech.com
           iframes:
@@ -688,25 +673,9 @@ components:
         - fileName: myData.csv
         - fileName: myData2.csv
         - fileName: myData3.csv
-    TwoWorkspaceUsers:
-      summary: Two users of a Workspace
-      description: Two Users of a Workspace example
+    TwoWorkspaceUsersMails:
+      summary: Two users mails
+      description: Two Users authorized for a Workspace example
       value:
-        - id: "1"
-          name: Bob
-          roles:
-            - Admin
-        - id: "2"
-          name: Alice
-          roles:
-            - User
-    TwoWorkspaceToAddOrReplace:
-      summary: Two users of a Workspace
-      description: Two Users of a Workspace example
-      value:
-        - id: "1"
-          roles:
-            - Admin
-        - id: "2"
-          roles:
-            - User
+        - bob@cosmotech.com
+        - alice@customer.com
