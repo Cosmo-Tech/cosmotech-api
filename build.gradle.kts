@@ -15,7 +15,7 @@ plugins {
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion apply false
 
-  id("com.diffplug.spotless") version "5.15.0"
+  id("com.diffplug.spotless") version "5.15.1"
 
   id("org.springframework.boot") version "2.5.4" apply false
   id("io.spring.dependency-management") version "1.0.11.RELEASE"
