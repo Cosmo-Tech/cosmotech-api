@@ -366,7 +366,7 @@ entity Workspace {
     tags: List<String>
     ownerId: String
     * solution: WorkspaceSolution
-    users: List<WorkspaceUser>
+    users: List<String>
     webApp: WorkspaceWebApp
     sendInputToDataWarehouse: Boolean
 }
@@ -379,12 +379,6 @@ entity WorkspaceSolution {
     solutionId: String
     runTemplateFilter: List<String>
     defaultRunTemplateDataset: Map
-}
-
-entity WorkspaceUser { 
-    * id: String
-    name: String
-    * roles: List<String>
 }
 
 entity WorkspaceWebApp { 
@@ -418,7 +412,6 @@ ScenarioRun -- "0..*" ScenarioRunContainer : containers
 ScenarioRunStatus -- "0..*" ScenarioRunStatusNode : nodes
 ScenarioRunStartContainers -- "0..*" ScenarioRunContainer : containers
 Workspace -- WorkspaceSolution : solution
-Workspace -- "0..*" WorkspaceUser : users
 Workspace -- WorkspaceWebApp : webApp
 
 @enduml

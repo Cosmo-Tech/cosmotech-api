@@ -86,7 +86,7 @@ Class | Method | HTTP request | Description
 *ValidatorApi* | [**findValidatorById**](Apis/ValidatorApi.md#findvalidatorbyid) | **GET** /organizations/{organization_id}/datasets/validators/{validator_id} | Get the details of a validator
 *ValidatorApi* | [**findValidatorRunById**](Apis/ValidatorApi.md#findvalidatorrunbyid) | **GET** /organizations/{organization_id}/datasets/validators/{validator_id}/history/{validatorrun_id} | Get the details of a validator run
 *ValidatorApi* | [**runValidator**](Apis/ValidatorApi.md#runvalidator) | **POST** /organizations/{organization_id}/datasets/validators/{validator_id}/run | Run a Validator
-*WorkspaceApi* | [**addOrReplaceUsersInOrganizationWorkspace**](Apis/WorkspaceApi.md#addorreplaceusersinorganizationworkspace) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/users | Add (or replace) users to the Workspace specified
+*WorkspaceApi* | [**addUsersInWorkspace**](Apis/WorkspaceApi.md#addusersinworkspace) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/users | Add users to the Workspace specified
 *WorkspaceApi* | [**createWorkspace**](Apis/WorkspaceApi.md#createworkspace) | **POST** /organizations/{organization_id}/workspaces | Create a new workspace
 *WorkspaceApi* | [**deleteAllWorkspaceFiles**](Apis/WorkspaceApi.md#deleteallworkspacefiles) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/files | Delete all Workspace files
 *WorkspaceApi* | [**deleteWorkspace**](Apis/WorkspaceApi.md#deleteworkspace) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id} | Delete a workspace
@@ -96,7 +96,7 @@ Class | Method | HTTP request | Description
 *WorkspaceApi* | [**findAllWorkspaces**](Apis/WorkspaceApi.md#findallworkspaces) | **GET** /organizations/{organization_id}/workspaces | List all Workspaces
 *WorkspaceApi* | [**findWorkspaceById**](Apis/WorkspaceApi.md#findworkspacebyid) | **GET** /organizations/{organization_id}/workspaces/{workspace_id} | Get the details of an workspace
 *WorkspaceApi* | [**removeAllUsersOfWorkspace**](Apis/WorkspaceApi.md#removeallusersofworkspace) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/users | Remove all users from the Workspace specified
-*WorkspaceApi* | [**removeUserFromOrganizationWorkspace**](Apis/WorkspaceApi.md#removeuserfromorganizationworkspace) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/users/{user_id} | Remove the specified user from the given Organization Workspace
+*WorkspaceApi* | [**removeUserFromWorkspace**](Apis/WorkspaceApi.md#removeuserfromworkspace) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/users/{user_mail} | Remove the specified user from the given Organization Workspace
 *WorkspaceApi* | [**updateWorkspace**](Apis/WorkspaceApi.md#updateworkspace) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id} | Update a workspace
 *WorkspaceApi* | [**uploadWorkspaceFile**](Apis/WorkspaceApi.md#uploadworkspacefile) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/files | Upload a file for the Workspace
 
@@ -144,7 +144,6 @@ Class | Method | HTTP request | Description
  - [Workspace](./Models/Workspace.md)
  - [WorkspaceFile](./Models/WorkspaceFile.md)
  - [WorkspaceSolution](./Models/WorkspaceSolution.md)
- - [WorkspaceUser](./Models/WorkspaceUser.md)
  - [WorkspaceWebApp](./Models/WorkspaceWebApp.md)
 
 

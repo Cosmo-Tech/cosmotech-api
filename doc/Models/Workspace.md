@@ -11,7 +11,7 @@ Name | Type | Description | Notes
 **tags** | [**List**](string.md) | the list of tags | [optional] [default to null]
 **ownerId** | [**String**](string.md) | the user id which own this workspace | [optional] [default to null]
 **solution** | [**WorkspaceSolution**](WorkspaceSolution.md) |  | [default to null]
-**users** | [**List**](WorkspaceUser.md) | the list of users Id with their role | [optional] [default to null]
+**users** | [**List**](string.md) | the list of users mails | [optional] [default to null]
 **webApp** | [**WorkspaceWebApp**](WorkspaceWebApp.md) |  | [optional] [default to null]
 **sendInputToDataWarehouse** | [**Boolean**](boolean.md) | default setting for all Scenarios and Run Templates to set whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to the ScenarioRun | [optional] [default to null]
 

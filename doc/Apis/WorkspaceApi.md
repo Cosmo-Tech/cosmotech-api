@@ -4,7 +4,7 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**addOrReplaceUsersInOrganizationWorkspace**](WorkspaceApi.md#addOrReplaceUsersInOrganizationWorkspace) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/users | Add (or replace) users to the Workspace specified
+[**addUsersInWorkspace**](WorkspaceApi.md#addUsersInWorkspace) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/users | Add users to the Workspace specified
 [**createWorkspace**](WorkspaceApi.md#createWorkspace) | **POST** /organizations/{organization_id}/workspaces | Create a new workspace
 [**deleteAllWorkspaceFiles**](WorkspaceApi.md#deleteAllWorkspaceFiles) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/files | Delete all Workspace files
 [**deleteWorkspace**](WorkspaceApi.md#deleteWorkspace) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id} | Delete a workspace
@@ -14,16 +14,16 @@ Method | HTTP request | Description
 [**findAllWorkspaces**](WorkspaceApi.md#findAllWorkspaces) | **GET** /organizations/{organization_id}/workspaces | List all Workspaces
 [**findWorkspaceById**](WorkspaceApi.md#findWorkspaceById) | **GET** /organizations/{organization_id}/workspaces/{workspace_id} | Get the details of an workspace
 [**removeAllUsersOfWorkspace**](WorkspaceApi.md#removeAllUsersOfWorkspace) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/users | Remove all users from the Workspace specified
-[**removeUserFromOrganizationWorkspace**](WorkspaceApi.md#removeUserFromOrganizationWorkspace) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/users/{user_id} | Remove the specified user from the given Organization Workspace
+[**removeUserFromWorkspace**](WorkspaceApi.md#removeUserFromWorkspace) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/users/{user_mail} | Remove the specified user from the given Organization Workspace
 [**updateWorkspace**](WorkspaceApi.md#updateWorkspace) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id} | Update a workspace
 [**uploadWorkspaceFile**](WorkspaceApi.md#uploadWorkspaceFile) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/files | Upload a file for the Workspace
 
 
-<a name="addOrReplaceUsersInOrganizationWorkspace"></a>
-# **addOrReplaceUsersInOrganizationWorkspace**
-> List addOrReplaceUsersInOrganizationWorkspace(organization\_id, workspace\_id, WorkspaceUser)
+<a name="addUsersInWorkspace"></a>
+# **addUsersInWorkspace**
+> List addUsersInWorkspace(organization\_id, workspace\_id, string)
 
-Add (or replace) users to the Workspace specified
+Add users to the Workspace specified
 
 ### Parameters
 
@@ -31,11 +31,11 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **workspace\_id** | **String**| the Workspace identifier | [default to null]
- **WorkspaceUser** | [**List**](../Models/WorkspaceUser.md)| the Users to add. Any User with the same ID is overwritten |
+ **string** | [**List**](../Models/string.md)| the users mails list to add |
 
 ### Return type
 
-[**List**](../Models/WorkspaceUser.md)
+[**List**](../Models/string.md)
 
 ### Authorization
 
@@ -43,7 +43,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="createWorkspace"></a>
@@ -281,9 +281,9 @@ null (empty response body)
 - **Content-Type**: Not defined
 - **Accept**: Not defined
 
-<a name="removeUserFromOrganizationWorkspace"></a>
-# **removeUserFromOrganizationWorkspace**
-> removeUserFromOrganizationWorkspace(organization\_id, workspace\_id, user\_id)
+<a name="removeUserFromWorkspace"></a>
+# **removeUserFromWorkspace**
+> removeUserFromWorkspace(organization\_id, workspace\_id, user\_mail)
 
 Remove the specified user from the given Organization Workspace
 
@@ -293,7 +293,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **workspace\_id** | **String**| the Workspace identifier | [default to null]
- **user\_id** | **String**| the User identifier | [default to null]
+ **user\_mail** | **String**| the User mail | [default to null]
 
 ### Return type
 
