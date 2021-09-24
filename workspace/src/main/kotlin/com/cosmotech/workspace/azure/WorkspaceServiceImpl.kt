@@ -39,8 +39,6 @@ import org.springframework.stereotype.Service
 @Suppress("TooManyFunctions")
 internal class WorkspaceServiceImpl(
     private val resourceLoader: ResourceLoader,
-    private val userService: UserApiService,
-    private val organizationService: OrganizationApiService,
     private val solutionService: SolutionApiService,
     private val azureStorageBlobServiceClient: BlobServiceClient,
     private val azureStorageBlobBatchClient: BlobBatchClient,
