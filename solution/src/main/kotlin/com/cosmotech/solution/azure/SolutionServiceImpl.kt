@@ -249,7 +249,7 @@ internal class SolutionServiceImpl(
               "It is therefore not possible to upload run template handlers. " +
               "Either update the Solution or upload a new one with run templates.")
     }
-    if (!validRunTemplateIds.contains(runTemplateId)) {
+    if (runTemplateId !in validRunTemplateIds) {
       throw IllegalArgumentException(
           "Invalid runTemplateId: [$runTemplateId]. Must be one of: $validRunTemplateIds")
     }

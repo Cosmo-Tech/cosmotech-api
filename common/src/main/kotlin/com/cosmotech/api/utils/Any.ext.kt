@@ -63,7 +63,7 @@ inline fun <reified T> T.compareToAndMutateIfNeeded(
   T::class
       .members
       .filterIsInstance(KProperty::class.java)
-      .filterNot { excludedMembersAsSet.isNotEmpty() && excludedMembersAsSet.contains(it.name) }
+      .filterNot { excludedMembersAsSet.isNotEmpty() && it.name in excludedMembersAsSet }
       .forEach { member ->
         val getter = member.getter
         val oldValue: Any? = getter.call(this)

@@ -346,7 +346,7 @@ internal class CsmSecurityConfiguration(
         NimbusJwtDecoder.withJwkSetUri(identityEndpoints.jwkSetEndpoint()).build()
     val validators = aadResourceServerConfiguration.createDefaultValidator().toMutableList()
 
-    if (allowedTenants.contains("*")) {
+    if ("*" in allowedTenants) {
       logger.info(
           "All tenants allowed to authenticate, since the following property contains a wildcard " +
               "element: csm.platform.authorization.allowed-tenants")

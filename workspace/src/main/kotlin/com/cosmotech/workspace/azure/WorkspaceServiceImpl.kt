@@ -259,7 +259,7 @@ internal class WorkspaceServiceImpl(
       workspaceId: String,
       fileName: String
   ): Resource {
-    if (fileName.contains("..")) {
+    if (".." in fileName) {
       throw IllegalArgumentException("Invalid filename: '$fileName'. '..' is not allowed")
     }
     val workspace = findWorkspaceById(organizationId, workspaceId)

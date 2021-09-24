@@ -113,8 +113,8 @@ class AnyExtTests {
         myDataClassObj.compareToAndMutateIfNeeded(
             MyDataClass("new_attr", false), mutateIfChanged = false)
     assertEquals(2, changes.size)
-    assertTrue { changes.contains("attr") }
-    assertTrue { changes.contains("anotherAttr") }
+    assertTrue { "attr" in changes }
+    assertTrue { "anotherAttr" in changes }
 
     assertEquals("old_attr", myDataClassObj.attr)
     assertTrue { myDataClassObj.anotherAttr }
@@ -171,9 +171,9 @@ class AnyExtTests {
             MyDataClass("id2", listOf("attr2", "attr3", "attr4"), false))
 
     assertEquals(2, changes.size)
-    assertTrue(changes.contains("listAttr"))
-    assertTrue(changes.contains("anotherAttr"))
-    assertFalse(changes.contains("id"))
+    assertTrue("listAttr" in changes)
+    assertTrue("anotherAttr" in changes)
+    assertFalse("id" in changes)
 
     assertEquals("id1", myDataClassObj.id)
     assertFalse { myDataClassObj.anotherAttr }
@@ -190,7 +190,7 @@ class AnyExtTests {
             MyDataClass("id2", listOf("attr2", "attr1"), false))
 
     assertEquals(1, changes.size)
-    assertTrue(changes.contains("anotherAttr"))
+    assertTrue("anotherAttr" in changes)
 
     assertEquals("id1", myDataClassObj.id)
     assertFalse { myDataClassObj.anotherAttr }

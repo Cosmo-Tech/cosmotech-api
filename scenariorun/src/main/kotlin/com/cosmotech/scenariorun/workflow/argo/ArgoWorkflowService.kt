@@ -221,7 +221,8 @@ internal class ArgoWorkflowService(
     val workflowName = scenarioRun.workflowName
     if (workflowId == null || workflowName == null) {
       throw IllegalStateException(
-          "Scenario run $scenarioRunId for Organization $organizationId contains a null workflowId or workflowName")
+          "Scenario run $scenarioRunId for Organization $organizationId contains a null " +
+              "workflowId or workflowName")
     }
     val workflowStatus = getWorkflowStatus(workflowId, workflowName)
     return ScenarioRunStatus(
