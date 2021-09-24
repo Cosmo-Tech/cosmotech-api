@@ -6,6 +6,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.util.capitalizeDecapitalize.capitalizeAsciiOnly
 import org.springframework.boot.gradle.dsl.SpringBootExtension
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 import org.springframework.boot.gradle.tasks.run.BootRun
@@ -352,19 +353,26 @@ subprojects {
 }
 
 val copySubProjectsDetektReportsTasks =
-    listOf("html", "xml", "txt", "sarif").map { format ->
-      tasks.register<Copy>("copySubProjects${format.capitalize()}DetektReports") {
-        subprojects.forEach { dependsOn(it.tasks.getByName("detekt")) }
-        val detektReports =
-            subprojects.map {
-              file("${it.projectDir}/build/reports/detekt/${it.name}-detekt.$format")
+    subprojects.flatMap { subProject ->
+      listOf("html", "xml", "txt", "sarif").map { format ->
+        val formatCapitalized = format.capitalizeAsciiOnly()
+        val copyTask =
+            tasks.register<Copy>(
+                "detektCopy${formatCapitalized}ReportFor" +
+                    "${subProject.projectDir.relativeTo(rootDir)}".capitalizeAsciiOnly()) {
+              shouldRunAfter(subProject.tasks.getByName("detekt"))
+              from(
+                  file(
+                      "${subProject.projectDir}/build/reports/detekt/${subProject.name}-detekt.$format"))
+              into("${rootProject.buildDir}/reports/detekt/$format")
             }
-        from(*detektReports.toTypedArray())
-        into("${rootProject.buildDir}/reports/detekt/$format")
+        subProject.tasks.getByName("detekt") { finalizedBy(copyTask) }
+        copyTask
       }
     }
 
 tasks.register<Copy>("copySubProjectsDetektReports") {
+  shouldRunAfter("detekt")
   dependsOn(*copySubProjectsDetektReportsTasks.toTypedArray())
 }
 
