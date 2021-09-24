@@ -2,7 +2,6 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 
 dependencies {
-  implementation("io.argoproj.workflow:argo-client-java:v3.0.1")
   api(projects.cosmotechApiCommon)
   // In a more separated-services world, we could instead have a dedicated client project per
   // service
