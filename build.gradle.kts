@@ -17,7 +17,7 @@ plugins {
 
   id("com.diffplug.spotless") version "5.15.1"
 
-  id("org.springframework.boot") version "2.5.4" apply false
+  id("org.springframework.boot") version "2.5.5" apply false
   id("io.spring.dependency-management") version "1.0.11.RELEASE"
 
   id("org.openapi.generator") version "5.2.1" apply false
