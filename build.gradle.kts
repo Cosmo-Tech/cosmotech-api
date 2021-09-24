@@ -183,7 +183,8 @@ subprojects {
     //    implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 
     testImplementation(kotlin("test"))
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.7.2")
+    testImplementation(platform("org.junit:junit-bom:5.8.1"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("io.mockk:mockk:1.12.0")
     testImplementation("org.awaitility:awaitility-kotlin:4.1.0")
 
