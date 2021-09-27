@@ -14,7 +14,7 @@ fun getCurrentUserName(): String? = getCurrentAuthentication()?.name
 fun getCurrentUserUPN(): String? =
     (getCurrentAuthentication()?.principal as? AADOAuth2AuthenticatedPrincipal)?.attributes
         ?.getOrDefault("upn", null) as?
-        String?
+(getCurrentAuthentication()?.principal as? OAuth2AuthenticatedPrincipal)?.getAttribute<String>("upn")
 
 fun getCurrentAuthenticatedUserName() =
     getCurrentUserName()
