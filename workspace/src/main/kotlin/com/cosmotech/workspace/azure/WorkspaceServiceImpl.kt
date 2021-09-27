@@ -3,6 +3,9 @@
 package com.cosmotech.workspace.azure
 
 import com.azure.cosmos.models.CosmosContainerProperties
+import com.azure.cosmos.models.CosmosQueryRequestOptions
+import com.azure.cosmos.models.SqlParameter
+import com.azure.cosmos.models.SqlQuerySpec
 import com.azure.spring.autoconfigure.storage.resource.AzureStorageResourcePatternResolver
 import com.azure.spring.autoconfigure.storage.resource.BlobStorageResource
 import com.azure.storage.blob.BlobServiceClient
@@ -18,11 +21,14 @@ import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.api.utils.getCurrentAuthenticatedUserRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserUPN
+import com.cosmotech.api.utils.toDomain
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceFile
+import com.fasterxml.jackson.databind.JsonNode
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -56,9 +62,11 @@ internal class WorkspaceServiceImpl(
     val currentUserUPN = getCurrentAuthenticatedUserUPN()
     logger.debug("Validating user with UPN: {}", currentUserUPN)
     val workspaceUsers = workspace.users
-    if (workspaceUsers != null && !workspaceUsers.contains(currentUserUPN))
+    if (workspaceUsers != null &&
+        workspaceUsers.isNotEmpty() &&
+        !workspaceUsers.contains(currentUserUPN))
         throw CsmAccessForbiddenException("You are not allowed to access this workspace")
-    if (workspaceUsers == null) {
+    if (workspaceUsers == null || workspaceUsers.isEmpty()) {
       logger.warn("No users list set on Workspace: {} - {}", workspace.name, workspace.id)
     } else {
       logger.debug(
@@ -69,8 +77,30 @@ internal class WorkspaceServiceImpl(
     }
   }
 
-  override fun findAllWorkspaces(organizationId: String) =
-      cosmosTemplate.findAll<Workspace>("${organizationId}_workspaces")
+  override fun findAllWorkspaces(organizationId: String): List<Workspace> {
+    val roles = getCurrentAuthenticatedUserRoles()
+    if ("Platform.Admin" in roles) {
+      return cosmosTemplate.findAll<Workspace>("${organizationId}_workspaces")
+    }
+
+    val userName = getCurrentAuthenticatedUserName()
+    val userUPN = getCurrentAuthenticatedUserUPN()
+    return cosmosCoreDatabase
+        .getContainer("${organizationId}_workspaces")
+        .queryItems(
+            SqlQuerySpec(
+                "SELECT * FROM c where c.ownerId = @USER_ID or c.users = [] or c.users = null " +
+                    "or ARRAY_CONTAINS(c.users, @USER_MAIL)",
+                listOf(SqlParameter("@USER_ID", userName), SqlParameter("@USER_MAIL", userUPN))),
+            CosmosQueryRequestOptions(),
+            // It would be much better to specify the Domain Type right away and
+            // avoid the map operation, but we can't due
+            // to the lack of customization of the Cosmos Client Object Mapper, as reported here
+            // :
+            // https://github.com/Azure/azure-sdk-for-java/issues/12269
+            JsonNode::class.java)
+        .mapNotNull { it.toDomain<Workspace>() }
+  }
 
   override fun findWorkspaceById(organizationId: String, workspaceId: String): Workspace {
     val workspace: Workspace =

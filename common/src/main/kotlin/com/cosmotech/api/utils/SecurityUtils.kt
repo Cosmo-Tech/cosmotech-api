@@ -15,6 +15,10 @@ fun getCurrentUserUPN(): String? =
     (getCurrentAuthentication()?.principal as? OAuth2AuthenticatedPrincipal)?.getAttribute<String>(
         "upn")
 
+fun getCurrentUserRoles(): List<String>? =
+    (getCurrentAuthentication()?.principal as? OAuth2AuthenticatedPrincipal)?.getAttribute<
+        List<String>>("roles")
+
 fun getCurrentAuthenticatedUserName() =
     getCurrentUserName()
         ?: throw IllegalStateException("User Authentication not found in Security Context")
@@ -22,3 +26,7 @@ fun getCurrentAuthenticatedUserName() =
 fun getCurrentAuthenticatedUserUPN() =
     getCurrentUserUPN()
         ?: throw IllegalStateException("User UPN not found in Authentication Principal")
+
+fun getCurrentAuthenticatedUserRoles() =
+    getCurrentUserRoles()
+        ?: throw IllegalStateException("User roles not found in Authentication Principal")
