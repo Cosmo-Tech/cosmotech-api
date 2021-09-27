@@ -6,6 +6,14 @@
 [![OpenAPI Clients](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/openapi_clients.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/openapi_clients.yml)
 [![Deploy](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/deploy.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/deploy.yml)
 
+## Github package configuration
+You must create a Github Personnal Access Token (PAT) to [work with Maven repositories](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry) with ['read:packages' authorizations](https://docs.github.com/en/packages/learn-github-packages/about-permissions-for-github-packages#about-scopes-and-permissions-for-package-registries).
+Then create the file ~/.gradle/gradle.properties:
+```
+gpr.user=[GITHUB_USERNAME]
+gpr.key=[GITHUB_PAT]
+```
+
 ## Building
 
 ```shell
