@@ -93,10 +93,11 @@ Some generated items are stored in GitHub. There is no need to manually push the
 A `dev` [Spring Profile](https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#features.profiles) is added to the list of active Profiles.
 
 You will therefore need to specify a `config/application-dev.yml` file, with sensitive configuration like
-the Azure Cosmos DB URI and Keys (`azure.cosmos.uri` and `azure.cosmos.key` properties).
+the Azure Cosmos DB URI and Keys (`csm.platform.azure.cosmos.uri` and `csm.platform.azure.cosmos.key` properties).
 
 See the [default configuration](api/src/main/resources/application.yml).
-Also note that the `azure` profile is also activated by default.
+
+Also note that the `azure` Profile is also activated by default. As such, the `application-azure.yml` file is read too as part of the application configuration \.
 
 Now you can run the API Server with :
 
@@ -221,7 +222,7 @@ kubectl create namespace phoenix
 
 * Run the dev deployment script
 
-** Example
+**Example**
 
 ```
 ./api/kubernetes/deploy_via_helm-dev.sh latest phoenix "a-super-secret-password" latest --values /path/to/my/values-dev.yaml
@@ -229,7 +230,7 @@ kubectl create namespace phoenix
 
 This uses the default [values-dev.yaml](api/kubernetes/helm-chart/values-dev.yaml).
 
-** Usage
+**Usage**
 
 ```
 ❯ ./api/kubernetes/deploy_via_helm-dev.sh --help                                                                                         
