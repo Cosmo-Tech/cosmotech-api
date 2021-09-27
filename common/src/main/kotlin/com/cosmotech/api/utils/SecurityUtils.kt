@@ -2,19 +2,18 @@
 // Licensed under the MIT license.
 package com.cosmotech.api.utils
 
-import com.azure.spring.aad.AADOAuth2AuthenticatedPrincipal
 import java.lang.IllegalStateException
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal
 
 fun getCurrentAuthentication(): Authentication? = SecurityContextHolder.getContext().authentication
 
 fun getCurrentUserName(): String? = getCurrentAuthentication()?.name
 
 fun getCurrentUserUPN(): String? =
-    (getCurrentAuthentication()?.principal as? AADOAuth2AuthenticatedPrincipal)?.attributes
-        ?.getOrDefault("upn", null) as?
-(getCurrentAuthentication()?.principal as? OAuth2AuthenticatedPrincipal)?.getAttribute<String>("upn")
+    (getCurrentAuthentication()?.principal as? OAuth2AuthenticatedPrincipal)?.getAttribute<String>(
+        "upn")
 
 fun getCurrentAuthenticatedUserName() =
     getCurrentUserName()
