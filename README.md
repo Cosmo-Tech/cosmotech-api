@@ -292,7 +292,7 @@ To run a local analysis with Detekt, simply run the `detekt` Gradle task:
 ./gradlew detekt
 ```
 
-You will then find the reports for the different sub-projects in the `build/reports/detekt` folder.
+You will then find the reports for the different sub-projects in the `build/reports/detekt` folder, under different formats: Plain text, HTML, and [SARIF](https://sarifweb.azurewebsites.net/). 
 
 #### KubeLinter
 
