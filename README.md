@@ -1,4 +1,4 @@
-# Cosmo Tech Cloud Platform API
+# cosmotech-api
 
 [![Build, Test and Package](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/build_test_package.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/build_test_package.yml)
 [![Lint](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/lint.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/lint.yml)
@@ -6,10 +6,63 @@
 [![OpenAPI Clients](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/openapi_clients.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/openapi_clients.yml)
 [![Deploy](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/deploy.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/deploy.yml)
 
-## Github package configuration
-You must create a Github Personnal Access Token (PAT) to [work with Maven repositories](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry) with ['read:packages' authorizations](https://docs.github.com/en/packages/learn-github-packages/about-permissions-for-github-packages#about-scopes-and-permissions-for-package-registries).
-Then create the file ~/.gradle/gradle.properties:
+> Cosmo Tech Cloud Platform API
+
+The Cosmo Tech Cloud Platform API exposes an API based on [OpenAPI](https://swagger.io/specification/) definitions.
+
+It is written in [Kotlin](https://kotlinlang.org/), using [Gradle](https://gradle.org/) and the [Spring Boot framework](https://spring.io/projects/spring-boot).
+
+Note that this project contains a set of service implementations leveraging [Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/) for data persistence.
+
+## Swagger UI
+
+A Swagger UI is exposed at the following URL to explore the API : https://dev.api.cosmotech.com/ 
+
+## Client Libraries
+
+[![JavaScript](https://img.shields.io/badge/javascript-cosmotech--api--javascript--client-yellowgreen)](https://github.com/Cosmo-Tech/cosmotech-api-javascript-client)
+
+[![YpeScript](https://img.shields.io/badge/typescript-cosmotech--api--typescript--client-brightgreen)](https://github.com/Cosmo-Tech/cosmotech-api-typescript-client)
+
+[![Java](https://img.shields.io/badge/java-cosmotech--api--java--client-blue)](https://github.com/Cosmo-Tech/cosmotech-api-java-client)
+
+[![Python](https://img.shields.io/badge/python-cosmotech--api--python--client-orange)](https://github.com/Cosmo-Tech/cosmotech-api-python-client)
+
+[![C#](https://img.shields.io/badge/csharp-cosmotech--api--csharp--client-lightgrey)](https://github.com/Cosmo-Tech/cosmotech-api-csharp-client)
+
+Note that the repositories for all these client libraries are automatically updated and kept in sync,
+if there is any change in the OpenAPI definition files.
+
+## Building
+
+### Prerequisites
+
+#### JDK
+
+As this project uses both Gradle and Kotlin, a [Java JDK](https://adoptium.net/?variant=openjdk17&jvmVariant=hotspot) version 11 or higher is required.
+
+We recommend installing your JDK with [SDKMAN!](https://sdkman.io/), a tool for managing parallel versions of multiple Software Development Kits on most Unix-based systems.
+
+To check your JDK version, run `java -version` :
+
+```shell
+❯ java -version
+openjdk version "17" 2021-09-14
+OpenJDK Runtime Environment Temurin-17+35 (build 17+35)
+OpenJDK 64-Bit Server VM Temurin-17+35 (build 17+35, mixed mode, sharing)
 ```
+
+#### GitHub Packages
+
+This project requires some public dependencies that are stored in GitHub Packages,
+which requires users to be authenticated ([even for public repositories](https://github.community/t/download-from-github-package-registry-without-authentication/14407/131)).
+
+Until this is fixed, you must create a Github Personnal Access Token (PAT) with the permissions below in order to [work with Maven repositories](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry):
+- [read:packages](https://docs.github.com/en/packages/learn-github-packages/about-permissions-for-github-packages#about-scopes-and-permissions-for-package-registries)
+
+Then add the following lines to the `~/.gradle/gradle.properties` file. Create it if it does not exist.
+
+```properties
 gpr.user=[GITHUB_USERNAME]
 gpr.key=[GITHUB_PAT]
 ```
@@ -20,31 +73,56 @@ gpr.key=[GITHUB_PAT]
 ./gradlew build
 ```
 
-## Running
+The [Gradle Wrapper](https://docs.gradle.org/current/userguide/gradle_wrapper.html) script takes 
+care of downloading the Gradle distribution if needed and all dependencies declared in the project.
 
-### Locally
+### Generated items
+
+The `build` command above generates few items:
+
+- [openapi.yaml](https://csmphoenixdev.blob.core.windows.net/public/openapi.yaml)
+
+Some generated items are stored in GitHub. There is no need to manually push them. They are automatically pushed if needed:
+
+- Documentation: [doc](doc)
+- PlantUML file and image: [openapi/plantuml](openapi/plantuml)
+
+
+## Running locally
+
+A `dev` [Spring Profile](https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#features.profiles) is added to the list of active Profiles.
+
+You will therefore need to specify a `config/application-dev.yml` file, with sensitive configuration like
+the Azure Cosmos DB URI and Keys (`azure.cosmos.uri` and `azure.cosmos.key` properties).
+
+See the [default configuration](api/src/main/resources/application.yml).
+Also note that the `azure` profile is also activated by default.
+
+Now you can run the API Server with :
 
 ```shell
 java -jar api/build/libs/cosmotech-api-<VERSION>-uberjar.jar
 ```
 
-You can also run via Spring Boot, like so:
+You can also run the application via the `bootRun` Gradle task, like so:
+
 ```shell
 ./gradlew :cosmotech-api:bootRun
 ```
 
-This activates an `dev` Spring profile, the configuration of which can be overridden through a `config/application-dev.yml` file.
+Once the application is started, you can head to the Swagger UI exposed at http://localhost:8080 to
+navigate through the API.
 
-See the [default configuration](api/src/main/resources/application.yml).
-Also note that the `azure` profile is also activated by default.
+## Deploying
 
-### Kubernetes
+This project comes with a set of [Helm](https://helm.sh/) Charts to make it deployable to local or remote Kubernetes clusters.
 
-#### Azure Kubernetes Service (AKS)
+### Azure Kubernetes Service (AKS)
 
-* Login, like so:
+* Login against the container registry of your choice, like Azure Container Registries in the example below:
 
 ```shell
+az login
 az acr login --name csmphoenix
 ```
 
@@ -66,12 +144,6 @@ Otherwise, run `az aks get-credentials`, e.g.:
 az aks get-credentials \
   --resource-group phoenix \
   --name phoenixAKSdev
-```
-
-* Create the namespace if needed
-
-```shell
-kubectl create namespace phoenix
 ```
 
 * Run the deployment script
@@ -118,7 +190,7 @@ Feel free to copy and customize this [values-azure.yaml](api/kubernetes/helm-cha
 
 See the dedicated [README](api/kubernetes/helm-chart/README.md) for more details about the different properties.
 
-#### Local Kubernetes Cluster
+### Local Kubernetes Cluster
 
 * Spawn a local cluster. Skip if you already have configured a local cluster.
 
@@ -173,23 +245,67 @@ Usage: ./deploy_via_helm-dev.sh NAMESPACE ARGO_POSTGRESQL_PASSWORD API_VERSION [
 
 See the dedicated [README](api/kubernetes/helm-chart/README.md) for more details about the different properties.
 
-## Generated items
+## Contributing
 
-- [openapi.yaml](https://csmphoenixdev.blob.core.windows.net/public/openapi.yaml)
+Feel free to submit pull requests or open issues for bugs or feature requests.
 
-Some generated items are stored in GitHub. There is no need to manually push them. They are automatically pushed if needed:
+We leverage the following tools to enforce code formatting and for code static analysis:
+- [Spotless](https://github.com/diffplug/spotless)
+- [Detekt](https://detekt.github.io/detekt/)
+- [KubeLinter](https://github.com/stackrox/kube-linter) and [helm lint](https://helm.sh/docs/helm/helm_lint/)
 
-- Documentation: [doc](doc)
-- PlantUML file and image: [openapi/plantuml](openapi/plantuml)
+These checks are automatically enforced as part of the continuous integration runs on GitHub.  
 
-## Generated API clients
+### Coding Style
 
-Clients for the API are generated and available on GitHub:
+Code must comply with the common community standards for Kotlin and Java conventions,
+based on the [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html).
 
-* [Javascript](https://github.com/Cosmo-Tech/cosmotech-api-javascript-client)
-* [Python](https://github.com/Cosmo-Tech/cosmotech-api-python-client)
-* [Java](https://github.com/Cosmo-Tech/cosmotech-api-java-client)
-* [C#](https://github.com/Cosmo-Tech/cosmotech-api-csharp-client)
+You can reformat your changes at any time using the `spotlessApply` Gradle task, like so:
+```shell
+./gradlew spotlessApply
+```
+
+Under the hood, this leverages [ktfmt](https://github.com/facebookincubator/ktfmt) for Kotlin code 
+and [google-java-format](https://github.com/google/google-java-format) for Java code.
+
+This makes an attempt to reformat the code to meet the style requirements. 
+So make sure to push any resulting changes.
+
+To check that your changes comply with the coding style, run:
+```shell
+./gradlew spotlessCheck
+```
+
+### Static Code Analysis
+
+[Detekt](https://detekt.github.io/detekt/) helps identity code smells in Kotlin code. 
+And [KubeLinter](https://github.com/stackrox/kube-linter) does the same in Kubernetes YAML resources and Helm Charts.
+
+Reports are then uploaded to GitHub Code Scanning, under the Security tab of the repo : https://github.com/Cosmo-Tech/cosmotech-api/security/code-scanning
+
+#### Detekt
+
+To run a local analysis with Detekt, simply run the `detekt` Gradle task:
+```shell
+./gradlew detekt
+```
+
+You will then find the reports for the different sub-projects in the `build/reports/detekt` folder.
+
+#### KubeLinter
+
+To run a local analysis of the Helm Charts maintained in this repo:
+- install KubeLinter : https://github.com/stackrox/kube-linter#installing-kubelinter
+- Run KubeLinter against the 2 Charts:
+
+```shell
+kube-linter --config api/kubernetes/.kube-linter.yaml lint api/kubernetes/helm-chart
+```
+
+```shell
+kube-linter --config api/kubernetes/.kube-linter.yaml lint api/kubernetes/csm-argo
+```
 
 ## License
 
