@@ -126,18 +126,21 @@ internal class WorkspaceServiceImpl(
   }
 
   override fun findWorkspaceById(organizationId: String, workspaceId: String): Workspace {
+    return this.findWorkspaceByIdValidated(organizationId, workspaceId)
+  }
+
+  private fun findWorkspaceByIdValidated(organizationId: String, workspaceId: String, adminScope: Boolean = false): Workspace {
     val workspace: Workspace =
         cosmosTemplate.findByIdOrThrow(
             "${organizationId}_workspaces",
             workspaceId,
             "Workspace $workspaceId not found in organization $organizationId")
-    this.validateUser(workspace)
+    this.validateUser(workspace, adminScope)
     return workspace
   }
 
   override fun removeAllUsersOfWorkspace(organizationId: String, workspaceId: String) {
-    val workspace = findWorkspaceById(organizationId, workspaceId)
-    this.validateUser(workspace, true)
+    val workspace = findWorkspaceByIdValidated(organizationId, workspaceId, true)
     if (!workspace.users.isNullOrEmpty()) {
       workspace.users = listOf()
       cosmosTemplate.upsert("${organizationId}_workspaces", workspace)
@@ -149,8 +152,7 @@ internal class WorkspaceServiceImpl(
       workspaceId: String,
       userMail: String
   ) {
-    val workspace = findWorkspaceById(organizationId, workspaceId)
-    this.validateUser(workspace, true)
+    val workspace = findWorkspaceByIdValidated(organizationId, workspaceId, true)
     val existingUsersCount = workspace.users?.size ?: 0
     workspace.users = workspace.users?.filter { it != userMail }
     if (workspace.users?.size ?: 0 < existingUsersCount) {
@@ -164,8 +166,7 @@ internal class WorkspaceServiceImpl(
       workspaceId: String,
       requestBody: List<String>
   ): List<String> {
-    val workspace = findWorkspaceById(organizationId, workspaceId)
-    this.validateUser(workspace, true)
+    val workspace = findWorkspaceByIdValidated(organizationId, workspaceId, true)
 
     if (requestBody.isEmpty()) {
       throw CsmClientException("User list cannot be empty")
@@ -196,8 +197,7 @@ internal class WorkspaceServiceImpl(
   }
 
   override fun deleteAllWorkspaceFiles(organizationId: String, workspaceId: String) {
-    val workspace = findWorkspaceById(organizationId, workspaceId)
-    this.validateUser(workspace)
+    val workspace = findWorkspaceByIdValidated(organizationId, workspaceId)
     logger.debug("Deleting all files for workspace #{} ({})", workspace.id, workspace.name)
 
     GlobalScope.launch {
@@ -225,8 +225,7 @@ internal class WorkspaceServiceImpl(
       workspaceId: String,
       workspace: Workspace
   ): Workspace {
-    val existingWorkspace = findWorkspaceById(organizationId, workspaceId)
-    this.validateUser(existingWorkspace, true)
+    val existingWorkspace = findWorkspaceByIdValidated(organizationId, workspaceId, true)
 
     var hasChanged =
         existingWorkspace
@@ -248,8 +247,7 @@ internal class WorkspaceServiceImpl(
   }
 
   override fun deleteWorkspace(organizationId: String, workspaceId: String): Workspace {
-    val workspace = findWorkspaceById(organizationId, workspaceId)
-    this.validateUser(workspace, true)
+    val workspace = findWorkspaceByIdValidated(organizationId, workspaceId, true)
     try {
       deleteAllWorkspaceFiles(organizationId, workspaceId)
     } finally {
@@ -259,8 +257,7 @@ internal class WorkspaceServiceImpl(
   }
 
   override fun deleteWorkspaceFile(organizationId: String, workspaceId: String, fileName: String) {
-    val workspace = findWorkspaceById(organizationId, workspaceId)
-    this.validateUser(workspace)
+    val workspace = findWorkspaceByIdValidated(organizationId, workspaceId)
     logger.debug(
         "Deleting file resource from workspace #{} ({}): {}",
         workspace.id,
@@ -280,8 +277,7 @@ internal class WorkspaceServiceImpl(
     if (fileName.contains("..")) {
       throw IllegalArgumentException("Invalid filename: '$fileName'. '..' is not allowed")
     }
-    val workspace = findWorkspaceById(organizationId, workspaceId)
-    this.validateUser(workspace)
+    val workspace = findWorkspaceByIdValidated(organizationId, workspaceId)
     logger.debug(
         "Downloading file resource to workspace #{} ({}): {}",
         workspace.id,
@@ -302,8 +298,7 @@ internal class WorkspaceServiceImpl(
       throw IllegalArgumentException("Invalid destination: '$destination'. '..' is not allowed")
     }
 
-    val workspace = findWorkspaceById(organizationId, workspaceId)
-    this.validateUser(workspace)
+    val workspace = findWorkspaceByIdValidated(organizationId, workspaceId)
     logger.debug(
         "Uploading file resource to workspace #{} ({}): {} => {}",
         workspace.id,
@@ -335,8 +330,7 @@ internal class WorkspaceServiceImpl(
       organizationId: String,
       workspaceId: String
   ): List<WorkspaceFile> {
-    val workspace = findWorkspaceById(organizationId, workspaceId)
-    this.validateUser(workspace)
+    val workspace = findWorkspaceByIdValidated(organizationId, workspaceId)
     logger.debug("List all files for workspace #{} ({})", workspace.id, workspace.name)
     return getWorkspaceFileResources(organizationId, workspaceId)
         .mapNotNull { it.filename?.removePrefix("${workspaceId.sanitizeForAzureStorage()}/") }
