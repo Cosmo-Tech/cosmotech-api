@@ -80,11 +80,13 @@ internal class WorkspaceServiceImpl(
   override fun findAllWorkspaces(organizationId: String): List<Workspace> {
     val roles = getCurrentAuthenticatedUserRoles()
     if ("Platform.Admin" in roles) {
+      logger.debug("User is Platform.Admin and can read all Workspaces")
       return cosmosTemplate.findAll<Workspace>("${organizationId}_workspaces")
     }
 
     val userName = getCurrentAuthenticatedUserName()
     val userUPN = getCurrentAuthenticatedUserUPN()
+    logger.debug("Searching and returning for Workspaces user has access to")
     return cosmosCoreDatabase
         .getContainer("${organizationId}_workspaces")
         .queryItems(
