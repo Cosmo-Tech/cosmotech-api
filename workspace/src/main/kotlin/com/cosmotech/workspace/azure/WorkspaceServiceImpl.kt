@@ -149,9 +149,9 @@ internal class WorkspaceServiceImpl(
   ) {
     val workspace = findWorkspaceById(organizationId, workspaceId)
     this.validateUser(workspace, true)
-    val existingUsersCount = workspace.users?.count() ?: 0
+    val existingUsersCount = workspace.users?.size ?: 0
     workspace.users = workspace.users?.filter { it != userMail }
-    if (workspace.users?.count() ?: 0 < existingUsersCount) {
+    if (workspace.users?.size ?: 0 < existingUsersCount) {
       logger.debug("Removing user {} from Workspace {}-{}", userMail, organizationId, workspaceId)
       cosmosTemplate.upsert("${organizationId}_workspaces", workspace)
     }
