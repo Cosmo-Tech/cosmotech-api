@@ -54,25 +54,27 @@ internal class WorkspaceServiceImpl(
 
   private fun validateAdmin(ownerId: String? = null, adminScope: Boolean = false): Boolean {
     logger.debug("Validating admin authorization")
+    var authorized = false
     if (ownerId == getCurrentAuthenticatedUserName()) {
       logger.debug("User is authorized: Owner")
-      return true
-    }
-    val roles = getCurrentAuthenticatedUserRoles()
-    if (roles.any {
-      it == ROLE_PLATFORM_ADMIN ||
-          it == ROLE_ORGANIZATION_ADMIN ||
-          it == ROLE_ORGANIZATION_COLLABORATOR
-    }) {
-      logger.debug("User is authorized: Role")
-      return true
+      authorized = true
+    } else {
+      val roles = getCurrentAuthenticatedUserRoles()
+      if (roles.any {
+                it == ROLE_PLATFORM_ADMIN ||
+                        it == ROLE_ORGANIZATION_ADMIN ||
+                        it == ROLE_ORGANIZATION_COLLABORATOR
+              }) {
+        logger.debug("User is authorized: Role")
+        authorized = true
+      }
     }
 
     if (adminScope) {
       throw CsmAccessForbiddenException("Your are not authorized to use this admin endpoint")
     }
 
-    return false
+    return authorized
   }
 
   private fun validateUser(workspace: Workspace, adminScope: Boolean = false) {
