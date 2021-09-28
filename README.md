@@ -67,7 +67,7 @@ gpr.user=[GITHUB_USERNAME]
 gpr.key=[GITHUB_PAT]
 ```
 
-## Building
+### Running the build
 
 ```shell
 ./gradlew build
@@ -76,7 +76,7 @@ gpr.key=[GITHUB_PAT]
 The [Gradle Wrapper](https://docs.gradle.org/current/userguide/gradle_wrapper.html) script takes 
 care of downloading the Gradle distribution if needed and all dependencies declared in the project.
 
-### Generated items
+**Generated items**
 
 The `build` command above generates few items. Some of them are currently versioned to easily access them from this repo. However, there is no need to manually push them. They are automatically pushed if needed, as part of the Continuous Integration runs:
 
