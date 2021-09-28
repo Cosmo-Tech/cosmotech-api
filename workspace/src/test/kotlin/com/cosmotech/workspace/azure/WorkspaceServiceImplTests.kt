@@ -29,14 +29,13 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal
-import kotlin.test.assertTrue
-import kotlin.test.assertFalse
 
 const val ORGANIZATION_ID = "O-AbCdEf123"
 const val WORKSPACE_ID = "W-BcDeFg123"
