@@ -19,7 +19,6 @@ import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmClientException
-import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserRoles
@@ -221,25 +220,15 @@ internal class WorkspaceServiceImpl(
 
     var hasChanged =
         existingWorkspace
-            .compareToAndMutateIfNeeded(
-                workspace, excludedFields = arrayOf("ownerId", "users", "solution"))
+            .compareToAndMutateIfNeeded(workspace, excludedFields = arrayOf("solution"))
             .isNotEmpty()
-
-    if (workspace.ownerId != null && workspace.changed(existingWorkspace) { ownerId }) {
-      // Allow to change the ownerId as well, but only the owner can transfer the ownership
-      if (existingWorkspace.ownerId != getCurrentAuthenticatedUserName()) {
-        // TODO Only the owner or an admin should be able to perform this operation
-        throw CsmAccessForbiddenException(
-            "You are not allowed to change the ownership of this Resource")
-      }
-      existingWorkspace.ownerId = workspace.ownerId
-      hasChanged = true
-    }
 
     // Validate solution ID
     workspace.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
-    existingWorkspace.solution = workspace.solution
-    hasChanged = true
+    if (existingWorkspace.solution != workspace.solution) {
+      existingWorkspace.solution = workspace.solution
+      hasChanged = true
+    }
 
     return if (hasChanged) {
       cosmosTemplate.upsertAndReturnEntity("${organizationId}_workspaces", existingWorkspace)
