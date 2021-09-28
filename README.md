@@ -16,19 +16,19 @@ Note that this project contains a set of service implementations leveraging [Azu
 
 ## Swagger UI
 
-A Swagger UI is exposed at the following URL to explore the API : https://dev.api.cosmotech.com/ 
+This API is [continuously deployed](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/deploy.yml) at the following URL, so you can easily explore it : https://dev.api.cosmotech.com/
 
 ## Client Libraries
 
-[![JavaScript](https://img.shields.io/badge/javascript-cosmotech--api--javascript--client-yellowgreen)](https://github.com/Cosmo-Tech/cosmotech-api-javascript-client)
+[![JavaScript](https://img.shields.io/badge/JavaScript-cosmotech--api--javascript--client-yellowgreen)](https://github.com/Cosmo-Tech/cosmotech-api-javascript-client)
 
-[![YpeScript](https://img.shields.io/badge/typescript-cosmotech--api--typescript--client-brightgreen)](https://github.com/Cosmo-Tech/cosmotech-api-typescript-client)
+[![YpeScript](https://img.shields.io/badge/TypeScript-cosmotech--api--typescript--client-brightgreen)](https://github.com/Cosmo-Tech/cosmotech-api-typescript-client)
 
-[![Java](https://img.shields.io/badge/java-cosmotech--api--java--client-blue)](https://github.com/Cosmo-Tech/cosmotech-api-java-client)
+[![Java](https://img.shields.io/badge/Java-cosmotech--api--java--client-blue)](https://github.com/Cosmo-Tech/cosmotech-api-java-client)
 
-[![Python](https://img.shields.io/badge/python-cosmotech--api--python--client-orange)](https://github.com/Cosmo-Tech/cosmotech-api-python-client)
+[![Python](https://img.shields.io/badge/Python-cosmotech--api--python--client-orange)](https://github.com/Cosmo-Tech/cosmotech-api-python-client)
 
-[![C#](https://img.shields.io/badge/csharp-cosmotech--api--csharp--client-lightgrey)](https://github.com/Cosmo-Tech/cosmotech-api-csharp-client)
+[![C#](https://img.shields.io/badge/C%23-cosmotech--api--csharp--client-lightgrey)](https://github.com/Cosmo-Tech/cosmotech-api-csharp-client)
 
 Note that the repositories for all these client libraries are automatically updated and kept in sync,
 if there is any change in the OpenAPI definition files.
@@ -39,7 +39,7 @@ if there is any change in the OpenAPI definition files.
 
 #### JDK
 
-As this project uses both Gradle and Kotlin, a [Java JDK](https://adoptium.net/?variant=openjdk17&jvmVariant=hotspot) version 11 or higher is required.
+As this project uses both Gradle and Kotlin, a [Java JDK](https://adoptium.net/?variant=openjdk17&jvmVariant=hotspot) (version 11 or higher) is required.
 
 We recommend installing your JDK with [SDKMAN!](https://sdkman.io/), a tool for managing parallel versions of multiple Software Development Kits on most Unix-based systems.
 
@@ -57,10 +57,10 @@ OpenJDK 64-Bit Server VM Temurin-17+35 (build 17+35, mixed mode, sharing)
 This project requires some public dependencies that are stored in GitHub Packages,
 which requires users to be authenticated ([even for public repositories](https://github.community/t/download-from-github-package-registry-without-authentication/14407/131)).
 
-Until this is fixed, you must create a Github Personnal Access Token (PAT) with the permissions below in order to [work with Maven repositories](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry):
+You must therefore create a GitHub Personal Access Token (PAT) with the permissions below in order to [work with Maven repositories](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry):
 - [read:packages](https://docs.github.com/en/packages/learn-github-packages/about-permissions-for-github-packages#about-scopes-and-permissions-for-package-registries)
 
-Then add the following lines to the `~/.gradle/gradle.properties` file. Create it if it does not exist.
+Then add the following lines to your `~/.gradle/gradle.properties` file. Create the file if it does not exist.
 
 ```properties
 gpr.user=[GITHUB_USERNAME]
@@ -78,11 +78,7 @@ care of downloading the Gradle distribution if needed and all dependencies decla
 
 ### Generated items
 
-The `build` command above generates few items:
-
-- [openapi.yaml](https://csmphoenixdev.blob.core.windows.net/public/openapi.yaml)
-
-Some generated items are stored in GitHub. There is no need to manually push them. They are automatically pushed if needed:
+The `build` command above generates few items. Some of them are currently versioned to easily access them from this repo. However, there is no need to manually push them. They are automatically pushed if needed, as part of the Continuous Integration runs:
 
 - Documentation: [doc](doc)
 - PlantUML file and image: [openapi/plantuml](openapi/plantuml)
@@ -95,7 +91,7 @@ A `dev` [Spring Profile](https://docs.spring.io/spring-boot/docs/current/referen
 You will therefore need to specify a `config/application-dev.yml` file, with sensitive configuration like
 the Azure Cosmos DB URI and Keys (`csm.platform.azure.cosmos.uri` and `csm.platform.azure.cosmos.key` properties).
 
-See the [default configuration](api/src/main/resources/application.yml).
+See the [default configuration](api/src/main/resources/application.yml) for an overview of all configuration properties.
 
 Also note that the `azure` Profile is also activated by default. As such, the `application-azure.yml` file is read too as part of the application configuration \.
 
@@ -280,7 +276,7 @@ To check that your changes comply with the coding style, run:
 
 ### Static Code Analysis
 
-[Detekt](https://detekt.github.io/detekt/) helps identity code smells in Kotlin code. 
+[Detekt](https://detekt.github.io/detekt/) helps identify code smells in Kotlin code. 
 And [KubeLinter](https://github.com/stackrox/kube-linter) does the same in Kubernetes YAML resources and Helm Charts.
 
 Reports are then uploaded to GitHub Code Scanning, under the Security tab of the repo : https://github.com/Cosmo-Tech/cosmotech-api/security/code-scanning
