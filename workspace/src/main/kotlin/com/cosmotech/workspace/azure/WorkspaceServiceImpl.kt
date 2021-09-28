@@ -18,6 +18,7 @@ import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
+import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -156,15 +157,19 @@ internal class WorkspaceServiceImpl(
     }
 
     if (requestBody.isEmpty()) {
-      // Nothing to do
-      return workspace.users ?: listOf()
+      throw CsmClientException("User list cannot be empty")
     }
 
     val userList = requestBody.toMutableList()
     userList.addAll(workspace.users ?: listOf())
-    workspace.users = userList.toSet().toList()
-
-    cosmosTemplate.upsert("${organizationId}_workspaces", workspace)
+    val newUserList = userList.toSet().toList()
+    if (newUserList.let { requestBody.size == it.size && requestBody.containsAll(it) }) {
+      logger.debug("No change detected in users to add")
+    } else {
+      logger.debug("Adding new users to workspace {}-{}", organizationId, workspaceId)
+      workspace.users = newUserList
+      cosmosTemplate.upsert("${organizationId}_workspaces", workspace)
+    }
 
     return workspace.users ?: listOf()
   }
@@ -231,12 +236,10 @@ internal class WorkspaceServiceImpl(
       hasChanged = true
     }
 
-    if (workspace.solution != null) {
-      // Validate solution ID
-      workspace.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
-      existingWorkspace.solution = workspace.solution
-      hasChanged = true
-    }
+    // Validate solution ID
+    workspace.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
+    existingWorkspace.solution = workspace.solution
+    hasChanged = true
 
     return if (hasChanged) {
       cosmosTemplate.upsertAndReturnEntity("${organizationId}_workspaces", existingWorkspace)
