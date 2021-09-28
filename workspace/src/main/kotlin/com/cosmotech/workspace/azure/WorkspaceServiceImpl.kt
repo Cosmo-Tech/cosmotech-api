@@ -61,10 +61,10 @@ internal class WorkspaceServiceImpl(
     } else {
       val roles = getCurrentAuthenticatedUserRoles()
       if (roles.any {
-                it == ROLE_PLATFORM_ADMIN ||
-                        it == ROLE_ORGANIZATION_ADMIN ||
-                        it == ROLE_ORGANIZATION_COLLABORATOR
-              }) {
+        it == ROLE_PLATFORM_ADMIN ||
+            it == ROLE_ORGANIZATION_ADMIN ||
+            it == ROLE_ORGANIZATION_COLLABORATOR
+      }) {
         logger.debug("User is authorized: Role")
         authorized = true
       }
@@ -129,7 +129,11 @@ internal class WorkspaceServiceImpl(
     return this.findWorkspaceByIdValidated(organizationId, workspaceId)
   }
 
-  private fun findWorkspaceByIdValidated(organizationId: String, workspaceId: String, adminScope: Boolean = false): Workspace {
+  private fun findWorkspaceByIdValidated(
+      organizationId: String,
+      workspaceId: String,
+      adminScope: Boolean = false
+  ): Workspace {
     val workspace: Workspace =
         cosmosTemplate.findByIdOrThrow(
             "${organizationId}_workspaces",
