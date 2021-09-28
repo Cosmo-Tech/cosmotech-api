@@ -8,6 +8,7 @@ import com.azure.storage.blob.BlobServiceClient
 import com.azure.storage.blob.batch.BlobBatchClient
 import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.utils.getCurrentAuthentication
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
@@ -18,9 +19,12 @@ import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.spyk
+import io.mockk.unmockkStatic
 import io.mockk.verify
 import java.lang.IllegalArgumentException
+import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -29,9 +33,14 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
+import org.springframework.security.core.Authentication
+import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal
 
 const val ORGANIZATION_ID = "O-AbCdEf123"
 const val WORKSPACE_ID = "W-BcDeFg123"
+const val AUTHENTICATED_USERNAME = "authenticated-user"
+const val AUTHENTICATED_USERUPN = "user@cosmotech.com"
+val AUTHENTICATED_USERROLES = listOf("Platform.Admin")
 
 @ExtendWith(MockKExtension::class)
 class WorkspaceServiceImplTests {
@@ -55,15 +64,30 @@ class WorkspaceServiceImplTests {
                 solutionService,
                 azureStorageBlobServiceClient,
                 azureStorageBlobBatchClient))
+    mockkStatic(::getCurrentAuthentication)
+    val authentication = mockk<Authentication>()
+    every { getCurrentAuthentication() } returns authentication
+    every { authentication.name } returns AUTHENTICATED_USERNAME
+    val principal = mockk<OAuth2AuthenticatedPrincipal>()
+    every { authentication.principal } returns principal
+    every { principal.getAttribute<String>("upn") } returns AUTHENTICATED_USERUPN
+    every { principal.getAttribute<List<String>>("roles") } returns AUTHENTICATED_USERROLES
+
     MockKAnnotations.init(this, relaxUnitFun = true)
+  }
+
+  @AfterTest
+  fun tearDown() {
+    unmockkStatic(::getCurrentAuthentication)
   }
 
   @Test
   fun `In uploadWorkspaceFile, filename is used if no destination set`() {
     val workspace = mockk<Workspace>()
+    every { workspace.ownerId } returns AUTHENTICATED_USERNAME
     every { workspace.id } returns WORKSPACE_ID
     every { workspace.name } returns "test workspace"
-    every { workspaceServiceImpl.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns
+    every { workspaceServiceImpl.findWorkspaceByIdValidated(ORGANIZATION_ID, WORKSPACE_ID) } returns
         workspace
 
     val file = mockk<Resource>(relaxed = true)
@@ -91,9 +115,10 @@ class WorkspaceServiceImplTests {
   @Test
   fun `In uploadWorkspaceFile, filename is used if destination is blank`() {
     val workspace = mockk<Workspace>()
+    every { workspace.ownerId } returns AUTHENTICATED_USERNAME
     every { workspace.id } returns WORKSPACE_ID
     every { workspace.name } returns "test workspace"
-    every { workspaceServiceImpl.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns
+    every { workspaceServiceImpl.findWorkspaceByIdValidated(ORGANIZATION_ID, WORKSPACE_ID) } returns
         workspace
 
     val file = mockk<Resource>(relaxed = true)
@@ -121,9 +146,10 @@ class WorkspaceServiceImplTests {
   @Test
   fun `In uploadWorkspaceFile, filename is appended to destination directory (ending with slash)`() {
     val workspace = mockk<Workspace>()
+    every { workspace.ownerId } returns AUTHENTICATED_USERNAME
     every { workspace.id } returns WORKSPACE_ID
     every { workspace.name } returns "test workspace"
-    every { workspaceServiceImpl.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns
+    every { workspaceServiceImpl.findWorkspaceByIdValidated(ORGANIZATION_ID, WORKSPACE_ID) } returns
         workspace
 
     val file = mockk<Resource>(relaxed = true)
@@ -153,9 +179,10 @@ class WorkspaceServiceImplTests {
   @Test
   fun `In uploadWorkspaceFile, destination is used as is as file path if not ending with slash)`() {
     val workspace = mockk<Workspace>()
+    every { workspace.ownerId } returns AUTHENTICATED_USERNAME
     every { workspace.id } returns WORKSPACE_ID
     every { workspace.name } returns "test workspace"
-    every { workspaceServiceImpl.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns
+    every { workspaceServiceImpl.findWorkspaceByIdValidated(ORGANIZATION_ID, WORKSPACE_ID) } returns
         workspace
 
     val file = mockk<Resource>(relaxed = true)
@@ -185,9 +212,10 @@ class WorkspaceServiceImplTests {
   @Test
   fun `In uploadWorkspaceFile, multiple slash characters in destination result in a single slash being used`() {
     val workspace = mockk<Workspace>()
+    every { workspace.ownerId } returns AUTHENTICATED_USERNAME
     every { workspace.id } returns WORKSPACE_ID
     every { workspace.name } returns "test workspace"
-    every { workspaceServiceImpl.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns
+    every { workspaceServiceImpl.findWorkspaceByIdValidated(ORGANIZATION_ID, WORKSPACE_ID) } returns
         workspace
 
     val file = mockk<Resource>(relaxed = true)
@@ -265,12 +293,13 @@ class WorkspaceServiceImplTests {
     confirmVerified(cosmosTemplate)
   }
 
-  /*
-  Test cannot be perform for now since update checks now for JWT security context
   @Test
   fun `should reject update request if solution ID is not valid`() {
-    every { workspaceServiceImpl.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns
+    every {
+      workspaceServiceImpl.findWorkspaceByIdValidated(ORGANIZATION_ID, WORKSPACE_ID, true)
+    } returns
         Workspace(
+            ownerId = AUTHENTICATED_USERNAME,
             id = WORKSPACE_ID,
             key = "my-workspace-key",
             name = "my workspace name",
@@ -296,5 +325,4 @@ class WorkspaceServiceImplTests {
     }
     confirmVerified(cosmosTemplate)
   }
-  */
 }

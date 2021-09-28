@@ -129,7 +129,7 @@ internal class WorkspaceServiceImpl(
     return this.findWorkspaceByIdValidated(organizationId, workspaceId)
   }
 
-  private fun findWorkspaceByIdValidated(
+  internal fun findWorkspaceByIdValidated(
       organizationId: String,
       workspaceId: String,
       adminScope: Boolean = false
