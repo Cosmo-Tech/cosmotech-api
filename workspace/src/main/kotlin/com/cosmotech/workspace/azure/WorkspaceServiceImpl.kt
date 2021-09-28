@@ -38,6 +38,10 @@ import org.springframework.core.io.ResourceLoader
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
+const val ROLE_PLATFORM_ADMIN = "Platform.Admin"
+const val ROLE_ORGANIZATION_ADMIN = "Organization.Admin"
+const val ROLE_ORGANIZATION_COLLABORATOR = "Organization.Collaborator"
+
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions")
@@ -48,39 +52,54 @@ internal class WorkspaceServiceImpl(
     private val azureStorageBlobBatchClient: BlobBatchClient,
 ) : AbstractCosmosBackedService(), WorkspaceApiService {
 
-  private fun validateUser(workspace: Workspace) {
-    // Owner is always a valid user
-    if (workspace.ownerId == getCurrentAuthenticatedUserName()) {
-      logger.debug(
-          "Owner {} is authorized on Workspace {} - {}",
-          workspace.ownerId,
-          workspace.name,
-          workspace.id)
-      return
+  private fun validateAdmin(ownerId: String? = null, adminScope: Boolean = false): Boolean {
+    logger.debug("Validating admin authorization")
+    if (ownerId == getCurrentAuthenticatedUserName()) {
+      logger.debug("User is authorized: Owner")
+      return true
     }
-    // User mail must be the same as upn attribute in token
-    val currentUserUPN = getCurrentAuthenticatedUserUPN()
-    logger.debug("Validating user with UPN: {}", currentUserUPN)
-    val workspaceUsers = workspace.users
-    if (workspaceUsers != null &&
-        workspaceUsers.isNotEmpty() &&
-        !workspaceUsers.contains(currentUserUPN))
-        throw CsmAccessForbiddenException("You are not allowed to access this workspace")
-    if (workspaceUsers == null || workspaceUsers.isEmpty()) {
-      logger.warn("No users list set on Workspace: {} - {}", workspace.name, workspace.id)
-    } else {
-      logger.debug(
-          "User {} is authorized on Workspace {} - {}",
-          currentUserUPN,
-          workspace.name,
-          workspace.id)
+    val roles = getCurrentAuthenticatedUserRoles()
+    if (roles.any {
+      it == ROLE_PLATFORM_ADMIN ||
+          it == ROLE_ORGANIZATION_ADMIN ||
+          it == ROLE_ORGANIZATION_COLLABORATOR
+    }) {
+      logger.debug("User is authorized: Role")
+      return true
+    }
+
+    if (adminScope) {
+      throw CsmAccessForbiddenException("Your are not authorized to use this admin endpoint")
+    }
+
+    return false
+  }
+
+  private fun validateUser(workspace: Workspace, adminScope: Boolean = false) {
+    if (!this.validateAdmin(workspace.ownerId, adminScope)) {
+      // User mail must be the same as upn attribute in token
+      val currentUserUPN = getCurrentAuthenticatedUserUPN()
+      logger.debug("Validating user with UPN: {}", currentUserUPN)
+      val workspaceUsers = workspace.users
+      if (workspaceUsers != null &&
+          workspaceUsers.isNotEmpty() &&
+          !workspaceUsers.contains(currentUserUPN))
+          throw CsmAccessForbiddenException("You are not allowed to access this workspace")
+      if (workspaceUsers == null || workspaceUsers.isEmpty()) {
+        logger.warn("No users list set on Workspace: {} - {}", workspace.name, workspace.id)
+      } else {
+        logger.debug(
+            "User {} is authorized on Workspace {} - {}",
+            currentUserUPN,
+            workspace.name,
+            workspace.id)
+      }
     }
   }
 
   override fun findAllWorkspaces(organizationId: String): List<Workspace> {
-    val roles = getCurrentAuthenticatedUserRoles()
-    if ("Platform.Admin" in roles) {
-      logger.debug("User is Platform.Admin and can read all Workspaces")
+    if (this.validateAdmin()) {
+      logger.debug("User is admin and can read all Workspaces")
       return cosmosTemplate.findAll<Workspace>("${organizationId}_workspaces")
     }
 
@@ -116,10 +135,7 @@ internal class WorkspaceServiceImpl(
 
   override fun removeAllUsersOfWorkspace(organizationId: String, workspaceId: String) {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    if (workspace.ownerId != getCurrentAuthenticatedUserName()) {
-      // TODO Only the owner or an admin should be able to perform this operation
-      throw CsmAccessForbiddenException("You are not allowed to update this Resource")
-    }
+    this.validateUser(workspace, true)
     if (!workspace.users.isNullOrEmpty()) {
       workspace.users = listOf()
       cosmosTemplate.upsert("${organizationId}_workspaces", workspace)
@@ -132,10 +148,7 @@ internal class WorkspaceServiceImpl(
       userMail: String
   ) {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    if (workspace.ownerId != getCurrentAuthenticatedUserName()) {
-      // TODO Only the owner or an admin should be able to perform this operation
-      throw CsmAccessForbiddenException("You are not allowed to update this Resource")
-    }
+    this.validateUser(workspace, true)
     val existingUsersCount = workspace.users?.count() ?: 0
     workspace.users = workspace.users?.filter { it != userMail }
     if (workspace.users?.count() ?: 0 < existingUsersCount) {
@@ -150,10 +163,7 @@ internal class WorkspaceServiceImpl(
       requestBody: List<String>
   ): List<String> {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    if (workspace.ownerId != getCurrentAuthenticatedUserName()) {
-      // TODO Only the owner or an admin should be able to perform this operation
-      throw CsmAccessForbiddenException("You are not allowed to update this Resource")
-    }
+    this.validateUser(workspace, true)
 
     if (requestBody.isEmpty()) {
       throw CsmClientException("User list cannot be empty")
@@ -185,6 +195,7 @@ internal class WorkspaceServiceImpl(
 
   override fun deleteAllWorkspaceFiles(organizationId: String, workspaceId: String) {
     val workspace = findWorkspaceById(organizationId, workspaceId)
+    this.validateUser(workspace)
     logger.debug("Deleting all files for workspace #{} ({})", workspace.id, workspace.name)
 
     GlobalScope.launch {
@@ -213,10 +224,7 @@ internal class WorkspaceServiceImpl(
       workspace: Workspace
   ): Workspace {
     val existingWorkspace = findWorkspaceById(organizationId, workspaceId)
-    if (existingWorkspace.ownerId != getCurrentAuthenticatedUserName()) {
-      // TODO Only the owner or an admin should be able to perform this operation
-      throw CsmAccessForbiddenException("You are not allowed to update this Resource")
-    }
+    this.validateUser(existingWorkspace, true)
 
     var hasChanged =
         existingWorkspace
@@ -239,10 +247,7 @@ internal class WorkspaceServiceImpl(
 
   override fun deleteWorkspace(organizationId: String, workspaceId: String): Workspace {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    if (workspace.ownerId != getCurrentAuthenticatedUserName()) {
-      // TODO Only the owner or an admin should be able to perform this operation
-      throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
-    }
+    this.validateUser(workspace, true)
     try {
       deleteAllWorkspaceFiles(organizationId, workspaceId)
     } finally {
@@ -253,6 +258,7 @@ internal class WorkspaceServiceImpl(
 
   override fun deleteWorkspaceFile(organizationId: String, workspaceId: String, fileName: String) {
     val workspace = findWorkspaceById(organizationId, workspaceId)
+    this.validateUser(workspace)
     logger.debug(
         "Deleting file resource from workspace #{} ({}): {}",
         workspace.id,
@@ -273,6 +279,7 @@ internal class WorkspaceServiceImpl(
       throw IllegalArgumentException("Invalid filename: '$fileName'. '..' is not allowed")
     }
     val workspace = findWorkspaceById(organizationId, workspaceId)
+    this.validateUser(workspace)
     logger.debug(
         "Downloading file resource to workspace #{} ({}): {}",
         workspace.id,
@@ -294,6 +301,7 @@ internal class WorkspaceServiceImpl(
     }
 
     val workspace = findWorkspaceById(organizationId, workspaceId)
+    this.validateUser(workspace)
     logger.debug(
         "Uploading file resource to workspace #{} ({}): {} => {}",
         workspace.id,
@@ -326,6 +334,7 @@ internal class WorkspaceServiceImpl(
       workspaceId: String
   ): List<WorkspaceFile> {
     val workspace = findWorkspaceById(organizationId, workspaceId)
+    this.validateUser(workspace)
     logger.debug("List all files for workspace #{} ({})", workspace.id, workspace.name)
     return getWorkspaceFileResources(organizationId, workspaceId)
         .mapNotNull { it.filename?.removePrefix("${workspaceId.sanitizeForAzureStorage()}/") }
