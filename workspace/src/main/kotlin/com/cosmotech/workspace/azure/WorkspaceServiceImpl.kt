@@ -52,7 +52,7 @@ internal class WorkspaceServiceImpl(
     private val azureStorageBlobBatchClient: BlobBatchClient,
 ) : AbstractCosmosBackedService(), WorkspaceApiService {
 
-  private fun validateAdmin(ownerId: String? = null, adminScope: Boolean = false): Boolean {
+  internal fun validateAdmin(ownerId: String? = null, adminScope: Boolean = false): Boolean {
     logger.debug("Validating admin authorization")
     var authorized = false
     if (ownerId == getCurrentAuthenticatedUserName()) {

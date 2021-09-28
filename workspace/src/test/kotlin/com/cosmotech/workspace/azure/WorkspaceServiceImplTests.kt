@@ -35,6 +35,8 @@ import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal
+import kotlin.test.assertTrue
+import kotlin.test.assertFalse
 
 const val ORGANIZATION_ID = "O-AbCdEf123"
 const val WORKSPACE_ID = "W-BcDeFg123"
@@ -324,5 +326,10 @@ class WorkspaceServiceImplTests {
           "${ORGANIZATION_ID}_workspaces", ofType(Workspace::class))
     }
     confirmVerified(cosmosTemplate)
+  }
+
+  @Test
+  fun `validateAdmin authorize if owner`() {
+    assertTrue { workspaceServiceImpl.validateAdmin(AUTHENTICATED_USERNAME) }
   }
 }
