@@ -136,16 +136,19 @@ internal class WorkspaceServiceImpl(
       // TODO Only the owner or an admin should be able to perform this operation
       throw CsmAccessForbiddenException("You are not allowed to update this Resource")
     }
+    val existingUsersCount = workspace.users?.count() ?: 0
     workspace.users = workspace.users?.filter { it != userMail }
-
-    cosmosTemplate.upsert("${organizationId}_workspaces", workspace)
+    if (workspace.users?.count() ?: 0 < existingUsersCount) {
+      logger.debug("Removing user {} from Workspace {}-{}", userMail, organizationId, workspaceId)
+      cosmosTemplate.upsert("${organizationId}_workspaces", workspace)
+    }
   }
 
   override fun addUsersInWorkspace(
-      organizationId: kotlin.String,
-      workspaceId: kotlin.String,
-      requestBody: kotlin.collections.List<kotlin.String>
-  ): List<kotlin.String> {
+      organizationId: String,
+      workspaceId: String,
+      requestBody: List<String>
+  ): List<String> {
     val workspace = findWorkspaceById(organizationId, workspaceId)
     if (workspace.ownerId != getCurrentAuthenticatedUserName()) {
       // TODO Only the owner or an admin should be able to perform this operation
