@@ -26,6 +26,7 @@ import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.Scenario.State
 import com.cosmotech.scenario.domain.ScenarioComparisonResult
+import com.cosmotech.scenario.domain.ScenarioDataDownloadJob
 import com.cosmotech.scenario.domain.ScenarioLastRun
 import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
 import com.cosmotech.scenario.domain.ScenarioUser
@@ -273,6 +274,14 @@ internal class ScenarioServiceImpl(
     // TODO Notify users
 
     this.handleScenarioDeletion(organizationId, workspaceId, scenario, waitRelationshipPropagation)
+  }
+
+  override fun downloadScenarioData(
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String
+  ): ScenarioDataDownloadJob {
+    TODO("Not yet implemented")
   }
 
   override fun deleteAllScenarios(organizationId: kotlin.String, workspaceId: kotlin.String) {

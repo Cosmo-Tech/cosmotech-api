@@ -427,6 +427,44 @@ paths:
         "404":
           description: the Scenario specified is unknown or you don't have access to it
 
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/downloads:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: scenario_id
+        in: path
+        description: the Scenario identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: downloadScenarioData
+      tags:
+        - scenario
+      summary: Download Scenario data
+      responses:
+        "201":
+          description: the Scenario Data response, once acknowledged.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioDataDownloadJob'
+              examples:
+                Scenario:
+                  $ref: '#/components/examples/BreweryScenarioDataDownloadJob'
+        "404":
+          description: the Scenario specified is unknown or you don't have access to it
+
 components:
   securitySchemes:
     oAuth2AuthCode:
@@ -644,6 +682,14 @@ components:
           type: string
           readOnly: true
           description: the parameter value for the compared Scenario
+    ScenarioDataDownloadJob:
+      type: object
+      description: Scenario data download job
+      properties:
+        id:
+          type: string
+          readOnly: true
+          description: the Scenario Data Download job identifier
   examples:
     BreweryScenarioIn:
       summary: Brewery Scenario input example
@@ -1010,3 +1056,8 @@ components:
           varType: string
           value: ""
           inherited: true
+    BreweryScenarioDataDownloadJob:
+      summary: Example of a scenario data download job
+      description: Brewery Scenario Data Download Job
+      value:
+        id: "sdl-abc123defghi"
