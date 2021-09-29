@@ -8,6 +8,7 @@ import com.azure.cosmos.models.PartitionKey
 import com.azure.cosmos.models.SqlParameter
 import com.azure.cosmos.models.SqlQuerySpec
 import com.cosmotech.api.azure.AbstractCosmosBackedService
+import com.cosmotech.api.events.ScenarioDataDownloadRequest
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.utils.convertToMap
@@ -29,6 +30,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import kotlin.reflect.full.memberProperties
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
 
 @Service
@@ -153,6 +155,21 @@ internal class ScenarioRunServiceImpl(
               JsonNode::class.java)
           .mapNotNull { it.toDomain<ScenarioRun>() }
           .toList()
+
+  @EventListener(ScenarioDataDownloadRequest::class)
+  fun onScenarioDataDownloadRequest(scenarioDataDownloadRequest: ScenarioDataDownloadRequest) {
+    val startInfo =
+        containerFactory.getStartInfo(
+            scenarioDataDownloadRequest.organizationId,
+            scenarioDataDownloadRequest.workspaceId,
+            scenarioDataDownloadRequest.scenarioId,
+            scenarioDataDownload = true)
+    logger.debug(startInfo.toString())
+    scenarioDataDownloadRequest.response =
+        workflowService
+            .launchScenarioRun(startInfo.startContainers)
+            .asMapWithAdditionalData(scenarioDataDownloadRequest.workspaceId)
+  }
 
   override fun runScenario(
       organizationId: String,

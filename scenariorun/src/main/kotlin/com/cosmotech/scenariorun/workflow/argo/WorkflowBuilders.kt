@@ -27,8 +27,10 @@ private const val CSM_DEFAULT_WORKFLOW_NAME = "default-workflow-"
 internal const val VOLUME_CLAIM = "datadir"
 internal const val VOLUME_CLAIM_DATASETS_SUBPATH = "datasetsdir"
 internal const val VOLUME_CLAIM_PARAMETERS_SUBPATH = "parametersdir"
+internal const val VOLUME_CLAIM_SCENARIO_DATA_SUBPATH = "scenariodatadir"
 private const val VOLUME_DATASETS_PATH = "/mnt/scenariorun-data"
 private const val VOLUME_PARAMETERS_PATH = "/mnt/scenariorun-parameters"
+private const val VOLUME_SCENARIODATA_PATH = "/mnt/scenario-data"
 
 internal fun buildTemplate(scenarioRunContainer: ScenarioRunContainer): Template {
   var envVars: MutableList<V1EnvVar>? = null
@@ -48,7 +50,11 @@ internal fun buildTemplate(scenarioRunContainer: ScenarioRunContainer): Template
           V1VolumeMount()
               .name(VOLUME_CLAIM)
               .mountPath(VOLUME_PARAMETERS_PATH)
-              .subPath(VOLUME_CLAIM_PARAMETERS_SUBPATH))
+              .subPath(VOLUME_CLAIM_PARAMETERS_SUBPATH),
+          V1VolumeMount()
+              .name(VOLUME_CLAIM)
+              .mountPath(VOLUME_SCENARIODATA_PATH)
+              .subPath(VOLUME_CLAIM_SCENARIO_DATA_SUBPATH))
 
   val container =
       V1Container()

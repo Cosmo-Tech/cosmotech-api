@@ -11,3 +11,10 @@ class WorkflowStatusRequest(
     val workflowId: String,
     val workflowName: String,
 ) : CsmRequestResponseEvent<String>(publisher)
+
+class ScenarioDataDownloadRequest(
+    publisher: Any,
+    val organizationId: String,
+    val workspaceId: String,
+    val scenarioId: String
+) : CsmRequestResponseEvent<Map<String, Any>>(publisher)

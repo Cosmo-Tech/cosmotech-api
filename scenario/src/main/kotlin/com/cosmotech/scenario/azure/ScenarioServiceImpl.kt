@@ -11,6 +11,7 @@ import com.azure.cosmos.models.SqlQuerySpec
 import com.cosmotech.api.azure.AbstractCosmosBackedService
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
+import com.cosmotech.api.events.ScenarioDataDownloadRequest
 import com.cosmotech.api.events.ScenarioDatasetListChanged
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
 import com.cosmotech.api.events.UserAddedToScenario
@@ -281,7 +282,14 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       scenarioId: String
   ): ScenarioDataDownloadJob {
-    TODO("Not yet implemented")
+    val scenario = this.findScenarioById(organizationId, workspaceId, scenarioId)
+    val scenarioDataDownloadRequest =
+        ScenarioDataDownloadRequest(this, organizationId, workspaceId, scenarioId)
+    this.eventPublisher.publishEvent(scenarioDataDownloadRequest)
+    val scenarioDataDownloadResponse = scenarioDataDownloadRequest.response
+    // TODO Handle response
+    return ScenarioDataDownloadJob(
+        id = this.idGenerator.generate(scope = "scenariodatadownload", prependPrefix = "sdl-"))
   }
 
   override fun deleteAllScenarios(organizationId: kotlin.String, workspaceId: kotlin.String) {
