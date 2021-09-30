@@ -14,6 +14,7 @@ class WorkflowStatusRequest(
 
 class ScenarioDataDownloadRequest(
     publisher: Any,
+    val jobId: String,
     val organizationId: String,
     val workspaceId: String,
     val scenarioId: String

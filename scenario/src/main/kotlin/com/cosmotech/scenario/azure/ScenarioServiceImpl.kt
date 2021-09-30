@@ -283,13 +283,14 @@ internal class ScenarioServiceImpl(
       scenarioId: String
   ): ScenarioDataDownloadJob {
     val scenario = this.findScenarioById(organizationId, workspaceId, scenarioId)
+    val resourceId =
+        this.idGenerator.generate(scope = "scenariodatadownload", prependPrefix = "sdl-")
     val scenarioDataDownloadRequest =
-        ScenarioDataDownloadRequest(this, organizationId, workspaceId, scenarioId)
+        ScenarioDataDownloadRequest(this, resourceId, organizationId, workspaceId, scenario.id!!)
     this.eventPublisher.publishEvent(scenarioDataDownloadRequest)
     val scenarioDataDownloadResponse = scenarioDataDownloadRequest.response
     // TODO Handle response
-    return ScenarioDataDownloadJob(
-        id = this.idGenerator.generate(scope = "scenariodatadownload", prependPrefix = "sdl-"))
+    return ScenarioDataDownloadJob(id = resourceId)
   }
 
   override fun deleteAllScenarios(organizationId: kotlin.String, workspaceId: kotlin.String) {

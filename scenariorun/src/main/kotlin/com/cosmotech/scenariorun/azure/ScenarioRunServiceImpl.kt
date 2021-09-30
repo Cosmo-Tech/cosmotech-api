@@ -163,7 +163,8 @@ internal class ScenarioRunServiceImpl(
             scenarioDataDownloadRequest.organizationId,
             scenarioDataDownloadRequest.workspaceId,
             scenarioDataDownloadRequest.scenarioId,
-            scenarioDataDownload = true)
+            scenarioDataDownload = true,
+            scenarioDataDownloadJobId = scenarioDataDownloadRequest.jobId)
     logger.debug(startInfo.toString())
     scenarioDataDownloadRequest.response =
         workflowService

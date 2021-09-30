@@ -522,6 +522,9 @@ components:
         fetchDatasets:
           type: boolean
           description: whether or not the fetch dataset step is done
+        scenarioDataDownloadTransform:
+          type: boolean
+          description: whether or not the scenario data download transform step step is done
         fetchScenarioParameters:
           type: boolean
           description: whether or not the fetch parameters step is done
