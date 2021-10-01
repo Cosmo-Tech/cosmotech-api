@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **runArgs** | [**List**](string.md) | the list of run arguments for the container | [optional] [default to null]
 **dependencies** | [**List**](string.md) | the list of dependencies container name to run this container | [optional] [default to null]
 **solutionContainer** | [**Boolean**](boolean.md) | whether or not this container is a Cosmo Tech solution container | [optional] [default to null]
+**artifacts** | [**List**](ScenarioRunContainerArtifact.md) | the list of artifacts | [optional] [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

@@ -100,6 +100,7 @@ entity RunTemplate {
     tags: List<String>
     computeSize: String
     fetchDatasets: Boolean
+    scenarioDataDownloadTransform: Boolean
     fetchScenarioParameters: Boolean
     applyParameters: Boolean
     validateData: Boolean
@@ -114,6 +115,7 @@ entity RunTemplate {
     preRunSource: RunTemplateStepSource
     runSource: RunTemplateStepSource
     postRunSource: RunTemplateStepSource
+    scenariodataTransformSource: RunTemplateStepSource
     parameterGroups: List<String>
     stackSteps: Boolean
 }
@@ -162,7 +164,7 @@ entity Scenario {
     runTemplateId: String
     workspaceId: String
     users: List<ScenarioUser>
-    state: String
+    state: ScenarioJobState
     creationDate: Date
     lastUpdate: Date
     ownerName: String
@@ -186,6 +188,18 @@ entity ScenarioComparisonResult {
     scenarioId: String
     comparedScenarioId: String
     changedValues: List<ScenarioChangedParameterValue>
+}
+
+entity ScenarioDataDownloadInfo { 
+    url: String
+    state: ScenarioJobState
+}
+
+entity ScenarioDataDownloadJob { 
+    id: String
+}
+
+entity ScenarioJobState { 
 }
 
 entity ScenarioLastRun { 
@@ -227,6 +241,12 @@ entity ScenarioRunContainer {
     runArgs: List<String>
     dependencies: List<String>
     solutionContainer: Boolean
+    artifacts: List<ScenarioRunContainerArtifact>
+}
+
+entity ScenarioRunContainerArtifact { 
+    name: String
+    path: String
 }
 
 entity ScenarioRunContainerLogs { 
@@ -256,6 +276,7 @@ entity ScenarioRunStartContainers {
     generateName: String
     * csmSimulationId: String
     nodeLabel: String
+    labels: Map
     * containers: List<ScenarioRunContainer>
 }
 
@@ -399,6 +420,7 @@ Organization -- "0..*" OrganizationUser : users
 Organization -- OrganizationServices : services
 User -- "0..*" UserOrganization : organizations
 UserOrganization -- "0..*" UserWorkspace : workspaces
+ScenarioRunContainer -- "0..*" ScenarioRunContainerArtifact : artifacts
 Solution -- "0..*" RunTemplateParameter : parameters
 Solution -- "0..*" RunTemplateParameterGroup : parameterGroups
 Solution -- "0..*" RunTemplate : runTemplates

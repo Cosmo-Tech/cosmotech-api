@@ -377,7 +377,7 @@ Name | Type | Description  | Notes
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **solution\_id** | **String**| the Solution identifier | [default to null]
  **run\_template\_id** | **String**| the Run Template identifier | [default to null]
- **handler\_id** | [**RunTemplateHandlerId**](../Models/.md)| the Handler identifier | [default to null] [enum: parameters_handler, validator, prerun, engine, postrun]
+ **handler\_id** | [**RunTemplateHandlerId**](../Models/.md)| the Handler identifier | [default to null] [enum: parameters_handler, validator, prerun, engine, postrun, scenariodata_transform]
  **body** | **File**|  |
  **overwrite** | **Boolean**| whether to overwrite any existing handler resource | [optional] [default to false]
 

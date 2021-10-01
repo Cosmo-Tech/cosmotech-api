@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 **tags** | [**List**](string.md) | the list of Run Template tags | [optional] [default to null]
 **computeSize** | [**String**](string.md) | the compute size needed for this Run Template. Standard sizes are basic and highcpu. Default is basic | [optional] [default to null]
 **fetchDatasets** | [**Boolean**](boolean.md) | whether or not the fetch dataset step is done | [optional] [default to null]
+**scenarioDataDownloadTransform** | [**Boolean**](boolean.md) | whether or not the scenario data download transform step step is done | [optional] [default to null]
 **fetchScenarioParameters** | [**Boolean**](boolean.md) | whether or not the fetch parameters step is done | [optional] [default to null]
 **applyParameters** | [**Boolean**](boolean.md) | whether or not the apply parameter step is done | [optional] [default to null]
 **validateData** | [**Boolean**](boolean.md) | whether or not the validate step is done | [optional] [default to null]
@@ -24,6 +25,7 @@ Name | Type | Description | Notes
 **preRunSource** | [**RunTemplateStepSource**](RunTemplateStepSource.md) |  | [optional] [default to null]
 **runSource** | [**RunTemplateStepSource**](RunTemplateStepSource.md) |  | [optional] [default to null]
 **postRunSource** | [**RunTemplateStepSource**](RunTemplateStepSource.md) |  | [optional] [default to null]
+**scenariodataTransformSource** | [**RunTemplateStepSource**](RunTemplateStepSource.md) |  | [optional] [default to null]
 **parameterGroups** | [**List**](string.md) | the ordered list of parameters groups for the Run Template | [optional] [default to null]
 **stackSteps** | [**Boolean**](boolean.md) | whether or not to stack adjacent scenario run steps in one container run which will chain steps | [optional] [default to null]
 

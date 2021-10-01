@@ -36,8 +36,10 @@ Class | Method | HTTP request | Description
 *ScenarioApi* | [**createScenario**](Apis/ScenarioApi.md#createscenario) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios | Create a new Scenario
 *ScenarioApi* | [**deleteAllScenarios**](Apis/ScenarioApi.md#deleteallscenarios) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios | Delete all Scenarios of the Workspace
 *ScenarioApi* | [**deleteScenario**](Apis/ScenarioApi.md#deletescenario) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id} | Delete a scenario
+*ScenarioApi* | [**downloadScenarioData**](Apis/ScenarioApi.md#downloadscenariodata) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/downloads | Download Scenario data
 *ScenarioApi* | [**findAllScenarios**](Apis/ScenarioApi.md#findallscenarios) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios | List all Scenarios
 *ScenarioApi* | [**findScenarioById**](Apis/ScenarioApi.md#findscenariobyid) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id} | Get the details of an scenario
+*ScenarioApi* | [**getScenarioDataDownloadJobInfo**](Apis/ScenarioApi.md#getscenariodatadownloadjobinfo) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/downloads/{download_id} | Get Scenario data download URL
 *ScenarioApi* | [**getScenariosTree**](Apis/ScenarioApi.md#getscenariostree) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/tree | Get the Scenarios Tree
 *ScenarioApi* | [**removeAllScenarioParameterValues**](Apis/ScenarioApi.md#removeallscenarioparametervalues) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/parameterValues | Remove all Parameter Values from the Scenario specified
 *ScenarioApi* | [**removeAllUsersOfScenario**](Apis/ScenarioApi.md#removeallusersofscenario) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/users | Remove all users from the Scenario specified
@@ -124,9 +126,13 @@ Class | Method | HTTP request | Description
  - [Scenario](./Models/Scenario.md)
  - [ScenarioChangedParameterValue](./Models/ScenarioChangedParameterValue.md)
  - [ScenarioComparisonResult](./Models/ScenarioComparisonResult.md)
+ - [ScenarioDataDownloadInfo](./Models/ScenarioDataDownloadInfo.md)
+ - [ScenarioDataDownloadJob](./Models/ScenarioDataDownloadJob.md)
+ - [ScenarioJobState](./Models/ScenarioJobState.md)
  - [ScenarioLastRun](./Models/ScenarioLastRun.md)
  - [ScenarioRun](./Models/ScenarioRun.md)
  - [ScenarioRunContainer](./Models/ScenarioRunContainer.md)
+ - [ScenarioRunContainerArtifact](./Models/ScenarioRunContainerArtifact.md)
  - [ScenarioRunContainerLogs](./Models/ScenarioRunContainerLogs.md)
  - [ScenarioRunLogs](./Models/ScenarioRunLogs.md)
  - [ScenarioRunSearch](./Models/ScenarioRunSearch.md)

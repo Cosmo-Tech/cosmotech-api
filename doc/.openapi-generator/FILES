@@ -27,9 +27,13 @@ Models/RunTemplateStepSource.md
 Models/Scenario.md
 Models/ScenarioChangedParameterValue.md
 Models/ScenarioComparisonResult.md
+Models/ScenarioDataDownloadInfo.md
+Models/ScenarioDataDownloadJob.md
+Models/ScenarioJobState.md
 Models/ScenarioLastRun.md
 Models/ScenarioRun.md
 Models/ScenarioRunContainer.md
+Models/ScenarioRunContainerArtifact.md
 Models/ScenarioRunContainerLogs.md
 Models/ScenarioRunLogs.md
 Models/ScenarioRunSearch.md
