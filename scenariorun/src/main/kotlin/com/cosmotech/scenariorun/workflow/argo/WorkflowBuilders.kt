@@ -6,20 +6,25 @@ import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.scenariorun.CSM_DAG_ROOT
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
+import io.argoproj.workflow.models.ArchiveStrategy
+import io.argoproj.workflow.models.Artifact
 import io.argoproj.workflow.models.DAGTask
 import io.argoproj.workflow.models.DAGTemplate
 import io.argoproj.workflow.models.Metadata
+import io.argoproj.workflow.models.Outputs
 import io.argoproj.workflow.models.Template
 import io.argoproj.workflow.models.Workflow
 import io.argoproj.workflow.models.WorkflowSpec
 import io.kubernetes.client.custom.Quantity
 import io.kubernetes.client.openapi.models.V1Container
+import io.kubernetes.client.openapi.models.V1EmptyDirVolumeSource
 import io.kubernetes.client.openapi.models.V1EnvVar
 import io.kubernetes.client.openapi.models.V1LocalObjectReference
 import io.kubernetes.client.openapi.models.V1ObjectMeta
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaimSpec
 import io.kubernetes.client.openapi.models.V1ResourceRequirements
+import io.kubernetes.client.openapi.models.V1Volume
 import io.kubernetes.client.openapi.models.V1VolumeMount
 
 private const val CSM_DAG_ENTRYPOINT = "entrypoint"
@@ -48,7 +53,8 @@ internal fun buildTemplate(scenarioRunContainer: ScenarioRunContainer): Template
           V1VolumeMount()
               .name(VOLUME_CLAIM)
               .mountPath(VOLUME_PARAMETERS_PATH)
-              .subPath(VOLUME_CLAIM_PARAMETERS_SUBPATH))
+              .subPath(VOLUME_CLAIM_PARAMETERS_SUBPATH),
+          V1VolumeMount().name("out").mountPath("/var/csmoutput"))
 
   val container =
       V1Container()
@@ -61,10 +67,25 @@ internal fun buildTemplate(scenarioRunContainer: ScenarioRunContainer): Template
     container.command(listOf(scenarioRunContainer.entrypoint))
   }
 
-  return Template()
-      .name(scenarioRunContainer.name)
-      .metadata(Metadata().labels(scenarioRunContainer.labels))
-      .container(container)
+  val template =
+      Template()
+          .name(scenarioRunContainer.name)
+          .metadata(Metadata().labels(scenarioRunContainer.labels))
+          .container(container)
+          .addVolumesItem(V1Volume().emptyDir(V1EmptyDirVolumeSource()).name("out"))
+
+  val artifacts =
+      scenarioRunContainer.artifacts?.map {
+        Artifact()
+            .name(it.name)
+            .path("/var/csmoutput/${it.path}")
+            .archive(ArchiveStrategy().none(Object()))
+      }
+  if (!artifacts.isNullOrEmpty()) {
+    template.outputs(Outputs().artifacts(artifacts))
+  }
+
+  return template
 }
 
 internal fun buildWorkflowSpec(
@@ -101,7 +122,9 @@ internal fun buildWorkflow(
 ) =
     Workflow()
         .metadata(
-            V1ObjectMeta().generateName(startContainers.generateName ?: CSM_DEFAULT_WORKFLOW_NAME))
+            V1ObjectMeta()
+                .generateName(startContainers.generateName ?: CSM_DEFAULT_WORKFLOW_NAME)
+                .labels(startContainers.labels))
         .spec(buildWorkflowSpec(csmPlatformProperties, startContainers))
 
 private fun buildEntrypointTemplate(startContainers: ScenarioRunStartContainers): Template {

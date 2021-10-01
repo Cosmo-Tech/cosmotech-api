@@ -522,6 +522,9 @@ components:
         fetchDatasets:
           type: boolean
           description: whether or not the fetch dataset step is done
+        scenarioDataDownloadTransform:
+          type: boolean
+          description: whether or not the scenario data download transform step step is done
         fetchScenarioParameters:
           type: boolean
           description: whether or not the fetch parameters step is done
@@ -559,6 +562,8 @@ components:
           $ref: "#/components/schemas/RunTemplateStepSource"
         postRunSource:
           $ref: "#/components/schemas/RunTemplateStepSource"
+        scenariodataTransformSource:
+          $ref: "#/components/schemas/RunTemplateStepSource"
         parameterGroups:
           type: array
           description: the ordered list of parameters groups for the Run Template
@@ -574,7 +579,7 @@ components:
     RunTemplateHandlerId:
       type: string
       description: the Run Template step handler identifier
-      enum: ["parameters_handler","validator","prerun","engine","postrun"]
+      enum: ["parameters_handler","validator","prerun","engine","postrun","scenariodata_transform"]
     RunTemplateStepSource:
       type: string
       description: the source local or cloud

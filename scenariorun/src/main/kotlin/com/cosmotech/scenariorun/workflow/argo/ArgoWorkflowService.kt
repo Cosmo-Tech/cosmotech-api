@@ -11,6 +11,7 @@ import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
 import com.cosmotech.scenariorun.domain.ScenarioRunStatus
 import com.cosmotech.scenariorun.domain.ScenarioRunStatusNode
 import com.cosmotech.scenariorun.workflow.WorkflowService
+import com.cosmotech.scenariorun.workflow.WorkflowStatusAndArtifact
 import com.cosmotech.scenariorun.workflow.argo.api.ArgoArtifactsByUidService
 import io.argoproj.workflow.ApiClient
 import io.argoproj.workflow.ApiException
@@ -21,7 +22,9 @@ import io.argoproj.workflow.apis.WorkflowServiceApi
 import io.argoproj.workflow.models.NodeStatus
 import io.argoproj.workflow.models.Workflow
 import io.argoproj.workflow.models.WorkflowCreateRequest
+import io.argoproj.workflow.models.WorkflowList
 import io.argoproj.workflow.models.WorkflowStatus
+import java.lang.StringBuilder
 import java.security.cert.X509Certificate
 import javax.net.ssl.SSLContext
 import javax.net.ssl.X509TrustManager
@@ -212,6 +215,71 @@ internal class ArgoWorkflowService(
       logger.debug("Response headers: {}", e.responseHeaders)
       throw IllegalStateException(e)
     }
+  }
+
+  override fun findWorkflowStatusAndArtifact(
+      labelSelector: String,
+      artifactNameFilter: String
+  ): List<WorkflowStatusAndArtifact> {
+    var workflowList: WorkflowList? = null
+    try {
+      // Workflows are auto-archived and auto-deleted more frequently
+      // (as soon as they succeed or after a TTL).
+      // Therefore, it is more likely to have more archived workflows.
+      // So we are calling the ArchivedWorkflow API first, to reduce the number of round trips to
+      // Argo
+      workflowList =
+          newServiceApiInstance<ArchivedWorkflowServiceApi>(this.apiClient)
+              .archivedWorkflowServiceListArchivedWorkflows(
+                  labelSelector, null, null, null, null, null, null, null, null)
+      logger.trace("workflowList: {}", workflowList)
+    } catch (e: ApiException) {
+      val logMessage =
+          "No archived workflow found for label selector $labelSelector - trying to find in the active ones"
+      logger.debug(logMessage)
+      logger.trace(logMessage, e)
+    }
+    if (workflowList == null || workflowList.items.isNullOrEmpty()) {
+      workflowList =
+          newServiceApiInstance<WorkflowServiceApi>(this.apiClient)
+              .workflowServiceListWorkflows(
+                  csmPlatformProperties.argo.workflows.namespace,
+                  labelSelector,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null)!!
+    }
+
+    return workflowList.items?.map { workflow ->
+      val workflowId = workflow.metadata.uid!!
+      val status = workflow.status?.phase
+      val artifactContent = StringBuilder()
+      // Listing Workflows does not return everyting in each Workflow object =>
+      // need to make an additional call to Argo via getActiveWorkflow()
+      getActiveWorkflow(workflowId, workflow.metadata.name!!).status?.nodes?.forEach {
+          (nodeKey, nodeValue) ->
+        nodeValue.outputs?.artifacts?.filter { it.name == artifactNameFilter }?.forEach {
+          if (it.s3 != null) {
+            val artifactName = it.name ?: ""
+            artifactContent.append(
+                artifactsByUidService
+                    .getArtifactByUid(workflowId, nodeKey, artifactName)
+                    .execute()
+                    .body()
+                    ?: "")
+          }
+        }
+      }
+      WorkflowStatusAndArtifact(
+          workflowId = workflowId, status = status!!, artifactContent = artifactContent.toString())
+    }
+        ?: listOf()
   }
 
   override fun getScenarioRunStatus(scenarioRun: ScenarioRun): ScenarioRunStatus {

@@ -8,13 +8,17 @@ import com.azure.cosmos.models.PartitionKey
 import com.azure.cosmos.models.SqlParameter
 import com.azure.cosmos.models.SqlQuerySpec
 import com.cosmotech.api.azure.AbstractCosmosBackedService
+import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
+import com.cosmotech.api.events.ScenarioDataDownloadRequest
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.scenario.domain.Scenario
+import com.cosmotech.scenariorun.CSM_JOB_ID_LABEL_KEY
 import com.cosmotech.scenariorun.ContainerFactory
+import com.cosmotech.scenariorun.SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME
 import com.cosmotech.scenariorun.api.ScenariorunApiService
 import com.cosmotech.scenariorun.domain.RunTemplateParameterValue
 import com.cosmotech.scenariorun.domain.ScenarioRun
@@ -29,6 +33,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import kotlin.reflect.full.memberProperties
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
 
 @Service
@@ -153,6 +158,37 @@ internal class ScenarioRunServiceImpl(
               JsonNode::class.java)
           .mapNotNull { it.toDomain<ScenarioRun>() }
           .toList()
+
+  @EventListener(ScenarioDataDownloadRequest::class)
+  fun onScenarioDataDownloadRequest(scenarioDataDownloadRequest: ScenarioDataDownloadRequest) {
+    val startInfo =
+        containerFactory.getStartInfo(
+            scenarioDataDownloadRequest.organizationId,
+            scenarioDataDownloadRequest.workspaceId,
+            scenarioDataDownloadRequest.scenarioId,
+            scenarioDataDownload = true,
+            scenarioDataDownloadJobId = scenarioDataDownloadRequest.jobId)
+    logger.debug(startInfo.toString())
+    scenarioDataDownloadRequest.response =
+        workflowService
+            .launchScenarioRun(startInfo.startContainers)
+            .asMapWithAdditionalData(scenarioDataDownloadRequest.workspaceId)
+  }
+
+  @EventListener(ScenarioDataDownloadJobInfoRequest::class)
+  fun onScenarioDataDownloadJobInfoRequest(
+      scenarioDataDownloadJobInfoRequest: ScenarioDataDownloadJobInfoRequest
+  ) {
+    val jobId = scenarioDataDownloadJobInfoRequest.jobId
+    val workflowStatusAndArtifactList =
+        this.workflowService.findWorkflowStatusAndArtifact(
+            "$CSM_JOB_ID_LABEL_KEY=${jobId}", SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME)
+    if (workflowStatusAndArtifactList.isNotEmpty()) {
+      scenarioDataDownloadJobInfoRequest.response =
+          workflowStatusAndArtifactList[0].status to
+              (workflowStatusAndArtifactList[0].artifactContent ?: "")
+    }
+  }
 
   override fun runScenario(
       organizationId: String,

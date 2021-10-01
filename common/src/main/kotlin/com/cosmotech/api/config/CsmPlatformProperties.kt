@@ -71,8 +71,9 @@ data class CsmPlatformProperties(
       /** Container image to fetch Scenario Parameters */
       val scenarioFetchParameters: String,
 
-      /** Container image to send data to DataWaregouse */
+      /** Container image to send data to DataWarehouse */
       val sendDataWarehouse: String,
+      val scenarioDataUpload: String = "cosmo-tech/azure-storage-publish:latest",
   )
 
   data class Argo(
