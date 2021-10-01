@@ -567,7 +567,7 @@ internal class ContainerFactory(
     envVars[AZURE_STORAGE_CONNECTION_STRING] =
         csmPlatformProperties.azure?.storage?.connectionString!!
     envVars["AZURE_STORAGE_CONTAINER_BLOB_PREFIX"] =
-        "${organizationId}/$scenarioDataDownloadJobId".sanitizeForAzureStorage()
+        "scenariodata/$scenarioDataDownloadJobId".sanitizeForAzureStorage()
     check(csmPlatformProperties.images.scenarioDataUpload.isNotBlank())
     val imageRepoAndTag = csmPlatformProperties.images.scenarioDataUpload.split(":", limit = 2)
     val repository = imageRepoAndTag[0]
