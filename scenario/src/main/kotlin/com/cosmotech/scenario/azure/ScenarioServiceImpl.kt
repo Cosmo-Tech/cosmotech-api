@@ -289,7 +289,7 @@ internal class ScenarioServiceImpl(
         ScenarioDataDownloadRequest(this, resourceId, organizationId, workspaceId, scenario.id!!)
     this.eventPublisher.publishEvent(scenarioDataDownloadRequest)
     val scenarioDataDownloadResponse = scenarioDataDownloadRequest.response
-    // TODO Handle response
+    logger.debug("scenarioDataDownloadResponse={}", scenarioDataDownloadResponse)
     return ScenarioDataDownloadJob(id = resourceId)
   }
 
