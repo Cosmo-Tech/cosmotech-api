@@ -97,7 +97,8 @@ internal const val AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR = "AZURE_EVENT_HUB_
 internal const val AZURE_AAD_POD_ID_BINDING_LABEL = "aadpodidbinding"
 private const val SCENARIO_DATA_ABSOLUTE_PATH_ENV_VAR = "CSM_DATA_ABSOLUTE_PATH"
 private const val SCENARIO_DATA_UPLOAD_LOG_LEVEL_ENV_VAR = "CSM_LOG_LEVEL"
-private const val CSM_JOB_ID_LABEL_KEY = "com.cosmotech/job_id"
+internal const val CSM_JOB_ID_LABEL_KEY = "com.cosmotech/job_id"
+internal const val SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME = "downloadUrl"
 
 public const val CSM_DAG_ROOT = "DAG_ROOT"
 
@@ -586,7 +587,9 @@ internal class ContainerFactory(
         dependencies = dependencies,
         envVars = envVars,
         artifacts =
-            listOf(ScenarioRunContainerArtifact(name = "downloadUrl", path = "download_url")))
+            listOf(
+                ScenarioRunContainerArtifact(
+                    name = SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME, path = "download_url")))
   }
 
   private fun buildFetchScenarioParametersContainersPipeline(

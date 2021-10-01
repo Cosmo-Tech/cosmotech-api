@@ -11,6 +11,7 @@ import com.azure.cosmos.models.SqlQuerySpec
 import com.cosmotech.api.azure.AbstractCosmosBackedService
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
+import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
 import com.cosmotech.api.events.ScenarioDataDownloadRequest
 import com.cosmotech.api.events.ScenarioDatasetListChanged
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
@@ -18,6 +19,7 @@ import com.cosmotech.api.events.UserAddedToScenario
 import com.cosmotech.api.events.UserRemovedFromScenario
 import com.cosmotech.api.events.WorkflowStatusRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
+import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -25,9 +27,10 @@ import com.cosmotech.api.utils.toDomain
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
-import com.cosmotech.scenario.domain.Scenario.State
 import com.cosmotech.scenario.domain.ScenarioComparisonResult
+import com.cosmotech.scenario.domain.ScenarioDataDownloadInfo
 import com.cosmotech.scenario.domain.ScenarioDataDownloadJob
+import com.cosmotech.scenario.domain.ScenarioJobState
 import com.cosmotech.scenario.domain.ScenarioLastRun
 import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
 import com.cosmotech.scenario.domain.ScenarioUser
@@ -184,7 +187,7 @@ internal class ScenarioServiceImpl(
             creationDate = now,
             lastUpdate = now,
             users = usersWithNames,
-            state = State.Created,
+            state = ScenarioJobState.Created,
             datasetList = datasetList,
             rootId = rootId,
             parametersValues = newParametersValuesList,
@@ -384,6 +387,24 @@ internal class ScenarioServiceImpl(
     return scenario
   }
 
+  override fun getScenarioDataDownloadJobInfo(
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String,
+      downloadId: String
+  ): ScenarioDataDownloadInfo {
+    val scenario = this.findScenarioById(organizationId, workspaceId, scenarioId)
+    val scenarioDataDownloadJobInfoRequest =
+        ScenarioDataDownloadJobInfoRequest(this, downloadId, organizationId)
+    this.eventPublisher.publishEvent(scenarioDataDownloadJobInfoRequest)
+    val response =
+        scenarioDataDownloadJobInfoRequest.response
+            ?: throw CsmResourceNotFoundException(
+                "No scenario data download job found with id $downloadId for scenario ${scenario.id})")
+    return ScenarioDataDownloadInfo(
+        state = mapPhaseToState(downloadId, response.first), url = response.second)
+  }
+
   internal fun findScenarioChildrenById(
       organizationId: String,
       workspaceId: String,
@@ -443,27 +464,21 @@ internal class ScenarioServiceImpl(
       }
       val workflowStatusRequest = WorkflowStatusRequest(this, workflowId, workflowName)
       this.eventPublisher.publishEvent(workflowStatusRequest)
-      scenario.state = this.mapPhaseToState(scenario.lastRun, workflowStatusRequest)
+      scenario.state =
+          this.mapPhaseToState(scenario.lastRun?.scenarioRunId, workflowStatusRequest.response)
     }
   }
 
-  private fun mapPhaseToState(
-      scenarioLastRun: ScenarioLastRun?,
-      workflowStatusRequest: WorkflowStatusRequest
-  ): State {
-    val scenarioRunId = scenarioLastRun?.scenarioRunId
-    val phase = workflowStatusRequest.response
-    logger.debug("Mapping phase $phase for scenario run $scenarioRunId")
+  private fun mapPhaseToState(jobId: String?, phase: String?): ScenarioJobState {
+    logger.debug("Mapping phase $phase for job $jobId")
     return when (phase) {
-      "Pending", "Running" -> State.Running
-      "Succeeded" -> State.Successful
-      "Skipped", "Failed", "Error", "Omitted" -> State.Failed
+      "Pending", "Running" -> ScenarioJobState.Running
+      "Succeeded" -> ScenarioJobState.Successful
+      "Skipped", "Failed", "Error", "Omitted" -> ScenarioJobState.Failed
       else -> {
         logger.warn(
-            "Unhandled state response for scenario run {}: {} => returning Unknown as state",
-            scenarioRunId,
-            phase)
-        State.Unknown
+            "Unhandled state response for job {}: {} => returning Unknown as state", jobId, phase)
+        ScenarioJobState.Unknown
       }
     }
   }

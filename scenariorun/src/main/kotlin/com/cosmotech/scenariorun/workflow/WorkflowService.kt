@@ -17,6 +17,11 @@ internal interface WorkflowService : HealthIndicator {
    */
   fun launchScenarioRun(scenarioRunStartContainers: ScenarioRunStartContainers): ScenarioRun
 
+  fun findWorkflowStatusAndArtifact(
+      labelSelector: String,
+      artifactNameFilter: String
+  ): List<WorkflowStatusAndArtifact>
+
   /**
    * Get a ScenarioRun status
    * @param scenarioRun the ScenarioRun
@@ -39,3 +44,9 @@ internal interface WorkflowService : HealthIndicator {
    */
   fun getScenarioRunCumulatedLogs(scenarioRun: ScenarioRun): String
 }
+
+data class WorkflowStatusAndArtifact(
+    val workflowId: String,
+    val status: String,
+    val artifactContent: String? = null
+)

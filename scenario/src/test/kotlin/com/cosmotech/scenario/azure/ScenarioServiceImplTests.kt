@@ -16,6 +16,7 @@ import com.cosmotech.api.id.CsmIdGenerator
 import com.cosmotech.api.utils.getCurrentAuthentication
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.scenario.domain.Scenario
+import com.cosmotech.scenario.domain.ScenarioJobState
 import com.cosmotech.scenario.domain.ScenarioLastRun
 import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
 import com.cosmotech.solution.api.SolutionApiService
@@ -603,23 +604,23 @@ class ScenarioServiceImplTests {
 
   @TestFactory
   fun `scenario state should be set to Running when needed`() =
-      buildDynamicTestsForWorkflowPhases(Scenario.State.Running, "Pending", "Running")
+      buildDynamicTestsForWorkflowPhases(ScenarioJobState.Running, "Pending", "Running")
 
   @TestFactory
   fun `scenario state should be set to Successful when needed`() =
-      buildDynamicTestsForWorkflowPhases(Scenario.State.Successful, "Succeeded")
+      buildDynamicTestsForWorkflowPhases(ScenarioJobState.Successful, "Succeeded")
 
   @TestFactory
   fun `scenario state should be set to Failed when needed`() =
       buildDynamicTestsForWorkflowPhases(
-          Scenario.State.Failed, "Skipped", "Failed", "Error", "Omitted")
+          ScenarioJobState.Failed, "Skipped", "Failed", "Error", "Omitted")
 
   @TestFactory
   fun `PROD-7888 - scenario state should be Unknown if workflow phase is null or not known to us`() =
-      buildDynamicTestsForWorkflowPhases(Scenario.State.Unknown, null, "an-unknown-status")
+      buildDynamicTestsForWorkflowPhases(ScenarioJobState.Unknown, null, "an-unknown-status")
 
   private fun buildDynamicTestsForWorkflowPhases(
-      expectedState: Scenario.State?,
+      expectedState: ScenarioJobState?,
       vararg phases: String?
   ) =
       phases.toList().map { phase ->

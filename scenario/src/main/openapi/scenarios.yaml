@@ -464,6 +464,52 @@ paths:
                   $ref: '#/components/examples/BreweryScenarioDataDownloadJob'
         "404":
           description: the Scenario specified is unknown or you don't have access to it
+          
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/downloads/{download_id}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: scenario_id
+        in: path
+        description: the Scenario identifier
+        required: true
+        schema:
+          type: string
+      - name: download_id
+        in: path
+        description: the Scenario Download identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getScenarioDataDownloadJobInfo
+      tags:
+        - scenario
+      summary: Get Scenario data download URL
+      responses:
+        "200":
+          description: the scenario data download URL.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioDataDownloadInfo'
+              examples:
+                ScenarioDataDownloadJobInfoResponse:
+                  value:
+                    url: "https://link/to/a/file/to/download"
+                    state: "Successful"
+        "404":
+          description: the Scenario specified is unknown or you don't have access to it
 
 components:
   securitySchemes:
@@ -523,20 +569,7 @@ components:
           items:
             $ref: '#/components/schemas/ScenarioUser'
         state:
-          type: string
-          readOnly: true
-          description: the Scenario state
-          enum:
-            - Created
-            - Running
-            - Successful
-            - Failed
-            # PROD-7888 : When requesting the scenario state right after a run has been submitted,
-            # the scenario run service (e.g., Argo Workflow) might not have scheduled the run
-            # effectively yet.
-            # Furthermore, temporary communication errors might occur anytime when remotely
-            # fetching last scenario run statuses.
-            - Unknown
+          $ref: '#/components/schemas/ScenarioJobState'
         creationDate:
           type: string
           # for example, 2017-07-21T17:32:28Z
@@ -682,6 +715,16 @@ components:
           type: string
           readOnly: true
           description: the parameter value for the compared Scenario
+    ScenarioDataDownloadInfo:
+      type: object
+      description: Scenario data download job info
+      properties:
+        url:
+          type: string
+          readOnly: true
+          description: the Scenario Data Download URL
+        state:
+          $ref: '#/components/schemas/ScenarioJobState'
     ScenarioDataDownloadJob:
       type: object
       description: Scenario data download job
@@ -690,6 +733,21 @@ components:
           type: string
           readOnly: true
           description: the Scenario Data Download job identifier
+    ScenarioJobState:
+      type: string
+      readOnly: true
+      description: the Scenario job state
+      enum:
+        - Created
+        - Running
+        - Successful
+        - Failed
+        # PROD-7888 : When requesting the scenario state right after a run has been submitted,
+        # the scenario run service (e.g., Argo Workflow) might not have scheduled the run
+        # effectively yet.
+        # Furthermore, temporary communication errors might occur anytime when remotely
+        # fetching last scenario run statuses.
+        - Unknown
   examples:
     BreweryScenarioIn:
       summary: Brewery Scenario input example
