@@ -610,9 +610,24 @@ components:
           type: boolean
           readOnly: true
           description: whether or not this container is a Cosmo Tech solution container
+        artifacts:
+          type: array
+          description: the list of artifacts
+          items:
+            $ref: '#/components/schemas/ScenarioRunContainerArtifact'
       required:
         - name
         - image
+    ScenarioRunContainerArtifact:
+      type: object
+      description: a scenario run container artifact
+      properties:
+        name:
+          type: string
+          description: the artifact name
+        path:
+          type: string
+          description: the artifact path (relative to /var/csmoutput)
     ScenarioRunLogs:
       type: object
       description: the scenariorun logs returned by all containers

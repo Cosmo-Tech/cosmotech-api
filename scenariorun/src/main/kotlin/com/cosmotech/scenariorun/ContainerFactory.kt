@@ -21,6 +21,7 @@ import com.cosmotech.scenariorun.dataset.PARAMETERS_DATASET_ID
 import com.cosmotech.scenariorun.dataset.findDatasetsAndConnectors
 import com.cosmotech.scenariorun.dataset.getDatasetEnvVars
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
+import com.cosmotech.scenariorun.domain.ScenarioRunContainerArtifact
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
@@ -583,7 +584,8 @@ internal class ContainerFactory(
                 csmPlatformProperties.azure?.containerRegistries?.core ?: "", repository, tag),
         dependencies = dependencies,
         envVars = envVars,
-    )
+        artifacts =
+            listOf(ScenarioRunContainerArtifact(name = "downloadUrl", path = "download_url")))
   }
 
   private fun buildFetchScenarioParametersContainersPipeline(

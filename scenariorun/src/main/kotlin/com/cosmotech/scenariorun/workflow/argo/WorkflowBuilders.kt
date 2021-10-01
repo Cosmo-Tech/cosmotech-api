@@ -67,18 +67,25 @@ internal fun buildTemplate(scenarioRunContainer: ScenarioRunContainer): Template
     container.command(listOf(scenarioRunContainer.entrypoint))
   }
 
-  return Template()
-      .name(scenarioRunContainer.name)
-      .metadata(Metadata().labels(scenarioRunContainer.labels))
-      .container(container)
-      .addVolumesItem(V1Volume().emptyDir(V1EmptyDirVolumeSource()).name("out"))
-      .outputs(
-          Outputs()
-              .addArtifactsItem(
-                  Artifact()
-                      .name("downloadUrl")
-                      .path("/var/csmoutput/download_url")
-                      .archive(ArchiveStrategy().none(Object()))))
+  val template =
+      Template()
+          .name(scenarioRunContainer.name)
+          .metadata(Metadata().labels(scenarioRunContainer.labels))
+          .container(container)
+          .addVolumesItem(V1Volume().emptyDir(V1EmptyDirVolumeSource()).name("out"))
+
+  val artifacts =
+      scenarioRunContainer.artifacts?.map {
+        Artifact()
+            .name(it.name)
+            .path("/var/csmoutput/${it.path}")
+            .archive(ArchiveStrategy().none(Object()))
+      }
+  if (!artifacts.isNullOrEmpty()) {
+    template.outputs(Outputs().artifacts(artifacts))
+  }
+
+  return template
 }
 
 internal fun buildWorkflowSpec(
