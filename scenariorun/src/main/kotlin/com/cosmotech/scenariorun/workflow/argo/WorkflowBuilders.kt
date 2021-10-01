@@ -122,7 +122,9 @@ internal fun buildWorkflow(
 ) =
     Workflow()
         .metadata(
-            V1ObjectMeta().generateName(startContainers.generateName ?: CSM_DEFAULT_WORKFLOW_NAME))
+            V1ObjectMeta()
+                .generateName(startContainers.generateName ?: CSM_DEFAULT_WORKFLOW_NAME)
+                .labels(startContainers.labels))
         .spec(buildWorkflowSpec(csmPlatformProperties, startContainers))
 
 private fun buildEntrypointTemplate(startContainers: ScenarioRunStartContainers): Template {

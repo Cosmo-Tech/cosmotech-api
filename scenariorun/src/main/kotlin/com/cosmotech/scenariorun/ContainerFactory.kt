@@ -97,6 +97,7 @@ internal const val AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR = "AZURE_EVENT_HUB_
 internal const val AZURE_AAD_POD_ID_BINDING_LABEL = "aadpodidbinding"
 private const val SCENARIO_DATA_ABSOLUTE_PATH_ENV_VAR = "CSM_DATA_ABSOLUTE_PATH"
 private const val SCENARIO_DATA_UPLOAD_LOG_LEVEL_ENV_VAR = "CSM_LOG_LEVEL"
+private const val CSM_JOB_ID_LABEL_KEY = "com.cosmotech/job_id"
 
 public const val CSM_DAG_ROOT = "DAG_ROOT"
 
@@ -267,7 +268,7 @@ internal class ContainerFactory(
         nodeLabel = nodeLabel,
         containers = containers,
         csmSimulationId = csmSimulationId,
-    )
+        labels = mapOf(CSM_JOB_ID_LABEL_KEY to (scenarioDataDownloadJobId ?: "")))
   }
 
   @Suppress("LongMethod") // Exception for this method - too tedious to update
