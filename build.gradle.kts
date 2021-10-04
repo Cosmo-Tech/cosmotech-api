@@ -168,7 +168,7 @@ subprojects {
     implementation("com.azure:azure-core:1.20.0")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation(
-        "org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.5.2")
+        "org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.5.5")
     implementation("org.springframework.security:spring-security-jwt:1.1.1.RELEASE")
     implementation("com.azure.spring:azure-spring-boot-starter-cosmos")
     implementation("com.azure.spring:azure-spring-boot-starter-storage")
