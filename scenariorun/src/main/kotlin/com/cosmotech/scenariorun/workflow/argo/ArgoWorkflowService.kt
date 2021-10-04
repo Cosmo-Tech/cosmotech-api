@@ -260,7 +260,7 @@ internal class ArgoWorkflowService(
       val workflowId = workflow.metadata.uid!!
       val status = workflow.status?.phase
       val artifactContent = StringBuilder()
-      // Listing Workflows does not return everyting in each Workflow object =>
+      // Listing Workflows does not return everything in each Workflow object =>
       // need to make an additional call to Argo via getActiveWorkflow()
       getActiveWorkflow(workflowId, workflow.metadata.name!!).status?.nodes?.forEach {
           (nodeKey, nodeValue) ->
@@ -277,7 +277,7 @@ internal class ArgoWorkflowService(
         }
       }
       WorkflowStatusAndArtifact(
-          workflowId = workflowId, status = status!!, artifactContent = artifactContent.toString())
+          workflowId = workflowId, status = status, artifactContent = artifactContent.toString())
     }
         ?: listOf()
   }

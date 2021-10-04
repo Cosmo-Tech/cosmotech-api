@@ -47,6 +47,6 @@ internal interface WorkflowService : HealthIndicator {
 
 data class WorkflowStatusAndArtifact(
     val workflowId: String,
-    val status: String,
+    val status: String? = null,
     val artifactContent: String? = null
 )
