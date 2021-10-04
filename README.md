@@ -114,6 +114,11 @@ navigate through the API.
 
 This project comes with a set of [Helm](https://helm.sh/) Charts to make it deployable to local or remote Kubernetes clusters.
 
+### Prerequisites
+
+- [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl)
+- [Helm](https://helm.sh/docs/intro/install/)
+
 ### Azure Kubernetes Service (AKS)
 
 * Login against the container registry of your choice, like Azure Container Registries in the example below:
