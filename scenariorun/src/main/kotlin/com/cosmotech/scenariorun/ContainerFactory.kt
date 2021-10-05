@@ -4,8 +4,9 @@ package com.cosmotech.scenariorun
 
 import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.config.CsmPlatformProperties
-import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBusNamespaces.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
+import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBusNamespaces.CsmPlatformAzureEventBus
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBusNamespaces.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
+import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBusNamespaces.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
 import com.cosmotech.api.utils.sanitizeForKubernetes
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
@@ -78,8 +79,8 @@ private const val AZURE_DATA_EXPLORER_DATABASE_NAME = "AZURE_DATA_EXPLORER_DATAB
 private const val RUN_TEMPLATE_ID_VAR = "CSM_RUN_TEMPLATE_ID"
 private const val CONTAINER_MODE_VAR = "CSM_CONTAINER_MODE"
 private const val ENTRYPOINT_NAME = "entrypoint.py"
-// private const val EVENT_HUB_CONTROL_PLANE_VAR = "CSM_CONTROL_PLANE_TOPIC"
-// private const val CONTROL_PLANE_SUFFIX = "-scenariorun"
+private const val EVENT_HUB_CONTROL_PLANE_VAR = "CSM_CONTROL_PLANE_TOPIC"
+private const val CONTROL_PLANE_SUFFIX = "-scenariorun"
 private const val EVENT_HUB_MEASURES_VAR = "CSM_PROBES_MEASURES_TOPIC"
 private const val CSM_SIMULATION_VAR = "CSM_SIMULATION"
 private const val NODE_PARAM_NONE = "%NONE%"
@@ -968,7 +969,7 @@ internal class ContainerFactory(
     envVars[RUN_TEMPLATE_ID_VAR] = runTemplateId
     envVars[CONTAINER_MODE_VAR] = step.mode
     envVars[EVENT_HUB_CONTROL_PLANE_VAR] =
-        StringBuilder(csmPlatformProperties.azure?.eventBus?.scenarioruns?.baseUri)
+        StringBuilder(csmPlatformProperties.azure?.eventBusNameSpace?.scenarioruns?.baseUri)
             .append("/")
             .append(organization.id)
             .append("-")
@@ -976,12 +977,18 @@ internal class ContainerFactory(
             .append(CONTROL_PLANE_SUFFIX)
             .toString()
             .lowercase()
-    */
     envVars[EVENT_HUB_MEASURES_VAR] =
-        "${csmPlatformProperties.azure?.eventBus?.probesmeasures?.baseUri}/${organization.id}-${workspace.key}".lowercase()
+        ("${csmPlatformProperties.azure?.eventBusNameSpace?.probesmeasures?.baseUri}/" +
+                "${organization.id}-${workspace.key}").lowercase()
 
-    // TODO: VCAR SPLIT AUTH FOR EVENT BUS NAMESPACES
-    envVars.putAll(getSpecificEventBusAuthenticationEnvVars())
+    // MIG ForbiddenComment, I don't know how to fix this error
+    // so I've removed the line
+    envVars.putAll(
+        getSpecificEventBusAuthenticationEnvVars(
+            csmPlatformProperties.azure?.eventBusNameSpace?.probesmeasures!!))
+    envVars.putAll(
+        getSpecificEventBusAuthenticationEnvVars(
+            csmPlatformProperties.azure?.eventBusNameSpace?.scenarioruns!!))
 
     val csmSimulation = template.csmSimulation
     if (csmSimulation != null) {
@@ -1009,9 +1016,10 @@ internal class ContainerFactory(
     )
   }
 
-  private fun getSpecificEventBusAuthenticationEnvVars(CsmPlatformAzureEventBus: eventBus): Map<String, String> =
-      when (eventBus.authentication?.strategy
-          ?: TENANT_CLIENT_CREDENTIALS) {
+  private fun getSpecificEventBusAuthenticationEnvVars(
+      eventBus: CsmPlatformAzureEventBus
+  ): Map<String, String> =
+      when (eventBus.authentication?.strategy ?: TENANT_CLIENT_CREDENTIALS) {
         SHARED_ACCESS_POLICY -> {
           // PROD-8071, PROD-8072 : support for shared access policies in the context of a platform
           // deployed in the customer tenant.
@@ -1020,21 +1028,13 @@ internal class ContainerFactory(
           // existing env vars.
           mapOf(
               AZURE_EVENT_HUB_SHARED_ACCESS_POLICY_ENV_VAR to
-                  (eventBus
-                      ?.authentication
-                      ?.sharedAccessPolicy
-                      ?.namespace
-                      ?.name
+                  (eventBus?.authentication?.sharedAccessPolicy?.namespace?.name
                       ?: throw IllegalStateException(
                           "Missing configuration property: " +
                               "csm.platform.azure.eventBus.authentication.sharedAccessPolicy" +
                               ".namespace.name")),
               AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR to
-                  (eventBus
-                      ?.authentication
-                      ?.sharedAccessPolicy
-                      ?.namespace
-                      ?.key
+                  (eventBus?.authentication?.sharedAccessPolicy?.namespace?.key
                       ?: throw IllegalStateException(
                           "Missing configuration property: " +
                               "csm.platform.azure.eventBus.authentication.sharedAccessPolicy" +

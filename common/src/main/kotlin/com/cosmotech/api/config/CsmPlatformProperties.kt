@@ -134,7 +134,7 @@ data class CsmPlatformProperties(
       val credentials: CsmPlatformAzureCredentials,
       val storage: CsmPlatformAzureStorage,
       val containerRegistries: CsmPlatformAzureContainerRegistries,
-      val eventBus: CsmPlatformAzureEventBusNamespaces,
+      val eventBusNameSpace: CsmPlatformAzureEventBusNamespaces,
       val dataWarehouseCluster: CsmPlatformAzureDataWarehouseCluster,
       val keyVault: String,
       val analytics: CsmPlatformAzureAnalytics,
