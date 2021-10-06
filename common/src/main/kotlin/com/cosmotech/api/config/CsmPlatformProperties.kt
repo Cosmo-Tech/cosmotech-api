@@ -134,7 +134,7 @@ data class CsmPlatformProperties(
       val credentials: CsmPlatformAzureCredentials,
       val storage: CsmPlatformAzureStorage,
       val containerRegistries: CsmPlatformAzureContainerRegistries,
-      val eventBusNameSpace: CsmPlatformAzureEventBusNamespaces,
+      val eventHubNamespace: CsmPlatformAzureEventHubNamespaces,
       val dataWarehouseCluster: CsmPlatformAzureDataWarehouseCluster,
       val keyVault: String,
       val analytics: CsmPlatformAzureAnalytics,
@@ -211,11 +211,11 @@ data class CsmPlatformProperties(
 
     data class CsmPlatformAzureContainerRegistries(val core: String, val solutions: String)
 
-    data class CsmPlatformAzureEventBusNamespaces(
-        val probesmeasures: CsmPlatformAzureEventBus,
-        val scenarioruns: CsmPlatformAzureEventBus,
+    data class CsmPlatformAzureEventHubNamespaces(
+        val probesmeasures: CsmPlatformAzureEventHub,
+        val scenarioruns: CsmPlatformAzureEventHub,
     ) {
-      data class CsmPlatformAzureEventBus(
+      data class CsmPlatformAzureEventHub(
           val baseUri: String,
           val authentication: Authentication = Authentication()
       ) {

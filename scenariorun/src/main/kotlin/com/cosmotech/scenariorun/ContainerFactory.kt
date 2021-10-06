@@ -4,9 +4,9 @@ package com.cosmotech.scenariorun
 
 import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.config.CsmPlatformProperties
-import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBusNamespaces.CsmPlatformAzureEventBus
-import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBusNamespaces.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
-import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBusNamespaces.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
+import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventHubNamespaces.CsmPlatformAzureEventHub
+import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventHubNamespaces.CsmPlatformAzureEventHub.Authentication.Strategy.SHARED_ACCESS_POLICY
+import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventHubNamespaces.CsmPlatformAzureEventHub.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
 import com.cosmotech.api.utils.sanitizeForKubernetes
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
@@ -969,7 +969,7 @@ internal class ContainerFactory(
     envVars[RUN_TEMPLATE_ID_VAR] = runTemplateId
     envVars[CONTAINER_MODE_VAR] = step.mode
     envVars[EVENT_HUB_CONTROL_PLANE_VAR] =
-        StringBuilder(csmPlatformProperties.azure?.eventBusNameSpace?.scenarioruns?.baseUri)
+        StringBuilder(csmPlatformProperties.azure?.eventHubNamespace?.scenarioruns?.baseUri)
             .append("/")
             .append(organization.id)
             .append("-")
@@ -978,17 +978,18 @@ internal class ContainerFactory(
             .toString()
             .lowercase()
     envVars[EVENT_HUB_MEASURES_VAR] =
-        ("${csmPlatformProperties.azure?.eventBusNameSpace?.probesmeasures?.baseUri}/" +
-                "${organization.id}-${workspace.key}").lowercase()
+        ("${csmPlatformProperties.azure?.eventHubNamespace?.probesmeasures?.baseUri}/" +
+                "${organization.id}-${workspace.key}")
+            .lowercase()
 
     // MIG ForbiddenComment, I don't know how to fix this error
     // so I've removed the line
     envVars.putAll(
         getSpecificEventBusAuthenticationEnvVars(
-            csmPlatformProperties.azure?.eventBusNameSpace?.probesmeasures!!))
+            csmPlatformProperties.azure?.eventHubNamespace?.probesmeasures!!))
     envVars.putAll(
         getSpecificEventBusAuthenticationEnvVars(
-            csmPlatformProperties.azure?.eventBusNameSpace?.scenarioruns!!))
+            csmPlatformProperties.azure?.eventHubNamespace?.scenarioruns!!))
 
     val csmSimulation = template.csmSimulation
     if (csmSimulation != null) {
@@ -1017,7 +1018,7 @@ internal class ContainerFactory(
   }
 
   private fun getSpecificEventBusAuthenticationEnvVars(
-      eventBus: CsmPlatformAzureEventBus
+      eventBus: CsmPlatformAzureEventHub
   ): Map<String, String> =
       when (eventBus.authentication?.strategy ?: TENANT_CLIENT_CREDENTIALS) {
         SHARED_ACCESS_POLICY -> {

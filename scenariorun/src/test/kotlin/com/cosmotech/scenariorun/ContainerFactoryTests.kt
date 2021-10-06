@@ -5,12 +5,12 @@ package com.cosmotech.scenariorun
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCredentials
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCredentials.CsmPlatformAzureCredentialsCore
-import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBusNamespaces.CsmPlatformAzureEventBus
-import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBusNamespaces.CsmPlatformAzureEventBus.Authentication
-import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBusNamespaces.CsmPlatformAzureEventBus.Authentication.SharedAccessPolicyCredentials
-import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBusNamespaces.CsmPlatformAzureEventBus.Authentication.SharedAccessPolicyDetails
-import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBusNamespaces.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
-import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBusNamespaces.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
+import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventHubNamespaces.CsmPlatformAzureEventHub
+import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventHubNamespaces.CsmPlatformAzureEventHub.Authentication
+import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventHubNamespaces.CsmPlatformAzureEventHub.Authentication.SharedAccessPolicyCredentials
+import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventHubNamespaces.CsmPlatformAzureEventHub.Authentication.SharedAccessPolicyDetails
+import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventHubNamespaces.CsmPlatformAzureEventHub.Authentication.Strategy.SHARED_ACCESS_POLICY
+import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventHubNamespaces.CsmPlatformAzureEventHub.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.connector.domain.Connector.IoTypes
@@ -88,8 +88,8 @@ class ContainerFactoryTests {
                     tenantId = "customer-app-registration-tenantId",
                     clientId = "customer-app-registration-clientId",
                     clientSecret = "customer-app-registration-clientSecret"))
-    every { azure.eventBusNameSpace.probesmeasures } returns
-        CsmPlatformAzureEventBus(
+    every { azure.eventHubNamespace.probesmeasures } returns
+        CsmPlatformAzureEventHub(
             baseUri = "amqps://csm-phoenix.servicebus.windows.net",
         )
     every { azure.dataWarehouseCluster } returns
@@ -1669,8 +1669,8 @@ class ContainerFactoryTests {
 
   @Test
   fun `PROD-8072- Tenant credentials are set as env vars to solution container by default`() {
-    every { azure.eventBusNameSpace.scenarioruns } returns
-        CsmPlatformAzureEventBus(
+    every { azure.eventHubNamespace.scenarioruns } returns
+        CsmPlatformAzureEventHub(
             baseUri = "amqps://csm-phoenix.servicebus.windows.net",
         )
 
@@ -1703,8 +1703,8 @@ class ContainerFactoryTests {
 
   @Test
   fun `PROD-8072- Tenant credentials are set as env vars to solution container if told so`() {
-    every { azure.eventBusNameSpace.scenarioruns } returns
-        CsmPlatformAzureEventBus(
+    every { azure.eventHubNamespace.scenarioruns } returns
+        CsmPlatformAzureEventHub(
             baseUri = "amqps://csm-phoenix.servicebus.windows.net",
             authentication = Authentication(strategy = TENANT_CLIENT_CREDENTIALS))
 
@@ -1738,8 +1738,8 @@ class ContainerFactoryTests {
 
   @Test
   fun `PROD-8072- Shared Access key set as env vars to solution container if told so`() {
-    every { azure.eventBusNameSpace.scenarioruns } returns
-        CsmPlatformAzureEventBus(
+    every { azure.eventHubNamespace.scenarioruns } returns
+        CsmPlatformAzureEventHub(
             baseUri = "amqps://csm-phoenix.servicebus.windows.net",
             authentication =
                 Authentication(
@@ -1780,8 +1780,8 @@ class ContainerFactoryTests {
 
   @Test
   fun `PROD-8072- Exception if Shared Access Policy strategy but no credentials configured`() {
-    every { azure.eventBusNameSpace.scenarioruns } returns
-        CsmPlatformAzureEventBus(
+    every { azure.eventHubNamespace.scenarioruns } returns
+        CsmPlatformAzureEventHub(
             baseUri = "amqps://csm-phoenix.servicebus.windows.net",
             authentication = Authentication(strategy = SHARED_ACCESS_POLICY))
 

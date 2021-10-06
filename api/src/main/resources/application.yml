@@ -116,7 +116,7 @@ csm:
       containerRegistries:
         core: ghcr.io
         solutions: ""
-      eventBus:
+      eventHubNamespace:
         probesmeasures:
           baseUri: ""
           # One of 'tenant_client_credentials' or 'shared_access_policy'.
