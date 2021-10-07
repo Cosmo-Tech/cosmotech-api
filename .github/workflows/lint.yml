@@ -82,57 +82,30 @@ jobs:
     runs-on: ubuntu-latest
     # TODO Errors purposely ignored for now.
     continue-on-error: true
+    strategy:
+      matrix:
+        chart:
+          - csm-argo
+          - helm-chart
 
     steps:
       - uses: actions/checkout@v2.3.4
 
-      - uses: actions/setup-go@v2.1.4
-        with:
-          go-version: '^1.17'
-
-      - run: go version
-
-      # Needed as the SARIF format is not supported via the KubeLinter GitHub Action
-      # Maybe open an issue in KubeLinter Action ?
-      - name: Download KubeLinter
-        env:
-          GO111MODULE: 'on'
-        run: go install golang.stackrox.io/kube-linter/cmd/kube-linter@latest
-
-      - run: kube-linter version
-
       - run: mkdir -p api/kubernetes/.sarif
 
-      - name: Lint Helm Chart (api) with KubeLinter
-        # TODO Errors purposely ignored for now.
-        run: |
-          kube-linter \
-            --config api/kubernetes/.kube-linter.yaml \
-            lint \
-            --format sarif \
-            api/kubernetes/helm-chart \
-          | jq | tee api/kubernetes/.sarif/helm-chart.sarif || true
-
-      # This is needed because the Helm Chart name does not match the folder name.
-      # Maybe open an issue in KubeLinter ?
-      - name: Fix artifact location URI in the SARIF reports (api)
-        if: ${{ always() }}
-        run: |
-          sed -i 's/api\/kubernetes\/cosmotech-api\//api\/kubernetes\/helm-chart\//g' \
-            api/kubernetes/.sarif/helm-chart.sarif
-
-      - name: Lint Helm Chart (csm-argo) with KubeLinter
-        # TODO Errors purposely ignored for now.
-        run: |
-          kube-linter \
-            --config api/kubernetes/.kube-linter.yaml \
-            lint \
-            --format sarif \
-            api/kubernetes/csm-argo \
-          | jq | tee api/kubernetes/.sarif/csm-argo.sarif || true
-
-      - name: Upload SARIF reports to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v1
-        if: ${{ always() }}
+      - name: Scan '${{ matrix.chart }}' Chart with kube-linter
+        uses: stackrox/kube-linter-action@v1.0.4
+        continue-on-error: true
         with:
-          sarif_file: 'api/kubernetes/.sarif/'
+          directory: api/kubernetes/${{ matrix.chart }}
+          config: api/kubernetes/.kube-linter.yaml
+          format: sarif
+          output-file: api/kubernetes/.sarif/${{ matrix.chart }}.sarif
+          version: 0.2.5
+
+      - name: Upload SARIF file
+        if: ${{ always() }}
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: api/kubernetes/.sarif/${{ matrix.chart }}.sarif
+
