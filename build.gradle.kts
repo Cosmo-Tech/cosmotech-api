@@ -102,6 +102,8 @@ subprojects {
   val integrationTestImplementation by configurations.getting {
     extendsFrom(configurations.testImplementation.get())
   }
+
+  @Suppress("UNUSED_VARIABLE")
   val integrationTestRuntimeOnly by configurations.getting {
     extendsFrom(configurations.testRuntimeOnly.get())
   }
