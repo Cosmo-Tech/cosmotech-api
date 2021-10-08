@@ -1,3 +1,5 @@
+// Copyright (c) Cosmo Tech.
+// Licensed under the MIT license.
 import com.google.cloud.tools.jib.gradle.JibTask
 import com.rameshkp.openapi.merger.gradle.task.OpenApiMergerTask
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
