@@ -81,6 +81,7 @@ private const val CONTAINER_MODE_VAR = "CSM_CONTAINER_MODE"
 private const val ENTRYPOINT_NAME = "entrypoint.py"
 private const val EVENT_HUB_CONTROL_PLANE_VAR = "CSM_CONTROL_PLANE_TOPIC"
 private const val CONTROL_PLANE_SUFFIX = "-scenariorun"
+private const val PROBE_MEASURES_SUFFIX = "-probe"
 private const val EVENT_HUB_MEASURES_VAR = "CSM_PROBES_MEASURES_TOPIC"
 private const val CSM_SIMULATION_VAR = "CSM_SIMULATION"
 private const val NODE_PARAM_NONE = "%NONE%"
@@ -968,8 +969,16 @@ internal class ContainerFactory(
             csmPlatformProperties, csmSimulationId, organization.id ?: "", workspace.key)
     envVars[RUN_TEMPLATE_ID_VAR] = runTemplateId
     envVars[CONTAINER_MODE_VAR] = step.mode
+
+    val baseUri =
+        StringBuilder("amqps://")
+            .append(organization.id)
+            .append("-")
+            .append(workspace.key)
+            .append(".servicebus.windows.net")
+
     envVars[EVENT_HUB_CONTROL_PLANE_VAR] =
-        StringBuilder(csmPlatformProperties.azure?.eventHubNamespace?.scenarioruns?.baseUri)
+        StringBuilder(baseUri)
             .append("/")
             .append(organization.id)
             .append("-")
@@ -978,8 +987,13 @@ internal class ContainerFactory(
             .toString()
             .lowercase()
     envVars[EVENT_HUB_MEASURES_VAR] =
-        ("${csmPlatformProperties.azure?.eventHubNamespace?.probesmeasures?.baseUri}/" +
-                "${organization.id}-${workspace.key}")
+        StringBuilder(baseUri)
+            .append("/")
+            .append(organization.id)
+            .append("-")
+            .append(workspace.key)
+            .append(PROBE_MEASURES_SUFFIX)
+            .toString()
             .lowercase()
 
     // MIG ForbiddenComment, I don't know how to fix this error
