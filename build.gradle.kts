@@ -28,7 +28,7 @@ plugins {
   id("io.gitlab.arturbosch.detekt") version "1.18.1"
 }
 
-val javaToolchainVersion = 16
+val kotlinJvmTarget = 16
 
 allprojects {
   apply(plugin = "com.diffplug.spotless")
@@ -91,7 +91,7 @@ subprojects {
     apply(plugin = "com.google.cloud.tools.jib")
   }
 
-  java { toolchain { languageVersion.set(JavaLanguageVersion.of(javaToolchainVersion)) } }
+  java { toolchain { languageVersion.set(JavaLanguageVersion.of(kotlinJvmTarget)) } }
 
   sourceSets {
     create("integrationTest") {
@@ -106,13 +106,11 @@ subprojects {
     extendsFrom(configurations.testRuntimeOnly.get())
   }
 
-  val kotlinJvmTarget = "11"
-
   tasks.withType<Detekt> {
     buildUponDefaultConfig = true // preconfigure defaults
     allRules = false // activate all available (even unstable) rules.
     config.from(file("$rootDir/.detekt/detekt.yaml"))
-    jvmTarget = kotlinJvmTarget
+    jvmTarget = kotlinJvmTarget.toString()
     ignoreFailures = project.findProperty("detekt.ignoreFailures")?.toString()?.toBoolean() ?: false
     // Specify the base path for file paths in the formatted reports.
     // If not set, all file paths reported will be absolute file path.
@@ -207,8 +205,8 @@ subprojects {
     kotlinOptions {
       languageVersion = "1.5"
       freeCompilerArgs = listOf("-Xjsr305=strict")
-      jvmTarget = kotlinJvmTarget
-      java { toolchain { languageVersion.set(JavaLanguageVersion.of(javaToolchainVersion)) } }
+      jvmTarget = kotlinJvmTarget.toString()
+      java { toolchain { languageVersion.set(JavaLanguageVersion.of(kotlinJvmTarget)) } }
     }
   }
 
