@@ -177,7 +177,7 @@ subprojects {
     // transitively,
     // but its version is incompatible at runtime with what is expected by
     // spring-security-oauth2-jose
-    implementation("com.nimbusds:nimbus-jose-jwt:9.15.2")
+    implementation("com.nimbusds:nimbus-jose-jwt:9.16-preview.1")
     implementation("org.springframework.security:spring-security-oauth2-jose:5.5.2")
     implementation("org.springframework.security:spring-security-oauth2-resource-server:5.5.2")
     //    implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
