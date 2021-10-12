@@ -147,6 +147,8 @@ argo:
 config:
   csm:
     platform:
+      api:
+        version: "latest"
       vendor: azure
       argo:
         base-uri: "http://argo-server:2746"
