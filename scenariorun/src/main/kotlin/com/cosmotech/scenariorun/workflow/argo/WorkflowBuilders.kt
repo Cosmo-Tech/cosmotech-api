@@ -113,7 +113,7 @@ internal fun buildWorkflowSpec(
       .serviceAccountName(csmPlatformProperties.argo.workflows.serviceAccountName)
       .entrypoint(CSM_DAG_ENTRYPOINT)
       .templates(templates)
-      .volumeClaimTemplates(buildVolumeClaims())
+      .volumeClaimTemplates(buildVolumeClaims(csmPlatformProperties.api.version!!))
 }
 
 internal fun buildWorkflow(
@@ -150,7 +150,7 @@ private fun buildEntrypointTemplate(startContainers: ScenarioRunStartContainers)
   return dagTemplate
 }
 
-private fun buildVolumeClaims(): List<V1PersistentVolumeClaim> {
+private fun buildVolumeClaims(version: String): List<V1PersistentVolumeClaim> {
   // Azure file storage minimal claim is 100Gi for Premium classes
   val dataDir =
       V1PersistentVolumeClaim()
@@ -158,7 +158,7 @@ private fun buildVolumeClaims(): List<V1PersistentVolumeClaim> {
           .spec(
               V1PersistentVolumeClaimSpec()
                   .accessModes(listOf("ReadWriteMany"))
-                  .storageClassName("phoenix-azurefile")
+                  .storageClassName("phoenix-azurefile-${version}")
                   .resources(
                       V1ResourceRequirements().requests(mapOf("storage" to Quantity("100Gi")))))
   return listOf(dataDir)

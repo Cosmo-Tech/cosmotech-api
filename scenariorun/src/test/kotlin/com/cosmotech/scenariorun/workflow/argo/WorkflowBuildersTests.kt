@@ -375,6 +375,7 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow spec with StartContainers volume claim`() {
     val sc = getStartContainersDiamond()
+    every { csmPlatformProperties.api.version } returns "test"
     val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc)
     val dataDir =
         V1PersistentVolumeClaim()
@@ -382,7 +383,7 @@ class WorkflowBuildersTests {
             .spec(
                 V1PersistentVolumeClaimSpec()
                     .accessModes(listOf("ReadWriteMany"))
-                    .storageClassName("phoenix-azurefile")
+                    .storageClassName("phoenix-azurefile-test")
                     .resources(
                         V1ResourceRequirements().requests(mapOf("storage" to Quantity("100Gi")))))
     val expected = listOf(dataDir)
