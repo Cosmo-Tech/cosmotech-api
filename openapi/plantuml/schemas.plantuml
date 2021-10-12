@@ -390,6 +390,7 @@ entity Workspace {
     users: List<WorkspaceUser>
     webApp: WorkspaceWebApp
     sendInputToDataWarehouse: Boolean
+    useOneEventHub: Boolean
 }
 
 entity WorkspaceFile { 
