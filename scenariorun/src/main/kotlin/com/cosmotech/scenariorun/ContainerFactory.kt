@@ -970,50 +970,15 @@ internal class ContainerFactory(
     envVars[RUN_TEMPLATE_ID_VAR] = runTemplateId
     envVars[CONTAINER_MODE_VAR] = step.mode
 
-    val baseUri =
-        StringBuilder("amqps://")
-            .append(organization.id)
-            .append("-")
-            .append(workspace.key)
-            .append(".servicebus.windows.net")
-
-    if (workspace.useOneEventHub == true) {
-      envVars[EVENT_HUB_CONTROL_PLANE_VAR] =
-          StringBuilder(baseUri)
-              .append("/")
-              .append(organization.id)
-              .append("-")
-              .append(workspace.key)
-              .toString()
-              .lowercase()
-    } else {
-      envVars[EVENT_HUB_CONTROL_PLANE_VAR] =
-          StringBuilder(baseUri)
-              .append("/")
-              .append(organization.id)
-              .append("-")
-              .append(workspace.key)
-              .append(CONTROL_PLANE_SUFFIX)
-              .toString()
-              .lowercase()
-      envVars[EVENT_HUB_MEASURES_VAR] =
-          StringBuilder(baseUri)
-              .append("/")
-              .append(organization.id)
-              .append("-")
-              .append(workspace.key)
-              .append(PROBE_MEASURES_SUFFIX)
-              .toString()
-              .lowercase()
-    }
+    buildEventHubPath(organization, workspace, envVars)
 
     // MIG ForbiddenComment, I don't know how to fix this error
     // so I've removed the line
     envVars.putAll(
-        getSpecificEventBusAuthenticationEnvVars(
+        getSpecificEventHubAuthenticationEnvVars(
             csmPlatformProperties.azure?.eventHubNamespace?.probesmeasures!!))
     envVars.putAll(
-        getSpecificEventBusAuthenticationEnvVars(
+        getSpecificEventHubAuthenticationEnvVars(
             csmPlatformProperties.azure?.eventHubNamespace?.scenarioruns!!))
 
     val csmSimulation = template.csmSimulation
@@ -1042,7 +1007,51 @@ internal class ContainerFactory(
     )
   }
 
-  private fun getSpecificEventBusAuthenticationEnvVars(
+  private fun buildEventHubPath(
+      organization: Organization,
+      workspace: Workspace,
+      envVars: MutableMap<String, String>
+  ) {
+    if (workspace.useOneEventHub == true) {
+      var baseUri = "amqps://csm-phoenix.servicebus.windows.net"
+      envVars[EVENT_HUB_MEASURES_VAR] =
+          StringBuilder(baseUri)
+              .append("/")
+              .append(organization.id)
+              .append("-")
+              .append(workspace.key)
+              .toString()
+              .lowercase()
+    } else {
+      var baseUri =
+              StringBuilder("amqps://")
+                      .append(organization.id)
+                      .append("-")
+                      .append(workspace.key)
+                      .append(".servicebus.windows.net")
+
+      envVars[EVENT_HUB_CONTROL_PLANE_VAR] =
+          StringBuilder(baseUri)
+              .append("/")
+              .append(organization.id)
+              .append("-")
+              .append(workspace.key)
+              .append(CONTROL_PLANE_SUFFIX)
+              .toString()
+              .lowercase()
+      envVars[EVENT_HUB_MEASURES_VAR] =
+          StringBuilder(baseUri)
+              .append("/")
+              .append(organization.id)
+              .append("-")
+              .append(workspace.key)
+              .append(PROBE_MEASURES_SUFFIX)
+              .toString()
+              .lowercase()
+    }
+  }
+
+  private fun getSpecificEventHubAuthenticationEnvVars(
       eventBus: CsmPlatformAzureEventHub
   ): Map<String, String> =
       when (eventBus.authentication?.strategy ?: TENANT_CLIENT_CREDENTIALS) {

@@ -744,6 +744,10 @@ class ContainerFactoryTests {
       resource: String,
       runTemplate: String,
   ) {
+    val prefix = when(getWorkspace().useOneEventHub) {
+      true -> "csm-phoenix"
+      else -> "organizationid-test"
+    }
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -761,7 +765,7 @@ class ContainerFactoryTests {
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to mode,
             "CSM_PROBES_MEASURES_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
+                "amqps://${prefix}.servicebus.windows.net/organizationid-test",
             "CSM_SIMULATION" to "TestSimulation",
             providerEnvVar to "azureStorage",
             "AZURE_STORAGE_CONNECTION_STRING" to "csmphoenix_storage_connection_string",
@@ -775,6 +779,10 @@ class ContainerFactoryTests {
       mode: String,
       providerEnvVar: String
   ) {
+    val prefix = when(getWorkspace().useOneEventHub) {
+      true -> "csm-phoenix"
+      else -> "organizationid-test"
+    }
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -792,7 +800,7 @@ class ContainerFactoryTests {
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to mode,
             "CSM_PROBES_MEASURES_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
+                "amqps://${prefix}.servicebus.windows.net/organizationid-test",
             "CSM_SIMULATION" to "TestSimulation",
             providerEnvVar to "local",
             "AZURE_STORAGE_CONNECTION_STRING" to "csmphoenix_storage_connection_string",
@@ -1679,6 +1687,10 @@ class ContainerFactoryTests {
     assertNotNull(container.envVars)
     assertFalse { container.envVars!!.containsKey(AZURE_EVENT_HUB_SHARED_ACCESS_POLICY_ENV_VAR) }
     assertFalse { container.envVars!!.containsKey(AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR) }
+    val prefix = when(getWorkspace().useOneEventHub) {
+      true -> "csm-phoenix"
+      else -> "organizationid-test"
+    }
     assertEquals(
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -1696,7 +1708,7 @@ class ContainerFactoryTests {
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to "handle-parameters",
             "CSM_PROBES_MEASURES_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
+                "amqps://${prefix}.servicebus.windows.net/organizationid-test",
             "CSM_SIMULATION" to "TestSimulation"),
         container.envVars)
   }
@@ -1714,6 +1726,10 @@ class ContainerFactoryTests {
     assertFalse { container.envVars!!.containsKey(AZURE_EVENT_HUB_SHARED_ACCESS_POLICY_ENV_VAR) }
     assertFalse { container.envVars!!.containsKey(AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR) }
 
+    val prefix = when(getWorkspace().useOneEventHub) {
+      true -> "csm-phoenix"
+      else -> "organizationid-test"
+    }
     assertEquals(
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -1731,7 +1747,7 @@ class ContainerFactoryTests {
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to "prerun",
             "CSM_PROBES_MEASURES_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
+                "amqps://${prefix}.servicebus.windows.net/organizationid-test",
             "CSM_SIMULATION" to "TestSimulation"),
         container.envVars)
   }
@@ -1754,6 +1770,10 @@ class ContainerFactoryTests {
 
     assertNotNull(container.envVars)
 
+    val prefix = when(getWorkspace().useOneEventHub) {
+      true -> "csm-phoenix"
+      else -> "organizationid-test"
+    }
     assertEquals(
         mapOf(
             "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to "my-eventhub-access-policy",
@@ -1773,7 +1793,7 @@ class ContainerFactoryTests {
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to "engine",
             "CSM_PROBES_MEASURES_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
+                "amqps://${prefix}.servicebus.windows.net/organizationid-test",
             "CSM_SIMULATION" to "TestSimulation"),
         container.envVars)
   }
@@ -1878,6 +1898,10 @@ class ContainerFactoryTests {
   }
 
   private fun validateEnvVarsSolutionContainer(container: ScenarioRunContainer?, mode: String) {
+    val prefix = when(getWorkspace().useOneEventHub) {
+      true -> "csm-phoenix"
+      else -> "organizationid-test"
+    }
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -1895,7 +1919,7 @@ class ContainerFactoryTests {
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to mode,
             "CSM_PROBES_MEASURES_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
+                "amqps://${prefix}.servicebus.windows.net/organizationid-test",
             "CSM_SIMULATION" to "TestSimulation")
     assertEquals(expected, container?.envVars)
   }
@@ -2111,6 +2135,7 @@ class ContainerFactoryTests {
             WorkspaceSolution(
                 solutionId = "1",
             ),
+        useOneEventHub = true,
     )
   }
 
