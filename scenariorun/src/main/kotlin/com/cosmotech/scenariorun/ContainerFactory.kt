@@ -1024,11 +1024,11 @@ internal class ContainerFactory(
               .lowercase()
     } else {
       var baseUri =
-              StringBuilder("amqps://")
-                      .append(organization.id)
-                      .append("-")
-                      .append(workspace.key)
-                      .append(".servicebus.windows.net")
+          StringBuilder("amqps://")
+              .append(organization.id)
+              .append("-")
+              .append(workspace.key)
+              .append(".servicebus.windows.net")
 
       envVars[EVENT_HUB_CONTROL_PLANE_VAR] =
           StringBuilder(baseUri)

@@ -744,10 +744,11 @@ class ContainerFactoryTests {
       resource: String,
       runTemplate: String,
   ) {
-    val prefix = when(getWorkspace().useOneEventHub) {
-      true -> "csm-phoenix"
-      else -> "organizationid-test"
-    }
+    val prefix =
+        when (getWorkspace().useOneEventHub) {
+          true -> "csm-phoenix"
+          else -> "organizationid-test"
+        }
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -779,10 +780,11 @@ class ContainerFactoryTests {
       mode: String,
       providerEnvVar: String
   ) {
-    val prefix = when(getWorkspace().useOneEventHub) {
-      true -> "csm-phoenix"
-      else -> "organizationid-test"
-    }
+    val prefix =
+        when (getWorkspace().useOneEventHub) {
+          true -> "csm-phoenix"
+          else -> "organizationid-test"
+        }
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -1687,10 +1689,11 @@ class ContainerFactoryTests {
     assertNotNull(container.envVars)
     assertFalse { container.envVars!!.containsKey(AZURE_EVENT_HUB_SHARED_ACCESS_POLICY_ENV_VAR) }
     assertFalse { container.envVars!!.containsKey(AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR) }
-    val prefix = when(getWorkspace().useOneEventHub) {
-      true -> "csm-phoenix"
-      else -> "organizationid-test"
-    }
+    val prefix =
+        when (getWorkspace().useOneEventHub) {
+          true -> "csm-phoenix"
+          else -> "organizationid-test"
+        }
     assertEquals(
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -1726,10 +1729,11 @@ class ContainerFactoryTests {
     assertFalse { container.envVars!!.containsKey(AZURE_EVENT_HUB_SHARED_ACCESS_POLICY_ENV_VAR) }
     assertFalse { container.envVars!!.containsKey(AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR) }
 
-    val prefix = when(getWorkspace().useOneEventHub) {
-      true -> "csm-phoenix"
-      else -> "organizationid-test"
-    }
+    val prefix =
+        when (getWorkspace().useOneEventHub) {
+          true -> "csm-phoenix"
+          else -> "organizationid-test"
+        }
     assertEquals(
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -1770,10 +1774,11 @@ class ContainerFactoryTests {
 
     assertNotNull(container.envVars)
 
-    val prefix = when(getWorkspace().useOneEventHub) {
-      true -> "csm-phoenix"
-      else -> "organizationid-test"
-    }
+    val prefix =
+        when (getWorkspace().useOneEventHub) {
+          true -> "csm-phoenix"
+          else -> "organizationid-test"
+        }
     assertEquals(
         mapOf(
             "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to "my-eventhub-access-policy",
@@ -1898,10 +1903,11 @@ class ContainerFactoryTests {
   }
 
   private fun validateEnvVarsSolutionContainer(container: ScenarioRunContainer?, mode: String) {
-    val prefix = when(getWorkspace().useOneEventHub) {
-      true -> "csm-phoenix"
-      else -> "organizationid-test"
-    }
+    val prefix =
+        when (getWorkspace().useOneEventHub) {
+          true -> "csm-phoenix"
+          else -> "organizationid-test"
+        }
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
