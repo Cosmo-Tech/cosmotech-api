@@ -480,6 +480,10 @@ components:
         sendInputToDataWarehouse:
           type: boolean
           description: default setting for all Scenarios and Run Templates to set whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to the ScenarioRun
+        useOneEventHub:
+          type: boolean
+          default: true
+          description: default setting for workspaces, set this property to false to use one EventHub for the the scenario run and one for the probe measures
       required:
         - key
         - name

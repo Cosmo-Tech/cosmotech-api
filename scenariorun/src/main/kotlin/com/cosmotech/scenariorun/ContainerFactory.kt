@@ -977,24 +977,35 @@ internal class ContainerFactory(
             .append(workspace.key)
             .append(".servicebus.windows.net")
 
-    envVars[EVENT_HUB_CONTROL_PLANE_VAR] =
-        StringBuilder(baseUri)
-            .append("/")
-            .append(organization.id)
-            .append("-")
-            .append(workspace.key)
-            .append(CONTROL_PLANE_SUFFIX)
-            .toString()
-            .lowercase()
-    envVars[EVENT_HUB_MEASURES_VAR] =
-        StringBuilder(baseUri)
-            .append("/")
-            .append(organization.id)
-            .append("-")
-            .append(workspace.key)
-            .append(PROBE_MEASURES_SUFFIX)
-            .toString()
-            .lowercase()
+    if (workspace.useOneEventHub == true) {
+      envVars[EVENT_HUB_CONTROL_PLANE_VAR] =
+          StringBuilder(baseUri)
+              .append("/")
+              .append(organization.id)
+              .append("-")
+              .append(workspace.key)
+              .toString()
+              .lowercase()
+    } else {
+      envVars[EVENT_HUB_CONTROL_PLANE_VAR] =
+          StringBuilder(baseUri)
+              .append("/")
+              .append(organization.id)
+              .append("-")
+              .append(workspace.key)
+              .append(CONTROL_PLANE_SUFFIX)
+              .toString()
+              .lowercase()
+      envVars[EVENT_HUB_MEASURES_VAR] =
+          StringBuilder(baseUri)
+              .append("/")
+              .append(organization.id)
+              .append("-")
+              .append(workspace.key)
+              .append(PROBE_MEASURES_SUFFIX)
+              .toString()
+              .lowercase()
+    }
 
     // MIG ForbiddenComment, I don't know how to fix this error
     // so I've removed the line
