@@ -1,7 +1,7 @@
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
-  name: phoenix-azurefile
+  name: phoenix-azurefile-{{ .Values.api.version }}
 provisioner: {{ .Values.argo.storage.class.provisioner }}
 mountOptions:
   {{- range .Values.argo.storage.class.mountOptions }}
