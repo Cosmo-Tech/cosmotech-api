@@ -139,7 +139,8 @@ csm:
       {{- else }}
       image-pull-secrets: []
       {{- end }}
-      storage-class: {{ include "cosmotech-api.fullname" . }}-{{ .Release.Namespace }}
+      workflows:
+        storage-class: {{ include "cosmotech-api.fullname" . }}-{{ .Release.Namespace }}
     {{- if eq .Values.config.csm.platform.vendor "azure" }}
     azure:
       containerRegistries:
