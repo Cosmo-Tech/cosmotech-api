@@ -62,7 +62,6 @@ csm:
       # Might conflict with the SpringBoot context path, hence leaving it at the root
       base-path: /
       base-url: "http://cosmotech-api-${csm.platform.api.version}:8080"
-      version: latest
     id-generator:
       type: hashid
     event-publisher:
@@ -71,6 +70,7 @@ csm:
       base-uri: "https://localhost:2746"
       image-pull-secrets: []
       workflows:
+        storage-class: "phoenix-azurefile"
         namespace: phoenix
         node-pool-label: agentpool
         service-account-name: workflow
