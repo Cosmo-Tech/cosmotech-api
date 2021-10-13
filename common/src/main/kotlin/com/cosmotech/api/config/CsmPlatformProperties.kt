@@ -94,7 +94,10 @@ data class CsmPlatformProperties(
         val nodePoolLabel: String,
 
         /** The Kubernetes service account name */
-        val serviceAccountName: String
+        val serviceAccountName: String,
+
+        /** The Kubernetes storage-class to use for volume claims */
+        val storageClass: String,
     )
   }
 
