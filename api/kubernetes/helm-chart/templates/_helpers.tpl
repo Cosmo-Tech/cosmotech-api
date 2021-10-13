@@ -132,7 +132,6 @@ csm:
       # API Base Path for OpenAPI-generated controllers.
       # Might conflict with the SpringBoot context path, hence leaving it at the root
       base-path: /
-      version: "{{ .Values.api.version }}"
     argo:
       {{- if .Values.argo.imageCredentials.registry }}
       image-pull-secrets:
@@ -140,6 +139,7 @@ csm:
       {{- else }}
       image-pull-secrets: []
       {{- end }}
+      storage-class: {{ include "cosmotech-api.fullname" . }}-{{ .Release.Namespace }}
     {{- if eq .Values.config.csm.platform.vendor "azure" }}
     azure:
       containerRegistries:
