@@ -150,6 +150,7 @@ config:
       vendor: azure
       argo:
         base-uri: "http://argo-server:2746"
+        storage-class: "phoenix-azurefile"
       authorization:
         allowed-tenants: []
       azure:
