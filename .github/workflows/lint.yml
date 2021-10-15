@@ -25,17 +25,13 @@ jobs:
       with:
         distribution: 'adopt'
         java-version: '16'
-        cache: 'gradle'
 
     - name: Check with Spotless
-      run: ./gradlew --info spotlessCheck
-
-    # The OpenAPI Generator Gradle Plugin exposes an 'openApiValidate' task,
-    # but at this time, it does not work with Gradle 7.0.
-    # See https://github.com/OpenAPITools/openapi-generator/issues/9328
-    # A separate dedicated job is available in the 'openapi.yml' Workflow
-  #    - name: Validate OpenAPI spec definitions
-#      run: ./gradlew openApiValidate --info
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: gradle/gradle-build-action@v2
+      with:
+        arguments: --info spotlessCheck
 
   detekt:
     runs-on: ubuntu-latest
@@ -50,10 +46,13 @@ jobs:
         with:
           distribution: 'adopt'
           java-version: '16'
-          cache: 'gradle'
 
       - name: Check with Detekt
-        run: ./gradlew --info detekt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: --info detekt
 
       - name: Upload SARIF reports to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v1
