@@ -332,7 +332,7 @@ subprojects {
     }
 
     configure<JibExtension> {
-      from { image = "openjdk:16-alpine" }
+      from { image = "eclipse-temurin:17-alpine" }
       to { image = "${project.group}/${project.name}:${project.version}" }
       container {
         format = OCI
