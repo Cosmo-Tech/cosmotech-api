@@ -126,6 +126,12 @@ jobs:
         with:
           version: v3.6.0
 
+      - name: Install envsubst
+        run: |
+          curl -SsL https://github.com/a8m/envsubst/releases/download/v1.2.0/envsubst-$(uname -s)-$(uname -m) -o envsubst && \
+            chmod +x envsubst && \
+            mv envsubst /usr/local/bin/envsubst
+
       - name: Generate KinD Config
         run: |
           cat <<EOF > /tmp/csm-kind-config.yaml
@@ -195,7 +201,7 @@ jobs:
             -Djib.to.image=localhost:5000/cosmotech-api:latest
             -Djib.allowInsecureRegistries=true
 
-      - name: Install the Helm Chart
+      - name: Install the Helm Chart (latest)
         env:
           PHOENIXAKSDEV_TENANT_ID: ${{ secrets.PHOENIXAKSDEV_TENANT_ID }}
           PHOENIXAKSDEV_CLIENT_ID: ${{ secrets.PHOENIXAKSDEV_CLIENT_ID }}
@@ -206,8 +212,22 @@ jobs:
           PHOENIXAKSDEV_STORAGE_ACCOUNT_KEY: ${{ secrets.PHOENIXAKSDEV_STORAGE_ACCOUNT_KEY }}
         run: .github/scripts/install-helm-chart.sh
 
-      - name: Test Helm Release
+      - name: Test Helm Release (latest)
         run: .github/scripts/test-helm-release.sh
+
+      - name: Install the Helm Chart (v1)
+        env:
+          PHOENIXAKSDEV_TENANT_ID: ${{ secrets.PHOENIXAKSDEV_TENANT_ID }}
+          PHOENIXAKSDEV_CLIENT_ID: ${{ secrets.PHOENIXAKSDEV_CLIENT_ID }}
+          PHOENIXAKSDEV_CLIENT_SECRET: ${{ secrets.PHOENIXAKSDEV_CLIENT_SECRET }}
+          PHOENIXAKSDEV_COSMOS_URI: ${{ secrets.PHOENIXAKSDEV_COSMOS_URI }}
+          PHOENIXAKSDEV_COSMOS_KEY: ${{ secrets.PHOENIXAKSDEV_COSMOS_KEY }}
+          PHOENIXAKSDEV_STORAGE_ACCOUNT_NAME: ${{ secrets.PHOENIXAKSDEV_STORAGE_ACCOUNT_NAME }}
+          PHOENIXAKSDEV_STORAGE_ACCOUNT_KEY: ${{ secrets.PHOENIXAKSDEV_STORAGE_ACCOUNT_KEY }}
+        run: .github/scripts/install-helm-chart.sh v1
+
+      - name: Test Helm Release (v1)
+        run: .github/scripts/test-helm-release.sh v1
 
   scan_and_push_container_images_to_registries:
     runs-on: ubuntu-latest

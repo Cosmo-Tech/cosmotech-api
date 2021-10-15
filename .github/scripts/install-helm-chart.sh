@@ -1,5 +1,8 @@
 #!/bin/bash
 
+API_VERSION=${1:-latest}
+IMAGE_TAG=${2:-latest}
+
 CURRENT_SCRIPT_DIR=$(realpath "$(dirname "$0")")
 HELM_DEPLOY_SCRIPT_BASE_PATH=$(realpath "${CURRENT_SCRIPT_DIR}"/../../api/kubernetes)
 
@@ -37,11 +40,12 @@ EOF
 "${HELM_DEPLOY_SCRIPT_BASE_PATH}"/deploy_via_helm-dev.sh \
   "${CHART_RELEASE_TEST_NAMESPACE}" \
   "${PASSWORD_FOR_ARGO_PASSWORD}" \
-  latest \
+  "${API_VERSION}" \
   --wait \
   --timeout 5m \
   --values "${HELM_DEPLOY_SCRIPT_BASE_PATH}/helm-chart/values-dev.yaml" \
-  --values values-ci.yaml
+  --values values-ci.yaml \
+  --set image.tag="${IMAGE_TAG}"
 
 retVal=$?
 echo "retVal=$retVal"
@@ -58,9 +62,9 @@ echo "=== Describe all resources across all namespaces ==="
 kubectl describe all --all-namespaces
 echo "=== ==="
 
-echo "=== cosmotech-api Pod logs ==="
+echo "=== cosmotech-api-${API_VERSION} Pod logs ==="
 COSMOTECH_API_POD=$(kubectl -n "${CHART_RELEASE_TEST_NAMESPACE}" get pods \
-  -l "app.kubernetes.io/name=cosmotech-api,app.kubernetes.io/instance=cosmotech-api-latest" \
+  -l "app.kubernetes.io/name=cosmotech-api,app.kubernetes.io/instance=cosmotech-api-${API_VERSION}" \
   -o jsonpath="{.items[0].metadata.name}")
 echo "COSMOTECH_API_POD=${COSMOTECH_API_POD}"
 kubectl -n "${CHART_RELEASE_TEST_NAMESPACE}" describe pod "${COSMOTECH_API_POD}"
