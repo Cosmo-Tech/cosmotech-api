@@ -68,6 +68,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: gradle/gradle-build-action@v2
         with:
+          cache-disabled: false
+          # Cache storage space is limited for GitHub actions
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: --info mergeOpenApiFiles
 
       - name: Archive openapi.yaml
@@ -122,6 +125,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: gradle/gradle-build-action@v2
         with:
+          cache-disabled: false
+          # Cache storage space is limited for GitHub actions
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: --info openApiMarkdownGenerate
 
       - name: Generate UML documentation
@@ -129,6 +135,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           uses: gradle/gradle-build-action@v2
         with:
+          cache-disabled: false
+          # Cache storage space is limited for GitHub actions
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: --info openApiUmlGenerate
 
       - name: Set Git identity
