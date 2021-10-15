@@ -248,7 +248,7 @@ jobs:
           arguments: |
             --info
             :cosmotech-api:jibDockerBuild
-            -Djib.to.image="com.cosmotech/cosmotech-api:${GITHUB_SHA}"
+            -Djib.to.image=com.cosmotech/cosmotech-api:${{ github.sha }}
 
       - name: Scan Container Image
         id: scan
