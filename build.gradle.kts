@@ -12,23 +12,26 @@ import org.jetbrains.kotlin.util.capitalizeDecapitalize.capitalizeAsciiOnly
 import org.springframework.boot.gradle.dsl.SpringBootExtension
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 import org.springframework.boot.gradle.tasks.run.BootRun
+import pl.allegro.tech.build.axion.release.domain.TagNameSerializationConfig
 
 plugins {
   val kotlinVersion = "1.5.31"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion apply false
-
+  id("pl.allegro.tech.build.axion-release") version "1.13.3"
   id("com.diffplug.spotless") version "5.16.0"
-
   id("org.springframework.boot") version "2.5.5" apply false
   id("io.spring.dependency-management") version "1.0.11.RELEASE"
-
   id("org.openapi.generator") version "5.2.1" apply false
-
   id("com.google.cloud.tools.jib") version "3.1.4" apply false
-
   id("io.gitlab.arturbosch.detekt") version "1.18.1"
 }
+
+scmVersion { tag(closureOf<TagNameSerializationConfig> { prefix = "" }) }
+
+group = "com.cosmotech"
+
+version = scmVersion.version
 
 val kotlinJvmTarget = 16
 
@@ -49,9 +52,6 @@ allprojects {
     }
     mavenCentral()
   }
-
-  group = "com.cosmotech"
-  version = "0.0.8-SNAPSHOT"
 
   configure<SpotlessExtension> {
     isEnforceCheck = false
@@ -86,6 +86,8 @@ subprojects {
   apply(plugin = "io.spring.dependency-management")
 
   dependencyManagement { imports { mavenBom("com.azure.spring:azure-spring-boot-bom:3.8.0") } }
+
+  version = rootProject.version
 
   // Apply some plugins to all projects except 'common'
   if (name != "cosmotech-api-common") {
