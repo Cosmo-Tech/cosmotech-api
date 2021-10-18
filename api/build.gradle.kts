@@ -8,6 +8,11 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins { id("com.rameshkp.openapi-merger-gradle-plugin") version "1.0.4" }
 
+// For some reason, the version for this project does not follow the rules set by
+// axion-release-plugin.
+// So forcing it explicitly to the parent project version.
+version = rootProject.version
+
 dependencies {
   api(projects.cosmotechApiCommon)
   implementation("io.argoproj.workflow:argo-client-java:v3.0.1")

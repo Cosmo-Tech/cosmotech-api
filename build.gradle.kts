@@ -27,18 +27,18 @@ plugins {
   id("io.gitlab.arturbosch.detekt") version "1.18.1"
 }
 
-scmVersion { tag(closureOf<TagNameSerializationConfig> { prefix = "" }) }
-
-group = "com.cosmotech"
-
-version = scmVersion.version
-
 val kotlinJvmTarget = 16
 
 allprojects {
+  apply(plugin = "pl.allegro.tech.build.axion-release")
   apply(plugin = "com.diffplug.spotless")
   apply(plugin = "org.jetbrains.kotlin.jvm")
   apply(plugin = "io.gitlab.arturbosch.detekt")
+
+  scmVersion { tag(closureOf<TagNameSerializationConfig> { prefix = "" }) }
+
+  group = "com.cosmotech"
+  version = scmVersion.version
 
   repositories {
     maven {
