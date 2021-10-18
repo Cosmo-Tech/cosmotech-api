@@ -154,6 +154,12 @@ jobs:
                   hostPort: 443
                   protocol: TCP
               - role: worker
+                kubeadmConfigPatches:
+                - |
+                  kind: JoinConfiguration
+                  nodeRegistration:
+                    kubeletExtraArgs:
+                      node-labels: "kubernetes.io/os=linux,agentpool=basicpool"
           featureGates:
             # TTL Controller for finished resources is currently an opt-in alpha feature
             # https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/
