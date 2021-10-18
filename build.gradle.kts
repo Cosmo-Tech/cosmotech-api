@@ -27,18 +27,18 @@ plugins {
   id("io.gitlab.arturbosch.detekt") version "1.18.1"
 }
 
+scmVersion { tag(closureOf<TagNameSerializationConfig> { prefix = "" }) }
+
+group = "com.cosmotech"
+
+version = scmVersion.version
+
 val kotlinJvmTarget = 16
 
 allprojects {
-  apply(plugin = "pl.allegro.tech.build.axion-release")
   apply(plugin = "com.diffplug.spotless")
   apply(plugin = "org.jetbrains.kotlin.jvm")
   apply(plugin = "io.gitlab.arturbosch.detekt")
-
-  scmVersion { tag(closureOf<TagNameSerializationConfig> { prefix = "" }) }
-
-  group = "com.cosmotech"
-  version = scmVersion.version
 
   repositories {
     maven {
@@ -87,7 +87,7 @@ subprojects {
 
   dependencyManagement { imports { mavenBom("com.azure.spring:azure-spring-boot-bom:3.8.0") } }
 
-  version = rootProject.version
+  version = parent?.scmVersion?.version ?: error("Parent project did not configure scmVersion!")
 
   // Apply some plugins to all projects except 'common'
   if (name != "cosmotech-api-common") {
