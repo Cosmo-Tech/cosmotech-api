@@ -45,7 +45,7 @@ fi
 CURRENT_SCRIPT_DIR=$(realpath "$(dirname "$0")")
 
 # Create the release directory
-WORKING_DIR=$(mktemp -d -t "${cosmotech-api-$3-client}-XXXXX")
+WORKING_DIR=$(mktemp -d -t "${cosmotech-api-$3}-XXXXXXXXXX")
 echo "WORKING_DIR: ${WORKING_DIR}"
 
 # Sets the new remote URI
