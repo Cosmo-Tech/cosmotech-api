@@ -61,6 +61,15 @@ docker network connect "kind" "${registry_name}" || true
 
 kubectl_ctx="kind-${cluster_name}"
 
+# Patch CoreDNS ConfigMap and re-start the corresponding Deployment, to fix potential issues around
+# DNS resolution at Cosmo Tech
+kubectl --context="${kubectl_ctx}" -n kube-system get configmap coredns -o yaml \
+  | sed 's/\/etc\/resolv\.conf/1\.1\.1\.1 8\.8\.8\.8/g' \
+  | kubectl --context="${kubectl_ctx}" -n kube-system replace -f -
+kubectl --context="${kubectl_ctx}" -n kube-system scale deployment coredns --replicas=0
+sleep 3
+kubectl --context="${kubectl_ctx}" -n kube-system scale deployment coredns --replicas=2
+
 # Communicate the local registry to external local tools
 # https://github.com/kubernetes/enhancements/tree/master/keps/sig-cluster-lifecycle/generic/1755-communicating-a-local-registry
 cat <<EOF | kubectl --context="${kubectl_ctx}" apply -f -
