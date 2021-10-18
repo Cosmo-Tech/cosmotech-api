@@ -15,7 +15,7 @@ jobs:
     concurrency: continuous-deployment_dev-environment
 
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v2.3.5
         with:
           ref: ${{ github.event.client_payload.gh_sha }}
 
