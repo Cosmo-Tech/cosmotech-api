@@ -12,6 +12,7 @@ jobs:
 
   deploy_to_dev_environment:
     runs-on: ubuntu-latest
+    concurrency: continuous-deployment_dev-environment
 
     steps:
       - uses: actions/checkout@v2.3.4
