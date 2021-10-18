@@ -41,6 +41,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2.3.5
+        with:
+          # Fetch all tags since Gradle project version is built upon SCM
+          fetch-depth: 0
 
       - name: Set up JDK
         uses: actions/setup-java@v2

@@ -110,12 +110,6 @@ jobs:
         with:
           version: v3.6.0
 
-      - name: Install envsubst
-        run: |
-          curl -SsL https://github.com/a8m/envsubst/releases/download/v1.2.0/envsubst-$(uname -s)-$(uname -m) -o envsubst && \
-            chmod +x envsubst && \
-            mv envsubst /usr/local/bin/envsubst
-
       - name: Generate KinD Config
         run: |
           cat <<EOF > /tmp/csm-kind-config.yaml
@@ -225,6 +219,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2.3.5
+        with:
+          # Fetch all tags since Gradle project version is built upon SCM
+          fetch-depth: 0
 
       - name: Set up JDK
         uses: actions/setup-java@v2
