@@ -49,6 +49,8 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
+      - run: ./gradlew cosmotech-api:properties
+
       - name: Generate Client (${{ matrix.language }})
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
