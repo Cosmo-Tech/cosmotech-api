@@ -286,3 +286,8 @@ tasks.getByName<BootJar>("bootJar") { finalizedBy("generateClients") }
 tasks.getByName<Copy>("copyOpenApiYamlToMainResources") { dependsOn("mergeOpenApiFiles") }
 
 tasks.getByName<Copy>("copyOpenApiYamlToTestResources") { dependsOn("mergeOpenApiFiles") }
+
+tasks.withType<GenerateTask> {
+  // Force-run all generation tasks, thus bypassing the Gradle Cache
+  outputs.upToDateWhen { false }
+}
