@@ -45,7 +45,7 @@ fi
 CURRENT_SCRIPT_DIR=$(realpath "$(dirname "$0")")
 
 # Create the release directory
-WORKING_DIR=$(mktemp -d -t "${cosmotech-api-$1-client}"-XXXXX)
+WORKING_DIR=$(mktemp -d -t "${cosmotech-api-$3-client}-XXXXX")
 echo "WORKING_DIR: ${WORKING_DIR}"
 
 # Sets the new remote URI
@@ -59,10 +59,13 @@ fi
 # Clone remote repository
 git clone "${github_uri}" "${WORKING_DIR}"
 # Delete all files to remove renamed or deleted files
+echo "Deleting everything under ${WORKING_DIR}..."
 rm -rf "${WORKING_DIR:?}/*"
 
 # Adds the files in the local repository
-cp -r "$(realpath "${CURRENT_SCRIPT_DIR}/..")"/* "${WORKING_DIR:?}"/
+GENERATED_SOURCES_DIR=$(realpath "${CURRENT_SCRIPT_DIR}/..")
+echo "Copy everything from ${GENERATED_SOURCES_DIR} to ${WORKING_DIR}..."
+cp -r "${GENERATED_SOURCES_DIR}"/* "${WORKING_DIR:?}"/
 
 pushd "${WORKING_DIR}" || exit 1
 
@@ -81,10 +84,10 @@ if [[ $(git status --porcelain) ]]; then
     git commit -m "$release_note"
   fi
 
-  # Pushes (Forces) the changes in the local repository up to the remote repository
+  # Pushes the changes in the local repository up to the remote repository
   echo "Git pushing to https://${git_host}/${git_organization_id}/${git_repo_id}.git"
+  git pull --rebase
   git push origin master 2>&1 | grep -v 'To https'
-
 fi
 
 popd

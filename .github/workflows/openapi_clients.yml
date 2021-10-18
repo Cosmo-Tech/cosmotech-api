@@ -52,7 +52,7 @@ jobs:
       - name: Generate Client (${{ matrix.language }})
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew --info ${{ matrix.gradle_task }}
+        run: ./gradlew --info ${{ matrix.gradle_task }} --rerun-tasks
 
       - name: Set Git identity
         if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
