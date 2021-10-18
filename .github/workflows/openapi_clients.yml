@@ -14,9 +14,6 @@ on:
 jobs:
   generate_and_push_openapi_clients:
     runs-on: ubuntu-latest
-    concurrency:
-      group: openapi_clients_update
-      cancel-in-progress: false
 
     strategy:
       fail-fast: false
@@ -37,6 +34,10 @@ jobs:
           - language: typescript
             gradle_task: generateTypescriptClient
             repo: cosmotech-api-typescript-client
+
+    concurrency:
+      group: ${{ matrix.language }}-openapi-client_update-${{ github.ref }}
+      cancel-in-progress: false
 
     steps:
       - uses: actions/checkout@v2.3.5
