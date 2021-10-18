@@ -25,10 +25,16 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: '17'
-        cache: 'gradle'
 
     - name: Check with Spotless
-      run: ./gradlew --info spotlessCheck
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: gradle/gradle-build-action@v2
+      with:
+        cache-disabled: false
+        # Cache storage space is limited for GitHub actions
+        cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+        arguments: --info spotlessCheck
 
   detekt:
     runs-on: ubuntu-latest
@@ -43,10 +49,16 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'gradle'
 
       - name: Check with Detekt
-        run: ./gradlew --info detekt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: gradle/gradle-build-action@v2
+        with:
+          cache-disabled: false
+          # Cache storage space is limited for GitHub actions
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          arguments: --info detekt
 
       - name: Upload SARIF reports to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v1

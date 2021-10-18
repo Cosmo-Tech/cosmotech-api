@@ -28,19 +28,23 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'gradle'
 
       - name: Build with Gradle
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          ./gradlew --info \
-            build \
-            -x generateClients \
-            -x test\
-            -x integrationTest \
-            -x spotlessCheck \
-            -x openApiValidate \
+        uses: gradle/gradle-build-action@v2
+        with:
+          cache-disabled: false
+          # Cache storage space is limited for GitHub actions
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          arguments: |
+            --info
+            build
+            -x generateClients
+            -x test
+            -x integrationTest
+            -x spotlessCheck
+            -x openApiValidate
             -x detekt
 
   test:
@@ -60,13 +64,26 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'gradle'
 
       - name: Run unit tests
-        run: ./gradlew test -x spotlessCheck -x openApiValidate --info
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: gradle/gradle-build-action@v2
+        with:
+          cache-disabled: false
+          # Cache storage space is limited for GitHub actions
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          arguments: --info test -x spotlessCheck -x openApiValidate
 
       - name: Run integration tests
-        run: ./gradlew integrationTest -x spotlessCheck -x openApiValidate --info
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: gradle/gradle-build-action@v2
+        with:
+          cache-disabled: false
+          # Cache storage space is limited for GitHub actions
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          arguments: --info integrationTest -x spotlessCheck -x openApiValidate
 
   test_helm:
     name: Test Helm Chart
@@ -103,7 +120,6 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'gradle'
 
       - name: Set up Helm
         uses: azure/setup-helm@v1.1
@@ -168,10 +184,15 @@ jobs:
       - name: Build, package and push container image
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          ./gradlew --info \
-            :cosmotech-api:jib \
-            -Djib.to.image=localhost:5000/cosmotech-api:latest \
+        uses: gradle/gradle-build-action@v2
+        with:
+          cache-disabled: false
+          # Cache storage space is limited for GitHub actions
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          arguments: |
+            --info
+            :cosmotech-api:jib
+            -Djib.to.image=localhost:5000/cosmotech-api:latest
             -Djib.allowInsecureRegistries=true
 
       - name: Install the Helm Chart (latest)
@@ -228,16 +249,23 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'gradle'
 
       - name: Retrieve branch or tag name
         id: refvar
         run: echo "::set-output name=gitRefName::${GITHUB_REF#refs/*/}"
 
       - name: Build local Container Image for scanning
-        run: |
-          ./gradlew :cosmotech-api:jibDockerBuild \
-            -Djib.to.image="com.cosmotech/cosmotech-api:${GITHUB_SHA}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: gradle/gradle-build-action@v2
+        with:
+          cache-disabled: false
+          # Cache storage space is limited for GitHub actions
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          arguments: |
+            --info
+            :cosmotech-api:jibDockerBuild
+            -Djib.to.image=com.cosmotech/cosmotech-api:${{ github.sha }}
 
       - name: Scan Container Image
         id: scan

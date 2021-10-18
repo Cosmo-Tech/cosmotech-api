@@ -23,7 +23,7 @@ jobs:
 
     services:
       swagger-editor:
-        image: swaggerapi/swagger-editor:v3.18.2
+        image: swaggerapi/swagger-editor:v3.16.5
         ports:
           - 80:8080
 
@@ -65,10 +65,16 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'gradle'
 
       - name: Merge OpenAPI definitions
-        run: ./gradlew --info mergeOpenApiFiles
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: gradle/gradle-build-action@v2
+        with:
+          cache-disabled: false
+          # Cache storage space is limited for GitHub actions
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          arguments: --info mergeOpenApiFiles
 
       - name: Archive openapi.yaml
         uses: actions/upload-artifact@v2
@@ -111,8 +117,6 @@ jobs:
     concurrency:
       group: generated-doc_update
       cancel-in-progress: false
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v2.3.5
         with:
@@ -124,13 +128,26 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'gradle'
 
       - name: Generate Markdown documentation
-        run: ./gradlew --info openApiMarkdownGenerate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: gradle/gradle-build-action@v2
+        with:
+          cache-disabled: false
+          # Cache storage space is limited for GitHub actions
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          arguments: --info openApiMarkdownGenerate
 
       - name: Generate UML documentation
-        run: ./gradlew --info openApiUmlGenerate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: gradle/gradle-build-action@v2
+        with:
+          cache-disabled: false
+          # Cache storage space is limited for GitHub actions
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          arguments: --info openApiUmlGenerate
 
       - name: Set Git identity
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
