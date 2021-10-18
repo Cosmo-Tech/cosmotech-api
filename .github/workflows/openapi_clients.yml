@@ -14,6 +14,7 @@ on:
 jobs:
   generate_and_push_openapi_clients:
     runs-on: ubuntu-latest
+    concurrency: openapi_clients_update
 
     strategy:
       fail-fast: false
