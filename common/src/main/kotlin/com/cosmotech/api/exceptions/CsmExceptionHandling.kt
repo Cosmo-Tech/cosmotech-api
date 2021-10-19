@@ -4,6 +4,7 @@ package com.cosmotech.api.exceptions
 
 import java.lang.IllegalArgumentException
 import org.springframework.http.ResponseEntity
+import org.springframework.security.authentication.InsufficientAuthenticationException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.context.request.NativeWebRequest
@@ -21,4 +22,10 @@ internal class CsmExceptionHandling : ProblemHandling {
       exception: IllegalArgumentException,
       request: NativeWebRequest
   ): ResponseEntity<Problem> = create(Status.BAD_REQUEST, exception, request)
+
+  @ExceptionHandler
+  fun handleInsufficientAuthenticationException(
+      exception: InsufficientAuthenticationException,
+      request: NativeWebRequest
+  ): ResponseEntity<Problem> = create(Status.UNAUTHORIZED, exception, request)
 }

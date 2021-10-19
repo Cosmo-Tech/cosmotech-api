@@ -3,6 +3,7 @@
 package com.cosmotech.api.azure
 
 import com.azure.storage.blob.models.BlobStorageException
+import com.cosmotech.api.exceptions.CsmExceptionHandling
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.http.ResponseEntity
@@ -11,13 +12,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.context.request.NativeWebRequest
 import org.zalando.problem.Problem
 import org.zalando.problem.Status
-import org.zalando.problem.spring.web.advice.ProblemHandling
 
 private const val HTTP_STATUS_CODE_CONFLICT = 409
 
 @ControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
-internal class AzureExceptionHandling : ProblemHandling {
+internal class AzureExceptionHandling : CsmExceptionHandling() {
 
   override fun isCausalChainsEnabled() = true
 
