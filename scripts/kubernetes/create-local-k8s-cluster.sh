@@ -65,7 +65,7 @@ kubectl_ctx="kind-${cluster_name}"
 # DNS resolution at Cosmo Tech
 nbReplicas=$(kubectl --context="${kubectl_ctx}" -n kube-system get deployment coredns -o=jsonpath='{.status.replicas}')
 kubectl --context="${kubectl_ctx}" -n kube-system get configmap coredns -o yaml \
-  | sed 's/\/etc\/resolv\.conf/1\.1\.1\.1 8\.8\.8\.8/g' \
+  | sed 's/\/etc\/resolv\.conf/1\.1\.1\.1 1\.0\.0\.1/g' \
   | kubectl --context="${kubectl_ctx}" -n kube-system replace -f -
 kubectl --context="${kubectl_ctx}" -n kube-system scale deployment coredns --replicas=0
 sleep 3
