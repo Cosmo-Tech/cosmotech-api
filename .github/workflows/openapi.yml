@@ -111,64 +111,6 @@ jobs:
           swagger-editor-url: http://localhost/
           definition-file: openapi.yaml
 
-  generate_doc_and_push_if_needed:
-    runs-on: ubuntu-latest
-    needs: validate_merged_openapi
-    concurrency:
-      group: generated-doc_update
-      cancel-in-progress: false
-    steps:
-      - uses: actions/checkout@v2.3.5
-        with:
-          # Fetch all tags since Gradle project version is built upon SCM
-          fetch-depth: 0
-
-      - name: Set up JDK
-        uses: actions/setup-java@v2
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Generate Markdown documentation
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: gradle/gradle-build-action@v2
-        with:
-          cache-disabled: false
-          # Cache storage space is limited for GitHub actions
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: --info openApiMarkdownGenerate
-
-      - name: Generate UML documentation
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: gradle/gradle-build-action@v2
-        with:
-          cache-disabled: false
-          # Cache storage space is limited for GitHub actions
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: --info openApiUmlGenerate
-
-      - name: Set Git identity
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        run: |
-          git config --global user.email "$GITHUB_ACTOR@users.noreply.github.com"
-          git config --global user.name "$GITHUB_ACTOR"
-
-      - name: Push generated documentation if needed
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        run: |
-          git fetch --prune
-          git pull --rebase --autostash
-          if [[ `git status --porcelain` ]]; then
-            git add doc/ openapi/plantuml/
-            git commit -m "chore(docs): Update generated documentation" \
-              -m "[skip ci]" \
-              -m "Co-authored-by: csmplatform <csmplatform@users.noreply.github.com>"
-            git pull --rebase
-            git push origin main
-          fi
-
   upload_merged_openapi:
     if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
     runs-on: ubuntu-latest

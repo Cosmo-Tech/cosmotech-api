@@ -1,12 +1,9 @@
 #!/bin/bash
 set -o errexit
 
-docker container run --rm \
-  -v "$(realpath "$(dirname "$0")/../../api/kubernetes/csm-argo"):/helm-docs" \
-  -u "$(id -u)" \
-  jnorwood/helm-docs:latest
-
-docker container run --rm \
-  -v "$(realpath "$(dirname "$0")/../../api/kubernetes/helm-chart"):/helm-docs" \
-  -u "$(id -u)" \
-  jnorwood/helm-docs:latest
+for chart in csm-argo helm-chart; do
+  docker container run --rm \
+    -v "$(realpath "$(dirname "$0")/../../api/kubernetes/${chart}"):/helm-docs" \
+    -u "$(id -u)" \
+    jnorwood/helm-docs:v1.5.0
+done
