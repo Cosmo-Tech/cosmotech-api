@@ -24,6 +24,7 @@ Cosmo Tech Platform API
 | autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
 | autoscaling.targetMemoryUtilizationPercentage | int | `80` |  |
 | config.csm.platform.argo.base-uri | string | `"http://argo-server:2746"` |  |
+| config.csm.platform.argo.workflows.storage-class | string | `"phoenix-azurefile"` |  |
 | config.csm.platform.authorization.allowed-tenants | list | `[]` |  |
 | config.csm.platform.azure.containerRegistries.solutions | string | `""` |  |
 | config.csm.platform.azure.cosmos.key | string | `"changeme"` | Cosmos DB Database Key. Can be retrieved from the Azure portal |
@@ -56,7 +57,7 @@ Cosmo Tech Platform API
 | nameOverride | string | `""` | value overriding the name of the Chart. Defaults to the Chart name. Truncated at 63 chars because some Kubernetes name fields are limited to this. |
 | nodeSelector | object | `{}` |  |
 | podAnnotations | object | `{}` | annotations to set the Deployment pod |
-| podSecurityContext | object | `{}` | the pod security context, i.e. applicable to all containers part of the pod |
+| podSecurityContext | object | `{"runAsNonRoot":true}` | the pod security context, i.e. applicable to all containers part of the pod |
 | replicaCount | int | `1` | number of pods replicas |
 | resources | object | `{}` | resources limits and requests for the pod placement |
 | securityContext | object | `{}` | the security context at the pod container level |
