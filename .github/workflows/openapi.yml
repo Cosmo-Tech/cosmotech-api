@@ -130,7 +130,7 @@ jobs:
           name: openapi
 
       - name: azure login
-        uses: azure/login@v1.3.0
+        uses: azure/login@v1.4.0
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
