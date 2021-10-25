@@ -15,9 +15,6 @@ jobs:
 
   generate_and_push_doc_for_openapi:
     runs-on: ubuntu-latest
-    concurrency:
-      group: generated-doc_update
-      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v2.3.5
         with:
@@ -72,9 +69,6 @@ jobs:
 
   generate_and_push_doc_for_helm_charts:
     runs-on: ubuntu-latest
-    concurrency:
-      group: generated-doc_update
-      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v2.3.5
 
