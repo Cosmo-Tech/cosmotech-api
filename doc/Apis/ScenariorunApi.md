@@ -83,7 +83,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**String**](../Models/string.md)
+**String**
 
 ### Authorization
 

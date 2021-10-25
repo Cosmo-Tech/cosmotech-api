@@ -194,7 +194,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**String**](../Models/string.md)
+**String**
 
 ### Authorization
 

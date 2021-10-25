@@ -2,7 +2,7 @@
 
 title Cosmo Tech Plaform API Schemas Diagram
 
-entity Connector { 
+entity Connector {
     id: String
     * key: String
     * name: String
@@ -18,7 +18,7 @@ entity Connector {
     parameterGroups: List<ConnectorParameterGroup>
 }
 
-entity ConnectorParameter { 
+entity ConnectorParameter {
     * id: String
     * label: String
     valueType: String
@@ -27,13 +27,13 @@ entity ConnectorParameter {
     envVar: String
 }
 
-entity ConnectorParameterGroup { 
+entity ConnectorParameterGroup {
     * id: String
     * label: String
     * parameters: List<ConnectorParameter>
 }
 
-entity Dataset { 
+entity Dataset {
     id: String
     name: String
     description: String
@@ -45,26 +45,26 @@ entity Dataset {
     compatibility: List<DatasetCompatibility>
 }
 
-entity DatasetCompatibility { 
+entity DatasetCompatibility {
     * solutionKey: String
     minimumVersion: String
     maximumVersion: String
 }
 
-entity DatasetConnector { 
+entity DatasetConnector {
     id: String
     name: String
     version: String
     parametersValues: Map
 }
 
-entity DatasetCopyParameters { 
+entity DatasetCopyParameters {
     sourceId: String
     targetId: String
     options: Map
 }
 
-entity Organization { 
+entity Organization {
     id: String
     name: String
     ownerId: String
@@ -72,7 +72,7 @@ entity Organization {
     services: OrganizationServices
 }
 
-entity OrganizationService { 
+entity OrganizationService {
     cloudService: String
     baseUri: String
     platformService: String
@@ -80,19 +80,19 @@ entity OrganizationService {
     credentials: Map
 }
 
-entity OrganizationServices { 
+entity OrganizationServices {
     tenantCredentials: Map
     storage: OrganizationService
     solutionsContainerRegistry: OrganizationService
 }
 
-entity OrganizationUser { 
+entity OrganizationUser {
     id: String
     name: String
     * roles: List<String>
 }
 
-entity RunTemplate { 
+entity RunTemplate {
     * id: String
     * name: String
     description: String
@@ -120,10 +120,10 @@ entity RunTemplate {
     stackSteps: Boolean
 }
 
-entity RunTemplateHandlerId { 
+entity RunTemplateHandlerId {
 }
 
-entity RunTemplateParameter { 
+entity RunTemplateParameter {
     * id: String
     * labels: Map
     * varType: String
@@ -134,7 +134,7 @@ entity RunTemplateParameter {
     options: Map
 }
 
-entity RunTemplateParameterGroup { 
+entity RunTemplateParameterGroup {
     * id: String
     * labels: Map
     isTable: Boolean
@@ -143,16 +143,16 @@ entity RunTemplateParameterGroup {
     * parameters: List<String>
 }
 
-entity RunTemplateParameterValue { 
+entity RunTemplateParameterValue {
     * parameterId: String
     varType: String
     * value: String
 }
 
-entity RunTemplateStepSource { 
+entity RunTemplateStepSource {
 }
 
-entity Scenario { 
+entity Scenario {
     id: String
     name: String
     description: String
@@ -177,39 +177,39 @@ entity Scenario {
     rootLastRun: ScenarioLastRun
 }
 
-entity ScenarioChangedParameterValue { 
+entity ScenarioChangedParameterValue {
     parameterId: String
     varType: String
     value: String
     comparedValue: String
 }
 
-entity ScenarioComparisonResult { 
+entity ScenarioComparisonResult {
     scenarioId: String
     comparedScenarioId: String
     changedValues: List<ScenarioChangedParameterValue>
 }
 
-entity ScenarioDataDownloadInfo { 
+entity ScenarioDataDownloadInfo {
     url: String
     state: ScenarioJobState
 }
 
-entity ScenarioDataDownloadJob { 
+entity ScenarioDataDownloadJob {
     id: String
 }
 
-entity ScenarioJobState { 
+entity ScenarioJobState {
 }
 
-entity ScenarioLastRun { 
+entity ScenarioLastRun {
     scenarioRunId: String
     csmSimulationRun: String
     workflowId: String
     workflowName: String
 }
 
-entity ScenarioRun { 
+entity ScenarioRun {
     id: String
     organizationId: String
     workflowId: String
@@ -231,7 +231,7 @@ entity ScenarioRun {
     containers: List<ScenarioRunContainer>
 }
 
-entity ScenarioRunContainer { 
+entity ScenarioRunContainer {
     id: String
     * name: String
     labels: Map
@@ -244,24 +244,24 @@ entity ScenarioRunContainer {
     artifacts: List<ScenarioRunContainerArtifact>
 }
 
-entity ScenarioRunContainerArtifact { 
+entity ScenarioRunContainerArtifact {
     name: String
     path: String
 }
 
-entity ScenarioRunContainerLogs { 
+entity ScenarioRunContainerLogs {
     nodeId: String
     containerName: String
     children: List<String>
     logs: String
 }
 
-entity ScenarioRunLogs { 
+entity ScenarioRunLogs {
     scenariorunId: String
     containers: Map
 }
 
-entity ScenarioRunSearch { 
+entity ScenarioRunSearch {
     solutionId: String
     runTemplateId: String
     workspaceId: String
@@ -272,7 +272,7 @@ entity ScenarioRunSearch {
     ownerId: String
 }
 
-entity ScenarioRunStartContainers { 
+entity ScenarioRunStartContainers {
     generateName: String
     * csmSimulationId: String
     nodeLabel: String
@@ -280,7 +280,7 @@ entity ScenarioRunStartContainers {
     * containers: List<ScenarioRunContainer>
 }
 
-entity ScenarioRunStatus { 
+entity ScenarioRunStatus {
     id: String
     organizationId: String
     workflowId: String
@@ -294,7 +294,7 @@ entity ScenarioRunStatus {
     nodes: List<ScenarioRunStatusNode>
 }
 
-entity ScenarioRunStatusNode { 
+entity ScenarioRunStatusNode {
     id: String
     name: String
     containerName: String
@@ -307,20 +307,20 @@ entity ScenarioRunStatusNode {
     endTime: String
 }
 
-entity ScenarioRunTemplateParameterValue { 
+entity ScenarioRunTemplateParameterValue {
     * parameterId: String
     varType: String
     * value: String
     isInherited: Boolean
 }
 
-entity ScenarioUser { 
+entity ScenarioUser {
     * id: String
     name: String
     * roles: List<String>
 }
 
-entity Solution { 
+entity Solution {
     id: String
     * key: String
     * name: String
@@ -336,27 +336,27 @@ entity Solution {
     * runTemplates: List<RunTemplate>
 }
 
-entity User { 
+entity User {
     id: String
     name: String
     platformRoles: List<String>
     organizations: List<UserOrganization>
 }
 
-entity UserOrganization { 
+entity UserOrganization {
     id: String
     name: String
     roles: List<String>
     workspaces: List<UserWorkspace>
 }
 
-entity UserWorkspace { 
+entity UserWorkspace {
     id: String
     name: String
     roles: List<String>
 }
 
-entity Validator { 
+entity Validator {
     * id: String
     * name: String
     description: String
@@ -367,7 +367,7 @@ entity Validator {
     tags: List<String>
 }
 
-entity ValidatorRun { 
+entity ValidatorRun {
     id: String
     validatorId: String
     validatorName: String
@@ -378,7 +378,7 @@ entity ValidatorRun {
     logs: String
 }
 
-entity Workspace { 
+entity Workspace {
     id: String
     * key: String
     * name: String
@@ -392,23 +392,23 @@ entity Workspace {
     sendInputToDataWarehouse: Boolean
 }
 
-entity WorkspaceFile { 
+entity WorkspaceFile {
     fileName: String
 }
 
-entity WorkspaceSolution { 
+entity WorkspaceSolution {
     solutionId: String
     runTemplateFilter: List<String>
     defaultRunTemplateDataset: Map
 }
 
-entity WorkspaceUser { 
+entity WorkspaceUser {
     * id: String
     name: String
     * roles: List<String>
 }
 
-entity WorkspaceWebApp { 
+entity WorkspaceWebApp {
     * url: String
     iframes: Map
     options: Map

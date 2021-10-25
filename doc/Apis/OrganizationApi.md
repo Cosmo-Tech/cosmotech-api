@@ -284,7 +284,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**Map**](../Models/object.md)
+**Map**
 
 ### Authorization
 

@@ -167,7 +167,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**File**](../Models/file.md)
+**File**
 
 ### Authorization
 
