@@ -22,7 +22,7 @@ plugins {
   id("com.diffplug.spotless") version "5.17.0"
   id("org.springframework.boot") version "2.5.5" apply false
   id("io.spring.dependency-management") version "1.0.11.RELEASE"
-  id("org.openapi.generator") version "5.2.1" apply false
+  id("org.openapi.generator") version "5.3.0" apply false
   id("com.google.cloud.tools.jib") version "3.1.4" apply false
   id("io.gitlab.arturbosch.detekt") version "1.18.1"
 }
