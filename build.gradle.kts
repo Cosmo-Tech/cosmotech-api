@@ -190,7 +190,7 @@ subprojects {
     testImplementation(platform("org.junit:junit-bom:5.8.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("io.mockk:mockk:1.12.0")
-    testImplementation("org.awaitility:awaitility-kotlin:4.1.0")
+    testImplementation("org.awaitility:awaitility-kotlin:4.1.1")
 
     integrationTestImplementation("org.springframework.boot:spring-boot-starter-test") {
       // Drop legacy Junit < 5
