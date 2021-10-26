@@ -480,6 +480,12 @@ components:
         sendInputToDataWarehouse:
           type: boolean
           description: default setting for all Scenarios and Run Templates to set whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to the ScenarioRun
+        useDedicatedEventHubNamespace:
+          type: boolean
+          default: false
+          description: Set this property to true to use a dedicated Azure Event Hub Namespace for this Workspace.
+            The Event Hub Namespace must be named \'<organization_id\>-<workspace_id\>\' (in lower case).
+            This Namespace must also contain two Event Hubs named \'probesmeasures\' and \'scenariorun\'.
       required:
         - key
         - name
