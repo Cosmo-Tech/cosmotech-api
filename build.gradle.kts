@@ -267,7 +267,11 @@ subprojects {
 
   tasks.getByName<Jar>("jar") { enabled = true }
 
-  if (!name.startsWith("cosmotech-api-common")) {
+  if (name.startsWith("cosmotech-api-common")) {
+    tasks.getByName<BootJar>("bootJar") { enabled = false }
+    tasks.getByName<BootBuildImage>("bootBuildImage") { enabled = false }
+    tasks.getByName<BootRun>("bootRun") { enabled = false }
+  } else {
 
     val openApiFileDefinition =
         if (name == "cosmotech-api") {
@@ -295,24 +299,18 @@ subprojects {
 
     tasks.getByName<Copy>("processTestResources") { dependsOn("copyOpenApiYamlToTestResources") }
 
-    if (name.startsWith("cosmotech-api-common")) {
-      tasks.getByName<BootJar>("bootJar") { enabled = false }
-      tasks.getByName<BootBuildImage>("bootBuildImage") { enabled = false }
-      tasks.getByName<BootJar>("bootRun") { enabled = false }
-    } else {
-      tasks.getByName<BootJar>("bootJar") { classifier = "uberjar" }
+    tasks.getByName<BootJar>("bootJar") { classifier = "uberjar" }
 
-      tasks.getByName<BootRun>("bootRun") {
-        workingDir = rootDir
+    tasks.getByName<BootRun>("bootRun") {
+      workingDir = rootDir
 
-        environment("CSM_PLATFORM_VENDOR", project.findProperty("platform")?.toString() ?: "azure")
+      environment("CSM_PLATFORM_VENDOR", project.findProperty("platform")?.toString() ?: "azure")
 
-        if (project.hasProperty("jvmArgs")) {
-          jvmArgs = project.property("jvmArgs").toString().split("\\s+".toRegex()).toList()
-        }
-
-        args = listOf("--spring.profiles.active=dev")
+      if (project.hasProperty("jvmArgs")) {
+        jvmArgs = project.property("jvmArgs").toString().split("\\s+".toRegex()).toList()
       }
+
+      args = listOf("--spring.profiles.active=dev")
     }
 
     configure<SpringBootExtension> {
