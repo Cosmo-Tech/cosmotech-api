@@ -13,7 +13,7 @@ import org.zalando.problem.Status
 import org.zalando.problem.spring.web.advice.ProblemHandling
 
 @ControllerAdvice
-internal class CsmExceptionHandling : ProblemHandling {
+class CsmExceptionHandling : ProblemHandling {
 
   override fun isCausalChainsEnabled() = true
 

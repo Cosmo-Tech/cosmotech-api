@@ -2,8 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.api.config
 
-import com.azure.cosmos.ConnectionMode
-import com.azure.cosmos.ConsistencyLevel
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
 
@@ -262,14 +260,17 @@ data class CsmPlatformProperties(
         /** Access Key of the Azure Cosmos DB database */
         val key: String,
 
-        /** Consistency level */
-        val consistencyLevel: ConsistencyLevel?,
+        /** Consistency level. See com.azure.cosmos.ConsistencyLevel for the possible values. */
+        val consistencyLevel: String?,
 
         /** Whether to populate Diagnostics Strings and Query metrics */
         val populateQueryMetrics: Boolean,
 
-        /** The connection mode to be used by the clients to Azure Cosmos DB. */
-        val connectionMode: ConnectionMode?
+        /**
+         * The connection mode to be used by the clients to Azure Cosmos DB. See
+         * com.azure.cosmos.ConnectionMode for the possible values.
+         */
+        val connectionMode: String?
     ) {
       data class CoreDatabase(
           /** The core database name in Azure Cosmos DB. Must already exist there. */

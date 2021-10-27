@@ -1,12 +1,13 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.api.config
+package com.cosmotech.api.azure
 
 import com.azure.spring.aad.AADAuthorizationServerEndpoints
 import com.azure.spring.aad.webapi.AADJwtBearerTokenAuthenticationConverter
 import com.azure.spring.aad.webapi.AADResourceServerConfiguration
 import com.azure.spring.aad.webapi.AADResourceServerProperties
 import com.azure.spring.autoconfigure.aad.AADAuthenticationProperties
+import com.cosmotech.api.config.CsmPlatformProperties
 import java.lang.IllegalArgumentException
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Bean

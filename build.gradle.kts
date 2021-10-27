@@ -10,6 +10,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.util.capitalizeDecapitalize.capitalizeAsciiOnly
 import org.springframework.boot.gradle.dsl.SpringBootExtension
+import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 import org.springframework.boot.gradle.tasks.run.BootRun
 import pl.allegro.tech.build.axion.release.domain.TagNameSerializationConfig
@@ -87,10 +88,10 @@ subprojects {
 
   dependencyManagement { imports { mavenBom("com.azure.spring:azure-spring-boot-bom:3.9.0") } }
 
-  version = parent?.scmVersion?.version ?: error("Parent project did not configure scmVersion!")
+  version = rootProject.scmVersion.version ?: error("Root project did not configure scmVersion!")
 
   // Apply some plugins to all projects except 'common'
-  if (name != "cosmotech-api-common") {
+  if (!name.startsWith("cosmotech-api-common")) {
     apply(plugin = "org.openapi.generator")
     apply(plugin = "com.google.cloud.tools.jib")
   }
@@ -166,25 +167,9 @@ subprojects {
 
     implementation("org.zalando:problem-spring-web-starter:0.27.0")
 
-    // TODO Extract those dependencies in a 'common/azure' sub-project,
-    //  included dynamically if the 'platform' build property is 'azure'
-    implementation("com.azure:azure-storage-blob-batch:12.11.1")
-    implementation("com.azure:azure-core:1.21.0")
     implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation(
-        "org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.5.5")
-    implementation("org.springframework.security:spring-security-jwt:1.1.1.RELEASE")
-    implementation("com.azure.spring:azure-spring-boot-starter-cosmos")
-    implementation("com.azure.spring:azure-spring-boot-starter-storage")
-    implementation("com.azure.spring:azure-spring-boot-starter-active-directory")
-    // com.azure.spring:azure-spring-boot-starter-active-directory provides this dependency
-    // transitively,
-    // but its version is incompatible at runtime with what is expected by
-    // spring-security-oauth2-jose
-    implementation("com.nimbusds:nimbus-jose-jwt:9.15.2")
     implementation("org.springframework.security:spring-security-oauth2-jose:5.5.3")
     implementation("org.springframework.security:spring-security-oauth2-resource-server:5.5.3")
-    //    implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:5.8.1"))
@@ -203,7 +188,7 @@ subprojects {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
   }
 
-  if (name != "cosmotech-api-common") {
+  if (!name.startsWith("cosmotech-api-common")) {
     tasks.withType<AbstractCompile> { dependsOn("openApiGenerate") }
   }
 
@@ -282,7 +267,7 @@ subprojects {
 
   tasks.getByName<Jar>("jar") { enabled = true }
 
-  if (name != "cosmotech-api-common") {
+  if (!name.startsWith("cosmotech-api-common")) {
 
     val openApiFileDefinition =
         if (name == "cosmotech-api") {
@@ -310,18 +295,24 @@ subprojects {
 
     tasks.getByName<Copy>("processTestResources") { dependsOn("copyOpenApiYamlToTestResources") }
 
-    tasks.getByName<BootJar>("bootJar") { classifier = "uberjar" }
+    if (name.startsWith("cosmotech-api-common")) {
+      tasks.getByName<BootJar>("bootJar") { enabled = false }
+      tasks.getByName<BootBuildImage>("bootBuildImage") { enabled = false }
+      tasks.getByName<BootJar>("bootRun") { enabled = false }
+    } else {
+      tasks.getByName<BootJar>("bootJar") { classifier = "uberjar" }
 
-    tasks.getByName<BootRun>("bootRun") {
-      workingDir = rootDir
+      tasks.getByName<BootRun>("bootRun") {
+        workingDir = rootDir
 
-      environment("CSM_PLATFORM_VENDOR", project.findProperty("platform")?.toString() ?: "azure")
+        environment("CSM_PLATFORM_VENDOR", project.findProperty("platform")?.toString() ?: "azure")
 
-      if (project.hasProperty("jvmArgs")) {
-        jvmArgs = project.property("jvmArgs").toString().split("\\s+".toRegex()).toList()
+        if (project.hasProperty("jvmArgs")) {
+          jvmArgs = project.property("jvmArgs").toString().split("\\s+".toRegex()).toList()
+        }
+
+        args = listOf("--spring.profiles.active=dev")
       }
-
-      args = listOf("--spring.profiles.active=dev")
     }
 
     configure<SpringBootExtension> {
@@ -332,7 +323,6 @@ subprojects {
         }
       }
     }
-
     configure<JibExtension> {
       from { image = "eclipse-temurin:17-alpine" }
       to { image = "${project.group}/${project.name}:${project.version}" }
@@ -364,7 +354,9 @@ val copySubProjectsDetektReportsTasks =
         val copyTask =
             tasks.register<Copy>(
                 "detektCopy${formatCapitalized}ReportFor" +
-                    "${subProject.projectDir.relativeTo(rootDir)}".capitalizeAsciiOnly()) {
+                    "${subProject.projectDir.relativeTo(rootDir)}"
+                        .capitalizeAsciiOnly()
+                        .replace("/", "_")) {
               shouldRunAfter(subProject.tasks.getByName("detekt"))
               from(
                   file(

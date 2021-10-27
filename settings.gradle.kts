@@ -8,7 +8,10 @@ rootProject.name = "cosmotech-api-parent"
 
 include(
     "api",
-    "common",
+    "common:common",
+    "common:azure",
+    "common:events",
+    "common:id",
     "connector",
     "dataset",
     "organization",
@@ -21,7 +24,15 @@ include(
 
 project(":api").name = "cosmotech-api"
 
-project(":common").name = "cosmotech-api-common"
+project(":common").name = "cosmotech-api-common-parent"
+
+project(":common:common").name = "cosmotech-api-common"
+
+project(":common:azure").name = "cosmotech-api-common-azure"
+
+project(":common:events").name = "cosmotech-api-common-events"
+
+project(":common:id").name = "cosmotech-api-common-id"
 
 project(":connector").name = "cosmotech-connector-api"
 

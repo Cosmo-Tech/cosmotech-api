@@ -4,7 +4,8 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 
 dependencies {
-  api(projects.cosmotechApiCommon)
+  api(projects.cosmotechApiCommonParent.cosmotechApiCommon)
+  api(projects.cosmotechApiCommonParent.cosmotechApiCommonAzure)
   implementation(projects.cosmotechUserApi)
   implementation(projects.cosmotechOrganizationApi)
   implementation(projects.cosmotechSolutionApi)

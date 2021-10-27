@@ -9,8 +9,7 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 plugins { id("com.rameshkp.openapi-merger-gradle-plugin") version "1.0.4" }
 
 dependencies {
-  api(projects.cosmotechApiCommon)
-  implementation("io.argoproj.workflow:argo-client-java:v3.0.1")
+  api(projects.cosmotechApiCommonParent.cosmotechApiCommon)
   implementation(projects.cosmotechConnectorApi)
   implementation(projects.cosmotechDatasetApi)
   implementation(projects.cosmotechOrganizationApi)
@@ -28,7 +27,8 @@ tasks.withType<JibTask> {
   val jarTasks =
       parent
           ?.subprojects
-          ?.filter { it.name != project.name && it.name != "cosmotech-api-common" }
+          ?.filterNot { it.name == project.name }
+          ?.filterNot { it.name.startsWith("cosmotech-api-common") }
           ?.flatMap { it.tasks.withType<Jar>() }
           ?.toList()
   logger.debug("jibTask ${this.name} needs to depend on : $jarTasks")

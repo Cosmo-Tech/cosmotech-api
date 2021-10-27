@@ -4,7 +4,8 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 
 dependencies {
-  api(projects.cosmotechApiCommon)
+  api(projects.cosmotechApiCommonParent.cosmotechApiCommon)
+  api(projects.cosmotechApiCommonParent.cosmotechApiCommonAzure)
   implementation("org.apache.commons:commons-compress:1.21")
 }
 
