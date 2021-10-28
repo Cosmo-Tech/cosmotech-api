@@ -51,6 +51,7 @@ envsubst < "${HELM_CHARTS_BASE_PATH}/csm-argo/values.yaml" | \
 
 # cosmotech-api
 export COSMOTECH_API_RELEASE_NAME="cosmotech-api-${API_VERSION}"
+# shellcheck disable=SC2140
 helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "${HELM_CHARTS_BASE_PATH}/helm-chart" \
     --namespace "${NAMESPACE}" \
     --values "${HELM_CHARTS_BASE_PATH}/helm-chart/values-dev.yaml" \
@@ -60,4 +61,5 @@ helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "${HELM_CHARTS_BASE_PATH}
     --set api.version="$API_VERSION" \
     --set config.csm.platform.argo.base-uri="http://${ARGO_RELEASE_NAME}-server.${NAMESPACE}.svc.cluster.local:2746" \
     --set config.csm.platform.argo.workflows.namespace="${NAMESPACE}" \
+    --set podAnnotations."com\.cosmotech/deployed-at-timestamp"="\"$(date +%s)\"" \
     "${@:4}"
