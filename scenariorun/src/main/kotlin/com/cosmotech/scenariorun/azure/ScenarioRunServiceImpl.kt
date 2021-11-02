@@ -31,7 +31,6 @@ import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
 import kotlin.reflect.full.memberProperties
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
@@ -40,10 +39,9 @@ import org.springframework.stereotype.Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions")
 internal class ScenarioRunServiceImpl(
+    private val containerFactory: ContainerFactory,
     private val workflowService: WorkflowService,
 ) : AbstractCosmosBackedService(), ScenariorunApiService {
-
-  @Autowired private lateinit var containerFactory: ContainerFactory
 
   private fun ScenarioRun.asMapWithAdditionalData(workspaceId: String? = null): Map<String, Any> {
     val scenarioAsMap = this.convertToMap().toMutableMap()
