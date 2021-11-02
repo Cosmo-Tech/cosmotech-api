@@ -238,11 +238,10 @@ jobs:
     permissions:
       packages: write
       contents: read
+      security-events: write
     env:
       DOCKER_BUILDKIT: 1
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    if: github.event_name != 'pull_request_target' && github.event.name != 'pull_request'
 
     steps:
       - uses: actions/checkout@v2.3.5
@@ -281,15 +280,21 @@ jobs:
         with:
           image-name: com.cosmotech/cosmotech-api:${{ github.sha }}
 
-      - name: Convert Container Scan Report to SARIF
+      - name: Install Container Scan to SARIF Converter tool
         if: ${{ always() }}
         env:
-          CONTAINER_SCAN_REPORT: ${{ steps.scan.outputs.scan-report-path }}
           CONTAINER_SCAN_TO_SARIF_VERSION: 0.1.0
         run: |
           mkdir -p bin
           curl -L "https://github.com/rm3l/container-scan-to-sarif/releases/download/${CONTAINER_SCAN_TO_SARIF_VERSION}/container-scan-to-sarif_${CONTAINER_SCAN_TO_SARIF_VERSION}_Linux_x86_64.tar.gz" \
             | tar zx -C bin
+          chmod +x ./bin/container-scan-to-sarif
+
+      - name: Convert Container Scan Report to SARIF
+        if: ${{ always() }}
+        env:
+          CONTAINER_SCAN_REPORT: ${{ steps.scan.outputs.scan-report-path }}
+        run: |
           ./bin/container-scan-to-sarif \
             -input "${CONTAINER_SCAN_REPORT}" \
             -output ./containerscanreport.sarif
