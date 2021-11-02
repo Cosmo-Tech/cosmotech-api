@@ -25,13 +25,13 @@ import com.cosmotech.scenariorun.domain.ScenarioRun
 import com.cosmotech.scenariorun.domain.ScenarioRunLogs
 import com.cosmotech.scenariorun.domain.ScenarioRunSearch
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
+import com.cosmotech.scenariorun.withoutSensitiveData
 import com.cosmotech.scenariorun.workflow.WorkflowService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
 import kotlin.reflect.full.memberProperties
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
@@ -40,10 +40,9 @@ import org.springframework.stereotype.Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions")
 internal class ScenarioRunServiceImpl(
+    private val containerFactory: ContainerFactory,
     private val workflowService: WorkflowService,
 ) : AbstractCosmosBackedService(), ScenariorunApiService {
-
-  @Autowired private lateinit var containerFactory: ContainerFactory
 
   private fun ScenarioRun.asMapWithAdditionalData(workspaceId: String? = null): Map<String, Any> {
     val scenarioAsMap = this.convertToMap().toMutableMap()
@@ -94,6 +93,7 @@ internal class ScenarioRunServiceImpl(
               JsonNode::class.java)
           .firstOrNull()
           ?.toDomain<ScenarioRun>()
+          ?.withoutSensitiveData()
           ?: throw java.lang.IllegalArgumentException(
               "ScenarioRun #$scenariorunId not found in organization #$organizationId")
 
@@ -133,7 +133,7 @@ internal class ScenarioRunServiceImpl(
               // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
               // https://github.com/Azure/azure-sdk-for-java/issues/12269
               JsonNode::class.java)
-          .mapNotNull { it.toDomain<ScenarioRun>() }
+          .mapNotNull { it.toDomain<ScenarioRun>()?.withoutSensitiveData() }
           .toList()
 
   override fun getWorkspaceScenarioRuns(
@@ -156,7 +156,7 @@ internal class ScenarioRunServiceImpl(
               // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
               // https://github.com/Azure/azure-sdk-for-java/issues/12269
               JsonNode::class.java)
-          .mapNotNull { it.toDomain<ScenarioRun>() }
+          .mapNotNull { it.toDomain<ScenarioRun>()?.withoutSensitiveData() }
           .toList()
 
   @EventListener(ScenarioDataDownloadRequest::class)
@@ -230,7 +230,7 @@ internal class ScenarioRunServiceImpl(
             ),
             ScenarioRunStartedForScenario.WorkflowData(
                 scenarioRun.workflowId!!, scenarioRun.workflowName!!)))
-    return scenarioRun
+    return scenarioRun.withoutSensitiveData()!!
   }
 
   override fun searchScenarioRuns(
@@ -260,7 +260,7 @@ internal class ScenarioRunServiceImpl(
             // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
             // https://github.com/Azure/azure-sdk-for-java/issues/12269
             JsonNode::class.java)
-        .mapNotNull { it.toDomain<ScenarioRun>() }
+        .mapNotNull { it.toDomain<ScenarioRun>().withoutSensitiveData() }
         .toList()
   }
 
@@ -270,17 +270,18 @@ internal class ScenarioRunServiceImpl(
   ): ScenarioRun {
     val scenarioRunRequest = workflowService.launchScenarioRun(scenarioRunStartContainers)
     return this.dbCreateScenarioRun(
-        scenarioRunRequest,
-        organizationId,
-        "None",
-        "None",
-        scenarioRunStartContainers.csmSimulationId,
-        null,
-        null,
-        null,
-        null,
-        scenarioRunStartContainers,
-    )
+            scenarioRunRequest,
+            organizationId,
+            "None",
+            "None",
+            scenarioRunStartContainers.csmSimulationId,
+            null,
+            null,
+            null,
+            null,
+            scenarioRunStartContainers,
+        )
+        .withoutSensitiveData()!!
   }
 
   private fun dbCreateScenarioRun(
