@@ -283,7 +283,7 @@ jobs:
       - name: Install Container Scan to SARIF Converter tool
         if: ${{ always() }}
         env:
-          CONTAINER_SCAN_TO_SARIF_VERSION: 0.1.0
+          CONTAINER_SCAN_TO_SARIF_VERSION: 0.2.2
         run: |
           mkdir -p bin
           curl -L "https://github.com/rm3l/container-scan-to-sarif/releases/download/${CONTAINER_SCAN_TO_SARIF_VERSION}/container-scan-to-sarif_${CONTAINER_SCAN_TO_SARIF_VERSION}_Linux_x86_64.tar.gz" \
