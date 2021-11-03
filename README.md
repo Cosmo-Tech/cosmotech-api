@@ -283,6 +283,7 @@ To check that your changes comply with the coding style, run:
 
 [Detekt](https://detekt.github.io/detekt/) helps identify code smells in Kotlin code. 
 And [KubeLinter](https://github.com/stackrox/kube-linter) does the same in Kubernetes YAML resources and Helm Charts.
+Container images built are also scanned for common vulnerabilities (CVEs) and best practices violations, using the [Container Scan Action](https://github.com/Azure/container-scan).
 
 Reports are then uploaded to GitHub Code Scanning, under the Security tab of the repo : https://github.com/Cosmo-Tech/cosmotech-api/security/code-scanning
 
