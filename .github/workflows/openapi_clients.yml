@@ -72,7 +72,6 @@ jobs:
         id: commitMsgGenerator
         run: |
           echo -e "Automatically update ${{ matrix.language }} client (ref: ${{ github.repository }}@${{ github.sha }})\n" > /tmp/commit-file.txt
-          echo -e "===\n${{ join(github.event.commits.*.message, '\n\n') }}\n===\n" >> /tmp/commit-file.txt
           echo "Co-authored-by: $GITHUB_ACTOR <$GITHUB_ACTOR@users.noreply.github.com>" >> /tmp/commit-file.txt
           echo "::set-output name=filePath::/tmp/commit-file.txt"
 
