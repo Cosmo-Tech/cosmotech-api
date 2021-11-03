@@ -280,19 +280,31 @@ jobs:
         with:
           image-name: com.cosmotech/cosmotech-api:${{ github.sha }}
 
-      - name: Convert Container Scan Report to SARIF
-        id: scan-to-sarif
-        uses: rm3l/container-scan-to-sarif-action@v1.2.1
+      - name: Install Container Scan to SARIF Converter tool
         if: ${{ always() }}
-        with:
-          converter-version: 0.2.2
-          input-file: ${{ steps.scan.outputs.scan-report-path }}
+        env:
+          CONTAINER_SCAN_TO_SARIF_VERSION: 0.2.2
+        run: |
+          mkdir -p bin
+          curl -L "https://github.com/rm3l/container-scan-to-sarif/releases/download/${CONTAINER_SCAN_TO_SARIF_VERSION}/container-scan-to-sarif_${CONTAINER_SCAN_TO_SARIF_VERSION}_Linux_x86_64.tar.gz" \
+            | tar zx -C bin
+          chmod +x ./bin/container-scan-to-sarif
+
+      - name: Convert Container Scan Report to SARIF
+        if: ${{ always() }}
+        env:
+          CONTAINER_SCAN_REPORT: ${{ steps.scan.outputs.scan-report-path }}
+        run: |
+          ./bin/container-scan-to-sarif \
+            -input "${CONTAINER_SCAN_REPORT}" \
+            -output ./containerscanreport.sarif
+          cat ./containerscanreport.sarif
 
       - name: Upload SARIF reports to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v1
         if: ${{ always() }}
         with:
-          sarif_file: ${{ steps.scan-to-sarif.outputs.sarif-report-path }}
+          sarif_file: 'containerscanreport.sarif'
 
       - name: Archive container image scan report
         if: ${{ always() }}
