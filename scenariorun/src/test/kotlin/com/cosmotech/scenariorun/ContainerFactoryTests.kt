@@ -1873,6 +1873,8 @@ class ContainerFactoryTests {
             "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to "a1b2c3d4e5==",
             "CSM_AMQPCONSUMER_USER" to "my-eventhub-access-policy",
             "CSM_AMQPCONSUMER_PASSWORD" to "a1b2c3d4e5==",
+            "CSM_CONTROL_PLANE_USER" to "my-eventhub-access-policy",
+            "CSM_CONTROL_PLANE_PASSWORD" to "a1b2c3d4e5==",
             "CSM_SIMULATION" to "TestSimulation"),
         container.envVars)
   }

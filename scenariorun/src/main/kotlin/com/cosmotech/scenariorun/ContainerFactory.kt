@@ -80,9 +80,8 @@ private const val AZURE_DATA_EXPLORER_DATABASE_NAME = "AZURE_DATA_EXPLORER_DATAB
 private const val RUN_TEMPLATE_ID_VAR = "CSM_RUN_TEMPLATE_ID"
 private const val CONTAINER_MODE_VAR = "CSM_CONTAINER_MODE"
 private const val ENTRYPOINT_NAME = "entrypoint.py"
-private const val EVENT_HUB_WORKSPACE_PROBES_MEASURES = "probesmeasures"
 private const val EVENT_HUB_MEASURES_VAR = "CSM_PROBES_MEASURES_TOPIC"
-private const val EVENT_HUB_HOST_NAME = "servicebus.windows.net"
+private const val EVENT_HUB_CONTROL_PLANE_VAR = "CSM_CONTROL_PLANE_TOPIC"
 private const val CSM_SIMULATION_VAR = "CSM_SIMULATION"
 private const val NODE_PARAM_NONE = "%NONE%"
 private const val NODE_LABEL_DEFAULT = "basic"
@@ -98,6 +97,8 @@ internal const val AZURE_EVENT_HUB_SHARED_ACCESS_POLICY_ENV_VAR =
 internal const val AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR = "AZURE_EVENT_HUB_SHARED_ACCESS_KEY"
 internal const val CSM_AMQPCONSUMER_USER_ENV_VAR = "CSM_AMQPCONSUMER_USER"
 internal const val CSM_AMQPCONSUMER_PASSWORD_ENV_VAR = "CSM_AMQPCONSUMER_PASSWORD"
+private const val CSM_CONTROL_PLANE_USER_ENV_VAR = "CSM_CONTROL_PLANE_USER"
+private const val CSM_CONTROL_PLANE_PASSWORD_ENV_VAR = "CSM_CONTROL_PLANE_PASSWORD"
 internal const val AZURE_AAD_POD_ID_BINDING_LABEL = "aadpodidbinding"
 private const val SCENARIO_DATA_ABSOLUTE_PATH_ENV_VAR = "CSM_DATA_ABSOLUTE_PATH"
 private const val SCENARIO_DATA_UPLOAD_LOG_LEVEL_ENV_VAR = "CSM_LOG_LEVEL"
@@ -1012,15 +1013,16 @@ internal class ContainerFactory(
   ): Map<String, String> {
     val envVars: MutableMap<String, String> = mutableMapOf()
     if (workspace.useDedicatedEventHubNamespace != true) {
-      envVars[EVENT_HUB_MEASURES_VAR] =
-          "${csmPlatformProperties.azure?.eventBus?.baseUri}/${organization.id}-${workspace.key}".lowercase()
-      envVars.putAll(
-          getSpecificEventHubAuthenticationEnvVars(csmPlatformProperties.azure?.eventBus!!))
+      val eventBus = csmPlatformProperties.azure?.eventBus!!
+      val eventHubBase = "${eventBus.baseUri}/${organization.id}-${workspace.key}".lowercase()
+      envVars[EVENT_HUB_MEASURES_VAR] = eventHubBase
+      envVars[EVENT_HUB_CONTROL_PLANE_VAR] = "${eventHubBase}-scenariorun"
+      envVars.putAll(getSpecificEventHubAuthenticationEnvVars(eventBus))
     } else {
-      val baseUri = "amqps://${organization.id}-${workspace.key}.${EVENT_HUB_HOST_NAME}"
-      envVars[EVENT_HUB_MEASURES_VAR] =
-          "${baseUri}/${EVENT_HUB_WORKSPACE_PROBES_MEASURES}".lowercase()
-      logger.debug(
+      val baseUri = "amqps://${organization.id}-${workspace.key}.servicebus.windows.net".lowercase()
+      envVars[EVENT_HUB_MEASURES_VAR] = "${baseUri}/probesmeasures"
+      envVars[EVENT_HUB_CONTROL_PLANE_VAR] = "${baseUri}/scenariorun"
+      logger.info(
           "Workspace ${workspace.id} set to use dedicated eventhub namespace " +
               " => " +
               "using tenant id, client id and client secret already put in the " +
@@ -1059,7 +1061,9 @@ internal class ContainerFactory(
               AZURE_EVENT_HUB_SHARED_ACCESS_POLICY_ENV_VAR to sharedAccessPolicyNamespaceName,
               AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR to sharedAccessPolicyNamespaceKey,
               CSM_AMQPCONSUMER_USER_ENV_VAR to sharedAccessPolicyNamespaceName,
-              CSM_AMQPCONSUMER_PASSWORD_ENV_VAR to sharedAccessPolicyNamespaceKey)
+              CSM_AMQPCONSUMER_PASSWORD_ENV_VAR to sharedAccessPolicyNamespaceKey,
+              CSM_CONTROL_PLANE_USER_ENV_VAR to sharedAccessPolicyNamespaceName,
+              CSM_CONTROL_PLANE_PASSWORD_ENV_VAR to sharedAccessPolicyNamespaceKey)
         }
         TENANT_CLIENT_CREDENTIALS -> {
           logger.debug(
