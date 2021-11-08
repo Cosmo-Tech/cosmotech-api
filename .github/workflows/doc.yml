@@ -16,7 +16,7 @@ jobs:
   generate_and_push_doc_for_openapi:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.3.5
+      - uses: actions/checkout@v2.4.0
         with:
           # Fetch all tags since Gradle project version is built upon SCM
           fetch-depth: 0
@@ -70,7 +70,7 @@ jobs:
   generate_and_push_doc_for_helm_charts:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.3.5
+      - uses: actions/checkout@v2.4.0
 
       - name: Update Helm Charts documentation
         run: ./scripts/kubernetes/update-helm-chart-readme.sh
