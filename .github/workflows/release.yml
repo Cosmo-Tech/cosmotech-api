@@ -9,7 +9,7 @@ jobs:
   upload_deploy_helper_script:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.3.5
+      - uses: actions/checkout@v2.4.0
 
       - name: Compute API version from tag
         id: apiVersionVar

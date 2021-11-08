@@ -41,7 +41,7 @@ jobs:
           - workspace
 
     steps:
-      - uses: actions/checkout@v2.3.5
+      - uses: actions/checkout@v2.4.0
 
       - name: Validate '${{ matrix.project }}' definition
         uses: char0n/swagger-editor-validate@v1.2.1
@@ -55,7 +55,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
-      - uses: actions/checkout@v2.3.5
+      - uses: actions/checkout@v2.4.0
         with:
           # Fetch all tags since Gradle project version is built upon SCM
           fetch-depth: 0
@@ -99,7 +99,7 @@ jobs:
           - 80:8080
 
     steps:
-      - uses: actions/checkout@v2.3.5
+      - uses: actions/checkout@v2.4.0
 
       - name: Download openapi artifact
         uses: actions/download-artifact@v2
