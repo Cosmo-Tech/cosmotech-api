@@ -86,7 +86,7 @@ subprojects {
   apply(plugin = "org.springframework.boot")
   apply(plugin = "io.spring.dependency-management")
 
-  dependencyManagement { imports { mavenBom("com.azure.spring:azure-spring-boot-bom:3.9.0") } }
+  dependencyManagement { imports { mavenBom("com.azure.spring:azure-spring-boot-bom:3.10.0") } }
 
   version = rootProject.scmVersion.version ?: error("Root project did not configure scmVersion!")
 
