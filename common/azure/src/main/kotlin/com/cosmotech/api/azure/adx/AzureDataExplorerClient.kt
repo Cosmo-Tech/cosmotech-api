@@ -30,7 +30,7 @@ internal const val HEALTH_KUSTO_QUERY =
 @Service("csmADX")
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 internal class AzureDataExplorerClient(private val csmPlatformProperties: CsmPlatformProperties) :
-    PostProcessingDataIngestionStateProvider, HealthIndicator {
+    HealthIndicator, PostProcessingDataIngestionStateProvider {
 
   private val logger = LoggerFactory.getLogger(AzureDataExplorerClient::class.java)
 
@@ -38,15 +38,15 @@ internal class AzureDataExplorerClient(private val csmPlatformProperties: CsmPla
 
   private lateinit var kustoClient: Client
 
-  private lateinit var dataIngestionStateIfNoControlPlaneInfoButProbeMeasuresData:
-      DataIngestionState
+  private val dataIngestionStateIfNoControlPlaneInfoButProbeMeasuresData =
+      DataIngestionState.valueOf(
+          csmPlatformProperties.dataIngestionState.stateIfNoControlPlaneInfoButProbeMeasuresData)
+
+  private val dataIngestionStateExceptionIfNoControlPlaneInfoAndNoProbeMeasuresData =
+      csmPlatformProperties.dataIngestionState.exceptionIfNoControlPlaneInfoAndNoProbeMeasuresData
 
   @PostConstruct
   internal fun init() {
-    this.dataIngestionStateIfNoControlPlaneInfoButProbeMeasuresData =
-        DataIngestionState.valueOf(
-            csmPlatformProperties.dataIngestionState.stateIfNoControlPlaneInfoButProbeMeasuresData)
-
     val csmPlatformAzure = csmPlatformProperties.azure!!
     // TODO Investigate whether we need to use core or customer creds
     val csmPlatformAzureCredentials = csmPlatformAzure.credentials.core
@@ -76,18 +76,28 @@ internal class AzureDataExplorerClient(private val csmPlatformProperties: CsmPla
         queryProbesMeasuresCount(organizationId, workspaceKey, csmSimulationRun)
 
     logger.debug(
-        "For scenario run $scenarioRunId (csmSimulationRun=" +
-            csmSimulationRun +
-            ": (sentMessagesTotal,probesMeasuresCount)=($sentMessagesTotal, $probesMeasuresCount)")
+        "Scenario run {} (csmSimulationRun={}): (sentMessagesTotal,probesMeasuresCount)=(" +
+            "$sentMessagesTotal,$probesMeasuresCount)",
+        scenarioRunId,
+        csmSimulationRun)
     return if (sentMessagesTotal == null) {
+      logger.debug(
+          "Scenario run {} (csmSimulationRun={}) produced {} measures, " +
+              "but no data found in SimulationTotalFacts control plane table",
+          scenarioRunId,
+          csmSimulationRun,
+          probesMeasuresCount)
       if (probesMeasuresCount > 0) {
         this.dataIngestionStateIfNoControlPlaneInfoButProbeMeasuresData
-      } else if (csmPlatformProperties
-          .dataIngestionState
-          .exceptionIfNoControlPlaneInfoAndNoProbeMeasuresData) {
+      } else if (this.dataIngestionStateExceptionIfNoControlPlaneInfoAndNoProbeMeasuresData) {
         throw UnsupportedOperationException(
             "Case not handled: probesMeasuresCount=0 and sentMessagesTotal=NULL. " +
-                "Simulation run $csmSimulationRun probably has no consumers.")
+                "Scenario run $scenarioRunId (csmSimulationRun=$csmSimulationRun) " +
+                "probably ran no AMQP consumers. " +
+                "To mitigate this, either make sure to build your Simulator using " +
+                "a version of SDK >= 8.5 or configure the " +
+                "'csm.platform.data-ingestion-state.exception-if-no-control-plane-info-" +
+                "and-no-probe-measures-data' property flag for this API")
       } else {
         // For backward compatibility purposes
         DataIngestionState.Successful
@@ -104,11 +114,6 @@ internal class AzureDataExplorerClient(private val csmPlatformProperties: CsmPla
       workspaceKey: String,
       csmSimulationRun: String
   ): Long {
-    val requestProperties =
-        ClientRequestProperties().apply {
-          timeoutInMilliSec = TimeUnit.SECONDS.toMillis(REQUEST_TIMEOUT_SECONDS)
-        }
-
     val probesMeasuresCountQueryPrimaryResults =
         this.kustoClient.execute(
                 getDatabaseName(organizationId, workspaceKey),
@@ -117,7 +122,9 @@ internal class AzureDataExplorerClient(private val csmPlatformProperties: CsmPla
                 | where SimulationRun == '${csmSimulationRun}'
                 | count
             """,
-                requestProperties)
+                ClientRequestProperties().apply {
+                  timeoutInMilliSec = TimeUnit.SECONDS.toMillis(REQUEST_TIMEOUT_SECONDS)
+                })
             .primaryResults
     if (!probesMeasuresCountQueryPrimaryResults.next()) {
       throw IllegalStateException("Missing ProbesMeasures table")
@@ -130,11 +137,6 @@ internal class AzureDataExplorerClient(private val csmPlatformProperties: CsmPla
       workspaceKey: String,
       csmSimulationRun: String
   ): Long? {
-    val requestProperties =
-        ClientRequestProperties().apply {
-          timeoutInMilliSec = TimeUnit.SECONDS.toMillis(REQUEST_TIMEOUT_SECONDS)
-        }
-
     val sentMessagesTotalQueryPrimaryResults =
         this.kustoClient.execute(
                 getDatabaseName(organizationId, workspaceKey),
@@ -143,7 +145,9 @@ internal class AzureDataExplorerClient(private val csmPlatformProperties: CsmPla
                 | where SimulationId == '${csmSimulationRun}'
                 | project SentMessagesTotal
             """,
-                requestProperties)
+                ClientRequestProperties().apply {
+                  timeoutInMilliSec = TimeUnit.SECONDS.toMillis(REQUEST_TIMEOUT_SECONDS)
+                })
             .primaryResults
 
     val sentMessagesTotalRowCount = sentMessagesTotalQueryPrimaryResults.count()
@@ -192,6 +196,5 @@ internal class AzureDataExplorerClient(private val csmPlatformProperties: CsmPla
   }
 }
 
-@Suppress("Unused", "UnusedPrivateMember")
 private fun getDatabaseName(organizationId: String, workspaceKey: String) =
     "${organizationId}-${workspaceKey}"
