@@ -282,7 +282,13 @@ internal class SolutionServiceImpl(
       RunTemplateHandlerId.prerun -> runTemplate.preRunSource = RunTemplateStepSource.cloud
       RunTemplateHandlerId.engine -> runTemplate.runSource = RunTemplateStepSource.cloud
       RunTemplateHandlerId.postrun -> runTemplate.postRunSource = RunTemplateStepSource.cloud
+      RunTemplateHandlerId.scenariodata_transform ->
+          runTemplate.scenariodataTransformSource = RunTemplateStepSource.cloud
+    }.run {
+      // This trick forces Kotlin to raise an error at compile time if the "when" statement is not
+      // exhaustive
     }
+
     cosmosTemplate.upsert("${organizationId}_solutions", solution)
   }
 }
