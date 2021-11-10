@@ -373,9 +373,27 @@ class WorkflowBuildersTests {
   }
 
   @Test
+  fun `Create Workflow spec with StartContainers volume claim default values`() {
+    val sc = getStartContainersDiamond()
+    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc)
+    val dataDir =
+        V1PersistentVolumeClaim()
+            .metadata(V1ObjectMeta().name(VOLUME_CLAIM))
+            .spec(
+                V1PersistentVolumeClaimSpec()
+                    .accessModes(emptyList())
+                    .storageClassName(null)
+                    .resources(V1ResourceRequirements().requests(emptyMap())))
+    val expected = listOf(dataDir)
+    assertEquals(expected, workflowSpec.volumeClaimTemplates)
+  }
+
+  @Test
   fun `Create Workflow spec with StartContainers volume claim`() {
     val sc = getStartContainersDiamond()
     every { csmPlatformProperties.argo.workflows.storageClass } returns "cosmotech-api-test-phoenix"
+    every { csmPlatformProperties.argo.workflows.accessModes } returns listOf("ReadWriteMany")
+    every { csmPlatformProperties.argo.workflows.requests } returns mapOf("storage" to "300Gi")
     val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc)
     val dataDir =
         V1PersistentVolumeClaim()
@@ -385,7 +403,7 @@ class WorkflowBuildersTests {
                     .accessModes(listOf("ReadWriteMany"))
                     .storageClassName("cosmotech-api-test-phoenix")
                     .resources(
-                        V1ResourceRequirements().requests(mapOf("storage" to Quantity("100Gi")))))
+                        V1ResourceRequirements().requests(mapOf("storage" to Quantity("300Gi")))))
     val expected = listOf(dataDir)
     assertEquals(expected, workflowSpec.volumeClaimTemplates)
   }

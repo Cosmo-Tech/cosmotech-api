@@ -129,6 +129,8 @@ argo:
   storage:
     # -- storage class used by Workflows submitted to Argo
     class:
+      # -- whether to install the storage class
+      install: true
       # -- volume plugin used for provisioning Persistent Volumes
       provisioner: kubernetes.io/azure-file
       # -- mount options, depending on the volume plugin configured. If the volume plugin does not support mount options but mount options are specified, provisioning will fail.
@@ -151,7 +153,17 @@ config:
       argo:
         base-uri: "http://argo-server:2746"
         workflows:
-          storage-class: "phoenix-azurefile"
+          # -- Name of the storage class for Workflows volumes.
+          # Useful if you want to use a different storage class, installed and managed externally.
+          # In this case, you should set argo.storage.class.install to false.
+          storage-class: null
+          access-modes:
+            # -- Any in the following list: ReadWriteOnce, ReadOnlyMany, ReadWriteMany, ReadWriteOncePod (K8s 1.22+).
+            # ReadWriteMany is recommended, as we are likely to have parallel pods accessing the volume
+            - ReadWriteMany
+          requests:
+            # Azure file storage minimal claim is 100Gi for Premium classes
+            storage: 100Gi
       authorization:
         allowed-tenants: []
       azure:

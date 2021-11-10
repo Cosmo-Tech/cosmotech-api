@@ -22,6 +22,11 @@ ingress:
   hosts:
     - host: localhost
 
+argo:
+  storage:
+    class:
+      install: false
+
 config:
   logging:
     level:
@@ -29,6 +34,16 @@ config:
       com.cosmotech: DEBUG
   csm:
     platform:
+      argo:
+        workflows:
+          # Use any default storage class available
+          storage-class: null
+          access-modes:
+            # ReadWriteMany is recommended, as we are likely to have parallel pods accessing the volume.
+            # But this is not possible locally for now. See PROD-8043
+            - ReadWriteOnce
+          requests:
+            storage: 1Gi
       azure:
         credentials:
           # TODO Breaking change: Move deprecated tenantId, clientId and clientSecret under the new 'core' field

@@ -37,9 +37,22 @@ resources:
 #    # az acr credential show -n csmengines --query="passwords[0].value" -o tsv
 #    password: "changeme"
 
+argo:
+  storage:
+    class:
+      install: true
+
 config:
   csm:
     platform:
+      argo:
+        workflows:
+          storage-class: null
+          access-modes:
+            - ReadWriteMany
+          requests:
+            # Azure file storage minimal claim is 100Gi for Premium classes
+            storage: 100Gi
       azure:
         credentials:
           # TODO Breaking change: Move deprecated tenantId, clientId and clientSecret under the new 'core' field
