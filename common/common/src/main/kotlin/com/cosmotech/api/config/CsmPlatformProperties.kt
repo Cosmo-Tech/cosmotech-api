@@ -94,8 +94,20 @@ data class CsmPlatformProperties(
         /** The Kubernetes service account name */
         val serviceAccountName: String,
 
-        /** The Kubernetes storage-class to use for volume claims */
-        val storageClass: String,
+        /**
+         * The Kubernetes storage-class to use for volume claims. Set to null or an empty string to
+         * use the default storage class available in the cluster
+         */
+        val storageClass: String? = null,
+
+        /** List of AccessModes for the Kubernetes Persistent Volume Claims to use for Workflows */
+        val accessModes: List<String> = emptyList(),
+
+        /**
+         * Minimum resources the volumes requested by the Persistent Volume Claims should have.
+         * Example: storage: 1Gi
+         */
+        val requests: Map<String, String> = emptyMap(),
     )
   }
 

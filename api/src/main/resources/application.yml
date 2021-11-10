@@ -74,7 +74,12 @@ csm:
         namespace: phoenix
         node-pool-label: agentpool
         service-account-name: workflow
-        storage-class: "phoenix-azurefile"
+        storage-class: null
+        access-modes:
+          # Any in the following list: ReadWriteOnce, ReadOnlyMany, ReadWriteMany, ReadWriteOncePod (K8s 1.22+)
+          - ReadWriteOnce
+        requests:
+          storage: 1Gi
     images:
       scenario-fetch-parameters: cosmo-tech/fetch-scenario-parameters
       send-datawarehouse: cosmo-tech/azure-data-explorer-connector
