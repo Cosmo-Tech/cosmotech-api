@@ -9,6 +9,8 @@ import com.microsoft.azure.kusto.data.Client
 import com.microsoft.azure.kusto.data.ClientImpl
 import com.microsoft.azure.kusto.data.ClientRequestProperties
 import com.microsoft.azure.kusto.data.auth.ConnectionStringBuilder
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
 import org.slf4j.LoggerFactory
@@ -40,10 +42,16 @@ internal class AzureDataExplorerClient(private val csmPlatformProperties: CsmPla
 
   private val dataIngestionStateIfNoControlPlaneInfoButProbeMeasuresData =
       DataIngestionState.valueOf(
-          csmPlatformProperties.dataIngestionState.stateIfNoControlPlaneInfoButProbeMeasuresData)
+          csmPlatformProperties.dataIngestion.state.stateIfNoControlPlaneInfoButProbeMeasuresData)
 
   private val dataIngestionStateExceptionIfNoControlPlaneInfoAndNoProbeMeasuresData =
-      csmPlatformProperties.dataIngestionState.exceptionIfNoControlPlaneInfoAndNoProbeMeasuresData
+      csmPlatformProperties.dataIngestion.state.exceptionIfNoControlPlaneInfoAndNoProbeMeasuresData
+
+  private val waitingTimeBeforeIngestion =
+      csmPlatformProperties.dataIngestion.waitingTimeBeforeIngestion
+
+  private val ingestionObservationWindowToBeConsideredAFailureMinutes =
+      csmPlatformProperties.dataIngestion.ingestionObservationWindowToBeConsideredAFailureMinutes
 
   @PostConstruct
   internal fun init() {
@@ -70,7 +78,8 @@ internal class AzureDataExplorerClient(private val csmPlatformProperties: CsmPla
       csmSimulationRun: String
   ): DataIngestionState? {
     logger.trace("getStateFor($organizationId,$workspaceKey,$scenarioRunId,$csmSimulationRun)")
-
+    // Due to latency before data ingestion
+    TimeUnit.SECONDS.sleep(waitingTimeBeforeIngestion)
     val sentMessagesTotal = querySentMessagesTotal(organizationId, workspaceKey, csmSimulationRun)
     val probesMeasuresCount =
         queryProbesMeasuresCount(organizationId, workspaceKey, csmSimulationRun)
@@ -88,6 +97,7 @@ internal class AzureDataExplorerClient(private val csmPlatformProperties: CsmPla
           csmSimulationRun,
           probesMeasuresCount)
       if (probesMeasuresCount > 0) {
+        // For backward compatibility purposes
         this.dataIngestionStateIfNoControlPlaneInfoButProbeMeasuresData
       } else if (this.dataIngestionStateExceptionIfNoControlPlaneInfoAndNoProbeMeasuresData) {
         throw UnsupportedOperationException(
@@ -96,20 +106,25 @@ internal class AzureDataExplorerClient(private val csmPlatformProperties: CsmPla
                 "probably ran no AMQP consumers. " +
                 "To mitigate this, either make sure to build your Simulator using " +
                 "a version of SDK >= 8.5 or configure the " +
-                "'csm.platform.data-ingestion-state.exception-if-no-control-plane-info-" +
+                "'csm.platform.data-ingestion.state.exception-if-no-control-plane-info-" +
                 "and-no-probe-measures-data' property flag for this API")
       } else {
-        // For backward compatibility purposes
+        // THis is the case where sentMessagesTotal == null, probesMeasuresCount = 0 and we don't
+        // want to throw an exception the simulation is successful but there's no probe measures
         DataIngestionState.Successful
       }
     } else if (probesMeasuresCount < sentMessagesTotal) {
-      DataIngestionState.InProgress
+      if (doesProbesMeasuresTableContainIngestionFailures(organizationId, workspaceKey)) {
+        DataIngestionState.Failure
+      } else {
+        DataIngestionState.InProgress
+      }
     } else {
       DataIngestionState.Successful
     }
   }
 
-  private fun queryProbesMeasuresCount(
+  internal fun queryProbesMeasuresCount(
       organizationId: String,
       workspaceKey: String,
       csmSimulationRun: String
@@ -132,7 +147,7 @@ internal class AzureDataExplorerClient(private val csmPlatformProperties: CsmPla
     return probesMeasuresCountQueryPrimaryResults.getLongObject("Count")!!
   }
 
-  private fun querySentMessagesTotal(
+  internal fun querySentMessagesTotal(
       organizationId: String,
       workspaceKey: String,
       csmSimulationRun: String
@@ -193,6 +208,34 @@ internal class AzureDataExplorerClient(private val csmPlatformProperties: CsmPla
           Health.down(exception)
         }
     return healthBuilder.withDetail("baseUri", baseUri).build()
+  }
+
+  internal fun doesProbesMeasuresTableContainIngestionFailures(
+      organizationId: String,
+      workspaceKey: String,
+  ): Boolean {
+    val databaseName = getDatabaseName(organizationId, workspaceKey)
+    val failureQueryPrimaryResults =
+        this.kustoClient.execute(
+                databaseName,
+                """
+                .show ingestion failures
+                | where  Table  == 'ProbesMeasures'
+                | order by FailedOn desc
+                | project FailedOn
+            """,
+                ClientRequestProperties().apply {
+                  timeoutInMilliSec = TimeUnit.SECONDS.toMillis(REQUEST_TIMEOUT_SECONDS)
+                })
+            .primaryResults
+    if (failureQueryPrimaryResults.next()) {
+      val count = failureQueryPrimaryResults.count()
+      val failedOn = failureQueryPrimaryResults.getKustoDateTime("FailedOn")!!
+      val now = LocalDateTime.now()
+      val minutes = failedOn.until(now, ChronoUnit.MINUTES)
+      return count > 0 && minutes < this.ingestionObservationWindowToBeConsideredAFailureMinutes
+    }
+    return false
   }
 }
 

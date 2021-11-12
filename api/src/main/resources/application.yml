@@ -157,9 +157,22 @@ csm:
         key: ""
         populateQueryMetrics: true
         uri: ""
-    data-ingestion-state:
-      state-if-no-control-plane-info-but-probe-measures-data: Successful
-      exception-if-no-control-plane-info-and-no-probe-measures-data: true
+    data-ingestion:
+      # Number of seconds to wait after a scenario run workflow end time, before
+      # starting to check ADX for data ingestion state.
+      # See https://bit.ly/3FXshzE for the rationale
+      waiting-time-before-ingestion-seconds: 10
+      # number of minutes after a scenario run workflow end time during which an ingestion failure
+      # detected is considered linked to the current scenario run
+      ingestion-observation-window-to-be-considered-a-failure-minutes: 5
+      state:
+        # state to report if there no ingestion failure detected, and no control plane info,
+        # but we have probe measures in ADX.
+        # Value should be convertible to a DataIngestionState
+        # (e.g., InProgress, Successful, Failure, Unknown)
+        state-if-no-control-plane-info-but-probe-measures-data: Successful
+        # whether to report an error if there is neither control plane info nor probe measures data in ADX
+        exception-if-no-control-plane-info-and-no-probe-measures-data: true
 
 springdoc:
   # See https://springdoc.org/#properties
