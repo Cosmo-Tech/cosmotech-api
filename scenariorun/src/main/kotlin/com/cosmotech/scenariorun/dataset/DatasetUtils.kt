@@ -43,6 +43,7 @@ internal fun findDatasetsAndConnectors(
           ?.forEach { parameter ->
             val parameterValue = scenario.parametersValues?.find { it.parameterId == parameter.id }
             if (parameterValue != null && parameterValue.value != "") {
+              // Handle parameterValue.isArray for DATASETID here
               addDatasetAndConnector(
                   datasetService,
                   connectorService,
