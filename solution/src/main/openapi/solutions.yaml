@@ -372,6 +372,54 @@ paths:
         "404":
           description: the Solution specified is unknown or you don't have access to it
 
+  /organizations/{organization_id}/solutions/{solution_id}/runtemplates/{run_template_id}/handlers/{handler_id}/download:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: solution_id
+        in: path
+        description: the Solution identifier
+        required: true
+        schema:
+          type: string
+      - name: run_template_id
+        in: path
+        description: the Run Template identifier
+        required: true
+        schema:
+          type: string
+      - name: handler_id
+        in: path
+        description: the Handler identifier
+        required: true
+        schema:
+          $ref: '#/components/schemas/RunTemplateHandlerId'
+    get:
+      operationId: downloadRunTemplateHandler
+      tags:
+        - solution
+      summary: Download a Run Template step handler zip file
+      responses:
+        "200":
+          description: the run template handle file as a resource
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+                default: inline; filename="handler.zip"
+                description: Used only with `application/zip` responses
+                example: inline; filename="handler.zip"
+        "404":
+          description: the Workspace file specified is unknown or you don't have access to it
   /organizations/{organization_id}/solutions/{solution_id}/runtemplates/{run_template_id}/handlers/{handler_id}/upload:
     parameters:
       - name: organization_id

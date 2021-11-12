@@ -27,6 +27,7 @@ import org.apache.commons.compress.archivers.ArchiveStreamFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.core.io.Resource
+import org.springframework.core.io.ResourceLoader
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
@@ -34,6 +35,7 @@ import org.springframework.stereotype.Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions")
 internal class SolutionServiceImpl(
+    private val resourceLoader: ResourceLoader,
     private val azureStorageBlobServiceClient: BlobServiceClient,
 ) : AbstractCosmosBackedService(), SolutionApiService {
 
@@ -235,24 +237,12 @@ internal class SolutionServiceImpl(
       body: Resource,
       overwrite: Boolean
   ) {
-    val solution = findSolutionById(organizationId, solutionId)
+    val solution = this.validateRunTemplate(organizationId, solutionId, runTemplateId)
     logger.debug(
         "Uploading run template handler to solution #{} ({} - {})",
         solution.id,
         solution.name,
         solution.version)
-
-    val validRunTemplateIds = solution.runTemplates.map { it.id }.toSet()
-    if (validRunTemplateIds.isEmpty()) {
-      throw IllegalArgumentException(
-          "Solution $solutionId does not declare any run templates. " +
-              "It is therefore not possible to upload run template handlers. " +
-              "Either update the Solution or upload a new one with run templates.")
-    }
-    if (runTemplateId !in validRunTemplateIds) {
-      throw IllegalArgumentException(
-          "Invalid runTemplateId: [$runTemplateId]. Must be one of: $validRunTemplateIds")
-    }
 
     // Security checks
     // TODO Security-wise, we should also check the content of the archive for potential attack
@@ -290,5 +280,48 @@ internal class SolutionServiceImpl(
     }
 
     cosmosTemplate.upsert("${organizationId}_solutions", solution)
+  }
+
+  override fun downloadRunTemplateHandler(
+      organizationId: String,
+      solutionId: String,
+      runTemplateId: String,
+      handlerId: RunTemplateHandlerId
+  ): Resource {
+    val solution = this.validateRunTemplate(organizationId, solutionId, runTemplateId)
+    val blobPath =
+        "${organizationId.sanitizeForAzureStorage()}/" +
+            "${solutionId.sanitizeForAzureStorage()}/" +
+            "${runTemplateId}/${handlerId.value}.zip"
+    logger.debug(
+        "Downloading run template handler resource for #{} ({}-{}) - {} - {}: {}",
+        solution.id,
+        solution.name,
+        solution.version,
+        runTemplateId,
+        handlerId,
+        blobPath)
+    return resourceLoader.getResource("azure-blob://${blobPath}")
+  }
+
+  private fun validateRunTemplate(
+      organizationId: String,
+      solutionId: String,
+      runTemplateId: String,
+  ): Solution {
+    val solution = findSolutionById(organizationId, solutionId)
+    val validRunTemplateIds = solution.runTemplates.map { it.id }.toSet()
+    if (validRunTemplateIds.isEmpty()) {
+      throw IllegalArgumentException(
+          "Solution $solutionId does not declare any run templates. " +
+              "It is therefore not possible to upload run template handlers. " +
+              "Either update the Solution or upload a new one with run templates.")
+    }
+    if (runTemplateId !in validRunTemplateIds) {
+      throw IllegalArgumentException(
+          "Invalid runTemplateId: [$runTemplateId]. Must be one of: $validRunTemplateIds")
+    }
+
+    return solution
   }
 }
