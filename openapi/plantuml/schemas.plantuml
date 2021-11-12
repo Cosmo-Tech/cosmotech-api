@@ -64,6 +64,10 @@ entity DatasetCopyParameters {
     options: Map
 }
 
+entity DatasetSearch {
+    DatasetTags: List<String>
+}
+
 entity Organization {
     id: String
     name: String
