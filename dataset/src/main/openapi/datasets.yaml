@@ -76,6 +76,48 @@ paths:
               examples:
                 Two:
                   $ref: '#/components/examples/TwoDatasets'
+  /organizations/{organization_id}/datasets/search:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: searchDatasets
+      tags:
+        - dataset
+      summary: Search Datasets
+      requestBody:
+        description: the Dataset search parameters
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DatasetSearch'
+            examples:
+              DatasetSearch:
+                $ref: '#/components/examples/DatasetSearch'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            examples:
+              DatasetSearch:
+                $ref: '#/components/examples/DatasetSearch'
+      responses:
+        "200":
+          description: the list of Datasets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Dataset'
+              examples:
+                Two:
+                  $ref: '#/components/examples/TwoDatasets'
   /organizations/{organization_id}/datasets/copy:
     parameters:
       - name: organization_id
@@ -540,6 +582,15 @@ components:
           scopes:
             http://dev.api.cosmotech.com/platform: Platform scope
   schemas:
+    DatasetSearch:
+      type: object
+      description: the search options
+      properties:
+        DatasetTags:
+          type: array
+          description: the dataset tag list to search
+          items:
+            type: string
     Dataset:
       type: object
       description: a Dataset

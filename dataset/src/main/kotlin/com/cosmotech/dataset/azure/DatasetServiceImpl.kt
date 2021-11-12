@@ -23,6 +23,7 @@ import com.cosmotech.dataset.api.DatasetApiService
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetCompatibility
 import com.cosmotech.dataset.domain.DatasetCopyParameters
+import com.cosmotech.dataset.domain.DatasetSearch
 import com.cosmotech.organization.api.OrganizationApiService
 import com.fasterxml.jackson.databind.JsonNode
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -157,6 +158,10 @@ internal class DatasetServiceImpl(
       datasetCopyParameters: DatasetCopyParameters
   ): DatasetCopyParameters {
     TODO("Not yet implemented")
+  }
+
+  override fun searchDatasets(organizationId: String, datasetSearch: DatasetSearch): List<Dataset> {
+    return listOf()
   }
 
   @EventListener(OrganizationRegistered::class)
