@@ -648,6 +648,10 @@ components:
           type: string
           readOnly: true
           description: the parameter value type
+        isArray:
+          type: boolean
+          readOnly: true
+          description: whether or not the parameter contains an array of values
         value:
           type: string
           description: the parameter value
