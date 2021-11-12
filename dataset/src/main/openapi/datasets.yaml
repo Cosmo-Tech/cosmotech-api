@@ -586,7 +586,7 @@ components:
       type: object
       description: the search options
       properties:
-        DatasetTags:
+        datasetTags:
           type: array
           description: the dataset tag list to search
           items:

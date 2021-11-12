@@ -65,7 +65,7 @@ entity DatasetCopyParameters {
 }
 
 entity DatasetSearch {
-    DatasetTags: List<String>
+    datasetTags: List<String>
 }
 
 entity Organization {
