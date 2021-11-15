@@ -591,6 +591,8 @@ components:
           description: the dataset tag list to search
           items:
             type: string
+      required:
+        - datasetTags
     Dataset:
       type: object
       description: a Dataset
