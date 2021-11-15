@@ -8,6 +8,7 @@ import com.cosmotech.connector.domain.Connector
 import com.cosmotech.dataset.api.DatasetApiService
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.scenario.domain.Scenario
+import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
 import com.cosmotech.scenariorun.FETCH_PATH_VAR
 import com.cosmotech.scenariorun.getCommonEnvVars
 import com.cosmotech.scenariorun.resolvePlatformVars
@@ -42,22 +43,55 @@ internal fun findDatasetsAndConnectors(
           ?.filter { it.varType == PARAMETERS_DATASET_ID }
           ?.forEach { parameter ->
             val parameterValue = scenario.parametersValues?.find { it.parameterId == parameter.id }
-            if (parameterValue != null && parameterValue.value != "") {
-              // Handle parameterValue.isArray for DATASETID here
-              addDatasetAndConnector(
-                  datasetService,
-                  connectorService,
-                  organizationId,
-                  parameterValue.value,
-                  datasets,
-                  connectors,
-              )
-            }
+            addParameterValue(
+              parameterValue,
+              datasetService,
+              connectorService,
+              organizationId,
+              datasets,
+              connectors,
+            )
           }
     }
   }
   return DatasetsConnectors(
       datasets = datasets.values.toList(), connectors = connectors.values.toList())
+}
+
+private fun addParameterValue(
+              parameterValue: ScenarioRunTemplateParameterValue?,
+              datasetService: DatasetApiService,
+              connectorService: ConnectorApiService,
+              organizationId: String,
+              datasets: MutableMap<String, Dataset>,
+              connectors: MutableMap<String, Connector>,
+            ) {
+    if (parameterValue != null && parameterValue.value != "") {
+      val value = parameterValue.value
+      if (value.startsWith("[")) {
+        val datasetIds = value.substring(1, value.length - 1)
+        val datasetIdList = datasetIds.split(",")
+        datasetIdList.forEach {
+          addDatasetAndConnector(
+              datasetService,
+              connectorService,
+              organizationId,
+              it,
+              datasets,
+              connectors,
+          )
+        }
+      } else {
+        addDatasetAndConnector(
+            datasetService,
+            connectorService,
+            organizationId,
+            value,
+            datasets,
+            connectors,
+        )
+      }
+    }
 }
 
 internal fun addDatasetAndConnector(
