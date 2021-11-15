@@ -20,7 +20,7 @@ plugins {
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.13.6"
-  id("com.diffplug.spotless") version "5.17.1"
+  id("com.diffplug.spotless") version "6.0.0"
   id("org.springframework.boot") version "2.5.6" apply false
   id("io.spring.dependency-management") version "1.0.11.RELEASE"
   id("org.openapi.generator") version "5.3.0" apply false
@@ -104,14 +104,12 @@ subprojects {
       runtimeClasspath += sourceSets.main.get().output + sourceSets.test.get().output
     }
   }
-  val integrationTestImplementation by configurations.getting {
-    extendsFrom(configurations.testImplementation.get())
-  }
+  val integrationTestImplementation by
+      configurations.getting { extendsFrom(configurations.testImplementation.get()) }
 
   @Suppress("UNUSED_VARIABLE")
-  val integrationTestRuntimeOnly by configurations.getting {
-    extendsFrom(configurations.testRuntimeOnly.get())
-  }
+  val integrationTestRuntimeOnly by
+      configurations.getting { extendsFrom(configurations.testRuntimeOnly.get()) }
 
   tasks.withType<Detekt> {
     buildUponDefaultConfig = true // preconfigure defaults
