@@ -21,6 +21,7 @@ import com.cosmotech.scenariorun.container.StartInfo
 import com.cosmotech.scenariorun.dataset.PARAMETERS_DATASET_ID
 import com.cosmotech.scenariorun.dataset.findDatasetsAndConnectors
 import com.cosmotech.scenariorun.dataset.getDatasetEnvVars
+import com.cosmotech.scenariorun.dataset.getDatasetIdListFromValue
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.scenariorun.domain.ScenarioRunContainerArtifact
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
@@ -750,27 +751,32 @@ internal class ContainerFactory(
                 ?: throw IllegalStateException(
                     "Parameter ${parameterValue.parameterId} not found in Solution ${solution.id}")
         if (parameter.varType == PARAMETERS_DATASET_ID) {
-          val dataset =
-              datasets?.find { dataset -> dataset.id == parameterValue.value }
-                  ?: throw IllegalStateException(
-                      "Dataset ${parameterValue.value} cannot be found in Datasets")
-          val connector =
-              connectors?.find { connector -> connector.id == dataset.connector?.id }
-                  ?: throw IllegalStateException(
-                      "Connector id ${dataset.connector?.id} not found in connectors list")
+          val datasetIdList = getDatasetIdListFromValue(parameterValue.value)
+          datasetIdList.forEachIndexed { index, datasetId ->
+            val dataset =
+                datasets?.find { dataset -> dataset.id == datasetId }
+                    ?: throw IllegalStateException(
+                        "Dataset ${datasetId} cannot be found in Datasets")
+            val connector =
+                connectors?.find { connector -> connector.id == dataset.connector?.id }
+                    ?: throw IllegalStateException(
+                        "Connector id ${dataset.connector?.id} not found in connectors list")
 
-          containers.add(
-              buildFromDataset(
-                  dataset,
-                  connector,
-                  datasetParameterCount,
-                  true,
-                  parameter.id,
-                  organizationId,
-                  workspaceId,
-                  workspaceKey,
-                  csmSimulationId))
-          datasetParameterCount++
+            val fetchId =
+                if (datasetIdList.size == 1) parameter.id else "${parameter.id}-${index.toString()}"
+            containers.add(
+                buildFromDataset(
+                    dataset,
+                    connector,
+                    datasetParameterCount,
+                    true,
+                    fetchId,
+                    organizationId,
+                    workspaceId,
+                    workspaceKey,
+                    csmSimulationId))
+            datasetParameterCount++
+          }
         }
       }
     }

@@ -682,9 +682,6 @@ components:
           type: object
           description: freeform options
           additionalProperties: true
-        isArray:
-          type: boolean
-          description: whether or not the parameter contains an array of values
       required:
         - id
         - labels

@@ -11,7 +11,6 @@ Name | Type | Description | Notes
 **maxValue** | **String** | the maximum value for this parameter | [optional] [default to null]
 **regexValidation** | **String** | a regex to validate the value | [optional] [default to null]
 **options** | **Map** | freeform options | [optional] [default to null]
-**isArray** | **Boolean** | whether or not the parameter contains an array of values | [optional] [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

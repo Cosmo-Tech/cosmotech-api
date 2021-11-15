@@ -136,7 +136,6 @@ entity RunTemplateParameter {
     maxValue: String
     regexValidation: String
     options: Map
-    isArray: Boolean
 }
 
 entity RunTemplateParameterGroup {
@@ -315,7 +314,6 @@ entity ScenarioRunStatusNode {
 entity ScenarioRunTemplateParameterValue {
     * parameterId: String
     varType: String
-    isArray: Boolean
     * value: String
     isInherited: Boolean
 }

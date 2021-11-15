@@ -44,12 +44,12 @@ internal fun findDatasetsAndConnectors(
           ?.forEach { parameter ->
             val parameterValue = scenario.parametersValues?.find { it.parameterId == parameter.id }
             addParameterValue(
-              parameterValue,
-              datasetService,
-              connectorService,
-              organizationId,
-              datasets,
-              connectors,
+                parameterValue,
+                datasetService,
+                connectorService,
+                organizationId,
+                datasets,
+                connectors,
             )
           }
     }
@@ -59,39 +59,36 @@ internal fun findDatasetsAndConnectors(
 }
 
 private fun addParameterValue(
-              parameterValue: ScenarioRunTemplateParameterValue?,
-              datasetService: DatasetApiService,
-              connectorService: ConnectorApiService,
-              organizationId: String,
-              datasets: MutableMap<String, Dataset>,
-              connectors: MutableMap<String, Connector>,
-            ) {
-    if (parameterValue != null && parameterValue.value != "") {
-      val value = parameterValue.value
-      if (value.startsWith("[")) {
-        val datasetIds = value.substring(1, value.length - 1)
-        val datasetIdList = datasetIds.split(",")
-        datasetIdList.forEach {
-          addDatasetAndConnector(
-              datasetService,
-              connectorService,
-              organizationId,
-              it,
-              datasets,
-              connectors,
-          )
-        }
-      } else {
-        addDatasetAndConnector(
-            datasetService,
-            connectorService,
-            organizationId,
-            value,
-            datasets,
-            connectors,
-        )
-      }
+    parameterValue: ScenarioRunTemplateParameterValue?,
+    datasetService: DatasetApiService,
+    connectorService: ConnectorApiService,
+    organizationId: String,
+    datasets: MutableMap<String, Dataset>,
+    connectors: MutableMap<String, Connector>,
+) {
+  if (parameterValue != null && parameterValue.value != "") {
+    val value = parameterValue.value
+    val datasetIdList = getDatasetIdListFromValue(value)
+    datasetIdList.forEach {
+      addDatasetAndConnector(
+          datasetService,
+          connectorService,
+          organizationId,
+          it,
+          datasets,
+          connectors,
+      )
     }
+  }
+}
+
+internal fun getDatasetIdListFromValue(paramValue: String): List<String> {
+  if (paramValue.startsWith("[")) {
+    val datasetIds = paramValue.substring(1, paramValue.length - 1)
+    return datasetIds.split(",")
+  } else {
+    return listOf(paramValue)
+  }
 }
 
 internal fun addDatasetAndConnector(

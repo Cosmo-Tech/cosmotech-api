@@ -1377,12 +1377,95 @@ class ContainerFactoryTests {
 
   @Test
   fun `Build all containers for a Scenario DATASETID containers env vars`() {
-    parametersDatasetEnvTest("1", "param2")
+    parametersDatasetEnvTest(getScenarioDatasetIds(), "1", "param2")
   }
 
   @Test
   fun `Build all containers for a Scenario DATASETID containers env vars 2`() {
-    parametersDatasetEnvTest("2", "param3")
+    parametersDatasetEnvTest(getScenarioDatasetIds(), "2", "param3")
+  }
+
+  @Test
+  fun `Build all containers for a Scenario Two DATASETID containers name list`() {
+    val scenario = getScenarioTwoDatasetIds()
+    val datasets = listOf(getDataset(), getDataset2(), getDataset3())
+    val connectors = listOf(getConnector(), getConnector2(), getConnector3())
+    val workspace = getWorkspace()
+    val solution = getSolutionDatasetIds()
+    val containers =
+        factory.buildContainersPipeline(
+            scenario,
+            datasets,
+            connectors,
+            workspace,
+            getOrganization(),
+            solution,
+            CSM_SIMULATION_ID)
+    val expected =
+        listOf(
+            "fetchDatasetContainer-1",
+            "fetchScenarioParametersContainer",
+            "fetchScenarioDatasetParametersContainer-1",
+            "fetchScenarioDatasetParametersContainer-2",
+            "fetchScenarioDatasetParametersContainer-3",
+            "fetchScenarioDatasetParametersContainer-4",
+            "applyParametersContainer",
+            "validateDataContainer",
+            "sendDataWarehouseContainer",
+            "preRunContainer",
+            "runContainer",
+            "postRunContainer",
+        )
+    assertEquals(expected, containers.map { container -> container.name })
+  }
+
+  @Test
+  fun `Build all containers for a Scenario Two DATASETID containers image list`() {
+    val scenario = getScenarioTwoDatasetIds()
+    val datasets = listOf(getDataset(), getDataset2(), getDataset3())
+    val connectors = listOf(getConnector(), getConnector2(), getConnector3())
+    val workspace = getWorkspace()
+    val solution = getSolutionDatasetIds()
+    val containers =
+        factory.buildContainersPipeline(
+            scenario,
+            datasets,
+            connectors,
+            workspace,
+            getOrganization(),
+            solution,
+            CSM_SIMULATION_ID)
+    val expected =
+        listOf(
+            "ghcr.io/cosmotech/test_connector:1.0.0",
+            "ghcr.io/cosmotech/scenariofetchparameters:1.0.0",
+            "ghcr.io/cosmotech/test_connector:1.0.0",
+            "ghcr.io/cosmotech/test_connector2:1.0.0",
+            "ghcr.io/cosmotech/test_connector2:1.0.0",
+            "ghcr.io/cosmotech/test_connector3:1.0.0",
+            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
+            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
+            "ghcr.io/cosmotech/senddatawarehouse:1.0.0",
+            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
+            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
+            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
+        )
+    assertEquals(expected, containers.map { container -> container.image })
+  }
+
+  @Test
+  fun `Build all containers for a Scenario Two DATASETID containers env vars 2-1`() {
+    parametersDatasetEnvTest(getScenarioTwoDatasetIds(), "1", "param2-0")
+  }
+
+  @Test
+  fun `Build all containers for a Scenario Two DATASETID containers env vars 2-2`() {
+    parametersDatasetEnvTest(getScenarioTwoDatasetIds(), "2", "param2-1")
+  }
+
+  @Test
+  fun `Build all containers for a Scenario Two DATASETID containers env vars 3`() {
+    parametersDatasetEnvTest(getScenarioTwoDatasetIds(), "3", "param3")
   }
 
   @Test
@@ -1812,8 +1895,7 @@ class ContainerFactoryTests {
     )
   }
 
-  private fun parametersDatasetEnvTest(nameId: String, param: String) {
-    val scenario = getScenarioDatasetIds()
+  private fun parametersDatasetEnvTest(scenario: Scenario, nameId: String, param: String) {
     val datasets = listOf(getDataset(), getDataset2(), getDataset3())
     val connectors = listOf(getConnector(), getConnector2(), getConnector3())
     val workspace = getWorkspace()
@@ -2243,15 +2325,15 @@ class ContainerFactoryTests {
                 ),
                 RunTemplateParameter(
                     id = "param2",
-                    labels = mapOf("en" to "Parameter Dataset 1"),
-                    varType = "%DATASETID%"),
-                RunTemplateParameter(
-                    id = "param3",
                     labels = mapOf("en" to "Parameter Dataset 2"),
                     varType = "%DATASETID%"),
                 RunTemplateParameter(
-                    id = "param4",
+                    id = "param3",
                     labels = mapOf("en" to "Parameter Dataset 3"),
+                    varType = "%DATASETID%"),
+                RunTemplateParameter(
+                    id = "param4",
+                    labels = mapOf("en" to "Parameter Dataset 4"),
                     varType = "%DATASETID%"),
                 RunTemplateParameter(
                     id = "param5",
@@ -2474,6 +2556,37 @@ class ContainerFactoryTests {
                 ScenarioRunTemplateParameterValue(
                     parameterId = "param2",
                     value = "1",
+                ),
+                ScenarioRunTemplateParameterValue(
+                    parameterId = "param3",
+                    value = "2",
+                ),
+                ScenarioRunTemplateParameterValue(
+                    parameterId = "param4",
+                    value = "3",
+                ),
+                ScenarioRunTemplateParameterValue(
+                    parameterId = "param5",
+                    value = "999",
+                ),
+            ))
+  }
+
+  private fun getScenarioTwoDatasetIds(): Scenario {
+    return Scenario(
+        id = "AQWXSZ",
+        name = "Test Scenario",
+        runTemplateId = "testruntemplate",
+        datasetList = listOf("1"),
+        parametersValues =
+            listOf(
+                ScenarioRunTemplateParameterValue(
+                    parameterId = "param1",
+                    value = "valParam1",
+                ),
+                ScenarioRunTemplateParameterValue(
+                    parameterId = "param2",
+                    value = "[1,2]",
                 ),
                 ScenarioRunTemplateParameterValue(
                     parameterId = "param3",
