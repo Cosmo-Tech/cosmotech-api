@@ -104,14 +104,12 @@ subprojects {
       runtimeClasspath += sourceSets.main.get().output + sourceSets.test.get().output
     }
   }
-  val integrationTestImplementation by configurations.getting {
-    extendsFrom(configurations.testImplementation.get())
-  }
+  val integrationTestImplementation by
+      configurations.getting { extendsFrom(configurations.testImplementation.get()) }
 
   @Suppress("UNUSED_VARIABLE")
-  val integrationTestRuntimeOnly by configurations.getting {
-    extendsFrom(configurations.testRuntimeOnly.get())
-  }
+  val integrationTestRuntimeOnly by
+      configurations.getting { extendsFrom(configurations.testRuntimeOnly.get()) }
 
   tasks.withType<Detekt> {
     buildUponDefaultConfig = true // preconfigure defaults
