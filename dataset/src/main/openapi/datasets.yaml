@@ -937,3 +937,9 @@ components:
       value:
         sourceId: "1"
         targetId: "2"
+    DatasetSearch:
+      summary: Example for dataset search
+      description: Parameters to search for a dataset
+      value:
+        datasetTags:
+          - dataset
