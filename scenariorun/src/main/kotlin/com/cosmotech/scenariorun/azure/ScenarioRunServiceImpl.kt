@@ -10,8 +10,12 @@ import com.azure.cosmos.models.SqlQuerySpec
 import com.cosmotech.api.azure.CsmAzureService
 import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
 import com.cosmotech.api.events.ScenarioDataDownloadRequest
+import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
+import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
+import com.cosmotech.api.scenariorun.DataIngestionState
+import com.cosmotech.api.scenariorun.PostProcessingDataIngestionStateProvider
 import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
@@ -25,6 +29,7 @@ import com.cosmotech.scenariorun.domain.ScenarioRun
 import com.cosmotech.scenariorun.domain.ScenarioRunLogs
 import com.cosmotech.scenariorun.domain.ScenarioRunSearch
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
+import com.cosmotech.scenariorun.domain.ScenarioRunStatus
 import com.cosmotech.scenariorun.withoutSensitiveData
 import com.cosmotech.scenariorun.workflow.WorkflowService
 import com.cosmotech.solution.domain.RunTemplate
@@ -42,6 +47,7 @@ import org.springframework.stereotype.Service
 internal class ScenarioRunServiceImpl(
     private val containerFactory: ContainerFactory,
     private val workflowService: WorkflowService,
+    private val postProcessingDataIngestionStateProvider: PostProcessingDataIngestionStateProvider,
 ) : CsmAzureService(), ScenariorunApiService {
 
   private fun ScenarioRun.asMapWithAdditionalData(workspaceId: String? = null): Map<String, Any> {
@@ -345,7 +351,84 @@ internal class ScenarioRunServiceImpl(
     return scenarioRun
   }
 
-  override fun getScenarioRunStatus(organizationId: String, scenariorunId: String) =
-      this.workflowService.getScenarioRunStatus(
-          this.findScenarioRunById(organizationId, scenariorunId))
+  override fun getScenarioRunStatus(
+      organizationId: String,
+      scenariorunId: String
+  ): ScenarioRunStatus {
+    val scenarioRun = this.findScenarioRunById(organizationId, scenariorunId)
+    val scenarioRunStatus = this.workflowService.getScenarioRunStatus(scenarioRun)
+    return scenarioRunStatus.copy(
+        state =
+            mapWorkflowPhaseToScenarioRunState(
+                organizationId,
+                scenarioRun.workspaceKey!!,
+                scenariorunId,
+                scenarioRunStatus.phase,
+                scenarioRun.csmSimulationRun))
+  }
+
+  @EventListener(WorkflowPhaseToStateRequest::class)
+  fun onWorkflowPhaseToStateRequest(request: WorkflowPhaseToStateRequest) {
+    request.response =
+        this.mapWorkflowPhaseToScenarioRunState(
+                organizationId = request.organizationId,
+                workspaceKey = request.workspaceKey,
+                scenarioRunId = request.jobId,
+                phase = request.workflowPhase,
+                csmSimulationRun = request.csmSimulationRun)
+            .value
+  }
+
+  @EventListener(ScenarioRunEndToEndStateRequest::class)
+  fun onScenarioRunEndToEndStateRequest(request: ScenarioRunEndToEndStateRequest) {
+    request.response =
+        this.findScenarioRunById(request.organizationId, request.scenarioRunId).state?.value
+  }
+
+  private fun mapWorkflowPhaseToScenarioRunState(
+      organizationId: String,
+      workspaceKey: String,
+      scenarioRunId: String?,
+      phase: String?,
+      csmSimulationRun: String?
+  ): ScenarioRunStatus.State {
+    logger.debug("Mapping phase $phase for job $scenarioRunId")
+    return when (phase) {
+      "Pending", "Running" -> ScenarioRunStatus.State.Running
+      "Succeeded" -> {
+        if (csmSimulationRun != null) {
+          logger.debug(
+              "ScenarioRun $scenarioRunId (csmSimulationRun=$csmSimulationRun) reported as " +
+                  "Successful by the Workflow Service => checking data ingestion status..")
+          val postProcessingState =
+              this.postProcessingDataIngestionStateProvider.getStateFor(
+                  organizationId = organizationId,
+                  workspaceKey = workspaceKey,
+                  scenarioRunId = scenarioRunId!!,
+                  //                  csmSimulationRun = "1e46cee6-1ea2-4da7-98a7-3bd81212a793",
+                  csmSimulationRun = csmSimulationRun,
+              )
+          logger.debug(
+              "Data Ingestion status for ScenarioRun $scenarioRunId " +
+                  "(csmSimulationRun=$csmSimulationRun): $postProcessingState")
+          when (postProcessingState) {
+            null -> ScenarioRunStatus.State.Unknown
+            DataIngestionState.InProgress -> ScenarioRunStatus.State.DataIngestionInProgress
+            DataIngestionState.Successful -> ScenarioRunStatus.State.Successful
+            DataIngestionState.Failure -> ScenarioRunStatus.State.Failed
+          }
+        } else {
+          ScenarioRunStatus.State.Successful
+        }
+      }
+      "Skipped", "Failed", "Error", "Omitted" -> ScenarioRunStatus.State.Failed
+      else -> {
+        logger.warn(
+            "Unhandled state response for job {}: {} => returning Unknown as state",
+            scenarioRunId,
+            phase)
+        ScenarioRunStatus.State.Unknown
+      }
+    }
+  }
 }

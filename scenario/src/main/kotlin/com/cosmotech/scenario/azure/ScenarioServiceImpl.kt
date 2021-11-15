@@ -14,14 +14,13 @@ import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
 import com.cosmotech.api.events.ScenarioDataDownloadRequest
 import com.cosmotech.api.events.ScenarioDatasetListChanged
+import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
 import com.cosmotech.api.events.UserAddedToScenario
 import com.cosmotech.api.events.UserRemovedFromScenario
-import com.cosmotech.api.events.WorkflowStatusRequest
+import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
-import com.cosmotech.api.scenariorun.DataIngestionState
-import com.cosmotech.api.scenariorun.PostProcessingDataIngestionStateProvider
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -62,7 +61,6 @@ internal class ScenarioServiceImpl(
     private val solutionService: SolutionApiService,
     private val organizationService: OrganizationApiService,
     private val workspaceService: WorkspaceApiService,
-    private val postProcessingDataIngestionStateProvider: PostProcessingDataIngestionStateProvider
 ) : CsmAzureService(), ScenarioApiService {
 
   override fun addOrReplaceScenarioParameterValues(
@@ -405,7 +403,7 @@ internal class ScenarioServiceImpl(
             ?: throw CsmResourceNotFoundException(
                 "No scenario data download job found with id $downloadId for scenario ${scenario.id})")
     return ScenarioDataDownloadInfo(
-        state = mapPhaseToState(organizationId, workspaceId, downloadId, response.first),
+        state = mapWorkflowPhaseToState(organizationId, workspaceId, downloadId, response.first),
         url = response.second)
   }
 
@@ -460,62 +458,45 @@ internal class ScenarioServiceImpl(
 
   private fun addStateToScenario(organizationId: String, scenario: Scenario?) {
     if (scenario?.lastRun != null) {
-      val workflowId = scenario.lastRun?.workflowId
-      val workflowName = scenario.lastRun?.workflowName
-      if (workflowId == null || workflowName == null) {
+      val scenarioRunId = scenario.lastRun?.scenarioRunId
+      if (scenarioRunId.isNullOrBlank()) {
         throw IllegalStateException(
-            "Scenario has a last Scenario Run but workflowId or workflowName is null")
+            "Scenario has a last Scenario Run but scenarioRunId is null or blank")
       }
-      val workflowStatusRequest = WorkflowStatusRequest(this, workflowId, workflowName)
-      this.eventPublisher.publishEvent(workflowStatusRequest)
+      val endToEndStateRequest =
+          ScenarioRunEndToEndStateRequest(
+              this, organizationId, scenario.workspaceId!!, scenarioRunId)
+      this.eventPublisher.publishEvent(endToEndStateRequest)
       scenario.state =
-          this.mapPhaseToState(
-              organizationId,
-              scenario.workspaceId!!,
-              scenario.lastRun?.scenarioRunId,
-              workflowStatusRequest.response,
-              scenario.lastRun?.csmSimulationRun)
+          when (endToEndStateRequest.response) {
+            "Running" -> ScenarioJobState.Running
+            "DataIngestionInProgress" -> ScenarioJobState.DataIngestionInProgress
+            "Successful" -> ScenarioJobState.Successful
+            "Failed", "DataIngestionFailure" -> ScenarioJobState.Failed
+            else -> ScenarioJobState.Unknown
+          }
     }
   }
 
-  private fun mapPhaseToState(
+  private fun mapWorkflowPhaseToState(
       organizationId: String,
       workspaceId: String,
       jobId: String?,
       phase: String?,
-      csmSimulationRun: String? = null
   ): ScenarioJobState {
     logger.debug("Mapping phase $phase for job $jobId")
-    return when (phase) {
-      "Pending", "Running" -> ScenarioJobState.Running
-      "Succeeded" -> {
-        if (jobId != null && csmSimulationRun != null) {
-          logger.debug(
-              "ScenarioRun $jobId (csmSimulationRun=$csmSimulationRun) reported as " +
-                  "Successful by the Workflow Service => checking data ingestion status..")
-          val postProcessingState =
-              this.postProcessingDataIngestionStateProvider.getStateFor(
-                  organizationId = organizationId,
-                  workspaceKey =
-                      workspaceService.findWorkspaceById(organizationId, workspaceId).key,
-                  scenarioRunId = jobId,
-                  //                  csmSimulationRun = "1e46cee6-1ea2-4da7-98a7-3bd81212a793",
-                  csmSimulationRun = csmSimulationRun,
-              )
-          logger.debug(
-              "Data Ingestion status for ScenarioRun $jobId " +
-                  "(csmSimulationRun=$csmSimulationRun): $postProcessingState")
-          when (postProcessingState) {
-            null -> ScenarioJobState.Unknown
-            DataIngestionState.InProgress -> ScenarioJobState.DataIngestionInProgress
-            DataIngestionState.Successful -> ScenarioJobState.Successful
-            DataIngestionState.Failure -> ScenarioJobState.Failed
-          }
-        } else {
-          ScenarioJobState.Successful
-        }
-      }
-      "Skipped", "Failed", "Error", "Omitted" -> ScenarioJobState.Failed
+    val workflowPhaseToStateRequest =
+        WorkflowPhaseToStateRequest(
+            publisher = this,
+            organizationId = organizationId,
+            workspaceKey = workspaceService.findWorkspaceById(organizationId, workspaceId).key,
+            jobId = jobId,
+            workflowPhase = phase)
+    this.eventPublisher.publishEvent(workflowPhaseToStateRequest)
+    return when (workflowPhaseToStateRequest.response) {
+      "Running" -> ScenarioJobState.Running
+      "Successful" -> ScenarioJobState.Successful
+      "Failed" -> ScenarioJobState.Failed
       else -> {
         logger.warn(
             "Unhandled state response for job {}: {} => returning Unknown as state", jobId, phase)

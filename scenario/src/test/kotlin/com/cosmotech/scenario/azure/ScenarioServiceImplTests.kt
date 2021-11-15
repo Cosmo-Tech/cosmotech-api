@@ -11,6 +11,7 @@ import com.azure.spring.data.cosmos.core.CosmosTemplate
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEvent
 import com.cosmotech.api.events.CsmEventPublisher
+import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.WorkflowStatusRequest
 import com.cosmotech.api.id.CsmIdGenerator
 import com.cosmotech.api.scenariorun.PostProcessingDataIngestionStateProvider
@@ -395,6 +396,7 @@ class ScenarioServiceImplTests {
   }
 
   @Test
+  @Ignore("The logic has been moved to ScenarioRunServiceImpl")
   fun `findScenarioById should throw an error if scenario has a last run but no workflow `() {
     val scenarioId = "S-myScenarioId"
     val scenario =
@@ -652,9 +654,18 @@ class ScenarioServiceImplTests {
                 override fun <T : CsmEvent> publishEvent(event: T) {
                   when (event) {
                     is WorkflowStatusRequest -> event.response = phase
+                    is ScenarioRunEndToEndStateRequest ->
+                        event.response =
+                            when (phase) {
+                              "Pending", "Running" -> "Running"
+                              "Succeeded" -> "Successful"
+                              "Skipped", "Failed", "Error", "Omitted" -> "Failed"
+                              else -> "Unknown"
+                            }
                     else ->
                         throw UnsupportedOperationException(
-                            "This test event publisher purposely supports events of type WorkflowStatusRequest only")
+                            "This test event publisher purposely supports events of type WorkflowStatusRequest" +
+                                " and ScenarioRunEndToEndStateRequest only")
                   }
                 }
               }

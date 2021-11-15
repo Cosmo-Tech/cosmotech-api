@@ -121,6 +121,7 @@ class ScenarioRunServiceImplTests {
     val myScenarioRun =
         ScenarioRun(
             id = "sr-myscenariorun1",
+            workspaceKey = "my-workspaceKey",
             containers =
                 listOf(
                     ScenarioRunContainer(
@@ -156,6 +157,7 @@ class ScenarioRunServiceImplTests {
     val myScenarioRun1 =
         ScenarioRun(
             id = "sr-myscenariorun1",
+            workspaceKey = "my-workspaceKey",
             containers =
                 listOf(
                     ScenarioRunContainer(
@@ -165,6 +167,7 @@ class ScenarioRunServiceImplTests {
     val myScenarioRun2 =
         ScenarioRun(
             id = "sr-myscenariorun2",
+            workspaceKey = "my-workspaceKey",
             containers =
                 listOf(
                     ScenarioRunContainer(
@@ -204,6 +207,7 @@ class ScenarioRunServiceImplTests {
     val myScenarioRun1 =
         ScenarioRun(
             id = "sr-myscenariorun1",
+            workspaceKey = "my-workspaceKey",
             containers =
                 listOf(
                     ScenarioRunContainer(
@@ -213,6 +217,7 @@ class ScenarioRunServiceImplTests {
     val myScenarioRun2 =
         ScenarioRun(
             id = "sr-myscenariorun2",
+            workspaceKey = "my-workspaceKey",
             containers =
                 listOf(
                     ScenarioRunContainer(
@@ -252,6 +257,7 @@ class ScenarioRunServiceImplTests {
     val myScenarioRun1 =
         ScenarioRun(
             id = "sr-myscenariorun1",
+            workspaceKey = "my-workspaceKey",
             containers =
                 listOf(
                     ScenarioRunContainer(
@@ -261,6 +267,7 @@ class ScenarioRunServiceImplTests {
     val myScenarioRun2 =
         ScenarioRun(
             id = "sr-myscenariorun2",
+            workspaceKey = "my-workspaceKey",
             containers =
                 listOf(
                     ScenarioRunContainer(

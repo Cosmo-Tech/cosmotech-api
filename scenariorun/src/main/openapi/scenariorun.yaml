@@ -442,6 +442,16 @@ components:
           description: status of ScenarioRun nodes
           items:
             $ref: '#/components/schemas/ScenarioRunStatusNode'
+        state:
+          type: string
+          enum:
+            - Running
+            - Successful
+            - Failed
+            - Unknown
+            # PROD-7420 : return data ingestion status
+            - DataIngestionInProgress
+            - DataIngestionFailure
     ScenarioRunStatusNode:
       type: object
       description: status of a ScenarioRun Node

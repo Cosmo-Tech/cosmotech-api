@@ -25,3 +25,18 @@ class ScenarioDataDownloadJobInfoRequest(
     val jobId: String,
     val organizationId: String,
 ) : CsmRequestResponseEvent<Pair<String?, String>>(publisher)
+
+class WorkflowPhaseToStateRequest(
+    publisher: Any,
+    val organizationId: String,
+    val workspaceKey: String,
+    val jobId: String?,
+    val workflowPhase: String?,
+) : CsmRequestResponseEvent<String>(publisher)
+
+class ScenarioRunEndToEndStateRequest(
+    publisher: Any,
+    val organizationId: String,
+    val workspaceId: String,
+    val scenarioRunId: String
+) : CsmRequestResponseEvent<String>(publisher)
