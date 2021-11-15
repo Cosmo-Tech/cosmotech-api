@@ -14,7 +14,6 @@ import com.cosmotech.api.events.ConnectorRemovedForOrganization
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
-import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -163,11 +162,8 @@ internal class DatasetServiceImpl(
 
   override fun searchDatasets(organizationId: String, datasetSearch: DatasetSearch): List<Dataset> {
     var searchList: Set<Dataset> = setOf()
-    if (datasetSearch.datasetTags == null) {
-      throw CsmClientException("Dataset tag list is mandatory for search")
-    }
 
-    datasetSearch.datasetTags?.forEach { tag ->
+    datasetSearch.datasetTags.forEach { tag ->
       val result =
           cosmosCoreDatabase
               .getContainer("${organizationId}_datasets")
