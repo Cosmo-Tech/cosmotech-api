@@ -419,7 +419,7 @@ paths:
                 description: Used only with `application/zip` responses
                 example: inline; filename="handler.zip"
         "404":
-          description: the Workspace file specified is unknown or you don't have access to it
+          description: the Run Template Handler file specified is unknown or you don't have access to it
   /organizations/{organization_id}/solutions/{solution_id}/runtemplates/{run_template_id}/handlers/{handler_id}/upload:
     parameters:
       - name: organization_id
