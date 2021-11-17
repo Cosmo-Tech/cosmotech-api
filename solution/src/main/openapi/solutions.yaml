@@ -411,13 +411,6 @@ paths:
               schema:
                 type: string
                 format: binary
-          headers:
-            Content-Disposition:
-              schema:
-                type: string
-                default: inline; filename="handler.zip"
-                description: Used only with `application/zip` responses
-                example: inline; filename="handler.zip"
         "404":
           description: the Run Template Handler file specified is unknown or you don't have access to it
   /organizations/{organization_id}/solutions/{solution_id}/runtemplates/{run_template_id}/handlers/{handler_id}/upload:
