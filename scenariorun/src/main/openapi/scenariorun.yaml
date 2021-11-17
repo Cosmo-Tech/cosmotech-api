@@ -443,15 +443,19 @@ components:
           items:
             $ref: '#/components/schemas/ScenarioRunStatusNode'
         state:
-          type: string
-          enum:
-            - Running
-            - Successful
-            - Failed
-            - Unknown
-            # PROD-7420 : return data ingestion status
-            - DataIngestionInProgress
-            - DataIngestionFailure
+          $ref: '#/components/schemas/ScenarioRunState'
+    ScenarioRunState:
+      type: string
+      readOnly: true
+      description: the ScenarioRun end-to-end state
+      enum:
+        - Running
+        - Successful
+        - Failed
+        - Unknown
+        # PROD-7420 : return data ingestion status
+        - DataIngestionInProgress
+        - DataIngestionFailure
     ScenarioRunStatusNode:
       type: object
       description: status of a ScenarioRun Node
@@ -494,6 +498,8 @@ components:
           type: string
           readOnly: true
           description: the ScenarioRun
+        state:
+          $ref: '#/components/schemas/ScenarioRunState'
         organizationId:
           type: string
           description: the Organization id

@@ -13,6 +13,7 @@ import com.azure.spring.data.cosmos.core.CosmosTemplate
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.id.CsmIdGenerator
+import com.cosmotech.api.scenariorun.PostProcessingDataIngestionStateProvider
 import com.cosmotech.api.utils.getCurrentAuthentication
 import com.cosmotech.api.utils.objectMapper
 import com.cosmotech.organization.api.OrganizationApiService
@@ -71,13 +72,20 @@ class ScenarioRunServiceImplTests {
 
   @MockK(relaxed = true) private lateinit var workflowService: WorkflowService
 
+  @MockK(relaxed = true)
+  private lateinit var postProcessingDataIngestionStateProvider:
+      PostProcessingDataIngestionStateProvider
+
   private lateinit var scenarioRunServiceImpl: ScenarioRunServiceImpl
 
   @BeforeTest
   fun setUp() {
     MockKAnnotations.init(this, relaxUnitFun = true)
 
-    this.scenarioRunServiceImpl = spyk(ScenarioRunServiceImpl(containerFactory, workflowService))
+    this.scenarioRunServiceImpl =
+        spyk(
+            ScenarioRunServiceImpl(
+                containerFactory, workflowService, postProcessingDataIngestionStateProvider))
 
     every { scenarioRunServiceImpl getProperty "cosmosTemplate" } returns cosmosTemplate
     every { scenarioRunServiceImpl getProperty "cosmosClient" } returns cosmosClient

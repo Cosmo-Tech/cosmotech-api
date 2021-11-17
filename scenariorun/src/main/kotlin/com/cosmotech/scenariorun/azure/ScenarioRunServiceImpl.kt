@@ -29,7 +29,9 @@ import com.cosmotech.scenariorun.domain.ScenarioRun
 import com.cosmotech.scenariorun.domain.ScenarioRunLogs
 import com.cosmotech.scenariorun.domain.ScenarioRunSearch
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
+import com.cosmotech.scenariorun.domain.ScenarioRunState
 import com.cosmotech.scenariorun.domain.ScenarioRunStatus
+import com.cosmotech.scenariorun.isTerminal
 import com.cosmotech.scenariorun.withoutSensitiveData
 import com.cosmotech.scenariorun.workflow.WorkflowService
 import com.cosmotech.solution.domain.RunTemplate
@@ -84,7 +86,7 @@ internal class ScenarioRunServiceImpl(
     cosmosTemplate.deleteEntity("${organizationId}_scenario_data", scenarioRun)
   }
 
-  override fun findScenarioRunById(organizationId: String, scenariorunId: String): ScenarioRun =
+  override fun findScenarioRunById(organizationId: String, scenariorunId: String) =
       cosmosCoreDatabase
           .getContainer("${organizationId}_scenario_data")
           .queryItems(
@@ -94,14 +96,35 @@ internal class ScenarioRunServiceImpl(
               CosmosQueryRequestOptions(),
               // It would be much better to specify the Domain Type right away and
               // avoid the map operation, but we can't due
-              // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
+              // to the lack of customization of the Cosmos Client Object Mapper, as reported here
+              // :
               // https://github.com/Azure/azure-sdk-for-java/issues/12269
               JsonNode::class.java)
           .firstOrNull()
           ?.toDomain<ScenarioRun>()
           ?.withoutSensitiveData()
+          ?.withStateInformation(organizationId)
           ?: throw java.lang.IllegalArgumentException(
               "ScenarioRun #$scenariorunId not found in organization #$organizationId")
+
+  private fun ScenarioRun?.withStateInformation(organizationId: String): ScenarioRun? {
+    if (this == null) {
+      return null
+    }
+    var scenarioRun = this.copy()
+    if (scenarioRun.state?.isTerminal() != true) {
+      // Compute and persist state if terminal
+      val state = getScenarioRunStatus(organizationId, scenarioRun).state
+      scenarioRun = scenarioRun.copy(state = state)
+      if (state?.isTerminal() == true) {
+        val scenarioRunAsMap = scenarioRun.asMapWithAdditionalData(this.workspaceId)
+        cosmosCoreDatabase
+            .getContainer("${organizationId}_scenario_data")
+            .upsertItem(scenarioRunAsMap, PartitionKey(this.ownerId), CosmosItemRequestOptions())
+      }
+    }
+    return scenarioRun
+  }
 
   override fun getScenarioRunLogs(organizationId: String, scenariorunId: String): ScenarioRunLogs {
     val scenarioRun = findScenarioRunById(organizationId, scenariorunId)
@@ -139,7 +162,9 @@ internal class ScenarioRunServiceImpl(
               // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
               // https://github.com/Azure/azure-sdk-for-java/issues/12269
               JsonNode::class.java)
-          .mapNotNull { it.toDomain<ScenarioRun>()?.withoutSensitiveData() }
+          .mapNotNull {
+            it.toDomain<ScenarioRun>()?.withoutSensitiveData().withStateInformation(organizationId)
+          }
           .toList()
 
   override fun getWorkspaceScenarioRuns(
@@ -162,7 +187,9 @@ internal class ScenarioRunServiceImpl(
               // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
               // https://github.com/Azure/azure-sdk-for-java/issues/12269
               JsonNode::class.java)
-          .mapNotNull { it.toDomain<ScenarioRun>()?.withoutSensitiveData() }
+          .mapNotNull {
+            it.toDomain<ScenarioRun>()?.withoutSensitiveData().withStateInformation(organizationId)
+          }
           .toList()
 
   @EventListener(ScenarioDataDownloadRequest::class)
@@ -266,7 +293,9 @@ internal class ScenarioRunServiceImpl(
             // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
             // https://github.com/Azure/azure-sdk-for-java/issues/12269
             JsonNode::class.java)
-        .mapNotNull { it.toDomain<ScenarioRun>().withoutSensitiveData() }
+        .mapNotNull {
+          it.toDomain<ScenarioRun>().withoutSensitiveData().withStateInformation(organizationId)
+        }
         .toList()
   }
 
@@ -351,18 +380,20 @@ internal class ScenarioRunServiceImpl(
     return scenarioRun
   }
 
-  override fun getScenarioRunStatus(
+  override fun getScenarioRunStatus(organizationId: String, scenariorunId: String) =
+      getScenarioRunStatus(organizationId, this.findScenarioRunById(organizationId, scenariorunId))
+
+  private fun getScenarioRunStatus(
       organizationId: String,
-      scenariorunId: String
+      scenarioRun: ScenarioRun,
   ): ScenarioRunStatus {
-    val scenarioRun = this.findScenarioRunById(organizationId, scenariorunId)
     val scenarioRunStatus = this.workflowService.getScenarioRunStatus(scenarioRun)
     return scenarioRunStatus.copy(
         state =
             mapWorkflowPhaseToScenarioRunState(
                 organizationId,
                 scenarioRun.workspaceKey!!,
-                scenariorunId,
+                scenarioRun.id,
                 scenarioRunStatus.phase,
                 scenarioRun.csmSimulationRun))
   }
@@ -391,10 +422,10 @@ internal class ScenarioRunServiceImpl(
       scenarioRunId: String?,
       phase: String?,
       csmSimulationRun: String?
-  ): ScenarioRunStatus.State {
+  ): ScenarioRunState {
     logger.debug("Mapping phase $phase for job $scenarioRunId")
     return when (phase) {
-      "Pending", "Running" -> ScenarioRunStatus.State.Running
+      "Pending", "Running" -> ScenarioRunState.Running
       "Succeeded" -> {
         if (csmSimulationRun != null) {
           logger.debug(
@@ -412,22 +443,22 @@ internal class ScenarioRunServiceImpl(
               "Data Ingestion status for ScenarioRun $scenarioRunId " +
                   "(csmSimulationRun=$csmSimulationRun): $postProcessingState")
           when (postProcessingState) {
-            null -> ScenarioRunStatus.State.Unknown
-            DataIngestionState.InProgress -> ScenarioRunStatus.State.DataIngestionInProgress
-            DataIngestionState.Successful -> ScenarioRunStatus.State.Successful
-            DataIngestionState.Failure -> ScenarioRunStatus.State.Failed
+            null -> ScenarioRunState.Unknown
+            DataIngestionState.InProgress -> ScenarioRunState.DataIngestionInProgress
+            DataIngestionState.Successful -> ScenarioRunState.Successful
+            DataIngestionState.Failure -> ScenarioRunState.Failed
           }
         } else {
-          ScenarioRunStatus.State.Successful
+          ScenarioRunState.Successful
         }
       }
-      "Skipped", "Failed", "Error", "Omitted" -> ScenarioRunStatus.State.Failed
+      "Skipped", "Failed", "Error", "Omitted" -> ScenarioRunState.Failed
       else -> {
         logger.warn(
             "Unhandled state response for job {}: {} => returning Unknown as state",
             scenarioRunId,
             phase)
-        ScenarioRunStatus.State.Unknown
+        ScenarioRunState.Unknown
       }
     }
   }
