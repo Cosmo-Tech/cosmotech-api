@@ -3,6 +3,7 @@
 package com.cosmotech.scenariorun.dataset
 
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.dataset.api.DatasetApiService
@@ -84,6 +85,9 @@ private fun addParameterValue(
 
 internal fun getDatasetIdListFromValue(paramValue: String): List<String> {
   if (paramValue.startsWith("[")) {
+    if (!(paramValue.last().equals(']'))) {
+      throw CsmClientException("Malformed dataset id list: must start with [ and end with ]")
+    }
     val datasetIds = paramValue.substring(1, paramValue.length - 1)
     return datasetIds.split(",")
   } else {

@@ -11,6 +11,7 @@ import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatfo
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.SharedAccessPolicyDetails
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
+import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.connector.domain.Connector.IoTypes
@@ -1469,6 +1470,19 @@ class ContainerFactoryTests {
   }
 
   @Test
+  fun `Build all containers for a Scenario DATASETID malformed list`() {
+    val scenario = getScenarioMalformedDatasetIds()
+    val datasets = listOf(getDataset(), getDataset2(), getDataset3())
+    val connectors = listOf(getConnector(), getConnector2(), getConnector3())
+    val workspace = getWorkspace()
+    val solution = getSolutionDatasetIds()
+    assertThrows(CsmClientException::class.java) {
+      factory.buildContainersPipeline(
+          scenario, datasets, connectors, workspace, getOrganization(), solution, CSM_SIMULATION_ID)
+    }
+  }
+
+  @Test
   fun `Full get Start Info csmSimulationId`() {
     val startInfo = getStartInfoFromIds()
     assertNotEquals("", startInfo.csmSimulationId)
@@ -2587,6 +2601,37 @@ class ContainerFactoryTests {
                 ScenarioRunTemplateParameterValue(
                     parameterId = "param2",
                     value = "[1,2]",
+                ),
+                ScenarioRunTemplateParameterValue(
+                    parameterId = "param3",
+                    value = "2",
+                ),
+                ScenarioRunTemplateParameterValue(
+                    parameterId = "param4",
+                    value = "3",
+                ),
+                ScenarioRunTemplateParameterValue(
+                    parameterId = "param5",
+                    value = "999",
+                ),
+            ))
+  }
+
+  private fun getScenarioMalformedDatasetIds(): Scenario {
+    return Scenario(
+        id = "AQWXSZ",
+        name = "Test Scenario",
+        runTemplateId = "testruntemplate",
+        datasetList = listOf("1"),
+        parametersValues =
+            listOf(
+                ScenarioRunTemplateParameterValue(
+                    parameterId = "param1",
+                    value = "valParam1",
+                ),
+                ScenarioRunTemplateParameterValue(
+                    parameterId = "param2",
+                    value = "[",
                 ),
                 ScenarioRunTemplateParameterValue(
                     parameterId = "param3",
