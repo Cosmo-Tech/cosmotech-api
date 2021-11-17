@@ -165,7 +165,7 @@ private val endpointSecurityReaders =
                     ROLE_ORGANIZATION_COLLABORATOR,
                     ROLE_ORGANIZATION_MODELER,
                     ROLE_ORGANIZATION_USER,
-                )),
+                    ROLE_ORGANIZATION_VIEWER)),
         CsmSecurityEndpointsRolesReader(
             paths = PATHS_SCENARIORUNS,
             roles =
