@@ -161,26 +161,24 @@ internal class DatasetServiceImpl(
   }
 
   override fun searchDatasets(organizationId: String, datasetSearch: DatasetSearch): List<Dataset> {
-    var searchList: Set<Dataset> = setOf()
-
-    datasetSearch.datasetTags.forEach { tag ->
-      val result =
-          cosmosCoreDatabase
-              .getContainer("${organizationId}_datasets")
-              .queryItems(
-                  SqlQuerySpec(
-                      "SELECT * FROM c WHERE ARRAY_CONTAINS(c.tags, @TAG)",
-                      listOf(SqlParameter("@TAG", tag))),
-                  CosmosQueryRequestOptions(),
-                  JsonNode::class.java)
-              .mapNotNull { it.toDomain<Dataset>() }
-              .toList()
-
-      if (searchList.size == 0) searchList = result.toSet()
-      else searchList = searchList.intersect(result)
+    val arrayContainsList: MutableList<String> = mutableListOf()
+    val sqlParameters: MutableList<SqlParameter> = mutableListOf()
+    datasetSearch.datasetTags.toSet().forEachIndexed { index, tag ->
+      var operator = "WHERE"
+      if (index > 0) operator = "AND"
+      val tagName = "@TAG${index}"
+      arrayContainsList.add("${operator} ARRAY_CONTAINS(c.tags, ${tagName})")
+      sqlParameters.add(SqlParameter(tagName, tag))
     }
-
-    return searchList.toList()
+    val arrayContains = arrayContainsList.joinToString(separator = " ")
+    return cosmosCoreDatabase
+        .getContainer("${organizationId}_datasets")
+        .queryItems(
+            SqlQuerySpec("SELECT * FROM c ${arrayContains}", sqlParameters),
+            CosmosQueryRequestOptions(),
+            JsonNode::class.java)
+        .mapNotNull { it.toDomain<Dataset>() }
+        .toList()
   }
 
   @EventListener(OrganizationRegistered::class)
