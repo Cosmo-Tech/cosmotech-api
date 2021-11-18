@@ -15,7 +15,7 @@ jobs:
     # x.y.z-rc => lastest staging
     # x.y.z => version x staging
     if: |
-      (contains(github.event.client_payload.gh_ref, 'refs/tags') &&
+      (contains(github.event.client_payload.gh_ref, 'refs/tags')) &&
       ((!contains(github.event.client_payload.gh_ref, '-')) ||
       (contains(github.event.client_payload.gh_ref, '-rc')))
     runs-on: ubuntu-latest
