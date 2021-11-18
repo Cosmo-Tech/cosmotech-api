@@ -21,7 +21,7 @@ plugins {
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.13.6"
   id("com.diffplug.spotless") version "6.0.0"
-  id("org.springframework.boot") version "2.5.6" apply false
+  id("org.springframework.boot") version "2.5.7" apply false
   id("io.spring.dependency-management") version "1.0.11.RELEASE"
   id("org.openapi.generator") version "5.3.0" apply false
   id("com.google.cloud.tools.jib") version "3.1.4" apply false
