@@ -167,7 +167,7 @@ subprojects {
 
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.security:spring-security-oauth2-jose:5.6.0")
-    implementation("org.springframework.security:spring-security-oauth2-resource-server:5.5.3")
+    implementation("org.springframework.security:spring-security-oauth2-resource-server:5.6.0")
 
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:5.8.1"))
