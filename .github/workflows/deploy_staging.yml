@@ -15,8 +15,8 @@ jobs:
     # x.y.z-rc => lastest staging
     # x.y.z => version x staging
     if: |
-      (github.event.client_payload.gh_ref != 'main') &&
-      (!contains(github.event.client_payload.gh_ref, '-dev'))
+      (!contains(github.event.client_payload.gh_ref, '-') ||
+      (contains(github.event.client_payload.gh_ref, '-rc'))
     runs-on: ubuntu-latest
     concurrency:
       group: continuous-deployment_staging-environment
@@ -44,7 +44,7 @@ jobs:
         # to avoid deploying a mistyped pre-release tag as stable, every version with '-' will go to latest
         run: |
           export gitRefName="${{ steps.refvar.outputs.gitRefName }}"
-          if [[ "$gitRefName" == *"-"* ]]; then \
+          if [[ "$gitRefName" == *"-rc"* ]]; then \
             echo "::set-output name=apiVersion::latest" ; \
           else \
             export tagFirstPart=$(echo "${{ steps.refvar.outputs.gitRefName }}" | cut -d '.' -f1)
