@@ -69,12 +69,12 @@ allprojects {
       licenseHeader(licenseHeaderComment)
     }
     kotlin {
-      ktfmt()
+      ktfmt("0.30")
       target("**/*.kt")
       licenseHeader(licenseHeaderComment)
     }
     kotlinGradle {
-      ktfmt()
+      ktfmt("0.30")
       target("**/*.kts")
       //      licenseHeader(licenseHeaderComment, "import")
     }
