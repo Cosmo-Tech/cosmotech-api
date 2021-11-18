@@ -86,7 +86,8 @@ private fun addParameterValue(
 internal fun getDatasetIdListFromValue(paramValue: String): List<String> {
   if (paramValue.startsWith("[")) {
     if (!(paramValue.last().equals(']'))) {
-      throw CsmClientException("Malformed dataset id list: must start with [ and end with ]")
+      throw CsmClientException(
+          "Malformed dataset id list, must start with [ and end with ]: ${paramValue}")
     }
     val datasetIds = paramValue.substring(1, paramValue.length - 1)
     return datasetIds.split(",")
