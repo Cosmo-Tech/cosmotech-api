@@ -11,6 +11,12 @@ on:
 jobs:
 
   deploy_to_dev_environment:
+    # Deploy if commit on main or to -dev major version
+    # main => latest dev
+    # x.y.z-dev => version x dev
+    if: |
+      (github.event.client_payload.gh_ref == 'main') ||
+      (contains(github.event.client_payload.gh_ref, '-dev'))
     runs-on: ubuntu-latest
     concurrency:
       group: continuous-deployment_dev-environment

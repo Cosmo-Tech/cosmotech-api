@@ -11,8 +11,12 @@ on:
 jobs:
 
   deploy_to_staging_environment:
-    # Do not deploy on staging for commit on main
-    if: github.event.client_payload.gh_ref != "main"
+    # Do not deploy on staging for commit on main or for dev version
+    # x.y.z-rc => lastest staging
+    # x.y.z => version x staging
+    if: |
+      (github.event.client_payload.gh_ref != 'main') &&
+      (!contains(github.event.client_payload.gh_ref, '-dev'))
     runs-on: ubuntu-latest
     concurrency:
       group: continuous-deployment_staging-environment
@@ -37,9 +41,10 @@ jobs:
       - name: Compute API version
         id: apiVersionVar
         # if git ref contains '-rc': deploy to latest, otherwise deploy to the major version
+        # to avoid deploying a mistyped pre-release tag as stable, every version with '-' will go to latest
         run: |
           export gitRefName="${{ steps.refvar.outputs.gitRefName }}"
-          if [[ "$gitRefName" == *"-rc"* ]]; then \
+          if [[ "$gitRefName" == *"-"* ]]; then \
             echo "::set-output name=apiVersion::latest" ; \
           else \
             export tagFirstPart=$(echo "${{ steps.refvar.outputs.gitRefName }}" | cut -d '.' -f1)
