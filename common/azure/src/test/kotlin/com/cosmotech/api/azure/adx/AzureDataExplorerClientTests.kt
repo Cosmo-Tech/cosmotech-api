@@ -5,6 +5,7 @@ package com.cosmotech.api.azure.adx
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureDataWarehouseCluster
+import com.cosmotech.api.events.CsmEventPublisher
 import com.microsoft.azure.kusto.data.Client
 import com.microsoft.azure.kusto.data.KustoOperationResult
 import com.microsoft.azure.kusto.data.KustoResultSetTable
@@ -25,6 +26,7 @@ class AzureDataExplorerClientTests {
 
   @MockK(relaxed = true) private lateinit var csmPlatformProperties: CsmPlatformProperties
   @MockK(relaxed = true) private lateinit var kustoClient: Client
+  @MockK(relaxed = true) private lateinit var eventPublisher: CsmEventPublisher
   private lateinit var azureDataExplorerClient: AzureDataExplorerClient
 
   @BeforeTest
@@ -37,7 +39,8 @@ class AzureDataExplorerClientTests {
     every { csmPlatformPropertiesAzure.dataWarehouseCluster } returns
         csmPlatformPropertiesAzureDataWarehouseCluster
     every { csmPlatformProperties.azure } returns csmPlatformPropertiesAzure
-    this.azureDataExplorerClient = AzureDataExplorerClient(this.csmPlatformProperties)
+    this.azureDataExplorerClient =
+        AzureDataExplorerClient(this.csmPlatformProperties, this.eventPublisher)
     this.azureDataExplorerClient.setKustoClient(kustoClient)
   }
 

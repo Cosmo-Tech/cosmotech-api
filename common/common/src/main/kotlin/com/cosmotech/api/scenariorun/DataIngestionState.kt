@@ -6,4 +6,5 @@ enum class DataIngestionState {
   InProgress,
   Successful,
   Failure,
+  Unknown
 }

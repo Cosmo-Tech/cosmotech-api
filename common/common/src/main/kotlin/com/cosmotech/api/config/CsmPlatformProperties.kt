@@ -338,7 +338,8 @@ data class CsmPlatformProperties(
       val ingestionObservationWindowToBeConsideredAFailureMinutes: Long = 5,
 
       /** Data ingestion state handling default behavior */
-      val state: State = State()) {
+      val state: State = State()
+  ) {
     data class State(
         /**
          * Whether to throw an exception if we have no control plane info about the scenario run,

@@ -3,6 +3,8 @@
 package com.cosmotech.api.azure.adx
 
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.api.events.CsmEventPublisher
+import com.cosmotech.api.events.ScenarioRunEndTimeRequest
 import com.cosmotech.api.scenariorun.DataIngestionState
 import com.cosmotech.api.scenariorun.PostProcessingDataIngestionStateProvider
 import com.microsoft.azure.kusto.data.Client
@@ -10,6 +12,7 @@ import com.microsoft.azure.kusto.data.ClientImpl
 import com.microsoft.azure.kusto.data.ClientRequestProperties
 import com.microsoft.azure.kusto.data.auth.ConnectionStringBuilder
 import java.time.LocalDateTime
+import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
@@ -31,8 +34,10 @@ internal const val HEALTH_KUSTO_QUERY =
 
 @Service("csmADX")
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
-internal class AzureDataExplorerClient(private val csmPlatformProperties: CsmPlatformProperties) :
-    HealthIndicator, PostProcessingDataIngestionStateProvider {
+internal class AzureDataExplorerClient(
+    private val csmPlatformProperties: CsmPlatformProperties,
+    val eventPublisher: CsmEventPublisher
+) : HealthIndicator, PostProcessingDataIngestionStateProvider {
 
   private val logger = LoggerFactory.getLogger(AzureDataExplorerClient::class.java)
 
@@ -48,7 +53,7 @@ internal class AzureDataExplorerClient(private val csmPlatformProperties: CsmPla
       csmPlatformProperties.dataIngestion.state.exceptionIfNoControlPlaneInfoAndNoProbeMeasuresData
 
   private val waitingTimeBeforeIngestion =
-      csmPlatformProperties.dataIngestion.waitingTimeBeforeIngestion
+      csmPlatformProperties.dataIngestion.waitingTimeBeforeIngestionSeconds
 
   private val ingestionObservationWindowToBeConsideredAFailureMinutes =
       csmPlatformProperties.dataIngestion.ingestionObservationWindowToBeConsideredAFailureMinutes
@@ -78,8 +83,17 @@ internal class AzureDataExplorerClient(private val csmPlatformProperties: CsmPla
       csmSimulationRun: String
   ): DataIngestionState? {
     logger.trace("getStateFor($organizationId,$workspaceKey,$scenarioRunId,$csmSimulationRun)")
-    // Due to latency before data ingestion
-    TimeUnit.SECONDS.sleep(waitingTimeBeforeIngestion)
+
+    val scenarioRunWorkflowEndTime =
+        queryScenarioRunWorkflowEndTime(organizationId, workspaceKey, scenarioRunId)
+    val seconds =
+        scenarioRunWorkflowEndTime?.until(ZonedDateTime.now(), ChronoUnit.SECONDS)
+            ?: return DataIngestionState.Unknown
+
+    if (seconds < waitingTimeBeforeIngestion) {
+      return DataIngestionState.InProgress
+    }
+
     val sentMessagesTotal = querySentMessagesTotal(organizationId, workspaceKey, csmSimulationRun)
     val probesMeasuresCount =
         queryProbesMeasuresCount(organizationId, workspaceKey, csmSimulationRun)
@@ -236,6 +250,17 @@ internal class AzureDataExplorerClient(private val csmPlatformProperties: CsmPla
       return count > 0 && minutes < this.ingestionObservationWindowToBeConsideredAFailureMinutes
     }
     return false
+  }
+
+  private fun queryScenarioRunWorkflowEndTime(
+      organizationId: String,
+      workspaceId: String,
+      scenarioRunId: String
+  ): ZonedDateTime? {
+    val scenarioRunEndTimeRequest =
+        ScenarioRunEndTimeRequest(this, organizationId, workspaceId, scenarioRunId)
+    this.eventPublisher.publishEvent(scenarioRunEndTimeRequest)
+    return scenarioRunEndTimeRequest.response
   }
 }
 

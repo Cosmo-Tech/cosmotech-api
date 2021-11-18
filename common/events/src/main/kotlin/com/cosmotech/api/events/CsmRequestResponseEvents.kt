@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 package com.cosmotech.api.events
 
+import java.time.ZonedDateTime
+
 sealed class CsmRequestResponseEvent<T>(publisher: Any) : CsmEvent(publisher) {
   var response: T? = null
 }
@@ -40,3 +42,10 @@ class ScenarioRunEndToEndStateRequest(
     val workspaceId: String,
     val scenarioRunId: String
 ) : CsmRequestResponseEvent<String>(publisher)
+
+class ScenarioRunEndTimeRequest(
+    publisher: Any,
+    val organizationId: String,
+    val workspaceId: String,
+    val scenarioRunId: String
+) : CsmRequestResponseEvent<ZonedDateTime>(publisher)

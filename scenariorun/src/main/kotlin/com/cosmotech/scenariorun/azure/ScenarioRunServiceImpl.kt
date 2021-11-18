@@ -10,6 +10,7 @@ import com.azure.cosmos.models.SqlQuerySpec
 import com.cosmotech.api.azure.CsmAzureService
 import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
 import com.cosmotech.api.events.ScenarioDataDownloadRequest
+import com.cosmotech.api.events.ScenarioRunEndTimeRequest
 import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
 import com.cosmotech.api.events.WorkflowPhaseToStateRequest
@@ -38,6 +39,7 @@ import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
+import java.time.ZonedDateTime
 import kotlin.reflect.full.memberProperties
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
@@ -87,6 +89,13 @@ internal class ScenarioRunServiceImpl(
   }
 
   override fun findScenarioRunById(organizationId: String, scenariorunId: String) =
+      findScenarioRunById(organizationId, scenariorunId, withStateInformation = true)
+
+  private fun findScenarioRunById(
+      organizationId: String,
+      scenariorunId: String,
+      withStateInformation: Boolean
+  ) =
       cosmosCoreDatabase
           .getContainer("${organizationId}_scenario_data")
           .queryItems(
@@ -103,7 +112,7 @@ internal class ScenarioRunServiceImpl(
           .firstOrNull()
           ?.toDomain<ScenarioRun>()
           ?.withoutSensitiveData()
-          ?.withStateInformation(organizationId)
+          ?.let { if (withStateInformation) it.withStateInformation(organizationId) else it }
           ?: throw java.lang.IllegalArgumentException(
               "ScenarioRun #$scenariorunId not found in organization #$organizationId")
 
@@ -443,7 +452,7 @@ internal class ScenarioRunServiceImpl(
               "Data Ingestion status for ScenarioRun $scenarioRunId " +
                   "(csmSimulationRun=$csmSimulationRun): $postProcessingState")
           when (postProcessingState) {
-            null -> ScenarioRunState.Unknown
+            null, DataIngestionState.Unknown -> ScenarioRunState.Unknown
             DataIngestionState.InProgress -> ScenarioRunState.DataIngestionInProgress
             DataIngestionState.Successful -> ScenarioRunState.Successful
             DataIngestionState.Failure -> ScenarioRunState.Failed
@@ -461,5 +470,17 @@ internal class ScenarioRunServiceImpl(
         ScenarioRunState.Unknown
       }
     }
+  }
+
+  @EventListener(ScenarioRunEndTimeRequest::class)
+  fun onScenarioRunWorkflowEndTimeRequest(scenarioRunEndTimeRequest: ScenarioRunEndTimeRequest) {
+    val scenarioRun =
+        findScenarioRunById(
+            scenarioRunEndTimeRequest.organizationId,
+            scenarioRunEndTimeRequest.scenarioRunId,
+            withStateInformation = false)
+    val endTimeString = this.workflowService.getScenarioRunStatus(scenarioRun).endTime
+    val endTime = endTimeString?.let(ZonedDateTime::parse)
+    scenarioRunEndTimeRequest.response = endTime
   }
 }
