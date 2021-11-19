@@ -249,8 +249,7 @@ subprojects {
         exceptionFormat = TestExceptionFormat.FULL
       }
 
-      // remove standard output/error logging from --info builds by assigning only 'failed' and
-      // 'skipped' events
+      // remove standard output/error logging from --info builds
       info {
         events(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
         exceptionFormat = TestExceptionFormat.FULL
