@@ -279,7 +279,7 @@ subprojects {
         if (name == "cosmotech-api") {
           file("${rootDir}/openapi/openapi.yaml")
         } else {
-          file("${projectDir}/src/main/openapi/${projectDir.relativeTo(rootDir)}s.yaml")
+          file("${projectDir}/src/main/openapi/${projectDir.relativeTo(rootDir)}.yaml")
         }
     tasks.register<Copy>("copyOpenApiYamlToMainResources") {
       from(openApiFileDefinition)

@@ -39,8 +39,8 @@ tasks.withType<JibTask> {
 
 tasks.register<Copy>("copySubProjectsOpenAPIFiles") {
   // By convention, we expect OpenAPI files for sub-projects to be named and placed as follows:
-  // <subproject>/src/main/openapi/<subproject>s.yaml
-  // For example: organization/src/main/openapi/organizations.yaml
+  // <subproject>/src/main/openapi/<subproject>.yaml
+  // For example: organization/src/main/openapi/organization.yaml
   val sourcePaths =
       configurations
           .implementation
@@ -53,7 +53,7 @@ tasks.register<Copy>("copySubProjectsOpenAPIFiles") {
             it.name.matches("^cosmotech-[a-zA-Z]+-api$".toRegex())
           }
           .map { it.dependencyProject.projectDir }
-          .map { file("${it}/src/main/openapi/${it.relativeTo(rootDir)}s.yaml") }
+          .map { file("${it}/src/main/openapi/${it.relativeTo(rootDir)}.yaml") }
           .filter { it.exists() }
           .map { it.absolutePath }
           .toMutableList()

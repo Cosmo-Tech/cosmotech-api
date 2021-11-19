@@ -47,7 +47,7 @@ jobs:
         uses: char0n/swagger-editor-validate@v1.2.1
         with:
           swagger-editor-url: http://localhost/
-          definition-file: ${{ matrix.project }}/src/main/openapi/${{ matrix.project }}s.yaml
+          definition-file: ${{ matrix.project }}/src/main/openapi/${{ matrix.project }}.yaml
 
   merge_openapi_specs:
     runs-on: ubuntu-latest

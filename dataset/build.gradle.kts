@@ -16,11 +16,11 @@ sourceSets {
 }
 
 tasks.getByName<ValidateTask>("openApiValidate") {
-  inputSpec.set("${projectDir}/src/main/openapi/datasets.yaml")
+  inputSpec.set("${projectDir}/src/main/openapi/dataset.yaml")
 }
 
 tasks.getByName<GenerateTask>("openApiGenerate") {
-  inputSpec.set("${projectDir}/src/main/openapi/datasets.yaml")
+  inputSpec.set("${projectDir}/src/main/openapi/dataset.yaml")
   outputDir.set("$buildDir/generated-sources/openapi")
   generatorName.set("kotlin-spring")
   apiPackage.set("com.cosmotech.dataset.api")

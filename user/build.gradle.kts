@@ -14,11 +14,11 @@ sourceSets {
 }
 
 tasks.getByName<ValidateTask>("openApiValidate") {
-  inputSpec.set("${projectDir}/src/main/openapi/users.yaml")
+  inputSpec.set("${projectDir}/src/main/openapi/user.yaml")
 }
 
 tasks.getByName<GenerateTask>("openApiGenerate") {
-  inputSpec.set("${projectDir}/src/main/openapi/users.yaml")
+  inputSpec.set("${projectDir}/src/main/openapi/user.yaml")
   outputDir.set("$buildDir/generated-sources/openapi")
   generatorName.set("kotlin-spring")
   apiPackage.set("com.cosmotech.user.api")
