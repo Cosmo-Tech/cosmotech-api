@@ -8,7 +8,10 @@ dependencies {
   implementation("io.argoproj.workflow:argo-client-java:v3.0.1")
   implementation("com.squareup.retrofit2:retrofit:2.9.0")
   implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
-  implementation("com.squareup.okhttp3:okhttp:4.9.2")
+
+  implementation("com.squareup.okhttp3:okhttp")
+  implementation("com.squareup.okhttp3:logging-interceptor")
+
   api(projects.cosmotechApiCommonParent.cosmotechApiCommon)
   api(projects.cosmotechApiCommonParent.cosmotechApiCommonAzure)
   implementation(projects.cosmotechConnectorApi)
