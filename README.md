@@ -91,9 +91,13 @@ A `dev` [Spring Profile](https://docs.spring.io/spring-boot/docs/current/referen
 You will therefore need to specify a `config/application-dev.yml` file, with sensitive configuration like
 the Azure Cosmos DB URI and Keys (`csm.platform.azure.cosmos.uri` and `csm.platform.azure.cosmos.key` properties).
 
-See the [default configuration](api/src/main/resources/application.yml) for an overview of all configuration properties.
+You may want to copy and customize the [sample configuration](config/application-dev.sample.yml):
 
-Also note that the `azure` Profile is also activated by default. As such, the `application-azure.yml` file is read too as part of the application configuration \.
+```shell
+cp config/application-dev.sample.yml config/application-dev.yml
+```
+
+Also note that the `azure` Profile is activated by default. As such, the [application-azure.yml](api/src/main/resources/application-azure.yml) file is also read as part of the application configuration.
 
 Now you can run the API Server with :
 

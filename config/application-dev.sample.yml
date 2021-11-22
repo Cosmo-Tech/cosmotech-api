@@ -1,0 +1,57 @@
+#
+# Sample configuration file for the dev profile.
+# Feel free to customize this file or, if needed, reach out to the Cosmo Tech for support.
+#
+# NOTE: Not all supported properties (declared in api/src/main/resources/application.yml)
+# are included here.
+# Only the relevant ones that need to be set are listed here.
+#
+logging:
+  level:
+    com.cosmotech: DEBUG
+    azure.cosmos: WARN
+    web: INFO
+    org.springframework: WARN
+
+server:
+  error:
+    include-stacktrace: always
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  server:
+    port: 8080
+
+csm:
+  platform:
+    argo:
+      base-uri: "http://localhost:2746"
+    azure:
+      credentials:
+        # TODO Fill these values or reach out to the Cosmo Tech Platform Team for support
+        tenantId: "e413b834-8be8-4822-a370-be619545cb49"
+        clientId: "[fill-this-value]"
+        clientSecret: "[fill-this-value]"
+      cosmos:
+        # TODO Fill these values or reach out to the Cosmo Tech Platform Team for support
+        key: "[fill-this-value]"
+        uri: "https://csmphoenixdev.documents.azure.com:443/"
+      dataWarehouseCluster:
+        baseUri: "https://phoenixdev.westeurope.kusto.windows.net"
+        options:
+          ingestionUri: "https://ingest-phoenixdev.westeurope.kusto.windows.net"
+      eventBus:
+        baseUri: "amqps://phoenixdev.servicebus.windows.net"
+      storage:
+        # TODO Fill these values or reach out to the Cosmo Tech Platform Team for support
+        account-name: "csmphoenixdev"
+        account-key: "[fill-this-value]"
+      containerRegistries:
+        solutions: "localhost:5000"
