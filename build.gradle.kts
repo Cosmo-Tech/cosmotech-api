@@ -88,7 +88,7 @@ subprojects {
 
   dependencyManagement {
     imports {
-      mavenBom("com.azure.spring:azure-spring-boot-bom:3.10.0")
+      mavenBom("com.azure.spring:azure-spring-boot-bom:3.10.2")
       mavenBom("com.squareup.okhttp3:okhttp-bom:4.9.3")
     }
   }
