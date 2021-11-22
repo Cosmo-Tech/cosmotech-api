@@ -2177,7 +2177,7 @@ class ContainerFactoryTests {
             id = "ParamGroup1", label = "Parameter Group 1", parameters = parametersList)
     return Connector(
         id = id,
-        key = id,
+        key = key,
         name = "Test Connector",
         repository = repository,
         version = "1.0.0",
@@ -2199,7 +2199,7 @@ class ContainerFactoryTests {
             id = "ParamGroup1", label = "Parameter Group 1", parameters = parametersList)
     return Connector(
         id = id,
-        key = id,
+        key = key,
         name = "Test Connector",
         repository = repository,
         version = "1.0.0",
@@ -2221,7 +2221,7 @@ class ContainerFactoryTests {
             id = "ParamGroup1", label = "Parameter Group 1", parameters = parametersList)
     return Connector(
         id = id,
-        key = id,
+        key = key,
         name = "Test Connector",
         repository = repository,
         version = "1.0.0",
