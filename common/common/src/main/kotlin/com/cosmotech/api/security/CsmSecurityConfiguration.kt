@@ -1,18 +1,14 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.api.azure
+package com.cosmotech.api.security
 
-import com.azure.spring.aad.AADAuthorizationServerEndpoints
-import com.azure.spring.aad.webapi.AADJwtBearerTokenAuthenticationConverter
-import com.azure.spring.aad.webapi.AADResourceServerConfiguration
-import com.azure.spring.aad.webapi.AADResourceServerProperties
-import com.azure.spring.autoconfigure.aad.AADAuthenticationProperties
 import com.cosmotech.api.config.CsmPlatformProperties
-import java.lang.IllegalArgumentException
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.convert.converter.Converter
 import org.springframework.http.HttpMethod
+import org.springframework.security.authentication.AbstractAuthenticationToken
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
@@ -280,8 +276,7 @@ private val endpointSecurityWriters =
 @EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true, proxyTargetClass = true)
 internal class CsmSecurityConfiguration(
     private val csmPlatformProperties: CsmPlatformProperties,
-    private val aadResourceServerConfiguration: AADResourceServerConfiguration,
-    private val aadAuthenticationProperties: AADAuthenticationProperties
+    private val jwtConverter: Converter<Jwt, out AbstractAuthenticationToken>,
 ) : WebSecurityConfigurerAdapter() {
 
   private val logger = LoggerFactory.getLogger(CsmSecurityConfiguration::class.java)
@@ -315,37 +310,31 @@ internal class CsmSecurityConfiguration(
         }
         .oauth2ResourceServer()
         .jwt()
-        .jwtAuthenticationConverter(
-            AADJwtBearerTokenAuthenticationConverter(
-                csmPlatformProperties.authorization.principalJwtClaim,
-                AADResourceServerProperties.DEFAULT_CLAIM_TO_AUTHORITY_PREFIX_MAP))
+        .jwtAuthenticationConverter(jwtConverter)
   }
 
   @Bean
-  fun jwtDecoder(): JwtDecoder {
+  fun jwtDecoder(csmSecurityValidator: CsmSecurityValidator): JwtDecoder {
     val allowedTenants =
-        (listOf(
-                csmPlatformProperties.azure?.credentials?.core?.tenantId,
-                csmPlatformProperties.azure?.credentials?.customer?.tenantId) +
+        (csmSecurityValidator.getAllowedTenants() +
                 csmPlatformProperties.authorization.allowedTenants)
             .filterNotNull()
             .filterNot(String::isBlank)
             .toSet()
     if (allowedTenants.isEmpty()) {
-      throw IllegalStateException(
+      logger.warn(
           "Could not determine list of tenants allowed. " +
-              "Please configure any of the following properties: " +
-              "'csm.platform.azure.credentials.core.tenantId' " +
+              "This means no Tenant is allowed to use this API. " +
+              "Is this intentional? " +
+              "If not, please properly configure any of the following properties: " +
+              "'csm.platform.<provider>.credentials.core.tenantId' " +
               "or 'csm.platform.authorization.allowed-tenants'" +
-              " or 'csm.platform.azure.credentials.customer.tenantId' ")
+              " or 'csm.platform.<provider>.credentials.customer.tenantId' ")
     }
 
-    val identityEndpoints =
-        AADAuthorizationServerEndpoints(
-            aadAuthenticationProperties.baseUri, aadAuthenticationProperties.tenantId)
     val nimbusJwtDecoder =
-        NimbusJwtDecoder.withJwkSetUri(identityEndpoints.jwkSetEndpoint()).build()
-    val validators = aadResourceServerConfiguration.createDefaultValidator().toMutableList()
+        NimbusJwtDecoder.withJwkSetUri(csmSecurityValidator.getJwksSetUri()).build()
+    val validators = csmSecurityValidator.getValidators().toMutableList()
 
     if ("*" in allowedTenants) {
       logger.info(
@@ -364,7 +353,7 @@ internal class CsmSecurityConfiguration(
   }
 }
 
-internal class CsmSecurityEndpointsRolesReader(
+private class CsmSecurityEndpointsRolesReader(
     val paths: List<String>,
     val roles: Array<String>,
 ) {
@@ -381,7 +370,7 @@ internal class CsmSecurityEndpointsRolesReader(
   }
 }
 
-internal class CsmSecurityEndpointsRolesWriter(
+private class CsmSecurityEndpointsRolesWriter(
     val paths: List<String>,
     val roles: Array<String>,
 ) {
@@ -402,7 +391,7 @@ internal class CsmSecurityEndpointsRolesWriter(
   }
 }
 
-internal class CsmJwtClaimValueInCollectionValidator(
+private class CsmJwtClaimValueInCollectionValidator(
     claimName: String,
     private val allowed: Collection<String>
 ) : OAuth2TokenValidator<Jwt> {

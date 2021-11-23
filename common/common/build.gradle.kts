@@ -5,4 +5,8 @@ dependencies {
   api(projects.cosmotechApiCommonParent.cosmotechApiCommonId)
   api(projects.cosmotechApiCommonParent.cosmotechApiCommonEvents)
   implementation("io.swagger.parser.v3:swagger-parser-v3:2.0.28")
+
+  implementation(
+      "org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.5.6")
+  implementation("org.springframework.security:spring-security-jwt:1.1.1.RELEASE")
 }
