@@ -91,6 +91,13 @@ subprojects {
       mavenBom("com.azure.spring:azure-spring-boot-bom:3.10.2")
       mavenBom("com.squareup.okhttp3:okhttp-bom:4.9.3")
     }
+    dependencies {
+      // azure-spring-boot-starter-cosmos depends on micrometer-core 1.7.3, but
+      // spring-boot-starter-actuator depends on micrometer-core 1.8.0.
+      // micrometer-core 1.8.0 comes with a breaking change.
+      // Dependency conflict resolution strategy is overridden by this dependencyManagement block
+      dependency("io.micrometer:micrometer-core:1.8.0")
+    }
   }
 
   version = rootProject.scmVersion.version ?: error("Root project did not configure scmVersion!")
