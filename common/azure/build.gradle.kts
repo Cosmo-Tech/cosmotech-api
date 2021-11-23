@@ -20,4 +20,6 @@ dependencies {
             "which is not backward-compatible with 1.7.x." +
             "See http://www.slf4j.org/faq.html#changesInVersion200")
   }
+  implementation("com.azure:azure-messaging-eventhubs")
+  implementation("com.azure:azure-identity")
 }

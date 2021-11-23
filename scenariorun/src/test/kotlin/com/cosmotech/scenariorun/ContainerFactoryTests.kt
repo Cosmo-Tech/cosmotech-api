@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenariorun
 
+import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCredentials
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCredentials.CsmPlatformAzureCredentialsCore
@@ -67,6 +68,7 @@ class ContainerFactoryTests {
   @MockK private lateinit var organizationService: OrganizationApiService
   @MockK private lateinit var connectorService: ConnectorApiService
   @MockK private lateinit var datasetService: DatasetApiService
+  @MockK(relaxed = true) lateinit var azureEventHubsClient: AzureEventHubsClient
 
   @InjectMockKs private lateinit var factory: ContainerFactory
 
@@ -763,8 +765,6 @@ class ContainerFactoryTests {
             "CSM_CONTAINER_MODE" to mode,
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
-            "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
             "CSM_SIMULATION" to "TestSimulation",
             providerEnvVar to "azureStorage",
             "AZURE_STORAGE_CONNECTION_STRING" to "csmphoenix_storage_connection_string",
@@ -796,8 +796,6 @@ class ContainerFactoryTests {
             "CSM_CONTAINER_MODE" to mode,
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
-            "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
             "CSM_SIMULATION" to "TestSimulation",
             providerEnvVar to "local",
             "AZURE_STORAGE_CONNECTION_STRING" to "csmphoenix_storage_connection_string",
@@ -1798,8 +1796,6 @@ class ContainerFactoryTests {
             "CSM_CONTAINER_MODE" to "handle-parameters",
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
-            "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
             "CSM_SIMULATION" to "TestSimulation"),
         container.envVars)
   }
@@ -1835,8 +1831,6 @@ class ContainerFactoryTests {
             "CSM_CONTAINER_MODE" to "prerun",
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
-            "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
             "CSM_SIMULATION" to "TestSimulation"),
         container.envVars)
   }
@@ -1883,8 +1877,6 @@ class ContainerFactoryTests {
             "CSM_AMQPCONSUMER_PASSWORD" to "a1b2c3d4e5==",
             "CSM_CONTROL_PLANE_USER" to "my-eventhub-access-policy",
             "CSM_CONTROL_PLANE_PASSWORD" to "a1b2c3d4e5==",
-            "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
             "CSM_SIMULATION" to "TestSimulation"),
         container.envVars)
   }
@@ -1985,8 +1977,6 @@ class ContainerFactoryTests {
             "CSM_CONTAINER_MODE" to "engine",
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
-            "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://organizationid-test.servicebus.windows.net/scenariorun",
             "CSM_SIMULATION" to "TestSimulation"),
         container.envVars)
   }
@@ -2019,8 +2009,6 @@ class ContainerFactoryTests {
             "CSM_CONTAINER_MODE" to "engine",
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
-            "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
             "CSM_SIMULATION" to "TestSimulation"),
         container.envVars)
   }
@@ -2073,8 +2061,6 @@ class ContainerFactoryTests {
             "CSM_CONTAINER_MODE" to mode,
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
-            "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
             "CSM_SIMULATION" to "TestSimulation")
     assertEquals(expected, container?.envVars)
   }

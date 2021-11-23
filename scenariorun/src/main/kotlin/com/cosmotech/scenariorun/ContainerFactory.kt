@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenariorun
 
+import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
 import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus
@@ -116,7 +117,8 @@ internal class ContainerFactory(
     private val solutionService: SolutionApiService,
     private val organizationService: OrganizationApiService,
     private val connectorService: ConnectorApiService,
-    private val datasetService: DatasetApiService
+    private val datasetService: DatasetApiService,
+    private val azureEventHubsClient: AzureEventHubsClient
 ) {
 
   private val logger = LoggerFactory.getLogger(ContainerFactory::class.java)
@@ -1012,17 +1014,53 @@ internal class ContainerFactory(
       workspace: Workspace
   ): Map<String, String> {
     val envVars: MutableMap<String, String> = mutableMapOf()
+    val eventBus = csmPlatformProperties.azure?.eventBus!!
     if (workspace.useDedicatedEventHubNamespace != true) {
-      val eventBus = csmPlatformProperties.azure?.eventBus!!
+
       val eventHubBase = "${eventBus.baseUri}/${organization.id}-${workspace.key}".lowercase()
       envVars[EVENT_HUB_MEASURES_VAR] = eventHubBase
-      envVars[EVENT_HUB_CONTROL_PLANE_VAR] = "${eventHubBase}-scenariorun"
+      val doesEventHubExist =
+          checkEventHubExistenceFromCredentialType(
+              eventBus, eventBus.baseUri, "${organization.id}-${workspace.key}-scenariorun")
+      if (doesEventHubExist) {
+        logger.debug(
+            "Control Plane Event Hub ({}/{}) does exist => " +
+                "instructing engine to send summary message at the end of the simulation",
+            eventBus.baseUri,
+            "${organization.id}-${workspace.key}-scenariorun")
+        envVars[EVENT_HUB_CONTROL_PLANE_VAR] = "${eventHubBase}-scenariorun"
+      } else {
+        logger.debug(
+            "Control Plane Event Hub ({}/{}) does not exist => " +
+                "summary message will *not* be sent at the end of the simulation",
+            eventBus.baseUri,
+            "${organization.id}-${workspace.key}-scenariorun")
+      }
+
       envVars.putAll(getSpecificEventHubAuthenticationEnvVars(eventBus))
     } else {
       val baseUri = "amqps://${organization.id}-${workspace.key}.servicebus.windows.net".lowercase()
       envVars[EVENT_HUB_MEASURES_VAR] = "${baseUri}/probesmeasures"
-      envVars[EVENT_HUB_CONTROL_PLANE_VAR] = "${baseUri}/scenariorun"
-      logger.info(
+
+      val doesEventHubExists =
+          checkEventHubExistenceFromCredentialType(
+              eventBus, "${organization.id}-${workspace.key}.servicebus.windows.net", "scenariorun")
+      if (doesEventHubExists) {
+        logger.debug(
+            "Control Plane Event Hub ({}/{}) does exist => " +
+                "instructing engine to send summary message at the end of the simulation",
+            "${organization.id}-${workspace.key}.servicebus.windows.net",
+            "scenariorun")
+        envVars[EVENT_HUB_CONTROL_PLANE_VAR] = "${baseUri}/scenariorun"
+      } else {
+        logger.debug(
+            "Control Plane Event Hub ({}/{}) does not exist => " +
+                "summary message will *not* be sent at the end of the simulation",
+            eventBus.baseUri,
+            "${organization.id}-${workspace.key}-scenariorun")
+      }
+
+      logger.debug(
           "Workspace ${workspace.id} set to use dedicated eventhub namespace " +
               " => " +
               "using tenant id, client id and client secret already put in the " +
@@ -1030,6 +1068,37 @@ internal class ContainerFactory(
     }
 
     return envVars.toMap()
+  }
+
+  private fun checkEventHubExistenceFromCredentialType(
+      eventBus: CsmPlatformAzureEventBus,
+      eventHubNamespace: String,
+      eventHubName: String
+  ): Boolean {
+    val doesEventHubExists =
+        when (eventBus.authentication.strategy) {
+          SHARED_ACCESS_POLICY -> {
+            azureEventHubsClient.doesEventHubExist(
+                eventHubNamespace.lowercase(),
+                eventHubName.lowercase(),
+                eventBus.authentication.sharedAccessPolicy?.namespace?.name
+                    ?: throw IllegalStateException(
+                        "Missing configuration property: " +
+                            "csm.platform.azure.eventBus.authentication.sharedAccessPolicy." +
+                            "namespace.name"),
+                eventBus.authentication.sharedAccessPolicy?.namespace?.key
+                    ?: throw IllegalStateException(
+                        "Missing configuration property: " +
+                            "csm.platform.azure.eventBus.authentication.sharedAccessPolicy." +
+                            "namespace.key"),
+                ignoreErrors = true)
+          }
+          TENANT_CLIENT_CREDENTIALS -> {
+            azureEventHubsClient.doesEventHubExist(
+                eventHubNamespace, eventHubName.lowercase(), ignoreErrors = true)
+          }
+        }
+    return doesEventHubExists
   }
 
   private fun getSpecificEventHubAuthenticationEnvVars(
