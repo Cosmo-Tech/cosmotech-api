@@ -21,8 +21,7 @@ plugins {
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.13.6"
   id("com.diffplug.spotless") version "6.0.0"
-  id("org.springframework.boot") version "2.5.7" apply false
-  id("io.spring.dependency-management") version "1.0.11.RELEASE"
+  id("org.springframework.boot") version "2.6.0" apply false
   id("org.openapi.generator") version "5.3.0" apply false
   id("com.google.cloud.tools.jib") version "3.1.4" apply false
   id("io.gitlab.arturbosch.detekt") version "1.18.1"
@@ -84,14 +83,6 @@ allprojects {
 subprojects {
   apply(plugin = "org.jetbrains.kotlin.plugin.spring")
   apply(plugin = "org.springframework.boot")
-  apply(plugin = "io.spring.dependency-management")
-
-  dependencyManagement {
-    imports {
-      mavenBom("com.azure.spring:azure-spring-boot-bom:3.10.2")
-      mavenBom("com.squareup.okhttp3:okhttp-bom:4.9.3")
-    }
-  }
 
   version = rootProject.scmVersion.version ?: error("Root project did not configure scmVersion!")
 
@@ -153,9 +144,17 @@ subprojects {
   }
 
   dependencies {
+    val developmentOnly = configurations.getByName("developmentOnly")
+
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2-native-mt")
+
+    implementation(
+        platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES))
+    developmentOnly(
+        platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES))
+
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-web") {
       exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
@@ -187,7 +186,6 @@ subprojects {
     }
     integrationTestImplementation("com.ninja-squad:springmockk:3.0.1")
 
-    val developmentOnly = configurations.getByName("developmentOnly")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
   }
 
