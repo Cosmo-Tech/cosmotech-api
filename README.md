@@ -2,9 +2,13 @@
 
 [![Build, Test and Package](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/build_test_package.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/build_test_package.yml)
 [![Lint](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/lint.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/lint.yml)
+[![Doc](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/doc.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/doc.yml)
+
 [![OpenAPI](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/openapi.yml/badge.svg)](https://csmphoenixdev.blob.core.windows.net/public/openapi.yaml)
 [![OpenAPI Clients](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/openapi_clients.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/openapi_clients.yml)
-[![Deploy](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/deploy.yml/badge.svg)](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/deploy.yml)
+
+[![Dev Deployment](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/deploy.yml/badge.svg)](https://dev.api.cosmotech.com/)
+[![Staging Deployment](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/deploy_staging.yml/badge.svg)](https://staging.api.cosmotech.com/)
 
 > Cosmo Tech Cloud Platform API
 
@@ -12,11 +16,13 @@ The Cosmo Tech Cloud Platform API exposes an API based on [OpenAPI](https://swag
 
 It is written in [Kotlin](https://kotlinlang.org/), using [Gradle](https://gradle.org/) and the [Spring Boot framework](https://spring.io/projects/spring-boot).
 
-Note that this project contains a set of service implementations leveraging [Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/) for data persistence.
+Note that this project contains a set of service implementations interacting with [Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/) for data persistence.
 
 ## Swagger UI
 
-This API is [continuously deployed](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/deploy.yml) at the following URL, so you can easily explore it : https://dev.api.cosmotech.com/
+This API is continuously deployed at the following URLs, so you can easily explore it :
+- Dev Environment: https://dev.api.cosmotech.com/
+- Staging Environment: https://staging.api.cosmotech.com/
 
 ## Client Libraries
 
