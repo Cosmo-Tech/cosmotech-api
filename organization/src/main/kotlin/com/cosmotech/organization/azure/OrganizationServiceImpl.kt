@@ -5,7 +5,7 @@ package com.cosmotech.organization.azure
 import com.azure.cosmos.models.CosmosContainerProperties
 import com.azure.cosmos.models.CosmosQueryRequestOptions
 import com.azure.cosmos.models.SqlQuerySpec
-import com.cosmotech.api.azure.AbstractCosmosBackedService
+import com.cosmotech.api.azure.CsmAzureService
 import com.cosmotech.api.azure.findAll
 import com.cosmotech.api.azure.findByIdOrThrow
 import com.cosmotech.api.events.OrganizationRegistered
@@ -38,7 +38,7 @@ import org.springframework.stereotype.Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions")
 internal class OrganizationServiceImpl(private val userService: UserApiService) :
-    AbstractCosmosBackedService(), OrganizationApiService {
+    CsmAzureService(), OrganizationApiService {
 
   private lateinit var coreOrganizationContainer: String
 

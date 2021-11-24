@@ -5,12 +5,12 @@ package com.cosmotech.api.azure
 import com.azure.cosmos.CosmosClient
 import com.azure.cosmos.CosmosDatabase
 import com.azure.spring.data.cosmos.core.CosmosTemplate
-import com.cosmotech.api.AbstractPhoenixService
+import com.cosmotech.api.CsmPhoenixService
 import javax.annotation.PostConstruct
 import org.springframework.beans.factory.annotation.Autowired
 
 @Suppress("UnnecessaryAbstractClass")
-abstract class AbstractCosmosBackedService : AbstractPhoenixService() {
+abstract class CsmAzureService : CsmPhoenixService() {
 
   @Autowired protected lateinit var cosmosTemplate: CosmosTemplate
 

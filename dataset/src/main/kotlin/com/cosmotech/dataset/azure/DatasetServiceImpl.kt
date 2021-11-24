@@ -6,7 +6,7 @@ import com.azure.cosmos.models.CosmosContainerProperties
 import com.azure.cosmos.models.CosmosQueryRequestOptions
 import com.azure.cosmos.models.SqlParameter
 import com.azure.cosmos.models.SqlQuerySpec
-import com.cosmotech.api.azure.AbstractCosmosBackedService
+import com.cosmotech.api.azure.CsmAzureService
 import com.cosmotech.api.azure.findAll
 import com.cosmotech.api.azure.findByIdOrThrow
 import com.cosmotech.api.events.ConnectorRemoved
@@ -37,7 +37,7 @@ import org.springframework.stereotype.Service
 internal class DatasetServiceImpl(
     private val organizationService: OrganizationApiService,
     private val connectorService: ConnectorApiService
-) : AbstractCosmosBackedService(), DatasetApiService {
+) : CsmAzureService(), DatasetApiService {
   override fun findAllDatasets(organizationId: String) =
       cosmosTemplate.findAll<Dataset>("${organizationId}_datasets")
 

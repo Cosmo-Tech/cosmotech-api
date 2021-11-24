@@ -3,7 +3,7 @@
 package com.cosmotech.connector.azure
 
 import com.azure.cosmos.models.CosmosContainerProperties
-import com.cosmotech.api.azure.AbstractCosmosBackedService
+import com.cosmotech.api.azure.CsmAzureService
 import com.cosmotech.api.azure.findAll
 import com.cosmotech.api.azure.findByIdOrThrow
 import com.cosmotech.api.events.ConnectorRemoved
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
-internal class ConnectorServiceImpl : AbstractCosmosBackedService(), ConnectorApiService {
+internal class ConnectorServiceImpl : CsmAzureService(), ConnectorApiService {
 
   private lateinit var coreConnectorContainer: String
 

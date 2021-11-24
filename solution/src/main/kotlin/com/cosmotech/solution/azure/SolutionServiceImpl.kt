@@ -4,7 +4,7 @@ package com.cosmotech.solution.azure
 
 import com.azure.cosmos.models.CosmosContainerProperties
 import com.azure.storage.blob.BlobServiceClient
-import com.cosmotech.api.azure.AbstractCosmosBackedService
+import com.cosmotech.api.azure.CsmAzureService
 import com.cosmotech.api.azure.findAll
 import com.cosmotech.api.azure.findByIdOrThrow
 import com.cosmotech.api.azure.sanitizeForAzureStorage
@@ -37,7 +37,7 @@ import org.springframework.stereotype.Service
 internal class SolutionServiceImpl(
     private val resourceLoader: ResourceLoader,
     private val azureStorageBlobServiceClient: BlobServiceClient,
-) : AbstractCosmosBackedService(), SolutionApiService {
+) : CsmAzureService(), SolutionApiService {
 
   override fun findAllSolutions(organizationId: String) =
       cosmosTemplate.findAll<Solution>("${organizationId}_solutions")

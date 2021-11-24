@@ -8,7 +8,7 @@ import com.azure.spring.autoconfigure.storage.resource.BlobStorageResource
 import com.azure.storage.blob.BlobServiceClient
 import com.azure.storage.blob.batch.BlobBatchClient
 import com.azure.storage.blob.models.DeleteSnapshotsOptionType
-import com.cosmotech.api.azure.AbstractCosmosBackedService
+import com.cosmotech.api.azure.CsmAzureService
 import com.cosmotech.api.azure.findAll
 import com.cosmotech.api.azure.findByIdOrThrow
 import com.cosmotech.api.azure.sanitizeForAzureStorage
@@ -48,7 +48,7 @@ internal class WorkspaceServiceImpl(
     private val solutionService: SolutionApiService,
     private val azureStorageBlobServiceClient: BlobServiceClient,
     private val azureStorageBlobBatchClient: BlobBatchClient,
-) : AbstractCosmosBackedService(), WorkspaceApiService {
+) : CsmAzureService(), WorkspaceApiService {
 
   private fun fetchUsers(userIds: Collection<String>): Map<String, User> =
       userIds.toSet().map { userService.findUserById(it) }.associateBy { it.id!! }

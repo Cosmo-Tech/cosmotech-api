@@ -2,14 +2,14 @@
 // Licensed under the MIT license.
 package com.cosmotech.dataset
 
-import com.cosmotech.api.AbstractPhoenixService
+import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.dataset.api.ValidatorApiService
 import com.cosmotech.dataset.domain.Validator
 import com.cosmotech.dataset.domain.ValidatorRun
 import org.springframework.stereotype.Service
 
 @Service
-internal class ValidatorServiceImpl : AbstractPhoenixService(), ValidatorApiService {
+internal class ValidatorServiceImpl : CsmPhoenixService(), ValidatorApiService {
   override fun findAllValidators(organizationId: String): List<Validator> {
     TODO("Not yet implemented")
   }
