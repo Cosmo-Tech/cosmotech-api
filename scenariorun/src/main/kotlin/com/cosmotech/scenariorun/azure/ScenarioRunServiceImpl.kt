@@ -23,6 +23,7 @@ import com.cosmotech.api.utils.toDomain
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenariorun.CSM_JOB_ID_LABEL_KEY
 import com.cosmotech.scenariorun.ContainerFactory
+import com.cosmotech.scenariorun.EVENT_HUB_CONTROL_PLANE_VAR
 import com.cosmotech.scenariorun.SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME
 import com.cosmotech.scenariorun.api.ScenariorunApiService
 import com.cosmotech.scenariorun.domain.RunTemplateParameterValue
@@ -111,8 +112,8 @@ internal class ScenarioRunServiceImpl(
               JsonNode::class.java)
           .firstOrNull()
           ?.toDomain<ScenarioRun>()
-          ?.withoutSensitiveData()
           ?.let { if (withStateInformation) it.withStateInformation(organizationId) else it }
+          ?.withoutSensitiveData()
           ?: throw java.lang.IllegalArgumentException(
               "ScenarioRun #$scenariorunId not found in organization #$organizationId")
 
@@ -172,7 +173,7 @@ internal class ScenarioRunServiceImpl(
               // https://github.com/Azure/azure-sdk-for-java/issues/12269
               JsonNode::class.java)
           .mapNotNull {
-            it.toDomain<ScenarioRun>()?.withoutSensitiveData().withStateInformation(organizationId)
+            it.toDomain<ScenarioRun>().withStateInformation(organizationId).withoutSensitiveData()
           }
           .toList()
 
@@ -197,7 +198,7 @@ internal class ScenarioRunServiceImpl(
               // https://github.com/Azure/azure-sdk-for-java/issues/12269
               JsonNode::class.java)
           .mapNotNull {
-            it.toDomain<ScenarioRun>()?.withoutSensitiveData().withStateInformation(organizationId)
+            it.toDomain<ScenarioRun>().withStateInformation(organizationId).withoutSensitiveData()
           }
           .toList()
 
@@ -303,7 +304,7 @@ internal class ScenarioRunServiceImpl(
             // https://github.com/Azure/azure-sdk-for-java/issues/12269
             JsonNode::class.java)
         .mapNotNull {
-          it.toDomain<ScenarioRun>().withoutSensitiveData().withStateInformation(organizationId)
+          it.toDomain<ScenarioRun>().withStateInformation(organizationId).withoutSensitiveData()
         }
         .toList()
   }
@@ -400,11 +401,17 @@ internal class ScenarioRunServiceImpl(
     return scenarioRunStatus.copy(
         state =
             mapWorkflowPhaseToScenarioRunState(
-                organizationId,
-                scenarioRun.workspaceKey!!,
-                scenarioRun.id,
-                scenarioRunStatus.phase,
-                scenarioRun.csmSimulationRun))
+                organizationId = organizationId,
+                workspaceKey = scenarioRun.workspaceKey!!,
+                scenarioRunId = scenarioRun.id,
+                phase = scenarioRunStatus.phase,
+                csmSimulationRun = scenarioRun.csmSimulationRun,
+                // Determine whether we need to check data ingestion state, based on whether the
+                // CSM_CONTROL_PLANE_TOPIC variable is present in any of the containers
+                checkDataIngestionState =
+                    scenarioRun.containers?.any {
+                      !it.envVars?.get(EVENT_HUB_CONTROL_PLANE_VAR).isNullOrBlank()
+                    }))
   }
 
   @EventListener(WorkflowPhaseToStateRequest::class)
@@ -415,7 +422,8 @@ internal class ScenarioRunServiceImpl(
                 workspaceKey = request.workspaceKey,
                 scenarioRunId = request.jobId,
                 phase = request.workflowPhase,
-                csmSimulationRun = request.csmSimulationRun)
+                csmSimulationRun = null,
+                checkDataIngestionState = false)
             .value
   }
 
@@ -430,13 +438,17 @@ internal class ScenarioRunServiceImpl(
       workspaceKey: String,
       scenarioRunId: String?,
       phase: String?,
-      csmSimulationRun: String?
+      csmSimulationRun: String?,
+      checkDataIngestionState: Boolean? = null,
   ): ScenarioRunState {
     logger.debug("Mapping phase $phase for job $scenarioRunId")
     return when (phase) {
       "Pending", "Running" -> ScenarioRunState.Running
       "Succeeded" -> {
-        if (csmSimulationRun != null) {
+        logger.trace(
+            "checkDataIngestionState=$checkDataIngestionState," +
+                "csmSimulationRun=$csmSimulationRun")
+        if (checkDataIngestionState == true && csmSimulationRun != null) {
           logger.debug(
               "ScenarioRun $scenarioRunId (csmSimulationRun=$csmSimulationRun) reported as " +
                   "Successful by the Workflow Service => checking data ingestion status..")
