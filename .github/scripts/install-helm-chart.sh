@@ -32,7 +32,7 @@ config:
           options:
             ingestionUri: "${PHOENIXAKSDEV_ADX_INGESTION_BASE_URI}"
         eventBus:
-          baseUri: "amqps://changeme.servicebus.windows.net"
+          baseUri: "${PHOENIXAKSDEV_EVENT_HUBS_BASE_URI}"
         storage:
           account-name: "${PHOENIXAKSDEV_STORAGE_ACCOUNT_NAME}"
           account-key: "${PHOENIXAKSDEV_STORAGE_ACCOUNT_KEY}"
