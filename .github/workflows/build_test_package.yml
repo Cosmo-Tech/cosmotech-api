@@ -38,7 +38,6 @@ jobs:
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: |
-            --info
             build
             -x generateClients
             -x test
@@ -73,7 +72,7 @@ jobs:
           cache-disabled: false
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: --info test -x spotlessCheck -x openApiValidate
+          arguments: test -x spotlessCheck -x openApiValidate
 
       - name: Run integration tests
         env:
@@ -83,7 +82,7 @@ jobs:
           cache-disabled: false
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: --info integrationTest -x spotlessCheck -x openApiValidate
+          arguments: integrationTest -x spotlessCheck -x openApiValidate
 
   test_helm:
     name: Test Helm Chart
@@ -196,7 +195,6 @@ jobs:
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: |
-            --info
             :cosmotech-api:jib
             -Djib.to.image=localhost:5000/cosmotech-api:latest
             -Djib.allowInsecureRegistries=true
@@ -268,7 +266,6 @@ jobs:
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: |
-            --info
             :cosmotech-api:jibDockerBuild
             -Djib.to.image=com.cosmotech/cosmotech-api:${{ github.sha }}
 

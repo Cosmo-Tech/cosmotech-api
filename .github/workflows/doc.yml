@@ -35,7 +35,7 @@ jobs:
           cache-disabled: false
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: --info openApiMarkdownGenerate
+          arguments: openApiMarkdownGenerate
 
       - name: Generate UML documentation
         env:
@@ -45,7 +45,7 @@ jobs:
           cache-disabled: false
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: --info openApiUmlGenerate
+          arguments: openApiUmlGenerate
 
       - name: Set Git identity
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}

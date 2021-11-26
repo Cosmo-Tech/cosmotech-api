@@ -74,7 +74,7 @@ jobs:
           cache-disabled: false
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: --info mergeOpenApiFiles
+          arguments: mergeOpenApiFiles
 
       - name: Archive openapi.yaml
         uses: actions/upload-artifact@v2

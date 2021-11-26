@@ -34,7 +34,7 @@ jobs:
         cache-disabled: false
         # Cache storage space is limited for GitHub actions
         cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-        arguments: --info spotlessCheck
+        arguments: spotlessCheck
 
   detekt:
     runs-on: ubuntu-latest
@@ -58,7 +58,7 @@ jobs:
           cache-disabled: false
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: --info detekt
+          arguments: detekt
 
       - name: Upload SARIF reports to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v1
