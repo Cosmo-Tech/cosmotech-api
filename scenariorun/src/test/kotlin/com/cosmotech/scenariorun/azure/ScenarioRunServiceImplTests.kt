@@ -10,10 +10,10 @@ import com.azure.cosmos.models.PartitionKey
 import com.azure.cosmos.models.SqlQuerySpec
 import com.azure.cosmos.util.CosmosPagedIterable
 import com.azure.spring.data.cosmos.core.CosmosTemplate
+import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.id.CsmIdGenerator
-import com.cosmotech.api.scenariorun.PostProcessingDataIngestionStateProvider
 import com.cosmotech.api.utils.getCurrentAuthentication
 import com.cosmotech.api.utils.objectMapper
 import com.cosmotech.organization.api.OrganizationApiService
@@ -72,9 +72,7 @@ class ScenarioRunServiceImplTests {
 
   @MockK(relaxed = true) private lateinit var workflowService: WorkflowService
 
-  @MockK(relaxed = true)
-  private lateinit var postProcessingDataIngestionStateProvider:
-      PostProcessingDataIngestionStateProvider
+  @MockK(relaxed = true) private lateinit var azureDataExplorerClient: AzureDataExplorerClient
 
   private lateinit var scenarioRunServiceImpl: ScenarioRunServiceImpl
 
@@ -83,9 +81,7 @@ class ScenarioRunServiceImplTests {
     MockKAnnotations.init(this, relaxUnitFun = true)
 
     this.scenarioRunServiceImpl =
-        spyk(
-            ScenarioRunServiceImpl(
-                containerFactory, workflowService, postProcessingDataIngestionStateProvider))
+        spyk(ScenarioRunServiceImpl(containerFactory, workflowService, azureDataExplorerClient))
 
     every { scenarioRunServiceImpl getProperty "cosmosTemplate" } returns cosmosTemplate
     every { scenarioRunServiceImpl getProperty "cosmosClient" } returns cosmosClient

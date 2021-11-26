@@ -8,6 +8,7 @@ import com.azure.cosmos.models.PartitionKey
 import com.azure.cosmos.models.SqlParameter
 import com.azure.cosmos.models.SqlQuerySpec
 import com.cosmotech.api.azure.CsmAzureService
+import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
 import com.cosmotech.api.events.ScenarioDataDownloadRequest
 import com.cosmotech.api.events.ScenarioRunEndTimeRequest
@@ -16,7 +17,6 @@ import com.cosmotech.api.events.ScenarioRunStartedForScenario
 import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.scenariorun.DataIngestionState
-import com.cosmotech.api.scenariorun.PostProcessingDataIngestionStateProvider
 import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
@@ -52,7 +52,7 @@ import org.springframework.stereotype.Service
 internal class ScenarioRunServiceImpl(
     private val containerFactory: ContainerFactory,
     private val workflowService: WorkflowService,
-    private val postProcessingDataIngestionStateProvider: PostProcessingDataIngestionStateProvider,
+    private val azureDataExplorerClient: AzureDataExplorerClient,
 ) : CsmAzureService(), ScenariorunApiService {
 
   private fun ScenarioRun.asMapWithAdditionalData(workspaceId: String? = null): Map<String, Any> {
@@ -453,11 +453,10 @@ internal class ScenarioRunServiceImpl(
               "ScenarioRun $scenarioRunId (csmSimulationRun=$csmSimulationRun) reported as " +
                   "Successful by the Workflow Service => checking data ingestion status..")
           val postProcessingState =
-              this.postProcessingDataIngestionStateProvider.getStateFor(
+              this.azureDataExplorerClient.getStateFor(
                   organizationId = organizationId,
                   workspaceKey = workspaceKey,
                   scenarioRunId = scenarioRunId!!,
-                  //                  csmSimulationRun = "1e46cee6-1ea2-4da7-98a7-3bd81212a793",
                   csmSimulationRun = csmSimulationRun,
               )
           logger.debug(

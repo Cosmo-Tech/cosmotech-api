@@ -6,7 +6,6 @@ import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.events.ScenarioRunEndTimeRequest
 import com.cosmotech.api.scenariorun.DataIngestionState
-import com.cosmotech.api.scenariorun.PostProcessingDataIngestionStateProvider
 import com.microsoft.azure.kusto.data.Client
 import com.microsoft.azure.kusto.data.ClientImpl
 import com.microsoft.azure.kusto.data.ClientRequestProperties
@@ -34,10 +33,10 @@ internal const val HEALTH_KUSTO_QUERY =
 
 @Service("csmADX")
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
-internal class AzureDataExplorerClient(
+class AzureDataExplorerClient(
     private val csmPlatformProperties: CsmPlatformProperties,
     val eventPublisher: CsmEventPublisher
-) : HealthIndicator, PostProcessingDataIngestionStateProvider {
+) : HealthIndicator {
 
   private val logger = LoggerFactory.getLogger(AzureDataExplorerClient::class.java)
 
@@ -76,7 +75,7 @@ internal class AzureDataExplorerClient(
     this.kustoClient = kustoClient
   }
 
-  override fun getStateFor(
+  fun getStateFor(
       organizationId: String,
       workspaceKey: String,
       scenarioRunId: String,
