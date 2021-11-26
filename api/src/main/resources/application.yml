@@ -157,6 +157,9 @@ csm:
         key: ""
         populateQueryMetrics: true
         uri: ""
+    data-ingestion-state:
+      state-if-no-control-plane-info-but-probe-measures-data: Successful
+      exception-if-no-control-plane-info-and-no-probe-measures-data: true
 
 springdoc:
   # See https://springdoc.org/#properties

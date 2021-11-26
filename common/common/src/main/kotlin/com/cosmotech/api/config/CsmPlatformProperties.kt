@@ -48,6 +48,9 @@ data class CsmPlatformProperties(
 
     /** Authorization Configuration */
     val authorization: Authorization = Authorization(),
+
+    /** Data Ingestion state reporting behavior */
+    val dataIngestionState: DataIngestionState = DataIngestionState(),
 ) {
 
   data class Authorization(
@@ -320,4 +323,18 @@ data class CsmPlatformProperties(
     /** Microsoft Azure : https://azure.microsoft.com/en-us/ */
     AZURE
   }
+
+  data class DataIngestionState(
+      /**
+       * Whether to throw an exception if we have no control plane info about the scenario run, and
+       * no probe measures data. This may typically happen if the simulation has no consumers.
+       */
+      val exceptionIfNoControlPlaneInfoAndNoProbeMeasuresData: Boolean = true,
+
+      /**
+       * State to report if we have no control plane info about the scenario run, but we have probe
+       * measures data. One of Successful, InProgress, Failure
+       */
+      val stateIfNoControlPlaneInfoButProbeMeasuresData: String = "Successful",
+  )
 }

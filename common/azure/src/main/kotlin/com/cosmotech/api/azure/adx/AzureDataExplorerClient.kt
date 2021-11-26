@@ -3,6 +3,8 @@
 package com.cosmotech.api.azure.adx
 
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.api.scenariorun.DataIngestionState
+import com.cosmotech.api.scenariorun.PostProcessingDataIngestionStateProvider
 import com.microsoft.azure.kusto.data.Client
 import com.microsoft.azure.kusto.data.ClientImpl
 import com.microsoft.azure.kusto.data.ClientRequestProperties
@@ -27,8 +29,8 @@ internal const val HEALTH_KUSTO_QUERY =
 
 @Service("csmADX")
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
-class AzureDataExplorerClient(private val csmPlatformProperties: CsmPlatformProperties) :
-    HealthIndicator {
+internal class AzureDataExplorerClient(private val csmPlatformProperties: CsmPlatformProperties) :
+    PostProcessingDataIngestionStateProvider, HealthIndicator {
 
   private val logger = LoggerFactory.getLogger(AzureDataExplorerClient::class.java)
 
@@ -36,8 +38,15 @@ class AzureDataExplorerClient(private val csmPlatformProperties: CsmPlatformProp
 
   private lateinit var kustoClient: Client
 
+  private lateinit var dataIngestionStateIfNoControlPlaneInfoButProbeMeasuresData:
+      DataIngestionState
+
   @PostConstruct
   internal fun init() {
+    this.dataIngestionStateIfNoControlPlaneInfoButProbeMeasuresData =
+        DataIngestionState.valueOf(
+            csmPlatformProperties.dataIngestionState.stateIfNoControlPlaneInfoButProbeMeasuresData)
+
     val csmPlatformAzure = csmPlatformProperties.azure!!
     // TODO Investigate whether we need to use core or customer creds
     val csmPlatformAzureCredentials = csmPlatformAzure.credentials.core
@@ -52,6 +61,105 @@ class AzureDataExplorerClient(private val csmPlatformProperties: CsmPlatformProp
 
   internal fun setKustoClient(kustoClient: Client) {
     this.kustoClient = kustoClient
+  }
+
+  override fun getStateFor(
+      organizationId: String,
+      workspaceKey: String,
+      scenarioRunId: String,
+      csmSimulationRun: String
+  ): DataIngestionState? {
+    logger.trace("getStateFor($organizationId,$workspaceKey,$scenarioRunId,$csmSimulationRun)")
+
+    val sentMessagesTotal = querySentMessagesTotal(organizationId, workspaceKey, csmSimulationRun)
+    val probesMeasuresCount =
+        queryProbesMeasuresCount(organizationId, workspaceKey, csmSimulationRun)
+
+    logger.debug(
+        "For scenario run $scenarioRunId (csmSimulationRun=" +
+            csmSimulationRun +
+            ": (sentMessagesTotal,probesMeasuresCount)=($sentMessagesTotal, $probesMeasuresCount)")
+    return if (sentMessagesTotal == null) {
+      if (probesMeasuresCount > 0) {
+        this.dataIngestionStateIfNoControlPlaneInfoButProbeMeasuresData
+      } else if (csmPlatformProperties
+          .dataIngestionState
+          .exceptionIfNoControlPlaneInfoAndNoProbeMeasuresData) {
+        throw UnsupportedOperationException(
+            "Case not handled: probesMeasuresCount=0 and sentMessagesTotal=NULL. " +
+                "Simulation run $csmSimulationRun probably has no consumers.")
+      } else {
+        // For backward compatibility purposes
+        DataIngestionState.Successful
+      }
+    } else if (probesMeasuresCount < sentMessagesTotal) {
+      DataIngestionState.InProgress
+    } else {
+      DataIngestionState.Successful
+    }
+  }
+
+  private fun queryProbesMeasuresCount(
+      organizationId: String,
+      workspaceKey: String,
+      csmSimulationRun: String
+  ): Long {
+    val requestProperties =
+        ClientRequestProperties().apply {
+          timeoutInMilliSec = TimeUnit.SECONDS.toMillis(REQUEST_TIMEOUT_SECONDS)
+        }
+
+    val probesMeasuresCountQueryPrimaryResults =
+        this.kustoClient.execute(
+                getDatabaseName(organizationId, workspaceKey),
+                """
+                ProbesMeasures
+                | where SimulationRun == '${csmSimulationRun}'
+                | count
+            """,
+                requestProperties)
+            .primaryResults
+    if (!probesMeasuresCountQueryPrimaryResults.next()) {
+      throw IllegalStateException("Missing ProbesMeasures table")
+    }
+    return probesMeasuresCountQueryPrimaryResults.getLongObject("Count")!!
+  }
+
+  private fun querySentMessagesTotal(
+      organizationId: String,
+      workspaceKey: String,
+      csmSimulationRun: String
+  ): Long? {
+    val requestProperties =
+        ClientRequestProperties().apply {
+          timeoutInMilliSec = TimeUnit.SECONDS.toMillis(REQUEST_TIMEOUT_SECONDS)
+        }
+
+    val sentMessagesTotalQueryPrimaryResults =
+        this.kustoClient.execute(
+                getDatabaseName(organizationId, workspaceKey),
+                """
+                SimulationTotalFacts
+                | where SimulationId == '${csmSimulationRun}'
+                | project SentMessagesTotal
+            """,
+                requestProperties)
+            .primaryResults
+
+    val sentMessagesTotalRowCount = sentMessagesTotalQueryPrimaryResults.count()
+    if (sentMessagesTotalRowCount > 1) {
+      throw IllegalStateException(
+          "Unexpected number of rows in SimulationTotalFacts ADX Table for SimulationId=" +
+              csmSimulationRun +
+              ". Expected at most 1, but got " +
+              sentMessagesTotalRowCount)
+    }
+    return if (sentMessagesTotalQueryPrimaryResults.next()) {
+      sentMessagesTotalQueryPrimaryResults.getLongObject("SentMessagesTotal")
+    } else {
+      // No row
+      null
+    }
   }
 
   @Suppress("TooGenericExceptionCaught")
@@ -84,6 +192,6 @@ class AzureDataExplorerClient(private val csmPlatformProperties: CsmPlatformProp
   }
 }
 
-@Suppress("Unused", "UnusedPrivateMember") // Used in the context of PROD-7420 and PROD-8148
+@Suppress("Unused", "UnusedPrivateMember")
 private fun getDatabaseName(organizationId: String, workspaceKey: String) =
     "${organizationId}-${workspaceKey}"
