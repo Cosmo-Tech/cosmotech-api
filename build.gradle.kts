@@ -174,7 +174,7 @@ subprojects {
     implementation("org.springframework.security:spring-security-oauth2-resource-server:5.6.0")
 
     testImplementation(kotlin("test"))
-    testImplementation(platform("org.junit:junit-bom:5.8.1"))
+    testImplementation(platform("org.junit:junit-bom:5.8.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("io.mockk:mockk:1.12.1")
     testImplementation("org.awaitility:awaitility-kotlin:4.1.1")
