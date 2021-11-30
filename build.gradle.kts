@@ -107,7 +107,7 @@ subprojects {
   val integrationTestRuntimeOnly by
       configurations.getting { extendsFrom(configurations.testRuntimeOnly.get()) }
 
-  tasks.withType<Detekt> {
+  tasks.withType<Detekt>().configureEach {
     buildUponDefaultConfig = true // preconfigure defaults
     allRules = false // activate all available (even unstable) rules.
     config.from(file("$rootDir/.detekt/detekt.yaml"))
