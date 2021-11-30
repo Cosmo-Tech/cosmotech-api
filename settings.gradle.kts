@@ -4,6 +4,13 @@
 // Gradle 7.0 feature previews
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
+pluginManagement {
+  repositories {
+    mavenCentral()
+    gradlePluginPortal()
+  }
+}
+
 rootProject.name = "cosmotech-api-parent"
 
 include(
