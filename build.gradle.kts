@@ -24,7 +24,7 @@ plugins {
   id("org.springframework.boot") version "2.6.0" apply false
   id("org.openapi.generator") version "5.3.0" apply false
   id("com.google.cloud.tools.jib") version "3.1.4" apply false
-  id("io.gitlab.arturbosch.detekt") version "1.18.1"
+  id("io.gitlab.arturbosch.detekt") version "1.19.0"
 }
 
 scmVersion { tag(closureOf<TagNameSerializationConfig> { prefix = "" }) }
@@ -107,7 +107,7 @@ subprojects {
   val integrationTestRuntimeOnly by
       configurations.getting { extendsFrom(configurations.testRuntimeOnly.get()) }
 
-  tasks.withType<Detekt> {
+  tasks.withType<Detekt>().configureEach {
     buildUponDefaultConfig = true // preconfigure defaults
     allRules = false // activate all available (even unstable) rules.
     config.from(file("$rootDir/.detekt/detekt.yaml"))
