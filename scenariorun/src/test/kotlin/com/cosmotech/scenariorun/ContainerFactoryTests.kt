@@ -1853,8 +1853,6 @@ class ContainerFactoryTests {
 
     assertEquals(
         mapOf(
-            "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to "my-eventhub-access-policy",
-            "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to "a1b2c3d4e5==",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -1871,6 +1869,10 @@ class ContainerFactoryTests {
             "CSM_CONTAINER_MODE" to "engine",
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
+            "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to "my-eventhub-access-policy",
+            "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to "a1b2c3d4e5==",
+            "CSM_AMQPCONSUMER_USER" to "my-eventhub-access-policy",
+            "CSM_AMQPCONSUMER_PASSWORD" to "a1b2c3d4e5==",
             "CSM_SIMULATION" to "TestSimulation"),
         container.envVars)
   }

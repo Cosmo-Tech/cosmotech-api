@@ -96,6 +96,8 @@ private const val MULTIPLE_STEPS_NAME = "multipleStepsContainer-"
 internal const val AZURE_EVENT_HUB_SHARED_ACCESS_POLICY_ENV_VAR =
     "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY"
 internal const val AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR = "AZURE_EVENT_HUB_SHARED_ACCESS_KEY"
+internal const val CSM_AMQPCONSUMER_USER_ENV_VAR = "CSM_AMQPCONSUMER_USER"
+internal const val CSM_AMQPCONSUMER_PASSWORD_ENV_VAR = "CSM_AMQPCONSUMER_PASSWORD"
 internal const val AZURE_AAD_POD_ID_BINDING_LABEL = "aadpodidbinding"
 private const val SCENARIO_DATA_ABSOLUTE_PATH_ENV_VAR = "CSM_DATA_ABSOLUTE_PATH"
 private const val SCENARIO_DATA_UPLOAD_LOG_LEVEL_ENV_VAR = "CSM_LOG_LEVEL"
@@ -1037,19 +1039,26 @@ internal class ContainerFactory(
           // PROD-8074: In the AMQP Consumers, Shared Access Policy credentials take precedence over
           // the tenant client credentials => we can therefore safely append the former to the
           // existing env vars.
+          // PROD-8599: AZURE_EVENT_HUB_SHARED_ACCESS_POLICY_ENV_VAR,
+          // AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR
+          // are renamed, but are kept for backward compability reason
+          val sharedAccessPolicyNamespaceName =
+              eventBus.authentication.sharedAccessPolicy?.namespace?.name
+                  ?: throw IllegalStateException(
+                      "Missing configuration property: " +
+                          "csm.platform.azure.eventBus.authentication.sharedAccessPolicy" +
+                          ".namespace.name")
+          val sharedAccessPolicyNamespaceKey =
+              eventBus.authentication.sharedAccessPolicy?.namespace?.key
+                  ?: throw IllegalStateException(
+                      "Missing configuration property: " +
+                          "csm.platform.azure.eventBus.authentication.sharedAccessPolicy" +
+                          ".namespace.key")
           mapOf(
-              AZURE_EVENT_HUB_SHARED_ACCESS_POLICY_ENV_VAR to
-                  (eventBus.authentication.sharedAccessPolicy?.namespace?.name
-                      ?: throw IllegalStateException(
-                          "Missing configuration property: " +
-                              "csm.platform.azure.eventBus.authentication.sharedAccessPolicy" +
-                              ".namespace.name")),
-              AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR to
-                  (eventBus.authentication.sharedAccessPolicy?.namespace?.key
-                      ?: throw IllegalStateException(
-                          "Missing configuration property: " +
-                              "csm.platform.azure.eventBus.authentication.sharedAccessPolicy" +
-                              ".namespace.key")))
+              AZURE_EVENT_HUB_SHARED_ACCESS_POLICY_ENV_VAR to sharedAccessPolicyNamespaceName,
+              AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR to sharedAccessPolicyNamespaceKey,
+              CSM_AMQPCONSUMER_USER_ENV_VAR to sharedAccessPolicyNamespaceName,
+              CSM_AMQPCONSUMER_PASSWORD_ENV_VAR to sharedAccessPolicyNamespaceKey)
         }
         TENANT_CLIENT_CREDENTIALS -> {
           logger.debug(
