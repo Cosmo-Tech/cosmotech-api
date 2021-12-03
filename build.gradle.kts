@@ -33,7 +33,7 @@ group = "com.cosmotech"
 
 version = scmVersion.version
 
-val kotlinJvmTarget = 16
+val kotlinJvmTarget = 17
 
 allprojects {
   apply(plugin = "com.diffplug.spotless")
@@ -144,6 +144,12 @@ subprojects {
   }
 
   dependencies {
+
+    // Workaround until Detekt adds support for JVM Target 17
+    // See https://github.com/detekt/detekt/issues/4287
+    detekt("io.gitlab.arturbosch.detekt:detekt-cli:1.19.0")
+    detekt("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.6.0")
+
     val developmentOnly = configurations.getByName("developmentOnly")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
