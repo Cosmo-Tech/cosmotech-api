@@ -14,7 +14,7 @@
 
 The Cosmo Tech Cloud Platform API exposes a [REST](https://en.wikipedia.org/wiki/Representational_state_transfer) API based on [OpenAPI](https://swagger.io/specification/) definitions.
 
-It is written in [Kotlin](https://kotlinlang.org/), makes use of the [Spring Boot framework](https://spring.io/projects/spring-boot), and built with [Gradle](https://gradle.org/). Note that this project contains a set of service implementations interacting with [Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/) for data persistence.
+It is written in [Kotlin](https://kotlinlang.org/), makes use of the [Spring Boot framework](https://spring.io/projects/spring-boot), and is built with [Gradle](https://gradle.org/). Note that this project contains a set of service implementations interacting with [Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/) for data persistence.
 
 ## Swagger UI
 
