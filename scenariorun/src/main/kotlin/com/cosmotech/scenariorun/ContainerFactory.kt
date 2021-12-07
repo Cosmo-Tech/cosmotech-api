@@ -249,10 +249,12 @@ internal class ContainerFactory(
         throw IllegalStateException("Scenario runTemplateId cannot be null")
     val template = getRunTemplate(solution, (scenario.runTemplateId ?: ""))
     val nodeLabel =
-        if (template.computeSize == NODE_PARAM_NONE) null
-        else {
-          if (template.computeSize != null) "${template.computeSize}${NODE_LABEL_SUFFIX}"
-          else "${NODE_LABEL_DEFAULT}${NODE_LABEL_SUFFIX}"
+        if (template.computeSize == NODE_PARAM_NONE) {
+          null
+        } else {
+          (template.computeSize ?: NODE_LABEL_DEFAULT)
+              .removeSuffix(NODE_LABEL_SUFFIX)
+              .plus(NODE_LABEL_SUFFIX)
         }
     val containers =
         buildContainersPipeline(
