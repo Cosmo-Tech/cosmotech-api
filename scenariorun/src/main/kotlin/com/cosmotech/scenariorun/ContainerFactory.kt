@@ -252,9 +252,8 @@ internal class ContainerFactory(
         if (template.computeSize == NODE_PARAM_NONE) {
           null
         } else {
-          (template.computeSize ?: NODE_LABEL_DEFAULT)
-              .removeSuffix(NODE_LABEL_SUFFIX)
-              .plus(NODE_LABEL_SUFFIX)
+          (template.computeSize?.removeSuffix(NODE_LABEL_SUFFIX) ?: NODE_LABEL_DEFAULT).plus(
+              NODE_LABEL_SUFFIX)
         }
     val containers =
         buildContainersPipeline(

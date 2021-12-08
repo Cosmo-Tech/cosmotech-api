@@ -2432,7 +2432,7 @@ class ContainerFactoryTests {
         id = "testruntemplate",
         name = "Test Run",
         csmSimulation = "TestSimulation",
-        computeSize = "highcpu",
+        computeSize = "highcpupool",
     )
   }
 
