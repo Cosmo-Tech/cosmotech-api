@@ -332,6 +332,16 @@ jobs:
   push_helm_charts_to_oci_registries:
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - path: api/kubernetes/helm-chart
+            chart_name: cosmotech-api-chart
+            name: API
+          - path: api/kubernetes/csm-argo
+            chart_name: csm-argo-chart
+            name: Argo Workflows
     needs:
       - build
       - test
@@ -364,40 +374,22 @@ jobs:
               --username "${{ github.actor }}" \
               --password-stdin
 
-      - name: Push API Helm Chart (sha) to GitHub Container Registry
+      - name: Push Helm Chart (sha) for ${{ matrix.name }} to GitHub Container Registry
         run: |
-          helm chart save api/kubernetes/helm-chart/ ghcr.io/cosmo-tech/cosmotech-api-chart:${GITHUB_SHA}
-          helm chart push ghcr.io/cosmo-tech/cosmotech-api-chart:${GITHUB_SHA}
+          helm chart save ${{ matrix.path }} ghcr.io/cosmo-tech/${{ matrix.chart_name }}:${GITHUB_SHA}
+          helm chart push ghcr.io/cosmo-tech/${{ matrix.chart_name }}:${GITHUB_SHA}
 
-      - name: Push API Helm Chart (tag) to GitHub Container Registry
+      - name: Push Helm Chart (tag) for ${{ matrix.name }} to GitHub Container Registry
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          helm chart save api/kubernetes/helm-chart/ ghcr.io/cosmo-tech/cosmotech-api-chart:${{ steps.refvar.outputs.gitRefName }}
-          helm chart push ghcr.io/cosmo-tech/cosmotech-api-chart:${{ steps.refvar.outputs.gitRefName }}
+          helm chart save ${{ matrix.path }} ghcr.io/cosmo-tech/${{ matrix.chart_name }}:${{ steps.refvar.outputs.gitRefName }}
+          helm chart push ghcr.io/cosmo-tech/${{ matrix.chart_name }}:${{ steps.refvar.outputs.gitRefName }}
 
-      - name: Push API Helm Chart (latest) to GitHub Container Registry
+      - name: Push Helm Chart (latest) for ${{ matrix.name }} to GitHub Container Registry
         if: github.ref == 'refs/heads/main'
         run: |
-          helm chart save api/kubernetes/helm-chart/ ghcr.io/cosmo-tech/cosmotech-api-chart:latest
-          helm chart push ghcr.io/cosmo-tech/cosmotech-api-chart:latest
-
-      - name: Push csm-argo Helm Chart (sha) to GitHub Container Registry
-        run: |
-          helm dependency update api/kubernetes/csm-argo/
-          helm chart save api/kubernetes/csm-argo/ ghcr.io/cosmo-tech/csm-argo-chart:${GITHUB_SHA}
-          helm chart push ghcr.io/cosmo-tech/csm-argo-chart:${GITHUB_SHA}
-
-      - name: Push csm-argo Helm Chart (tag) to GitHub Container Registry
-        if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          helm chart save api/kubernetes/csm-argo/ ghcr.io/cosmo-tech/csm-argo-chart:${{ steps.refvar.outputs.gitRefName }}
-          helm chart push ghcr.io/cosmo-tech/csm-argo-chart:${{ steps.refvar.outputs.gitRefName }}
-
-      - name: Push csm-argo Helm Chart (latest) to GitHub Container Registry
-        if: github.ref == 'refs/heads/main'
-        run: |
-          helm chart save api/kubernetes/csm-argo/ ghcr.io/cosmo-tech/csm-argo-chart:latest
-          helm chart push ghcr.io/cosmo-tech/csm-argo-chart:latest
+          helm chart save ${{ matrix.path }} ghcr.io/cosmo-tech/${{ matrix.chart_name }}:latest
+          helm chart push ghcr.io/cosmo-tech/${{ matrix.chart_name }}:latest
 
       - name: Logout from GitHub Container Registry
         if: ${{ always() }}
