@@ -376,6 +376,7 @@ jobs:
 
       - name: Push Helm Chart (sha) for ${{ matrix.name }} to GitHub Container Registry
         run: |
+          helm dependency update ${{ matrix.path }}
           helm chart save ${{ matrix.path }} ghcr.io/cosmo-tech/${{ matrix.chart_name }}:${GITHUB_SHA}
           helm chart push ghcr.io/cosmo-tech/${{ matrix.chart_name }}:${GITHUB_SHA}
 
