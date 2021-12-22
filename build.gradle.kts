@@ -154,7 +154,7 @@ subprojects {
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2-native-mt")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0-native-mt")
 
     implementation(
         platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES))
