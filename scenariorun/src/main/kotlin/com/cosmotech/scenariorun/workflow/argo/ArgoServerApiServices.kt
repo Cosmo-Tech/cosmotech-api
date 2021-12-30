@@ -1,6 +1,6 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.scenariorun.workflow.argo.api
+package com.cosmotech.scenariorun.workflow.argo
 
 import retrofit2.Call
 import retrofit2.http.GET

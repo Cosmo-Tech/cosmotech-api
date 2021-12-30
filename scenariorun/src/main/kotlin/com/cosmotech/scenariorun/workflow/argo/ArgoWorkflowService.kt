@@ -12,7 +12,6 @@ import com.cosmotech.scenariorun.domain.ScenarioRunStatus
 import com.cosmotech.scenariorun.domain.ScenarioRunStatusNode
 import com.cosmotech.scenariorun.workflow.WorkflowService
 import com.cosmotech.scenariorun.workflow.WorkflowStatusAndArtifact
-import com.cosmotech.scenariorun.workflow.argo.api.ArgoArtifactsByUidService
 import io.argoproj.workflow.ApiClient
 import io.argoproj.workflow.ApiException
 import io.argoproj.workflow.Configuration
