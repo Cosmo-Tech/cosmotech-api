@@ -1,6 +1,6 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.api.events.impl
+package com.cosmotech.api.events.inprocess
 
 import com.cosmotech.api.events.CsmEvent
 import com.cosmotech.api.events.CsmEventPublisher
