@@ -85,8 +85,6 @@ jobs:
 
   kube-linter:
     runs-on: ubuntu-latest
-    # TODO Errors purposely ignored for now.
-    continue-on-error: true
     strategy:
       matrix:
         chart:

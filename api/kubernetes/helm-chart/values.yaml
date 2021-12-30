@@ -6,7 +6,7 @@
 #
 
 # -- number of pods replicas
-replicaCount: 1
+replicaCount: 3
 
 image:
   # -- container image to use for deployment
@@ -43,6 +43,15 @@ serviceAccount:
   # If not set and `serviceAccount.create` is `true`, a name is generated using the `fullname` template
   name: ""
 
+# -- Deployment strategy
+deploymentStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    # -- maximum number of Pods that can be created over the desired number of Pods
+    maxSurge: 1
+    # -- maximum number of Pods that can be unavailable during the update process
+    maxUnavailable: 50%
+
 # -- annotations to set the Deployment pod
 podAnnotations: {}
 
@@ -51,11 +60,11 @@ podSecurityContext:
   runAsNonRoot: true
 
 # -- the security context at the pod container level
-securityContext: {}
+securityContext:
   # capabilities:
   #   drop:
   #   - ALL
-  # readOnlyRootFilesystem: true
+  readOnlyRootFilesystem: true
   # runAsNonRoot: true
   # runAsUser: 1000
 
@@ -92,17 +101,13 @@ ingress:
   #      - chart-example.local
 
 # -- resources limits and requests for the pod placement
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1024Mi
+  requests:
+    cpu: 500m
+    memory: 512Mi
 
 autoscaling:
   enabled: false
@@ -115,6 +120,7 @@ nodeSelector: {}
 
 tolerations: []
 
+# -- default behavior is a pod anti-affinity, which prevents pods from co-locating on a same node
 affinity: {}
 
 argo:

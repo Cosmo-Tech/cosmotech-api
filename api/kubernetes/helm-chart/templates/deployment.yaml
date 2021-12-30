@@ -2,11 +2,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "cosmotech-api.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "cosmotech-api.labels" . | nindent 4 }}
+  annotations:
+    email: "platform@cosmotech.com"
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  strategy:
+  {{- with .Values.deploymentStrategy }}
+    {{- toYaml . | nindent 4 }}
   {{- end }}
   selector:
     matchLabels:
@@ -19,6 +26,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
+        networking/traffic-allowed: "yes"
         {{- include "cosmotech-api.selectorLabels" . | nindent 8 }}
     spec:
       {{- if .Values.imageCredentials.registry }}
@@ -33,6 +41,8 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       volumes:
+        - name: tmp-dir
+          emptyDir: {}
         - name: helm-config
           secret:
             secretName: {{ include "cosmotech-api.fullname" . }}
@@ -56,6 +66,9 @@ spec:
               # using a configured Kubernetes Secret containing all the 'config.*' properties
               value: "helm"
           volumeMounts:
+            - mountPath: /tmp
+              name: tmp-dir
+              readOnly: false
             - mountPath: /config
               name: helm-config
               readOnly: true
@@ -90,9 +103,27 @@ spec:
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.affinity }}
       affinity:
+      {{- if .Values.affinity}}
+      {{- with .Values.affinity }}
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- else }}
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: "app.kubernetes.io/name"
+                      operator: In
+                      values:
+                        - {{ include "cosmotech-api.name" . }}
+                    - key: "app.kubernetes.io/instance"
+                      operator: In
+                      values:
+                        - {{ .Release.Name }}
+                topologyKey: "kubernetes.io/hostname"
       {{- end }}
       {{- with .Values.tolerations }}
       tolerations:

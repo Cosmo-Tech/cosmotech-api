@@ -159,6 +159,9 @@ jobs:
                   nodeRegistration:
                     kubeletExtraArgs:
                       node-labels: "kubernetes.io/os=linux,agentpool=basicpool"
+          networking:
+            disableDefaultCNI: true
+            podSubnet: 192.168.0.0/16
           featureGates:
             # TTL Controller for finished resources is currently an opt-in alpha feature
             # https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/
@@ -172,6 +175,16 @@ jobs:
           version: v0.11.1
           config: /tmp/csm-kind-config.yaml
 
+      - name: Deploy Calico
+        run: |
+          helm repo add projectcalico https://docs.projectcalico.org/charts
+          helm \
+            install calico \
+            projectcalico/tigera-operator \
+            --version v3.21.2 \
+            --wait \
+            --timeout 2m
+
       - name: Deploy the NGINX Ingress Controller in the KinD Cluster
         run: |
           kubectl apply -f \
@@ -179,6 +192,14 @@ jobs:
           kubectl -n ingress-nginx wait deploy/ingress-nginx-controller \
             --for condition=available \
             --timeout=60s
+          kubectl -n ingress-nginx \
+            label pods \
+            -l "app.kubernetes.io/instance=ingress-nginx,app.kubernetes.io/component=controller" \
+            "networking/traffic-allowed=yes"
+          kubectl -n ingress-nginx \
+            label services \
+            -l "app.kubernetes.io/instance=ingress-nginx,app.kubernetes.io/component=controller" \
+            "networking/traffic-allowed=yes"
           kubectl -n ingress-nginx describe deployment ingress-nginx-controller
 
       - name: Make scripts executable

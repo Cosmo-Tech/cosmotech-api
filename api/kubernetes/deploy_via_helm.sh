@@ -76,13 +76,21 @@ if [[ "${NGINX_INGRESS_CONTROLLER_ENABLED:-false}" == "true" ]]; then
 
 cat <<EOF > values-ingress-nginx.yaml
 controller:
+  labels:
+    networking/traffic-allowed: "yes"
+  podLabels:
+    networking/traffic-allowed: "yes"
   replicaCount: "${NGINX_INGRESS_CONTROLLER_REPLICA_COUNT}"
   nodeSelector:
     beta.kubernetes.io/os: "linux"
   service:
+    labels:
+      networking/traffic-allowed: "yes"
     loadBalancerIP: "${NGINX_INGRESS_CONTROLLER_LOADBALANCER_IP}"
 
 defaultBackend:
+  podLabels:
+    networking/traffic-allowed: "yes"
   nodeSelector:
     "beta.kubernetes.io/os": "linux"
 
@@ -137,7 +145,10 @@ if [[ "${CERT_MANAGER_ENABLED:-false}" == "true" ]]; then
     --wait \
     --timeout "${CERT_MANAGER_INSTALL_WAIT_TIMEOUT:-3m}" \
     --set installCRDs=true \
-    --set nodeSelector."beta\.kubernetes\.io/os"=linux
+    --set nodeSelector."beta\.kubernetes\.io/os"=linux \
+    --set podLabels."networking/traffic-allowed"=yes \
+    --set webhook.podLabels."networking/traffic-allowed"=yes \
+    --set cainjector.podLabels."networking/traffic-allowed"=yes
 
   if [[ "${COSMOTECH_API_DNS_NAME:-}" != "" && "${TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL:-}" != "" ]]; then
     # Wait few seconds until the CertManager WebHook pod is ready.
@@ -161,6 +172,9 @@ spec:
           ingress:
             class: nginx
             podTemplate:
+              metadata:
+                labels:
+                  networking/traffic-allowed: "yes"
               spec:
                 nodeSelector:
                   "kubernetes.io/os": linux

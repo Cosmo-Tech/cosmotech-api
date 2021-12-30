@@ -48,6 +48,11 @@ nodes:
         nodeRegistration:
           kubeletExtraArgs:
             node-labels: "kubernetes.io/os=linux,agentpool=basicpool"
+networking:
+  # disable kindnet, which does not support Network Policies
+  disableDefaultCNI: true
+  # set to Calico's default subnet
+  podSubnet: 192.168.0.0/16
 featureGates:
   # TTL Controller for finished resources is currently an opt-in alpha feature
   # https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/
@@ -92,8 +97,26 @@ for node in $(kind get nodes --name "${cluster_name}"); do
     annotate node "${node}" "kind.x-k8s.io/registry=localhost:${registry_port}";
 done
 
+# Install Calico
+helm repo add projectcalico https://docs.projectcalico.org/charts
+helm --kube-context="${kubectl_ctx}" \
+  install calico \
+  projectcalico/tigera-operator \
+  --version v3.21.2
+
 # cf. https://kind.sigs.k8s.io/docs/user/ingress/#ingress-nginx
 ingress_nginx_controller_tag="controller-v0.47.0"
 kubectl --context="${kubectl_ctx}" \
   apply -f \
   "https://raw.githubusercontent.com/kubernetes/ingress-nginx/${ingress_nginx_controller_tag}/deploy/static/provider/kind/deploy.yaml"
+
+kubectl --context="${kubectl_ctx}" \
+  -n ingress-nginx \
+  label pods \
+  -l "app.kubernetes.io/instance=ingress-nginx,app.kubernetes.io/component=controller" \
+  "networking/traffic-allowed=yes"
+kubectl --context="${kubectl_ctx}" \
+  -n ingress-nginx \
+  label services \
+  -l "app.kubernetes.io/instance=ingress-nginx,app.kubernetes.io/component=controller" \
+  "networking/traffic-allowed=yes"
