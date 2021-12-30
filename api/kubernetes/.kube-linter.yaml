@@ -9,7 +9,9 @@ checks:
   # exclude explicitly excludes checks, by name. exclude has the highest priority: if a check is
   # in exclude, then it is not considered, even if it is in include as well.
   exclude:
-    - use-namespace
+    # use-namespace because the resources here are deployed via Helm and, as such, are very likely
+    # to be deployed in a different namespace
+    - "use-namespace"
 
 ## customChecks defines custom checks.
 #customChecks:
