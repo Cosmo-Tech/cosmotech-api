@@ -8,7 +8,7 @@ Cosmo Tech Platform API
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| affinity | object | `{}` |  |
+| affinity | object | `{}` | default behavior is a pod anti-affinity, which prevents pods from co-locating on a same node |
 | api.servletContextPath | string | `"/"` |  |
 | api.version | string | `"latest"` |  |
 | argo.imageCredentials.password | string | `""` | password for registry to use for pulling the Workflow images. Useful if you are using a private registry |
@@ -44,6 +44,9 @@ Cosmo Tech Platform API
 | config.csm.platform.azure.storage.account-key | string | `"changeme"` | Azure storage account access key. Can be retrieved from the Azure portal |
 | config.csm.platform.azure.storage.account-name | string | `"changeme"` | Azure storage account name. Length should be between 3 and 24 and use numbers and lower-case letters only |
 | config.csm.platform.vendor | string | `"azure"` |  |
+| deploymentStrategy | object | `{"rollingUpdate":{"maxSurge":1,"maxUnavailable":"50%"},"type":"RollingUpdate"}` | Deployment strategy |
+| deploymentStrategy.rollingUpdate.maxSurge | int | `1` | maximum number of Pods that can be created over the desired number of Pods |
+| deploymentStrategy.rollingUpdate.maxUnavailable | string | `"50%"` | maximum number of Pods that can be unavailable during the update process |
 | fullnameOverride | string | `""` | value overriding the full name of the Chart. If not set, the value is computed from `nameOverride`. Truncated at 63 chars because some Kubernetes name fields are limited to this. |
 | image.pullPolicy | string | `"Always"` | [policy](https://kubernetes.io/docs/concepts/containers/images/#updating-images) for pulling the image |
 | image.repository | string | `"ghcr.io/cosmo-tech/cosmotech-api"` | container image to use for deployment |
@@ -61,9 +64,9 @@ Cosmo Tech Platform API
 | nodeSelector | object | `{}` |  |
 | podAnnotations | object | `{}` | annotations to set the Deployment pod |
 | podSecurityContext | object | `{"runAsNonRoot":true}` | the pod security context, i.e. applicable to all containers part of the pod |
-| replicaCount | int | `1` | number of pods replicas |
-| resources | object | `{}` | resources limits and requests for the pod placement |
-| securityContext | object | `{}` | the security context at the pod container level |
+| replicaCount | int | `3` | number of pods replicas |
+| resources | object | `{"limits":{"cpu":"1000m","memory":"1024Mi"},"requests":{"cpu":"500m","memory":"512Mi"}}` | resources limits and requests for the pod placement |
+| securityContext | object | `{"readOnlyRootFilesystem":true}` | the security context at the pod container level |
 | service.managementPort | int | `8081` | service management port |
 | service.port | int | `8080` | service port |
 | service.type | string | `"ClusterIP"` | service type. See [this page](https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types) for the possible values |

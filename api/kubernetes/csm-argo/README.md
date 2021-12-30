@@ -33,6 +33,7 @@ Meta-Chart allowing to deploy both Argo and PostgreSQL (for Workflows archival)
 | argo.controller.persistence.postgresql.tableName | string | `"workflows"` |  |
 | argo.controller.persistence.postgresql.userNameSecret.key | string | `"postgresql.username"` |  |
 | argo.controller.persistence.postgresql.userNameSecret.name | string | `"${ARGO_RELEASE_NAME}-argo-postgresql-secret"` |  |
+| argo.controller.podLabels.networking/traffic-allowed | string | `"yes"` |  |
 | argo.controller.workflowDefaults.spec.activeDeadlineSeconds | int | `604800` |  |
 | argo.controller.workflowDefaults.spec.podGC.strategy | string | `"OnWorkflowSuccess"` |  |
 | argo.controller.workflowDefaults.spec.ttlStrategy.secondsAfterCompletion | int | `259200` |  |
@@ -45,10 +46,19 @@ Meta-Chart allowing to deploy both Argo and PostgreSQL (for Workflows archival)
 | argo.minio.defaultBucket.enabled | bool | `true` |  |
 | argo.minio.defaultBucket.name | string | `"argo-workflows"` |  |
 | argo.minio.install | bool | `true` |  |
+| argo.minio.networkPolicy.allowExternal | bool | `true` |  |
+| argo.minio.networkPolicy.enabled | bool | `false` |  |
+| argo.minio.podLabels.networking/traffic-allowed | string | `"yes"` |  |
+| argo.server.podLabels.networking/traffic-allowed | string | `"yes"` |  |
 | argo.server.secure | bool | `false` |  |
 | argo.workflow.rbac.create | bool | `true` |  |
 | argo.workflow.serviceAccount.create | bool | `true` |  |
 | argo.workflow.serviceAccount.name | string | `"workflow"` |  |
+| postgresql.networkPolicy.enabled | bool | `true` |  |
+| postgresql.networkPolicy.explicitNamespacesSelector.matchExpressions[0].key | string | `"app"` |  |
+| postgresql.networkPolicy.explicitNamespacesSelector.matchExpressions[0].operator | string | `"In"` |  |
+| postgresql.networkPolicy.explicitNamespacesSelector.matchExpressions[0].values[0] | string | `"argo-server"` |  |
+| postgresql.networkPolicy.explicitNamespacesSelector.matchExpressions[0].values[1] | string | `"argo-workflow-controller"` |  |
 | postgresql.postgresqlDatabase | string | `"argo_workflows"` |  |
 | postgresql.postgresqlPassword | string | `"${ARGO_POSTGRESQL_PASSWORD}"` |  |
 | postgresql.postgresqlUsername | string | `"argo"` |  |
