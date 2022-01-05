@@ -14,7 +14,7 @@ management:
     health:
       group:
         readiness:
-          include: "readinessState,argo,csmCosmos,blobStorage"
+          include: "readinessState,argo,csmCosmos,blobStorage,csmADX"
 
 csm:
   platform:
