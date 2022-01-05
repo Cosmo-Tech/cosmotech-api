@@ -28,9 +28,9 @@ config:
           key: "${PHOENIXAKSDEV_COSMOS_KEY}"
           uri: "${PHOENIXAKSDEV_COSMOS_URI}"
         dataWarehouseCluster:
-          baseUri: "https://changeme.kusto.windows.net"
+          baseUri: "${PHOENIXAKSDEV_ADX_BASE_URI}"
           options:
-            ingestionUri: "https://changeme.kusto.windows.net"
+            ingestionUri: "${PHOENIXAKSDEV_ADX_INGESTION_BASE_URI}"
         eventBus:
           baseUri: "amqps://changeme.servicebus.windows.net"
         storage:
