@@ -119,6 +119,7 @@ jobs:
             --values /tmp/values_for_environment.yaml \
             --values /tmp/values_for_environment_with_build_info.yaml \
             --set image.tag="${GH_SHA}" \
+            --set replicaCount=2 \
             --atomic \
             --wait \
             --timeout 5m
