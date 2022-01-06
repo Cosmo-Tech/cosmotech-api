@@ -14,6 +14,7 @@ import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.id.CsmIdGenerator
+import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.getCurrentAuthentication
 import com.cosmotech.api.utils.objectMapper
 import com.cosmotech.organization.api.OrganizationApiService
@@ -37,6 +38,7 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.spyk
 import io.mockk.unmockkStatic
+import io.mockk.verify
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -402,5 +404,21 @@ class ScenarioRunServiceImplTests {
     assertNull(
         scenarioRunById.containers,
         "List of containers must be NULL for scenarioRun $scenarioRunById")
+  }
+
+  @Test
+  fun `PROD-8148 - deleteDataFromScenarioRunId is called once`() {
+    val scenarioRun = mockk<ScenarioRun>()
+    every { scenarioRunServiceImpl.findScenarioRunById("orgId", "scenariorunId") } returns
+        scenarioRun
+    val cosmosTemplate = mockk<CosmosTemplate>()
+    every { cosmosTemplate.deleteEntity("orgId", scenarioRun) }
+    every { scenarioRun.ownerId } returns "ownerId"
+    every { scenarioRun.workspaceKey } returns "wk"
+    every { getCurrentAuthenticatedUserName() } returns "ownerId"
+    scenarioRun.ownerId != getCurrentAuthenticatedUserName()
+    val azureDataExplorerClient = mockk<AzureDataExplorerClient>()
+    scenarioRunServiceImpl.deleteScenarioRun("orgId", "scenariorunId")
+    verify(exactly = 1) { scenarioRunServiceImpl.deleteScenarioRun("orgId", "scenariorunId") }
   }
 }

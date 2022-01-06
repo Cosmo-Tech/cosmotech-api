@@ -10,6 +10,7 @@ import com.microsoft.azure.kusto.data.Client
 import com.microsoft.azure.kusto.data.ClientImpl
 import com.microsoft.azure.kusto.data.ClientRequestProperties
 import com.microsoft.azure.kusto.data.auth.ConnectionStringBuilder
+import com.microsoft.azure.kusto.data.exceptions.DataServiceException
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.time.temporal.Temporal
@@ -249,6 +250,29 @@ class AzureDataExplorerClient(
               this.ingestionObservationWindowToBeConsideredAFailureMinutes
     } else {
       false
+    }
+  }
+
+  fun deleteDataFromScenarioRunId(
+      organizationId: String,
+      workspaceKey: String,
+      scenarioRunId: String
+  ): String {
+    val databaseName = getDatabaseName(organizationId, workspaceKey)
+    try {
+      return this.kustoClient.executeToJsonResult(
+          databaseName,
+          """
+        .drop extents <|
+            .show database '${databaseName}' extents
+            where tags has 'drop-by:${scenarioRunId}'
+    """,
+          ClientRequestProperties().apply {
+            timeoutInMilliSec = TimeUnit.SECONDS.toMillis(REQUEST_TIMEOUT_SECONDS)
+          })
+    } catch (exception: DataServiceException) {
+      logger.debug("An error occurred while deleting data: {}", exception.message, exception)
+      throw IllegalStateException("An error occurred while deleting data")
     }
   }
 

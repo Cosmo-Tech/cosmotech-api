@@ -389,4 +389,10 @@ class AzureDataExplorerClientTests {
             "sr-myscenarioRunId",
             "my-csm-simulation-run"))
   }
+
+  @Test
+  fun `PROD-8148 - deleteDataFromScenarioRunId failed`() {
+    val res = azureDataExplorerClient.deleteDataFromScenarioRunId("orgId", "wk", "my-scenariorunId")
+    assertEquals("", res)
+  }
 }
