@@ -86,7 +86,17 @@ internal class ScenarioRunServiceImpl(
       // TODO Only the owner or an admin should be able to perform this operation
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
     }
-    cosmosTemplate.deleteEntity("${organizationId}_scenario_data", scenarioRun)
+
+    // Simple way to ensure that we do not delete data if something went wrong
+    try {
+      azureDataExplorerClient.deleteDataFromScenarioRunId(
+          organizationId, scenarioRun.workspaceKey!!, scenariorunId)
+
+      // It seems that deleteEntity does not throw any exception
+      cosmosTemplate.deleteEntity("${organizationId}_scenario_data", scenarioRun)
+    } catch (exception: IllegalStateException) {
+      logger.debug("An error occurred while deleting ScenarioRun: {}", exception.message, exception)
+    }
   }
 
   override fun findScenarioRunById(organizationId: String, scenariorunId: String) =
