@@ -3,49 +3,52 @@
 package com.cosmotech.api.id.hashids
 
 import java.lang.IllegalArgumentException
-import kotlin.test.BeforeTest
-import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
+import org.hashids.Hashids
+import org.junit.jupiter.api.DynamicTest.dynamicTest
+import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.assertThrows
+
+private typealias Tester = (hashidGenerator: HashidsCsmIdGenerator) -> Unit
 
 class HashidsCsmIdGeneratorTests {
 
-  private lateinit var hashidsCsmIdGenerator: HashidsCsmIdGenerator
+  private fun performTestWithDifferentHashidGenerators(tester: Tester) =
+      mapOf(
+          "default with current time in nanos" to HashidsCsmIdGenerator(),
+          "PROD-8703: number higher than the max allowed" to
+              HashidsCsmIdGenerator { (Hashids.MAX_NUMBER + 100).toULong() })
+          .map { (purpose, idGenerator) -> dynamicTest(purpose) { tester(idGenerator) } }
 
-  @BeforeTest
-  fun beforeEachTest() {
-    this.hashidsCsmIdGenerator = HashidsCsmIdGenerator()
+  @TestFactory
+  fun `generate with blank scope`() = performTestWithDifferentHashidGenerators {
+    assertThrows<IllegalArgumentException> { it.generate("") }
+    assertThrows<IllegalArgumentException> { it.generate("   ") }
   }
 
-  @Test
-  fun `generate with blank scope`() {
-    assertThrows<IllegalArgumentException> { this.hashidsCsmIdGenerator.generate("") }
-    assertThrows<IllegalArgumentException> { this.hashidsCsmIdGenerator.generate("   ") }
-  }
-
-  @Test
-  fun `generate with no prepend prefix`() {
-    val hashid = this.hashidsCsmIdGenerator.generate("fake_scope")
+  @TestFactory
+  fun `generate with no prepend prefix`() = performTestWithDifferentHashidGenerators {
+    val hashid = it.generate("fake_scope")
     assertFalse { hashid.isBlank() }
     assertTrue { hashid.startsWith("f-", ignoreCase = false) }
     assertFalse { hashid.substringAfter("f-", missingDelimiterValue = "").isBlank() }
   }
 
-  @Test
-  fun `generate with custom prepend prefix`() {
-    val hashid =
-        this.hashidsCsmIdGenerator.generate("test_scope", prependPrefix = "my-custom-prefix-")
+  @TestFactory
+  fun `generate with custom prepend prefix`() = performTestWithDifferentHashidGenerators {
+    val hashid = it.generate("test_scope", prependPrefix = "my-custom-prefix-")
     assertFalse { hashid.isBlank() }
     assertTrue { hashid.startsWith("my-custom-prefix-", ignoreCase = false) }
     assertFalse { hashid.substringAfter("my-custom-prefix-").isBlank() }
   }
 
-  @Test
-  fun `2 generations within a same scope do not return the same ID`() {
-    val hashid1 = this.hashidsCsmIdGenerator.generate("test_scope")
-    val hashid2 = this.hashidsCsmIdGenerator.generate("test_scope")
+  @TestFactory
+  fun `2 generations within a same scope do not return the same ID`() =
+      performTestWithDifferentHashidGenerators {
+    val hashid1 = it.generate("test_scope")
+    val hashid2 = it.generate("test_scope")
     assertFalse { hashid1.isBlank() }
     assertTrue { hashid1.startsWith("t-", ignoreCase = false) }
     assertFalse { hashid2.isBlank() }
@@ -53,10 +56,11 @@ class HashidsCsmIdGeneratorTests {
     assertNotEquals(hashid1, hashid2)
   }
 
-  @Test
-  fun `2 generations within different scopes do not return the same ID`() {
-    val hashid1 = this.hashidsCsmIdGenerator.generate("test scope")
-    val hashid2 = this.hashidsCsmIdGenerator.generate("another scope")
+  @TestFactory
+  fun `2 generations within different scopes do not return the same ID`() =
+      performTestWithDifferentHashidGenerators {
+    val hashid1 = it.generate("test scope")
+    val hashid2 = it.generate("another scope")
     assertFalse { hashid1.isBlank() }
     assertTrue { hashid1.startsWith("t-", ignoreCase = false) }
     assertFalse { hashid2.isBlank() }
