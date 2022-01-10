@@ -114,9 +114,9 @@ management:
         readiness:
           {{- if eq .Values.config.csm.platform.vendor "azure" }}
           {{- if index .Values.config.csm.platform.argo "base-uri" }}
-          include: "readinessState,argo,csmCosmos,blobStorage,csmADX"
+          include: "readinessState,argo,csmCosmos,blobStorage"
           {{- else }}
-          include: "readinessState,csmCosmos,blobStorage,csmADX"
+          include: "readinessState,csmCosmos,blobStorage"
           {{- end }}
           {{- else }}
           {{- if index .Values.config.csm.platform.argo "base-uri" }}
