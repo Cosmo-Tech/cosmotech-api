@@ -13,7 +13,7 @@ dependencies {
   implementation("com.azure.spring:azure-spring-boot-starter-storage")
   api("com.azure:azure-storage-blob-batch")
   implementation("com.azure.spring:azure-spring-boot-starter-active-directory")
-  implementation("com.microsoft.azure.kusto:kusto-ingest:2.8.2") {
+  implementation("com.microsoft.azure.kusto:kusto-ingest:3.0.0") {
     exclude(group = "org.slf4j", module = "slf4j-api")
     because(
         "this depends on org.slf4j:slf4j-api 1.8.0-beta4 (pre 2.x)," +
