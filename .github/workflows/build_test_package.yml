@@ -304,7 +304,7 @@ jobs:
 
       - name: Convert Container Scan Report to SARIF
         id: scan-to-sarif
-        uses: rm3l/container-scan-to-sarif-action@v1.3.0
+        uses: rm3l/container-scan-to-sarif-action@v1.4.0
         if: ${{ always() }}
         with:
           input-file: ${{ steps.scan.outputs.scan-report-path }}
