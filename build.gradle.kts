@@ -104,18 +104,19 @@ subprojects {
   val projectDirName = projectDir.relativeTo(rootDir).name
   val openApiDefinitionFile = file("${projectDir}/src/main/openapi/${projectDirName}.yaml")
 
+  val openApiServerSourcesGenerationDir = "${buildDir}/generated-sources/openapi/kotlin-spring"
+
   sourceSets {
     create("integrationTest") {
       compileClasspath += sourceSets.main.get().output + sourceSets.test.get().output
       runtimeClasspath += sourceSets.main.get().output + sourceSets.test.get().output
     }
     if (openApiDefinitionFile.exists()) {
-      sourceSets {
-        main { java.srcDirs("$buildDir/generated-sources/openapi/src/main/kotlin") }
-        test { java.srcDirs("$buildDir/generated-sources/openapi/src/test/kotlin") }
-      }
+      main { java.srcDirs("$openApiServerSourcesGenerationDir/src/main/kotlin") }
+      test { java.srcDirs("$openApiServerSourcesGenerationDir/src/test/kotlin") }
     }
   }
+
   val integrationTestImplementation by
       configurations.getting { extendsFrom(configurations.testImplementation.get()) }
 
@@ -298,7 +299,7 @@ subprojects {
 
     tasks.withType<GenerateTask> {
       inputSpec.set("${projectDir}/src/main/openapi/${projectDirName}.yaml")
-      outputDir.set("${buildDir}/generated-sources/openapi")
+      outputDir.set(openApiServerSourcesGenerationDir)
       generatorName.set("kotlin-spring")
       apiPackage.set("com.cosmotech.${projectDirName}.api")
       modelPackage.set("com.cosmotech.${projectDirName}.domain")

@@ -35,7 +35,7 @@ if [ -n "$4" ]; then
 fi
 
 # shellcheck disable=SC2086
-"$(realpath "$(dirname "$0")/../../api/build/generated-sources/$1/scripts")"/git_push.sh \
+"$(realpath "$(dirname "$0")/../../api/build/generated-sources/openapi/$1/scripts")"/git_push.sh \
   "$2" \
   Cosmo-Tech \
   "cosmotech-api-$1-client" \
