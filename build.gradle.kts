@@ -9,11 +9,18 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.util.capitalizeDecapitalize.capitalizeAsciiOnly
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 import org.springframework.boot.gradle.dsl.SpringBootExtension
 import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 import org.springframework.boot.gradle.tasks.run.BootRun
 import pl.allegro.tech.build.axion.release.domain.TagNameSerializationConfig
+
+// TODO This build script does way too much things.
+// Consider refactoring it by extracting these custom tasks and plugin
+// implementations/configurations in a 'buildSrc' included build.
+// See https://docs.gradle.org/current/userguide/organizing_gradle_projects.html#sec:build_sources
 
 plugins {
   val kotlinVersion = "1.6.0"
@@ -94,10 +101,19 @@ subprojects {
 
   java { toolchain { languageVersion.set(JavaLanguageVersion.of(kotlinJvmTarget)) } }
 
+  val projectDirName = projectDir.relativeTo(rootDir).name
+  val openApiDefinitionFile = file("${projectDir}/src/main/openapi/${projectDirName}.yaml")
+
   sourceSets {
     create("integrationTest") {
       compileClasspath += sourceSets.main.get().output + sourceSets.test.get().output
       runtimeClasspath += sourceSets.main.get().output + sourceSets.test.get().output
+    }
+    if (openApiDefinitionFile.exists()) {
+      sourceSets {
+        main { java.srcDirs("$buildDir/generated-sources/openapi/src/main/kotlin") }
+        test { java.srcDirs("$buildDir/generated-sources/openapi/src/test/kotlin") }
+      }
     }
   }
   val integrationTestImplementation by
@@ -273,6 +289,41 @@ subprojects {
 
   tasks.getByName<Jar>("jar") { enabled = true }
 
+  if (openApiDefinitionFile.exists()) {
+    logger.info("Found OpenAPI definition: $openApiDefinitionFile")
+
+    tasks.withType<ValidateTask> {
+      inputSpec.set("${projectDir}/src/main/openapi/${projectDirName}.yaml")
+    }
+
+    tasks.withType<GenerateTask> {
+      inputSpec.set("${projectDir}/src/main/openapi/${projectDirName}.yaml")
+      outputDir.set("${buildDir}/generated-sources/openapi")
+      generatorName.set("kotlin-spring")
+      apiPackage.set("com.cosmotech.${projectDirName}.api")
+      modelPackage.set("com.cosmotech.${projectDirName}.domain")
+      globalProperties.set(
+          mapOf(
+              "apiDocs" to "true",
+              // Excluded because the OpenAPI Generator generates test classes that expect the
+              // Service Implementation to be present in the 'apiPackage' package,
+              // which is not the case when serviceInterface is true.
+              // We will write our own tests instead.
+              "apiTests" to "false"))
+      additionalProperties.set(
+          mapOf(
+              "title" to "Cosmo Tech ${projectDirName.capitalizeAsciiOnly()} Manager API",
+              "basePackage" to "com.cosmotech",
+              "configPackage" to "com.cosmotech.${projectDirName}.config",
+              "enumPropertyNaming" to "original",
+              "exceptionHandler" to false,
+              "serviceInterface" to true,
+              "swaggerAnnotations" to false,
+              "useTags" to true,
+              "modelMutable" to true))
+    }
+  }
+
   if (name.startsWith("cosmotech-api-common")) {
     tasks.getByName<BootJar>("bootJar") { enabled = false }
     tasks.getByName<BootBuildImage>("bootBuildImage") { enabled = false }
@@ -283,7 +334,7 @@ subprojects {
         if (name == "cosmotech-api") {
           file("${rootDir}/openapi/openapi.yaml")
         } else {
-          file("${projectDir}/src/main/openapi/${projectDir.relativeTo(rootDir)}.yaml")
+          openApiDefinitionFile
         }
     tasks.register<Copy>("copyOpenApiYamlToMainResources") {
       from(openApiFileDefinition)
