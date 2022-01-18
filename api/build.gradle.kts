@@ -93,6 +93,10 @@ openApiMerger {
         url.set("https://dev.api.cosmotech.com")
         description.set("Development")
       }
+      register("staging") {
+        url.set("https://staging.api.cosmotech.com")
+        description.set("Staging")
+      }
       register("production") {
         url.set("https://api.cosmotech.com")
         description.set("Production")
