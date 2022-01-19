@@ -10,6 +10,10 @@
 [![Dev Deployment](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/deploy.yml/badge.svg)](https://dev.api.cosmotech.com/)
 [![Staging Deployment](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/deploy_staging.yml/badge.svg)](https://staging.api.cosmotech.com/)
 
+> AKS releases compatibilities
+- latest: 1.21+
+- v0: 1.21+
+
 > Cosmo Tech Cloud Platform API
 
 The Cosmo Tech Cloud Platform API exposes a [REST](https://en.wikipedia.org/wiki/Representational_state_transfer) API based on [OpenAPI](https://swagger.io/specification/) definitions.
