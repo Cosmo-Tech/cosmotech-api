@@ -11,32 +11,71 @@ help() {
   echo "You can retrieve the Helm values for your existing Platform with the following command:"
   echo "helm -n <NAMESPACE> get values cosmotech-api-<API_VERSION> | tail -n +2 | tee my_platform_cosmotech_api.values.yaml"
   echo
-  echo "Usage: ./$(basename "$0") CHART_PACKAGE_VERSION NAMESPACE API_VERSION /absolute/path/to/cosmotech_api_values.yaml [any additional options to pass as is to the cosmotech-api Helm Chart]"
+  echo "Usage: ./$(basename "$0") CHART_PACKAGE_VERSION [/absolute/path/to/cosmotech_api_values.yaml=current] [NAMESPACE=phoenix] [API_VERSION=MajorVersionOrLatestOf(CHART_PACKAGE_VERSION)] [INSTALL_SCRIPT_BRANCH=main] [any additional options to pass as is to the cosmotech-api Helm Chart]"
   echo
   echo "Examples:"
   echo
-  echo "- ./$(basename "$0") latest phoenix latest \\"
+  echo "- ./$(basename "$0") latest \\"
   echo "    /absolute/path/to/my/platform/cosmotech-api-values.yaml \\"
+  echo "    phoenix \\"
+  echo "    latest \\"
+  echo "    main \\"
   echo "    --set image.pullPolicy=Always"
   echo
-  echo "- ./$(basename "$0") 1.2.0 phoenix v1 /absolute/path/to/my/platform/cosmotech-api-values.yaml"
+  echo "- ./$(basename "$0") 0.0.10-rc /absolute/path/to/my/platform/cosmotech-api-values.yaml"
 }
 
 if [[ "${1:-}" == "--help" ||  "${1:-}" == "-h" ]]; then
   help
   exit 0
 fi
-if [[ $# -lt 4 ]]; then
+if [[ $# -lt 1 ]]; then
   help
   exit 1
 fi
 
 export HELM_EXPERIMENTAL_OCI=1
 
-CHART_PACKAGE_VERSION="$1"
-export NAMESPACE="$2"
-export API_VERSION="$3"
-export COSMOTECH_API_RELEASE_VALUES_FILE="$4"
+export CHART_PACKAGE_VERSION="$1"
+export COSMOTECH_API_RELEASE_VALUES_FILE="$2"
+export NAMESPACE="$3"
+export API_VERSION="$4"
+export GIT_BRANCH_NAME="$5"
+
+if [[ -z "${NAMESPACE}" ]]; then
+  export NAMESPACE="phoenix"
+fi
+
+if [[ -z "${API_VERSION}" ]]; then
+  if [[ "${CHART_PACKAGE_VERSION}" == "latest" ]]; then
+    export API_VERSION="latest"
+  else
+    export tagFirstPart=$(echo "${CHART_PACKAGE_VERSION}" | cut -d '.' -f1)
+    if [[ $tagFirstPart == "v*" ]]; then
+      export API_VERSION=${tagFirstPart}
+    else
+      export API_VERSION=v${tagFirstPart}
+    fi
+  fi
+fi
+
+if [[ -z "${GIT_BRANCH_NAME}" ]]; then
+  export GIT_BRANCH_NAME="main"
+fi
+
+if [[ -z "${COSMOTECH_API_RELEASE_VALUES_FILE}" ]]; then
+  echo Getting cosmotech-api-${API_VERSION} helm values...
+  TMPDIR=$(mktemp -d) 
+  export COSMOTECH_API_RELEASE_VALUES_FILE="${TMPDIR}/platform_cosmotech_api.values.yaml"
+  helm -n ${NAMESPACE} get values cosmotech-api-${API_VERSION} | tail -n +2 | tee ${COSMOTECH_API_RELEASE_VALUES_FILE} >/dev/null
+fi
+
+echo Upgrade parameters:
+echo CHART_PACKAGE_VERSION=${CHART_PACKAGE_VERSION}
+echo COSMOTECH_API_RELEASE_VALUES_FILE=${COSMOTECH_API_RELEASE_VALUES_FILE}
+echo NAMESPACE=${NAMESPACE}
+echo API_VERSION=${API_VERSION}
+echo GIT_BRANCH_NAME=${GIT_BRANCH_NAME}
 
 echo "Setting environment variables useful for this upgrade..."
 
@@ -60,7 +99,7 @@ else
 fi
 
 NGINX_INGRESS_CONTROLLER_ALB_RG=$(kubectl -n "${NAMESPACE}" get service ingress-nginx-controller -o json | jq -r '.metadata.annotations["service.beta.kubernetes.io/azure-load-balancer-resource-group"]')
-if [[ -n "$NGINX_INGRESS_CONTROLLER_ALB_RG" ]]; then
+if [[ -n "$NGINX_INGRESS_CONTROLLER_ALB_RG" ]] && [[ "$NGINX_INGRESS_CONTROLLER_ALB_RG" != "null" ]]; then
   export NGINX_INGRESS_CONTROLLER_HELM_ADDITIONAL_OPTIONS="--set controller.service.annotations.\"service\.beta\.kubernetes\.io/azure-load-balancer-resource-group\"=$NGINX_INGRESS_CONTROLLER_ALB_RG"
 else
   unset NGINX_INGRESS_CONTROLLER_HELM_ADDITIONAL_OPTIONS
@@ -99,10 +138,6 @@ fi
 export COSMOTECH_API_DNS_NAME=$(kubectl -n "${NAMESPACE}" get ingress cosmotech-api-latest -o json | jq -r '.spec.tls[0].hosts[0]')
 
 # Now run the deployment script with the right environment variables set
-GIT_BRANCH_NAME="main"
-if [[ "${CHART_PACKAGE_VERSION}" != "latest" ]]; then
-  GIT_BRANCH_NAME="${CHART_PACKAGE_VERSION}"
-fi
 echo "Now running the deployment script (from \"${GIT_BRANCH_NAME}\" Git Branch) with the right environment variables..."
 curl -o- -sSL https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-api/"${GIT_BRANCH_NAME}"/api/kubernetes/deploy_via_helm.sh | bash -s -- \
   "${CHART_PACKAGE_VERSION}" \
@@ -110,4 +145,5 @@ curl -o- -sSL https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-api/"${GIT_
   "${ARGO_POSTGRESQL_PASSWORD}" \
   "${API_VERSION}" \
   --values "${COSMOTECH_API_RELEASE_VALUES_FILE}" \
-  "${@:5}"
+  --set image.tag="${CHART_PACKAGE_VERSION}"
+  "${@:6}"
