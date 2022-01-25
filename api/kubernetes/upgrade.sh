@@ -22,7 +22,7 @@ help() {
   echo "    main \\"
   echo "    --set image.pullPolicy=Always"
   echo
-  echo "- ./$(basename "$0") 0.0.10-rc /absolute/path/to/my/platform/cosmotech-api-values.yaml"
+  echo "- ./$(basename "$0") 0.0.10-rc"
 }
 
 if [[ "${1:-}" == "--help" ||  "${1:-}" == "-h" ]]; then
