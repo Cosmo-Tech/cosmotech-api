@@ -1,7 +1,7 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
 
-val azureSpringBootBomVersion = "3.11.0"
+val azureSpringBootBomVersion = "3.13.0"
 
 dependencies {
   api(projects.cosmotechApiCommonParent.cosmotechApiCommon)
