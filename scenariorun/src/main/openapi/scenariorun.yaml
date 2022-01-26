@@ -337,6 +337,35 @@ paths:
               examples:
                 ScenarioRun:
                   $ref: '#/components/examples/BreweryScenarioRun'
+  /organizations/{organization_id}/scenarioruns/{scenariorun_id}/stop:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: scenariorun_id
+        in: path
+        description: the scenariorun identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: stopScenarioRun
+      tags:
+        - scenariorun
+      summary: stop a ScenarioRun for the Scenario
+      responses:
+        "200":
+          description: the scenariorun status details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioRunStatus'
+              examples:
+                ScenarioRun:
+                  $ref: '#/components/examples/BreweryScenarioRunStatus'
 components:
   securitySchemes:
     oAuth2AuthCode:

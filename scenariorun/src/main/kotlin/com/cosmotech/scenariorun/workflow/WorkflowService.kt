@@ -43,6 +43,13 @@ internal interface WorkflowService : HealthIndicator {
    * @return all the ScenarioRun logs
    */
   fun getScenarioRunCumulatedLogs(scenarioRun: ScenarioRun): String
+
+  /**
+   * Stop the running workflow
+   * @param scenarioRun the scenarioRun object
+   * @return the ScenarioRun status
+   */
+  fun stopWorkflow(scenarioRun: ScenarioRun): ScenarioRunStatus
 }
 
 data class WorkflowStatusAndArtifact(

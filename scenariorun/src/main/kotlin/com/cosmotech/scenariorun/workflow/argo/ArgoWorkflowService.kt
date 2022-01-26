@@ -23,6 +23,8 @@ import io.argoproj.workflow.models.Workflow
 import io.argoproj.workflow.models.WorkflowCreateRequest
 import io.argoproj.workflow.models.WorkflowList
 import io.argoproj.workflow.models.WorkflowStatus
+import io.argoproj.workflow.models.WorkflowStopRequest
+import io.kubernetes.client.util.ObjectAccessor.namespace
 import java.lang.StringBuilder
 import java.security.cert.X509Certificate
 import javax.net.ssl.SSLContext
@@ -39,6 +41,7 @@ import retrofit2.converter.scalars.ScalarsConverterFactory
 
 @Service("argo")
 @ConditionalOnExpression("#{! '\${csm.platform.argo.base-uri}'.trim().isEmpty()}")
+@Suppress("TooManyFunctions")
 internal class ArgoWorkflowService(
     @Value("\${api.version:?}") private val apiVersion: String,
     private val csmPlatformProperties: CsmPlatformProperties,
@@ -292,32 +295,7 @@ internal class ArgoWorkflowService(
               "workflowId or workflowName")
     }
     val workflowStatus = getWorkflowStatus(workflowId, workflowName)
-    return ScenarioRunStatus(
-        id = scenarioRunId,
-        organizationId = organizationId,
-        workflowId = workflowId,
-        workflowName = workflowName,
-        startTime = workflowStatus?.startedAt?.toString(),
-        endTime = workflowStatus?.finishedAt?.toString(),
-        phase = workflowStatus?.phase,
-        progress = workflowStatus?.progress,
-        message = workflowStatus?.message,
-        estimatedDuration = workflowStatus?.estimatedDuration,
-        nodes =
-            workflowStatus?.nodes?.values?.map { nodeStatus ->
-              ScenarioRunStatusNode(
-                  id = nodeStatus.id,
-                  name = nodeStatus.name,
-                  containerName = nodeStatus.displayName,
-                  estimatedDuration = nodeStatus.estimatedDuration,
-                  hostNodeName = nodeStatus.hostNodeName,
-                  message = nodeStatus.message,
-                  phase = nodeStatus.phase,
-                  progress = nodeStatus.progress,
-                  startTime = nodeStatus.startedAt?.toString(),
-                  endTime = nodeStatus.finishedAt?.toString(),
-              )
-            })
+    return buildScenarioRunStatusFromWorkflowStatus(scenarioRun, workflowStatus)
   }
 
   override fun getScenarioRunLogs(scenarioRun: ScenarioRun): ScenarioRunLogs {
@@ -372,6 +350,57 @@ internal class ArgoWorkflowService(
           Health.down(exception)
         }
     return healthBuilder.withDetail("url", apiClient.basePath).build()
+  }
+
+  override fun stopWorkflow(scenarioRun: ScenarioRun): ScenarioRunStatus {
+    var workflow = Workflow()
+    try {
+      workflow =
+          newServiceApiInstance<WorkflowServiceApi>(this.apiClient)
+              .workflowServiceStopWorkflow(
+                  csmPlatformProperties.argo.workflows.namespace,
+                  scenarioRun.workflowName,
+                  WorkflowStopRequest())
+    } catch (e: ApiException) {
+      System.err.println("Exception when calling WorkflowServiceApi#workflowServiceStopWorkflow")
+      System.err.println("Status code: " + e.code)
+      System.err.println("Reason: " + e.responseBody)
+      System.err.println("Response headers: " + e.responseHeaders)
+    }
+
+    return buildScenarioRunStatusFromWorkflowStatus(scenarioRun, workflow.status)
+  }
+
+  private fun buildScenarioRunStatusFromWorkflowStatus(
+      scenarioRun: ScenarioRun,
+      workflowStatus: WorkflowStatus?
+  ): ScenarioRunStatus {
+    return ScenarioRunStatus(
+        id = scenarioRun.id,
+        organizationId = scenarioRun.organizationId,
+        workflowId = scenarioRun.workflowId,
+        workflowName = scenarioRun.workflowName,
+        startTime = workflowStatus?.startedAt?.toString(),
+        endTime = workflowStatus?.finishedAt?.toString(),
+        phase = workflowStatus?.phase,
+        progress = workflowStatus?.progress,
+        message = workflowStatus?.message,
+        estimatedDuration = workflowStatus?.estimatedDuration,
+        nodes =
+            workflowStatus?.nodes?.values?.map { nodeStatus ->
+              ScenarioRunStatusNode(
+                  id = nodeStatus.id,
+                  name = nodeStatus.name,
+                  containerName = nodeStatus.displayName,
+                  estimatedDuration = nodeStatus.estimatedDuration,
+                  hostNodeName = nodeStatus.hostNodeName,
+                  message = nodeStatus.message,
+                  phase = nodeStatus.phase,
+                  progress = nodeStatus.progress,
+                  startTime = nodeStatus.startedAt?.toString(),
+                  endTime = nodeStatus.finishedAt?.toString(),
+              )
+            })
   }
 
   // Should be handled synchronously

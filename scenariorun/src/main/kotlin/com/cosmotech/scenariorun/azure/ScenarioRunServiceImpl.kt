@@ -548,4 +548,8 @@ internal class ScenarioRunServiceImpl(
     val endTime = endTimeString?.let(ZonedDateTime::parse)
     scenarioRunEndTimeRequest.response = endTime
   }
+
+  override fun stopScenarioRun(organizationId: String, scenariorunId: String): ScenarioRunStatus {
+    return workflowService.stopWorkflow(findScenarioRunById(organizationId, scenariorunId))
+  }
 }
