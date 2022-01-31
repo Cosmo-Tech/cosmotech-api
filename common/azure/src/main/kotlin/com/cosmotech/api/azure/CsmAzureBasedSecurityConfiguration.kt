@@ -18,24 +18,38 @@ import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Component
 
 @Component
-@ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
+@ConditionalOnProperty(
+    name = ["csm.platform.identityProvider"], havingValue = "aad", matchIfMissing = true
+)
 internal class CsmAzureBasedSecurityConfiguration(
     private val csmPlatformProperties: CsmPlatformProperties,
 ) {
 
-  @Bean
-  fun jwtAuthenticationConverter(): Converter<Jwt, out AbstractAuthenticationToken> =
-      AADJwtBearerTokenAuthenticationConverter(
-          csmPlatformProperties.authorization.principalJwtClaim,
-          AADResourceServerProperties.DEFAULT_CLAIM_TO_AUTHORITY_PREFIX_MAP)
+    @Bean
+    fun aadJwtAuthenticationConverter(): Converter<Jwt, out AbstractAuthenticationToken> {
+        val claimAuthorityMap =
+            AADResourceServerProperties.DEFAULT_CLAIM_TO_AUTHORITY_PREFIX_MAP.toMutableMap()
 
-  @Bean
-  fun csmSecurityValidator(
-      aadResourceServerConfiguration: AADResourceServerConfiguration,
-      aadAuthenticationProperties: AADAuthenticationProperties,
-  ) =
-      CsmAzureBasedSecurityValidator(
-          csmPlatformProperties, aadResourceServerConfiguration, aadAuthenticationProperties)
+        csmPlatformProperties.azure?.activeDirectory?.claimToAuthorityPrefix?.let {
+            claimAuthorityMap.putAll(
+                it
+            )
+        }
+        return AADJwtBearerTokenAuthenticationConverter(
+            csmPlatformProperties.authorization.principalJwtClaim,
+            claimAuthorityMap
+        )
+    }
+
+
+    @Bean
+    fun csmSecurityValidator(
+        aadResourceServerConfiguration: AADResourceServerConfiguration,
+        aadAuthenticationProperties: AADAuthenticationProperties,
+    ) =
+        CsmAzureBasedSecurityValidator(
+            csmPlatformProperties, aadResourceServerConfiguration, aadAuthenticationProperties
+        )
 }
 
 internal class CsmAzureBasedSecurityValidator(
@@ -43,16 +57,18 @@ internal class CsmAzureBasedSecurityValidator(
     private val aadResourceServerConfiguration: AADResourceServerConfiguration,
     private val aadAuthenticationProperties: AADAuthenticationProperties,
 ) : CsmSecurityValidator {
-  override fun getAllowedTenants() =
-      listOf(
-          csmPlatformProperties.azure?.credentials?.core?.tenantId,
-          csmPlatformProperties.azure?.credentials?.customer?.tenantId)
+    override fun getAllowedTenants() =
+        listOf(
+            csmPlatformProperties.azure?.credentials?.core?.tenantId,
+            csmPlatformProperties.azure?.credentials?.customer?.tenantId
+        )
 
-  override fun getJwksSetUri(): String =
-      AADAuthorizationServerEndpoints(
-              aadAuthenticationProperties.baseUri, aadAuthenticationProperties.tenantId)
-          .jwkSetEndpoint()
+    override fun getJwksSetUri(): String =
+        AADAuthorizationServerEndpoints(
+            aadAuthenticationProperties.baseUri, aadAuthenticationProperties.tenantId
+        )
+            .jwkSetEndpoint()
 
-  override fun getValidators(): List<OAuth2TokenValidator<Jwt>> =
-      aadResourceServerConfiguration.createDefaultValidator()
+    override fun getValidators(): List<OAuth2TokenValidator<Jwt>> =
+        aadResourceServerConfiguration.createDefaultValidator()
 }
