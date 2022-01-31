@@ -11,7 +11,6 @@ dependencies {
 
   api("com.azure.spring:azure-spring-boot-starter-cosmos")
   implementation("com.azure.spring:azure-spring-boot-starter-storage")
-  implementation("com.azure:azure-storage-blob-batch:12.11.3")
   api("com.azure:azure-storage-blob-batch:12.11.3")
   implementation("com.azure.spring:azure-spring-boot-starter-active-directory")
   implementation("com.microsoft.azure.kusto:kusto-ingest:3.0.0") {
