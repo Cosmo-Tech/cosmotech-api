@@ -4,6 +4,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **String** | the ScenarioRun | [optional] [default to null]
+**state** | [**ScenarioRunState**](ScenarioRunState.md) |  | [optional] [default to null]
 **organizationId** | **String** | the Organization id | [optional] [default to null]
 **workflowId** | **String** | the Cosmo Tech compute cluster Argo Workflow Id to search | [optional] [default to null]
 **csmSimulationRun** | **String** | the Cosmo Tech Simulation Run Id | [optional] [default to null]

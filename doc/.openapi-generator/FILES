@@ -39,6 +39,7 @@ Models/ScenarioRunContainerLogs.md
 Models/ScenarioRunLogs.md
 Models/ScenarioRunSearch.md
 Models/ScenarioRunStartContainers.md
+Models/ScenarioRunState.md
 Models/ScenarioRunStatus.md
 Models/ScenarioRunStatusNode.md
 Models/ScenarioRunTemplateParameterValue.md

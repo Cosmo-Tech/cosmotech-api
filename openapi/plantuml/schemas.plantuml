@@ -215,6 +215,7 @@ entity ScenarioLastRun {
 
 entity ScenarioRun {
     id: String
+    state: ScenarioRunState
     organizationId: String
     workflowId: String
     csmSimulationRun: String
@@ -284,6 +285,9 @@ entity ScenarioRunStartContainers {
     * containers: List<ScenarioRunContainer>
 }
 
+entity ScenarioRunState {
+}
+
 entity ScenarioRunStatus {
     id: String
     organizationId: String
@@ -296,6 +300,7 @@ entity ScenarioRunStatus {
     message: String
     estimatedDuration: Integer
     nodes: List<ScenarioRunStatusNode>
+    state: ScenarioRunState
 }
 
 entity ScenarioRunStatusNode {
