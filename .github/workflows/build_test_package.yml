@@ -231,6 +231,7 @@ jobs:
           PHOENIXAKSDEV_STORAGE_ACCOUNT_KEY: ${{ secrets.PHOENIXAKSDEV_STORAGE_ACCOUNT_KEY }}
           PHOENIXAKSDEV_ADX_BASE_URI: ${{ secrets.PHOENIXAKSDEV_ADX_BASE_URI }}
           PHOENIXAKSDEV_ADX_INGESTION_BASE_URI: ${{ secrets.PHOENIXAKSDEV_ADX_INGESTION_BASE_URI }}
+          PHOENIXAKSDEV_EVENT_HUBS_BASE_URI: ${{ secrets.PHOENIXAKSDEV_EVENT_HUBS_BASE_URI }}
         run: .github/scripts/install-helm-chart.sh
 
       - name: Test Helm Release (latest)
@@ -247,6 +248,7 @@ jobs:
           PHOENIXAKSDEV_STORAGE_ACCOUNT_KEY: ${{ secrets.PHOENIXAKSDEV_STORAGE_ACCOUNT_KEY }}
           PHOENIXAKSDEV_ADX_BASE_URI: ${{ secrets.PHOENIXAKSDEV_ADX_BASE_URI }}
           PHOENIXAKSDEV_ADX_INGESTION_BASE_URI: ${{ secrets.PHOENIXAKSDEV_ADX_INGESTION_BASE_URI }}
+          PHOENIXAKSDEV_EVENT_HUBS_BASE_URI: ${{ secrets.PHOENIXAKSDEV_EVENT_HUBS_BASE_URI }}
         run: .github/scripts/install-helm-chart.sh v1
 
       - name: Test Helm Release (v1)

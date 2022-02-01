@@ -10,6 +10,7 @@ import com.azure.cosmos.models.PartitionKey
 import com.azure.cosmos.models.SqlQuerySpec
 import com.azure.cosmos.util.CosmosPagedIterable
 import com.azure.spring.data.cosmos.core.CosmosTemplate
+import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.id.CsmIdGenerator
@@ -71,13 +72,16 @@ class ScenarioRunServiceImplTests {
 
   @MockK(relaxed = true) private lateinit var workflowService: WorkflowService
 
+  @MockK(relaxed = true) private lateinit var azureDataExplorerClient: AzureDataExplorerClient
+
   private lateinit var scenarioRunServiceImpl: ScenarioRunServiceImpl
 
   @BeforeTest
   fun setUp() {
     MockKAnnotations.init(this, relaxUnitFun = true)
 
-    this.scenarioRunServiceImpl = spyk(ScenarioRunServiceImpl(containerFactory, workflowService))
+    this.scenarioRunServiceImpl =
+        spyk(ScenarioRunServiceImpl(containerFactory, workflowService, azureDataExplorerClient))
 
     every { scenarioRunServiceImpl getProperty "cosmosTemplate" } returns cosmosTemplate
     every { scenarioRunServiceImpl getProperty "cosmosClient" } returns cosmosClient
@@ -121,6 +125,7 @@ class ScenarioRunServiceImplTests {
     val myScenarioRun =
         ScenarioRun(
             id = "sr-myscenariorun1",
+            workspaceKey = "my-workspaceKey",
             containers =
                 listOf(
                     ScenarioRunContainer(
@@ -156,6 +161,7 @@ class ScenarioRunServiceImplTests {
     val myScenarioRun1 =
         ScenarioRun(
             id = "sr-myscenariorun1",
+            workspaceKey = "my-workspaceKey",
             containers =
                 listOf(
                     ScenarioRunContainer(
@@ -165,6 +171,7 @@ class ScenarioRunServiceImplTests {
     val myScenarioRun2 =
         ScenarioRun(
             id = "sr-myscenariorun2",
+            workspaceKey = "my-workspaceKey",
             containers =
                 listOf(
                     ScenarioRunContainer(
@@ -204,6 +211,7 @@ class ScenarioRunServiceImplTests {
     val myScenarioRun1 =
         ScenarioRun(
             id = "sr-myscenariorun1",
+            workspaceKey = "my-workspaceKey",
             containers =
                 listOf(
                     ScenarioRunContainer(
@@ -213,6 +221,7 @@ class ScenarioRunServiceImplTests {
     val myScenarioRun2 =
         ScenarioRun(
             id = "sr-myscenariorun2",
+            workspaceKey = "my-workspaceKey",
             containers =
                 listOf(
                     ScenarioRunContainer(
@@ -252,6 +261,7 @@ class ScenarioRunServiceImplTests {
     val myScenarioRun1 =
         ScenarioRun(
             id = "sr-myscenariorun1",
+            workspaceKey = "my-workspaceKey",
             containers =
                 listOf(
                     ScenarioRunContainer(
@@ -261,6 +271,7 @@ class ScenarioRunServiceImplTests {
     val myScenarioRun2 =
         ScenarioRun(
             id = "sr-myscenariorun2",
+            workspaceKey = "my-workspaceKey",
             containers =
                 listOf(
                     ScenarioRunContainer(

@@ -14,10 +14,11 @@ import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
 import com.cosmotech.api.events.ScenarioDataDownloadRequest
 import com.cosmotech.api.events.ScenarioDatasetListChanged
+import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
 import com.cosmotech.api.events.UserAddedToScenario
 import com.cosmotech.api.events.UserRemovedFromScenario
-import com.cosmotech.api.events.WorkflowStatusRequest
+import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.utils.changed
@@ -54,7 +55,7 @@ import org.springframework.stereotype.Service
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
-@Suppress("TooManyFunctions")
+@Suppress("LargeClass", "TooManyFunctions")
 internal class ScenarioServiceImpl(
     private val userService: UserApiService,
     private val solutionService: SolutionApiService,
@@ -348,7 +349,7 @@ internal class ScenarioServiceImpl(
           .mapNotNull {
             val scenario = it.toDomain<Scenario>()
             if (addState) {
-              this.addStateToScenario(scenario)
+              this.addStateToScenario(organizationId, scenario)
             }
             return@mapNotNull scenario
           }
@@ -383,7 +384,7 @@ internal class ScenarioServiceImpl(
     val scenario =
         this.findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
             .addLastRunsInfo(this, organizationId, workspaceId)
-    this.addStateToScenario(scenario)
+    this.addStateToScenario(organizationId, scenario)
     return scenario
   }
 
@@ -402,7 +403,8 @@ internal class ScenarioServiceImpl(
             ?: throw CsmResourceNotFoundException(
                 "No scenario data download job found with id $downloadId for scenario ${scenario.id})")
     return ScenarioDataDownloadInfo(
-        state = mapPhaseToState(downloadId, response.first), url = response.second)
+        state = mapWorkflowPhaseToState(organizationId, workspaceId, downloadId, response.first),
+        url = response.second)
   }
 
   internal fun findScenarioChildrenById(
@@ -454,27 +456,47 @@ internal class ScenarioServiceImpl(
           ?: throw java.lang.IllegalArgumentException(
               "Scenario #$scenarioId not found in workspace #$workspaceId in organization #$organizationId")
 
-  private fun addStateToScenario(scenario: Scenario?) {
+  private fun addStateToScenario(organizationId: String, scenario: Scenario?) {
     if (scenario?.lastRun != null) {
-      val workflowId = scenario.lastRun?.workflowId
-      val workflowName = scenario.lastRun?.workflowName
-      if (workflowId == null || workflowName == null) {
+      val scenarioRunId = scenario.lastRun?.scenarioRunId
+      if (scenarioRunId.isNullOrBlank()) {
         throw IllegalStateException(
-            "Scenario has a last Scenario Run but workflowId or workflowName is null")
+            "Scenario has a last Scenario Run but scenarioRunId is null or blank")
       }
-      val workflowStatusRequest = WorkflowStatusRequest(this, workflowId, workflowName)
-      this.eventPublisher.publishEvent(workflowStatusRequest)
+      val endToEndStateRequest =
+          ScenarioRunEndToEndStateRequest(
+              this, organizationId, scenario.workspaceId!!, scenarioRunId)
+      this.eventPublisher.publishEvent(endToEndStateRequest)
       scenario.state =
-          this.mapPhaseToState(scenario.lastRun?.scenarioRunId, workflowStatusRequest.response)
+          when (endToEndStateRequest.response) {
+            "Running" -> ScenarioJobState.Running
+            "DataIngestionInProgress" -> ScenarioJobState.DataIngestionInProgress
+            "Successful" -> ScenarioJobState.Successful
+            "Failed", "DataIngestionFailure" -> ScenarioJobState.Failed
+            else -> ScenarioJobState.Unknown
+          }
     }
   }
 
-  private fun mapPhaseToState(jobId: String?, phase: String?): ScenarioJobState {
+  private fun mapWorkflowPhaseToState(
+      organizationId: String,
+      workspaceId: String,
+      jobId: String?,
+      phase: String?,
+  ): ScenarioJobState {
     logger.debug("Mapping phase $phase for job $jobId")
-    return when (phase) {
-      "Pending", "Running" -> ScenarioJobState.Running
-      "Succeeded" -> ScenarioJobState.Successful
-      "Skipped", "Failed", "Error", "Omitted" -> ScenarioJobState.Failed
+    val workflowPhaseToStateRequest =
+        WorkflowPhaseToStateRequest(
+            publisher = this,
+            organizationId = organizationId,
+            workspaceKey = workspaceService.findWorkspaceById(organizationId, workspaceId).key,
+            jobId = jobId,
+            workflowPhase = phase)
+    this.eventPublisher.publishEvent(workflowPhaseToStateRequest)
+    return when (workflowPhaseToStateRequest.response) {
+      "Running" -> ScenarioJobState.Running
+      "Successful" -> ScenarioJobState.Successful
+      "Failed" -> ScenarioJobState.Failed
       else -> {
         logger.warn(
             "Unhandled state response for job {}: {} => returning Unknown as state", jobId, phase)

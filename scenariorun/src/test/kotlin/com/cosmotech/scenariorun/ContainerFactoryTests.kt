@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenariorun
 
+import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCredentials
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCredentials.CsmPlatformAzureCredentialsCore
@@ -67,6 +68,7 @@ class ContainerFactoryTests {
   @MockK private lateinit var organizationService: OrganizationApiService
   @MockK private lateinit var connectorService: ConnectorApiService
   @MockK private lateinit var datasetService: DatasetApiService
+  @MockK(relaxed = true) lateinit var azureEventHubsClient: AzureEventHubsClient
 
   @InjectMockKs private lateinit var factory: ContainerFactory
 
@@ -1873,6 +1875,8 @@ class ContainerFactoryTests {
             "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to "a1b2c3d4e5==",
             "CSM_AMQPCONSUMER_USER" to "my-eventhub-access-policy",
             "CSM_AMQPCONSUMER_PASSWORD" to "a1b2c3d4e5==",
+            "CSM_CONTROL_PLANE_USER" to "my-eventhub-access-policy",
+            "CSM_CONTROL_PLANE_PASSWORD" to "a1b2c3d4e5==",
             "CSM_SIMULATION" to "TestSimulation"),
         container.envVars)
   }

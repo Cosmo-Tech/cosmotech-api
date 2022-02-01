@@ -48,6 +48,9 @@ data class CsmPlatformProperties(
 
     /** Authorization Configuration */
     val authorization: Authorization = Authorization(),
+
+    /** Data Ingestion reporting behavior */
+    val dataIngestion: DataIngestion = DataIngestion(),
 ) {
 
   data class Authorization(
@@ -319,5 +322,37 @@ data class CsmPlatformProperties(
   enum class Vendor {
     /** Microsoft Azure : https://azure.microsoft.com/en-us/ */
     AZURE
+  }
+
+  data class DataIngestion(
+      /**
+       * Number of seconds to wait after a scenario run workflow end time, before starting to check
+       * ADX for data ingestion state. See https://bit.ly/3FXshzE for the rationale
+       */
+      val waitingTimeBeforeIngestionSeconds: Long = 10,
+
+      /**
+       * number of minutes after a scenario run workflow end time during which an ingestion failure
+       * detected is considered linked to the current scenario run
+       */
+      val ingestionObservationWindowToBeConsideredAFailureMinutes: Long = 5,
+
+      /** Data ingestion state handling default behavior */
+      val state: State = State()
+  ) {
+    data class State(
+        /**
+         * Whether to throw an exception if we have no control plane info about the scenario run,
+         * and no probe measures data. This may typically happen if the simulation has no consumers.
+         */
+        val exceptionIfNoControlPlaneInfoAndNoProbeMeasuresData: Boolean = true,
+
+        /**
+         * State to report if we have no ingestion failure, and no control plane info about the
+         * scenario run, but we have probe measures data. One of Successful, InProgress, Failure,
+         * Unknown
+         */
+        val stateIfNoControlPlaneInfoButProbeMeasuresData: String = "Successful",
+    )
   }
 }

@@ -8,16 +8,22 @@ import com.azure.cosmos.models.PartitionKey
 import com.azure.cosmos.models.SqlParameter
 import com.azure.cosmos.models.SqlQuerySpec
 import com.cosmotech.api.azure.CsmAzureService
+import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
 import com.cosmotech.api.events.ScenarioDataDownloadRequest
+import com.cosmotech.api.events.ScenarioRunEndTimeRequest
+import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
+import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
+import com.cosmotech.api.scenariorun.DataIngestionState
 import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenariorun.CSM_JOB_ID_LABEL_KEY
 import com.cosmotech.scenariorun.ContainerFactory
+import com.cosmotech.scenariorun.EVENT_HUB_CONTROL_PLANE_VAR
 import com.cosmotech.scenariorun.SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME
 import com.cosmotech.scenariorun.api.ScenariorunApiService
 import com.cosmotech.scenariorun.domain.RunTemplateParameterValue
@@ -25,12 +31,16 @@ import com.cosmotech.scenariorun.domain.ScenarioRun
 import com.cosmotech.scenariorun.domain.ScenarioRunLogs
 import com.cosmotech.scenariorun.domain.ScenarioRunSearch
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
+import com.cosmotech.scenariorun.domain.ScenarioRunState
+import com.cosmotech.scenariorun.domain.ScenarioRunStatus
+import com.cosmotech.scenariorun.isTerminal
 import com.cosmotech.scenariorun.withoutSensitiveData
 import com.cosmotech.scenariorun.workflow.WorkflowService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
+import java.time.ZonedDateTime
 import kotlin.reflect.full.memberProperties
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
@@ -42,6 +52,7 @@ import org.springframework.stereotype.Service
 internal class ScenarioRunServiceImpl(
     private val containerFactory: ContainerFactory,
     private val workflowService: WorkflowService,
+    private val azureDataExplorerClient: AzureDataExplorerClient,
 ) : CsmAzureService(), ScenariorunApiService {
 
   private fun ScenarioRun.asMapWithAdditionalData(workspaceId: String? = null): Map<String, Any> {
@@ -78,7 +89,14 @@ internal class ScenarioRunServiceImpl(
     cosmosTemplate.deleteEntity("${organizationId}_scenario_data", scenarioRun)
   }
 
-  override fun findScenarioRunById(organizationId: String, scenariorunId: String): ScenarioRun =
+  override fun findScenarioRunById(organizationId: String, scenariorunId: String) =
+      findScenarioRunById(organizationId, scenariorunId, withStateInformation = true)
+
+  private fun findScenarioRunById(
+      organizationId: String,
+      scenariorunId: String,
+      withStateInformation: Boolean
+  ) =
       cosmosCoreDatabase
           .getContainer("${organizationId}_scenario_data")
           .queryItems(
@@ -88,14 +106,35 @@ internal class ScenarioRunServiceImpl(
               CosmosQueryRequestOptions(),
               // It would be much better to specify the Domain Type right away and
               // avoid the map operation, but we can't due
-              // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
+              // to the lack of customization of the Cosmos Client Object Mapper, as reported here
+              // :
               // https://github.com/Azure/azure-sdk-for-java/issues/12269
               JsonNode::class.java)
           .firstOrNull()
           ?.toDomain<ScenarioRun>()
+          ?.let { if (withStateInformation) it.withStateInformation(organizationId) else it }
           ?.withoutSensitiveData()
           ?: throw java.lang.IllegalArgumentException(
               "ScenarioRun #$scenariorunId not found in organization #$organizationId")
+
+  private fun ScenarioRun?.withStateInformation(organizationId: String): ScenarioRun? {
+    if (this == null) {
+      return null
+    }
+    var scenarioRun = this.copy()
+    if (scenarioRun.state?.isTerminal() != true) {
+      // Compute and persist state if terminal
+      val state = getScenarioRunStatus(organizationId, scenarioRun).state
+      scenarioRun = scenarioRun.copy(state = state)
+      if (state?.isTerminal() == true) {
+        val scenarioRunAsMap = scenarioRun.asMapWithAdditionalData(this.workspaceId)
+        cosmosCoreDatabase
+            .getContainer("${organizationId}_scenario_data")
+            .upsertItem(scenarioRunAsMap, PartitionKey(this.ownerId), CosmosItemRequestOptions())
+      }
+    }
+    return scenarioRun
+  }
 
   override fun getScenarioRunLogs(organizationId: String, scenariorunId: String): ScenarioRunLogs {
     val scenarioRun = findScenarioRunById(organizationId, scenariorunId)
@@ -133,7 +172,9 @@ internal class ScenarioRunServiceImpl(
               // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
               // https://github.com/Azure/azure-sdk-for-java/issues/12269
               JsonNode::class.java)
-          .mapNotNull { it.toDomain<ScenarioRun>()?.withoutSensitiveData() }
+          .mapNotNull {
+            it.toDomain<ScenarioRun>().withStateInformation(organizationId).withoutSensitiveData()
+          }
           .toList()
 
   override fun getWorkspaceScenarioRuns(
@@ -156,7 +197,9 @@ internal class ScenarioRunServiceImpl(
               // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
               // https://github.com/Azure/azure-sdk-for-java/issues/12269
               JsonNode::class.java)
-          .mapNotNull { it.toDomain<ScenarioRun>()?.withoutSensitiveData() }
+          .mapNotNull {
+            it.toDomain<ScenarioRun>().withStateInformation(organizationId).withoutSensitiveData()
+          }
           .toList()
 
   @EventListener(ScenarioDataDownloadRequest::class)
@@ -260,7 +303,9 @@ internal class ScenarioRunServiceImpl(
             // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
             // https://github.com/Azure/azure-sdk-for-java/issues/12269
             JsonNode::class.java)
-        .mapNotNull { it.toDomain<ScenarioRun>().withoutSensitiveData() }
+        .mapNotNull {
+          it.toDomain<ScenarioRun>().withStateInformation(organizationId).withoutSensitiveData()
+        }
         .toList()
   }
 
@@ -346,6 +391,107 @@ internal class ScenarioRunServiceImpl(
   }
 
   override fun getScenarioRunStatus(organizationId: String, scenariorunId: String) =
-      this.workflowService.getScenarioRunStatus(
-          this.findScenarioRunById(organizationId, scenariorunId))
+      getScenarioRunStatus(organizationId, this.findScenarioRunById(organizationId, scenariorunId))
+
+  private fun getScenarioRunStatus(
+      organizationId: String,
+      scenarioRun: ScenarioRun,
+  ): ScenarioRunStatus {
+    val scenarioRunStatus = this.workflowService.getScenarioRunStatus(scenarioRun)
+    return scenarioRunStatus.copy(
+        state =
+            mapWorkflowPhaseToScenarioRunState(
+                organizationId = organizationId,
+                workspaceKey = scenarioRun.workspaceKey!!,
+                scenarioRunId = scenarioRun.id,
+                phase = scenarioRunStatus.phase,
+                csmSimulationRun = scenarioRun.csmSimulationRun,
+                // Determine whether we need to check data ingestion state, based on whether the
+                // CSM_CONTROL_PLANE_TOPIC variable is present in any of the containers
+                checkDataIngestionState =
+                    scenarioRun.containers?.any {
+                      !it.envVars?.get(EVENT_HUB_CONTROL_PLANE_VAR).isNullOrBlank()
+                    }))
+  }
+
+  @EventListener(WorkflowPhaseToStateRequest::class)
+  fun onWorkflowPhaseToStateRequest(request: WorkflowPhaseToStateRequest) {
+    request.response =
+        this.mapWorkflowPhaseToScenarioRunState(
+                organizationId = request.organizationId,
+                workspaceKey = request.workspaceKey,
+                scenarioRunId = request.jobId,
+                phase = request.workflowPhase,
+                csmSimulationRun = null,
+                checkDataIngestionState = false)
+            .value
+  }
+
+  @EventListener(ScenarioRunEndToEndStateRequest::class)
+  fun onScenarioRunEndToEndStateRequest(request: ScenarioRunEndToEndStateRequest) {
+    request.response =
+        this.findScenarioRunById(request.organizationId, request.scenarioRunId).state?.value
+  }
+
+  private fun mapWorkflowPhaseToScenarioRunState(
+      organizationId: String,
+      workspaceKey: String,
+      scenarioRunId: String?,
+      phase: String?,
+      csmSimulationRun: String?,
+      checkDataIngestionState: Boolean? = null,
+  ): ScenarioRunState {
+    logger.debug("Mapping phase $phase for job $scenarioRunId")
+    return when (phase) {
+      "Pending", "Running" -> ScenarioRunState.Running
+      "Succeeded" -> {
+        logger.trace(
+            "checkDataIngestionState=$checkDataIngestionState," +
+                "csmSimulationRun=$csmSimulationRun")
+        if (checkDataIngestionState == true && csmSimulationRun != null) {
+          logger.debug(
+              "ScenarioRun $scenarioRunId (csmSimulationRun=$csmSimulationRun) reported as " +
+                  "Successful by the Workflow Service => checking data ingestion status..")
+          val postProcessingState =
+              this.azureDataExplorerClient.getStateFor(
+                  organizationId = organizationId,
+                  workspaceKey = workspaceKey,
+                  scenarioRunId = scenarioRunId!!,
+                  csmSimulationRun = csmSimulationRun,
+              )
+          logger.debug(
+              "Data Ingestion status for ScenarioRun $scenarioRunId " +
+                  "(csmSimulationRun=$csmSimulationRun): $postProcessingState")
+          when (postProcessingState) {
+            null, DataIngestionState.Unknown -> ScenarioRunState.Unknown
+            DataIngestionState.InProgress -> ScenarioRunState.DataIngestionInProgress
+            DataIngestionState.Successful -> ScenarioRunState.Successful
+            DataIngestionState.Failure -> ScenarioRunState.Failed
+          }
+        } else {
+          ScenarioRunState.Successful
+        }
+      }
+      "Skipped", "Failed", "Error", "Omitted" -> ScenarioRunState.Failed
+      else -> {
+        logger.warn(
+            "Unhandled state response for job {}: {} => returning Unknown as state",
+            scenarioRunId,
+            phase)
+        ScenarioRunState.Unknown
+      }
+    }
+  }
+
+  @EventListener(ScenarioRunEndTimeRequest::class)
+  fun onScenarioRunWorkflowEndTimeRequest(scenarioRunEndTimeRequest: ScenarioRunEndTimeRequest) {
+    val scenarioRun =
+        findScenarioRunById(
+            scenarioRunEndTimeRequest.organizationId,
+            scenarioRunEndTimeRequest.scenarioRunId,
+            withStateInformation = false)
+    val endTimeString = this.workflowService.getScenarioRunStatus(scenarioRun).endTime
+    val endTime = endTimeString?.let(ZonedDateTime::parse)
+    scenarioRunEndTimeRequest.response = endTime
+  }
 }

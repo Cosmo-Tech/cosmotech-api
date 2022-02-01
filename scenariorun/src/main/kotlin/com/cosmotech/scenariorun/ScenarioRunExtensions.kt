@@ -3,6 +3,7 @@
 package com.cosmotech.scenariorun
 
 import com.cosmotech.scenariorun.domain.ScenarioRun
+import com.cosmotech.scenariorun.domain.ScenarioRunState
 
 /**
  * PROD-8473 : containers listed in a ScenarioRun return environment variables, which are likely to
@@ -15,3 +16,12 @@ import com.cosmotech.scenariorun.domain.ScenarioRun
  * right by inspecting the Kubernetes Cluster.
  */
 internal fun ScenarioRun?.withoutSensitiveData(): ScenarioRun? = this?.copy(containers = null)
+
+internal fun ScenarioRunState.isTerminal() =
+    when (this) {
+      ScenarioRunState.DataIngestionFailure, ScenarioRunState.Failed, ScenarioRunState.Successful ->
+          true
+      ScenarioRunState.Unknown,
+      ScenarioRunState.DataIngestionInProgress,
+      ScenarioRunState.Running -> false
+    }

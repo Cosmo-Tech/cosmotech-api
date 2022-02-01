@@ -748,6 +748,8 @@ components:
         # Furthermore, temporary communication errors might occur anytime when remotely
         # fetching last scenario run statuses.
         - Unknown
+        # PROD-7420 : return data ingestion status
+        - DataIngestionInProgress
   examples:
     BreweryScenarioIn:
       summary: Brewery Scenario input example

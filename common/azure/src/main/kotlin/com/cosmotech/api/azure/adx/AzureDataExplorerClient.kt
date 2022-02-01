@@ -3,10 +3,16 @@
 package com.cosmotech.api.azure.adx
 
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.api.events.CsmEventPublisher
+import com.cosmotech.api.events.ScenarioRunEndTimeRequest
+import com.cosmotech.api.scenariorun.DataIngestionState
 import com.microsoft.azure.kusto.data.Client
 import com.microsoft.azure.kusto.data.ClientImpl
 import com.microsoft.azure.kusto.data.ClientRequestProperties
 import com.microsoft.azure.kusto.data.auth.ConnectionStringBuilder
+import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
+import java.time.temporal.Temporal
 import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
 import org.slf4j.LoggerFactory
@@ -27,14 +33,29 @@ internal const val HEALTH_KUSTO_QUERY =
 
 @Service("csmADX")
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
-class AzureDataExplorerClient(private val csmPlatformProperties: CsmPlatformProperties) :
-    HealthIndicator {
+class AzureDataExplorerClient(
+    private val csmPlatformProperties: CsmPlatformProperties,
+    val eventPublisher: CsmEventPublisher
+) : HealthIndicator {
 
   private val logger = LoggerFactory.getLogger(AzureDataExplorerClient::class.java)
 
   private val baseUri = csmPlatformProperties.azure!!.dataWarehouseCluster.baseUri
 
   private lateinit var kustoClient: Client
+
+  private val dataIngestionStateIfNoControlPlaneInfoButProbeMeasuresData =
+      DataIngestionState.valueOf(
+          csmPlatformProperties.dataIngestion.state.stateIfNoControlPlaneInfoButProbeMeasuresData)
+
+  private val dataIngestionStateExceptionIfNoControlPlaneInfoAndNoProbeMeasuresData =
+      csmPlatformProperties.dataIngestion.state.exceptionIfNoControlPlaneInfoAndNoProbeMeasuresData
+
+  private val waitingTimeBeforeIngestion =
+      csmPlatformProperties.dataIngestion.waitingTimeBeforeIngestionSeconds
+
+  private val ingestionObservationWindowToBeConsideredAFailureMinutes =
+      csmPlatformProperties.dataIngestion.ingestionObservationWindowToBeConsideredAFailureMinutes
 
   @PostConstruct
   internal fun init() {
@@ -52,6 +73,125 @@ class AzureDataExplorerClient(private val csmPlatformProperties: CsmPlatformProp
 
   internal fun setKustoClient(kustoClient: Client) {
     this.kustoClient = kustoClient
+  }
+
+  fun getStateFor(
+      organizationId: String,
+      workspaceKey: String,
+      scenarioRunId: String,
+      csmSimulationRun: String
+  ): DataIngestionState? {
+    logger.trace("getStateFor($organizationId,$workspaceKey,$scenarioRunId,$csmSimulationRun)")
+
+    val scenarioRunWorkflowEndTime =
+        queryScenarioRunWorkflowEndTime(organizationId, workspaceKey, scenarioRunId)
+    val seconds =
+        scenarioRunWorkflowEndTime?.until(ZonedDateTime.now(), ChronoUnit.SECONDS)
+            ?: return DataIngestionState.Unknown
+
+    if (seconds <= waitingTimeBeforeIngestion) {
+      return DataIngestionState.InProgress
+    }
+
+    val sentMessagesTotal = querySentMessagesTotal(organizationId, workspaceKey, csmSimulationRun)
+    val probesMeasuresCount =
+        queryProbesMeasuresCount(organizationId, workspaceKey, csmSimulationRun)
+
+    logger.debug(
+        "Scenario run {} (csmSimulationRun={}): (sentMessagesTotal,probesMeasuresCount)=(" +
+            "$sentMessagesTotal,$probesMeasuresCount)",
+        scenarioRunId,
+        csmSimulationRun)
+    return if (sentMessagesTotal == null) {
+      logger.debug(
+          "Scenario run {} (csmSimulationRun={}) produced {} measures, " +
+              "but no data found in SimulationTotalFacts control plane table",
+          scenarioRunId,
+          csmSimulationRun,
+          probesMeasuresCount)
+      if (probesMeasuresCount > 0) {
+        // For backward compatibility purposes
+        this.dataIngestionStateIfNoControlPlaneInfoButProbeMeasuresData
+      } else if (this.dataIngestionStateExceptionIfNoControlPlaneInfoAndNoProbeMeasuresData) {
+        throw UnsupportedOperationException(
+            "Case not handled: probesMeasuresCount=0 and sentMessagesTotal=NULL. " +
+                "Scenario run $scenarioRunId (csmSimulationRun=$csmSimulationRun) " +
+                "probably ran no AMQP consumers. " +
+                "To mitigate this, either make sure to build your Simulator using " +
+                "a version of SDK >= 8.5 or configure the " +
+                "'csm.platform.data-ingestion.state.exception-if-no-control-plane-info-" +
+                "and-no-probe-measures-data' property flag for this API")
+      } else {
+        // THis is the case where sentMessagesTotal == null, probesMeasuresCount = 0 and we don't
+        // want to throw an exception the simulation is successful but there's no probe measures
+        DataIngestionState.Successful
+      }
+    } else if (probesMeasuresCount < sentMessagesTotal) {
+      if (anyDataPlaneIngestionFailures(organizationId, workspaceKey, scenarioRunWorkflowEndTime)) {
+        DataIngestionState.Failure
+      } else {
+        DataIngestionState.InProgress
+      }
+    } else {
+      DataIngestionState.Successful
+    }
+  }
+
+  internal fun queryProbesMeasuresCount(
+      organizationId: String,
+      workspaceKey: String,
+      csmSimulationRun: String
+  ): Long {
+    val probesMeasuresCountQueryPrimaryResults =
+        this.kustoClient.execute(
+                getDatabaseName(organizationId, workspaceKey),
+                """
+                ProbesMeasures
+                | where SimulationRun == '${csmSimulationRun}'
+                | count
+            """,
+                ClientRequestProperties().apply {
+                  timeoutInMilliSec = TimeUnit.SECONDS.toMillis(REQUEST_TIMEOUT_SECONDS)
+                })
+            .primaryResults
+    if (!probesMeasuresCountQueryPrimaryResults.next()) {
+      throw IllegalStateException("Missing ProbesMeasures table")
+    }
+    return probesMeasuresCountQueryPrimaryResults.getLongObject("Count")!!
+  }
+
+  internal fun querySentMessagesTotal(
+      organizationId: String,
+      workspaceKey: String,
+      csmSimulationRun: String
+  ): Long? {
+    val sentMessagesTotalQueryPrimaryResults =
+        this.kustoClient.execute(
+                getDatabaseName(organizationId, workspaceKey),
+                """
+                SimulationTotalFacts
+                | where SimulationId == '${csmSimulationRun}'
+                | project SentMessagesTotal
+            """,
+                ClientRequestProperties().apply {
+                  timeoutInMilliSec = TimeUnit.SECONDS.toMillis(REQUEST_TIMEOUT_SECONDS)
+                })
+            .primaryResults
+
+    val sentMessagesTotalRowCount = sentMessagesTotalQueryPrimaryResults.count()
+    if (sentMessagesTotalRowCount > 1) {
+      throw IllegalStateException(
+          "Unexpected number of rows in SimulationTotalFacts ADX Table for SimulationId=" +
+              csmSimulationRun +
+              ". Expected at most 1, but got " +
+              sentMessagesTotalRowCount)
+    }
+    return if (sentMessagesTotalQueryPrimaryResults.next()) {
+      sentMessagesTotalQueryPrimaryResults.getLongObject("SentMessagesTotal")
+    } else {
+      // No row
+      null
+    }
   }
 
   @Suppress("TooGenericExceptionCaught")
@@ -82,8 +222,47 @@ class AzureDataExplorerClient(private val csmPlatformProperties: CsmPlatformProp
         }
     return healthBuilder.withDetail("baseUri", baseUri).build()
   }
+
+  internal fun <T : Temporal> anyDataPlaneIngestionFailures(
+      organizationId: String,
+      workspaceKey: String,
+      scenarioRunWorkflowEndTime: T,
+  ): Boolean {
+    val databaseName = getDatabaseName(organizationId, workspaceKey)
+    val failureQueryPrimaryResults =
+        this.kustoClient.execute(
+                databaseName,
+                """
+                .show ingestion failures
+                | where  Table  == 'ProbesMeasures'
+                | order by FailedOn desc
+                | project FailedOn
+            """,
+                ClientRequestProperties().apply {
+                  timeoutInMilliSec = TimeUnit.SECONDS.toMillis(REQUEST_TIMEOUT_SECONDS)
+                })
+            .primaryResults
+    return if (failureQueryPrimaryResults.next()) {
+      failureQueryPrimaryResults.count() > 0 &&
+          failureQueryPrimaryResults.getKustoDateTime("FailedOn")!!.until(
+              scenarioRunWorkflowEndTime, ChronoUnit.MINUTES) <
+              this.ingestionObservationWindowToBeConsideredAFailureMinutes
+    } else {
+      false
+    }
+  }
+
+  private fun queryScenarioRunWorkflowEndTime(
+      organizationId: String,
+      workspaceId: String,
+      scenarioRunId: String
+  ): ZonedDateTime? {
+    val scenarioRunEndTimeRequest =
+        ScenarioRunEndTimeRequest(this, organizationId, workspaceId, scenarioRunId)
+    this.eventPublisher.publishEvent(scenarioRunEndTimeRequest)
+    return scenarioRunEndTimeRequest.response
+  }
 }
 
-@Suppress("Unused", "UnusedPrivateMember") // Used in the context of PROD-7420 and PROD-8148
 private fun getDatabaseName(organizationId: String, workspaceKey: String) =
     "${organizationId}-${workspaceKey}"
