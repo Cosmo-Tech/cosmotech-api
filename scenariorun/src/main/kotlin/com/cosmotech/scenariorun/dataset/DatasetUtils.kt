@@ -125,6 +125,7 @@ internal fun getDatasetEnvVars(
     fetchId: String?,
     organizationId: String,
     workspaceId: String,
+    scenarioId: String,
     workspaceKey: String,
     csmSimulationId: String
 ): Map<String, String> {
@@ -133,6 +134,8 @@ internal fun getDatasetEnvVars(
           csmPlatformProperties,
           csmSimulationId,
           organizationId,
+          workspaceId,
+          scenarioId,
           workspaceKey,
           azureManagedIdentity = connector.azureManagedIdentity,
           azureAuthenticationWithCustomerAppRegistration =

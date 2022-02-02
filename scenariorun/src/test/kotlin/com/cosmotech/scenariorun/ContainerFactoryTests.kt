@@ -136,7 +136,8 @@ class ContainerFactoryTests {
             false,
             "1",
             "Organizationid",
-            "workspaceid",
+            "Workspaceid",
+            "Scenarioid",
             "Test",
             CSM_SIMULATION_ID)
     assertNotNull(container)
@@ -152,7 +153,8 @@ class ContainerFactoryTests {
             false,
             "1",
             "Organizationid",
-            "workspaceid",
+            "Workspaceid",
+            "Scenarioid",
             "Test",
             CSM_SIMULATION_ID)
     assertEquals("fetchDatasetContainer-1", container.name)
@@ -168,8 +170,9 @@ class ContainerFactoryTests {
             false,
             "1",
             "Organizationid",
+            "Workspaceid",
+            "Scenarioid",
             "Test",
-            "workspaceid",
             CSM_SIMULATION_ID)
     assertEquals("ghcr.io/cosmotech/test_connector:1.0.0", container.image)
   }
@@ -184,7 +187,8 @@ class ContainerFactoryTests {
           false,
           "1",
           "Organizationid",
-          "workspaceid",
+          "Workspaceid",
+          "Scenarioid",
           "Test",
           CSM_SIMULATION_ID)
     }
@@ -200,7 +204,8 @@ class ContainerFactoryTests {
             false,
             null,
             "Organizationid",
-            "workspaceid",
+            "Workspaceid",
+            "Scenarioid",
             "Test",
             CSM_SIMULATION_ID)
     val expected =
@@ -217,6 +222,9 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "CSM_ORGANIZATION_ID" to "Organizationid",
+            "CSM_WORKSPACE_ID" to "Workspaceid",
+            "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "ENV_PARAM_1" to "env_param1_value",
             "ENV_PARAM_2" to "env_param2_value",
@@ -234,7 +242,8 @@ class ContainerFactoryTests {
             false,
             null,
             "Organizationid",
-            "workspaceid",
+            "Workspaceid",
+            "Scenarioid",
             "Test",
             CSM_SIMULATION_ID)
     val expected =
@@ -251,6 +260,9 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "CSM_ORGANIZATION_ID" to "Organizationid",
+            "CSM_WORKSPACE_ID" to "Workspaceid",
+            "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "ENV_PARAM_1" to "organizationid/workspaceid/workspace.env",
         )
@@ -267,7 +279,8 @@ class ContainerFactoryTests {
             false,
             null,
             "Organizationid",
-            "workspaceid",
+            "Workspaceid",
+            "Scenarioid",
             "Test",
             CSM_SIMULATION_ID)
     val expected =
@@ -284,6 +297,9 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "CSM_ORGANIZATION_ID" to "Organizationid",
+            "CSM_WORKSPACE_ID" to "Workspaceid",
+            "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "AZURE_STORAGE_CONNECTION_STRING" to "csmphoenix_storage_connection_string",
         )
@@ -300,7 +316,8 @@ class ContainerFactoryTests {
             false,
             null,
             "Organizationid",
-            "workspaceid",
+            "Workspaceid",
+            "Scenarioid",
             "Test",
             CSM_SIMULATION_ID)
     val expected =
@@ -317,6 +334,9 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "CSM_ORGANIZATION_ID" to "Organizationid",
+            "CSM_WORKSPACE_ID" to "Workspaceid",
+            "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
         )
     assertEquals(expected, container.envVars)
@@ -332,7 +352,8 @@ class ContainerFactoryTests {
             false,
             null,
             "Organizationid",
-            "workspaceid",
+            "Workspaceid",
+            "Scenarioid",
             "Test",
             CSM_SIMULATION_ID)
     val expected =
@@ -347,6 +368,9 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "CSM_ORGANIZATION_ID" to "Organizationid",
+            "CSM_WORKSPACE_ID" to "Workspaceid",
+            "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
         )
     assertEquals(expected, container.envVars)
@@ -362,7 +386,8 @@ class ContainerFactoryTests {
             false,
             null,
             "Organizationid",
-            "workspaceid",
+            "Workspaceid",
+            "Scenarioid",
             "Test",
             CSM_SIMULATION_ID)
     val expected = mapOf("aadpodidbinding" to "phoenixdev-pod-identity")
@@ -379,7 +404,8 @@ class ContainerFactoryTests {
             false,
             "1",
             "Organizationid",
-            "workspaceid",
+            "Workspaceid",
+            "Scenarioid",
             "Test",
             CSM_SIMULATION_ID)
     val expected = listOf("organizationid/workspaceid/workspace.param")
@@ -396,7 +422,8 @@ class ContainerFactoryTests {
             false,
             "1",
             "Organizationid",
-            "workspaceid",
+            "Workspaceid",
+            "Scenarioid",
             "Test",
             CSM_SIMULATION_ID)
     val expected = listOf("param1_value", "param2_value", "param3_value")
@@ -427,7 +454,7 @@ class ContainerFactoryTests {
   @Test
   fun `Fetch Scenario Parameters Container env vars valid`() {
     val container =
-        factory.buildScenarioParametersFetchContainer("1", "2", "Test", "3", CSM_SIMULATION_ID)
+        factory.buildScenarioParametersFetchContainer("1", "2", "3", "Test", CSM_SIMULATION_ID)
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -442,10 +469,10 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "1-Test",
-            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_ORGANIZATION_ID" to "1",
             "CSM_WORKSPACE_ID" to "2",
-            "CSM_SCENARIO_ID" to "3")
+            "CSM_SCENARIO_ID" to "3",
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters")
     assertEquals(expected, container.envVars)
   }
 
@@ -453,7 +480,7 @@ class ContainerFactoryTests {
   fun `Fetch Scenario Parameters Container env vars valid json`() {
     val container =
         factory.buildScenarioParametersFetchContainer(
-            "1", "2", "Test", "3", CSM_SIMULATION_ID, true)
+            "1", "2", "3", "Test", CSM_SIMULATION_ID, true)
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -468,10 +495,10 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "1-Test",
-            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "CSM_ORGANIZATION_ID" to "1",
             "CSM_WORKSPACE_ID" to "2",
             "CSM_SCENARIO_ID" to "3",
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "WRITE_CSV" to "false",
             "WRITE_JSON" to "true")
     assertEquals(expected, container.envVars)
@@ -481,7 +508,7 @@ class ContainerFactoryTests {
   fun `Send DataWarehouse Container is not null`() {
     val container =
         factory.buildSendDataWarehouseContainer(
-            "Organizationid", getWorkspace(), getRunTemplate(), CSM_SIMULATION_ID)
+            "Organizationid", getWorkspace(), "Scenarioid", getRunTemplate(), CSM_SIMULATION_ID)
     assertNotNull(container)
   }
 
@@ -489,7 +516,7 @@ class ContainerFactoryTests {
   fun `Send DataWarehouseContainer name valid`() {
     val container =
         factory.buildSendDataWarehouseContainer(
-            "Organizationid", getWorkspace(), getRunTemplate(), CSM_SIMULATION_ID)
+            "Organizationid", getWorkspace(), "Scenarioid", getRunTemplate(), CSM_SIMULATION_ID)
     assertEquals("sendDataWarehouseContainer", container.name)
   }
 
@@ -497,7 +524,7 @@ class ContainerFactoryTests {
   fun `Send DataWarehouse Container image valid`() {
     val container =
         factory.buildSendDataWarehouseContainer(
-            "Organizationid", getWorkspace(), getRunTemplate(), CSM_SIMULATION_ID)
+            "Organizationid", getWorkspace(), "Scenarioid", getRunTemplate(), CSM_SIMULATION_ID)
     assertEquals("ghcr.io/cosmotech/senddatawarehouse:1.0.0", container.image)
   }
 
@@ -505,7 +532,7 @@ class ContainerFactoryTests {
   fun `Send DataWarehouse Container env vars valid`() {
     val container =
         factory.buildSendDataWarehouseContainer(
-            "Organizationid", getWorkspace(), getRunTemplate(), CSM_SIMULATION_ID)
+            "Organizationid", getWorkspace(), "Scenarioid", getRunTemplate(), CSM_SIMULATION_ID)
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -520,6 +547,9 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "CSM_ORGANIZATION_ID" to "Organizationid",
+            "CSM_WORKSPACE_ID" to "Workspaceid",
+            "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "true",
             "CSM_SEND_DATAWAREHOUSE_DATASETS" to "true",
         )
@@ -530,7 +560,11 @@ class ContainerFactoryTests {
   fun `Send DataWarehouse Container no send env vars`() {
     val container =
         factory.buildSendDataWarehouseContainer(
-            "Organizationid", getWorkspaceNoSend(), getRunTemplate(), CSM_SIMULATION_ID)
+            "Organizationid",
+            getWorkspaceNoSend(),
+            "Scenarioid",
+            getRunTemplate(),
+            CSM_SIMULATION_ID)
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -545,6 +579,9 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "CSM_ORGANIZATION_ID" to "Organizationid",
+            "CSM_WORKSPACE_ID" to "Workspaceid",
+            "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "false",
             "CSM_SEND_DATAWAREHOUSE_DATASETS" to "false",
         )
@@ -555,7 +592,11 @@ class ContainerFactoryTests {
   fun `Send DataWarehouse Container env vars send override dataset template`() {
     val container =
         factory.buildSendDataWarehouseContainer(
-            "Organizationid", getWorkspace(), getRunTemplateNoDatasetsSend(), CSM_SIMULATION_ID)
+            "Organizationid",
+            getWorkspace(),
+            "Scenarioid",
+            getRunTemplateNoDatasetsSend(),
+            CSM_SIMULATION_ID)
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -570,6 +611,9 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "CSM_ORGANIZATION_ID" to "Organizationid",
+            "CSM_WORKSPACE_ID" to "Workspaceid",
+            "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "true",
             "CSM_SEND_DATAWAREHOUSE_DATASETS" to "false",
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
@@ -584,7 +628,11 @@ class ContainerFactoryTests {
   fun `Send DataWarehouse Container env vars send override parameters template`() {
     val container =
         factory.buildSendDataWarehouseContainer(
-            "Organizationid", getWorkspace(), getRunTemplateNoParametersSend(), CSM_SIMULATION_ID)
+            "Organizationid",
+            getWorkspace(),
+            "Scenarioid",
+            getRunTemplateNoParametersSend(),
+            CSM_SIMULATION_ID)
     val expected =
         mapOf(
             "AZURE_TENANT_ID" to "12345678",
@@ -599,6 +647,9 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "CSM_ORGANIZATION_ID" to "Organizationid",
+            "CSM_WORKSPACE_ID" to "Workspaceid",
+            "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "false",
             "CSM_SEND_DATAWAREHOUSE_DATASETS" to "true",
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
@@ -637,7 +688,12 @@ class ContainerFactoryTests {
   fun `Parameters Handler Container bad template exception`() {
     assertThrows(IllegalStateException::class.java) {
       factory.buildApplyParametersContainer(
-          getOrganization(), getWorkspace(), getSolution(), "badTemplate", CSM_SIMULATION_ID)
+          getOrganization(),
+          getWorkspace(),
+          getScenario(),
+          getSolution(),
+          "badTemplate",
+          CSM_SIMULATION_ID)
     }
   }
 
@@ -653,6 +709,7 @@ class ContainerFactoryTests {
         factory.buildApplyParametersContainer(
             getOrganization(),
             getWorkspace(),
+            getScenario(),
             getSolutionLocalSources(),
             "testruntemplate",
             CSM_SIMULATION_ID)
@@ -665,6 +722,7 @@ class ContainerFactoryTests {
         factory.buildApplyParametersContainer(
             getOrganization(),
             getWorkspace(),
+            getScenario(),
             getSolutionCloudSources(),
             "testruntemplate",
             CSM_SIMULATION_ID)
@@ -683,6 +741,7 @@ class ContainerFactoryTests {
         factory.buildValidateDataContainer(
             getOrganization(),
             getWorkspace(),
+            getScenario(),
             getSolutionCloudSources(),
             "testruntemplate",
             CSM_SIMULATION_ID)
@@ -701,6 +760,7 @@ class ContainerFactoryTests {
         factory.buildPreRunContainer(
             getOrganization(),
             getWorkspace(),
+            getScenario(),
             getSolutionCloudSources(),
             "testruntemplate",
             CSM_SIMULATION_ID)
@@ -714,6 +774,7 @@ class ContainerFactoryTests {
         factory.buildRunContainer(
             getOrganization(),
             getWorkspace(),
+            getScenario(),
             getSolutionCloudSources(),
             "testruntemplate",
             CSM_SIMULATION_ID)
@@ -727,6 +788,7 @@ class ContainerFactoryTests {
         factory.buildPostRunContainer(
             getOrganization(),
             getWorkspace(),
+            getScenario(),
             getSolutionCloudSources(),
             "testruntemplate",
             CSM_SIMULATION_ID)
@@ -761,6 +823,9 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "CSM_ORGANIZATION_ID" to "Organizationid",
+            "CSM_WORKSPACE_ID" to "Workspaceid",
+            "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to mode,
             "CSM_PROBES_MEASURES_TOPIC" to
@@ -792,6 +857,9 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "CSM_ORGANIZATION_ID" to "Organizationid",
+            "CSM_WORKSPACE_ID" to "Workspaceid",
+            "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to mode,
             "CSM_PROBES_MEASURES_TOPIC" to
@@ -1206,6 +1274,9 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "CSM_ORGANIZATION_ID" to "Organizationid",
+            "CSM_WORKSPACE_ID" to "Workspaceid",
+            "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "ENV_PARAM_1" to "env_param1_value",
             "ENV_PARAM_2" to "env_param2_value",
@@ -1309,7 +1380,7 @@ class ContainerFactoryTests {
             getOrganization(),
             solution,
             CSM_SIMULATION_ID)
-    assertEquals("workflow-aqwxsz-", startContainers.generateName)
+    assertEquals("workflow-scenarioid-", startContainers.generateName)
   }
 
   @Test
@@ -1493,7 +1564,7 @@ class ContainerFactoryTests {
   @Test
   fun `Full get Start Info name`() {
     val startInfo = getStartInfoFromIds()
-    assertEquals("workflow-aqwxsz-", startInfo.startContainers.generateName)
+    assertEquals("workflow-scenarioid-", startInfo.startContainers.generateName)
   }
 
   @Test
@@ -1536,7 +1607,16 @@ class ContainerFactoryTests {
 
     assertThrows(IllegalArgumentException::class.java) {
       factory.buildFromDataset(
-          dataset, connector, 1, true, "fetchId", "O-id", "W-id", "W-key", "csmSimulationId")
+          dataset,
+          connector,
+          1,
+          true,
+          "fetchId",
+          "O-id",
+          "W-id",
+          "S-id",
+          "W-key",
+          "csmSimulationId")
     }
   }
 
@@ -1574,7 +1654,16 @@ class ContainerFactoryTests {
 
     val scenarioRunContainer =
         factory.buildFromDataset(
-            dataset, connector, 1, true, "fetchId", "O-id", "W-id", "W-key", "csmSimulationId")
+            dataset,
+            connector,
+            1,
+            true,
+            "fetchId",
+            "O-id",
+            "W-id",
+            "S-id",
+            "W-key",
+            "csmSimulationId")
 
     assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
@@ -1592,6 +1681,9 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
+            "CSM_ORGANIZATION_ID" to "O-id",
+            "CSM_WORKSPACE_ID" to "W-id",
+            "CSM_SCENARIO_ID" to "S-id",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId"),
         scenarioRunContainer.envVars)
   }
@@ -1608,7 +1700,16 @@ class ContainerFactoryTests {
 
     val scenarioRunContainer =
         factory.buildFromDataset(
-            dataset, connector, 1, true, "fetchId", "O-id", "W-id", "W-key", "csmSimulationId")
+            dataset,
+            connector,
+            1,
+            true,
+            "fetchId",
+            "O-id",
+            "W-id",
+            "S-id",
+            "W-key",
+            "csmSimulationId")
 
     assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
@@ -1626,6 +1727,9 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
+            "CSM_ORGANIZATION_ID" to "O-id",
+            "CSM_WORKSPACE_ID" to "W-id",
+            "CSM_SCENARIO_ID" to "S-id",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId"),
         scenarioRunContainer.envVars)
   }
@@ -1642,7 +1746,16 @@ class ContainerFactoryTests {
 
     val scenarioRunContainer =
         factory.buildFromDataset(
-            dataset, connector, 1, true, "fetchId", "O-id", "W-id", "W-key", "csmSimulationId")
+            dataset,
+            connector,
+            1,
+            true,
+            "fetchId",
+            "O-id",
+            "W-id",
+            "S-id",
+            "W-key",
+            "csmSimulationId")
 
     assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
     assertEquals(
@@ -1660,6 +1773,9 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
+            "CSM_ORGANIZATION_ID" to "O-id",
+            "CSM_WORKSPACE_ID" to "W-id",
+            "CSM_SCENARIO_ID" to "S-id",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId"),
         scenarioRunContainer.envVars)
   }
@@ -1676,7 +1792,16 @@ class ContainerFactoryTests {
 
     val scenarioRunContainer =
         factory.buildFromDataset(
-            dataset, connector, 1, true, "fetchId", "O-id", "W-id", "W-key", "csmSimulationId")
+            dataset,
+            connector,
+            1,
+            true,
+            "fetchId",
+            "O-id",
+            "W-id",
+            "S-id",
+            "W-key",
+            "csmSimulationId")
 
     assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
@@ -1694,6 +1819,9 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
+            "CSM_ORGANIZATION_ID" to "O-id",
+            "CSM_WORKSPACE_ID" to "W-id",
+            "CSM_SCENARIO_ID" to "S-id",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId"),
         scenarioRunContainer.envVars)
   }
@@ -1710,7 +1838,16 @@ class ContainerFactoryTests {
 
     val scenarioRunContainer =
         factory.buildFromDataset(
-            dataset, connector, 1, true, "fetchId", "O-id", "W-id", "W-key", "csmSimulationId")
+            dataset,
+            connector,
+            1,
+            true,
+            "fetchId",
+            "O-id",
+            "W-id",
+            "S-id",
+            "W-key",
+            "csmSimulationId")
 
     assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
@@ -1728,6 +1865,9 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
+            "CSM_ORGANIZATION_ID" to "O-id",
+            "CSM_WORKSPACE_ID" to "W-id",
+            "CSM_SCENARIO_ID" to "S-id",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId"),
         scenarioRunContainer.envVars)
   }
@@ -1744,7 +1884,16 @@ class ContainerFactoryTests {
 
     val scenarioRunContainer =
         factory.buildFromDataset(
-            dataset, connector, 1, true, "fetchId", "O-id", "W-id", "W-key", "csmSimulationId")
+            dataset,
+            connector,
+            1,
+            true,
+            "fetchId",
+            "O-id",
+            "W-id",
+            "S-id",
+            "W-key",
+            "csmSimulationId")
 
     assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
@@ -1762,6 +1911,9 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
+            "CSM_ORGANIZATION_ID" to "O-id",
+            "CSM_WORKSPACE_ID" to "W-id",
+            "CSM_SCENARIO_ID" to "S-id",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId"),
         scenarioRunContainer.envVars)
   }
@@ -1792,6 +1944,9 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "CSM_ORGANIZATION_ID" to "Organizationid",
+            "CSM_WORKSPACE_ID" to "Workspaceid",
+            "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to "handle-parameters",
             "CSM_PROBES_MEASURES_TOPIC" to
@@ -1827,6 +1982,9 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "CSM_ORGANIZATION_ID" to "Organizationid",
+            "CSM_WORKSPACE_ID" to "Workspaceid",
+            "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to "prerun",
             "CSM_PROBES_MEASURES_TOPIC" to
@@ -1867,6 +2025,9 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "CSM_ORGANIZATION_ID" to "Organizationid",
+            "CSM_WORKSPACE_ID" to "Workspaceid",
+            "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to "engine",
             "CSM_PROBES_MEASURES_TOPIC" to
@@ -1893,8 +2054,8 @@ class ContainerFactoryTests {
 
   private fun getStartInfoFromIds(): StartInfo {
     val organizationId = "Organizationid"
-    val workspaceId = "workspaceid"
-    val scenarioId = "AQWXSZ"
+    val workspaceId = "Workspaceid"
+    val scenarioId = "Scenarioid"
 
     every { organizationService.findOrganizationById(organizationId) } returns getOrganization()
     every { workspaceService.findWorkspaceById(organizationId, workspaceId) } returns getWorkspace()
@@ -1947,6 +2108,9 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "CSM_ORGANIZATION_ID" to "Organizationid",
+            "CSM_WORKSPACE_ID" to "Workspaceid",
+            "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/${param}",
             "ENV_PARAM_1" to "env_param1_value",
             "ENV_PARAM_2" to "env_param2_value",
@@ -1973,6 +2137,9 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "CSM_ORGANIZATION_ID" to "Organizationid",
+            "CSM_WORKSPACE_ID" to "Workspaceid",
+            "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to "engine",
             "CSM_PROBES_MEASURES_TOPIC" to
@@ -2005,6 +2172,9 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "CSM_ORGANIZATION_ID" to "Organizationid",
+            "CSM_WORKSPACE_ID" to "Workspaceid",
+            "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to "engine",
             "CSM_PROBES_MEASURES_TOPIC" to
@@ -2015,23 +2185,39 @@ class ContainerFactoryTests {
 
   private fun buildApplyParametersContainer(): ScenarioRunContainer {
     return factory.buildApplyParametersContainer(
-        getOrganization(), getWorkspace(), getSolution(), "testruntemplate", CSM_SIMULATION_ID)
+        getOrganization(),
+        getWorkspace(),
+        getScenario(),
+        getSolution(),
+        "testruntemplate",
+        CSM_SIMULATION_ID)
   }
 
   private fun buildValidateDataContainer(): ScenarioRunContainer {
     return factory.buildValidateDataContainer(
-        getOrganization(), getWorkspace(), getSolution(), "testruntemplate", CSM_SIMULATION_ID)
+        getOrganization(),
+        getWorkspace(),
+        getScenario(),
+        getSolution(),
+        "testruntemplate",
+        CSM_SIMULATION_ID)
   }
 
   private fun buildPreRunContainer(): ScenarioRunContainer {
     return factory.buildPreRunContainer(
-        getOrganization(), getWorkspace(), getSolution(), "testruntemplate", CSM_SIMULATION_ID)
+        getOrganization(),
+        getWorkspace(),
+        getScenario(),
+        getSolution(),
+        "testruntemplate",
+        CSM_SIMULATION_ID)
   }
 
   private fun buildRunContainer(dedicatedEventHubNamespace: Boolean? = null): ScenarioRunContainer {
     return factory.buildRunContainer(
         getOrganization(),
         getWorkspace(dedicatedEventHubNamespace),
+        getScenario(),
         getSolution(),
         "testruntemplate",
         CSM_SIMULATION_ID)
@@ -2039,7 +2225,12 @@ class ContainerFactoryTests {
 
   private fun buildPostRunContainer(): ScenarioRunContainer {
     return factory.buildPostRunContainer(
-        getOrganization(), getWorkspace(), getSolution(), "testruntemplate", CSM_SIMULATION_ID)
+        getOrganization(),
+        getWorkspace(),
+        getScenario(),
+        getSolution(),
+        "testruntemplate",
+        CSM_SIMULATION_ID)
   }
 
   private fun validateEnvVarsSolutionContainer(container: ScenarioRunContainer?, mode: String) {
@@ -2057,6 +2248,9 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "CSM_ORGANIZATION_ID" to "Organizationid",
+            "CSM_WORKSPACE_ID" to "Workspaceid",
+            "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to mode,
             "CSM_PROBES_MEASURES_TOPIC" to
@@ -2267,7 +2461,7 @@ class ContainerFactoryTests {
 
   private fun getWorkspace(dedicatedEventHubNamespace: Boolean? = null): Workspace {
     return Workspace(
-        id = "workspaceid",
+        id = "Workspaceid",
         key = "Test",
         name = "Test Workspace",
         description = "Test Workspace Description",
@@ -2282,7 +2476,7 @@ class ContainerFactoryTests {
 
   private fun getWorkspaceNoSend(): Workspace {
     return Workspace(
-        id = "workspaceid",
+        id = "Workspaceid",
         key = "Test",
         name = "Test Workspace",
         description = "Test Workspace Description",
@@ -2554,7 +2748,7 @@ class ContainerFactoryTests {
 
   private fun getScenario(): Scenario {
     return Scenario(
-        id = "AQWXSZ",
+        id = "Scenarioid",
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
         datasetList = listOf("1"),
@@ -2563,7 +2757,7 @@ class ContainerFactoryTests {
 
   private fun getScenarioDatasetIds(): Scenario {
     return Scenario(
-        id = "AQWXSZ",
+        id = "Scenarioid",
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
         datasetList = listOf("1"),
@@ -2594,7 +2788,7 @@ class ContainerFactoryTests {
 
   private fun getScenarioTwoDatasetIds(): Scenario {
     return Scenario(
-        id = "AQWXSZ",
+        id = "Scenarioid",
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
         datasetList = listOf("1"),
@@ -2625,7 +2819,7 @@ class ContainerFactoryTests {
 
   private fun getScenarioMalformedDatasetIds(): Scenario {
     return Scenario(
-        id = "AQWXSZ",
+        id = "Scenarioid",
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
         datasetList = listOf("1"),
@@ -2656,7 +2850,7 @@ class ContainerFactoryTests {
 
   private fun getScenarioTwoDatasetsAndDatasetIds(): Scenario {
     return Scenario(
-        id = "AQWXSZ",
+        id = "Scenarioid",
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
         datasetList = listOf("1", "2"),
@@ -2687,7 +2881,7 @@ class ContainerFactoryTests {
 
   private fun getScenarioThreeDatasets(): Scenario {
     return Scenario(
-        id = "AQWXSZ",
+        id = "Scenarioid",
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
         datasetList = listOf("1", "2", "3"),

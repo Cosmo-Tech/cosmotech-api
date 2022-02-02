@@ -67,9 +67,9 @@ private const val DATASET_PATH = "/mnt/scenariorun-data"
 private const val PARAMETERS_PATH_VAR = "CSM_PARAMETERS_ABSOLUTE_PATH"
 private const val PARAMETERS_PATH = "/mnt/scenariorun-parameters"
 internal const val FETCH_PATH_VAR = "CSM_FETCH_ABSOLUTE_PATH"
-private const val PARAMETERS_FETCH_CONTAINER_ORGANIZATION_VAR = "CSM_ORGANIZATION_ID"
-private const val PARAMETERS_FETCH_CONTAINER_WORKSPACE_VAR = "CSM_WORKSPACE_ID"
-private const val PARAMETERS_FETCH_CONTAINER_SCENARIO_VAR = "CSM_SCENARIO_ID"
+private const val PARAMETERS_ORGANIZATION_VAR = "CSM_ORGANIZATION_ID"
+private const val PARAMETERS_WORKSPACE_VAR = "CSM_WORKSPACE_ID"
+private const val PARAMETERS_SCENARIO_VAR = "CSM_SCENARIO_ID"
 private const val PARAMETERS_FETCH_CONTAINER_CSV_VAR = "WRITE_CSV"
 private const val PARAMETERS_FETCH_CONTAINER_JSON_VAR = "WRITE_JSON"
 private const val SEND_DATAWAREHOUSE_PARAMETERS_VAR = "CSM_SEND_DATAWAREHOUSE_PARAMETERS"
@@ -347,6 +347,7 @@ internal class ContainerFactory(
                 currentDependencies,
                 organization,
                 workspace,
+                scenario,
                 solution,
                 runTemplateId,
                 csmSimulationId))
@@ -358,6 +359,7 @@ internal class ContainerFactory(
                 currentDependencies,
                 organization,
                 workspace,
+                scenario,
                 solution,
                 runTemplateId,
                 csmSimulationId))
@@ -366,7 +368,7 @@ internal class ContainerFactory(
 
       containers.addAll(
           buildSendDataWarehouseContainersPipeline(
-              currentDependencies, workspace, template, organization, csmSimulationId))
+              currentDependencies, workspace, template, organization, scenario, csmSimulationId))
 
       if (testStep(template.preRun)) {
         containers.addAll(
@@ -374,6 +376,7 @@ internal class ContainerFactory(
                 currentDependencies,
                 organization,
                 workspace,
+                scenario,
                 solution,
                 runTemplateId,
                 csmSimulationId))
@@ -386,6 +389,7 @@ internal class ContainerFactory(
                 currentDependencies,
                 organization,
                 workspace,
+                scenario,
                 solution,
                 runTemplateId,
                 csmSimulationId))
@@ -398,6 +402,7 @@ internal class ContainerFactory(
                 currentDependencies,
                 organization,
                 workspace,
+                scenario,
                 solution,
                 runTemplateId,
                 csmSimulationId,
@@ -416,6 +421,7 @@ internal class ContainerFactory(
       currentDependencies: MutableList<String>?,
       organization: Organization,
       workspace: Workspace,
+      scenario: Scenario,
       solution: Solution,
       runTemplateId: String,
       csmSimulationId: String,
@@ -424,6 +430,7 @@ internal class ContainerFactory(
           this.buildPostRunContainer(
               organization,
               workspace,
+              scenario,
               solution,
               runTemplateId,
               csmSimulationId,
@@ -446,6 +453,7 @@ internal class ContainerFactory(
           this.buildSolutionContainer(
               organization,
               workspace,
+              scenario.id ?: "",
               solution,
               runTemplateId,
               "${RunTemplateHandlerId.scenariodata_transform}Container".sanitizeForKubernetes(),
@@ -466,7 +474,7 @@ internal class ContainerFactory(
             workspace.key,
             scenario.id!!,
             csmSimulationId,
-            scenarioDataDownloadJobId!!)
+            scenarioDataDownloadJobId)
     return listOfNotNull(scenarioDataTransformContainer, scenarioDataUploadContainer)
   }
 
@@ -474,6 +482,7 @@ internal class ContainerFactory(
       currentDependencies: MutableList<String>?,
       organization: Organization,
       workspace: Workspace,
+      scenario: Scenario,
       solution: Solution,
       runTemplateId: String,
       csmSimulationId: String,
@@ -482,6 +491,7 @@ internal class ContainerFactory(
           this.buildRunContainer(
               organization,
               workspace,
+              scenario,
               solution,
               runTemplateId,
               csmSimulationId,
@@ -491,6 +501,7 @@ internal class ContainerFactory(
       currentDependencies: MutableList<String>?,
       organization: Organization,
       workspace: Workspace,
+      scenario: Scenario,
       solution: Solution,
       runTemplateId: String,
       csmSimulationId: String,
@@ -499,6 +510,7 @@ internal class ContainerFactory(
           this.buildPreRunContainer(
               organization,
               workspace,
+              scenario,
               solution,
               runTemplateId,
               csmSimulationId,
@@ -509,6 +521,7 @@ internal class ContainerFactory(
       workspace: Workspace,
       template: RunTemplate,
       organization: Organization,
+      scenario: Scenario,
       csmSimulationId: String,
   ): List<ScenarioRunContainer> {
     val containers: MutableList<ScenarioRunContainer> = mutableListOf()
@@ -520,7 +533,12 @@ internal class ContainerFactory(
     if (sendParameters || sendDatasets)
         containers.add(
             this.buildSendDataWarehouseContainer(
-                organization.id, workspace, template, csmSimulationId, currentDependencies))
+                organization.id ?: "",
+                workspace,
+                scenario.id ?: "",
+                template,
+                csmSimulationId,
+                currentDependencies))
     return containers.toList()
   }
 
@@ -528,6 +546,7 @@ internal class ContainerFactory(
       currentDependencies: MutableList<String>?,
       organization: Organization,
       workspace: Workspace,
+      scenario: Scenario,
       solution: Solution,
       runTemplateId: String,
       csmSimulationId: String,
@@ -536,6 +555,7 @@ internal class ContainerFactory(
           this.buildValidateDataContainer(
               organization,
               workspace,
+              scenario,
               solution,
               runTemplateId,
               csmSimulationId,
@@ -545,6 +565,7 @@ internal class ContainerFactory(
       currentDependencies: MutableList<String>?,
       organization: Organization,
       workspace: Workspace,
+      scenario: Scenario,
       solution: Solution,
       runTemplateId: String,
       csmSimulationId: String,
@@ -553,6 +574,7 @@ internal class ContainerFactory(
           this.buildApplyParametersContainer(
               organization,
               workspace,
+              scenario,
               solution,
               runTemplateId,
               csmSimulationId,
@@ -568,11 +590,14 @@ internal class ContainerFactory(
       scenarioDataDownloadJobId: String,
   ): ScenarioRunContainer {
     val envVars =
-        getCommonEnvVars(csmPlatformProperties, csmSimulationId, organizationId, workspaceKey)
+        getCommonEnvVars(
+            csmPlatformProperties,
+            csmSimulationId,
+            organizationId,
+            workspaceId,
+            scenarioId,
+            workspaceKey)
     envVars[SCENARIO_DATA_ABSOLUTE_PATH_ENV_VAR] = DATASET_PATH
-    envVars[PARAMETERS_FETCH_CONTAINER_ORGANIZATION_VAR] = organizationId
-    envVars[PARAMETERS_FETCH_CONTAINER_WORKSPACE_VAR] = workspaceId
-    envVars[PARAMETERS_FETCH_CONTAINER_SCENARIO_VAR] = scenarioId
     envVars[SCENARIO_DATA_UPLOAD_LOG_LEVEL_ENV_VAR] = if (logger.isDebugEnabled) "debug" else "info"
     envVars[AZURE_STORAGE_CONNECTION_STRING] =
         csmPlatformProperties.azure?.storage?.connectionString!!
@@ -617,8 +642,8 @@ internal class ContainerFactory(
           this.buildScenarioParametersFetchContainer(
               organization.id ?: "",
               workspace.id ?: "",
-              workspace.key,
               scenario.id ?: "",
+              workspace.key,
               csmSimulationId,
               template.parametersJson)
       containers.add(container)
@@ -669,6 +694,7 @@ internal class ContainerFactory(
                 null,
                 organization.id ?: "",
                 workspace.id ?: "",
+                scenario.id ?: "",
                 workspace.key,
                 csmSimulationId)
         containers.add(container)
@@ -691,6 +717,7 @@ internal class ContainerFactory(
       fetchId: String?,
       organizationId: String,
       workspaceId: String,
+      scenarioId: String,
       workspaceKey: String,
       csmSimulationId: String
   ): ScenarioRunContainer {
@@ -729,6 +756,7 @@ internal class ContainerFactory(
                 fetchId,
                 organizationId,
                 workspaceId,
+                scenarioId,
                 workspaceKey,
                 csmSimulationId),
         runArgs =
@@ -779,6 +807,7 @@ internal class ContainerFactory(
                     fetchId,
                     organizationId,
                     workspaceId,
+                    scenario.id ?: "",
                     workspaceKey,
                     csmSimulationId))
             datasetParameterCount++
@@ -793,17 +822,20 @@ internal class ContainerFactory(
   internal fun buildScenarioParametersFetchContainer(
       organizationId: String,
       workspaceId: String,
-      workspaceKey: String,
       scenarioId: String,
+      workspaceKey: String,
       csmSimulationId: String,
       jsonFile: Boolean? = null,
   ): ScenarioRunContainer {
     val envVars =
-        getCommonEnvVars(csmPlatformProperties, csmSimulationId, organizationId, workspaceKey)
+        getCommonEnvVars(
+            csmPlatformProperties,
+            csmSimulationId,
+            organizationId,
+            workspaceId,
+            scenarioId,
+            workspaceKey)
     envVars[FETCH_PATH_VAR] = PARAMETERS_PATH
-    envVars[PARAMETERS_FETCH_CONTAINER_ORGANIZATION_VAR] = organizationId
-    envVars[PARAMETERS_FETCH_CONTAINER_WORKSPACE_VAR] = workspaceId
-    envVars[PARAMETERS_FETCH_CONTAINER_SCENARIO_VAR] = scenarioId
     if (jsonFile != null && jsonFile) {
       envVars[PARAMETERS_FETCH_CONTAINER_CSV_VAR] = "false"
       envVars[PARAMETERS_FETCH_CONTAINER_JSON_VAR] = "true"
@@ -820,15 +852,21 @@ internal class ContainerFactory(
   }
 
   internal fun buildSendDataWarehouseContainer(
-      organizationId: String?,
+      organizationId: String,
       workspace: Workspace,
+      scenarioId: String,
       runTemplate: RunTemplate,
       csmSimulationId: String,
       dependencies: List<String>? = null,
   ): ScenarioRunContainer {
-    if (organizationId == null) throw IllegalStateException("Organization Id cannot be null")
     val envVars =
-        getCommonEnvVars(csmPlatformProperties, csmSimulationId, organizationId, workspace.key)
+        getCommonEnvVars(
+            csmPlatformProperties,
+            csmSimulationId,
+            organizationId,
+            workspace.id ?: "",
+            scenarioId,
+            workspace.key)
     val sendParameters =
         getSendOptionValue(
             workspace.sendInputToDataWarehouse, runTemplate.sendInputParametersToDataWarehouse)
@@ -850,6 +888,7 @@ internal class ContainerFactory(
   internal fun buildApplyParametersContainer(
       organization: Organization,
       workspace: Workspace,
+      scenario: Scenario,
       solution: Solution,
       runTemplateId: String,
       csmSimulationId: String,
@@ -858,6 +897,7 @@ internal class ContainerFactory(
     return this.buildSolutionContainer(
         organization,
         workspace,
+        scenario.id ?: "",
         solution,
         runTemplateId,
         CONTAINER_APPLY_PARAMETERS,
@@ -870,6 +910,7 @@ internal class ContainerFactory(
   internal fun buildValidateDataContainer(
       organization: Organization,
       workspace: Workspace,
+      scenario: Scenario,
       solution: Solution,
       runTemplateId: String,
       csmSimulationId: String,
@@ -878,6 +919,7 @@ internal class ContainerFactory(
     return this.buildSolutionContainer(
         organization,
         workspace,
+        scenario.id ?: "",
         solution,
         runTemplateId,
         CONTAINER_VALIDATE_DATA,
@@ -890,6 +932,7 @@ internal class ContainerFactory(
   internal fun buildPreRunContainer(
       organization: Organization,
       workspace: Workspace,
+      scenario: Scenario,
       solution: Solution,
       runTemplateId: String,
       csmSimulationId: String,
@@ -898,6 +941,7 @@ internal class ContainerFactory(
     return this.buildSolutionContainer(
         organization,
         workspace,
+        scenario.id ?: "",
         solution,
         runTemplateId,
         CONTAINER_PRERUN,
@@ -910,6 +954,7 @@ internal class ContainerFactory(
   internal fun buildRunContainer(
       organization: Organization,
       workspace: Workspace,
+      scenario: Scenario,
       solution: Solution,
       runTemplateId: String,
       csmSimulationId: String,
@@ -918,6 +963,7 @@ internal class ContainerFactory(
     return this.buildSolutionContainer(
         organization,
         workspace,
+        scenario.id ?: "",
         solution,
         runTemplateId,
         CONTAINER_RUN,
@@ -930,6 +976,7 @@ internal class ContainerFactory(
   internal fun buildPostRunContainer(
       organization: Organization,
       workspace: Workspace,
+      scenario: Scenario,
       solution: Solution,
       runTemplateId: String,
       csmSimulationId: String,
@@ -938,6 +985,7 @@ internal class ContainerFactory(
     return this.buildSolutionContainer(
         organization,
         workspace,
+        scenario.id ?: "",
         solution,
         runTemplateId,
         CONTAINER_POSTRUN,
@@ -960,6 +1008,7 @@ internal class ContainerFactory(
   private fun buildSolutionContainer(
       organization: Organization,
       workspace: Workspace,
+      scenarioId: String,
       solution: Solution,
       runTemplateId: String,
       name: String,
@@ -977,7 +1026,12 @@ internal class ContainerFactory(
             solution.version)
     val envVars =
         getCommonEnvVars(
-            csmPlatformProperties, csmSimulationId, organization.id ?: "", workspace.key)
+            csmPlatformProperties,
+            csmSimulationId,
+            organization.id ?: "",
+            workspace.id ?: "",
+            scenarioId,
+            workspace.key)
     envVars[RUN_TEMPLATE_ID_VAR] = runTemplateId
     envVars[CONTAINER_MODE_VAR] = step.mode
 
@@ -1154,6 +1208,8 @@ internal fun getCommonEnvVars(
     csmPlatformProperties: CsmPlatformProperties,
     csmSimulationId: String,
     organizationId: String,
+    workspaceId: String,
+    scenarioId: String,
     workspaceKey: String,
     azureManagedIdentity: Boolean? = null,
     azureAuthenticationWithCustomerAppRegistration: Boolean? = null,
@@ -1194,6 +1250,9 @@ internal fun getCommonEnvVars(
           AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI_VAR to
               (csmPlatformProperties.azure?.dataWarehouseCluster?.options?.ingestionUri ?: ""),
           AZURE_DATA_EXPLORER_DATABASE_NAME to "${organizationId}-${workspaceKey}",
+          PARAMETERS_ORGANIZATION_VAR to organizationId,
+          PARAMETERS_WORKSPACE_VAR to workspaceId,
+          PARAMETERS_SCENARIO_VAR to scenarioId,
       )
 
   return (identityEnvVars + commonEnvVars).toMutableMap()
