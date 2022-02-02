@@ -102,10 +102,10 @@ internal class ScenarioRunServiceImpl(
   override fun findScenarioRunById(organizationId: String, scenariorunId: String) =
       findScenarioRunById(organizationId, scenariorunId, withStateInformation = true)
 
-  private fun findScenarioRunById(
+  private fun findScenarioRunByIdOptional(
       organizationId: String,
       scenariorunId: String,
-      withStateInformation: Boolean
+      withStateInformation: Boolean = true
   ) =
       cosmosCoreDatabase
           .getContainer("${organizationId}_scenario_data")
@@ -124,6 +124,13 @@ internal class ScenarioRunServiceImpl(
           ?.toDomain<ScenarioRun>()
           ?.let { if (withStateInformation) it.withStateInformation(organizationId) else it }
           ?.withoutSensitiveData()
+
+  private fun findScenarioRunById(
+      organizationId: String,
+      scenariorunId: String,
+      withStateInformation: Boolean
+  ) =
+      this.findScenarioRunByIdOptional(organizationId, scenariorunId, withStateInformation)
           ?: throw java.lang.IllegalArgumentException(
               "ScenarioRun #$scenariorunId not found in organization #$organizationId")
 
@@ -440,7 +447,9 @@ internal class ScenarioRunServiceImpl(
   @EventListener(ScenarioRunEndToEndStateRequest::class)
   fun onScenarioRunEndToEndStateRequest(request: ScenarioRunEndToEndStateRequest) {
     request.response =
-        this.findScenarioRunById(request.organizationId, request.scenarioRunId).state?.value
+        this.findScenarioRunByIdOptional(request.organizationId, request.scenarioRunId)
+            ?.state
+            ?.value
   }
 
   private fun mapWorkflowPhaseToScenarioRunState(
