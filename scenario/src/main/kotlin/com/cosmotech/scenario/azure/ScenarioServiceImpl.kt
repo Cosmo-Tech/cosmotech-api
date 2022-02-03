@@ -14,6 +14,7 @@ import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
 import com.cosmotech.api.events.ScenarioDataDownloadRequest
 import com.cosmotech.api.events.ScenarioDatasetListChanged
+import com.cosmotech.api.events.ScenarioDeleted
 import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
 import com.cosmotech.api.events.UserAddedToScenario
@@ -279,6 +280,7 @@ internal class ScenarioServiceImpl(
     // TODO Notify users
 
     this.handleScenarioDeletion(organizationId, workspaceId, scenario, waitRelationshipPropagation)
+    eventPublisher.publishEvent(ScenarioDeleted(this, organizationId, workspaceId, scenarioId))
   }
 
   override fun downloadScenarioData(
@@ -297,10 +299,13 @@ internal class ScenarioServiceImpl(
     return ScenarioDataDownloadJob(id = resourceId)
   }
 
-  override fun deleteAllScenarios(organizationId: kotlin.String, workspaceId: kotlin.String) {
+  override fun deleteAllScenarios(organizationId: String, workspaceId: String) {
     // TODO Only the workspace owner should be able to do this
     val scenarios = this.findAllScenariosStateOption(organizationId, workspaceId, false)
-    scenarios.forEach { cosmosTemplate.deleteEntity("${organizationId}_scenario_data", it) }
+    scenarios.forEach {
+      cosmosTemplate.deleteEntity("${organizationId}_scenario_data", it)
+      eventPublisher.publishEvent(ScenarioDeleted(this, organizationId, workspaceId, it.id!!))
+    }
   }
 
   /** See https://spaceport.cosmotech.com/jira/browse/PROD-7939 */

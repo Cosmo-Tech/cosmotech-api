@@ -11,6 +11,7 @@ import com.cosmotech.api.azure.CsmAzureService
 import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
 import com.cosmotech.api.events.ScenarioDataDownloadRequest
+import com.cosmotech.api.events.ScenarioDeleted
 import com.cosmotech.api.events.ScenarioRunEndTimeRequest
 import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
@@ -42,8 +43,13 @@ import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
 import java.time.ZonedDateTime
 import kotlin.reflect.full.memberProperties
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
 @Service
@@ -86,16 +92,23 @@ internal class ScenarioRunServiceImpl(
       // TODO Only the owner or an admin should be able to perform this operation
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
     }
+    this.deleteScenarioRunWithoutAccessEnforcement(scenarioRun)
+  }
 
+  private fun deleteScenarioRunWithoutAccessEnforcement(scenarioRun: ScenarioRun) {
     // Simple way to ensure that we do not delete data if something went wrong
     try {
       azureDataExplorerClient.deleteDataFromScenarioRunId(
-          organizationId, scenarioRun.workspaceKey!!, scenariorunId)
+          scenarioRun.organizationId!!, scenarioRun.workspaceKey!!, scenarioRun.id!!)
 
       // It seems that deleteEntity does not throw any exception
-      cosmosTemplate.deleteEntity("${organizationId}_scenario_data", scenarioRun)
+      cosmosTemplate.deleteEntity("${scenarioRun.organizationId}_scenario_data", scenarioRun)
     } catch (exception: IllegalStateException) {
-      logger.debug("An error occurred while deleting ScenarioRun: {}", exception.message, exception)
+      logger.debug(
+          "An error occurred while deleting ScenarioRun {}: {}",
+          scenarioRun.id,
+          exception.message,
+          exception)
     }
   }
 
@@ -450,6 +463,28 @@ internal class ScenarioRunServiceImpl(
         this.findScenarioRunByIdOptional(request.organizationId, request.scenarioRunId)
             ?.state
             ?.value
+  }
+
+  @EventListener(ScenarioDeleted::class)
+  @Async("csm-in-process-event-executor")
+  fun onScenarioDeleted(event: ScenarioDeleted) {
+    logger.debug(
+        "Caught ScenarioDeleted event => deleting all runs linked to scenario {}", event.scenarioId)
+    runBlocking {
+      val jobs =
+          this@ScenarioRunServiceImpl.getScenarioRuns(
+                  event.organizationId, event.workspaceId, event.scenarioId)
+              .map { scenarioRun ->
+                GlobalScope.launch {
+                  // TODO Consider using a smaller coroutine scope
+                  this@ScenarioRunServiceImpl.deleteScenarioRunWithoutAccessEnforcement(scenarioRun)
+                }
+              }
+      jobs.joinAll()
+      if (jobs.isNotEmpty()) {
+        logger.debug("Done deleting {} run(s) linked to scenario {}!", jobs.size, event.scenarioId)
+      }
+    }
   }
 
   private fun mapWorkflowPhaseToScenarioRunState(

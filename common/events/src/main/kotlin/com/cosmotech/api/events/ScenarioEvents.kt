@@ -24,3 +24,10 @@ class ScenarioDatasetListChanged(
     val scenarioId: String,
     val datasetList: List<String>?
 ) : CsmEvent(publisher)
+
+class ScenarioDeleted(
+    publisher: Any,
+    val organizationId: String,
+    val workspaceId: String,
+    val scenarioId: String
+) : CsmEvent(publisher)
