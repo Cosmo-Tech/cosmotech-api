@@ -264,7 +264,7 @@ class AzureDataExplorerClient(
           databaseName,
           """
         .drop extents <|
-            .show database '${databaseName}' extents
+            .show database ['${databaseName}'] extents
             where tags has 'drop-by:${scenarioRunId}'
     """,
           ClientRequestProperties().apply {
