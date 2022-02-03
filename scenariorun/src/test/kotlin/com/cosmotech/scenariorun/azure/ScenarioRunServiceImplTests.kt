@@ -407,13 +407,17 @@ class ScenarioRunServiceImplTests {
   }
 
   @Test
+  // TODO MIG This test should verify that azureDataExplorerClient#deleteDataFromScenarioRunId is
+  // called instead
   fun `PROD-8148 - deleteDataFromScenarioRunId is called once`() {
     val scenarioRun = mockk<ScenarioRun>()
     every { scenarioRunServiceImpl.findScenarioRunById("orgId", "scenariorunId") } returns
         scenarioRun
     val cosmosTemplate = mockk<CosmosTemplate>()
     every { cosmosTemplate.deleteEntity("orgId", scenarioRun) }
+    every { scenarioRun.id } returns "scenariorunId"
     every { scenarioRun.ownerId } returns "ownerId"
+    every { scenarioRun.organizationId } returns "ownerId"
     every { scenarioRun.workspaceKey } returns "wk"
     every { getCurrentAuthenticatedUserName() } returns "ownerId"
     scenarioRun.ownerId != getCurrentAuthenticatedUserName()
