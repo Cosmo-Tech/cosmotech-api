@@ -34,6 +34,9 @@ const val ROLE_SOLUTION_WRITER = "Solution.Writer"
 const val ROLE_WORKSPACE_READER = "Workspace.Reader"
 const val ROLE_WORKSPACE_WRITER = "Workspace.Writer"
 
+// Allowed scopes
+const val SCOPE_SCENARIO_READ = "SCOPE_csm.scenario.read"
+
 // Endpoints paths
 const val PATH_CONNECTORS = "/connectors"
 const val PATH_DATASETS = "/organizations/*/datasets"
@@ -147,16 +150,32 @@ internal val endpointSecurityReaders =
             )
         ),
         CsmSecurityEndpointsRolesReader(
-            paths = PATHS_SCENARIOS,
-            roles =
-            arrayOf(
+            paths = listOf(PATH_SCENARIOS),
+            roles = arrayOf(
                 ROLE_SCENARIO_READER,
                 ROLE_SCENARIO_WRITER,
                 ROLE_ORGANIZATION_ADMIN,
                 ROLE_ORGANIZATION_COLLABORATOR,
                 ROLE_ORGANIZATION_MODELER,
                 ROLE_ORGANIZATION_USER,
-                ROLE_ORGANIZATION_VIEWER
+                ROLE_ORGANIZATION_VIEWER,
+                SCOPE_SCENARIO_READ,
+            )
+        ),
+        CsmSecurityEndpointsRolesReader(
+            paths = listOf(
+                PATH_SCENARIOS_COMPARE,
+                PATH_SCENARIOS_USERS,
+                PATH_SCENARIOS_PARAMETERVALUES
+            ),
+            roles = arrayOf(
+                ROLE_SCENARIO_READER,
+                ROLE_SCENARIO_WRITER,
+                ROLE_ORGANIZATION_ADMIN,
+                ROLE_ORGANIZATION_COLLABORATOR,
+                ROLE_ORGANIZATION_MODELER,
+                ROLE_ORGANIZATION_USER,
+                ROLE_ORGANIZATION_VIEWER,
             )
         ),
         CsmSecurityEndpointsRolesReader(
