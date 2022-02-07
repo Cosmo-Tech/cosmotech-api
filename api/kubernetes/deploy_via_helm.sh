@@ -67,7 +67,22 @@ if [[ "${COSMOTECH_API_DNS_NAME:-}" == "" ]]; then
   export COSMOTECH_API_DNS_NAME="${CERT_MANAGER_COSMOTECH_API_DNS_NAME:-}"
 fi
 
-# NGINX Ingress Controller
+# NGINX Ingress Controller & Certificate
+if [[ "${TLS_CERTIFICATE_TYPE:-let_s_encrypt}" != "let_s_encrypt" ]]; then
+  export CERT_MANAGER_ENABLED="false"
+  if [[ "${TLS_CERTIFICATE_TYPE:-}" == "custom" ]]; then
+    export TLS_SECRET_NAME="custom-tls-secret"
+    kubectl -n "${NAMESPACE}" create secret tls "${TLS_SECRET_NAME}" \
+      --cert "${TLS_CERTIFICATE_CUSTOM_CERTIFICATE_PATH}" \
+      --key "${TLS_CERTIFICATE_CUSTOM_KEY_PATH}" \
+      --dry-run=client \
+      -o yaml | kubectl -n "${NAMESPACE}" apply -f -
+  fi
+else
+  export CERT_MANAGER_ENABLED="true"
+  export TLS_SECRET_NAME="letsencrypt-${CERT_MANAGER_ACME}"
+fi
+
 if [[ "${NGINX_INGRESS_CONTROLLER_ENABLED:-false}" == "true" ]]; then
   helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 
@@ -87,6 +102,8 @@ controller:
     labels:
       networking/traffic-allowed: "yes"
     loadBalancerIP: "${NGINX_INGRESS_CONTROLLER_LOADBALANCER_IP}"
+  extraArgs:
+    default-ssl-certificate: "${NAMESPACE}/${TLS_SECRET_NAME}"
 
 defaultBackend:
   podLabels:
@@ -120,20 +137,6 @@ if [[ "${TLS_CERTIFICATE_TYPE:-}" == "" ]]; then
   else
     export TLS_CERTIFICATE_TYPE="none"
   fi
-fi
-if [[ "${TLS_CERTIFICATE_TYPE:-let_s_encrypt}" != "let_s_encrypt" ]]; then
-  export CERT_MANAGER_ENABLED="false"
-  if [[ "${TLS_CERTIFICATE_TYPE:-}" == "custom" ]]; then
-    export TLS_SECRET_NAME="custom-tls-secret"
-    kubectl -n "${NAMESPACE}" create secret tls "${TLS_SECRET_NAME}" \
-      --cert "${TLS_CERTIFICATE_CUSTOM_CERTIFICATE_PATH}" \
-      --key "${TLS_CERTIFICATE_CUSTOM_KEY_PATH}" \
-      --dry-run=client \
-      -o yaml | kubectl -n "${NAMESPACE}" apply -f -
-  fi
-else
-  export CERT_MANAGER_ENABLED="true"
-  export TLS_SECRET_NAME="letsencrypt-${CERT_MANAGER_ACME}"
 fi
 if [[ "${CERT_MANAGER_ENABLED:-false}" == "true" ]]; then
   helm repo add jetstack https://charts.jetstack.io
