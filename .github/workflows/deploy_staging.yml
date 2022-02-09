@@ -93,10 +93,13 @@ jobs:
 
           EOF
 
-      - uses: Azure/aks-set-context@v2.0
+      - uses: Azure/login@v1
         with:
           # Secret created with: az ad sp create-for-rbac -n "github-actions" --sdk-auth
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
+
+      - uses: Azure/aks-set-context@v2.0
+        with:
           cluster-name: ${{ secrets.STAGING_ENV_CLUSTER_NAME }}
           resource-group: ${{ secrets.STAGING_ENV_CLUSTER_RESOURCE_GROUP }}
 
