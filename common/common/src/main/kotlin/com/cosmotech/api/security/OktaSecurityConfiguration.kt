@@ -12,7 +12,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 @Configuration
 @EnableWebSecurity(debug = true)
 @ConditionalOnProperty(
-    name = ["csm.platform.identityProvider"], havingValue = "okta", matchIfMissing = false
+    name = ["csm.platform.identityProvider.code"], havingValue = "okta", matchIfMissing = false
 )
 @EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true, proxyTargetClass = true)
 internal class OktaSecurityConfiguration : AbstractSecurityConfiguration() {
