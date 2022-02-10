@@ -68,6 +68,13 @@ if [[ "${COSMOTECH_API_DNS_NAME:-}" == "" ]]; then
 fi
 
 # NGINX Ingress Controller & Certificate
+if [[ "${CERT_MANAGER_USE_ACME_PROD:-false}" == "true" ]]; then
+  export CERT_MANAGER_ACME="prod"
+  export CERT_MANAGER_ACME_SERVER="https://acme-v02.api.letsencrypt.org/directory"
+else
+  export CERT_MANAGER_ACME="staging"
+  export CERT_MANAGER_ACME_SERVER="https://acme-staging-v02.api.letsencrypt.org/directory"
+fi
 if [[ "${TLS_CERTIFICATE_TYPE:-let_s_encrypt}" != "let_s_encrypt" ]]; then
   export CERT_MANAGER_ENABLED="false"
   if [[ "${TLS_CERTIFICATE_TYPE:-}" == "custom" ]]; then
@@ -123,13 +130,6 @@ fi
 # cert-manager
 if [[ "${TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL:-}" == "" ]]; then
   export TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL="${CERT_MANAGER_ACME_CONTACT_EMAIL:-}"
-fi
-if [[ "${CERT_MANAGER_USE_ACME_PROD:-false}" == "true" ]]; then
-  export CERT_MANAGER_ACME="prod"
-  export CERT_MANAGER_ACME_SERVER="https://acme-v02.api.letsencrypt.org/directory"
-else
-  export CERT_MANAGER_ACME="staging"
-  export CERT_MANAGER_ACME_SERVER="https://acme-staging-v02.api.letsencrypt.org/directory"
 fi
 if [[ "${TLS_CERTIFICATE_TYPE:-}" == "" ]]; then
   if [[ "${CERT_MANAGER_ENABLED:-}" == "true" ]]; then
