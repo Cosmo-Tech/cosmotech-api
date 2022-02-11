@@ -1069,6 +1069,10 @@ internal class ContainerFactory(
   ): Map<String, String> {
     val envVars: MutableMap<String, String> = mutableMapOf()
     val eventBus = csmPlatformProperties.azure?.eventBus!!
+    logger.debug(
+        "Get Event Hub env vars for workspace {} with dedicated namespace: {}",
+        workspace.id,
+        workspace.useDedicatedEventHubNamespace ?: "null")
     if (workspace.useDedicatedEventHubNamespace != true) {
 
       val eventHubBase = "${eventBus.baseUri}/${organization.id}-${workspace.key}".lowercase()
