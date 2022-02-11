@@ -98,11 +98,25 @@ internal class ScenarioRunServiceImpl(
   private fun deleteScenarioRunWithoutAccessEnforcement(scenarioRun: ScenarioRun) {
     // Simple way to ensure that we do not delete data if something went wrong
     try {
+      logger.debug(
+          "Deleting scenario run. Organization: {}, Workspace: {}, Scenario Run Id: {}, csmSimulationRun: {}",
+          scenarioRun.organizationId ?: "null",
+          scenarioRun.workspaceKey ?: "null",
+          scenarioRun.id ?: "null",
+          scenarioRun.csmSimulationRun ?: "null")
+
+      // Change function name: Use csmSimulationRun here, not Simulation Run id
       azureDataExplorerClient.deleteDataFromScenarioRunId(
-          scenarioRun.organizationId!!, scenarioRun.workspaceKey!!, scenarioRun.id!!)
+          scenarioRun.organizationId!!, scenarioRun.workspaceKey!!, scenarioRun.csmSimulationRun!!)
+      logger.debug(
+          "Scenario run {} deleted from ADX with csmSimulationRun {}",
+          scenarioRun.id!!,
+          scenarioRun.csmSimulationRun!!)
 
       // It seems that deleteEntity does not throw any exception
+      logger.debug("Deleting Scenario Run {} from Cosmos DB", scenarioRun.id!!)
       cosmosTemplate.deleteEntity("${scenarioRun.organizationId}_scenario_data", scenarioRun)
+      logger.debug("Scenario Run {} deleted from Cosmos DB", scenarioRun.id!!)
     } catch (exception: IllegalStateException) {
       logger.debug(
           "An error occurred while deleting ScenarioRun {}: {}",

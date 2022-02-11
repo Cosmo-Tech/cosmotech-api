@@ -419,6 +419,7 @@ class ScenarioRunServiceImplTests {
     every { scenarioRun.ownerId } returns "ownerId"
     every { scenarioRun.organizationId } returns "ownerId"
     every { scenarioRun.workspaceKey } returns "wk"
+    every { scenarioRun.csmSimulationRun } returns "csmSimulationRun"
     every { getCurrentAuthenticatedUserName() } returns "ownerId"
     scenarioRun.ownerId != getCurrentAuthenticatedUserName()
     val azureDataExplorerClient = mockk<AzureDataExplorerClient>()
