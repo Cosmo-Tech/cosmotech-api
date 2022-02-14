@@ -365,6 +365,9 @@ subprojects {
       workingDir = rootDir
 
       environment("CSM_PLATFORM_VENDOR", project.findProperty("platform")?.toString() ?: "azure")
+      project.findProperty("identityProvider")?.toString()?.let {
+        environment("IDENTITY_PROVIDER", it)
+      }
 
       if (project.hasProperty("jvmArgs")) {
         jvmArgs = project.property("jvmArgs").toString().split("\\s+".toRegex()).toList()

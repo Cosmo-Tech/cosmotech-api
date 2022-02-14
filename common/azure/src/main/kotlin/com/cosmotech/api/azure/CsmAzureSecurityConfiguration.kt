@@ -16,18 +16,16 @@ import org.springframework.security.oauth2.jwt.Jwt
 @Configuration
 @EnableWebSecurity
 @ConditionalOnProperty(
-    name = ["csm.platform.identityProvider.code"], havingValue = "aad", matchIfMissing = true
-)
+    name = ["csm.platform.identityProvider.code"], havingValue = "aad", matchIfMissing = true)
 @EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true, proxyTargetClass = true)
 internal class CsmAzureSecurityConfiguration(
     private val aadJwtAuthenticationConverter: Converter<Jwt, out AbstractAuthenticationToken>
 ) : AbstractSecurityConfiguration() {
 
-    private val logger = LoggerFactory.getLogger(CsmAzureSecurityConfiguration::class.java)
+  private val logger = LoggerFactory.getLogger(CsmAzureSecurityConfiguration::class.java)
 
-    override fun configure(http: HttpSecurity) {
-        logger.info("Azure Active Directory http security configuration")
-        super.getOAuth2JwtConfigurer(http)
-            ?.jwtAuthenticationConverter(aadJwtAuthenticationConverter)
-    }
+  override fun configure(http: HttpSecurity) {
+    logger.info("Azure Active Directory http security configuration")
+    super.getOAuth2JwtConfigurer(http)?.jwtAuthenticationConverter(aadJwtAuthenticationConverter)
+  }
 }

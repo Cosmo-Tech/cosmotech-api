@@ -34,7 +34,7 @@ import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.utils.getCloudPath
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
-import java.util.UUID
+import java.util.*
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
@@ -54,9 +54,13 @@ private const val CONTAINER_RUN = "runContainer"
 private const val CONTAINER_RUN_MODE = "engine"
 private const val CONTAINER_POSTRUN = "postRunContainer"
 private const val CONTAINER_POSTRUN_MODE = "postrun"
+internal const val IDENTITY_PROVIDER = "IDENTITY_PROVIDER"
 internal const val AZURE_TENANT_ID_VAR = "AZURE_TENANT_ID"
 internal const val AZURE_CLIENT_ID_VAR = "AZURE_CLIENT_ID"
 internal const val AZURE_CLIENT_SECRET_VAR = "AZURE_CLIENT_SECRET"
+internal const val OKTA_CLIENT_ID = "OKTA_CLIENT_ID"
+internal const val OKTA_CLIENT_SECRET = "OKTA_CLIENT_SECRET"
+internal const val OKTA_CLIENT_ISSUER = "OKTA_CLIENT_ISSUER"
 private const val CSM_AZURE_MANAGED_IDENTITY_VAR = "CSM_AZURE_MANAGED_IDENTITY"
 private const val CSM_SIMULATION_ID = "CSM_SIMULATION_ID"
 private const val API_BASE_URL_VAR = "CSM_API_URL"
@@ -1242,8 +1246,19 @@ internal fun getCommonEnvVars(
                 (csmPlatformProperties.azure?.credentials?.core?.clientSecret!!),
         )
       }
+  val oktaEnvVars: MutableMap<String, String> = mutableMapOf()
+  // OKTA Env Vars
+  if (csmPlatformProperties.identityProvider?.code == "okta") {
+    oktaEnvVars.putAll(
+        mapOf(
+            OKTA_CLIENT_ID to (csmPlatformProperties.okta?.clientId!!),
+            OKTA_CLIENT_SECRET to (csmPlatformProperties.okta?.clientSecret!!),
+            OKTA_CLIENT_ISSUER to (csmPlatformProperties.okta?.issuer!!),
+        ))
+  }
   val commonEnvVars =
       mapOf(
+          IDENTITY_PROVIDER to (csmPlatformProperties.identityProvider?.code ?: "aad"),
           CSM_SIMULATION_ID to csmSimulationId,
           API_BASE_URL_VAR to csmPlatformProperties.api.baseUrl,
           API_BASE_SCOPE_VAR to "${csmPlatformProperties.azure?.appIdUri}${API_SCOPE_SUFFIX}",
@@ -1259,7 +1274,7 @@ internal fun getCommonEnvVars(
           PARAMETERS_SCENARIO_VAR to scenarioId,
       )
 
-  return (identityEnvVars + commonEnvVars).toMutableMap()
+  return (identityEnvVars + commonEnvVars + oktaEnvVars).toMutableMap()
 }
 
 private fun stackSolutionContainers(
