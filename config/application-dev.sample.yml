@@ -31,6 +31,12 @@ management:
 
 csm:
   platform:
+    identityProvider:
+      code: aad
+      # Use to overwrite openAPI configuration
+      authorizationUrl: "[fill-this-value]"
+      scopes:
+        "[fill-this-value]": "[fill-this-value]"
     argo:
       base-uri: "http://localhost:2746"
     azure:
@@ -55,3 +61,10 @@ csm:
         account-key: "[fill-this-value]"
       containerRegistries:
         solutions: "localhost:5000"
+      activeDirectory:
+        #N.B: This part is only here to allow modification on claims prefixes (for scope and roles)
+        # If you specify an entry with "scp" key, the value will be the scope prefix used
+        # If you specify an entry with "roles" key, the value will be the roles prefix used
+        claimToAuthorityPrefix:
+          # Set to empty string to overwrite default value (APPROLE_)
+          roles: ""
