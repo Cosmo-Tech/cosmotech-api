@@ -57,7 +57,7 @@ private const val CSM_SIMULATION_ID = "simulationrunid"
 
 @Suppress("TooManyFunctions", "LargeClass")
 @ExtendWith(MockKExtension::class)
-class ContainerFactoryTests {
+class OktaContainerFactoryTests {
 
   @MockK(relaxed = true) private lateinit var azure: CsmPlatformProperties.CsmPlatformAzure
   @MockK(relaxed = true) private lateinit var csmPlatformProperties: CsmPlatformProperties
@@ -72,10 +72,10 @@ class ContainerFactoryTests {
 
   @InjectMockKs private lateinit var factory: ContainerFactory
 
+  @Suppress("LongMethod")
   @BeforeTest
   fun setUp() {
     MockKAnnotations.init(this)
-
     every { azure.appIdUri } returns "http://dev.api.cosmotech.com"
     every { azure.credentials } returns
         CsmPlatformAzureCredentials(
@@ -126,9 +126,15 @@ class ContainerFactoryTests {
         )
     every { csmPlatformProperties.identityProvider } returns
         CsmPlatformProperties.CsmIdentityProvider(
-            code = "aad",
+            code = "okta",
             scopes = mapOf("This is a fake scope id" to "This is a fake scope name"),
             authorizationUrl = "http://this_is_a_fake_url.com",
+        )
+    every { csmPlatformProperties.okta } returns
+        CsmPlatformProperties.CsmPlatformOkta(
+            issuer = "http://okta.com/oauth2/default",
+            clientId = "123456",
+            clientSecret = "azerty",
         )
   }
 
@@ -216,7 +222,10 @@ class ContainerFactoryTests {
             CSM_SIMULATION_ID)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "okta",
+            "OKTA_CLIENT_ID" to "123456",
+            "OKTA_CLIENT_SECRET" to "azerty",
+            "OKTA_CLIENT_ISSUER" to "http://okta.com/oauth2/default",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -255,7 +264,10 @@ class ContainerFactoryTests {
             CSM_SIMULATION_ID)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "okta",
+            "OKTA_CLIENT_ID" to "123456",
+            "OKTA_CLIENT_SECRET" to "azerty",
+            "OKTA_CLIENT_ISSUER" to "http://okta.com/oauth2/default",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -293,7 +305,10 @@ class ContainerFactoryTests {
             CSM_SIMULATION_ID)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "okta",
+            "OKTA_CLIENT_ID" to "123456",
+            "OKTA_CLIENT_SECRET" to "azerty",
+            "OKTA_CLIENT_ISSUER" to "http://okta.com/oauth2/default",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -331,7 +346,10 @@ class ContainerFactoryTests {
             CSM_SIMULATION_ID)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "okta",
+            "OKTA_CLIENT_ID" to "123456",
+            "OKTA_CLIENT_SECRET" to "azerty",
+            "OKTA_CLIENT_ISSUER" to "http://okta.com/oauth2/default",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -368,7 +386,10 @@ class ContainerFactoryTests {
             CSM_SIMULATION_ID)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "okta",
+            "OKTA_CLIENT_ID" to "123456",
+            "OKTA_CLIENT_SECRET" to "azerty",
+            "OKTA_CLIENT_ISSUER" to "http://okta.com/oauth2/default",
             "CSM_AZURE_MANAGED_IDENTITY" to "true",
             "CSM_SIMULATION_ID" to "simulationrunid",
             "CSM_API_URL" to "https://api.cosmotech.com",
@@ -468,7 +489,10 @@ class ContainerFactoryTests {
         factory.buildScenarioParametersFetchContainer("1", "2", "3", "Test", CSM_SIMULATION_ID)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "okta",
+            "OKTA_CLIENT_ID" to "123456",
+            "OKTA_CLIENT_SECRET" to "azerty",
+            "OKTA_CLIENT_ISSUER" to "http://okta.com/oauth2/default",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -495,7 +519,10 @@ class ContainerFactoryTests {
             "1", "2", "3", "Test", CSM_SIMULATION_ID, true)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "okta",
+            "OKTA_CLIENT_ID" to "123456",
+            "OKTA_CLIENT_SECRET" to "azerty",
+            "OKTA_CLIENT_ISSUER" to "http://okta.com/oauth2/default",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -548,7 +575,10 @@ class ContainerFactoryTests {
             "Organizationid", getWorkspace(), "Scenarioid", getRunTemplate(), CSM_SIMULATION_ID)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "okta",
+            "OKTA_CLIENT_ID" to "123456",
+            "OKTA_CLIENT_SECRET" to "azerty",
+            "OKTA_CLIENT_ISSUER" to "http://okta.com/oauth2/default",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -581,7 +611,10 @@ class ContainerFactoryTests {
             CSM_SIMULATION_ID)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "okta",
+            "OKTA_CLIENT_ID" to "123456",
+            "OKTA_CLIENT_SECRET" to "azerty",
+            "OKTA_CLIENT_ISSUER" to "http://okta.com/oauth2/default",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -614,7 +647,10 @@ class ContainerFactoryTests {
             CSM_SIMULATION_ID)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "okta",
+            "OKTA_CLIENT_ID" to "123456",
+            "OKTA_CLIENT_SECRET" to "azerty",
+            "OKTA_CLIENT_ISSUER" to "http://okta.com/oauth2/default",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -651,7 +687,10 @@ class ContainerFactoryTests {
             CSM_SIMULATION_ID)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "okta",
+            "OKTA_CLIENT_ID" to "123456",
+            "OKTA_CLIENT_SECRET" to "azerty",
+            "OKTA_CLIENT_ISSUER" to "http://okta.com/oauth2/default",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -828,7 +867,10 @@ class ContainerFactoryTests {
   ) {
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "okta",
+            "OKTA_CLIENT_ID" to "123456",
+            "OKTA_CLIENT_SECRET" to "azerty",
+            "OKTA_CLIENT_ISSUER" to "http://okta.com/oauth2/default",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -863,7 +905,10 @@ class ContainerFactoryTests {
   ) {
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "okta",
+            "OKTA_CLIENT_ID" to "123456",
+            "OKTA_CLIENT_SECRET" to "azerty",
+            "OKTA_CLIENT_ISSUER" to "http://okta.com/oauth2/default",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -1281,7 +1326,10 @@ class ContainerFactoryTests {
     val container = containers.find { container -> container.name == "fetchDatasetContainer-2" }
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "okta",
+            "OKTA_CLIENT_ID" to "123456",
+            "OKTA_CLIENT_SECRET" to "azerty",
+            "OKTA_CLIENT_ISSUER" to "http://okta.com/oauth2/default",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -1347,7 +1395,7 @@ class ContainerFactoryTests {
   }
 
   @Test
-  fun `Build start containers node Label NONE`() {
+  fun `Build start containers node Label %NONE%`() {
     val scenario = getScenario()
     val datasets = listOf(getDataset())
     val connectors = listOf(getConnector())
@@ -1689,7 +1737,10 @@ class ContainerFactoryTests {
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "okta",
+            "OKTA_CLIENT_ID" to "123456",
+            "OKTA_CLIENT_SECRET" to "azerty",
+            "OKTA_CLIENT_ISSUER" to "http://okta.com/oauth2/default",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -1736,7 +1787,10 @@ class ContainerFactoryTests {
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "okta",
+            "OKTA_CLIENT_ID" to "123456",
+            "OKTA_CLIENT_SECRET" to "azerty",
+            "OKTA_CLIENT_ISSUER" to "http://okta.com/oauth2/default",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -1785,7 +1839,10 @@ class ContainerFactoryTests {
         scenarioRunContainer.labels)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "okta",
+            "OKTA_CLIENT_ID" to "123456",
+            "OKTA_CLIENT_SECRET" to "azerty",
+            "OKTA_CLIENT_ISSUER" to "http://okta.com/oauth2/default",
             "CSM_AZURE_MANAGED_IDENTITY" to "true",
             "CSM_SIMULATION_ID" to "csmSimulationId",
             "CSM_API_URL" to "https://api.cosmotech.com",
@@ -1830,7 +1887,10 @@ class ContainerFactoryTests {
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "okta",
+            "OKTA_CLIENT_ID" to "123456",
+            "OKTA_CLIENT_SECRET" to "azerty",
+            "OKTA_CLIENT_ISSUER" to "http://okta.com/oauth2/default",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -1877,7 +1937,10 @@ class ContainerFactoryTests {
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "okta",
+            "OKTA_CLIENT_ID" to "123456",
+            "OKTA_CLIENT_SECRET" to "azerty",
+            "OKTA_CLIENT_ISSUER" to "http://okta.com/oauth2/default",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -1924,7 +1987,10 @@ class ContainerFactoryTests {
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "okta",
+            "OKTA_CLIENT_ID" to "123456",
+            "OKTA_CLIENT_SECRET" to "azerty",
+            "OKTA_CLIENT_ISSUER" to "http://okta.com/oauth2/default",
             "AZURE_TENANT_ID" to "customer-app-registration-tenantId",
             "AZURE_CLIENT_ID" to "customer-app-registration-clientId",
             "AZURE_CLIENT_SECRET" to "customer-app-registration-clientSecret",
@@ -1958,7 +2024,10 @@ class ContainerFactoryTests {
     assertFalse { container.envVars!!.containsKey(AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR) }
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "okta",
+            "OKTA_CLIENT_ID" to "123456",
+            "OKTA_CLIENT_SECRET" to "azerty",
+            "OKTA_CLIENT_ISSUER" to "http://okta.com/oauth2/default",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -1997,7 +2066,10 @@ class ContainerFactoryTests {
 
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "okta",
+            "OKTA_CLIENT_ID" to "123456",
+            "OKTA_CLIENT_SECRET" to "azerty",
+            "OKTA_CLIENT_ISSUER" to "http://okta.com/oauth2/default",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -2041,7 +2113,10 @@ class ContainerFactoryTests {
 
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "okta",
+            "OKTA_CLIENT_ID" to "123456",
+            "OKTA_CLIENT_SECRET" to "azerty",
+            "OKTA_CLIENT_ISSUER" to "http://okta.com/oauth2/default",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -2125,7 +2200,10 @@ class ContainerFactoryTests {
         }
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "okta",
+            "OKTA_CLIENT_ID" to "123456",
+            "OKTA_CLIENT_SECRET" to "azerty",
+            "OKTA_CLIENT_ISSUER" to "http://okta.com/oauth2/default",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -2155,7 +2233,10 @@ class ContainerFactoryTests {
     assertNotNull(container.envVars)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "okta",
+            "OKTA_CLIENT_ID" to "123456",
+            "OKTA_CLIENT_SECRET" to "azerty",
+            "OKTA_CLIENT_ISSUER" to "http://okta.com/oauth2/default",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -2191,7 +2272,10 @@ class ContainerFactoryTests {
     assertNotNull(container.envVars)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "okta",
+            "OKTA_CLIENT_ID" to "123456",
+            "OKTA_CLIENT_SECRET" to "azerty",
+            "OKTA_CLIENT_ISSUER" to "http://okta.com/oauth2/default",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -2268,7 +2352,10 @@ class ContainerFactoryTests {
   private fun validateEnvVarsSolutionContainer(container: ScenarioRunContainer?, mode: String) {
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "okta",
+            "OKTA_CLIENT_ID" to "123456",
+            "OKTA_CLIENT_SECRET" to "azerty",
+            "OKTA_CLIENT_ISSUER" to "http://okta.com/oauth2/default",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -2321,7 +2408,7 @@ class ContainerFactoryTests {
     return DatasetConnector(
         id = "AzErTyUiOp",
         parametersValues =
-            mutableMapOf(
+            mapOf(
                 "EnvParam1" to "%WORKSPACE_FILE%/workspace.env",
                 "Param1" to "%WORKSPACE_FILE%/workspace.param",
             ))
@@ -2331,7 +2418,7 @@ class ContainerFactoryTests {
     return DatasetConnector(
         id = "AzErTyUiOp",
         parametersValues =
-            mutableMapOf(
+            mapOf(
                 "EnvParam1" to "%STORAGE_CONNECTION_STRING%",
             ))
   }
@@ -2340,7 +2427,7 @@ class ContainerFactoryTests {
     return DatasetConnector(
         id = "AzErTyUiOp",
         parametersValues =
-            mutableMapOf(
+            mapOf(
                 "EnvParam1" to "env_param1_value",
                 "EnvParam2" to "env_param2_value",
                 "EnvParam3" to "env_param3_value",
@@ -2354,7 +2441,7 @@ class ContainerFactoryTests {
     return DatasetConnector(
         id = "AzErTyUiOp2",
         parametersValues =
-            mutableMapOf(
+            mapOf(
                 "EnvParam1" to "env_param1_value",
                 "EnvParam2" to "env_param2_value",
                 "EnvParam3" to "env_param3_value",
@@ -2368,7 +2455,7 @@ class ContainerFactoryTests {
     return DatasetConnector(
         id = "AzErTyUiOp3",
         parametersValues =
-            mutableMapOf(
+            mapOf(
                 "EnvParam1" to "env_param1_value",
                 "EnvParam2" to "env_param2_value",
                 "EnvParam3" to "env_param3_value",
@@ -2529,7 +2616,7 @@ class ContainerFactoryTests {
         name = "Test Solution",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
-        runTemplates = mutableListOf(getRunTemplate()),
+        runTemplates = listOf(getRunTemplate()),
     )
   }
 
@@ -2540,7 +2627,7 @@ class ContainerFactoryTests {
         name = "Test Solution",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
-        runTemplates = mutableListOf(getRunTemplateStack()),
+        runTemplates = listOf(getRunTemplateStack()),
     )
   }
 
@@ -2551,7 +2638,7 @@ class ContainerFactoryTests {
         name = "Test Solution",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
-        runTemplates = mutableListOf(getRunTemplateStackNoDWH()),
+        runTemplates = listOf(getRunTemplateStackNoDWH()),
     )
   }
 
@@ -2562,39 +2649,39 @@ class ContainerFactoryTests {
         name = "Test Solution",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
-        runTemplates = mutableListOf(getRunTemplateDatasetIds()),
+        runTemplates = listOf(getRunTemplateDatasetIds()),
         parameters =
-            mutableListOf(
+            listOf(
                 RunTemplateParameter(
                     id = "param1",
-                    labels = mutableMapOf("en" to "Parameter 1"),
+                    labels = mapOf("en" to "Parameter 1"),
                     varType = "string",
                 ),
                 RunTemplateParameter(
                     id = "param2",
-                    labels = mutableMapOf("en" to "Parameter Dataset 2"),
+                    labels = mapOf("en" to "Parameter Dataset 2"),
                     varType = "%DATASETID%"),
                 RunTemplateParameter(
                     id = "param3",
-                    labels = mutableMapOf("en" to "Parameter Dataset 3"),
+                    labels = mapOf("en" to "Parameter Dataset 3"),
                     varType = "%DATASETID%"),
                 RunTemplateParameter(
                     id = "param4",
-                    labels = mutableMapOf("en" to "Parameter Dataset 4"),
+                    labels = mapOf("en" to "Parameter Dataset 4"),
                     varType = "%DATASETID%"),
                 RunTemplateParameter(
                     id = "param5",
-                    labels = mutableMapOf("en" to "Parameter 5"),
+                    labels = mapOf("en" to "Parameter 5"),
                     varType = "int",
                 ),
             ),
         parameterGroups =
-            mutableListOf(
+            listOf(
                 RunTemplateParameterGroup(
                     id = "group1",
-                    labels = mutableMapOf("en" to "Parameter Group 1"),
+                    labels = mapOf("en" to "Parameter Group 1"),
                     parameters =
-                        mutableListOf(
+                        listOf(
                             "param1",
                             "param2",
                             "param3",
@@ -2610,7 +2697,7 @@ class ContainerFactoryTests {
         name = "Test Solution",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
-        runTemplates = mutableListOf(getRunTemplateNoPool()),
+        runTemplates = listOf(getRunTemplateNoPool()),
     )
   }
 
@@ -2621,7 +2708,7 @@ class ContainerFactoryTests {
         name = "Test Solution",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
-        runTemplates = mutableListOf(getRunTemplateNonePool()),
+        runTemplates = listOf(getRunTemplateNonePool()),
     )
   }
 
@@ -2632,7 +2719,7 @@ class ContainerFactoryTests {
         name = "Test Solution",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
-        runTemplates = mutableListOf(getRunTemplateOnlyRun()),
+        runTemplates = listOf(getRunTemplateOnlyRun()),
     )
   }
 
@@ -2643,7 +2730,7 @@ class ContainerFactoryTests {
         name = "Test Solution",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
-        runTemplates = mutableListOf(getRunTemplateCloudSources()),
+        runTemplates = listOf(getRunTemplateCloudSources()),
     )
   }
 
@@ -2654,7 +2741,7 @@ class ContainerFactoryTests {
         name = "Test Solution",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
-        runTemplates = mutableListOf(getRunTemplateLocalSources()),
+        runTemplates = listOf(getRunTemplateLocalSources()),
     )
   }
 
@@ -2695,7 +2782,7 @@ class ContainerFactoryTests {
         name = "Test Run",
         csmSimulation = "TestSimulation",
         computeSize = "highcpu",
-        parameterGroups = mutableListOf("group1"),
+        parameterGroups = listOf("group1"),
     )
   }
 
@@ -2784,7 +2871,7 @@ class ContainerFactoryTests {
         id = "Scenarioid",
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
-        datasetList = mutableListOf("1"),
+        datasetList = listOf("1"),
     )
   }
 
@@ -2793,9 +2880,9 @@ class ContainerFactoryTests {
         id = "Scenarioid",
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
-        datasetList = mutableListOf("1"),
+        datasetList = listOf("1"),
         parametersValues =
-            mutableListOf(
+            listOf(
                 ScenarioRunTemplateParameterValue(
                     parameterId = "param1",
                     value = "valParam1",
@@ -2824,9 +2911,9 @@ class ContainerFactoryTests {
         id = "Scenarioid",
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
-        datasetList = mutableListOf("1"),
+        datasetList = listOf("1"),
         parametersValues =
-            mutableListOf(
+            listOf(
                 ScenarioRunTemplateParameterValue(
                     parameterId = "param1",
                     value = "valParam1",
@@ -2855,9 +2942,9 @@ class ContainerFactoryTests {
         id = "Scenarioid",
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
-        datasetList = mutableListOf("1"),
+        datasetList = listOf("1"),
         parametersValues =
-            mutableListOf(
+            listOf(
                 ScenarioRunTemplateParameterValue(
                     parameterId = "param1",
                     value = "valParam1",
@@ -2886,9 +2973,9 @@ class ContainerFactoryTests {
         id = "Scenarioid",
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
-        datasetList = mutableListOf("1", "2"),
+        datasetList = listOf("1", "2"),
         parametersValues =
-            mutableListOf(
+            listOf(
                 ScenarioRunTemplateParameterValue(
                     parameterId = "param1",
                     value = "valParam1",
@@ -2917,7 +3004,7 @@ class ContainerFactoryTests {
         id = "Scenarioid",
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
-        datasetList = mutableListOf("1", "2", "3"),
+        datasetList = listOf("1", "2", "3"),
     )
   }
 

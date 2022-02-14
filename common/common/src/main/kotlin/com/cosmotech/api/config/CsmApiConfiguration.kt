@@ -6,7 +6,6 @@ import com.cosmotech.api.config.CsmPlatformProperties.Vendor.AZURE
 import com.cosmotech.api.utils.yamlObjectMapper
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import java.lang.IllegalArgumentException
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
@@ -50,13 +49,18 @@ internal class CsmPlatformEnvironmentPostProcessor(private val log: Log) :
       application: SpringApplication
   ) {
     val platform = (System.getenv("CSM_PLATFORM_VENDOR") ?: AZURE.toString()).lowercase()
-    if (platform.isNotBlank()) {
-      // Automatically add the 'azure' Spring Profile before the application context is refreshed
-      if (environment.activeProfiles.none { platform.equals(it, ignoreCase = true) }) {
-        log.debug("Adding '$platform' as an active profile")
-        environment.addActiveProfile(platform)
+    addSpringProfile(platform, environment)
+    val identityProvider = (System.getenv("IDENTITY_PROVIDER") ?: "")
+    addSpringProfile(identityProvider, environment)
+  }
+
+  private fun addSpringProfile(profile: String, environment: ConfigurableEnvironment) {
+    if (profile.isNotBlank()) {
+      if (environment.activeProfiles.none { profile.equals(it, ignoreCase = true) }) {
+        log.debug("Adding '$profile' as an active profile")
+        environment.addActiveProfile(profile)
       } else {
-        log.debug("'$platform' is already an active profile")
+        log.debug("'$profile' is already an active profile")
       }
     }
   }

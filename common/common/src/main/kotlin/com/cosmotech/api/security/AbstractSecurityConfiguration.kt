@@ -55,8 +55,7 @@ val PATHS_SCENARIOS =
         PATH_SCENARIOS,
         PATH_SCENARIOS_COMPARE,
         PATH_SCENARIOS_USERS,
-        PATH_SCENARIOS_PARAMETERVALUES
-    )
+        PATH_SCENARIOS_PARAMETERVALUES)
 const val PATH_SCENARIORUNS = "/organizations/*/scenarioruns"
 const val PATH_SCENARIORUNS_STATUS = "/organizations/*/scenarioruns/*/status"
 const val PATH_SCENARIORUNS_LOGS = "/organizations/*/scenarioruns/*/logs"
@@ -71,8 +70,7 @@ val PATHS_SCENARIORUNS =
         PATH_SCENARIORUNS_LOGS,
         PATH_SCENARIORUNS_CUMULATEDLOGS,
         PATH_SCENARIORUNS_WORKSPACES,
-        PATH_SCENARIORUNS_SCENARIOS
-    )
+        PATH_SCENARIORUNS_SCENARIOS)
 const val PATH_SOLUTIONS = "/organizations/*/solutions"
 const val PATH_SOLUTIONS_PARAMETERS = "/organizations/*/solutions/*/parameters"
 const val PATH_SOLUTIONS_PARAMETERGROUPS = "/organizations/*/solutions/*/parameterGroups"
@@ -85,8 +83,7 @@ val PATHS_SOLUTIONS =
         PATH_SOLUTIONS_PARAMETERS,
         PATH_SOLUTIONS_PARAMETERGROUPS,
         PATH_SOLUTIONS_RUNTEMPLATES,
-        PATH_SOLUTIONS_RUNTEMPLATES_HANDLERS_UPLOAD
-    )
+        PATH_SOLUTIONS_RUNTEMPLATES_HANDLERS_UPLOAD)
 const val PATH_WORKSPACES = "/organizations/*/workspaces"
 const val PATH_WORKSPACES_USERS = "/organizations/*/workspaces/*/users"
 val PATHS_WORKSPACES = listOf(PATH_WORKSPACES, PATH_WORKSPACES_USERS)
@@ -110,239 +107,210 @@ internal val endpointSecurityReaders =
         CsmSecurityEndpointsRolesReader(
             paths = listOf(PATH_CONNECTORS),
             roles =
-            arrayOf(
-                ROLE_CONNECTOR_READER,
-                ROLE_CONNECTOR_WRITER,
-                ROLE_CONNECTOR_DEVELOPER,
-                ROLE_ORGANIZATION_ADMIN,
-                ROLE_ORGANIZATION_COLLABORATOR,
-                ROLE_ORGANIZATION_MODELER,
-                ROLE_ORGANIZATION_USER,
-                ROLE_ORGANIZATION_VIEWER
-            )
-        ),
+                arrayOf(
+                    ROLE_CONNECTOR_READER,
+                    ROLE_CONNECTOR_WRITER,
+                    ROLE_CONNECTOR_DEVELOPER,
+                    ROLE_ORGANIZATION_ADMIN,
+                    ROLE_ORGANIZATION_COLLABORATOR,
+                    ROLE_ORGANIZATION_MODELER,
+                    ROLE_ORGANIZATION_USER,
+                    ROLE_ORGANIZATION_VIEWER)),
         CsmSecurityEndpointsRolesReader(
             paths = listOf(PATH_DATASETS),
             roles =
-            arrayOf(
-                ROLE_DATASET_READER,
-                ROLE_DATASET_WRITER,
-                ROLE_CONNECTOR_DEVELOPER,
-                ROLE_ORGANIZATION_ADMIN,
-                ROLE_ORGANIZATION_COLLABORATOR,
-                ROLE_ORGANIZATION_MODELER,
-                ROLE_ORGANIZATION_USER,
-                ROLE_ORGANIZATION_VIEWER
-            )
-        ),
+                arrayOf(
+                    ROLE_DATASET_READER,
+                    ROLE_DATASET_WRITER,
+                    ROLE_CONNECTOR_DEVELOPER,
+                    ROLE_ORGANIZATION_ADMIN,
+                    ROLE_ORGANIZATION_COLLABORATOR,
+                    ROLE_ORGANIZATION_MODELER,
+                    ROLE_ORGANIZATION_USER,
+                    ROLE_ORGANIZATION_VIEWER)),
         CsmSecurityEndpointsRolesReader(
             paths = PATHS_ORGANIZATIONS,
             roles =
-            arrayOf(
-                ROLE_ORGANIZATION_READER,
-                ROLE_ORGANIZATION_WRITER,
-                ROLE_CONNECTOR_DEVELOPER,
-                ROLE_ORGANIZATION_ADMIN,
-                ROLE_ORGANIZATION_COLLABORATOR,
-                ROLE_ORGANIZATION_MODELER,
-                ROLE_ORGANIZATION_USER,
-                ROLE_ORGANIZATION_VIEWER
-            )
-        ),
+                arrayOf(
+                    ROLE_ORGANIZATION_READER,
+                    ROLE_ORGANIZATION_WRITER,
+                    ROLE_CONNECTOR_DEVELOPER,
+                    ROLE_ORGANIZATION_ADMIN,
+                    ROLE_ORGANIZATION_COLLABORATOR,
+                    ROLE_ORGANIZATION_MODELER,
+                    ROLE_ORGANIZATION_USER,
+                    ROLE_ORGANIZATION_VIEWER)),
         CsmSecurityEndpointsRolesReader(
             paths = listOf(PATH_SCENARIOS),
-            roles = arrayOf(
-                ROLE_SCENARIO_READER,
-                ROLE_SCENARIO_WRITER,
-                ROLE_ORGANIZATION_ADMIN,
-                ROLE_ORGANIZATION_COLLABORATOR,
-                ROLE_ORGANIZATION_MODELER,
-                ROLE_ORGANIZATION_USER,
-                ROLE_ORGANIZATION_VIEWER,
-                SCOPE_SCENARIO_READ,
-            )
-        ),
+            roles =
+                arrayOf(
+                    ROLE_SCENARIO_READER,
+                    ROLE_SCENARIO_WRITER,
+                    ROLE_ORGANIZATION_ADMIN,
+                    ROLE_ORGANIZATION_COLLABORATOR,
+                    ROLE_ORGANIZATION_MODELER,
+                    ROLE_ORGANIZATION_USER,
+                    ROLE_ORGANIZATION_VIEWER,
+                    SCOPE_SCENARIO_READ,
+                )),
         CsmSecurityEndpointsRolesReader(
-            paths = listOf(
-                PATH_SCENARIOS_COMPARE,
-                PATH_SCENARIOS_USERS,
-                PATH_SCENARIOS_PARAMETERVALUES
-            ),
-            roles = arrayOf(
-                ROLE_SCENARIO_READER,
-                ROLE_SCENARIO_WRITER,
-                ROLE_ORGANIZATION_ADMIN,
-                ROLE_ORGANIZATION_COLLABORATOR,
-                ROLE_ORGANIZATION_MODELER,
-                ROLE_ORGANIZATION_USER,
-                ROLE_ORGANIZATION_VIEWER,
-            )
-        ),
+            paths =
+                listOf(
+                    PATH_SCENARIOS_COMPARE, PATH_SCENARIOS_USERS, PATH_SCENARIOS_PARAMETERVALUES),
+            roles =
+                arrayOf(
+                    ROLE_SCENARIO_READER,
+                    ROLE_SCENARIO_WRITER,
+                    ROLE_ORGANIZATION_ADMIN,
+                    ROLE_ORGANIZATION_COLLABORATOR,
+                    ROLE_ORGANIZATION_MODELER,
+                    ROLE_ORGANIZATION_USER,
+                    ROLE_ORGANIZATION_VIEWER,
+                )),
         CsmSecurityEndpointsRolesReader(
             paths = PATHS_SCENARIORUNS,
             roles =
-            arrayOf(
-                ROLE_SCENARIORUN_READER,
-                ROLE_SCENARIORUN_WRITER,
-                ROLE_ORGANIZATION_ADMIN,
-                ROLE_ORGANIZATION_COLLABORATOR,
-                ROLE_ORGANIZATION_MODELER,
-                ROLE_ORGANIZATION_USER,
-            )
-        ),
+                arrayOf(
+                    ROLE_SCENARIORUN_READER,
+                    ROLE_SCENARIORUN_WRITER,
+                    ROLE_ORGANIZATION_ADMIN,
+                    ROLE_ORGANIZATION_COLLABORATOR,
+                    ROLE_ORGANIZATION_MODELER,
+                    ROLE_ORGANIZATION_USER,
+                )),
         CsmSecurityEndpointsRolesReader(
             paths = PATHS_SOLUTIONS,
             roles =
-            arrayOf(
-                ROLE_SOLUTION_READER,
-                ROLE_SOLUTION_WRITER,
-                ROLE_CONNECTOR_DEVELOPER,
-                ROLE_ORGANIZATION_ADMIN,
-                ROLE_ORGANIZATION_COLLABORATOR,
-                ROLE_ORGANIZATION_MODELER,
-                ROLE_ORGANIZATION_USER,
-                ROLE_ORGANIZATION_VIEWER
-            )
-        ),
+                arrayOf(
+                    ROLE_SOLUTION_READER,
+                    ROLE_SOLUTION_WRITER,
+                    ROLE_CONNECTOR_DEVELOPER,
+                    ROLE_ORGANIZATION_ADMIN,
+                    ROLE_ORGANIZATION_COLLABORATOR,
+                    ROLE_ORGANIZATION_MODELER,
+                    ROLE_ORGANIZATION_USER,
+                    ROLE_ORGANIZATION_VIEWER)),
         CsmSecurityEndpointsRolesReader(
             paths = PATHS_WORKSPACES,
             roles =
-            arrayOf(
-                ROLE_WORKSPACE_READER,
-                ROLE_WORKSPACE_WRITER,
-                ROLE_CONNECTOR_DEVELOPER,
-                ROLE_ORGANIZATION_ADMIN,
-                ROLE_ORGANIZATION_COLLABORATOR,
-                ROLE_ORGANIZATION_MODELER,
-                ROLE_ORGANIZATION_USER,
-                ROLE_ORGANIZATION_VIEWER
-            )
-        ),
+                arrayOf(
+                    ROLE_WORKSPACE_READER,
+                    ROLE_WORKSPACE_WRITER,
+                    ROLE_CONNECTOR_DEVELOPER,
+                    ROLE_ORGANIZATION_ADMIN,
+                    ROLE_ORGANIZATION_COLLABORATOR,
+                    ROLE_ORGANIZATION_MODELER,
+                    ROLE_ORGANIZATION_USER,
+                    ROLE_ORGANIZATION_VIEWER)),
     )
 
 internal val endpointSecurityWriters =
     listOf(
         CsmSecurityEndpointsRolesWriter(
             paths = listOf(PATH_CONNECTORS),
-            roles = arrayOf(ROLE_CONNECTOR_WRITER, ROLE_CONNECTOR_DEVELOPER)
-        ),
+            roles = arrayOf(ROLE_CONNECTOR_WRITER, ROLE_CONNECTOR_DEVELOPER)),
         CsmSecurityEndpointsRolesWriter(
             paths = listOf(PATH_DATASETS),
             roles =
-            arrayOf(
-                ROLE_DATASET_WRITER,
-                ROLE_CONNECTOR_DEVELOPER,
-                ROLE_ORGANIZATION_ADMIN,
-                ROLE_ORGANIZATION_COLLABORATOR,
-                ROLE_ORGANIZATION_MODELER,
-                ROLE_ORGANIZATION_USER,
-            )
-        ),
+                arrayOf(
+                    ROLE_DATASET_WRITER,
+                    ROLE_CONNECTOR_DEVELOPER,
+                    ROLE_ORGANIZATION_ADMIN,
+                    ROLE_ORGANIZATION_COLLABORATOR,
+                    ROLE_ORGANIZATION_MODELER,
+                    ROLE_ORGANIZATION_USER,
+                )),
         CsmSecurityEndpointsRolesWriter(
             paths = PATHS_ORGANIZATIONS,
             roles =
-            arrayOf(
-                ROLE_ORGANIZATION_WRITER,
-                ROLE_ORGANIZATION_ADMIN,
-            )
-        ),
+                arrayOf(
+                    ROLE_ORGANIZATION_WRITER,
+                    ROLE_ORGANIZATION_ADMIN,
+                )),
         CsmSecurityEndpointsRolesWriter(
             paths = PATHS_SCENARIOS,
             roles =
-            arrayOf(
-                ROLE_SCENARIO_WRITER,
-                ROLE_ORGANIZATION_ADMIN,
-                ROLE_ORGANIZATION_COLLABORATOR,
-                ROLE_ORGANIZATION_MODELER,
-                ROLE_ORGANIZATION_USER,
-            )
-        ),
+                arrayOf(
+                    ROLE_SCENARIO_WRITER,
+                    ROLE_ORGANIZATION_ADMIN,
+                    ROLE_ORGANIZATION_COLLABORATOR,
+                    ROLE_ORGANIZATION_MODELER,
+                    ROLE_ORGANIZATION_USER,
+                )),
         CsmSecurityEndpointsRolesWriter(
             paths = PATHS_SCENARIORUNS,
             roles =
-            arrayOf(
-                ROLE_SCENARIORUN_WRITER,
-                ROLE_ORGANIZATION_ADMIN,
-                ROLE_ORGANIZATION_COLLABORATOR,
-                ROLE_ORGANIZATION_MODELER,
-                ROLE_ORGANIZATION_USER,
-            )
-        ),
+                arrayOf(
+                    ROLE_SCENARIORUN_WRITER,
+                    ROLE_ORGANIZATION_ADMIN,
+                    ROLE_ORGANIZATION_COLLABORATOR,
+                    ROLE_ORGANIZATION_MODELER,
+                    ROLE_ORGANIZATION_USER,
+                )),
         CsmSecurityEndpointsRolesWriter(
             paths = PATHS_SOLUTIONS,
             roles =
-            arrayOf(
-                ROLE_SOLUTION_WRITER,
-                ROLE_ORGANIZATION_ADMIN,
-                ROLE_ORGANIZATION_COLLABORATOR,
-                ROLE_ORGANIZATION_MODELER,
-            )
-        ),
+                arrayOf(
+                    ROLE_SOLUTION_WRITER,
+                    ROLE_ORGANIZATION_ADMIN,
+                    ROLE_ORGANIZATION_COLLABORATOR,
+                    ROLE_ORGANIZATION_MODELER,
+                )),
         CsmSecurityEndpointsRolesWriter(
             paths = PATHS_WORKSPACES,
             roles =
-            arrayOf(
-                ROLE_WORKSPACE_WRITER,
-                ROLE_ORGANIZATION_ADMIN,
-                ROLE_ORGANIZATION_COLLABORATOR,
-            )
-        ),
+                arrayOf(
+                    ROLE_WORKSPACE_WRITER,
+                    ROLE_ORGANIZATION_ADMIN,
+                    ROLE_ORGANIZATION_COLLABORATOR,
+                )),
         CsmSecurityEndpointsRolesWriter(
             paths = listOf(PATH_WORKSPACES_FILES),
             roles =
-            arrayOf(
-                ROLE_WORKSPACE_WRITER,
-                ROLE_ORGANIZATION_ADMIN,
-                ROLE_ORGANIZATION_COLLABORATOR,
-                ROLE_ORGANIZATION_MODELER,
-                ROLE_ORGANIZATION_USER,
-            )
-        ),
+                arrayOf(
+                    ROLE_WORKSPACE_WRITER,
+                    ROLE_ORGANIZATION_ADMIN,
+                    ROLE_ORGANIZATION_COLLABORATOR,
+                    ROLE_ORGANIZATION_MODELER,
+                    ROLE_ORGANIZATION_USER,
+                )),
     )
 
 abstract class AbstractSecurityConfiguration : WebSecurityConfigurerAdapter() {
 
-    fun getOAuth2JwtConfigurer(
-        http: HttpSecurity
-    ): OAuth2ResourceServerConfigurer<HttpSecurity>.JwtConfigurer? {
+  fun getOAuth2JwtConfigurer(
+      http: HttpSecurity
+  ): OAuth2ResourceServerConfigurer<HttpSecurity>.JwtConfigurer? {
 
-        val corsHttpMethodsAllowed =
-            HttpMethod.values().filterNot { it == HttpMethod.TRACE }.map(HttpMethod::name)
+    val corsHttpMethodsAllowed =
+        HttpMethod.values().filterNot { it == HttpMethod.TRACE }.map(HttpMethod::name)
 
-        return http.cors()
-            .configurationSource {
-                CorsConfiguration().applyPermitDefaultValues().apply {
-                    allowedMethods = corsHttpMethodsAllowed
-                }
-            }
-            .and()
-            .authorizeRequests { requests ->
-                requests.antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+    return http.cors()
+        .configurationSource {
+          CorsConfiguration().applyPermitDefaultValues().apply {
+            allowedMethods = corsHttpMethodsAllowed
+          }
+        }
+        .and()
+        .authorizeRequests { requests ->
+          requests.antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                // Public paths
-                endpointSecurityPublic.forEach { path ->
-                    requests.antMatchers(HttpMethod.GET, path).permitAll()
-                }
+          // Public paths
+          endpointSecurityPublic.forEach { path ->
+            requests.antMatchers(HttpMethod.GET, path).permitAll()
+          }
 
-                // Endpoint security for reader roles
-                endpointSecurityReaders.forEach { endpointsRoles ->
-                    endpointsRoles.applyRoles(
-                        requests
-                    )
-                }
+          // Endpoint security for reader roles
+          endpointSecurityReaders.forEach { endpointsRoles -> endpointsRoles.applyRoles(requests) }
 
-                // Endpoint security for writer roles
-                endpointSecurityWriters.forEach { endpointsRoles ->
-                    endpointsRoles.applyRoles(
-                        requests
-                    )
-                }
+          // Endpoint security for writer roles
+          endpointSecurityWriters.forEach { endpointsRoles -> endpointsRoles.applyRoles(requests) }
 
-                requests.anyRequest().authenticated()
-            }
-            .oauth2ResourceServer()
-            .jwt()
-    }
+          requests.anyRequest().authenticated()
+        }
+        .oauth2ResourceServer()
+        .jwt()
+  }
 }
 
 internal class CsmSecurityEndpointsRolesWriter(
@@ -350,20 +318,20 @@ internal class CsmSecurityEndpointsRolesWriter(
     val roles: Array<String>,
 ) {
 
-    @Suppress("SpreadOperator")
-    fun applyRoles(
-        requests: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry
-    ) {
-        this.paths.forEach { path ->
-            requests
-                .antMatchers(HttpMethod.POST, path, "${path}/*")
-                .hasAnyAuthority(ROLE_PLATFORM_ADMIN, *this.roles)
-                .antMatchers(HttpMethod.PATCH, path, "${path}/*")
-                .hasAnyAuthority(ROLE_PLATFORM_ADMIN, *this.roles)
-                .antMatchers(HttpMethod.DELETE, path, "${path}/*")
-                .hasAnyAuthority(ROLE_PLATFORM_ADMIN, *this.roles)
-        }
+  @Suppress("SpreadOperator")
+  fun applyRoles(
+      requests: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry
+  ) {
+    this.paths.forEach { path ->
+      requests
+          .antMatchers(HttpMethod.POST, path, "${path}/*")
+          .hasAnyAuthority(ROLE_PLATFORM_ADMIN, *this.roles)
+          .antMatchers(HttpMethod.PATCH, path, "${path}/*")
+          .hasAnyAuthority(ROLE_PLATFORM_ADMIN, *this.roles)
+          .antMatchers(HttpMethod.DELETE, path, "${path}/*")
+          .hasAnyAuthority(ROLE_PLATFORM_ADMIN, *this.roles)
     }
+  }
 }
 
 internal class CsmSecurityEndpointsRolesReader(
@@ -371,14 +339,14 @@ internal class CsmSecurityEndpointsRolesReader(
     val roles: Array<String>,
 ) {
 
-    @Suppress("SpreadOperator")
-    fun applyRoles(
-        requests: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry
-    ) {
-        this.paths.forEach { path ->
-            requests
-                .antMatchers(HttpMethod.GET, path, "${path}/*")
-                .hasAnyAuthority(ROLE_PLATFORM_ADMIN, *this.roles)
-        }
+  @Suppress("SpreadOperator")
+  fun applyRoles(
+      requests: ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry
+  ) {
+    this.paths.forEach { path ->
+      requests
+          .antMatchers(HttpMethod.GET, path, "${path}/*")
+          .hasAnyAuthority(ROLE_PLATFORM_ADMIN, *this.roles)
     }
+  }
 }
