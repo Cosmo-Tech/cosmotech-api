@@ -135,7 +135,7 @@ This project comes with a set of [Helm](https://helm.sh/) Charts to make it depl
 
 ```shell
 az login
-az acr login --name csmphoenix
+az acr login --name csmenginesdev
 ```
 
 * Build and push the container image, e.g.:
@@ -236,7 +236,7 @@ kubectl create namespace phoenix
 **Example**
 
 ```
-./api/kubernetes/deploy_via_helm-dev.sh latest phoenix "a-super-secret-password" latest --values /path/to/my/values-dev.yaml
+./api/kubernetes/deploy_via_helm-dev.sh phoenix "a-super-secret-password" latest --values /path/to/my/values-dev.yaml
 ```
 
 This uses the default [values-dev.yaml](api/kubernetes/helm-chart/values-dev.yaml).
