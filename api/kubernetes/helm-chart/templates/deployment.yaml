@@ -61,6 +61,11 @@ spec:
             - name: CSM_PLATFORM_VENDOR
               # Used to include a specific '{{ .Values.config.csm.platform.vendor }}' Spring profile
               value: "{{ .Values.config.csm.platform.vendor }}"
+            {{if .Values.config.csm.platform.identityProvider }}
+            - name: IDENTITY_PROVIDER
+            # Used to include a specific '{{ .Values.config.csm.platform.identityProvider.code | default "aad" }}' Spring profile
+              value: {{ .Values.config.csm.platform.identityProvider.code | quote }}
+            {{end}}
             - name: SPRING_PROFILES_INCLUDE
               # The properties file for the 'helm' profile is mounted as a Volume in the Container,
               # using a configured Kubernetes Secret containing all the 'config.*' properties
