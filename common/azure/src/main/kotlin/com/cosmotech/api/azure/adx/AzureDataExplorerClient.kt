@@ -9,6 +9,7 @@ import com.cosmotech.api.scenariorun.DataIngestionState
 import com.microsoft.azure.kusto.data.Client
 import com.microsoft.azure.kusto.data.ClientImpl
 import com.microsoft.azure.kusto.data.ClientRequestProperties
+import com.microsoft.azure.kusto.data.KustoOperationResult
 import com.microsoft.azure.kusto.data.auth.ConnectionStringBuilder
 import com.microsoft.azure.kusto.data.exceptions.DataServiceException
 import java.time.ZonedDateTime
@@ -23,6 +24,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Service
 
 private const val REQUEST_TIMEOUT_SECONDS = 30L
+private const val KUSTO_RESPONSE_VERSION = "v1"
 // Default database name as defined as a private field in
 // com.microsoft.azure.kusto.data.ClientImpl. Used for health-checking.
 internal const val DEFAULT_DATABASE_NAME = "NetDefaultDb"
@@ -224,25 +226,30 @@ class AzureDataExplorerClient(
     return healthBuilder.withDetail("baseUri", baseUri).build()
   }
 
+  // PROD-8858 to avoid server 500 error use the v1 version of the KustoOperationResult
+  // see KustoOperationResult.java
   internal fun <T : Temporal> anyDataPlaneIngestionFailures(
       organizationId: String,
       workspaceKey: String,
       scenarioRunWorkflowEndTime: T,
   ): Boolean {
     val databaseName = getDatabaseName(organizationId, workspaceKey)
-    val failureQueryPrimaryResults =
-        this.kustoClient.execute(
-                databaseName,
-                """
+    val failureQueryResultsJsonString =
+        this.kustoClient.executeToJsonResult(
+            databaseName,
+            """
                 .show ingestion failures
                 | where  Table  == 'ProbesMeasures'
                 | order by FailedOn desc
                 | project FailedOn
             """,
-                ClientRequestProperties().apply {
-                  timeoutInMilliSec = TimeUnit.SECONDS.toMillis(REQUEST_TIMEOUT_SECONDS)
-                })
-            .primaryResults
+            ClientRequestProperties().apply {
+              timeoutInMilliSec = TimeUnit.SECONDS.toMillis(REQUEST_TIMEOUT_SECONDS)
+            })
+
+    val failureQueryPrimaryResults =
+        KustoOperationResult(failureQueryResultsJsonString, KUSTO_RESPONSE_VERSION).primaryResults
+
     return if (failureQueryPrimaryResults.next()) {
       failureQueryPrimaryResults.count() > 0 &&
           failureQueryPrimaryResults.getKustoDateTime("FailedOn")!!.until(
