@@ -489,6 +489,41 @@ class ContainerFactoryTests {
   }
 
   @Test
+  fun `Fetch Scenario Parameters Container env vars valid with containerScopes defined`() {
+
+    every { csmPlatformProperties.identityProvider } returns
+        CsmPlatformProperties.CsmIdentityProvider(
+            code = "aad",
+            scopes = mapOf("This is a fake scope id" to "This is a fake scope name"),
+            authorizationUrl = "http://this_is_a_fake_url.com",
+            containerScopes =
+                mapOf("scope1" to "This is a scope", "scope2" to "This is another scope"))
+
+    val container =
+        factory.buildScenarioParametersFetchContainer("1", "2", "3", "Test", CSM_SIMULATION_ID)
+    val expected =
+        mapOf(
+            "IDENTITY_PROVIDER" to "aad",
+            "AZURE_TENANT_ID" to "12345678",
+            "AZURE_CLIENT_ID" to "98765432",
+            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "CSM_SIMULATION_ID" to "simulationrunid",
+            "CSM_API_URL" to "https://api.cosmotech.com",
+            "CSM_API_SCOPE" to "scope1,scope2",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "1-Test",
+            "CSM_ORGANIZATION_ID" to "1",
+            "CSM_WORKSPACE_ID" to "2",
+            "CSM_SCENARIO_ID" to "3",
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters")
+    assertEquals(expected, container.envVars)
+  }
+
+  @Test
   fun `Fetch Scenario Parameters Container env vars valid json`() {
     val container =
         factory.buildScenarioParametersFetchContainer(

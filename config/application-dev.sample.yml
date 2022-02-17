@@ -37,6 +37,13 @@ csm:
       authorizationUrl: "[fill-this-value]"
       scopes:
         "[fill-this-value]": "[fill-this-value]"
+      containerScopes:
+        "[fill-this-value]": "[fill-this-value]"
+      # Here you can set custom user and admin groups
+      # - userGroup will have same rights that Organization.Viewer
+      # - admingroup will have same rights that Organization.User
+      # userGroup : "myCustomUserGroup"
+      # adminGroup : "myCustomAdminGroup"
     argo:
       base-uri: "http://localhost:2746"
     azure:

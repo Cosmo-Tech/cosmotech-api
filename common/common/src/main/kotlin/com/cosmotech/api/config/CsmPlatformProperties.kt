@@ -383,7 +383,22 @@ data class CsmPlatformProperties(
        * - "https://{yourOktaDomain}/oauth2/default/v1/authorize"
        * - "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
        */
-      val authorizationUrl: String
+      val authorizationUrl: String,
+      /**
+       * entry sample :
+       * - {"csm.read.scenario" to "Read access to scenarios"}
+       */
+      val containerScopes: Map<String, String> = emptyMap(),
+      /**
+       * Custom group name used acted as Organization.Viewer default: Organization.Viewer e.g.
+       * "ciam-userAccess-dev"
+       */
+      val userGroup: String? = null,
+      /**
+       * Custom group name used acted as Organization.User default: Organization.User e.g.
+       * "ciam-adminAccess-dev"
+       */
+      val adminGroup: String? = null,
   )
 
   data class CsmPlatformOkta(
@@ -395,5 +410,8 @@ data class CsmPlatformProperties(
 
       /** Okta Application Secret */
       val clientSecret: String,
+
+      /** Okta Authorization Server Audience */
+      val audience: String,
   )
 }

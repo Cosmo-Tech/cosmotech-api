@@ -102,7 +102,12 @@ val endpointSecurityPublic =
         "/openapi",
         "/error",
     )
-internal val endpointSecurityReaders =
+
+@Suppress("LongMethod")
+internal fun endpointSecurityReaders(
+    customOrganizationUser: String,
+    customOrganizationViewer: String
+) =
     listOf(
         CsmSecurityEndpointsRolesReader(
             paths = listOf(PATH_CONNECTORS),
@@ -115,7 +120,9 @@ internal val endpointSecurityReaders =
                     ROLE_ORGANIZATION_COLLABORATOR,
                     ROLE_ORGANIZATION_MODELER,
                     ROLE_ORGANIZATION_USER,
-                    ROLE_ORGANIZATION_VIEWER)),
+                    ROLE_ORGANIZATION_VIEWER,
+                    customOrganizationUser,
+                    customOrganizationViewer)),
         CsmSecurityEndpointsRolesReader(
             paths = listOf(PATH_DATASETS),
             roles =
@@ -127,7 +134,9 @@ internal val endpointSecurityReaders =
                     ROLE_ORGANIZATION_COLLABORATOR,
                     ROLE_ORGANIZATION_MODELER,
                     ROLE_ORGANIZATION_USER,
-                    ROLE_ORGANIZATION_VIEWER)),
+                    ROLE_ORGANIZATION_VIEWER,
+                    customOrganizationUser,
+                    customOrganizationViewer)),
         CsmSecurityEndpointsRolesReader(
             paths = PATHS_ORGANIZATIONS,
             roles =
@@ -139,7 +148,9 @@ internal val endpointSecurityReaders =
                     ROLE_ORGANIZATION_COLLABORATOR,
                     ROLE_ORGANIZATION_MODELER,
                     ROLE_ORGANIZATION_USER,
-                    ROLE_ORGANIZATION_VIEWER)),
+                    ROLE_ORGANIZATION_VIEWER,
+                    customOrganizationUser,
+                    customOrganizationViewer)),
         CsmSecurityEndpointsRolesReader(
             paths = listOf(PATH_SCENARIOS),
             roles =
@@ -152,7 +163,8 @@ internal val endpointSecurityReaders =
                     ROLE_ORGANIZATION_USER,
                     ROLE_ORGANIZATION_VIEWER,
                     SCOPE_SCENARIO_READ,
-                )),
+                    customOrganizationUser,
+                    customOrganizationViewer)),
         CsmSecurityEndpointsRolesReader(
             paths =
                 listOf(
@@ -166,7 +178,8 @@ internal val endpointSecurityReaders =
                     ROLE_ORGANIZATION_MODELER,
                     ROLE_ORGANIZATION_USER,
                     ROLE_ORGANIZATION_VIEWER,
-                )),
+                    customOrganizationUser,
+                    customOrganizationViewer)),
         CsmSecurityEndpointsRolesReader(
             paths = PATHS_SCENARIORUNS,
             roles =
@@ -177,7 +190,7 @@ internal val endpointSecurityReaders =
                     ROLE_ORGANIZATION_COLLABORATOR,
                     ROLE_ORGANIZATION_MODELER,
                     ROLE_ORGANIZATION_USER,
-                )),
+                    customOrganizationUser)),
         CsmSecurityEndpointsRolesReader(
             paths = PATHS_SOLUTIONS,
             roles =
@@ -189,7 +202,9 @@ internal val endpointSecurityReaders =
                     ROLE_ORGANIZATION_COLLABORATOR,
                     ROLE_ORGANIZATION_MODELER,
                     ROLE_ORGANIZATION_USER,
-                    ROLE_ORGANIZATION_VIEWER)),
+                    ROLE_ORGANIZATION_VIEWER,
+                    customOrganizationUser,
+                    customOrganizationViewer)),
         CsmSecurityEndpointsRolesReader(
             paths = PATHS_WORKSPACES,
             roles =
@@ -201,10 +216,13 @@ internal val endpointSecurityReaders =
                     ROLE_ORGANIZATION_COLLABORATOR,
                     ROLE_ORGANIZATION_MODELER,
                     ROLE_ORGANIZATION_USER,
-                    ROLE_ORGANIZATION_VIEWER)),
+                    ROLE_ORGANIZATION_VIEWER,
+                    customOrganizationUser,
+                    customOrganizationViewer)),
     )
 
-internal val endpointSecurityWriters =
+@Suppress("LongMethod")
+internal fun endpointSecurityWriters(customOrganizationUser: String) =
     listOf(
         CsmSecurityEndpointsRolesWriter(
             paths = listOf(PATH_CONNECTORS),
@@ -219,7 +237,7 @@ internal val endpointSecurityWriters =
                     ROLE_ORGANIZATION_COLLABORATOR,
                     ROLE_ORGANIZATION_MODELER,
                     ROLE_ORGANIZATION_USER,
-                )),
+                    customOrganizationUser)),
         CsmSecurityEndpointsRolesWriter(
             paths = PATHS_ORGANIZATIONS,
             roles =
@@ -236,7 +254,7 @@ internal val endpointSecurityWriters =
                     ROLE_ORGANIZATION_COLLABORATOR,
                     ROLE_ORGANIZATION_MODELER,
                     ROLE_ORGANIZATION_USER,
-                )),
+                    customOrganizationUser)),
         CsmSecurityEndpointsRolesWriter(
             paths = PATHS_SCENARIORUNS,
             roles =
@@ -246,7 +264,7 @@ internal val endpointSecurityWriters =
                     ROLE_ORGANIZATION_COLLABORATOR,
                     ROLE_ORGANIZATION_MODELER,
                     ROLE_ORGANIZATION_USER,
-                )),
+                    customOrganizationUser)),
         CsmSecurityEndpointsRolesWriter(
             paths = PATHS_SOLUTIONS,
             roles =
@@ -273,13 +291,15 @@ internal val endpointSecurityWriters =
                     ROLE_ORGANIZATION_COLLABORATOR,
                     ROLE_ORGANIZATION_MODELER,
                     ROLE_ORGANIZATION_USER,
-                )),
+                    customOrganizationUser)),
     )
 
 abstract class AbstractSecurityConfiguration : WebSecurityConfigurerAdapter() {
 
   fun getOAuth2JwtConfigurer(
-      http: HttpSecurity
+      http: HttpSecurity,
+      organizationUserGroup: String,
+      organizationViewerGroup: String
   ): OAuth2ResourceServerConfigurer<HttpSecurity>.JwtConfigurer? {
 
     val corsHttpMethodsAllowed =
@@ -301,10 +321,15 @@ abstract class AbstractSecurityConfiguration : WebSecurityConfigurerAdapter() {
           }
 
           // Endpoint security for reader roles
-          endpointSecurityReaders.forEach { endpointsRoles -> endpointsRoles.applyRoles(requests) }
+          endpointSecurityReaders(organizationUserGroup, organizationViewerGroup).forEach {
+              endpointsRoles ->
+            endpointsRoles.applyRoles(requests)
+          }
 
           // Endpoint security for writer roles
-          endpointSecurityWriters.forEach { endpointsRoles -> endpointsRoles.applyRoles(requests) }
+          endpointSecurityWriters(organizationUserGroup).forEach { endpointsRoles ->
+            endpointsRoles.applyRoles(requests)
+          }
 
           requests.anyRequest().authenticated()
         }
