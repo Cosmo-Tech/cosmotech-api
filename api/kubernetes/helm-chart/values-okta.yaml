@@ -44,11 +44,18 @@ config:
         authorizationUrl: "https://changeme/oauth2/default/v1/authorize"
         scopes:
           changeme: "changeme"
+        containerScopes:
+          changeme: "changeme"
+        # Here you can set custom user and admin groups
+        # - userGroup will have same rights that Organization.Viewer
+        # - admingroup will have same rights that Organization.User
+        # userGroup : "myCustomUserGroup"
+        # adminGroup : "myCustomAdminGroup"
       # Use to define Okta Configuration
       okta:
         issuer: "https://changeme/oauth2/default"
         clientId: "changeme"
-        clientSecret: "changeme-JC9ZFWcm"
+        clientSecret: "changeme"
         audience: "changeme"
       argo:
         workflows:

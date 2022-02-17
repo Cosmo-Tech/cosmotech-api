@@ -1212,6 +1212,24 @@ internal class ContainerFactory(
   }
 }
 
+/**
+ * Get scopes used by containers
+ * @return all scopes defined join by ","
+ */
+internal fun getContainerScopes(csmPlatformProperties: CsmPlatformProperties): String {
+
+  if (csmPlatformProperties.identityProvider != null) {
+    val containerScopes =
+        csmPlatformProperties.identityProvider?.containerScopes?.keys?.joinToString(separator = ",")
+            ?: ""
+    if (containerScopes.isBlank() && csmPlatformProperties.identityProvider!!.code == "aad") {
+      return "${csmPlatformProperties.azure?.appIdUri}${API_SCOPE_SUFFIX}"
+    }
+    return containerScopes
+  }
+  return "${csmPlatformProperties.azure?.appIdUri}${API_SCOPE_SUFFIX}"
+}
+
 internal fun getCommonEnvVars(
     csmPlatformProperties: CsmPlatformProperties,
     csmSimulationId: String,
@@ -1247,7 +1265,6 @@ internal fun getCommonEnvVars(
         )
       }
   val oktaEnvVars: MutableMap<String, String> = mutableMapOf()
-  // OKTA Env Vars
   if (csmPlatformProperties.identityProvider?.code == "okta") {
     oktaEnvVars.putAll(
         mapOf(
@@ -1256,12 +1273,13 @@ internal fun getCommonEnvVars(
             OKTA_CLIENT_ISSUER to (csmPlatformProperties.okta?.issuer!!),
         ))
   }
+  val containerScopes = getContainerScopes(csmPlatformProperties)
   val commonEnvVars =
       mapOf(
           IDENTITY_PROVIDER to (csmPlatformProperties.identityProvider?.code ?: "aad"),
           CSM_SIMULATION_ID to csmSimulationId,
           API_BASE_URL_VAR to csmPlatformProperties.api.baseUrl,
-          API_BASE_SCOPE_VAR to "${csmPlatformProperties.azure?.appIdUri}${API_SCOPE_SUFFIX}",
+          API_BASE_SCOPE_VAR to containerScopes,
           DATASET_PATH_VAR to DATASET_PATH,
           PARAMETERS_PATH_VAR to PARAMETERS_PATH,
           AZURE_DATA_EXPLORER_RESOURCE_URI_VAR to
@@ -1273,7 +1291,6 @@ internal fun getCommonEnvVars(
           PARAMETERS_WORKSPACE_VAR to workspaceId,
           PARAMETERS_SCENARIO_VAR to scenarioId,
       )
-
   return (identityEnvVars + commonEnvVars + oktaEnvVars).toMutableMap()
 }
 
