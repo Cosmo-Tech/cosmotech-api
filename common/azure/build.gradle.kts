@@ -2,18 +2,21 @@
 // Licensed under the MIT license.
 
 val azureSpringBootBomVersion = "3.13.0"
+val azureSDKBomVersion = "1.1.0"
+val azureKustoIngestVersion = "3.0.0"
 
 dependencies {
   api(projects.cosmotechApiCommonParent.cosmotechApiCommon)
 
   api(platform("com.azure.spring:azure-spring-boot-bom:$azureSpringBootBomVersion"))
   implementation(platform("com.azure.spring:azure-spring-boot-bom:$azureSpringBootBomVersion"))
+  api(platform("com.azure:azure-sdk-bom:$azureSDKBomVersion"))
 
   api("com.azure.spring:azure-spring-boot-starter-cosmos")
   implementation("com.azure.spring:azure-spring-boot-starter-storage")
-  api("com.azure:azure-storage-blob-batch:12.11.3")
+  api("com.azure:azure-storage-blob-batch")
   implementation("com.azure.spring:azure-spring-boot-starter-active-directory")
-  implementation("com.microsoft.azure.kusto:kusto-ingest:3.0.0") {
+  implementation("com.microsoft.azure.kusto:kusto-ingest:$azureKustoIngestVersion") {
     exclude(group = "org.slf4j", module = "slf4j-api")
     because(
         "this depends on org.slf4j:slf4j-api 1.8.0-beta4 (pre 2.x)," +
