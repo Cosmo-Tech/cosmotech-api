@@ -51,7 +51,7 @@ internal class SolutionServiceImpl(
   override fun removeAllRunTemplates(organizationId: String, solutionId: String) {
     val solution = findSolutionById(organizationId, solutionId)
     if (!solution.runTemplates.isNullOrEmpty()) {
-      solution.runTemplates = listOf()
+      solution.runTemplates = mutableListOf()
       cosmosTemplate.upsert("${organizationId}_solutions", solution)
     }
   }
@@ -59,7 +59,7 @@ internal class SolutionServiceImpl(
   override fun removeAllSolutionParameterGroups(organizationId: String, solutionId: String) {
     val solution = findSolutionById(organizationId, solutionId)
     if (!solution.parameterGroups.isNullOrEmpty()) {
-      solution.parameterGroups = listOf()
+      solution.parameterGroups = mutableListOf()
       cosmosTemplate.upsert("${organizationId}_solutions", solution)
     }
   }
@@ -67,7 +67,7 @@ internal class SolutionServiceImpl(
   override fun removeAllSolutionParameters(organizationId: String, solutionId: String) {
     val solution = findSolutionById(organizationId, solutionId)
     if (!solution.parameters.isNullOrEmpty()) {
-      solution.parameters = listOf()
+      solution.parameters = mutableListOf()
       cosmosTemplate.upsert("${organizationId}_solutions", solution)
     }
   }
@@ -86,7 +86,7 @@ internal class SolutionServiceImpl(
         existingSolution.parameterGroups?.associateBy { it.id }?.toMutableMap() ?: mutableMapOf()
     runTemplateParameterGroupMap.putAll(
         runTemplateParameterGroup.filter { it.id.isNotBlank() }.associateBy { it.id })
-    existingSolution.parameterGroups = runTemplateParameterGroupMap.values.toList()
+    existingSolution.parameterGroups = runTemplateParameterGroupMap.values.toMutableList()
     cosmosTemplate.upsert("${organizationId}_solutions", existingSolution)
 
     return runTemplateParameterGroup
@@ -106,7 +106,7 @@ internal class SolutionServiceImpl(
         existingSolution.parameters?.associateBy { it.id }?.toMutableMap() ?: mutableMapOf()
     runTemplateParameterMap.putAll(
         runTemplateParameter.filter { it.id.isNotBlank() }.associateBy { it.id })
-    existingSolution.parameters = runTemplateParameterMap.values.toList()
+    existingSolution.parameters = runTemplateParameterMap.values.toMutableList()
     cosmosTemplate.upsert("${organizationId}_solutions", existingSolution)
 
     return runTemplateParameter
@@ -122,10 +122,9 @@ internal class SolutionServiceImpl(
     }
 
     val existingSolution = findSolutionById(organizationId, solutionId)
-    val runTemplateMap =
-        existingSolution.runTemplates?.associateBy { it.id }?.toMutableMap() ?: mutableMapOf()
+    val runTemplateMap = existingSolution.runTemplates.associateBy { it.id }.toMutableMap()
     runTemplateMap.putAll(runTemplate.filter { it.id.isNotBlank() }.associateBy { it.id })
-    existingSolution.runTemplates = runTemplateMap.values.toList()
+    existingSolution.runTemplates = runTemplateMap.values.toMutableList()
     cosmosTemplate.upsert("${organizationId}_solutions", existingSolution)
 
     return runTemplate
@@ -154,11 +153,9 @@ internal class SolutionServiceImpl(
       runTemplateId: String
   ) {
     val existingSolution = findSolutionById(organizationId, solutionId)
-    val runTemplatesMutableList = existingSolution.runTemplates.toMutableList()
-    if (!runTemplatesMutableList.removeIf { it.id == runTemplateId }) {
+    if (!existingSolution.runTemplates.removeIf { it.id == runTemplateId }) {
       throw CsmResourceNotFoundException("Run Template '$runTemplateId' *not* found")
     }
-    existingSolution.runTemplates = runTemplatesMutableList.toList()
     cosmosTemplate.upsert("${organizationId}_solutions", existingSolution)
   }
 
@@ -200,7 +197,8 @@ internal class SolutionServiceImpl(
       runTemplate: RunTemplate
   ): List<RunTemplate> {
     val existingSolution = findSolutionById(organizationId, solutionId)
-    val runTemplates = existingSolution.runTemplates.filter { it.id == runTemplateId }
+    val runTemplates =
+        existingSolution.runTemplates.filter { it.id == runTemplateId }.toMutableList()
     if (runTemplates.isEmpty()) {
       throw CsmResourceNotFoundException("Run Template '$runTemplateId' *not* found")
     }

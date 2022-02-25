@@ -134,34 +134,34 @@ class ScenarioServiceImplTests {
     every { runTemplate1.id } returns "runTemplate1_id"
     every { runTemplate1.name } returns "runTemplate1 name"
     every { runTemplate1.parameterGroups } returns
-        listOf("parameter_group_11", "parameter_group_12")
+        mutableListOf("parameter_group_11", "parameter_group_12")
 
     val runTemplate2 = mockk<RunTemplate>()
     every { runTemplate2.id } returns "runTemplate2_id"
     every { runTemplate2.id } returns "runTemplate2 name"
-    every { runTemplate2.parameterGroups } returns listOf("parameter_group_21")
+    every { runTemplate2.parameterGroups } returns mutableListOf("parameter_group_21")
 
-    every { solution.runTemplates } returns listOf(runTemplate1, runTemplate2)
+    every { solution.runTemplates } returns mutableListOf(runTemplate1, runTemplate2)
 
     val parameterGroup11 = mockk<RunTemplateParameterGroup>()
     every { parameterGroup11.id } returns "parameter_group_11"
     every { parameterGroup11.parameters } returns
-        listOf("parameter_group_11_parameter1", "parameter_group_11_parameter2")
+        mutableListOf("parameter_group_11_parameter1", "parameter_group_11_parameter2")
     val parameterGroup12 = mockk<RunTemplateParameterGroup>()
     every { parameterGroup12.id } returns "parameter_group_12"
-    every { parameterGroup12.parameters } returns listOf("parameter_group_12_parameter1")
+    every { parameterGroup12.parameters } returns mutableListOf("parameter_group_12_parameter1")
     val parameterGroup21 = mockk<RunTemplateParameterGroup>()
     every { parameterGroup21.id } returns "parameter_group_21"
-    every { parameterGroup21.parameters } returns emptyList()
+    every { parameterGroup21.parameters } returns mutableListOf()
 
     every { solution.parameterGroups } returns
-        listOf(parameterGroup11, parameterGroup12, parameterGroup21)
+        mutableListOf(parameterGroup11, parameterGroup12, parameterGroup21)
 
     val parentScenarioId = "S-parent"
     val parentScenario = mockk<Scenario>(relaxed = true)
     every { parentScenario.id } returns parentScenarioId
     every { parentScenario.parametersValues } returns
-        listOf(
+        mutableListOf(
             ScenarioRunTemplateParameterValue(
                 parameterId = "parameter_group_11_parameter1",
                 value = "parameter_group_11_parameter1_value"))
@@ -192,7 +192,7 @@ class ScenarioServiceImplTests {
                 parentId = parentScenarioId,
                 runTemplateId = "runTemplate1_id",
                 parametersValues =
-                    listOf(
+                    mutableListOf(
                         ScenarioRunTemplateParameterValue(
                             parameterId = "parameter_group_12_parameter1",
                             value = "parameter_group_12_parameter1_value"))))
@@ -233,28 +233,28 @@ class ScenarioServiceImplTests {
     every { runTemplate1.id } returns "runTemplate1_id"
     every { runTemplate1.name } returns "runTemplate1 name"
     every { runTemplate1.parameterGroups } returns
-        listOf("parameter_group_11", "parameter_group_12")
+        mutableListOf("parameter_group_11", "parameter_group_12")
 
     val runTemplate2 = mockk<RunTemplate>()
     every { runTemplate2.id } returns "runTemplate2_id"
     every { runTemplate2.id } returns "runTemplate2 name"
-    every { runTemplate2.parameterGroups } returns listOf("parameter_group_21")
+    every { runTemplate2.parameterGroups } returns mutableListOf("parameter_group_21")
 
-    every { solution.runTemplates } returns listOf(runTemplate1, runTemplate2)
+    every { solution.runTemplates } returns mutableListOf(runTemplate1, runTemplate2)
 
     val parameterGroup11 = mockk<RunTemplateParameterGroup>()
     every { parameterGroup11.id } returns "parameter_group_11"
     every { parameterGroup11.parameters } returns
-        listOf("parameter_group_11_parameter1", "parameter_group_11_parameter2")
+        mutableListOf("parameter_group_11_parameter1", "parameter_group_11_parameter2")
     val parameterGroup12 = mockk<RunTemplateParameterGroup>()
     every { parameterGroup12.id } returns "parameter_group_12"
-    every { parameterGroup12.parameters } returns listOf("parameter_group_12_parameter1")
+    every { parameterGroup12.parameters } returns mutableListOf("parameter_group_12_parameter1")
     val parameterGroup21 = mockk<RunTemplateParameterGroup>()
     every { parameterGroup21.id } returns "parameter_group_21"
-    every { parameterGroup21.parameters } returns emptyList()
+    every { parameterGroup21.parameters } returns mutableListOf()
 
     every { solution.parameterGroups } returns
-        listOf(parameterGroup11, parameterGroup12, parameterGroup21)
+        mutableListOf(parameterGroup11, parameterGroup12, parameterGroup21)
 
     every { idGenerator.generate("scenario") } returns "S-myScenarioId"
 
@@ -277,7 +277,7 @@ class ScenarioServiceImplTests {
                 solutionId = SOLUTION_ID,
                 runTemplateId = "runTemplate1_id",
                 parametersValues =
-                    listOf(
+                    mutableListOf(
                         ScenarioRunTemplateParameterValue(
                             parameterId = "parameter_group_12_parameter1",
                             value = "parameter_group_12_parameter1_value"))))
@@ -311,34 +311,34 @@ class ScenarioServiceImplTests {
     every { runTemplate1.id } returns "runTemplate1_id"
     every { runTemplate1.name } returns "runTemplate1 name"
     every { runTemplate1.parameterGroups } returns
-        listOf("parameter_group_11", "parameter_group_12")
+        mutableListOf("parameter_group_11", "parameter_group_12")
 
     val runTemplate2 = mockk<RunTemplate>()
     every { runTemplate2.id } returns "runTemplate2_id"
     every { runTemplate2.id } returns "runTemplate2 name"
-    every { runTemplate2.parameterGroups } returns listOf("parameter_group_21")
+    every { runTemplate2.parameterGroups } returns mutableListOf("parameter_group_21")
 
-    every { solution.runTemplates } returns listOf(runTemplate1, runTemplate2)
+    every { solution.runTemplates } returns mutableListOf(runTemplate1, runTemplate2)
 
     val parameterGroup11 = mockk<RunTemplateParameterGroup>()
     every { parameterGroup11.id } returns "parameter_group_11"
     every { parameterGroup11.parameters } returns
-        listOf("parameter_group_11_parameter1", "parameter_group_11_parameter2")
+        mutableListOf("parameter_group_11_parameter1", "parameter_group_11_parameter2")
     val parameterGroup12 = mockk<RunTemplateParameterGroup>()
     every { parameterGroup12.id } returns "parameter_group_12"
-    every { parameterGroup12.parameters } returns listOf("parameter_group_12_parameter1")
+    every { parameterGroup12.parameters } returns mutableListOf("parameter_group_12_parameter1")
     val parameterGroup21 = mockk<RunTemplateParameterGroup>()
     every { parameterGroup21.id } returns "parameter_group_21"
-    every { parameterGroup21.parameters } returns emptyList()
+    every { parameterGroup21.parameters } returns mutableListOf()
 
     every { solution.parameterGroups } returns
-        listOf(parameterGroup11, parameterGroup12, parameterGroup21)
+        mutableListOf(parameterGroup11, parameterGroup12, parameterGroup21)
 
     val parentScenarioId = "S-parent"
     val parentScenario = mockk<Scenario>(relaxed = true)
     every { parentScenario.id } returns parentScenarioId
     every { parentScenario.parametersValues } returns
-        listOf(
+        mutableListOf(
             ScenarioRunTemplateParameterValue(
                 parameterId = "parameter_group_11_parameter1",
                 value = "parameter_group_11_parameter1_value_from_parent"))
@@ -369,7 +369,7 @@ class ScenarioServiceImplTests {
                 parentId = parentScenarioId,
                 runTemplateId = "runTemplate1_id",
                 parametersValues =
-                    listOf(
+                    mutableListOf(
                         ScenarioRunTemplateParameterValue(
                             parameterId = "parameter_group_11_parameter1",
                             value = "parameter_group_11_parameter1_value_from_child"))))

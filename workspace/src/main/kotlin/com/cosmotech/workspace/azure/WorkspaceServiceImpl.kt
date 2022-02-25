@@ -18,6 +18,7 @@ import com.cosmotech.api.events.UserAddedToWorkspace
 import com.cosmotech.api.events.UserRemovedFromOrganization
 import com.cosmotech.api.events.UserRemovedFromWorkspace
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
+import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -66,7 +67,7 @@ internal class WorkspaceServiceImpl(
     val workspace = findWorkspaceById(organizationId, workspaceId)
     if (!workspace.users.isNullOrEmpty()) {
       val userIds = workspace.users!!.mapNotNull { it.id }
-      workspace.users = listOf()
+      workspace.users = mutableListOf()
       cosmosTemplate.upsert("${organizationId}_workspaces", workspace)
 
       userIds.forEach {
@@ -82,11 +83,9 @@ internal class WorkspaceServiceImpl(
       userId: String
   ) {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    val workspaceUserMap =
-        workspace.users?.associateBy { it.id!! }?.toMutableMap() ?: mutableMapOf()
-    if (workspaceUserMap.containsKey(userId)) {
-      workspaceUserMap.remove(userId)
-      workspace.users = workspaceUserMap.values.toList()
+    if (!(workspace.users?.removeIf { it.id == userId } ?: false)) {
+      throw CsmResourceNotFoundException("User '$userId' *not* found")
+    } else {
       cosmosTemplate.upsert("${organizationId}_workspaces", workspace)
       this.eventPublisher.publishEvent(
           UserRemovedFromWorkspace(this, organizationId, workspaceId, userId))
@@ -103,24 +102,22 @@ internal class WorkspaceServiceImpl(
       return workspaceUser
     }
 
-    val organization = organizationService.findOrganizationById(organizationId)
+    organizationService.findOrganizationById(organizationId)
     val workspace = findWorkspaceById(organizationId, workspaceId)
 
-    val workspaceUserWithoutNullIds = workspaceUser.filter { it.id != null }
-    val newUsersLoaded = fetchUsers(workspaceUserWithoutNullIds.mapNotNull { it.id })
+    val newUsersLoaded = fetchUsers(workspaceUser.mapNotNull { it.id })
     val workspaceUserWithRightNames =
-        workspaceUserWithoutNullIds.map { it.copy(name = newUsersLoaded[it.id]!!.name!!) }
-    val workspaceUserMap = workspaceUserWithRightNames.associateBy { it.id!! }
+        workspaceUser.map { it.copy(name = newUsersLoaded[it.id]!!.name!!) }
+    val workspaceUserMap = workspaceUserWithRightNames.associateBy { it.id }
 
     val currentWorkspaceUsers =
-        workspace.users?.filter { it.id != null }?.associateBy { it.id!! }?.toMutableMap()
-            ?: mutableMapOf()
+        workspace.users?.associateBy { it.id }?.toMutableMap() ?: mutableMapOf()
 
     newUsersLoaded.forEach { (userId, _) ->
       // Add or replace
       currentWorkspaceUsers[userId] = workspaceUserMap[userId]!!
     }
-    workspace.users = currentWorkspaceUsers.values.toList()
+    workspace.users = currentWorkspaceUsers.values.toMutableList()
 
     cosmosTemplate.upsert("${organizationId}_workspaces", workspace)
 
@@ -128,7 +125,7 @@ internal class WorkspaceServiceImpl(
     workspace.users?.forEach { user ->
       this.eventPublisher.publishEvent(
           UserAddedToWorkspace(
-              this, organizationId, user.id!!, user.roles.map { role -> role.value }))
+              this, organizationId, user.id, user.roles.map { role -> role.value }))
     }
     return workspaceUserWithRightNames
   }
@@ -199,11 +196,11 @@ internal class WorkspaceServiceImpl(
           workspace.users?.mapNotNull { it.id }?.filterNot { usersToSet.containsKey(it) }
       val usersWithNames =
           usersToSet.let { workspace.users!!.map { it.copy(name = usersToSet[it.id]!!.name!!) } }
-      existingWorkspace.users = usersWithNames
+      existingWorkspace.users = usersWithNames.toMutableList()
       hasChanged = true
     }
 
-    if (workspace.solution != null) {
+    if (workspace.solution.solutionId != null) {
       // Validate solution ID
       workspace.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
       existingWorkspace.solution = workspace.solution
@@ -219,7 +216,7 @@ internal class WorkspaceServiceImpl(
       workspace.users?.forEach { user ->
         this.eventPublisher.publishEvent(
             UserAddedToWorkspace(
-                this, organizationId, user.id!!, user.roles.map { role -> role.value }))
+                this, organizationId, user.id, user.roles.map { role -> role.value }))
       }
       responseEntity
     } else {

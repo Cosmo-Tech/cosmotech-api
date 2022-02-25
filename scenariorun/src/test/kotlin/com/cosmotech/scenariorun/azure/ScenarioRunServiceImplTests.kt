@@ -422,7 +422,6 @@ class ScenarioRunServiceImplTests {
     every { scenarioRun.csmSimulationRun } returns "csmSimulationRun"
     every { getCurrentAuthenticatedUserName() } returns "ownerId"
     scenarioRun.ownerId != getCurrentAuthenticatedUserName()
-    val azureDataExplorerClient = mockk<AzureDataExplorerClient>()
     scenarioRunServiceImpl.deleteScenarioRun("orgId", "scenariorunId")
     verify(exactly = 1) { scenarioRunServiceImpl.deleteScenarioRun("orgId", "scenariorunId") }
   }

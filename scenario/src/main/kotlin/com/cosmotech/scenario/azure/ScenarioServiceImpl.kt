@@ -80,7 +80,7 @@ internal class ScenarioServiceImpl(
               .filter { it.parameterId.isNotBlank() }
               .map { it.copy(isInherited = false) }
               .associateBy { it.parameterId })
-      scenario.parametersValues = parametersValuesMap.values.toList()
+      scenario.parametersValues = parametersValuesMap.values.toMutableList()
       upsertScenarioData(organizationId, scenario, workspaceId)
     }
     return scenarioRunTemplateParameterValue
@@ -100,25 +100,24 @@ internal class ScenarioServiceImpl(
       return scenarioUser
     }
 
-    val organization = organizationService.findOrganizationById(organizationId)
-    val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
+    // Validate organizationId & workspaceId
+    organizationService.findOrganizationById(organizationId)
+    workspaceService.findWorkspaceById(organizationId, workspaceId)
     val scenario = findScenarioById(organizationId, workspaceId, scenarioId)
 
-    val scenarioUserWithoutNullIds = scenarioUser.filter { it.id != null }
-    val newUsersLoaded = fetchUsers(scenarioUserWithoutNullIds.mapNotNull { it.id })
+    val newUsersLoaded = fetchUsers(scenarioUser.mapNotNull { it.id })
     val scenarioUserWithRightNames =
-        scenarioUserWithoutNullIds.map { it.copy(name = newUsersLoaded[it.id]!!.name!!) }
-    val scenarioUserMap = scenarioUserWithRightNames.associateBy { it.id!! }
+        scenarioUser.map { it.copy(name = newUsersLoaded[it.id]!!.name!!) }
+    val scenarioUserMap = scenarioUserWithRightNames.associateBy { it.id }
 
     val currentScenarioUsers =
-        scenario.users?.filter { it.id != null }?.associateBy { it.id!! }?.toMutableMap()
-            ?: mutableMapOf()
+        scenario.users?.associateBy { it.id }?.toMutableMap() ?: mutableMapOf()
 
     newUsersLoaded.forEach { (userId, _) ->
       // Add or replace
       currentScenarioUsers[userId] = scenarioUserMap[userId]!!
     }
-    scenario.users = currentScenarioUsers.values.toList()
+    scenario.users = currentScenarioUsers.values.toMutableList()
     scenario.lastUpdate = OffsetDateTime.now()
 
     upsertScenarioData(organizationId, scenario, workspaceId)
@@ -126,8 +125,7 @@ internal class ScenarioServiceImpl(
     // Roles might have changed => notify all users so they can update their own items
     scenario.users?.forEach { user ->
       this.eventPublisher.publishEvent(
-          UserAddedToScenario(
-              this, organizationId, user.id!!, user.roles.map { role -> role.value }))
+          UserAddedToScenario(this, organizationId, user.id, user.roles.map { role -> role.value }))
     }
     return scenarioUserWithRightNames
   }
@@ -146,7 +144,8 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       scenario: Scenario
   ): Scenario {
-    val organization = organizationService.findOrganizationById(organizationId)
+    // Validate organizationId
+    organizationService.findOrganizationById(organizationId)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     val solution =
         workspace.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
@@ -188,7 +187,7 @@ internal class ScenarioServiceImpl(
             runTemplateName = runTemplate?.name,
             creationDate = now,
             lastUpdate = now,
-            users = usersWithNames,
+            users = usersWithNames?.toMutableList() ?: mutableListOf(),
             state = ScenarioJobState.Created,
             datasetList = datasetList,
             rootId = rootId,
@@ -207,8 +206,7 @@ internal class ScenarioServiceImpl(
     // Roles might have changed => notify all users so they can update their own items
     scenario.users?.forEach { user ->
       this.eventPublisher.publishEvent(
-          UserAddedToScenario(
-              this, organizationId, user.id!!, user.roles.map { role -> role.value }))
+          UserAddedToScenario(this, organizationId, user.id, user.roles.map { role -> role.value }))
     }
 
     return scenarioToSave
@@ -521,7 +519,7 @@ internal class ScenarioServiceImpl(
   ) {
     val scenario = findScenarioById(organizationId, workspaceId, scenarioId)
     if (!scenario.parametersValues.isNullOrEmpty()) {
-      scenario.parametersValues = listOf()
+      scenario.parametersValues = mutableListOf()
       scenario.lastUpdate = OffsetDateTime.now()
 
       upsertScenarioData(organizationId, scenario, workspaceId)
@@ -536,7 +534,7 @@ internal class ScenarioServiceImpl(
     val scenario = findScenarioById(organizationId, workspaceId, scenarioId)
     if (!scenario.users.isNullOrEmpty()) {
       val userIds = scenario.users!!.mapNotNull { it.id }
-      scenario.users = listOf()
+      scenario.users = mutableListOf()
       scenario.lastUpdate = OffsetDateTime.now()
 
       upsertScenarioData(organizationId, scenario, workspaceId)
@@ -555,10 +553,9 @@ internal class ScenarioServiceImpl(
       userId: String
   ) {
     val scenario = findScenarioById(organizationId, workspaceId, scenarioId)
-    val scenarioUserMap = scenario.users?.associateBy { it.id!! }?.toMutableMap() ?: mutableMapOf()
-    if (scenarioUserMap.containsKey(userId)) {
-      scenarioUserMap.remove(userId)
-      scenario.users = scenarioUserMap.values.toList()
+    if (!(scenario.users?.removeIf { it.id == userId } ?: false)) {
+      throw CsmResourceNotFoundException("User '$userId' *not* found")
+    } else {
       scenario.lastUpdate = OffsetDateTime.now()
       upsertScenarioData(organizationId, scenario, workspaceId)
       this.eventPublisher.publishEvent(
@@ -677,14 +674,13 @@ internal class ScenarioServiceImpl(
       scenarioId: String,
       scenario: Scenario
   ) {
-    userIdsRemoved?.forEach {
+    userIdsRemoved.forEach {
       this.eventPublisher.publishEvent(
           UserRemovedFromScenario(this, organizationId, workspaceId, scenarioId, it))
     }
     scenario.users?.forEach { user ->
       this.eventPublisher.publishEvent(
-          UserAddedToScenario(
-              this, organizationId, user.id!!, user.roles.map { role -> role.value }))
+          UserAddedToScenario(this, organizationId, user.id, user.roles.map { role -> role.value }))
     }
   }
 
@@ -719,7 +715,7 @@ internal class ScenarioServiceImpl(
             ?: emptyList()
     val usersWithNames =
         usersToSet.let { scenario.users!!.map { it.copy(name = usersToSet[it.id]!!.name!!) } }
-    existingScenario.users = usersWithNames
+    existingScenario.users = usersWithNames.toMutableList()
     return userIdsRemoved
   }
 
@@ -771,8 +767,8 @@ internal class ScenarioServiceImpl(
             scenarioDatasetListChanged.organizationId,
             scenarioDatasetListChanged.workspaceId,
             scenarioDatasetListChanged.scenarioId)
-    children?.forEach {
-      it.datasetList = scenarioDatasetListChanged.datasetList
+    children.forEach {
+      it.datasetList = scenarioDatasetListChanged.datasetList?.toMutableList() ?: mutableListOf()
       it.lastUpdate = OffsetDateTime.now()
       upsertScenarioData(
           scenarioDatasetListChanged.organizationId, it, scenarioDatasetListChanged.workspaceId)
