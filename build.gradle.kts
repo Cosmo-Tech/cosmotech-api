@@ -207,7 +207,7 @@ subprojects {
       exclude(module = "junit")
       exclude(module = "mockito-core")
     }
-    integrationTestImplementation("com.ninja-squad:springmockk:3.1.0")
+    integrationTestImplementation("com.ninja-squad:springmockk:3.1.1")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
   }
