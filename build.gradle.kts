@@ -193,7 +193,7 @@ subprojects {
     implementation("org.zalando:problem-spring-web-starter:0.27.0")
 
     implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.security:spring-security-oauth2-jose:5.6.1")
+    implementation("org.springframework.security:spring-security-oauth2-jose:5.6.2")
     implementation("org.springframework.security:spring-security-oauth2-resource-server:5.6.2")
 
     testImplementation(kotlin("test"))
