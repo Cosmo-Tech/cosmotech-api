@@ -1327,7 +1327,7 @@ class ContainerFactoryTests {
   }
 
   @Test
-  fun `Build start containers node Label %NONE%`() {
+  fun `Build start containers node Label NONE`() {
     val scenario = getScenario()
     val datasets = listOf(getDataset())
     val connectors = listOf(getConnector())
@@ -2288,7 +2288,7 @@ class ContainerFactoryTests {
     return DatasetConnector(
         id = "AzErTyUiOp",
         parametersValues =
-            mapOf(
+            mutableMapOf(
                 "EnvParam1" to "%WORKSPACE_FILE%/workspace.env",
                 "Param1" to "%WORKSPACE_FILE%/workspace.param",
             ))
@@ -2298,7 +2298,7 @@ class ContainerFactoryTests {
     return DatasetConnector(
         id = "AzErTyUiOp",
         parametersValues =
-            mapOf(
+            mutableMapOf(
                 "EnvParam1" to "%STORAGE_CONNECTION_STRING%",
             ))
   }
@@ -2307,7 +2307,7 @@ class ContainerFactoryTests {
     return DatasetConnector(
         id = "AzErTyUiOp",
         parametersValues =
-            mapOf(
+            mutableMapOf(
                 "EnvParam1" to "env_param1_value",
                 "EnvParam2" to "env_param2_value",
                 "EnvParam3" to "env_param3_value",
@@ -2321,7 +2321,7 @@ class ContainerFactoryTests {
     return DatasetConnector(
         id = "AzErTyUiOp2",
         parametersValues =
-            mapOf(
+            mutableMapOf(
                 "EnvParam1" to "env_param1_value",
                 "EnvParam2" to "env_param2_value",
                 "EnvParam3" to "env_param3_value",
@@ -2335,7 +2335,7 @@ class ContainerFactoryTests {
     return DatasetConnector(
         id = "AzErTyUiOp3",
         parametersValues =
-            mapOf(
+            mutableMapOf(
                 "EnvParam1" to "env_param1_value",
                 "EnvParam2" to "env_param2_value",
                 "EnvParam3" to "env_param3_value",
@@ -2496,7 +2496,7 @@ class ContainerFactoryTests {
         name = "Test Solution",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
-        runTemplates = listOf(getRunTemplate()),
+        runTemplates = mutableListOf(getRunTemplate()),
     )
   }
 
@@ -2507,7 +2507,7 @@ class ContainerFactoryTests {
         name = "Test Solution",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
-        runTemplates = listOf(getRunTemplateStack()),
+        runTemplates = mutableListOf(getRunTemplateStack()),
     )
   }
 
@@ -2518,7 +2518,7 @@ class ContainerFactoryTests {
         name = "Test Solution",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
-        runTemplates = listOf(getRunTemplateStackNoDWH()),
+        runTemplates = mutableListOf(getRunTemplateStackNoDWH()),
     )
   }
 
@@ -2529,39 +2529,39 @@ class ContainerFactoryTests {
         name = "Test Solution",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
-        runTemplates = listOf(getRunTemplateDatasetIds()),
+        runTemplates = mutableListOf(getRunTemplateDatasetIds()),
         parameters =
-            listOf(
+            mutableListOf(
                 RunTemplateParameter(
                     id = "param1",
-                    labels = mapOf("en" to "Parameter 1"),
+                    labels = mutableMapOf("en" to "Parameter 1"),
                     varType = "string",
                 ),
                 RunTemplateParameter(
                     id = "param2",
-                    labels = mapOf("en" to "Parameter Dataset 2"),
+                    labels = mutableMapOf("en" to "Parameter Dataset 2"),
                     varType = "%DATASETID%"),
                 RunTemplateParameter(
                     id = "param3",
-                    labels = mapOf("en" to "Parameter Dataset 3"),
+                    labels = mutableMapOf("en" to "Parameter Dataset 3"),
                     varType = "%DATASETID%"),
                 RunTemplateParameter(
                     id = "param4",
-                    labels = mapOf("en" to "Parameter Dataset 4"),
+                    labels = mutableMapOf("en" to "Parameter Dataset 4"),
                     varType = "%DATASETID%"),
                 RunTemplateParameter(
                     id = "param5",
-                    labels = mapOf("en" to "Parameter 5"),
+                    labels = mutableMapOf("en" to "Parameter 5"),
                     varType = "int",
                 ),
             ),
         parameterGroups =
-            listOf(
+            mutableListOf(
                 RunTemplateParameterGroup(
                     id = "group1",
-                    labels = mapOf("en" to "Parameter Group 1"),
+                    labels = mutableMapOf("en" to "Parameter Group 1"),
                     parameters =
-                        listOf(
+                        mutableListOf(
                             "param1",
                             "param2",
                             "param3",
@@ -2577,7 +2577,7 @@ class ContainerFactoryTests {
         name = "Test Solution",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
-        runTemplates = listOf(getRunTemplateNoPool()),
+        runTemplates = mutableListOf(getRunTemplateNoPool()),
     )
   }
 
@@ -2588,7 +2588,7 @@ class ContainerFactoryTests {
         name = "Test Solution",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
-        runTemplates = listOf(getRunTemplateNonePool()),
+        runTemplates = mutableListOf(getRunTemplateNonePool()),
     )
   }
 
@@ -2599,7 +2599,7 @@ class ContainerFactoryTests {
         name = "Test Solution",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
-        runTemplates = listOf(getRunTemplateOnlyRun()),
+        runTemplates = mutableListOf(getRunTemplateOnlyRun()),
     )
   }
 
@@ -2610,7 +2610,7 @@ class ContainerFactoryTests {
         name = "Test Solution",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
-        runTemplates = listOf(getRunTemplateCloudSources()),
+        runTemplates = mutableListOf(getRunTemplateCloudSources()),
     )
   }
 
@@ -2621,7 +2621,7 @@ class ContainerFactoryTests {
         name = "Test Solution",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
-        runTemplates = listOf(getRunTemplateLocalSources()),
+        runTemplates = mutableListOf(getRunTemplateLocalSources()),
     )
   }
 
@@ -2662,7 +2662,7 @@ class ContainerFactoryTests {
         name = "Test Run",
         csmSimulation = "TestSimulation",
         computeSize = "highcpu",
-        parameterGroups = listOf("group1"),
+        parameterGroups = mutableListOf("group1"),
     )
   }
 
@@ -2751,7 +2751,7 @@ class ContainerFactoryTests {
         id = "Scenarioid",
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
-        datasetList = listOf("1"),
+        datasetList = mutableListOf("1"),
     )
   }
 
@@ -2760,9 +2760,9 @@ class ContainerFactoryTests {
         id = "Scenarioid",
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
-        datasetList = listOf("1"),
+        datasetList = mutableListOf("1"),
         parametersValues =
-            listOf(
+            mutableListOf(
                 ScenarioRunTemplateParameterValue(
                     parameterId = "param1",
                     value = "valParam1",
@@ -2791,9 +2791,9 @@ class ContainerFactoryTests {
         id = "Scenarioid",
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
-        datasetList = listOf("1"),
+        datasetList = mutableListOf("1"),
         parametersValues =
-            listOf(
+            mutableListOf(
                 ScenarioRunTemplateParameterValue(
                     parameterId = "param1",
                     value = "valParam1",
@@ -2822,9 +2822,9 @@ class ContainerFactoryTests {
         id = "Scenarioid",
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
-        datasetList = listOf("1"),
+        datasetList = mutableListOf("1"),
         parametersValues =
-            listOf(
+            mutableListOf(
                 ScenarioRunTemplateParameterValue(
                     parameterId = "param1",
                     value = "valParam1",
@@ -2853,9 +2853,9 @@ class ContainerFactoryTests {
         id = "Scenarioid",
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
-        datasetList = listOf("1", "2"),
+        datasetList = mutableListOf("1", "2"),
         parametersValues =
-            listOf(
+            mutableListOf(
                 ScenarioRunTemplateParameterValue(
                     parameterId = "param1",
                     value = "valParam1",
@@ -2884,7 +2884,7 @@ class ContainerFactoryTests {
         id = "Scenarioid",
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
-        datasetList = listOf("1", "2", "3"),
+        datasetList = mutableListOf("1", "2", "3"),
     )
   }
 

@@ -50,7 +50,7 @@ internal class DatasetServiceImpl(
   override fun removeAllDatasetCompatibilityElements(organizationId: String, datasetId: String) {
     val dataset = findDatasetById(organizationId, datasetId)
     if (!dataset.compatibility.isNullOrEmpty()) {
-      dataset.compatibility = listOf()
+      dataset.compatibility = mutableListOf()
       cosmosTemplate.upsert("${organizationId}_datasets", dataset)
     }
   }
@@ -147,7 +147,7 @@ internal class DatasetServiceImpl(
         datasetCompatibility.filter { it.solutionKey.isNotBlank() }.associateBy {
           "${it.solutionKey}-${it.minimumVersion}-${it.maximumVersion}"
         })
-    existingDataset.compatibility = datasetCompatibilityMap.values.toList()
+    existingDataset.compatibility = datasetCompatibilityMap.values.toMutableList()
     cosmosTemplate.upsert("${organizationId}_datasets", existingDataset)
 
     return datasetCompatibility

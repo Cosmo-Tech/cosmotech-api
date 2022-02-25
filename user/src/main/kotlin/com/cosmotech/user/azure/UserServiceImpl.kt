@@ -12,6 +12,7 @@ import com.cosmotech.api.events.UserAddedToOrganization
 import com.cosmotech.api.events.UserRegistered
 import com.cosmotech.api.events.UserRemovedFromOrganization
 import com.cosmotech.api.events.UserUnregistered
+import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.utils.changed
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
@@ -55,7 +56,7 @@ internal class UserServiceImpl : CsmAzureService(), UserApiService {
         principal.isAuthenticated,
         principal.name,
         principal.authorities)
-    return User(name = principal.name, platformRoles = listOf())
+    return User(name = principal.name, platformRoles = mutableListOf())
   }
 
   override fun getOrganizationCurrentUser(organizationId: String): User {
@@ -130,8 +131,8 @@ internal class UserServiceImpl : CsmAzureService(), UserApiService {
         UserOrganization(
             id = userAddedToOrganization.organizationId,
             name = userAddedToOrganization.organizationName,
-            roles = userAddedToOrganization.roles)
-    user.organizations = organizationMap.values.toList()
+            roles = userAddedToOrganization.roles?.toMutableList())
+    user.organizations = organizationMap.values.toMutableList()
     cosmosTemplate.upsert(coreUserContainer, user)
   }
 
@@ -139,10 +140,11 @@ internal class UserServiceImpl : CsmAzureService(), UserApiService {
   @Async("csm-in-process-event-executor")
   fun onUserUserRemovedFromOrganization(userRemovedFromOrganization: UserRemovedFromOrganization) {
     val user = this.findUserById(userRemovedFromOrganization.userId)
-    val organizationMap =
-        user.organizations?.associateBy { it.id }?.toMutableMap() ?: mutableMapOf()
-    organizationMap.remove(userRemovedFromOrganization.organizationId)
-    user.organizations = organizationMap.values.toList()
+    if (!(user.organizations?.removeIf { it.id == userRemovedFromOrganization.organizationId }
+        ?: false)) {
+      throw CsmResourceNotFoundException(
+          "Organization '${userRemovedFromOrganization.organizationId}' *not* found")
+    }
     cosmosTemplate.upsert(coreUserContainer, user)
   }
 

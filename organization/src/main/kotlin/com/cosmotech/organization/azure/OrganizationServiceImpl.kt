@@ -15,6 +15,7 @@ import com.cosmotech.api.events.UserRemovedFromOrganization
 import com.cosmotech.api.events.UserUnregistered
 import com.cosmotech.api.events.UserUnregisteredForOrganization
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
+import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -75,7 +76,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService) 
       // Add or replace
       currentOrganizationUsers[userId] = organizationUserMap[userId]!!
     }
-    organization.users = currentOrganizationUsers.values.toList()
+    organization.users = currentOrganizationUsers.values.toMutableList()
 
     cosmosTemplate.upsert(coreOrganizationContainer, organization)
 
@@ -118,7 +119,9 @@ internal class OrganizationServiceImpl(private val userService: UserApiService) 
     val newOrganizationId = idGenerator.generate("organization")
 
     val usersWithNames =
-        usersLoaded?.let { organization.users?.map { it.copy(name = usersLoaded[it.id]!!.name!!) } }
+        usersLoaded
+            ?.let { organization.users?.map { it.copy(name = usersLoaded[it.id]!!.name!!) } }
+            ?.toMutableList()
 
     val organizationRegistered =
         cosmosTemplate.insert(
@@ -153,7 +156,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService) 
     val organization = findOrganizationById(organizationId)
     if (!organization.users.isNullOrEmpty()) {
       val userIds = organization.users!!.mapNotNull { it.id }
-      organization.users = listOf()
+      organization.users = mutableListOf()
       cosmosTemplate.upsert(coreOrganizationContainer, organization)
 
       userIds.forEach {
@@ -164,11 +167,9 @@ internal class OrganizationServiceImpl(private val userService: UserApiService) 
 
   override fun removeUserFromOrganization(organizationId: String, userId: String) {
     val organization = findOrganizationById(organizationId)
-    val organizationUserMap =
-        organization.users?.associateBy { it.id!! }?.toMutableMap() ?: mutableMapOf()
-    if (organizationUserMap.containsKey(userId)) {
-      organizationUserMap.remove(userId)
-      organization.users = organizationUserMap.values.toList()
+    if (!(organization.users?.removeIf { it.id == userId } ?: false)) {
+      throw CsmResourceNotFoundException("User '$userId' *not* found")
+    } else {
       cosmosTemplate.upsert(coreOrganizationContainer, organization)
       this.eventPublisher.publishEvent(UserRemovedFromOrganization(this, organizationId, userId))
     }
@@ -220,7 +221,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService) 
           organization.users?.mapNotNull { it.id }?.filterNot { usersToSet.containsKey(it) }
       val usersWithNames =
           usersToSet.let { organization.users!!.map { it.copy(name = usersToSet[it.id]!!.name!!) } }
-      existingOrganization.users = usersWithNames
+      existingOrganization.users = usersWithNames.toMutableList()
       hasChanged = true
     }
     if (organization.services != null && organization.changed(existingOrganization) { services }) {
@@ -344,16 +345,12 @@ internal class OrganizationServiceImpl(private val userService: UserApiService) 
       userUnregisteredForOrganization: UserUnregisteredForOrganization
   ) {
     val organization = findOrganizationById(userUnregisteredForOrganization.organizationId)
-    if (!organization.users.isNullOrEmpty()) {
-      val organizationUsersAsMutableList = organization.users?.toMutableList()
-      val removalResult =
-          organizationUsersAsMutableList?.toMutableList()?.removeIf {
-            it.id == userUnregisteredForOrganization.userId
-          }
-      if (removalResult == true) {
-        organization.users = organizationUsersAsMutableList.toList()
-        cosmosTemplate.upsert(coreOrganizationContainer, organization)
-      }
+    if (!(organization.users?.removeIf { it.id == userUnregisteredForOrganization.userId }
+        ?: false)) {
+      throw CsmResourceNotFoundException(
+          "User '${userUnregisteredForOrganization.userId}' *not* found")
+    } else {
+      cosmosTemplate.upsert(coreOrganizationContainer, organization)
     }
   }
 }
