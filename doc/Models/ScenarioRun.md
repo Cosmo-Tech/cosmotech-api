@@ -22,7 +22,7 @@ Name | Type | Description | Notes
 **sendDatasetsToDataWarehouse** | **Boolean** | whether or not the Datasets values are send to the DataWarehouse prior to Simulation Run. If not set follow the Workspace setting | [optional] [default to null]
 **sendInputParametersToDataWarehouse** | **Boolean** | whether or not the input parameters values are send to the DataWarehouse prior to Simulation Run. If not set follow the Workspace setting | [optional] [default to null]
 **nodeLabel** | **String** | the node label request | [optional] [default to null]
-**containers** | [**List**](ScenarioRunContainer.md) | the containers list | [optional] [default to null]
+**containers** | [**List**](ScenarioRunContainer.md) | the containers list. This information is not returned by the API. | [optional] [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 
