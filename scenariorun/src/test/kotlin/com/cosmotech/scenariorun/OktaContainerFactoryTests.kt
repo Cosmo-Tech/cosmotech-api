@@ -119,7 +119,7 @@ class OktaContainerFactoryTests {
     every { csmPlatformProperties.identityProvider } returns
         CsmPlatformProperties.CsmIdentityProvider(
             code = "okta",
-            scopes = mapOf("This is a fake scope id" to "This is a fake scope name"),
+            defaultScopes = mapOf("This is a fake scope id" to "This is a fake scope name"),
             authorizationUrl = "http://this_is_a_fake_url.com",
             containerScopes =
                 mapOf("scope1" to "This is a scope", "scope2" to "This is another scope"),

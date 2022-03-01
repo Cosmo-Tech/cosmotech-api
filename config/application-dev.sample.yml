@@ -32,19 +32,21 @@ management:
 csm:
   platform:
     identityProvider:
-      code: aad
+      code: azure
       # Use to overwrite openAPI configuration
       authorizationUrl: "[fill-this-value]"
       tokenUrl: "[fill-this-value]"
-      scopes:
+      defaultScopes:
         "[fill-this-value]": "[fill-this-value]"
       containerScopes:
         "[fill-this-value]": "[fill-this-value]"
       # Here you can set custom user and admin groups
-      # - userGroup will have same rights that Organization.Viewer
-      # - admingroup will have same rights that Organization.User
-      # userGroup : "myCustomUserGroup"
+      # - adminGroup will have same rights that Platform.Admin
+      # - userGroup will have same rights that Organization.User
+      # - viewerGroup will have same rights that Organization.Viewer
       # adminGroup : "myCustomAdminGroup"
+      # userGroup : "myCustomUserGroup"
+      # userGroup : "myCustomViewerGroup"
     argo:
       base-uri: "http://localhost:2746"
     azure:

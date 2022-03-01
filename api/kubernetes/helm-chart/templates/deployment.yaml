@@ -63,7 +63,7 @@ spec:
               value: "{{ .Values.config.csm.platform.vendor }}"
             {{if .Values.config.csm.platform.identityProvider }}
             - name: IDENTITY_PROVIDER
-            # Used to include a specific '{{ .Values.config.csm.platform.identityProvider.code | default "aad" }}' Spring profile
+            # Used to include a specific '{{ .Values.config.csm.platform.identityProvider.code | default "azure" }}' Spring profile
               value: {{ .Values.config.csm.platform.identityProvider.code | quote }}
             {{end}}
             - name: SPRING_PROFILES_INCLUDE

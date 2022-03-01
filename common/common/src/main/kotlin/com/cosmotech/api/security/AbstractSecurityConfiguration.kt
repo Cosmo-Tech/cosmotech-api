@@ -38,8 +38,23 @@ const val ROLE_SOLUTION_WRITER = "Solution.Writer"
 const val ROLE_WORKSPACE_READER = "Workspace.Reader"
 const val ROLE_WORKSPACE_WRITER = "Workspace.Writer"
 
-// Allowed scopes
+// Allowed read scopes
+const val SCOPE_CONNECTOR_READ = "SCOPE_csm.connector.read"
+const val SCOPE_ORGANIZATION_READ = "SCOPE_csm.organization.read"
+const val SCOPE_DATASET_READ = "SCOPE_csm.dataset.read"
+const val SCOPE_SOLUTION_READ = "SCOPE_csm.solution.read"
+const val SCOPE_WORKSPACE_READ = "SCOPE_csm.workspace.read"
 const val SCOPE_SCENARIO_READ = "SCOPE_csm.scenario.read"
+const val SCOPE_SCENARIORUN_READ = "SCOPE_csm.scenariorun.read"
+
+// Allowed write scopes
+const val SCOPE_CONNECTOR_WRITE = "SCOPE_csm.connector.write"
+const val SCOPE_ORGANIZATION_WRITE = "SCOPE_csm.organization.write"
+const val SCOPE_DATASET_WRITE = "SCOPE_csm.dataset.write"
+const val SCOPE_SOLUTION_WRITE = "SCOPE_csm.solution.write"
+const val SCOPE_WORKSPACE_WRITE = "SCOPE_csm.workspace.write"
+const val SCOPE_SCENARIO_WRITE = "SCOPE_csm.scenario.write"
+const val SCOPE_SCENARIORUN_WRITE = "SCOPE_csm.scenariorun.write"
 
 // Endpoints paths
 const val PATH_CONNECTORS = "/connectors"
@@ -109,6 +124,7 @@ val endpointSecurityPublic =
 
 @Suppress("LongMethod")
 internal fun endpointSecurityReaders(
+    customOrganizationAdmin: String,
     customOrganizationUser: String,
     customOrganizationViewer: String
 ) =
@@ -125,8 +141,11 @@ internal fun endpointSecurityReaders(
                     ROLE_ORGANIZATION_MODELER,
                     ROLE_ORGANIZATION_USER,
                     ROLE_ORGANIZATION_VIEWER,
+                    SCOPE_CONNECTOR_READ,
+                    SCOPE_CONNECTOR_WRITE,
                     customOrganizationUser,
-                    customOrganizationViewer)),
+                    customOrganizationViewer),
+            customAdmin = customOrganizationAdmin),
         CsmSecurityEndpointsRolesReader(
             paths = listOf(PATH_DATASETS),
             roles =
@@ -139,8 +158,11 @@ internal fun endpointSecurityReaders(
                     ROLE_ORGANIZATION_MODELER,
                     ROLE_ORGANIZATION_USER,
                     ROLE_ORGANIZATION_VIEWER,
+                    SCOPE_DATASET_READ,
+                    SCOPE_DATASET_WRITE,
                     customOrganizationUser,
-                    customOrganizationViewer)),
+                    customOrganizationViewer),
+            customAdmin = customOrganizationAdmin),
         CsmSecurityEndpointsRolesReader(
             paths = PATHS_ORGANIZATIONS,
             roles =
@@ -153,10 +175,13 @@ internal fun endpointSecurityReaders(
                     ROLE_ORGANIZATION_MODELER,
                     ROLE_ORGANIZATION_USER,
                     ROLE_ORGANIZATION_VIEWER,
+                    SCOPE_ORGANIZATION_READ,
+                    SCOPE_ORGANIZATION_WRITE,
                     customOrganizationUser,
-                    customOrganizationViewer)),
+                    customOrganizationViewer),
+            customAdmin = customOrganizationAdmin),
         CsmSecurityEndpointsRolesReader(
-            paths = listOf(PATH_SCENARIOS),
+            paths = PATHS_SCENARIOS,
             roles =
                 arrayOf(
                     ROLE_SCENARIO_READER,
@@ -167,23 +192,10 @@ internal fun endpointSecurityReaders(
                     ROLE_ORGANIZATION_USER,
                     ROLE_ORGANIZATION_VIEWER,
                     SCOPE_SCENARIO_READ,
+                    SCOPE_SCENARIO_WRITE,
                     customOrganizationUser,
-                    customOrganizationViewer)),
-        CsmSecurityEndpointsRolesReader(
-            paths =
-                listOf(
-                    PATH_SCENARIOS_COMPARE, PATH_SCENARIOS_USERS, PATH_SCENARIOS_PARAMETERVALUES),
-            roles =
-                arrayOf(
-                    ROLE_SCENARIO_READER,
-                    ROLE_SCENARIO_WRITER,
-                    ROLE_ORGANIZATION_ADMIN,
-                    ROLE_ORGANIZATION_COLLABORATOR,
-                    ROLE_ORGANIZATION_MODELER,
-                    ROLE_ORGANIZATION_USER,
-                    ROLE_ORGANIZATION_VIEWER,
-                    customOrganizationUser,
-                    customOrganizationViewer)),
+                    customOrganizationViewer),
+            customAdmin = customOrganizationAdmin),
         CsmSecurityEndpointsRolesReader(
             paths = PATHS_SCENARIORUNS,
             roles =
@@ -194,7 +206,10 @@ internal fun endpointSecurityReaders(
                     ROLE_ORGANIZATION_COLLABORATOR,
                     ROLE_ORGANIZATION_MODELER,
                     ROLE_ORGANIZATION_USER,
-                    customOrganizationUser)),
+                    SCOPE_SCENARIORUN_READ,
+                    SCOPE_SCENARIORUN_WRITE,
+                    customOrganizationUser),
+            customAdmin = customOrganizationAdmin),
         CsmSecurityEndpointsRolesReader(
             paths = PATHS_SOLUTIONS,
             roles =
@@ -207,8 +222,11 @@ internal fun endpointSecurityReaders(
                     ROLE_ORGANIZATION_MODELER,
                     ROLE_ORGANIZATION_USER,
                     ROLE_ORGANIZATION_VIEWER,
+                    SCOPE_SOLUTION_READ,
+                    SCOPE_SOLUTION_WRITE,
                     customOrganizationUser,
-                    customOrganizationViewer)),
+                    customOrganizationViewer),
+            customAdmin = customOrganizationAdmin),
         CsmSecurityEndpointsRolesReader(
             paths = PATHS_WORKSPACES,
             roles =
@@ -221,16 +239,23 @@ internal fun endpointSecurityReaders(
                     ROLE_ORGANIZATION_MODELER,
                     ROLE_ORGANIZATION_USER,
                     ROLE_ORGANIZATION_VIEWER,
+                    SCOPE_WORKSPACE_READ,
+                    SCOPE_WORKSPACE_WRITE,
                     customOrganizationUser,
-                    customOrganizationViewer)),
+                    customOrganizationViewer),
+            customAdmin = customOrganizationAdmin),
     )
 
 @Suppress("LongMethod")
-internal fun endpointSecurityWriters(customOrganizationUser: String) =
+internal fun endpointSecurityWriters(
+    customOrganizationAdmin: String,
+    customOrganizationUser: String
+) =
     listOf(
         CsmSecurityEndpointsRolesWriter(
             paths = listOf(PATH_CONNECTORS),
-            roles = arrayOf(ROLE_CONNECTOR_WRITER, ROLE_CONNECTOR_DEVELOPER)),
+            roles = arrayOf(ROLE_CONNECTOR_WRITER, ROLE_CONNECTOR_DEVELOPER, SCOPE_CONNECTOR_WRITE),
+            customAdmin = customOrganizationAdmin),
         CsmSecurityEndpointsRolesWriter(
             paths = listOf(PATH_DATASETS),
             roles =
@@ -241,14 +266,15 @@ internal fun endpointSecurityWriters(customOrganizationUser: String) =
                     ROLE_ORGANIZATION_COLLABORATOR,
                     ROLE_ORGANIZATION_MODELER,
                     ROLE_ORGANIZATION_USER,
-                    customOrganizationUser)),
+                    SCOPE_DATASET_WRITE,
+                    customOrganizationUser),
+            customAdmin = customOrganizationAdmin),
         CsmSecurityEndpointsRolesWriter(
             paths = PATHS_ORGANIZATIONS,
             roles =
                 arrayOf(
-                    ROLE_ORGANIZATION_WRITER,
-                    ROLE_ORGANIZATION_ADMIN,
-                )),
+                    ROLE_ORGANIZATION_WRITER, ROLE_ORGANIZATION_ADMIN, SCOPE_ORGANIZATION_WRITE),
+            customAdmin = customOrganizationAdmin),
         CsmSecurityEndpointsRolesWriter(
             paths = PATHS_SCENARIOS,
             roles =
@@ -258,7 +284,9 @@ internal fun endpointSecurityWriters(customOrganizationUser: String) =
                     ROLE_ORGANIZATION_COLLABORATOR,
                     ROLE_ORGANIZATION_MODELER,
                     ROLE_ORGANIZATION_USER,
-                    customOrganizationUser)),
+                    SCOPE_SCENARIO_WRITE,
+                    customOrganizationUser),
+            customAdmin = customOrganizationAdmin),
         CsmSecurityEndpointsRolesWriter(
             paths = PATHS_SCENARIORUNS,
             roles =
@@ -268,7 +296,9 @@ internal fun endpointSecurityWriters(customOrganizationUser: String) =
                     ROLE_ORGANIZATION_COLLABORATOR,
                     ROLE_ORGANIZATION_MODELER,
                     ROLE_ORGANIZATION_USER,
-                    customOrganizationUser)),
+                    SCOPE_SCENARIORUN_WRITE,
+                    customOrganizationUser),
+            customAdmin = customOrganizationAdmin),
         CsmSecurityEndpointsRolesWriter(
             paths = PATHS_SOLUTIONS,
             roles =
@@ -277,7 +307,8 @@ internal fun endpointSecurityWriters(customOrganizationUser: String) =
                     ROLE_ORGANIZATION_ADMIN,
                     ROLE_ORGANIZATION_COLLABORATOR,
                     ROLE_ORGANIZATION_MODELER,
-                )),
+                    SCOPE_SOLUTION_WRITE),
+            customAdmin = customOrganizationAdmin),
         CsmSecurityEndpointsRolesWriter(
             paths = PATHS_WORKSPACES,
             roles =
@@ -285,7 +316,8 @@ internal fun endpointSecurityWriters(customOrganizationUser: String) =
                     ROLE_WORKSPACE_WRITER,
                     ROLE_ORGANIZATION_ADMIN,
                     ROLE_ORGANIZATION_COLLABORATOR,
-                )),
+                    SCOPE_WORKSPACE_WRITE),
+            customAdmin = customOrganizationAdmin),
         CsmSecurityEndpointsRolesWriter(
             paths = listOf(PATH_WORKSPACES_FILES),
             roles =
@@ -295,13 +327,16 @@ internal fun endpointSecurityWriters(customOrganizationUser: String) =
                     ROLE_ORGANIZATION_COLLABORATOR,
                     ROLE_ORGANIZATION_MODELER,
                     ROLE_ORGANIZATION_USER,
-                    customOrganizationUser)),
+                    SCOPE_WORKSPACE_WRITE,
+                    customOrganizationUser),
+            customAdmin = customOrganizationAdmin),
     )
 
 abstract class AbstractSecurityConfiguration : WebSecurityConfigurerAdapter() {
 
   fun getOAuth2JwtConfigurer(
       http: HttpSecurity,
+      organizationAdminGroup: String,
       organizationUserGroup: String,
       organizationViewerGroup: String
   ): OAuth2ResourceServerConfigurer<HttpSecurity>.JwtConfigurer? {
@@ -325,13 +360,13 @@ abstract class AbstractSecurityConfiguration : WebSecurityConfigurerAdapter() {
           }
 
           // Endpoint security for reader roles
-          endpointSecurityReaders(organizationUserGroup, organizationViewerGroup).forEach {
-              endpointsRoles ->
-            endpointsRoles.applyRoles(requests)
-          }
+          endpointSecurityReaders(
+              organizationAdminGroup, organizationUserGroup, organizationViewerGroup)
+              .forEach { endpointsRoles -> endpointsRoles.applyRoles(requests) }
 
           // Endpoint security for writer roles
-          endpointSecurityWriters(organizationUserGroup).forEach { endpointsRoles ->
+          endpointSecurityWriters(organizationAdminGroup, organizationUserGroup).forEach {
+              endpointsRoles ->
             endpointsRoles.applyRoles(requests)
           }
 
@@ -343,6 +378,7 @@ abstract class AbstractSecurityConfiguration : WebSecurityConfigurerAdapter() {
 }
 
 internal class CsmSecurityEndpointsRolesWriter(
+    val customAdmin: String,
     val paths: List<String>,
     val roles: Array<String>,
 ) {
@@ -354,16 +390,17 @@ internal class CsmSecurityEndpointsRolesWriter(
     this.paths.forEach { path ->
       requests
           .antMatchers(HttpMethod.POST, path, "${path}/*")
-          .hasAnyAuthority(ROLE_PLATFORM_ADMIN, *this.roles)
+          .hasAnyAuthority(ROLE_PLATFORM_ADMIN, customAdmin, *this.roles)
           .antMatchers(HttpMethod.PATCH, path, "${path}/*")
-          .hasAnyAuthority(ROLE_PLATFORM_ADMIN, *this.roles)
+          .hasAnyAuthority(ROLE_PLATFORM_ADMIN, customAdmin, *this.roles)
           .antMatchers(HttpMethod.DELETE, path, "${path}/*")
-          .hasAnyAuthority(ROLE_PLATFORM_ADMIN, *this.roles)
+          .hasAnyAuthority(ROLE_PLATFORM_ADMIN, customAdmin, *this.roles)
     }
   }
 }
 
 internal class CsmSecurityEndpointsRolesReader(
+    val customAdmin: String,
     val paths: List<String>,
     val roles: Array<String>,
 ) {
@@ -375,7 +412,7 @@ internal class CsmSecurityEndpointsRolesReader(
     this.paths.forEach { path ->
       requests
           .antMatchers(HttpMethod.GET, path, "${path}/*")
-          .hasAnyAuthority(ROLE_PLATFORM_ADMIN, *this.roles)
+          .hasAnyAuthority(ROLE_PLATFORM_ADMIN, customAdmin, *this.roles)
     }
   }
 }

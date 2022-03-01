@@ -29,7 +29,11 @@ import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
 import com.cosmotech.scenariorun.container.StartInfo
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.solution.api.SolutionApiService
-import com.cosmotech.solution.domain.*
+import com.cosmotech.solution.domain.RunTemplate
+import com.cosmotech.solution.domain.RunTemplateParameter
+import com.cosmotech.solution.domain.RunTemplateParameterGroup
+import com.cosmotech.solution.domain.RunTemplateStepSource
+import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
@@ -41,7 +45,11 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import kotlin.test.BeforeTest
 import kotlin.test.assertFalse
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
@@ -118,8 +126,8 @@ class ContainerFactoryTests {
         )
     every { csmPlatformProperties.identityProvider } returns
         CsmPlatformProperties.CsmIdentityProvider(
-            code = "aad",
-            scopes = mapOf("This is a fake scope id" to "This is a fake scope name"),
+            code = "azure",
+            defaultScopes = mapOf("This is a fake scope id" to "This is a fake scope name"),
             authorizationUrl = "http://this_is_a_fake_url.com",
             tokenUrl = "http://this_is_a_fake_token_url.com",
         )
@@ -209,7 +217,7 @@ class ContainerFactoryTests {
             CSM_SIMULATION_ID)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "azure",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -248,7 +256,7 @@ class ContainerFactoryTests {
             CSM_SIMULATION_ID)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "azure",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -286,7 +294,7 @@ class ContainerFactoryTests {
             CSM_SIMULATION_ID)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "azure",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -324,7 +332,7 @@ class ContainerFactoryTests {
             CSM_SIMULATION_ID)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "azure",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -361,7 +369,7 @@ class ContainerFactoryTests {
             CSM_SIMULATION_ID)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "azure",
             "CSM_AZURE_MANAGED_IDENTITY" to "true",
             "CSM_SIMULATION_ID" to "simulationrunid",
             "CSM_API_URL" to "https://api.cosmotech.com",
@@ -461,7 +469,7 @@ class ContainerFactoryTests {
         factory.buildScenarioParametersFetchContainer("1", "2", "3", "Test", CSM_SIMULATION_ID)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "azure",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -486,8 +494,8 @@ class ContainerFactoryTests {
 
     every { csmPlatformProperties.identityProvider } returns
         CsmPlatformProperties.CsmIdentityProvider(
-            code = "aad",
-            scopes = mapOf("This is a fake scope id" to "This is a fake scope name"),
+            code = "azure",
+            defaultScopes = mapOf("This is a fake scope id" to "This is a fake scope name"),
             authorizationUrl = "http://this_is_a_fake_url.com",
             containerScopes =
                 mapOf("scope1" to "This is a scope", "scope2" to "This is another scope"),
@@ -498,7 +506,7 @@ class ContainerFactoryTests {
         factory.buildScenarioParametersFetchContainer("1", "2", "3", "Test", CSM_SIMULATION_ID)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "azure",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -525,7 +533,7 @@ class ContainerFactoryTests {
             "1", "2", "3", "Test", CSM_SIMULATION_ID, true)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "azure",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -578,7 +586,7 @@ class ContainerFactoryTests {
             "Organizationid", getWorkspace(), "Scenarioid", getRunTemplate(), CSM_SIMULATION_ID)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "azure",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -611,7 +619,7 @@ class ContainerFactoryTests {
             CSM_SIMULATION_ID)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "azure",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -644,7 +652,7 @@ class ContainerFactoryTests {
             CSM_SIMULATION_ID)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "azure",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -681,7 +689,7 @@ class ContainerFactoryTests {
             CSM_SIMULATION_ID)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "azure",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -858,7 +866,7 @@ class ContainerFactoryTests {
   ) {
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "azure",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -893,7 +901,7 @@ class ContainerFactoryTests {
   ) {
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "azure",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -1311,7 +1319,7 @@ class ContainerFactoryTests {
     val container = containers.find { container -> container.name == "fetchDatasetContainer-2" }
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "azure",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -1719,7 +1727,7 @@ class ContainerFactoryTests {
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "azure",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -1766,7 +1774,7 @@ class ContainerFactoryTests {
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "azure",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -1815,7 +1823,7 @@ class ContainerFactoryTests {
         scenarioRunContainer.labels)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "azure",
             "CSM_AZURE_MANAGED_IDENTITY" to "true",
             "CSM_SIMULATION_ID" to "csmSimulationId",
             "CSM_API_URL" to "https://api.cosmotech.com",
@@ -1860,7 +1868,7 @@ class ContainerFactoryTests {
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "azure",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -1907,7 +1915,7 @@ class ContainerFactoryTests {
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "azure",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -1954,7 +1962,7 @@ class ContainerFactoryTests {
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "azure",
             "AZURE_TENANT_ID" to "customer-app-registration-tenantId",
             "AZURE_CLIENT_ID" to "customer-app-registration-clientId",
             "AZURE_CLIENT_SECRET" to "customer-app-registration-clientSecret",
@@ -1988,7 +1996,7 @@ class ContainerFactoryTests {
     assertFalse { container.envVars!!.containsKey(AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR) }
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "azure",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -2027,7 +2035,7 @@ class ContainerFactoryTests {
 
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "azure",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -2071,7 +2079,7 @@ class ContainerFactoryTests {
 
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "azure",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -2155,7 +2163,7 @@ class ContainerFactoryTests {
         }
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "azure",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -2185,7 +2193,7 @@ class ContainerFactoryTests {
     assertNotNull(container.envVars)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "azure",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -2221,7 +2229,7 @@ class ContainerFactoryTests {
     assertNotNull(container.envVars)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "azure",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
@@ -2298,7 +2306,7 @@ class ContainerFactoryTests {
   private fun validateEnvVarsSolutionContainer(container: ScenarioRunContainer?, mode: String) {
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "aad",
+            "IDENTITY_PROVIDER" to "azure",
             "AZURE_TENANT_ID" to "12345678",
             "AZURE_CLIENT_ID" to "98765432",
             "AZURE_CLIENT_SECRET" to "azertyuiop",
