@@ -187,6 +187,8 @@ springdoc:
     display-request-duration: true
     filter: true
     tags-sorter: alpha
+    oauth:
+      use-pkce-with-authorization-code-grant: true
   writer-with-default-pretty-printer: true
 
 # Aliases

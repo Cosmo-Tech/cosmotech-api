@@ -7,11 +7,11 @@ import io.swagger.v3.oas.models.security.OAuthFlow
 import io.swagger.v3.oas.models.security.OAuthFlows
 import io.swagger.v3.oas.models.security.Scopes
 import io.swagger.v3.parser.OpenAPIV3Parser
-import java.io.BufferedReader
 import org.springdoc.core.customizers.OperationCustomizer
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import java.io.BufferedReader
 
 @Configuration
 internal class CsmOpenAPIConfiguration(val csmPlatformProperties: CsmPlatformProperties) {
@@ -76,41 +76,17 @@ internal class CsmOpenAPIConfiguration(val csmPlatformProperties: CsmPlatformPro
       val scopes = Scopes()
       scopes.putAll(csmPlatformProperties.identityProvider!!.scopes)
 
-      // TODO Find a way to add this behaviour in Swagger configuration
-      // N.B: The current behaviour will modified the openapi configuration in declarative way.
-      // We should find how to change the application of this nonce parameter dynamically
-
-      val implicitFlow =
+      val authorizationCodeFlow =
           OAuthFlows()
-              .implicit(
+              .authorizationCode(
                   OAuthFlow()
                       .scopes(scopes)
-                      .authorizationUrl(
-                          constructAuthorizationUrlWithNonce(
-                              csmPlatformProperties.identityProvider!!.authorizationUrl)))
+                      .tokenUrl(csmPlatformProperties.identityProvider!!.tokenUrl)
+                      .authorizationUrl(csmPlatformProperties.identityProvider!!.authorizationUrl))
 
-      openAPI.components.securitySchemes["oAuth2AuthCode"]?.flows(implicitFlow)
+      openAPI.components.securitySchemes["oAuth2AuthCode"]?.flows(authorizationCodeFlow)
     }
 
     return openAPI
-  }
-
-  /**
-   * Construct a randomString to add nonce parameter in an authorization Url
-   * @param authorizationUrl an authorization Url
-   * @return the authorization Url passed in parameter with a random nonce query parameter
-   */
-  private fun constructAuthorizationUrlWithNonce(authorizationUrl: String): String {
-    val charPool: List<Char> = ('a'..'z') + ('0'..'9')
-
-    val randomString =
-        (1..charPool.size)
-            .map { kotlin.random.Random.nextInt(0, charPool.size) }
-            .map(charPool::get)
-            .joinToString("")
-
-    val sb = StringBuilder(authorizationUrl).append("?nonce=").append(randomString)
-
-    return sb.toString()
   }
 }

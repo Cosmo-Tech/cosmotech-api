@@ -130,7 +130,9 @@ class OktaContainerFactoryTests {
             scopes = mapOf("This is a fake scope id" to "This is a fake scope name"),
             authorizationUrl = "http://this_is_a_fake_url.com",
             containerScopes =
-                mapOf("scope1" to "This is a scope", "scope2" to "This is another scope"))
+                mapOf("scope1" to "This is a scope", "scope2" to "This is another scope"),
+            tokenUrl = "http://this_is_a_fake_token_url.com",
+        )
     every { csmPlatformProperties.okta } returns
         CsmPlatformProperties.CsmPlatformOkta(
             issuer = "http://okta.com/oauth2/default",
