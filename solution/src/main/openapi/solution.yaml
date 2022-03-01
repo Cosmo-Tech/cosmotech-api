@@ -614,6 +614,15 @@ components:
         stackSteps:
           type: boolean
           description: whether or not to stack adjacent scenario run steps in one container run which will chain steps
+        gitRepositoryUrl:
+          type: string
+          description: an optional URL to the git repository
+        gitBranchName:
+          type: string
+          description: an optional git branch name
+        runTemplateSourceDir:
+          type: string
+          description: an optional directory where to find the run template source
       required:
         - id
         - name
@@ -623,8 +632,8 @@ components:
       enum: ["parameters_handler","validator","prerun","engine","postrun","scenariodata_transform"]
     RunTemplateStepSource:
       type: string
-      description: the source local or cloud
-      enum: ["local","cloud"]
+      description: the source local, cloud or git repository
+      enum: ["cloud","git","local","platform"]
     RunTemplateParameterGroup:
       type: object
       description: a Parameter Group for a Run Template
