@@ -8,6 +8,7 @@ import com.cosmotech.api.security.CsmJwtClaimValueInCollectionValidator
 import com.cosmotech.api.security.CsmSecurityValidator
 import com.cosmotech.api.security.ROLE_ORGANIZATION_USER
 import com.cosmotech.api.security.ROLE_ORGANIZATION_VIEWER
+import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
@@ -25,7 +26,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 @Configuration
 @EnableWebSecurity
 @ConditionalOnProperty(
-    name = ["csm.platform.identityProvider.code"], havingValue = "aad", matchIfMissing = true)
+    name = ["csm.platform.identityProvider.code"], havingValue = "azure", matchIfMissing = true)
 @EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true, proxyTargetClass = true)
 internal class CsmAzureSecurityConfiguration(
     private val aadJwtAuthenticationConverter: Converter<Jwt, out AbstractAuthenticationToken>,
@@ -34,14 +35,17 @@ internal class CsmAzureSecurityConfiguration(
 
   private val logger = LoggerFactory.getLogger(CsmAzureSecurityConfiguration::class.java)
 
+  private val organizationAdminGroup =
+      csmPlatformProperties.identityProvider?.adminGroup ?: ROLE_PLATFORM_ADMIN
   private val organizationUserGroup =
-      csmPlatformProperties.identityProvider?.adminGroup ?: ROLE_ORGANIZATION_USER
+      csmPlatformProperties.identityProvider?.userGroup ?: ROLE_ORGANIZATION_USER
   private val organizationViewerGroup =
-      csmPlatformProperties.identityProvider?.userGroup ?: ROLE_ORGANIZATION_VIEWER
+      csmPlatformProperties.identityProvider?.viewerGroup ?: ROLE_ORGANIZATION_VIEWER
 
   override fun configure(http: HttpSecurity) {
     logger.info("Azure Active Directory http security configuration")
-    super.getOAuth2JwtConfigurer(http, organizationUserGroup, organizationViewerGroup)
+    super.getOAuth2JwtConfigurer(
+            http, organizationAdminGroup, organizationUserGroup, organizationViewerGroup)
         ?.jwtAuthenticationConverter(aadJwtAuthenticationConverter)
   }
 

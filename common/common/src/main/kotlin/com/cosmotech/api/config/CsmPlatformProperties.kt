@@ -50,7 +50,7 @@ data class CsmPlatformProperties(
     val authorization: Authorization = Authorization(),
 
     /**
-     * Identity provider used for (aad : Azure Active Directory ,okta : Okta) if openapi default
+     * Identity provider used for (azure : Azure Active Directory ,okta : Okta) if openapi default
      * configuration needs to be overwritten
      */
     val identityProvider: CsmIdentityProvider?,
@@ -371,14 +371,14 @@ data class CsmPlatformProperties(
   }
 
   data class CsmIdentityProvider(
-      /** okta|aad */
+      /** okta|azure */
       val code: String,
       /**
        * entry sample :
        * - {"http://dev.api.cosmotech.com/platform" to "Platform scope"}
        * - {"default" to "Default scope"}
        */
-      val scopes: Map<String, String> = emptyMap(),
+      val defaultScopes: Map<String, String> = emptyMap(),
       /**
        * - "https://{yourOktaDomain}/oauth2/default/v1/authorize"
        * - "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
@@ -394,16 +394,12 @@ data class CsmPlatformProperties(
        * - {"csm.read.scenario" to "Read access to scenarios"}
        */
       val containerScopes: Map<String, String> = emptyMap(),
-      /**
-       * Custom group name used acted as Organization.Viewer default: Organization.Viewer e.g.
-       * "ciam-userAccess-dev"
-       */
-      val userGroup: String? = null,
-      /**
-       * Custom group name used acted as Organization.User default: Organization.User e.g.
-       * "ciam-adminAccess-dev"
-       */
+      /** Custom group name used acted as Organization.Admin default: Platform.Admin */
       val adminGroup: String? = null,
+      /** Custom group name used acted as Organization.User default: Organization.User */
+      val userGroup: String? = null,
+      /** Custom group name used acted as Organization.Viewer default: Organization.Viewer */
+      val viewerGroup: String? = null,
   )
 
   data class CsmPlatformOkta(

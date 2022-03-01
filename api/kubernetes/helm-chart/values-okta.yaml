@@ -43,15 +43,18 @@ config:
         # Use to overwrite openAPI configuration
         authorizationUrl: "https://changeme/oauth2/default/v1/authorize"
         tokenUrl: "https://changeme/oauth2/default/v1/token"
-        scopes:
+        defaultScopes:
           changeme: "changeme"
         containerScopes:
           changeme: "changeme"
         # Here you can set custom user and admin groups
-        # - userGroup will have same rights that Organization.Viewer
-        # - admingroup will have same rights that Organization.User
-        # userGroup : "myCustomUserGroup"
+        # - adminGroup will have same rights that Platform.Admin
+        # - userGroup will have same rights that Organization.User
+        # - viewerGroup will have same rights that Organization.Viewer
         # adminGroup : "myCustomAdminGroup"
+        # userGroup : "myCustomUserGroup"
+        # viewerGroup : "myCustomViewerGroup"
+
       # Use to define Okta Configuration
       okta:
         issuer: "https://changeme/oauth2/default"

@@ -18,8 +18,8 @@ management:
 csm:
   platform:
     identityProvider :
-      code: aad
-      scopes:
+      code: azure
+      defaultScopes:
         "[http://this_is_a_fake_scope.com/default]" : "Fake Scope"
       authorizationUrl: "http://this_is_a_fake_authorization_url.com"
       tokenUrl: "http://this_is_a_fake_token_url.com"

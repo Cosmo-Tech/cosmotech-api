@@ -74,7 +74,7 @@ internal class CsmOpenAPIConfiguration(val csmPlatformProperties: CsmPlatformPro
 
     if (csmPlatformProperties.identityProvider != null) {
       val scopes = Scopes()
-      scopes.putAll(csmPlatformProperties.identityProvider!!.scopes)
+      scopes.putAll(csmPlatformProperties.identityProvider!!.defaultScopes)
 
       val authorizationCodeFlow =
           OAuthFlows()
@@ -85,6 +85,13 @@ internal class CsmOpenAPIConfiguration(val csmPlatformProperties: CsmPlatformPro
                       .authorizationUrl(csmPlatformProperties.identityProvider!!.authorizationUrl))
 
       openAPI.components.securitySchemes["oAuth2AuthCode"]?.flows(authorizationCodeFlow)
+    } else {
+      val oauth2Scopes =
+          openAPI.components.securitySchemes["oAuth2AuthCode"]?.flows?.implicit?.scopes
+      if (csmPlatformProperties.azure != null) {
+        oauth2Scopes?.clear()
+        oauth2Scopes?.put("${csmPlatformProperties.azure!!.appIdUri}/platform", "Platform scope")
+      }
     }
 
     return openAPI

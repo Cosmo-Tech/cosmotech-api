@@ -6,6 +6,7 @@ import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.security.AbstractSecurityConfiguration
 import com.cosmotech.api.security.ROLE_ORGANIZATION_USER
 import com.cosmotech.api.security.ROLE_ORGANIZATION_VIEWER
+import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Configuration
@@ -23,14 +24,16 @@ internal class OktaSecurityConfiguration(
 ) : AbstractSecurityConfiguration() {
 
   private val logger = LoggerFactory.getLogger(OktaSecurityConfiguration::class.java)
-
+  private val organizationAdminGroup =
+      csmPlatformProperties.identityProvider?.adminGroup ?: ROLE_PLATFORM_ADMIN
   private val organizationUserGroup =
-      csmPlatformProperties.identityProvider?.adminGroup ?: ROLE_ORGANIZATION_USER
+      csmPlatformProperties.identityProvider?.userGroup ?: ROLE_ORGANIZATION_USER
   private val organizationViewerGroup =
-      csmPlatformProperties.identityProvider?.userGroup ?: ROLE_ORGANIZATION_VIEWER
+      csmPlatformProperties.identityProvider?.viewerGroup ?: ROLE_ORGANIZATION_VIEWER
 
   override fun configure(http: HttpSecurity) {
     logger.info("Okta http security configuration")
-    super.getOAuth2JwtConfigurer(http, organizationUserGroup, organizationViewerGroup)
+    super.getOAuth2JwtConfigurer(
+        http, organizationAdminGroup, organizationUserGroup, organizationViewerGroup)
   }
 }

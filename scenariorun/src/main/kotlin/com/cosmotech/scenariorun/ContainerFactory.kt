@@ -34,7 +34,7 @@ import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.utils.getCloudPath
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
-import java.util.*
+import java.util.UUID
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
@@ -1222,7 +1222,7 @@ internal fun getContainerScopes(csmPlatformProperties: CsmPlatformProperties): S
     val containerScopes =
         csmPlatformProperties.identityProvider?.containerScopes?.keys?.joinToString(separator = ",")
             ?: ""
-    if (containerScopes.isBlank() && csmPlatformProperties.identityProvider!!.code == "aad") {
+    if (containerScopes.isBlank() && csmPlatformProperties.identityProvider!!.code == "azure") {
       return "${csmPlatformProperties.azure?.appIdUri}${API_SCOPE_SUFFIX}"
     }
     return containerScopes
@@ -1276,7 +1276,7 @@ internal fun getCommonEnvVars(
   val containerScopes = getContainerScopes(csmPlatformProperties)
   val commonEnvVars =
       mapOf(
-          IDENTITY_PROVIDER to (csmPlatformProperties.identityProvider?.code ?: "aad"),
+          IDENTITY_PROVIDER to (csmPlatformProperties.identityProvider?.code ?: "azure"),
           CSM_SIMULATION_ID to csmSimulationId,
           API_BASE_URL_VAR to csmPlatformProperties.api.baseUrl,
           API_BASE_SCOPE_VAR to containerScopes,

@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component
 
 @Component
 @ConditionalOnProperty(
-    name = ["csm.platform.identityProvider.code"], havingValue = "aad", matchIfMissing = true)
+    name = ["csm.platform.identityProvider.code"], havingValue = "azure", matchIfMissing = true)
 internal class CsmAzureBasedSecurityConfiguration(
     private val csmPlatformProperties: CsmPlatformProperties,
 ) {
