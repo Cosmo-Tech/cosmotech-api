@@ -95,6 +95,8 @@ private const val GENERATE_NAME_PREFIX = "workflow-"
 private const val GENERATE_NAME_SUFFIX = "-"
 private const val STEP_SOURCE_LOCAL = "local"
 private const val STEP_SOURCE_CLOUD = "azureStorage"
+private const val STEP_SOURCE_GIT = "git"
+private const val STEP_SOURCE_PLATFORM = "platform"
 private const val AZURE_STORAGE_CONNECTION_STRING = "AZURE_STORAGE_CONNECTION_STRING"
 private const val MULTIPLE_STEPS_NAME = "multipleStepsContainer-"
 internal const val AZURE_EVENT_HUB_SHARED_ACCESS_POLICY_ENV_VAR =
@@ -1052,9 +1054,13 @@ internal class ContainerFactory(
           csmPlatformProperties.azure?.storage?.connectionString ?: ""
       if (organization.id == null) throw IllegalStateException("Organization id cannot be null")
       if (workspace.id == null) throw IllegalStateException("Workspace id cannot be null")
-      if (source != STEP_SOURCE_LOCAL) {
+      if (source == STEP_SOURCE_CLOUD || source == STEP_SOURCE_PLATFORM) {
         envVars[step.pathVar] =
             (step.path?.invoke(organization.id ?: "", solution.id ?: "", runTemplateId) ?: "")
+      } else if (source == STEP_SOURCE_GIT) {
+        envVars[step.pathVar] = template.gitRepositoryUrl ?: ""
+        envVars["CSM_RUN_TEMPLATE_GIT_BRANCH_NAME"] = template.gitBranchName ?: ""
+        envVars["CSM_RUN_TEMPLATE_SOURCE_DIRECTORY"] = template.runTemplateSourceDir ?: ""
       }
     }
     return ScenarioRunContainer(
@@ -1374,7 +1380,9 @@ private fun getDatasetRunArgs(
 
 private fun getSource(source: RunTemplateStepSource?) =
     when (source) {
-      RunTemplateStepSource.local -> STEP_SOURCE_LOCAL
       RunTemplateStepSource.cloud -> STEP_SOURCE_CLOUD
+      RunTemplateStepSource.git -> STEP_SOURCE_GIT
+      RunTemplateStepSource.local -> STEP_SOURCE_LOCAL
+      RunTemplateStepSource.platform -> STEP_SOURCE_PLATFORM
       else -> null
     }
