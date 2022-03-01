@@ -29,11 +29,7 @@ import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
 import com.cosmotech.scenariorun.container.StartInfo
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.solution.api.SolutionApiService
-import com.cosmotech.solution.domain.RunTemplate
-import com.cosmotech.solution.domain.RunTemplateParameter
-import com.cosmotech.solution.domain.RunTemplateParameterGroup
-import com.cosmotech.solution.domain.RunTemplateStepSource
-import com.cosmotech.solution.domain.Solution
+import com.cosmotech.solution.domain.*
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
@@ -45,11 +41,7 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import kotlin.test.BeforeTest
 import kotlin.test.assertFalse
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
@@ -2411,7 +2403,7 @@ class OktaContainerFactoryTests {
     return DatasetConnector(
         id = "AzErTyUiOp",
         parametersValues =
-            mapOf(
+            mutableMapOf(
                 "EnvParam1" to "%WORKSPACE_FILE%/workspace.env",
                 "Param1" to "%WORKSPACE_FILE%/workspace.param",
             ))
@@ -2421,7 +2413,7 @@ class OktaContainerFactoryTests {
     return DatasetConnector(
         id = "AzErTyUiOp",
         parametersValues =
-            mapOf(
+            mutableMapOf(
                 "EnvParam1" to "%STORAGE_CONNECTION_STRING%",
             ))
   }
@@ -2430,7 +2422,7 @@ class OktaContainerFactoryTests {
     return DatasetConnector(
         id = "AzErTyUiOp",
         parametersValues =
-            mapOf(
+            mutableMapOf(
                 "EnvParam1" to "env_param1_value",
                 "EnvParam2" to "env_param2_value",
                 "EnvParam3" to "env_param3_value",
@@ -2444,7 +2436,7 @@ class OktaContainerFactoryTests {
     return DatasetConnector(
         id = "AzErTyUiOp2",
         parametersValues =
-            mapOf(
+            mutableMapOf(
                 "EnvParam1" to "env_param1_value",
                 "EnvParam2" to "env_param2_value",
                 "EnvParam3" to "env_param3_value",
@@ -2458,7 +2450,7 @@ class OktaContainerFactoryTests {
     return DatasetConnector(
         id = "AzErTyUiOp3",
         parametersValues =
-            mapOf(
+            mutableMapOf(
                 "EnvParam1" to "env_param1_value",
                 "EnvParam2" to "env_param2_value",
                 "EnvParam3" to "env_param3_value",
@@ -2619,7 +2611,7 @@ class OktaContainerFactoryTests {
         name = "Test Solution",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
-        runTemplates = listOf(getRunTemplate()),
+        runTemplates = mutableListOf(getRunTemplate()),
     )
   }
 
@@ -2630,7 +2622,7 @@ class OktaContainerFactoryTests {
         name = "Test Solution",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
-        runTemplates = listOf(getRunTemplateStack()),
+        runTemplates = mutableListOf(getRunTemplateStack()),
     )
   }
 
@@ -2641,7 +2633,7 @@ class OktaContainerFactoryTests {
         name = "Test Solution",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
-        runTemplates = listOf(getRunTemplateStackNoDWH()),
+        runTemplates = mutableListOf(getRunTemplateStackNoDWH()),
     )
   }
 
@@ -2652,39 +2644,39 @@ class OktaContainerFactoryTests {
         name = "Test Solution",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
-        runTemplates = listOf(getRunTemplateDatasetIds()),
+        runTemplates = mutableListOf(getRunTemplateDatasetIds()),
         parameters =
-            listOf(
+            mutableListOf(
                 RunTemplateParameter(
                     id = "param1",
-                    labels = mapOf("en" to "Parameter 1"),
+                    labels = mutableMapOf("en" to "Parameter 1"),
                     varType = "string",
                 ),
                 RunTemplateParameter(
                     id = "param2",
-                    labels = mapOf("en" to "Parameter Dataset 2"),
+                    labels = mutableMapOf("en" to "Parameter Dataset 2"),
                     varType = "%DATASETID%"),
                 RunTemplateParameter(
                     id = "param3",
-                    labels = mapOf("en" to "Parameter Dataset 3"),
+                    labels = mutableMapOf("en" to "Parameter Dataset 3"),
                     varType = "%DATASETID%"),
                 RunTemplateParameter(
                     id = "param4",
-                    labels = mapOf("en" to "Parameter Dataset 4"),
+                    labels = mutableMapOf("en" to "Parameter Dataset 4"),
                     varType = "%DATASETID%"),
                 RunTemplateParameter(
                     id = "param5",
-                    labels = mapOf("en" to "Parameter 5"),
+                    labels = mutableMapOf("en" to "Parameter 5"),
                     varType = "int",
                 ),
             ),
         parameterGroups =
-            listOf(
+            mutableListOf(
                 RunTemplateParameterGroup(
                     id = "group1",
-                    labels = mapOf("en" to "Parameter Group 1"),
+                    labels = mutableMapOf("en" to "Parameter Group 1"),
                     parameters =
-                        listOf(
+                        mutableListOf(
                             "param1",
                             "param2",
                             "param3",
@@ -2700,7 +2692,7 @@ class OktaContainerFactoryTests {
         name = "Test Solution",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
-        runTemplates = listOf(getRunTemplateNoPool()),
+        runTemplates = mutableListOf(getRunTemplateNoPool()),
     )
   }
 
@@ -2711,7 +2703,7 @@ class OktaContainerFactoryTests {
         name = "Test Solution",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
-        runTemplates = listOf(getRunTemplateNonePool()),
+        runTemplates = mutableListOf(getRunTemplateNonePool()),
     )
   }
 
@@ -2722,7 +2714,7 @@ class OktaContainerFactoryTests {
         name = "Test Solution",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
-        runTemplates = listOf(getRunTemplateOnlyRun()),
+        runTemplates = mutableListOf(getRunTemplateOnlyRun()),
     )
   }
 
@@ -2733,7 +2725,7 @@ class OktaContainerFactoryTests {
         name = "Test Solution",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
-        runTemplates = listOf(getRunTemplateCloudSources()),
+        runTemplates = mutableListOf(getRunTemplateCloudSources()),
     )
   }
 
@@ -2744,7 +2736,7 @@ class OktaContainerFactoryTests {
         name = "Test Solution",
         repository = "cosmotech/testsolution_simulator",
         version = "1.0.0",
-        runTemplates = listOf(getRunTemplateLocalSources()),
+        runTemplates = mutableListOf(getRunTemplateLocalSources()),
     )
   }
 
@@ -2785,7 +2777,7 @@ class OktaContainerFactoryTests {
         name = "Test Run",
         csmSimulation = "TestSimulation",
         computeSize = "highcpu",
-        parameterGroups = listOf("group1"),
+        parameterGroups = mutableListOf("group1"),
     )
   }
 
@@ -2874,7 +2866,7 @@ class OktaContainerFactoryTests {
         id = "Scenarioid",
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
-        datasetList = listOf("1"),
+        datasetList = mutableListOf("1"),
     )
   }
 
@@ -2883,9 +2875,9 @@ class OktaContainerFactoryTests {
         id = "Scenarioid",
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
-        datasetList = listOf("1"),
+        datasetList = mutableListOf("1"),
         parametersValues =
-            listOf(
+            mutableListOf(
                 ScenarioRunTemplateParameterValue(
                     parameterId = "param1",
                     value = "valParam1",
@@ -2914,9 +2906,9 @@ class OktaContainerFactoryTests {
         id = "Scenarioid",
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
-        datasetList = listOf("1"),
+        datasetList = mutableListOf("1"),
         parametersValues =
-            listOf(
+            mutableListOf(
                 ScenarioRunTemplateParameterValue(
                     parameterId = "param1",
                     value = "valParam1",
@@ -2945,9 +2937,9 @@ class OktaContainerFactoryTests {
         id = "Scenarioid",
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
-        datasetList = listOf("1"),
+        datasetList = mutableListOf("1"),
         parametersValues =
-            listOf(
+            mutableListOf(
                 ScenarioRunTemplateParameterValue(
                     parameterId = "param1",
                     value = "valParam1",
@@ -2976,9 +2968,9 @@ class OktaContainerFactoryTests {
         id = "Scenarioid",
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
-        datasetList = listOf("1", "2"),
+        datasetList = mutableListOf("1", "2"),
         parametersValues =
-            listOf(
+            mutableListOf(
                 ScenarioRunTemplateParameterValue(
                     parameterId = "param1",
                     value = "valParam1",
@@ -3007,7 +2999,7 @@ class OktaContainerFactoryTests {
         id = "Scenarioid",
         name = "Test Scenario",
         runTemplateId = "testruntemplate",
-        datasetList = listOf("1", "2", "3"),
+        datasetList = mutableListOf("1", "2", "3"),
     )
   }
 
