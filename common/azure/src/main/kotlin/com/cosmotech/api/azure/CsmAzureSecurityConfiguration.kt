@@ -4,17 +4,23 @@ package com.cosmotech.api.azure
 
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.security.AbstractSecurityConfiguration
+import com.cosmotech.api.security.CsmJwtClaimValueInCollectionValidator
+import com.cosmotech.api.security.CsmSecurityValidator
 import com.cosmotech.api.security.ROLE_ORGANIZATION_USER
 import com.cosmotech.api.security.ROLE_ORGANIZATION_VIEWER
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.convert.converter.Converter
 import org.springframework.security.authentication.AbstractAuthenticationToken
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator
 import org.springframework.security.oauth2.jwt.Jwt
+import org.springframework.security.oauth2.jwt.JwtDecoder
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 
 @Configuration
 @EnableWebSecurity
@@ -23,7 +29,7 @@ import org.springframework.security.oauth2.jwt.Jwt
 @EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true, proxyTargetClass = true)
 internal class CsmAzureSecurityConfiguration(
     private val aadJwtAuthenticationConverter: Converter<Jwt, out AbstractAuthenticationToken>,
-    csmPlatformProperties: CsmPlatformProperties,
+    private val csmPlatformProperties: CsmPlatformProperties,
 ) : AbstractSecurityConfiguration() {
 
   private val logger = LoggerFactory.getLogger(CsmAzureSecurityConfiguration::class.java)
@@ -37,5 +43,44 @@ internal class CsmAzureSecurityConfiguration(
     logger.info("Azure Active Directory http security configuration")
     super.getOAuth2JwtConfigurer(http, organizationUserGroup, organizationViewerGroup)
         ?.jwtAuthenticationConverter(aadJwtAuthenticationConverter)
+  }
+
+  @Bean
+  fun jwtDecoder(csmSecurityValidator: CsmSecurityValidator): JwtDecoder {
+    val allowedTenants =
+        (csmSecurityValidator.getAllowedTenants() +
+                csmPlatformProperties.authorization.allowedTenants)
+            .filterNotNull()
+            .filterNot(String::isBlank)
+            .toSet()
+    if (allowedTenants.isEmpty()) {
+      logger.warn(
+          "Could not determine list of tenants allowed. " +
+              "This means no Tenant is allowed to use this API. " +
+              "Is this intentional? " +
+              "If not, please properly configure any of the following properties: " +
+              "'csm.platform.<provider>.credentials.core.tenantId' " +
+              "or 'csm.platform.authorization.allowed-tenants'" +
+              " or 'csm.platform.<provider>.credentials.customer.tenantId' ")
+    }
+
+    val nimbusJwtDecoder =
+        NimbusJwtDecoder.withJwkSetUri(csmSecurityValidator.getJwksSetUri()).build()
+    val validators = csmSecurityValidator.getValidators().toMutableList()
+
+    if ("*" in allowedTenants) {
+      logger.info(
+          "All tenants allowed to authenticate, since the following property contains a wildcard " +
+              "element: csm.platform.authorization.allowed-tenants")
+    } else {
+      // Validate against the list of allowed tenants
+      validators.add(
+          CsmJwtClaimValueInCollectionValidator(
+              claimName = csmPlatformProperties.authorization.tenantIdJwtClaim,
+              allowed = allowedTenants))
+    }
+
+    nimbusJwtDecoder.setJwtValidator(DelegatingOAuth2TokenValidator(validators))
+    return nimbusJwtDecoder
   }
 }

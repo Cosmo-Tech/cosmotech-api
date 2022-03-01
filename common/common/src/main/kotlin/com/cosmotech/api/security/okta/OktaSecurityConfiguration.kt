@@ -1,8 +1,11 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.api.security
+package com.cosmotech.api.security.okta
 
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.api.security.AbstractSecurityConfiguration
+import com.cosmotech.api.security.ROLE_ORGANIZATION_USER
+import com.cosmotech.api.security.ROLE_ORGANIZATION_VIEWER
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Configuration
