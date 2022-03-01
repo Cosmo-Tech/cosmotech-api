@@ -7,6 +7,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer
+import org.springframework.security.oauth2.core.OAuth2TokenValidator
+import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult
+import org.springframework.security.oauth2.jwt.Jwt
+import org.springframework.security.oauth2.jwt.JwtClaimValidator
 import org.springframework.web.cors.CorsConfiguration
 
 // Business roles
@@ -374,4 +378,17 @@ internal class CsmSecurityEndpointsRolesReader(
           .hasAnyAuthority(ROLE_PLATFORM_ADMIN, *this.roles)
     }
   }
+}
+
+class CsmJwtClaimValueInCollectionValidator(
+    claimName: String,
+    private val allowed: Collection<String>
+) : OAuth2TokenValidator<Jwt> {
+
+  private val jwtClaimValidator: JwtClaimValidator<String> =
+      JwtClaimValidator(claimName, allowed::contains)
+
+  override fun validate(token: Jwt?): OAuth2TokenValidatorResult =
+      this.jwtClaimValidator.validate(
+          token ?: throw IllegalArgumentException("JWT must not be null"))
 }
