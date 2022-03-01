@@ -88,6 +88,16 @@ csm:
       principal-jwt-claim: "sub"
       tenant-id-jwt-claim: "iss"
       allowed-tenants: []
+    upload:
+      authorized-mime-types:
+        - csv
+        - json
+        - yml
+        - yaml
+        - txt
+        - xls
+        - xlsx
+        - zip 
     vendor: azure
     azure:
       appIdUri: "http://dev.api.cosmotech.com"

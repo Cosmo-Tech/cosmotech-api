@@ -7,4 +7,5 @@ dependencies {
   implementation(projects.cosmotechUserApi)
   implementation(projects.cosmotechOrganizationApi)
   implementation(projects.cosmotechSolutionApi)
+  implementation("org.apache.tika:tika-core:2.3.0")
 }

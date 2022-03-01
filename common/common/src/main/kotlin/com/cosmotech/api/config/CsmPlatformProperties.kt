@@ -51,6 +51,9 @@ data class CsmPlatformProperties(
 
     /** Data Ingestion reporting behavior */
     val dataIngestion: DataIngestion = DataIngestion(),
+
+    /** Upload files properties */
+    val upload: Upload = Upload(),
 ) {
 
   data class Authorization(
@@ -355,4 +358,9 @@ data class CsmPlatformProperties(
         val stateIfNoControlPlaneInfoButProbeMeasuresData: String = "Successful",
     )
   }
+
+  data class Upload(
+      /** The list of files MIME types when uploading a file to the Platform */
+      val authorizedMimeTypes: List<String> = emptyList()
+  )
 }

@@ -30,8 +30,14 @@ import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceFile
 import com.cosmotech.workspace.domain.WorkspaceUser
+import java.io.BufferedInputStream
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.apache.tika.config.TikaConfig
+import org.apache.tika.metadata.Metadata
+import org.apache.tika.metadata.TikaCoreProperties
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.core.io.Resource
@@ -288,6 +294,17 @@ internal class WorkspaceServiceImpl(
         file.filename,
         destination)
 
+    val tika = TikaConfig()
+    val metadata = Metadata()
+    metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, file.filename)
+    val inputStream = file.getInputStream()
+    var mimetype = tika.getDetector().detect(inputStream, metadata)
+    logger.info("Detected type for file {}: {}", file.filename, mimetype)
+    if (mimetype.getSubtype().equals("zip")) {
+      val zipIn = ZipInputStream(inputStream)
+      this.recurseDetectZipFile(tika, zipIn, file.filename ?: "Unknown")
+    }
+
     val fileRelativeDestinationBuilder = StringBuilder()
     if (destination.isNullOrBlank()) {
       fileRelativeDestinationBuilder.append(file.filename)
@@ -343,4 +360,35 @@ internal class WorkspaceServiceImpl(
       AzureStorageResourcePatternResolver(azureStorageBlobServiceClient)
           .getResources("azure-blob://$organizationId/$workspaceId/**/*".sanitizeForAzureStorage())
           .map { it as BlobStorageResource }
+
+  private fun recurseDetectZipFile(
+      tika: TikaConfig,
+      zipInputStream: ZipInputStream,
+      fileName: String
+  ) {
+    logger.info("Scanning Zip file {}", fileName)
+    var entry: ZipEntry? = null
+    while ({
+      entry = zipInputStream.getNextEntry()
+      entry
+    }() != null) {
+      logger.debug("Zip entry {}", entry?.getName())
+      if (entry?.isDirectory() ?: false) {
+        logger.debug("Directory detected")
+      } else {
+        logger.debug("File detected")
+        val bufferedStream = BufferedInputStream(zipInputStream)
+        val metadata = Metadata()
+        metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, entry?.getName() ?: "Unknown")
+        var mimetype = tika.getDetector().detect(bufferedStream, metadata)
+        logger.info("Detected type for file {}: {}", entry?.getName(), mimetype)
+        if (mimetype.getSubtype().equals("zip")) {
+          val zipIn = ZipInputStream(bufferedStream)
+          this.recurseDetectZipFile(tika, zipIn, entry?.getName() ?: "Unknown")
+        }
+      }
+    }
+
+    logger.info("Zip file end {}", fileName)
+  }
 }
