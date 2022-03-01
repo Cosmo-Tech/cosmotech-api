@@ -35,6 +35,7 @@ csm:
       code: aad
       # Use to overwrite openAPI configuration
       authorizationUrl: "[fill-this-value]"
+      tokenUrl: "[fill-this-value]"
       scopes:
         "[fill-this-value]": "[fill-this-value]"
       containerScopes:

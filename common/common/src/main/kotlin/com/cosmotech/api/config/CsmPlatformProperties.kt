@@ -385,6 +385,11 @@ data class CsmPlatformProperties(
        */
       val authorizationUrl: String,
       /**
+       * - "https://{yourOktaDomain}/oauth2/default/v1/token"
+       * - "https://login.microsoftonline.com/common/oauth2/v2.0/token"
+       */
+      val tokenUrl: String,
+      /**
        * entry sample :
        * - {"csm.read.scenario" to "Read access to scenarios"}
        */

@@ -29,11 +29,7 @@ import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
 import com.cosmotech.scenariorun.container.StartInfo
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.solution.api.SolutionApiService
-import com.cosmotech.solution.domain.RunTemplate
-import com.cosmotech.solution.domain.RunTemplateParameter
-import com.cosmotech.solution.domain.RunTemplateParameterGroup
-import com.cosmotech.solution.domain.RunTemplateStepSource
-import com.cosmotech.solution.domain.Solution
+import com.cosmotech.solution.domain.*
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
@@ -45,11 +41,7 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import kotlin.test.BeforeTest
 import kotlin.test.assertFalse
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
@@ -129,6 +121,7 @@ class ContainerFactoryTests {
             code = "aad",
             scopes = mapOf("This is a fake scope id" to "This is a fake scope name"),
             authorizationUrl = "http://this_is_a_fake_url.com",
+            tokenUrl = "http://this_is_a_fake_token_url.com",
         )
   }
 
@@ -497,7 +490,9 @@ class ContainerFactoryTests {
             scopes = mapOf("This is a fake scope id" to "This is a fake scope name"),
             authorizationUrl = "http://this_is_a_fake_url.com",
             containerScopes =
-                mapOf("scope1" to "This is a scope", "scope2" to "This is another scope"))
+                mapOf("scope1" to "This is a scope", "scope2" to "This is another scope"),
+            tokenUrl = "http://this_is_a_fake_token_url.com",
+        )
 
     val container =
         factory.buildScenarioParametersFetchContainer("1", "2", "3", "Test", CSM_SIMULATION_ID)

@@ -42,6 +42,7 @@ config:
         code: okta
         # Use to overwrite openAPI configuration
         authorizationUrl: "https://changeme/oauth2/default/v1/authorize"
+        tokenUrl: "https://changeme/oauth2/default/v1/token"
         scopes:
           changeme: "changeme"
         containerScopes:

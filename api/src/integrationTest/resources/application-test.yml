@@ -22,6 +22,7 @@ csm:
       scopes:
         "[http://this_is_a_fake_scope.com/default]" : "Fake Scope"
       authorizationUrl: "http://this_is_a_fake_authorization_url.com"
+      tokenUrl: "http://this_is_a_fake_token_url.com"
     authorization:
       tenant-id-jwt-claim: "iss"
       # Note that the way @Value works in Spring does not make it possible to inject this sole YAML list.
