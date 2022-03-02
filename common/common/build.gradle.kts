@@ -9,4 +9,5 @@ dependencies {
   implementation(
       "org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.6.3")
   implementation("org.springframework.security:spring-security-jwt:1.1.1.RELEASE")
+  implementation("org.apache.tika:tika-core:2.3.0")
 }

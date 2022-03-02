@@ -361,6 +361,13 @@ data class CsmPlatformProperties(
 
   data class Upload(
       /** The list of files MIME types when uploading a file to the Platform */
-      val authorizedMimeTypes: List<String> = emptyList()
-  )
+      val authorizedMimeTypes: AuthorizedMimeTypes = AuthorizedMimeTypes(),
+  ) {
+    data class AuthorizedMimeTypes(
+        /** List of authorized mime types for workspace file upload */
+        val workspaces: List<String> = emptyList(),
+        /** List of authorized mime types for step handler file upload */
+        val handlers: List<String> = emptyList(),
+    )
+  }
 }

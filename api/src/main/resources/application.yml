@@ -90,14 +90,18 @@ csm:
       allowed-tenants: []
     upload:
       authorized-mime-types:
-        - csv
-        - json
-        - yml
-        - yaml
-        - txt
-        - xls
-        - xlsx
-        - zip 
+        workspaces:
+          - application/zip
+          - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+          - application/x-tika-ooxml
+          - text/csv
+          - text/plain
+          - text/x-yaml
+        handlers:
+          - application/zip
+          - application/x-sh
+          - text/x-python
+          - text/plain
     vendor: azure
     azure:
       appIdUri: "http://dev.api.cosmotech.com"

@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 package com.cosmotech.workspace.azure
 
+import com.azure.cosmos.CosmosClient
+import com.cosmotech.api.config.CsmPlatformProperties
 import com.azure.spring.data.cosmos.core.CosmosTemplate
 import com.azure.storage.blob.BlobContainerClient
 import com.azure.storage.blob.BlobServiceClient
@@ -37,6 +39,8 @@ const val WORKSPACE_ID = "W-BcDeFg123"
 
 @ExtendWith(MockKExtension::class)
 class WorkspaceServiceImplTests {
+  @MockK(relaxed = true) private lateinit var csmPlatformProperties: CsmPlatformProperties
+  @MockK(relaxed = true) private lateinit var cosmosClient: CosmosClient
 
   @MockK private lateinit var resourceLoader: ResourceLoader
   @MockK private lateinit var userService: UserApiService
@@ -52,6 +56,8 @@ class WorkspaceServiceImplTests {
 
   @BeforeTest
   fun setUp() {
+    MockKAnnotations.init(this, relaxUnitFun = true)
+
     this.workspaceServiceImpl =
         spyk(
             WorkspaceServiceImpl(
@@ -61,7 +67,27 @@ class WorkspaceServiceImplTests {
                 solutionService,
                 azureStorageBlobServiceClient,
                 azureStorageBlobBatchClient))
-    MockKAnnotations.init(this, relaxUnitFun = true)
+
+    every { workspaceServiceImpl getProperty "cosmosClient" } returns cosmosClient
+
+    val csmPlatformPropertiesUpload = mockk<CsmPlatformProperties.Upload>()
+    val csmPlatformPropertiesAuthorizedMimeTypes = mockk<CsmPlatformProperties.Upload.AuthorizedMimeTypes>()
+    every { csmPlatformPropertiesAuthorizedMimeTypes.workspaces } returns
+          listOf(
+            "application/zip",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "application/x-tika-ooxml",
+            "text/csv",
+            "text/plain",
+            "text/x-yaml",
+          )
+    every { csmPlatformPropertiesUpload.authorizedMimeTypes } returns csmPlatformPropertiesAuthorizedMimeTypes
+    every { csmPlatformProperties.upload } returns csmPlatformPropertiesUpload
+
+    every { workspaceServiceImpl getProperty "csmPlatformProperties" } returns
+        csmPlatformProperties
+
+    workspaceServiceImpl.init()
   }
 
   @Test
