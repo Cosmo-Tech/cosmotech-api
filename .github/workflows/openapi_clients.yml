@@ -40,7 +40,7 @@ jobs:
       cancel-in-progress: false
 
     steps:
-      - uses: actions/checkout@v2.4.0
+      - uses: actions/checkout@v3
         with:
           # Fetch all tags since Gradle project version is built upon SCM
           fetch-depth: 0
