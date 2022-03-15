@@ -52,6 +52,9 @@ import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
+private const val MIN_SDK_VERSION_MAJOR = 8
+private const val MIN_SDK_VERSION_MINOR = 5
+
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions")
@@ -406,6 +409,8 @@ internal class ScenarioRunServiceImpl(
             runTemplateId = runTemplate?.id,
             generateName = startContainers.generateName,
             computeSize = runTemplate?.computeSize,
+            noDatawarehouseConsumers = runTemplate?.noDatawarehouseConsumers,
+            sdkVersion = solution?.sdkVersion,
             datasetList = scenario?.datasetList,
             parametersValues =
                 (scenario?.parametersValues?.map { scenarioValue ->
@@ -442,6 +447,29 @@ internal class ScenarioRunServiceImpl(
       scenarioRun: ScenarioRun,
   ): ScenarioRunStatus {
     val scenarioRunStatus = this.workflowService.getScenarioRunStatus(scenarioRun)
+    // Check if SDK version used to build the Solution enable control plane for data ingestion: SDK
+    // >= 8.5
+    var versionWithDataIngestionState = true
+    if (scenarioRun.sdkVersion != null) {
+      logger.debug(
+          "SDK version for scenario run status detected: {}", scenarioRun.sdkVersion ?: "ERROR")
+      val splitVersion = scenarioRun.sdkVersion?.split(".") ?: listOf()
+      if (splitVersion.size < 2) {
+        logger.error("Malformed SDK version for scenario run status data ingestion check")
+      } else {
+        val major = splitVersion[0].toIntOrNull()
+        val minor = splitVersion[1].toIntOrNull()
+        if (major == null || minor == null) {
+          logger.error(
+              "Malformed SDK version for scenario run status data ingestion check: use int for MAJOR and MINOR version")
+        } else {
+          versionWithDataIngestionState =
+              ((major == MIN_SDK_VERSION_MAJOR && minor >= MIN_SDK_VERSION_MINOR) ||
+                  (major > MIN_SDK_VERSION_MAJOR))
+        }
+      }
+    }
+
     return scenarioRunStatus.copy(
         state =
             mapWorkflowPhaseToScenarioRunState(
@@ -452,10 +480,13 @@ internal class ScenarioRunServiceImpl(
                 csmSimulationRun = scenarioRun.csmSimulationRun,
                 // Determine whether we need to check data ingestion state, based on whether the
                 // CSM_CONTROL_PLANE_TOPIC variable is present in any of the containers
+                // And if the run template send data to datawarehouse with probe consumers
                 checkDataIngestionState =
                     scenarioRun.containers?.any {
                       !it.envVars?.get(EVENT_HUB_CONTROL_PLANE_VAR).isNullOrBlank()
-                    }))
+                    } &&
+                        !(scenarioRun.noDatawarehouseConsumers ?: false) &&
+                        versionWithDataIngestionState))
   }
 
   @EventListener(WorkflowPhaseToStateRequest::class)

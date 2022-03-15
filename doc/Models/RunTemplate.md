@@ -9,6 +9,7 @@ Name | Type | Description | Notes
 **csmSimulation** | **String** | the Cosmo Tech simulation name. This information is send to the Engine. Mandatory information if no Engine is defined | [optional] [default to null]
 **tags** | **List** | the list of Run Template tags | [optional] [default to null]
 **computeSize** | **String** | the compute size needed for this Run Template. Standard sizes are basic and highcpu. Default is basic | [optional] [default to null]
+**noDatawarehouseConsumers** | **Boolean** | set to true if the simulation does not use any Datawarehouse consumers (AMQP consumers for Azure) | [optional] [default to null]
 **fetchDatasets** | **Boolean** | whether or not the fetch dataset step is done | [optional] [default to null]
 **scenarioDataDownloadTransform** | **Boolean** | whether or not the scenario data download transform step step is done | [optional] [default to null]
 **fetchScenarioParameters** | **Boolean** | whether or not the fetch parameters step is done | [optional] [default to null]

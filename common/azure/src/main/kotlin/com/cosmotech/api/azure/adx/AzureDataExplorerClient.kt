@@ -47,18 +47,13 @@ class AzureDataExplorerClient(
 
   private lateinit var kustoClient: Client
 
-  private val dataIngestionStateIfNoControlPlaneInfoButProbeMeasuresData =
-      DataIngestionState.valueOf(
-          csmPlatformProperties.dataIngestion.state.stateIfNoControlPlaneInfoButProbeMeasuresData)
-
-  private val dataIngestionStateExceptionIfNoControlPlaneInfoAndNoProbeMeasuresData =
-      csmPlatformProperties.dataIngestion.state.exceptionIfNoControlPlaneInfoAndNoProbeMeasuresData
-
   private val waitingTimeBeforeIngestion =
       csmPlatformProperties.dataIngestion.waitingTimeBeforeIngestionSeconds
 
   private val ingestionObservationWindowToBeConsideredAFailureMinutes =
       csmPlatformProperties.dataIngestion.ingestionObservationWindowToBeConsideredAFailureMinutes
+
+  private val noDataTimeOutSeconds = csmPlatformProperties.dataIngestion.state.noDataTimeOutSeconds
 
   @PostConstruct
   internal fun init() {
@@ -82,8 +77,10 @@ class AzureDataExplorerClient(
       organizationId: String,
       workspaceKey: String,
       scenarioRunId: String,
-      csmSimulationRun: String
+      csmSimulationRun: String,
   ): DataIngestionState? {
+    // Important: We only enter in this function if ingestion state can be fetch with control plane
+    // information
     logger.trace("getStateFor($organizationId,$workspaceKey,$scenarioRunId,$csmSimulationRun)")
 
     val scenarioRunWorkflowEndTime =
@@ -105,7 +102,7 @@ class AzureDataExplorerClient(
             "$sentMessagesTotal,$probesMeasuresCount)",
         scenarioRunId,
         csmSimulationRun)
-    return if (sentMessagesTotal == null) {
+    return if (sentMessagesTotal == 0L) {
       logger.debug(
           "Scenario run {} (csmSimulationRun={}) produced {} measures, " +
               "but no data found in SimulationTotalFacts control plane table",
@@ -113,21 +110,23 @@ class AzureDataExplorerClient(
           csmSimulationRun,
           probesMeasuresCount)
       if (probesMeasuresCount > 0) {
-        // For backward compatibility purposes
-        this.dataIngestionStateIfNoControlPlaneInfoButProbeMeasuresData
-      } else if (this.dataIngestionStateExceptionIfNoControlPlaneInfoAndNoProbeMeasuresData) {
+        // We do not handle here the case where there are probes measures but no sentMessagesTotal ever written
+        // There is a total run timeout for argo workflows however (7d)
+        DataIngestionState.InProgress
+      } else if (seconds > this.noDataTimeOutSeconds) {
         throw UnsupportedOperationException(
-            "Case not handled: probesMeasuresCount=0 and sentMessagesTotal=NULL. " +
+            "Time out of ${this.noDataTimeOutSeconds} seconds reached for probesMeasuresCount=0 " +
+                "and sentMessagesTotal=0." +
                 "Scenario run $scenarioRunId (csmSimulationRun=$csmSimulationRun) " +
-                "probably ran no AMQP consumers. " +
-                "To mitigate this, either make sure to build your Simulator using " +
-                "a version of SDK >= 8.5 or configure the " +
-                "'csm.platform.data-ingestion.state.exception-if-no-control-plane-info-" +
-                "and-no-probe-measures-data' property flag for this API")
+                "probably ran no AMQP consumers or took to long to probe data. " +
+                "You can set a sdkVersion < 8.5 on your Solution to disable data ingestion state with control plane. " +
+                "You can set noDatawarehouseConsumers to true on your run template to disable data ingestion " +
+                "state with control plane. " +
+                "You can configure 'csm.platform.data-ingestion.state.no-data-time-out-seconds' to set this timeout " +
+                "property flag for this API.")
       } else {
-        // THis is the case where sentMessagesTotal == null, probesMeasuresCount = 0 and we don't
-        // want to throw an exception the simulation is successful but there's no probe measures
-        DataIngestionState.Successful
+        // No data time out not reached yet
+        DataIngestionState.InProgress
       }
     } else if (probesMeasuresCount < sentMessagesTotal) {
       if (anyDataPlaneIngestionFailures(organizationId, workspaceKey, scenarioRunWorkflowEndTime)) {
@@ -167,7 +166,7 @@ class AzureDataExplorerClient(
       organizationId: String,
       workspaceKey: String,
       csmSimulationRun: String
-  ): Long? {
+  ): Long {
     val sentMessagesTotalQueryPrimaryResults =
         this.kustoClient.execute(
                 getDatabaseName(organizationId, workspaceKey),
@@ -180,10 +179,11 @@ class AzureDataExplorerClient(
                   timeoutInMilliSec = TimeUnit.SECONDS.toMillis(REQUEST_TIMEOUT_SECONDS)
                 })
             .primaryResults
-      if (!sentMessagesTotalQueryPrimaryResults.next()) {
-          throw IllegalStateException("Missing record in table SimulationTotalFacts for simulation ${csmSimulationRun}")
-      }
-      return sentMessagesTotalQueryPrimaryResults.getLongObject("SentMessagesTotal")!!
+    if (!sentMessagesTotalQueryPrimaryResults.next()) {
+      throw IllegalStateException(
+          "Missing record in table SimulationTotalFacts for simulation ${csmSimulationRun}")
+    }
+    return sentMessagesTotalQueryPrimaryResults.getLongObject("SentMessagesTotal")!!
   }
 
   @Suppress("TooGenericExceptionCaught")

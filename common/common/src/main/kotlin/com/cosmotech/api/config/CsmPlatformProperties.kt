@@ -329,7 +329,7 @@ data class CsmPlatformProperties(
        * Number of seconds to wait after a scenario run workflow end time, before starting to check
        * ADX for data ingestion state. See https://bit.ly/3FXshzE for the rationale
        */
-      val waitingTimeBeforeIngestionSeconds: Long = 10,
+      val waitingTimeBeforeIngestionSeconds: Long = 15,
 
       /**
        * number of minutes after a scenario run workflow end time during which an ingestion failure
@@ -342,17 +342,10 @@ data class CsmPlatformProperties(
   ) {
     data class State(
         /**
-         * Whether to throw an exception if we have no control plane info about the scenario run,
-         * and no probe measures data. This may typically happen if the simulation has no consumers.
+         * The timeout in second before considering no data in probes measures and control plane is
+         * an issue
          */
-        val exceptionIfNoControlPlaneInfoAndNoProbeMeasuresData: Boolean = true,
-
-        /**
-         * State to report if we have no ingestion failure, and no control plane info about the
-         * scenario run, but we have probe measures data. One of Successful, InProgress, Failure,
-         * Unknown
-         */
-        val stateIfNoControlPlaneInfoButProbeMeasuresData: String = "Successful",
+        val noDataTimeOutSeconds: Long = 60,
     )
   }
 }
