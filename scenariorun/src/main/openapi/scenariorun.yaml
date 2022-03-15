@@ -573,6 +573,9 @@ components:
           type: string
           readOnly: true
           description: the compute size needed for this Analysis. Standard sizes are basic and highcpu. Default is basic
+        noDatawarehouseConsumers:
+          type: boolean
+          description: set to true if the simulation does not use any Datawarehouse consumers (AMQP consumers for Azure)
         datasetList:
           type: array
           readOnly: true

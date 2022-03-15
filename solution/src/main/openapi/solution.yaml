@@ -507,6 +507,9 @@ components:
           type: string
           readOnly: true
           description: the User id which own this Solution
+        sdkVersion:
+          type: string
+          description: the MAJOR.MINOR version used to build this solution
         url:
           type: string
           description: an optional URL link to solution page
@@ -560,6 +563,9 @@ components:
         computeSize:
           type: string
           description: the compute size needed for this Run Template. Standard sizes are basic and highcpu. Default is basic
+        noDatawarehouseConsumers:
+          type: boolean
+          description: set to true if the simulation does not use any Datawarehouse consumers (AMQP consumers for Azure)
         fetchDatasets:
           type: boolean
           description: whether or not the fetch dataset step is done

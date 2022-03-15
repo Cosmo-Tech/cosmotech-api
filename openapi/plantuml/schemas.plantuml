@@ -103,6 +103,7 @@ entity RunTemplate {
     csmSimulation: String
     tags: List<String>
     computeSize: String
+    noDatawarehouseConsumers: Boolean
     fetchDatasets: Boolean
     scenarioDataDownloadTransform: Boolean
     fetchScenarioParameters: Boolean
