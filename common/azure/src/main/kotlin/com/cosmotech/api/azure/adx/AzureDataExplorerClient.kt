@@ -174,27 +174,16 @@ class AzureDataExplorerClient(
                 """
                 SimulationTotalFacts
                 | where SimulationId == '${csmSimulationRun}'
-                | project SentMessagesTotal
+                | summarize SentMessagesTotal = sum(SentMessagesTotal)
             """,
                 ClientRequestProperties().apply {
                   timeoutInMilliSec = TimeUnit.SECONDS.toMillis(REQUEST_TIMEOUT_SECONDS)
                 })
             .primaryResults
-
-    val sentMessagesTotalRowCount = sentMessagesTotalQueryPrimaryResults.count()
-    if (sentMessagesTotalRowCount > 1) {
-      throw IllegalStateException(
-          "Unexpected number of rows in SimulationTotalFacts ADX Table for SimulationId=" +
-              csmSimulationRun +
-              ". Expected at most 1, but got " +
-              sentMessagesTotalRowCount)
-    }
-    return if (sentMessagesTotalQueryPrimaryResults.next()) {
-      sentMessagesTotalQueryPrimaryResults.getLongObject("SentMessagesTotal")
-    } else {
-      // No row
-      null
-    }
+      if (!sentMessagesTotalQueryPrimaryResults.next()) {
+          throw IllegalStateException("Missing record in table SimulationTotalFacts for simulation ${csmSimulationRun}")
+      }
+      return sentMessagesTotalQueryPrimaryResults.getLongObject("SentMessagesTotal")!!
   }
 
   @Suppress("TooGenericExceptionCaught")
