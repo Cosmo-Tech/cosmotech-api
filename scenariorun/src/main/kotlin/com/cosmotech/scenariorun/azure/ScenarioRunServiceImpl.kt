@@ -409,7 +409,7 @@ internal class ScenarioRunServiceImpl(
             runTemplateId = runTemplate?.id,
             generateName = startContainers.generateName,
             computeSize = runTemplate?.computeSize,
-            noDatawarehouseConsumers = runTemplate?.noDatawarehouseConsumers,
+            noDataIngestionState = runTemplate?.noDataIngestionState,
             sdkVersion = solution?.sdkVersion,
             datasetList = scenario?.datasetList,
             parametersValues =
@@ -482,10 +482,11 @@ internal class ScenarioRunServiceImpl(
                 // CSM_CONTROL_PLANE_TOPIC variable is present in any of the containers
                 // And if the run template send data to datawarehouse with probe consumers
                 checkDataIngestionState =
-                    scenarioRun.containers?.any {
+                    (scenarioRun.containers?.any {
                       !it.envVars?.get(EVENT_HUB_CONTROL_PLANE_VAR).isNullOrBlank()
-                    } &&
-                        !(scenarioRun.noDatawarehouseConsumers ?: false) &&
+                    }
+                        ?: false) &&
+                        !(scenarioRun.noDataIngestionState ?: false) &&
                         versionWithDataIngestionState))
   }
 

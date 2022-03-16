@@ -103,31 +103,7 @@ class AzureDataExplorerClient(
         scenarioRunId,
         csmSimulationRun)
     return if (sentMessagesTotal == 0L) {
-      logger.debug(
-          "Scenario run {} (csmSimulationRun={}) produced {} measures, " +
-              "but no data found in SimulationTotalFacts control plane table",
-          scenarioRunId,
-          csmSimulationRun,
-          probesMeasuresCount)
-      if (probesMeasuresCount > 0) {
-        // We do not handle here the case where there are probes measures but no sentMessagesTotal ever written
-        // There is a total run timeout for argo workflows however (7d)
-        DataIngestionState.InProgress
-      } else if (seconds > this.noDataTimeOutSeconds) {
-        throw UnsupportedOperationException(
-            "Time out of ${this.noDataTimeOutSeconds} seconds reached for probesMeasuresCount=0 " +
-                "and sentMessagesTotal=0." +
-                "Scenario run $scenarioRunId (csmSimulationRun=$csmSimulationRun) " +
-                "probably ran no AMQP consumers or took to long to probe data. " +
-                "You can set a sdkVersion < 8.5 on your Solution to disable data ingestion state with control plane. " +
-                "You can set noDatawarehouseConsumers to true on your run template to disable data ingestion " +
-                "state with control plane. " +
-                "You can configure 'csm.platform.data-ingestion.state.no-data-time-out-seconds' to set this timeout " +
-                "property flag for this API.")
-      } else {
-        // No data time out not reached yet
-        DataIngestionState.InProgress
-      }
+      this.handleNoDataTimeOut(scenarioRunId, csmSimulationRun, seconds, probesMeasuresCount)
     } else if (probesMeasuresCount < sentMessagesTotal) {
       if (anyDataPlaneIngestionFailures(organizationId, workspaceKey, scenarioRunWorkflowEndTime)) {
         DataIngestionState.Failure
@@ -136,6 +112,43 @@ class AzureDataExplorerClient(
       }
     } else {
       DataIngestionState.Successful
+    }
+  }
+
+  private fun handleNoDataTimeOut(
+      scenarioRunId: String,
+      csmSimulationRun: String,
+      seconds: Long,
+      probesMeasuresCount: Long,
+  ): DataIngestionState {
+    logger.debug(
+        "Scenario run {} (csmSimulationRun={}) produced {} measures, " +
+            "but no data found in SimulationTotalFacts control plane table",
+        scenarioRunId,
+        csmSimulationRun,
+        probesMeasuresCount)
+    if (seconds > this.noDataTimeOutSeconds) {
+      var error =
+          "Time out of ${this.noDataTimeOutSeconds} seconds reached for sentMessagesTotal=0 " +
+              "with probesMeasuresCount=${probesMeasuresCount} " +
+              "for Scenario run $scenarioRunId (csmSimulationRun=$csmSimulationRun). "
+      if (probesMeasuresCount > 0) {
+        error += "There is maybe an issue in data ingestion of control plane to datawarehouse. "
+      } else {
+        error += "Simulation seems to send not data at all or there is an issue in data ingestion. "
+      }
+      logger.error(
+          error +
+              "Solution can set a sdkVersion < 8.5 to disable data ingestion state with control plane. " +
+              "Solution can set noDataIngestionState to true on the run template to disable data ingestion " +
+              "state with control plane. " +
+              "Devops admin can configure 'csm.platform.data-ingestion.state.no-data-time-out-seconds' to set this " +
+              "timeout property flag for this API.")
+
+      return DataIngestionState.Failure
+    } else {
+      // No data time out not reached yet
+      return DataIngestionState.InProgress
     }
   }
 

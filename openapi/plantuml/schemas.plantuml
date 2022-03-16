@@ -103,7 +103,7 @@ entity RunTemplate {
     csmSimulation: String
     tags: List<String>
     computeSize: String
-    noDatawarehouseConsumers: Boolean
+    noDataIngestionState: Boolean
     fetchDatasets: Boolean
     scenarioDataDownloadTransform: Boolean
     fetchScenarioParameters: Boolean
@@ -229,6 +229,8 @@ entity ScenarioRun {
     solutionId: String
     runTemplateId: String
     computeSize: String
+    sdkVersion: String
+    noDataIngestionState: Boolean
     datasetList: List<String>
     parametersValues: List<RunTemplateParameterValue>
     sendDatasetsToDataWarehouse: Boolean
@@ -339,6 +341,7 @@ entity Solution {
     csmSimulator: String
     * version: String
     ownerId: String
+    sdkVersion: String
     url: String
     tags: List<String>
     parameters: List<RunTemplateParameter>

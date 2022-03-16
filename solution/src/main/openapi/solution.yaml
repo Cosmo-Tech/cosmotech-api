@@ -563,9 +563,9 @@ components:
         computeSize:
           type: string
           description: the compute size needed for this Run Template. Standard sizes are basic and highcpu. Default is basic
-        noDatawarehouseConsumers:
+        noDataIngestionState:
           type: boolean
-          description: set to true if the simulation does not use any Datawarehouse consumers (AMQP consumers for Azure)
+          description: set to true if the run template does not want to check data ingestion state (no probes or not control plane)
         fetchDatasets:
           type: boolean
           description: whether or not the fetch dataset step is done
