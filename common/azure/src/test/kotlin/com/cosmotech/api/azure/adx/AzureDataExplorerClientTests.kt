@@ -24,7 +24,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.boot.actuate.health.Status
 
@@ -159,7 +158,7 @@ class AzureDataExplorerClientTests {
   }
 
   @TestFactory
-  fun `PROD-7420 - getStateFor returns configured state if no control plane messages but probes measures`():
+  fun `PROD-7420 - getStateFor returns In Progress if no control plane messages but no time out`():
       Collection<DynamicTest> {
     every { eventPublisher.publishEvent(any<ScenarioRunEndTimeRequest>()) } answers
         {
@@ -171,21 +170,19 @@ class AzureDataExplorerClientTests {
         every { csmPlatformProperties.dataIngestion } returns
             CsmPlatformProperties.DataIngestion(
                 waitingTimeBeforeIngestionSeconds = 1,
-                state =
-                    CsmPlatformProperties.DataIngestion.State(
-                        stateIfNoControlPlaneInfoButProbeMeasuresData = dataIngestionState.name))
+                state = CsmPlatformProperties.DataIngestion.State(noDataTimeOutSeconds = 60))
         val azureDataExplorerClient =
             spyk(AzureDataExplorerClient(csmPlatformProperties, eventPublisher))
         every {
           azureDataExplorerClient.querySentMessagesTotal(
               eq("my-organization-id"), eq("my-workspace-key"), eq("my-csm-simulation-run"))
-        } returns null
+        } returns 0
         every {
           azureDataExplorerClient.queryProbesMeasuresCount(
               eq("my-organization-id"), eq("my-workspace-key"), eq("my-csm-simulation-run"))
         } returns 42
         assertEquals(
-            dataIngestionState,
+            DataIngestionState.InProgress,
             azureDataExplorerClient.getStateFor(
                 "my-organization-id",
                 "my-workspace-key",
@@ -196,57 +193,27 @@ class AzureDataExplorerClientTests {
   }
 
   @Test
-  fun `PROD-7420 - getStateFor throws error if told so if no control plane messages and no probes measures`() {
+  fun `PROD-7420 getStateFor returns Failure if told so if no control plane messages and time out`() {
     every { eventPublisher.publishEvent(any<ScenarioRunEndTimeRequest>()) } answers
         {
-          firstArg<ScenarioRunEndTimeRequest>().response = ZonedDateTime.now().minusSeconds(10)
+          firstArg<ScenarioRunEndTimeRequest>().response = ZonedDateTime.now().minusSeconds(70)
         }
     every { csmPlatformProperties.dataIngestion } returns
         CsmPlatformProperties.DataIngestion(
             waitingTimeBeforeIngestionSeconds = 1,
-            state =
-                CsmPlatformProperties.DataIngestion.State(
-                    exceptionIfNoControlPlaneInfoAndNoProbeMeasuresData = true))
+            state = CsmPlatformProperties.DataIngestion.State(noDataTimeOutSeconds = 60))
     val azureDataExplorerClient =
         spyk(AzureDataExplorerClient(csmPlatformProperties, eventPublisher))
     every {
       azureDataExplorerClient.querySentMessagesTotal(
-          eq("my-organization-id"), eq("my-workspace-key"), eq("my-csm-simulation-run"))
-    } returns null
-    every {
-      azureDataExplorerClient.queryProbesMeasuresCount(
           eq("my-organization-id"), eq("my-workspace-key"), eq("my-csm-simulation-run"))
     } returns 0
-    assertThrows<UnsupportedOperationException> {
-      azureDataExplorerClient.getStateFor(
-          "my-organization-id", "my-workspace-key", "sr-myscenarioRunId", "my-csm-simulation-run")
-    }
-  }
-
-  @Test
-  fun `PROD-7420 getStateFor returns Successful if told so if no control plane messages and no probes measures`() {
-    every { eventPublisher.publishEvent(any<ScenarioRunEndTimeRequest>()) } answers
-        {
-          firstArg<ScenarioRunEndTimeRequest>().response = ZonedDateTime.now().minusSeconds(10)
-        }
-    every { csmPlatformProperties.dataIngestion } returns
-        CsmPlatformProperties.DataIngestion(
-            waitingTimeBeforeIngestionSeconds = 1,
-            state =
-                CsmPlatformProperties.DataIngestion.State(
-                    exceptionIfNoControlPlaneInfoAndNoProbeMeasuresData = false))
-    val azureDataExplorerClient =
-        spyk(AzureDataExplorerClient(csmPlatformProperties, eventPublisher))
-    every {
-      azureDataExplorerClient.querySentMessagesTotal(
-          eq("my-organization-id"), eq("my-workspace-key"), eq("my-csm-simulation-run"))
-    } returns null
     every {
       azureDataExplorerClient.queryProbesMeasuresCount(
           eq("my-organization-id"), eq("my-workspace-key"), eq("my-csm-simulation-run"))
     } returns 0
     assertEquals(
-        DataIngestionState.Successful,
+        DataIngestionState.Failure,
         azureDataExplorerClient.getStateFor(
             "my-organization-id",
             "my-workspace-key",
