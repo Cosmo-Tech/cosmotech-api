@@ -9,6 +9,7 @@ import com.azure.cosmos.models.PartitionKey
 import com.azure.cosmos.models.SqlParameter
 import com.azure.cosmos.models.SqlQuerySpec
 import com.cosmotech.api.azure.CsmAzureService
+import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
@@ -36,6 +37,7 @@ import com.cosmotech.scenario.domain.ScenarioJobState
 import com.cosmotech.scenario.domain.ScenarioLastRun
 import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
 import com.cosmotech.scenario.domain.ScenarioUser
+import com.cosmotech.scenario.domain.ScenarioValidationStatus
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
@@ -62,6 +64,7 @@ internal class ScenarioServiceImpl(
     private val solutionService: SolutionApiService,
     private val organizationService: OrganizationApiService,
     private val workspaceService: WorkspaceApiService,
+    private val azureDataExplorerClient: AzureDataExplorerClient,
 ) : CsmAzureService(), ScenarioApiService {
 
   override fun addOrReplaceScenarioParameterValues(
@@ -332,6 +335,13 @@ internal class ScenarioServiceImpl(
       this.findAllScenariosStateOption(organizationId, workspaceId, true)
           .addLastRunsInfo(this, organizationId, workspaceId)
 
+  override fun findAllScenariosByValidationStatus(
+      organizationId: String,
+      workspaceId: String,
+      validationStatus: ScenarioValidationStatus
+  ): List<Scenario> =
+      findAllScenarioByValidationStatus(organizationId, workspaceId, validationStatus.toString())
+
   internal fun findAllScenariosStateOption(
       organizationId: String,
       workspaceId: String,
@@ -356,6 +366,30 @@ internal class ScenarioServiceImpl(
             }
             return@mapNotNull scenario
           }
+
+  private fun findAllScenarioByValidationStatus(
+      organizationId: String,
+      workspaceId: String,
+      validationStatus: String
+  ): List<Scenario> =
+      cosmosCoreDatabase
+          .getContainer("${organizationId}_scenario_data")
+          .queryItems(
+              SqlQuerySpec(
+                  "SELECT * FROM c WHERE c.type = 'Scenario' " +
+                      "AND c.workspaceId = @WORKSPACE_ID " +
+                      "AND c.validationStatus = @VALIDATION_STATUS",
+                  listOf(
+                      SqlParameter("@WORKSPACE_ID", workspaceId),
+                      SqlParameter("@VALIDATION_STATUS", validationStatus))),
+              CosmosQueryRequestOptions(),
+              // It would be much better to specify the Domain Type right away and
+              // avoid the map operation, but we can't due
+              // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
+              // https://github.com/Azure/azure-sdk-for-java/issues/12269
+              JsonNode::class.java)
+          .mapNotNull { it.toDomain<Scenario>() }
+          .toList()
 
   private fun findAllScenariosByRootId(
       organizationId: String,
@@ -389,6 +423,15 @@ internal class ScenarioServiceImpl(
             .addLastRunsInfo(this, organizationId, workspaceId)
     this.addStateToScenario(organizationId, scenario)
     return scenario
+  }
+
+  override fun getScenarioValidationStatusById(
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String
+  ): ScenarioValidationStatus {
+    val scenario = this.findScenarioById(organizationId, workspaceId, scenarioId)
+    return scenario.validationStatus ?: ScenarioValidationStatus.Unknown
   }
 
   override fun getScenarioDataDownloadJobInfo(
@@ -630,6 +673,12 @@ internal class ScenarioServiceImpl(
       if (datasetListUpdated) {
         publishDatasetListChangedEvent(organizationId, workspaceId, scenarioId, scenario)
       }
+
+      azureDataExplorerClient.ingestScenarioValidationStatus(
+          organizationId,
+          workspace.key,
+          scenarioId,
+          scenario.validationStatus?.toString() ?: ScenarioValidationStatus.Unknown.toString())
     }
 
     return existingScenario

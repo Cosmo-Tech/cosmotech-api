@@ -96,6 +96,43 @@ paths:
           description: Request succeeded
         "404":
           description: the Scenario specified is unknown or you don't have access to it
+  /organizations/{organization_id}/workspaces/{workspace_id}/{validationStatus}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: validationStatus
+        in: path
+        description: the Scenario Validation Status
+        required: true
+        schema:
+          $ref: '#/components/schemas/ScenarioValidationStatus'
+    get:
+      operationId: findAllScenariosByValidationStatus
+      tags:
+        - scenario
+      summary: List all Scenarios by validation status
+      responses:
+        "200":
+          description: the list of Scenarios by a given validation status
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Scenario'
+              examples:
+                ThreeScenario:
+                  $ref: '#/components/examples/ThreeScenarios'
   /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/tree:
     parameters:
       - name: organization_id
@@ -218,6 +255,40 @@ paths:
           description: Request succeeded
         "404":
           description: the Scenario specified is unknown or you don't have access to it
+
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/ValidationStatus:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: scenario_id
+        in: path
+        description: the Scenario identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getScenarioValidationStatusById
+      tags:
+        - scenario
+      summary: Get the validation status of an scenario
+      responses:
+        "200":
+          description: the Scenario validation status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioValidationStatus'
+
   /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/compare/{compared_scenario_id}:
     parameters:
       - name: organization_id
@@ -619,6 +690,8 @@ components:
             - $ref: '#/components/schemas/ScenarioLastRun'
             - type: object
               description: the last Scenario Run for the root (master) of Scenario
+        validationStatus:
+          $ref: '#/components/schemas/ScenarioValidationStatus'
 #      required:
 #        - name
 #        - runTemplateId
@@ -750,6 +823,14 @@ components:
         - Unknown
         # PROD-7420 : return data ingestion status
         - DataIngestionInProgress
+    ScenarioValidationStatus:
+      type: string
+      description: the validation status of the scenario
+      enum:
+        - Draft
+        - Rejected
+        - Unknown
+        - Validated
   examples:
     BreweryScenarioIn:
       summary: Brewery Scenario input example

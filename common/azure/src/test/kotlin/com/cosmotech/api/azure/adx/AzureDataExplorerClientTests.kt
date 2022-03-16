@@ -13,6 +13,13 @@ import com.microsoft.azure.kusto.data.KustoOperationResult
 import com.microsoft.azure.kusto.data.KustoResultSetTable
 import com.microsoft.azure.kusto.data.exceptions.DataClientException
 import com.microsoft.azure.kusto.data.exceptions.DataServiceException
+import com.microsoft.azure.kusto.ingest.IngestClient
+import com.microsoft.azure.kusto.ingest.IngestionProperties
+import com.microsoft.azure.kusto.ingest.exceptions.IngestionClientException
+import com.microsoft.azure.kusto.ingest.result.IngestionStatus
+import com.microsoft.azure.kusto.ingest.result.IngestionStatusResult
+import com.microsoft.azure.kusto.ingest.result.OperationStatus
+import com.microsoft.azure.kusto.ingest.source.StreamSourceInfo
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -32,6 +39,7 @@ class AzureDataExplorerClientTests {
 
   @MockK(relaxed = true) private lateinit var csmPlatformProperties: CsmPlatformProperties
   @MockK(relaxed = true) private lateinit var kustoClient: Client
+  @MockK(relaxed = true) private lateinit var ingestClient: IngestClient
   @MockK(relaxed = true) private lateinit var eventPublisher: CsmEventPublisher
 
   private lateinit var azureDataExplorerClient: AzureDataExplorerClient
@@ -43,6 +51,8 @@ class AzureDataExplorerClientTests {
         mockk<CsmPlatformAzureDataWarehouseCluster>()
     every { csmPlatformPropertiesAzureDataWarehouseCluster.baseUri } returns
         "https://my-datawarehouse.cluster"
+    every { csmPlatformPropertiesAzureDataWarehouseCluster.options.ingestionUri } returns
+        "https://my-ingestdatawarehouse.cluster"
     every { csmPlatformPropertiesAzure.dataWarehouseCluster } returns
         csmPlatformPropertiesAzureDataWarehouseCluster
     every { csmPlatformProperties.azure } returns csmPlatformPropertiesAzure
@@ -50,6 +60,7 @@ class AzureDataExplorerClientTests {
     this.azureDataExplorerClient =
         AzureDataExplorerClient(this.csmPlatformProperties, this.eventPublisher)
     this.azureDataExplorerClient.setKustoClient(kustoClient)
+    this.azureDataExplorerClient.setIngestClient(ingestClient)
   }
 
   @Test
@@ -361,5 +372,56 @@ class AzureDataExplorerClientTests {
   fun `PROD-8148 - deleteDataFromScenarioRunId failed`() {
     val res = azureDataExplorerClient.deleteDataFromScenarioRunId("orgId", "wk", "my-scenariorunId")
     assertEquals("", res)
+  }
+
+  @Test
+  fun `PROD-8987 - ingestScenarioValidationStatus status queued`() {
+    val status = IngestionStatus()
+    status.status = OperationStatus.Queued
+    val result = IngestionStatusResult(status)
+
+    val streamSourceInfoMock = mockk<StreamSourceInfo>()
+    val ingestionPropertiesMock = mockk<IngestionProperties>()
+    every { ingestClient.ingestFromStream(streamSourceInfoMock, ingestionPropertiesMock) } returns
+        result
+
+    val ingestionStatus =
+        this.azureDataExplorerClient.ingestFromStream(streamSourceInfoMock, ingestionPropertiesMock)
+
+    assertEquals(OperationStatus.Queued.toString(), ingestionStatus.status.toString())
+  }
+
+  @Test
+  fun `PROD-8987 - ingestScenarioValidationStatus no infinity loop`() {
+    val status = IngestionStatus()
+    status.status = OperationStatus.Pending
+    val result = IngestionStatusResult(status)
+
+    val streamSourceInfoMock = mockk<StreamSourceInfo>()
+    val ingestionPropertiesMock = mockk<IngestionProperties>()
+    every { ingestClient.ingestFromStream(streamSourceInfoMock, ingestionPropertiesMock) } returns
+        result
+
+    val ingestionStatus =
+        this.azureDataExplorerClient.ingestFromStream(streamSourceInfoMock, ingestionPropertiesMock)
+
+    assertEquals(OperationStatus.Pending.toString(), ingestionStatus.status.toString())
+  }
+
+  @Test
+  fun `PROD-8987 - ingestScenarioValidationStatus failed`() {
+    val status = IngestionStatus()
+    status.status = OperationStatus.Failed
+    val result = IngestionStatusResult(status)
+
+    val streamSourceInfoMock = mockk<StreamSourceInfo>()
+    val ingestionPropertiesMock = mockk<IngestionProperties>()
+
+    every { ingestClient.ingestFromStream(streamSourceInfoMock, ingestionPropertiesMock) } throws
+        IngestionClientException("Failed")
+
+    val ingestionStatus =
+        this.azureDataExplorerClient.ingestFromStream(streamSourceInfoMock, ingestionPropertiesMock)
+    assertEquals(OperationStatus.Failed.toString(), ingestionStatus.status.toString())
   }
 }

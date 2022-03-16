@@ -12,6 +12,19 @@ import com.microsoft.azure.kusto.data.ClientRequestProperties
 import com.microsoft.azure.kusto.data.KustoOperationResult
 import com.microsoft.azure.kusto.data.auth.ConnectionStringBuilder
 import com.microsoft.azure.kusto.data.exceptions.DataServiceException
+import com.microsoft.azure.kusto.ingest.ColumnMapping
+import com.microsoft.azure.kusto.ingest.IngestClient
+import com.microsoft.azure.kusto.ingest.IngestClientFactory
+import com.microsoft.azure.kusto.ingest.IngestionMapping
+import com.microsoft.azure.kusto.ingest.IngestionMapping.IngestionMappingKind
+import com.microsoft.azure.kusto.ingest.IngestionProperties
+import com.microsoft.azure.kusto.ingest.exceptions.IngestionClientException
+import com.microsoft.azure.kusto.ingest.result.IngestionStatus
+import com.microsoft.azure.kusto.ingest.result.OperationStatus
+import com.microsoft.azure.kusto.ingest.source.StreamSourceInfo
+import java.io.ByteArrayInputStream
+import java.io.InputStream
+import java.nio.charset.StandardCharsets
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.time.temporal.Temporal
@@ -35,6 +48,7 @@ internal const val HEALTH_KUSTO_QUERY =
                   """
 
 @Service("csmADX")
+@Suppress("TooManyFunctions")
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 class AzureDataExplorerClient(
     private val csmPlatformProperties: CsmPlatformProperties,
@@ -45,7 +59,12 @@ class AzureDataExplorerClient(
 
   private val baseUri = csmPlatformProperties.azure!!.dataWarehouseCluster.baseUri
 
+  private val ingestionUri =
+      csmPlatformProperties.azure!!.dataWarehouseCluster.options!!.ingestionUri
+
   private lateinit var kustoClient: Client
+
+  private lateinit var ingestClient: IngestClient
 
   private val waitingTimeBeforeIngestion =
       csmPlatformProperties.dataIngestion.waitingTimeBeforeIngestionSeconds
@@ -55,22 +74,38 @@ class AzureDataExplorerClient(
 
   private val noDataTimeOutSeconds = csmPlatformProperties.dataIngestion.state.noDataTimeOutSeconds
 
+  private val sleepingTimeScenarioValidationStatus =
+      csmPlatformProperties.dataIngestion.sleepingTimeBeforeQueryingScenarioValidationStatusSeconds
+
+  private val maxRetryAuthorized = csmPlatformProperties.dataIngestion.maxRetryAuthorized
+
+  internal fun getConnectionStringBuilder(clusterUri: String): ConnectionStringBuilder {
+    val csmPlatformAzure = csmPlatformProperties.azure!!
+    // TODO Investigate whether we need to use core or customer creds
+    val csmPlatformAzureCredentials = csmPlatformAzure.credentials.core
+    return ConnectionStringBuilder.createWithAadApplicationCredentials(
+        clusterUri,
+        csmPlatformAzureCredentials.clientId,
+        csmPlatformAzureCredentials.clientSecret,
+        csmPlatformAzureCredentials.tenantId)
+  }
+
   @PostConstruct
   internal fun init() {
     val csmPlatformAzure = csmPlatformProperties.azure!!
     // TODO Investigate whether we need to use core or customer creds
     val csmPlatformAzureCredentials = csmPlatformAzure.credentials.core
-    this.kustoClient =
-        ClientImpl(
-            ConnectionStringBuilder.createWithAadApplicationCredentials(
-                baseUri,
-                csmPlatformAzureCredentials.clientId,
-                csmPlatformAzureCredentials.clientSecret,
-                csmPlatformAzureCredentials.tenantId))
+    this.kustoClient = ClientImpl(getConnectionStringBuilder(baseUri))
+
+    this.ingestClient = IngestClientFactory.createClient(getConnectionStringBuilder(ingestionUri))
   }
 
   internal fun setKustoClient(kustoClient: Client) {
     this.kustoClient = kustoClient
+  }
+
+  internal fun setIngestClient(ingestClient: IngestClient) {
+    this.ingestClient = ingestClient
   }
 
   fun getStateFor(
@@ -283,6 +318,72 @@ class AzureDataExplorerClient(
       logger.debug("An error occurred while deleting data: {}", exception.message, exception)
       throw IllegalStateException("An error occurred while deleting data")
     }
+  }
+
+  fun ingestScenarioValidationStatus(
+      organizationId: String,
+      workspaceKey: String,
+      scenarioId: String,
+      scenarioStatus: String
+  ): String {
+    val databaseName = getDatabaseName(organizationId, workspaceKey.replace("\\s".toRegex(), ""))
+    val ingestionProperties = IngestionProperties(databaseName, "ScenarioValidationStatus")
+    ingestionProperties.ingestionMapping = buildScenarioValidationStatusIngestionMapping()
+    ingestionProperties.setReportMethod(IngestionProperties.IngestionReportMethod.QUEUE_AND_TABLE)
+    ingestionProperties.setReportLevel(
+        IngestionProperties.IngestionReportLevel.FAILURES_AND_SUCCESSES)
+    ingestionProperties.dataFormat = IngestionProperties.DataFormat.CSV
+
+    val data = "${scenarioId},${scenarioStatus},${ZonedDateTime.now().toLocalDate().toString()}"
+    val inputStream: InputStream = ByteArrayInputStream(StandardCharsets.UTF_8.encode(data).array())
+    val streamSourceInfo = StreamSourceInfo(inputStream)
+
+    return ingestFromStream(streamSourceInfo, ingestionProperties).status.toString()
+  }
+
+  private fun buildScenarioValidationStatusIngestionMapping(): IngestionMapping {
+    val scenarioIdColumn = ColumnMapping("ScenarioId", "string")
+    val statusColumn = ColumnMapping("Status", "string")
+    val modifiedDateColumn = ColumnMapping("ModifiedDate", "string")
+    scenarioIdColumn.setOrdinal(0)
+    statusColumn.setOrdinal(1)
+    modifiedDateColumn.setOrdinal(2)
+
+    var columnMappings = mutableListOf<ColumnMapping>()
+    columnMappings.add(scenarioIdColumn)
+    columnMappings.add(statusColumn)
+    columnMappings.add(modifiedDateColumn)
+
+    return IngestionMapping(columnMappings.toTypedArray(), IngestionMappingKind.CSV)
+  }
+
+  internal fun ingestFromStream(
+      streamSourceInfo: StreamSourceInfo,
+      ingestionProperties: IngestionProperties
+  ): IngestionStatus {
+    var status = IngestionStatus()
+    try {
+      val result = ingestClient.ingestFromStream(streamSourceInfo, ingestionProperties)
+      if (result.ingestionStatusCollection.size > 0) {
+        status = result.ingestionStatusCollection[0]
+      }
+      var retryCount: Int = 0
+      while (status.status == OperationStatus.Pending && retryCount < maxRetryAuthorized) {
+        Thread.sleep(sleepingTimeScenarioValidationStatus)
+        if (result.ingestionStatusCollection.size > 0) {
+          status = result.ingestionStatusCollection[0]
+        }
+        retryCount++
+      }
+
+      logger.info("Ingestion completed")
+      logger.info("Final status: ${status.status}")
+    } catch (e: IngestionClientException) {
+      logger.info("Failed to initiate ingestion: ${e.message}")
+      status.status = OperationStatus.Failed
+    }
+
+    return status
   }
 
   private fun queryScenarioRunWorkflowEndTime(

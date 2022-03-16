@@ -349,6 +349,12 @@ data class CsmPlatformProperties(
        */
       val ingestionObservationWindowToBeConsideredAFailureMinutes: Long = 5,
 
+      /** number of seconds to wait after the checking the scenario validation ingestion status */
+      val sleepingTimeBeforeQueryingScenarioValidationStatusSeconds: Long = 5,
+
+      /** number of retry to query the scenario validation status */
+      val maxRetryAuthorized: Long = 5,
+
       /** Data ingestion state handling default behavior */
       val state: State = State()
   ) {

@@ -165,6 +165,10 @@ csm:
       # number of minutes after a scenario run workflow end time during which an ingestion failure
       # detected is considered linked to the current scenario run
       ingestion-observation-window-to-be-considered-a-failure-minutes: 5
+      # number of seconds to wait after the checking the scenario validation ingestion status
+      sleeping-time-before-querying-scenario-validation-status-seconds: 5
+      # number of retry to query the scenario validation status
+      max-retry-authorized: 5
       state:
         # the timeout in second before considering no data in probes measures and control plane is an issue
         no-data-time-out-seconds: 60
