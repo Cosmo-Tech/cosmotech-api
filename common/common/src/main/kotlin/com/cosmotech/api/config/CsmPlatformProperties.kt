@@ -330,7 +330,9 @@ data class CsmPlatformProperties(
       }
     }
 
-    data class CsmPlatformAzureActiveDirectory(val claimToAuthorityPrefix: Map<String, String>?)
+    data class CsmPlatformAzureActiveDirectory(
+        val claimToAuthorityPrefix: Map<String, String> = mapOf("roles" to "")
+    )
   }
 
   enum class Vendor {
