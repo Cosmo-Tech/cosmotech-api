@@ -3,7 +3,7 @@
 
 val azureSpringBootBomVersion = "3.14.0"
 val azureSDKBomVersion = "1.1.1"
-val azureKustoIngestVersion = "3.0.0"
+val azureKustoIngestVersion = "3.1.0"
 
 dependencies {
   api(projects.cosmotechApiCommonParent.cosmotechApiCommon)
