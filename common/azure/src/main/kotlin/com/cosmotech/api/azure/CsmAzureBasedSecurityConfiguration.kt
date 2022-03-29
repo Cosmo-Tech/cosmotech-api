@@ -29,9 +29,7 @@ internal class CsmAzureBasedSecurityConfiguration(
     val claimAuthorityMap =
         AADResourceServerProperties.DEFAULT_CLAIM_TO_AUTHORITY_PREFIX_MAP.toMutableMap()
 
-    csmPlatformProperties.azure?.activeDirectory?.claimToAuthorityPrefix?.let {
-      claimAuthorityMap.putAll(it)
-    }
+    csmPlatformProperties.azure?.claimToAuthorityPrefix?.let { claimAuthorityMap.putAll(it) }
     return AADJwtBearerTokenAuthenticationConverter(
         csmPlatformProperties.authorization.principalJwtClaim, claimAuthorityMap)
   }

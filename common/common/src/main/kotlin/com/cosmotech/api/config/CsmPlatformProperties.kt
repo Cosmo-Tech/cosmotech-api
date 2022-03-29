@@ -166,7 +166,7 @@ data class CsmPlatformProperties(
       /** Azure Cosmos DB */
       val cosmos: CsmPlatformAzureCosmos,
       val appIdUri: String,
-      val activeDirectory: CsmPlatformAzureActiveDirectory?
+      val claimToAuthorityPrefix: Map<String, String> = mutableMapOf("roles" to "")
   ) {
 
     data class CsmPlatformAzureCredentials(
@@ -329,10 +329,6 @@ data class CsmPlatformProperties(
         )
       }
     }
-
-    data class CsmPlatformAzureActiveDirectory(
-        val claimToAuthorityPrefix: Map<String, String> = mapOf("roles" to "")
-    )
   }
 
   enum class Vendor {
