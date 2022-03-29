@@ -123,6 +123,9 @@ entity RunTemplate {
     scenariodataTransformSource: RunTemplateStepSource
     parameterGroups: List<String>
     stackSteps: Boolean
+    gitRepositoryUrl: String
+    gitBranchName: String
+    runTemplateSourceDir: String
 }
 
 entity RunTemplateHandlerId {

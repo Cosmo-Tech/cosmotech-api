@@ -29,6 +29,9 @@ Name | Type | Description | Notes
 **scenariodataTransformSource** | [**RunTemplateStepSource**](RunTemplateStepSource.md) |  | [optional] [default to null]
 **parameterGroups** | **List** | the ordered list of parameters groups for the Run Template | [optional] [default to null]
 **stackSteps** | **Boolean** | whether or not to stack adjacent scenario run steps in one container run which will chain steps | [optional] [default to null]
+**gitRepositoryUrl** | **String** | an optional URL to the git repository | [optional] [default to null]
+**gitBranchName** | **String** | an optional git branch name | [optional] [default to null]
+**runTemplateSourceDir** | **String** | an optional directory where to find the run template source | [optional] [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 
