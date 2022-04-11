@@ -102,7 +102,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Download openapi artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: openapi
       - name: Validate merged OpenAPI definition
@@ -125,7 +125,7 @@ jobs:
         run: echo "::set-output name=gitRefName::${GITHUB_REF#refs/*/}"
 
       - name: Download openapi artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: openapi
 
