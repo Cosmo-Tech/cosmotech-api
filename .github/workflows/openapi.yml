@@ -77,7 +77,7 @@ jobs:
           arguments: mergeOpenApiFiles
 
       - name: Archive openapi.yaml
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: openapi
           path: openapi/openapi.yaml
