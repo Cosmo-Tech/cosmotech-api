@@ -44,6 +44,7 @@ Models/ScenarioRunStatus.md
 Models/ScenarioRunStatusNode.md
 Models/ScenarioRunTemplateParameterValue.md
 Models/ScenarioUser.md
+Models/ScenarioValidationStatus.md
 Models/Solution.md
 Models/User.md
 Models/UserOrganization.md

@@ -12,8 +12,10 @@ Method | HTTP request | Description
 [**deleteScenario**](ScenarioApi.md#deleteScenario) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id} | Delete a scenario
 [**downloadScenarioData**](ScenarioApi.md#downloadScenarioData) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/downloads | Download Scenario data
 [**findAllScenarios**](ScenarioApi.md#findAllScenarios) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios | List all Scenarios
+[**findAllScenariosByValidationStatus**](ScenarioApi.md#findAllScenariosByValidationStatus) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/{validationStatus} | List all Scenarios by validation status
 [**findScenarioById**](ScenarioApi.md#findScenarioById) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id} | Get the details of an scenario
 [**getScenarioDataDownloadJobInfo**](ScenarioApi.md#getScenarioDataDownloadJobInfo) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/downloads/{download_id} | Get Scenario data download URL
+[**getScenarioValidationStatusById**](ScenarioApi.md#getScenarioValidationStatusById) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/ValidationStatus | Get the validation status of an scenario
 [**getScenariosTree**](ScenarioApi.md#getScenariosTree) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/tree | Get the Scenarios Tree
 [**removeAllScenarioParameterValues**](ScenarioApi.md#removeAllScenarioParameterValues) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/parameterValues | Remove all Parameter Values from the Scenario specified
 [**removeAllUsersOfScenario**](ScenarioApi.md#removeAllUsersOfScenario) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/users | Remove all users from the Scenario specified
@@ -239,6 +241,33 @@ Name | Type | Description  | Notes
 - **Content-Type**: Not defined
 - **Accept**: application/json
 
+<a name="findAllScenariosByValidationStatus"></a>
+# **findAllScenariosByValidationStatus**
+> List findAllScenariosByValidationStatus(organization\_id, workspace\_id, validationStatus)
+
+List all Scenarios by validation status
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **workspace\_id** | **String**| the Workspace identifier | [default to null]
+ **validationStatus** | [**ScenarioValidationStatus**](../Models/.md)| the Scenario Validation Status | [default to null] [enum: Draft, Rejected, Unknown, Validated]
+
+### Return type
+
+[**List**](../Models/Scenario.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
 <a name="findScenarioById"></a>
 # **findScenarioById**
 > Scenario findScenarioById(organization\_id, workspace\_id, scenario\_id)
@@ -284,6 +313,33 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**ScenarioDataDownloadInfo**](../Models/ScenarioDataDownloadInfo.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+<a name="getScenarioValidationStatusById"></a>
+# **getScenarioValidationStatusById**
+> ScenarioValidationStatus getScenarioValidationStatusById(organization\_id, workspace\_id, scenario\_id)
+
+Get the validation status of an scenario
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **workspace\_id** | **String**| the Workspace identifier | [default to null]
+ **scenario\_id** | **String**| the Scenario identifier | [default to null]
+
+### Return type
+
+[**ScenarioValidationStatus**](../Models/ScenarioValidationStatus.md)
 
 ### Authorization
 

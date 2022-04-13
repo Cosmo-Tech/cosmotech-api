@@ -183,6 +183,7 @@ entity Scenario {
     lastRun: ScenarioLastRun
     parentLastRun: ScenarioLastRun
     rootLastRun: ScenarioLastRun
+    validationStatus: ScenarioValidationStatus
 }
 
 entity ScenarioChangedParameterValue {
@@ -335,6 +336,9 @@ entity ScenarioUser {
     * roles: List<String>
 }
 
+entity ScenarioValidationStatus {
+}
+
 entity Solution {
     id: String
     * key: String
@@ -432,18 +436,7 @@ entity WorkspaceWebApp {
 }
 
 
-Connector -- "0..*" ConnectorParameterGroup : parameterGroups
-Organization -- "0..*" OrganizationUser : users
-Organization -- OrganizationServices : services
-User -- "0..*" UserOrganization : organizations
-UserOrganization -- "0..*" UserWorkspace : workspaces
 ScenarioRunContainer -- "0..*" ScenarioRunContainerArtifact : artifacts
-Solution -- "0..*" RunTemplateParameter : parameters
-Solution -- "0..*" RunTemplateParameterGroup : parameterGroups
-Solution -- "0..*" RunTemplate : runTemplates
-ScenarioComparisonResult -- "0..*" ScenarioChangedParameterValue : changedValues
-Dataset -- DatasetConnector : connector
-Dataset -- "0..*" DatasetCompatibility : compatibility
 ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
 OrganizationServices -- OrganizationService : storage
 OrganizationServices -- OrganizationService : solutionsContainerRegistry
@@ -455,6 +448,17 @@ Scenario -- ScenarioLastRun : rootLastRun
 ScenarioRun -- "0..*" RunTemplateParameterValue : parametersValues
 ScenarioRun -- "0..*" ScenarioRunContainer : containers
 ScenarioRunStatus -- "0..*" ScenarioRunStatusNode : nodes
+Connector -- "0..*" ConnectorParameterGroup : parameterGroups
+Organization -- "0..*" OrganizationUser : users
+Organization -- OrganizationServices : services
+User -- "0..*" UserOrganization : organizations
+UserOrganization -- "0..*" UserWorkspace : workspaces
+Solution -- "0..*" RunTemplateParameter : parameters
+Solution -- "0..*" RunTemplateParameterGroup : parameterGroups
+Solution -- "0..*" RunTemplate : runTemplates
+ScenarioComparisonResult -- "0..*" ScenarioChangedParameterValue : changedValues
+Dataset -- DatasetConnector : connector
+Dataset -- "0..*" DatasetCompatibility : compatibility
 ScenarioRunStartContainers -- "0..*" ScenarioRunContainer : containers
 Workspace -- WorkspaceSolution : solution
 Workspace -- "0..*" WorkspaceUser : users

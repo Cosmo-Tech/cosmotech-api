@@ -25,6 +25,7 @@ Name | Type | Description | Notes
 **lastRun** | [**ScenarioLastRun**](ScenarioLastRun.md) |  | [optional] [default to null]
 **parentLastRun** | [**ScenarioLastRun**](ScenarioLastRun.md) |  | [optional] [default to null]
 **rootLastRun** | [**ScenarioLastRun**](ScenarioLastRun.md) |  | [optional] [default to null]
+**validationStatus** | [**ScenarioValidationStatus**](ScenarioValidationStatus.md) |  | [optional] [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 
