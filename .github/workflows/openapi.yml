@@ -141,6 +141,7 @@ jobs:
             --account-name csmphoenixdev \
             --container-name public \
             --name openapi-${{ steps.refvar.outputs.gitRefName }}.yaml \
+            --overwrite \
             --file openapi.yaml
 
       - name: Upload openapi.yml to Azure Storage
@@ -150,4 +151,5 @@ jobs:
             --account-name csmphoenixdev \
             --container-name public \
             --name openapi.yaml \
+            --overwrite \
             --file openapi.yaml
