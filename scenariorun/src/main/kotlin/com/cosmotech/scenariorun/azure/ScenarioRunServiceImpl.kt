@@ -114,12 +114,12 @@ internal class ScenarioRunServiceImpl(
       logger.debug(
           "Scenario run {} deleted from ADX with csmSimulationRun {}",
           scenarioRun.id!!,
-          scenarioRun.csmSimulationRun!!)
+          scenarioRun.csmSimulationRun)
 
       // It seems that deleteEntity does not throw any exception
-      logger.debug("Deleting Scenario Run {} from Cosmos DB", scenarioRun.id!!)
+      logger.debug("Deleting Scenario Run {} from Cosmos DB", scenarioRun.id)
       cosmosTemplate.deleteEntity("${scenarioRun.organizationId}_scenario_data", scenarioRun)
-      logger.debug("Scenario Run {} deleted from Cosmos DB", scenarioRun.id!!)
+      logger.debug("Scenario Run {} deleted from Cosmos DB", scenarioRun.id)
     } catch (exception: IllegalStateException) {
       logger.debug(
           "An error occurred while deleting ScenarioRun {}: {}",

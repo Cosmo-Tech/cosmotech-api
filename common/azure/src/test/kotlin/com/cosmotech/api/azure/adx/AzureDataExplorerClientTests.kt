@@ -412,7 +412,6 @@ class AzureDataExplorerClientTests {
   fun `PROD-8987 - ingestScenarioValidationStatus failed`() {
     val status = IngestionStatus()
     status.status = OperationStatus.Failed
-    val result = IngestionStatusResult(status)
 
     val streamSourceInfoMock = mockk<StreamSourceInfo>()
     val ingestionPropertiesMock = mockk<IngestionProperties>()

@@ -59,8 +59,7 @@ class AzureDataExplorerClient(
 
   private val baseUri = csmPlatformProperties.azure!!.dataWarehouseCluster.baseUri
 
-  private val ingestionUri =
-      csmPlatformProperties.azure!!.dataWarehouseCluster.options!!.ingestionUri
+  private val ingestionUri = csmPlatformProperties.azure!!.dataWarehouseCluster.options.ingestionUri
 
   private lateinit var kustoClient: Client
 
@@ -92,9 +91,6 @@ class AzureDataExplorerClient(
 
   @PostConstruct
   internal fun init() {
-    val csmPlatformAzure = csmPlatformProperties.azure!!
-    // TODO Investigate whether we need to use core or customer creds
-    val csmPlatformAzureCredentials = csmPlatformAzure.credentials.core
     this.kustoClient = ClientImpl(getConnectionStringBuilder(baseUri))
 
     this.ingestClient = IngestClientFactory.createClient(getConnectionStringBuilder(ingestionUri))
