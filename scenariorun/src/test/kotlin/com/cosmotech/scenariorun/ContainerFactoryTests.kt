@@ -2253,6 +2253,13 @@ class ContainerFactoryTests {
         container.envVars)
   }
 
+  @Test
+  fun `PROD-9174 remove AMQP protocol`() {
+    val uri = "amqps://test.hostname.com"
+    val hostname = factory.removeAMQPProtocol(uri)
+    assertEquals("test.hostname.com", hostname)
+  }
+
   private fun buildApplyParametersContainer(): ScenarioRunContainer {
     return factory.buildApplyParametersContainer(
         getOrganization(),
