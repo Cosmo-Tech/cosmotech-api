@@ -31,7 +31,7 @@ plugins {
   id("org.springframework.boot") version "2.6.6" apply false
   id("org.openapi.generator") version "5.4.0" apply false
   id("com.google.cloud.tools.jib") version "3.2.1" apply false
-  id("io.gitlab.arturbosch.detekt") version "1.19.0"
+  id("io.gitlab.arturbosch.detekt") version "1.20.0"
 }
 
 scmVersion { tag(closureOf<TagNameSerializationConfig> { prefix = "" }) }
@@ -165,6 +165,7 @@ subprojects {
     // Workaround until Detekt adds support for JVM Target 17
     // See https://github.com/detekt/detekt/issues/4287
     detekt("io.gitlab.arturbosch.detekt:detekt-cli:1.20.0")
+    detekt("io.gitlab.arturbosch.detekt:detekt-formatting:1.20.0")
     detekt("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.6.20")
 
     val developmentOnly = configurations.getByName("developmentOnly")
