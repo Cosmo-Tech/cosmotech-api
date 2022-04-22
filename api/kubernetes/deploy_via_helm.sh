@@ -267,6 +267,9 @@ resources:
     #   cpu: 100m
     memory: 1024Mi
 
+nodeSelector:
+  agentpool: basicpool
+
 EOF
 
 if [[ "${CERT_MANAGER_ENABLED:-false}" == "true" ]]; then
