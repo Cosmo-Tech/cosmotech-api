@@ -122,7 +122,7 @@ EOF
 
   helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
     --namespace "${NAMESPACE}" \
-    --version 3.32.0 \
+    --version 4.1.0 \
     --values values-ingress-nginx.yaml \
     ${NGINX_INGRESS_CONTROLLER_HELM_ADDITIONAL_OPTIONS:-}
 fi
