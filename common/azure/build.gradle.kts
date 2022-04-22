@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 val azureSpringBootBomVersion = "3.14.0"
-val azureSDKBomVersion = "1.2.0"
+val azureSDKBomVersion = "1.2.1"
 val azureKustoIngestVersion = "3.1.0"
 
 dependencies {
