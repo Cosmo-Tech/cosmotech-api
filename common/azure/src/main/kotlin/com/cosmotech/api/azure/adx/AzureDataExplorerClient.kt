@@ -330,7 +330,7 @@ class AzureDataExplorerClient(
         IngestionProperties.IngestionReportLevel.FAILURES_AND_SUCCESSES)
     ingestionProperties.dataFormat = IngestionProperties.DataFormat.CSV
 
-    val data = "${scenarioId},${scenarioStatus},${ZonedDateTime.now().toLocalDate().toString()}"
+    val data = "${scenarioId},${scenarioStatus},${ZonedDateTime.now().toLocalDateTime().toString()}"
     val inputStream: InputStream = ByteArrayInputStream(StandardCharsets.UTF_8.encode(data).array())
     val streamSourceInfo = StreamSourceInfo(inputStream)
 
