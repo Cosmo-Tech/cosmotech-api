@@ -195,6 +195,7 @@ internal class ScenarioServiceImpl(
             datasetList = datasetList,
             rootId = rootId,
             parametersValues = newParametersValuesList,
+            validationStatus = ScenarioValidationStatus.Draft,
         )
     val scenarioAsMap = scenarioToSave.asMapWithAdditionalData(workspaceId)
     // We cannot use cosmosTemplate as it expects the Domain object to contain a field named 'id'
@@ -674,11 +675,10 @@ internal class ScenarioServiceImpl(
         publishDatasetListChangedEvent(organizationId, workspaceId, scenarioId, scenario)
       }
 
-      azureDataExplorerClient.ingestScenarioValidationStatus(
-          organizationId,
-          workspace.key,
-          scenarioId,
-          scenario.validationStatus?.toString() ?: ScenarioValidationStatus.Unknown.toString())
+      if (scenario.validationStatus != null) {
+        azureDataExplorerClient.ingestScenarioValidationStatus(
+            organizationId, workspace.key, scenarioId, scenario.validationStatus.toString())
+      }
     }
 
     return existingScenario
