@@ -9,7 +9,6 @@ import com.azure.cosmos.models.PartitionKey
 import com.azure.cosmos.models.SqlParameter
 import com.azure.cosmos.models.SqlQuerySpec
 import com.cosmotech.api.azure.CsmAzureService
-import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
@@ -64,7 +63,6 @@ internal class ScenarioServiceImpl(
     private val solutionService: SolutionApiService,
     private val organizationService: OrganizationApiService,
     private val workspaceService: WorkspaceApiService,
-    private val azureDataExplorerClient: AzureDataExplorerClient,
 ) : CsmAzureService(), ScenarioApiService {
 
   override fun addOrReplaceScenarioParameterValues(
@@ -673,11 +671,6 @@ internal class ScenarioServiceImpl(
 
       if (datasetListUpdated) {
         publishDatasetListChangedEvent(organizationId, workspaceId, scenarioId, scenario)
-      }
-
-      if (scenario.validationStatus != null) {
-        azureDataExplorerClient.ingestScenarioValidationStatus(
-            organizationId, workspace.key, scenarioId, scenario.validationStatus.toString())
       }
     }
 

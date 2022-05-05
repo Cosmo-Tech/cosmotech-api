@@ -8,7 +8,6 @@ import com.azure.cosmos.CosmosDatabase
 import com.azure.cosmos.models.CosmosItemResponse
 import com.azure.cosmos.models.PartitionKey
 import com.azure.spring.data.cosmos.core.CosmosTemplate
-import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEvent
 import com.cosmotech.api.events.CsmEventPublisher
@@ -63,7 +62,6 @@ class ScenarioServiceImplTests {
   @MockK private lateinit var solutionService: SolutionApiService
   @MockK private lateinit var workspaceService: WorkspaceApiService
   @MockK private lateinit var idGenerator: CsmIdGenerator
-  @MockK private lateinit var azureDataExplorerClient: AzureDataExplorerClient
 
   @Suppress("unused") @MockK(relaxed = true) private lateinit var cosmosTemplate: CosmosTemplate
   @Suppress("unused") @MockK private lateinit var cosmosClient: CosmosClient
@@ -83,11 +81,7 @@ class ScenarioServiceImplTests {
     this.scenarioServiceImpl =
         spyk(
             ScenarioServiceImpl(
-                userService,
-                solutionService,
-                organizationService,
-                workspaceService,
-                azureDataExplorerClient),
+                userService, solutionService, organizationService, workspaceService),
             recordPrivateCalls = true)
 
     every { scenarioServiceImpl getProperty "cosmosTemplate" } returns cosmosTemplate
