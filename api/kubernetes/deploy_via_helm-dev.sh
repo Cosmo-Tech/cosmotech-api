@@ -11,6 +11,7 @@ help() {
   echo "This script takes at least 3 parameters."
   echo
   echo "The following optional environment variables can be set to alter this script behavior:"
+  echo "- NAMESPACE | string | name of the targeted namespace. Generated when not set"
   echo "- ARGO_MINIO_ACCESS_KEY | string | AccessKey for MinIO. Generated when not set"
   echo "- ARGO_MINIO_SECRET_KEY | string | SecretKey for MinIO. Generated when not set"
   echo "- ARGO_MINIO_REQUESTS_MEMORY | units of bytes (default is 4Gi) | Memory requests for the Argo MinIO server"
@@ -33,7 +34,7 @@ export API_VERSION="$3"
 HELM_CHARTS_BASE_PATH=$(realpath "$(dirname "$0")")
 
 # Create namespace if it does not exist
-kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
+kubectl create namespace "${NAMESPACE:-phoenix}" --dry-run=client -o yaml | kubectl apply -f -
 
 # Argo
 export ARGO_RELEASE_NAME=argo
