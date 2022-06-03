@@ -9,7 +9,7 @@ Meta-Chart allowing to deploy both Argo and PostgreSQL (for Workflows archival)
 | Repository | Name | Version |
 |------------|------|---------|
 | https://argoproj.github.io/argo-helm | argo | 0.16.10 |
-| https://charts.bitnami.com/bitnami | postgresql | 10.4.6 |
+| https://charts.bitnami.com/bitnami | postgresql | 10.16.2 |
 
 ## Values
 
