@@ -40,7 +40,7 @@ kubectl create namespace "${NAMESPACE:-phoenix}" --dry-run=client -o yaml | kube
 export ARGO_RELEASE_NAME=argo
 export ARGO_RELEASE_NAMESPACE="${NAMESPACE}"
 export ARGO_POSTGRESQL_PASSWORD="$2"
-helm dependency update "${HELM_CHARTS_BASE_PATH}/csm-argo"
+#helm dependency update "${HELM_CHARTS_BASE_PATH}/csm-argo"
 # Default memory request in MinIO Chart is 4Gi, which may not work in clusters with lower resources
 envsubst < "${HELM_CHARTS_BASE_PATH}/csm-argo/values.yaml" | \
     helm upgrade --install "${ARGO_RELEASE_NAME}" "${HELM_CHARTS_BASE_PATH}/csm-argo" \
