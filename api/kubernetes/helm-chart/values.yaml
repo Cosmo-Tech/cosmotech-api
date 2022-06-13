@@ -151,7 +151,6 @@ argo:
       # -- Parameters describe volumes belonging to the storage class. Different parameters may be accepted depending on the provisioner.
       parameters:
         skuName: Premium_LRS
-        tags: Authentication=Anonymous,Network=Exposed
 
 config:
   csm:
