@@ -2,7 +2,5 @@
 // Licensed under the MIT license.
 
 dependencies {
-  api(projects.cosmotechApiCommonParent.cosmotechApiCommon)
-  api(projects.cosmotechApiCommonParent.cosmotechApiCommonAzure)
   implementation("org.apache.commons:commons-compress:1.21")
 }

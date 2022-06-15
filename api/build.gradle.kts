@@ -9,7 +9,6 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 plugins { id("com.rameshkp.openapi-merger-gradle-plugin") version "1.0.4" }
 
 dependencies {
-  api(projects.cosmotechApiCommonParent.cosmotechApiCommon)
   implementation(projects.cosmotechConnectorApi)
   implementation(projects.cosmotechDatasetApi)
   implementation(projects.cosmotechOrganizationApi)
