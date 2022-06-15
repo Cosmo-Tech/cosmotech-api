@@ -23,7 +23,7 @@ import pl.allegro.tech.build.axion.release.domain.TagNameSerializationConfig
 // See https://docs.gradle.org/current/userguide/organizing_gradle_projects.html#sec:build_sources
 
 plugins {
-  val kotlinVersion = "1.6.0"
+  val kotlinVersion = "1.6.20"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.13.6"
@@ -41,8 +41,8 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 val kotlinJvmTarget = 17
-val cosmotechApiCommonVersion = "0.1.0-SNAPSHOT"
-val cosmotechApiAzureVersion = "0.1.0-SNAPSHOT"
+val cosmotechApiCommonVersion = "0.1.1-SNAPSHOT"
+val cosmotechApiAzureVersion = "0.1.1-SNAPSHOT"
 
 allprojects {
   apply(plugin = "com.diffplug.spotless")
@@ -60,7 +60,7 @@ allprojects {
       content { includeModule("io.argoproj.workflow", "argo-client-java") }
     }
     mavenCentral()
-    mavenLocal()
+    maven { url = uri("https://jitpack.io") }
   }
 
   configure<SpotlessExtension> {
