@@ -12,8 +12,6 @@ dependencies {
   implementation("com.squareup.okhttp3:okhttp")
   implementation("com.squareup.okhttp3:logging-interceptor")
 
-  api(projects.cosmotechApiCommonParent.cosmotechApiCommon)
-  api(projects.cosmotechApiCommonParent.cosmotechApiCommonAzure)
   implementation(projects.cosmotechConnectorApi)
   implementation(projects.cosmotechDatasetApi)
   implementation(projects.cosmotechOrganizationApi)

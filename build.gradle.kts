@@ -41,6 +41,8 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 val kotlinJvmTarget = 17
+val cosmotechApiCommonVersion = "0.1.0-SNAPSHOT"
+val cosmotechApiAzureVersion = "0.1.0-SNAPSHOT"
 
 allprojects {
   apply(plugin = "com.diffplug.spotless")
@@ -58,6 +60,7 @@ allprojects {
       content { includeModule("io.argoproj.workflow", "argo-client-java") }
     }
     mavenCentral()
+    mavenLocal()
   }
 
   configure<SpotlessExtension> {
@@ -192,6 +195,7 @@ subprojects {
 
     implementation("org.zalando:problem-spring-web-starter:0.27.0")
 
+    api("com.azure.spring:azure-spring-boot-starter-cosmos:3.1.0")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.security:spring-security-oauth2-jose:5.6.3")
     implementation("org.springframework.security:spring-security-oauth2-resource-server:5.6.3")
@@ -212,6 +216,10 @@ subprojects {
     integrationTestImplementation("com.ninja-squad:springmockk:3.1.1")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
+
+
+    api("com.github.Cosmo-Tech:cosmotech-api-common:$cosmotechApiCommonVersion")
+    api("com.github.Cosmo-Tech:cosmotech-api-azure:$cosmotechApiAzureVersion")
   }
 
   if (!name.startsWith("cosmotech-api-common")) {
