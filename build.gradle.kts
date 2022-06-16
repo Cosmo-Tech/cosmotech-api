@@ -23,7 +23,7 @@ import pl.allegro.tech.build.axion.release.domain.TagNameSerializationConfig
 // See https://docs.gradle.org/current/userguide/organizing_gradle_projects.html#sec:build_sources
 
 plugins {
-  val kotlinVersion = "1.6.20"
+  val kotlinVersion = "1.7.0"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.13.6"
@@ -217,18 +217,17 @@ subprojects {
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
-
     api("com.github.Cosmo-Tech:cosmotech-api-common:$cosmotechApiCommonVersion")
     api("com.github.Cosmo-Tech:cosmotech-api-azure:$cosmotechApiAzureVersion")
   }
 
-  if (!name.startsWith("cosmotech-api-common")) {
-    tasks.withType<AbstractCompile> { dependsOn("openApiGenerate") }
-  }
+  tasks.withType<AbstractCompile> { dependsOn("openApiGenerate") }
 
   tasks.withType<KotlinCompile> {
+    dependsOn("openApiGenerate")
+
     kotlinOptions {
-      languageVersion = "1.5"
+      languageVersion = "1.7"
       freeCompilerArgs = listOf("-Xjsr305=strict")
       jvmTarget = kotlinJvmTarget.toString()
       java { toolchain { languageVersion.set(JavaLanguageVersion.of(kotlinJvmTarget)) } }
