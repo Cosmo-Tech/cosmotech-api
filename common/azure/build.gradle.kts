@@ -1,7 +1,7 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
 
-val azureSpringBootBomVersion = "3.14.0"
+val azureSpringBootBomVersion = "4.0.0"
 val azureSDKBomVersion = "1.2.2"
 val azureKustoIngestVersion = "3.1.0"
 
