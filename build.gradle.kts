@@ -201,7 +201,7 @@ subprojects {
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:5.8.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("io.mockk:mockk:1.12.3")
+    testImplementation("io.mockk:mockk:1.12.4")
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
 
     integrationTestImplementation("org.springframework.boot:spring-boot-starter-test") {
