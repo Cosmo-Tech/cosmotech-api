@@ -93,14 +93,10 @@ allprojects {
 subprojects {
   apply(plugin = "org.jetbrains.kotlin.plugin.spring")
   apply(plugin = "org.springframework.boot")
+  apply(plugin = "org.openapi.generator")
+  apply(plugin = "com.google.cloud.tools.jib")
 
   version = rootProject.scmVersion.version ?: error("Root project did not configure scmVersion!")
-
-  // Apply some plugins to all projects except 'common'
-  if (!name.startsWith("cosmotech-api-common")) {
-    apply(plugin = "org.openapi.generator")
-    apply(plugin = "com.google.cloud.tools.jib")
-  }
 
   java { toolchain { languageVersion.set(JavaLanguageVersion.of(kotlinJvmTarget)) } }
 
@@ -141,24 +137,24 @@ subprojects {
     reports {
       html {
         // observe findings in your browser with structure and code snippets
-        enabled = true
-        destination = file("$buildDir/reports/detekt/${project.name}-detekt.html")
+        required.set(true)
+        outputLocation.set(file("$buildDir/reports/detekt/${project.name}-detekt.html"))
       }
       xml {
         // checkstyle like format mainly for integrations like Jenkins
-        enabled = false
-        destination = file("$buildDir/reports/detekt/${project.name}-detekt.xml")
+        required.set(false)
+        outputLocation.set(file("$buildDir/reports/detekt/${project.name}-detekt.xml"))
       }
       txt {
         // similar to the console output, contains issue signature to manually edit baseline files
-        enabled = true
-        destination = file("$buildDir/reports/detekt/${project.name}-detekt.txt")
+        required.set(true)
+        outputLocation.set(file("$buildDir/reports/detekt/${project.name}-detekt.txt"))
       }
       sarif {
         // standardized SARIF format (https://sarifweb.azurewebsites.net/) to support integrations
         // with Github Code Scanning
-        enabled = true
-        destination = file("$buildDir/reports/detekt/${project.name}-detekt.sarif")
+        required.set(true)
+        outputLocation.set(file("$buildDir/reports/detekt/${project.name}-detekt.sarif"))
       }
     }
   }
@@ -220,8 +216,6 @@ subprojects {
     api("com.github.Cosmo-Tech:cosmotech-api-common:$cosmotechApiCommonVersion")
     api("com.github.Cosmo-Tech:cosmotech-api-azure:$cosmotechApiAzureVersion")
   }
-
-  tasks.withType<AbstractCompile> { dependsOn("openApiGenerate") }
 
   tasks.withType<KotlinCompile> {
     dependsOn("openApiGenerate")
