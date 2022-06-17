@@ -11,6 +11,7 @@ import com.azure.cosmos.models.SqlQuerySpec
 import com.azure.cosmos.util.CosmosPagedIterable
 import com.azure.spring.data.cosmos.core.CosmosTemplate
 import com.cosmotech.api.azure.adx.AzureDataExplorerClient
+import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.id.CsmIdGenerator
@@ -76,6 +77,8 @@ class ScenarioRunServiceImplTests {
 
   @MockK(relaxed = true) private lateinit var azureDataExplorerClient: AzureDataExplorerClient
 
+  @MockK(relaxed = true) private lateinit var azureEventHubsClient: AzureEventHubsClient
+
   private lateinit var scenarioRunServiceImpl: ScenarioRunServiceImpl
 
   @BeforeTest
@@ -83,7 +86,13 @@ class ScenarioRunServiceImplTests {
     MockKAnnotations.init(this, relaxUnitFun = true)
 
     this.scenarioRunServiceImpl =
-        spyk(ScenarioRunServiceImpl(containerFactory, workflowService, azureDataExplorerClient))
+        spyk(
+            ScenarioRunServiceImpl(
+                containerFactory,
+                workflowService,
+                workspaceService,
+                azureDataExplorerClient,
+                azureEventHubsClient))
 
     every { scenarioRunServiceImpl getProperty "cosmosTemplate" } returns cosmosTemplate
     every { scenarioRunServiceImpl getProperty "cosmosClient" } returns cosmosClient
@@ -394,7 +403,15 @@ class ScenarioRunServiceImplTests {
                         image = "my-image:latest")))
     every { workflowService.launchScenarioRun(any(), any()) } returns myScenarioRun
     every { idGenerator.generate("scenariorun", "sr-") } returns myScenarioRun.id!!
-
+    val eventBus = mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus>()
+    every { csmPlatformProperties.azure?.eventBus!! } returns eventBus
+    every { workspace.key } returns "my-workspace-key"
+    val authentication =
+        mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication>()
+    every { eventBus.authentication } returns authentication
+    every { eventBus.authentication.strategy } returns
+        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
+            .TENANT_CLIENT_CREDENTIALS
     val scenarioRunById =
         this.scenarioRunServiceImpl.runScenario(ORGANIZATION_ID, WORKSPACE_ID, "s-myscenarioid")
 
