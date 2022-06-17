@@ -9,7 +9,9 @@ import com.azure.cosmos.models.PartitionKey
 import com.azure.cosmos.models.SqlParameter
 import com.azure.cosmos.models.SqlQuerySpec
 import com.cosmotech.api.azure.CsmAzureService
-import com.cosmotech.api.azure.adx.AzureDataExplorerClient
+import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
+import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
+import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
@@ -23,6 +25,7 @@ import com.cosmotech.api.events.UserRemovedFromScenario
 import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.scenario.ScenarioMetaData
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -47,6 +50,7 @@ import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
 import java.time.OffsetDateTime
+import java.time.ZonedDateTime
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -64,7 +68,7 @@ internal class ScenarioServiceImpl(
     private val solutionService: SolutionApiService,
     private val organizationService: OrganizationApiService,
     private val workspaceService: WorkspaceApiService,
-    private val azureDataExplorerClient: AzureDataExplorerClient,
+    private val azureEventHubsClient: AzureEventHubsClient
 ) : CsmAzureService(), ScenarioApiService {
 
   override fun addOrReplaceScenarioParameterValues(
@@ -212,7 +216,7 @@ internal class ScenarioServiceImpl(
       this.eventPublisher.publishEvent(
           UserAddedToScenario(this, organizationId, user.id, user.roles.map { role -> role.value }))
     }
-
+    sendScenarioMetaData(organizationId, workspace, scenarioToSave)
     return scenarioToSave
   }
 
@@ -283,6 +287,9 @@ internal class ScenarioServiceImpl(
 
     this.handleScenarioDeletion(organizationId, workspaceId, scenario, waitRelationshipPropagation)
     eventPublisher.publishEvent(ScenarioDeleted(this, organizationId, workspaceId, scenarioId))
+
+    val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
+    sendScenarioMetaData(organizationId, workspace, scenario)
   }
 
   override fun downloadScenarioData(
@@ -675,10 +682,7 @@ internal class ScenarioServiceImpl(
         publishDatasetListChangedEvent(organizationId, workspaceId, scenarioId, scenario)
       }
 
-      if (scenario.validationStatus != null) {
-        azureDataExplorerClient.ingestScenarioValidationStatus(
-            organizationId, workspace.key, scenarioId, scenario.validationStatus.toString())
-      }
+      sendScenarioMetaData(organizationId, workspace, scenario)
     }
 
     return existingScenario
@@ -776,6 +780,48 @@ internal class ScenarioServiceImpl(
             scenario.asMapWithAdditionalData(workspaceId),
             PartitionKey(scenario.ownerId),
             CosmosItemRequestOptions())
+  }
+
+  private fun sendScenarioMetaData(
+      organizationId: String,
+      workspace: Workspace,
+      scenario: Scenario
+  ) {
+    if (workspace.sendScenarioMetadataToEventHub != true) {
+      return
+    }
+
+    val eventBus = csmPlatformProperties.azure?.eventBus!!
+    val eventHubNamespace = "${organizationId}-${workspace.key}".lowercase()
+    val eventHubName = "scenariometadata"
+    val baseHostName = "${eventHubNamespace}.servicebus.windows.net".lowercase()
+
+    val scenarioMetaData =
+        ScenarioMetaData(
+            organizationId,
+            workspace.id!!,
+            scenario.id!!,
+            scenario.name ?: "",
+            scenario.description ?: "",
+            scenario.parentId ?: "",
+            scenario.solutionName ?: "",
+            scenario.runTemplateName ?: "",
+            scenario.validationStatus.toString(),
+            ZonedDateTime.now().toLocalDateTime().toString())
+
+    when (eventBus.authentication.strategy) {
+      SHARED_ACCESS_POLICY -> {
+        azureEventHubsClient.sendMetaData(
+            baseHostName,
+            eventHubName,
+            eventBus.authentication.sharedAccessPolicy?.namespace?.name!!,
+            eventBus.authentication.sharedAccessPolicy?.namespace?.key!!,
+            scenarioMetaData)
+      }
+      TENANT_CLIENT_CREDENTIALS -> {
+        azureEventHubsClient.sendMetaData(baseHostName, eventHubName, scenarioMetaData)
+      }
+    }
   }
 
   @EventListener(OrganizationRegistered::class)

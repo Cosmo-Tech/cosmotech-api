@@ -9,6 +9,9 @@ import com.azure.cosmos.models.SqlParameter
 import com.azure.cosmos.models.SqlQuerySpec
 import com.cosmotech.api.azure.CsmAzureService
 import com.cosmotech.api.azure.adx.AzureDataExplorerClient
+import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
+import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
+import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
 import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
 import com.cosmotech.api.events.ScenarioDataDownloadRequest
 import com.cosmotech.api.events.ScenarioDeleted
@@ -17,6 +20,7 @@ import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
 import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
+import com.cosmotech.api.scenario.ScenarioRunMetaData
 import com.cosmotech.api.scenariorun.DataIngestionState
 import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -39,6 +43,7 @@ import com.cosmotech.scenariorun.withoutSensitiveData
 import com.cosmotech.scenariorun.workflow.WorkflowService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
+import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
 import java.time.ZonedDateTime
@@ -61,7 +66,9 @@ private const val MIN_SDK_VERSION_MINOR = 5
 internal class ScenarioRunServiceImpl(
     private val containerFactory: ContainerFactory,
     private val workflowService: WorkflowService,
+    private val workspaceService: WorkspaceApiService,
     private val azureDataExplorerClient: AzureDataExplorerClient,
+    private val azureEventHubsClient: AzureEventHubsClient
 ) : CsmAzureService(), ScenariorunApiService {
 
   private fun ScenarioRun.asMapWithAdditionalData(workspaceId: String? = null): Map<String, Any> {
@@ -322,6 +329,10 @@ internal class ScenarioRunServiceImpl(
             ),
             ScenarioRunStartedForScenario.WorkflowData(
                 scenarioRun.workflowId!!, scenarioRun.workflowName!!)))
+
+    val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
+    sendScenarioRunMetaData(organizationId, workspace, scenarioId, scenarioRun.csmSimulationRun)
+
     return scenarioRun.withoutSensitiveData()!!
   }
 
@@ -599,5 +610,35 @@ internal class ScenarioRunServiceImpl(
 
   override fun stopScenarioRun(organizationId: String, scenariorunId: String): ScenarioRunStatus {
     return workflowService.stopWorkflow(findScenarioRunById(organizationId, scenariorunId))
+  }
+
+  private fun sendScenarioRunMetaData(
+      organizationId: String,
+      workspace: Workspace,
+      scenarioId: String,
+      simulationRun: String
+  ) {
+    val eventBus = csmPlatformProperties.azure?.eventBus!!
+    val eventHubNamespace = "${organizationId}-${workspace.key}".lowercase()
+    val eventHubName = "scenariorunmetadata"
+    val baseHostName = "${eventHubNamespace}.servicebus.windows.net".lowercase()
+
+    val scenarioMetaData =
+        ScenarioRunMetaData(
+            simulationRun, scenarioId, ZonedDateTime.now().toLocalDateTime().toString())
+
+    when (eventBus.authentication.strategy) {
+      SHARED_ACCESS_POLICY -> {
+        azureEventHubsClient.sendMetaData(
+            baseHostName,
+            eventHubName,
+            eventBus.authentication.sharedAccessPolicy?.namespace?.name!!,
+            eventBus.authentication.sharedAccessPolicy?.namespace?.key!!,
+            scenarioMetaData)
+      }
+      TENANT_CLIENT_CREDENTIALS -> {
+        azureEventHubsClient.sendMetaData(baseHostName, eventHubName, scenarioMetaData)
+      }
+    }
   }
 }
