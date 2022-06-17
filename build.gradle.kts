@@ -193,7 +193,7 @@ subprojects {
 
     api("com.azure.spring:azure-spring-boot-starter-cosmos:3.1.0")
     implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.security:spring-security-oauth2-jose:5.6.3")
+    implementation("org.springframework.security:spring-security-oauth2-jose:5.7.1")
     implementation("org.springframework.security:spring-security-oauth2-resource-server:5.6.3")
     val oktaSpringBootVersion = "2.1.5"
     implementation("com.okta.spring:okta-spring-boot-starter:${oktaSpringBootVersion}")
