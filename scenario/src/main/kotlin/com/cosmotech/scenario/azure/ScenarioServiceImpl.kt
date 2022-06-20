@@ -233,7 +233,7 @@ internal class ScenarioServiceImpl(
             ?.filter { parameterGroup ->
               runTemplate?.parameterGroups?.contains(parameterGroup.id) == true
             }
-            ?.flatMap { parameterGroup -> parameterGroup.parameters }
+            ?.flatMap { parameterGroup -> parameterGroup?.parameters ?: mutableListOf() }
     if (!runTemplateParametersIds.isNullOrEmpty()) {
       val parentParameters = parent.parametersValues?.associate { it.parameterId to it }
       val scenarioParameters = scenario.parametersValues?.associate { it.parameterId to it }
