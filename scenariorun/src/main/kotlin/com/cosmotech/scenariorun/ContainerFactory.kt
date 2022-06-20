@@ -1008,7 +1008,9 @@ internal class ContainerFactory(
   }
 
   private fun getRunTemplate(solution: Solution, runTemplateId: String): RunTemplate {
-    return solution.runTemplates.find { runTemplate -> runTemplate.id == runTemplateId }
+    return (solution.runTemplates ?: mutableListOf()).find { runTemplate ->
+      runTemplate.id == runTemplateId
+    }
         ?: throw IllegalStateException(
             "runTemplateId $runTemplateId not found in Solution ${solution.id}")
   }
@@ -1026,7 +1028,6 @@ internal class ContainerFactory(
   ): ScenarioRunContainer {
 
     if (step == null) throw IllegalStateException("Solution Container Step Spec is not defined")
-    val template = getRunTemplate(solution, runTemplateId)
     val imageName =
         getImageName(
             csmPlatformProperties.azure?.containerRegistries?.solutions ?: "",
@@ -1045,6 +1046,7 @@ internal class ContainerFactory(
 
     envVars.putAll(getEventHubEnvVars(organization, workspace))
 
+    val template = getRunTemplate(solution, runTemplateId)
     val csmSimulation = template.csmSimulation
     if (csmSimulation != null) {
       envVars[CSM_SIMULATION_VAR] = csmSimulation
@@ -1248,8 +1250,10 @@ internal class ContainerFactory(
         }
       }
 
-  private fun getImageName(registry: String, repository: String, version: String? = null): String {
-    val repoVersion = if (version == null) repository else "${repository}:${version}"
+  private fun getImageName(registry: String, repository: String?, version: String? = null): String {
+    if (repository == null) throw IllegalStateException("Solution repository is not defined")
+    val repo = repository ?: "ERROR"
+    val repoVersion = if (version == null) repo else "${repo}:${version}"
     return if (registry != "") "${registry}/${repoVersion}" else repoVersion
   }
 }

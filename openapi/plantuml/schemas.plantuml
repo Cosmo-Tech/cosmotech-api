@@ -98,7 +98,7 @@ entity OrganizationUser {
 
 entity RunTemplate {
     * id: String
-    * name: String
+    name: String
     description: String
     csmSimulation: String
     tags: List<String>
@@ -134,8 +134,8 @@ entity RunTemplateHandlerId {
 
 entity RunTemplateParameter {
     * id: String
-    * labels: Map
-    * varType: String
+    labels: Map
+    varType: String
     defaultValue: String
     minValue: String
     maxValue: String
@@ -145,11 +145,11 @@ entity RunTemplateParameter {
 
 entity RunTemplateParameterGroup {
     * id: String
-    * labels: Map
+    labels: Map
     isTable: Boolean
     options: Map
     parentId: String
-    * parameters: List<String>
+    parameters: List<String>
 }
 
 entity RunTemplateParameterValue {
@@ -342,19 +342,19 @@ entity ScenarioValidationStatus {
 
 entity Solution {
     id: String
-    * key: String
-    * name: String
+    key: String
+    name: String
     description: String
-    * repository: String
+    repository: String
     csmSimulator: String
-    * version: String
+    version: String
     ownerId: String
     sdkVersion: String
     url: String
     tags: List<String>
     parameters: List<RunTemplateParameter>
     parameterGroups: List<RunTemplateParameterGroup>
-    * runTemplates: List<RunTemplate>
+    runTemplates: List<RunTemplate>
 }
 
 entity User {

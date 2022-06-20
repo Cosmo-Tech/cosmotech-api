@@ -533,12 +533,12 @@ components:
           description: list of Run Template
           items:
             $ref: '#/components/schemas/RunTemplate'
-      required:
-        - key
-        - name
-        - repository
-        - version
-        - runTemplates
+  #       required:
+  #         - key
+  #         - name
+  #         - repository
+  #         - version
+  #         - runTemplates
     RunTemplate:
       type: object
       description: a Solution Run Template
@@ -634,7 +634,7 @@ components:
           description: an optional duration in seconds in which a workflow is allowed to run
       required:
         - id
-        - name
+#         - name
     RunTemplateHandlerId:
       type: string
       description: the Run Template step handler identifier
@@ -670,8 +670,8 @@ components:
             description: a Run Template Parameter id
       required:
         - id
-        - labels
-        - parameters
+#         - labels
+#         - parameters
     RunTemplateParameter:
       type: object
       description: a Run Template Parameter
@@ -702,8 +702,8 @@ components:
           additionalProperties: true
       required:
         - id
-        - labels
-        - varType
+#         - labels
+#         - varType
     TranslatedLabels:
       type: object
       description: a translated label with key as ISO 639-1 code

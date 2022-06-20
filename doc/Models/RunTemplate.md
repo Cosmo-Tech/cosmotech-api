@@ -4,7 +4,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **String** | the Solution Run Template id | [default to null]
-**name** | **String** | the Run Template name | [default to null]
+**name** | **String** | the Run Template name | [optional] [default to null]
 **description** | **String** | the Run Template description | [optional] [default to null]
 **csmSimulation** | **String** | the Cosmo Tech simulation name. This information is send to the Engine. Mandatory information if no Engine is defined | [optional] [default to null]
 **tags** | **List** | the list of Run Template tags | [optional] [default to null]
