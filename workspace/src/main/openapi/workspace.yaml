@@ -341,7 +341,7 @@ paths:
         "404":
           description: the Workspace or the file specified is unknown or you don't have access to them
 
-  /organizations/{organization_id}/workspaces/{workspace_id}/users:
+  /organizations/{organization_id}/workspaces/{workspace_id}/security:
     parameters:
       - name: organization_id
         in: path
@@ -355,11 +355,31 @@ paths:
         required: true
         schema:
           type: string
-    post:
-      operationId: addOrReplaceUsersInOrganizationWorkspace
+    get:
+      operationId: getWorkspaceSecurity
       tags:
         - workspace
-      summary: Add (or replace) users to the Workspace specified
+      summary: Get the Workspace security information
+      response:
+        "200":
+          description: The Workspace security
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceSecurity'
+              examples:
+                PublicWorkspaceSecurity:
+                  $ref: '#/components/examples/PublicWorkspaceSecurity'
+                PrivateWorkspaceSecurity:
+                  $ref: '#/components/examples/PrivateWorkspaceSecurity'
+        "404":
+          description: the Workspace specified is unknown or you don't have access to it
+    WIP TO REMOVE ?
+    patch:
+      operationId: updateWorkspaceSecurity
+      tags:
+        - workspace
+      summary: Change the Workspace security
       requestBody:
         description: the Users to add. Any User with the same ID is overwritten
         required: true
@@ -386,18 +406,77 @@ paths:
                   $ref: '#/components/examples/TwoWorkspaceUsers'
         "404":
           description: the Workspace specified is unknown or you don't have access to it
-    delete:
-      operationId: removeAllUsersOfWorkspace
+
+  /organizations/{organization_id}/workspaces/{workspace_id}/security/visibility:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: setWorkspaceVisibility
       tags:
         - workspace
-      summary: Remove all users from the Workspace specified
-      responses:
-        "204":
-          description: the operation succeeded
+      summary: set the Workspace visibility
+        WIP BODY HERE
+      response:
+        "200":
+          description: The Workspace visibility
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceSecurityVisibility'
+              examples:
+                PublicWorkspaceSecurity:
+                  $ref: '#/components/examples/PublicWorkspaceVisibility'
+                PrivateWorkspaceSecurity:
+                  $ref: '#/components/examples/PrivateWorkspaceVisibility'
         "404":
           description: the Workspace specified is unknown or you don't have access to it
 
-  /organizations/{organization_id}/workspaces/{workspace_id}/users/{user_id}:
+  /organizations/{organization_id}/workspaces/{workspace_id}/security/access:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: addWorkspaceAccess
+      tags:
+        - workspace
+      summary: add a control acccess to the Workspace
+        WIP BODY HERE
+      response:
+        "200":
+          description: The Workspace access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceAccessControl'
+              examples:
+                worskapceAccessControl:
+                  $ref: '#/components/examples/accessControl'
+        "404":
+          description: the Workspace specified is unknown or you don't have access to it
+
+  WIP identity_id
+  /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id}:
     parameters:
       - name: organization_id
         in: path
@@ -470,11 +549,6 @@ components:
           description: the user id which own this workspace
         solution:
           $ref: '#/components/schemas/WorkspaceSolution'
-        users:
-          type: array
-          description: the list of users Id with their role
-          items:
-            $ref: '#/components/schemas/WorkspaceUser'
         webApp:
           $ref: '#/components/schemas/WorkspaceWebApp'
         sendInputToDataWarehouse:
@@ -492,30 +566,57 @@ components:
           description: Set this property to false to not send scenario metada to Azure Event Hub Namespace for this Workspace.
             The Event Hub Namespace must be named \'<organization_id\>-<workspace_id\>\' (in lower case).
             This Namespace must also contain two Event Hubs named \'scenariometadata\' and \'scenariorunmetadata\'.
+        visibility:
+          $ref: '#/components/schemas/WorkspaceSecurityVisibility'
+          readonly: true
+        userRoles:
+          $ref: '#/components/schemas/WorkspaceRoleList'
+          readonly: true
+        security:
+          $ref: '#/components/schemas/WorkspaceSecurity'
       required:
         - key
         - name
         - solution
-    WorkspaceUser:
+    WorkspaceSecurity:
       type: object
-      description: a Workspace user with roles
+      description: the workspace security information
+      properties:
+        visibility:
+          $ref: '#/components/schemas/WorkspaceSecurityVisibility'
+        accessList:
+          type: array
+          description: the list of ids which can access this Workspace
+          readonly: true
+        accessControlList:
+          type: object
+          description: the list which can access this Workspace with detailed access control information
+          additionalProperties:
+            $ref: '#/components/schemas/WorkspaceAccessControl'
+    WorkspaceSecurityVisibility:
+      type: string
+      enum: ["private", "public"]
+      default: "private"
+    WorkspaceAccessControl:
+      type: object
+      description: a Workspace access control item
       properties:
         id:
           type: string
-          description: the User id
-        name:
-          type: string
-          readOnly: true
-          description: the User name
+          description: the identity id
         roles:
-          type: array
-          description: the User roles
-          items:
-            type: string
-            enum: ["Admin","User","Viewer"]
+          $ref: '#components/schemas/WorkspaceRoleList'
       required:
         - id
         - roles
+    WorkspaceRoleList:
+      type: array
+      description: a roles list
+      items:
+        $ref: '#/components/schemas/WorkspaceRole'
+    WorkspaceRole:
+      type: string
+      enum: ["Admin","Writer","Reader","SenarioCreator"]
     WorkspaceFile:
       type: object
       description: a Workspace File resource
