@@ -40,8 +40,6 @@ paths:
             examples:
               Workspace:
                 $ref: '#/components/examples/BreweryWorkspaceCreateIn'
-              WorkspaceWithSecurity:
-                $ref: '#/components/examples/BreweryWorkspaceCreateSecurity'
           application/yaml:
             schema:
               type: string
@@ -49,8 +47,6 @@ paths:
             examples:
               Workspace:
                 $ref: '#/components/examples/BreweryWorkspaceCreateIn'
-              WorkspaceWithSecurity:
-                $ref: '#/components/examples/BreweryWorkspaceCreateSecurity'
       responses:
         "201":
           description: the workspace details
@@ -345,45 +341,6 @@ paths:
         "404":
           description: the Workspace or the file specified is unknown or you don't have access to them
 
-  /organizations/{organization_id}/workspaces/{workspace_id}/permissions/{role}:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: role
-        in: path
-        description: the Role
-        required: true
-        schema:
-          type: string
-    get:
-      operationId: getWorkspacePermissions
-      tags:
-        - workspace
-      summary: Get the Workspace permission by given role
-      responses:
-        "200":
-          description: The Workspace security permission list
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: string
-                example:
-                  - "commonpermissiondelete"
-                  - "commonpermissionwrite"
-                  - "commonpermissioncreatechildren"
-
   /organizations/{organization_id}/workspaces/{workspace_id}/security:
     parameters:
       - name: organization_id
@@ -403,7 +360,7 @@ paths:
       tags:
         - workspace
       summary: Get the Workspace security information
-      responses:
+      response:
         "200":
           description: The Workspace security
           content:
@@ -411,12 +368,46 @@ paths:
               schema:
                 $ref: '#/components/schemas/WorkspaceSecurity'
               examples:
-                WorkspaceSecurity:
-                  $ref: '#/components/examples/BreweryWorkspaceSecurity'
+                PublicWorkspaceSecurity:
+                  $ref: '#/components/examples/PublicWorkspaceSecurity'
+                PrivateWorkspaceSecurity:
+                  $ref: '#/components/examples/PrivateWorkspaceSecurity'
+        "404":
+          description: the Workspace specified is unknown or you don't have access to it
+    WIP TO REMOVE ?
+    patch:
+      operationId: updateWorkspaceSecurity
+      tags:
+        - workspace
+      summary: Change the Workspace security
+      requestBody:
+        description: the Users to add. Any User with the same ID is overwritten
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/WorkspaceUser'
+            examples:
+              TwoWorkspaceUsersToAddOrReplace:
+                $ref: '#/components/examples/TwoWorkspaceUsers'
+      responses:
+        "200":
+          description: the Workspace Users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkspaceUser'
+              examples:
+                TwoWorkspaceUsers:
+                  $ref: '#/components/examples/TwoWorkspaceUsers'
         "404":
           description: the Workspace specified is unknown or you don't have access to it
 
-  /organizations/{organization_id}/workspaces/{workspace_id}/security/default:
+  /organizations/{organization_id}/workspaces/{workspace_id}/security/visibility:
     parameters:
       - name: organization_id
         in: path
@@ -431,33 +422,23 @@ paths:
         schema:
           type: string
     post:
-      operationId: setWorkspaceDefaultSecurity
+      operationId: setWorkspaceVisibility
       tags:
         - workspace
-      summary: set the Workspace default security
-      requestBody:
-        description: the new Workspace default security.
-        required: true
-        content:
-          application/json:
-            schema:
-              type: string
-            example: "commonrolewriter"
-          application/yaml:
-            schema:
-              type: string
-              format: binary
-            example: "commonrolewriter"
-      responses:
+      summary: set the Workspace visibility
+        WIP BODY HERE
+      response:
         "200":
-          description: The Workspace default visibility
+          description: The Workspace visibility
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkspaceSecurity'
+                $ref: '#/components/schemas/WorkspaceSecurityVisibility'
               examples:
-                WriterWorkspaceSecurity:
-                  $ref: '#/components/examples/BreweryDefaultSecurityRoleWriter'
+                PublicWorkspaceSecurity:
+                  $ref: '#/components/examples/PublicWorkspaceVisibility'
+                PrivateWorkspaceSecurity:
+                  $ref: '#/components/examples/PrivateWorkspaceVisibility'
         "404":
           description: the Workspace specified is unknown or you don't have access to it
 
@@ -476,28 +457,12 @@ paths:
         schema:
           type: string
     post:
-      operationId: addWorkspaceAccessControl
+      operationId: addWorkspaceAccess
       tags:
         - workspace
       summary: add a control acccess to the Workspace
-      requestBody:
-        description: the new Workspace security access to add.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WorkspaceAccessControl'
-            examples:
-              WorkspaceAccess:
-                $ref: '#/components/examples/BreweryWorkspaceAccessControl'
-          application/yaml:
-            schema:
-              type: string
-              format: binary
-            examples:
-              WorkspaceAccess:
-                $ref: '#/components/examples/BreweryWorkspaceAccessControl'
-      responses:
+        WIP BODY HERE
+      response:
         "200":
           description: The Workspace access
           content:
@@ -505,11 +470,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/WorkspaceAccessControl'
               examples:
-                WorkspaceAccessControl:
-                  $ref: '#/components/examples/BreweryWorkspaceAccessControl'
+                worskapceAccessControl:
+                  $ref: '#/components/examples/accessControl'
         "404":
           description: the Workspace specified is unknown or you don't have access to it
 
+  WIP identity_id
   /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id}:
     parameters:
       - name: organization_id
@@ -524,73 +490,22 @@ paths:
         required: true
         schema:
           type: string
-      - name: identity_id
+      - name: user_id
         in: path
         description: the User identifier
         required: true
         schema:
           type: string
-    get:
-      operationId: getWorkspaceAccessControl
-      tags:
-        - workspace
-      summary: get a control acccess for the Workspace
-      responses:
-        "200":
-          description: The Workspace access
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WorkspaceAccessControl'
-              examples:
-                WorkspaceAccessControl:
-                  $ref: '#/components/examples/BreweryWorkspaceAccessControl'
-        "404":
-          description: the Workspace or user specified is unknown or you don't have access to it
     delete:
-      operationId: removeWorkspaceAccessControl
+      operationId: removeUserFromOrganizationWorkspace
       tags:
         - workspace
-      summary: Remove the specified access from the given Organization Workspace
+      summary: Remove the specified user from the given Organization Workspace
       responses:
         "204":
           description: Request succeeded
         "404":
-          description: the Workspace or the user specified is unknown or you don't have access to them
-
-  /organizations/{organization_id}/workspaces/{workspace_id}/security/users:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-    get:
-      operationId: getWorkspaceSecurityUsers
-      tags:
-        - workspace
-      summary: Get the Workspace security users list
-      responses:
-        "200":
-          description: The Workspace security users list
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: string
-                example:
-                  - alice@mycompany.com
-                  - bob@mycompany.com
-        "404":
-          description: the Workspace specified is unknown or you don't have access to it
+          description: the Workspace or the User specified is unknown or you don't have access to them
 
 components:
   securitySchemes:
@@ -651,9 +566,14 @@ components:
           description: Set this property to false to not send scenario metada to Azure Event Hub Namespace for this Workspace.
             The Event Hub Namespace must be named \'<organization_id\>-<workspace_id\>\' (in lower case).
             This Namespace must also contain two Event Hubs named \'scenariometadata\' and \'scenariorunmetadata\'.
+        visibility:
+          $ref: '#/components/schemas/WorkspaceSecurityVisibility'
+          readonly: true
+        userRoles:
+          $ref: '#/components/schemas/WorkspaceRoleList'
+          readonly: true
         security:
-          allOf:
-           - $ref: '#/components/schemas/WorkspaceSecurity'
+          $ref: '#/components/schemas/WorkspaceSecurity'
       required:
         - key
         - name
@@ -661,37 +581,42 @@ components:
     WorkspaceSecurity:
       type: object
       description: the workspace security information
-      x-impl: 'com.cosmotech.api.rbac.model.RbacSecurity(default, accessControlList)'
       properties:
-        default:
-          x-impl: override
-          type: string
-          description: the role by default
+        visibility:
+          $ref: '#/components/schemas/WorkspaceSecurityVisibility'
+        accessList:
+          type: array
+          description: the list of ids which can access this Workspace
+          readonly: true
         accessControlList:
-          type: list
+          type: object
           description: the list which can access this Workspace with detailed access control information
-          x-impl: override
-          items:
-            $ref: '#/components/schemas/RbacAccessControl'
-      required:
-        - default
-        - accessControlList
+          additionalProperties:
+            $ref: '#/components/schemas/WorkspaceAccessControl'
+    WorkspaceSecurityVisibility:
+      type: string
+      enum: ["private", "public"]
+      default: "private"
     WorkspaceAccessControl:
       type: object
-      x-impl: 'com.cosmotech.api.rbac.model.RbacAccessControl(id, role)'
       description: a Workspace access control item
       properties:
         id:
-          x-impl: override
           type: string
           description: the identity id
-        role:
-          x-impl: override
-          type: string
-          description: a role
+        roles:
+          $ref: '#components/schemas/WorkspaceRoleList'
       required:
         - id
-        - role
+        - roles
+    WorkspaceRoleList:
+      type: array
+      description: a roles list
+      items:
+        $ref: '#/components/schemas/WorkspaceRole'
+    WorkspaceRole:
+      type: string
+      enum: ["Admin","Writer","Reader","SenarioCreator"]
     WorkspaceFile:
       type: object
       description: a Workspace File resource
@@ -751,24 +676,18 @@ components:
             - "1"
           defaultRunTemplateDataset:
             1: "1"
-    BreweryWorkspaceCreateSecurity:
-      summary: Brewery Workspace Create with security
-      description: Brewery Workspace Create with default security
-      value:
-        name: Brewery Analysis
-        key: brewery
-        description: Brewery analysis for stock, production, transport and customer satisfaction
-        version: "1.0.0"
-        tags:
-          - Brewery
-        solution:
-          solutionId: "1"
-          runTemplateFilter:
-            - "1"
-          defaultRunTemplateDataset:
-            1: "1"
-        security:
-          default: "commonrolereader"
+        users:
+          - id: "1"
+            roles:
+              - Admin
+          - id: "2"
+            roles:
+              - Viewer
+        webApp:
+          url: https://brewery.app.cosmotech.com
+          iframes:
+            main: https://app.powerbi.com/reportEmbed?reportId=05eee4e7-b301-4fb3-8850-9ef00f3516ef&autoAuth=true&ctid=e9641c78-d0d6-4d09-af63-168922724e7f&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWZyYW5jZS1jZW50cmFsLWEtcHJpbWFyeS1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D
+            dashboard: https://app.powerbi.com/reportEmbed?reportId=05eee4e7-b301-4fb3-8850-9ef00f3516ef&autoAuth=true&ctid=e9641c78-d0d6-4d09-af63-168922724e7f&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWZyYW5jZS1jZW50cmFsLWEtcHJpbWFyeS1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D
     BreweryWorkspace:
       summary: Brewery Workspace
       description: Brewery Workspace example
@@ -787,11 +706,20 @@ components:
             - "1"
           defaultRunTemplateDataset:
             1: "1"
-        security:
-          default: "commonrolereader"
-          accessControlList:
-            - id: "alice@mycompany.com"
-              role: "commonroleadmin"
+        users:
+          - id: "1"
+            name: Bob
+            roles:
+              - Admin
+          - id: "2"
+            name: Alice
+            roles:
+              - Viewer
+        webApp:
+          url: https://brewery.app.cosmotech.com
+          iframes:
+            main: https://app.powerbi.com/reportEmbed?reportId=05eee4e7-b301-4fb3-8850-9ef00f3516ef&autoAuth=true&ctid=e9641c78-d0d6-4d09-af63-168922724e7f&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWZyYW5jZS1jZW50cmFsLWEtcHJpbWFyeS1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D
+            dashboard: https://app.powerbi.com/reportEmbed?reportId=05eee4e7-b301-4fb3-8850-9ef00f3516ef&autoAuth=true&ctid=e9641c78-d0d6-4d09-af63-168922724e7f&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWZyYW5jZS1jZW50cmFsLWEtcHJpbWFyeS1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D
     OneWorkspace:
       summary: One Workspace list
       description: One Workspace list example
@@ -810,11 +738,20 @@ components:
               - "1"
             defaultRunTemplateDataset:
               1: "1"
-          security:
-            default: "commonrolereader"
-            accessControlList:
-              - id: "alice@mycompany.com"
-                role: "commonroleadmin"
+          users:
+            - id: "1"
+              name: Bob
+              roles:
+                - Admin
+            - id: "2"
+              name: Alice
+              roles:
+                - Viewer
+          webApp:
+            url: https://brewery.app.cosmotech.com
+            iframes:
+              main: https://app.powerbi.com/reportEmbed?reportId=05eee4e7-b301-4fb3-8850-9ef00f3516ef&autoAuth=true&ctid=e9641c78-d0d6-4d09-af63-168922724e7f&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWZyYW5jZS1jZW50cmFsLWEtcHJpbWFyeS1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D
+              dashboard: https://app.powerbi.com/reportEmbed?reportId=05eee4e7-b301-4fb3-8850-9ef00f3516ef&autoAuth=true&ctid=e9641c78-d0d6-4d09-af63-168922724e7f&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWZyYW5jZS1jZW50cmFsLWEtcHJpbWFyeS1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D
     BreweryWorkspaceUpdate:
       summary: Update the Brewery Workspace
       description: Update the Brewery Workspace by changing its name
@@ -838,30 +775,20 @@ components:
             - "1"
           defaultRunTemplateDataset:
             1: "1"
-        security:
-          default: "commonrolereader"
-          accessControlList:
-            - id: "alice@mycompany.com"
-              role: "commonroleadmin"
-    BreweryWorkspaceSecurity:
-      summary: Brewery Workspace security
-      description: Brewery Workspace security example
-      value:
-        default: "commonrolereader"
-        accessControlList:
-          - id: "bob@mycosmocompany.com"
-            role: "commonrolewriter"
-    BreweryWorkspaceAccessControl:
-      summary: Set an access control.
-      description: Set an access control for a user to a workspace.
-      value:
-        id: "bob@mycompany.com"
-        role: "commonrolewriter"
-    BreweryDefaultSecurityRoleWriter:
-      summary: Brewery Workspace Writer default security
-      description: Brewery Workspace example
-      value:
-        default: "commonrolewriter"
+        users:
+          - id: "1"
+            name: Bob
+            roles:
+              - Admin
+          - id: "2"
+            name: Alice
+            roles:
+              - Viewer
+        webApp:
+          url: https://brewery.app.cosmotech.com
+          iframes:
+            main: https://app.powerbi.com/reportEmbed?reportId=05eee4e7-b301-4fb3-8850-9ef00f3516ef&autoAuth=true&ctid=e9641c78-d0d6-4d09-af63-168922724e7f&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWZyYW5jZS1jZW50cmFsLWEtcHJpbWFyeS1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D
+            dashboard: https://app.powerbi.com/reportEmbed?reportId=05eee4e7-b301-4fb3-8850-9ef00f3516ef&autoAuth=true&ctid=e9641c78-d0d6-4d09-af63-168922724e7f&config=eyJjbHVzdGVyVXJsIjoiaHR0cHM6Ly93YWJpLWZyYW5jZS1jZW50cmFsLWEtcHJpbWFyeS1yZWRpcmVjdC5hbmFseXNpcy53aW5kb3dzLm5ldC8ifQ%3D%3D
     BreweryWorkspaceFile:
       summary: Brewery Workspace file example
       description: Brewery Workspace file uploaded return example
@@ -874,3 +801,25 @@ components:
         - fileName: myData.csv
         - fileName: myData2.csv
         - fileName: myData3.csv
+    TwoWorkspaceUsers:
+      summary: Two users of a Workspace
+      description: Two Users of a Workspace example
+      value:
+        - id: "1"
+          name: Bob
+          roles:
+            - Admin
+        - id: "2"
+          name: Alice
+          roles:
+            - User
+    TwoWorkspaceToAddOrReplace:
+      summary: Two users of a Workspace
+      description: Two Users of a Workspace example
+      value:
+        - id: "1"
+          roles:
+            - Admin
+        - id: "2"
+          roles:
+            - User
