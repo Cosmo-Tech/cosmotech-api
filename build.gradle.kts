@@ -12,7 +12,6 @@ import org.jetbrains.kotlin.util.capitalizeDecapitalize.capitalizeAsciiOnly
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 import org.springframework.boot.gradle.dsl.SpringBootExtension
-import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 import org.springframework.boot.gradle.tasks.run.BootRun
 import pl.allegro.tech.build.axion.release.domain.TagNameSerializationConfig
@@ -42,7 +41,7 @@ version = scmVersion.version
 
 val kotlinJvmTarget = 17
 val cosmotechApiCommonVersion = "0.1.1-SNAPSHOT"
-val cosmotechApiAzureVersion = "0.1.1-SNAPSHOT"
+val cosmotechApiAzureVersion = "0.1.2-SNAPSHOT"
 
 allprojects {
   apply(plugin = "com.diffplug.spotless")
@@ -328,83 +327,76 @@ subprojects {
     }
   }
 
-  if (name.startsWith("cosmotech-api-common")) {
-    tasks.getByName<BootJar>("bootJar") { enabled = false }
-    tasks.getByName<BootBuildImage>("bootBuildImage") { enabled = false }
-    tasks.getByName<BootRun>("bootRun") { enabled = false }
-  } else {
-
-    val openApiFileDefinition =
-        if (name == "cosmotech-api") {
-          file("${rootDir}/openapi/openapi.yaml")
-        } else {
-          openApiDefinitionFile
-        }
-    tasks.register<Copy>("copyOpenApiYamlToMainResources") {
-      from(openApiFileDefinition)
-      into("$buildDir/resources/main/static")
-      rename { if (it != "openapi.yaml") "openapi.yaml" else it }
-    }
-    tasks.register<Copy>("copyOpenApiYamlToTestResources") {
-      from(openApiFileDefinition)
-      into("$buildDir/resources/test/static")
-      rename { if (it != "openapi.yaml") "openapi.yaml" else it }
-    }
-
-    tasks.getByName<Copy>("processResources") {
-      dependsOn("copyOpenApiYamlToMainResources")
-      filesMatching("**/banner.txt") {
-        filter<ReplaceTokens>("tokens" to mapOf("projectVersion" to project.version))
+  val openApiFileDefinition =
+      if (name == "cosmotech-api") {
+        file("${rootDir}/openapi/openapi.yaml")
+      } else {
+        openApiDefinitionFile
       }
+  tasks.register<Copy>("copyOpenApiYamlToMainResources") {
+    from(openApiFileDefinition)
+    into("$buildDir/resources/main/static")
+    rename { if (it != "openapi.yaml") "openapi.yaml" else it }
+  }
+  tasks.register<Copy>("copyOpenApiYamlToTestResources") {
+    from(openApiFileDefinition)
+    into("$buildDir/resources/test/static")
+    rename { if (it != "openapi.yaml") "openapi.yaml" else it }
+  }
+
+  tasks.getByName<Copy>("processResources") {
+    dependsOn("copyOpenApiYamlToMainResources")
+    filesMatching("**/banner.txt") {
+      filter<ReplaceTokens>("tokens" to mapOf("projectVersion" to project.version))
     }
+  }
 
-    tasks.getByName<Copy>("processTestResources") { dependsOn("copyOpenApiYamlToTestResources") }
+  tasks.getByName<Copy>("processTestResources") { dependsOn("copyOpenApiYamlToTestResources") }
 
-    tasks.getByName<BootJar>("bootJar") { classifier = "uberjar" }
+  tasks.getByName<BootJar>("bootJar") { classifier = "uberjar" }
 
-    tasks.getByName<BootRun>("bootRun") {
-      workingDir = rootDir
+  tasks.getByName<BootRun>("bootRun") {
+    workingDir = rootDir
 
-      environment("CSM_PLATFORM_VENDOR", project.findProperty("platform")?.toString() ?: "azure")
-      project.findProperty("identityProvider")?.toString()?.let {
-        environment("IDENTITY_PROVIDER", it)
-      }
-
-      if (project.hasProperty("jvmArgs")) {
-        jvmArgs = project.property("jvmArgs").toString().split("\\s+".toRegex()).toList()
-      }
-
-      args = listOf("--spring.profiles.active=dev")
+    environment("CSM_PLATFORM_VENDOR", project.findProperty("platform")?.toString() ?: "azure")
+    project.findProperty("identityProvider")?.toString()?.let {
+      environment("IDENTITY_PROVIDER", it)
     }
 
-    configure<SpringBootExtension> {
-      buildInfo {
-        properties {
-          // Unsetting time so the task can be deterministic and cacheable, for performance reasons
-          time = null
-        }
+    if (project.hasProperty("jvmArgs")) {
+      jvmArgs = project.property("jvmArgs").toString().split("\\s+".toRegex()).toList()
+    }
+
+    args = listOf("--spring.profiles.active=dev")
+  }
+
+  configure<SpringBootExtension> {
+    buildInfo {
+      properties {
+        // Unsetting time so the task can be deterministic and cacheable, for performance reasons
+        time = null
       }
     }
-    configure<JibExtension> {
-      from { image = "eclipse-temurin:17-alpine" }
-      to { image = "${project.group}/${project.name}:${project.version}" }
-      container {
-        format = OCI
-        labels.putAll(mapOf("maintainer" to "Cosmo Tech"))
-        environment =
-            mapOf(
-                "JAVA_TOOL_OPTIONS" to
-                    "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=localhost:5005")
-        jvmFlags =
-            listOf(
-                // Make sure Spring DevTools is disabled in production as running it is a
-                // security risk
-                "-Dspring.devtools.restart.enabled=false")
-        ports = listOf("5005", "8080", "8081")
-        // Docker Best Practice : run as non-root.
-        // These are the 'nobody' UID and GID inside the image
-        user = "65534:65534"
-      }
+  }
+  configure<JibExtension> {
+    from { image = "eclipse-temurin:17-alpine" }
+    to { image = "${project.group}/${project.name}:${project.version}" }
+    container {
+      format = OCI
+      labels.putAll(mapOf("maintainer" to "Cosmo Tech"))
+      environment =
+          mapOf(
+              "JAVA_TOOL_OPTIONS" to
+                  "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=localhost:5005")
+      jvmFlags =
+          listOf(
+              // Make sure Spring DevTools is disabled in production as running it is a
+              // security risk
+              "-Dspring.devtools.restart.enabled=false")
+      ports = listOf("5005", "8080", "8081")
+      // Docker Best Practice : run as non-root.
+      // These are the 'nobody' UID and GID inside the image
+      user = "65534:65534"
     }
   }
 }

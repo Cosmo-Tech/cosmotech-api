@@ -27,7 +27,6 @@ tasks.withType<JibTask> {
       parent
           ?.subprojects
           ?.filterNot { it.name == project.name }
-          ?.filterNot { it.name.startsWith("cosmotech-api-common") }
           ?.flatMap { it.tasks.withType<Jar>() }
           ?.toList()
   logger.debug("jibTask ${this.name} needs to depend on : $jarTasks")
