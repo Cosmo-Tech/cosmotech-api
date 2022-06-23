@@ -1,3 +1,5 @@
+echo You must install dnsutils with deploy_dnsutils.sh and apt install wget in order to use this script
+
 set -x
 export MASTER_ENDPOINT_IP=$1
 export MASTER_SERVICE_IP=$2
