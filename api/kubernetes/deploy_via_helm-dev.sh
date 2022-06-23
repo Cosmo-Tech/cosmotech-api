@@ -34,7 +34,12 @@ if [[ $# -lt 3 ]]; then
   exit 1
 fi
 
-export NAMESPACE="$1"
+if [ -z "$1" ];
+  then
+    export NAMESPACE="phoenix"
+else
+  export NAMESPACE="$1"
+fi
 export ARGO_POSTGRESQL_PASSWORD="$2"
 export API_VERSION="$3"
 
@@ -57,7 +62,26 @@ echo "[info] Working directory: ${WORKING_DIR}"
 pushd "${WORKING_DIR}"
 
 # Create namespace if it does not exist
-kubectl create namespace "${NAMESPACE:-phoenix}" --dry-run=client -o yaml | kubectl apply -f -
+kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
+
+# Redis Cluster
+helm upgrade --install \
+    --namespace ${NAMESPACE} cosmotechredis bitnami/redis \
+    --values https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-redis/main/values-cosmotech-cluster.yaml \
+    --set replica.replicaCount=2 \
+    --create-namespace \
+    --wait \
+    --timeout 10m0s
+
+# Redis Insight
+REDIS_INSIGHT_HELM_CHART="${HELM_CHARTS_BASE_PATH}/charts/redisinsight-chart.tgz"
+wget https://docs.redis.com/latest/pkgs/redisinsight-chart-0.1.0.tgz  -O ${REDIS_INSIGHT_HELM_CHART}
+
+helm upgrade --install \
+   --namespace ${NAMESPACE} redisinsight ${REDIS_INSIGHT_HELM_CHART} \
+   --set service.type=NodePort \
+   --wait \
+   --timeout 5m0s
 
 # Minio
 cat <<EOF > values-minio.yaml
