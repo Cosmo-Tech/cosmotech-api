@@ -43,6 +43,9 @@ notice_argo_pvc_pv() {
 API_VERSION="$2"
 COSMOTECH_API_RELEASE_NAME="cosmotech-api-${API_VERSION}"
 ARGO_RELEASE_NAME=argo
+REDIS_RELEASE_NAME=cosmotechredis
+REDISINSIGHT_RELEASE_NAME=redisinsight
+
 
 echo "-> Uninstalling Helm release: '${ARGO_RELEASE_NAME}'..."
 helm -n "${NAMESPACE}" uninstall "${ARGO_RELEASE_NAME}" "${@:3}"
@@ -50,6 +53,14 @@ argoUninstallReturnValue=$?
 
 echo "-> Uninstalling Helm release: '${COSMOTECH_API_RELEASE_NAME}'..."
 helm -n "${NAMESPACE}" uninstall "${COSMOTECH_API_RELEASE_NAME}" "${@:3}"
+cosmotechApiUninstallReturnValue=$?
+
+echo "-> Uninstalling Helm release: '${REDIS_RELEASE_NAME}'..."
+helm -n "${NAMESPACE}" uninstall "${REDIS_RELEASE_NAME}" "${@:3}"
+cosmotechApiUninstallReturnValue=$?
+
+echo "-> Uninstalling Helm release: '${REDISINSIGHT_RELEASE_NAME}'..."
+helm -n "${NAMESPACE}" uninstall "${REDISINSIGHT_RELEASE_NAME}" "${@:3}"
 cosmotechApiUninstallReturnValue=$?
 
 kubectl -n "${NAMESPACE}" delete secrets \
