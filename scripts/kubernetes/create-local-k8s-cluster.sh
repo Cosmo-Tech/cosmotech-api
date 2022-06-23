@@ -52,7 +52,39 @@ nodes:
         kind: JoinConfiguration
         nodeRegistration:
           kubeletExtraArgs:
-            node-labels: "kubernetes.io/os=linux,agentpool=basicpool,cosmotech.com/tier=services"
+            node-labels: "kubernetes.io/os=linux,agentpool=basicpool,cosmotech.com/tier=compute,cosmotech.com/size=basic"
+    - role: worker
+      image: kindest/node:${kindest_node_image_tag}
+      kubeadmConfigPatches:
+      - |
+        kind: JoinConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "kubernetes.io/os=linux,cosmotech.com/tier=services"
+    - role: worker
+      image: kindest/node:${kindest_node_image_tag}
+      kubeadmConfigPatches:
+      - |
+        kind: JoinConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "kubernetes.io/os=linux,cosmotech.com/tier=services"
+    - role: worker
+      image: kindest/node:${kindest_node_image_tag}
+      kubeadmConfigPatches:
+      - |
+        kind: JoinConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "kubernetes.io/os=linux,cosmotech.com/tier=db"
+    - role: worker
+      image: kindest/node:${kindest_node_image_tag}
+      kubeadmConfigPatches:
+      - |
+        kind: JoinConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "kubernetes.io/os=linux,cosmotech.com/tier=db"
     - role: worker
       image: kindest/node:${kindest_node_image_tag}
       kubeadmConfigPatches:
@@ -64,7 +96,8 @@ nodes:
             value: "cosmotech"
             effect: "NoSchedule"
           kubeletExtraArgs:
-            node-labels: "kubernetes.io/os=linux,agentpool=basicpool,cosmotech.com/tier=monitoring"
+            node-labels: "kubernetes.io/os=linux,cosmotech.com/tier=monitoring"
+
 networking:
   # disable kindnet, which does not support Network Policies
   disableDefaultCNI: true

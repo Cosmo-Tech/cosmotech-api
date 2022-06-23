@@ -71,6 +71,8 @@ helm upgrade --install \
     --namespace ${NAMESPACE} cosmotechredis bitnami/redis \
     --values https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-redis/main/values-cosmotech-cluster.yaml \
     --set replica.replicaCount=2 \
+    --set master.nodeSelector."cosmotech\\.com/tier"=db \
+    --set replica.nodeSelector."cosmotech\\.com/tier"=db \
     --wait \
     --timeout 10m0s
 
@@ -81,6 +83,7 @@ wget https://docs.redis.com/latest/pkgs/redisinsight-chart-0.1.0.tgz  -O ${REDIS
 helm upgrade --install \
    --namespace ${NAMESPACE} redisinsight ${REDIS_INSIGHT_HELM_CHART} \
    --set service.type=NodePort \
+   --set nodeSelector."cosmotech\\.com/tier"=services \
    --wait \
    --timeout 5m0s
 
@@ -94,7 +97,7 @@ persistence:
   enabled: true
 resources:
   requests:
-    memory: "2Gi"
+    memory: "${ARGO_MINIO_REQUESTS_MEMORY:-2Gi}"
 service:
   type: ClusterIP
 DeploymentUpdate:
@@ -111,7 +114,10 @@ networkPolicy:
   allowExternal: true
 podLabels:
   networking/traffic-allowed: "yes"
-
+nodeSelector:
+  cosmotech.com/tier: services
+accessKey: "${ARGO_MINIO_ACCESS_KEY:-}"
+secretKey: "${ARGO_MINIO_SECRET_KEY:-}"
 EOF
 
 helm repo add minio https://helm.min.io/
@@ -126,6 +132,11 @@ auth:
 primary:
   podLabels:
     "networking/traffic-allowed": "yes"
+  nodeSelector:
+    cosmotech.com/tier: db
+readReplicas:
+  nodeSelector:
+    cosmotech.com/tier: db
 
 EOF
 
@@ -185,7 +196,11 @@ server:
   secure: false
   podLabels:
     networking/traffic-allowed: "yes"
+  nodeSelector:
+    cosmotech.com/tier: services
 controller:
+  nodeSelector:
+    cosmotech.com/tier: services
   podLabels:
     networking/traffic-allowed: "yes"
   containerRuntimeExecutor: k8sapi
@@ -250,6 +265,7 @@ helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "${HELM_CHARTS_BASE_PATH}
     --set config.csm.platform.argo.workflows.namespace="${NAMESPACE}" \
     --set config.csm.platform.argo.workflows.service-account-name="${ARGO_SERVICE_ACCOUNT}" \
     --set podAnnotations."com\.cosmotech/deployed-at-timestamp"="\"$(date +%s)\"" \
+    --set nodeSelector."cosmotech\\.com/tier"=services \
     "${@:4}"
 
 # kube-prometheus-stack
