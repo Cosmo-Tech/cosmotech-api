@@ -51,7 +51,39 @@ nodes:
         kind: JoinConfiguration
         nodeRegistration:
           kubeletExtraArgs:
-            node-labels: "kubernetes.io/os=linux,agentpool=basicpool"
+            node-labels: "kubernetes.io/os=linux,agentpool=basicpool,cosmotech.com/tier=compute,cosmotech.com/size=basic"
+    - role: worker
+      image: kindest/node:${kindest_node_image_tag}
+      kubeadmConfigPatches:
+      - |
+        kind: JoinConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "kubernetes.io/os=linux,cosmotech.com/tier=services"
+    - role: worker
+      image: kindest/node:${kindest_node_image_tag}
+      kubeadmConfigPatches:
+      - |
+        kind: JoinConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "kubernetes.io/os=linux,cosmotech.com/tier=services"
+    - role: worker
+      image: kindest/node:${kindest_node_image_tag}
+      kubeadmConfigPatches:
+      - |
+        kind: JoinConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "kubernetes.io/os=linux,cosmotech.com/tier=db"
+    - role: worker
+      image: kindest/node:${kindest_node_image_tag}
+      kubeadmConfigPatches:
+      - |
+        kind: JoinConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "kubernetes.io/os=linux,cosmotech.com/tier=db"
 networking:
   # disable kindnet, which does not support Network Policies
   disableDefaultCNI: true

@@ -49,6 +49,8 @@ helm upgrade --install \
     --namespace ${NAMESPACE} cosmotechredis bitnami/redis \
     --values https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-redis/main/values-cosmotech-cluster.yaml \
     --set replica.replicaCount=2 \
+    --set master.nodeSelector."cosmotech\\.com/tier"=db \
+    --set replica.nodeSelector."cosmotech\\.com/tier"=db \
     --wait \
     --timeout 10m0s
 
@@ -59,6 +61,7 @@ wget https://docs.redis.com/latest/pkgs/redisinsight-chart-0.1.0.tgz  -O ${REDIS
 helm upgrade --install \
    --namespace ${NAMESPACE} redisinsight ${REDIS_INSIGHT_HELM_CHART} \
    --set service.type=NodePort \
+   --set nodeSelector."cosmotech\\.com/tier"=services \
    --wait \
    --timeout 5m0s
 
@@ -74,7 +77,12 @@ envsubst < "${HELM_CHARTS_BASE_PATH}/csm-argo/values.yaml" | \
         --values - \
         --set argo.minio.resources.requests.memory="${ARGO_MINIO_REQUESTS_MEMORY:-512Mi}" \
         --set argo.minio.accessKey="${ARGO_MINIO_ACCESS_KEY:-}" \
-        --set argo.minio.secretKey="${ARGO_MINIO_SECRET_KEY:-}"
+        --set argo.minio.secretKey="${ARGO_MINIO_SECRET_KEY:-}" \
+        --set argo.controller.nodeSelector."cosmotech\\.com/tier"=services \
+        --set argo.server.nodeSelector."cosmotech\\.com/tier"=services \
+        --set argo.minio.nodeSelector."cosmotech\\.com/tier"=services \
+        --set postgresql.primary.nodeSelector."cosmotech\\.com/tier"=db \
+        --set postgresql.readReplicas.nodeSelector."cosmotech\\.com/tier"=db
 
 # cosmotech-api
 export COSMOTECH_API_RELEASE_NAME="cosmotech-api-${API_VERSION}"
@@ -89,4 +97,5 @@ helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "${HELM_CHARTS_BASE_PATH}
     --set config.csm.platform.argo.base-uri="http://${ARGO_RELEASE_NAME}-server.${NAMESPACE}.svc.cluster.local:2746" \
     --set config.csm.platform.argo.workflows.namespace="${NAMESPACE}" \
     --set podAnnotations."com\.cosmotech/deployed-at-timestamp"="\"$(date +%s)\"" \
+    --set nodeSelector."cosmotech\\.com/tier"=services \
     "${@:4}"
