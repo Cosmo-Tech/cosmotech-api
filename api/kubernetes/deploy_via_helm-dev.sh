@@ -65,6 +65,8 @@ pushd "${WORKING_DIR}"
 kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
 
 # Redis Cluster
+helm repo add bitnami https://charts.bitnami.com/bitnami
+
 helm upgrade --install \
     --namespace ${NAMESPACE} cosmotechredis bitnami/redis \
     --values https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-redis/main/values-cosmotech-cluster.yaml \
