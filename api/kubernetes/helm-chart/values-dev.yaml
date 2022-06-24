@@ -31,7 +31,7 @@ resources:
     memory: 1024Mi
   requests:
     cpu: 500m
-    memory: 768Mi
+    memory: 512Mi
 
 argo:
   storage:
