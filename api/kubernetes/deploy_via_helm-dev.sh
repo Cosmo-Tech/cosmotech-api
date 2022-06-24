@@ -50,7 +50,15 @@ helm upgrade --install \
     --values https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-redis/main/values-cosmotech-cluster.yaml \
     --set replica.replicaCount=2 \
     --set master.nodeSelector."cosmotech\\.com/tier"=db \
+    --set master.resources.requests.cpu=500m \
+    --set master.resources.limits.cpu=1 \
+    --set master.resources.requests.memory=512Mi \
+    --set master.resources.limits.memory=1024Mi \
     --set replica.nodeSelector."cosmotech\\.com/tier"=db \
+    --set replica.resources.requests.cpu=500m \
+    --set replica.resources.limits.cpu=1 \
+    --set replica.resources.requests.memory=512Mi \
+    --set replica.resources.limits.memory=1024Mi \
     --wait \
     --timeout 10m0s
 
@@ -62,6 +70,10 @@ helm upgrade --install \
    --namespace ${NAMESPACE} redisinsight ${REDIS_INSIGHT_HELM_CHART} \
    --set service.type=NodePort \
    --set nodeSelector."cosmotech\\.com/tier"=services \
+    --set resources.requests.cpu=100m \
+    --set resources.limits.cpu=1 \
+    --set resources.requests.memory=128Mi \
+    --set resources.limits.memory=128Mi \
    --wait \
    --timeout 5m0s
 
@@ -75,14 +87,29 @@ envsubst < "${HELM_CHARTS_BASE_PATH}/csm-argo/values.yaml" | \
     helm upgrade --install "${ARGO_RELEASE_NAME}" "${HELM_CHARTS_BASE_PATH}/csm-argo" \
         --namespace "${NAMESPACE}" \
         --values - \
-        --set argo.minio.resources.requests.memory="${ARGO_MINIO_REQUESTS_MEMORY:-512Mi}" \
+        --set argo.minio.resources.requests.memory="${ARGO_MINIO_REQUESTS_MEMORY:-128Mi}" \
+        --set argo.minio.resources.limits.memory="${ARGO_MINIO_REQUESTS_MEMORY:-256Mi}" \
+        --set argo.minio.resources.requests.cpu="100m" \
+        --set argo.minio.resources.limits.cpu="1" \
         --set argo.minio.accessKey="${ARGO_MINIO_ACCESS_KEY:-}" \
         --set argo.minio.secretKey="${ARGO_MINIO_SECRET_KEY:-}" \
         --set argo.controller.nodeSelector."cosmotech\\.com/tier"=services \
+        --set argo.controller.resources.requests.memory="64Mi" \
+        --set argo.controller.resources.limits.memory="128Mi" \
+        --set argo.controller.resources.requests.cpu="100m" \
+        --set argo.controller.resources.limits.cpu="1" \
         --set argo.server.nodeSelector."cosmotech\\.com/tier"=services \
+        --set argo.server.resources.requests.memory="64Mi" \
+        --set argo.server.resources.limits.memory="128Mi" \
+        --set argo.server.resources.requests.cpu="100m" \
+        --set argo.server.resources.limits.cpu="1" \
         --set argo.minio.nodeSelector."cosmotech\\.com/tier"=services \
         --set postgresql.primary.nodeSelector."cosmotech\\.com/tier"=db \
-        --set postgresql.readReplicas.nodeSelector."cosmotech\\.com/tier"=db
+        --set postgresql.readReplicas.nodeSelector."cosmotech\\.com/tier"=db \
+        --set postgresql.resources.requests.memory="64Mi" \
+        --set postgresql.resources.limits.memory="256Mi" \
+        --set postgresql.resources.requests.cpu="250m" \
+        --set postgresql.resources.limits.cpu="1" \
 
 # cosmotech-api
 export COSMOTECH_API_RELEASE_NAME="cosmotech-api-${API_VERSION}"

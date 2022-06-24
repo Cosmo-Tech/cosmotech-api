@@ -22,9 +22,16 @@ ingress:
   hosts:
     - host: localhost
 
-# Resource limits are purposely removed to increase chances for charts
+# Resource limits can be purposely removed to increase chances for charts
 # to run on environments with little resources, such as Minikube or Kind.
-resources: null
+# resources: null
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1024Mi
+  requests:
+    cpu: 500m
+    memory: 768Mi
 
 argo:
   storage:
