@@ -72,7 +72,15 @@ helm upgrade --install \
     --values https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-redis/main/values-cosmotech-cluster.yaml \
     --set replica.replicaCount=2 \
     --set master.nodeSelector."cosmotech\\.com/tier"=db \
+    --set master.resources.requests.cpu=500m \
+    --set master.resources.limits.cpu=1 \
+    --set master.resources.requests.memory=512Mi \
+    --set master.resources.limits.memory=1024Mi \
     --set replica.nodeSelector."cosmotech\\.com/tier"=db \
+    --set replica.resources.requests.cpu=500m \
+    --set replica.resources.limits.cpu=1 \
+    --set replica.resources.requests.memory=512Mi \
+    --set replica.resources.limits.memory=1024Mi \
     --wait \
     --timeout 10m0s
 
@@ -84,6 +92,10 @@ helm upgrade --install \
    --namespace ${NAMESPACE} redisinsight ${REDIS_INSIGHT_HELM_CHART} \
    --set service.type=NodePort \
    --set nodeSelector."cosmotech\\.com/tier"=services \
+    --set resources.requests.cpu=100m \
+    --set resources.limits.cpu=1 \
+    --set resources.requests.memory=128Mi \
+    --set resources.limits.memory=128Mi \
    --wait \
    --timeout 5m0s
 
@@ -98,6 +110,10 @@ persistence:
 resources:
   requests:
     memory: "${ARGO_MINIO_REQUESTS_MEMORY:-2Gi}"
+    cpu: "100m"
+  limits:
+    memory: "${ARGO_MINIO_REQUESTS_MEMORY:-2Gi}"
+    cpu: "1"
 service:
   type: ClusterIP
 DeploymentUpdate:
@@ -137,6 +153,13 @@ primary:
 readReplicas:
   nodeSelector:
     cosmotech.com/tier: db
+resources:
+  requests:
+    memory: "64Mi"
+    cpu: "250m"
+  limits:
+    memory: "256Mi"
+    cpu: "1"
 
 EOF
 
@@ -198,11 +221,25 @@ server:
     networking/traffic-allowed: "yes"
   nodeSelector:
     cosmotech.com/tier: services
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "100m"
+    limits:
+      memory: "128Mi"
+      cpu: "1"
 controller:
   nodeSelector:
     cosmotech.com/tier: services
   podLabels:
     networking/traffic-allowed: "yes"
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "100m"
+    limits:
+      memory: "128Mi"
+      cpu: "1"
   containerRuntimeExecutor: k8sapi
   metricsConfig:
     enabled: true
