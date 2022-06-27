@@ -14,8 +14,8 @@ import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.id.CsmIdGenerator
-import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.api.utils.getCurrentAuthentication
+import com.cosmotech.api.auth.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.api.auth.utils.getCurrentAuthentication
 import com.cosmotech.api.utils.objectMapper
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.scenariorun.ContainerFactory

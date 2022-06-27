@@ -40,8 +40,9 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 val kotlinJvmTarget = 17
-val cosmotechApiCommonVersion = "0.1.1-SNAPSHOT"
+val cosmotechApiCommonVersion = "0.1.2-SNAPSHOT"
 val cosmotechApiAzureVersion = "0.1.2-SNAPSHOT"
+val cosmotechApiAuthVersion = "0.1.0-SNAPSHOT"
 
 allprojects {
   apply(plugin = "com.diffplug.spotless")
@@ -49,6 +50,7 @@ allprojects {
   apply(plugin = "io.gitlab.arturbosch.detekt")
 
   repositories {
+    mavenLocal()
     maven {
       name = "Argo Client Java GitHub Packages"
       url = uri("https://maven.pkg.github.com/argoproj-labs/argo-client-java")
@@ -169,6 +171,7 @@ subprojects {
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("com.azure.spring:azure-spring-boot-starter-storage:4.0.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1-native-mt")
 
     implementation(
@@ -214,6 +217,7 @@ subprojects {
 
     api("com.github.Cosmo-Tech:cosmotech-api-common:$cosmotechApiCommonVersion")
     api("com.github.Cosmo-Tech:cosmotech-api-azure:$cosmotechApiAzureVersion")
+    api("com.github.Cosmo-Tech:cosmotech-api-auth:$cosmotechApiAuthVersion")
   }
 
   tasks.withType<KotlinCompile> {

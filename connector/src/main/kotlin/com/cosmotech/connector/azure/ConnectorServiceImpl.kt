@@ -8,7 +8,7 @@ import com.cosmotech.api.azure.findAll
 import com.cosmotech.api.azure.findByIdOrThrow
 import com.cosmotech.api.events.ConnectorRemoved
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
-import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.api.auth.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
 import javax.annotation.PostConstruct

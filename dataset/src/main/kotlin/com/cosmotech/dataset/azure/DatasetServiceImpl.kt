@@ -16,7 +16,7 @@ import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
-import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.api.auth.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.dataset.api.DatasetApiService

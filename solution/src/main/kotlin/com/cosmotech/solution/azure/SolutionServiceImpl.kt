@@ -14,7 +14,7 @@ import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
-import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.api.auth.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateHandlerId

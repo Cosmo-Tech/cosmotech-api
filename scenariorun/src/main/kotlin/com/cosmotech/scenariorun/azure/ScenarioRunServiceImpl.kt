@@ -19,7 +19,7 @@ import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.scenariorun.DataIngestionState
 import com.cosmotech.api.utils.convertToMap
-import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.api.auth.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenariorun.CSM_JOB_ID_LABEL_KEY

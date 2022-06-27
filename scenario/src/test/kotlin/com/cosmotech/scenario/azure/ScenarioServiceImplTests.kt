@@ -15,7 +15,7 @@ import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.WorkflowStatusRequest
 import com.cosmotech.api.id.CsmIdGenerator
-import com.cosmotech.api.utils.getCurrentAuthentication
+import com.cosmotech.api.auth.utils.getCurrentAuthentication
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioJobState
