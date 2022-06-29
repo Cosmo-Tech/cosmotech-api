@@ -455,8 +455,8 @@ argo:
       limits:
         cpu: 1000m
         memory: 256Mi
-    accessKey:"${ARGO_MINIO_ACCESS_KEY:-}"
-    secretKey:"${ARGO_MINIO_SECRET_KEY:-}"
+    accessKey: "${ARGO_MINIO_ACCESS_KEY:-}"
+    secretKey: "${ARGO_MINIO_SECRET_KEY:-}"
 postgresql:
   resources:
     requests:
