@@ -104,25 +104,47 @@ controller:
     networking/traffic-allowed: "yes"
   replicaCount: "${NGINX_INGRESS_CONTROLLER_REPLICA_COUNT}"
   nodeSelector:
-    beta.kubernetes.io/os: "linux"
+    cosmotech.com/tier: "services"
+  tolerations:
+  - key: "vendor"
+    operator: "cosmotech"
+    effect: "NoSchedule"
   service:
     labels:
       networking/traffic-allowed: "yes"
     loadBalancerIP: "${NGINX_INGRESS_CONTROLLER_LOADBALANCER_IP}"
   extraArgs:
     default-ssl-certificate: "${NAMESPACE}/${TLS_SECRET_NAME}"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 1000m
+      memory: 512Mi
 
 defaultBackend:
   podLabels:
     networking/traffic-allowed: "yes"
   nodeSelector:
-    "beta.kubernetes.io/os": "linux"
+    cosmotech.com/tier: "services"
+  tolerations:
+  - key: "vendor"
+    operator: "cosmotech"
+    effect: "NoSchedule"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 1000m
+      memory: 512Mi
 
 EOF
 
   helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
     --namespace "${NAMESPACE}" \
-    --version 4.1.0 \
+   --version 4.1.4 \
     --values values-ingress-nginx.yaml \
     ${NGINX_INGRESS_CONTROLLER_HELM_ADDITIONAL_OPTIONS:-}
 fi
@@ -141,17 +163,82 @@ fi
 if [[ "${CERT_MANAGER_ENABLED:-false}" == "true" ]]; then
   helm repo add jetstack https://charts.jetstack.io
 
+cat <<EOF > values-cert-manager.yaml
+installCRDs: true
+tolerations:
+- key: "vendor"
+  operator: "cosmotech"
+  effect: "NoSchedule"
+nodeSelector:
+  cosmotech.com/tier: "services"
+podLabels:
+  networking/traffic-allowed: yes
+resources:
+  requests:
+    cpu: 10m
+    memory: 16Mi
+  limits:
+    cpu: 1000m
+    memory: 64Mi
+webhook:
+  tolerations:
+  - key: "vendor"
+    operator: "cosmotech"
+    effect: "NoSchedule"
+  nodeSelector:
+    cosmotech.com/tier: "services"
+  podLabels:
+    networking/traffic-allowed: yes
+  resources:
+    requests:
+      cpu: 10m
+      memory: 16Mi
+    limits:
+      cpu: 1000m
+      memory: 64Mi
+cainjector:
+  tolerations:
+  - key: "vendor"
+    operator: "cosmotech"
+    effect: "NoSchedule"
+  nodeSelector:
+    cosmotech.com/tier: "services"
+  podLabels:
+    networking/traffic-allowed: yes
+  resources:
+    requests:
+      cpu: 10m
+      memory: 16Mi
+    limits:
+      cpu: 1000m
+      memory: 64Mi
+startupapicheck:
+  tolerations:
+  - key: "vendor"
+    operator: "cosmotech"
+    effect: "NoSchedule"
+  nodeSelector:
+    cosmotech.com/tier: "services"
+  podLabels:
+    networking/traffic-allowed: yes
+  resources:
+    requests:
+      cpu: 10m
+      memory: 16Mi
+    limits:
+      cpu: 1000m
+      memory: 64Mi
+
+EOF
+
   kubectl label namespace "${NAMESPACE}" cert-manager.io/disable-validation=true --overwrite=true
   helm upgrade --install cert-manager jetstack/cert-manager \
     --namespace "${NAMESPACE}" \
-    --version v1.3.1 \
+    --version v1.8.2 \
     --wait \
     --timeout "${CERT_MANAGER_INSTALL_WAIT_TIMEOUT:-3m}" \
     --set installCRDs=true \
-    --set nodeSelector."beta\.kubernetes\.io/os"=linux \
-    --set podLabels."networking/traffic-allowed"=yes \
-    --set webhook.podLabels."networking/traffic-allowed"=yes \
-    --set cainjector.podLabels."networking/traffic-allowed"=yes
+    --values values-cert-manager.yaml
 
   if [[ "${COSMOTECH_API_DNS_NAME:-}" != "" && "${TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL:-}" != "" ]]; then
     # Wait few seconds until the CertManager WebHook pod is ready.
@@ -179,8 +266,19 @@ spec:
                 labels:
                   networking/traffic-allowed: "yes"
               spec:
+                tolerations:
+                - key: "vendor"
+                  operator: "cosmotech"
+                  effect: "NoSchedule"
                 nodeSelector:
-                  "kubernetes.io/os": linux
+                  cosmotech.com/tier: "services"
+                resources:
+                  requests:
+                    cpu: 10m
+                    memory: 16Mi
+                  limits:
+                    cpu: 1000m
+                    memory: 64Mi
 
 ---
 
@@ -211,13 +309,76 @@ export ARGO_RELEASE_NAMESPACE="${NAMESPACE}"
 export ARGO_POSTGRESQL_PASSWORD="$3"
 helm pull oci://ghcr.io/cosmo-tech/csm-argo-chart --version "${CHART_PACKAGE_VERSION}" --untar
 # Default memory request in MinIO Chart is 4Gi, which may not work in clusters with lower resources
+# memory: "${ARGO_MINIO_REQUESTS_MEMORY:-4Gi}"
+cat <<EOF > values-csm-argo.yaml
+argo:
+  server:
+    tolerations:
+    - key: "vendor"
+      operator: "cosmotech"
+      effect: "NoSchedule"
+    nodeSelector:
+      cosmocontroller.com/tier: "services"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 32Mi
+      limits:
+        cpu: 1000m
+        memory: 64Mi
+  controller:
+    tolerations:
+    - key: "vendor"
+      operator: "cosmotech"
+      effect: "NoSchedule"
+    nodeSelector:
+      cosmotech.com/tier: "services"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 32Mi
+      limits:
+        cpu: 1000m
+        memory: 128Mi
+  minio:
+    tolerations:
+    - key: "vendor"
+      operator: "cosmotech"
+      effect: "NoSchedule"
+    nodeSelector:
+      cosmotech.com/tier: "services"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 1000m
+        memory: 256Mi
+    accessKey:"${ARGO_MINIO_ACCESS_KEY:-}"
+    secretKey:"${ARGO_MINIO_SECRET_KEY:-}"
+postgresql:
+  resources:
+    requests:
+      cpu: 250m
+      memory: 64Mi
+    limits:
+      cpu: 1000m
+      memory: 256Mi
+  primary:
+    tolerations:
+    - key: "vendor"
+      operator: "cosmotech"
+      effect: "NoSchedule"
+    nodeSelector:
+      cosmotech.com/tier: "db"
+
+EOF
+
 envsubst < ./csm-argo/values.yaml | \
     helm upgrade --install "${ARGO_RELEASE_NAME}" ./csm-argo \
         --namespace "${NAMESPACE}" \
         --values - \
-        --set argo.minio.resources.requests.memory="${ARGO_MINIO_REQUESTS_MEMORY:-4Gi}" \
-        --set argo.minio.accessKey="${ARGO_MINIO_ACCESS_KEY:-}" \
-        --set argo.minio.secretKey="${ARGO_MINIO_SECRET_KEY:-}"
+        --values values-csm-argo.yaml
 
 # cosmotech-api
 export COSMOTECH_API_RELEASE_NAME="cosmotech-api-${API_VERSION}"
@@ -230,7 +391,7 @@ else
 fi
 cat <<EOF > values-cosmotech-api-deploy.yaml
 image:
-  tag: "$API_VERSION"
+  tag: "$CHART_PACKAGE_VERSION"
 
 api:
   version: "$API_VERSION"
@@ -258,17 +419,19 @@ ingress:
     - secretName: ${TLS_SECRET_NAME}
       hosts: [${COSMOTECH_API_DNS_NAME}]
 
-resources:
-  # Recommended in production environments
-  limits:
-    #   cpu: 100m
-    memory: 2048Mi
-  requests:
-    #   cpu: 100m
-    memory: 1024Mi
-
+tolerations:
+- key: "vendor"
+  operator: "cosmotech"
+  effect: "NoSchedule"
 nodeSelector:
-  agentpool: basicpool
+  cosmotech.com/tier: "services"
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1024Mi
 
 EOF
 
