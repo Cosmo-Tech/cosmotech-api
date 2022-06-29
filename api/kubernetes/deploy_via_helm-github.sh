@@ -50,6 +50,8 @@ if [[ $# -lt 4 ]]; then
   exit 1
 fi
 
+echo -- Cosmo Tech Platform installation START
+
 export HELM_EXPERIMENTAL_OCI=1
 
 CHART_PACKAGE_VERSION="$1"
@@ -63,7 +65,7 @@ export VERSION_REDIS_COSMOTECH="1.0.0"
 export VERSION_REDIS_INSIGHT="0.1.0"
 
 WORKING_DIR=$(mktemp -d -t cosmotech-api-helm-XXXXXXXXXX)
-echo "[info] Working directory: ${WORKING_DIR}"
+echo -- "[info] Working directory: ${WORKING_DIR}"
 cd "${WORKING_DIR}"
 
 # Create namespace if it does not exist
@@ -74,6 +76,7 @@ if [[ "${COSMOTECH_API_DNS_NAME:-}" == "" ]]; then
 fi
 
 # NGINX Ingress Controller & Certificate
+echo -- Certificate config
 if [[ "${CERT_MANAGER_USE_ACME_PROD:-false}" == "true" ]]; then
   export CERT_MANAGER_ACME="prod"
   export CERT_MANAGER_ACME_SERVER="https://acme-v02.api.letsencrypt.org/directory"
@@ -96,6 +99,7 @@ else
   export TLS_SECRET_NAME="letsencrypt-${CERT_MANAGER_ACME}"
 fi
 
+echo -- NGINX Ingress Controller
 if [[ "${NGINX_INGRESS_CONTROLLER_ENABLED:-false}" == "true" ]]; then
   helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 
@@ -158,6 +162,7 @@ EOF
 fi
 
 # cert-manager
+echo -- Cert Manager
 if [[ "${TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL:-}" == "" ]]; then
   export TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL="${CERT_MANAGER_ACME_CONTACT_EMAIL:-}"
 fi
@@ -257,9 +262,10 @@ EOF
     # Otherwise, we might run into the following issue :
     # Error from server: error when creating "STDIN": conversion webhook for cert-manager.io/v1alpha2,
     # Kind=Certificate failed: Post "https://cert-manager-webhook.${NAMESPACE}.svc:443/convert?timeout=30s"
+echo -- Cluster Issuer and Certificate
     sleep 25
 cat <<EOF | kubectl --namespace "${NAMESPACE}" apply --validate=false -f -
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
   name: letsencrypt-${CERT_MANAGER_ACME}
@@ -295,7 +301,7 @@ spec:
 
 ---
 
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: ${TLS_SECRET_NAME}
@@ -317,6 +323,7 @@ EOF
 fi
 
 # Redis Cluster
+echo -- Redis
 helm repo add bitnami https://charts.bitnami.com/bitnami
 cat <<EOF > values-redis.yaml
 image:
@@ -371,6 +378,7 @@ helm upgrade --install \
     --timeout 10m0s
 
 # Redis Insight
+echo -- Redis Insight
 REDIS_INSIGHT_HELM_CHART="redisinsight-chart.tgz"
 wget https://docs.redis.com/latest/pkgs/redisinsight-chart-${VERSION_REDIS_INSIGHT}.tgz  -O ${REDIS_INSIGHT_HELM_CHART}
 
@@ -402,6 +410,7 @@ helm upgrade --install \
    --timeout 5m0s
 
 # Argo
+echo -- Cosmo Tech Argo
 export ARGO_RELEASE_NAME=argo
 export ARGO_RELEASE_NAMESPACE="${NAMESPACE}"
 export ARGO_POSTGRESQL_PASSWORD="$3"
@@ -483,6 +492,7 @@ envsubst < ./csm-argo/values.yaml | \
         --values values-csm-argo.yaml
 
 # cosmotech-api
+echo -- Cosmo Tech API
 export COSMOTECH_API_RELEASE_NAME="cosmotech-api-${API_VERSION}"
 helm pull oci://ghcr.io/cosmo-tech/cosmotech-api-chart --version "${CHART_PACKAGE_VERSION}"
 
@@ -549,3 +559,4 @@ helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "cosmotech-api-chart-${CH
     --values values-cosmotech-api-deploy.yaml \
     ${CERT_MANAGER_INGRESS_ANNOTATION_SET} \
     "${@:5}"
+echo -- Cosmo Tech Platform installation DONE
