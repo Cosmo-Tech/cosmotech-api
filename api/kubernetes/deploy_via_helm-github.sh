@@ -99,19 +99,20 @@ if [[ "${NGINX_INGRESS_CONTROLLER_ENABLED:-false}" == "true" ]]; then
 cat <<EOF > values-ingress-nginx.yaml
 controller:
   labels:
-    networking/traffic-allowed: "yes"
+    "networking/traffic-allowed": "yes"
   podLabels:
-    networking/traffic-allowed: "yes"
+    "networking/traffic-allowed": "yes"
   replicaCount: "${NGINX_INGRESS_CONTROLLER_REPLICA_COUNT}"
   nodeSelector:
-    cosmotech.com/tier: "services"
+    "cosmotech.com/tier": "services"
   tolerations:
   - key: "vendor"
-    operator: "cosmotech"
+    operator: "Equal"
+    value: "cosmotech"
     effect: "NoSchedule"
   service:
     labels:
-      networking/traffic-allowed: "yes"
+      "networking/traffic-allowed": "yes"
     loadBalancerIP: "${NGINX_INGRESS_CONTROLLER_LOADBALANCER_IP}"
   extraArgs:
     default-ssl-certificate: "${NAMESPACE}/${TLS_SECRET_NAME}"
@@ -125,12 +126,13 @@ controller:
 
 defaultBackend:
   podLabels:
-    networking/traffic-allowed: "yes"
+    "networking/traffic-allowed": "yes"
   nodeSelector:
-    cosmotech.com/tier: "services"
+    "cosmotech.com/tier": "services"
   tolerations:
   - key: "vendor"
-    operator: "cosmotech"
+    operator: "Equal"
+    value: "cosmotech"
     effect: "NoSchedule"
   resources:
     requests:
@@ -167,12 +169,13 @@ cat <<EOF > values-cert-manager.yaml
 installCRDs: true
 tolerations:
 - key: "vendor"
-  operator: "cosmotech"
+  operator: "Equal"
+  value: "cosmotech"
   effect: "NoSchedule"
 nodeSelector:
-  cosmotech.com/tier: "services"
+  "cosmotech.com/tier": "services"
 podLabels:
-  networking/traffic-allowed: yes
+  "networking/traffic-allowed": "yes"
 resources:
   requests:
     cpu: 10m
@@ -183,12 +186,13 @@ resources:
 webhook:
   tolerations:
   - key: "vendor"
-    operator: "cosmotech"
+    operator: "Equal"
+    value: "cosmotech"
     effect: "NoSchedule"
   nodeSelector:
-    cosmotech.com/tier: "services"
+    "cosmotech.com/tier": "services"
   podLabels:
-    networking/traffic-allowed: yes
+    "networking/traffic-allowed": "yes"
   resources:
     requests:
       cpu: 10m
@@ -199,12 +203,13 @@ webhook:
 cainjector:
   tolerations:
   - key: "vendor"
-    operator: "cosmotech"
+    operator: "Equal"
+    value: "cosmotech"
     effect: "NoSchedule"
   nodeSelector:
-    cosmotech.com/tier: "services"
+    "cosmotech.com/tier": "services"
   podLabels:
-    networking/traffic-allowed: yes
+    "networking/traffic-allowed": "yes"
   resources:
     requests:
       cpu: 10m
@@ -215,12 +220,13 @@ cainjector:
 startupapicheck:
   tolerations:
   - key: "vendor"
-    operator: "cosmotech"
+    operator: "Equal"
+    value: "cosmotech"
     effect: "NoSchedule"
   nodeSelector:
-    cosmotech.com/tier: "services"
+    "cosmotech.com/tier": "services"
   podLabels:
-    networking/traffic-allowed: yes
+    "networking/traffic-allowed": "yes"
   resources:
     requests:
       cpu: 10m
@@ -264,14 +270,15 @@ spec:
             podTemplate:
               metadata:
                 labels:
-                  networking/traffic-allowed: "yes"
+                  "networking/traffic-allowed": "yes"
               spec:
                 tolerations:
                 - key: "vendor"
-                  operator: "cosmotech"
+                  operator: "Equal"
+                  value: "cosmotech"
                   effect: "NoSchedule"
                 nodeSelector:
-                  cosmotech.com/tier: "services"
+                  "cosmotech.com/tier": "services"
                 resources:
                   requests:
                     cpu: 10m
@@ -307,49 +314,51 @@ fi
 helm repo add bitnami https://charts.bitnami.com/bitnami
 cat <<EOF > values-redis.yaml
 replica:
-  replicaCount: 3
-argo:
-  server:
-    tolerations:
-    - key: "vendor"
-      operator: "cosmotech"
-      effect: "NoSchedule"
-    nodeSelector:
-      cosmocontroller.com/tier: "db"
-    resources:
-      requests:
-        cpu: 500m
-        memory: 2Gi
-      limits:
-        cpu: 1000m
-        memory: 4Gi
-  replica:
-    tolerations:
-    - key: "vendor"
-      operator: "cosmotech"
-      effect: "NoSchedule"
-    nodeSelector:
-      cosmotech.com/tier: "db"
-    resources:
-      requests:
-        cpu: 500m
-        memory: 2Gi
-      limits:
-        cpu: 1000m
-        memory: 4Gi
+  replicaCount: 1
+master:
+  tolerations:
+  - key: "vendor"
+    operator: "Equal"
+    value: "cosmotech"
+    effect: "NoSchedule"
+  nodeSelector:
+    cosmotech.com/tier: "db"
+  resources:
+    requests:
+      cpu: 500m
+      memory: 2Gi
+    limits:
+      cpu: 1000m
+      memory: 3Gi
+replica:
+  tolerations:
+  - key: "vendor"
+    operator: "Equal"
+    value: "cosmotech"
+    effect: "NoSchedule"
+  nodeSelector:
+    "cosmotech.com/tier": "db"
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 1000m
+      memory: 4Gi
 
 EOF
 
 
 helm upgrade --install \
     --namespace ${NAMESPACE} cosmotechredis bitnami/redis \
+    --version 16.13.0 \
     --values https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-redis/main/values-cosmotech-cluster.yaml \
     --values values-redis.yaml \
     --wait \
     --timeout 10m0s
 
 # Redis Insight
-REDIS_INSIGHT_HELM_CHART="redisinsight-chart.tgz"
+REDIS_INSIGHT_HELM_CHART="charts/redisinsight-chart.tgz"
 wget https://docs.redis.com/latest/pkgs/redisinsight-chart-0.1.0.tgz  -O ${REDIS_INSIGHT_HELM_CHART}
 
 cat <<EOF > values-redis-insight.yaml
@@ -357,10 +366,11 @@ service:
   type:NodePort
 tolerations:
 - key: "vendor"
-  operator: "cosmotech"
+  operator: "Equal"
+  value: "cosmotech"
   effect: "NoSchedule"
 nodeSelector:
-  cosmocontroller.com/tier: "services"
+  cosmotech.com/tier: "services"
 resources:
   requests:
     cpu: 100m
@@ -389,10 +399,11 @@ argo:
   server:
     tolerations:
     - key: "vendor"
-      operator: "cosmotech"
+      operator: "Equal"
+      value: "cosmotech"
       effect: "NoSchedule"
     nodeSelector:
-      cosmocontroller.com/tier: "services"
+      cosmotech.com/tier: "services"
     resources:
       requests:
         cpu: 100m
@@ -403,10 +414,11 @@ argo:
   controller:
     tolerations:
     - key: "vendor"
-      operator: "cosmotech"
+      operator: "Equal"
+      value: "cosmotech"
       effect: "NoSchedule"
     nodeSelector:
-      cosmotech.com/tier: "services"
+      "cosmotech.com/tier": "services"
     resources:
       requests:
         cpu: 100m
@@ -417,10 +429,11 @@ argo:
   minio:
     tolerations:
     - key: "vendor"
-      operator: "cosmotech"
+      operator: "Equal"
+      value: "cosmotech"
       effect: "NoSchedule"
     nodeSelector:
-      cosmotech.com/tier: "services"
+      "cosmotech.com/tier": "services"
     resources:
       requests:
         cpu: 100m
@@ -441,10 +454,11 @@ postgresql:
   primary:
     tolerations:
     - key: "vendor"
-      operator: "cosmotech"
+      operator: "Equal"
+      value: "cosmotech"
       effect: "NoSchedule"
     nodeSelector:
-      cosmotech.com/tier: "db"
+      "cosmotech.com/tier": "db"
 
 EOF
 
@@ -495,10 +509,11 @@ ingress:
 
 tolerations:
 - key: "vendor"
-  operator: "cosmotech"
+  operator: "Equal"
+  value: "cosmotech"
   effect: "NoSchedule"
 nodeSelector:
-  cosmotech.com/tier: "services"
+  "cosmotech.com/tier": "services"
 resources:
   requests:
     cpu: 500m
