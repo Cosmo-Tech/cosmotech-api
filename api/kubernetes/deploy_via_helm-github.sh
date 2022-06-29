@@ -303,6 +303,80 @@ EOF
   fi
 fi
 
+# Redis Cluster
+helm repo add bitnami https://charts.bitnami.com/bitnami
+cat <<EOF > values-redis.yaml
+replica:
+  replicaCount: 3
+argo:
+  server:
+    tolerations:
+    - key: "vendor"
+      operator: "cosmotech"
+      effect: "NoSchedule"
+    nodeSelector:
+      cosmocontroller.com/tier: "db"
+    resources:
+      requests:
+        cpu: 500m
+        memory: 2Gi
+      limits:
+        cpu: 1000m
+        memory: 4Gi
+  replica:
+    tolerations:
+    - key: "vendor"
+      operator: "cosmotech"
+      effect: "NoSchedule"
+    nodeSelector:
+      cosmotech.com/tier: "db"
+    resources:
+      requests:
+        cpu: 500m
+        memory: 2Gi
+      limits:
+        cpu: 1000m
+        memory: 4Gi
+
+EOF
+
+
+helm upgrade --install \
+    --namespace ${NAMESPACE} cosmotechredis bitnami/redis \
+    --values https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-redis/main/values-cosmotech-cluster.yaml \
+    --values values-redis.yaml \
+    --wait \
+    --timeout 10m0s
+
+# Redis Insight
+REDIS_INSIGHT_HELM_CHART="redisinsight-chart.tgz"
+wget https://docs.redis.com/latest/pkgs/redisinsight-chart-0.1.0.tgz  -O ${REDIS_INSIGHT_HELM_CHART}
+
+cat <<EOF > values-redis-insight.yaml
+service:
+  type:NodePort
+tolerations:
+- key: "vendor"
+  operator: "cosmotech"
+  effect: "NoSchedule"
+nodeSelector:
+  cosmocontroller.com/tier: "services"
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 1000m
+    memory: 128Mi
+
+EOF
+
+helm upgrade --install \
+   --namespace ${NAMESPACE} redisinsight ${REDIS_INSIGHT_HELM_CHART} \
+   --values values-redis-insight.yaml \
+   --wait \
+   --timeout 5m0s
+
 # Argo
 export ARGO_RELEASE_NAME=argo
 export ARGO_RELEASE_NAMESPACE="${NAMESPACE}"
