@@ -56,6 +56,12 @@ CHART_PACKAGE_VERSION="$1"
 export NAMESPACE="$2"
 export API_VERSION="$4"
 
+export VERSION_INGRESS_NGINX="4.1.4"
+export VERSION_CERT_MANAGER="1.8.2"
+export VERSION_REDIS="16.13.0"
+export VERSION_REDIS_COSMOTECH="1.0.0"
+export VERSION_REDIS_INSIGHT="0.1.0"
+
 WORKING_DIR=$(mktemp -d -t cosmotech-api-helm-XXXXXXXXXX)
 echo "[info] Working directory: ${WORKING_DIR}"
 cd "${WORKING_DIR}"
@@ -146,7 +152,7 @@ EOF
 
   helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
     --namespace "${NAMESPACE}" \
-   --version 4.1.4 \
+   --version "${VERSION_INGRESS_NGINX}" \
     --values values-ingress-nginx.yaml \
     ${NGINX_INGRESS_CONTROLLER_HELM_ADDITIONAL_OPTIONS:-}
 fi
@@ -240,7 +246,7 @@ EOF
   kubectl label namespace "${NAMESPACE}" cert-manager.io/disable-validation=true --overwrite=true
   helm upgrade --install cert-manager jetstack/cert-manager \
     --namespace "${NAMESPACE}" \
-    --version v1.8.2 \
+    --version "${VERSION_CERT_MANAGER}" \
     --wait \
     --timeout "${CERT_MANAGER_INSTALL_WAIT_TIMEOUT:-3m}" \
     --set installCRDs=true \
@@ -313,9 +319,13 @@ fi
 # Redis Cluster
 helm repo add bitnami https://charts.bitnami.com/bitnami
 cat <<EOF > values-redis.yaml
-replica:
-  replicaCount: 1
+image:
+  registry: ghcr.io
+  repository: cosmo-tech/cosmotech-redis
+  tag: ${VERSION_REDIS_COSMOTECH}
 master:
+  podLabels:
+    "networking/traffic-allowed": "yes"
   tolerations:
   - key: "vendor"
     operator: "Equal"
@@ -329,8 +339,11 @@ master:
       memory: 2Gi
     limits:
       cpu: 1000m
-      memory: 3Gi
+      memory: 4Gi
 replica:
+  replicaCount: 1
+  podLabels:
+    "networking/traffic-allowed": "yes"
   tolerations:
   - key: "vendor"
     operator: "Equal"
@@ -341,7 +354,7 @@ replica:
   resources:
     requests:
       cpu: 500m
-      memory: 1Gi
+      memory: 2Gi
     limits:
       cpu: 1000m
       memory: 4Gi
@@ -351,19 +364,20 @@ EOF
 
 helm upgrade --install \
     --namespace ${NAMESPACE} cosmotechredis bitnami/redis \
-    --version 16.13.0 \
+    --version "${VERSION_REDIS}" \
     --values https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-redis/main/values-cosmotech-cluster.yaml \
     --values values-redis.yaml \
     --wait \
     --timeout 10m0s
 
 # Redis Insight
-REDIS_INSIGHT_HELM_CHART="charts/redisinsight-chart.tgz"
-wget https://docs.redis.com/latest/pkgs/redisinsight-chart-0.1.0.tgz  -O ${REDIS_INSIGHT_HELM_CHART}
+REDIS_INSIGHT_HELM_CHART="redisinsight-chart.tgz"
+wget https://docs.redis.com/latest/pkgs/redisinsight-chart-${VERSION_REDIS_INSIGHT}.tgz  -O ${REDIS_INSIGHT_HELM_CHART}
 
 cat <<EOF > values-redis-insight.yaml
 service:
-  type:NodePort
+  type: NodePort
+  port: 80
 tolerations:
 - key: "vendor"
   operator: "Equal"
