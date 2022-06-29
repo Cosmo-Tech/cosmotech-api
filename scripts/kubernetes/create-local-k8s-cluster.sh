@@ -50,6 +50,10 @@ nodes:
       - |
         kind: JoinConfiguration
         nodeRegistration:
+          taints:
+          - key: "vendor"
+            value: "cosmotech"
+            effect: "NoSchedule"
           kubeletExtraArgs:
             node-labels: "kubernetes.io/os=linux,agentpool=basicpool,cosmotech.com/tier=compute,cosmotech.com/size=basic"
     - role: worker
@@ -58,6 +62,34 @@ nodes:
       - |
         kind: JoinConfiguration
         nodeRegistration:
+          taints:
+          - key: "vendor"
+            value: "cosmotech"
+            effect: "NoSchedule"
+          kubeletExtraArgs:
+            node-labels: "kubernetes.io/os=linux,agentpool=highcpupool,cosmotech.com/tier=compute,cosmotech.com/size=highcpu"
+    - role: worker
+      image: kindest/node:${kindest_node_image_tag}
+      kubeadmConfigPatches:
+      - |
+        kind: JoinConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+          taints:
+          - key: "vendor"
+            value: "cosmotech"
+            effect: "NoSchedule"
+            node-labels: "kubernetes.io/os=linux,agentpool=memorypool,cosmotech.com/tier=compute,cosmotech.com/size=highmemory"
+    - role: worker
+      image: kindest/node:${kindest_node_image_tag}
+      kubeadmConfigPatches:
+      - |
+        kind: JoinConfiguration
+        nodeRegistration:
+          taints:
+          - key: "vendor"
+            value: "cosmotech"
+            effect: "NoSchedule"
           kubeletExtraArgs:
             node-labels: "kubernetes.io/os=linux,cosmotech.com/tier=services"
     - role: worker
@@ -66,6 +98,10 @@ nodes:
       - |
         kind: JoinConfiguration
         nodeRegistration:
+          taints:
+          - key: "vendor"
+            value: "cosmotech"
+            effect: "NoSchedule"
           kubeletExtraArgs:
             node-labels: "kubernetes.io/os=linux,cosmotech.com/tier=services"
     - role: worker
@@ -74,6 +110,10 @@ nodes:
       - |
         kind: JoinConfiguration
         nodeRegistration:
+          taints:
+          - key: "vendor"
+            value: "cosmotech"
+            effect: "NoSchedule"
           kubeletExtraArgs:
             node-labels: "kubernetes.io/os=linux,cosmotech.com/tier=db"
     - role: worker
@@ -82,6 +122,10 @@ nodes:
       - |
         kind: JoinConfiguration
         nodeRegistration:
+          taints:
+          - key: "vendor"
+            value: "cosmotech"
+            effect: "NoSchedule"
           kubeletExtraArgs:
             node-labels: "kubernetes.io/os=linux,cosmotech.com/tier=db"
 networking:
