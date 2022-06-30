@@ -119,6 +119,22 @@ resources:
   limits:
     cpu: 2
     memory: 200Mi
+metricsScraper:
+  enabled: true
+  nodeSelector:
+    "cosmotech.com/tier": "services"
+  tolerations:
+  - key: "vendor"
+    operator: "Equal"
+    value: "cosmotech"
+    effect: "NoSchedule"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 32Mi
+    limits:
+      cpu: 1
+      memory: 64Mi
 
 EOF
 helm upgrade --install -n ${NAMESPACE} kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --values values-kubernetes-dashboard.yaml
