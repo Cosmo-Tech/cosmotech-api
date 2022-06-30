@@ -75,6 +75,65 @@ if [[ "${COSMOTECH_API_DNS_NAME:-}" == "" ]]; then
   export COSMOTECH_API_DNS_NAME="${CERT_MANAGER_COSMOTECH_API_DNS_NAME:-}"
 fi
 
+# Kubernetes Dashboard
+echo -- Kubernetes Dashboard
+cat <<EOF > values-kubernetes-dashboard-rbac.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-user
+  namespace: phoenix
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-user
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: admin-user
+  namespace: phoenix
+
+EOF
+kubectl --namespace "${NAMESPACE}" apply --validate=false -f values-kubernetes-dashboard-rbac.yaml
+
+echo Dashboard token:
+kubectl -n ${NAMESPACE} get secret $(kubectl -n ${NAMESPACE} get sa/admin-user -o jsonpath="{.secrets[0].name}") -o go-template="{{.data.token | base64decode}}"
+echo
+
+helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
+cat <<EOF > values-kubernetes-dashboard.yaml
+ingress:
+  enabled: false
+service:
+  externalPort: 80
+serviceAccount:
+  create: false
+  name: admin-user
+protocolHttp: true
+podLabels:
+  "networking/traffic-allowed": "yes"
+nodeSelector:
+  "cosmotech.com/tier": "services"
+tolerations:
+- key: "vendor"
+  operator: "Equal"
+  value: "cosmotech"
+  effect: "NoSchedule"
+resources:
+  requests:
+    cpu: 100m
+    memory: 200Mi
+  limits:
+    cpu: 2
+    memory: 200Mi
+
+EOF
+helm upgrade --install -n ${NAMESPACE} kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --values values-kubernetes-dashboard.yaml
+
 # NGINX Ingress Controller & Certificate
 echo -- Certificate config
 if [[ "${CERT_MANAGER_USE_ACME_PROD:-false}" == "true" ]]; then
@@ -244,7 +303,7 @@ startupapicheck:
       memory: 16Mi
     limits:
       cpu: 1000m
-      memory: 64Mi
+      memory: 63Mi
 
 EOF
 
