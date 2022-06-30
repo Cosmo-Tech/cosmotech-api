@@ -64,13 +64,72 @@ pushd "${WORKING_DIR}"
 # Create namespace if it does not exist
 kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
 
+# Kubernetes Dashboard
+echo -- Kubernetes Dashboard
+cat <<EOF > values-kubernetes-dashboard-rbac.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-user
+  namespace: phoenix
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-user
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: admin-user
+  namespace: phoenix
+
+EOF
+kubectl --namespace "${NAMESPACE}" apply --validate=false -f values-kubernetes-dashboard-rbac.yaml
+
+echo Dashboard token:
+kubectl -n ${NAMESPACE} get secret $(kubectl -n ${NAMESPACE} get sa/admin-user -o jsonpath="{.secrets[0].name}") -o go-template="{{.data.token | base64decode}}"
+echo
+
+helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
+cat <<EOF > values-kubernetes-dashboard.yaml
+ingress:
+  enabled: false
+service:
+  externalPort: 80
+serviceAccount:
+  create: false
+  name: admin-user
+protocolHttp: true
+podLabels:
+  "networking/traffic-allowed": "yes"
+nodeSelector:
+  "cosmotech.com/tier": "services"
+tolerations:
+- key: "vendor"
+  operator: "Equal"
+  value: "cosmotech"
+  effect: "NoSchedule"
+resources:
+  requests:
+    cpu: 100m
+    memory: 200Mi
+  limits:
+    cpu: 2
+    memory: 200Mi
+
+EOF
+helm upgrade --install -n ${NAMESPACE} kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --values values-kubernetes-dashboard.yaml
+
 # Redis Cluster
 helm repo add bitnami https://charts.bitnami.com/bitnami
 
 helm upgrade --install \
     --namespace ${NAMESPACE} cosmotechredis bitnami/redis \
     --values https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-redis/main/values-cosmotech-cluster.yaml \
-    --set replica.replicaCount=2 \
+    --set replica.replicaCount=1 \
     --set master.nodeSelector."cosmotech\\.com/tier"=db \
     --set master.resources.requests.cpu=500m \
     --set master.resources.limits.cpu=1 \
