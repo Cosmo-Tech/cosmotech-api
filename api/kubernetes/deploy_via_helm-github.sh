@@ -63,6 +63,7 @@ export VERSION_CERT_MANAGER="1.8.2"
 export VERSION_REDIS="16.13.0"
 export VERSION_REDIS_COSMOTECH="1.0.0"
 export VERSION_REDIS_INSIGHT="0.1.0"
+export VERSION_KUBERNETES_DASHBOARD="5.7.0"
 
 WORKING_DIR=$(mktemp -d -t cosmotech-api-helm-XXXXXXXXXX)
 echo -- "[info] Working directory: ${WORKING_DIR}"
@@ -130,9 +131,26 @@ resources:
   limits:
     cpu: 2
     memory: 200Mi
+metricsScraper:
+  enabled: true
+  nodeSelector:
+    "cosmotech.com/tier": "services"
+  tolerations:
+  - key: "vendor"
+    operator: "Equal"
+    value: "cosmotech"
+    effect: "NoSchedule"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 32Mi
+    limits:
+      cpu: 1
+      memory: 64Mi
+
 
 EOF
-helm upgrade --install -n ${NAMESPACE} kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --values values-kubernetes-dashboard.yaml
+helm upgrade --install -n ${NAMESPACE} kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --version ${VERSION_KUBERNETES_DASHBOARD} --values values-kubernetes-dashboard.yaml
 
 # NGINX Ingress Controller & Certificate
 echo -- Certificate config
