@@ -109,6 +109,7 @@ kubectl -n ${NAMESPACE} get secret $(kubectl -n ${NAMESPACE} get sa/admin-user -
 echo
 
 helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
+helm repo update
 cat <<EOF > values-kubernetes-dashboard.yaml
 ingress:
   enabled: false
@@ -158,6 +159,7 @@ helm upgrade --install -n ${NAMESPACE} kubernetes-dashboard kubernetes-dashboard
 # Grafana
 echo -- Grafana
 helm repo add grafana https://grafana.github.io/helm-charts
+helm repo update
 
 cat <<EOF > values-grafana.yaml
 loki:
@@ -262,6 +264,8 @@ prometheus:
         memory: 64Mi
 promtail:
   enabled: true
+  config:
+    lokiAddress: "http://grafana-loki:3100/loki/api/v1/push"
   podLabels:
     "networking/traffic-allowed": "yes"
   nodeSelector:
@@ -331,6 +335,7 @@ fi
 echo -- NGINX Ingress Controller
 if [[ "${NGINX_INGRESS_CONTROLLER_ENABLED:-false}" == "true" ]]; then
   helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+  helm repo update
 
   export NGINX_INGRESS_CONTROLLER_REPLICA_COUNT="${NGINX_INGRESS_CONTROLLER_REPLICA_COUNT:-1}"
   export NGINX_INGRESS_CONTROLLER_LOADBALANCER_IP="${NGINX_INGRESS_CONTROLLER_LOADBALANCER_IP:-}"
@@ -404,6 +409,7 @@ if [[ "${TLS_CERTIFICATE_TYPE:-}" == "" ]]; then
 fi
 if [[ "${CERT_MANAGER_ENABLED:-false}" == "true" ]]; then
   helm repo add jetstack https://charts.jetstack.io
+  helm repo update
 
 cat <<EOF > values-cert-manager.yaml
 installCRDs: true
@@ -592,6 +598,7 @@ kubectl --namespace "${NAMESPACE}" apply -f redis-pvc.yaml --dry-run=client -o y
 fi
 
 helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
 cat <<EOF > values-redis.yaml
 image:
   registry: ghcr.io
@@ -777,6 +784,8 @@ else
   export COSMOTECH_API_INGRESS_ENABLED=false
 fi
 cat <<EOF > values-cosmotech-api-deploy.yaml
+replicaCount: 2
+
 image:
   tag: "$CHART_PACKAGE_VERSION"
 
