@@ -47,7 +47,7 @@ HELM_CHARTS_BASE_PATH=$(realpath "$(dirname "$0")")
 
 WORKING_DIR=$(mktemp -d -t cosmotech-api-helm-XXXXXXXXXX)
 echo "[info] Working directory: ${WORKING_DIR}"
-cd "${WORKING_DIR}"
+pushd "${WORKING_DIR}"
 
 # Create namespace if it does not exist
 kubectl create namespace "${NAMESPACE:-phoenix}" --dry-run=client -o yaml | kubectl apply -f -
@@ -59,7 +59,7 @@ defaultBucket:
   enabled: true
   name: ${ARGO_BUCKET_NAME}
 persistence:
-  enabled:true
+  enabled: true
 resources:
   requests:
     memory: "2Gi"
@@ -183,13 +183,15 @@ controller:
         name: "${ARGO_POSTGRESQL_SECRET}"
         key: username
       passwordSecret:
-        name: "${POSTGRES_RELEASE_NAME}-postgresql-secret"
+        name: "${ARGO_POSTGRESQL_SECRET}"
         key: password
 
 EOF
 
 helm repo add argo https://argoproj.github.io/argo-helm
 helm upgrade --install -n ${NAMESPACE} ${ARGO_RELEASE_NAME} argo/argo-workflows --version ${ARGO_VERSION} --values values-argo.yaml
+
+popd
 
 # cosmotech-api
 export COSMOTECH_API_RELEASE_NAME="cosmotech-api-${API_VERSION}"
