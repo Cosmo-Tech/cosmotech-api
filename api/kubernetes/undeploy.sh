@@ -45,6 +45,8 @@ COSMOTECH_API_RELEASE_NAME="cosmotech-api-${API_VERSION}"
 ARGO_RELEASE_NAME=argo
 REDIS_RELEASE_NAME=cosmotechredis
 REDISINSIGHT_RELEASE_NAME=redisinsight
+GRAFANA_RELEASE_NAME=grafana
+KUBERNETES_DASHBOARD_RELEASE_NAME=kubernetes-dashboard
 
 
 echo "-> Uninstalling Helm release: '${ARGO_RELEASE_NAME}'..."
@@ -61,6 +63,14 @@ cosmotechApiUninstallReturnValue=$?
 
 echo "-> Uninstalling Helm release: '${REDISINSIGHT_RELEASE_NAME}'..."
 helm -n "${NAMESPACE}" uninstall "${REDISINSIGHT_RELEASE_NAME}" "${@:3}"
+cosmotechApiUninstallReturnValue=$?
+
+echo "-> Uninstalling Helm release: '${GRAFANA_RELEASE_NAME}'..."
+helm -n "${NAMESPACE}" uninstall "${GRAFANA_RELEASE_NAME}" "${@:3}"
+cosmotechApiUninstallReturnValue=$?
+
+echo "-> Uninstalling Helm release: '${KUBERNETES_DASHBOARD_RELEASE_NAME}'..."
+helm -n "${NAMESPACE}" uninstall "${KUBERNETES_DASHBOARD_RELEASE_NAME}" "${@:3}"
 cosmotechApiUninstallReturnValue=$?
 
 kubectl -n "${NAMESPACE}" delete secrets \
