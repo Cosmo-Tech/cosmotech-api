@@ -236,10 +236,10 @@ prometheus:
     resources:
       requests:
         cpu: 100m
-        memory: 15Mi
+        memory: 128Mi
       limits:
         cpu: 1
-        memory: 64Mi
+        memory: 256Mi
   pushgateway:
     persistentVolume:
       enabled: true
@@ -555,12 +555,12 @@ fi
 echo -- Redis
 # Create Persistent Volume manually to retain data in a disk outside the cluster
 # Creating of Persistent Volume claims
-if [[ "${REDIS_MASTER_PV:-}" != "" && "${REDIS_REPLICA1_PV:-}" != "" && "${REDIS_PVC_STORAGE_CLASS_NAME:-}" != "" ]]; then
+if [[ "${REDIS_MASTER_PV:-}" != "" && "${REDIS_REPLICA1_PV:-}" != "" ]]; then
 echo Creating Persistent Volume Claim for defined Persistent Volumes for Redis
 export REDIS_MASTER_PVC=pvc-redis-master
 export REDIS_REPLICA1_PVC=pvc-redis-replica1
 
-cat <<EOF | kubectl --namespace "${NAMESPACE}" apply -f -
+cat <<EOF > redis-pvc.yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -572,7 +572,7 @@ spec:
     requests:
       storage: "64Gi"
   volumeName: "${REDIS_MASTER_PV}"
-  storageClassName: "${REDIS_PVC_STORAGE_CLASS_NAME}"
+  storageClassName: "${REDIS_PVC_STORAGE_CLASS_NAME:-default}"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -585,9 +585,10 @@ spec:
     requests:
       storage: "64Gi"
   volumeName: "${REDIS_REPLICA1_PV}"
-  storageClassName: "${REDIS_PVC_STORAGE_CLASS_NAME}"
+  storageClassName: "${REDIS_PVC_STORAGE_CLASS_NAME:-default}"
 
 EOF
+kubectl --namespace "${NAMESPACE}" apply -f redis-pvc.yaml --dry-run=client -o yaml | kubectl apply -f -
 fi
 
 helm repo add bitnami https://charts.bitnami.com/bitnami
@@ -817,7 +818,7 @@ resources:
     cpu: 500m
     memory: 512Mi
   limits:
-    cpu: 1000m
+    cpu: 2
     memory: 1024Mi
 
 EOF

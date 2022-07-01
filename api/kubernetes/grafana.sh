@@ -41,6 +41,7 @@ else
 fi
 
 echo "Grafana console: http://localhost:${PORT}"
+echo "Account: admin"
 echo "Secret: $(kubectl get secret --namespace ${NAMESPACE} grafana -o jsonpath="{.data.admin-password}" | base64 --decode)"
 
 kubectl --namespace ${NAMESPACE} port-forward service/grafana ${PORT}:80
