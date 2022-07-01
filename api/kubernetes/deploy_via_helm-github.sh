@@ -29,6 +29,9 @@ help() {
   echo "- TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL | Email String | contact email, used for Let's Encrypt certificate requests"
   echo "- TLS_CERTIFICATE_CUSTOM_CERTIFICATE_PATH | File path | path to a file containing the custom TLS certificate to use for HTTPS"
   echo "- TLS_CERTIFICATE_CUSTOM_KEY_PATH | File path | path to a file containing the key for the custom TLS certificate to use for HTTPS"
+  echo "- REDIS_MASTER_PV | string | The Persistent Volume name for redis master"
+  echo "- REDIS_REPLICA1_PV | string | The Persistent Volume name for redis replica 1"
+  echo "- REDIS_PVC_STORAGE_CLASS_NAME | string | The Persistent Volume Claim storage class name"
   echo
   echo "Usage: ./$(basename "$0") CHART_PACKAGE_VERSION NAMESPACE ARGO_POSTGRESQL_PASSWORD API_VERSION [any additional options to pass as is to the cosmotech-api Helm Chart]"
   echo
@@ -151,6 +154,155 @@ metricsScraper:
 
 EOF
 helm upgrade --install -n ${NAMESPACE} kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --version ${VERSION_KUBERNETES_DASHBOARD} --values values-kubernetes-dashboard.yaml
+
+# Grafana
+echo -- Grafana
+helm repo add grafana https://grafana.github.io/helm-charts
+
+cat <<EOF > values-grafana.yaml
+loki:
+  enabled: true
+  persistence:
+    enabled: "true"
+    size: "64Gi"
+  podLabels:
+    "networking/traffic-allowed": "yes"
+  nodeSelector:
+    "cosmotech.com/tier": "services"
+  tolerations:
+  - key: "vendor"
+    operator: "Equal"
+    value: "cosmotech"
+    effect: "NoSchedule"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 32Mi
+    limits:
+      cpu: 1
+      memory: 64Mi
+prometheus:
+  enabled: true
+  alertmanager:
+    persistentVolume:
+      enabled: true
+      size: "2Gi"
+    podLabels:
+      "networking/traffic-allowed": "yes"
+    nodeSelector:
+      "cosmotech.com/tier": "services"
+    tolerations:
+    - key: "vendor"
+      operator: "Equal"
+      value: "cosmotech"
+      effect: "NoSchedule"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 16Mi
+      limits:
+        cpu: 1
+        memory: 64Mi
+  nodeExporter:
+    podLabels:
+      "networking/traffic-allowed": "yes"
+    nodeSelector:
+      "cosmotech.com/tier": "services"
+    tolerations:
+    - key: "vendor"
+      operator: "Equal"
+      value: "cosmotech"
+      effect: "NoSchedule"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 16Mi
+      limits:
+        cpu: 1
+        memory: 64Mi
+  server:
+    persistentVolume:
+      enabled: true
+      size: "64Gi"
+    podLabels:
+      "networking/traffic-allowed": "yes"
+    nodeSelector:
+      "cosmotech.com/tier": "services"
+    tolerations:
+    - key: "vendor"
+      operator: "Equal"
+      value: "cosmotech"
+      effect: "NoSchedule"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 15Mi
+      limits:
+        cpu: 1
+        memory: 64Mi
+  pushgateway:
+    persistentVolume:
+      enabled: true
+      size: "2Gi"
+    podLabels:
+      "networking/traffic-allowed": "yes"
+    nodeSelector:
+      "cosmotech.com/tier": "services"
+    tolerations:
+    - key: "vendor"
+      operator: "Equal"
+      value: "cosmotech"
+      effect: "NoSchedule"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 15Mi
+      limits:
+        cpu: 1
+        memory: 64Mi
+promtail:
+  enabled: true
+  podLabels:
+    "networking/traffic-allowed": "yes"
+  nodeSelector:
+    "cosmotech.com/tier": "services"
+  tolerations:
+  - key: "vendor"
+    operator: "Equal"
+    value: "cosmotech"
+    effect: "NoSchedule"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 16Mi
+    limits:
+      cpu: 1
+      memory: 64Mi
+grafana:
+  enabled: true
+  persistence:
+    enabled: "true"
+    size: "8Gi"
+  podLabels:
+    "networking/traffic-allowed": "yes"
+  nodeSelector:
+    "cosmotech.com/tier": "services"
+  tolerations:
+  - key: "vendor"
+    operator: "Equal"
+    value: "cosmotech"
+    effect: "NoSchedule"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 64Mi
+    limits:
+      cpu: 1
+      memory: 128Mi
+
+EOF
+
+helm upgrade --install -n ${NAMESPACE} grafana grafana/loki-stack --values values-grafana.yaml
 
 # NGINX Ingress Controller & Certificate
 echo -- Certificate config
@@ -401,6 +553,43 @@ fi
 
 # Redis Cluster
 echo -- Redis
+# Create Persistent Volume manually to retain data in a disk outside the cluster
+# Creating of Persistent Volume claims
+if [[ "${REDIS_MASTER_PV:-}" != "" && "${REDIS_REPLICA1_PV:-}" != "" && "${REDIS_PVC_STORAGE_CLASS_NAME:-}" != "" ]]; then
+echo Creating Persistent Volume Claim for defined Persistent Volumes for Redis
+export REDIS_MASTER_PVC=pvc-redis-master
+export REDIS_REPLICA1_PVC=pvc-redis-replica1
+
+cat <<EOF | kubectl --namespace "${NAMESPACE}" apply -f -
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: "${REDIS_MASTER_PVC}"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: "64Gi"
+  volumeName: "${REDIS_MASTER_PV}"
+  storageClassName: "${REDIS_PVC_STORAGE_CLASS_NAME}"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: "${REDIS_REPLICA1_PVC}"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: "64Gi"
+  volumeName: "${REDIS_REPLICA1_PV}"
+  storageClassName: "${REDIS_PVC_STORAGE_CLASS_NAME}"
+
+EOF
+fi
+
 helm repo add bitnami https://charts.bitnami.com/bitnami
 cat <<EOF > values-redis.yaml
 image:
@@ -408,6 +597,9 @@ image:
   repository: cosmo-tech/cosmotech-redis
   tag: ${VERSION_REDIS_COSMOTECH}
 master:
+  persistence:
+    existingClaim: "${REDIS_MASTER_PVC:-}"
+    size: "64Gi"
   podLabels:
     "networking/traffic-allowed": "yes"
   tolerations:
@@ -426,6 +618,9 @@ master:
       memory: 4Gi
 replica:
   replicaCount: 1
+  persistence:
+    existingClaim: "${REDIS_REPLICA1_PVC:-}"
+    size: "64Gi"
   podLabels:
     "networking/traffic-allowed": "yes"
   tolerations:
@@ -541,6 +736,8 @@ argo:
       limits:
         cpu: 1000m
         memory: 256Mi
+    persistence:
+      size: 16Gi
     accessKey: "${ARGO_MINIO_ACCESS_KEY:-}"
     secretKey: "${ARGO_MINIO_SECRET_KEY:-}"
 postgresql:
