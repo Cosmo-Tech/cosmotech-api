@@ -40,15 +40,71 @@ kubectl create namespace "${NAMESPACE:-phoenix}" --dry-run=client -o yaml | kube
 export ARGO_RELEASE_NAME=argo
 export ARGO_RELEASE_NAMESPACE="${NAMESPACE}"
 export ARGO_POSTGRESQL_PASSWORD="$2"
-helm dependency update "${HELM_CHARTS_BASE_PATH}/csm-argo"
-# Default memory request in MinIO Chart is 4Gi, which may not work in clusters with lower resources
-envsubst < "${HELM_CHARTS_BASE_PATH}/csm-argo/values.yaml" | \
-    helm upgrade --install "${ARGO_RELEASE_NAME}" "${HELM_CHARTS_BASE_PATH}/csm-argo" \
-        --namespace "${NAMESPACE}" \
-        --values - \
-        --set argo.minio.resources.requests.memory="${ARGO_MINIO_REQUESTS_MEMORY:-512Mi}" \
-        --set argo.minio.accessKey="${ARGO_MINIO_ACCESS_KEY:-}" \
-        --set argo.minio.secretKey="${ARGO_MINIO_SECRET_KEY:-}"
+export ARGO_VERSION="v3.3.7"
+wget "https://github.com/argoproj/argo-workflows/releases/download/${ARGO_VERSION}/install.yaml" |  \
+sed -i -e 's/namespace: argo/namespace: '${NAMESPACE}'/g' | kubectl apply -n "${NAMESPACE}" -f -
+
+# Minio
+export MINIO_RELEASE_NAME=argo-artifacts
+export BUCKET_NAME=my-bucket
+helm repo add minio https://operator.min.io/
+helm install ${MINIO_RELEASE_NAME} minio/minio --namespace argo --set fullnameOverride=argo-${MINIO_RELEASE_NAME} \
+  --set defaultBucket.enabled=true --set defaultBucket.name=${BUCKET_NAME} --set persistence.enabled=false \
+  --set resources.requests.memory=2Gi --set service.type=ClusterIP 
+
+# Configure Argo and Minio
+cat <<EOF | kubectl -n "${NAMESPACE}" apply -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: workflow-controller-configmap
+data:
+  persistence: |
+    connectionPool:
+      maxIdleConns: 100
+      maxOpenConns: 0
+      connMaxLifetime: 0s
+    nodeStatusOffLoad: true
+    archive: true
+    archiveTTL: 7d
+  artifactRepository: |
+    s3:
+      bucket: my-bucket
+      endpoint: ${MINIO_RELEASE_NAME}.${NAMESPACE}.svc.cluster.local:9000
+      insecure: true
+      # References to kubernetes secrets holding credentials
+      accessKeySecret:
+        name: ${MINIO_RELEASE_NAME}
+        key: accesskey
+      secretKeySecret:
+        name: ${MINIO_RELEASE_NAME}
+        key: secretkey    
+EOF
+
+
+# create role binding for argo resources
+cat <<EOF | kubectl -n "${NAMESPACE}" apply -f -
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: fabric8-rbac
+subjects:
+  - kind: ServiceAccount
+    # Reference to upper's `metadata.name`
+    name: default
+    # Reference to upper's `metadata.namespace`
+    namespace: ${NAMESPACE}
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+EOF
+
+
+# Postgres
+export POSTGRES_RELEASE_NAME=postgres
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm install -n ${NAMESPACE} ${POSTGRES_RELEASE_NAME} bitnami/postgresql
 
 # cosmotech-api
 export COSMOTECH_API_RELEASE_NAME="cosmotech-api-${API_VERSION}"
