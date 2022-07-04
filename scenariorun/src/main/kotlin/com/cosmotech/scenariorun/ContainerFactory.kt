@@ -1277,6 +1277,7 @@ internal fun getContainerScopes(csmPlatformProperties: CsmPlatformProperties): S
   }
   return "${csmPlatformProperties.azure?.appIdUri}${API_SCOPE_SUFFIX}"
 }
+
 @Suppress("LongMethod")
 internal fun getCommonEnvVars(
     csmPlatformProperties: CsmPlatformProperties,
@@ -1324,15 +1325,14 @@ internal fun getCommonEnvVars(
 
   val twinCacheEnvVars: MutableMap<String, String> = mutableMapOf()
   if (csmPlatformProperties.twincache != null) {
-      val twinCacheInfo = csmPlatformProperties.twincache!!
-      twinCacheEnvVars.putAll(
-         mapOf(
-           TWIN_CACHE_HOST to (twinCacheInfo.host),
-           TWIN_CACHE_PORT to (twinCacheInfo.port),
-           TWIN_CACHE_PASSWORD to (twinCacheInfo.password),
-           TWIN_CACHE_USERNAME to (twinCacheInfo.username),
-         )
-      )
+    val twinCacheInfo = csmPlatformProperties.twincache!!
+    twinCacheEnvVars.putAll(
+        mapOf(
+            TWIN_CACHE_HOST to (twinCacheInfo.host),
+            TWIN_CACHE_PORT to (twinCacheInfo.port),
+            TWIN_CACHE_PASSWORD to (twinCacheInfo.password),
+            TWIN_CACHE_USERNAME to (twinCacheInfo.username),
+        ))
   }
 
   val containerScopes = getContainerScopes(csmPlatformProperties)
