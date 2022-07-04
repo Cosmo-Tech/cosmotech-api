@@ -1,0 +1,11 @@
+name: TwinCache Brewery reference
+description: TwinCache reference
+tags:
+  - TwinCache
+  - Brewery
+  - Reference
+  - dataset
+connector:
+  id: "c-177velrvov5"
+  parametersValues:
+    TWIN_CACHE_NAME: my-graph-name
