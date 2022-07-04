@@ -72,6 +72,7 @@ class ContainerFactoryTests {
 
   @InjectMockKs private lateinit var factory: ContainerFactory
 
+  @Suppress("LongMethod")
   @BeforeTest
   fun setUp() {
     MockKAnnotations.init(this)
@@ -131,6 +132,12 @@ class ContainerFactoryTests {
             authorizationUrl = "http://this_is_a_fake_url.com",
             tokenUrl = "http://this_is_a_fake_token_url.com",
         )
+    every { csmPlatformProperties.twincache } returns
+        CsmPlatformProperties.CsmTwinCacheProperties(
+            host = "this_is_a_host",
+            port = "6973",
+            password = "this_is_a_password",
+       )
   }
 
   @Test
@@ -236,8 +243,12 @@ class ContainerFactoryTests {
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "ENV_PARAM_1" to "env_param1_value",
             "ENV_PARAM_2" to "env_param2_value",
-            "ENV_PARAM_3" to "env_param3_value")
-    assertEquals(expected, container.envVars)
+            "ENV_PARAM_3" to "env_param3_value",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default")
+    assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
   }
 
   @Test
@@ -274,8 +285,12 @@ class ContainerFactoryTests {
             "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "ENV_PARAM_1" to "organizationid/workspaceid/workspace.env",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default"
         )
-    assertEquals(expected, container.envVars)
+    assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
   }
 
   @Test
@@ -312,8 +327,12 @@ class ContainerFactoryTests {
             "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "AZURE_STORAGE_CONNECTION_STRING" to "csmphoenix_storage_connection_string",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default"
         )
-    assertEquals(expected, container.envVars)
+    assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
   }
 
   @Test
@@ -349,8 +368,12 @@ class ContainerFactoryTests {
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default"
         )
-    assertEquals(expected, container.envVars)
+    assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
   }
 
   @Test
@@ -384,8 +407,12 @@ class ContainerFactoryTests {
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default"
         )
-    assertEquals(expected, container.envVars)
+    assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
   }
 
   @Test
@@ -485,8 +512,12 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "1",
             "CSM_WORKSPACE_ID" to "2",
             "CSM_SCENARIO_ID" to "3",
-            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters")
-    assertEquals(expected, container.envVars)
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default")
+    assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
   }
 
   @Test
@@ -522,8 +553,12 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "1",
             "CSM_WORKSPACE_ID" to "2",
             "CSM_SCENARIO_ID" to "3",
-            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters")
-    assertEquals(expected, container.envVars)
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default")
+    assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
   }
 
   @Test
@@ -551,8 +586,12 @@ class ContainerFactoryTests {
             "CSM_SCENARIO_ID" to "3",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "WRITE_CSV" to "false",
-            "WRITE_JSON" to "true")
-    assertEquals(expected, container.envVars)
+            "WRITE_JSON" to "true",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default")
+    assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
   }
 
   @Test
@@ -604,8 +643,12 @@ class ContainerFactoryTests {
             "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "true",
             "CSM_SEND_DATAWAREHOUSE_DATASETS" to "true",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default"
         )
-    assertEquals(expected, container.envVars)
+    assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
   }
 
   @Test
@@ -637,8 +680,12 @@ class ContainerFactoryTests {
             "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "false",
             "CSM_SEND_DATAWAREHOUSE_DATASETS" to "false",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default"
         )
-    assertEquals(expected, container.envVars)
+    assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
   }
 
   @Test
@@ -674,8 +721,12 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default"
         )
-    assertEquals(expected, container.envVars)
+    assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
   }
 
   @Test
@@ -711,8 +762,12 @@ class ContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default"
         )
-    assertEquals(expected, container.envVars)
+    assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
   }
 
   @Test
@@ -890,8 +945,12 @@ class ContainerFactoryTests {
             providerEnvVar to "azureStorage",
             "AZURE_STORAGE_CONNECTION_STRING" to "csmphoenix_storage_connection_string",
             resourceEnvVar to "organizationid/1/${runTemplate}/${resource}.zip",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default"
         )
-    assertEquals(expected, container.envVars)
+    assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
   }
 
   private fun envVarsWithSourceLocalValid(
@@ -924,8 +983,12 @@ class ContainerFactoryTests {
             "CSM_SIMULATION" to "TestSimulation",
             providerEnvVar to "local",
             "AZURE_STORAGE_CONNECTION_STRING" to "csmphoenix_storage_connection_string",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default"
         )
-    assertEquals(expected, container.envVars)
+    assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
   }
 
   @Test
@@ -1338,8 +1401,12 @@ class ContainerFactoryTests {
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "ENV_PARAM_1" to "env_param1_value",
             "ENV_PARAM_2" to "env_param2_value",
-            "ENV_PARAM_3" to "env_param3_value")
-    assertEquals(expected, container?.envVars)
+            "ENV_PARAM_3" to "env_param3_value",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default")
+    assertEquals(expected.toSortedMap(), container?.envVars?.toSortedMap())
   }
 
   @Test
@@ -1743,8 +1810,12 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "O-id",
             "CSM_WORKSPACE_ID" to "W-id",
             "CSM_SCENARIO_ID" to "S-id",
-            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId"),
-        scenarioRunContainer.envVars)
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default").toSortedMap(),
+        scenarioRunContainer.envVars?.toSortedMap())
   }
 
   @Test
@@ -1790,8 +1861,12 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "O-id",
             "CSM_WORKSPACE_ID" to "W-id",
             "CSM_SCENARIO_ID" to "S-id",
-            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId"),
-        scenarioRunContainer.envVars)
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default").toSortedMap(),
+        scenarioRunContainer.envVars?.toSortedMap())
   }
 
   @Test
@@ -1837,8 +1912,12 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "O-id",
             "CSM_WORKSPACE_ID" to "W-id",
             "CSM_SCENARIO_ID" to "S-id",
-            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId"),
-        scenarioRunContainer.envVars)
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default").toSortedMap(),
+        scenarioRunContainer.envVars?.toSortedMap())
   }
 
   @Test
@@ -1884,8 +1963,12 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "O-id",
             "CSM_WORKSPACE_ID" to "W-id",
             "CSM_SCENARIO_ID" to "S-id",
-            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId"),
-        scenarioRunContainer.envVars)
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default").toSortedMap(),
+        scenarioRunContainer.envVars?.toSortedMap())
   }
 
   @Test
@@ -1931,8 +2014,12 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "O-id",
             "CSM_WORKSPACE_ID" to "W-id",
             "CSM_SCENARIO_ID" to "S-id",
-            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId"),
-        scenarioRunContainer.envVars)
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default").toSortedMap(),
+        scenarioRunContainer.envVars?.toSortedMap())
   }
 
   @Test
@@ -1978,8 +2065,12 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "O-id",
             "CSM_WORKSPACE_ID" to "W-id",
             "CSM_SCENARIO_ID" to "S-id",
-            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId"),
-        scenarioRunContainer.envVars)
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default").toSortedMap(),
+        scenarioRunContainer.envVars?.toSortedMap())
   }
 
   @Test
@@ -2016,8 +2107,12 @@ class ContainerFactoryTests {
             "CSM_CONTAINER_MODE" to "handle-parameters",
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
-            "CSM_SIMULATION" to "TestSimulation"),
-        container.envVars)
+            "CSM_SIMULATION" to "TestSimulation",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default").toSortedMap(),
+        container.envVars?.toSortedMap())
   }
 
   @Test
@@ -2055,8 +2150,12 @@ class ContainerFactoryTests {
             "CSM_CONTAINER_MODE" to "prerun",
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
-            "CSM_SIMULATION" to "TestSimulation"),
-        container.envVars)
+            "CSM_SIMULATION" to "TestSimulation",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default").toSortedMap(),
+        container.envVars?.toSortedMap())
   }
 
   @Test
@@ -2105,8 +2204,12 @@ class ContainerFactoryTests {
             "CSM_AMQPCONSUMER_PASSWORD" to "a1b2c3d4e5==",
             "CSM_CONTROL_PLANE_USER" to "my-eventhub-access-policy",
             "CSM_CONTROL_PLANE_PASSWORD" to "a1b2c3d4e5==",
-            "CSM_SIMULATION" to "TestSimulation"),
-        container.envVars)
+            "CSM_SIMULATION" to "TestSimulation",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default").toSortedMap(),
+        container.envVars?.toSortedMap())
   }
 
   @Test
@@ -2182,8 +2285,12 @@ class ContainerFactoryTests {
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/${param}",
             "ENV_PARAM_1" to "env_param1_value",
             "ENV_PARAM_2" to "env_param2_value",
-            "ENV_PARAM_3" to "env_param3_value")
-    assertEquals(expected, container?.envVars)
+            "ENV_PARAM_3" to "env_param3_value",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default")
+    assertEquals(expected.toSortedMap(), container?.envVars?.toSortedMap())
   }
 
   @Test
@@ -2213,8 +2320,12 @@ class ContainerFactoryTests {
             "CSM_CONTAINER_MODE" to "engine",
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
-            "CSM_SIMULATION" to "TestSimulation"),
-        container.envVars)
+            "CSM_SIMULATION" to "TestSimulation",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default").toSortedMap(),
+        container.envVars?.toSortedMap())
   }
 
   @Test
@@ -2249,8 +2360,12 @@ class ContainerFactoryTests {
             "CSM_CONTAINER_MODE" to "engine",
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
-            "CSM_SIMULATION" to "TestSimulation"),
-        container.envVars)
+            "CSM_SIMULATION" to "TestSimulation",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default").toSortedMap(),
+        container.envVars?.toSortedMap())
   }
 
   @Test
@@ -2333,8 +2448,12 @@ class ContainerFactoryTests {
             "CSM_CONTAINER_MODE" to mode,
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
-            "CSM_SIMULATION" to "TestSimulation")
-    assertEquals(expected, container?.envVars)
+            "CSM_SIMULATION" to "TestSimulation",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default")
+    assertEquals(expected.toSortedMap(), container?.envVars?.toSortedMap())
   }
 
   private fun getDatasetWorkspaceFile(): Dataset {
