@@ -137,7 +137,7 @@ class ContainerFactoryTests {
             host = "this_is_a_host",
             port = "6973",
             password = "this_is_a_password",
-       )
+        )
   }
 
   @Test
@@ -288,8 +288,7 @@ class ContainerFactoryTests {
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default"
-        )
+            "TWIN_CACHE_USERNAME" to "default")
     assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
   }
 
@@ -330,8 +329,7 @@ class ContainerFactoryTests {
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default"
-        )
+            "TWIN_CACHE_USERNAME" to "default")
     assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
   }
 
@@ -371,8 +369,7 @@ class ContainerFactoryTests {
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default"
-        )
+            "TWIN_CACHE_USERNAME" to "default")
     assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
   }
 
@@ -410,8 +407,7 @@ class ContainerFactoryTests {
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default"
-        )
+            "TWIN_CACHE_USERNAME" to "default")
     assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
   }
 
@@ -646,8 +642,7 @@ class ContainerFactoryTests {
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default"
-        )
+            "TWIN_CACHE_USERNAME" to "default")
     assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
   }
 
@@ -683,8 +678,7 @@ class ContainerFactoryTests {
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default"
-        )
+            "TWIN_CACHE_USERNAME" to "default")
     assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
   }
 
@@ -724,8 +718,7 @@ class ContainerFactoryTests {
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default"
-        )
+            "TWIN_CACHE_USERNAME" to "default")
     assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
   }
 
@@ -765,8 +758,7 @@ class ContainerFactoryTests {
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default"
-        )
+            "TWIN_CACHE_USERNAME" to "default")
     assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
   }
 
@@ -948,8 +940,7 @@ class ContainerFactoryTests {
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default"
-        )
+            "TWIN_CACHE_USERNAME" to "default")
     assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
   }
 
@@ -986,8 +977,7 @@ class ContainerFactoryTests {
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default"
-        )
+            "TWIN_CACHE_USERNAME" to "default")
     assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
   }
 
@@ -1794,27 +1784,29 @@ class ContainerFactoryTests {
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_SIMULATION_ID" to "csmSimulationId",
-            "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
-            "CSM_ORGANIZATION_ID" to "O-id",
-            "CSM_WORKSPACE_ID" to "W-id",
-            "CSM_SCENARIO_ID" to "S-id",
-            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
-            "TWIN_CACHE_HOST" to "this_is_a_host",
-            "TWIN_CACHE_PORT" to "6973",
-            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default").toSortedMap(),
+                "IDENTITY_PROVIDER" to "azure",
+                "AZURE_TENANT_ID" to "12345678",
+                "AZURE_CLIENT_ID" to "98765432",
+                "AZURE_CLIENT_SECRET" to "azertyuiop",
+                "CSM_SIMULATION_ID" to "csmSimulationId",
+                "CSM_API_URL" to "https://api.cosmotech.com",
+                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
+                    "https://phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                    "https://ingest-phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
+                "CSM_ORGANIZATION_ID" to "O-id",
+                "CSM_WORKSPACE_ID" to "W-id",
+                "CSM_SCENARIO_ID" to "S-id",
+                "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
+                "TWIN_CACHE_HOST" to "this_is_a_host",
+                "TWIN_CACHE_PORT" to "6973",
+                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+                "TWIN_CACHE_USERNAME" to "default")
+            .toSortedMap(),
         scenarioRunContainer.envVars?.toSortedMap())
   }
 
@@ -1845,27 +1837,29 @@ class ContainerFactoryTests {
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_SIMULATION_ID" to "csmSimulationId",
-            "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
-            "CSM_ORGANIZATION_ID" to "O-id",
-            "CSM_WORKSPACE_ID" to "W-id",
-            "CSM_SCENARIO_ID" to "S-id",
-            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
-            "TWIN_CACHE_HOST" to "this_is_a_host",
-            "TWIN_CACHE_PORT" to "6973",
-            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default").toSortedMap(),
+                "IDENTITY_PROVIDER" to "azure",
+                "AZURE_TENANT_ID" to "12345678",
+                "AZURE_CLIENT_ID" to "98765432",
+                "AZURE_CLIENT_SECRET" to "azertyuiop",
+                "CSM_SIMULATION_ID" to "csmSimulationId",
+                "CSM_API_URL" to "https://api.cosmotech.com",
+                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
+                    "https://phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                    "https://ingest-phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
+                "CSM_ORGANIZATION_ID" to "O-id",
+                "CSM_WORKSPACE_ID" to "W-id",
+                "CSM_SCENARIO_ID" to "S-id",
+                "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
+                "TWIN_CACHE_HOST" to "this_is_a_host",
+                "TWIN_CACHE_PORT" to "6973",
+                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+                "TWIN_CACHE_USERNAME" to "default")
+            .toSortedMap(),
         scenarioRunContainer.envVars?.toSortedMap())
   }
 
@@ -1898,25 +1892,27 @@ class ContainerFactoryTests {
         scenarioRunContainer.labels)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "CSM_AZURE_MANAGED_IDENTITY" to "true",
-            "CSM_SIMULATION_ID" to "csmSimulationId",
-            "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
-            "CSM_ORGANIZATION_ID" to "O-id",
-            "CSM_WORKSPACE_ID" to "W-id",
-            "CSM_SCENARIO_ID" to "S-id",
-            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
-            "TWIN_CACHE_HOST" to "this_is_a_host",
-            "TWIN_CACHE_PORT" to "6973",
-            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default").toSortedMap(),
+                "IDENTITY_PROVIDER" to "azure",
+                "CSM_AZURE_MANAGED_IDENTITY" to "true",
+                "CSM_SIMULATION_ID" to "csmSimulationId",
+                "CSM_API_URL" to "https://api.cosmotech.com",
+                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
+                    "https://phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                    "https://ingest-phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
+                "CSM_ORGANIZATION_ID" to "O-id",
+                "CSM_WORKSPACE_ID" to "W-id",
+                "CSM_SCENARIO_ID" to "S-id",
+                "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
+                "TWIN_CACHE_HOST" to "this_is_a_host",
+                "TWIN_CACHE_PORT" to "6973",
+                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+                "TWIN_CACHE_USERNAME" to "default")
+            .toSortedMap(),
         scenarioRunContainer.envVars?.toSortedMap())
   }
 
@@ -1947,27 +1943,29 @@ class ContainerFactoryTests {
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_SIMULATION_ID" to "csmSimulationId",
-            "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
-            "CSM_ORGANIZATION_ID" to "O-id",
-            "CSM_WORKSPACE_ID" to "W-id",
-            "CSM_SCENARIO_ID" to "S-id",
-            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
-            "TWIN_CACHE_HOST" to "this_is_a_host",
-            "TWIN_CACHE_PORT" to "6973",
-            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default").toSortedMap(),
+                "IDENTITY_PROVIDER" to "azure",
+                "AZURE_TENANT_ID" to "12345678",
+                "AZURE_CLIENT_ID" to "98765432",
+                "AZURE_CLIENT_SECRET" to "azertyuiop",
+                "CSM_SIMULATION_ID" to "csmSimulationId",
+                "CSM_API_URL" to "https://api.cosmotech.com",
+                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
+                    "https://phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                    "https://ingest-phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
+                "CSM_ORGANIZATION_ID" to "O-id",
+                "CSM_WORKSPACE_ID" to "W-id",
+                "CSM_SCENARIO_ID" to "S-id",
+                "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
+                "TWIN_CACHE_HOST" to "this_is_a_host",
+                "TWIN_CACHE_PORT" to "6973",
+                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+                "TWIN_CACHE_USERNAME" to "default")
+            .toSortedMap(),
         scenarioRunContainer.envVars?.toSortedMap())
   }
 
@@ -1998,27 +1996,29 @@ class ContainerFactoryTests {
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_SIMULATION_ID" to "csmSimulationId",
-            "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
-            "CSM_ORGANIZATION_ID" to "O-id",
-            "CSM_WORKSPACE_ID" to "W-id",
-            "CSM_SCENARIO_ID" to "S-id",
-            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
-            "TWIN_CACHE_HOST" to "this_is_a_host",
-            "TWIN_CACHE_PORT" to "6973",
-            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default").toSortedMap(),
+                "IDENTITY_PROVIDER" to "azure",
+                "AZURE_TENANT_ID" to "12345678",
+                "AZURE_CLIENT_ID" to "98765432",
+                "AZURE_CLIENT_SECRET" to "azertyuiop",
+                "CSM_SIMULATION_ID" to "csmSimulationId",
+                "CSM_API_URL" to "https://api.cosmotech.com",
+                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
+                    "https://phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                    "https://ingest-phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
+                "CSM_ORGANIZATION_ID" to "O-id",
+                "CSM_WORKSPACE_ID" to "W-id",
+                "CSM_SCENARIO_ID" to "S-id",
+                "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
+                "TWIN_CACHE_HOST" to "this_is_a_host",
+                "TWIN_CACHE_PORT" to "6973",
+                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+                "TWIN_CACHE_USERNAME" to "default")
+            .toSortedMap(),
         scenarioRunContainer.envVars?.toSortedMap())
   }
 
@@ -2049,27 +2049,29 @@ class ContainerFactoryTests {
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "customer-app-registration-tenantId",
-            "AZURE_CLIENT_ID" to "customer-app-registration-clientId",
-            "AZURE_CLIENT_SECRET" to "customer-app-registration-clientSecret",
-            "CSM_SIMULATION_ID" to "csmSimulationId",
-            "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
-            "CSM_ORGANIZATION_ID" to "O-id",
-            "CSM_WORKSPACE_ID" to "W-id",
-            "CSM_SCENARIO_ID" to "S-id",
-            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
-            "TWIN_CACHE_HOST" to "this_is_a_host",
-            "TWIN_CACHE_PORT" to "6973",
-            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default").toSortedMap(),
+                "IDENTITY_PROVIDER" to "azure",
+                "AZURE_TENANT_ID" to "customer-app-registration-tenantId",
+                "AZURE_CLIENT_ID" to "customer-app-registration-clientId",
+                "AZURE_CLIENT_SECRET" to "customer-app-registration-clientSecret",
+                "CSM_SIMULATION_ID" to "csmSimulationId",
+                "CSM_API_URL" to "https://api.cosmotech.com",
+                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
+                    "https://phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                    "https://ingest-phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
+                "CSM_ORGANIZATION_ID" to "O-id",
+                "CSM_WORKSPACE_ID" to "W-id",
+                "CSM_SCENARIO_ID" to "S-id",
+                "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
+                "TWIN_CACHE_HOST" to "this_is_a_host",
+                "TWIN_CACHE_PORT" to "6973",
+                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+                "TWIN_CACHE_USERNAME" to "default")
+            .toSortedMap(),
         scenarioRunContainer.envVars?.toSortedMap())
   }
 
@@ -2087,31 +2089,33 @@ class ContainerFactoryTests {
     assertFalse { container.envVars!!.containsKey(AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR) }
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
-            "CSM_ORGANIZATION_ID" to "Organizationid",
-            "CSM_WORKSPACE_ID" to "Workspaceid",
-            "CSM_SCENARIO_ID" to "Scenarioid",
-            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
-            "CSM_CONTAINER_MODE" to "handle-parameters",
-            "CSM_PROBES_MEASURES_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
-            "CSM_SIMULATION" to "TestSimulation",
-            "TWIN_CACHE_HOST" to "this_is_a_host",
-            "TWIN_CACHE_PORT" to "6973",
-            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default").toSortedMap(),
+                "IDENTITY_PROVIDER" to "azure",
+                "AZURE_TENANT_ID" to "12345678",
+                "AZURE_CLIENT_ID" to "98765432",
+                "AZURE_CLIENT_SECRET" to "azertyuiop",
+                "CSM_SIMULATION_ID" to "simulationrunid",
+                "CSM_API_URL" to "https://api.cosmotech.com",
+                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
+                    "https://phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                    "https://ingest-phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+                "CSM_ORGANIZATION_ID" to "Organizationid",
+                "CSM_WORKSPACE_ID" to "Workspaceid",
+                "CSM_SCENARIO_ID" to "Scenarioid",
+                "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
+                "CSM_CONTAINER_MODE" to "handle-parameters",
+                "CSM_PROBES_MEASURES_TOPIC" to
+                    "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
+                "CSM_SIMULATION" to "TestSimulation",
+                "TWIN_CACHE_HOST" to "this_is_a_host",
+                "TWIN_CACHE_PORT" to "6973",
+                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+                "TWIN_CACHE_USERNAME" to "default")
+            .toSortedMap(),
         container.envVars?.toSortedMap())
   }
 
@@ -2130,31 +2134,33 @@ class ContainerFactoryTests {
 
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
-            "CSM_ORGANIZATION_ID" to "Organizationid",
-            "CSM_WORKSPACE_ID" to "Workspaceid",
-            "CSM_SCENARIO_ID" to "Scenarioid",
-            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
-            "CSM_CONTAINER_MODE" to "prerun",
-            "CSM_PROBES_MEASURES_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
-            "CSM_SIMULATION" to "TestSimulation",
-            "TWIN_CACHE_HOST" to "this_is_a_host",
-            "TWIN_CACHE_PORT" to "6973",
-            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default").toSortedMap(),
+                "IDENTITY_PROVIDER" to "azure",
+                "AZURE_TENANT_ID" to "12345678",
+                "AZURE_CLIENT_ID" to "98765432",
+                "AZURE_CLIENT_SECRET" to "azertyuiop",
+                "CSM_SIMULATION_ID" to "simulationrunid",
+                "CSM_API_URL" to "https://api.cosmotech.com",
+                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
+                    "https://phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                    "https://ingest-phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+                "CSM_ORGANIZATION_ID" to "Organizationid",
+                "CSM_WORKSPACE_ID" to "Workspaceid",
+                "CSM_SCENARIO_ID" to "Scenarioid",
+                "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
+                "CSM_CONTAINER_MODE" to "prerun",
+                "CSM_PROBES_MEASURES_TOPIC" to
+                    "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
+                "CSM_SIMULATION" to "TestSimulation",
+                "TWIN_CACHE_HOST" to "this_is_a_host",
+                "TWIN_CACHE_PORT" to "6973",
+                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+                "TWIN_CACHE_USERNAME" to "default")
+            .toSortedMap(),
         container.envVars?.toSortedMap())
   }
 
@@ -2178,37 +2184,39 @@ class ContainerFactoryTests {
 
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
-            "CSM_ORGANIZATION_ID" to "Organizationid",
-            "CSM_WORKSPACE_ID" to "Workspaceid",
-            "CSM_SCENARIO_ID" to "Scenarioid",
-            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
-            "CSM_CONTAINER_MODE" to "engine",
-            "CSM_PROBES_MEASURES_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
-            "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to "my-eventhub-access-policy",
-            "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to "a1b2c3d4e5==",
-            "CSM_AMQPCONSUMER_USER" to "my-eventhub-access-policy",
-            "CSM_AMQPCONSUMER_PASSWORD" to "a1b2c3d4e5==",
-            "CSM_CONTROL_PLANE_USER" to "my-eventhub-access-policy",
-            "CSM_CONTROL_PLANE_PASSWORD" to "a1b2c3d4e5==",
-            "CSM_SIMULATION" to "TestSimulation",
-            "TWIN_CACHE_HOST" to "this_is_a_host",
-            "TWIN_CACHE_PORT" to "6973",
-            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default").toSortedMap(),
+                "IDENTITY_PROVIDER" to "azure",
+                "AZURE_TENANT_ID" to "12345678",
+                "AZURE_CLIENT_ID" to "98765432",
+                "AZURE_CLIENT_SECRET" to "azertyuiop",
+                "CSM_SIMULATION_ID" to "simulationrunid",
+                "CSM_API_URL" to "https://api.cosmotech.com",
+                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
+                    "https://phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                    "https://ingest-phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+                "CSM_ORGANIZATION_ID" to "Organizationid",
+                "CSM_WORKSPACE_ID" to "Workspaceid",
+                "CSM_SCENARIO_ID" to "Scenarioid",
+                "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
+                "CSM_CONTAINER_MODE" to "engine",
+                "CSM_PROBES_MEASURES_TOPIC" to
+                    "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
+                "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to "my-eventhub-access-policy",
+                "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to "a1b2c3d4e5==",
+                "CSM_AMQPCONSUMER_USER" to "my-eventhub-access-policy",
+                "CSM_AMQPCONSUMER_PASSWORD" to "a1b2c3d4e5==",
+                "CSM_CONTROL_PLANE_USER" to "my-eventhub-access-policy",
+                "CSM_CONTROL_PLANE_PASSWORD" to "a1b2c3d4e5==",
+                "CSM_SIMULATION" to "TestSimulation",
+                "TWIN_CACHE_HOST" to "this_is_a_host",
+                "TWIN_CACHE_PORT" to "6973",
+                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+                "TWIN_CACHE_USERNAME" to "default")
+            .toSortedMap(),
         container.envVars?.toSortedMap())
   }
 
@@ -2300,31 +2308,33 @@ class ContainerFactoryTests {
     assertNotNull(container.envVars)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
-            "CSM_ORGANIZATION_ID" to "Organizationid",
-            "CSM_WORKSPACE_ID" to "Workspaceid",
-            "CSM_SCENARIO_ID" to "Scenarioid",
-            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
-            "CSM_CONTAINER_MODE" to "engine",
-            "CSM_PROBES_MEASURES_TOPIC" to
-                "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
-            "CSM_SIMULATION" to "TestSimulation",
-            "TWIN_CACHE_HOST" to "this_is_a_host",
-            "TWIN_CACHE_PORT" to "6973",
-            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default").toSortedMap(),
+                "IDENTITY_PROVIDER" to "azure",
+                "AZURE_TENANT_ID" to "12345678",
+                "AZURE_CLIENT_ID" to "98765432",
+                "AZURE_CLIENT_SECRET" to "azertyuiop",
+                "CSM_SIMULATION_ID" to "simulationrunid",
+                "CSM_API_URL" to "https://api.cosmotech.com",
+                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
+                    "https://phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                    "https://ingest-phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+                "CSM_ORGANIZATION_ID" to "Organizationid",
+                "CSM_WORKSPACE_ID" to "Workspaceid",
+                "CSM_SCENARIO_ID" to "Scenarioid",
+                "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
+                "CSM_CONTAINER_MODE" to "engine",
+                "CSM_PROBES_MEASURES_TOPIC" to
+                    "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
+                "CSM_SIMULATION" to "TestSimulation",
+                "TWIN_CACHE_HOST" to "this_is_a_host",
+                "TWIN_CACHE_PORT" to "6973",
+                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+                "TWIN_CACHE_USERNAME" to "default")
+            .toSortedMap(),
         container.envVars?.toSortedMap())
   }
 
@@ -2340,31 +2350,33 @@ class ContainerFactoryTests {
     assertNotNull(container.envVars)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
-            "CSM_ORGANIZATION_ID" to "Organizationid",
-            "CSM_WORKSPACE_ID" to "Workspaceid",
-            "CSM_SCENARIO_ID" to "Scenarioid",
-            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
-            "CSM_CONTAINER_MODE" to "engine",
-            "CSM_PROBES_MEASURES_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
-            "CSM_SIMULATION" to "TestSimulation",
-            "TWIN_CACHE_HOST" to "this_is_a_host",
-            "TWIN_CACHE_PORT" to "6973",
-            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default").toSortedMap(),
+                "IDENTITY_PROVIDER" to "azure",
+                "AZURE_TENANT_ID" to "12345678",
+                "AZURE_CLIENT_ID" to "98765432",
+                "AZURE_CLIENT_SECRET" to "azertyuiop",
+                "CSM_SIMULATION_ID" to "simulationrunid",
+                "CSM_API_URL" to "https://api.cosmotech.com",
+                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
+                    "https://phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                    "https://ingest-phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+                "CSM_ORGANIZATION_ID" to "Organizationid",
+                "CSM_WORKSPACE_ID" to "Workspaceid",
+                "CSM_SCENARIO_ID" to "Scenarioid",
+                "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
+                "CSM_CONTAINER_MODE" to "engine",
+                "CSM_PROBES_MEASURES_TOPIC" to
+                    "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
+                "CSM_SIMULATION" to "TestSimulation",
+                "TWIN_CACHE_HOST" to "this_is_a_host",
+                "TWIN_CACHE_PORT" to "6973",
+                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+                "TWIN_CACHE_USERNAME" to "default")
+            .toSortedMap(),
         container.envVars?.toSortedMap())
   }
 
