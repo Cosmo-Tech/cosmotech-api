@@ -13,8 +13,9 @@ help() {
   echo "The following optional environment variables can be set to alter this script behavior:"
   echo "- NAMESPACE | string | name of the targeted namespace. Generated when not set"
   echo "- AZURE_DIGITAL_TWINS_URL | string | ex: https://<my-adt-instance>.api.weu.digitaltwins.azure.net"
+  echo "- CRON_MINUTES_INTERVAL | string | 5"
   echo
-  echo "Usage: ./$(basename "$0") NAMESPACE AZURE_DIGITAL_TWINS_URL"
+  echo "Usage: ./$(basename "$0") NAMESPACE AZURE_DIGITAL_TWINS_URL CRON_MINUTES_INTERVAL"
 }
 
 if [[ "${1:-}" == "--help" ||  "${1:-}" == "-h" ]]; then
@@ -31,6 +32,7 @@ BINARY=yq_linux_amd64
 
 export NAMESPACE="$1"
 export AZURE_DIGITAL_TWINS_URL="$2"
+export CRON_MINUTES_INTERVAL="${3:-5}"
 BASE_PATH=$(realpath "$(dirname "$0")")
 
 API_CONFIG_YAML=$(kubectl get secret --namespace ${NAMESPACE} cosmotech-api-latest -o jsonpath="{.data.application-helm\.yml}" | base64 --decode)
@@ -62,9 +64,9 @@ cat <<EOF > adt-sync-cronjob.yaml
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: adt-full-sync-cron
+  name: adt-full-sync-cron-${RANDOM}
 spec:
-  schedule: "*/5 * * * *"
+  schedule: "*/${CRON_MINUTES_INTERVAL} * * * *"
   concurrencyPolicy: Replace
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3
