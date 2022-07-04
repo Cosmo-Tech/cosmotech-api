@@ -137,7 +137,11 @@ metricsScraper:
       memory: 64Mi
 
 EOF
-helm upgrade --install -n ${NAMESPACE} kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --values values-kubernetes-dashboard.yaml
+helm upgrade --install \
+    -n ${NAMESPACE} kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard \
+    --values values-kubernetes-dashboard.yaml \
+   --wait \
+   --timeout 10m0s
 
 # Redis Cluster
 helm repo add bitnami https://charts.bitnami.com/bitnami
@@ -172,7 +176,9 @@ helm upgrade --install \
     --set resources.requests.memory=128Mi \
     --set resources.limits.memory=128Mi \
    --wait \
-   --timeout 5m0s
+   --timeout 10m0s
+
+REDIS_PASSWORD=$(kubectl get secret --namespace ${NAMESPACE} cosmotechredis -o jsonpath="{.data.redis-password}" | base64 --decode)
 
 # Minio
 cat <<EOF > values-minio.yaml
@@ -376,6 +382,10 @@ helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "${HELM_CHARTS_BASE_PATH}
     --set config.csm.platform.argo.base-uri="http://${ARGO_RELEASE_NAME}-argo-workflows-server.${NAMESPACE}.svc.cluster.local:2746" \
     --set config.csm.platform.argo.workflows.namespace="${NAMESPACE}" \
     --set config.csm.platform.argo.workflows.service-account-name="${ARGO_SERVICE_ACCOUNT}" \
+    --set config.csm.platform.twincache.host="cosmotechredis-master.${NAMESPACE}.svc.cluster.local" \
+    --set config.csm.platform.twincache.port="6379" \
+    --set config.csm.platform.twincache.username="default" \
+    --set config.csm.platform.twincache.password="${REDIS_PASSWORD}" \
     --set podAnnotations."com\.cosmotech/deployed-at-timestamp"="\"$(date +%s)\"" \
     --set nodeSelector."cosmotech\\.com/tier"=services \
     "${@:4}"
