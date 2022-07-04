@@ -1,0 +1,20 @@
+key: TwinCache Connector 0.0.7
+name: TwinCache Connector 0.0.7
+description: Connector for CosmoTech TwinCache. Read TwinCache and write the data in CSV for the Simulation
+repository: cosmo-tech/twincache-connector
+version: "0.0.7"
+tags:
+  - TwinCache
+url: https://github.com/Cosmo-Tech/twincache-connector/pkgs/container/twincache-connector
+ioTypes:
+  - read
+parameterGroups:
+  - id: parameters
+    label: Parameters
+    parameters:
+      - id: TWIN_CACHE_NAME
+        label: TwinCache entity name
+        valueType: string
+        envVar: TWIN_CACHE_NAME
+
+
