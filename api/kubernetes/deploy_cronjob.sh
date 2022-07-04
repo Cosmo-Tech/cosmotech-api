@@ -8,42 +8,51 @@ set -eo errexit
 
 help() {
   echo
-  echo "This script takes at least 3 parameters."
+  echo "This script takes at least 2 parameters."
   echo
   echo "The following optional environment variables can be set to alter this script behavior:"
   echo "- NAMESPACE | string | name of the targeted namespace. Generated when not set"
-  echo "- AZURE_CLIENT_ID | string "
-  echo "- AZURE_TENANT_ID | string "
-  echo "- AZURE_CLIENT_SECRET | string "
   echo "- AZURE_DIGITAL_TWINS_URL | string | ex: https://<my-adt-instance>.api.weu.digitaltwins.azure.net"
-  echo "- TWIN_CACHE_HOST | string | ex: <my-redis-master-instance>.phoenix.svc.cluster.local"
-  echo "- TWIN_CACHE_PORT | string | default to 6379"
-  echo "- TWIN_CACHE_NAME | string | will be the name of the key"
-  echo "- TWIN_CACHE_PASSWORD | string | password used for twin cache connection"
   echo
-  echo "Usage: ./$(basename "$0") NAMESPACE AZURE_CLIENT_ID AZURE_TENANT_ID AZURE_CLIENT_SECRET AZURE_DIGITAL_TWINS_URL TWIN_CACHE_HOST TWIN_CACHE_PORT TWIN_CACHE_NAME TWIN_CACHE_PASSWORD"
+  echo "Usage: ./$(basename "$0") NAMESPACE AZURE_DIGITAL_TWINS_URL"
 }
 
 if [[ "${1:-}" == "--help" ||  "${1:-}" == "-h" ]]; then
   help
   exit 0
 fi
-if [[ $# -lt 9 ]]; then
+if [[ $# -lt 2 ]]; then
   help
   exit 1
 fi
 
-export NAMESPACE="$1"
-export AZURE_CLIENT_ID="$2"
-export AZURE_TENANT_ID="$3"
-export AZURE_CLIENT_SECRET="$4"
-export AZURE_DIGITAL_TWINS_URL="$5"
-export TWIN_CACHE_HOST="$6"
-export TWIN_CACHE_PORT="$7"
-export TWIN_CACHE_NAME="$8"
-export TWIN_CACHE_PASSWORD="$9"
+VERSION=v4.2.0
+BINARY=yq_linux_amd64
 
+export NAMESPACE="$1"
+export AZURE_DIGITAL_TWINS_URL="$2"
 BASE_PATH=$(realpath "$(dirname "$0")")
+
+API_CONFIG_YAML=$(kubectl get secret --namespace ${NAMESPACE} cosmotech-api-latest -o jsonpath="{.data.application-helm\.yml}" | base64 --decode)
+
+if [ -e /usr/bin/yq ]
+then
+  echo "yq already exists no need to install"
+else
+  echo "yq do not exist, version to be installed : ${VERSION} , binary ${BINARY}"
+  wget https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY}.tar.gz -O - | tar xz && sudo mv ${BINARY} /usr/bin/yq
+fi
+
+TWIN_CACHE_INFO=$(echo "$API_CONFIG_YAML" | yq e '.csm.platform.twincache' - )
+AZURE_CREDENTIALS_INFO=$(echo "$API_CONFIG_YAML" | yq e '.csm.platform.azure.credentials' - )
+
+export TWIN_CACHE_HOST=$( echo "$TWIN_CACHE_INFO" | yq e '.host' - )
+export TWIN_CACHE_PORT=$(echo "$TWIN_CACHE_INFO" | yq e '.port' - )
+export TWIN_CACHE_PASSWORD=$( echo "$TWIN_CACHE_INFO" | yq e '.password' - )
+export AZURE_CLIENT_ID=$( echo "$AZURE_CREDENTIALS_INFO" | yq e '.clientId' - )
+export AZURE_TENANT_ID=$( echo "$AZURE_CREDENTIALS_INFO" | yq e '.tenantId' - )
+export AZURE_CLIENT_SECRET=$( echo "$AZURE_CREDENTIALS_INFO" | yq e '.clientSecret' - )
+export TWIN_CACHE_NAME=$(echo "$AZURE_DIGITAL_TWINS_URL" | sed -e 's|^[^/]*//||' -e 's|/.*$||' -e 's|\..*$||')
 
 mkdir -p "$BASE_PATH/cronjob"
 
