@@ -375,6 +375,7 @@ export COSMOTECH_API_RELEASE_NAME="cosmotech-api-${API_VERSION}"
 helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "${HELM_CHARTS_BASE_PATH}/helm-chart" \
     --namespace "${NAMESPACE}" \
     --values "${HELM_CHARTS_BASE_PATH}/helm-chart/values-dev.yaml" \
+    --set replicaCount=2 \
     --set config.csm.platform.commit-id="$(git rev-parse --short HEAD || "")" \
     --set config.csm.platform.vcs-ref="$(git rev-parse --abbrev-ref HEAD || "")" \
     --set image.tag="$API_VERSION" \
