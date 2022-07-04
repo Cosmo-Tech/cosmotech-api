@@ -61,6 +61,10 @@ internal const val AZURE_CLIENT_SECRET_VAR = "AZURE_CLIENT_SECRET"
 internal const val OKTA_CLIENT_ID = "OKTA_CLIENT_ID"
 internal const val OKTA_CLIENT_SECRET = "OKTA_CLIENT_SECRET"
 internal const val OKTA_CLIENT_ISSUER = "OKTA_CLIENT_ISSUER"
+internal const val TWIN_CACHE_HOST = "TWIN_CACHE_HOST"
+internal const val TWIN_CACHE_PASSWORD = "TWIN_CACHE_PASSWORD"
+internal const val TWIN_CACHE_USERNAME = "TWIN_CACHE_USERNAME"
+internal const val TWIN_CACHE_PORT = "TWIN_CACHE_PORT"
 private const val CSM_AZURE_MANAGED_IDENTITY_VAR = "CSM_AZURE_MANAGED_IDENTITY"
 private const val CSM_SIMULATION_ID = "CSM_SIMULATION_ID"
 private const val API_BASE_URL_VAR = "CSM_API_URL"
@@ -1273,7 +1277,7 @@ internal fun getContainerScopes(csmPlatformProperties: CsmPlatformProperties): S
   }
   return "${csmPlatformProperties.azure?.appIdUri}${API_SCOPE_SUFFIX}"
 }
-
+@Suppress("LongMethod")
 internal fun getCommonEnvVars(
     csmPlatformProperties: CsmPlatformProperties,
     csmSimulationId: String,
@@ -1317,6 +1321,20 @@ internal fun getCommonEnvVars(
             OKTA_CLIENT_ISSUER to (csmPlatformProperties.okta?.issuer!!),
         ))
   }
+
+  val twinCacheEnvVars: MutableMap<String, String> = mutableMapOf()
+  if (csmPlatformProperties.twincache != null) {
+      val twinCacheInfo = csmPlatformProperties.twincache!!
+      twinCacheEnvVars.putAll(
+         mapOf(
+           TWIN_CACHE_HOST to (twinCacheInfo.host),
+           TWIN_CACHE_PORT to (twinCacheInfo.port),
+           TWIN_CACHE_PASSWORD to (twinCacheInfo.password),
+           TWIN_CACHE_USERNAME to (twinCacheInfo.username),
+         )
+      )
+  }
+
   val containerScopes = getContainerScopes(csmPlatformProperties)
   val commonEnvVars =
       mapOf(
@@ -1335,7 +1353,7 @@ internal fun getCommonEnvVars(
           PARAMETERS_WORKSPACE_VAR to workspaceId,
           PARAMETERS_SCENARIO_VAR to scenarioId,
       )
-  return (identityEnvVars + commonEnvVars + oktaEnvVars).toMutableMap()
+  return (identityEnvVars + commonEnvVars + oktaEnvVars + twinCacheEnvVars).toMutableMap()
 }
 
 private fun stackSolutionContainers(
