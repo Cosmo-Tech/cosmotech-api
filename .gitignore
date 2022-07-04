@@ -41,9 +41,10 @@ out/
 *.swp
 *.swo
 
-# generated plantuml
+# generated
 openapi/plantuml/.openapi-generator/
 openapi/openapi.yaml
+api/kubernetes/cronjob/*.yaml
 
 ### Personal directory ###
 perso
