@@ -25,5 +25,7 @@ if [[ $# -lt 2 ]]; then
   help
   exit 1
 fi
+export NAMESPACE=$1
+export CRONJOB_NAME=$2
 
-kubectl delete -n "${NAMESPACE}" "${CRONJOB_NAME}"
+kubectl delete cronjob -n ${NAMESPACE} ${CRONJOB_NAME}
