@@ -141,6 +141,8 @@ artifactRepository:
       name: ${MINIO_RELEASE_NAME}
       key: secretkey
 server:
+  extraArgs:
+  - --auth-mode=server
   secure: false
   podLabels:
     networking/traffic-allowed: "yes"
@@ -203,7 +205,7 @@ helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "${HELM_CHARTS_BASE_PATH}
     --set config.csm.platform.vcs-ref="$(git rev-parse --abbrev-ref HEAD || "")" \
     --set image.tag="$API_VERSION" \
     --set api.version="$API_VERSION" \
-    --set config.csm.platform.argo.base-uri="http://${ARGO_RELEASE_NAME}-server.${NAMESPACE}.svc.cluster.local:2746" \
+    --set config.csm.platform.argo.base-uri="http://${ARGO_RELEASE_NAME}-argo-workflows-server.${NAMESPACE}.svc.cluster.local:2746" \
     --set config.csm.platform.argo.workflows.namespace="${NAMESPACE}" \
     --set podAnnotations."com\.cosmotech/deployed-at-timestamp"="\"$(date +%s)\"" \
     "${@:4}"
