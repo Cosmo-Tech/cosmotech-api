@@ -76,7 +76,7 @@ spec:
         spec:
           containers:
             - name: adt-connector-full-sync-container
-              image: ghcr.io/cosmo-tech/adt-twincache-connector:0.0.2
+              image: ghcr.io/cosmo-tech/adt-twincache-connector:0.0.3
               imagePullPolicy: IfNotPresent
               command: [ 'python', "main.py" ]
               env:
