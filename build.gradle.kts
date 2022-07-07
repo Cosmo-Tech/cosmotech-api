@@ -41,7 +41,8 @@ version = scmVersion.version
 
 val kotlinJvmTarget = 17
 val cosmotechApiCommonVersion = "0.1.1-SNAPSHOT"
-val cosmotechApiAzureVersion = "0.1.2-SNAPSHOT"
+val cosmotechApiAzureVersion = "0.1.4-SNAPSHOT"
+val azureSpringBootBomVersion = "3.14.0"
 
 allprojects {
   apply(plugin = "com.diffplug.spotless")
@@ -49,6 +50,7 @@ allprojects {
   apply(plugin = "io.gitlab.arturbosch.detekt")
 
   repositories {
+    mavenLocal()
     maven {
       name = "Argo Client Java GitHub Packages"
       url = uri("https://maven.pkg.github.com/argoproj-labs/argo-client-java")
@@ -175,6 +177,7 @@ subprojects {
         platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES))
     developmentOnly(
         platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES))
+    implementation(platform("com.azure.spring:azure-spring-boot-bom:$azureSpringBootBomVersion"))
 
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-web") {
