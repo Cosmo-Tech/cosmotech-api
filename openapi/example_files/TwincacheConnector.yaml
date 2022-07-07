@@ -1,8 +1,8 @@
-key: TwinCache Connector 0.0.7
-name: TwinCache Connector 0.0.7
+key: TwinCache Connector 0.1.0
+name: TwinCache Connector 0.1.0
 description: Connector for CosmoTech TwinCache. Read TwinCache and write the data in CSV for the Simulation
 repository: cosmo-tech/twincache-connector
-version: "0.0.7"
+version: "0.1.0"
 tags:
   - TwinCache
 url: https://github.com/Cosmo-Tech/twincache-connector/pkgs/container/twincache-connector
