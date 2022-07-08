@@ -335,7 +335,7 @@ class ScenarioRunServiceImplTests {
             workflowId = "my-workflow-id",
             workflowName = "my-workflow-name",
             containers = containers)
-    every { workflowService.launchScenarioRun(any()) } returns myScenarioRun
+    every { workflowService.launchScenarioRun(any(), null) } returns myScenarioRun
     every { idGenerator.generate("scenariorun", "sr-") } returns myScenarioRun.id!!
 
     val scenarioRun =
@@ -392,7 +392,7 @@ class ScenarioRunServiceImplTests {
                         name = "my-container1",
                         envVars = mapOf("MY_SECRET_ENV_VAR" to "value"),
                         image = "my-image:latest")))
-    every { workflowService.launchScenarioRun(any()) } returns myScenarioRun
+    every { workflowService.launchScenarioRun(any(), any()) } returns myScenarioRun
     every { idGenerator.generate("scenariorun", "sr-") } returns myScenarioRun.id!!
 
     val scenarioRunById =
