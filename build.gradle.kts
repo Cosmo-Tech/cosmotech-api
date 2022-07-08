@@ -40,8 +40,9 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 val kotlinJvmTarget = 17
-val cosmotechApiCommonVersion = "0.1.1-SNAPSHOT"
-val cosmotechApiAzureVersion = "0.1.2-SNAPSHOT"
+val cosmotechApiCommonVersion = "0.1.2-SNAPSHOT"
+val cosmotechApiAzureVersion = "0.1.4-SNAPSHOT"
+val azureSpringBootBomVersion = "3.14.0"
 
 allprojects {
   apply(plugin = "com.diffplug.spotless")
@@ -190,7 +191,6 @@ subprojects {
 
     implementation("org.zalando:problem-spring-web-starter:0.27.0")
 
-    api("com.azure.spring:azure-spring-boot-starter-cosmos:3.1.0")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.security:spring-security-oauth2-jose:5.6.3")
     implementation("org.springframework.security:spring-security-oauth2-resource-server:5.6.3")
@@ -213,7 +213,17 @@ subprojects {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
     api("com.github.Cosmo-Tech:cosmotech-api-common:$cosmotechApiCommonVersion")
-    api("com.github.Cosmo-Tech:cosmotech-api-azure:$cosmotechApiAzureVersion")
+    api("com.github.Cosmo-Tech:cosmotech-api-azure:$cosmotechApiAzureVersion") {
+      exclude(group = "org.slf4j", module = "slf4j-api")
+      because(
+          "this depends on org.slf4j:slf4j-api 1.8.0-beta4 (pre 2.x)," +
+              "which is not backward-compatible with 1.7.x." +
+              "See http://www.slf4j.org/faq.html#changesInVersion200")
+    }
+
+
+    implementation(platform("com.azure.spring:azure-spring-boot-bom:$azureSpringBootBomVersion"))
+    api("com.azure.spring:azure-spring-boot-starter-cosmos")
   }
 
   tasks.withType<KotlinCompile> {
