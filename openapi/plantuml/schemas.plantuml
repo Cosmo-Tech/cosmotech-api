@@ -126,6 +126,7 @@ entity RunTemplate {
     gitRepositoryUrl: String
     gitBranchName: String
     runTemplateSourceDir: String
+    executionTimeout: Integer
 }
 
 entity RunTemplateHandlerId {

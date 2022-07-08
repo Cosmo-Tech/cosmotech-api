@@ -123,7 +123,7 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow Spec with StartContainers not null`() {
     val sc = getStartContainersRun()
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc)
+    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
     assertNotNull(workflowSpec)
   }
 
@@ -136,7 +136,7 @@ class WorkflowBuildersTests {
     every { csmPlatformProperties.argo } returns argo
 
     val sc = getStartContainersRun()
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc)
+    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
     val expected = mapOf("kubernetes.io/os" to "linux", "agentpool" to "highcpupool")
 
     assertEquals(expected, workflowSpec.nodeSelector)
@@ -151,7 +151,7 @@ class WorkflowBuildersTests {
     every { csmPlatformProperties.argo } returns argo
 
     val sc = getStartContainersRunDefaultPool()
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc)
+    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
     val expected = mapOf("kubernetes.io/os" to "linux", "agentpool" to "basicpool")
 
     assertEquals(expected, workflowSpec.nodeSelector)
@@ -160,7 +160,7 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow Spec with StartContainers no pool`() {
     val sc = getStartContainersRunNoPool()
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc)
+    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
     val expected = mapOf("kubernetes.io/os" to "linux")
 
     assertEquals(expected, workflowSpec.nodeSelector)
@@ -175,7 +175,7 @@ class WorkflowBuildersTests {
     every { csmPlatformProperties.argo } returns argo
 
     val sc = getStartContainersRun()
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc)
+    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
 
     assertEquals("workflow", workflowSpec.serviceAccountName)
   }
@@ -183,7 +183,7 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow Spec with StartContainers Run name`() {
     val sc = getStartContainersRun()
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc)
+    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
 
     assertEquals("runContainer", workflowSpec.templates?.getOrNull(0)?.name)
   }
@@ -191,7 +191,7 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow Spec with StartContainers Entrypoint FetchDataset`() {
     val sc = getStartContainers()
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc)
+    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
 
     assertEquals("entrypoint", workflowSpec.entrypoint)
   }
@@ -199,7 +199,7 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow Spec with StartContainers entrypoint template not null`() {
     val sc = getStartContainers()
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc)
+    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
 
     val entrypointTemplate =
         workflowSpec.templates?.find { template -> template.name.equals("entrypoint") }
@@ -209,7 +209,7 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow Spec with StartContainers entrypoint dag not null`() {
     val sc = getStartContainers()
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc)
+    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
 
     val entrypointTemplate =
         workflowSpec.templates?.find { template -> template.name.equals("entrypoint") }
@@ -220,7 +220,7 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow Spec with StartContainers entrypoint with dependencies dag valid`() {
     val sc = getStartContainersWithDependencies()
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc)
+    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
 
     val entrypointTemplate =
         workflowSpec.templates?.find { template -> template.name.equals("entrypoint") }
@@ -263,7 +263,7 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow Spec with StartContainers entrypoint dag valid`() {
     val sc = getStartContainers()
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc)
+    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
 
     val entrypointTemplate =
         workflowSpec.templates?.find { template -> template.name.equals("entrypoint") }
@@ -306,7 +306,7 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow Spec with StartContainers entrypoint dag dependencies valid`() {
     val sc = getStartContainers()
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc)
+    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
 
     val entrypointTemplate =
         workflowSpec.templates?.find { template -> template.name.equals("entrypoint") }
@@ -331,7 +331,7 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow Spec with StartContainers diamond`() {
     val sc = getStartContainersDiamond()
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc)
+    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
 
     val entrypointTemplate =
         workflowSpec.templates?.find { template -> template.name.equals("entrypoint") }
@@ -352,14 +352,14 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow with StartContainers not null`() {
     val sc = getStartContainers()
-    val workflow = buildWorkflow(csmPlatformProperties, sc)
+    val workflow = buildWorkflow(csmPlatformProperties, sc, null)
     assertNotNull(workflow)
   }
 
   @Test
   fun `Create Workflow with StartContainers generate name default`() {
     val sc = getStartContainers()
-    val workflow = buildWorkflow(csmPlatformProperties, sc)
+    val workflow = buildWorkflow(csmPlatformProperties, sc, null)
     val expected = V1ObjectMeta().generateName("default-workflow-")
     assertEquals(expected, workflow.metadata)
   }
@@ -367,7 +367,7 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow with StartContainers generate name Scenario`() {
     val sc = getStartContainersNamed()
-    val workflow = buildWorkflow(csmPlatformProperties, sc)
+    val workflow = buildWorkflow(csmPlatformProperties, sc, null)
     val expected = V1ObjectMeta().generateName("Scenario-1-")
     assertEquals(expected, workflow.metadata)
   }
@@ -375,7 +375,7 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow spec with StartContainers volume claim default values`() {
     val sc = getStartContainersDiamond()
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc)
+    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
     val dataDir =
         V1PersistentVolumeClaim()
             .metadata(V1ObjectMeta().name(VOLUME_CLAIM))
@@ -394,7 +394,7 @@ class WorkflowBuildersTests {
     every { csmPlatformProperties.argo.workflows.storageClass } returns "cosmotech-api-test-phoenix"
     every { csmPlatformProperties.argo.workflows.accessModes } returns listOf("ReadWriteMany")
     every { csmPlatformProperties.argo.workflows.requests } returns mapOf("storage" to "300Gi")
-    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc)
+    val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
     val dataDir =
         V1PersistentVolumeClaim()
             .metadata(V1ObjectMeta().name(VOLUME_CLAIM))
@@ -429,7 +429,7 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow with metadata labels`() {
     val sc = getStartContainersWithLabels()
-    val workflow = buildWorkflowSpec(csmPlatformProperties, sc)
+    val workflow = buildWorkflowSpec(csmPlatformProperties, sc, null)
     val labeledTemplate =
         workflow.templates?.find { template -> template.name.equals("fetchDatasetContainer-1") }
 
