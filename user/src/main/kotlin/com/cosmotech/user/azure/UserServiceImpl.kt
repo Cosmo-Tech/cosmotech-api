@@ -6,24 +6,18 @@ import com.azure.cosmos.models.CosmosContainerProperties
 import com.cosmotech.api.azure.CsmAzureService
 import com.cosmotech.api.azure.findAll
 import com.cosmotech.api.azure.findByIdOrThrow
-import com.cosmotech.api.events.OrganizationRegistered
-import com.cosmotech.api.events.OrganizationUnregistered
-import com.cosmotech.api.events.UserAddedToOrganization
-import com.cosmotech.api.events.UserRegistered
-import com.cosmotech.api.events.UserRemovedFromOrganization
-import com.cosmotech.api.events.UserUnregistered
+import com.cosmotech.api.events.*
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.utils.changed
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
 import com.cosmotech.user.domain.UserOrganization
-import java.lang.IllegalStateException
-import javax.annotation.PostConstruct
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
+import javax.annotation.PostConstruct
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
@@ -34,7 +28,7 @@ internal class UserServiceImpl : CsmAzureService(), UserApiService {
 
   @PostConstruct
   fun initService() {
-    this.coreUserContainer = csmPlatformProperties.azure!!.cosmos.coreDatabase.users.container
+    this.coreUserContainer = csmPlatformProperties.azure!!.cosmos!!.coreDatabase!!.users!!.container
     cosmosCoreDatabase.createContainerIfNotExists(
         CosmosContainerProperties(coreUserContainer, "/id"))
   }

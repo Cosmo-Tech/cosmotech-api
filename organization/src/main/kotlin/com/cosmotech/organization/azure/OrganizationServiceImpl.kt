@@ -8,12 +8,7 @@ import com.azure.cosmos.models.SqlQuerySpec
 import com.cosmotech.api.azure.CsmAzureService
 import com.cosmotech.api.azure.findAll
 import com.cosmotech.api.azure.findByIdOrThrow
-import com.cosmotech.api.events.OrganizationRegistered
-import com.cosmotech.api.events.OrganizationUnregistered
-import com.cosmotech.api.events.UserAddedToOrganization
-import com.cosmotech.api.events.UserRemovedFromOrganization
-import com.cosmotech.api.events.UserUnregistered
-import com.cosmotech.api.events.UserUnregisteredForOrganization
+import com.cosmotech.api.events.*
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.utils.changed
@@ -28,12 +23,11 @@ import com.cosmotech.organization.domain.OrganizationUser
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
 import com.fasterxml.jackson.databind.JsonNode
-import java.lang.IllegalStateException
-import javax.annotation.PostConstruct
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
+import javax.annotation.PostConstruct
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
@@ -46,7 +40,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService) 
   @PostConstruct
   fun initService() {
     this.coreOrganizationContainer =
-        csmPlatformProperties.azure!!.cosmos.coreDatabase.organizations.container
+        csmPlatformProperties.azure!!.cosmos!!.coreDatabase!!.organizations!!.container
     cosmosCoreDatabase.createContainerIfNotExists(
         CosmosContainerProperties(coreOrganizationContainer, "/id"))
   }

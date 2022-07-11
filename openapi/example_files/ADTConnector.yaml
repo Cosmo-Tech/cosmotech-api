@@ -1,4 +1,4 @@
-  connectorKey: ADT Connector
+  key: ADT Connector
   name: ADT Connector
   description: Connector for Azure Digital Twins. Read ADT and write the data in CSV for the Simulation
   repository: azure-digital-twins-simulator-connector

@@ -171,6 +171,7 @@ subprojects {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1-native-mt")
+    implementation("org.jetbrains.kotlin:kotlin-test:1.7.0")
 
     implementation(
         platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES))
@@ -221,9 +222,14 @@ subprojects {
               "See http://www.slf4j.org/faq.html#changesInVersion200")
     }
 
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("com.redis.om:redis-om-spring:0.5.1")
+    implementation("com.redislabs:jrejson:1.5.0")
 
     implementation(platform("com.azure.spring:azure-spring-boot-bom:$azureSpringBootBomVersion"))
     api("com.azure.spring:azure-spring-boot-starter-cosmos")
+
+
   }
 
   tasks.withType<KotlinCompile> {
@@ -312,6 +318,11 @@ subprojects {
     tasks.withType<GenerateTask> {
       inputSpec.set("${projectDir}/src/main/openapi/${projectDirName}.yaml")
       outputDir.set(openApiServerSourcesGenerationDir)
+      if (projectDirName.equals("connector")) {
+        templateDir.set("${rootDir}/openapi/templates/kotlin-spring")
+      }
+      // project.logger.lifecycle("###########################
+      // ${rootDir}/openapi/templates/kotlin-spring")
       generatorName.set("kotlin-spring")
       apiPackage.set("com.cosmotech.${projectDirName}.api")
       modelPackage.set("com.cosmotech.${projectDirName}.domain")
