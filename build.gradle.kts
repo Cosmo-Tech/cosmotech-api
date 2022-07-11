@@ -221,7 +221,6 @@ subprojects {
               "See http://www.slf4j.org/faq.html#changesInVersion200")
     }
 
-
     implementation(platform("com.azure.spring:azure-spring-boot-bom:$azureSpringBootBomVersion"))
     api("com.azure.spring:azure-spring-boot-starter-cosmos")
   }
