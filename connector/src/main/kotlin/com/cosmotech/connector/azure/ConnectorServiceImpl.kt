@@ -21,6 +21,8 @@ internal class ConnectorServiceImpl : CsmAzureService(), ConnectorApiService {
 
   private lateinit var coreConnectorContainer: String
 
+  //  @Autowired private lateinit var connectorRepository: ConnectorRepository
+
   @PostConstruct
   fun initService() {
     this.coreConnectorContainer =
@@ -35,6 +37,7 @@ internal class ConnectorServiceImpl : CsmAzureService(), ConnectorApiService {
       cosmosTemplate.findByIdOrThrow(coreConnectorContainer, connectorId)
 
   override fun registerConnector(connector: Connector): Connector {
+
     if (connector.azureManagedIdentity == true &&
         connector.azureAuthenticationWithCustomerAppRegistration == true) {
       throw IllegalArgumentException(
@@ -43,6 +46,7 @@ internal class ConnectorServiceImpl : CsmAzureService(), ConnectorApiService {
               "Both azureManagedIdentity and azureAuthenticationWithCustomerAppRegistration " +
               "cannot be set to true")
     }
+
     return cosmosTemplate.insert(
         coreConnectorContainer,
         connector.copy(

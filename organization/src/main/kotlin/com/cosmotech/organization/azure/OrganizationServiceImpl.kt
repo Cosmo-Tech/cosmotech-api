@@ -8,12 +8,7 @@ import com.azure.cosmos.models.SqlQuerySpec
 import com.cosmotech.api.azure.CsmAzureService
 import com.cosmotech.api.azure.findAll
 import com.cosmotech.api.azure.findByIdOrThrow
-import com.cosmotech.api.events.OrganizationRegistered
-import com.cosmotech.api.events.OrganizationUnregistered
-import com.cosmotech.api.events.UserAddedToOrganization
-import com.cosmotech.api.events.UserRemovedFromOrganization
-import com.cosmotech.api.events.UserUnregistered
-import com.cosmotech.api.events.UserUnregisteredForOrganization
+import com.cosmotech.api.events.*
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.utils.changed
@@ -45,7 +40,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService) 
   @PostConstruct
   fun initService() {
     this.coreOrganizationContainer =
-        csmPlatformProperties.azure!!.cosmos.coreDatabase.organizations.container
+        csmPlatformProperties.azure!!.cosmos!!.coreDatabase!!.organizations!!.container
     cosmosCoreDatabase.createContainerIfNotExists(
         CosmosContainerProperties(coreOrganizationContainer, "/id"))
   }
