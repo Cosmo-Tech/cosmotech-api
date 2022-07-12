@@ -24,6 +24,7 @@ import io.kubernetes.client.openapi.models.V1ObjectMeta
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaimSpec
 import io.kubernetes.client.openapi.models.V1ResourceRequirements
+import io.kubernetes.client.openapi.models.V1Toleration
 import io.kubernetes.client.openapi.models.V1Volume
 import io.kubernetes.client.openapi.models.V1VolumeMount
 
@@ -97,7 +98,7 @@ internal fun buildWorkflowSpec(
     startContainers: ScenarioRunStartContainers,
     executionTimeout: Int?
 ): WorkflowSpec {
-  val nodeSelector = mutableMapOf("kubernetes.io/os" to "linux")
+  val nodeSelector = mutableMapOf("kubernetes.io/os" to "linux", "cosmotech.com/tier" to "compute")
   if (startContainers.nodeLabel != null) {
     nodeSelector[csmPlatformProperties.argo.workflows.nodePoolLabel] = startContainers.nodeLabel
   }
@@ -119,7 +120,8 @@ internal fun buildWorkflowSpec(
                   ?.map(V1LocalObjectReference()::name)
                   ?.ifEmpty { null })
           .nodeSelector(nodeSelector)
-          .serviceAccountName(csmPlatformProperties.argo.workflows.serviceAccountName)
+          .tolerations(listOf(V1Toleration().key("vendor").value("cosmotech").effect("NoSchedule")))
+      .serviceAccountName(csmPlatformProperties.argo.workflows.serviceAccountName)
           .entrypoint(CSM_DAG_ENTRYPOINT)
           .templates(templates)
           .volumeClaimTemplates(buildVolumeClaims(csmPlatformProperties))
