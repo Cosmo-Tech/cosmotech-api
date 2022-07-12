@@ -137,7 +137,11 @@ class WorkflowBuildersTests {
 
     val sc = getStartContainersRun()
     val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
-    val expected = mapOf("kubernetes.io/os" to "linux", "agentpool" to "highcpupool")
+    val expected =
+        mapOf(
+            "kubernetes.io/os" to "linux",
+            "cosmotech.com/tier" to "compute",
+            "agentpool" to "highcpupool")
 
     assertEquals(expected, workflowSpec.nodeSelector)
   }
@@ -152,7 +156,11 @@ class WorkflowBuildersTests {
 
     val sc = getStartContainersRunDefaultPool()
     val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
-    val expected = mapOf("kubernetes.io/os" to "linux", "agentpool" to "basicpool")
+    val expected =
+        mapOf(
+            "kubernetes.io/os" to "linux",
+            "cosmotech.com/tier" to "compute",
+            "agentpool" to "basicpool")
 
     assertEquals(expected, workflowSpec.nodeSelector)
   }
@@ -161,7 +169,7 @@ class WorkflowBuildersTests {
   fun `Create Workflow Spec with StartContainers no pool`() {
     val sc = getStartContainersRunNoPool()
     val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
-    val expected = mapOf("kubernetes.io/os" to "linux")
+    val expected = mapOf("kubernetes.io/os" to "linux", "cosmotech.com/tier" to "compute")
 
     assertEquals(expected, workflowSpec.nodeSelector)
   }

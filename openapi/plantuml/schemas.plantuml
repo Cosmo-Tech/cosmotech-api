@@ -96,6 +96,11 @@ entity OrganizationUser {
     * roles: List<String>
 }
 
+entity ResourceSizeInfo {
+    * cpu: String
+    * memory: String
+}
+
 entity RunTemplate {
     * id: String
     name: String
@@ -103,6 +108,7 @@ entity RunTemplate {
     csmSimulation: String
     tags: List<String>
     computeSize: String
+    resourceSizing: RunTemplateResourceSizing
     noDataIngestionState: Boolean
     fetchDatasets: Boolean
     scenarioDataDownloadTransform: Boolean
@@ -158,6 +164,11 @@ entity RunTemplateParameterValue {
     * value: String
 }
 
+entity RunTemplateResourceSizing {
+    * requests: ResourceSizeInfo
+    * limits: ResourceSizeInfo
+}
+
 entity RunTemplateStepSource {
 }
 
@@ -180,6 +191,7 @@ entity Scenario {
     solutionName: String
     runTemplateName: String
     datasetList: List<String>
+    resourceSizing: ScenarioResourceSizing
     parametersValues: List<ScenarioRunTemplateParameterValue>
     lastRun: ScenarioLastRun
     parentLastRun: ScenarioLastRun
@@ -219,6 +231,11 @@ entity ScenarioLastRun {
     workflowName: String
 }
 
+entity ScenarioResourceSizing {
+    * requests: ResourceSizeInfo
+    * limits: ResourceSizeInfo
+}
+
 entity ScenarioRun {
     id: String
     state: ScenarioRunState
@@ -254,6 +271,7 @@ entity ScenarioRunContainer {
     runArgs: List<String>
     dependencies: List<String>
     solutionContainer: Boolean
+    nodeLabel: String
     artifacts: List<ScenarioRunContainerArtifact>
 }
 
@@ -437,11 +455,14 @@ entity WorkspaceWebApp {
 }
 
 
+RunTemplateResourceSizing -- ResourceSizeInfo : requests
+RunTemplateResourceSizing -- ResourceSizeInfo : limits
 ScenarioRunContainer -- "0..*" ScenarioRunContainerArtifact : artifacts
 ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
 OrganizationServices -- OrganizationService : storage
 OrganizationServices -- OrganizationService : solutionsContainerRegistry
 Scenario -- "0..*" ScenarioUser : users
+Scenario -- ScenarioResourceSizing : resourceSizing
 Scenario -- "0..*" ScenarioRunTemplateParameterValue : parametersValues
 Scenario -- ScenarioLastRun : lastRun
 Scenario -- ScenarioLastRun : parentLastRun
@@ -450,9 +471,12 @@ ScenarioRun -- "0..*" RunTemplateParameterValue : parametersValues
 ScenarioRun -- "0..*" ScenarioRunContainer : containers
 ScenarioRunStatus -- "0..*" ScenarioRunStatusNode : nodes
 Connector -- "0..*" ConnectorParameterGroup : parameterGroups
+ScenarioResourceSizing -- ResourceSizeInfo : requests
+ScenarioResourceSizing -- ResourceSizeInfo : limits
 Organization -- "0..*" OrganizationUser : users
 Organization -- OrganizationServices : services
 User -- "0..*" UserOrganization : organizations
+RunTemplate -- RunTemplateResourceSizing : resourceSizing
 UserOrganization -- "0..*" UserWorkspace : workspaces
 Solution -- "0..*" RunTemplateParameter : parameters
 Solution -- "0..*" RunTemplateParameterGroup : parameterGroups
