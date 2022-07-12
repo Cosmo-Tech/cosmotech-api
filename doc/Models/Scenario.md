@@ -20,6 +20,7 @@ Name | Type | Description | Notes
 **solutionName** | **String** | the Solution name | [optional] [default to null]
 **runTemplateName** | **String** | the Solution Run Template name associated with this Scenario | [optional] [default to null]
 **datasetList** | **List** | the list of Dataset Id associated to this Scenario Run Template | [optional] [default to null]
+**resourceSizing** | [**ScenarioResourceSizing**](ScenarioResourceSizing.md) |  | [optional] [default to null]
 **parametersValues** | [**List**](ScenarioRunTemplateParameterValue.md) | the list of Solution Run Template parameters values | [optional] [default to null]
 **lastRun** | [**ScenarioLastRun**](ScenarioLastRun.md) |  | [optional] [default to null]
 **parentLastRun** | [**ScenarioLastRun**](ScenarioLastRun.md) |  | [optional] [default to null]

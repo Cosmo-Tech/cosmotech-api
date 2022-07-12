@@ -563,6 +563,8 @@ components:
         computeSize:
           type: string
           description: the compute size needed for this Run Template. Standard sizes are basic and highcpu. Default is basic
+        resourceSizing:
+          $ref: "#/components/schemas/RunTemplateResourceSizing"
         noDataIngestionState:
           type: boolean
           description: set to true if the run template does not want to check data ingestion state (no probes or not control plane)
@@ -664,6 +666,30 @@ components:
       type: string
       description: the source local, cloud or git repository
       enum: ["cloud","git","local","platform"]
+    RunTemplateResourceSizing:
+      type: object
+      description: a description object for resource requests and limits (default same configuration as basic sizing)
+      properties:
+        requests:
+          $ref: '#/components/schemas/ResourceSizeInfo'
+        limits:
+          $ref: '#/components/schemas/ResourceSizeInfo'
+      required:
+        - requests
+        - limits
+    ResourceSizeInfo:
+      type: object
+      description: define cpus and memory needs
+      properties:
+        cpu:
+          type: string
+          description: define cpu needs
+        memory:
+          type: string
+          description: define memory needs
+      required:
+        - cpu
+        - memory
     RunTemplateParameterGroup:
       type: object
       description: a Parameter Group for a Run Template

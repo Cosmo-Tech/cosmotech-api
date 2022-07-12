@@ -115,6 +115,11 @@ entity OrganizationServices {
     solutionsContainerRegistry: OrganizationService
 }
 
+entity ResourceSizeInfo {
+    * cpu: String
+    * memory: String
+}
+
 entity RunTemplate {
     * id: String
     name: String
@@ -122,6 +127,7 @@ entity RunTemplate {
     csmSimulation: String
     tags: List<String>
     computeSize: String
+    resourceSizing: RunTemplateResourceSizing
     noDataIngestionState: Boolean
     fetchDatasets: Boolean
     scenarioDataDownloadTransform: Boolean
@@ -178,6 +184,11 @@ entity RunTemplateParameterValue {
     * value: String
 }
 
+entity RunTemplateResourceSizing {
+    * requests: ResourceSizeInfo
+    * limits: ResourceSizeInfo
+}
+
 entity RunTemplateStepSource {
 }
 
@@ -199,6 +210,7 @@ entity Scenario {
     solutionName: String
     runTemplateName: String
     datasetList: List<String>
+    resourceSizing: ScenarioResourceSizing
     parametersValues: List<ScenarioRunTemplateParameterValue>
     lastRun: ScenarioLastRun
     parentLastRun: ScenarioLastRun
@@ -248,6 +260,11 @@ entity ScenarioRole {
     * role: String
 }
 
+entity ScenarioResourceSizing {
+    * requests: ResourceSizeInfo
+    * limits: ResourceSizeInfo
+}
+
 entity ScenarioRun {
     id: String
     state: ScenarioRunState
@@ -283,6 +300,7 @@ entity ScenarioRunContainer {
     runArgs: List<String>
     dependencies: List<String>
     solutionContainer: Boolean
+    nodeLabel: String
     artifacts: List<ScenarioRunContainerArtifact>
 }
 
@@ -474,11 +492,14 @@ entity WorkspaceWebApp {
 }
 
 
+RunTemplateResourceSizing -- ResourceSizeInfo : requests
+RunTemplateResourceSizing -- ResourceSizeInfo : limits
 ScenarioRunContainer -- "0..*" ScenarioRunContainerArtifact : artifacts
 WorkspaceSecurity -- "0..*" WorkspaceAccessControl : accessControlList
 ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
 OrganizationServices -- OrganizationService : storage
 OrganizationServices -- OrganizationService : solutionsContainerRegistry
+Scenario -- ScenarioResourceSizing : resourceSizing
 Scenario -- "0..*" ScenarioRunTemplateParameterValue : parametersValues
 Scenario -- ScenarioLastRun : lastRun
 Scenario -- ScenarioLastRun : parentLastRun
@@ -488,11 +509,14 @@ ScenarioRun -- "0..*" RunTemplateParameterValue : parametersValues
 ScenarioRun -- "0..*" ScenarioRunContainer : containers
 ScenarioRunStatus -- "0..*" ScenarioRunStatusNode : nodes
 Connector -- "0..*" ConnectorParameterGroup : parameterGroups
+ScenarioResourceSizing -- ResourceSizeInfo : requests
+ScenarioResourceSizing -- ResourceSizeInfo : limits
 ScenarioSecurity -- "0..*" ScenarioAccessControl : accessControlList
 Organization -- OrganizationServices : services
 Organization -- OrganizationSecurity : security
 User -- "0..*" UserOrganization : organizations
 RunTemplate -- DeleteHistoricalData : deleteHistoricalData
+RunTemplate -- RunTemplateResourceSizing : resourceSizing
 UserOrganization -- "0..*" UserWorkspace : workspaces
 Solution -- "0..*" RunTemplateParameter : parameters
 Solution -- "0..*" RunTemplateParameterGroup : parameterGroups
