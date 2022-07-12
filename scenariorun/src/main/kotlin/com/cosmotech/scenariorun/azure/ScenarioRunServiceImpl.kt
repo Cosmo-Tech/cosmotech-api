@@ -261,7 +261,7 @@ internal class ScenarioRunServiceImpl(
     logger.debug(startInfo.toString())
     scenarioDataDownloadRequest.response =
         workflowService
-            .launchScenarioRun(startInfo.startContainers)
+            .launchScenarioRun(startInfo.startContainers, null)
             .asMapWithAdditionalData(scenarioDataDownloadRequest.workspaceId)
   }
 
@@ -293,7 +293,9 @@ internal class ScenarioRunServiceImpl(
             scenarioId,
         )
     logger.debug(startInfo.toString())
-    val scenarioRunRequest = workflowService.launchScenarioRun(startInfo.startContainers)
+    val scenarioRunRequest =
+        workflowService.launchScenarioRun(
+            startInfo.startContainers, startInfo.runTemplate.executionTimeout)
     val scenarioRun =
         this.dbCreateScenarioRun(
             scenarioRunRequest,
@@ -360,7 +362,7 @@ internal class ScenarioRunServiceImpl(
       organizationId: String,
       scenarioRunStartContainers: ScenarioRunStartContainers
   ): ScenarioRun {
-    val scenarioRunRequest = workflowService.launchScenarioRun(scenarioRunStartContainers)
+    val scenarioRunRequest = workflowService.launchScenarioRun(scenarioRunStartContainers, null)
     return this.dbCreateScenarioRun(
             scenarioRunRequest,
             organizationId,

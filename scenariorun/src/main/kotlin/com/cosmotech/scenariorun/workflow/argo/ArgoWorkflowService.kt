@@ -180,11 +180,13 @@ internal class ArgoWorkflowService(
   }
 
   override fun launchScenarioRun(
-      scenarioRunStartContainers: ScenarioRunStartContainers
+      scenarioRunStartContainers: ScenarioRunStartContainers,
+      executionTimeout: Int?
   ): ScenarioRun {
     val body =
         WorkflowCreateRequest()
-            .workflow(buildWorkflow(csmPlatformProperties, scenarioRunStartContainers))
+            .workflow(
+                buildWorkflow(csmPlatformProperties, scenarioRunStartContainers, executionTimeout))
 
     logger.trace("Workflow: {}", body.workflow)
 

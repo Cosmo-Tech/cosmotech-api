@@ -34,6 +34,7 @@ internal const val VOLUME_CLAIM_DATASETS_SUBPATH = "datasetsdir"
 internal const val VOLUME_CLAIM_PARAMETERS_SUBPATH = "parametersdir"
 private const val VOLUME_DATASETS_PATH = "/mnt/scenariorun-data"
 private const val VOLUME_PARAMETERS_PATH = "/mnt/scenariorun-parameters"
+private const val CSM_ARGO_WORKFLOWS_TIMEOUT = 28800
 
 internal fun buildTemplate(scenarioRunContainer: ScenarioRunContainer): Template {
   var envVars: MutableList<V1EnvVar>? = null
@@ -90,7 +91,8 @@ internal fun buildTemplate(scenarioRunContainer: ScenarioRunContainer): Template
 
 internal fun buildWorkflowSpec(
     csmPlatformProperties: CsmPlatformProperties,
-    startContainers: ScenarioRunStartContainers
+    startContainers: ScenarioRunStartContainers,
+    executionTimeout: Int?
 ): WorkflowSpec {
   val nodeSelector = mutableMapOf("kubernetes.io/os" to "linux")
   if (startContainers.nodeLabel != null) {
@@ -101,31 +103,37 @@ internal fun buildWorkflowSpec(
   val entrypointTemplate = buildEntrypointTemplate(startContainers)
   templates.add(entrypointTemplate)
 
-  return WorkflowSpec()
-      .imagePullSecrets(
-          csmPlatformProperties
-              .argo
-              .imagePullSecrets
-              ?.filterNot(String::isBlank)
-              ?.map(V1LocalObjectReference()::name)
-              ?.ifEmpty { null })
-      .nodeSelector(nodeSelector)
-      .serviceAccountName(csmPlatformProperties.argo.workflows.serviceAccountName)
-      .entrypoint(CSM_DAG_ENTRYPOINT)
-      .templates(templates)
-      .volumeClaimTemplates(buildVolumeClaims(csmPlatformProperties))
+  var workflowSpec =
+      WorkflowSpec()
+          .imagePullSecrets(
+              csmPlatformProperties
+                  .argo
+                  .imagePullSecrets
+                  ?.filterNot(String::isBlank)
+                  ?.map(V1LocalObjectReference()::name)
+                  ?.ifEmpty { null })
+          .nodeSelector(nodeSelector)
+          .serviceAccountName(csmPlatformProperties.argo.workflows.serviceAccountName)
+          .entrypoint(CSM_DAG_ENTRYPOINT)
+          .templates(templates)
+          .volumeClaimTemplates(buildVolumeClaims(csmPlatformProperties))
+
+  workflowSpec.activeDeadlineSeconds = executionTimeout ?: CSM_ARGO_WORKFLOWS_TIMEOUT
+
+  return workflowSpec
 }
 
 internal fun buildWorkflow(
     csmPlatformProperties: CsmPlatformProperties,
-    startContainers: ScenarioRunStartContainers
+    startContainers: ScenarioRunStartContainers,
+    executionTimeout: Int?
 ) =
     Workflow()
         .metadata(
             V1ObjectMeta()
                 .generateName(startContainers.generateName ?: CSM_DEFAULT_WORKFLOW_NAME)
                 .labels(startContainers.labels))
-        .spec(buildWorkflowSpec(csmPlatformProperties, startContainers))
+        .spec(buildWorkflowSpec(csmPlatformProperties, startContainers, executionTimeout))
 
 private fun buildEntrypointTemplate(startContainers: ScenarioRunStartContainers): Template {
   val dagTemplate = Template().name(CSM_DAG_ENTRYPOINT)
