@@ -136,7 +136,7 @@ resources:
     cpu: 2
     memory: 200Mi
 metricsScraper:
-  enabled: true
+  enabled: false
   nodeSelector:
     "cosmotech.com/tier": "services"
   tolerations:
@@ -152,8 +152,8 @@ metricsScraper:
       cpu: 1
       memory: 64Mi
 
-
 EOF
+
 helm upgrade --install -n ${NAMESPACE} kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --version ${VERSION_KUBERNETES_DASHBOARD} --values values-kubernetes-dashboard.yaml
 
 # Grafana
@@ -179,10 +179,10 @@ loki:
   resources:
     requests:
       cpu: 100m
-      memory: 32Mi
+      memory: 128Mi
     limits:
       cpu: 1
-      memory: 64Mi
+      memory: 128Mi
 prometheus:
   enabled: true
   alertmanager:
@@ -201,15 +201,13 @@ prometheus:
     resources:
       requests:
         cpu: 100m
-        memory: 16Mi
+        memory: 64Mi
       limits:
         cpu: 1
         memory: 64Mi
   nodeExporter:
     podLabels:
       "networking/traffic-allowed": "yes"
-    nodeSelector:
-      "cosmotech.com/tier": "services"
     tolerations:
     - key: "vendor"
       operator: "Equal"
@@ -218,7 +216,7 @@ prometheus:
     resources:
       requests:
         cpu: 100m
-        memory: 16Mi
+        memory: 64Mi
       limits:
         cpu: 1
         memory: 64Mi
@@ -238,11 +236,12 @@ prometheus:
     resources:
       requests:
         cpu: 100m
-        memory: 128Mi
+        memory: 512Mi
       limits:
         cpu: 1
-        memory: 256Mi
+        memory: 512Mi
   pushgateway:
+    enabled: false
     persistentVolume:
       enabled: true
       size: "2Gi"
@@ -258,7 +257,7 @@ prometheus:
     resources:
       requests:
         cpu: 100m
-        memory: 15Mi
+        memory: 64Mi
       limits:
         cpu: 1
         memory: 64Mi
@@ -278,7 +277,7 @@ promtail:
   resources:
     requests:
       cpu: 100m
-      memory: 16Mi
+      memory: 64Mi
     limits:
       cpu: 1
       memory: 64Mi
@@ -299,7 +298,7 @@ grafana:
   resources:
     requests:
       cpu: 100m
-      memory: 64Mi
+      memory: 128Mi
     limits:
       cpu: 1
       memory: 128Mi
@@ -363,7 +362,7 @@ controller:
   resources:
     requests:
       cpu: 100m
-      memory: 128Mi
+      memory: 512Mi
     limits:
       cpu: 1000m
       memory: 512Mi
@@ -381,7 +380,7 @@ defaultBackend:
   resources:
     requests:
       cpu: 100m
-      memory: 128Mi
+      memory: 512Mi
     limits:
       cpu: 1000m
       memory: 512Mi
@@ -425,7 +424,7 @@ podLabels:
 resources:
   requests:
     cpu: 10m
-    memory: 16Mi
+    memory: 64Mi
   limits:
     cpu: 1000m
     memory: 64Mi
@@ -442,7 +441,7 @@ webhook:
   resources:
     requests:
       cpu: 10m
-      memory: 16Mi
+      memory: 64Mi
     limits:
       cpu: 1000m
       memory: 64Mi
@@ -459,7 +458,7 @@ cainjector:
   resources:
     requests:
       cpu: 10m
-      memory: 16Mi
+      memory: 64Mi
     limits:
       cpu: 1000m
       memory: 64Mi
@@ -476,10 +475,10 @@ startupapicheck:
   resources:
     requests:
       cpu: 10m
-      memory: 16Mi
+      memory: 64Mi
     limits:
       cpu: 1000m
-      memory: 63Mi
+      memory: 64Mi
 
 EOF
 
@@ -529,7 +528,7 @@ spec:
                 resources:
                   requests:
                     cpu: 10m
-                    memory: 16Mi
+                    memory: 64Mi
                   limits:
                     cpu: 1000m
                     memory: 64Mi
@@ -620,7 +619,7 @@ master:
   resources:
     requests:
       cpu: 500m
-      memory: 2Gi
+      memory: 4Gi
     limits:
       cpu: 1000m
       memory: 4Gi
@@ -641,7 +640,7 @@ replica:
   resources:
     requests:
       cpu: 500m
-      memory: 2Gi
+      memory: 4Gi
     limits:
       cpu: 1000m
       memory: 4Gi
@@ -710,7 +709,7 @@ argo:
     resources:
       requests:
         cpu: 100m
-        memory: 32Mi
+        memory: 64Mi
       limits:
         cpu: 1000m
         memory: 64Mi
@@ -725,10 +724,10 @@ argo:
     resources:
       requests:
         cpu: 100m
-        memory: 32Mi
+        memory: 64Mi
       limits:
         cpu: 1000m
-        memory: 128Mi
+        memory: 64Mi
   minio:
     tolerations:
     - key: "vendor"
@@ -740,7 +739,7 @@ argo:
     resources:
       requests:
         cpu: 100m
-        memory: 128Mi
+        memory: 256Mi
       limits:
         cpu: 1000m
         memory: 256Mi
@@ -752,7 +751,7 @@ postgresql:
   resources:
     requests:
       cpu: 250m
-      memory: 64Mi
+      memory: 256Mi
     limits:
       cpu: 1000m
       memory: 256Mi
@@ -825,7 +824,7 @@ nodeSelector:
 resources:
   requests:
     cpu: 500m
-    memory: 512Mi
+    memory: 1024Mi
   limits:
     cpu: 2
     memory: 1024Mi
