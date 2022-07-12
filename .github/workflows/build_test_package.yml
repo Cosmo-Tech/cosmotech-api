@@ -303,6 +303,8 @@ jobs:
         uses: Azure/container-scan@v0.1
         with:
           image-name: com.cosmotech/cosmotech-api:${{ github.sha }}
+        env:
+          DOCKLE_HOST: "unix:///var/run/docker.sock"
 
       - name: Convert Container Scan Report to SARIF
         id: scan-to-sarif
