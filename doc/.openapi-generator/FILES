@@ -23,11 +23,13 @@ Models/OrganizationRole.md
 Models/OrganizationSecurity.md
 Models/OrganizationService.md
 Models/OrganizationServices.md
+Models/ResourceSizeInfo.md
 Models/RunTemplate.md
 Models/RunTemplateHandlerId.md
 Models/RunTemplateParameter.md
 Models/RunTemplateParameterGroup.md
 Models/RunTemplateParameterValue.md
+Models/RunTemplateResourceSizing.md
 Models/RunTemplateStepSource.md
 Models/Scenario.md
 Models/ScenarioAccessControl.md
@@ -38,6 +40,7 @@ Models/ScenarioDataDownloadJob.md
 Models/ScenarioJobState.md
 Models/ScenarioLastRun.md
 Models/ScenarioRole.md
+Models/ScenarioResourceSizing.md
 Models/ScenarioRun.md
 Models/ScenarioRunContainer.md
 Models/ScenarioRunContainerArtifact.md

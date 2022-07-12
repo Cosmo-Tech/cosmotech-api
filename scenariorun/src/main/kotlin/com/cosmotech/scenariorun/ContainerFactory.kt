@@ -17,8 +17,10 @@ import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
+import com.cosmotech.scenariorun.container.Sizing
 import com.cosmotech.scenariorun.container.SolutionContainerStepSpec
 import com.cosmotech.scenariorun.container.StartInfo
+import com.cosmotech.scenariorun.container.toSizing
 import com.cosmotech.scenariorun.dataset.PARAMETERS_DATASET_ID
 import com.cosmotech.scenariorun.dataset.findDatasetsAndConnectors
 import com.cosmotech.scenariorun.dataset.getDatasetEnvVars
@@ -260,16 +262,23 @@ internal class ContainerFactory(
       scenarioDataDownload: Boolean = false,
       scenarioDataDownloadJobId: String? = null,
   ): ScenarioRunStartContainers {
+
     if (scenario.runTemplateId == "")
         throw IllegalStateException("Scenario runTemplateId cannot be null")
+
     val template = getRunTemplate(solution, (scenario.runTemplateId ?: ""))
+
     val nodeLabel =
         if (template.computeSize == NODE_PARAM_NONE) {
           null
         } else {
-          (template.computeSize?.removeSuffix(NODE_LABEL_SUFFIX) ?: NODE_LABEL_DEFAULT).plus(
-              NODE_LABEL_SUFFIX)
+          (template.computeSize?.removeSuffix(NODE_LABEL_SUFFIX) ?: NODE_LABEL_DEFAULT)
         }
+
+    val scenarioSizing = scenario.resourceSizing?.toSizing()
+
+    val runTemplateSizing = template.resourceSizing?.toSizing()
+
     val containers =
         buildContainersPipeline(
             scenario,
@@ -281,12 +290,12 @@ internal class ContainerFactory(
             csmSimulationId,
             scenarioDataDownload,
             scenarioDataDownloadJobId,
-        )
+            scenarioSizing ?: runTemplateSizing)
     val generateName =
         "${GENERATE_NAME_PREFIX}${scenario.id}${GENERATE_NAME_SUFFIX}".sanitizeForKubernetes()
     return ScenarioRunStartContainers(
         generateName = generateName,
-        nodeLabel = nodeLabel,
+        nodeLabel = nodeLabel?.plus(NODE_LABEL_SUFFIX),
         containers = containers,
         csmSimulationId = csmSimulationId,
         labels = mapOf(CSM_JOB_ID_LABEL_KEY to (scenarioDataDownloadJobId ?: "")))
@@ -303,6 +312,7 @@ internal class ContainerFactory(
       csmSimulationId: String,
       scenarioDataDownload: Boolean = false,
       scenarioDataDownloadJobId: String? = null,
+      customSizing: Sizing?
   ): List<ScenarioRunContainer> {
     if (scenario.id == null) throw IllegalStateException("Scenario Id cannot be null")
     val runTemplateId =

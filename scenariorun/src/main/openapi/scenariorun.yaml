@@ -724,6 +724,9 @@ components:
           type: boolean
           readOnly: true
           description: whether or not this container is a Cosmo Tech solution container
+        nodeLabel:
+          type: string
+          description: the node label request
         artifacts:
           type: array
           description: the list of artifacts
