@@ -32,7 +32,7 @@ internal fun findDatasetsAndConnectors(
     addDatasetAndConnector(
         datasetService, connectorService, organizationId, datasetId, datasets, connectors)
   }
-  val parameterGroupIds = runTemplate.parameterGroups ?: listOf()
+  val parameterGroupIds = runTemplate.parameterGroups
   if (parameterGroupIds != null) {
     val parametersIds =
         (solution.parameterGroups?.filter { it.id in parameterGroupIds }?.map {
