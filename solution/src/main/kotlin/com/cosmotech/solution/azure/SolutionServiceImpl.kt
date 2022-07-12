@@ -154,7 +154,7 @@ internal class SolutionServiceImpl(
       runTemplateId: String
   ) {
     val existingSolution = findSolutionById(organizationId, solutionId)
-    if (!(existingSolution.runTemplates?.removeIf { it.id == runTemplateId } ?: true)) {
+    if (existingSolution.runTemplates?.removeIf { it.id == runTemplateId } == false) {
       throw CsmResourceNotFoundException("Run Template '$runTemplateId' *not* found")
     }
     cosmosTemplate.upsert("${organizationId}_solutions", existingSolution)
@@ -200,8 +200,7 @@ internal class SolutionServiceImpl(
     val existingSolution = findSolutionById(organizationId, solutionId)
     val runTemplates =
         existingSolution.runTemplates?.filter { it.id == runTemplateId }?.toMutableList()
-            ?: mutableListOf()
-    if (runTemplates.isEmpty()) {
+    if (runTemplates == null || runTemplates.isEmpty()) {
       throw CsmResourceNotFoundException("Run Template '$runTemplateId' *not* found")
     }
     var hasChanged = false
@@ -263,20 +262,19 @@ internal class SolutionServiceImpl(
             "${solutionId.sanitizeForAzureStorage()}/$runTemplateId/${handlerId.value}.zip")
         .upload(body.inputStream, body.contentLength(), overwrite)
 
-    val runTemplate = solution.runTemplates?.findLast { it.id == runTemplateId }
-    if (runTemplate == null) {
-      throw CsmResourceNotFoundException("Run Template '$runTemplateId' *not* found")
-    }
+    val runTemplate =
+        solution.runTemplates?.findLast { it.id == runTemplateId }
+            ?: throw CsmResourceNotFoundException("Run Template '$runTemplateId' *not* found")
     when (handlerId) {
       RunTemplateHandlerId.parameters_handler ->
-          runTemplate!!.parametersHandlerSource = RunTemplateStepSource.cloud
+          runTemplate.parametersHandlerSource = RunTemplateStepSource.cloud
       RunTemplateHandlerId.validator ->
-          runTemplate!!.datasetValidatorSource = RunTemplateStepSource.cloud
-      RunTemplateHandlerId.prerun -> runTemplate!!.preRunSource = RunTemplateStepSource.cloud
-      RunTemplateHandlerId.engine -> runTemplate!!.runSource = RunTemplateStepSource.cloud
-      RunTemplateHandlerId.postrun -> runTemplate!!.postRunSource = RunTemplateStepSource.cloud
+          runTemplate.datasetValidatorSource = RunTemplateStepSource.cloud
+      RunTemplateHandlerId.prerun -> runTemplate.preRunSource = RunTemplateStepSource.cloud
+      RunTemplateHandlerId.engine -> runTemplate.runSource = RunTemplateStepSource.cloud
+      RunTemplateHandlerId.postrun -> runTemplate.postRunSource = RunTemplateStepSource.cloud
       RunTemplateHandlerId.scenariodata_transform ->
-          runTemplate!!.scenariodataTransformSource = RunTemplateStepSource.cloud
+          runTemplate.scenariodataTransformSource = RunTemplateStepSource.cloud
     }.run {
       // This trick forces Kotlin to raise an error at compile time if the "when" statement is not
       // exhaustive
@@ -313,8 +311,8 @@ internal class SolutionServiceImpl(
       runTemplateId: String,
   ): Solution {
     val solution = findSolutionById(organizationId, solutionId)
-    val validRunTemplateIds = solution.runTemplates?.map { it.id }?.toSet() ?: setOf()
-    if (validRunTemplateIds.isEmpty()) {
+    val validRunTemplateIds = solution.runTemplates?.map { it.id }?.toSet()
+    if (validRunTemplateIds == null || validRunTemplateIds.isEmpty()) {
       throw IllegalArgumentException(
           "Solution $solutionId does not declare any run templates. " +
               "It is therefore not possible to upload run template handlers. " +
