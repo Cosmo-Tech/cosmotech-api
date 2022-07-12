@@ -114,7 +114,7 @@ internal const val SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME = "downloadUrl"
 private const val EVENT_HUB_SCENARIO_RUN_NAME = "scenariorun"
 private const val EVENT_HUB_PROBES_MEASURES_NAME = "probesmeasures"
 
-public const val CSM_DAG_ROOT = "DAG_ROOT"
+const val CSM_DAG_ROOT = "DAG_ROOT"
 
 @Component
 @Suppress("LargeClass", "TooManyFunctions")
@@ -1008,9 +1008,7 @@ internal class ContainerFactory(
   }
 
   private fun getRunTemplate(solution: Solution, runTemplateId: String): RunTemplate {
-    return (solution.runTemplates ?: mutableListOf()).find { runTemplate ->
-      runTemplate.id == runTemplateId
-    }
+    return solution.runTemplates?.find { runTemplate -> runTemplate.id == runTemplateId }
         ?: throw IllegalStateException(
             "runTemplateId $runTemplateId not found in Solution ${solution.id}")
   }
@@ -1251,10 +1249,10 @@ internal class ContainerFactory(
       }
 
   private fun getImageName(registry: String, repository: String?, version: String? = null): String {
-    if (repository == null) throw IllegalStateException("Solution repository is not defined")
-    val repo = repository ?: "ERROR"
-    val repoVersion = if (version == null) repo else "${repo}:${version}"
-    return if (registry != "") "${registry}/${repoVersion}" else repoVersion
+    val repoVersion =
+        repository.let { if (version == null) it else "${it}:${version}" }
+            ?: throw IllegalStateException("Solution repository is not defined")
+    return if (registry.isNotEmpty()) "${registry}/${repoVersion}" else repoVersion
   }
 }
 
