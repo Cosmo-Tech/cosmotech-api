@@ -412,6 +412,7 @@ class ScenarioRunServiceImplTests {
     every { eventBus.authentication.strategy } returns
         CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
             .TENANT_CLIENT_CREDENTIALS
+    every { workspace.sendScenarioMetadataToEventHub } returns false
     val scenarioRunById =
         this.scenarioRunServiceImpl.runScenario(ORGANIZATION_ID, WORKSPACE_ID, "s-myscenarioid")
 
