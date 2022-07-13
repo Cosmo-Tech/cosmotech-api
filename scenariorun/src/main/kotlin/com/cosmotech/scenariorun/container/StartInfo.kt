@@ -4,11 +4,14 @@ package com.cosmotech.scenariorun.container
 
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioResourceSizing
+import com.cosmotech.scenariorun.domain.ContainerResourceSizeInfo
+import com.cosmotech.scenariorun.domain.ContainerResourceSizing
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateResourceSizing
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.domain.Workspace
+import io.kubernetes.client.custom.Quantity
 
 internal data class StartInfo(
     val startContainers: ScenarioRunStartContainers,
@@ -22,6 +25,12 @@ internal data class StartInfo(
 data class SizingInfo(val cpu: String, val memory: String)
 
 data class Sizing(val requests: SizingInfo, val limits: SizingInfo)
+
+fun Sizing.toContainerResourceSizing(): ContainerResourceSizing {
+  return ContainerResourceSizing(
+      requests = ContainerResourceSizeInfo(cpu = this.requests.cpu, memory = this.requests.memory),
+      limits = ContainerResourceSizeInfo(cpu = this.limits.cpu, memory = this.limits.memory))
+}
 
 internal val BASIC_SIZING =
     Sizing(
@@ -48,4 +57,12 @@ fun RunTemplateResourceSizing.toSizing(): Sizing {
   return Sizing(
       requests = SizingInfo(cpu = this.requests.cpu, memory = this.requests.memory),
       limits = SizingInfo(cpu = this.limits.cpu, memory = this.limits.memory))
+}
+
+fun ContainerResourceSizing.getRequestsMap(): Map<String, Quantity> {
+  return mapOf("cpu" to Quantity(this.requests.cpu), "memory" to Quantity(this.requests.memory))
+}
+
+fun ContainerResourceSizing.getLimitsMap(): Map<String, Quantity> {
+  return mapOf("cpu" to Quantity(this.limits.cpu), "memory" to Quantity(this.limits.memory))
 }

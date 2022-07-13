@@ -38,6 +38,16 @@ entity ConnectorParameterGroup {
     * parameters: List<ConnectorParameter>
 }
 
+entity ContainerResourceSizeInfo {
+    * cpu: String
+    * memory: String
+}
+
+entity ContainerResourceSizing {
+    * requests: ContainerResourceSizeInfo
+    * limits: ContainerResourceSizeInfo
+}
+
 entity Dataset {
     id: String
     name: String
@@ -301,6 +311,7 @@ entity ScenarioRunContainer {
     dependencies: List<String>
     solutionContainer: Boolean
     nodeLabel: String
+    resourceSizing: ContainerResourceSizing
     artifacts: List<ScenarioRunContainerArtifact>
 }
 
@@ -494,6 +505,9 @@ entity WorkspaceWebApp {
 
 RunTemplateResourceSizing -- ResourceSizeInfo : requests
 RunTemplateResourceSizing -- ResourceSizeInfo : limits
+ContainerResourceSizing -- ContainerResourceSizeInfo : requests
+ContainerResourceSizing -- ContainerResourceSizeInfo : limits
+ScenarioRunContainer -- ContainerResourceSizing : resourceSizing
 ScenarioRunContainer -- "0..*" ScenarioRunContainerArtifact : artifacts
 WorkspaceSecurity -- "0..*" WorkspaceAccessControl : accessControlList
 ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
