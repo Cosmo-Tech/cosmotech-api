@@ -4,6 +4,10 @@ package com.cosmotech.scenariorun.workflow.argo
 
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.scenariorun.CSM_DAG_ROOT
+import com.cosmotech.scenariorun.container.BASIC_SIZING
+import com.cosmotech.scenariorun.container.getLimitsMap
+import com.cosmotech.scenariorun.container.getRequestsMap
+import com.cosmotech.scenariorun.container.toContainerResourceSizing
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
 import io.argoproj.workflow.models.ArchiveStrategy
@@ -58,6 +62,9 @@ internal fun buildTemplate(scenarioRunContainer: ScenarioRunContainer): Template
               .subPath(VOLUME_CLAIM_PARAMETERS_SUBPATH),
           V1VolumeMount().name("out").mountPath("/var/csmoutput"))
 
+  val sizingInfo = scenarioRunContainer.resourceSizing ?: BASIC_SIZING.toContainerResourceSizing()
+
+  scenarioRunContainer.nodeLabel
   val container =
       V1Container()
           .image(scenarioRunContainer.image)
@@ -65,6 +72,10 @@ internal fun buildTemplate(scenarioRunContainer: ScenarioRunContainer): Template
           .env(envVars)
           .args(scenarioRunContainer.runArgs)
           .volumeMounts(volumeMounts)
+          .resources(
+              V1ResourceRequirements()
+                  .requests(sizingInfo.getRequestsMap())
+                  .limits(sizingInfo.getLimitsMap()))
   if (scenarioRunContainer.entrypoint != null) {
     container.command(listOf(scenarioRunContainer.entrypoint))
   }
