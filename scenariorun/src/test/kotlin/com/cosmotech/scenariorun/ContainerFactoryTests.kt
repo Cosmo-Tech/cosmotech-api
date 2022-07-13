@@ -26,6 +26,7 @@ import com.cosmotech.organization.domain.Organization
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
+import com.cosmotech.scenariorun.container.BASIC_SIZING
 import com.cosmotech.scenariorun.container.StartInfo
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.solution.api.SolutionApiService
@@ -153,7 +154,8 @@ class ContainerFactoryTests {
             "Workspaceid",
             "Scenarioid",
             "Test",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     assertNotNull(container)
   }
 
@@ -170,7 +172,8 @@ class ContainerFactoryTests {
             "Workspaceid",
             "Scenarioid",
             "Test",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     assertEquals("fetchDatasetContainer-1", container.name)
   }
 
@@ -187,7 +190,8 @@ class ContainerFactoryTests {
             "Workspaceid",
             "Scenarioid",
             "Test",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     assertEquals("ghcr.io/cosmotech/test_connector:1.0.0", container.image)
   }
 
@@ -204,7 +208,8 @@ class ContainerFactoryTests {
           "Workspaceid",
           "Scenarioid",
           "Test",
-          CSM_SIMULATION_ID)
+          CSM_SIMULATION_ID,
+          customSizing = BASIC_SIZING)
     }
   }
 
@@ -221,7 +226,8 @@ class ContainerFactoryTests {
             "Workspaceid",
             "Scenarioid",
             "Test",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     val expected =
         mapOf(
             "IDENTITY_PROVIDER" to "azure",
@@ -264,7 +270,8 @@ class ContainerFactoryTests {
             "Workspaceid",
             "Scenarioid",
             "Test",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     val expected =
         mapOf(
             "IDENTITY_PROVIDER" to "azure",
@@ -305,7 +312,8 @@ class ContainerFactoryTests {
             "Workspaceid",
             "Scenarioid",
             "Test",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     val expected =
         mapOf(
             "IDENTITY_PROVIDER" to "azure",
@@ -346,7 +354,8 @@ class ContainerFactoryTests {
             "Workspaceid",
             "Scenarioid",
             "Test",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     val expected =
         mapOf(
             "IDENTITY_PROVIDER" to "azure",
@@ -386,7 +395,8 @@ class ContainerFactoryTests {
             "Workspaceid",
             "Scenarioid",
             "Test",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     val expected =
         mapOf(
             "IDENTITY_PROVIDER" to "azure",
@@ -424,7 +434,8 @@ class ContainerFactoryTests {
             "Workspaceid",
             "Scenarioid",
             "Test",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     val expected = mapOf("aadpodidbinding" to "phoenixdev-pod-identity")
     assertEquals(expected, container.labels)
   }
@@ -442,7 +453,8 @@ class ContainerFactoryTests {
             "Workspaceid",
             "Scenarioid",
             "Test",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     val expected = listOf("organizationid/workspaceid/workspace.param")
     assertEquals(expected, container.runArgs)
   }
@@ -460,7 +472,8 @@ class ContainerFactoryTests {
             "Workspaceid",
             "Scenarioid",
             "Test",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     val expected = listOf("param1_value", "param2_value", "param3_value")
     assertEquals(expected, container.runArgs)
   }
@@ -468,28 +481,32 @@ class ContainerFactoryTests {
   @Test
   fun `Fetch Scenario Parameters Container is not null`() {
     val container =
-        factory.buildScenarioParametersFetchContainer("1", "2", "3", "Test", CSM_SIMULATION_ID)
+        factory.buildScenarioParametersFetchContainer(
+            "1", "2", "3", "Test", CSM_SIMULATION_ID, customSizing = BASIC_SIZING)
     assertNotNull(container)
   }
 
   @Test
   fun `Fetch Scenario Parameters Container name valid`() {
     val container =
-        factory.buildScenarioParametersFetchContainer("1", "2", "3", "Test", CSM_SIMULATION_ID)
+        factory.buildScenarioParametersFetchContainer(
+            "1", "2", "3", "Test", CSM_SIMULATION_ID, customSizing = BASIC_SIZING)
     assertEquals("fetchScenarioParametersContainer", container.name)
   }
 
   @Test
   fun `Fetch Scenario Parameters Container image valid`() {
     val container =
-        factory.buildScenarioParametersFetchContainer("1", "2", "3", "Test", CSM_SIMULATION_ID)
+        factory.buildScenarioParametersFetchContainer(
+            "1", "2", "3", "Test", CSM_SIMULATION_ID, customSizing = BASIC_SIZING)
     assertEquals("ghcr.io/cosmotech/scenariofetchparameters:1.0.0", container.image)
   }
 
   @Test
   fun `Fetch Scenario Parameters Container env vars valid`() {
     val container =
-        factory.buildScenarioParametersFetchContainer("1", "2", "3", "Test", CSM_SIMULATION_ID)
+        factory.buildScenarioParametersFetchContainer(
+            "1", "2", "3", "Test", CSM_SIMULATION_ID, customSizing = BASIC_SIZING)
     val expected =
         mapOf(
             "IDENTITY_PROVIDER" to "azure",
@@ -530,7 +547,8 @@ class ContainerFactoryTests {
         )
 
     val container =
-        factory.buildScenarioParametersFetchContainer("1", "2", "3", "Test", CSM_SIMULATION_ID)
+        factory.buildScenarioParametersFetchContainer(
+            "1", "2", "3", "Test", CSM_SIMULATION_ID, customSizing = BASIC_SIZING)
     val expected =
         mapOf(
             "IDENTITY_PROVIDER" to "azure",
@@ -561,7 +579,7 @@ class ContainerFactoryTests {
   fun `Fetch Scenario Parameters Container env vars valid json`() {
     val container =
         factory.buildScenarioParametersFetchContainer(
-            "1", "2", "3", "Test", CSM_SIMULATION_ID, true)
+            "1", "2", "3", "Test", CSM_SIMULATION_ID, true, customSizing = BASIC_SIZING)
     val expected =
         mapOf(
             "IDENTITY_PROVIDER" to "azure",
@@ -594,7 +612,12 @@ class ContainerFactoryTests {
   fun `Send DataWarehouse Container is not null`() {
     val container =
         factory.buildSendDataWarehouseContainer(
-            "Organizationid", getWorkspace(), "Scenarioid", getRunTemplate(), CSM_SIMULATION_ID)
+            "Organizationid",
+            getWorkspace(),
+            "Scenarioid",
+            getRunTemplate(),
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     assertNotNull(container)
   }
 
@@ -602,7 +625,12 @@ class ContainerFactoryTests {
   fun `Send DataWarehouseContainer name valid`() {
     val container =
         factory.buildSendDataWarehouseContainer(
-            "Organizationid", getWorkspace(), "Scenarioid", getRunTemplate(), CSM_SIMULATION_ID)
+            "Organizationid",
+            getWorkspace(),
+            "Scenarioid",
+            getRunTemplate(),
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     assertEquals("sendDataWarehouseContainer", container.name)
   }
 
@@ -610,7 +638,12 @@ class ContainerFactoryTests {
   fun `Send DataWarehouse Container image valid`() {
     val container =
         factory.buildSendDataWarehouseContainer(
-            "Organizationid", getWorkspace(), "Scenarioid", getRunTemplate(), CSM_SIMULATION_ID)
+            "Organizationid",
+            getWorkspace(),
+            "Scenarioid",
+            getRunTemplate(),
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     assertEquals("ghcr.io/cosmotech/senddatawarehouse:1.0.0", container.image)
   }
 
@@ -618,7 +651,12 @@ class ContainerFactoryTests {
   fun `Send DataWarehouse Container env vars valid`() {
     val container =
         factory.buildSendDataWarehouseContainer(
-            "Organizationid", getWorkspace(), "Scenarioid", getRunTemplate(), CSM_SIMULATION_ID)
+            "Organizationid",
+            getWorkspace(),
+            "Scenarioid",
+            getRunTemplate(),
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     val expected =
         mapOf(
             "IDENTITY_PROVIDER" to "azure",
@@ -654,7 +692,8 @@ class ContainerFactoryTests {
             getWorkspaceNoSend(),
             "Scenarioid",
             getRunTemplate(),
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     val expected =
         mapOf(
             "IDENTITY_PROVIDER" to "azure",
@@ -690,7 +729,8 @@ class ContainerFactoryTests {
             getWorkspace(),
             "Scenarioid",
             getRunTemplateNoDatasetsSend(),
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     val expected =
         mapOf(
             "IDENTITY_PROVIDER" to "azure",
@@ -730,7 +770,8 @@ class ContainerFactoryTests {
             getWorkspace(),
             "Scenarioid",
             getRunTemplateNoParametersSend(),
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     val expected =
         mapOf(
             "IDENTITY_PROVIDER" to "azure",
@@ -795,7 +836,8 @@ class ContainerFactoryTests {
           getScenario(),
           getSolution(),
           "badTemplate",
-          CSM_SIMULATION_ID)
+          CSM_SIMULATION_ID,
+          customSizing = BASIC_SIZING)
     }
   }
 
@@ -814,7 +856,8 @@ class ContainerFactoryTests {
             getScenario(),
             getSolutionLocalSources(),
             "testruntemplate",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     envVarsWithSourceLocalValid(container, "handle-parameters", "CSM_PARAMETERS_HANDLER_PROVIDER")
   }
 
@@ -827,7 +870,8 @@ class ContainerFactoryTests {
             getScenario(),
             getSolutionCloudSources(),
             "testruntemplate",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     envVarsWithSourceValid(
         container,
         "handle-parameters",
@@ -846,7 +890,8 @@ class ContainerFactoryTests {
             getScenario(),
             getSolutionCloudSources(),
             "testruntemplate",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     envVarsWithSourceValid(
         container,
         "validate",
@@ -865,7 +910,8 @@ class ContainerFactoryTests {
             getScenario(),
             getSolutionCloudSources(),
             "testruntemplate",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     envVarsWithSourceValid(
         container, "prerun", "CSM_PRERUN_PROVIDER", "CSM_PRERUN_PATH", "prerun", "testruntemplate")
   }
@@ -879,7 +925,8 @@ class ContainerFactoryTests {
             getScenario(),
             getSolutionCloudSources(),
             "testruntemplate",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     envVarsWithSourceValid(
         container, "engine", "CSM_ENGINE_PROVIDER", "CSM_ENGINE_PATH", "engine", "testruntemplate")
   }
@@ -893,7 +940,8 @@ class ContainerFactoryTests {
             getScenario(),
             getSolutionCloudSources(),
             "testruntemplate",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     envVarsWithSourceValid(
         container,
         "postrun",
@@ -1068,7 +1116,8 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = BASIC_SIZING)
     assertEquals(containers.size, 8)
   }
 
@@ -1087,7 +1136,8 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = BASIC_SIZING)
     val expected =
         listOf(
             "fetchDatasetContainer-1",
@@ -1112,7 +1162,8 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = BASIC_SIZING)
     val container = containers.find { container -> container.name == "multipleStepsContainer-1" }
     this.validateEnvVarsSolutionContainer(
         container, "handle-parameters,validate,prerun,engine,postrun")
@@ -1133,7 +1184,8 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = BASIC_SIZING)
     val expected =
         listOf(
             "fetchDatasetContainer-1",
@@ -1160,7 +1212,8 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = BASIC_SIZING)
     val container = containers.find { container -> container.name == "multipleStepsContainer-1" }
     this.validateEnvVarsSolutionContainer(container, "handle-parameters,validate")
   }
@@ -1180,7 +1233,8 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = BASIC_SIZING)
     val container = containers.find { container -> container.name == "multipleStepsContainer-2" }
     this.validateEnvVarsSolutionContainer(container, "prerun,engine,postrun")
   }
@@ -1200,7 +1254,8 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = BASIC_SIZING)
     val expected =
         listOf(
             "fetchDatasetContainer-1",
@@ -1230,7 +1285,8 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = BASIC_SIZING)
     assertEquals(1, containers.size)
   }
 
@@ -1249,7 +1305,8 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = BASIC_SIZING)
     assertEquals(containers.size, 10)
   }
 
@@ -1268,7 +1325,8 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = BASIC_SIZING)
     val expected =
         listOf(
             "fetchDatasetContainer-1",
@@ -1300,7 +1358,8 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = BASIC_SIZING)
     val expected =
         listOf(
             listOf("DAG_ROOT"),
@@ -1336,7 +1395,8 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = BASIC_SIZING)
     val expected =
         listOf(
             "ghcr.io/cosmotech/test_connector:1.0.0",
@@ -1368,7 +1428,8 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = BASIC_SIZING)
     val container = containers.find { container -> container.name == "fetchDatasetContainer-2" }
     val expected =
         mapOf(
@@ -1414,7 +1475,8 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = BASIC_SIZING)
     val expected =
         listOf(
             "runContainer",
@@ -1513,7 +1575,8 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = BASIC_SIZING)
     val expected =
         listOf(
             "fetchDatasetContainer-1",
@@ -1546,7 +1609,8 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = BASIC_SIZING)
     val expected =
         listOf(
             "ghcr.io/cosmotech/test_connector:1.0.0",
@@ -1589,7 +1653,8 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = BASIC_SIZING)
     val expected =
         listOf(
             "fetchDatasetContainer-1",
@@ -1623,7 +1688,8 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = BASIC_SIZING)
     val expected =
         listOf(
             "ghcr.io/cosmotech/test_connector:1.0.0",
@@ -1666,7 +1732,14 @@ class ContainerFactoryTests {
     val solution = getSolutionDatasetIds()
     assertThrows(CsmClientException::class.java) {
       factory.buildContainersPipeline(
-          scenario, datasets, connectors, workspace, getOrganization(), solution, CSM_SIMULATION_ID)
+          scenario,
+          datasets,
+          connectors,
+          workspace,
+          getOrganization(),
+          solution,
+          CSM_SIMULATION_ID,
+          scenarioRunSizing = BASIC_SIZING)
     }
   }
 
@@ -1731,7 +1804,8 @@ class ContainerFactoryTests {
           "W-id",
           "S-id",
           "W-key",
-          "csmSimulationId")
+          "csmSimulationId",
+          customSizing = BASIC_SIZING)
     }
   }
 
@@ -1778,7 +1852,8 @@ class ContainerFactoryTests {
             "W-id",
             "S-id",
             "W-key",
-            "csmSimulationId")
+            "csmSimulationId",
+            customSizing = BASIC_SIZING)
 
     assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
@@ -1831,7 +1906,8 @@ class ContainerFactoryTests {
             "W-id",
             "S-id",
             "W-key",
-            "csmSimulationId")
+            "csmSimulationId",
+            customSizing = BASIC_SIZING)
 
     assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
@@ -1884,7 +1960,8 @@ class ContainerFactoryTests {
             "W-id",
             "S-id",
             "W-key",
-            "csmSimulationId")
+            "csmSimulationId",
+            customSizing = BASIC_SIZING)
 
     assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
     assertEquals(
@@ -1937,7 +2014,8 @@ class ContainerFactoryTests {
             "W-id",
             "S-id",
             "W-key",
-            "csmSimulationId")
+            "csmSimulationId",
+            customSizing = BASIC_SIZING)
 
     assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
@@ -1990,7 +2068,8 @@ class ContainerFactoryTests {
             "W-id",
             "S-id",
             "W-key",
-            "csmSimulationId")
+            "csmSimulationId",
+            customSizing = BASIC_SIZING)
 
     assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
@@ -2043,7 +2122,8 @@ class ContainerFactoryTests {
             "W-id",
             "S-id",
             "W-key",
-            "csmSimulationId")
+            "csmSimulationId",
+            customSizing = BASIC_SIZING)
 
     assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
@@ -2267,7 +2347,8 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = BASIC_SIZING)
     val container =
         containers.find { container ->
           container.name == "fetchScenarioDatasetParametersContainer-${nameId}"
@@ -2394,7 +2475,8 @@ class ContainerFactoryTests {
         getScenario(),
         getSolution(),
         "testruntemplate",
-        CSM_SIMULATION_ID)
+        CSM_SIMULATION_ID,
+        customSizing = BASIC_SIZING)
   }
 
   private fun buildValidateDataContainer(): ScenarioRunContainer {
@@ -2404,7 +2486,8 @@ class ContainerFactoryTests {
         getScenario(),
         getSolution(),
         "testruntemplate",
-        CSM_SIMULATION_ID)
+        CSM_SIMULATION_ID,
+        customSizing = BASIC_SIZING)
   }
 
   private fun buildPreRunContainer(): ScenarioRunContainer {
@@ -2414,7 +2497,8 @@ class ContainerFactoryTests {
         getScenario(),
         getSolution(),
         "testruntemplate",
-        CSM_SIMULATION_ID)
+        CSM_SIMULATION_ID,
+        customSizing = BASIC_SIZING)
   }
 
   private fun buildRunContainer(dedicatedEventHubNamespace: Boolean? = null): ScenarioRunContainer {
@@ -2424,7 +2508,8 @@ class ContainerFactoryTests {
         getScenario(),
         getSolution(),
         "testruntemplate",
-        CSM_SIMULATION_ID)
+        CSM_SIMULATION_ID,
+        customSizing = BASIC_SIZING)
   }
 
   private fun buildPostRunContainer(): ScenarioRunContainer {
@@ -2434,7 +2519,8 @@ class ContainerFactoryTests {
         getScenario(),
         getSolution(),
         "testruntemplate",
-        CSM_SIMULATION_ID)
+        CSM_SIMULATION_ID,
+        customSizing = BASIC_SIZING)
   }
 
   private fun validateEnvVarsSolutionContainer(container: ScenarioRunContainer?, mode: String) {
