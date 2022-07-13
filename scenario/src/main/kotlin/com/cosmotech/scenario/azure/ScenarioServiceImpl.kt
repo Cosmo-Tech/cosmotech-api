@@ -287,9 +287,6 @@ internal class ScenarioServiceImpl(
 
     this.handleScenarioDeletion(organizationId, workspaceId, scenario, waitRelationshipPropagation)
     eventPublisher.publishEvent(ScenarioDeleted(this, organizationId, workspaceId, scenarioId))
-
-    val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
-    sendScenarioMetaData(organizationId, workspace, scenario)
   }
 
   override fun downloadScenarioData(
@@ -789,6 +786,11 @@ internal class ScenarioServiceImpl(
   ) {
     if (workspace.sendScenarioMetadataToEventHub != true) {
       return
+    }
+
+    if (workspace.useDedicatedEventHubNamespace == false) {
+      logger.warn(
+          "workspace must be configured with useDedicatedEventHubNamespace to true in order to send metadata")
     }
 
     val eventBus = csmPlatformProperties.azure?.eventBus!!
