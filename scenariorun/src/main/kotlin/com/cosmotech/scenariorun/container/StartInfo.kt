@@ -23,64 +23,29 @@ data class SizingInfo(val cpu: String, val memory: String)
 
 data class Sizing(val requests: SizingInfo, val limits: SizingInfo)
 
+internal val BASIC_SIZING =
+    Sizing(
+        requests = SizingInfo(cpu = "1", memory = "64Mi"),
+        limits = SizingInfo(cpu = "4", memory = "2048Mi"))
 
-internal val BASIC_SIZING = Sizing(
-  requests = SizingInfo(
-    cpu = "1",
-    memory = "4"
-  ),
-  limits = SizingInfo(
-    cpu = "",
-    memory = ""
-  )
-)
+internal val HIGH_MEMORY_SIZING =
+    Sizing(
+        requests = SizingInfo(cpu = "1", memory = "64000Mi"),
+        limits = SizingInfo(cpu = "16", memory = "128000Mi"))
 
-internal val HIGH_MEMORY_SIZING = Sizing(
-  requests = SizingInfo(
-    cpu = "1",
-    memory = "4"
-  ),
-  limits = SizingInfo(
-    cpu = "",
-    memory = ""
-  )
-)
+internal val HIGH_CPU_SIZING =
+    Sizing(
+        requests = SizingInfo(cpu = "24", memory = "4096Mi"),
+        limits = SizingInfo(cpu = "72", memory = ""))
 
-internal val HIGH_CPU_SIZING = Sizing(
-  requests = SizingInfo(
-    cpu = "1",
-    memory = "4"
-  ),
-  limits = SizingInfo(
-    cpu = "",
-    memory = ""
-  )
-)
-
-
-
-fun ScenarioResourceSizing.toSizing() : Sizing{
-    return Sizing(
-      requests = SizingInfo(
-          cpu = this.requests.cpu,
-          memory = this.requests.memory
-      ),
-      limits = SizingInfo(
-          cpu = this.limits.cpu,
-          memory = this.limits.memory
-      )
-    )
-}
-fun RunTemplateResourceSizing.toSizing() : Sizing{
-    return Sizing(
-      requests = SizingInfo(
-          cpu = this.requests.cpu,
-          memory = this.requests.memory
-      ),
-      limits = SizingInfo(
-          cpu = this.limits.cpu,
-          memory = this.limits.memory
-      )
-    )
+fun ScenarioResourceSizing.toSizing(): Sizing {
+  return Sizing(
+      requests = SizingInfo(cpu = this.requests.cpu, memory = this.requests.memory),
+      limits = SizingInfo(cpu = this.limits.cpu, memory = this.limits.memory))
 }
 
+fun RunTemplateResourceSizing.toSizing(): Sizing {
+  return Sizing(
+      requests = SizingInfo(cpu = this.requests.cpu, memory = this.requests.memory),
+      limits = SizingInfo(cpu = this.limits.cpu, memory = this.limits.memory))
+}

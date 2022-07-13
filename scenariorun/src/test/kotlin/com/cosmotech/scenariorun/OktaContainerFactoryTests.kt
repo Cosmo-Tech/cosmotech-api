@@ -26,6 +26,8 @@ import com.cosmotech.organization.domain.Organization
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
+import com.cosmotech.scenariorun.container.BASIC_SIZING
+import com.cosmotech.scenariorun.container.HIGH_CPU_SIZING
 import com.cosmotech.scenariorun.container.StartInfo
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.solution.api.SolutionApiService
@@ -152,7 +154,8 @@ class OktaContainerFactoryTests {
             "Workspaceid",
             "Scenarioid",
             "Test",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     assertNotNull(container)
   }
 
@@ -169,7 +172,8 @@ class OktaContainerFactoryTests {
             "Workspaceid",
             "Scenarioid",
             "Test",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     assertEquals("fetchDatasetContainer-1", container.name)
   }
 
@@ -186,7 +190,8 @@ class OktaContainerFactoryTests {
             "Workspaceid",
             "Scenarioid",
             "Test",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     assertEquals("ghcr.io/cosmotech/test_connector:1.0.0", container.image)
   }
 
@@ -203,7 +208,8 @@ class OktaContainerFactoryTests {
           "Workspaceid",
           "Scenarioid",
           "Test",
-          CSM_SIMULATION_ID)
+          CSM_SIMULATION_ID,
+          customSizing = BASIC_SIZING)
     }
   }
 
@@ -220,7 +226,8 @@ class OktaContainerFactoryTests {
             "Workspaceid",
             "Scenarioid",
             "Test",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     val expected =
         mapOf(
             "IDENTITY_PROVIDER" to "okta",
@@ -266,7 +273,8 @@ class OktaContainerFactoryTests {
             "Workspaceid",
             "Scenarioid",
             "Test",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     val expected =
         mapOf(
             "IDENTITY_PROVIDER" to "okta",
@@ -310,7 +318,8 @@ class OktaContainerFactoryTests {
             "Workspaceid",
             "Scenarioid",
             "Test",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     val expected =
         mapOf(
             "IDENTITY_PROVIDER" to "okta",
@@ -354,7 +363,8 @@ class OktaContainerFactoryTests {
             "Workspaceid",
             "Scenarioid",
             "Test",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     val expected =
         mapOf(
             "IDENTITY_PROVIDER" to "okta",
@@ -397,7 +407,8 @@ class OktaContainerFactoryTests {
             "Workspaceid",
             "Scenarioid",
             "Test",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     val expected =
         mapOf(
             "IDENTITY_PROVIDER" to "okta",
@@ -438,7 +449,8 @@ class OktaContainerFactoryTests {
             "Workspaceid",
             "Scenarioid",
             "Test",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     val expected = mapOf("aadpodidbinding" to "phoenixdev-pod-identity")
     assertEquals(expected, container.labels)
   }
@@ -456,7 +468,8 @@ class OktaContainerFactoryTests {
             "Workspaceid",
             "Scenarioid",
             "Test",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     val expected = listOf("organizationid/workspaceid/workspace.param")
     assertEquals(expected, container.runArgs)
   }
@@ -474,7 +487,8 @@ class OktaContainerFactoryTests {
             "Workspaceid",
             "Scenarioid",
             "Test",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     val expected = listOf("param1_value", "param2_value", "param3_value")
     assertEquals(expected, container.runArgs)
   }
@@ -482,28 +496,32 @@ class OktaContainerFactoryTests {
   @Test
   fun `Fetch Scenario Parameters Container is not null`() {
     val container =
-        factory.buildScenarioParametersFetchContainer("1", "2", "3", "Test", CSM_SIMULATION_ID)
+        factory.buildScenarioParametersFetchContainer(
+            "1", "2", "3", "Test", CSM_SIMULATION_ID, customSizing = BASIC_SIZING)
     assertNotNull(container)
   }
 
   @Test
   fun `Fetch Scenario Parameters Container name valid`() {
     val container =
-        factory.buildScenarioParametersFetchContainer("1", "2", "3", "Test", CSM_SIMULATION_ID)
+        factory.buildScenarioParametersFetchContainer(
+            "1", "2", "3", "Test", CSM_SIMULATION_ID, customSizing = BASIC_SIZING)
     assertEquals("fetchScenarioParametersContainer", container.name)
   }
 
   @Test
   fun `Fetch Scenario Parameters Container image valid`() {
     val container =
-        factory.buildScenarioParametersFetchContainer("1", "2", "3", "Test", CSM_SIMULATION_ID)
+        factory.buildScenarioParametersFetchContainer(
+            "1", "2", "3", "Test", CSM_SIMULATION_ID, customSizing = BASIC_SIZING)
     assertEquals("ghcr.io/cosmotech/scenariofetchparameters:1.0.0", container.image)
   }
 
   @Test
   fun `Fetch Scenario Parameters Container env vars valid`() {
     val container =
-        factory.buildScenarioParametersFetchContainer("1", "2", "3", "Test", CSM_SIMULATION_ID)
+        factory.buildScenarioParametersFetchContainer(
+            "1", "2", "3", "Test", CSM_SIMULATION_ID, customSizing = BASIC_SIZING)
     val expected =
         mapOf(
             "IDENTITY_PROVIDER" to "okta",
@@ -537,7 +555,7 @@ class OktaContainerFactoryTests {
   fun `Fetch Scenario Parameters Container env vars valid json`() {
     val container =
         factory.buildScenarioParametersFetchContainer(
-            "1", "2", "3", "Test", CSM_SIMULATION_ID, true)
+            "1", "2", "3", "Test", CSM_SIMULATION_ID, true, customSizing = BASIC_SIZING)
     val expected =
         mapOf(
             "IDENTITY_PROVIDER" to "okta",
@@ -573,7 +591,12 @@ class OktaContainerFactoryTests {
   fun `Send DataWarehouse Container is not null`() {
     val container =
         factory.buildSendDataWarehouseContainer(
-            "Organizationid", getWorkspace(), "Scenarioid", getRunTemplate(), CSM_SIMULATION_ID)
+            "Organizationid",
+            getWorkspace(),
+            "Scenarioid",
+            getRunTemplate(),
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     assertNotNull(container)
   }
 
@@ -581,7 +604,12 @@ class OktaContainerFactoryTests {
   fun `Send DataWarehouseContainer name valid`() {
     val container =
         factory.buildSendDataWarehouseContainer(
-            "Organizationid", getWorkspace(), "Scenarioid", getRunTemplate(), CSM_SIMULATION_ID)
+            "Organizationid",
+            getWorkspace(),
+            "Scenarioid",
+            getRunTemplate(),
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     assertEquals("sendDataWarehouseContainer", container.name)
   }
 
@@ -589,7 +617,12 @@ class OktaContainerFactoryTests {
   fun `Send DataWarehouse Container image valid`() {
     val container =
         factory.buildSendDataWarehouseContainer(
-            "Organizationid", getWorkspace(), "Scenarioid", getRunTemplate(), CSM_SIMULATION_ID)
+            "Organizationid",
+            getWorkspace(),
+            "Scenarioid",
+            getRunTemplate(),
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     assertEquals("ghcr.io/cosmotech/senddatawarehouse:1.0.0", container.image)
   }
 
@@ -597,7 +630,12 @@ class OktaContainerFactoryTests {
   fun `Send DataWarehouse Container env vars valid`() {
     val container =
         factory.buildSendDataWarehouseContainer(
-            "Organizationid", getWorkspace(), "Scenarioid", getRunTemplate(), CSM_SIMULATION_ID)
+            "Organizationid",
+            getWorkspace(),
+            "Scenarioid",
+            getRunTemplate(),
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     val expected =
         mapOf(
             "IDENTITY_PROVIDER" to "okta",
@@ -636,7 +674,8 @@ class OktaContainerFactoryTests {
             getWorkspaceNoSend(),
             "Scenarioid",
             getRunTemplate(),
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     val expected =
         mapOf(
             "IDENTITY_PROVIDER" to "okta",
@@ -675,7 +714,8 @@ class OktaContainerFactoryTests {
             getWorkspace(),
             "Scenarioid",
             getRunTemplateNoDatasetsSend(),
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     val expected =
         mapOf(
             "IDENTITY_PROVIDER" to "okta",
@@ -718,7 +758,8 @@ class OktaContainerFactoryTests {
             getWorkspace(),
             "Scenarioid",
             getRunTemplateNoParametersSend(),
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     val expected =
         mapOf(
             "IDENTITY_PROVIDER" to "okta",
@@ -786,7 +827,8 @@ class OktaContainerFactoryTests {
           getScenario(),
           getSolution(),
           "badTemplate",
-          CSM_SIMULATION_ID)
+          CSM_SIMULATION_ID,
+          customSizing = BASIC_SIZING)
     }
   }
 
@@ -805,7 +847,8 @@ class OktaContainerFactoryTests {
             getScenario(),
             getSolutionLocalSources(),
             "testruntemplate",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     envVarsWithSourceLocalValid(container, "handle-parameters", "CSM_PARAMETERS_HANDLER_PROVIDER")
   }
 
@@ -818,7 +861,8 @@ class OktaContainerFactoryTests {
             getScenario(),
             getSolutionCloudSources(),
             "testruntemplate",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     envVarsWithSourceValid(
         container,
         "handle-parameters",
@@ -837,7 +881,8 @@ class OktaContainerFactoryTests {
             getScenario(),
             getSolutionCloudSources(),
             "testruntemplate",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     envVarsWithSourceValid(
         container,
         "validate",
@@ -856,7 +901,8 @@ class OktaContainerFactoryTests {
             getScenario(),
             getSolutionCloudSources(),
             "testruntemplate",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     envVarsWithSourceValid(
         container, "prerun", "CSM_PRERUN_PROVIDER", "CSM_PRERUN_PATH", "prerun", "testruntemplate")
   }
@@ -870,7 +916,8 @@ class OktaContainerFactoryTests {
             getScenario(),
             getSolutionCloudSources(),
             "testruntemplate",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     envVarsWithSourceValid(
         container, "engine", "CSM_ENGINE_PROVIDER", "CSM_ENGINE_PATH", "engine", "testruntemplate")
   }
@@ -884,7 +931,8 @@ class OktaContainerFactoryTests {
             getScenario(),
             getSolutionCloudSources(),
             "testruntemplate",
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            customSizing = BASIC_SIZING)
     envVarsWithSourceValid(
         container,
         "postrun",
@@ -1065,7 +1113,8 @@ class OktaContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = HIGH_CPU_SIZING)
     assertEquals(containers.size, 8)
   }
 
@@ -1084,7 +1133,8 @@ class OktaContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = HIGH_CPU_SIZING)
     val expected =
         listOf(
             "fetchDatasetContainer-1",
@@ -1109,7 +1159,8 @@ class OktaContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = HIGH_CPU_SIZING)
     val container = containers.find { container -> container.name == "multipleStepsContainer-1" }
     this.validateEnvVarsSolutionContainer(
         container, "handle-parameters,validate,prerun,engine,postrun")
@@ -1130,7 +1181,8 @@ class OktaContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = HIGH_CPU_SIZING)
     val expected =
         listOf(
             "fetchDatasetContainer-1",
@@ -1157,7 +1209,8 @@ class OktaContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = HIGH_CPU_SIZING)
     val container = containers.find { container -> container.name == "multipleStepsContainer-1" }
     this.validateEnvVarsSolutionContainer(container, "handle-parameters,validate")
   }
@@ -1177,7 +1230,8 @@ class OktaContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = HIGH_CPU_SIZING)
     val container = containers.find { container -> container.name == "multipleStepsContainer-2" }
     this.validateEnvVarsSolutionContainer(container, "prerun,engine,postrun")
   }
@@ -1197,7 +1251,8 @@ class OktaContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = HIGH_CPU_SIZING)
     val expected =
         listOf(
             "fetchDatasetContainer-1",
@@ -1227,7 +1282,8 @@ class OktaContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = HIGH_CPU_SIZING)
     assertEquals(1, containers.size)
   }
 
@@ -1246,7 +1302,8 @@ class OktaContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = HIGH_CPU_SIZING)
     assertEquals(containers.size, 10)
   }
 
@@ -1265,7 +1322,8 @@ class OktaContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = HIGH_CPU_SIZING)
     val expected =
         listOf(
             "fetchDatasetContainer-1",
@@ -1297,7 +1355,8 @@ class OktaContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = HIGH_CPU_SIZING)
     val expected =
         listOf(
             listOf("DAG_ROOT"),
@@ -1333,7 +1392,8 @@ class OktaContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = HIGH_CPU_SIZING)
     val expected =
         listOf(
             "ghcr.io/cosmotech/test_connector:1.0.0",
@@ -1365,7 +1425,8 @@ class OktaContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = HIGH_CPU_SIZING)
     val container = containers.find { container -> container.name == "fetchDatasetContainer-2" }
     val expected =
         mapOf(
@@ -1414,7 +1475,8 @@ class OktaContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = HIGH_CPU_SIZING)
     val expected =
         listOf(
             "runContainer",
@@ -1513,7 +1575,8 @@ class OktaContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = HIGH_CPU_SIZING)
     val expected =
         listOf(
             "fetchDatasetContainer-1",
@@ -1546,7 +1609,8 @@ class OktaContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = HIGH_CPU_SIZING)
     val expected =
         listOf(
             "ghcr.io/cosmotech/test_connector:1.0.0",
@@ -1589,7 +1653,8 @@ class OktaContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = HIGH_CPU_SIZING)
     val expected =
         listOf(
             "fetchDatasetContainer-1",
@@ -1623,7 +1688,8 @@ class OktaContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = HIGH_CPU_SIZING)
     val expected =
         listOf(
             "ghcr.io/cosmotech/test_connector:1.0.0",
@@ -1666,7 +1732,14 @@ class OktaContainerFactoryTests {
     val solution = getSolutionDatasetIds()
     assertThrows(CsmClientException::class.java) {
       factory.buildContainersPipeline(
-          scenario, datasets, connectors, workspace, getOrganization(), solution, CSM_SIMULATION_ID)
+          scenario,
+          datasets,
+          connectors,
+          workspace,
+          getOrganization(),
+          solution,
+          CSM_SIMULATION_ID,
+          scenarioRunSizing = HIGH_CPU_SIZING)
     }
   }
 
@@ -1731,7 +1804,8 @@ class OktaContainerFactoryTests {
           "W-id",
           "S-id",
           "W-key",
-          "csmSimulationId")
+          "csmSimulationId",
+          customSizing = BASIC_SIZING)
     }
   }
 
@@ -1778,7 +1852,8 @@ class OktaContainerFactoryTests {
             "W-id",
             "S-id",
             "W-key",
-            "csmSimulationId")
+            "csmSimulationId",
+            customSizing = BASIC_SIZING)
 
     assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
@@ -1834,7 +1909,8 @@ class OktaContainerFactoryTests {
             "W-id",
             "S-id",
             "W-key",
-            "csmSimulationId")
+            "csmSimulationId",
+            customSizing = BASIC_SIZING)
 
     assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
@@ -1890,7 +1966,8 @@ class OktaContainerFactoryTests {
             "W-id",
             "S-id",
             "W-key",
-            "csmSimulationId")
+            "csmSimulationId",
+            customSizing = BASIC_SIZING)
 
     assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
     assertEquals(
@@ -1946,7 +2023,8 @@ class OktaContainerFactoryTests {
             "W-id",
             "S-id",
             "W-key",
-            "csmSimulationId")
+            "csmSimulationId",
+            customSizing = BASIC_SIZING)
 
     assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
@@ -2002,7 +2080,8 @@ class OktaContainerFactoryTests {
             "W-id",
             "S-id",
             "W-key",
-            "csmSimulationId")
+            "csmSimulationId",
+            customSizing = BASIC_SIZING)
 
     assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
@@ -2058,7 +2137,8 @@ class OktaContainerFactoryTests {
             "W-id",
             "S-id",
             "W-key",
-            "csmSimulationId")
+            "csmSimulationId",
+            customSizing = BASIC_SIZING)
 
     assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
@@ -2294,7 +2374,8 @@ class OktaContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            scenarioRunSizing = HIGH_CPU_SIZING)
     val container =
         containers.find { container ->
           container.name == "fetchScenarioDatasetParametersContainer-${nameId}"
@@ -2423,7 +2504,8 @@ class OktaContainerFactoryTests {
         getScenario(),
         getSolution(),
         "testruntemplate",
-        CSM_SIMULATION_ID)
+        CSM_SIMULATION_ID,
+        customSizing = BASIC_SIZING)
   }
 
   private fun buildValidateDataContainer(): ScenarioRunContainer {
@@ -2433,7 +2515,8 @@ class OktaContainerFactoryTests {
         getScenario(),
         getSolution(),
         "testruntemplate",
-        CSM_SIMULATION_ID)
+        CSM_SIMULATION_ID,
+        customSizing = BASIC_SIZING)
   }
 
   private fun buildPreRunContainer(): ScenarioRunContainer {
@@ -2443,7 +2526,8 @@ class OktaContainerFactoryTests {
         getScenario(),
         getSolution(),
         "testruntemplate",
-        CSM_SIMULATION_ID)
+        CSM_SIMULATION_ID,
+        customSizing = BASIC_SIZING)
   }
 
   private fun buildRunContainer(dedicatedEventHubNamespace: Boolean? = null): ScenarioRunContainer {
@@ -2453,7 +2537,8 @@ class OktaContainerFactoryTests {
         getScenario(),
         getSolution(),
         "testruntemplate",
-        CSM_SIMULATION_ID)
+        CSM_SIMULATION_ID,
+        customSizing = BASIC_SIZING)
   }
 
   private fun buildPostRunContainer(): ScenarioRunContainer {
@@ -2463,7 +2548,8 @@ class OktaContainerFactoryTests {
         getScenario(),
         getSolution(),
         "testruntemplate",
-        CSM_SIMULATION_ID)
+        CSM_SIMULATION_ID,
+        customSizing = BASIC_SIZING)
   }
 
   private fun validateEnvVarsSolutionContainer(container: ScenarioRunContainer?, mode: String) {

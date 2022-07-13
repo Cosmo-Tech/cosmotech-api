@@ -17,6 +17,9 @@ import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
+import com.cosmotech.scenariorun.container.BASIC_SIZING
+import com.cosmotech.scenariorun.container.HIGH_CPU_SIZING
+import com.cosmotech.scenariorun.container.HIGH_MEMORY_SIZING
 import com.cosmotech.scenariorun.container.Sizing
 import com.cosmotech.scenariorun.container.SolutionContainerStepSpec
 import com.cosmotech.scenariorun.container.StartInfo
@@ -96,6 +99,8 @@ internal const val EVENT_HUB_CONTROL_PLANE_VAR = "CSM_CONTROL_PLANE_TOPIC"
 private const val CSM_SIMULATION_VAR = "CSM_SIMULATION"
 private const val NODE_PARAM_NONE = "%NONE%"
 private const val NODE_LABEL_DEFAULT = "basic"
+private const val NODE_LABEL_HIGH_CPU = "highcpu"
+private const val NODE_LABEL_HIGH_MEMORY = "memory"
 private const val NODE_LABEL_SUFFIX = "pool"
 private const val GENERATE_NAME_PREFIX = "workflow-"
 private const val GENERATE_NAME_SUFFIX = "-"
@@ -121,6 +126,13 @@ private const val EVENT_HUB_SCENARIO_RUN_NAME = "scenariorun"
 private const val EVENT_HUB_PROBES_MEASURES_NAME = "probesmeasures"
 
 const val CSM_DAG_ROOT = "DAG_ROOT"
+
+private val LABEL_SIZING =
+    mapOf(
+        NODE_LABEL_DEFAULT to BASIC_SIZING,
+        NODE_LABEL_HIGH_CPU to HIGH_CPU_SIZING,
+        NODE_LABEL_HIGH_MEMORY to HIGH_MEMORY_SIZING,
+    )
 
 @Component
 @Suppress("LargeClass", "TooManyFunctions")
@@ -279,6 +291,13 @@ internal class ContainerFactory(
 
     val runTemplateSizing = template.resourceSizing?.toSizing()
 
+    val defaultSizing =
+        if (nodeLabel != null) {
+          (LABEL_SIZING[nodeLabel] ?: BASIC_SIZING)
+        } else {
+          (BASIC_SIZING)
+        }
+
     val containers =
         buildContainersPipeline(
             scenario,
@@ -290,7 +309,7 @@ internal class ContainerFactory(
             csmSimulationId,
             scenarioDataDownload,
             scenarioDataDownloadJobId,
-            scenarioSizing ?: runTemplateSizing)
+            scenarioSizing ?: (runTemplateSizing ?: defaultSizing))
     val generateName =
         "${GENERATE_NAME_PREFIX}${scenario.id}${GENERATE_NAME_SUFFIX}".sanitizeForKubernetes()
     return ScenarioRunStartContainers(
@@ -312,7 +331,7 @@ internal class ContainerFactory(
       csmSimulationId: String,
       scenarioDataDownload: Boolean = false,
       scenarioDataDownloadJobId: String? = null,
-      customSizing: Sizing?
+      scenarioRunSizing: Sizing
   ): List<ScenarioRunContainer> {
     if (scenario.id == null) throw IllegalStateException("Scenario Id cannot be null")
     val runTemplateId =
@@ -333,7 +352,8 @@ internal class ContainerFactory(
             scenario,
             organization,
             workspace,
-            csmSimulationId))
+            csmSimulationId,
+            BASIC_SIZING))
 
     if (scenarioDataDownload) {
       containers.addAll(
@@ -345,7 +365,8 @@ internal class ContainerFactory(
               solution,
               template,
               csmSimulationId,
-              scenarioDataDownloadJobId!!))
+              scenarioDataDownloadJobId!!,
+              BASIC_SIZING))
     } else {
       containers.addAll(
           buildFetchScenarioParametersContainersPipeline(
@@ -357,7 +378,8 @@ internal class ContainerFactory(
               csmSimulationId,
               solution,
               datasets,
-              connectors))
+              connectors,
+              BASIC_SIZING))
 
       if (currentDependencies.isNullOrEmpty()) {
         currentDependencies = null
@@ -372,7 +394,8 @@ internal class ContainerFactory(
                 scenario,
                 solution,
                 runTemplateId,
-                csmSimulationId))
+                csmSimulationId,
+                BASIC_SIZING))
         currentDependencies = mutableListOf(CONTAINER_APPLY_PARAMETERS)
       }
       if (testStep(template.validateData)) {
@@ -384,13 +407,20 @@ internal class ContainerFactory(
                 scenario,
                 solution,
                 runTemplateId,
-                csmSimulationId))
+                csmSimulationId,
+                BASIC_SIZING))
         currentDependencies = mutableListOf(CONTAINER_VALIDATE_DATA)
       }
 
       containers.addAll(
           buildSendDataWarehouseContainersPipeline(
-              currentDependencies, workspace, template, organization, scenario, csmSimulationId))
+              currentDependencies,
+              workspace,
+              template,
+              organization,
+              scenario,
+              csmSimulationId,
+              BASIC_SIZING))
 
       if (testStep(template.preRun)) {
         containers.addAll(
@@ -401,7 +431,8 @@ internal class ContainerFactory(
                 scenario,
                 solution,
                 runTemplateId,
-                csmSimulationId))
+                csmSimulationId,
+                BASIC_SIZING))
         currentDependencies = mutableListOf(CONTAINER_PRERUN)
       }
 
@@ -414,7 +445,8 @@ internal class ContainerFactory(
                 scenario,
                 solution,
                 runTemplateId,
-                csmSimulationId))
+                csmSimulationId,
+                scenarioRunSizing))
         currentDependencies = mutableListOf(CONTAINER_RUN)
       }
 
@@ -428,7 +460,7 @@ internal class ContainerFactory(
                 solution,
                 runTemplateId,
                 csmSimulationId,
-            ))
+                BASIC_SIZING))
       }
     }
 
@@ -447,6 +479,7 @@ internal class ContainerFactory(
       solution: Solution,
       runTemplateId: String,
       csmSimulationId: String,
+      customSizing: Sizing
   ) =
       listOf(
           this.buildPostRunContainer(
@@ -456,7 +489,8 @@ internal class ContainerFactory(
               solution,
               runTemplateId,
               csmSimulationId,
-              currentDependencies))
+              currentDependencies,
+              customSizing))
 
   private fun buildScenarioDataDownloadContainersPipeline(
       dependencies: MutableList<String>?,
@@ -467,6 +501,7 @@ internal class ContainerFactory(
       template: RunTemplate,
       csmSimulationId: String,
       scenarioDataDownloadJobId: String,
+      customSizing: Sizing
   ): List<ScenarioRunContainer> {
     val runTemplateId = template.id
     var scenarioDataTransformContainer: ScenarioRunContainer? = null
@@ -482,7 +517,7 @@ internal class ContainerFactory(
               steps[RunTemplateHandlerId.scenariodata_transform.toString()],
               csmSimulationId,
               dependencies,
-          )
+              customSizing)
     }
     val scenarioDataUploadContainer =
         this.buildScenarioDataUploadContainersPipeline(
@@ -496,7 +531,8 @@ internal class ContainerFactory(
             workspace.key,
             scenario.id!!,
             csmSimulationId,
-            scenarioDataDownloadJobId)
+            scenarioDataDownloadJobId,
+            customSizing)
     return listOfNotNull(scenarioDataTransformContainer, scenarioDataUploadContainer)
   }
 
@@ -508,6 +544,7 @@ internal class ContainerFactory(
       solution: Solution,
       runTemplateId: String,
       csmSimulationId: String,
+      customSizing: Sizing
   ) =
       listOf(
           this.buildRunContainer(
@@ -517,7 +554,8 @@ internal class ContainerFactory(
               solution,
               runTemplateId,
               csmSimulationId,
-              currentDependencies))
+              currentDependencies,
+              customSizing))
 
   private fun buildPreRunContainersPipeline(
       currentDependencies: MutableList<String>?,
@@ -527,6 +565,7 @@ internal class ContainerFactory(
       solution: Solution,
       runTemplateId: String,
       csmSimulationId: String,
+      customSizing: Sizing
   ) =
       listOf(
           this.buildPreRunContainer(
@@ -536,7 +575,8 @@ internal class ContainerFactory(
               solution,
               runTemplateId,
               csmSimulationId,
-              currentDependencies))
+              currentDependencies,
+              customSizing))
 
   private fun buildSendDataWarehouseContainersPipeline(
       currentDependencies: MutableList<String>?,
@@ -545,6 +585,7 @@ internal class ContainerFactory(
       organization: Organization,
       scenario: Scenario,
       csmSimulationId: String,
+      customSizing: Sizing
   ): List<ScenarioRunContainer> {
     val containers: MutableList<ScenarioRunContainer> = mutableListOf()
     val sendParameters =
@@ -560,7 +601,8 @@ internal class ContainerFactory(
                 scenario.id ?: "",
                 template,
                 csmSimulationId,
-                currentDependencies))
+                currentDependencies,
+                customSizing))
     return containers.toList()
   }
 
@@ -572,6 +614,7 @@ internal class ContainerFactory(
       solution: Solution,
       runTemplateId: String,
       csmSimulationId: String,
+      customSizing: Sizing
   ) =
       listOf(
           this.buildValidateDataContainer(
@@ -581,7 +624,8 @@ internal class ContainerFactory(
               solution,
               runTemplateId,
               csmSimulationId,
-              currentDependencies))
+              currentDependencies,
+              customSizing))
 
   private fun buildApplyParametersContainersPipeline(
       currentDependencies: MutableList<String>?,
@@ -591,6 +635,7 @@ internal class ContainerFactory(
       solution: Solution,
       runTemplateId: String,
       csmSimulationId: String,
+      customSizing: Sizing
   ) =
       listOf(
           this.buildApplyParametersContainer(
@@ -600,7 +645,8 @@ internal class ContainerFactory(
               solution,
               runTemplateId,
               csmSimulationId,
-              currentDependencies))
+              currentDependencies,
+              customSizing))
 
   private fun buildScenarioDataUploadContainersPipeline(
       dependencies: List<String>?,
@@ -610,6 +656,7 @@ internal class ContainerFactory(
       scenarioId: String,
       csmSimulationId: String,
       scenarioDataDownloadJobId: String,
+      customSizing: Sizing
   ): ScenarioRunContainer {
     val envVars =
         getCommonEnvVars(
@@ -656,7 +703,8 @@ internal class ContainerFactory(
       csmSimulationId: String,
       solution: Solution,
       datasets: List<Dataset>?,
-      connectors: List<Connector>?
+      connectors: List<Connector>?,
+      customSizing: Sizing
   ): List<ScenarioRunContainer> {
     val containers: MutableList<ScenarioRunContainer> = mutableListOf()
     if (testStep(template.fetchScenarioParameters)) {
@@ -667,7 +715,8 @@ internal class ContainerFactory(
               scenario.id ?: "",
               workspace.key,
               csmSimulationId,
-              template.parametersJson)
+              template.parametersJson,
+              customSizing)
       containers.add(container)
       currentDependencies?.add(container.name)
       val datasetParamContainers =
@@ -679,7 +728,8 @@ internal class ContainerFactory(
               organization.id ?: "",
               workspace.id ?: "",
               workspace.key,
-              csmSimulationId)
+              csmSimulationId,
+              customSizing)
       containers.addAll(datasetParamContainers)
       currentDependencies?.addAll(datasetParamContainers.map { dsContainer -> dsContainer.name })
     }
@@ -694,7 +744,8 @@ internal class ContainerFactory(
       scenario: Scenario,
       organization: Organization,
       workspace: Workspace,
-      csmSimulationId: String
+      csmSimulationId: String,
+      customSizing: Sizing
   ): List<ScenarioRunContainer> {
     val containers: MutableList<ScenarioRunContainer> = mutableListOf()
     if (testStep(template.fetchDatasets) && datasets != null && connectors != null) {
@@ -718,7 +769,8 @@ internal class ContainerFactory(
                 workspace.id ?: "",
                 scenario.id ?: "",
                 workspace.key,
-                csmSimulationId)
+                csmSimulationId,
+                customSizing)
         containers.add(container)
         currentDependencies?.add(container.name)
         datasetCount++
@@ -731,6 +783,7 @@ internal class ContainerFactory(
     return step ?: true
   }
 
+  @Suppress("LongParameterList")
   internal fun buildFromDataset(
       dataset: Dataset,
       connector: Connector,
@@ -741,7 +794,8 @@ internal class ContainerFactory(
       workspaceId: String,
       scenarioId: String,
       workspaceKey: String,
-      csmSimulationId: String
+      csmSimulationId: String,
+      customSizing: Sizing
   ): ScenarioRunContainer {
     val dsConnectorId =
         dataset.connector?.id
@@ -795,6 +849,7 @@ internal class ContainerFactory(
       workspaceId: String,
       workspaceKey: String,
       csmSimulationId: String,
+      customSizing: Sizing
   ): List<ScenarioRunContainer> {
     val containers: MutableList<ScenarioRunContainer> = mutableListOf()
     var datasetParameterCount = 1
@@ -831,7 +886,8 @@ internal class ContainerFactory(
                     workspaceId,
                     scenario.id ?: "",
                     workspaceKey,
-                    csmSimulationId))
+                    csmSimulationId,
+                    customSizing))
             datasetParameterCount++
           }
         }
@@ -848,6 +904,7 @@ internal class ContainerFactory(
       workspaceKey: String,
       csmSimulationId: String,
       jsonFile: Boolean? = null,
+      customSizing: Sizing
   ): ScenarioRunContainer {
     val envVars =
         getCommonEnvVars(
@@ -880,6 +937,7 @@ internal class ContainerFactory(
       runTemplate: RunTemplate,
       csmSimulationId: String,
       dependencies: List<String>? = null,
+      customSizing: Sizing
   ): ScenarioRunContainer {
     val envVars =
         getCommonEnvVars(
@@ -915,6 +973,7 @@ internal class ContainerFactory(
       runTemplateId: String,
       csmSimulationId: String,
       dependencies: List<String>? = null,
+      customSizing: Sizing
   ): ScenarioRunContainer {
     return this.buildSolutionContainer(
         organization,
@@ -926,7 +985,7 @@ internal class ContainerFactory(
         steps[CONTAINER_APPLY_PARAMETERS_MODE],
         csmSimulationId,
         dependencies,
-    )
+        customSizing)
   }
 
   internal fun buildValidateDataContainer(
@@ -937,6 +996,7 @@ internal class ContainerFactory(
       runTemplateId: String,
       csmSimulationId: String,
       dependencies: List<String>? = null,
+      customSizing: Sizing
   ): ScenarioRunContainer {
     return this.buildSolutionContainer(
         organization,
@@ -948,7 +1008,7 @@ internal class ContainerFactory(
         steps[CONTAINER_VALIDATE_DATA_MODE],
         csmSimulationId,
         dependencies,
-    )
+        customSizing)
   }
 
   internal fun buildPreRunContainer(
@@ -959,6 +1019,7 @@ internal class ContainerFactory(
       runTemplateId: String,
       csmSimulationId: String,
       dependencies: List<String>? = null,
+      customSizing: Sizing
   ): ScenarioRunContainer {
     return this.buildSolutionContainer(
         organization,
@@ -970,7 +1031,7 @@ internal class ContainerFactory(
         steps[CONTAINER_PRERUN_MODE],
         csmSimulationId,
         dependencies,
-    )
+        customSizing)
   }
 
   internal fun buildRunContainer(
@@ -981,6 +1042,7 @@ internal class ContainerFactory(
       runTemplateId: String,
       csmSimulationId: String,
       dependencies: List<String>? = null,
+      customSizing: Sizing
   ): ScenarioRunContainer {
     return this.buildSolutionContainer(
         organization,
@@ -992,7 +1054,7 @@ internal class ContainerFactory(
         steps[CONTAINER_RUN_MODE],
         csmSimulationId,
         dependencies,
-    )
+        customSizing)
   }
 
   internal fun buildPostRunContainer(
@@ -1003,6 +1065,7 @@ internal class ContainerFactory(
       runTemplateId: String,
       csmSimulationId: String,
       dependencies: List<String>? = null,
+      customSizing: Sizing
   ): ScenarioRunContainer {
     return this.buildSolutionContainer(
         organization,
@@ -1014,7 +1077,7 @@ internal class ContainerFactory(
         steps[CONTAINER_POSTRUN_MODE],
         csmSimulationId,
         dependencies,
-    )
+        customSizing)
   }
 
   internal fun getSendOptionValue(workspaceOption: Boolean?, templateOption: Boolean?): Boolean {
@@ -1037,6 +1100,7 @@ internal class ContainerFactory(
       step: SolutionContainerStepSpec?,
       csmSimulationId: String,
       dependencies: List<String>? = null,
+      customSizing: Sizing
   ): ScenarioRunContainer {
 
     if (step == null) throw IllegalStateException("Solution Container Step Spec is not defined")
