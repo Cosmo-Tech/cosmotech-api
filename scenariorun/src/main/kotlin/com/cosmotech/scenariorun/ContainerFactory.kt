@@ -23,6 +23,7 @@ import com.cosmotech.scenariorun.container.HIGH_MEMORY_SIZING
 import com.cosmotech.scenariorun.container.Sizing
 import com.cosmotech.scenariorun.container.SolutionContainerStepSpec
 import com.cosmotech.scenariorun.container.StartInfo
+import com.cosmotech.scenariorun.container.toContainerResourceSizing
 import com.cosmotech.scenariorun.container.toSizing
 import com.cosmotech.scenariorun.dataset.PARAMETERS_DATASET_ID
 import com.cosmotech.scenariorun.dataset.findDatasetsAndConnectors
@@ -691,7 +692,8 @@ internal class ContainerFactory(
         artifacts =
             listOf(
                 ScenarioRunContainerArtifact(
-                    name = SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME, path = "download_url")))
+                    name = SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME, path = "download_url")),
+        resourceSizing = customSizing.toContainerResourceSizing())
   }
 
   private fun buildFetchScenarioParametersContainersPipeline(
@@ -837,7 +839,8 @@ internal class ContainerFactory(
                 csmSimulationId),
         runArgs =
             getDatasetRunArgs(
-                csmPlatformProperties, dataset, connector, organizationId, workspaceId))
+                csmPlatformProperties, dataset, connector, organizationId, workspaceId),
+        resourceSizing = customSizing.toContainerResourceSizing())
   }
 
   private fun buildScenarioParametersDatasetFetchContainers(
@@ -927,7 +930,7 @@ internal class ContainerFactory(
                 csmPlatformProperties.images.scenarioFetchParameters),
         dependencies = listOf(CSM_DAG_ROOT),
         envVars = envVars,
-    )
+        resourceSizing = customSizing.toContainerResourceSizing())
   }
 
   internal fun buildSendDataWarehouseContainer(
@@ -962,7 +965,8 @@ internal class ContainerFactory(
                 csmPlatformProperties.azure?.containerRegistries?.core ?: "",
                 csmPlatformProperties.images.sendDataWarehouse),
         dependencies = dependencies,
-        envVars = envVars)
+        envVars = envVars,
+        resourceSizing = customSizing.toContainerResourceSizing())
   }
 
   internal fun buildApplyParametersContainer(
@@ -1150,7 +1154,7 @@ internal class ContainerFactory(
         dependencies = dependencies,
         entrypoint = ENTRYPOINT_NAME,
         solutionContainer = true,
-    )
+        resourceSizing = customSizing.toContainerResourceSizing())
   }
 
   private fun getEventHubEnvVars(

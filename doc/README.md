@@ -134,6 +134,8 @@ Class | Method | HTTP request | Description
  - [Connector](./Models/Connector.md)
  - [ConnectorParameter](./Models/ConnectorParameter.md)
  - [ConnectorParameterGroup](./Models/ConnectorParameterGroup.md)
+ - [ContainerResourceSizeInfo](./Models/ContainerResourceSizeInfo.md)
+ - [ContainerResourceSizing](./Models/ContainerResourceSizing.md)
  - [Dataset](./Models/Dataset.md)
  - [DatasetCompatibility](./Models/DatasetCompatibility.md)
  - [DatasetConnector](./Models/DatasetConnector.md)

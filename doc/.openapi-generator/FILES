@@ -11,6 +11,8 @@ Models/ComponentRolePermissions.md
 Models/Connector.md
 Models/ConnectorParameter.md
 Models/ConnectorParameterGroup.md
+Models/ContainerResourceSizeInfo.md
+Models/ContainerResourceSizing.md
 Models/Dataset.md
 Models/DatasetCompatibility.md
 Models/DatasetConnector.md
