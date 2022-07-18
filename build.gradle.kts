@@ -30,7 +30,7 @@ plugins {
   id("org.springframework.boot") version "2.7.0" apply false
   id("org.openapi.generator") version "5.4.0" apply false
   id("com.google.cloud.tools.jib") version "3.2.1" apply false
-  id("io.gitlab.arturbosch.detekt") version "1.19.0"
+  id("io.gitlab.arturbosch.detekt") version "1.21.0"
 }
 
 scmVersion { tag(closureOf<TagNameSerializationConfig> { prefix = "" }) }
