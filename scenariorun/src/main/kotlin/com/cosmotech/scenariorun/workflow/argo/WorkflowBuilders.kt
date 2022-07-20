@@ -10,6 +10,7 @@ import com.cosmotech.scenariorun.container.getRequestsMap
 import com.cosmotech.scenariorun.container.toContainerResourceSizing
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
+import com.cosmotech.scenariorun.getNodeLabelSize
 import io.argoproj.workflow.models.ArchiveStrategy
 import io.argoproj.workflow.models.Artifact
 import io.argoproj.workflow.models.DAGTask
@@ -88,6 +89,7 @@ internal fun buildTemplate(
           .name(scenarioRunContainer.name)
           .metadata(Metadata().labels(scenarioRunContainer.labels))
           .container(container)
+          .nodeSelector(scenarioRunContainer.getNodeLabelSize())
           .addVolumesItem(V1Volume().emptyDir(V1EmptyDirVolumeSource()).name("out"))
 
   val artifacts =
@@ -132,7 +134,7 @@ internal fun buildWorkflowSpec(
                   ?.ifEmpty { null })
           .nodeSelector(nodeSelector)
           .tolerations(listOf(V1Toleration().key("vendor").value("cosmotech").effect("NoSchedule")))
-      .serviceAccountName(csmPlatformProperties.argo.workflows.serviceAccountName)
+          .serviceAccountName(csmPlatformProperties.argo.workflows.serviceAccountName)
           .entrypoint(CSM_DAG_ENTRYPOINT)
           .templates(templates)
           .volumeClaimTemplates(buildVolumeClaims(csmPlatformProperties))
