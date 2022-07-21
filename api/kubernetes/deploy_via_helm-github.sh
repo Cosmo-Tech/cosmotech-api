@@ -32,7 +32,6 @@ help() {
   echo "- REDIS_MASTER_PV | string | The Persistent Volume name for redis master"
   echo "- REDIS_REPLICA1_PV | string | The Persistent Volume name for redis replica 1"
   echo "- REDIS_PVC_STORAGE_CLASS_NAME | string | The Persistent Volume Claim storage class name"
-  echo "- API_MANAGEMENT_PORT | int | The Cosmo Tech API management port"
   echo
   echo "Usage: ./$(basename "$0") CHART_PACKAGE_VERSION NAMESPACE ARGO_POSTGRESQL_PASSWORD API_VERSION [any additional options to pass as is to the cosmotech-api Helm Chart]"
   echo
@@ -62,13 +61,11 @@ CHART_PACKAGE_VERSION="$1"
 export NAMESPACE="$2"
 export API_VERSION="$4"
 
-export NAMESPACE_MONITORING="monitoring"
 export VERSION_INGRESS_NGINX="4.1.4"
 export VERSION_CERT_MANAGER="1.8.2"
 export VERSION_REDIS="16.13.0"
 export VERSION_REDIS_COSMOTECH="1.0.0"
 export VERSION_REDIS_INSIGHT="0.1.0"
-export VERSION_KUBERNETES_DASHBOARD="5.7.0"
 
 WORKING_DIR=$(mktemp -d -t cosmotech-api-helm-XXXXXXXXXX)
 echo -- "[info] Working directory: ${WORKING_DIR}"
@@ -76,292 +73,10 @@ cd "${WORKING_DIR}"
 
 # Create namespaces if it does not exist
 kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
-kubectl create namespace "${NAMESPACE_MONITORING}" --dry-run=client -o yaml | kubectl apply -f -
 
 if [[ "${COSMOTECH_API_DNS_NAME:-}" == "" ]]; then
   export COSMOTECH_API_DNS_NAME="${CERT_MANAGER_COSMOTECH_API_DNS_NAME:-}"
 fi
-
-# Kubernetes Dashboard
-echo -- Kubernetes Dashboard
-cat <<EOF > values-kubernetes-dashboard-rbac.yaml
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: admin-user
-  namespace: phoenix
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: admin-user
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: cluster-admin
-subjects:
-- kind: ServiceAccount
-  name: admin-user
-  namespace: phoenix
-
-EOF
-kubectl --namespace "${NAMESPACE}" apply --validate=false -f values-kubernetes-dashboard-rbac.yaml
-
-echo Dashboard token:
-kubectl -n ${NAMESPACE} get secret $(kubectl -n ${NAMESPACE} get sa/admin-user -o jsonpath="{.secrets[0].name}") -o go-template="{{.data.token | base64decode}}"
-echo
-
-helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
-helm repo update
-cat <<EOF > values-kubernetes-dashboard.yaml
-ingress:
-  enabled: false
-service:
-  externalPort: 80
-serviceAccount:
-  create: false
-  name: admin-user
-protocolHttp: true
-podLabels:
-  "networking/traffic-allowed": "yes"
-nodeSelector:
-  "cosmotech.com/tier": "services"
-tolerations:
-- key: "vendor"
-  operator: "Equal"
-  value: "cosmotech"
-  effect: "NoSchedule"
-resources:
-  requests:
-    cpu: 100m
-    memory: 200Mi
-  limits:
-    cpu: 2
-    memory: 200Mi
-metricsScraper:
-  enabled: false
-  nodeSelector:
-    "cosmotech.com/tier": "services"
-  tolerations:
-  - key: "vendor"
-    operator: "Equal"
-    value: "cosmotech"
-    effect: "NoSchedule"
-  resources:
-    requests:
-      cpu: 100m
-      memory: 32Mi
-    limits:
-      cpu: 1
-      memory: 64Mi
-
-EOF
-
-helm upgrade --install -n ${NAMESPACE} kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --version ${VERSION_KUBERNETES_DASHBOARD} --values values-kubernetes-dashboard.yaml
-
-# Grafana
-echo -- Grafana
-helm repo add grafana https://grafana.github.io/helm-charts
-helm repo update
-
-cat <<EOF > values-grafana.yaml
-loki:
-  enabled: true
-  persistence:
-    enabled: "true"
-    size: "64Gi"
-  podLabels:
-    "networking/traffic-allowed": "yes"
-  nodeSelector:
-    "cosmotech.com/tier": "services"
-  tolerations:
-  - key: "vendor"
-    operator: "Equal"
-    value: "cosmotech"
-    effect: "NoSchedule"
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
-    limits:
-      cpu: 1
-      memory: 128Mi
-prometheus:
-  enabled: true
-  alertmanager:
-    persistentVolume:
-      enabled: true
-      size: "2Gi"
-    podLabels:
-      "networking/traffic-allowed": "yes"
-    nodeSelector:
-      "cosmotech.com/tier": "services"
-    tolerations:
-    - key: "vendor"
-      operator: "Equal"
-      value: "cosmotech"
-      effect: "NoSchedule"
-    resources:
-      requests:
-        cpu: 100m
-        memory: 64Mi
-      limits:
-        cpu: 1
-        memory: 64Mi
-  nodeExporter:
-    podLabels:
-      "networking/traffic-allowed": "yes"
-    tolerations:
-    - key: "vendor"
-      operator: "Equal"
-      value: "cosmotech"
-      effect: "NoSchedule"
-    resources:
-      requests:
-        cpu: 100m
-        memory: 64Mi
-      limits:
-        cpu: 1
-        memory: 64Mi
-  server:
-    persistentVolume:
-      enabled: true
-      size: "64Gi"
-    podLabels:
-      "networking/traffic-allowed": "yes"
-    nodeSelector:
-      "cosmotech.com/tier": "services"
-    tolerations:
-    - key: "vendor"
-      operator: "Equal"
-      value: "cosmotech"
-      effect: "NoSchedule"
-    resources:
-      requests:
-        cpu: 100m
-        memory: 512Mi
-      limits:
-        cpu: 1
-        memory: 512Mi
-  pushgateway:
-    enabled: false
-    persistentVolume:
-      enabled: true
-      size: "2Gi"
-    podLabels:
-      "networking/traffic-allowed": "yes"
-    nodeSelector:
-      "cosmotech.com/tier": "services"
-    tolerations:
-    - key: "vendor"
-      operator: "Equal"
-      value: "cosmotech"
-      effect: "NoSchedule"
-    resources:
-      requests:
-        cpu: 100m
-        memory: 64Mi
-      limits:
-        cpu: 1
-        memory: 64Mi
-  extraScrapeConfigs: |
-      - job_name: 'prometheus-api-exporter'
-        metrics_path: /actuator/prometheus
-        scrape_interval: 10s
-        kubernetes_sd_configs:
-          - role: endpoints
-        scheme: http
-        relabel_configs:
-          - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
-            action: keep
-            regex: ${NAMESPACE};cosmotech-api-${API_VERSION};${API_MANAGEMENT_PORT:-8081}
-
-promtail:
-  enabled: true
-  config:
-    lokiAddress: "http://grafana-loki:3100/loki/api/v1/push"
-  podLabels:
-    "networking/traffic-allowed": "yes"
-  nodeSelector:
-    "cosmotech.com/tier": "services"
-  tolerations:
-  - key: "vendor"
-    operator: "Equal"
-    value: "cosmotech"
-    effect: "NoSchedule"
-  resources:
-    requests:
-      cpu: 100m
-      memory: 64Mi
-    limits:
-      cpu: 1
-      memory: 64Mi
-grafana:
-  enabled: true
-  deploymentStrategy: { "type": "Recreate" }
-  persistence:
-    enabled: "true"
-    size: "8Gi"
-  podLabels:
-    "networking/traffic-allowed": "yes"
-  nodeSelector:
-    "cosmotech.com/tier": "services"
-  tolerations:
-  - key: "vendor"
-    operator: "Equal"
-    value: "cosmotech"
-    effect: "NoSchedule"
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
-    limits:
-      cpu: 1
-      memory: 128Mi
-  dashboardProviders:
-    dashboardproviders.yaml:
-      apiVersion: 1
-      providers:
-        - name: cluster
-          orgId: 1
-          folder:
-          type: file
-          disableDeletion: true
-          editable: false
-          options:
-            path: /var/lib/grafana/dashboards/cluster
-  dashboards:
-    cluster:
-      kubernetes:
-        # Ref: https://grafana.com/grafana/dashboards/15661
-        gnetId: 15661
-        revision: 1
-        datasource: Prometheus
-      aggregated-logs:
-        # Ref: https://grafana.com/grafana/dashboards/13639
-        gnetId: 13639
-        revision: 1
-        datasource: Loki
-EOF
-
-#       ingress-nginx:
-#         # Ref: https://grafana.com/grafana/dashboards/9614-nginx-ingress-controller/
-#         gnetId: 9614
-#         revision: 1
-#         datasource: Prometheus
-#       prometheus-stats:
-#         # Ref: https://grafana.com/dashboards/2
-#         gnetId: 2
-#         revision: 2
-#         datasource: Prometheus
-#       loki-stats:
-#         # Ref: https://grafana.com/dashboards/14055
-#         gnetId: 14055
-#         revision: 5
-#         datasource: Prometheus
-
-
-helm upgrade --install -n ${NAMESPACE} grafana grafana/loki-stack --values values-grafana.yaml
 
 # NGINX Ingress Controller & Certificate
 echo -- Certificate config
@@ -397,8 +112,6 @@ if [[ "${NGINX_INGRESS_CONTROLLER_ENABLED:-false}" == "true" ]]; then
 
 cat <<EOF > values-ingress-nginx.yaml
 controller:
-  metrics:
-    enabled: true
   labels:
     "networking/traffic-allowed": "yes"
   podLabels:
@@ -661,8 +374,6 @@ image:
   registry: ghcr.io
   repository: cosmo-tech/cosmotech-redis
   tag: ${VERSION_REDIS_COSMOTECH}
-metrics:
-  enabled: true
 master:
   persistence:
     existingClaim: "${REDIS_MASTER_PVC:-}"
@@ -850,9 +561,6 @@ image:
 
 api:
   version: "$API_VERSION"
-
-service:
-  managementPort: ${API_MANAGEMENT_PORT:-8081}
 
 config:
   csm:

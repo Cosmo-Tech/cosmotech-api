@@ -38,13 +38,6 @@ management:
         include: "*"
   server:
     port: 8081
-  metrics:
-    tags:
-      platform_uri: ${csm.platform.azure.appIdUri}
-      platform_tenant_id: ${csm.platform.azure.credentials.customer.tenantId}
-      platform_version: ${csm.platform.version}
-      platform_vendor: ${csm.platform.vendor}
-      platform_commit_id: ${csm.platform.commit-id}
 
 server:
   jetty:
