@@ -214,22 +214,22 @@ subprojects {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
     api("com.github.Cosmo-Tech:cosmotech-api-common:$cosmotechApiCommonVersion")
-    api("com.github.Cosmo-Tech:cosmotech-api-azure:$cosmotechApiAzureVersion") {
-      exclude(group = "org.slf4j", module = "slf4j-api")
-      because(
-          "this depends on org.slf4j:slf4j-api 1.8.0-beta4 (pre 2.x)," +
-              "which is not backward-compatible with 1.7.x." +
-              "See http://www.slf4j.org/faq.html#changesInVersion200")
-    }
 
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("com.redis.om:redis-om-spring:0.5.1")
     implementation("com.redislabs:jrejson:1.5.0")
 
-    implementation(platform("com.azure.spring:azure-spring-boot-bom:$azureSpringBootBomVersion"))
-    api("com.azure.spring:azure-spring-boot-starter-cosmos")
-
-
+    if (!name.startsWith("cosmotech-connector-api")) {
+      implementation(platform("com.azure.spring:azure-spring-boot-bom:$azureSpringBootBomVersion"))
+      api("com.azure.spring:azure-spring-boot-starter-cosmos")
+      api("com.github.Cosmo-Tech:cosmotech-api-azure:$cosmotechApiAzureVersion") {
+        exclude(group = "org.slf4j", module = "slf4j-api")
+        because(
+          "this depends on org.slf4j:slf4j-api 1.8.0-beta4 (pre 2.x)," +
+                  "which is not backward-compatible with 1.7.x." +
+                  "See http://www.slf4j.org/faq.html#changesInVersion200")
+      }
+    }
   }
 
   tasks.withType<KotlinCompile> {
