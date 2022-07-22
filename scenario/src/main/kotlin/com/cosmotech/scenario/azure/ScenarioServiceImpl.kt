@@ -679,7 +679,7 @@ internal class ScenarioServiceImpl(
         publishDatasetListChangedEvent(organizationId, workspaceId, scenarioId, scenario)
       }
 
-      sendScenarioMetaData(organizationId, workspace, scenario)
+      sendScenarioMetaData(organizationId, workspace, existingScenario)
     }
 
     return existingScenario
