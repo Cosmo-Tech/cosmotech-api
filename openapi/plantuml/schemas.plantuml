@@ -412,6 +412,7 @@ entity Workspace {
     webApp: WorkspaceWebApp
     sendInputToDataWarehouse: Boolean
     useDedicatedEventHubNamespace: Boolean
+    sendScenarioMetadataToEventHub: Boolean
 }
 
 entity WorkspaceFile {
