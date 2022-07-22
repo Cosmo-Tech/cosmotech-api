@@ -618,13 +618,14 @@ internal class ScenarioRunServiceImpl(
       scenarioId: String,
       simulationRun: String
   ) {
-    if (workspace.sendScenarioMetadataToEventHub != true) {
+    if (workspace.sendScenarioMetadataToEventHub == false) {
       return
     }
 
     if (workspace.useDedicatedEventHubNamespace == false) {
-      logger.warn(
+      logger.error(
           "workspace must be configured with useDedicatedEventHubNamespace to true in order to send metadata")
+      return
     }
 
     val eventBus = csmPlatformProperties.azure?.eventBus!!
