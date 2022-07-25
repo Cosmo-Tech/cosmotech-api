@@ -784,11 +784,11 @@ internal class ScenarioServiceImpl(
       workspace: Workspace,
       scenario: Scenario
   ) {
-    if (workspace.sendScenarioMetadataToEventHub == false) {
+    if (workspace.sendScenarioMetadataToEventHub != true) {
       return
     }
 
-    if (workspace.useDedicatedEventHubNamespace == false) {
+    if (workspace.useDedicatedEventHubNamespace != true) {
       logger.error(
           "workspace must be configured with useDedicatedEventHubNamespace to true in order to send metadata")
       return
