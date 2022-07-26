@@ -155,6 +155,7 @@ class OktaContainerFactoryTests {
             "Scenarioid",
             "Test",
             CSM_SIMULATION_ID,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
     assertNotNull(container)
   }
@@ -173,6 +174,7 @@ class OktaContainerFactoryTests {
             "Scenarioid",
             "Test",
             CSM_SIMULATION_ID,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
     assertEquals("fetchDatasetContainer-1", container.name)
   }
@@ -191,6 +193,7 @@ class OktaContainerFactoryTests {
             "Scenarioid",
             "Test",
             CSM_SIMULATION_ID,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
     assertEquals("ghcr.io/cosmotech/test_connector:1.0.0", container.image)
   }
@@ -209,6 +212,7 @@ class OktaContainerFactoryTests {
           "Scenarioid",
           "Test",
           CSM_SIMULATION_ID,
+          nodeSizingLabel = NODE_LABEL_DEFAULT,
           customSizing = BASIC_SIZING)
     }
   }
@@ -227,6 +231,7 @@ class OktaContainerFactoryTests {
             "Scenarioid",
             "Test",
             CSM_SIMULATION_ID,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
     val expected =
         mapOf(
@@ -274,6 +279,7 @@ class OktaContainerFactoryTests {
             "Scenarioid",
             "Test",
             CSM_SIMULATION_ID,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
     val expected =
         mapOf(
@@ -319,6 +325,7 @@ class OktaContainerFactoryTests {
             "Scenarioid",
             "Test",
             CSM_SIMULATION_ID,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
     val expected =
         mapOf(
@@ -364,6 +371,7 @@ class OktaContainerFactoryTests {
             "Scenarioid",
             "Test",
             CSM_SIMULATION_ID,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
     val expected =
         mapOf(
@@ -408,6 +416,7 @@ class OktaContainerFactoryTests {
             "Scenarioid",
             "Test",
             CSM_SIMULATION_ID,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
     val expected =
         mapOf(
@@ -450,6 +459,7 @@ class OktaContainerFactoryTests {
             "Scenarioid",
             "Test",
             CSM_SIMULATION_ID,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
     val expected = mapOf("aadpodidbinding" to "phoenixdev-pod-identity")
     assertEquals(expected, container.labels)
@@ -469,6 +479,7 @@ class OktaContainerFactoryTests {
             "Scenarioid",
             "Test",
             CSM_SIMULATION_ID,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
     val expected = listOf("organizationid/workspaceid/workspace.param")
     assertEquals(expected, container.runArgs)
@@ -488,6 +499,7 @@ class OktaContainerFactoryTests {
             "Scenarioid",
             "Test",
             CSM_SIMULATION_ID,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
     val expected = listOf("param1_value", "param2_value", "param3_value")
     assertEquals(expected, container.runArgs)
@@ -497,7 +509,13 @@ class OktaContainerFactoryTests {
   fun `Fetch Scenario Parameters Container is not null`() {
     val container =
         factory.buildScenarioParametersFetchContainer(
-            "1", "2", "3", "Test", CSM_SIMULATION_ID, customSizing = BASIC_SIZING)
+            "1",
+            "2",
+            "3",
+            "Test",
+            CSM_SIMULATION_ID,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
+            customSizing = BASIC_SIZING)
     assertNotNull(container)
   }
 
@@ -505,7 +523,13 @@ class OktaContainerFactoryTests {
   fun `Fetch Scenario Parameters Container name valid`() {
     val container =
         factory.buildScenarioParametersFetchContainer(
-            "1", "2", "3", "Test", CSM_SIMULATION_ID, customSizing = BASIC_SIZING)
+            "1",
+            "2",
+            "3",
+            "Test",
+            CSM_SIMULATION_ID,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
+            customSizing = BASIC_SIZING)
     assertEquals("fetchScenarioParametersContainer", container.name)
   }
 
@@ -513,7 +537,13 @@ class OktaContainerFactoryTests {
   fun `Fetch Scenario Parameters Container image valid`() {
     val container =
         factory.buildScenarioParametersFetchContainer(
-            "1", "2", "3", "Test", CSM_SIMULATION_ID, customSizing = BASIC_SIZING)
+            "1",
+            "2",
+            "3",
+            "Test",
+            CSM_SIMULATION_ID,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
+            customSizing = BASIC_SIZING)
     assertEquals("ghcr.io/cosmotech/scenariofetchparameters:1.0.0", container.image)
   }
 
@@ -521,7 +551,13 @@ class OktaContainerFactoryTests {
   fun `Fetch Scenario Parameters Container env vars valid`() {
     val container =
         factory.buildScenarioParametersFetchContainer(
-            "1", "2", "3", "Test", CSM_SIMULATION_ID, customSizing = BASIC_SIZING)
+            "1",
+            "2",
+            "3",
+            "Test",
+            CSM_SIMULATION_ID,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
+            customSizing = BASIC_SIZING)
     val expected =
         mapOf(
             "IDENTITY_PROVIDER" to "okta",
@@ -555,7 +591,14 @@ class OktaContainerFactoryTests {
   fun `Fetch Scenario Parameters Container env vars valid json`() {
     val container =
         factory.buildScenarioParametersFetchContainer(
-            "1", "2", "3", "Test", CSM_SIMULATION_ID, true, customSizing = BASIC_SIZING)
+            "1",
+            "2",
+            "3",
+            "Test",
+            CSM_SIMULATION_ID,
+            true,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
+            customSizing = BASIC_SIZING)
     val expected =
         mapOf(
             "IDENTITY_PROVIDER" to "okta",
@@ -596,6 +639,7 @@ class OktaContainerFactoryTests {
             "Scenarioid",
             getRunTemplate(),
             CSM_SIMULATION_ID,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
     assertNotNull(container)
   }
@@ -609,6 +653,7 @@ class OktaContainerFactoryTests {
             "Scenarioid",
             getRunTemplate(),
             CSM_SIMULATION_ID,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
     assertEquals("sendDataWarehouseContainer", container.name)
   }
@@ -622,6 +667,7 @@ class OktaContainerFactoryTests {
             "Scenarioid",
             getRunTemplate(),
             CSM_SIMULATION_ID,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
     assertEquals("ghcr.io/cosmotech/senddatawarehouse:1.0.0", container.image)
   }
@@ -635,6 +681,7 @@ class OktaContainerFactoryTests {
             "Scenarioid",
             getRunTemplate(),
             CSM_SIMULATION_ID,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
     val expected =
         mapOf(
@@ -675,6 +722,7 @@ class OktaContainerFactoryTests {
             "Scenarioid",
             getRunTemplate(),
             CSM_SIMULATION_ID,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
     val expected =
         mapOf(
@@ -715,6 +763,7 @@ class OktaContainerFactoryTests {
             "Scenarioid",
             getRunTemplateNoDatasetsSend(),
             CSM_SIMULATION_ID,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
     val expected =
         mapOf(
@@ -759,6 +808,7 @@ class OktaContainerFactoryTests {
             "Scenarioid",
             getRunTemplateNoParametersSend(),
             CSM_SIMULATION_ID,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
     val expected =
         mapOf(
@@ -828,6 +878,7 @@ class OktaContainerFactoryTests {
           getSolution(),
           "badTemplate",
           CSM_SIMULATION_ID,
+          nodeSizingLabel = NODE_LABEL_DEFAULT,
           customSizing = BASIC_SIZING)
     }
   }
@@ -848,6 +899,7 @@ class OktaContainerFactoryTests {
             getSolutionLocalSources(),
             "testruntemplate",
             CSM_SIMULATION_ID,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
     envVarsWithSourceLocalValid(container, "handle-parameters", "CSM_PARAMETERS_HANDLER_PROVIDER")
   }
@@ -862,6 +914,7 @@ class OktaContainerFactoryTests {
             getSolutionCloudSources(),
             "testruntemplate",
             CSM_SIMULATION_ID,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
     envVarsWithSourceValid(
         container,
@@ -882,6 +935,7 @@ class OktaContainerFactoryTests {
             getSolutionCloudSources(),
             "testruntemplate",
             CSM_SIMULATION_ID,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
     envVarsWithSourceValid(
         container,
@@ -902,6 +956,7 @@ class OktaContainerFactoryTests {
             getSolutionCloudSources(),
             "testruntemplate",
             CSM_SIMULATION_ID,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
     envVarsWithSourceValid(
         container, "prerun", "CSM_PRERUN_PROVIDER", "CSM_PRERUN_PATH", "prerun", "testruntemplate")
@@ -917,6 +972,7 @@ class OktaContainerFactoryTests {
             getSolutionCloudSources(),
             "testruntemplate",
             CSM_SIMULATION_ID,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
     envVarsWithSourceValid(
         container, "engine", "CSM_ENGINE_PROVIDER", "CSM_ENGINE_PATH", "engine", "testruntemplate")
@@ -932,6 +988,7 @@ class OktaContainerFactoryTests {
             getSolutionCloudSources(),
             "testruntemplate",
             CSM_SIMULATION_ID,
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
     envVarsWithSourceValid(
         container,
@@ -1114,6 +1171,7 @@ class OktaContainerFactoryTests {
             getOrganization(),
             solution,
             CSM_SIMULATION_ID,
+            scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = HIGH_CPU_SIZING)
     assertEquals(containers.size, 8)
   }
@@ -1134,6 +1192,7 @@ class OktaContainerFactoryTests {
             getOrganization(),
             solution,
             CSM_SIMULATION_ID,
+            scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = HIGH_CPU_SIZING)
     val expected =
         listOf(
@@ -1160,6 +1219,7 @@ class OktaContainerFactoryTests {
             getOrganization(),
             solution,
             CSM_SIMULATION_ID,
+            scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = HIGH_CPU_SIZING)
     val container = containers.find { container -> container.name == "multipleStepsContainer-1" }
     this.validateEnvVarsSolutionContainer(
@@ -1182,6 +1242,7 @@ class OktaContainerFactoryTests {
             getOrganization(),
             solution,
             CSM_SIMULATION_ID,
+            scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = HIGH_CPU_SIZING)
     val expected =
         listOf(
@@ -1210,6 +1271,7 @@ class OktaContainerFactoryTests {
             getOrganization(),
             solution,
             CSM_SIMULATION_ID,
+            scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = HIGH_CPU_SIZING)
     val container = containers.find { container -> container.name == "multipleStepsContainer-1" }
     this.validateEnvVarsSolutionContainer(container, "handle-parameters,validate")
@@ -1231,6 +1293,7 @@ class OktaContainerFactoryTests {
             getOrganization(),
             solution,
             CSM_SIMULATION_ID,
+            scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = HIGH_CPU_SIZING)
     val container = containers.find { container -> container.name == "multipleStepsContainer-2" }
     this.validateEnvVarsSolutionContainer(container, "prerun,engine,postrun")
@@ -1252,6 +1315,7 @@ class OktaContainerFactoryTests {
             getOrganization(),
             solution,
             CSM_SIMULATION_ID,
+            scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = HIGH_CPU_SIZING)
     val expected =
         listOf(
@@ -1283,6 +1347,7 @@ class OktaContainerFactoryTests {
             getOrganization(),
             solution,
             CSM_SIMULATION_ID,
+            scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = HIGH_CPU_SIZING)
     assertEquals(1, containers.size)
   }
@@ -1303,6 +1368,7 @@ class OktaContainerFactoryTests {
             getOrganization(),
             solution,
             CSM_SIMULATION_ID,
+            scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = HIGH_CPU_SIZING)
     assertEquals(containers.size, 10)
   }
@@ -1323,6 +1389,7 @@ class OktaContainerFactoryTests {
             getOrganization(),
             solution,
             CSM_SIMULATION_ID,
+            scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = HIGH_CPU_SIZING)
     val expected =
         listOf(
@@ -1356,6 +1423,7 @@ class OktaContainerFactoryTests {
             getOrganization(),
             solution,
             CSM_SIMULATION_ID,
+            scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = HIGH_CPU_SIZING)
     val expected =
         listOf(
@@ -1393,6 +1461,7 @@ class OktaContainerFactoryTests {
             getOrganization(),
             solution,
             CSM_SIMULATION_ID,
+            scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = HIGH_CPU_SIZING)
     val expected =
         listOf(
@@ -1426,6 +1495,7 @@ class OktaContainerFactoryTests {
             getOrganization(),
             solution,
             CSM_SIMULATION_ID,
+            scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = HIGH_CPU_SIZING)
     val container = containers.find { container -> container.name == "fetchDatasetContainer-2" }
     val expected =
@@ -1476,6 +1546,7 @@ class OktaContainerFactoryTests {
             getOrganization(),
             solution,
             CSM_SIMULATION_ID,
+            scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = HIGH_CPU_SIZING)
     val expected =
         listOf(
@@ -1576,6 +1647,7 @@ class OktaContainerFactoryTests {
             getOrganization(),
             solution,
             CSM_SIMULATION_ID,
+            scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = HIGH_CPU_SIZING)
     val expected =
         listOf(
@@ -1610,6 +1682,7 @@ class OktaContainerFactoryTests {
             getOrganization(),
             solution,
             CSM_SIMULATION_ID,
+            scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = HIGH_CPU_SIZING)
     val expected =
         listOf(
@@ -1654,6 +1727,7 @@ class OktaContainerFactoryTests {
             getOrganization(),
             solution,
             CSM_SIMULATION_ID,
+            scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = HIGH_CPU_SIZING)
     val expected =
         listOf(
@@ -1689,6 +1763,7 @@ class OktaContainerFactoryTests {
             getOrganization(),
             solution,
             CSM_SIMULATION_ID,
+            scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = HIGH_CPU_SIZING)
     val expected =
         listOf(
@@ -1739,6 +1814,7 @@ class OktaContainerFactoryTests {
           getOrganization(),
           solution,
           CSM_SIMULATION_ID,
+          scenarioRunLabel = NODE_LABEL_DEFAULT,
           scenarioRunSizing = HIGH_CPU_SIZING)
     }
   }
@@ -1805,6 +1881,7 @@ class OktaContainerFactoryTests {
           "S-id",
           "W-key",
           "csmSimulationId",
+          nodeSizingLabel = NODE_LABEL_DEFAULT,
           customSizing = BASIC_SIZING)
     }
   }
@@ -1853,6 +1930,7 @@ class OktaContainerFactoryTests {
             "S-id",
             "W-key",
             "csmSimulationId",
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
 
     assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
@@ -1910,6 +1988,7 @@ class OktaContainerFactoryTests {
             "S-id",
             "W-key",
             "csmSimulationId",
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
 
     assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
@@ -1967,6 +2046,7 @@ class OktaContainerFactoryTests {
             "S-id",
             "W-key",
             "csmSimulationId",
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
 
     assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
@@ -2024,6 +2104,7 @@ class OktaContainerFactoryTests {
             "S-id",
             "W-key",
             "csmSimulationId",
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
 
     assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
@@ -2081,6 +2162,7 @@ class OktaContainerFactoryTests {
             "S-id",
             "W-key",
             "csmSimulationId",
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
 
     assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
@@ -2138,6 +2220,7 @@ class OktaContainerFactoryTests {
             "S-id",
             "W-key",
             "csmSimulationId",
+            nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
 
     assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
@@ -2375,6 +2458,7 @@ class OktaContainerFactoryTests {
             getOrganization(),
             solution,
             CSM_SIMULATION_ID,
+            scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = HIGH_CPU_SIZING)
     val container =
         containers.find { container ->
@@ -2505,6 +2589,7 @@ class OktaContainerFactoryTests {
         getSolution(),
         "testruntemplate",
         CSM_SIMULATION_ID,
+        nodeSizingLabel = NODE_LABEL_DEFAULT,
         customSizing = BASIC_SIZING)
   }
 
@@ -2516,6 +2601,7 @@ class OktaContainerFactoryTests {
         getSolution(),
         "testruntemplate",
         CSM_SIMULATION_ID,
+        nodeSizingLabel = NODE_LABEL_DEFAULT,
         customSizing = BASIC_SIZING)
   }
 
@@ -2527,6 +2613,7 @@ class OktaContainerFactoryTests {
         getSolution(),
         "testruntemplate",
         CSM_SIMULATION_ID,
+        nodeSizingLabel = NODE_LABEL_DEFAULT,
         customSizing = BASIC_SIZING)
   }
 
@@ -2538,6 +2625,7 @@ class OktaContainerFactoryTests {
         getSolution(),
         "testruntemplate",
         CSM_SIMULATION_ID,
+        nodeSizingLabel = NODE_LABEL_DEFAULT,
         customSizing = BASIC_SIZING)
   }
 
@@ -2549,6 +2637,7 @@ class OktaContainerFactoryTests {
         getSolution(),
         "testruntemplate",
         CSM_SIMULATION_ID,
+        nodeSizingLabel = NODE_LABEL_DEFAULT,
         customSizing = BASIC_SIZING)
   }
 
