@@ -4,7 +4,6 @@ package com.cosmotech.scenariorun
 
 import com.cosmotech.scenariorun.domain.ScenarioRun
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
-import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
 import com.cosmotech.scenariorun.domain.ScenarioRunState
 
 /**
@@ -29,6 +28,6 @@ internal fun ScenarioRunState.isTerminal() =
     }
 
 internal fun ScenarioRunContainer.getNodeLabelSize(): Map<String, String> {
-  val currentNodeLabel = this.nodeLabel?.removeSuffix(NODE_LABEL_SUFFIX) ?: NODE_LABEL_DEFAULT
+  val currentNodeLabel = this.nodeLabel ?: NODE_LABEL_DEFAULT
   return mapOf("cosmotech.com/size" to currentNodeLabel)
 }

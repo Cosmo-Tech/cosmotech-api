@@ -45,7 +45,7 @@ internal val HIGH_MEMORY_SIZING =
 internal val HIGH_CPU_SIZING =
     Sizing(
         requests = SizingInfo(cpu = "24", memory = "4096Mi"),
-        limits = SizingInfo(cpu = "72", memory = ""))
+        limits = SizingInfo(cpu = "72", memory = "144000Mi"))
 
 fun ScenarioResourceSizing.toSizing(): Sizing {
   return Sizing(
