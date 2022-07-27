@@ -8,9 +8,7 @@ import com.azure.storage.blob.BlobServiceClient
 import com.azure.storage.blob.batch.BlobBatchClient
 import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
-import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.solution.api.SolutionApiService
-import com.cosmotech.user.api.UserApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import io.mockk.MockKAnnotations
@@ -39,9 +37,7 @@ const val WORKSPACE_ID = "W-BcDeFg123"
 class WorkspaceServiceImplTests {
 
   @MockK private lateinit var resourceLoader: ResourceLoader
-  @MockK private lateinit var userService: UserApiService
   @MockK private lateinit var solutionService: SolutionApiService
-  @MockK private lateinit var organizationService: OrganizationApiService
   @MockK private lateinit var azureStorageBlobServiceClient: BlobServiceClient
 
   @MockK private lateinit var azureStorageBlobBatchClient: BlobBatchClient
@@ -56,8 +52,6 @@ class WorkspaceServiceImplTests {
         spyk(
             WorkspaceServiceImpl(
                 resourceLoader,
-                userService,
-                organizationService,
                 solutionService,
                 azureStorageBlobServiceClient,
                 azureStorageBlobBatchClient))

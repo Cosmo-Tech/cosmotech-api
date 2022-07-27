@@ -52,8 +52,13 @@ Models/UserWorkspace.md
 Models/Validator.md
 Models/ValidatorRun.md
 Models/Workspace.md
+Models/WorkspaceAccessControl.md
+Models/WorkspaceAccessControlWithPermissions.md
+Models/WorkspaceAccessControlWithPermissions_allOf.md
 Models/WorkspaceFile.md
+Models/WorkspaceRole.md
+Models/WorkspaceRoleItems.md
+Models/WorkspaceSecurity.md
 Models/WorkspaceSolution.md
-Models/WorkspaceUser.md
 Models/WorkspaceWebApp.md
 README.md
