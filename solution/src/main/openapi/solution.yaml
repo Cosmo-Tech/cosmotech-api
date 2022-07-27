@@ -563,7 +563,8 @@ components:
         computeSize:
           type: string
           description: the compute size needed for this Run Template. Standard sizes are basic and highcpu. Default is basic
-        resourceSizing:
+        runSizing:
+          description: definition of resources needed for the scenario run
           $ref: "#/components/schemas/RunTemplateResourceSizing"
         noDataIngestionState:
           type: boolean

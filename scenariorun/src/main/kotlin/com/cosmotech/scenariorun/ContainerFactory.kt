@@ -288,9 +288,9 @@ internal class ContainerFactory(
           (template.computeSize?.removeSuffix(NODE_LABEL_SUFFIX) ?: NODE_LABEL_DEFAULT)
         }
 
-    val scenarioSizing = scenario.resourceSizing?.toSizing()
+    val scenarioSizing = scenario.runSizing?.toSizing()
 
-    val runTemplateSizing = template.resourceSizing?.toSizing()
+    val runTemplateSizing = template.runSizing?.toSizing()
 
     val defaultSizing =
         if (nodeLabel != null) {
@@ -721,7 +721,7 @@ internal class ContainerFactory(
                 ScenarioRunContainerArtifact(
                     name = SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME, path = "download_url")),
         nodeLabel = nodeSizingLabel,
-        resourceSizing = customSizing.toContainerResourceSizing())
+        runSizing = customSizing.toContainerResourceSizing())
   }
 
   @Suppress("LongParameterList")
@@ -876,7 +876,7 @@ internal class ContainerFactory(
             getDatasetRunArgs(
                 csmPlatformProperties, dataset, connector, organizationId, workspaceId),
         nodeLabel = nodeSizingLabel,
-        resourceSizing = customSizing.toContainerResourceSizing())
+        runSizing = customSizing.toContainerResourceSizing())
   }
 
   private fun buildScenarioParametersDatasetFetchContainers(
@@ -970,7 +970,7 @@ internal class ContainerFactory(
         dependencies = listOf(CSM_DAG_ROOT),
         envVars = envVars,
         nodeLabel = nodeSizingLabel,
-        resourceSizing = customSizing.toContainerResourceSizing())
+        runSizing = customSizing.toContainerResourceSizing())
   }
 
   internal fun buildSendDataWarehouseContainer(
@@ -1008,7 +1008,7 @@ internal class ContainerFactory(
         dependencies = dependencies,
         envVars = envVars,
         nodeLabel = nodeSizingLabel,
-        resourceSizing = customSizing.toContainerResourceSizing())
+        runSizing = customSizing.toContainerResourceSizing())
   }
 
   internal fun buildApplyParametersContainer(
@@ -1208,7 +1208,7 @@ internal class ContainerFactory(
         entrypoint = ENTRYPOINT_NAME,
         solutionContainer = true,
         nodeLabel = sizingLabel,
-        resourceSizing = customSizing.toContainerResourceSizing())
+        runSizing = customSizing.toContainerResourceSizing())
   }
 
   private fun getEventHubEnvVars(
