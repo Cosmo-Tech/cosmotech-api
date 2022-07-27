@@ -52,7 +52,7 @@ nodes:
         kind: JoinConfiguration
         nodeRegistration:
           kubeletExtraArgs:
-            node-labels: "kubernetes.io/os=linux,agentpool=basicpool,cosmotech.com/tier=compute,cosmotech.com/size=basic"
+            node-labels: "kubernetes.io/os=linux,cosmotech.com/tier=compute,cosmotech.com/size=basic"
     - role: worker
       image: kindest/node:${kindest_node_image_tag}
       kubeadmConfigPatches:
