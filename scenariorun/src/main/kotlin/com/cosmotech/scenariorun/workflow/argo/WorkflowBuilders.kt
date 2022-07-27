@@ -66,7 +66,7 @@ internal fun buildTemplate(
               .subPath(VOLUME_CLAIM_PARAMETERS_SUBPATH),
           V1VolumeMount().name("out").mountPath("/var/csmoutput"))
 
-  val sizingInfo = scenarioRunContainer.resourceSizing ?: BASIC_SIZING.toContainerResourceSizing()
+  val sizingInfo = scenarioRunContainer.runSizing ?: BASIC_SIZING.toContainerResourceSizing()
 
   scenarioRunContainer.nodeLabel
   val container =

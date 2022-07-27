@@ -874,7 +874,8 @@ components:
           description: the list of Dataset Id associated to this Scenario Run Template
           items:
             type: string
-        resourceSizing:
+        runSizing:
+          description: definition of resources needed for the scenario run
           $ref: "#/components/schemas/ScenarioResourceSizing"
         parametersValues:
           type: array
