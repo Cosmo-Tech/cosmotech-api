@@ -8,23 +8,27 @@ import com.azure.storage.blob.BlobServiceClient
 import com.azure.storage.blob.batch.BlobBatchClient
 import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
-import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
-import io.mockk.*
+import io.mockk.MockKAnnotations
+import io.mockk.confirmVerified
+import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
-import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
-import org.junit.jupiter.api.assertThrows
-import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.core.io.Resource
-import org.springframework.core.io.ResourceLoader
+import io.mockk.mockk
+import io.mockk.spyk
+import io.mockk.verify
+import java.lang.IllegalArgumentException
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.extension.ExtendWith
+import org.springframework.core.io.Resource
+import org.springframework.core.io.ResourceLoader
 
 const val ORGANIZATION_ID = "O-AbCdEf123"
 const val WORKSPACE_ID = "W-BcDeFg123"
@@ -38,8 +42,6 @@ class WorkspaceServiceImplTests {
 
   @MockK private lateinit var azureStorageBlobBatchClient: BlobBatchClient
 
-  @RelaxedMockK private lateinit var csmRbac: CsmRbac
-
   @Suppress("unused") @MockK private lateinit var cosmosTemplate: CosmosTemplate
 
   @InjectMockKs private lateinit var workspaceServiceImpl: WorkspaceServiceImpl
@@ -52,15 +54,13 @@ class WorkspaceServiceImplTests {
                 resourceLoader,
                 solutionService,
                 azureStorageBlobServiceClient,
-                azureStorageBlobBatchClient,
-                csmRbac))
+                azureStorageBlobBatchClient))
     MockKAnnotations.init(this, relaxUnitFun = true)
-    this.csmRbac = mockk<CsmRbac>(relaxed = true)
   }
 
   @Test
   fun `In uploadWorkspaceFile, filename is used if no destination set`() {
-    val workspace = mockk<Workspace>(relaxed = true)
+    val workspace = mockk<Workspace>()
     every { workspace.id } returns WORKSPACE_ID
     every { workspace.name } returns "test workspace"
     every { workspaceServiceImpl.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns
@@ -90,7 +90,7 @@ class WorkspaceServiceImplTests {
 
   @Test
   fun `In uploadWorkspaceFile, filename is used if destination is blank`() {
-    val workspace = mockk<Workspace>(relaxed = true)
+    val workspace = mockk<Workspace>()
     every { workspace.id } returns WORKSPACE_ID
     every { workspace.name } returns "test workspace"
     every { workspaceServiceImpl.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns
@@ -120,7 +120,7 @@ class WorkspaceServiceImplTests {
 
   @Test
   fun `In uploadWorkspaceFile, filename is appended to destination directory (ending with slash)`() {
-    val workspace = mockk<Workspace>(relaxed = true)
+    val workspace = mockk<Workspace>()
     every { workspace.id } returns WORKSPACE_ID
     every { workspace.name } returns "test workspace"
     every { workspaceServiceImpl.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns
@@ -152,7 +152,7 @@ class WorkspaceServiceImplTests {
 
   @Test
   fun `In uploadWorkspaceFile, destination is used as is as file path if not ending with slash)`() {
-    val workspace = mockk<Workspace>(relaxed = true)
+    val workspace = mockk<Workspace>()
     every { workspace.id } returns WORKSPACE_ID
     every { workspace.name } returns "test workspace"
     every { workspaceServiceImpl.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns
@@ -184,7 +184,7 @@ class WorkspaceServiceImplTests {
 
   @Test
   fun `In uploadWorkspaceFile, multiple slash characters in destination result in a single slash being used`() {
-    val workspace = mockk<Workspace>(relaxed = true)
+    val workspace = mockk<Workspace>()
     every { workspace.id } returns WORKSPACE_ID
     every { workspace.name } returns "test workspace"
     every { workspaceServiceImpl.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns
@@ -267,9 +267,7 @@ class WorkspaceServiceImplTests {
 
   @Test
   fun `should reject update request if solution ID is not valid`() {
-    every {
-      workspaceServiceImpl.findWorkspaceByIdNoSecurity(ORGANIZATION_ID, WORKSPACE_ID)
-    } returns
+    every { workspaceServiceImpl.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns
         Workspace(
             id = WORKSPACE_ID,
             key = "my-workspace-key",

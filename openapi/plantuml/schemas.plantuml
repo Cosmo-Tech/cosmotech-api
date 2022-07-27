@@ -2,11 +2,6 @@
 
 title Cosmo Tech Plaform API Schemas Diagram
 
-entity ComponentRolePermissions {
-    component: String
-    roles: Map
-}
-
 entity Connector {
     id: String
     * key: String
@@ -85,17 +80,6 @@ entity Organization {
     ownerId: String
     users: List<OrganizationUser>
     services: OrganizationServices
-    security: RbacSecurity
-}
-
-entity OrganizationAccessControl {
-    * id: String
-    * role: String
-}
-
-entity OrganizationSecurity {
-    * default: String
-    accessControlList: List<RbacAccessControl>
 }
 
 entity OrganizationService {
@@ -195,6 +179,7 @@ entity Scenario {
     solutionId: String
     runTemplateId: String
     workspaceId: String
+    users: List<ScenarioUser>
     state: ScenarioJobState
     creationDate: Date
     lastUpdate: Date
@@ -207,12 +192,6 @@ entity Scenario {
     parentLastRun: ScenarioLastRun
     rootLastRun: ScenarioLastRun
     validationStatus: ScenarioValidationStatus
-    security: RbacSecurity
-}
-
-entity ScenarioAccessControl {
-    * id: String
-    * role: String
 }
 
 entity ScenarioChangedParameterValue {
@@ -359,9 +338,10 @@ entity ScenarioRunTemplateParameterValue {
     isInherited: Boolean
 }
 
-entity ScenarioSecurity {
-    * default: String
-    accessControlList: List<RbacAccessControl>
+entity ScenarioUser {
+    * id: String
+    name: String
+    * roles: List<String>
 }
 
 entity ScenarioValidationStatus {
@@ -439,21 +419,32 @@ entity Workspace {
     sendInputToDataWarehouse: Boolean
     useDedicatedEventHubNamespace: Boolean
     sendScenarioMetadataToEventHub: Boolean
-    security: RbacSecurity
+    security: WorkspaceSecurity
 }
 
 entity WorkspaceAccessControl {
     * id: String
-    * role: String
+    * roles: List<WorkspaceRole>
+}
+
+entity WorkspaceAccessControlWithPermissions {
+    permissions: List<String>
 }
 
 entity WorkspaceFile {
     fileName: String
 }
 
+entity WorkspaceRole {
+}
+
+entity WorkspaceRoleItems {
+    roles: List<WorkspaceRole>
+}
+
 entity WorkspaceSecurity {
-    * default: String
-    accessControlList: List<RbacAccessControl>
+    default: List<WorkspaceRole>
+    accessControlList: Map
 }
 
 entity WorkspaceSolution {
@@ -468,23 +459,23 @@ entity WorkspaceWebApp {
     options: Map
 }
 
+WorkspaceAccessControl <|--- WorkspaceAccessControlWithPermissions
 
 ScenarioRunContainer -- "0..*" ScenarioRunContainerArtifact : artifacts
 ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
 OrganizationServices -- OrganizationService : storage
 OrganizationServices -- OrganizationService : solutionsContainerRegistry
+Scenario -- "0..*" ScenarioUser : users
 Scenario -- "0..*" ScenarioRunTemplateParameterValue : parametersValues
 Scenario -- ScenarioLastRun : lastRun
 Scenario -- ScenarioLastRun : parentLastRun
 Scenario -- ScenarioLastRun : rootLastRun
-Scenario -- RbacSecurity : security
 ScenarioRun -- "0..*" RunTemplateParameterValue : parametersValues
 ScenarioRun -- "0..*" ScenarioRunContainer : containers
 ScenarioRunStatus -- "0..*" ScenarioRunStatusNode : nodes
 Connector -- "0..*" ConnectorParameterGroup : parameterGroups
 Organization -- "0..*" OrganizationUser : users
 Organization -- OrganizationServices : services
-Organization -- RbacSecurity : security
 User -- "0..*" UserOrganization : organizations
 RunTemplate -- DeleteHistoricalData : deleteHistoricalData
 UserOrganization -- "0..*" UserWorkspace : workspaces
@@ -496,7 +487,8 @@ Dataset -- DatasetConnector : connector
 Dataset -- "0..*" DatasetCompatibility : compatibility
 ScenarioRunStartContainers -- "0..*" ScenarioRunContainer : containers
 Workspace -- WorkspaceSolution : solution
+Workspace -- "0..*" WorkspaceUser : users
 Workspace -- WorkspaceWebApp : webApp
-Workspace -- RbacSecurity : security
+Workspace -- WorkspaceSecurity : security
 
 @enduml
