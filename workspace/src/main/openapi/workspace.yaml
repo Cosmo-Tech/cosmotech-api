@@ -402,7 +402,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WorkspaceRoleList'
+              $ref: '#/components/schemas/WorkspaceRoleItems'
             examples:
               BreweryUpdate:
                 $ref: '#/components/examples/BreweryWorkspaceDefaultSecurity'
@@ -610,7 +610,7 @@ components:
           type: string
           description: the identity id
         roles:
-          $ref: '#components/schemas/WorkspaceRoleList'
+          $ref: '#/components/schemas/WorkspaceRoleList'
       required:
         - id
         - roles
@@ -625,6 +625,12 @@ components:
               items:
                 type: string
                 description: a permission id.
+    WorkspaceRoleItems:
+      type: object
+      description: a list of role access list
+      properties:
+        roles:
+          $ref: '#/components/schemas/WorkspaceRoleList'
     WorkspaceRoleList:
       type: array
       description: a roles list
@@ -817,7 +823,8 @@ components:
       summary: Set of default security
       description: An array of default security values
       value:
-        - Writer
+        roles:
+          - Writer
     BreweryWorkspaceAccessControl:
       summary: Set an access control.
       description: Set an access control for a user to a workspace.

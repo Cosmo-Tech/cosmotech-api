@@ -7,7 +7,6 @@ Apis/SolutionApi.md
 Apis/UserApi.md
 Apis/ValidatorApi.md
 Apis/WorkspaceApi.md
-Models/ComponentRolePermissions.md
 Models/Connector.md
 Models/ConnectorParameter.md
 Models/ConnectorParameterGroup.md
@@ -17,8 +16,6 @@ Models/DatasetConnector.md
 Models/DatasetCopyParameters.md
 Models/DatasetSearch.md
 Models/Organization.md
-Models/OrganizationAccessControl.md
-Models/OrganizationSecurity.md
 Models/OrganizationService.md
 Models/OrganizationServices.md
 Models/OrganizationUser.md
@@ -29,7 +26,6 @@ Models/RunTemplateParameterGroup.md
 Models/RunTemplateParameterValue.md
 Models/RunTemplateStepSource.md
 Models/Scenario.md
-Models/ScenarioAccessControl.md
 Models/ScenarioChangedParameterValue.md
 Models/ScenarioComparisonResult.md
 Models/ScenarioDataDownloadInfo.md
@@ -47,7 +43,7 @@ Models/ScenarioRunState.md
 Models/ScenarioRunStatus.md
 Models/ScenarioRunStatusNode.md
 Models/ScenarioRunTemplateParameterValue.md
-Models/ScenarioSecurity.md
+Models/ScenarioUser.md
 Models/ScenarioValidationStatus.md
 Models/Solution.md
 Models/User.md
@@ -57,7 +53,11 @@ Models/Validator.md
 Models/ValidatorRun.md
 Models/Workspace.md
 Models/WorkspaceAccessControl.md
+Models/WorkspaceAccessControlWithPermissions.md
+Models/WorkspaceAccessControlWithPermissions_allOf.md
 Models/WorkspaceFile.md
+Models/WorkspaceRole.md
+Models/WorkspaceRoleItems.md
 Models/WorkspaceSecurity.md
 Models/WorkspaceSolution.md
 Models/WorkspaceWebApp.md
