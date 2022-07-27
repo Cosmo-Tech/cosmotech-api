@@ -93,7 +93,7 @@ Class | Method | HTTP request | Description
 *ValidatorApi* | [**findValidatorById**](Apis/ValidatorApi.md#findvalidatorbyid) | **GET** /organizations/{organization_id}/datasets/validators/{validator_id} | Get the details of a validator
 *ValidatorApi* | [**findValidatorRunById**](Apis/ValidatorApi.md#findvalidatorrunbyid) | **GET** /organizations/{organization_id}/datasets/validators/{validator_id}/history/{validatorrun_id} | Get the details of a validator run
 *ValidatorApi* | [**runValidator**](Apis/ValidatorApi.md#runvalidator) | **POST** /organizations/{organization_id}/datasets/validators/{validator_id}/run | Run a Validator
-*WorkspaceApi* | [**addOrReplaceUsersInOrganizationWorkspace**](Apis/WorkspaceApi.md#addorreplaceusersinorganizationworkspace) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/users | Add (or replace) users to the Workspace specified
+*WorkspaceApi* | [**addWorkspaceAccess**](Apis/WorkspaceApi.md#addworkspaceaccess) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/security/access | add a control acccess to the Workspace
 *WorkspaceApi* | [**createWorkspace**](Apis/WorkspaceApi.md#createworkspace) | **POST** /organizations/{organization_id}/workspaces | Create a new workspace
 *WorkspaceApi* | [**deleteAllWorkspaceFiles**](Apis/WorkspaceApi.md#deleteallworkspacefiles) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/files | Delete all Workspace files
 *WorkspaceApi* | [**deleteWorkspace**](Apis/WorkspaceApi.md#deleteworkspace) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id} | Delete a workspace
@@ -102,8 +102,10 @@ Class | Method | HTTP request | Description
 *WorkspaceApi* | [**findAllWorkspaceFiles**](Apis/WorkspaceApi.md#findallworkspacefiles) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/files | List all Workspace files
 *WorkspaceApi* | [**findAllWorkspaces**](Apis/WorkspaceApi.md#findallworkspaces) | **GET** /organizations/{organization_id}/workspaces | List all Workspaces
 *WorkspaceApi* | [**findWorkspaceById**](Apis/WorkspaceApi.md#findworkspacebyid) | **GET** /organizations/{organization_id}/workspaces/{workspace_id} | Get the details of an workspace
-*WorkspaceApi* | [**removeAllUsersOfWorkspace**](Apis/WorkspaceApi.md#removeallusersofworkspace) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/users | Remove all users from the Workspace specified
-*WorkspaceApi* | [**removeUserFromOrganizationWorkspace**](Apis/WorkspaceApi.md#removeuserfromorganizationworkspace) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/users/{user_id} | Remove the specified user from the given Organization Workspace
+*WorkspaceApi* | [**getWorkspaceAccess**](Apis/WorkspaceApi.md#getworkspaceaccess) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id} | get a control acccess for the Workspace
+*WorkspaceApi* | [**getWorkspaceSecurity**](Apis/WorkspaceApi.md#getworkspacesecurity) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/security | Get the Workspace security information
+*WorkspaceApi* | [**removeWorkspaceAccess**](Apis/WorkspaceApi.md#removeworkspaceaccess) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id} | Remove the specified access from the given Organization Workspace
+*WorkspaceApi* | [**setWorkspaceDefaultSecurity**](Apis/WorkspaceApi.md#setworkspacedefaultsecurity) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/security/default | set the Workspace default security
 *WorkspaceApi* | [**updateWorkspace**](Apis/WorkspaceApi.md#updateworkspace) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id} | Update a workspace
 *WorkspaceApi* | [**uploadWorkspaceFile**](Apis/WorkspaceApi.md#uploadworkspacefile) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/files | Upload a file for the Workspace
 
@@ -156,9 +158,14 @@ Class | Method | HTTP request | Description
  - [Validator](./Models/Validator.md)
  - [ValidatorRun](./Models/ValidatorRun.md)
  - [Workspace](./Models/Workspace.md)
+ - [WorkspaceAccessControl](./Models/WorkspaceAccessControl.md)
+ - [WorkspaceAccessControlWithPermissions](./Models/WorkspaceAccessControlWithPermissions.md)
+ - [WorkspaceAccessControlWithPermissions_allOf](./Models/WorkspaceAccessControlWithPermissions_allOf.md)
  - [WorkspaceFile](./Models/WorkspaceFile.md)
+ - [WorkspaceRole](./Models/WorkspaceRole.md)
+ - [WorkspaceRoleItems](./Models/WorkspaceRoleItems.md)
+ - [WorkspaceSecurity](./Models/WorkspaceSecurity.md)
  - [WorkspaceSolution](./Models/WorkspaceSolution.md)
- - [WorkspaceUser](./Models/WorkspaceUser.md)
  - [WorkspaceWebApp](./Models/WorkspaceWebApp.md)
 
 
