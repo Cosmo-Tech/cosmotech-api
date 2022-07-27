@@ -15,6 +15,7 @@ import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
+import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -26,7 +27,6 @@ import com.cosmotech.workspace.domain.WorkspaceAccessControlWithPermissions
 import com.cosmotech.workspace.domain.WorkspaceFile
 import com.cosmotech.workspace.domain.WorkspaceRoleItems
 import com.cosmotech.workspace.domain.WorkspaceSecurity
-import java.lang.UnsupportedOperationException
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -253,7 +253,20 @@ internal class WorkspaceServiceImpl(
       workspaceId: kotlin.String,
       workspaceAccessControl: WorkspaceAccessControl
   ): WorkspaceAccessControlWithPermissions {
-    throw UnsupportedOperationException("Not implemented yet")
+    val workspace = findWorkspaceById(organizationId, workspaceId)
+
+    if (workspace.security == null) {
+      logger.debug("Creating workspace security since it does not exist yet")
+      workspace.security = WorkspaceSecurity()
+      workspace.security?.accessControlList = mutableMapOf()
+    }
+
+    workspace.security?.accessControlList?.put(workspaceAccessControl.id, workspaceAccessControl)
+    this.updateWorkspace(organizationId, workspaceId, workspace)
+
+    val accessControlWithPermissions: WorkspaceAccessControlWithPermissions =
+        workspaceAccessControl as WorkspaceAccessControlWithPermissions
+    return accessControlWithPermissions
   }
 
   override fun getWorkspaceAccess(
@@ -261,26 +274,54 @@ internal class WorkspaceServiceImpl(
       workspaceId: kotlin.String,
       identityId: kotlin.String
   ): WorkspaceAccessControlWithPermissions {
-    throw UnsupportedOperationException("Not implemented yet")
+    val workspace = findWorkspaceById(organizationId, workspaceId)
+    val acl = workspace.security?.accessControlList?.get(identityId)
+    return acl as WorkspaceAccessControlWithPermissions
+        ?: throw CsmResourceNotFoundException(
+            "The requested control access for $identityId does not exist")
   }
+
   override fun getWorkspaceSecurity(
       organizationId: kotlin.String,
       workspaceId: kotlin.String
   ): WorkspaceSecurity {
-    throw UnsupportedOperationException("Not implemented yet")
+    val workspace = findWorkspaceById(organizationId, workspaceId)
+    return workspace.security ?: WorkspaceSecurity()
   }
+
   override fun removeWorkspaceAccess(
       organizationId: kotlin.String,
       workspaceId: kotlin.String,
       identityId: kotlin.String
   ): Unit {
-    throw UnsupportedOperationException("Not implemented yet")
+    val workspace = findWorkspaceById(organizationId, workspaceId)
+    val acl = workspace.security?.accessControlList?.get(identityId)
+    if (acl == null) {
+      throw CsmResourceNotFoundException(
+          "The requested control access for $identityId does not exist")
+    }
+    workspace.security?.accessControlList?.remove(identityId)
   }
+
   override fun setWorkspaceDefaultSecurity(
       organizationId: kotlin.String,
       workspaceId: kotlin.String,
       workspaceRoleItems: WorkspaceRoleItems
   ): WorkspaceSecurity {
-    throw UnsupportedOperationException("Not implemented yet")
+    val workspace = findWorkspaceById(organizationId, workspaceId)
+    if (workspace.security == null) {
+      logger.debug("Creating workspace security since it does not exist yet")
+      workspace.security = WorkspaceSecurity()
+      workspace.security?.accessControlList = mutableMapOf()
+    }
+    if (workspaceRoleItems.roles.size == 0) {
+      workspace.security?.default = null
+    } else {
+      workspace.security?.default = workspaceRoleItems.roles
+    }
+
+    this.updateWorkspace(organizationId, workspaceId, workspace)
+
+    return workspace.security ?: WorkspaceSecurity()
   }
 }

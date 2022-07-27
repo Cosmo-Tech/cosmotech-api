@@ -40,7 +40,7 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 val kotlinJvmTarget = 17
-val cosmotechApiCommonVersion = "0.1.6-SNAPSHOT"
+val cosmotechApiCommonVersion = "0.1.7-SNAPSHOT"
 val cosmotechApiAzureVersion = "0.1.5-SNAPSHOT"
 val azureSpringBootBomVersion = "3.14.0"
 
@@ -50,6 +50,7 @@ allprojects {
   apply(plugin = "io.gitlab.arturbosch.detekt")
 
   repositories {
+    mavenLocal()
     maven {
       name = "Argo Client Java GitHub Packages"
       url = uri("https://maven.pkg.github.com/argoproj-labs/argo-client-java")
