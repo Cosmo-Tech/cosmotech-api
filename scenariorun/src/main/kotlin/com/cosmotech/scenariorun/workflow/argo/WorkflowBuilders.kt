@@ -112,9 +112,6 @@ internal fun buildWorkflowSpec(
     executionTimeout: Int?
 ): WorkflowSpec {
   val nodeSelector = mutableMapOf("kubernetes.io/os" to "linux", "cosmotech.com/tier" to "compute")
-  if (startContainers.nodeLabel != null) {
-    nodeSelector[csmPlatformProperties.argo.workflows.nodePoolLabel] = startContainers.nodeLabel
-  }
   val templates =
       startContainers
           .containers
