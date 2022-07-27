@@ -597,12 +597,6 @@ components:
       properties:
         default:
           $ref: '#/components/schemas/WorkspaceRoleList'
-        accessList:
-          type: array
-          description: the list of ids which can access this Workspace
-          items:
-            type: string
-            description: a user id.
         accessControlList:
           type: object
           description: the list which can access this Workspace with detailed access control information
@@ -738,8 +732,6 @@ components:
         security:
           default:
             - "Reader"
-          accessList:
-            - "alice@mycompany.com"
           accessControlList:
             - id: "alice@mycompany.com"
               roles:
@@ -765,8 +757,6 @@ components:
           security:
             default:
               - "Reader"
-            accessList:
-              - "alice@mycompany.com"
             accessControlList:
               - id: "alice@mycompany.com"
                 roles:
@@ -797,8 +787,6 @@ components:
         security:
           default:
             - "Reader"
-          accessList:
-            - "alice@mycompany.com"
           accessControlList:
             - id: "alice@mycompany.com"
               roles:
@@ -809,8 +797,6 @@ components:
       value:
         default:
           - "Reader"
-        accessList:
-          - "bob@mycompany.com"
         accessControlList:
           - id: "bob@mycosmocompany.com"
             roles:
