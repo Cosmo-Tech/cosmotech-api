@@ -4,7 +4,7 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**addOrReplaceUsersInOrganizationWorkspace**](WorkspaceApi.md#addOrReplaceUsersInOrganizationWorkspace) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/users | Add (or replace) users to the Workspace specified
+[**addWorkspaceAccess**](WorkspaceApi.md#addWorkspaceAccess) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/security/access | add a control acccess to the Workspace
 [**createWorkspace**](WorkspaceApi.md#createWorkspace) | **POST** /organizations/{organization_id}/workspaces | Create a new workspace
 [**deleteAllWorkspaceFiles**](WorkspaceApi.md#deleteAllWorkspaceFiles) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/files | Delete all Workspace files
 [**deleteWorkspace**](WorkspaceApi.md#deleteWorkspace) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id} | Delete a workspace
@@ -13,17 +13,19 @@ Method | HTTP request | Description
 [**findAllWorkspaceFiles**](WorkspaceApi.md#findAllWorkspaceFiles) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/files | List all Workspace files
 [**findAllWorkspaces**](WorkspaceApi.md#findAllWorkspaces) | **GET** /organizations/{organization_id}/workspaces | List all Workspaces
 [**findWorkspaceById**](WorkspaceApi.md#findWorkspaceById) | **GET** /organizations/{organization_id}/workspaces/{workspace_id} | Get the details of an workspace
-[**removeAllUsersOfWorkspace**](WorkspaceApi.md#removeAllUsersOfWorkspace) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/users | Remove all users from the Workspace specified
-[**removeUserFromOrganizationWorkspace**](WorkspaceApi.md#removeUserFromOrganizationWorkspace) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/users/{user_id} | Remove the specified user from the given Organization Workspace
+[**getWorkspaceAccess**](WorkspaceApi.md#getWorkspaceAccess) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id} | get a control acccess for the Workspace
+[**getWorkspaceSecurity**](WorkspaceApi.md#getWorkspaceSecurity) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/security | Get the Workspace security information
+[**removeWorkspaceAccess**](WorkspaceApi.md#removeWorkspaceAccess) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id} | Remove the specified access from the given Organization Workspace
+[**setWorkspaceDefaultSecurity**](WorkspaceApi.md#setWorkspaceDefaultSecurity) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/security/default | set the Workspace default security
 [**updateWorkspace**](WorkspaceApi.md#updateWorkspace) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id} | Update a workspace
 [**uploadWorkspaceFile**](WorkspaceApi.md#uploadWorkspaceFile) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/files | Upload a file for the Workspace
 
 
-<a name="addOrReplaceUsersInOrganizationWorkspace"></a>
-# **addOrReplaceUsersInOrganizationWorkspace**
-> List addOrReplaceUsersInOrganizationWorkspace(organization\_id, workspace\_id, WorkspaceUser)
+<a name="addWorkspaceAccess"></a>
+# **addWorkspaceAccess**
+> WorkspaceAccessControlWithPermissions addWorkspaceAccess(organization\_id, workspace\_id, WorkspaceAccessControl)
 
-Add (or replace) users to the Workspace specified
+add a control acccess to the Workspace
 
 ### Parameters
 
@@ -31,11 +33,11 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **workspace\_id** | **String**| the Workspace identifier | [default to null]
- **WorkspaceUser** | [**List**](../Models/WorkspaceUser.md)| the Users to add. Any User with the same ID is overwritten |
+ **WorkspaceAccessControl** | [**WorkspaceAccessControl**](../Models/WorkspaceAccessControl.md)| the new Workspace security access to add. |
 
 ### Return type
 
-[**List**](../Models/WorkspaceUser.md)
+[**WorkspaceAccessControlWithPermissions**](../Models/WorkspaceAccessControlWithPermissions.md)
 
 ### Authorization
 
@@ -43,7 +45,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="createWorkspace"></a>
@@ -255,11 +257,11 @@ Name | Type | Description  | Notes
 - **Content-Type**: Not defined
 - **Accept**: application/json
 
-<a name="removeAllUsersOfWorkspace"></a>
-# **removeAllUsersOfWorkspace**
-> removeAllUsersOfWorkspace(organization\_id, workspace\_id)
+<a name="getWorkspaceAccess"></a>
+# **getWorkspaceAccess**
+> WorkspaceAccessControlWithPermissions getWorkspaceAccess(organization\_id, workspace\_id, identity\_id)
 
-Remove all users from the Workspace specified
+get a control acccess for the Workspace
 
 ### Parameters
 
@@ -267,6 +269,60 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **workspace\_id** | **String**| the Workspace identifier | [default to null]
+ **identity\_id** | **String**| the User identifier | [default to null]
+
+### Return type
+
+[**WorkspaceAccessControlWithPermissions**](../Models/WorkspaceAccessControlWithPermissions.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+<a name="getWorkspaceSecurity"></a>
+# **getWorkspaceSecurity**
+> WorkspaceSecurity getWorkspaceSecurity(organization\_id, workspace\_id)
+
+Get the Workspace security information
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **workspace\_id** | **String**| the Workspace identifier | [default to null]
+
+### Return type
+
+[**WorkspaceSecurity**](../Models/WorkspaceSecurity.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+<a name="removeWorkspaceAccess"></a>
+# **removeWorkspaceAccess**
+> removeWorkspaceAccess(organization\_id, workspace\_id, identity\_id)
+
+Remove the specified access from the given Organization Workspace
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **workspace\_id** | **String**| the Workspace identifier | [default to null]
+ **identity\_id** | **String**| the User identifier | [default to null]
 
 ### Return type
 
@@ -281,11 +337,11 @@ null (empty response body)
 - **Content-Type**: Not defined
 - **Accept**: Not defined
 
-<a name="removeUserFromOrganizationWorkspace"></a>
-# **removeUserFromOrganizationWorkspace**
-> removeUserFromOrganizationWorkspace(organization\_id, workspace\_id, user\_id)
+<a name="setWorkspaceDefaultSecurity"></a>
+# **setWorkspaceDefaultSecurity**
+> WorkspaceSecurity setWorkspaceDefaultSecurity(organization\_id, workspace\_id, WorkspaceRoleItems)
 
-Remove the specified user from the given Organization Workspace
+set the Workspace default security
 
 ### Parameters
 
@@ -293,11 +349,11 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **workspace\_id** | **String**| the Workspace identifier | [default to null]
- **user\_id** | **String**| the User identifier | [default to null]
+ **WorkspaceRoleItems** | [**WorkspaceRoleItems**](../Models/WorkspaceRoleItems.md)| the new Workspace default security. |
 
 ### Return type
 
-null (empty response body)
+[**WorkspaceSecurity**](../Models/WorkspaceSecurity.md)
 
 ### Authorization
 
@@ -305,8 +361,8 @@ null (empty response body)
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
-- **Accept**: Not defined
+- **Content-Type**: application/json, application/yaml
+- **Accept**: application/json
 
 <a name="updateWorkspace"></a>
 # **updateWorkspace**
