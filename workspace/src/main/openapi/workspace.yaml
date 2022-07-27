@@ -631,6 +631,8 @@ components:
       properties:
         roles:
           $ref: '#/components/schemas/WorkspaceRoleList'
+      required:
+        - roles
     WorkspaceRoleList:
       type: array
       description: a roles list
