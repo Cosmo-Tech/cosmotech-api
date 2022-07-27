@@ -408,15 +408,36 @@ entity Workspace {
     tags: List<String>
     ownerId: String
     * solution: WorkspaceSolution
-    users: List<WorkspaceUser>
     webApp: WorkspaceWebApp
     sendInputToDataWarehouse: Boolean
     useDedicatedEventHubNamespace: Boolean
     sendScenarioMetadataToEventHub: Boolean
+    security: WorkspaceSecurity
+}
+
+entity WorkspaceAccessControl {
+    * id: String
+    * roles: List<WorkspaceRole>
+}
+
+entity WorkspaceAccessControlWithPermissions {
+    permissions: List<String>
 }
 
 entity WorkspaceFile {
     fileName: String
+}
+
+entity WorkspaceRole {
+}
+
+entity WorkspaceRoleItems {
+    roles: List<WorkspaceRole>
+}
+
+entity WorkspaceSecurity {
+    default: List<WorkspaceRole>
+    accessControlList: Map
 }
 
 entity WorkspaceSolution {
@@ -425,18 +446,13 @@ entity WorkspaceSolution {
     defaultRunTemplateDataset: Map
 }
 
-entity WorkspaceUser {
-    * id: String
-    name: String
-    * roles: List<String>
-}
-
 entity WorkspaceWebApp {
     * url: String
     iframes: Map
     options: Map
 }
 
+WorkspaceAccessControl <|--- WorkspaceAccessControlWithPermissions
 
 ScenarioRunContainer -- "0..*" ScenarioRunContainerArtifact : artifacts
 ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
@@ -463,7 +479,7 @@ Dataset -- DatasetConnector : connector
 Dataset -- "0..*" DatasetCompatibility : compatibility
 ScenarioRunStartContainers -- "0..*" ScenarioRunContainer : containers
 Workspace -- WorkspaceSolution : solution
-Workspace -- "0..*" WorkspaceUser : users
 Workspace -- WorkspaceWebApp : webApp
+Workspace -- WorkspaceSecurity : security
 
 @enduml
