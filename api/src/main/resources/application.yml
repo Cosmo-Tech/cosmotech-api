@@ -76,7 +76,7 @@ csm:
       imagePullPolicy: IfNotPresent
       workflows:
         namespace: phoenix
-        node-pool-label: agentpool
+        node-pool-label: ""
         service-account-name: workflow
         storage-class: null
         access-modes:

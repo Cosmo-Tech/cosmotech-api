@@ -140,18 +140,14 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow Spec with StartContainers agent pool`() {
     val workflows = mockk<CsmPlatformProperties.Argo.Workflows>(relaxed = true)
-    every { workflows.nodePoolLabel } returns "agentpool"
+    every { workflows.nodePoolLabel } returns ""
     val argo = mockk<CsmPlatformProperties.Argo>(relaxed = true)
     every { argo.workflows } returns workflows
     every { csmPlatformProperties.argo } returns argo
 
     val sc = getStartContainersRun()
     val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
-    val expected =
-        mapOf(
-            "kubernetes.io/os" to "linux",
-            "cosmotech.com/tier" to "compute",
-            "agentpool" to "highcpupool")
+    val expected = mapOf("kubernetes.io/os" to "linux", "cosmotech.com/tier" to "compute")
 
     assertEquals(expected, workflowSpec.nodeSelector)
   }
@@ -159,18 +155,14 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Workflow Spec with StartContainers basic agent pool`() {
     val workflows = mockk<CsmPlatformProperties.Argo.Workflows>(relaxed = true)
-    every { workflows.nodePoolLabel } returns "agentpool"
+    every { workflows.nodePoolLabel } returns ""
     val argo = mockk<CsmPlatformProperties.Argo>(relaxed = true)
     every { argo.workflows } returns workflows
     every { csmPlatformProperties.argo } returns argo
 
     val sc = getStartContainersRunDefaultPool()
     val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
-    val expected =
-        mapOf(
-            "kubernetes.io/os" to "linux",
-            "cosmotech.com/tier" to "compute",
-            "agentpool" to "basicpool")
+    val expected = mapOf("kubernetes.io/os" to "linux", "cosmotech.com/tier" to "compute")
 
     assertEquals(expected, workflowSpec.nodeSelector)
   }
