@@ -727,7 +727,7 @@ components:
         nodeLabel:
           type: string
           description: the node label request
-        resourceSizing:
+        runSizing:
           $ref: "#/components/schemas/ContainerResourceSizing"
         artifacts:
           type: array

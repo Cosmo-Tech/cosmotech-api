@@ -9,7 +9,7 @@ Name | Type | Description | Notes
 **csmSimulation** | **String** | the Cosmo Tech simulation name. This information is send to the Engine. Mandatory information if no Engine is defined | [optional] [default to null]
 **tags** | **List** | the list of Run Template tags | [optional] [default to null]
 **computeSize** | **String** | the compute size needed for this Run Template. Standard sizes are basic and highcpu. Default is basic | [optional] [default to null]
-**resourceSizing** | [**RunTemplateResourceSizing**](RunTemplateResourceSizing.md) |  | [optional] [default to null]
+**runSizing** | [**RunTemplateResourceSizing**](RunTemplateResourceSizing.md) |  | [optional] [default to null]
 **noDataIngestionState** | **Boolean** | set to true if the run template does not want to check data ingestion state (no probes or not control plane) | [optional] [default to null]
 **fetchDatasets** | **Boolean** | whether or not the fetch dataset step is done | [optional] [default to null]
 **scenarioDataDownloadTransform** | **Boolean** | whether or not the scenario data download transform step step is done | [optional] [default to null]
