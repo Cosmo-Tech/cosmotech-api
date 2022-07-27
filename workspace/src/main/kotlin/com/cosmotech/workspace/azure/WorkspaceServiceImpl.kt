@@ -16,22 +16,19 @@ import com.cosmotech.api.events.DeleteHistoricalDataOrganization
 import com.cosmotech.api.events.DeleteHistoricalDataWorkspace
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
-import com.cosmotech.api.events.UserAddedToWorkspace
-import com.cosmotech.api.events.UserRemovedFromOrganization
-import com.cosmotech.api.events.UserRemovedFromWorkspace
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
-import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.solution.api.SolutionApiService
-import com.cosmotech.user.api.UserApiService
-import com.cosmotech.user.domain.User
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
+import com.cosmotech.workspace.domain.WorkspaceAccessControl
+import com.cosmotech.workspace.domain.WorkspaceAccessControlWithPermissions
 import com.cosmotech.workspace.domain.WorkspaceFile
-import com.cosmotech.workspace.domain.WorkspaceUser
+import com.cosmotech.workspace.domain.WorkspaceRoleItems
+import com.cosmotech.workspace.domain.WorkspaceSecurity
+import java.lang.UnsupportedOperationException
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -46,15 +43,10 @@ import org.springframework.stereotype.Service
 @Suppress("TooManyFunctions")
 internal class WorkspaceServiceImpl(
     private val resourceLoader: ResourceLoader,
-    private val userService: UserApiService,
-    private val organizationService: OrganizationApiService,
     private val solutionService: SolutionApiService,
     private val azureStorageBlobServiceClient: BlobServiceClient,
     private val azureStorageBlobBatchClient: BlobBatchClient,
 ) : CsmAzureService(), WorkspaceApiService {
-
-  private fun fetchUsers(userIds: Collection<String>): Map<String, User> =
-      userIds.toSet().map { userService.findUserById(it) }.associateBy { it.id!! }
 
   override fun findAllWorkspaces(organizationId: String) =
       cosmosTemplate.findAll<Workspace>("${organizationId}_workspaces")
@@ -64,73 +56,6 @@ internal class WorkspaceServiceImpl(
           "${organizationId}_workspaces",
           workspaceId,
           "Workspace $workspaceId not found in organization $organizationId")
-
-  override fun removeAllUsersOfWorkspace(organizationId: String, workspaceId: String) {
-    val workspace = findWorkspaceById(organizationId, workspaceId)
-    if (!workspace.users.isNullOrEmpty()) {
-      val userIds = workspace.users!!.mapNotNull { it.id }
-      workspace.users = mutableListOf()
-      cosmosTemplate.upsert("${organizationId}_workspaces", workspace)
-
-      userIds.forEach {
-        this.eventPublisher.publishEvent(
-            UserRemovedFromWorkspace(this, organizationId, workspaceId, it))
-      }
-    }
-  }
-
-  override fun removeUserFromOrganizationWorkspace(
-      organizationId: String,
-      workspaceId: String,
-      userId: String
-  ) {
-    val workspace = findWorkspaceById(organizationId, workspaceId)
-    if (!(workspace.users?.removeIf { it.id == userId } ?: false)) {
-      throw CsmResourceNotFoundException("User '$userId' *not* found")
-    } else {
-      cosmosTemplate.upsert("${organizationId}_workspaces", workspace)
-      this.eventPublisher.publishEvent(
-          UserRemovedFromWorkspace(this, organizationId, workspaceId, userId))
-    }
-  }
-
-  override fun addOrReplaceUsersInOrganizationWorkspace(
-      organizationId: String,
-      workspaceId: String,
-      workspaceUser: List<WorkspaceUser>
-  ): List<WorkspaceUser> {
-    if (workspaceUser.isEmpty()) {
-      // Nothing to do
-      return workspaceUser
-    }
-
-    organizationService.findOrganizationById(organizationId)
-    val workspace = findWorkspaceById(organizationId, workspaceId)
-
-    val newUsersLoaded = fetchUsers(workspaceUser.mapNotNull { it.id })
-    val workspaceUserWithRightNames =
-        workspaceUser.map { it.copy(name = newUsersLoaded[it.id]!!.name!!) }
-    val workspaceUserMap = workspaceUserWithRightNames.associateBy { it.id }
-
-    val currentWorkspaceUsers =
-        workspace.users?.associateBy { it.id }?.toMutableMap() ?: mutableMapOf()
-
-    newUsersLoaded.forEach { (userId, _) ->
-      // Add or replace
-      currentWorkspaceUsers[userId] = workspaceUserMap[userId]!!
-    }
-    workspace.users = currentWorkspaceUsers.values.toMutableList()
-
-    cosmosTemplate.upsert("${organizationId}_workspaces", workspace)
-
-    // Roles might have changed => notify all users so they can update their own items
-    workspace.users?.forEach { user ->
-      this.eventPublisher.publishEvent(
-          UserAddedToWorkspace(
-              this, organizationId, user.id, user.roles.map { role -> role.value }))
-    }
-    return workspaceUserWithRightNames
-  }
 
   override fun createWorkspace(organizationId: String, workspace: Workspace): Workspace {
     // Validate Solution ID
@@ -175,8 +100,7 @@ internal class WorkspaceServiceImpl(
 
     var hasChanged =
         existingWorkspace
-            .compareToAndMutateIfNeeded(
-                workspace, excludedFields = arrayOf("ownerId", "users", "solution"))
+            .compareToAndMutateIfNeeded(workspace, excludedFields = arrayOf("ownerId", "solution"))
             .isNotEmpty()
 
     if (workspace.ownerId != null && workspace.changed(existingWorkspace) { ownerId }) {
@@ -190,18 +114,6 @@ internal class WorkspaceServiceImpl(
       hasChanged = true
     }
 
-    var userIdsRemoved: List<String>? = listOf()
-    if (workspace.users != null) {
-      // Specifying a list of users here overrides the previous list
-      val usersToSet = fetchUsers(workspace.users!!.mapNotNull { it.id })
-      userIdsRemoved =
-          workspace.users?.mapNotNull { it.id }?.filterNot { usersToSet.containsKey(it) }
-      val usersWithNames =
-          usersToSet.let { workspace.users!!.map { it.copy(name = usersToSet[it.id]!!.name!!) } }
-      existingWorkspace.users = usersWithNames.toMutableList()
-      hasChanged = true
-    }
-
     if (workspace.solution.solutionId != null) {
       // Validate solution ID
       workspace.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
@@ -212,14 +124,6 @@ internal class WorkspaceServiceImpl(
     return if (hasChanged) {
       val responseEntity =
           cosmosTemplate.upsertAndReturnEntity("${organizationId}_workspaces", existingWorkspace)
-      userIdsRemoved?.forEach {
-        this.eventPublisher.publishEvent(UserRemovedFromOrganization(this, organizationId, it))
-      }
-      workspace.users?.forEach { user ->
-        this.eventPublisher.publishEvent(
-            UserAddedToWorkspace(
-                this, organizationId, user.id, user.roles.map { role -> role.value }))
-      }
       responseEntity
     } else {
       existingWorkspace
@@ -355,4 +259,40 @@ internal class WorkspaceServiceImpl(
       AzureStorageResourcePatternResolver(azureStorageBlobServiceClient)
           .getResources("azure-blob://$organizationId/$workspaceId/**/*".sanitizeForAzureStorage())
           .map { it as BlobStorageResource }
+
+  override fun addWorkspaceAccess(
+      organizationId: kotlin.String,
+      workspaceId: kotlin.String,
+      workspaceAccessControl: WorkspaceAccessControl
+  ): WorkspaceAccessControlWithPermissions {
+    throw UnsupportedOperationException("Not implemented yet")
+  }
+
+  override fun getWorkspaceAccess(
+      organizationId: kotlin.String,
+      workspaceId: kotlin.String,
+      identityId: kotlin.String
+  ): WorkspaceAccessControlWithPermissions {
+    throw UnsupportedOperationException("Not implemented yet")
+  }
+  override fun getWorkspaceSecurity(
+      organizationId: kotlin.String,
+      workspaceId: kotlin.String
+  ): WorkspaceSecurity {
+    throw UnsupportedOperationException("Not implemented yet")
+  }
+  override fun removeWorkspaceAccess(
+      organizationId: kotlin.String,
+      workspaceId: kotlin.String,
+      identityId: kotlin.String
+  ): Unit {
+    throw UnsupportedOperationException("Not implemented yet")
+  }
+  override fun setWorkspaceDefaultSecurity(
+      organizationId: kotlin.String,
+      workspaceId: kotlin.String,
+      workspaceRoleItems: WorkspaceRoleItems
+  ): WorkspaceSecurity {
+    throw UnsupportedOperationException("Not implemented yet")
+  }
 }
