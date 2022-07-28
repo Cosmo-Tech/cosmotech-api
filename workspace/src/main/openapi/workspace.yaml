@@ -41,7 +41,7 @@ paths:
               Workspace:
                 $ref: '#/components/examples/BreweryWorkspaceCreateIn'
               WorkspaceWithSecurity:
-                $ref: '#components/examples/BreweryWorkspaceCreateSecurity'
+                $ref: '#/components/examples/BreweryWorkspaceCreateSecurity'
           application/yaml:
             schema:
               type: string
@@ -50,7 +50,7 @@ paths:
               Workspace:
                 $ref: '#/components/examples/BreweryWorkspaceCreateIn'
               WorkspaceWithSecurity:
-                $ref: '#components/examples/BreweryWorkspaceCreateSecurity'
+                $ref: '#/components/examples/BreweryWorkspaceCreateSecurity'
       responses:
         "201":
           description: the workspace details
@@ -834,6 +834,17 @@ components:
         id: bob@mycompany.com
         roles:
           - Writer
+    BreweryWorkspaceAccessControlWithPermissions:
+      summary: Access control.
+      description: Access control with permissions for a user to a workspace.
+      value:
+        id: bob@mycompany.com
+        roles:
+          - Writer
+        permissions:
+          - workspace_read
+          - workspace_write
+          - workspace_create_scenario
     BreweryWorkspaceFile:
       summary: Brewery Workspace file example
       description: Brewery Workspace file uploaded return example
