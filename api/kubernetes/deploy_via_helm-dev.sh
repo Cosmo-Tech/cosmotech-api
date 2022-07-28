@@ -22,7 +22,7 @@ help() {
   echo "- PROM_REPLICAS_NUMBER | number of prometheus replicas (default is 1)"
   echo "- PROM_ADMIN_PASSWORD | admin password for grafana (generated if not specified)"
   echo
-  echo "Usage: ./$(basename "$0") NAMESPACE ARGO_POSTGRESQL_PASSWORD API_VERSION [any additional options to pass as is to the cosmotech-api Helm Chart]"
+  echo "Usage: ./$(basename "$0") API_IMAGE_TAG NAMESPACE ARGO_POSTGRESQL_PASSWORD API_VERSION [any additional options to pass as is to the cosmotech-api Helm Chart]"
 }
 
 if [[ "${1:-}" == "--help" ||  "${1:-}" == "-h" ]]; then
@@ -34,14 +34,15 @@ if [[ $# -lt 3 ]]; then
   exit 1
 fi
 
-if [ -z "$1" ];
+export API_IMAGE_TAG="$1"
+if [ -z "$2" ];
   then
     export NAMESPACE="phoenix"
 else
-  export NAMESPACE="$1"
+  export NAMESPACE="$2"
 fi
-export ARGO_POSTGRESQL_PASSWORD="$2"
-export API_VERSION="$3"
+export ARGO_POSTGRESQL_PASSWORD="$3"
+export API_VERSION="$4"
 
 export ARGO_RELEASE_NAME=argocsmv2
 export MINIO_RELEASE_NAME=miniocsmv2
@@ -299,7 +300,7 @@ helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "${HELM_CHARTS_BASE_PATH}
     --set replicaCount=2 \
     --set config.csm.platform.commit-id="$(git rev-parse --short HEAD || "")" \
     --set config.csm.platform.vcs-ref="$(git rev-parse --abbrev-ref HEAD || "")" \
-    --set image.tag="$API_VERSION" \
+    --set image.tag="$API_IMAGE_TAG" \
     --set api.version="$API_VERSION" \
     --set config.csm.platform.argo.base-uri="http://${ARGO_RELEASE_NAME}-argo-workflows-server.${NAMESPACE}.svc.cluster.local:2746" \
     --set config.csm.platform.argo.workflows.namespace="${NAMESPACE}" \
