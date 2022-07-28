@@ -254,18 +254,17 @@ internal class WorkspaceServiceImpl(
       workspaceAccessControl: WorkspaceAccessControl
   ): WorkspaceAccessControlWithPermissions {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-
-    if (workspace.security == null) {
-      logger.debug("Creating workspace security since it does not exist yet")
-      workspace.security = WorkspaceSecurity()
-      workspace.security?.accessControlList = mutableMapOf()
-    }
+    this.initSecurity(workspace)
 
     workspace.security?.accessControlList?.put(workspaceAccessControl.id, workspaceAccessControl)
     this.updateWorkspace(organizationId, workspaceId, workspace)
 
     val accessControlWithPermissions: WorkspaceAccessControlWithPermissions =
-        workspaceAccessControl as WorkspaceAccessControlWithPermissions
+        WorkspaceAccessControlWithPermissions(
+          workspaceAccessControl.id,
+          workspaceAccessControl.roles,
+          permissions = mutableListOf("HardCodedReader")
+        )
     return accessControlWithPermissions
   }
 
@@ -275,8 +274,11 @@ internal class WorkspaceServiceImpl(
       identityId: kotlin.String
   ): WorkspaceAccessControlWithPermissions {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    val acl = workspace.security?.accessControlList?.get(identityId)
-    return acl as WorkspaceAccessControlWithPermissions
+    val acl =
+        workspace.security?.accessControlList?.get(identityId)?.copy() as
+            WorkspaceAccessControlWithPermissions
+
+    return acl
         ?: throw CsmResourceNotFoundException(
             "The requested control access for $identityId does not exist")
   }
@@ -309,19 +311,19 @@ internal class WorkspaceServiceImpl(
       workspaceRoleItems: WorkspaceRoleItems
   ): WorkspaceSecurity {
     val workspace = findWorkspaceById(organizationId, workspaceId)
+    this.initSecurity(workspace)
+
+    workspace.security?.default = workspaceRoleItems.roles
+    this.updateWorkspace(organizationId, workspaceId, workspace)
+
+    return workspace.security ?: WorkspaceSecurity()
+  }
+
+  private fun initSecurity(workspace: Workspace) {
     if (workspace.security == null) {
       logger.debug("Creating workspace security since it does not exist yet")
       workspace.security = WorkspaceSecurity()
       workspace.security?.accessControlList = mutableMapOf()
     }
-    if (workspaceRoleItems.roles.size == 0) {
-      workspace.security?.default = null
-    } else {
-      workspace.security?.default = workspaceRoleItems.roles
-    }
-
-    this.updateWorkspace(organizationId, workspaceId, workspace)
-
-    return workspace.security ?: WorkspaceSecurity()
   }
 }
