@@ -2,12 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.user.azure
 
-import com.azure.cosmos.models.CosmosContainerProperties
-import com.cosmotech.api.azure.CsmAzureService
-import com.cosmotech.api.azure.findAll
-import com.cosmotech.api.azure.findByIdOrThrow
-import com.cosmotech.api.events.OrganizationRegistered
-import com.cosmotech.api.events.OrganizationUnregistered
+import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.events.UserAddedToOrganization
 import com.cosmotech.api.events.UserRegistered
 import com.cosmotech.api.events.UserRemovedFromOrganization
@@ -15,37 +10,26 @@ import com.cosmotech.api.events.UserUnregistered
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.utils.changed
 import com.cosmotech.user.api.UserApiService
+import com.cosmotech.user.azure.repositories.UserRepository
 import com.cosmotech.user.domain.User
 import com.cosmotech.user.domain.UserOrganization
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
-import javax.annotation.PostConstruct
 
 @Service
-@ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
+//@ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions")
-internal class UserServiceImpl : CsmAzureService(), UserApiService {
-
-  private lateinit var coreUserContainer: String
-
-  @PostConstruct
-  fun initService() {
-    this.coreUserContainer = csmPlatformProperties.azure!!.cosmos!!.coreDatabase!!.users!!.container
-    cosmosCoreDatabase.createContainerIfNotExists(
-        CosmosContainerProperties(coreUserContainer, "/id"))
-  }
+internal class UserServiceImpl (var userRepository: UserRepository): CsmPhoenixService(), UserApiService {
 
   override fun authorizeUser() {
     TODO("Not yet implemented")
   }
 
-  override fun findAllUsers() = cosmosTemplate.findAll<User>(coreUserContainer)
+  override fun findAllUsers() = userRepository.findAll().toList()
 
-  override fun findUserById(userId: String): User =
-      cosmosTemplate.findByIdOrThrow(coreUserContainer, userId)
+  override fun findUserById(userId: String): User = userRepository.findById((userId)).orElseThrow()
 
   override fun getCurrentUser(): User {
     val principal = SecurityContextHolder.getContext().authentication
@@ -70,8 +54,7 @@ internal class UserServiceImpl : CsmAzureService(), UserApiService {
     if (user.name.isNullOrBlank()) {
       throw IllegalArgumentException("User name must not be null or blank")
     }
-    val userRegistered =
-        cosmosTemplate.insert(coreUserContainer, user.copy(id = idGenerator.generate("user")))
+    val userRegistered = userRepository.save(user)
     val userId =
         userRegistered.id
             ?: throw IllegalStateException(
@@ -81,7 +64,7 @@ internal class UserServiceImpl : CsmAzureService(), UserApiService {
   }
 
   override fun unregisterUser(userId: String) {
-    cosmosTemplate.deleteEntity(coreUserContainer, findUserById(userId))
+    userRepository.deleteById(userId)
     this.eventPublisher.publishEvent(UserUnregistered(this, userId))
   }
 
@@ -101,24 +84,24 @@ internal class UserServiceImpl : CsmAzureService(), UserApiService {
     // Changing the list of Organizations a User is member of can be done via the
     // '/organizations/:id/users' endpoint
     return if (hasChanged) {
-      cosmosTemplate.upsertAndReturnEntity(coreUserContainer, existingUser)
+      userRepository.save(user)
     } else {
       existingUser
     }
   }
 
-  @EventListener(OrganizationRegistered::class)
+  /*@EventListener(OrganizationRegistered::class)
   fun onOrganizationRegistered(organizationRegistered: OrganizationRegistered) {
     cosmosCoreDatabase.createContainerIfNotExists(
         CosmosContainerProperties("${organizationRegistered.organizationId}_user-data", "/ownerId"))
-  }
+  }*/
 
-  @EventListener(OrganizationUnregistered::class)
+  /*@EventListener(OrganizationUnregistered::class)
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
     cosmosTemplate.deleteContainer("${organizationUnregistered.organizationId}_user-data")
     // TODO Remove organization from all users that reference it
-  }
+  }*/
 
   @EventListener(UserAddedToOrganization::class)
   @Async("csm-in-process-event-executor")
@@ -132,22 +115,21 @@ internal class UserServiceImpl : CsmAzureService(), UserApiService {
             name = userAddedToOrganization.organizationName,
             roles = userAddedToOrganization.roles?.toMutableList())
     user.organizations = organizationMap.values.toMutableList()
-    cosmosTemplate.upsert(coreUserContainer, user)
+    userRepository.save(user)
   }
 
   @EventListener(UserRemovedFromOrganization::class)
   @Async("csm-in-process-event-executor")
   fun onUserUserRemovedFromOrganization(userRemovedFromOrganization: UserRemovedFromOrganization) {
     val user = this.findUserById(userRemovedFromOrganization.userId)
-    if (!(user.organizations?.removeIf { it.id == userRemovedFromOrganization.organizationId }
-        ?: false)) {
+    if (user.organizations?.removeIf { it.id == userRemovedFromOrganization.organizationId } != true) {
       throw CsmResourceNotFoundException(
           "Organization '${userRemovedFromOrganization.organizationId}' *not* found")
     }
-    cosmosTemplate.upsert(coreUserContainer, user)
+    userRepository.save(user)
   }
 
-  override fun testPlatform(): kotlin.String {
+  override fun testPlatform(): String {
     return "TEST OK. Welcome to the Cosmo Tech Platform"
   }
 }

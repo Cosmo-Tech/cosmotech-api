@@ -40,7 +40,7 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 val kotlinJvmTarget = 17
-val cosmotechApiCommonVersion = "0.1.2-SNAPSHOT"
+val cosmotechApiCommonVersion = "LCRA~migrate-redis-config-SNAPSHOT"
 val cosmotechApiAzureVersion = "0.1.4-SNAPSHOT"
 val azureSpringBootBomVersion = "3.14.0"
 
@@ -50,6 +50,8 @@ allprojects {
   apply(plugin = "io.gitlab.arturbosch.detekt")
 
   repositories {
+
+
     maven {
       name = "Argo Client Java GitHub Packages"
       url = uri("https://maven.pkg.github.com/argoproj-labs/argo-client-java")
@@ -213,13 +215,19 @@ subprojects {
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
-    api("com.github.Cosmo-Tech:cosmotech-api-common:$cosmotechApiCommonVersion")
+    api("com.github.Cosmo-Tech:cosmotech-api-common:$cosmotechApiCommonVersion"){
+      version {
+        strictly("LCRA~migrate-redis-config-SNAPSHOT")
+        prefer("0.1.2-SNAPSHOT")
+      }
+    }
 
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("com.redis.om:redis-om-spring:0.5.1")
     implementation("com.redislabs:jrejson:1.5.0")
 
-    if (!name.startsWith("cosmotech-connector-api")) {
+    if (!name.startsWith("cosmotech-connector-api") && !name.startsWith("cosmotech-organization-api")
+      && !name.startsWith("cosmotech-user-api")) {
       implementation(platform("com.azure.spring:azure-spring-boot-bom:$azureSpringBootBomVersion"))
       api("com.azure.spring:azure-spring-boot-starter-cosmos")
       api("com.github.Cosmo-Tech:cosmotech-api-azure:$cosmotechApiAzureVersion") {
@@ -318,7 +326,8 @@ subprojects {
     tasks.withType<GenerateTask> {
       inputSpec.set("${projectDir}/src/main/openapi/${projectDirName}.yaml")
       outputDir.set(openApiServerSourcesGenerationDir)
-      if (projectDirName.equals("connector")) {
+      if (projectDirName.equals("connector") || projectDirName.equals("organization")
+        || projectDirName.equals("organization")) {
         templateDir.set("${rootDir}/openapi/templates/kotlin-spring")
       }
       // project.logger.lifecycle("###########################
