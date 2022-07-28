@@ -230,7 +230,7 @@ else
 fi
 cat <<EOF > values-cosmotech-api-deploy.yaml
 image:
-  tag: "$API_VERSION"
+  tag: "$CHART_PACKAGE_VERSION"
 
 api:
   version: "$API_VERSION"
