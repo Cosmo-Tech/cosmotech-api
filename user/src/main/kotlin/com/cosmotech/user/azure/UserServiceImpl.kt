@@ -19,9 +19,9 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 
 @Service
-//@ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions")
-internal class UserServiceImpl (var userRepository: UserRepository): CsmPhoenixService(), UserApiService {
+internal class UserServiceImpl(var userRepository: UserRepository) :
+    CsmPhoenixService(), UserApiService {
 
   override fun authorizeUser() {
     TODO("Not yet implemented")
@@ -122,7 +122,8 @@ internal class UserServiceImpl (var userRepository: UserRepository): CsmPhoenixS
   @Async("csm-in-process-event-executor")
   fun onUserUserRemovedFromOrganization(userRemovedFromOrganization: UserRemovedFromOrganization) {
     val user = this.findUserById(userRemovedFromOrganization.userId)
-    if (user.organizations?.removeIf { it.id == userRemovedFromOrganization.organizationId } != true) {
+    if (user.organizations?.removeIf { it.id == userRemovedFromOrganization.organizationId } !=
+        true) {
       throw CsmResourceNotFoundException(
           "Organization '${userRemovedFromOrganization.organizationId}' *not* found")
     }

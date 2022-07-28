@@ -9,7 +9,7 @@ import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.FilterType
 
 @SpringBootApplication
-@EnableRedisDocumentRepositories
+@EnableRedisDocumentRepositories("com.cosmotech")
 @ComponentScan(
     basePackages = ["com.cosmotech"],
     excludeFilters =

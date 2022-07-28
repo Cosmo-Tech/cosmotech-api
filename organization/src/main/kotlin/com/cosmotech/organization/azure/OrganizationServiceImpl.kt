@@ -25,13 +25,12 @@ import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
-
 @Service
-//@ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions")
-internal class OrganizationServiceImpl(private val userService: UserApiService,
-    var organizationRepository: OrganizationRepository) :
-    CsmPhoenixService(), OrganizationApiService {
+internal class OrganizationServiceImpl(
+    private val userService: UserApiService,
+    var organizationRepository: OrganizationRepository
+) : CsmPhoenixService(), OrganizationApiService {
 
   override fun addOrReplaceUsersInOrganization(
       organizationId: String,
@@ -60,15 +59,15 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
     }
     organization.users = currentOrganizationUsers.values.toMutableList()
 
-//#####################################################################################################################
-//#####################################################################################################################
-//#####################################################################################################################
+    // ############################################################################################################
+    // ############################################################################################################
+    // ############################################################################################################
     organizationRepository.save(organization)
-//#####################################################################################################################
-//#####################################################################################################################
-//#####################################################################################################################
+    // ############################################################################################################
+    // ############################################################################################################
+    // ############################################################################################################
 
-//    cosmosTemplate.upsert(coreOrganizationContainer, organization)
+    //    cosmosTemplate.upsert(coreOrganizationContainer, organization)
 
     // Roles might have changed => notify all users so they can update their own items
     organization.users?.forEach { user ->
@@ -83,8 +82,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
     return organizationUserWithRightNames
   }
 
-  override fun findAllOrganizations() =
-      organizationRepository.findAll().toList()
+  override fun findAllOrganizations() = organizationRepository.findAll().toList()
 
   override fun findOrganizationById(organizationId: String): Organization =
       organizationRepository.findById(organizationId).orElseThrow()
@@ -106,7 +104,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
 
     val usersLoaded = organization.users?.mapNotNull { it.id }?.let { fetchUsers(it) }
 
-//    val newOrganizationId = idGenerator.generate("organization")
+    //    val newOrganizationId = idGenerator.generate("organization")
 
     val usersWithNames =
         usersLoaded
@@ -120,16 +118,16 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
 
     this.eventPublisher.publishEvent(OrganizationRegistered(this, organizationId))
     organization.users?.forEach { user ->
-        this.eventPublisher.publishEvent(
-            UserAddedToOrganization(
-                this,
-                organizationId,
-                organization.name!!,
-                user.id!!,
-                user.roles.map { role -> role.value }))
+      this.eventPublisher.publishEvent(
+          UserAddedToOrganization(
+              this,
+              organizationId,
+              organization.name!!,
+              user.id!!,
+              user.roles.map { role -> role.value }))
     }
 
-      // TODO Handle rollbacks in case of errors
+    // TODO Handle rollbacks in case of errors
 
     return organizationRepository.save(organization)
   }
@@ -140,15 +138,15 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
       val userIds = organization.users!!.mapNotNull { it.id }
       organization.users = mutableListOf()
 
-        //#############################################################################################################
-//#####################################################################################################################
-//#####################################################################################################################
-        organizationRepository.save(organization)
-//#####################################################################################################################
-//#####################################################################################################################
-//#####################################################################################################################
+      // #############################################################################################################
+      // #############################################################################################################
+      // #############################################################################################################
+      organizationRepository.save(organization)
+      // ############################################################################################################
+      // ############################################################################################################
+      // ############################################################################################################
 
-//        cosmosTemplate.upsert(coreOrganizationContainer, organization)
+      //        cosmosTemplate.upsert(coreOrganizationContainer, organization)
 
       userIds.forEach {
         this.eventPublisher.publishEvent(UserRemovedFromOrganization(this, organizationId, it))
@@ -162,15 +160,15 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
       throw CsmResourceNotFoundException("User '$userId' *not* found")
     } else {
 
-        //#############################################################################################################
-//#####################################################################################################################
-//#####################################################################################################################
-        organizationRepository.save(organization)
-//#####################################################################################################################
-//#####################################################################################################################
-//#####################################################################################################################
+      // ######################################################################################################
+      // ######################################################################################################
+      // ######################################################################################################
+      organizationRepository.save(organization)
+      // ######################################################################################################
+      // ######################################################################################################
+      // ######################################################################################################
 
-//        cosmosTemplate.upsert(coreOrganizationContainer, organization)
+      //        cosmosTemplate.upsert(coreOrganizationContainer, organization)
       this.eventPublisher.publishEvent(UserRemovedFromOrganization(this, organizationId, userId))
     }
   }
@@ -231,15 +229,16 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
     return if (hasChanged) {
       val responseEntity =
 
-      //###############################################################################################################
-//#####################################################################################################################
-//#####################################################################################################################
-          organizationRepository.save(organization)
-//#####################################################################################################################
-//#####################################################################################################################
-//#####################################################################################################################
+      // ###################################################################################################
+      // ###################################################################################################
+      // ###################################################################################################
+      organizationRepository.save(organization)
+      // ###################################################################################################
+      // ###################################################################################################
+      // ###################################################################################################
 
-//        cosmosTemplate.upsertAndReturnEntity(coreOrganizationContainer, existingOrganization)
+      //        cosmosTemplate.upsertAndReturnEntity(coreOrganizationContainer,
+      // existingOrganization)
       userIdsRemoved?.forEach {
         this.eventPublisher.publishEvent(UserRemovedFromOrganization(this, organizationId, it))
       }
@@ -297,15 +296,15 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
       //      existingServices.existingOrganizationService = existingOrganizationService
       existingOrganization.services = existingServices
 
-        //#############################################################################################################
-//#####################################################################################################################
-//#####################################################################################################################
-        organizationRepository.save(existingOrganization)
-//#####################################################################################################################
-//#####################################################################################################################
-//#####################################################################################################################
+      // ################################################################################################
+      // ################################################################################################
+      // ################################################################################################
+      organizationRepository.save(existingOrganization)
+      // ################################################################################################
+      // ################################################################################################
+      // ################################################################################################
 
-//        cosmosTemplate.upsert(coreOrganizationContainer, existingOrganization)
+      //        cosmosTemplate.upsert(coreOrganizationContainer, existingOrganization)
       existingOrganizationService
     } else {
       existingOrganizationService
@@ -327,15 +326,15 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
     existingServices.tenantCredentials = existingTenantCredentials
     existingOrganization.services = existingServices
 
-      //###############################################################################################################
-//#####################################################################################################################
-//#####################################################################################################################
-      organizationRepository.save(existingOrganization)
-//#####################################################################################################################
-//#####################################################################################################################
-//#####################################################################################################################
+    // ###################################################################################################
+    // ###################################################################################################
+    // ###################################################################################################
+    organizationRepository.save(existingOrganization)
+    // #################################################################################################
+    // #################################################################################################
+    // #################################################################################################
 
-//      cosmosTemplate.upsert(coreOrganizationContainer, existingOrganization)
+    //      cosmosTemplate.upsert(coreOrganizationContainer, existingOrganization)
     return existingTenantCredentials?.toMap() ?: mapOf()
   }
 
@@ -378,15 +377,15 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
           "User '${userUnregisteredForOrganization.userId}' *not* found")
     } else {
 
-        //#############################################################################################################
-//#####################################################################################################################
-//#####################################################################################################################
-        organizationRepository.save(organization)
-//#####################################################################################################################
-//#####################################################################################################################
-//#####################################################################################################################
+      // ###########################################################################################
+      // ###########################################################################################
+      // ###########################################################################################
+      organizationRepository.save(organization)
+      // ###########################################################################################
+      // ###########################################################################################
+      // ###########################################################################################
 
-//        cosmosTemplate.upsert(coreOrganizationContainer, organization)
+      //        cosmosTemplate.upsert(coreOrganizationContainer, organization)
     }
   }
 }
