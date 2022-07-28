@@ -51,6 +51,14 @@ nodes:
       - |
         kind: JoinConfiguration
         nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "kubernetes.io/os=linux,cosmotech.com/tier=kindservice"
+    - role: worker
+      image: kindest/node:${kindest_node_image_tag}
+      kubeadmConfigPatches:
+      - |
+        kind: JoinConfiguration
+        nodeRegistration:
           taints:
           - key: "vendor"
             value: "cosmotech"
