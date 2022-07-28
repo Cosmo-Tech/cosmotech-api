@@ -2,29 +2,23 @@
 // Licensed under the MIT license.
 package com.cosmotech.organization.azure
 
-import com.azure.cosmos.models.CosmosContainerProperties
-import com.azure.cosmos.models.CosmosQueryRequestOptions
-import com.azure.cosmos.models.SqlQuerySpec
-import com.cosmotech.api.azure.CsmAzureService
-import com.cosmotech.api.azure.findAll
-import com.cosmotech.api.azure.findByIdOrThrow
+import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.events.UserAddedToOrganization
 import com.cosmotech.api.events.UserRemovedFromOrganization
-import com.cosmotech.api.events.UserUnregistered
 import com.cosmotech.api.events.UserUnregisteredForOrganization
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.api.utils.toDomain
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationService
 import com.cosmotech.organization.domain.OrganizationServices
 import com.cosmotech.organization.domain.OrganizationUser
+import com.cosmotech.organization.repositories.OrganizationRepository
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
 import com.fasterxml.jackson.databind.JsonNode
@@ -34,21 +28,13 @@ import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
+
 @Service
-@ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
+//@ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions")
-internal class OrganizationServiceImpl(private val userService: UserApiService) :
-    CsmAzureService(), OrganizationApiService {
-
-  private lateinit var coreOrganizationContainer: String
-
-  @PostConstruct
-  fun initService() {
-    this.coreOrganizationContainer =
-        csmPlatformProperties.azure!!.cosmos!!.coreDatabase!!.organizations!!.container
-    cosmosCoreDatabase.createContainerIfNotExists(
-        CosmosContainerProperties(coreOrganizationContainer, "/id"))
-  }
+internal class OrganizationServiceImpl(private val userService: UserApiService,
+    var organizationRepository: OrganizationRepository) :
+    CsmPhoenixService(), OrganizationApiService {
 
   override fun addOrReplaceUsersInOrganization(
       organizationId: String,
@@ -77,8 +63,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService) 
     }
     organization.users = currentOrganizationUsers.values.toMutableList()
 
-    cosmosTemplate.upsert(coreOrganizationContainer, organization)
-
+    organizationRepository.save(organization)
     // Roles might have changed => notify all users so they can update their own items
     organization.users?.forEach { user ->
       this.eventPublisher.publishEvent(
@@ -93,10 +78,10 @@ internal class OrganizationServiceImpl(private val userService: UserApiService) 
   }
 
   override fun findAllOrganizations() =
-      cosmosTemplate.findAll<Organization>(coreOrganizationContainer)
+      organizationRepository.findAll().toList()
 
   override fun findOrganizationById(organizationId: String): Organization =
-      cosmosTemplate.findByIdOrThrow(coreOrganizationContainer, organizationId)
+      organizationRepository.findById(organizationId).orElseThrow()
 
   /**
    * Return list of users with the specified identifiers. TODO It would be better to have
@@ -115,40 +100,32 @@ internal class OrganizationServiceImpl(private val userService: UserApiService) 
 
     val usersLoaded = organization.users?.mapNotNull { it.id }?.let { fetchUsers(it) }
 
-    val newOrganizationId = idGenerator.generate("organization")
+//    val newOrganizationId = idGenerator.generate("organization")
 
     val usersWithNames =
         usersLoaded
             ?.let { organization.users?.map { it.copy(name = usersLoaded[it.id]!!.name!!) } }
             ?.toMutableList()
 
-    val organizationRegistered =
-        cosmosTemplate.insert(
-            coreOrganizationContainer,
-            organization.copy(
-                id = newOrganizationId,
-                users = usersWithNames,
-                ownerId = getCurrentAuthenticatedUserName()))
-
     val organizationId =
-        organizationRegistered.id
+        organization.id
             ?: throw IllegalStateException(
-                "No ID returned for organization registered: $organizationRegistered")
+                "No ID returned for organization registered: $organization")
 
     this.eventPublisher.publishEvent(OrganizationRegistered(this, organizationId))
     organization.users?.forEach { user ->
-      this.eventPublisher.publishEvent(
-          UserAddedToOrganization(
-              this,
-              organizationId,
-              organizationRegistered.name!!,
-              user.id!!,
-              user.roles.map { role -> role.value }))
+        this.eventPublisher.publishEvent(
+            UserAddedToOrganization(
+                this,
+                organizationId,
+                organization.name!!,
+                user.id!!,
+                user.roles.map { role -> role.value }))
     }
 
-    // TODO Handle rollbacks in case of errors
+      // TODO Handle rollbacks in case of errors
 
-    return organizationRegistered
+    return organizationRepository.save(organization)
   }
 
   override fun removeAllUsersInOrganization(organizationId: String) {
@@ -156,8 +133,8 @@ internal class OrganizationServiceImpl(private val userService: UserApiService) 
     if (!organization.users.isNullOrEmpty()) {
       val userIds = organization.users!!.mapNotNull { it.id }
       organization.users = mutableListOf()
-      cosmosTemplate.upsert(coreOrganizationContainer, organization)
 
+        organizationRepository.save(organization)
       userIds.forEach {
         this.eventPublisher.publishEvent(UserRemovedFromOrganization(this, organizationId, it))
       }
@@ -169,8 +146,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService) 
     if (!(organization.users?.removeIf { it.id == userId } ?: false)) {
       throw CsmResourceNotFoundException("User '$userId' *not* found")
     } else {
-      cosmosTemplate.upsert(coreOrganizationContainer, organization)
-      this.eventPublisher.publishEvent(UserRemovedFromOrganization(this, organizationId, userId))
+        organizationRepository.save(organization)     this.eventPublisher.publishEvent(UserRemovedFromOrganization(this, organizationId, userId))
     }
   }
 
@@ -181,7 +157,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService) 
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
     }
 
-    cosmosTemplate.deleteEntity(coreOrganizationContainer, organization)
+    organizationRepository.deleteById(organizationId)
 
     this.eventPublisher.publishEvent(OrganizationUnregistered(this, organizationId))
 
@@ -229,8 +205,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService) 
     }
     return if (hasChanged) {
       val responseEntity =
-          cosmosTemplate.upsertAndReturnEntity(coreOrganizationContainer, existingOrganization)
-      userIdsRemoved?.forEach {
+        organizationRepository.save(organization)      userIdsRemoved?.forEach {
         this.eventPublisher.publishEvent(UserRemovedFromOrganization(this, organizationId, it))
       }
       organization.users?.forEach { user ->
@@ -286,8 +261,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService) 
     return if (hasChanged) {
       //      existingServices.existingOrganizationService = existingOrganizationService
       existingOrganization.services = existingServices
-      cosmosTemplate.upsert(coreOrganizationContainer, existingOrganization)
-      existingOrganizationService
+      organizationRepository.save(existingOrganization)      existingOrganizationService
     } else {
       existingOrganizationService
     }
@@ -307,18 +281,17 @@ internal class OrganizationServiceImpl(private val userService: UserApiService) 
 
     existingServices.tenantCredentials = existingTenantCredentials
     existingOrganization.services = existingServices
-
-    cosmosTemplate.upsert(coreOrganizationContainer, existingOrganization)
-    return existingTenantCredentials?.toMap() ?: mapOf()
+   organizationRepository.save(existingOrganization)   return existingTenantCredentials?.toMap() ?: mapOf()
   }
 
-  @EventListener(UserUnregistered::class)
+  /*@EventListener(UserUnregistered::class)
   @Async("csm-in-process-event-executor")
   fun onUserUnregistered(userUnregisteredEvent: UserUnregistered) {
     // FIXME Does not work yet !
     val userId = userUnregisteredEvent.userId
     logger.info(
         "User $userId unregistered => removing them from all organizations they belong to..")
+      organizationRepository
     cosmosCoreDatabase
         .getContainer(coreOrganizationContainer)
         .queryItems(
@@ -336,7 +309,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService) 
               UserUnregisteredForOrganization(
                   this, organizationId = organization.id!!, userId = userId))
         }
-  }
+  }*/
 
   @EventListener(UserUnregisteredForOrganization::class)
   @Async("csm-in-process-event-executor")
@@ -349,7 +322,6 @@ internal class OrganizationServiceImpl(private val userService: UserApiService) 
       throw CsmResourceNotFoundException(
           "User '${userUnregisteredForOrganization.userId}' *not* found")
     } else {
-      cosmosTemplate.upsert(coreOrganizationContainer, organization)
-    }
+      organizationRepository.save(organization)   }
   }
 }
