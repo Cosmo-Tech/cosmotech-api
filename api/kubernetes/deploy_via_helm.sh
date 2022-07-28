@@ -434,6 +434,8 @@ resources:
     #   cpu: 100m
     memory: 1024Mi
 
+nodeSelector:
+  agentpool: basicpool
 
 EOF
 
