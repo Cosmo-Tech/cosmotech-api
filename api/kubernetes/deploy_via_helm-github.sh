@@ -592,13 +592,6 @@ tolerations:
   effect: "NoSchedule"
 nodeSelector:
   "cosmotech.com/tier": "services"
-resources:
-  requests:
-    cpu: 500m
-    memory: 1024Mi
-  limits:
-    cpu: 2
-    memory: 2048Mi
 
 EOF
 
