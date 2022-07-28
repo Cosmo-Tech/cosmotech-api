@@ -80,15 +80,11 @@ jobs:
       - name: Lint Helm Chart (api) with helm
         run: helm lint api/kubernetes/helm-chart
 
-      - name: Lint Helm Chart (csm-argo)
-        run: helm lint api/kubernetes/csm-argo
-
   kube-linter:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         chart:
-          - csm-argo
           - helm-chart
 
     steps:
