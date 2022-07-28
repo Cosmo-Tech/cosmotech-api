@@ -57,8 +57,9 @@ echo -- Cosmo Tech Platform installation START
 
 export HELM_EXPERIMENTAL_OCI=1
 
-CHART_PACKAGE_VERSION="$1"
+export CHART_PACKAGE_VERSION="$1"
 export NAMESPACE="$2"
+export ARGO_POSTGRESQL_PASSWORD="$3"
 export API_VERSION="$4"
 
 export VERSION_INGRESS_NGINX="4.1.4"
@@ -463,7 +464,6 @@ helm upgrade --install \
 echo -- Cosmo Tech Argo
 export ARGO_RELEASE_NAME=argo
 export ARGO_RELEASE_NAMESPACE="${NAMESPACE}"
-export ARGO_POSTGRESQL_PASSWORD="$3"
 helm pull oci://ghcr.io/cosmo-tech/csm-argo-chart --version "${CHART_PACKAGE_VERSION}" --untar
 # Default memory request in MinIO Chart is 4Gi, which may not work in clusters with lower resources
 # memory: "${ARGO_MINIO_REQUESTS_MEMORY:-4Gi}"
