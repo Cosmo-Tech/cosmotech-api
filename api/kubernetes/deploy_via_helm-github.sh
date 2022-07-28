@@ -598,7 +598,7 @@ resources:
     memory: 1024Mi
   limits:
     cpu: 2
-    memory: 1024Mi
+    memory: 2048Mi
 
 EOF
 
