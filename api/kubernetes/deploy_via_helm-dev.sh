@@ -312,7 +312,7 @@ helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "${HELM_CHARTS_BASE_PATH}
     --set config.csm.platform.twincache.password="${REDIS_PASSWORD}" \
     --set podAnnotations."com\.cosmotech/deployed-at-timestamp"="\"$(date +%s)\"" \
     --set nodeSelector."cosmotech\\.com/tier"=services \
-    "${@:4}"
+    "${@:5}"
 
 # kube-prometheus-stack
 # https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
