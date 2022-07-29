@@ -8,9 +8,10 @@ set -eo errexit
 
 help() {
   echo
-  echo "This script takes at least 3 parameters."
+  echo "This script takes at least 4 parameters."
   echo
   echo "The following optional environment variables can be set to alter this script behavior:"
+  echo "- API_IMAGE_TAG | string | V1, V2, latest"
   echo "- NAMESPACE | string | name of the targeted namespace. Generated when not set"
   echo "- ARGO_MINIO_ACCESS_KEY | string | AccessKey for MinIO. Generated when not set"
   echo "- ARGO_MINIO_SECRET_KEY | string | SecretKey for MinIO. Generated when not set"
@@ -29,7 +30,7 @@ if [[ "${1:-}" == "--help" ||  "${1:-}" == "-h" ]]; then
   help
   exit 0
 fi
-if [[ $# -lt 3 ]]; then
+if [[ $# -lt 4 ]]; then
   help
   exit 1
 fi
