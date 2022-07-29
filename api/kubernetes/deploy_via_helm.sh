@@ -268,14 +268,14 @@ EOF
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm upgrade --install -n ${NAMESPACE} ${POSTGRES_RELEASE_NAME} bitnami/postgresql --version ${POSTGRESQL_VERSION} --values values-postgresql.yaml
 
-export ARGO_POSTGRESQL_SECRET=argo-postgres-config
+export ARGO_POSTGRESQL_SECRET_NAME=argo-postgres-config
 cat <<EOF > postgres-secret.yaml
 apiVersion: v1
 kind: Secret
 metadata:
   labels:
     app: postgres
-  name: ${ARGO_POSTGRESQL_SECRET}
+  name: ${ARGO_POSTGRESQL_SECRET_NAME}
 stringData:
   password: ${ARGO_POSTGRESQL_PASSWORD}
   username: ${ARGO_POSTGRESQL_USER}
@@ -350,10 +350,10 @@ controller:
       database: ${ARGO_DATABASE}
       tableName: workflows
       userNameSecret:
-        name: "${ARGO_POSTGRESQL_SECRET}"
+        name: "${ARGO_POSTGRESQL_SECRET_NAME}"
         key: username
       passwordSecret:
-        name: "${ARGO_POSTGRESQL_SECRET}"
+        name: "${ARGO_POSTGRESQL_SECRET_NAME}"
         key: password
 
 EOF
