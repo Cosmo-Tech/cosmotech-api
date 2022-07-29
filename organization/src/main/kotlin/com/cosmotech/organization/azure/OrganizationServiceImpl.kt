@@ -32,7 +32,11 @@ internal class OrganizationServiceImpl(
     var organizationRepository: OrganizationRepository
 ) : CsmPhoenixService(), OrganizationApiService {
 
-  override fun addOrReplaceUsersInOrganization(
+
+    //lateinit var client: Client
+
+
+    override fun addOrReplaceUsersInOrganization(
       organizationId: String,
       organizationUser: List<OrganizationUser>
   ): List<OrganizationUser> {
@@ -59,13 +63,7 @@ internal class OrganizationServiceImpl(
     }
     organization.users = currentOrganizationUsers.values.toMutableList()
 
-    // ############################################################################################################
-    // ############################################################################################################
-    // ############################################################################################################
     organizationRepository.save(organization)
-    // ############################################################################################################
-    // ############################################################################################################
-    // ############################################################################################################
 
     //    cosmosTemplate.upsert(coreOrganizationContainer, organization)
 
@@ -138,13 +136,7 @@ internal class OrganizationServiceImpl(
       val userIds = organization.users!!.mapNotNull { it.id }
       organization.users = mutableListOf()
 
-      // #############################################################################################################
-      // #############################################################################################################
-      // #############################################################################################################
       organizationRepository.save(organization)
-      // ############################################################################################################
-      // ############################################################################################################
-      // ############################################################################################################
 
       //        cosmosTemplate.upsert(coreOrganizationContainer, organization)
 
@@ -160,13 +152,7 @@ internal class OrganizationServiceImpl(
       throw CsmResourceNotFoundException("User '$userId' *not* found")
     } else {
 
-      // ######################################################################################################
-      // ######################################################################################################
-      // ######################################################################################################
       organizationRepository.save(organization)
-      // ######################################################################################################
-      // ######################################################################################################
-      // ######################################################################################################
 
       //        cosmosTemplate.upsert(coreOrganizationContainer, organization)
       this.eventPublisher.publishEvent(UserRemovedFromOrganization(this, organizationId, userId))
@@ -229,13 +215,7 @@ internal class OrganizationServiceImpl(
     return if (hasChanged) {
       val responseEntity =
 
-      // ###################################################################################################
-      // ###################################################################################################
-      // ###################################################################################################
       organizationRepository.save(organization)
-      // ###################################################################################################
-      // ###################################################################################################
-      // ###################################################################################################
 
       //        cosmosTemplate.upsertAndReturnEntity(coreOrganizationContainer,
       // existingOrganization)
@@ -296,13 +276,7 @@ internal class OrganizationServiceImpl(
       //      existingServices.existingOrganizationService = existingOrganizationService
       existingOrganization.services = existingServices
 
-      // ################################################################################################
-      // ################################################################################################
-      // ################################################################################################
       organizationRepository.save(existingOrganization)
-      // ################################################################################################
-      // ################################################################################################
-      // ################################################################################################
 
       //        cosmosTemplate.upsert(coreOrganizationContainer, existingOrganization)
       existingOrganizationService
@@ -326,17 +300,34 @@ internal class OrganizationServiceImpl(
     existingServices.tenantCredentials = existingTenantCredentials
     existingOrganization.services = existingServices
 
-    // ###################################################################################################
-    // ###################################################################################################
-    // ###################################################################################################
     organizationRepository.save(existingOrganization)
-    // #################################################################################################
-    // #################################################################################################
-    // #################################################################################################
-
     //      cosmosTemplate.upsert(coreOrganizationContainer, existingOrganization)
     return existingTenantCredentials?.toMap() ?: mapOf()
   }
+
+  /*@EventListener(UserUnregistered::class)
+  @Async("csm-in-process-event-executor")
+  fun onUserUnregistered(userUnregisteredEvent: UserUnregistered) {
+      // FIXME Does not work yet !
+      val userId = userUnregisteredEvent.userId
+      logger.info(
+          "User $userId unregistered => removing them from all organizations they belong to.."
+      )
+
+      val schema: Schema = Schema().addTextField("$.userId", 1.0)
+      val rule: IndexDefinition = IndexDefinition(IndexDefinition.Type.JSON)
+          .setPrefixes("com.cosmotech.organization")
+      client.createIndex(
+          schema, io.redisearch.client.Client.IndexOptions.defaultOptions().setDefinition(rule)
+      )
+
+      val q: io.redisearch.Query = io.redisearch.Query(userId)
+      val search: SearchResult = client.search(q)
+
+      for (item: Document in search.docs) {
+          UserUnregisteredForOrganization(this, item.id, userId)
+      }
+  }*/
 
   /*@EventListener(UserUnregistered::class)
   @Async("csm-in-process-event-executor")
@@ -377,13 +368,7 @@ internal class OrganizationServiceImpl(
           "User '${userUnregisteredForOrganization.userId}' *not* found")
     } else {
 
-      // ###########################################################################################
-      // ###########################################################################################
-      // ###########################################################################################
       organizationRepository.save(organization)
-      // ###########################################################################################
-      // ###########################################################################################
-      // ###########################################################################################
 
       //        cosmosTemplate.upsert(coreOrganizationContainer, organization)
     }
