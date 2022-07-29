@@ -227,7 +227,7 @@ defaultBucket:
   name: ${ARGO_BUCKET_NAME}
 persistence:
   enabled: true
-  size: "${ARGO_MINIO_PERSISTENCE_SIZE:-500Gi}"
+  size: "${ARGO_MINIO_PERSISTENCE_SIZE:-16Gi}"
 resources:
   requests:
     memory: "2Gi"
