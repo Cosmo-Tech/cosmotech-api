@@ -21,9 +21,6 @@ import com.cosmotech.organization.domain.OrganizationUser
 import com.cosmotech.organization.repositories.OrganizationRepository
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
-import com.fasterxml.jackson.databind.JsonNode
-import javax.annotation.PostConstruct
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
@@ -36,7 +33,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
     var organizationRepository: OrganizationRepository) :
     CsmPhoenixService(), OrganizationApiService {
 
-  override fun addOrReplaceUsersInOrganization(
+    override fun addOrReplaceUsersInOrganization(
       organizationId: String,
       organizationUser: List<OrganizationUser>
   ): List<OrganizationUser> {
@@ -283,6 +280,30 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
     existingOrganization.services = existingServices
    organizationRepository.save(existingOrganization)   return existingTenantCredentials?.toMap() ?: mapOf()
   }
+
+  /*@EventListener(UserUnregistered::class)
+  @Async("csm-in-process-event-executor")
+  fun onUserUnregistered(userUnregisteredEvent: UserUnregistered) {
+      // FIXME Does not work yet !
+      val userId = userUnregisteredEvent.userId
+      logger.info(
+          "User $userId unregistered => removing them from all organizations they belong to.."
+      )
+
+      val schema: Schema = Schema().addTextField("$.userId", 1.0)
+      val rule: IndexDefinition = IndexDefinition(IndexDefinition.Type.JSON)
+          .setPrefixes("com.cosmotech.organization")
+      client.createIndex(
+          schema, io.redisearch.client.Client.IndexOptions.defaultOptions().setDefinition(rule)
+      )
+
+      val q: io.redisearch.Query = io.redisearch.Query(userId)
+      val search: SearchResult = client.search(q)
+
+      for (item: Document in search.docs) {
+          UserUnregisteredForOrganization(this, item.id, userId)
+      }
+  }*/
 
   /*@EventListener(UserUnregistered::class)
   @Async("csm-in-process-event-executor")
