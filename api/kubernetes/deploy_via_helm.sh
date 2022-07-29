@@ -15,6 +15,7 @@ help() {
   echo "- ARGO_MINIO_ACCESS_KEY | string | AccessKey for MinIO. Generated when not set"
   echo "- ARGO_MINIO_SECRET_KEY | string | SecretKey for MinIO. Generated when not set"
   echo "- ARGO_MINIO_REQUESTS_MEMORY | units of bytes (default is 4Gi) | Memory requests for the Argo MinIO server"
+  echo "- ARGO_MINIO_PERSISTENCE_SIZE | units of bytes (default is 500Gi) | Persistence size for the Argo MinIO server"
   echo "- NGINX_INGRESS_CONTROLLER_ENABLED | boolean (default is false) | indicating whether an NGINX Ingress Controller should be deployed and an Ingress resource created too"
   echo "- NGINX_INGRESS_CONTROLLER_REPLICA_COUNT | int (default is 1) | number of pods for the NGINX Ingress Controller"
   echo "- NGINX_INGRESS_CONTROLLER_LOADBALANCER_IP | IP Address String | optional public IP Address to use as LoadBalancer IP. You can create one with this Azure CLI command: az network public-ip create --resource-group <my-rg>> --name <a-name> --sku Standard --allocation-method static --query publicIp.ipAddress -o tsv "
@@ -217,7 +218,8 @@ envsubst < ./csm-argo/values.yaml | \
         --values - \
         --set argo.minio.resources.requests.memory="${ARGO_MINIO_REQUESTS_MEMORY:-4Gi}" \
         --set argo.minio.accessKey="${ARGO_MINIO_ACCESS_KEY:-}" \
-        --set argo.minio.secretKey="${ARGO_MINIO_SECRET_KEY:-}"
+        --set argo.minio.secretKey="${ARGO_MINIO_SECRET_KEY:-}" \
+        --set argo.minio.persistence.size="${ARGO_MINIO_PERSISTENCE_SIZE:-500Gi}"
 
 # cosmotech-api
 export COSMOTECH_API_RELEASE_NAME="cosmotech-api-${API_VERSION}"
