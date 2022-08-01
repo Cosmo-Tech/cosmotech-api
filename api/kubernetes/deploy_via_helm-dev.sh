@@ -109,8 +109,8 @@ metadata:
     app: postgres
   name: ${ARGO_POSTGRESQL_SECRET_NAME}
 stringData:
-  password: ${ARGO_POSTGRESQL_PASSWORD}
-  username: ${ARGO_POSTGRESQL_USER}
+  password: "${ARGO_POSTGRESQL_PASSWORD}"
+  username: "${ARGO_POSTGRESQL_USER}"
 type: Opaque
 
 EOF
