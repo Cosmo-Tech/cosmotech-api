@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eo errexit
+set -eox errexit
 export HELM_EXPERIMENTAL_OCI=1
 
 #
@@ -373,21 +373,18 @@ else
   export COSMOTECH_API_INGRESS_ENABLED=false
 fi
 cat <<EOF > values-cosmotech-api-deploy.yaml
-image:
-  tag: "$CHART_PACKAGE_VERSION"
-
 api:
   version: "$API_VERSION"
 
 image:
-  # -- container image to use for deployment
   repository: ghcr.io/cosmo-tech/cosmotech-api
+  tag: "$CHART_PACKAGE_VERSION"
 
 config:
   csm:
     platform:
       argo:
-        base-uri: "https://${ARGO_RELEASE_NAME}-argo-workflows-server.${NAMESPACE}.svc.cluster.local:2746"
+        base-uri: "http://${ARGO_RELEASE_NAME}-argo-workflows-server.${NAMESPACE}.svc.cluster.local:2746"
         workflows:
           namespace: ${NAMESPACE}
 
