@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eox errexit
+set -eo errexit
 export HELM_EXPERIMENTAL_OCI=1
 
 #
