@@ -375,6 +375,7 @@ subprojects {
     if (project.hasProperty("jvmArgs")) {
       jvmArgs = project.property("jvmArgs").toString().split("\\s+".toRegex()).toList()
     } else {
+      // Add java.time accessible for Gson used by argo
       jvmArgs = mutableListOf("--add-opens", "java.base/java.time=ALL-UNNAMED")
     }
 
@@ -401,10 +402,11 @@ subprojects {
                   "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=localhost:5005")
       jvmFlags =
           listOf(
-              // Make sure Spring DevTools is disabled in production as running it is a
-              // security risk
+              // Add java.time accessible for Gson used by argo
               "--add-opens",
               "java.base/java.time=ALL-UNNAMED",
+              // Make sure Spring DevTools is disabled in production as running it is a
+              // security risk
               "-Dspring.devtools.restart.enabled=false")
       ports = listOf("5005", "8080", "8081")
       // Docker Best Practice : run as non-root.
