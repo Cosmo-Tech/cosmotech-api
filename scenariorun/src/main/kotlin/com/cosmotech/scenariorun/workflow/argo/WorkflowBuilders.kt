@@ -6,15 +6,15 @@ import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.scenariorun.CSM_DAG_ROOT
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
-import io.argoproj.workflow.models.ArchiveStrategy
-import io.argoproj.workflow.models.Artifact
-import io.argoproj.workflow.models.DAGTask
-import io.argoproj.workflow.models.DAGTemplate
-import io.argoproj.workflow.models.Metadata
-import io.argoproj.workflow.models.Outputs
-import io.argoproj.workflow.models.Template
-import io.argoproj.workflow.models.Workflow
-import io.argoproj.workflow.models.WorkflowSpec
+import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1ArchiveStrategy
+import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1Artifact
+import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1DAGTask
+import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1DAGTemplate
+import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1Metadata
+import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1Outputs
+import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1Template
+import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1Workflow
+import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowSpec
 import io.kubernetes.client.custom.Quantity
 import io.kubernetes.client.openapi.models.V1Container
 import io.kubernetes.client.openapi.models.V1EmptyDirVolumeSource
@@ -36,7 +36,9 @@ private const val VOLUME_DATASETS_PATH = "/mnt/scenariorun-data"
 private const val VOLUME_PARAMETERS_PATH = "/mnt/scenariorun-parameters"
 private const val CSM_ARGO_WORKFLOWS_TIMEOUT = 28800
 
-internal fun buildTemplate(scenarioRunContainer: ScenarioRunContainer): Template {
+internal fun buildTemplate(
+    scenarioRunContainer: ScenarioRunContainer
+): IoArgoprojWorkflowV1alpha1Template {
   var envVars: MutableList<V1EnvVar>? = null
   if (scenarioRunContainer.envVars != null) {
     envVars = mutableListOf()
@@ -69,21 +71,21 @@ internal fun buildTemplate(scenarioRunContainer: ScenarioRunContainer): Template
   }
 
   val template =
-      Template()
+      IoArgoprojWorkflowV1alpha1Template()
           .name(scenarioRunContainer.name)
-          .metadata(Metadata().labels(scenarioRunContainer.labels))
+          .metadata(IoArgoprojWorkflowV1alpha1Metadata().labels(scenarioRunContainer.labels))
           .container(container)
           .addVolumesItem(V1Volume().emptyDir(V1EmptyDirVolumeSource()).name("out"))
 
   val artifacts =
       scenarioRunContainer.artifacts?.map {
-        Artifact()
+        IoArgoprojWorkflowV1alpha1Artifact()
             .name(it.name)
             .path("/var/csmoutput/${it.path}")
-            .archive(ArchiveStrategy().none(Object()))
+            .archive(IoArgoprojWorkflowV1alpha1ArchiveStrategy().none(Object()))
       }
   if (!artifacts.isNullOrEmpty()) {
-    template.outputs(Outputs().artifacts(artifacts))
+    template.outputs(IoArgoprojWorkflowV1alpha1Outputs().artifacts(artifacts))
   }
 
   return template
@@ -93,7 +95,7 @@ internal fun buildWorkflowSpec(
     csmPlatformProperties: CsmPlatformProperties,
     startContainers: ScenarioRunStartContainers,
     executionTimeout: Int?
-): WorkflowSpec {
+): IoArgoprojWorkflowV1alpha1WorkflowSpec {
   val nodeSelector = mutableMapOf("kubernetes.io/os" to "linux")
   if (startContainers.nodeLabel != null) {
     nodeSelector[csmPlatformProperties.argo.workflows.nodePoolLabel] = startContainers.nodeLabel
@@ -104,7 +106,7 @@ internal fun buildWorkflowSpec(
   templates.add(entrypointTemplate)
 
   var workflowSpec =
-      WorkflowSpec()
+      IoArgoprojWorkflowV1alpha1WorkflowSpec()
           .imagePullSecrets(
               csmPlatformProperties
                   .argo
@@ -128,16 +130,18 @@ internal fun buildWorkflow(
     startContainers: ScenarioRunStartContainers,
     executionTimeout: Int?
 ) =
-    Workflow()
+    IoArgoprojWorkflowV1alpha1Workflow()
         .metadata(
             V1ObjectMeta()
                 .generateName(startContainers.generateName ?: CSM_DEFAULT_WORKFLOW_NAME)
                 .labels(startContainers.labels))
         .spec(buildWorkflowSpec(csmPlatformProperties, startContainers, executionTimeout))
 
-private fun buildEntrypointTemplate(startContainers: ScenarioRunStartContainers): Template {
-  val dagTemplate = Template().name(CSM_DAG_ENTRYPOINT)
-  val dagTasks: MutableList<DAGTask> = mutableListOf()
+private fun buildEntrypointTemplate(
+    startContainers: ScenarioRunStartContainers
+): IoArgoprojWorkflowV1alpha1Template {
+  val dagTemplate = IoArgoprojWorkflowV1alpha1Template().name(CSM_DAG_ENTRYPOINT)
+  val dagTasks: MutableList<IoArgoprojWorkflowV1alpha1DAGTask> = mutableListOf()
   var previousContainer: ScenarioRunContainer? = null
   for (container in startContainers.containers) {
     var dependencies: List<String>? = null
@@ -148,12 +152,16 @@ private fun buildEntrypointTemplate(startContainers: ScenarioRunStartContainers)
     } else {
       if (previousContainer != null) dependencies = listOf(previousContainer.name)
     }
-    val task = DAGTask().name(container.name).template(container.name).dependencies(dependencies)
+    val task =
+        IoArgoprojWorkflowV1alpha1DAGTask()
+            .name(container.name)
+            .template(container.name)
+            .dependencies(dependencies)
     dagTasks.add(task)
     previousContainer = container
   }
 
-  dagTemplate.dag(DAGTemplate().tasks(dagTasks))
+  dagTemplate.dag(IoArgoprojWorkflowV1alpha1DAGTemplate().tasks(dagTasks))
 
   return dagTemplate
 }
