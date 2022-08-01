@@ -368,9 +368,6 @@ jobs:
           - path: api/kubernetes/helm-chart
             chart_name: cosmotech-api-chart
             name: API
-          - path: api/kubernetes/csm-argo
-            chart_name: csm-argo-chart
-            name: Argo Workflows
     needs:
       - build
       - test
