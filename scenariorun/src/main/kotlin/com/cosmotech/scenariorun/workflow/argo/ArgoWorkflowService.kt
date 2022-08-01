@@ -12,6 +12,7 @@ import com.cosmotech.scenariorun.domain.ScenarioRunStatus
 import com.cosmotech.scenariorun.domain.ScenarioRunStatusNode
 import com.cosmotech.scenariorun.workflow.WorkflowService
 import com.cosmotech.scenariorun.workflow.WorkflowStatusAndArtifact
+import com.google.gson.Gson
 import io.argoproj.workflow.ApiClient
 import io.argoproj.workflow.ApiException
 import io.argoproj.workflow.Configuration
@@ -194,7 +195,7 @@ internal class ArgoWorkflowService(
             .workflow(
                 buildWorkflow(csmPlatformProperties, scenarioRunStartContainers, executionTimeout))
 
-    logger.trace("Workflow: {}", body.workflow)
+    logger.trace("Workflow: {}", Gson().toJson(body.workflow))
 
     try {
       val workflow =
