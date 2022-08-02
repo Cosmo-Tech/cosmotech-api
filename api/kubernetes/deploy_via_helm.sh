@@ -296,6 +296,8 @@ executor:
   env:
   - name: RESOURCE_STATE_CHECK_INTERVAL
     value: 1s
+  - name: WAIT_CONTAINER_STATUS_CHECK_INTERVAL
+    value: 1s
 artifactRepository:
   archiveLogs: true
   s3:
