@@ -52,7 +52,7 @@ allprojects {
   repositories {
     maven {
       name = "Argo Client Java GitHub Packages"
-      url = uri("https://maven.pkg.github.com/argoproj/argo-client-java")
+      url = uri("https://maven.pkg.github.com/argoproj-labs/argo-client-java")
       credentials {
         username = project.findProperty("gpr.user")?.toString() ?: System.getenv("GITHUB_ACTOR")
         password = project.findProperty("gpr.key")?.toString() ?: System.getenv("GITHUB_TOKEN")
