@@ -109,8 +109,8 @@ metadata:
     app: postgres
   name: ${ARGO_POSTGRESQL_SECRET_NAME}
 stringData:
-  password: ${ARGO_POSTGRESQL_PASSWORD}
-  username: ${ARGO_POSTGRESQL_USER}
+  password: "${ARGO_POSTGRESQL_PASSWORD}"
+  username: "${ARGO_POSTGRESQL_USER}"
 type: Opaque
 
 EOF
@@ -118,15 +118,21 @@ kubectl apply -n ${NAMESPACE} -f postgres-secret.yaml
 
 # Argo
 cat <<EOF > values-argo.yaml
+images:
+  pullPolicy: IfNotPresent
 workflow:
   serviceAccount:
     create: true
-    name: workflow
+    name: workflowcsmv2
   rbac:
     create: true
 executor:
   env:
   - name: RESOURCE_STATE_CHECK_INTERVAL
+    value: 1s
+  - name: WAIT_CONTAINER_STATUS_CHECK_INTERVAL
+    value: 1s
+  - name: RECENTLY_STARTED_POD_DURATION
     value: 1s
 artifactRepository:
   archiveLogs: true
@@ -187,6 +193,8 @@ controller:
       passwordSecret:
         name: "${ARGO_POSTGRESQL_SECRET_NAME}"
         key: password
+mainContainer:
+  imagePullPolicy: IfNotPresent
 
 EOF
 

@@ -287,7 +287,7 @@ kubectl apply -n ${NAMESPACE} -f postgres-secret.yaml
 # Argo
 cat <<EOF > values-argo.yaml
 images:
-  imagePullPolicy: "IfNotPresent"
+  pullPolicy: IfNotPresent
 workflow:
   serviceAccount:
     create: true
@@ -360,7 +360,7 @@ controller:
         name: "${ARGO_POSTGRESQL_SECRET_NAME}"
         key: password
 mainContainer:
-  imagePullPolicy: "IfNotPresent"
+  imagePullPolicy: IfNotPresent
 
 EOF
 
