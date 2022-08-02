@@ -12,7 +12,7 @@
 
 > AKS releases compatibilities
 - latest: 1.21+
-- v0: 1.21+
+- v1: 1.21+
 
 > Cosmo Tech Cloud Platform API
 
