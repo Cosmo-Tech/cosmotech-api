@@ -36,21 +36,31 @@ class WorkflowBuildersTests {
   @Test
   fun `Template not null`() {
     val src = getScenarioRunContainer()
-    val template = buildTemplate(src)
+    val template = buildTemplate(src, csmPlatformProperties)
     assertNotNull(template)
   }
 
   @Test
   fun `Template has image`() {
     val src = getScenarioRunContainer()
-    val template = buildTemplate(src)
+    val template = buildTemplate(src, csmPlatformProperties)
     assertEquals(src.image, template.container?.image)
   }
 
   @Test
-  fun `Template has image pull policy set to Always`() {
+  fun `Template has image pull policy set to IfNotPresent`() {
+    every { csmPlatformProperties.argo.imagePullPolicy } returns "IfNotPresent"
     val src = getScenarioRunContainer()
-    val template = buildTemplate(src)
+    val template = buildTemplate(src, csmPlatformProperties)
+    assertNotNull(template.container)
+    assertEquals("IfNotPresent", template.container!!.imagePullPolicy)
+  }
+
+  @Test
+  fun `Template has image pull policy set to Always`() {
+    every { csmPlatformProperties.argo.imagePullPolicy } returns "Always"
+    val src = getScenarioRunContainer()
+    val template = buildTemplate(src, csmPlatformProperties)
     assertNotNull(template.container)
     assertEquals("Always", template.container!!.imagePullPolicy)
   }
@@ -59,42 +69,42 @@ class WorkflowBuildersTests {
   fun `Template has name`() {
     val name = "template name"
     val src = getScenarioRunContainer(name)
-    val template = buildTemplate(src)
+    val template = buildTemplate(src, csmPlatformProperties)
     assertEquals(name, template.name)
   }
 
   @Test
   fun `Template has args`() {
     val src = getScenarioRunContainerArgs()
-    val template = buildTemplate(src)
+    val template = buildTemplate(src, csmPlatformProperties)
     assertEquals(src.runArgs, template.container?.args)
   }
 
   @Test
   fun `Template has no args`() {
     val src = getScenarioRunContainer()
-    val template = buildTemplate(src)
+    val template = buildTemplate(src, csmPlatformProperties)
     assertEquals(src.runArgs, template.container?.args)
   }
 
   @Test
   fun `Template has simulator default entrypoint`() {
     val src = getScenarioRunContainerEntrypoint()
-    val template = buildTemplate(src)
+    val template = buildTemplate(src, csmPlatformProperties)
     assertEquals(listOf(DEFAULT_ENTRY_POINT), template.container?.command)
   }
 
   @Test
   fun `Template has simulator no entrypoint`() {
     val src = getScenarioRunContainer()
-    val template = buildTemplate(src)
+    val template = buildTemplate(src, csmPlatformProperties)
     assertNull(template.container?.command)
   }
 
   @Test
   fun `Template has default entrypoint if not defined`() {
     val src = getScenarioRunContainer()
-    val template = buildTemplate(src)
+    val template = buildTemplate(src, csmPlatformProperties)
     val expected: String? = null
     assertEquals(expected, template.container?.command)
   }
@@ -102,14 +112,14 @@ class WorkflowBuildersTests {
   @Test
   fun `Template has default env var`() {
     val src = getScenarioRunContainer()
-    val template = buildTemplate(src)
+    val template = buildTemplate(src, csmPlatformProperties)
     assertNull(template.container?.env)
   }
 
   @Test
   fun `Template has env var`() {
     val src = getScenarioRunContainerEnv()
-    val template = buildTemplate(src)
+    val template = buildTemplate(src, csmPlatformProperties)
     val expected =
         listOf(
             V1EnvVar().name("env1").value("envvar1"),
@@ -411,7 +421,7 @@ class WorkflowBuildersTests {
   @Test
   fun `Create Template with StartContainers volume mount`() {
     val src = getScenarioRunContainer()
-    val template = buildTemplate(src)
+    val template = buildTemplate(src, csmPlatformProperties)
     val expected =
         listOf(
             V1VolumeMount()

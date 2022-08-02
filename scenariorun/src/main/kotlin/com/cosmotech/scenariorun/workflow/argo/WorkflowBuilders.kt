@@ -36,7 +36,10 @@ private const val VOLUME_DATASETS_PATH = "/mnt/scenariorun-data"
 private const val VOLUME_PARAMETERS_PATH = "/mnt/scenariorun-parameters"
 private const val CSM_ARGO_WORKFLOWS_TIMEOUT = 28800
 
-internal fun buildTemplate(scenarioRunContainer: ScenarioRunContainer): Template {
+internal fun buildTemplate(
+    scenarioRunContainer: ScenarioRunContainer,
+    csmPlatformProperties: CsmPlatformProperties
+): Template {
   var envVars: MutableList<V1EnvVar>? = null
   if (scenarioRunContainer.envVars != null) {
     envVars = mutableListOf()
@@ -60,7 +63,7 @@ internal fun buildTemplate(scenarioRunContainer: ScenarioRunContainer): Template
   val container =
       V1Container()
           .image(scenarioRunContainer.image)
-          .imagePullPolicy("Always")
+          .imagePullPolicy(csmPlatformProperties.argo.imagePullPolicy)
           .env(envVars)
           .args(scenarioRunContainer.runArgs)
           .volumeMounts(volumeMounts)
@@ -99,7 +102,10 @@ internal fun buildWorkflowSpec(
     nodeSelector[csmPlatformProperties.argo.workflows.nodePoolLabel] = startContainers.nodeLabel
   }
   val templates =
-      startContainers.containers.map { container -> buildTemplate(container) }.toMutableList()
+      startContainers
+          .containers
+          .map { container -> buildTemplate(container, csmPlatformProperties) }
+          .toMutableList()
   val entrypointTemplate = buildEntrypointTemplate(startContainers)
   templates.add(entrypointTemplate)
 
