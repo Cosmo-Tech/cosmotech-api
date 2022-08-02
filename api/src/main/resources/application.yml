@@ -80,7 +80,7 @@ csm:
       workflows:
         namespace: phoenix
         node-pool-label: agentpool
-        service-account-name: workflow
+        service-account-name: workflowcsmv2
         storage-class: null
         access-modes:
           # Any in the following list: ReadWriteOnce, ReadOnlyMany, ReadWriteMany, ReadWriteOncePod (K8s 1.22+)

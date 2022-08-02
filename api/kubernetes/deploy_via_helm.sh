@@ -58,7 +58,7 @@ export NAMESPACE="$2"
 export API_VERSION="$4"
 
 export ARGO_VERSION="0.16.6"
-export ARGO_RELEASE_NAME=argo
+export ARGO_RELEASE_NAME=argocsmv2
 export ARGO_RELEASE_NAMESPACE="${NAMESPACE}"
 export MINIO_VERSION="8.0.10"
 export MINIO_RELEASE_NAME=miniocsmv2
@@ -289,7 +289,7 @@ cat <<EOF > values-argo.yaml
 workflow:
   serviceAccount:
     create: true
-    name: workflow
+    name: workflowcsmv2
   rbac:
     create: true
 executor:
