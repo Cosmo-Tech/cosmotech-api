@@ -19,12 +19,12 @@ import io.argoproj.workflow.Configuration
 import io.argoproj.workflow.apis.ArchivedWorkflowServiceApi
 import io.argoproj.workflow.apis.InfoServiceApi
 import io.argoproj.workflow.apis.WorkflowServiceApi
-import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1NodeStatus
-import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1Workflow
-import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowCreateRequest
-import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowList
-import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowStatus
-import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowStopRequest
+import io.argoproj.workflow.models.NodeStatus
+import io.argoproj.workflow.models.Workflow
+import io.argoproj.workflow.models.WorkflowCreateRequest
+import io.argoproj.workflow.models.WorkflowList
+import io.argoproj.workflow.models.WorkflowStatus
+import io.argoproj.workflow.models.WorkflowStopRequest
 import io.kubernetes.client.util.ObjectAccessor.namespace
 import java.lang.StringBuilder
 import java.security.cert.X509Certificate
@@ -97,10 +97,7 @@ internal class ArgoWorkflowService(
     }
   }
 
-  private fun getWorkflowStatus(
-      workflowId: String,
-      workflowName: String
-  ): IoArgoprojWorkflowV1alpha1WorkflowStatus? {
+  private fun getWorkflowStatus(workflowId: String, workflowName: String): WorkflowStatus? {
     return try {
       this.getActiveWorkflow(workflowId, workflowName).status
     } catch (apiException: ApiException) {
@@ -114,11 +111,8 @@ internal class ArgoWorkflowService(
     }
   }
 
-  private fun getActiveWorkflow(
-      workflowId: String,
-      workflowName: String
-  ): IoArgoprojWorkflowV1alpha1Workflow {
-    var workflow: IoArgoprojWorkflowV1alpha1Workflow? = null
+  private fun getActiveWorkflow(workflowId: String, workflowName: String): Workflow {
+    var workflow: Workflow? = null
     try {
       // Workflows are auto-archived and auto-deleted more frequently
       // (as soon as they succeed or after a TTL).
@@ -145,7 +139,7 @@ internal class ArgoWorkflowService(
     return workflow
   }
 
-  private fun getWorkflowLogs(workflow: IoArgoprojWorkflowV1alpha1Workflow): Map<String, String> {
+  private fun getWorkflowLogs(workflow: Workflow): Map<String, String> {
     val workflowId = workflow.metadata.uid
     val logsMap: MutableMap<String, String> = mutableMapOf()
     if (workflowId != null) {
@@ -168,7 +162,7 @@ internal class ArgoWorkflowService(
   }
 
   private fun getCumulatedSortedLogs(
-      nodes: Map<String, IoArgoprojWorkflowV1alpha1NodeStatus>,
+      nodes: Map<String, NodeStatus>,
       logsMap: Map<String, String>,
       child: String? = null
   ): String {
@@ -191,7 +185,7 @@ internal class ArgoWorkflowService(
       executionTimeout: Int?
   ): ScenarioRun {
     val body =
-        IoArgoprojWorkflowV1alpha1WorkflowCreateRequest()
+        WorkflowCreateRequest()
             .workflow(
                 buildWorkflow(csmPlatformProperties, scenarioRunStartContainers, executionTimeout))
 
@@ -232,7 +226,7 @@ internal class ArgoWorkflowService(
       labelSelector: String,
       artifactNameFilter: String
   ): List<WorkflowStatusAndArtifact> {
-    var workflowList: IoArgoprojWorkflowV1alpha1WorkflowList? = null
+    var workflowList: WorkflowList? = null
     try {
       // Workflows are auto-archived and auto-deleted more frequently
       // (as soon as they succeed or after a TTL).
@@ -242,7 +236,7 @@ internal class ArgoWorkflowService(
       workflowList =
           newServiceApiInstance<ArchivedWorkflowServiceApi>(this.apiClient)
               .archivedWorkflowServiceListArchivedWorkflows(
-                  labelSelector, null, null, null, null, null, null, null, null, null)
+                  labelSelector, null, null, null, null, null, null, null, null)
       logger.trace("workflowList: {}", workflowList)
     } catch (e: ApiException) {
       val logMessage =
@@ -362,14 +356,14 @@ internal class ArgoWorkflowService(
   }
 
   override fun stopWorkflow(scenarioRun: ScenarioRun): ScenarioRunStatus {
-    var workflow = IoArgoprojWorkflowV1alpha1Workflow()
+    var workflow = Workflow()
     try {
       workflow =
           newServiceApiInstance<WorkflowServiceApi>(this.apiClient)
               .workflowServiceStopWorkflow(
                   csmPlatformProperties.argo.workflows.namespace,
                   scenarioRun.workflowName,
-                  IoArgoprojWorkflowV1alpha1WorkflowStopRequest())
+                  WorkflowStopRequest())
     } catch (e: ApiException) {
       System.err.println("Exception when calling WorkflowServiceApi#workflowServiceStopWorkflow")
       System.err.println("Status code: " + e.code)
@@ -382,7 +376,7 @@ internal class ArgoWorkflowService(
 
   private fun buildScenarioRunStatusFromWorkflowStatus(
       scenarioRun: ScenarioRun,
-      workflowStatus: IoArgoprojWorkflowV1alpha1WorkflowStatus?
+      workflowStatus: WorkflowStatus?
   ): ScenarioRunStatus {
     return ScenarioRunStatus(
         id = scenarioRun.id,

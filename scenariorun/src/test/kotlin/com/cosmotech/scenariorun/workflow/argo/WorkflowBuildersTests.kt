@@ -5,7 +5,7 @@ package com.cosmotech.scenariorun.workflow.argo
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
-import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1DAGTask
+import io.argoproj.workflow.models.DAGTask
 import io.kubernetes.client.custom.Quantity
 import io.kubernetes.client.openapi.models.V1EnvVar
 import io.kubernetes.client.openapi.models.V1ObjectMeta
@@ -226,34 +226,32 @@ class WorkflowBuildersTests {
         workflowSpec.templates?.find { template -> template.name.equals("entrypoint") }
     val expected =
         listOf(
-            IoArgoprojWorkflowV1alpha1DAGTask()
-                .name("fetchDatasetContainer-1")
-                .template("fetchDatasetContainer-1"),
-            IoArgoprojWorkflowV1alpha1DAGTask()
+            DAGTask().name("fetchDatasetContainer-1").template("fetchDatasetContainer-1"),
+            DAGTask()
                 .name("fetchScenarioParametersContainer")
                 .template("fetchScenarioParametersContainer"),
-            IoArgoprojWorkflowV1alpha1DAGTask()
+            DAGTask()
                 .name("applyParametersContainer")
                 .template("applyParametersContainer")
                 .dependencies(
                     listOf("fetchDatasetContainer-1", "fetchScenarioParametersContainer")),
-            IoArgoprojWorkflowV1alpha1DAGTask()
+            DAGTask()
                 .name("validateDataContainer")
                 .template("validateDataContainer")
                 .dependencies(listOf("applyParametersContainer")),
-            IoArgoprojWorkflowV1alpha1DAGTask()
+            DAGTask()
                 .name("sendDataWarehouseContainer")
                 .template("sendDataWarehouseContainer")
                 .dependencies(listOf("validateDataContainer")),
-            IoArgoprojWorkflowV1alpha1DAGTask()
+            DAGTask()
                 .name("preRunContainer")
                 .template("preRunContainer")
                 .dependencies(listOf("validateDataContainer")),
-            IoArgoprojWorkflowV1alpha1DAGTask()
+            DAGTask()
                 .name("runContainer")
                 .template("runContainer")
                 .dependencies(listOf("preRunContainer")),
-            IoArgoprojWorkflowV1alpha1DAGTask()
+            DAGTask()
                 .name("postRunContainer")
                 .template("postRunContainer")
                 .dependencies(listOf("runContainer")),
@@ -271,34 +269,32 @@ class WorkflowBuildersTests {
         workflowSpec.templates?.find { template -> template.name.equals("entrypoint") }
     val expected =
         listOf(
-            IoArgoprojWorkflowV1alpha1DAGTask()
-                .name("fetchDatasetContainer-1")
-                .template("fetchDatasetContainer-1"),
-            IoArgoprojWorkflowV1alpha1DAGTask()
+            DAGTask().name("fetchDatasetContainer-1").template("fetchDatasetContainer-1"),
+            DAGTask()
                 .name("fetchScenarioParametersContainer")
                 .template("fetchScenarioParametersContainer")
                 .dependencies(listOf("fetchDatasetContainer-1")),
-            IoArgoprojWorkflowV1alpha1DAGTask()
+            DAGTask()
                 .name("applyParametersContainer")
                 .template("applyParametersContainer")
                 .dependencies(listOf("fetchScenarioParametersContainer")),
-            IoArgoprojWorkflowV1alpha1DAGTask()
+            DAGTask()
                 .name("validateDataContainer")
                 .template("validateDataContainer")
                 .dependencies(listOf("applyParametersContainer")),
-            IoArgoprojWorkflowV1alpha1DAGTask()
+            DAGTask()
                 .name("sendDataWarehouseContainer")
                 .template("sendDataWarehouseContainer")
                 .dependencies(listOf("validateDataContainer")),
-            IoArgoprojWorkflowV1alpha1DAGTask()
+            DAGTask()
                 .name("preRunContainer")
                 .template("preRunContainer")
                 .dependencies(listOf("sendDataWarehouseContainer")),
-            IoArgoprojWorkflowV1alpha1DAGTask()
+            DAGTask()
                 .name("runContainer")
                 .template("runContainer")
                 .dependencies(listOf("preRunContainer")),
-            IoArgoprojWorkflowV1alpha1DAGTask()
+            DAGTask()
                 .name("postRunContainer")
                 .template("postRunContainer")
                 .dependencies(listOf("runContainer")),
@@ -341,16 +337,10 @@ class WorkflowBuildersTests {
         workflowSpec.templates?.find { template -> template.name.equals("entrypoint") }
     val expected =
         listOf(
-            IoArgoprojWorkflowV1alpha1DAGTask().name("Diamond-A").template("Diamond-A"),
-            IoArgoprojWorkflowV1alpha1DAGTask()
-                .name("Diamond-B")
-                .template("Diamond-B")
-                .dependencies(listOf("Diamond-A")),
-            IoArgoprojWorkflowV1alpha1DAGTask()
-                .name("Diamond-C")
-                .template("Diamond-C")
-                .dependencies(listOf("Diamond-A")),
-            IoArgoprojWorkflowV1alpha1DAGTask()
+            DAGTask().name("Diamond-A").template("Diamond-A"),
+            DAGTask().name("Diamond-B").template("Diamond-B").dependencies(listOf("Diamond-A")),
+            DAGTask().name("Diamond-C").template("Diamond-C").dependencies(listOf("Diamond-A")),
+            DAGTask()
                 .name("Diamond-D")
                 .template("Diamond-D")
                 .dependencies(listOf("Diamond-B", "Diamond-C")),
