@@ -374,8 +374,6 @@ subprojects {
 
     if (project.hasProperty("jvmArgs")) {
       jvmArgs = project.property("jvmArgs").toString().split("\\s+".toRegex()).toList()
-    } else {
-      jvmArgs = mutableListOf("--add-opens", "java.base/java.time=ALL-UNNAMED")
     }
 
     args = listOf("--spring.profiles.active=dev")
