@@ -403,8 +403,6 @@ subprojects {
           listOf(
               // Make sure Spring DevTools is disabled in production as running it is a
               // security risk
-              "--add-opens",
-              "java.base/java.time=ALL-UNNAMED",
               "-Dspring.devtools.restart.enabled=false")
       ports = listOf("5005", "8080", "8081")
       // Docker Best Practice : run as non-root.
