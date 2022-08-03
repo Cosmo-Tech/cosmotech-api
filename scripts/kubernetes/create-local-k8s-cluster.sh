@@ -16,7 +16,8 @@ fi
 
 cluster_name=${1:-local-k8s-cluster}
 
-kindest_node_image_tag='v1.21.2'
+export aks_minor_version="1.23"
+kindest_node_image_tag="v${aks_minor_version}.6"
 
 cat <<EOF | kind create cluster --name "${cluster_name}" --config=-
 
@@ -109,10 +110,12 @@ helm --kube-context="${kubectl_ctx}" \
   --version v3.21.2
 
 # cf. https://kind.sigs.k8s.io/docs/user/ingress/#ingress-nginx
-ingress_nginx_controller_tag="controller-v0.47.0"
+# ingress_nginx_controller_tag="controller-v0.47.0"
 kubectl --context="${kubectl_ctx}" \
   apply -f \
-  "https://raw.githubusercontent.com/kubernetes/ingress-nginx/${ingress_nginx_controller_tag}/deploy/static/provider/kind/deploy.yaml"
+  "https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/${aks_minor_version}/deploy.yaml"
+
+#  "https://raw.githubusercontent.com/kubernetes/ingress-nginx/${ingress_nginx_controller_tag}/deploy/static/provider/kind/deploy.yaml"
 
 kubectl --context="${kubectl_ctx}" \
   -n ingress-nginx \
