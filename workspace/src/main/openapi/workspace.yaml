@@ -377,6 +377,38 @@ paths:
         "404":
           description: the Workspace specified is unknown or you don't have access to it
 
+  /organizations/{organization_id}/workspaces/{workspace_id}/security/users:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getWorkspaceSecurityUsers
+      tags:
+        - workspace
+      summary: Get the Workspace security users list
+      responses:
+        "200":
+          description: The Workspace security users list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceSecurityUsers'
+              examples:
+                WorkspaceSecurity:
+                  $ref: '#/components/examples/BreweryWorkspaceSecurityUsers'
+        "404":
+          description: the Workspace specified is unknown or you don't have access to it
+
   /organizations/{organization_id}/workspaces/{workspace_id}/security/default:
     parameters:
       - name: organization_id
@@ -640,7 +672,7 @@ components:
         $ref: '#/components/schemas/WorkspaceRole'
     WorkspaceRole:
       type: string
-      enum: ["Admin","Writer","ScenarioCreator","Reader"]
+      enum: ["commonroleadmin","commonrolewriter","commonrolecreator","commonrolereader"]
     WorkspaceFile:
       type: object
       description: a Workspace File resource
@@ -648,6 +680,14 @@ components:
         fileName:
           type: string
           description: the Workspace File name
+    WorkspaceSecurityUsers:
+      type: object
+      description: the list of Workspace users
+      properties:
+        users:
+          type: array
+          items:
+            type: string
     WorkspaceWebApp:
       type: object
       description: a Workspace Web Application
@@ -845,6 +885,13 @@ components:
           - workspace_read
           - workspace_write
           - workspace_create_scenario
+    BreweryWorkspaceSecurityUsers:
+      summary: Security users list
+      description: Example of RBAC security users list
+      value:
+        users:
+          - alice@mycompany.com
+          - bob@mycompany.com
     BreweryWorkspaceFile:
       summary: Brewery Workspace file example
       description: Brewery Workspace file uploaded return example
