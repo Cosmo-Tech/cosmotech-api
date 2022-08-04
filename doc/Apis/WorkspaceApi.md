@@ -15,6 +15,7 @@ Method | HTTP request | Description
 [**findWorkspaceById**](WorkspaceApi.md#findWorkspaceById) | **GET** /organizations/{organization_id}/workspaces/{workspace_id} | Get the details of an workspace
 [**getWorkspaceAccess**](WorkspaceApi.md#getWorkspaceAccess) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id} | get a control acccess for the Workspace
 [**getWorkspaceSecurity**](WorkspaceApi.md#getWorkspaceSecurity) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/security | Get the Workspace security information
+[**getWorkspaceSecurityUsers**](WorkspaceApi.md#getWorkspaceSecurityUsers) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/security/users | Get the Workspace security users list
 [**removeWorkspaceAccess**](WorkspaceApi.md#removeWorkspaceAccess) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id} | Remove the specified access from the given Organization Workspace
 [**setWorkspaceDefaultSecurity**](WorkspaceApi.md#setWorkspaceDefaultSecurity) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/security/default | set the Workspace default security
 [**updateWorkspace**](WorkspaceApi.md#updateWorkspace) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id} | Update a workspace
@@ -299,6 +300,32 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**WorkspaceSecurity**](../Models/WorkspaceSecurity.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+<a name="getWorkspaceSecurityUsers"></a>
+# **getWorkspaceSecurityUsers**
+> WorkspaceSecurityUsers getWorkspaceSecurityUsers(organization\_id, workspace\_id)
+
+Get the Workspace security users list
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **workspace\_id** | **String**| the Workspace identifier | [default to null]
+
+### Return type
+
+[**WorkspaceSecurityUsers**](../Models/WorkspaceSecurityUsers.md)
 
 ### Authorization
 
