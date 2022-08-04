@@ -16,8 +16,10 @@ import com.cosmotech.api.events.DeleteHistoricalDataOrganization
 import com.cosmotech.api.events.DeleteHistoricalDataWorkspace
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
-import com.cosmotech.api.exceptions.CsmAccessForbiddenException
-import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.rbac.COMMON_PERMISSION_ADMIN
+import com.cosmotech.api.rbac.COMMON_PERMISSION_DELETE
+import com.cosmotech.api.rbac.COMMON_PERMISSION_READ
+import com.cosmotech.api.rbac.COMMON_PERMISSION_WRITE
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -29,12 +31,8 @@ import com.cosmotech.workspace.domain.WorkspaceAccessControlWithPermissions
 import com.cosmotech.workspace.domain.WorkspaceFile
 import com.cosmotech.workspace.domain.WorkspaceRoleItems
 import com.cosmotech.workspace.domain.WorkspaceSecurity
+import com.cosmotech.workspace.domain.WorkspaceSecurityUsers
 import com.cosmotech.workspace.rbac.WorkspaceRbac
-import com.cosmotech.api.rbac.COMMON_PERMISSION_ADMIN
-import com.cosmotech.api.rbac.COMMON_PERMISSION_DELETE
-import com.cosmotech.api.rbac.COMMON_PERMISSION_WRITE
-import com.cosmotech.api.rbac.COMMON_PERMISSION_READ
-import com.cosmotech.api.rbac.COMMON_PERMISSION_CREATE_CHILDREN
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -59,14 +57,15 @@ internal class WorkspaceServiceImpl(
       cosmosTemplate.findAll<Workspace>("${organizationId}_workspaces")
 
   override fun findWorkspaceById(organizationId: String, workspaceId: String): Workspace {
-      val workspace: Workspace = cosmosTemplate.findByIdOrThrow(
-          "${organizationId}_workspaces",
-          workspaceId,
-          "Workspace $workspaceId not found in organization $organizationId")
+    val workspace: Workspace =
+        cosmosTemplate.findByIdOrThrow(
+            "${organizationId}_workspaces",
+            workspaceId,
+            "Workspace $workspaceId not found in organization $organizationId")
     this.rbac.initFor(workspace)
     this.rbac.verify(COMMON_PERMISSION_READ)
     return workspace
-        }
+  }
 
   override fun createWorkspace(organizationId: String, workspace: Workspace): Workspace {
     // Needs security on Organization to check RBAC
@@ -119,6 +118,18 @@ internal class WorkspaceServiceImpl(
         existingWorkspace
             .compareToAndMutateIfNeeded(workspace, excludedFields = arrayOf("security", "solution"))
             .isNotEmpty()
+
+    val securityChanged = workspace.changed(existingWorkspace) { security }
+    if (this.rbac.check(COMMON_PERMISSION_ADMIN) && securityChanged) {
+      logger.debug("Writing new security information for workspace ${workspace.id}")
+      // handle new and deleted users for permission propagation
+      existingWorkspace.security = workspace.security
+      hasChanged = true
+    } else {
+      if (securityChanged)
+          logger.warn(
+              "workspace ${workspace.id} security cannot be changed due to missing permission")
+    }
 
     if (workspace.solution.solutionId != null) {
       // Validate solution ID
@@ -276,7 +287,7 @@ internal class WorkspaceServiceImpl(
     return AzureStorageResourcePatternResolver(azureStorageBlobServiceClient)
         .getResources("azure-blob://$organizationId/$workspaceId/**/*".sanitizeForAzureStorage())
         .map { it as BlobStorageResource }
-      }
+  }
 
   override fun addWorkspaceAccess(
       organizationId: kotlin.String,
@@ -286,6 +297,8 @@ internal class WorkspaceServiceImpl(
     val workspace = findWorkspaceById(organizationId, workspaceId)
     this.rbac.initFor(workspace)
     this.rbac.verify(COMMON_PERMISSION_ADMIN)
+
+    // add restricted list from organization. Add reader permission to solution
     this.rbac.setWorkspaceAccess(workspaceAccessControl)
     this.rbac.update(workspace)
     this.updateWorkspace(organizationId, workspaceId, workspace)
@@ -310,6 +323,7 @@ internal class WorkspaceServiceImpl(
     val workspace = findWorkspaceById(organizationId, workspaceId)
     this.rbac.initFor(workspace)
     this.rbac.verify(COMMON_PERMISSION_READ)
+    this.rbac.update(workspace)
     return workspace.security ?: WorkspaceSecurity()
   }
 
@@ -322,6 +336,7 @@ internal class WorkspaceServiceImpl(
     this.rbac.initFor(workspace)
     this.rbac.verify(COMMON_PERMISSION_ADMIN)
     this.rbac.removeUser(identityId)
+    // propagate removal to scenario, solution?
     this.rbac.update(workspace)
     this.updateWorkspace(organizationId, workspaceId, workspace)
   }
@@ -341,5 +356,16 @@ internal class WorkspaceServiceImpl(
     this.updateWorkspace(organizationId, workspaceId, workspace)
 
     return workspace.security ?: WorkspaceSecurity()
+  }
+
+  override fun getWorkspaceSecurityUsers(
+      organizationId: kotlin.String,
+      workspaceId: kotlin.String
+  ): WorkspaceSecurityUsers {
+    val workspace = findWorkspaceById(organizationId, workspaceId)
+
+    this.rbac.initFor(workspace)
+    this.rbac.verify(COMMON_PERMISSION_READ)
+    return this.rbac.getWorkspaceUsers()
   }
 }

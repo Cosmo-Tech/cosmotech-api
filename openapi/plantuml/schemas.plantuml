@@ -447,6 +447,10 @@ entity WorkspaceSecurity {
     accessControlList: Map
 }
 
+entity WorkspaceSecurityUsers {
+    users: List<String>
+}
+
 entity WorkspaceSolution {
     solutionId: String
     runTemplateFilter: List<String>
