@@ -29,6 +29,7 @@ import com.cosmotech.workspace.domain.WorkspaceAccessControlWithPermissions
 import com.cosmotech.workspace.domain.WorkspaceFile
 import com.cosmotech.workspace.domain.WorkspaceRoleItems
 import com.cosmotech.workspace.domain.WorkspaceSecurity
+import com.cosmotech.workspace.rbac.WorkspaceRbac
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -46,6 +47,7 @@ internal class WorkspaceServiceImpl(
     private val solutionService: SolutionApiService,
     private val azureStorageBlobServiceClient: BlobServiceClient,
     private val azureStorageBlobBatchClient: BlobBatchClient,
+    private val rbac: WorkspaceRbac,
 ) : CsmAzureService(), WorkspaceApiService {
 
   override fun findAllWorkspaces(organizationId: String) =
@@ -266,17 +268,16 @@ internal class WorkspaceServiceImpl(
       workspaceAccessControl: WorkspaceAccessControl
   ): WorkspaceAccessControlWithPermissions {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    this.initSecurity(workspace)
+    this.rbac.initFor(workspace)
 
-    workspace.security?.accessControlList?.put(workspaceAccessControl.id, workspaceAccessControl)
+    // workspace.security?.accessControlList?.put(workspaceAccessControl.id, workspaceAccessControl)
     this.updateWorkspace(organizationId, workspaceId, workspace)
 
     val accessControlWithPermissions: WorkspaceAccessControlWithPermissions =
         WorkspaceAccessControlWithPermissions(
-          workspaceAccessControl.id,
-          workspaceAccessControl.roles,
-          permissions = mutableListOf("HardCodedReader")
-        )
+            workspaceAccessControl.id,
+            workspaceAccessControl.roles,
+            permissions = mutableListOf("HardCodedReader"))
     return accessControlWithPermissions
   }
 
@@ -323,19 +324,13 @@ internal class WorkspaceServiceImpl(
       workspaceRoleItems: WorkspaceRoleItems
   ): WorkspaceSecurity {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    this.initSecurity(workspace)
 
-    workspace.security?.default = workspaceRoleItems.roles
+    this.rbac.initFor(workspace)
+    this.rbac.setDefault(workspaceRoleItems)
+    this.rbac.update(workspace)
+
     this.updateWorkspace(organizationId, workspaceId, workspace)
 
     return workspace.security ?: WorkspaceSecurity()
-  }
-
-  private fun initSecurity(workspace: Workspace) {
-    if (workspace.security == null) {
-      logger.debug("Creating workspace security since it does not exist yet")
-      workspace.security = WorkspaceSecurity()
-      workspace.security?.accessControlList = mutableMapOf()
-    }
   }
 }
