@@ -11,6 +11,7 @@ import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
+import com.cosmotech.workspace.rbac.WorkspaceRbac
 import io.mockk.MockKAnnotations
 import io.mockk.confirmVerified
 import io.mockk.every
@@ -42,6 +43,8 @@ class WorkspaceServiceImplTests {
 
   @MockK private lateinit var azureStorageBlobBatchClient: BlobBatchClient
 
+  @MockK private lateinit var rbac: WorkspaceRbac
+
   @Suppress("unused") @MockK private lateinit var cosmosTemplate: CosmosTemplate
 
   @InjectMockKs private lateinit var workspaceServiceImpl: WorkspaceServiceImpl
@@ -54,7 +57,8 @@ class WorkspaceServiceImplTests {
                 resourceLoader,
                 solutionService,
                 azureStorageBlobServiceClient,
-                azureStorageBlobBatchClient))
+                azureStorageBlobBatchClient,
+                rbac))
     MockKAnnotations.init(this, relaxUnitFun = true)
   }
 
