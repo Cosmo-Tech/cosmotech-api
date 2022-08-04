@@ -59,6 +59,7 @@ Models/WorkspaceFile.md
 Models/WorkspaceRole.md
 Models/WorkspaceRoleItems.md
 Models/WorkspaceSecurity.md
+Models/WorkspaceSecurityUsers.md
 Models/WorkspaceSolution.md
 Models/WorkspaceWebApp.md
 README.md

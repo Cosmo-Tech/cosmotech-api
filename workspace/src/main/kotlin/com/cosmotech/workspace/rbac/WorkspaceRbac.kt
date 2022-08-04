@@ -12,31 +12,30 @@ import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.migrateResourceSecurity
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
+import com.cosmotech.workspace.domain.WorkspaceAccessControlWithPermissions
 import com.cosmotech.workspace.domain.WorkspaceRole
 import com.cosmotech.workspace.domain.WorkspaceRoleItems
 import com.cosmotech.workspace.domain.WorkspaceSecurity
-import com.cosmotech.workspace.domain.WorkspaceAccessControlWithPermissions
+import com.cosmotech.workspace.domain.WorkspaceSecurityUsers
 import java.lang.IllegalStateException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.stereotype.Component
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.stereotype.Component
 
 @Configuration
 internal class RbacConfiguration {
-  @Bean(name=["Workspace"])
-  fun getRolesDefinition(): RolesDefinition = getCommonRolesDefinition()
+  @Bean(name = ["Workspace"]) fun getRolesDefinition(): RolesDefinition = getCommonRolesDefinition()
 }
 
 @Component
 internal class WorkspaceRbac(
-  csmPlatformProperties: CsmPlatformProperties,
-  @Qualifier("Workspace") workspaceRoleDefinition: RolesDefinition,
-  csmAdmin: CsmAdmin,
-) :
-    CsmRbac(csmPlatformProperties, workspaceRoleDefinition, csmAdmin) {
+    csmPlatformProperties: CsmPlatformProperties,
+    @Qualifier("Workspace") workspaceRoleDefinition: RolesDefinition,
+    csmAdmin: CsmAdmin,
+) : CsmRbac(csmPlatformProperties, workspaceRoleDefinition, csmAdmin) {
   private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
   fun initFor(workspace: Workspace) {
@@ -94,28 +93,28 @@ internal class WorkspaceRbac(
     this.setDefault(workspaceRoleItems.roles.map { it.toString() }.toList())
   }
 
-  fun getWorkspaceAccessControlWithPermissions(user: String): WorkspaceAccessControlWithPermissions  {
+  fun getWorkspaceAccessControlWithPermissions(
+      user: String
+  ): WorkspaceAccessControlWithPermissions {
     val userInfo = this.getUserInfo(user)
     return WorkspaceAccessControlWithPermissions(
-      id = userInfo.id,
-      roles = userInfo.roles.map { WorkspaceRole.valueOf(it) }.toMutableList(),
-      permissions = userInfo.permissions.toMutableList()
-    )
+        id = userInfo.id,
+        roles = userInfo.roles.map { WorkspaceRole.valueOf(it) }.toMutableList(),
+        permissions = userInfo.permissions.toMutableList())
   }
 
-  fun setWorkspaceAccess(
-      workspaceAccessControl: WorkspaceAccessControl
-    ) {
-      this.setUserRoles(
-        workspaceAccessControl.id,
-        workspaceAccessControl.roles.map { it.toString() }
-      )
-    }
+  fun setWorkspaceAccess(workspaceAccessControl: WorkspaceAccessControl) {
+    this.setUserRoles(workspaceAccessControl.id, workspaceAccessControl.roles.map { it.toString() })
+  }
+
+  fun getWorkspaceUsers(): WorkspaceSecurityUsers {
+    return WorkspaceSecurityUsers(users = this.getUsers().toMutableList())
+  }
 
   @Suppress("MaxLineLength")
   private fun migrateSecurity(workspace: Workspace): ResourceSecurity {
     logger.warn(
-        "Security for workspace ${workspace.id} does not exist. Trying to migrate it with options defined in config")
+        "Security for workspace ${workspace.id} does not exist. Trying to migrate it with options defined in config. New security will be stored only for update commands")
     val migratedSecurity = migrateResourceSecurity(this.csmPlatformProperties, this.rolesDefinition)
     if (csmPlatformProperties.rbac.enabled && migratedSecurity == null) {
       throw IllegalStateException(
