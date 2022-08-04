@@ -28,6 +28,11 @@ import com.cosmotech.workspace.domain.WorkspaceFile
 import com.cosmotech.workspace.domain.WorkspaceRoleItems
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.rbac.WorkspaceRbac
+import com.cosmotech.api.rbac.COMMON_PERMISSION_ADMIN
+import com.cosmotech.api.rbac.COMMON_PERMISSION_DELETE
+import com.cosmotech.api.rbac.COMMON_PERMISSION_WRITE
+import com.cosmotech.api.rbac.COMMON_PERMISSION_READ
+import com.cosmotech.api.rbac.COMMON_PERMISSION_CREATE_CHILDREN
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -51,13 +56,18 @@ internal class WorkspaceServiceImpl(
   override fun findAllWorkspaces(organizationId: String) =
       cosmosTemplate.findAll<Workspace>("${organizationId}_workspaces")
 
-  override fun findWorkspaceById(organizationId: String, workspaceId: String): Workspace =
-      cosmosTemplate.findByIdOrThrow(
+  override fun findWorkspaceById(organizationId: String, workspaceId: String): Workspace {
+      val workspace: Workspace = cosmosTemplate.findByIdOrThrow(
           "${organizationId}_workspaces",
           workspaceId,
           "Workspace $workspaceId not found in organization $organizationId")
+    this.rbac.initFor(workspace)
+    this.rbac.verify(COMMON_PERMISSION_READ)
+    return workspace
+        }
 
   override fun createWorkspace(organizationId: String, workspace: Workspace): Workspace {
+    // Needs security on Organization to check RBAC
     // Validate Solution ID
     workspace.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
     return cosmosTemplate.insert(
@@ -69,6 +79,8 @@ internal class WorkspaceServiceImpl(
 
   override fun deleteAllWorkspaceFiles(organizationId: String, workspaceId: String) {
     val workspace = findWorkspaceById(organizationId, workspaceId)
+    this.rbac.initFor(workspace)
+    this.rbac.verify(COMMON_PERMISSION_READ)
     logger.debug("Deleting all files for workspace #{} ({})", workspace.id, workspace.name)
 
     GlobalScope.launch {
@@ -97,22 +109,14 @@ internal class WorkspaceServiceImpl(
       workspace: Workspace
   ): Workspace {
     val existingWorkspace = findWorkspaceById(organizationId, workspaceId)
+    this.rbac.initFor(existingWorkspace)
+    this.rbac.verify(COMMON_PERMISSION_WRITE)
 
+    // Security cannot be changed by updateWorkspace
     var hasChanged =
         existingWorkspace
-            .compareToAndMutateIfNeeded(workspace, excludedFields = arrayOf("ownerId", "solution"))
+            .compareToAndMutateIfNeeded(workspace, excludedFields = arrayOf("security", "solution"))
             .isNotEmpty()
-
-    if (workspace.ownerId != null && workspace.changed(existingWorkspace) { ownerId }) {
-      // Allow to change the ownerId as well, but only the owner can transfer the ownership
-      if (existingWorkspace.ownerId != getCurrentAuthenticatedUserName()) {
-        // TODO Only the owner or an admin should be able to perform this operation
-        throw CsmAccessForbiddenException(
-            "You are not allowed to change the ownership of this Resource")
-      }
-      existingWorkspace.ownerId = workspace.ownerId
-      hasChanged = true
-    }
 
     if (workspace.solution.solutionId != null) {
       // Validate solution ID
@@ -132,10 +136,8 @@ internal class WorkspaceServiceImpl(
 
   override fun deleteWorkspace(organizationId: String, workspaceId: String): Workspace {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    if (workspace.ownerId != getCurrentAuthenticatedUserName()) {
-      // TODO Only the owner or an admin should be able to perform this operation
-      throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
-    }
+    this.rbac.initFor(workspace)
+    this.rbac.verify(COMMON_PERMISSION_DELETE)
     try {
       deleteAllWorkspaceFiles(organizationId, workspaceId)
     } finally {
@@ -146,6 +148,8 @@ internal class WorkspaceServiceImpl(
 
   override fun deleteWorkspaceFile(organizationId: String, workspaceId: String, fileName: String) {
     val workspace = findWorkspaceById(organizationId, workspaceId)
+    this.rbac.initFor(workspace)
+    this.rbac.verify(COMMON_PERMISSION_READ)
     logger.debug(
         "Deleting file resource from workspace #{} ({}): {}",
         workspace.id,
@@ -166,6 +170,8 @@ internal class WorkspaceServiceImpl(
       throw IllegalArgumentException("Invalid filename: '$fileName'. '..' is not allowed")
     }
     val workspace = findWorkspaceById(organizationId, workspaceId)
+    this.rbac.initFor(workspace)
+    this.rbac.verify(COMMON_PERMISSION_READ)
     logger.debug(
         "Downloading file resource to workspace #{} ({}): {}",
         workspace.id,
@@ -194,6 +200,10 @@ internal class WorkspaceServiceImpl(
         file.filename,
         destination)
 
+    this.rbac.initFor(workspace)
+    // Create a new custom permission for file upload?
+    this.rbac.verify(COMMON_PERMISSION_READ)
+
     val fileRelativeDestinationBuilder = StringBuilder()
     if (destination.isNullOrBlank()) {
       fileRelativeDestinationBuilder.append(file.filename)
@@ -219,6 +229,8 @@ internal class WorkspaceServiceImpl(
       workspaceId: String
   ): List<WorkspaceFile> {
     val workspace = findWorkspaceById(organizationId, workspaceId)
+    this.rbac.initFor(workspace)
+    this.rbac.verify(COMMON_PERMISSION_READ)
     logger.debug("List all files for workspace #{} ({})", workspace.id, workspace.name)
     return getWorkspaceFileResources(organizationId, workspaceId)
         .mapNotNull { it.filename?.removePrefix("${workspaceId.sanitizeForAzureStorage()}/") }
@@ -245,10 +257,14 @@ internal class WorkspaceServiceImpl(
   private fun getWorkspaceFileResources(
       organizationId: String,
       workspaceId: String
-  ): List<BlobStorageResource> =
-      AzureStorageResourcePatternResolver(azureStorageBlobServiceClient)
-          .getResources("azure-blob://$organizationId/$workspaceId/**/*".sanitizeForAzureStorage())
-          .map { it as BlobStorageResource }
+  ): List<BlobStorageResource> {
+    val workspace = findWorkspaceById(organizationId, workspaceId)
+    this.rbac.initFor(workspace)
+    this.rbac.verify(COMMON_PERMISSION_READ)
+    return AzureStorageResourcePatternResolver(azureStorageBlobServiceClient)
+        .getResources("azure-blob://$organizationId/$workspaceId/**/*".sanitizeForAzureStorage())
+        .map { it as BlobStorageResource }
+      }
 
   override fun addWorkspaceAccess(
       organizationId: kotlin.String,
@@ -257,16 +273,11 @@ internal class WorkspaceServiceImpl(
   ): WorkspaceAccessControlWithPermissions {
     val workspace = findWorkspaceById(organizationId, workspaceId)
     this.rbac.initFor(workspace)
-
-    // workspace.security?.accessControlList?.put(workspaceAccessControl.id, workspaceAccessControl)
+    this.rbac.verify(COMMON_PERMISSION_ADMIN)
+    this.rbac.setWorkspaceAccess(workspaceAccessControl)
+    this.rbac.update(workspace)
     this.updateWorkspace(organizationId, workspaceId, workspace)
-
-    val accessControlWithPermissions: WorkspaceAccessControlWithPermissions =
-        WorkspaceAccessControlWithPermissions(
-            workspaceAccessControl.id,
-            workspaceAccessControl.roles,
-            permissions = mutableListOf("HardCodedReader"))
-    return accessControlWithPermissions
+    return this.rbac.getWorkspaceAccessControlWithPermissions(workspaceAccessControl.id)
   }
 
   override fun getWorkspaceAccess(
@@ -275,13 +286,9 @@ internal class WorkspaceServiceImpl(
       identityId: kotlin.String
   ): WorkspaceAccessControlWithPermissions {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    val acl =
-        workspace.security?.accessControlList?.get(identityId)?.copy() as
-            WorkspaceAccessControlWithPermissions
-
-    return acl
-        ?: throw CsmResourceNotFoundException(
-            "The requested control access for $identityId does not exist")
+    this.rbac.initFor(workspace)
+    this.rbac.verify(COMMON_PERMISSION_READ)
+    return this.rbac.getWorkspaceAccessControlWithPermissions(identityId)
   }
 
   override fun getWorkspaceSecurity(
@@ -289,6 +296,8 @@ internal class WorkspaceServiceImpl(
       workspaceId: kotlin.String
   ): WorkspaceSecurity {
     val workspace = findWorkspaceById(organizationId, workspaceId)
+    this.rbac.initFor(workspace)
+    this.rbac.verify(COMMON_PERMISSION_READ)
     return workspace.security ?: WorkspaceSecurity()
   }
 
@@ -298,12 +307,11 @@ internal class WorkspaceServiceImpl(
       identityId: kotlin.String
   ): Unit {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    val acl = workspace.security?.accessControlList?.get(identityId)
-    if (acl == null) {
-      throw CsmResourceNotFoundException(
-          "The requested control access for $identityId does not exist")
-    }
-    workspace.security?.accessControlList?.remove(identityId)
+    this.rbac.initFor(workspace)
+    this.rbac.verify(COMMON_PERMISSION_ADMIN)
+    this.rbac.removeUser(identityId)
+    this.rbac.update(workspace)
+    this.updateWorkspace(organizationId, workspaceId, workspace)
   }
 
   override fun setWorkspaceDefaultSecurity(
@@ -314,6 +322,7 @@ internal class WorkspaceServiceImpl(
     val workspace = findWorkspaceById(organizationId, workspaceId)
 
     this.rbac.initFor(workspace)
+    this.rbac.verify(COMMON_PERMISSION_ADMIN)
     this.rbac.setDefault(workspaceRoleItems)
     this.rbac.update(workspace)
 

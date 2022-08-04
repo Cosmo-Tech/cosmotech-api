@@ -17,6 +17,7 @@ import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
+import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.spyk
@@ -43,7 +44,7 @@ class WorkspaceServiceImplTests {
 
   @MockK private lateinit var azureStorageBlobBatchClient: BlobBatchClient
 
-  @MockK private lateinit var rbac: WorkspaceRbac
+  @RelaxedMockK private lateinit var rbac: WorkspaceRbac
 
   @Suppress("unused") @MockK private lateinit var cosmosTemplate: CosmosTemplate
 
@@ -60,6 +61,7 @@ class WorkspaceServiceImplTests {
                 azureStorageBlobBatchClient,
                 rbac))
     MockKAnnotations.init(this, relaxUnitFun = true)
+    this.rbac = mockk<WorkspaceRbac>(relaxed = true)
   }
 
   @Test
