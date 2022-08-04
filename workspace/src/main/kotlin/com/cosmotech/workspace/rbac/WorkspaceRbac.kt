@@ -37,31 +37,38 @@ internal class WorkspaceRbac(
     csmAdmin: CsmAdmin,
 ) : CsmRbac(csmPlatformProperties, workspaceRoleDefinition, csmAdmin) {
   private val logger: Logger = LoggerFactory.getLogger(this::class.java)
+  private var isInit: Boolean = false
 
   fun initFor(workspace: Workspace) {
-    logger.info("Configuring workspace ${workspace.id} rbac from security")
-    var resourceSecurity: ResourceSecurity
-    if (workspace.security == null) {
-      resourceSecurity = migrateSecurity(workspace)
+    if (this.isInit) {
+      logger.debug("Workspace ${workspace.id} rbac already init")
+      return
     } else {
-      val acl: MutableMap<String, List<String>> =
-          workspace
-              .security
-              ?.accessControlList
-              ?.entries
-              ?.associateBy({ it.key }, { it.value.roles.map { role -> role.toString() } })
-              ?.toMutableMap()
-              ?: mutableMapOf()
-      if (csmPlatformProperties.rbac.enabled && acl.size == 0) {
-        throw IllegalStateException("The workspace ${workspace.id} has no ACL defined")
+      logger.info("Configuring workspace ${workspace.id} rbac from security")
+      var resourceSecurity: ResourceSecurity
+      if (workspace.security == null) {
+        resourceSecurity = migrateSecurity(workspace)
+      } else {
+        val acl: MutableMap<String, List<String>> =
+            workspace
+                .security
+                ?.accessControlList
+                ?.entries
+                ?.associateBy({ it.key }, { it.value.roles.map { role -> role.toString() } })
+                ?.toMutableMap()
+                ?: mutableMapOf()
+        if (csmPlatformProperties.rbac.enabled && acl.size == 0) {
+          throw IllegalStateException("The workspace ${workspace.id} has no ACL defined")
+        }
+        val defaultAcl: List<String> =
+            workspace.security?.default?.map { it.toString() }?.toList() ?: listOf()
+        resourceSecurity = createResourceSecurity(defaultAcl, acl)
       }
-      val defaultAcl: List<String> =
-          workspace.security?.default?.map { it.toString() }?.toList() ?: listOf()
-      resourceSecurity = createResourceSecurity(defaultAcl, acl)
-    }
 
-    val workspaceId: String = workspace.id ?: throw IllegalStateException("Workspace id is null")
-    this.setResourceInfo(workspaceId, resourceSecurity)
+      val workspaceId: String = workspace.id ?: throw IllegalStateException("Workspace id is null")
+      this.setResourceInfo(workspaceId, resourceSecurity)
+      this.isInit = true
+    }
   }
 
   fun update(workspace: Workspace) {
