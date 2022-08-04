@@ -107,6 +107,7 @@ Class | Method | HTTP request | Description
 *WorkspaceApi* | [**findWorkspaceById**](Apis/WorkspaceApi.md#findworkspacebyid) | **GET** /organizations/{organization_id}/workspaces/{workspace_id} | Get the details of an workspace
 *WorkspaceApi* | [**getWorkspaceAccess**](Apis/WorkspaceApi.md#getworkspaceaccess) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id} | get a control acccess for the Workspace
 *WorkspaceApi* | [**getWorkspaceSecurity**](Apis/WorkspaceApi.md#getworkspacesecurity) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/security | Get the Workspace security information
+*WorkspaceApi* | [**getWorkspaceSecurityUsers**](Apis/WorkspaceApi.md#getworkspacesecurityusers) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/security/users | Get the Workspace security users list
 *WorkspaceApi* | [**removeWorkspaceAccess**](Apis/WorkspaceApi.md#removeworkspaceaccess) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id} | Remove the specified access from the given Organization Workspace
 *WorkspaceApi* | [**setWorkspaceDefaultSecurity**](Apis/WorkspaceApi.md#setworkspacedefaultsecurity) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/security/default | set the Workspace default security
 *WorkspaceApi* | [**updateWorkspace**](Apis/WorkspaceApi.md#updateworkspace) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id} | Update a workspace
@@ -169,6 +170,7 @@ Class | Method | HTTP request | Description
  - [WorkspaceRole](./Models/WorkspaceRole.md)
  - [WorkspaceRoleItems](./Models/WorkspaceRoleItems.md)
  - [WorkspaceSecurity](./Models/WorkspaceSecurity.md)
+ - [WorkspaceSecurityUsers](./Models/WorkspaceSecurityUsers.md)
  - [WorkspaceSolution](./Models/WorkspaceSolution.md)
  - [WorkspaceWebApp](./Models/WorkspaceWebApp.md)
 
