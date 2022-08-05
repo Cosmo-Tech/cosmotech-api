@@ -13,7 +13,6 @@ Name | Type | Description | Notes
 **solutionId** | **String** | the Solution Id associated with this Scenario | [optional] [default to null]
 **runTemplateId** | **String** | the Solution Run Template Id associated with this Scenario | [optional] [default to null]
 **workspaceId** | **String** | the associated Workspace Id | [optional] [default to null]
-**users** | [**List**](ScenarioUser.md) | the list of users Id with their role | [optional] [default to null]
 **state** | [**ScenarioJobState**](ScenarioJobState.md) |  | [optional] [default to null]
 **creationDate** | **Date** | the Scenario creation date | [optional] [default to null]
 **lastUpdate** | **Date** | the last time a Scenario was updated | [optional] [default to null]
@@ -26,6 +25,7 @@ Name | Type | Description | Notes
 **parentLastRun** | [**ScenarioLastRun**](ScenarioLastRun.md) |  | [optional] [default to null]
 **rootLastRun** | [**ScenarioLastRun**](ScenarioLastRun.md) |  | [optional] [default to null]
 **validationStatus** | [**ScenarioValidationStatus**](ScenarioValidationStatus.md) |  | [optional] [default to null]
+**security** | [**ScenarioSecurity**](ScenarioSecurity.md) |  | [optional] [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

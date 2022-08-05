@@ -8,7 +8,6 @@ import com.azure.cosmos.CosmosDatabase
 import com.azure.cosmos.models.CosmosItemResponse
 import com.azure.cosmos.models.PartitionKey
 import com.azure.spring.data.cosmos.core.CosmosTemplate
-import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEvent
@@ -26,7 +25,6 @@ import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.Solution
-import com.cosmotech.user.api.UserApiService
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
@@ -59,7 +57,6 @@ const val AUTHENTICATED_USERNAME = "authenticated-user"
 @Suppress("LongMethod", "LargeClass")
 class ScenarioServiceImplTests {
 
-  @MockK private lateinit var userService: UserApiService
   @MockK private lateinit var organizationService: OrganizationApiService
   @MockK private lateinit var solutionService: SolutionApiService
   @MockK private lateinit var workspaceService: WorkspaceApiService
@@ -85,7 +82,6 @@ class ScenarioServiceImplTests {
     this.scenarioServiceImpl =
         spyk(
             ScenarioServiceImpl(
-                userService,
                 solutionService,
                 organizationService,
                 workspaceService,
