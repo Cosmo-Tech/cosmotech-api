@@ -27,12 +27,17 @@ Models/RunTemplateParameterGroup.md
 Models/RunTemplateParameterValue.md
 Models/RunTemplateStepSource.md
 Models/Scenario.md
+Models/ScenarioAccessControl.md
+Models/ScenarioAccessControlWithPermissions.md
+Models/ScenarioAccessControlWithPermissions_allOf.md
 Models/ScenarioChangedParameterValue.md
 Models/ScenarioComparisonResult.md
 Models/ScenarioDataDownloadInfo.md
 Models/ScenarioDataDownloadJob.md
 Models/ScenarioJobState.md
 Models/ScenarioLastRun.md
+Models/ScenarioRole.md
+Models/ScenarioRoleItems.md
 Models/ScenarioRun.md
 Models/ScenarioRunContainer.md
 Models/ScenarioRunContainerArtifact.md
@@ -44,7 +49,8 @@ Models/ScenarioRunState.md
 Models/ScenarioRunStatus.md
 Models/ScenarioRunStatusNode.md
 Models/ScenarioRunTemplateParameterValue.md
-Models/ScenarioUser.md
+Models/ScenarioSecurity.md
+Models/ScenarioSecurityUsers.md
 Models/ScenarioValidationStatus.md
 Models/Solution.md
 Models/User.md
@@ -55,7 +61,6 @@ Models/ValidatorRun.md
 Models/Workspace.md
 Models/WorkspaceAccessControl.md
 Models/WorkspaceAccessControlWithPermissions.md
-Models/WorkspaceAccessControlWithPermissions_allOf.md
 Models/WorkspaceFile.md
 Models/WorkspaceRole.md
 Models/WorkspaceRoleItems.md
