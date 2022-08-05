@@ -32,7 +32,7 @@ Class | Method | HTTP request | Description
 *OrganizationApi* | [**updateStorageByOrganizationId**](Apis/OrganizationApi.md#updatestoragebyorganizationid) | **PATCH** /organizations/{organization_id}/services/storage | Update storage configuration for the Organization specified
 *OrganizationApi* | [**updateTenantCredentialsByOrganizationId**](Apis/OrganizationApi.md#updatetenantcredentialsbyorganizationid) | **PATCH** /organizations/{organization_id}/services/tenantCredentials | Update tenant credentials for the Organization specified
 *ScenarioApi* | [**addOrReplaceScenarioParameterValues**](Apis/ScenarioApi.md#addorreplacescenarioparametervalues) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/parameterValues | Add (or replace) Parameter Values for the Scenario specified
-*ScenarioApi* | [**addOrReplaceUsersInScenario**](Apis/ScenarioApi.md#addorreplaceusersinscenario) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/users | Add (or replace) users in the Scenario specified
+*ScenarioApi* | [**addScenarioAccess**](Apis/ScenarioApi.md#addscenarioaccess) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/access | add a control acccess to the Scenario
 *ScenarioApi* | [**compareScenarios**](Apis/ScenarioApi.md#comparescenarios) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/compare/{compared_scenario_id} | Compare the Scenario with another one and returns the difference for parameters values
 *ScenarioApi* | [**createScenario**](Apis/ScenarioApi.md#createscenario) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios | Create a new Scenario
 *ScenarioApi* | [**deleteAllScenarios**](Apis/ScenarioApi.md#deleteallscenarios) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios | Delete all Scenarios of the Workspace
@@ -41,12 +41,15 @@ Class | Method | HTTP request | Description
 *ScenarioApi* | [**findAllScenarios**](Apis/ScenarioApi.md#findallscenarios) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios | List all Scenarios
 *ScenarioApi* | [**findAllScenariosByValidationStatus**](Apis/ScenarioApi.md#findallscenariosbyvalidationstatus) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/{validationStatus} | List all Scenarios by validation status
 *ScenarioApi* | [**findScenarioById**](Apis/ScenarioApi.md#findscenariobyid) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id} | Get the details of an scenario
+*ScenarioApi* | [**getScenarioAccess**](Apis/ScenarioApi.md#getscenarioaccess) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/access/{identity_id} | get a control acccess for the Scenario
 *ScenarioApi* | [**getScenarioDataDownloadJobInfo**](Apis/ScenarioApi.md#getscenariodatadownloadjobinfo) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/downloads/{download_id} | Get Scenario data download URL
+*ScenarioApi* | [**getScenarioSecurity**](Apis/ScenarioApi.md#getscenariosecurity) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security | Get the Scenario security information
+*ScenarioApi* | [**getScenarioSecurityUsers**](Apis/ScenarioApi.md#getscenariosecurityusers) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/users | Get the Scenario security users list
 *ScenarioApi* | [**getScenarioValidationStatusById**](Apis/ScenarioApi.md#getscenariovalidationstatusbyid) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/ValidationStatus | Get the validation status of an scenario
 *ScenarioApi* | [**getScenariosTree**](Apis/ScenarioApi.md#getscenariostree) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/tree | Get the Scenarios Tree
 *ScenarioApi* | [**removeAllScenarioParameterValues**](Apis/ScenarioApi.md#removeallscenarioparametervalues) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/parameterValues | Remove all Parameter Values from the Scenario specified
-*ScenarioApi* | [**removeAllUsersOfScenario**](Apis/ScenarioApi.md#removeallusersofscenario) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/users | Remove all users from the Scenario specified
-*ScenarioApi* | [**removeUserFromScenario**](Apis/ScenarioApi.md#removeuserfromscenario) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/users/{user_id} | Remove the specified user from the given Scenario
+*ScenarioApi* | [**removeScenarioAccess**](Apis/ScenarioApi.md#removescenarioaccess) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/access/{identity_id} | Remove the specified access from the given Organization Scenario
+*ScenarioApi* | [**setScenarioDefaultSecurity**](Apis/ScenarioApi.md#setscenariodefaultsecurity) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/default | set the Scenario default security
 *ScenarioApi* | [**updateScenario**](Apis/ScenarioApi.md#updatescenario) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id} | Update a scenario
 *ScenariorunApi* | [**deleteScenarioRun**](Apis/ScenariorunApi.md#deletescenariorun) | **DELETE** /organizations/{organization_id}/scenarioruns/{scenariorun_id} | Delete a scenariorun
 *ScenariorunApi* | [**findScenarioRunById**](Apis/ScenariorunApi.md#findscenariorunbyid) | **GET** /organizations/{organization_id}/scenarioruns/{scenariorun_id} | Get the details of a scenariorun
@@ -133,12 +136,17 @@ Class | Method | HTTP request | Description
  - [RunTemplateParameterValue](./Models/RunTemplateParameterValue.md)
  - [RunTemplateStepSource](./Models/RunTemplateStepSource.md)
  - [Scenario](./Models/Scenario.md)
+ - [ScenarioAccessControl](./Models/ScenarioAccessControl.md)
+ - [ScenarioAccessControlWithPermissions](./Models/ScenarioAccessControlWithPermissions.md)
+ - [ScenarioAccessControlWithPermissions_allOf](./Models/ScenarioAccessControlWithPermissions_allOf.md)
  - [ScenarioChangedParameterValue](./Models/ScenarioChangedParameterValue.md)
  - [ScenarioComparisonResult](./Models/ScenarioComparisonResult.md)
  - [ScenarioDataDownloadInfo](./Models/ScenarioDataDownloadInfo.md)
  - [ScenarioDataDownloadJob](./Models/ScenarioDataDownloadJob.md)
  - [ScenarioJobState](./Models/ScenarioJobState.md)
  - [ScenarioLastRun](./Models/ScenarioLastRun.md)
+ - [ScenarioRole](./Models/ScenarioRole.md)
+ - [ScenarioRoleItems](./Models/ScenarioRoleItems.md)
  - [ScenarioRun](./Models/ScenarioRun.md)
  - [ScenarioRunContainer](./Models/ScenarioRunContainer.md)
  - [ScenarioRunContainerArtifact](./Models/ScenarioRunContainerArtifact.md)
@@ -150,7 +158,8 @@ Class | Method | HTTP request | Description
  - [ScenarioRunStatus](./Models/ScenarioRunStatus.md)
  - [ScenarioRunStatusNode](./Models/ScenarioRunStatusNode.md)
  - [ScenarioRunTemplateParameterValue](./Models/ScenarioRunTemplateParameterValue.md)
- - [ScenarioUser](./Models/ScenarioUser.md)
+ - [ScenarioSecurity](./Models/ScenarioSecurity.md)
+ - [ScenarioSecurityUsers](./Models/ScenarioSecurityUsers.md)
  - [ScenarioValidationStatus](./Models/ScenarioValidationStatus.md)
  - [Solution](./Models/Solution.md)
  - [User](./Models/User.md)
@@ -161,7 +170,6 @@ Class | Method | HTTP request | Description
  - [Workspace](./Models/Workspace.md)
  - [WorkspaceAccessControl](./Models/WorkspaceAccessControl.md)
  - [WorkspaceAccessControlWithPermissions](./Models/WorkspaceAccessControlWithPermissions.md)
- - [WorkspaceAccessControlWithPermissions_allOf](./Models/WorkspaceAccessControlWithPermissions_allOf.md)
  - [WorkspaceFile](./Models/WorkspaceFile.md)
  - [WorkspaceRole](./Models/WorkspaceRole.md)
  - [WorkspaceRoleItems](./Models/WorkspaceRoleItems.md)

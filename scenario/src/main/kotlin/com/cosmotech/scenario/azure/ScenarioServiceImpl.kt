@@ -20,8 +20,6 @@ import com.cosmotech.api.events.ScenarioDatasetListChanged
 import com.cosmotech.api.events.ScenarioDeleted
 import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
-import com.cosmotech.api.events.UserAddedToScenario
-import com.cosmotech.api.events.UserRemovedFromScenario
 import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
@@ -33,22 +31,25 @@ import com.cosmotech.api.utils.toDomain
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
+import com.cosmotech.scenario.domain.ScenarioAccessControl
+import com.cosmotech.scenario.domain.ScenarioAccessControlWithPermissions
 import com.cosmotech.scenario.domain.ScenarioComparisonResult
 import com.cosmotech.scenario.domain.ScenarioDataDownloadInfo
 import com.cosmotech.scenario.domain.ScenarioDataDownloadJob
 import com.cosmotech.scenario.domain.ScenarioJobState
 import com.cosmotech.scenario.domain.ScenarioLastRun
+import com.cosmotech.scenario.domain.ScenarioRoleItems
 import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
-import com.cosmotech.scenario.domain.ScenarioUser
+import com.cosmotech.scenario.domain.ScenarioSecurity
+import com.cosmotech.scenario.domain.ScenarioSecurityUsers
 import com.cosmotech.scenario.domain.ScenarioValidationStatus
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
-import com.cosmotech.user.api.UserApiService
-import com.cosmotech.user.domain.User
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
+import java.lang.UnsupportedOperationException
 import java.time.OffsetDateTime
 import java.time.ZonedDateTime
 import kotlinx.coroutines.GlobalScope
@@ -64,7 +65,6 @@ import org.springframework.stereotype.Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("LargeClass", "TooManyFunctions")
 internal class ScenarioServiceImpl(
-    private val userService: UserApiService,
     private val solutionService: SolutionApiService,
     private val organizationService: OrganizationApiService,
     private val workspaceService: WorkspaceApiService,
@@ -93,50 +93,6 @@ internal class ScenarioServiceImpl(
     return scenarioRunTemplateParameterValue
   }
 
-  private fun fetchUsers(userIds: Collection<String>): Map<String, User> =
-      userIds.toSet().map { userService.findUserById(it) }.associateBy { it.id!! }
-
-  override fun addOrReplaceUsersInScenario(
-      organizationId: String,
-      workspaceId: String,
-      scenarioId: String,
-      scenarioUser: List<ScenarioUser>
-  ): List<ScenarioUser> {
-    if (scenarioUser.isEmpty()) {
-      // Nothing to do
-      return scenarioUser
-    }
-
-    // Validate organizationId & workspaceId
-    organizationService.findOrganizationById(organizationId)
-    workspaceService.findWorkspaceById(organizationId, workspaceId)
-    val scenario = findScenarioById(organizationId, workspaceId, scenarioId)
-
-    val newUsersLoaded = fetchUsers(scenarioUser.mapNotNull { it.id })
-    val scenarioUserWithRightNames =
-        scenarioUser.map { it.copy(name = newUsersLoaded[it.id]!!.name!!) }
-    val scenarioUserMap = scenarioUserWithRightNames.associateBy { it.id }
-
-    val currentScenarioUsers =
-        scenario.users?.associateBy { it.id }?.toMutableMap() ?: mutableMapOf()
-
-    newUsersLoaded.forEach { (userId, _) ->
-      // Add or replace
-      currentScenarioUsers[userId] = scenarioUserMap[userId]!!
-    }
-    scenario.users = currentScenarioUsers.values.toMutableList()
-    scenario.lastUpdate = OffsetDateTime.now()
-
-    upsertScenarioData(organizationId, scenario, workspaceId)
-
-    // Roles might have changed => notify all users so they can update their own items
-    scenario.users?.forEach { user ->
-      this.eventPublisher.publishEvent(
-          UserAddedToScenario(this, organizationId, user.id, user.roles.map { role -> role.value }))
-    }
-    return scenarioUserWithRightNames
-  }
-
   override fun compareScenarios(
       organizationId: String,
       workspaceId: String,
@@ -161,10 +117,6 @@ internal class ScenarioServiceImpl(
     if (scenario.runTemplateId != null && runTemplate == null) {
       throw IllegalArgumentException("Run Template not found: ${scenario.runTemplateId}")
     }
-
-    val usersLoaded = scenario.users?.map { it.id }?.let { fetchUsers(it) }
-    val usersWithNames =
-        usersLoaded?.let { scenario.users?.map { it.copy(name = usersLoaded[it.id]!!.name!!) } }
 
     var datasetList = scenario.datasetList
     val parentId = scenario.parentId
@@ -194,7 +146,6 @@ internal class ScenarioServiceImpl(
             runTemplateName = runTemplate?.name,
             creationDate = now,
             lastUpdate = now,
-            users = usersWithNames?.toMutableList() ?: mutableListOf(),
             state = ScenarioJobState.Created,
             datasetList = datasetList,
             rootId = rootId,
@@ -211,11 +162,6 @@ internal class ScenarioServiceImpl(
       throw IllegalArgumentException("No Scenario returned in response: $scenarioAsMap")
     }
 
-    // Roles might have changed => notify all users so they can update their own items
-    scenario.users?.forEach { user ->
-      this.eventPublisher.publishEvent(
-          UserAddedToScenario(this, organizationId, user.id, user.roles.map { role -> role.value }))
-    }
     sendScenarioMetaData(organizationId, workspace, scenarioToSave)
     return scenarioToSave
   }
@@ -283,7 +229,6 @@ internal class ScenarioServiceImpl(
     }
 
     cosmosTemplate.deleteEntity("${organizationId}_scenario_data", scenario)
-    // TODO Notify users
 
     this.handleScenarioDeletion(organizationId, workspaceId, scenario, waitRelationshipPropagation)
     eventPublisher.publishEvent(ScenarioDeleted(this, organizationId, workspaceId, scenarioId))
@@ -574,43 +519,6 @@ internal class ScenarioServiceImpl(
     }
   }
 
-  override fun removeAllUsersOfScenario(
-      organizationId: String,
-      workspaceId: String,
-      scenarioId: String
-  ) {
-    val scenario = findScenarioById(organizationId, workspaceId, scenarioId)
-    if (!scenario.users.isNullOrEmpty()) {
-      val userIds = scenario.users!!.mapNotNull { it.id }
-      scenario.users = mutableListOf()
-      scenario.lastUpdate = OffsetDateTime.now()
-
-      upsertScenarioData(organizationId, scenario, workspaceId)
-
-      userIds.forEach {
-        this.eventPublisher.publishEvent(
-            UserRemovedFromScenario(this, organizationId, workspaceId, scenarioId, it))
-      }
-    }
-  }
-
-  override fun removeUserFromScenario(
-      organizationId: String,
-      workspaceId: String,
-      scenarioId: String,
-      userId: String
-  ) {
-    val scenario = findScenarioById(organizationId, workspaceId, scenarioId)
-    if (!(scenario.users?.removeIf { it.id == userId } ?: false)) {
-      throw CsmResourceNotFoundException("User '$userId' *not* found")
-    } else {
-      scenario.lastUpdate = OffsetDateTime.now()
-      upsertScenarioData(organizationId, scenario, workspaceId)
-      this.eventPublisher.publishEvent(
-          UserRemovedFromScenario(this, organizationId, workspaceId, scenarioId, userId))
-    }
-  }
-
   override fun updateScenario(
       organizationId: String,
       workspaceId: String,
@@ -635,12 +543,6 @@ internal class ScenarioServiceImpl(
 
     if (scenario.ownerId != null && scenario.changed(existingScenario) { ownerId }) {
       updateScenarioOwner(existingScenario, scenario)
-      hasChanged = true
-    }
-
-    var userIdsRemoved = listOf<String>()
-    if (scenario.users != null) {
-      userIdsRemoved = updateScenarioUsers(scenario, existingScenario)
       hasChanged = true
     }
 
@@ -672,8 +574,6 @@ internal class ScenarioServiceImpl(
     if (hasChanged) {
       existingScenario.lastUpdate = OffsetDateTime.now()
       upsertScenarioData(organizationId, existingScenario, workspaceId)
-
-      publishUserRelatedEvents(userIdsRemoved, organizationId, workspaceId, scenarioId, scenario)
 
       if (datasetListUpdated) {
         publishDatasetListChangedEvent(organizationId, workspaceId, scenarioId, scenario)
@@ -717,23 +617,6 @@ internal class ScenarioServiceImpl(
             this, organizationId, workspaceId, scenarioId, scenario.datasetList))
   }
 
-  private fun publishUserRelatedEvents(
-      userIdsRemoved: List<String>,
-      organizationId: String,
-      workspaceId: String,
-      scenarioId: String,
-      scenario: Scenario
-  ) {
-    userIdsRemoved.forEach {
-      this.eventPublisher.publishEvent(
-          UserRemovedFromScenario(this, organizationId, workspaceId, scenarioId, it))
-    }
-    scenario.users?.forEach { user ->
-      this.eventPublisher.publishEvent(
-          UserAddedToScenario(this, organizationId, user.id, user.roles.map { role -> role.value }))
-    }
-  }
-
   private fun updateScenarioParametersValues(existingScenario: Scenario, scenario: Scenario) {
     existingScenario.parametersValues = scenario.parametersValues
     existingScenario.parametersValues?.forEach { it.isInherited = false }
@@ -755,18 +638,6 @@ internal class ScenarioServiceImpl(
                 "No run template '${newRunTemplateId}' in solution ${solution?.id}")
     existingScenario.runTemplateId = scenario.runTemplateId
     existingScenario.runTemplateName = runTemplate.name
-  }
-
-  private fun updateScenarioUsers(scenario: Scenario, existingScenario: Scenario): List<String> {
-    // Specifying a list of users here overrides the previous list
-    val usersToSet = fetchUsers(scenario.users!!.mapNotNull { it.id })
-    val userIdsRemoved =
-        scenario.users?.mapNotNull { it.id }?.filterNot { usersToSet.containsKey(it) }
-            ?: emptyList()
-    val usersWithNames =
-        usersToSet.let { scenario.users!!.map { it.copy(name = usersToSet[it.id]!!.name!!) } }
-    existingScenario.users = usersWithNames.toMutableList()
-    return userIdsRemoved
   }
 
   internal fun upsertScenarioData(organizationId: String, scenario: Scenario, workspaceId: String) {
@@ -871,5 +742,57 @@ internal class ScenarioServiceImpl(
       upsertScenarioData(
           scenarioDatasetListChanged.organizationId, it, scenarioDatasetListChanged.workspaceId)
     }
+  }
+
+  override fun addScenarioAccess(
+      organizationId: kotlin.String,
+      workspaceId: kotlin.String,
+      scenarioId: kotlin.String,
+      scenarioAccessControl: ScenarioAccessControl
+  ): ScenarioAccessControlWithPermissions {
+    throw UnsupportedOperationException("Security operation not supported yet")
+  }
+
+  override fun getScenarioAccess(
+      organizationId: kotlin.String,
+      workspaceId: kotlin.String,
+      scenarioId: kotlin.String,
+      identityId: kotlin.String
+  ): ScenarioAccessControlWithPermissions {
+    throw UnsupportedOperationException("Security operation not supported yet")
+  }
+
+  override fun getScenarioSecurity(
+      organizationId: kotlin.String,
+      workspaceId: kotlin.String,
+      scenarioId: kotlin.String
+  ): ScenarioSecurity {
+    throw UnsupportedOperationException("Security operation not supported yet")
+  }
+
+  override fun getScenarioSecurityUsers(
+      organizationId: kotlin.String,
+      workspaceId: kotlin.String,
+      scenarioId: kotlin.String
+  ): ScenarioSecurityUsers {
+    throw UnsupportedOperationException("Security operation not supported yet")
+  }
+
+  override fun removeScenarioAccess(
+      organizationId: kotlin.String,
+      workspaceId: kotlin.String,
+      scenarioId: kotlin.String,
+      identityId: kotlin.String
+  ): Unit {
+    throw UnsupportedOperationException("Security operation not supported yet")
+  }
+
+  override fun setScenarioDefaultSecurity(
+      organizationId: kotlin.String,
+      workspaceId: kotlin.String,
+      scenarioId: kotlin.String,
+      scenarioRoleItems: ScenarioRoleItems
+  ): ScenarioSecurity {
+    throw UnsupportedOperationException("Security operation not supported yet")
   }
 }
