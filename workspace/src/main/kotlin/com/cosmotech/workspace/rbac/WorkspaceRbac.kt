@@ -53,8 +53,7 @@ internal class WorkspaceRbac(
             workspace
                 .security
                 ?.accessControlList
-                ?.entries
-                ?.associateBy({ it.key }, { it.value.roles.map { role -> role.toString() } })
+                ?.associateBy({ it.id }, { it.roles.map { role -> role.toString() } })
                 ?.toMutableMap()
                 ?: mutableMapOf()
         if (csmPlatformProperties.rbac.enabled && acl.size == 0) {
@@ -85,15 +84,12 @@ internal class WorkspaceRbac(
             .accessControlList
             .roles
             .entries
-            .associateBy(
-                { it.key },
-                {
-                  WorkspaceAccessControl(
-                      id = it.key,
-                      roles =
-                          (it.value.map { role -> WorkspaceRole.valueOf(role) }.toMutableList()))
-                })
-            .toMutableMap()
+            .map {
+              WorkspaceAccessControl(
+                  id = it.key,
+                  roles = (it.value.map { role -> WorkspaceRole.valueOf(role) }.toMutableList()))
+            }
+            .toMutableList()
   }
 
   fun setDefault(workspaceRoleItems: WorkspaceRoleItems) {
