@@ -481,45 +481,6 @@ paths:
         "404":
           description: the Scenario specified is unknown or you don't have access to it
 
-  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/permissions/{role}:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: role
-        in: path
-        description: the Role
-        required: true
-        schema:
-          type: string
-    get:
-      operationId: getScenarioPermissions
-      tags:
-        - scenario
-      summary: Get the Scenario permission by given role
-      responses:
-        "200":
-          description: The Scenarios security permission list
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: string
-                example:
-                  - "commonpermissiondelete"
-                  - "commonpermissionwrite"
-                  - "commonpermissioncreatechildren"
-
   /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security:
     parameters:
       - name: organization_id
@@ -558,6 +519,44 @@ paths:
         "404":
           description: the Scenario specified is unknown or you don't have access to it
 
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/users:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: scenario_id
+        in: path
+        description: the Scenario identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getScenarioSecurityUsers
+      tags:
+        - scenario
+      summary: Get the Scenario security users list
+      responses:
+        "200":
+          description: The Scenario security users list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioSecurityUsers'
+              examples:
+                ScenarioSecurity:
+                  $ref: '#/components/examples/BreweryScenarioSecurityUsers'
+        "404":
+          description: the Scenario specified is unknown or you don't have access to it
+
   /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/default:
     parameters:
       - name: organization_id
@@ -589,13 +588,17 @@ paths:
         content:
           application/json:
             schema:
-              type: string
-            example: "commonrolewriter"
+              $ref: '#/components/schemas/ScenarioRoleItems'
+            examples:
+              BreweryUpdate:
+                $ref: '#/components/examples/BreweryScenarioDefaultSecurity'
           application/yaml:
             schema:
               type: string
               format: binary
-            example: "commonrolewriter"
+            examples:
+              BreweryUpdate:
+                $ref: '#/components/examples/BreweryScenarioDefaultSecurity'
       responses:
         "200":
           description: The Scenario default visibility
@@ -632,7 +635,7 @@ paths:
         schema:
           type: string
     post:
-      operationId: addScenarioAccessControl
+      operationId: addScenarioAccess
       tags:
         - scenario
       summary: add a control acccess to the Scenario
@@ -659,10 +662,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ScenarioAccessControl'
+                $ref: '#/components/schemas/ScenarioAccessControlWithPermissions'
               examples:
                 ScenarioAccessControl:
-                  $ref: '#/components/examples/BreweryScenarioAccessControl'
+                  $ref: '#/components/examples/BreweryScenarioAccessControlWithPermissions'
         "404":
           description: the Scenario specified is unknown or you don't have access to it
 
@@ -693,7 +696,7 @@ paths:
         schema:
           type: string
     get:
-      operationId: getScenarioAccessControl
+      operationId: getScenarioAccess
       tags:
         - scenario
       summary: get a control acccess for the Scenario
@@ -703,14 +706,15 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ScenarioAccessControl'
+                $ref: '#/components/schemas/ScenarioAccessControlWithPermissions'
               examples:
                 ScenarioAccessControl:
-                  $ref: '#/components/examples/BreweryScenarioAccessControl'
+                  $ref: '#/components/examples/BreweryScenarioAccessControlWithPermissions'
         "404":
           description: the Scenario or user specified is unknown or you don't have access to it
+
     delete:
-      operationId: removeScenarioAccessControl
+      operationId: removeScenarioAccess
       tags:
         - scenario
       summary: Remove the specified access from the given Organization Scenario
@@ -720,45 +724,6 @@ paths:
         "404":
           description: the Scenario or the user specified is unknown or you don't have access to them
 
-  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/users:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: scenario_id
-        in: path
-        description: the Scenario identifier
-        required: true
-        schema:
-          type: string
-    get:
-      operationId: getScenarioSecurityUsers
-      tags:
-        - scenario
-      summary: Get the Scenario security users list
-      responses:
-        "200":
-          description: The Scenario security users list
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: string
-                example:
-                  - alice@mycompany.com
-                  - bob@mycompany.com
-        "404":
-          description: the Scenario specified is unknown or you don't have access to it
 
 components:
   securitySchemes:
@@ -774,11 +739,9 @@ components:
     Scenario:
       type: object
       description: a Scenario with base information
-#      x-impl: 'com.cosmotech.api.rbac.model.Rbac'
       properties:
         id:
           type: string
-#          x-impl: override
           readOnly: true
           description: the Scenario unique identifier
         name:
@@ -868,46 +831,68 @@ components:
         validationStatus:
           $ref: '#/components/schemas/ScenarioValidationStatus'
         security:
-          allOf:
-            - $ref: '#/components/schemas/ScenarioSecurity'
-#          x-impl: override
+          $ref: '#/components/schemas/ScenarioSecurity'
 #      required:
 #        - name
 #        - runTemplateId
     ScenarioSecurity:
       type: object
-      x-impl: 'com.cosmotech.api.rbac.model.RbacSecurity(default, accessControlList)'
       description: the Scenario security information
       properties:
         default:
-          x-impl: override
-          type: string
-          description: the role by default
+          $ref: '#/components/schemas/ScenarioRoleList'
         accessControlList:
           type: list
           description: the list which can access this Scenario with detailed access control information
-          x-impl: override
           items:
-            $ref: '#/components/schemas/RbacAccessControl'
-      required:
-        - default
-        - accessControlList
+            $ref: '#/components/schemas/ScenarioAccessControl'
     ScenarioAccessControl:
       type: object
-      x-impl: 'com.cosmotech.api.rbac.model.RbacAccessControl(id, role)'
       description: a Scenario access control item
       properties:
         id:
-          x-impl: override
           type: string
           description: the identity id
-        role:
-          x-impl: override
-          type: string
-          description: a role
+        roles:
+          $ref: '#/components/schemas/ScenarioRoleList'
       required:
         - id
-        - role
+        - roles
+    ScenarioAccessControlWithPermissions:
+      allOf:
+        - $ref: '#/components/schemas/ScenarioAccessControl'
+        - type: object
+          properties:
+            permissions:
+              type: array
+              description: a list of permissions
+              items:
+                type: string
+                description: a permission id.
+    ScenarioRoleItems:
+      type: object
+      description: a list of role access list
+      properties:
+        roles:
+          $ref: '#/components/schemas/ScenarioRoleList'
+      required:
+        - roles
+    ScenarioRoleList:
+      type: array
+      description: a roles list
+      items:
+        $ref: '#/components/schemas/ScenarioRole'
+    ScenarioRole:
+      type: string
+      enum: ["commonroleadmin","commonrolewriter","commonrolecreator","commonrolereader"]
+    ScenarioSecurityUsers:
+      type: object
+      description: the list of Scenario users
+      properties:
+        users:
+          type: array
+          items:
+            type: string
     ScenarioLastRun:
       type: object
       properties:
@@ -1369,18 +1354,54 @@ components:
       summary: Brewery Scenario security
       description: Brewery Scenario security example
       value:
-        default: "commonrolereader"
+        default:
+          - "commonrolereader"
         accessControlList:
+          - id: "alice@mycosmocompany.com"
+            roles:
+              - "commonroleadmin"
           - id: "bob@mycosmocompany.com"
-            role: "commonrolewriter"
+            roles:
+              - "commonrolewriter"
+    BreweryDefaultSecurityRoleNone:
+      summary: Brewery Scenario None default security
+      description: Brewery Scenario example
+      value:
+        default: []
     BreweryDefaultSecurityRoleWriter:
       summary: Brewery Scenario Writer default security
       description: Brewery Scenario example
       value:
-        default: "commonrolewriter"
+        default:
+          - "commonrolewriter"
+    BreweryScenarioDefaultSecurity:
+      summary: Set of default security
+      description: An array of default security values
+      value:
+        roles:
+          - commonrolewriter
     BreweryScenarioAccessControl:
       summary: Set an access control.
-      description: Set an access control for a user to a workspace.
+      description: Set an access control for a user to a Scenario.
       value:
-        id: "bob@mycompany.com"
-        role: "commonrolewriter"
+        id: bob@mycompany.com
+        roles:
+          - commonrolewriter
+    BreweryScenarioAccessControlWithPermissions:
+      summary: Access control.
+      description: Access control with permissions for a user to a Scenario.
+      value:
+        id: bob@mycompany.com
+        roles:
+          - commonrolewriter
+        permissions:
+          - commonpermissionread
+          - commonpermissionwrite
+          - commonpermissioncreatescenario
+    BreweryScenarioSecurityUsers:
+      summary: Security users list
+      description: Example of RBAC security users list
+      value:
+        users:
+          - alice@mycompany.com
+          - bob@mycompany.com

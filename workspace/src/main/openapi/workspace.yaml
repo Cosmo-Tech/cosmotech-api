@@ -673,13 +673,6 @@ components:
     WorkspaceRole:
       type: string
       enum: ["commonroleadmin","commonrolewriter","commonrolecreator","commonrolereader"]
-    WorkspaceFile:
-      type: object
-      description: a Workspace File resource
-      properties:
-        fileName:
-          type: string
-          description: the Workspace File name
     WorkspaceSecurityUsers:
       type: object
       description: the list of Workspace users
@@ -688,6 +681,13 @@ components:
           type: array
           items:
             type: string
+    WorkspaceFile:
+      type: object
+      description: a Workspace File resource
+      properties:
+        fileName:
+          type: string
+          description: the Workspace File name
     WorkspaceWebApp:
       type: object
       description: a Workspace Web Application
@@ -758,7 +758,7 @@ components:
             1: "1"
         security:
           default:
-            - "Reader"
+            - "commonrolereader"
     BreweryWorkspace:
       summary: Brewery Workspace
       description: Brewery Workspace example
@@ -779,11 +779,11 @@ components:
             1: "1"
         security:
           default:
-            - "Reader"
+            - "commonrolereader"
           accessControlList:
             - id: "alice@mycompany.com"
               roles:
-                - "Admin"
+                - "commonroleadmin"
     OneWorkspace:
       summary: One Workspace list
       description: One Workspace list example
@@ -804,11 +804,11 @@ components:
               1: "1"
           security:
             default:
-              - "Reader"
+              - "commonrolereader"
             accessControlList:
               - id: "alice@mycompany.com"
                 roles:
-                  - "Admin"
+                  - "commonroleadmin"
     BreweryWorkspaceUpdate:
       summary: Update the Brewery Workspace
       description: Update the Brewery Workspace by changing its name
@@ -834,57 +834,56 @@ components:
             1: "1"
         security:
           default:
-            - "Reader"
+            - "commonrolereader"
           accessControlList:
             - id: "alice@mycompany.com"
               roles:
-                - "Admin"
+                - "commonroleadmin"
     BreweryWorkspaceSecurity:
       summary: Brewery Workspace security
       description: Brewery Workspace security example
       value:
         default:
-          - "Reader"
+          - "commonrolereader"
         accessControlList:
           - id: "bob@mycosmocompany.com"
             roles:
-              - "Writer"
+              - "commonrolewriter"
     BreweryDefaultSecurityRoleNone:
       summary: Brewery Workspace None default security
       description: Brewery Workspace example
       value:
-        default:
-          - "None"
+        default: []
     BreweryDefaultSecurityRoleWriter:
       summary: Brewery Workspace Writer default security
       description: Brewery Workspace example
       value:
         default:
-          - "Writer"
+          - "commonrolewriter"
     BreweryWorkspaceDefaultSecurity:
       summary: Set of default security
       description: An array of default security values
       value:
         roles:
-          - Writer
+          - commonrolewriter
     BreweryWorkspaceAccessControl:
       summary: Set an access control.
       description: Set an access control for a user to a workspace.
       value:
         id: bob@mycompany.com
         roles:
-          - Writer
+          - commonrolewriter
     BreweryWorkspaceAccessControlWithPermissions:
       summary: Access control.
       description: Access control with permissions for a user to a workspace.
       value:
         id: bob@mycompany.com
         roles:
-          - Writer
+          - commonrolewriter
         permissions:
-          - workspace_read
-          - workspace_write
-          - workspace_create_scenario
+          - commonpermissionread
+          - commonpermissionwrite
+          - commonpermissioncreatescenario
     BreweryWorkspaceSecurityUsers:
       summary: Security users list
       description: Example of RBAC security users list
