@@ -444,7 +444,7 @@ entity WorkspaceRoleItems {
 
 entity WorkspaceSecurity {
     default: List<WorkspaceRole>
-    accessControlList: Map
+    accessControlList: List<WorkspaceAccessControl>
 }
 
 entity WorkspaceSecurityUsers {
@@ -466,6 +466,7 @@ entity WorkspaceWebApp {
 WorkspaceAccessControl <|--- WorkspaceAccessControlWithPermissions
 
 ScenarioRunContainer -- "0..*" ScenarioRunContainerArtifact : artifacts
+WorkspaceSecurity -- "0..*" WorkspaceAccessControl : accessControlList
 ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
 OrganizationServices -- OrganizationService : storage
 OrganizationServices -- OrganizationService : solutionsContainerRegistry
