@@ -884,7 +884,7 @@ components:
         $ref: '#/components/schemas/ScenarioRole'
     ScenarioRole:
       type: string
-      enum: ["commonroleadmin","commonrolewriter","commonrolecreator","commonrolereader"]
+      enum: ["commonroleadmin","commonrolewriter","commonrolecreator","commonrolereader","scenariorolevalidator","scenariorolerunscenario"]
     ScenarioSecurityUsers:
       type: object
       description: the list of Scenario users
