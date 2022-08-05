@@ -630,9 +630,9 @@ components:
         default:
           $ref: '#/components/schemas/WorkspaceRoleList'
         accessControlList:
-          type: object
+          type: list
           description: the list which can access this Workspace with detailed access control information
-          additionalProperties:
+          items:
             $ref: '#/components/schemas/WorkspaceAccessControl'
     WorkspaceAccessControl:
       type: object
