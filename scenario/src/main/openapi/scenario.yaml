@@ -333,107 +333,6 @@ paths:
         "404":
           description: one of the Scenarios specified is unknown or you don't have access to it
 
-  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/users:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: scenario_id
-        in: path
-        description: the Scenario identifier
-        required: true
-        schema:
-          type: string
-    post:
-      operationId: addOrReplaceUsersInScenario
-      tags:
-        - scenario
-      summary: Add (or replace) users in the Scenario specified
-      requestBody:
-        description: the Users to add. Any User with the same ID is overwritten
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/ScenarioUser'
-            examples:
-              TwoScenarioUsersToAddOrReplace:
-                $ref: '#/components/examples/TwoScenarioUsers'
-      responses:
-        "201":
-          description: the Scenario Users
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ScenarioUser'
-              examples:
-                TwoScenarioUsers:
-                  $ref: '#/components/examples/TwoScenarioUsers'
-        "400":
-          description: Bad request
-        "404":
-          description: the Scenario specified is unknown or you don't have access to it
-    delete:
-      operationId: removeAllUsersOfScenario
-      tags:
-        - scenario
-      summary: Remove all users from the Scenario specified
-      responses:
-        "204":
-          description: the operation succeeded
-        "404":
-          description: the Scenario specified is unknown or you don't have access to it
-
-  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/users/{user_id}:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-      - name: scenario_id
-        in: path
-        description: the Scenario identifier
-        required: true
-        schema:
-          type: string
-      - name: user_id
-        in: path
-        description: the User identifier
-        required: true
-        schema:
-          type: string
-    delete:
-      operationId: removeUserFromScenario
-      tags:
-        - scenario
-      summary: Remove the specified user from the given Scenario
-      responses:
-        "204":
-          description: Request succeeded
-        "404":
-          description: the Scenario or the User specified is unknown or you don't have access to them
-
   /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/parameterValues:
     parameters:
       - name: organization_id
@@ -535,7 +434,7 @@ paths:
                   $ref: '#/components/examples/BreweryScenarioDataDownloadJob'
         "404":
           description: the Scenario specified is unknown or you don't have access to it
-          
+
   /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/downloads/{download_id}:
     parameters:
       - name: organization_id
@@ -581,6 +480,250 @@ paths:
                     state: "Successful"
         "404":
           description: the Scenario specified is unknown or you don't have access to it
+
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: scenario_id
+        in: path
+        description: the Scenario identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getScenarioSecurity
+      tags:
+        - scenario
+      summary: Get the Scenario security information
+      responses:
+        "200":
+          description: The Scenario security
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioSecurity'
+              examples:
+                ScenarioSecurity:
+                  $ref: '#/components/examples/BreweryScenarioSecurity'
+        "404":
+          description: the Scenario specified is unknown or you don't have access to it
+
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/users:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: scenario_id
+        in: path
+        description: the Scenario identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getScenarioSecurityUsers
+      tags:
+        - scenario
+      summary: Get the Scenario security users list
+      responses:
+        "200":
+          description: The Scenario security users list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioSecurityUsers'
+              examples:
+                ScenarioSecurity:
+                  $ref: '#/components/examples/BreweryScenarioSecurityUsers'
+        "404":
+          description: the Scenario specified is unknown or you don't have access to it
+
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/default:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: scenario_id
+        in: path
+        description: the Scenario identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: setScenarioDefaultSecurity
+      tags:
+        - scenario
+      summary: set the Scenario default security
+      requestBody:
+        description: the new Scenario default security.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScenarioRoleItems'
+            examples:
+              BreweryUpdate:
+                $ref: '#/components/examples/BreweryScenarioDefaultSecurity'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            examples:
+              BreweryUpdate:
+                $ref: '#/components/examples/BreweryScenarioDefaultSecurity'
+      responses:
+        "200":
+          description: The Scenario default visibility
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioSecurity'
+              examples:
+                NoneScenarioSecurity:
+                  $ref: '#/components/examples/BreweryDefaultSecurityRoleNone'
+                WriterScenarioSecurity:
+                  $ref: '#/components/examples/BreweryDefaultSecurityRoleWriter'
+        "404":
+          description: the Scenario specified is unknown or you don't have access to it
+
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/access:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: scenario_id
+        in: path
+        description: the Scenario identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: addScenarioAccess
+      tags:
+        - scenario
+      summary: add a control acccess to the Scenario
+      requestBody:
+        description: the new Scenario security access to add.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScenarioAccessControl'
+            examples:
+              ScenarioAccess:
+                $ref: '#/components/examples/BreweryScenarioAccessControl'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            examples:
+              ScenarioAccess:
+                $ref: '#/components/examples/BreweryScenarioAccessControl'
+      responses:
+        "200":
+          description: The Scenario access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioAccessControlWithPermissions'
+              examples:
+                ScenarioAccessControl:
+                  $ref: '#/components/examples/BreweryScenarioAccessControlWithPermissions'
+        "404":
+          description: the Scenario specified is unknown or you don't have access to it
+
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/access/{identity_id}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: scenario_id
+        in: path
+        description: the Scenario identifier
+        required: true
+        schema:
+          type: string
+      - name: identity_id
+        in: path
+        description: the User identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getScenarioAccess
+      tags:
+        - scenario
+      summary: get a control acccess for the Scenario
+      responses:
+        "200":
+          description: The Scenario access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioAccessControlWithPermissions'
+              examples:
+                ScenarioAccessControl:
+                  $ref: '#/components/examples/BreweryScenarioAccessControlWithPermissions'
+        "404":
+          description: the Scenario or user specified is unknown or you don't have access to it
+
+    delete:
+      operationId: removeScenarioAccess
+      tags:
+        - scenario
+      summary: Remove the specified access from the given Organization Scenario
+      responses:
+        "204":
+          description: Request succeeded
+        "404":
+          description: the Scenario or the user specified is unknown or you don't have access to them
+
 
 components:
   securitySchemes:
@@ -634,11 +777,6 @@ components:
           type: string
           readOnly: true
           description: the associated Workspace Id
-        users:
-          type: array
-          description: the list of users Id with their role
-          items:
-            $ref: '#/components/schemas/ScenarioUser'
         state:
           $ref: '#/components/schemas/ScenarioJobState'
         creationDate:
@@ -692,9 +830,69 @@ components:
               description: the last Scenario Run for the root (master) of Scenario
         validationStatus:
           $ref: '#/components/schemas/ScenarioValidationStatus'
+        security:
+          $ref: '#/components/schemas/ScenarioSecurity'
 #      required:
 #        - name
 #        - runTemplateId
+    ScenarioSecurity:
+      type: object
+      description: the Scenario security information
+      properties:
+        default:
+          $ref: '#/components/schemas/ScenarioRoleList'
+        accessControlList:
+          type: list
+          description: the list which can access this Scenario with detailed access control information
+          items:
+            $ref: '#/components/schemas/ScenarioAccessControl'
+    ScenarioAccessControl:
+      type: object
+      description: a Scenario access control item
+      properties:
+        id:
+          type: string
+          description: the identity id
+        roles:
+          $ref: '#/components/schemas/ScenarioRoleList'
+      required:
+        - id
+        - roles
+    ScenarioAccessControlWithPermissions:
+      allOf:
+        - $ref: '#/components/schemas/ScenarioAccessControl'
+        - type: object
+          properties:
+            permissions:
+              type: array
+              description: a list of permissions
+              items:
+                type: string
+                description: a permission id.
+    ScenarioRoleItems:
+      type: object
+      description: a list of role access list
+      properties:
+        roles:
+          $ref: '#/components/schemas/ScenarioRoleList'
+      required:
+        - roles
+    ScenarioRoleList:
+      type: array
+      description: a roles list
+      items:
+        $ref: '#/components/schemas/ScenarioRole'
+    ScenarioRole:
+      type: string
+      enum: ["commonroleadmin","commonrolewriter","commonrolecreator","commonrolereader"]
+    ScenarioSecurityUsers:
+      type: object
+      description: the list of Scenario users
+      properties:
+        users:
+          type: array
+          items:
+            type: string
     ScenarioLastRun:
       type: object
       properties:
@@ -730,26 +928,6 @@ components:
       required:
         - parameterId
         - value
-    ScenarioUser:
-      type: object
-      description: a Scenario user with roles
-      properties:
-        id:
-          type: string
-          description: the User id
-        name:
-          type: string
-          readOnly: true
-          description: the User name
-        roles:
-          type: array
-          description: the User role
-          items:
-            type: string
-            enum: ["Viewer","Editor"]
-      required:
-        - id
-        - roles
     ScenarioComparisonResult:
       type: object
       description: the result of the comparison of two scenarios
@@ -842,21 +1020,19 @@ components:
           - Brewery
           - reference
         runTemplateId: "hundred"
-        users:
-          - id: "1"
-            name: Bob
-            roles:
-            - Editor
-          - id: "2"
-            name: Alice
-            roles:
-            - Viewer
         datasetList:
           - "1"
         parametersValues:
           - parameterId: prefix
             varType: string
             value: ""
+        security:
+          default:
+            - "commonrolereader"
+          accessControlList:
+            - id: "alice@mycompany.com"
+              roles:
+                - "commonroleadmin"
     BreweryChildScenarioIn:
       summary: Brewery Child Scenario input example
       description: Brewery Child Scenario input example
@@ -883,15 +1059,6 @@ components:
         solutionName: Brewery Solution
         runTemplateId: "hundred"
         runTemplateName: Full simulation 100 steps
-        users:
-          - id: "1"
-            name: Bob
-            roles:
-            - Editor
-          - id: "2"
-            name: Alice
-            roles:
-            - Viewer
         state: Running
         ownerName: Bob
         creationDate: "2021-04-21T17:32:28Z"
@@ -907,6 +1074,13 @@ components:
           scenarioRunId: "SR-V9EYbbOE0"
           workflowId: "c7cd3f15-8a3b-4bcd-b3ca-62ee24c13d67"
           workflowName: "workflow-s-dwpxbzmdxn-zkvd7"
+        security:
+          default:
+            - "commonrolereader"
+          accessControlList:
+            - id: "alice@mycompany.com"
+              roles:
+                - "commonroleadmin"
     ThreeScenarios:
       summary: Three Scenarios with parent and children
       description: Three Scenarios with parent master Scenario and two children Scenarios
@@ -923,15 +1097,6 @@ components:
           solutionName: Brewery Solution
           runTemplateId: "hundred"
           runTemplateName: Full simulation 100 steps
-          users:
-            - id: "1"
-              name: Bob
-              roles:
-              - Editor
-            - id: "2"
-              name: Alice
-              roles:
-              - Viewer
           state: Created
           ownerName: Bob
           creationDate: "2021-04-21T17:32:28Z"
@@ -942,6 +1107,13 @@ components:
             - parameterId: prefix
               varType: string
               value: ""
+          security:
+            default:
+              - "commonrolereader"
+            accessControlList:
+              - id: "alice@mycompany.com"
+                roles:
+                  - "commonroleadmin"
         - id: "2"
           name: Brewery Analysis name example
           description: Brewery analysis with example as name prefix
@@ -955,15 +1127,6 @@ components:
           solutionName: Brewery Solution
           runTemplateId: "hundred"
           runTemplateName: Full simulation 100 steps
-          users:
-            - id: "1"
-              name: Bob
-              roles:
-              - Editor
-            - id: "2"
-              name: Alice
-              roles:
-              - Viewer
           state: Running
           ownerName: Bob
           creationDate: "2021-04-21T17:32:28Z"
@@ -979,6 +1142,13 @@ components:
             scenarioRunId: "SR-V9EYbbOE0"
             workflowId: "c7cd3f15-8a3b-4bcd-b3ca-62ee24c13d67"
             workflowName: "workflow-s-dwpxbzmdxn-zkvd7"
+          security:
+            default:
+              - "commonrolereader"
+            accessControlList:
+              - id: "alice@mycompany.com"
+                roles:
+                  - "commonroleadmin"
         - id: "3"
           name: Brewery Analysis name no change
           description: Brewery analysis with no change on name prefix
@@ -991,15 +1161,6 @@ components:
           solutionName: Brewery Solution
           runTemplateId: "hundred"
           runTemplateName: Full simulation 100 steps
-          users:
-            - id: "1"
-              name: Bob
-              roles:
-              - Editor
-            - id: "2"
-              name: Alice
-              roles:
-              - Editor
           state: Failed
           ownerName: Alice
           creationDate: "2021-04-21T17:32:28Z"
@@ -1016,6 +1177,13 @@ components:
             scenarioRunId: "SR-V9EYbbOE0"
             workflowId: "c7cd3f15-8a3b-4bcd-b3ca-62ee24c13d67"
             workflowName: "workflow-s-dwpxbzmdxn-zkvd7"
+          security:
+            default:
+              - "commonrolereader"
+            accessControlList:
+              - id: "alice@mycompany.com"
+                roles:
+                  - "commonroleadmin"
     BreweryScenarioUpdate:
       summary: Update the Brewery Scenario
       description: Update the Brewery Scenario by changing its name
@@ -1037,15 +1205,6 @@ components:
         solutionName: Brewery Solution
         runTemplateId: "hundred"
         runTemplateName: Full simulation 100 steps
-        users:
-          - id: "1"
-            name: Bob
-            roles:
-            - Editor
-          - id: "2"
-            name: Alice
-            roles:
-            - Viewer
         state: Created
         ownerName: Bob
         creationDate: "2021-04-21T17:32:28Z"
@@ -1056,6 +1215,13 @@ components:
           - parameterId: prefix
             varType: string
             value: ""
+        security:
+          default:
+            - "commonrolereader"
+          accessControlList:
+            - id: "alice@mycompany.com"
+              roles:
+                - "commonroleadmin"
     BreweryScenarioComparison:
       summary: Brewery comparison result
       description: Brewery comparison result between a parent Scenario and its child
@@ -1080,15 +1246,6 @@ components:
             - reference
           ownerId: "1"
           worskspaceId: "1"
-          users:
-            - id: "1"
-              name: Bob
-              roles:
-              - Editor
-            - id: "2"
-              name: Alice
-              roles:
-              - Viewer
           state: Created
           creationDate: "2021-04-21T17:32:28Z"
           lastUpdate: "2021-04-21T17:32:28Z"
@@ -1102,6 +1259,13 @@ components:
               varType: string
               value: ""
               inherited: true
+          security:
+            default:
+              - "commonrolereader"
+            accessControlList:
+              - id: "alice@mycompany.com"
+                roles:
+                  - "commonroleadmin"
         - id: "2"
           name: Brewery Analysis name example
           description: Brewery analysis with example as name prefix
@@ -1111,15 +1275,6 @@ components:
           parentId: "1"
           ownerId: "1"
           worskspaceId: "1"
-          users:
-            - id: "1"
-              name: Bob
-              roles:
-              - Editor
-            - id: "2"
-              name: Alice
-              roles:
-              - Viewer
           state: Running
           creationDate: "2021-04-21T17:32:28Z"
           lastUpdate: "2021-04-21T17:32:28Z"
@@ -1138,6 +1293,13 @@ components:
             scenarioRunId: "SR-V9EYbbOE0"
             workflowId: "c7cd3f15-8a3b-4bcd-b3ca-62ee24c13d67"
             workflowName: "workflow-s-dwpxbzmdxn-zkvd7"
+          security:
+            default:
+              - "commonrolereader"
+            accessControlList:
+              - id: "alice@mycompany.com"
+                roles:
+                  - "commonroleadmin"
         - id: "3"
           name: Brewery Analysis name no change
           description: Brewery analysis with no change on name prefix
@@ -1146,15 +1308,6 @@ components:
           parentId: "1"
           ownerId: "2"
           worskspaceId: "1"
-          users:
-            - id: "1"
-              name: Bob
-              roles:
-              - Editor
-            - id: "2"
-              name: Alice
-              roles:
-              - Editor
           state: Failed
           creationDate: "2021-04-21T17:32:28Z"
           lastUpdate: "2021-04-21T17:32:28Z"
@@ -1173,18 +1326,13 @@ components:
             scenarioRunId: "SR-V9EYbbOE0"
             workflowId: "c7cd3f15-8a3b-4bcd-b3ca-62ee24c13d67"
             workflowName: "workflow-s-dwpxbzmdxn-zkvd7"
-    TwoScenarioUsers:
-      summary: 2 scenario users
-      description: 2 scenario users
-      value:
-        - id: "1"
-          name: Bob
-          roles:
-          - Editor
-        - id: "2"
-          name: Alice
-          roles:
-          - Editor
+          security:
+            default:
+              - "commonrolereader"
+            accessControlList:
+              - id: "alice@mycompany.com"
+                roles:
+                  - "commonroleadmin"
     TwoScenarioRunTemplateParameterValueToAddOrReplace:
       summary: Scenarios Run Templates added
       description: Scenarios Run Templates added
@@ -1202,3 +1350,58 @@ components:
       description: Brewery Scenario Data Download Job
       value:
         id: "sdl-abc123defghi"
+    BreweryScenarioSecurity:
+      summary: Brewery Scenario security
+      description: Brewery Scenario security example
+      value:
+        default:
+          - "commonrolereader"
+        accessControlList:
+          - id: "alice@mycosmocompany.com"
+            roles:
+              - "commonroleadmin"
+          - id: "bob@mycosmocompany.com"
+            roles:
+              - "commonrolewriter"
+    BreweryDefaultSecurityRoleNone:
+      summary: Brewery Scenario None default security
+      description: Brewery Scenario example
+      value:
+        default: []
+    BreweryDefaultSecurityRoleWriter:
+      summary: Brewery Scenario Writer default security
+      description: Brewery Scenario example
+      value:
+        default:
+          - "commonrolewriter"
+    BreweryScenarioDefaultSecurity:
+      summary: Set of default security
+      description: An array of default security values
+      value:
+        roles:
+          - commonrolewriter
+    BreweryScenarioAccessControl:
+      summary: Set an access control.
+      description: Set an access control for a user to a Scenario.
+      value:
+        id: bob@mycompany.com
+        roles:
+          - commonrolewriter
+    BreweryScenarioAccessControlWithPermissions:
+      summary: Access control.
+      description: Access control with permissions for a user to a Scenario.
+      value:
+        id: bob@mycompany.com
+        roles:
+          - commonrolewriter
+        permissions:
+          - commonpermissionread
+          - commonpermissionwrite
+          - commonpermissioncreatescenario
+    BreweryScenarioSecurityUsers:
+      summary: Security users list
+      description: Example of RBAC security users list
+      value:
+        users:
+          - alice@mycompany.com
+          - bob@mycompany.com
