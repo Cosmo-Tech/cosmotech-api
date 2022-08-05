@@ -66,10 +66,6 @@ csm:
     vcs-ref: ""
     rbac:
       enabled: true
-      migrateCurrentAsAdmin: true
-      migrateAdminFromList: false
-      # migrateAdminList
-      #   - admin@mail.com
 
     api:
       # API Base Path for OpenAPI-generated controllers.
