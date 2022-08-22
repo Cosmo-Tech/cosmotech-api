@@ -2,14 +2,9 @@
 // Licensed under the MIT license.
 package com.cosmotech.solution.azure
 
-import com.azure.cosmos.models.CosmosContainerProperties
 import com.azure.storage.blob.BlobServiceClient
-import com.cosmotech.api.azure.CsmAzureService
-import com.cosmotech.api.azure.findAll
-import com.cosmotech.api.azure.findByIdOrThrow
+import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.azure.sanitizeForAzureStorage
-import com.cosmotech.api.events.OrganizationRegistered
-import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.utils.changed
@@ -22,37 +17,33 @@ import com.cosmotech.solution.domain.RunTemplateParameter
 import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.RunTemplateStepSource
 import com.cosmotech.solution.domain.Solution
+import com.cosmotech.solution.repositories.SolutionRepository
 import org.apache.commons.compress.archivers.ArchiveException
 import org.apache.commons.compress.archivers.ArchiveStreamFactory
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
-import org.springframework.context.event.EventListener
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
-import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
 @Service
-@ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions")
 internal class SolutionServiceImpl(
     private val resourceLoader: ResourceLoader,
     private val azureStorageBlobServiceClient: BlobServiceClient,
-) : CsmAzureService(), SolutionApiService {
+    var solutionRepository: SolutionRepository
+) : CsmPhoenixService(), SolutionApiService {
 
   override fun findAllSolutions(organizationId: String) =
-      cosmosTemplate.findAll<Solution>("${organizationId}_solutions")
+      solutionRepository.findAll().toList()
 
   override fun findSolutionById(organizationId: String, solutionId: String): Solution =
-      cosmosTemplate.findByIdOrThrow(
-          "${organizationId}_solutions",
-          solutionId,
-          "Solution $solutionId not found in organization $organizationId")
+      solutionRepository.findById(solutionId).orElseThrow()
 
   override fun removeAllRunTemplates(organizationId: String, solutionId: String) {
     val solution = findSolutionById(organizationId, solutionId)
     if (!solution.runTemplates.isNullOrEmpty()) {
       solution.runTemplates = mutableListOf()
-      cosmosTemplate.upsert("${organizationId}_solutions", solution)
+        solutionRepository.save(solution)
+//      cosmosTemplate.upsert("${organizationId}_solutions", solution)
     }
   }
 
@@ -60,7 +51,8 @@ internal class SolutionServiceImpl(
     val solution = findSolutionById(organizationId, solutionId)
     if (!solution.parameterGroups.isNullOrEmpty()) {
       solution.parameterGroups = mutableListOf()
-      cosmosTemplate.upsert("${organizationId}_solutions", solution)
+        solutionRepository.save(solution)
+//      cosmosTemplate.upsert("${organizationId}_solutions", solution)
     }
   }
 
@@ -68,7 +60,8 @@ internal class SolutionServiceImpl(
     val solution = findSolutionById(organizationId, solutionId)
     if (!solution.parameters.isNullOrEmpty()) {
       solution.parameters = mutableListOf()
-      cosmosTemplate.upsert("${organizationId}_solutions", solution)
+        solutionRepository.save(solution)
+//      cosmosTemplate.upsert("${organizationId}_solutions", solution)
     }
   }
 
@@ -87,8 +80,8 @@ internal class SolutionServiceImpl(
     runTemplateParameterGroupMap.putAll(
         runTemplateParameterGroup.filter { it.id.isNotBlank() }.associateBy { it.id })
     existingSolution.parameterGroups = runTemplateParameterGroupMap.values.toMutableList()
-    cosmosTemplate.upsert("${organizationId}_solutions", existingSolution)
-
+//    cosmosTemplate.upsert("${organizationId}_solutions", existingSolution)
+solutionRepository.save(existingSolution)
     return runTemplateParameterGroup
   }
 
@@ -107,8 +100,8 @@ internal class SolutionServiceImpl(
     runTemplateParameterMap.putAll(
         runTemplateParameter.filter { it.id.isNotBlank() }.associateBy { it.id })
     existingSolution.parameters = runTemplateParameterMap.values.toMutableList()
-    cosmosTemplate.upsert("${organizationId}_solutions", existingSolution)
-
+//    cosmosTemplate.upsert("${organizationId}_solutions", existingSolution)
+solutionRepository.save(existingSolution)
     return runTemplateParameter
   }
 
@@ -126,18 +119,21 @@ internal class SolutionServiceImpl(
         existingSolution.runTemplates?.associateBy { it.id }?.toMutableMap() ?: mutableMapOf()
     runTemplateMap.putAll(runTemplate.filter { it.id.isNotBlank() }.associateBy { it.id })
     existingSolution.runTemplates = runTemplateMap.values.toMutableList()
-    cosmosTemplate.upsert("${organizationId}_solutions", existingSolution)
-
+//    cosmosTemplate.upsert("${organizationId}_solutions", existingSolution)
+solutionRepository.save(existingSolution)
     return runTemplate
   }
 
   override fun createSolution(organizationId: String, solution: Solution) =
-      cosmosTemplate.insert(
-          "${organizationId}_solutions",
-          solution.copy(
+      solutionRepository.save(solution.copy(
               id = idGenerator.generate("solution", prependPrefix = "sol-"),
               ownerId = getCurrentAuthenticatedUserName()))
-          ?: throw IllegalArgumentException("No solution returned in response: $solution")
+//      cosmosTemplate.insert(
+//          "${organizationId}_solutions",
+//          solution.copy(
+//              id = idGenerator.generate("solution", prependPrefix = "sol-"),
+//              ownerId = getCurrentAuthenticatedUserName()))
+//          ?: throw IllegalArgumentException("No solution returned in response: $solution")
 
   override fun deleteSolution(organizationId: String, solutionId: String) {
     val solution = findSolutionById(organizationId, solutionId)
@@ -145,7 +141,8 @@ internal class SolutionServiceImpl(
       // TODO Only the owner or an admin should be able to perform this operation
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
     }
-    cosmosTemplate.deleteEntity("${organizationId}_solutions", solution)
+      solutionRepository.delete(solution)
+//    cosmosTemplate.deleteEntity("${organizationId}_solutions", solution)
   }
 
   override fun deleteSolutionRunTemplate(
@@ -157,7 +154,8 @@ internal class SolutionServiceImpl(
     if (existingSolution.runTemplates?.removeIf { it.id == runTemplateId } == false) {
       throw CsmResourceNotFoundException("Run Template '$runTemplateId' *not* found")
     }
-    cosmosTemplate.upsert("${organizationId}_solutions", existingSolution)
+      solutionRepository.save(existingSolution)
+//    cosmosTemplate.upsert("${organizationId}_solutions", existingSolution)
   }
 
   override fun updateSolution(
@@ -185,7 +183,8 @@ internal class SolutionServiceImpl(
     }
 
     return if (hasChanged) {
-      cosmosTemplate.upsertAndReturnEntity("${organizationId}_solutions", existingSolution)
+        solutionRepository.save(existingSolution)
+//      cosmosTemplate.upsertAndReturnEntity("${organizationId}_solutions", existingSolution)
     } else {
       existingSolution
     }
@@ -211,22 +210,23 @@ internal class SolutionServiceImpl(
 
     if (hasChanged) {
       existingSolution.runTemplates = runTemplates
-      cosmosTemplate.upsert("${organizationId}_solutions", existingSolution)
+        solutionRepository.save(existingSolution)
+//      cosmosTemplate.upsert("${organizationId}_solutions", existingSolution)
     }
     return runTemplates
   }
 
-  @EventListener(OrganizationRegistered::class)
-  fun onOrganizationRegistered(organizationRegistered: OrganizationRegistered) {
-    cosmosCoreDatabase.createContainerIfNotExists(
-        CosmosContainerProperties("${organizationRegistered.organizationId}_solutions", "/id"))
-  }
+//  @EventListener(OrganizationRegistered::class)
+//  fun onOrganizationRegistered(organizationRegistered: OrganizationRegistered) {
+//    cosmosCoreDatabase.createContainerIfNotExists(
+//        CosmosContainerProperties("${organizationRegistered.organizationId}_solutions", "/id"))
+//  }
 
-  @EventListener(OrganizationUnregistered::class)
-  @Async("csm-in-process-event-executor")
-  fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
-    cosmosTemplate.deleteContainer("${organizationUnregistered.organizationId}_solutions")
-  }
+//  @EventListener(OrganizationUnregistered::class)
+//  @Async("csm-in-process-event-executor")
+//  fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
+//    cosmosTemplate.deleteContainer("${organizationUnregistered.organizationId}_solutions")
+//  }
 
   override fun uploadRunTemplateHandler(
       organizationId: String,
@@ -280,7 +280,8 @@ internal class SolutionServiceImpl(
       // exhaustive
     }
 
-    cosmosTemplate.upsert("${organizationId}_solutions", solution)
+      solutionRepository.save(solution)
+//    cosmosTemplate.upsert("${organizationId}_solutions", solution)
   }
 
   override fun downloadRunTemplateHandler(
