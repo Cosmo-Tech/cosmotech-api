@@ -81,9 +81,9 @@ echo "Setting environment variables useful for this upgrade..."
 
 # Retrieve the Argo MinIO access and secret key credentials
 # shellcheck disable=SC2155
-export ARGO_MINIO_ACCESS_KEY=$(kubectl -n "${NAMESPACE}" get secret argo-minio -o=jsonpath='{.data.accesskey}' | base64 -d)
+export ARGO_MINIO_ACCESS_KEY=$(kubectl -n "${NAMESPACE}" get secret argo-miniocsmv2 -o=jsonpath='{.data.accesskey}' | base64 -d)
 # shellcheck disable=SC2155
-export ARGO_MINIO_SECRET_KEY=$(kubectl -n "${NAMESPACE}" get secret argo-minio -o=jsonpath='{.data.secretkey}' | base64 -d)
+export ARGO_MINIO_SECRET_KEY=$(kubectl -n "${NAMESPACE}" get secret argo-miniocsmv2 -o=jsonpath='{.data.secretkey}' | base64 -d)
 
 # Retrieve the current Argo PostgreSQL secret
 # shellcheck disable=SC2155
