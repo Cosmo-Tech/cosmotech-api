@@ -221,7 +221,7 @@ fi
 
 # Minio
 cat <<EOF > values-minio.yaml
-fullnameOverride: argo-${MINIO_RELEASE_NAME}
+fullnameOverride: ${MINIO_RELEASE_NAME}
 defaultBucket:
   enabled: true
   name: ${ARGO_BUCKET_NAME}
@@ -300,6 +300,7 @@ executor:
     value: 1s
   - name: WAIT_CONTAINER_STATUS_CHECK_INTERVAL
     value: 1s
+useDefaultArtifactRepo: true
 artifactRepository:
   archiveLogs: true
   s3:

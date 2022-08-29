@@ -32,9 +32,9 @@ export NAMESPACE="$1"
 export ARGO_POSTGRESQL_PASSWORD="$2"
 export API_VERSION="$3"
 
-export ARGO_RELEASE_NAME=argo
-export MINIO_RELEASE_NAME=minio
-export POSTGRES_RELEASE_NAME=postgres
+export ARGO_RELEASE_NAME=argocsmv2
+export MINIO_RELEASE_NAME=miniocsmv2
+export POSTGRES_RELEASE_NAME=postgrescsmv2
 export ARGO_VERSION="0.16.6"
 export MINIO_VERSION="8.0.10"
 export POSTGRESQL_VERSION="11.6.12"
@@ -54,7 +54,7 @@ kubectl create namespace "${NAMESPACE:-phoenix}" --dry-run=client -o yaml | kube
 
 # Minio
 cat <<EOF > values-minio.yaml
-fullnameOverride: argo-${MINIO_RELEASE_NAME}
+fullnameOverride: ${MINIO_RELEASE_NAME}
 defaultBucket:
   enabled: true
   name: ${ARGO_BUCKET_NAME}
@@ -134,6 +134,7 @@ executor:
     value: 1s
   - name: RECENTLY_STARTED_POD_DURATION
     value: 1s
+useDefaultArtifactRepo: true
 artifactRepository:
   archiveLogs: true
   s3:
