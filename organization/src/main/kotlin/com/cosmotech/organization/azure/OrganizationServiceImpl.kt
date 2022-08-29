@@ -21,20 +21,23 @@ import com.cosmotech.organization.domain.OrganizationUser
 import com.cosmotech.organization.repositories.OrganizationRepository
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
+import com.redislabs.modules.rejson.JReJSON
+import io.redisearch.Query
+import io.redisearch.SearchResult
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
+import redis.clients.jedis.JedisPool
 
 @Service
 @Suppress("TooManyFunctions")
 internal class OrganizationServiceImpl(
     private val userService: UserApiService,
-    var organizationRepository: OrganizationRepository
+    var organizationRepository: OrganizationRepository,
 ) : CsmPhoenixService(), OrganizationApiService {
 
-
-    //lateinit var client: Client
-
+    var jed: JedisPool = JedisPool()
+    var jso = JReJSON()
 
     override fun addOrReplaceUsersInOrganization(
       organizationId: String,
@@ -125,9 +128,15 @@ internal class OrganizationServiceImpl(
               user.roles.map { role -> role.value }))
     }
 
+
+      var q: Query = Query()
+      var res: SearchResult
+
     // TODO Handle rollbacks in case of errors
 
     return organizationRepository.save(organization)
+
+
   }
 
   override fun removeAllUsersInOrganization(organizationId: String) {
@@ -138,8 +147,6 @@ internal class OrganizationServiceImpl(
 
       organizationRepository.save(organization)
 
-      //        cosmosTemplate.upsert(coreOrganizationContainer, organization)
-
       userIds.forEach {
         this.eventPublisher.publishEvent(UserRemovedFromOrganization(this, organizationId, it))
       }
@@ -148,13 +155,12 @@ internal class OrganizationServiceImpl(
 
   override fun removeUserFromOrganization(organizationId: String, userId: String) {
     val organization = findOrganizationById(organizationId)
-    if (!(organization.users?.removeIf { it.id == userId } ?: false)) {
+    if (organization.users?.removeIf { it.id == userId } != true) {
       throw CsmResourceNotFoundException("User '$userId' *not* found")
     } else {
 
       organizationRepository.save(organization)
 
-      //        cosmosTemplate.upsert(coreOrganizationContainer, organization)
       this.eventPublisher.publishEvent(UserRemovedFromOrganization(this, organizationId, userId))
     }
   }
@@ -215,10 +221,8 @@ internal class OrganizationServiceImpl(
     return if (hasChanged) {
       val responseEntity =
 
-      organizationRepository.save(organization)
+      organizationRepository.save(existingOrganization)
 
-      //        cosmosTemplate.upsertAndReturnEntity(coreOrganizationContainer,
-      // existingOrganization)
       userIdsRemoved?.forEach {
         this.eventPublisher.publishEvent(UserRemovedFromOrganization(this, organizationId, it))
       }
@@ -273,12 +277,10 @@ internal class OrganizationServiceImpl(
       hasChanged = true
     }
     return if (hasChanged) {
-      //      existingServices.existingOrganizationService = existingOrganizationService
       existingOrganization.services = existingServices
 
       organizationRepository.save(existingOrganization)
 
-      //        cosmosTemplate.upsert(coreOrganizationContainer, existingOrganization)
       existingOrganizationService
     } else {
       existingOrganizationService
@@ -301,7 +303,6 @@ internal class OrganizationServiceImpl(
     existingOrganization.services = existingServices
 
     organizationRepository.save(existingOrganization)
-    //      cosmosTemplate.upsert(coreOrganizationContainer, existingOrganization)
     return existingTenantCredentials?.toMap() ?: mapOf()
   }
 
@@ -362,15 +363,12 @@ internal class OrganizationServiceImpl(
       userUnregisteredForOrganization: UserUnregisteredForOrganization
   ) {
     val organization = findOrganizationById(userUnregisteredForOrganization.organizationId)
-    if (!(organization.users?.removeIf { it.id == userUnregisteredForOrganization.userId }
-        ?: false)) {
+    if (organization.users?.removeIf { it.id == userUnregisteredForOrganization.userId } != true) {
       throw CsmResourceNotFoundException(
           "User '${userUnregisteredForOrganization.userId}' *not* found")
     } else {
 
       organizationRepository.save(organization)
-
-      //        cosmosTemplate.upsert(coreOrganizationContainer, organization)
     }
   }
 }
