@@ -431,7 +431,7 @@ fi
 
 HELM_CHARTS_BASE_PATH=$(realpath "$(dirname "$0")")
 
-helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "${HELM_CHARTS_BASE_PATH}/helm-chart" \
+helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "cosmotech-api-chart-${CHART_PACKAGE_VERSION}.tgz" \
     --namespace "${NAMESPACE}" \
     --version ${CHART_PACKAGE_VERSION} \
     --values values-cosmotech-api-deploy.yaml \
