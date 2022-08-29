@@ -2,8 +2,6 @@
 
 API_VERSION=${1:-latest}
 
-helm -n "${CHART_RELEASE_TEST_NAMESPACE}" test argo || exit 1
-
 helm -n "${CHART_RELEASE_TEST_NAMESPACE}" test "cosmotech-api-${API_VERSION}"
 
 retVal=$?
