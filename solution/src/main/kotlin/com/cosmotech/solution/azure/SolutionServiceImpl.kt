@@ -1,10 +1,8 @@
-// Copyright (c) Cosmo Tech.
+// Copyright (c) Cos.mo Tech.
 // Licensed under the MIT license.
 package com.cosmotech.solution.azure
 
-import com.azure.storage.blob.BlobServiceClient
 import com.cosmotech.api.CsmPhoenixService
-import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.utils.changed
@@ -15,22 +13,26 @@ import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateHandlerId
 import com.cosmotech.solution.domain.RunTemplateParameter
 import com.cosmotech.solution.domain.RunTemplateParameterGroup
-import com.cosmotech.solution.domain.RunTemplateStepSource
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.repositories.SolutionRepository
-import org.apache.commons.compress.archivers.ArchiveException
-import org.apache.commons.compress.archivers.ArchiveStreamFactory
+import com.redislabs.modules.rejson.JReJSON
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
+import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Service
 
 @Service
 @Suppress("TooManyFunctions")
 internal class SolutionServiceImpl(
     private val resourceLoader: ResourceLoader,
-    private val azureStorageBlobServiceClient: BlobServiceClient,
     var solutionRepository: SolutionRepository
 ) : CsmPhoenixService(), SolutionApiService {
+
+    var jso = JReJSON()
+
+    @Autowired
+    private var template: RedisTemplate<String, String>? = null
 
   override fun findAllSolutions(organizationId: String) =
       solutionRepository.findAll().toList()
@@ -42,8 +44,8 @@ internal class SolutionServiceImpl(
     val solution = findSolutionById(organizationId, solutionId)
     if (!solution.runTemplates.isNullOrEmpty()) {
       solution.runTemplates = mutableListOf()
-        solutionRepository.save(solution)
-//      cosmosTemplate.upsert("${organizationId}_solutions", solution)
+
+      solutionRepository.save(solution)
     }
   }
 
@@ -51,8 +53,8 @@ internal class SolutionServiceImpl(
     val solution = findSolutionById(organizationId, solutionId)
     if (!solution.parameterGroups.isNullOrEmpty()) {
       solution.parameterGroups = mutableListOf()
-        solutionRepository.save(solution)
-//      cosmosTemplate.upsert("${organizationId}_solutions", solution)
+
+      solutionRepository.save(solution)
     }
   }
 
@@ -60,8 +62,8 @@ internal class SolutionServiceImpl(
     val solution = findSolutionById(organizationId, solutionId)
     if (!solution.parameters.isNullOrEmpty()) {
       solution.parameters = mutableListOf()
-        solutionRepository.save(solution)
-//      cosmosTemplate.upsert("${organizationId}_solutions", solution)
+
+      solutionRepository.save(solution)
     }
   }
 
@@ -80,8 +82,9 @@ internal class SolutionServiceImpl(
     runTemplateParameterGroupMap.putAll(
         runTemplateParameterGroup.filter { it.id.isNotBlank() }.associateBy { it.id })
     existingSolution.parameterGroups = runTemplateParameterGroupMap.values.toMutableList()
-//    cosmosTemplate.upsert("${organizationId}_solutions", existingSolution)
-solutionRepository.save(existingSolution)
+
+    solutionRepository.save(existingSolution)
+
     return runTemplateParameterGroup
   }
 
@@ -100,8 +103,9 @@ solutionRepository.save(existingSolution)
     runTemplateParameterMap.putAll(
         runTemplateParameter.filter { it.id.isNotBlank() }.associateBy { it.id })
     existingSolution.parameters = runTemplateParameterMap.values.toMutableList()
-//    cosmosTemplate.upsert("${organizationId}_solutions", existingSolution)
-solutionRepository.save(existingSolution)
+
+    solutionRepository.save(existingSolution)
+
     return runTemplateParameter
   }
 
@@ -119,21 +123,26 @@ solutionRepository.save(existingSolution)
         existingSolution.runTemplates?.associateBy { it.id }?.toMutableMap() ?: mutableMapOf()
     runTemplateMap.putAll(runTemplate.filter { it.id.isNotBlank() }.associateBy { it.id })
     existingSolution.runTemplates = runTemplateMap.values.toMutableList()
-//    cosmosTemplate.upsert("${organizationId}_solutions", existingSolution)
-solutionRepository.save(existingSolution)
+
+    solutionRepository.save(existingSolution)
+
     return runTemplate
   }
 
-  override fun createSolution(organizationId: String, solution: Solution) =
-      solutionRepository.save(solution.copy(
+  override fun createSolution(organizationId: String, solution: Solution): Solution {
+      return solutionRepository.save(
+          solution.copy(
               id = idGenerator.generate("solution", prependPrefix = "sol-"),
-              ownerId = getCurrentAuthenticatedUserName()))
-//      cosmosTemplate.insert(
-//          "${organizationId}_solutions",
-//          solution.copy(
-//              id = idGenerator.generate("solution", prependPrefix = "sol-"),
-//              ownerId = getCurrentAuthenticatedUserName()))
-//          ?: throw IllegalArgumentException("No solution returned in response: $solution")
+              ownerId = getCurrentAuthenticatedUserName()
+          )
+      )
+
+      /*sol.id = sol.id!!.replace("${organizationId}_", "")
+      println(sol.id)
+updateSolution(organizationId, "${organizationId}_"+sol.id!!, sol)
+      return saveId(organizationId, solution.id!!, solution)*/
+  }
+
 
   override fun deleteSolution(organizationId: String, solutionId: String) {
     val solution = findSolutionById(organizationId, solutionId)
@@ -142,7 +151,6 @@ solutionRepository.save(existingSolution)
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
     }
       solutionRepository.delete(solution)
-//    cosmosTemplate.deleteEntity("${organizationId}_solutions", solution)
   }
 
   override fun deleteSolutionRunTemplate(
@@ -155,7 +163,6 @@ solutionRepository.save(existingSolution)
       throw CsmResourceNotFoundException("Run Template '$runTemplateId' *not* found")
     }
       solutionRepository.save(existingSolution)
-//    cosmosTemplate.upsert("${organizationId}_solutions", existingSolution)
   }
 
   override fun updateSolution(
@@ -184,7 +191,6 @@ solutionRepository.save(existingSolution)
 
     return if (hasChanged) {
         solutionRepository.save(existingSolution)
-//      cosmosTemplate.upsertAndReturnEntity("${organizationId}_solutions", existingSolution)
     } else {
       existingSolution
     }
@@ -211,22 +217,9 @@ solutionRepository.save(existingSolution)
     if (hasChanged) {
       existingSolution.runTemplates = runTemplates
         solutionRepository.save(existingSolution)
-//      cosmosTemplate.upsert("${organizationId}_solutions", existingSolution)
     }
     return runTemplates
   }
-
-//  @EventListener(OrganizationRegistered::class)
-//  fun onOrganizationRegistered(organizationRegistered: OrganizationRegistered) {
-//    cosmosCoreDatabase.createContainerIfNotExists(
-//        CosmosContainerProperties("${organizationRegistered.organizationId}_solutions", "/id"))
-//  }
-
-//  @EventListener(OrganizationUnregistered::class)
-//  @Async("csm-in-process-event-executor")
-//  fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
-//    cosmosTemplate.deleteContainer("${organizationUnregistered.organizationId}_solutions")
-//  }
 
   override fun uploadRunTemplateHandler(
       organizationId: String,
@@ -236,7 +229,7 @@ solutionRepository.save(existingSolution)
       body: Resource,
       overwrite: Boolean
   ) {
-    val solution = this.validateRunTemplate(organizationId, solutionId, runTemplateId)
+   /* val solution = this.validateRunTemplate(organizationId, solutionId, runTemplateId)
     logger.debug(
         "Uploading run template handler to solution #{} ({} - {})",
         solution.id,
@@ -280,8 +273,7 @@ solutionRepository.save(existingSolution)
       // exhaustive
     }
 
-      solutionRepository.save(solution)
-//    cosmosTemplate.upsert("${organizationId}_solutions", solution)
+    solutionRepository.save(solution)*/
   }
 
   override fun downloadRunTemplateHandler(
@@ -290,9 +282,9 @@ solutionRepository.save(existingSolution)
       runTemplateId: String,
       handlerId: RunTemplateHandlerId
   ): Resource {
-    val solution = this.validateRunTemplate(organizationId, solutionId, runTemplateId)
-    val blobPath =
-        "${organizationId.sanitizeForAzureStorage()}/" +
+    //val solution = this.validateRunTemplate(organizationId, solutionId, runTemplateId)
+    val blobPath = ""
+        /*"${organizationId.sanitizeForAzureStorage()}/" +
             "${solutionId.sanitizeForAzureStorage()}/" +
             "${runTemplateId}/${handlerId.value}.zip"
     logger.debug(
@@ -302,7 +294,7 @@ solutionRepository.save(existingSolution)
         solution.version,
         runTemplateId,
         handlerId,
-        blobPath)
+        blobPath)*/
     return resourceLoader.getResource("azure-blob://${blobPath}")
   }
 
@@ -326,4 +318,19 @@ solutionRepository.save(existingSolution)
 
     return solution
   }
+
+    private fun saveId(organizationId: String, solutionId: String, solution: Solution) : Solution{
+        var sol = solutionRepository.save(
+            solution.copy(
+                id = idGenerator.generate("solution", prependPrefix = "${organizationId}_sol-"),
+                ownerId = getCurrentAuthenticatedUserName()))
+
+        sol.id = sol.id!!.replace("${organizationId}_","")
+        return solutionRepository.save(sol)
+    }
+
+    private fun findId(organizationId: String, solutionId: String, solution: Solution){
+
+    }
+
 }

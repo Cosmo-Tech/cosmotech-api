@@ -43,8 +43,10 @@ internal class WorkspaceServiceImpl(
     private val solutionService: SolutionApiService,
     private val azureStorageBlobServiceClient: BlobServiceClient,
     private val azureStorageBlobBatchClient: BlobBatchClient,
-    var workspaceRepository: WorkspaceRepository
+    var workspaceRepository: WorkspaceRepository,
 ) : CsmPhoenixService(), WorkspaceApiService {
+
+
     private fun fetchUsers(userIds: Collection<String>): Map<String, User> =
         userIds.toSet().map { userService.findUserById(it) }.associateBy { it.id!! }
 
@@ -124,8 +126,11 @@ internal class WorkspaceServiceImpl(
     override fun createWorkspace(organizationId: String, workspace: Workspace): Workspace {
         // Validate Solution ID
         workspace.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
-        return workspaceRepository.save(workspace.copy(
-            id = idGenerator.generate("workspace"), ownerId = getCurrentAuthenticatedUserName()))
+        var work = workspaceRepository.save(workspace.copy(
+            id = idGenerator.generate("workspace"),
+            ownerId = getCurrentAuthenticatedUserName()))
+
+        return work
     }
 
     override fun deleteAllWorkspaceFiles(organizationId: String, workspaceId: String) {

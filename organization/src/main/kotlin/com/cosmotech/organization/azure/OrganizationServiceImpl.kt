@@ -21,9 +21,13 @@ import com.cosmotech.organization.domain.OrganizationUser
 import com.cosmotech.organization.repositories.OrganizationRepository
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
+import com.redislabs.modules.rejson.JReJSON
+import io.redisearch.Query
+import io.redisearch.SearchResult
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
+import redis.clients.jedis.JedisPool
 
 
 @Service
@@ -140,7 +144,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
 
   override fun removeUserFromOrganization(organizationId: String, userId: String) {
     val organization = findOrganizationById(organizationId)
-    if (!(organization.users?.removeIf { it.id == userId } ?: false)) {
+    if (organization.users?.removeIf { it.id == userId } != true) {
       throw CsmResourceNotFoundException("User '$userId' *not* found")
     } else {
         organizationRepository.save(organization)     this.eventPublisher.publishEvent(UserRemovedFromOrganization(this, organizationId, userId))
@@ -256,7 +260,6 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
       hasChanged = true
     }
     return if (hasChanged) {
-      //      existingServices.existingOrganizationService = existingOrganizationService
       existingOrganization.services = existingServices
       organizationRepository.save(existingOrganization)      existingOrganizationService
     } else {
@@ -338,8 +341,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
       userUnregisteredForOrganization: UserUnregisteredForOrganization
   ) {
     val organization = findOrganizationById(userUnregisteredForOrganization.organizationId)
-    if (!(organization.users?.removeIf { it.id == userUnregisteredForOrganization.userId }
-        ?: false)) {
+    if (organization.users?.removeIf { it.id == userUnregisteredForOrganization.userId } != true) {
       throw CsmResourceNotFoundException(
           "User '${userUnregisteredForOrganization.userId}' *not* found")
     } else {
