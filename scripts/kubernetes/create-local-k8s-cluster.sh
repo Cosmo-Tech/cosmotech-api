@@ -111,11 +111,10 @@ helm --kube-context="${kubectl_ctx}" \
 
 # cf. https://kind.sigs.k8s.io/docs/user/ingress/#ingress-nginx
 # ingress_nginx_controller_tag="controller-v0.47.0"
+# no more generation for different aks version: https://github.com/kubernetes/ingress-nginx/commit/c85765a015ea6709d161eccd42ef6134981c04b4
 kubectl --context="${kubectl_ctx}" \
   apply -f \
-  "https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/${aks_minor_version}/deploy.yaml"
-
-#  "https://raw.githubusercontent.com/kubernetes/ingress-nginx/${ingress_nginx_controller_tag}/deploy/static/provider/kind/deploy.yaml"
+  "https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml"
 
 kubectl --context="${kubectl_ctx}" \
   -n ingress-nginx \
