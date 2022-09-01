@@ -1,4 +1,4 @@
-namespace: monitoring
+namespace: prometheus
 name: cosmotech-api-latest
 defaultRules:
   create: false
