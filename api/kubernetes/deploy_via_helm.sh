@@ -30,6 +30,7 @@ help() {
   echo "- TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL | Email String | contact email, used for Let's Encrypt certificate requests"
   echo "- TLS_CERTIFICATE_CUSTOM_CERTIFICATE_PATH | File path | path to a file containing the custom TLS certificate to use for HTTPS"
   echo "- TLS_CERTIFICATE_CUSTOM_KEY_PATH | File path | path to a file containing the key for the custom TLS certificate to use for HTTPS"
+  echo "- DEPLOY_PROMETHEUS_STACK | boolean (default is false) | deploy prometheus stack to monitor platform usage"
   echo
   echo "Usage: ./$(basename "$0") CHART_PACKAGE_VERSION NAMESPACE ARGO_POSTGRESQL_PASSWORD API_VERSION [any additional options to pass as is to the cosmotech-api Helm Chart]"
   echo
@@ -444,3 +445,18 @@ helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "cosmotech-api-chart-${CH
     --values values-cosmotech-api-deploy.yaml \
     ${CERT_MANAGER_INGRESS_ANNOTATION_SET} \
     "${@:5}"
+
+
+# kube-prometheus-stack
+# https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
+# https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack
+if [[ "${DEPLOY_PROMETHEUS_STACK:-false}" == "true" ]]; then
+  export MONITORING_NAMESPACE="prometheus"
+  kubectl create namespace "${MONITORING_NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
+  helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+  helm repo update
+
+  helm upgrade --install prometheus-operator prometheus-community/kube-prometheus-stack \
+               --namespace "${MONITORING_NAMESPACE}" \
+               --values "${HELM_CHARTS_BASE_PATH}/helm-chart/kube-prometheus-stack.yaml"
+fi
