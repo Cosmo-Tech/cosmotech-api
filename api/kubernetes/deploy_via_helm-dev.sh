@@ -218,3 +218,15 @@ helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "${HELM_CHARTS_BASE_PATH}
     --set config.csm.platform.argo.workflows.namespace="${NAMESPACE}" \
     --set podAnnotations."com\.cosmotech/deployed-at-timestamp"="\"$(date +%s)\"" \
     "${@:4}"
+
+# kube-prometheus-stack
+# https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
+# https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack
+export MONITORING_NAMESPACE="prometheus"
+kubectl create namespace "${MONITORING_NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+helm upgrade --install prometheus-operator prometheus-community/kube-prometheus-stack \
+             --namespace "${MONITORING_NAMESPACE}" \
+             --values "${HELM_CHARTS_BASE_PATH}/helm-chart/kube-prometheus-stack.yaml"

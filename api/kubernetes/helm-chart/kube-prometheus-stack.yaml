@@ -1,0 +1,72 @@
+namespace: monitoring
+name: cosmotech-api-latest
+defaultRules:
+  create: false
+alertmanager:
+  enabled: false
+grafana:
+  enabled: false
+kubeApiServer:
+  enabled: false
+kubelet:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+coreDns:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeStateMetrics:
+  enabled: false
+nodeExporter:
+  enabled: false
+prometheus:
+  enabled: true
+  crname: prometheus
+  serviceAccount:
+    create: true
+    name: prometheus-service-account
+  prometheusSpec:
+    logLevel: info
+    replicas: 1
+    podMetadata:
+      annotations:
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+      labels:
+        app: prometheus
+    resources:
+      limits:
+        cpu: 1
+        memory: 2Gi
+      requests:
+        cpu: 1
+        memory: 2Gi
+    retention: 12h
+    serviceMonitorSelector:
+      matchLabels:
+        serviceMonitorSelector: prometheus
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: "standard"
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: 10Gi
+  additionalServiceMonitors:
+    - name: cosmotech-latest
+      additionalLabels:
+        serviceMonitorSelector: prometheus
+      endpoints:
+        - interval: 30s
+          targetPort: 8081
+          path: /actuator/prometheus
+      namespaceSelector:
+        matchNames:
+        - phoenix
+      selector:
+        matchLabels:
+          app.kubernetes.io/instance: cosmotech-api-latest
