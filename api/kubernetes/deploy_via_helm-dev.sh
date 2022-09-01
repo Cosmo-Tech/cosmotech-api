@@ -222,11 +222,11 @@ helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "${HELM_CHARTS_BASE_PATH}
 # kube-prometheus-stack
 # https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
 # https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack
-export MONITORING_NAMESPACE="prometheus"
+export MONITORING_NAMESPACE="${NAMESPACE}-monitoring"
 kubectl create namespace "${MONITORING_NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
 
 helm upgrade --install prometheus-operator prometheus-community/kube-prometheus-stack \
              --namespace "${MONITORING_NAMESPACE}" \
-             --values "${HELM_CHARTS_BASE_PATH}/helm-chart/kube-prometheus-stack.yaml"
+             --values "${HELM_CHARTS_BASE_PATH}/kube-prometheus-stack.yaml"
