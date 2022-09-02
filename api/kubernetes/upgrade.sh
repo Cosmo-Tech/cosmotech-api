@@ -137,6 +137,8 @@ fi
 # shellcheck disable=SC2155
 export COSMOTECH_API_DNS_NAME=$(kubectl -n "${NAMESPACE}" get ingress cosmotech-api-latest -o json | jq -r '.spec.tls[0].hosts[0]')
 
+export PROM_ADMIN_PASSWORD=$(kubectl -n "${NAMESPACE}-monitoring" get secret "prometheus-operator-grafana" -o=jsonpath='{.data.admin-password}' | base64 -d)
+
 # Now run the deployment script with the right environment variables set
 echo "Now running the deployment script (from \"${GIT_BRANCH_NAME}\" Git Branch) with the right environment variables..."
 curl -o- -sSL https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-api/"${GIT_BRANCH_NAME}"/api/kubernetes/deploy_via_helm.sh | bash -s -- \

@@ -1,4 +1,4 @@
-namespace: prometheus
+namespace: $MONITORING_NAMESPACE_VAR
 name: cosmotech-api-latest
 defaultRules:
   create: false
@@ -6,6 +6,7 @@ alertmanager:
   enabled: false
 grafana:
   enabled: true
+  adminPassword: $PROM_ADMIN_PASSWORD_VAR
 kubeApiServer:
   enabled: false
 kubelet:
@@ -30,7 +31,7 @@ prometheus:
     name: prometheus-service-account
   prometheusSpec:
     logLevel: info
-    replicas: 1
+    replicas: $PROM_REPLICAS_NUMBER_VAR
     podMetadata:
       annotations:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
@@ -39,10 +40,10 @@ prometheus:
     resources:
       limits:
         cpu: 1
-        memory: 2Gi
+        memory: $PROM_CPU_MEM_LIMITS_VAR
       requests:
         cpu: 1
-        memory: 2Gi
+        memory: $PROM_CPU_MEM_REQUESTS_VAR
     retention: 12h
     serviceMonitorSelector:
       matchLabels:
@@ -50,12 +51,12 @@ prometheus:
     storageSpec:
       volumeClaimTemplate:
         spec:
-          storageClassName: "standard"
+          storageClassName: $PROM_STORAGE_CLASS_NAME_VAR
           accessModes:
           - ReadWriteOnce
           resources:
             requests:
-              storage: 10Gi
+              storage: $PROM_STORAGE_RESOURCE_REQUEST_VAR
   additionalServiceMonitors:
     - name: cosmotech-latest
       additionalLabels:
