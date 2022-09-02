@@ -58,3 +58,4 @@ api/kubernetes/helm-chart/values-vcr.yaml
 ### Helm ###
 # Chart dependencies
 **/charts/*.tgz
+/kube-prometheus-stack.yaml
