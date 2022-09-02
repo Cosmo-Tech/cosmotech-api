@@ -289,13 +289,14 @@ EOF
 kubectl apply -n ${NAMESPACE} -f postgres-secret.yaml
 
 # Argo
+export ARGO_SERVICE_ACCOUNT=workflowcsmv2
 cat <<EOF > values-argo.yaml
 images:
   pullPolicy: IfNotPresent
 workflow:
   serviceAccount:
     create: true
-    name: workflowcsmv2
+    name: ${ARGO_SERVICE_ACCOUNT}
   rbac:
     create: true
 executor:
@@ -398,6 +399,7 @@ config:
         base-uri: "http://${ARGO_RELEASE_NAME}-argo-workflows-server.${NAMESPACE}.svc.cluster.local:2746"
         workflows:
           namespace: ${NAMESPACE}
+          service-account-name: ${ARGO_SERVICE_ACCOUNT}
 
 ingress:
   enabled: ${COSMOTECH_API_INGRESS_ENABLED}
