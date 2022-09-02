@@ -23,11 +23,17 @@ import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
 import com.redislabs.modules.rejson.JReJSON
 import io.redisearch.Query
+import io.redisearch.Schema
 import io.redisearch.SearchResult
+import io.redisearch.client.Client
+import io.redisearch.client.IndexDefinition
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.event.EventListener
+import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
-import redis.clients.jedis.JedisPool
+import org.springframework.web.client.HttpServerErrorException.InternalServerError
+import redis.clients.jedis.Jedis
 
 @Service
 @Suppress("TooManyFunctions")
@@ -36,8 +42,19 @@ internal class OrganizationServiceImpl(
     var organizationRepository: OrganizationRepository,
 ) : CsmPhoenixService(), OrganizationApiService {
 
-    var jed: JedisPool = JedisPool()
     var jso = JReJSON()
+    var jed: Jedis = Jedis()
+val client: Client = Client("organization_idx", jed)
+    val sc: Schema = Schema().addTextField("$.id", 5.0)
+    val def: IndexDefinition = IndexDefinition(IndexDefinition.Type.JSON).setPrefixes("com.cosmotech.organization.domain.Organization:")
+
+
+
+    private val MASTER_NAME = "mymaster"
+    private var sentinels: Set<String>? = HashSet()
+    @Autowired
+    lateinit var template: RedisTemplate<String, String>
+
 
     override fun addOrReplaceUsersInOrganization(
       organizationId: String,
@@ -85,8 +102,19 @@ internal class OrganizationServiceImpl(
 
   override fun findAllOrganizations() = organizationRepository.findAll().toList()
 
-  override fun findOrganizationById(organizationId: String): Organization =
-      organizationRepository.findById(organizationId).orElseThrow()
+  override fun findOrganizationById(organizationId: String): Organization {
+var que = Query("@\\$\\.id:$organizationId")
+
+      val res: SearchResult = client.search(que)
+
+
+        println("#############################")
+        println(res.docs[0].id.toString())
+        println("#############################")
+
+        return organizationRepository.findById(organizationId).orElseThrow()
+    }
+
 
   /**
    * Return list of users with the specified identifiers. TODO It would be better to have
@@ -97,6 +125,25 @@ internal class OrganizationServiceImpl(
       userIds.toSet().map { userService.findUserById(it) }.associateBy { it.id!! }
 
   override fun registerOrganization(organization: Organization): Organization {
+    if(organizationRepository.count().equals(0)){
+      try {
+          client.createIndex(sc, Client.IndexOptions.defaultOptions().setDefinition(def))
+      }catch (e: InternalServerError){
+//          client.toString()
+////          Commands.Command.CREATE
+//          println("#####################################")
+//          println("tubad")
+//          println("#####################################")
+         // client.createIndex(sc, Client.IndexOptions.defaultOptions().setDefinition(def))
+      }
+    }else{
+//        println("#####################################")
+//        println(client.dropIndex())
+//        println("#####################################")
+    }
+
+      client.createIndex(sc, Client.IndexOptions.defaultOptions().setDefinition(def))
+
     logger.trace("Registering organization : $organization")
 
     if (organization.name.isNullOrBlank()) {
@@ -127,11 +174,6 @@ internal class OrganizationServiceImpl(
               user.id!!,
               user.roles.map { role -> role.value }))
     }
-
-
-      var q: Query = Query()
-      var res: SearchResult
-
     // TODO Handle rollbacks in case of errors
 
     return organizationRepository.save(organization)
@@ -322,7 +364,7 @@ internal class OrganizationServiceImpl(
           schema, io.redisearch.client.Client.IndexOptions.defaultOptions().setDefinition(rule)
       )
 
-      val q: io.redisearch.Query = io.redisearch.Query(userId)
+      val q = io.redisearch.Query(userId)
       val search: SearchResult = client.search(q)
 
       for (item: Document in search.docs) {
