@@ -15,11 +15,8 @@ import com.cosmotech.solution.domain.RunTemplateParameter
 import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.repositories.SolutionRepository
-import com.redislabs.modules.rejson.JReJSON
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
-import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Service
 
 @Service
@@ -28,11 +25,6 @@ internal class SolutionServiceImpl(
     private val resourceLoader: ResourceLoader,
     var solutionRepository: SolutionRepository
 ) : CsmPhoenixService(), SolutionApiService {
-
-    var jso = JReJSON()
-
-    @Autowired
-    private var template: RedisTemplate<String, String>? = null
 
   override fun findAllSolutions(organizationId: String) =
       solutionRepository.findAll().toList()
@@ -130,6 +122,7 @@ internal class SolutionServiceImpl(
   }
 
   override fun createSolution(organizationId: String, solution: Solution): Solution {
+
       return solutionRepository.save(
           solution.copy(
               id = idGenerator.generate("solution", prependPrefix = "sol-"),

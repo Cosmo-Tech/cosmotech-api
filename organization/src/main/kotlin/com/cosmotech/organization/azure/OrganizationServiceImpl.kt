@@ -23,11 +23,17 @@ import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
 import com.redislabs.modules.rejson.JReJSON
 import io.redisearch.Query
+import io.redisearch.Schema
 import io.redisearch.SearchResult
+import io.redisearch.client.Client
+import io.redisearch.client.IndexDefinition
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.event.EventListener
+import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
-import redis.clients.jedis.JedisPool
+import org.springframework.web.client.HttpServerErrorException.InternalServerError
+import redis.clients.jedis.Jedis
 
 
 @Service

@@ -3,10 +3,14 @@
 //import com.redis.om.spring.metamodel.MetamodelField
 //import com.redis.om.spring.ops.RedisModulesOperations
 //import com.redis.om.spring.repository.RedisDocumentRepository
+//import com.redis.om.spring.repository.query.RediSearchQuery
 //import com.redislabs.modules.rejson.Path
+//import io.redisearch.Query
 //import io.redisearch.Schema
 //import io.redisearch.client.Client
+//import io.redisearch.client.Commands
 //import io.redisearch.client.IndexDefinition
+//import org.springframework.beans.factory.annotation.Autowired
 //import org.springframework.beans.factory.annotation.Qualifier
 //import org.springframework.data.domain.Page
 //import org.springframework.data.domain.PageImpl
@@ -16,6 +20,7 @@
 //import org.springframework.data.redis.core.RedisTemplate
 //import org.springframework.data.repository.core.EntityInformation
 //import org.springframework.util.Assert
+//import redis.clients.jedis.Jedis
 //import java.util.function.Function
 //import java.util.stream.Collectors
 //import java.util.stream.StreamSupport
@@ -57,13 +62,16 @@
 //            Client.IndexOptions
 //                .defaultOptions()
 //                .setDefinition(IndexDefinition()
-//                    .setPrefixes(String[].{"item:", "product:"})
+//                    .setPrefixes(Array<String>() {"item :", "product :"})
 //                    .setFilter("@price>100")))
 //
 //
 //        if(entityInformation!!.isNew(entity)){
 //            return operations.insert(entity)
 //        }
+//        var query: Query
+//
+//
 //
 //        return operations.update(entityInformation.getRequiredId(entity), entity)
 //    }
