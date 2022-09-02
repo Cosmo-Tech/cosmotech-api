@@ -5,7 +5,7 @@ defaultRules:
 alertmanager:
   enabled: false
 grafana:
-  enabled: false
+  enabled: true
 kubeApiServer:
   enabled: false
 kubelet:
