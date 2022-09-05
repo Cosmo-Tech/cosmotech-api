@@ -3,13 +3,15 @@
 package com.cosmotech.workspace.azure
 
 import com.azure.cosmos.models.CosmosContainerProperties
+import com.azure.cosmos.models.CosmosQueryRequestOptions
+import com.azure.cosmos.models.SqlParameter
+import com.azure.cosmos.models.SqlQuerySpec
 import com.azure.spring.autoconfigure.storage.resource.AzureStorageResourcePatternResolver
 import com.azure.spring.autoconfigure.storage.resource.BlobStorageResource
 import com.azure.storage.blob.BlobServiceClient
 import com.azure.storage.blob.batch.BlobBatchClient
 import com.azure.storage.blob.models.DeleteSnapshotsOptionType
 import com.cosmotech.api.azure.CsmAzureService
-import com.cosmotech.api.azure.findAll
 import com.cosmotech.api.azure.findByIdOrThrow
 import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.events.DeleteHistoricalDataOrganization
@@ -22,7 +24,9 @@ import com.cosmotech.api.rbac.COMMON_PERMISSION_READ
 import com.cosmotech.api.rbac.COMMON_PERMISSION_WRITE
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
+import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.api.utils.toDomain
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
@@ -34,6 +38,7 @@ import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSecurityUsers
 import com.cosmotech.workspace.rbac.RbacConfiguration
 import com.cosmotech.workspace.rbac.rbac
+import com.fasterxml.jackson.databind.JsonNode
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.springframework.beans.factory.annotation.Qualifier
@@ -58,10 +63,27 @@ internal class WorkspaceServiceImpl(
     @Qualifier("Workspace") private val rbacConfiguration: RbacConfiguration,
 ) : CsmAzureService(), WorkspaceApiService {
 
-  // where ARRAY_CONTAINS(c.security.accessControlList, { id: "vincent.carluer@cosmotech.com" },
-  // true)
-  override fun findAllWorkspaces(organizationId: String) =
-      cosmosTemplate.findAll<Workspace>("${organizationId}_workspaces")
+  override fun findAllWorkspaces(organizationId: String): List<Workspace> {
+    val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+    logger.debug("Getting workspaces for user ${currentUser}")
+    val templateQuery =
+        "SELECT * FROM c " +
+            "WHERE ARRAY_CONTAINS(c.security.accessControlList, { id: @ACL_USER}, true)"
+    logger.debug("Template query: ${templateQuery}")
+
+    return cosmosCoreDatabase
+        .getContainer("${organizationId}_workspaces")
+        .queryItems(
+            SqlQuerySpec(templateQuery, listOf(SqlParameter("@ACL_USER", currentUser))),
+            CosmosQueryRequestOptions(),
+            // It would be much better to specify the Domain Type right away and
+            // avoid the map operation, but we can't due
+            // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
+            // https://github.com/Azure/azure-sdk-for-java/issues/12269
+            JsonNode::class.java)
+        .mapNotNull { it.toDomain<Workspace>() }
+        .toList()
+  }
 
   internal fun findWorkspaceByIdNoSecurity(organizationId: String, workspaceId: String): Workspace =
       cosmosTemplate.findByIdOrThrow(
