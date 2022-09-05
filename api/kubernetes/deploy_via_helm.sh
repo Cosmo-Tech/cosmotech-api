@@ -31,6 +31,12 @@ help() {
   echo "- TLS_CERTIFICATE_CUSTOM_CERTIFICATE_PATH | File path | path to a file containing the custom TLS certificate to use for HTTPS"
   echo "- TLS_CERTIFICATE_CUSTOM_KEY_PATH | File path | path to a file containing the key for the custom TLS certificate to use for HTTPS"
   echo "- DEPLOY_PROMETHEUS_STACK | boolean (default is false) | deploy prometheus stack to monitor platform usage"
+  echo "--- PROM_STORAGE_CLASS_NAME | storage class name for the prometheus PVC (default is standard)"
+  echo "--- PROM_STORAGE_RESOURCE_REQUEST | size requested for prometheusPVC (default is 10Gi)"
+  echo "--- PROM_CPU_MEM_LIMITS | memory size limit for prometheus (default is 2Gi)"
+  echo "--- PROM_CPU_MEM_REQUESTS | memory size requested for prometheus (default is 2Gi)"
+  echo "--- PROM_REPLICAS_NUMBER | number of prometheus replicas (default is 1)"
+  echo "--- PROM_ADMIN_PASSWORD | admin password for grafana (generated if not specified)"
   echo
   echo "Usage: ./$(basename "$0") CHART_PACKAGE_VERSION NAMESPACE ARGO_POSTGRESQL_PASSWORD API_VERSION [any additional options to pass as is to the cosmotech-api Helm Chart]"
   echo
@@ -456,7 +462,16 @@ if [[ "${DEPLOY_PROMETHEUS_STACK:-false}" == "true" ]]; then
   helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
   helm repo update
 
+  MONITORING_NAMESPACE_VAR=${MONITORING_NAMESPACE} \
+  PROM_STORAGE_CLASS_NAME_VAR=${PROM_STORAGE_CLASS_NAME:-"standard"} \
+  PROM_STORAGE_RESOURCE_REQUEST_VAR=${PROM_STORAGE_RESOURCE_REQUEST:-"10Gi"} \
+  PROM_CPU_MEM_LIMITS_VAR=${PROM_CPU_MEM_LIMITS:-"2Gi"} \
+  PROM_CPU_MEM_REQUESTS_VAR=${PROM_CPU_MEM_REQUESTS:-"2Gi"} \
+  PROM_REPLICAS_NUMBER_VAR=${PROM_REPLICAS_NUMBER:-"1"} \
+  PROM_ADMIN_PASSWORD_VAR=${PROM_ADMIN_PASSWORD:-$(date +%s | sha256sum | base64 | head -c 32)} \
+  envsubst < "${HELM_CHARTS_BASE_PATH}"/kube-prometheus-stack-template.yaml > kube-prometheus-stack.yaml
+
   helm upgrade --install prometheus-operator prometheus-community/kube-prometheus-stack \
                --namespace "${MONITORING_NAMESPACE}" \
-               --values "${HELM_CHARTS_BASE_PATH}/kube-prometheus-stack.yaml"
+               --values "kube-prometheus-stack.yaml"
 fi
