@@ -8,6 +8,13 @@ grafana:
   enabled: true
   adminPassword: $PROM_ADMIN_PASSWORD_VAR
   defaultDashboardsEnabled: false
+  tolerations:
+    - key: "vendor"
+      operator: "Equal"
+      value: "cosmotech"
+      effect: "NoSchedule"
+  nodeSelector:
+    "cosmotech.com/tier": "monitoring"
 kubeApiServer:
   enabled: false
 kubelet:
