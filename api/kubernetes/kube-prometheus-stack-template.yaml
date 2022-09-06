@@ -32,6 +32,11 @@ prometheus:
   prometheusSpec:
     logLevel: info
     replicas: $PROM_REPLICAS_NUMBER_VAR
+    tolerations:
+      - key: "vendor"
+        operator: "Equal"
+        value: "cosmotech"
+        effect: "NoSchedule"
     podMetadata:
       annotations:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
