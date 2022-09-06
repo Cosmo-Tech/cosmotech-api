@@ -37,6 +37,8 @@ prometheus:
         operator: "Equal"
         value: "cosmotech"
         effect: "NoSchedule"
+    nodeSelector:
+      "cosmotech.com/tier": "services"
     podMetadata:
       annotations:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
