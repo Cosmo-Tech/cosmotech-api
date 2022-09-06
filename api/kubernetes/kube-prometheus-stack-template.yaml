@@ -23,6 +23,14 @@ kubeStateMetrics:
   enabled: false
 nodeExporter:
   enabled: false
+prometheusOperator:
+  tolerations:
+    - key: "vendor"
+      operator: "Equal"
+      value: "cosmotech"
+      effect: "NoSchedule"
+  nodeSelector:
+    "cosmotech.com/tier": "monitoring"
 prometheus:
   enabled: true
   crname: prometheus
@@ -38,7 +46,7 @@ prometheus:
         value: "cosmotech"
         effect: "NoSchedule"
     nodeSelector:
-      "cosmotech.com/tier": "services"
+      "cosmotech.com/tier": "monitoring"
     podMetadata:
       annotations:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
