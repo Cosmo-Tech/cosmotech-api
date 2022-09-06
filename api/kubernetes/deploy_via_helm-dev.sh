@@ -294,24 +294,66 @@ popd
 
 # cosmotech-api
 export COSMOTECH_API_RELEASE_NAME="cosmotech-api-${API_VERSION}"
-# shellcheck disable=SC2140
+
+cat <<EOF > values-cosmotech-api-deploy.yaml
+api:
+  version: "$API_VERSION"
+replicaCount: 2
+
+image:
+  tag: "$API_IMAGE_TAG"
+
+config:
+  csm:
+    platform:
+      argo:
+        base-uri: "http://${ARGO_RELEASE_NAME}-argo-workflows-server.${NAMESPACE}.svc.cluster.local:2746"
+        workflows:
+          namespace: ${NAMESPACE}
+          service-account-name: ${ARGO_SERVICE_ACCOUNT}
+      twincache:
+        host: "cosmotechredis-master.${NAMESPACE}.svc.cluster.local"
+        port: "6379"
+        username: "default"
+        password: "${REDIS_PASSWORD}"
+
+
+ingress:
+  enabled: ${COSMOTECH_API_INGRESS_ENABLED}
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "30"
+    nginx.org/client-max-body-size: "0"
+  hosts:
+    - host: "${COSMOTECH_API_DNS_NAME}"
+  tls:
+    - secretName: ${TLS_SECRET_NAME}
+      hosts: [${COSMOTECH_API_DNS_NAME}]
+
+resources:
+  # Recommended in production environments
+  limits:
+    #   cpu: 100m
+    memory: 2048Mi
+  requests:
+    #   cpu: 100m
+    memory: 1024Mi
+
+nodeSelector:
+  cosmotech.com/tier: services
+
+EOF
+
+
 helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "${HELM_CHARTS_BASE_PATH}/helm-chart" \
     --namespace "${NAMESPACE}" \
-    --values "${HELM_CHARTS_BASE_PATH}/helm-chart/values-dev.yaml" \
-    --set replicaCount=2 \
     --set config.csm.platform.commit-id="$(git rev-parse --short HEAD || "")" \
     --set config.csm.platform.vcs-ref="$(git rev-parse --abbrev-ref HEAD || "")" \
-    --set image.tag="$API_IMAGE_TAG" \
-    --set api.version="$API_VERSION" \
-    --set config.csm.platform.argo.base-uri="http://${ARGO_RELEASE_NAME}-argo-workflows-server.${NAMESPACE}.svc.cluster.local:2746" \
-    --set config.csm.platform.argo.workflows.namespace="${NAMESPACE}" \
-    --set config.csm.platform.argo.workflows.service-account-name="${ARGO_SERVICE_ACCOUNT}" \
-    --set config.csm.platform.twincache.host="cosmotechredis-master.${NAMESPACE}.svc.cluster.local" \
-    --set config.csm.platform.twincache.port="6379" \
-    --set config.csm.platform.twincache.username="default" \
-    --set config.csm.platform.twincache.password="${REDIS_PASSWORD}" \
     --set podAnnotations."com\.cosmotech/deployed-at-timestamp"="\"$(date +%s)\"" \
-    --set nodeSelector."cosmotech\\.com/tier"=services \
+    --values "values-cosmotech-api-deploy.yaml" \
     "${@:5}"
 
 # kube-prometheus-stack
