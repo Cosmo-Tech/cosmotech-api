@@ -102,7 +102,20 @@ internal class ScenarioRunServiceImpl(
       // TODO Only the owner or an admin should be able to perform this operation
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
     }
-    this.deleteScenarioRunWithoutAccessEnforcement(scenarioRun)
+    deleteScenarioRunWithoutAccessEnforcement(scenarioRun)
+  }
+
+  private fun deleteScenarioMetadataWithoutAccessEnforcement(scenarioRun: ScenarioRun) {
+    logger.debug(
+        "Deleting scenario metadata. Organization: {}, Workspace: {}, scenarioId: {}",
+        scenarioRun.organizationId ?: "null",
+        scenarioRun.workspaceKey ?: "null",
+        scenarioRun.scenarioId ?: "null")
+
+    azureDataExplorerClient.deleteDataFromADXbyExtentShard(
+        scenarioRun.organizationId!!, scenarioRun.workspaceKey!!, scenarioRun.scenarioId!!)
+    logger.debug(
+        "Scenario metadata {} deleted from ADX with csmSimulationRun {}", scenarioRun.scenarioId!!)
   }
 
   private fun deleteScenarioRunWithoutAccessEnforcement(scenarioRun: ScenarioRun) {
@@ -115,8 +128,7 @@ internal class ScenarioRunServiceImpl(
           scenarioRun.id ?: "null",
           scenarioRun.csmSimulationRun ?: "null")
 
-      // Change function name: Use csmSimulationRun here, not Simulation Run id
-      azureDataExplorerClient.deleteDataFromScenarioRunId(
+      azureDataExplorerClient.deleteDataFromADXbyExtentShard(
           scenarioRun.organizationId!!, scenarioRun.workspaceKey!!, scenarioRun.csmSimulationRun!!)
       logger.debug(
           "Scenario run {} deleted from ADX with csmSimulationRun {}",
@@ -543,6 +555,29 @@ internal class ScenarioRunServiceImpl(
       if (jobs.isNotEmpty()) {
         logger.debug("Done deleting {} run(s) linked to scenario {}!", jobs.size, event.scenarioId)
       }
+    }
+
+    try {
+      logger.debug(
+          "Caught ScenarioDeleted event => deleting all scenario metadata linked to scenario {}",
+          event.scenarioId)
+
+      val workspace = workspaceService.findWorkspaceById(event.organizationId, event.workspaceId)
+      var scenarioRun =
+          ScenarioRun(
+              organizationId = event.organizationId,
+              workspaceKey = workspace.key,
+              scenarioId = event.scenarioId)
+
+      deleteScenarioMetadataWithoutAccessEnforcement(scenarioRun)
+
+      logger.debug("Done deleting scenarion metadata linked to scenario {}!", event.scenarioId)
+    } catch (exception: IllegalStateException) {
+      logger.debug(
+          "An error occurred while deleting Scenario metadata {}: {}",
+          event.scenarioId,
+          exception.message,
+          exception)
     }
   }
 
