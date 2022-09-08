@@ -99,6 +99,7 @@ internal class ScenarioRunServiceImpl(
   }
 
   override fun deleteScenarioRun(organizationId: String, scenariorunId: String) {
+  override fun deleteScenarioRun(organizationId: String, scenariorunId: String) {
     val scenarioRun = this.findScenarioRunById(organizationId, scenariorunId)
     if (scenarioRun.ownerId != getCurrentAuthenticatedUserName()) {
       // TODO Only the owner or an admin should be able to perform this operation
@@ -623,7 +624,7 @@ internal class ScenarioRunServiceImpl(
               "ScenarioRun $scenarioRunId (csmSimulationRun=$csmSimulationRun) reported as " +
                   "Successful by the Workflow Service => checking data ingestion status..")
           val postProcessingState =
-              this.azureDataExplorerClient.getStateFor(
+              this.azureDataExplorerClient.useFor(
                   organizationId = organizationId,
                   workspaceKey = workspaceKey,
                   scenarioRunId = scenarioRunId!!,

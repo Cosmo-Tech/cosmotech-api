@@ -7,6 +7,7 @@ import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.events.UserAddedToOrganization
 import com.cosmotech.api.events.UserRemovedFromOrganization
+import com.cosmotech.api.events.UserUnregistered
 import com.cosmotech.api.events.UserUnregisteredForOrganization
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
@@ -21,18 +22,15 @@ import com.cosmotech.organization.domain.OrganizationUser
 import com.cosmotech.organization.repositories.OrganizationRepository
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
-import com.redislabs.modules.rejson.JReJSON
+import io.redisearch.Document
 import io.redisearch.Query
 import io.redisearch.Schema
 import io.redisearch.SearchResult
 import io.redisearch.client.Client
 import io.redisearch.client.IndexDefinition
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.event.EventListener
-import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
-import org.springframework.web.client.HttpServerErrorException.InternalServerError
 import redis.clients.jedis.Jedis
 
 
@@ -99,7 +97,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
       userIds.toSet().map { userService.findUserById(it) }.associateBy { it.id!! }
 
   override fun registerOrganization(organization: Organization): Organization {
-    logger.trace("Registering organization : $organization")
+          logger.trace("Registering organization : $organization")
 
     if (organization.name.isNullOrBlank()) {
       throw IllegalArgumentException("Organization name must not be null or blank")
@@ -290,7 +288,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
    organizationRepository.save(existingOrganization)   return existingTenantCredentials?.toMap() ?: mapOf()
   }
 
-  /*@EventListener(UserUnregistered::class)
+  @EventListener(UserUnregistered::class)
   @Async("csm-in-process-event-executor")
   fun onUserUnregistered(userUnregisteredEvent: UserUnregistered) {
       // FIXME Does not work yet !
@@ -299,20 +297,16 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
           "User $userId unregistered => removing them from all organizations they belong to.."
       )
 
-      val schema: Schema = Schema().addTextField("$.userId", 1.0)
-      val rule: IndexDefinition = IndexDefinition(IndexDefinition.Type.JSON)
-          .setPrefixes("com.cosmotech.organization")
-      client.createIndex(
-          schema, io.redisearch.client.Client.IndexOptions.defaultOptions().setDefinition(rule)
-      )
-
-      val q: io.redisearch.Query = io.redisearch.Query(userId)
+      val q: io.redisearch.Query = io.redisearch.Query(userId).addFilter(Query.Filter("userId:"))
       val search: SearchResult = client.search(q)
 
-      for (item: Document in search.docs) {
+      val result = IntArray(search.docs.size)
+
+      for ((index, value) in search.docs.withIndex()) {
+          result[index] = search.docs[index].id.toInt()
           UserUnregisteredForOrganization(this, item.id, userId)
       }
-  }*/
+  }
 
   /*@EventListener(UserUnregistered::class)
   @Async("csm-in-process-event-executor")

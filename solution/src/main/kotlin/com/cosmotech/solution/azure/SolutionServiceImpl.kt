@@ -15,9 +15,15 @@ import com.cosmotech.solution.domain.RunTemplateParameter
 import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.repositories.SolutionRepository
+import io.redisearch.Query
+import io.redisearch.Schema
+import io.redisearch.SearchResult
+import io.redisearch.client.Client
+import io.redisearch.client.IndexDefinition
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
 import org.springframework.stereotype.Service
+import redis.clients.jedis.Jedis
 
 @Service
 @Suppress("TooManyFunctions")
@@ -26,11 +32,28 @@ internal class SolutionServiceImpl(
     var solutionRepository: SolutionRepository
 ) : CsmPhoenixService(), SolutionApiService {
 
+    var jed: Jedis = Jedis()
+    val client: Client = Client("solution_idx", jed)
+    val sc: Schema = Schema().addTextField("$.id", 5.0).addTextField("$.organizationId", 5.0)
+    val def: IndexDefinition = IndexDefinition(IndexDefinition.Type.JSON).setPrefixes("com.cosmotech.solution.domain.Solution:")
+
+    init {
+        client.createIndex(sc, Client.IndexOptions.defaultOptions().setDefinition(def))
+    }
+
   override fun findAllSolutions(organizationId: String) =
       solutionRepository.findAll().toList()
 
-  override fun findSolutionById(organizationId: String, solutionId: String): Solution =
-      solutionRepository.findById(solutionId).orElseThrow()
+  override fun findSolutionById(organizationId: String, solutionId: String): Solution {
+
+    //  val filter = Query.Filter("@\\$\\.organizationId:$organizationId")
+      val q = Query("@\\$\\.id:$solutionId")//.addFilter(filter)
+
+      val res: SearchResult = client.search(q)
+
+      val sol = res.docs[0] as Solution
+      return sol
+  }
 
   override fun removeAllRunTemplates(organizationId: String, solutionId: String) {
     val solution = findSolutionById(organizationId, solutionId)
@@ -129,11 +152,6 @@ internal class SolutionServiceImpl(
               ownerId = getCurrentAuthenticatedUserName()
           )
       )
-
-      /*sol.id = sol.id!!.replace("${organizationId}_", "")
-      println(sol.id)
-updateSolution(organizationId, "${organizationId}_"+sol.id!!, sol)
-      return saveId(organizationId, solution.id!!, solution)*/
   }
 
 
@@ -311,19 +329,5 @@ updateSolution(organizationId, "${organizationId}_"+sol.id!!, sol)
 
     return solution
   }
-
-    private fun saveId(organizationId: String, solutionId: String, solution: Solution) : Solution{
-        var sol = solutionRepository.save(
-            solution.copy(
-                id = idGenerator.generate("solution", prependPrefix = "${organizationId}_sol-"),
-                ownerId = getCurrentAuthenticatedUserName()))
-
-        sol.id = sol.id!!.replace("${organizationId}_","")
-        return solutionRepository.save(sol)
-    }
-
-    private fun findId(organizationId: String, solutionId: String, solution: Solution){
-
-    }
 
 }
