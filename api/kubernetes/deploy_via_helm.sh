@@ -469,7 +469,108 @@ if [[ "${DEPLOY_PROMETHEUS_STACK:-false}" == "true" ]]; then
   PROM_CPU_MEM_REQUESTS_VAR=${PROM_CPU_MEM_REQUESTS:-"2Gi"} \
   PROM_REPLICAS_NUMBER_VAR=${PROM_REPLICAS_NUMBER:-"1"} \
   PROM_ADMIN_PASSWORD_VAR=${PROM_ADMIN_PASSWORD:-$(date +%s | sha256sum | base64 | head -c 32)} \
-  envsubst < "${HELM_CHARTS_BASE_PATH}"/kube-prometheus-stack-template.yaml > kube-prometheus-stack.yaml
+  # Cannot use kube-prometheus-stack.yaml here directly since ARM only download deploy_via_helm.sh
+  # envsubst < "${HELM_CHARTS_BASE_PATH}"/kube-prometheus-stack-template.yaml > kube-prometheus-stack.yaml
+
+cat <<EOF > kube-prometheus-stack.yaml
+namespace: $MONITORING_NAMESPACE_VAR
+name: cosmotech-api-latest
+defaultRules:
+  create: false
+alertmanager:
+  enabled: false
+grafana:
+  enabled: true
+  adminPassword: $PROM_ADMIN_PASSWORD_VAR
+  defaultDashboardsEnabled: false
+  tolerations:
+    - key: "vendor"
+      operator: "Equal"
+      value: "cosmotech"
+      effect: "NoSchedule"
+  nodeSelector:
+    "cosmotech.com/tier": "monitoring"
+kubeApiServer:
+  enabled: false
+kubelet:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+coreDns:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeStateMetrics:
+  enabled: false
+nodeExporter:
+  enabled: false
+prometheusOperator:
+  tolerations:
+    - key: "vendor"
+      operator: "Equal"
+      value: "cosmotech"
+      effect: "NoSchedule"
+  nodeSelector:
+    "cosmotech.com/tier": "monitoring"
+prometheus:
+  enabled: true
+  crname: prometheus
+  serviceAccount:
+    create: true
+    name: prometheus-service-account
+  prometheusSpec:
+    logLevel: info
+    replicas: $PROM_REPLICAS_NUMBER_VAR
+    tolerations:
+      - key: "vendor"
+        operator: "Equal"
+        value: "cosmotech"
+        effect: "NoSchedule"
+    nodeSelector:
+      "cosmotech.com/tier": "monitoring"
+    podMetadata:
+      annotations:
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+      labels:
+        app: prometheus
+    resources:
+      limits:
+        cpu: 1
+        memory: $PROM_CPU_MEM_LIMITS_VAR
+      requests:
+        cpu: 1
+        memory: $PROM_CPU_MEM_REQUESTS_VAR
+    retention: 12h
+    serviceMonitorSelector:
+      matchLabels:
+        serviceMonitorSelector: prometheus
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: $PROM_STORAGE_CLASS_NAME_VAR
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: $PROM_STORAGE_RESOURCE_REQUEST_VAR
+  additionalServiceMonitors:
+    - name: cosmotech-latest
+      additionalLabels:
+        serviceMonitorSelector: prometheus
+      endpoints:
+        - interval: 30s
+          targetPort: 8081
+          path: /actuator/prometheus
+      namespaceSelector:
+        matchNames:
+        - phoenix
+      selector:
+        matchLabels:
+          app.kubernetes.io/instance: cosmotech-api-latest
+
+EOF
 
   helm upgrade --install prometheus-operator prometheus-community/kube-prometheus-stack \
                --namespace "${MONITORING_NAMESPACE}" \
