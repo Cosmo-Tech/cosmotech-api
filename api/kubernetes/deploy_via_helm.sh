@@ -77,6 +77,8 @@ export POSTGRES_RELEASE_NAME=postgrescsmv2
 export POSTGRESQL_VERSION="11.6.12"
 export ARGO_POSTGRESQL_USER=argo
 export ARGO_POSTGRESQL_PASSWORD="$3"
+export INGRESS_NGINX_VERSION="4.2.5"
+export CERT_MANAGER_VERSION="1.9.1"
 
 export ARGO_DATABASE=argo_workflows
 export ARGO_BUCKET_NAME=argo-workflows
@@ -147,7 +149,7 @@ EOF
 
   helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
     --namespace "${NAMESPACE}" \
-    --version 4.1.0 \
+    --version ${INGRESS_NGINX_VERSION} \
     --values values-ingress-nginx.yaml \
     ${NGINX_INGRESS_CONTROLLER_HELM_ADDITIONAL_OPTIONS:-}
 fi
@@ -169,7 +171,7 @@ if [[ "${CERT_MANAGER_ENABLED:-false}" == "true" ]]; then
   kubectl label namespace "${NAMESPACE}" cert-manager.io/disable-validation=true --overwrite=true
   helm upgrade --install cert-manager jetstack/cert-manager \
     --namespace "${NAMESPACE}" \
-    --version v1.3.1 \
+    --version v${CERT_MANAGER_VERSION} \
     --wait \
     --timeout "${CERT_MANAGER_INSTALL_WAIT_TIMEOUT:-3m}" \
     --set installCRDs=true \
