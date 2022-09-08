@@ -131,7 +131,7 @@ controller:
     networking/traffic-allowed: "yes"
   replicaCount: "${NGINX_INGRESS_CONTROLLER_REPLICA_COUNT}"
   nodeSelector:
-    beta.kubernetes.io/os: "linux"
+    kubernetes.io/os: "linux"
   service:
     labels:
       networking/traffic-allowed: "yes"
@@ -143,7 +143,7 @@ defaultBackend:
   podLabels:
     networking/traffic-allowed: "yes"
   nodeSelector:
-    "beta.kubernetes.io/os": "linux"
+    "kubernetes.io/os": "linux"
 
 EOF
 
@@ -175,7 +175,7 @@ if [[ "${CERT_MANAGER_ENABLED:-false}" == "true" ]]; then
     --wait \
     --timeout "${CERT_MANAGER_INSTALL_WAIT_TIMEOUT:-3m}" \
     --set installCRDs=true \
-    --set nodeSelector."beta\.kubernetes\.io/os"=linux \
+    --set nodeSelector."kubernetes\.io/os"=linux \
     --set podLabels."networking/traffic-allowed"=yes \
     --set webhook.podLabels."networking/traffic-allowed"=yes \
     --set cainjector.podLabels."networking/traffic-allowed"=yes
@@ -183,11 +183,11 @@ if [[ "${CERT_MANAGER_ENABLED:-false}" == "true" ]]; then
   if [[ "${COSMOTECH_API_DNS_NAME:-}" != "" && "${TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL:-}" != "" ]]; then
     # Wait few seconds until the CertManager WebHook pod is ready.
     # Otherwise, we might run into the following issue :
-    # Error from server: error when creating "STDIN": conversion webhook for cert-manager.io/v1alpha2,
+    # Error from server: error when creating "STDIN": conversion webhook for cert-manager.io/v1,
     # Kind=Certificate failed: Post "https://cert-manager-webhook.${NAMESPACE}.svc:443/convert?timeout=30s"
     sleep 25
 cat <<EOF | kubectl --namespace "${NAMESPACE}" apply --validate=false -f -
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
   name: letsencrypt-${CERT_MANAGER_ACME}
@@ -211,7 +211,7 @@ spec:
 
 ---
 
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: ${TLS_SECRET_NAME}
