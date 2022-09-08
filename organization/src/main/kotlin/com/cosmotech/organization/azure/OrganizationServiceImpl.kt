@@ -7,6 +7,7 @@ import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.events.UserAddedToOrganization
 import com.cosmotech.api.events.UserRemovedFromOrganization
+import com.cosmotech.api.events.UserUnregistered
 import com.cosmotech.api.events.UserUnregisteredForOrganization
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
@@ -21,18 +22,15 @@ import com.cosmotech.organization.domain.OrganizationUser
 import com.cosmotech.organization.repositories.OrganizationRepository
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
-import com.redislabs.modules.rejson.JReJSON
+import io.redisearch.Document
 import io.redisearch.Query
 import io.redisearch.Schema
 import io.redisearch.SearchResult
 import io.redisearch.client.Client
 import io.redisearch.client.IndexDefinition
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.event.EventListener
-import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
-import org.springframework.web.client.HttpServerErrorException.InternalServerError
 import redis.clients.jedis.Jedis
 
 @Service
@@ -42,19 +40,15 @@ internal class OrganizationServiceImpl(
     var organizationRepository: OrganizationRepository,
 ) : CsmPhoenixService(), OrganizationApiService {
 
-    var jso = JReJSON()
     var jed: Jedis = Jedis()
-val client: Client = Client("organization_idx", jed)
-    val sc: Schema = Schema().addTextField("$.id", 5.0)
-    val def: IndexDefinition = IndexDefinition(IndexDefinition.Type.JSON).setPrefixes("com.cosmotech.organization.domain.Organization:")
+    val client: Client = Client("organization_idx", jed)
+    val sc: Schema = Schema().addTextField("$.id", 1.0).addTextField("$.userId", 1.0)
+    val def: IndexDefinition = IndexDefinition(IndexDefinition.Type.JSON)
+        .setPrefixes("com.cosmotech.solution.domain.Organization:")
 
-
-
-    private val MASTER_NAME = "mymaster"
-    private var sentinels: Set<String>? = HashSet()
-    @Autowired
-    lateinit var template: RedisTemplate<String, String>
-
+    init {
+        client.createIndex(sc, Client.IndexOptions.defaultOptions().setDefinition(def))
+    }
 
     override fun addOrReplaceUsersInOrganization(
       organizationId: String,
@@ -102,18 +96,8 @@ val client: Client = Client("organization_idx", jed)
 
   override fun findAllOrganizations() = organizationRepository.findAll().toList()
 
-  override fun findOrganizationById(organizationId: String): Organization {
-var que = Query("@\\$\\.id:$organizationId")
-
-      val res: SearchResult = client.search(que)
-
-
-        println("#############################")
-        println(res.docs[0].id.toString())
-        println("#############################")
-
-        return organizationRepository.findById(organizationId).orElseThrow()
-    }
+  override fun findOrganizationById(organizationId: String): Organization =
+      organizationRepository.findById(organizationId).orElseThrow()
 
 
   /**
@@ -125,59 +109,39 @@ var que = Query("@\\$\\.id:$organizationId")
       userIds.toSet().map { userService.findUserById(it) }.associateBy { it.id!! }
 
   override fun registerOrganization(organization: Organization): Organization {
-    if(organizationRepository.count().equals(0)){
-      try {
-          client.createIndex(sc, Client.IndexOptions.defaultOptions().setDefinition(def))
-      }catch (e: InternalServerError){
-//          client.toString()
-////          Commands.Command.CREATE
-//          println("#####################################")
-//          println("tubad")
-//          println("#####################################")
-         // client.createIndex(sc, Client.IndexOptions.defaultOptions().setDefinition(def))
-      }
-    }else{
-//        println("#####################################")
-//        println(client.dropIndex())
-//        println("#####################################")
-    }
+          logger.trace("Registering organization : $organization")
 
-      client.createIndex(sc, Client.IndexOptions.defaultOptions().setDefinition(def))
+          if (organization.name.isNullOrBlank()) {
+              throw IllegalArgumentException("Organization name must not be null or blank")
+          }
 
-    logger.trace("Registering organization : $organization")
+          val usersLoaded = organization.users?.mapNotNull { it.id }?.let { fetchUsers(it) }
 
-    if (organization.name.isNullOrBlank()) {
-      throw IllegalArgumentException("Organization name must not be null or blank")
-    }
+          //    val newOrganizationId = idGenerator.generate("organization")
 
-    val usersLoaded = organization.users?.mapNotNull { it.id }?.let { fetchUsers(it) }
+          val usersWithNames =
+              usersLoaded
+                  ?.let { organization.users?.map { it.copy(name = usersLoaded[it.id]!!.name!!) } }
+                  ?.toMutableList()
 
-    //    val newOrganizationId = idGenerator.generate("organization")
+          val organizationId =
+              organization.id
+                  ?: throw IllegalStateException(
+                      "No ID returned for organization registered: $organization")
 
-    val usersWithNames =
-        usersLoaded
-            ?.let { organization.users?.map { it.copy(name = usersLoaded[it.id]!!.name!!) } }
-            ?.toMutableList()
+          this.eventPublisher.publishEvent(OrganizationRegistered(this, organizationId))
+          organization.users?.forEach { user ->
+              this.eventPublisher.publishEvent(
+                  UserAddedToOrganization(
+                      this,
+                      organizationId,
+                      organization.name!!,
+                      user.id!!,
+                      user.roles.map { role -> role.value }))
+          }
+          // TODO Handle rollbacks in case of errors
 
-    val organizationId =
-        organization.id
-            ?: throw IllegalStateException(
-                "No ID returned for organization registered: $organization")
-
-    this.eventPublisher.publishEvent(OrganizationRegistered(this, organizationId))
-    organization.users?.forEach { user ->
-      this.eventPublisher.publishEvent(
-          UserAddedToOrganization(
-              this,
-              organizationId,
-              organization.name!!,
-              user.id!!,
-              user.roles.map { role -> role.value }))
-    }
-    // TODO Handle rollbacks in case of errors
-
-    return organizationRepository.save(organization)
-
+          return organizationRepository.save(organization)
 
   }
 
@@ -348,7 +312,7 @@ var que = Query("@\\$\\.id:$organizationId")
     return existingTenantCredentials?.toMap() ?: mapOf()
   }
 
-  /*@EventListener(UserUnregistered::class)
+  @EventListener(UserUnregistered::class)
   @Async("csm-in-process-event-executor")
   fun onUserUnregistered(userUnregisteredEvent: UserUnregistered) {
       // FIXME Does not work yet !
@@ -357,20 +321,16 @@ var que = Query("@\\$\\.id:$organizationId")
           "User $userId unregistered => removing them from all organizations they belong to.."
       )
 
-      val schema: Schema = Schema().addTextField("$.userId", 1.0)
-      val rule: IndexDefinition = IndexDefinition(IndexDefinition.Type.JSON)
-          .setPrefixes("com.cosmotech.organization")
-      client.createIndex(
-          schema, io.redisearch.client.Client.IndexOptions.defaultOptions().setDefinition(rule)
-      )
-
-      val q = io.redisearch.Query(userId)
+      val q = io.redisearch.Query(userId).addFilter(Query.Filter("userId:"))
       val search: SearchResult = client.search(q)
 
-      for (item: Document in search.docs) {
+      val result = IntArray(search.docs.size)
+
+      for ((index, value) in search.docs.withIndex()) {
+          result[index] = search.docs[index].id.toInt()
           UserUnregisteredForOrganization(this, item.id, userId)
       }
-  }*/
+  }
 
   /*@EventListener(UserUnregistered::class)
   @Async("csm-in-process-event-executor")
