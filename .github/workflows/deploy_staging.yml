@@ -118,7 +118,7 @@ jobs:
           COSMOTECH_API_DNS_NAME: ${{ secrets.STAGING_ENV_COSMOTECH_API_DNS_NAME }}
           TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL: ${{ secrets.STAGING_ENV_TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL }}
         run: |
-          ./api/kubernetes/deploy_via_helm-github.sh \
+          ./api/kubernetes/deploy_via_helm-latest.sh \
             "${GH_SHA}" \
             "${NAMESPACE}" \
             "${ARGO_POSTGRESQL_PASSSORD}" \
