@@ -29,7 +29,7 @@ jobs:
           ref: ${{ github.event.client_payload.gh_sha }}
 
       - name: Set up Helm
-        uses: azure/setup-helm@v2.1
+        uses: azure/setup-helm@v3.3
         with:
           version: v3.6.0
 
@@ -98,7 +98,7 @@ jobs:
           # Secret created with: az ad sp create-for-rbac -n "github-actions" --sdk-auth
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
 
-      - uses: Azure/aks-set-context@v2.2
+      - uses: Azure/aks-set-context@v3.1
         with:
           cluster-name: ${{ secrets.STAGING_ENV_CLUSTER_NAME }}
           resource-group: ${{ secrets.STAGING_ENV_CLUSTER_RESOURCE_GROUP }}
@@ -110,6 +110,7 @@ jobs:
           ARGO_MINIO_ACCESS_KEY: ${{ secrets.STAGING_ENV_ARGO_MINIO_ACCESS_KEY }}
           ARGO_MINIO_SECRET_KEY: ${{ secrets.STAGING_ENV_ARGO_MINIO_SECRET_KEY }}
           ARGO_POSTGRESQL_PASSSORD: ${{ secrets.STAGING_ENV_ARGO_POSTGRESQL_PASSSORD }}
+          DEPLOY_PROMETHEUS_STACK: 'true'
           NGINX_INGRESS_CONTROLLER_ENABLED: 'true'
           NGINX_INGRESS_CONTROLLER_LOADBALANCER_IP: ${{ secrets.STAGING_ENV_NGINX_INGRESS_CONTROLLER_LOADBALANCER_IP }}
           CERT_MANAGER_USE_ACME_PROD: 'true'

@@ -81,13 +81,13 @@ echo "Setting environment variables useful for this upgrade..."
 
 # Retrieve the Argo MinIO access and secret key credentials
 # shellcheck disable=SC2155
-export ARGO_MINIO_ACCESS_KEY=$(kubectl -n "${NAMESPACE}" get secret argo-minio -o=jsonpath='{.data.accesskey}' | base64 -d)
+export ARGO_MINIO_ACCESS_KEY=$(kubectl -n "${NAMESPACE}" get secret miniocsmv2 -o=jsonpath='{.data.accesskey}' | base64 -d)
 # shellcheck disable=SC2155
-export ARGO_MINIO_SECRET_KEY=$(kubectl -n "${NAMESPACE}" get secret argo-minio -o=jsonpath='{.data.secretkey}' | base64 -d)
+export ARGO_MINIO_SECRET_KEY=$(kubectl -n "${NAMESPACE}" get secret miniocsmv2 -o=jsonpath='{.data.secretkey}' | base64 -d)
 
 # Retrieve the current Argo PostgreSQL secret
 # shellcheck disable=SC2155
-export ARGO_POSTGRESQL_PASSWORD=$(kubectl -n "${NAMESPACE}" get secret argo-argo-postgresql-secret -o json | jq -r '.data["postgresql.password"]' | base64 -d)
+export ARGO_POSTGRESQL_PASSWORD=$(kubectl -n "${NAMESPACE}" get secret argo-postgres-config -o json | jq -r '.data["password"]' | base64 -d)
 
 # Get the current Ingress Controller Load Balancer IP
 # shellcheck disable=SC2155
@@ -136,6 +136,8 @@ fi
 
 # shellcheck disable=SC2155
 export COSMOTECH_API_DNS_NAME=$(kubectl -n "${NAMESPACE}" get ingress cosmotech-api-latest -o json | jq -r '.spec.tls[0].hosts[0]')
+
+export PROM_ADMIN_PASSWORD=$(kubectl -n "${NAMESPACE}-monitoring" get secret "prometheus-operator-grafana" -o=jsonpath='{.data.admin-password}' | base64 -d)
 
 # Now run the deployment script with the right environment variables set
 echo "Now running the deployment script (from \"${GIT_BRANCH_NAME}\" Git Branch) with the right environment variables..."

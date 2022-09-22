@@ -80,6 +80,7 @@ csm:
     argo:
       base-uri: "https://localhost:2746"
       image-pull-secrets: []
+      imagePullPolicy: IfNotPresent
       workflows:
         namespace: phoenix
         node-pool-label: agentpool

@@ -87,7 +87,7 @@ spec:
           startupProbe:
             initialDelaySeconds: 5
             periodSeconds: 5
-            failureThreshold: 5
+            failureThreshold: 60
             tcpSocket:
               port: http
           livenessProbe:
