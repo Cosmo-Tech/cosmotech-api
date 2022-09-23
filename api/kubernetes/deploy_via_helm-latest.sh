@@ -446,7 +446,7 @@ helm upgrade --install \
    --values values-redis-insight.yaml \
    --timeout 10m0s
 
-REDIS_PASSWORD=$(kubectl get secret --namespace ${NAMESPACE} cosmotechredis -o jsonpath="{.data.redis-password}" | base64 --decode)
+REDIS_PASSWORD=$(kubectl get secret --namespace ${NAMESPACE} cosmotechredis -o jsonpath="{.data.redis-password}" | base64 -d)
 
 echo -- Minio
 # Minio
