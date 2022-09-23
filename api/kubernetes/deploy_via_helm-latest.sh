@@ -410,6 +410,7 @@ helm upgrade --install \
     --wait \
     --values values-redis.yaml \
     --timeout 10m0s
+HELM_CHARTS_BASE_PATH=$(realpath "$(dirname "$0")")
 
 echo -- Redis Insight
 # Redis Insight
@@ -731,8 +732,6 @@ if [[ "${CERT_MANAGER_ENABLED:-false}" == "true" ]]; then
 else
   export CERT_MANAGER_INGRESS_ANNOTATION_SET=""
 fi
-
-HELM_CHARTS_BASE_PATH=$(realpath "$(dirname "$0")")
 
 helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "cosmotech-api-chart-${CHART_PACKAGE_VERSION}.tgz" \
     --namespace "${NAMESPACE}" \
