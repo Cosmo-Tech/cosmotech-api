@@ -414,7 +414,7 @@ HELM_CHARTS_BASE_PATH=$(realpath "$(dirname "$0")")
 
 echo -- Redis Insight
 # Redis Insight
-REDIS_INSIGHT_HELM_CHART="${HELM_CHARTS_BASE_PATH}/charts/redisinsight-chart.tgz"
+REDIS_INSIGHT_HELM_CHART="${WORKING_DIR}/redisinsight-chart.tgz"
 wget https://docs.redis.com/latest/pkgs/redisinsight-chart-${VERSION_REDIS_INSIGHT}.tgz  -O ${REDIS_INSIGHT_HELM_CHART}
 
 cat <<EOF > values-redis-insight.yaml
