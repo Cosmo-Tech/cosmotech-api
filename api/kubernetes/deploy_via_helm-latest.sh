@@ -443,7 +443,7 @@ helm upgrade --install \
    --namespace ${NAMESPACE} redisinsight ${REDIS_INSIGHT_HELM_CHART} \
    --set service.type=NodePort \
    --wait \
-    --values values-redis-insight \
+   --values values-redis-insight.yaml \
    --timeout 10m0s
 
 REDIS_PASSWORD=$(kubectl get secret --namespace ${NAMESPACE} cosmotechredis -o jsonpath="{.data.redis-password}" | base64 --decode)
