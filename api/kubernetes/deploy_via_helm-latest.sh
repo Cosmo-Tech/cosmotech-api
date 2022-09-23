@@ -691,6 +691,11 @@ config:
         workflows:
           namespace: ${NAMESPACE}
           service-account-name: ${ARGO_SERVICE_ACCOUNT}
+      twincache:
+        host: "cosmotechredis-master.${NAMESPACE}.svc.cluster.local"
+        port: "6379"
+        username: "default"
+        password: "${REDIS_PASSWORD}"
 
 ingress:
   enabled: ${COSMOTECH_API_INGRESS_ENABLED}
