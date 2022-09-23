@@ -9,6 +9,7 @@ import com.azure.cosmos.models.PartitionKey
 import com.azure.cosmos.models.SqlParameter
 import com.azure.cosmos.models.SqlQuerySpec
 import com.cosmotech.api.azure.CsmAzureService
+import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
@@ -68,6 +69,7 @@ internal class ScenarioServiceImpl(
     private val solutionService: SolutionApiService,
     private val organizationService: OrganizationApiService,
     private val workspaceService: WorkspaceApiService,
+    private val azureDataExplorerClient: AzureDataExplorerClient,
     private val azureEventHubsClient: AzureEventHubsClient
 ) : CsmAzureService(), ScenarioApiService {
 
@@ -286,7 +288,25 @@ internal class ScenarioServiceImpl(
     // TODO Notify users
 
     this.handleScenarioDeletion(organizationId, workspaceId, scenario, waitRelationshipPropagation)
+    val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
+    deleteScenarioMetadata(organizationId, workspace.key, scenarioId)
+
     eventPublisher.publishEvent(ScenarioDeleted(this, organizationId, workspaceId, scenarioId))
+  }
+
+  private fun deleteScenarioMetadata(
+      organizationId: String,
+      workspaceKey: String,
+      scenarioId: String
+  ) {
+    logger.debug(
+        "Deleting scenario metadata. Organization: {}, Workspace: {}, scenarioId: {}",
+        organizationId ?: "null",
+        workspaceKey ?: "null",
+        scenarioId ?: "null")
+
+    azureDataExplorerClient.deleteDataFromADXbyExtentShard(organizationId, workspaceKey, scenarioId)
+    logger.debug("Scenario metadata deleted from ADX for scenario {}", scenarioId)
   }
 
   override fun downloadScenarioData(
