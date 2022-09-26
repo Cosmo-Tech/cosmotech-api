@@ -427,7 +427,7 @@ tolerations:
   value: "cosmotech"
   effect: "NoSchedule"
 nodeSelector:
-  cosmotech.com/tier: "services"
+  "cosmotech.com/tier": "services"
 resources:
   requests:
     cpu: 100m
@@ -487,7 +487,7 @@ tolerations:
   value: "cosmotech"
   effect: "NoSchedule"
 nodeSelector:
-  cosmotech.com/tier: services
+  "cosmotech.com/tier": "services"
 accessKey: "${ARGO_MINIO_ACCESS_KEY:-}"
 secretKey: "${ARGO_MINIO_SECRET_KEY:-}"
 EOF
@@ -514,7 +514,7 @@ primary:
       "cosmotech.com/tier": "db"
 readReplicas:
   nodeSelector:
-    cosmotech.com/tier: db
+    "cosmotech.com/tier": "db"
   tolerations:
   - key: "vendor"
     operator: "Equal"
@@ -591,7 +591,7 @@ server:
     value: "cosmotech"
     effect: "NoSchedule"
   nodeSelector:
-    cosmotech.com/tier: services
+    "cosmotech.com/tier": "services"
   resources:
     requests:
       memory: "64Mi"
@@ -608,7 +608,7 @@ controller:
     value: "cosmotech"
     effect: "NoSchedule"
   nodeSelector:
-    cosmotech.com/tier: services
+    "cosmotech.com/tier": "services"
   resources:
     requests:
       memory: "64Mi"
