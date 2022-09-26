@@ -103,25 +103,8 @@ internal class ScenarioRunServiceImpl(
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
     }
     deleteScenarioRunWithoutAccessEnforcement(scenarioRun)
-    deleteScenarioRunMetadata(
-        organizationId, scenarioRun.workspaceKey!!, scenarioRun.csmSimulationRun!!)
   }
 
-  private fun deleteScenarioRunMetadata(
-      organizationId: String,
-      workspaceKey: String,
-      csmSimulationRun: String
-  ) {
-    logger.debug(
-        "Deleting scenario run metadata. Organization: {}, Workspace: {}, csmSimulationRun: {}",
-        organizationId,
-        workspaceKey,
-        csmSimulationRun)
-
-    azureDataExplorerClient.deleteDataFromADXbyExtentShard(
-        organizationId, workspaceKey, csmSimulationRun)
-    logger.debug("Scenario run metadata deleted from ADX for SimulationRun {}", csmSimulationRun)
-  }
   private fun deleteScenarioRunWithoutAccessEnforcement(scenarioRun: ScenarioRun) {
     // Simple way to ensure that we do not delete data if something went wrong
     try {

@@ -41,7 +41,7 @@ version = scmVersion.version
 
 val kotlinJvmTarget = 17
 val cosmotechApiCommonVersion = "0.1.8-SNAPSHOT"
-val cosmotechApiAzureVersion = "delete_scenario_data_in_adx_Prod-9897-SNAPSHOT"
+val cosmotechApiAzureVersion = "0.1.6-SNAPSHOT"
 
 val azureSpringBootBomVersion = "3.14.0"
 
