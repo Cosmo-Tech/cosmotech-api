@@ -425,9 +425,9 @@ class ScenarioRunServiceImplTests {
   }
 
   @Test
-  // TODO MIG This test should verify that azureDataExplorerClient#deleteDataFromScenarioRunId is
+  // TODO MIG This test should verify that azureDataExplorerClient#deleteDataFromADXbyExtentShard is
   // called instead
-  fun `PROD-8148 - deleteDataFromScenarioRunId is called once`() {
+  fun `PROD-8148 - deleteDataFromADXbyExtentShard is called once`() {
     val scenarioRun = mockk<ScenarioRun>()
     every { scenarioRunServiceImpl.findScenarioRunById("orgId", "scenariorunId") } returns
         scenarioRun
@@ -438,6 +438,7 @@ class ScenarioRunServiceImplTests {
     every { scenarioRun.organizationId } returns "ownerId"
     every { scenarioRun.workspaceKey } returns "wk"
     every { scenarioRun.csmSimulationRun } returns "csmSimulationRun"
+    every { scenarioRun.scenarioId } returns "scenarioId"
     every { getCurrentAuthenticatedUserName() } returns "ownerId"
     scenarioRun.ownerId != getCurrentAuthenticatedUserName()
     scenarioRunServiceImpl.deleteScenarioRun("orgId", "scenariorunId")

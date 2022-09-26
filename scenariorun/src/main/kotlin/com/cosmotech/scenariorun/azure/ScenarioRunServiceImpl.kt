@@ -102,7 +102,7 @@ internal class ScenarioRunServiceImpl(
       // TODO Only the owner or an admin should be able to perform this operation
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
     }
-    this.deleteScenarioRunWithoutAccessEnforcement(scenarioRun)
+    deleteScenarioRunWithoutAccessEnforcement(scenarioRun)
   }
 
   private fun deleteScenarioRunWithoutAccessEnforcement(scenarioRun: ScenarioRun) {
@@ -115,8 +115,7 @@ internal class ScenarioRunServiceImpl(
           scenarioRun.id ?: "null",
           scenarioRun.csmSimulationRun ?: "null")
 
-      // Change function name: Use csmSimulationRun here, not Simulation Run id
-      azureDataExplorerClient.deleteDataFromScenarioRunId(
+      azureDataExplorerClient.deleteDataFromADXbyExtentShard(
           scenarioRun.organizationId!!, scenarioRun.workspaceKey!!, scenarioRun.csmSimulationRun!!)
       logger.debug(
           "Scenario run {} deleted from ADX with csmSimulationRun {}",

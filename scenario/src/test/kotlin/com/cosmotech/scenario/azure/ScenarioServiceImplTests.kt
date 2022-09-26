@@ -8,6 +8,7 @@ import com.azure.cosmos.CosmosDatabase
 import com.azure.cosmos.models.CosmosItemResponse
 import com.azure.cosmos.models.PartitionKey
 import com.azure.spring.data.cosmos.core.CosmosTemplate
+import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEvent
@@ -64,6 +65,7 @@ class ScenarioServiceImplTests {
   @MockK private lateinit var workspaceService: WorkspaceApiService
   @MockK private lateinit var idGenerator: CsmIdGenerator
   @MockK(relaxed = true) private lateinit var azureEventHubsClient: AzureEventHubsClient
+  @MockK(relaxed = true) private lateinit var azureDataExplorerClient: AzureDataExplorerClient
 
   @Suppress("unused") @MockK(relaxed = true) private lateinit var cosmosTemplate: CosmosTemplate
   @Suppress("unused") @MockK private lateinit var cosmosClient: CosmosClient
@@ -87,6 +89,7 @@ class ScenarioServiceImplTests {
                 solutionService,
                 organizationService,
                 workspaceService,
+                azureDataExplorerClient,
                 azureEventHubsClient),
             recordPrivateCalls = true)
 
