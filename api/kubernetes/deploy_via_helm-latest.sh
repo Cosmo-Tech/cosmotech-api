@@ -510,8 +510,8 @@ primary:
     operator: "Equal"
     value: "cosmotech"
     effect: "NoSchedule"
-    nodeSelector:
-      "cosmotech.com/tier": "db"
+  nodeSelector:
+    "cosmotech.com/tier": "db"
 readReplicas:
   nodeSelector:
     "cosmotech.com/tier": "db"
