@@ -135,6 +135,26 @@ internal class ScenarioRunServiceImpl(
     }
   }
 
+  override fun deleteObsoleteScenarioRunsByScenario(organizationId: String, workspaceId: String, scenarioId: String) {
+      val scenarioRuns = getScenarioRuns(organizationId, workspaceId, scenarioId)
+      val scenarioRunStatus = mutableListOf<ScenarioRunStatus>()
+      var successful = false
+      for(item in scenarioRuns){
+          scenarioRunStatus.add(getScenarioRunStatus(item.id!!, item))
+      }
+      scenarioRunStatus.sortedByDescending { it.endTime }
+      for(item in scenarioRunStatus){
+          val scenarioRunState = item.state
+          if(scenarioRunState == ScenarioRunState.Failed || scenarioRunState == ScenarioRunState.Unknown){
+              deleteScenarioRun(organizationId, item.id!!)
+          }else if(scenarioRunState == ScenarioRunState.Successful){
+              if(!successful){
+                  successful = true
+              }
+          }
+      }
+  }
+
   override fun findScenarioRunById(organizationId: String, scenariorunId: String) =
       findScenarioRunById(organizationId, scenariorunId, withStateInformation = true)
 
