@@ -6,17 +6,37 @@ info:
   version: 0.0.8-SNAPSHOT
 
 servers:
-- url: 'https://api.azure.cosmo-platform.com'
-- url: 'http://localhost:4010'
+  - url: 'https://api.azure.cosmo-platform.com'
+  - url: 'http://localhost:4010'
 
 security:
-- oAuth2AuthCode: [ ]
+  - oAuth2AuthCode: [ ]
 
 tags:
-- name: scenariorun
-  description: ScenarioRun Management
+  - name: scenariorun
+    description: ScenarioRun Management
 
 paths:
+  /organizations/{organization_id}/scenarioruns/deletehistoricaldata:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    delete:
+      operationId: deleteHistoricalDataOrganization
+      tags:
+        - scenariorun
+      summary: Delete all historical ScenarioRuns in the database
+      responses:
+        "204":
+          description: Request succeeded
+        "400":
+          description: Bad request
+        "404":
+          description: the Scenario specified is unknown or you don't have access to it
   /organizations/{organization_id}/scenarioruns/search:
     parameters:
       - name: organization_id
@@ -303,10 +323,10 @@ paths:
                 OneScenarioRun:
                   $ref: '#/components/examples/OneScenarioRun'
     delete:
-      operationId: deleteObsoleteScenarioRunsByScenario
+      operationId: deleteHistoricalScenarioRunsByScenario
       tags:
         - scenariorun
-      summary: Delete all obsolete ScenarioRuns for the Scenario
+      summary: Delete all historical ScenarioRuns for the Scenario
       responses:
         "204":
           description: Request succeeded
@@ -805,7 +825,7 @@ components:
       description: Brewery ScenarioRun logs with plain text example
       value:
         scenariorunId: "1"
-        containers: 
+        containers:
           fetchDatasetContainers:
             nodeId: azertyuiop-123
             containerName: azertyuiop

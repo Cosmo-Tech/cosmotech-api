@@ -12,6 +12,8 @@ import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
+import com.cosmotech.api.events.DeleteHistoricalDataOrganization
+import com.cosmotech.api.events.DeleteHistoricalDataScenario
 import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
 import com.cosmotech.api.events.ScenarioDataDownloadRequest
 import com.cosmotech.api.events.ScenarioDeleted
@@ -135,24 +137,35 @@ internal class ScenarioRunServiceImpl(
     }
   }
 
-  override fun deleteObsoleteScenarioRunsByScenario(organizationId: String, workspaceId: String, scenarioId: String) {
-      val scenarioRuns = getScenarioRuns(organizationId, workspaceId, scenarioId)
-      val scenarioRunStatus = mutableListOf<ScenarioRunStatus>()
-      var successful = false
-      for(item in scenarioRuns){
-          scenarioRunStatus.add(getScenarioRunStatus(item.id!!, item))
+  override fun deleteHistoricalScenarioRunsByScenario(
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String
+  ) {
+    val scenarioRuns = getScenarioRuns(organizationId, workspaceId, scenarioId)
+    val scenarioRunStatus = mutableListOf<ScenarioRunStatus>()
+    var firstSuccessfulRun = false
+    for (item in scenarioRuns) {
+      scenarioRunStatus.add(getScenarioRunStatus(item.id!!, item))
+    }
+    scenarioRunStatus.sortedByDescending { it.endTime }
+    for (item in scenarioRunStatus) {
+      val scenarioRunState = item.state
+      if (scenarioRunState == ScenarioRunState.Failed) {
+        deleteScenarioRun(organizationId, item.id!!)
+      } else if (scenarioRunState == ScenarioRunState.Successful) {
+        if (!firstSuccessfulRun) {
+          firstSuccessfulRun = true
+        } else {
+          deleteScenarioRun(organizationId, item.id!!)
+        }
       }
-      scenarioRunStatus.sortedByDescending { it.endTime }
-      for(item in scenarioRunStatus){
-          val scenarioRunState = item.state
-          if(scenarioRunState == ScenarioRunState.Failed || scenarioRunState == ScenarioRunState.Unknown){
-              deleteScenarioRun(organizationId, item.id!!)
-          }else if(scenarioRunState == ScenarioRunState.Successful){
-              if(!successful){
-                  successful = true
-              }
-          }
-      }
+    }
+  }
+
+  override fun deleteHistoricalDataOrganization(organizationId: String) {
+    this.eventPublisher.publishEvent(
+        DeleteHistoricalDataOrganization(this, organizationId = organizationId))
   }
 
   override fun findScenarioRunById(organizationId: String, scenariorunId: String) =
@@ -231,9 +244,9 @@ internal class ScenarioRunServiceImpl(
           .queryItems(
               SqlQuerySpec(
                   """
-                            SELECT * FROM c 
-                              WHERE c.type = 'ScenarioRun' 
-                                AND c.workspaceId = @WORKSPACE_ID 
+                            SELECT * FROM c
+                              WHERE c.type = 'ScenarioRun'
+                                AND c.workspaceId = @WORKSPACE_ID
                                 AND c.scenarioId = @SCENARIO_ID
                           """.trimIndent(),
                   listOf(
@@ -259,8 +272,8 @@ internal class ScenarioRunServiceImpl(
           .queryItems(
               SqlQuerySpec(
                   """
-                            SELECT * FROM c 
-                              WHERE c.type = 'ScenarioRun' 
+                            SELECT * FROM c
+                              WHERE c.type = 'ScenarioRun'
                                 AND c.workspaceId = @WORKSPACE_ID
                           """.trimIndent(),
                   listOf(SqlParameter("@WORKSPACE_ID", workspaceId))),
@@ -274,6 +287,11 @@ internal class ScenarioRunServiceImpl(
             it.toDomain<ScenarioRun>().withStateInformation(organizationId).withoutSensitiveData()
           }
           .toList()
+
+  @EventListener(DeleteHistoricalDataScenario::class)
+  fun deleteHistoricalDataScenarioRun(data: DeleteHistoricalDataScenario) {
+    deleteHistoricalScenarioRunsByScenario(data.organizationId, data.workspaceId, data.scenarioId)
+  }
 
   @EventListener(ScenarioDataDownloadRequest::class)
   fun onScenarioDataDownloadRequest(scenarioDataDownloadRequest: ScenarioDataDownloadRequest) {
@@ -371,8 +389,8 @@ internal class ScenarioRunServiceImpl(
         .queryItems(
             SqlQuerySpec(
                 """
-                            SELECT * FROM c 
-                              WHERE c.type = 'ScenarioRun' 
+                            SELECT * FROM c
+                              WHERE c.type = 'ScenarioRun'
                               $andExpr
                           """.trimIndent(),
                 scenarioRunSearchPredicatePair.second),
@@ -493,7 +511,8 @@ internal class ScenarioRunServiceImpl(
         val minor = splitVersion[1].toIntOrNull()
         if (major == null || minor == null) {
           logger.error(
-              "Malformed SDK version for scenario run status data ingestion check: use int for MAJOR and MINOR version")
+              "Malformed SDK version for scenario run status data ingestion check:" +
+                  " use int for MAJOR and MINOR version")
         } else {
           versionWithDataIngestionState =
               ((major == MIN_SDK_VERSION_MAJOR && minor >= MIN_SDK_VERSION_MINOR) ||
