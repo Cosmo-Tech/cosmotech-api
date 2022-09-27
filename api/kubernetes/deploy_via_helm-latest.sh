@@ -214,10 +214,10 @@ podLabels:
 resources:
   requests:
     cpu: 10m
-    memory: 64Mi
+    memory: 128Mi
   limits:
     cpu: 1000m
-    memory: 64Mi
+    memory: 256Mi
 webhook:
   tolerations:
   - key: "vendor"
@@ -248,10 +248,10 @@ cainjector:
   resources:
     requests:
       cpu: 10m
-      memory: 64Mi
+      memory: 128Mi
     limits:
       cpu: 1000m
-      memory: 64Mi
+      memory: 256Mi
 startupapicheck:
   tolerations:
   - key: "vendor"
