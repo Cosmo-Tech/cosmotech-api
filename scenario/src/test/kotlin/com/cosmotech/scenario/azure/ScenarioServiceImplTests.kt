@@ -15,6 +15,7 @@ import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.WorkflowStatusRequest
 import com.cosmotech.api.id.CsmIdGenerator
+import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.utils.getCurrentAuthentication
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.scenario.domain.Scenario
@@ -30,6 +31,7 @@ import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
+import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import java.time.Duration
 import java.util.stream.Stream
@@ -63,6 +65,9 @@ class ScenarioServiceImplTests {
   @MockK private lateinit var idGenerator: CsmIdGenerator
   @MockK(relaxed = true) private lateinit var azureEventHubsClient: AzureEventHubsClient
 
+  @RelaxedMockK
+  private lateinit var csmRbac: CsmRbac
+
   @Suppress("unused") @MockK(relaxed = true) private lateinit var cosmosTemplate: CosmosTemplate
   @Suppress("unused") @MockK private lateinit var cosmosClient: CosmosClient
   @Suppress("unused") @MockK(relaxed = true) private lateinit var cosmosCoreDatabase: CosmosDatabase
@@ -81,7 +86,7 @@ class ScenarioServiceImplTests {
     this.scenarioServiceImpl =
         spyk(
             ScenarioServiceImpl(
-                solutionService, organizationService, workspaceService, azureEventHubsClient),
+                solutionService, organizationService, workspaceService, azureEventHubsClient, csmRbac),
             recordPrivateCalls = true)
 
     every { scenarioServiceImpl getProperty "cosmosTemplate" } returns cosmosTemplate

@@ -2,6 +2,11 @@
 
 title Cosmo Tech Plaform API Schemas Diagram
 
+entity ComponentRolePermissions {
+    component: String
+    roles: Map
+}
+
 entity Connector {
     id: String
     * key: String
@@ -74,6 +79,17 @@ entity Organization {
     ownerId: String
     users: List<OrganizationUser>
     services: OrganizationServices
+    security: RbacSecurity
+}
+
+entity OrganizationAccessControl {
+    * id: String
+    * role: String
+}
+
+entity OrganizationSecurity {
+    * default: String
+    accessControlList: List<RbacAccessControl>
 }
 
 entity OrganizationService {
@@ -184,16 +200,12 @@ entity Scenario {
     parentLastRun: ScenarioLastRun
     rootLastRun: ScenarioLastRun
     validationStatus: ScenarioValidationStatus
-    security: ScenarioSecurity
+    security: RbacSecurity
 }
 
 entity ScenarioAccessControl {
     * id: String
-    * roles: List<ScenarioRole>
-}
-
-entity ScenarioAccessControlWithPermissions {
-    permissions: List<String>
+    * role: String
 }
 
 entity ScenarioChangedParameterValue {
@@ -226,13 +238,6 @@ entity ScenarioLastRun {
     csmSimulationRun: String
     workflowId: String
     workflowName: String
-}
-
-entity ScenarioRole {
-}
-
-entity ScenarioRoleItems {
-    * roles: List<ScenarioRole>
 }
 
 entity ScenarioRun {
@@ -348,12 +353,8 @@ entity ScenarioRunTemplateParameterValue {
 }
 
 entity ScenarioSecurity {
-    default: List<ScenarioRole>
-    accessControlList: List<ScenarioAccessControl>
-}
-
-entity ScenarioSecurityUsers {
-    users: List<String>
+    * default: String
+    accessControlList: List<RbacAccessControl>
 }
 
 entity ScenarioValidationStatus {
@@ -431,36 +432,21 @@ entity Workspace {
     sendInputToDataWarehouse: Boolean
     useDedicatedEventHubNamespace: Boolean
     sendScenarioMetadataToEventHub: Boolean
-    security: WorkspaceSecurity
+    security: RbacSecurity
 }
 
 entity WorkspaceAccessControl {
     * id: String
-    * roles: List<WorkspaceRole>
-}
-
-entity WorkspaceAccessControlWithPermissions {
-    permissions: List<String>
+    * role: String
 }
 
 entity WorkspaceFile {
     fileName: String
 }
 
-entity WorkspaceRole {
-}
-
-entity WorkspaceRoleItems {
-    * roles: List<WorkspaceRole>
-}
-
 entity WorkspaceSecurity {
-    default: List<WorkspaceRole>
-    accessControlList: List<WorkspaceAccessControl>
-}
-
-entity WorkspaceSecurityUsers {
-    users: List<String>
+    * default: String
+    accessControlList: List<RbacAccessControl>
 }
 
 entity WorkspaceSolution {
@@ -475,11 +461,8 @@ entity WorkspaceWebApp {
     options: Map
 }
 
-ScenarioAccessControl <|--- ScenarioAccessControlWithPermissions
-WorkspaceAccessControl <|--- WorkspaceAccessControlWithPermissions
 
 ScenarioRunContainer -- "0..*" ScenarioRunContainerArtifact : artifacts
-WorkspaceSecurity -- "0..*" WorkspaceAccessControl : accessControlList
 ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
 OrganizationServices -- OrganizationService : storage
 OrganizationServices -- OrganizationService : solutionsContainerRegistry
@@ -487,14 +470,14 @@ Scenario -- "0..*" ScenarioRunTemplateParameterValue : parametersValues
 Scenario -- ScenarioLastRun : lastRun
 Scenario -- ScenarioLastRun : parentLastRun
 Scenario -- ScenarioLastRun : rootLastRun
-Scenario -- ScenarioSecurity : security
+Scenario -- RbacSecurity : security
 ScenarioRun -- "0..*" RunTemplateParameterValue : parametersValues
 ScenarioRun -- "0..*" ScenarioRunContainer : containers
 ScenarioRunStatus -- "0..*" ScenarioRunStatusNode : nodes
 Connector -- "0..*" ConnectorParameterGroup : parameterGroups
-ScenarioSecurity -- "0..*" ScenarioAccessControl : accessControlList
 Organization -- "0..*" OrganizationUser : users
 Organization -- OrganizationServices : services
+Organization -- RbacSecurity : security
 User -- "0..*" UserOrganization : organizations
 UserOrganization -- "0..*" UserWorkspace : workspaces
 Solution -- "0..*" RunTemplateParameter : parameters
@@ -506,6 +489,6 @@ Dataset -- "0..*" DatasetCompatibility : compatibility
 ScenarioRunStartContainers -- "0..*" ScenarioRunContainer : containers
 Workspace -- WorkspaceSolution : solution
 Workspace -- WorkspaceWebApp : webApp
-Workspace -- WorkspaceSecurity : security
+Workspace -- RbacSecurity : security
 
 @enduml

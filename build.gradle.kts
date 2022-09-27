@@ -40,7 +40,7 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 val kotlinJvmTarget = 17
-val cosmotechApiCommonVersion = "0.1.7-SNAPSHOT"
+val cosmotechApiCommonVersion = "0.1.8-SNAPSHOT"
 val cosmotechApiAzureVersion = "0.1.5-SNAPSHOT"
 val azureSpringBootBomVersion = "3.14.0"
 
@@ -60,6 +60,7 @@ allprojects {
       content { includeModule("io.argoproj.workflow", "argo-client-java") }
     }
     mavenCentral()
+    mavenLocal()
     maven { url = uri("https://jitpack.io") }
   }
 
@@ -311,6 +312,13 @@ subprojects {
     tasks.withType<GenerateTask> {
       inputSpec.set("${projectDir}/src/main/openapi/${projectDirName}.yaml")
       outputDir.set(openApiServerSourcesGenerationDir)
+      importMappings.set(
+        mapOf(
+          "RbacSecurity" to "com.cosmotech.api.rbac.model.RbacSecurity",
+          "RbacAccessControl" to "com.cosmotech.api.rbac.model.RbacAccessControl",
+        )
+      )
+      templateDir.set("${rootDir}/openapi/templates")
       generatorName.set("kotlin-spring")
       apiPackage.set("com.cosmotech.${projectDirName}.api")
       modelPackage.set("com.cosmotech.${projectDirName}.domain")

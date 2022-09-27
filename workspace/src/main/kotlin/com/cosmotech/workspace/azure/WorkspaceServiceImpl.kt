@@ -16,10 +16,13 @@ import com.cosmotech.api.azure.findByIdOrThrow
 import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
-import com.cosmotech.api.rbac.COMMON_PERMISSION_ADMIN
-import com.cosmotech.api.rbac.COMMON_PERMISSION_DELETE
-import com.cosmotech.api.rbac.COMMON_PERMISSION_READ
-import com.cosmotech.api.rbac.COMMON_PERMISSION_WRITE
+import com.cosmotech.api.rbac.CsmRbac
+import com.cosmotech.api.rbac.PERMISSION_EDIT
+import com.cosmotech.api.rbac.PERMISSION_EDIT_SECURITY
+import com.cosmotech.api.rbac.PERMISSION_READ_DATA
+import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
+import com.cosmotech.api.rbac.getCommonRolesDefinition
+import com.cosmotech.api.rbac.getPermissions
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
@@ -29,17 +32,11 @@ import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
-import com.cosmotech.workspace.domain.WorkspaceAccessControlWithPermissions
 import com.cosmotech.workspace.domain.WorkspaceFile
-import com.cosmotech.workspace.domain.WorkspaceRoleItems
 import com.cosmotech.workspace.domain.WorkspaceSecurity
-import com.cosmotech.workspace.domain.WorkspaceSecurityUsers
-import com.cosmotech.workspace.rbac.RbacConfiguration
-import com.cosmotech.workspace.rbac.rbac
 import com.fasterxml.jackson.databind.JsonNode
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Scope
@@ -54,124 +51,124 @@ import org.springframework.stereotype.Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions")
 internal class WorkspaceServiceImpl(
-    private val resourceLoader: ResourceLoader,
-    private val solutionService: SolutionApiService,
-    private val azureStorageBlobServiceClient: BlobServiceClient,
-    private val azureStorageBlobBatchClient: BlobBatchClient,
-    @Qualifier("Workspace") private val rbacConfiguration: RbacConfiguration,
+  private val resourceLoader: ResourceLoader,
+  private val solutionService: SolutionApiService,
+  private val azureStorageBlobServiceClient: BlobServiceClient,
+  private val azureStorageBlobBatchClient: BlobBatchClient,
+  private val csmRbac: CsmRbac
 ) : CsmAzureService(), WorkspaceApiService {
+
 
   override fun findAllWorkspaces(organizationId: String): List<Workspace> {
     val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
     logger.debug("Getting workspaces for user ${currentUser}")
     val templateQuery =
-        "SELECT * FROM c " +
-            "WHERE ARRAY_CONTAINS(c.security.accessControlList, { id: @ACL_USER}, true)" +
-            " OR NOT IS_DEFINED(c.security)" +
-            " OR ARRAY_LENGTH(c.security.default) > 0"
+      "SELECT * FROM c " +
+              "WHERE ARRAY_CONTAINS(c.security.accessControlList, { id: @ACL_USER}, true)" +
+              " OR NOT IS_DEFINED(c.security)" +
+              " OR ARRAY_LENGTH(c.security.default) > 0"
     logger.debug("Template query: ${templateQuery}")
 
     return cosmosCoreDatabase
-        .getContainer("${organizationId}_workspaces")
-        .queryItems(
-            SqlQuerySpec(templateQuery, listOf(SqlParameter("@ACL_USER", currentUser))),
-            CosmosQueryRequestOptions(),
-            // It would be much better to specify the Domain Type right away and
-            // avoid the map operation, but we can't due
-            // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
-            // https://github.com/Azure/azure-sdk-for-java/issues/12269
-            JsonNode::class.java)
-        .mapNotNull { it.toDomain<Workspace>() }
-        .toList()
+      .getContainer("${organizationId}_workspaces")
+      .queryItems(
+        SqlQuerySpec(templateQuery, listOf(SqlParameter("@ACL_USER", currentUser))),
+        CosmosQueryRequestOptions(),
+        // It would be much better to specify the Domain Type right away and
+        // avoid the map operation, but we can't due
+        // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
+        // https://github.com/Azure/azure-sdk-for-java/issues/12269
+        JsonNode::class.java)
+      .mapNotNull { it.toDomain<Workspace>() }
+      .toList()
   }
 
   internal fun findWorkspaceByIdNoSecurity(organizationId: String, workspaceId: String): Workspace =
-      cosmosTemplate.findByIdOrThrow(
-          "${organizationId}_workspaces",
-          workspaceId,
-          "Workspace $workspaceId not found in organization $organizationId")
+    cosmosTemplate.findByIdOrThrow(
+      "${organizationId}_workspaces",
+      workspaceId,
+      "Workspace $workspaceId not found in organization $organizationId")
 
   override fun findWorkspaceById(organizationId: String, workspaceId: String): Workspace {
     val workspace: Workspace = this.findWorkspaceByIdNoSecurity(organizationId, workspaceId)
-    rbac(this.rbacConfiguration, workspace, COMMON_PERMISSION_READ)
+    csmRbac.verify(workspace.security, PERMISSION_READ_DATA)
     return workspace
   }
 
   override fun createWorkspace(organizationId: String, workspace: Workspace): Workspace {
     // Needs security on Organization to check RBAC
+    csmRbac.verify(workspace.security, PERMISSION_EDIT)
     // Validate Solution ID
-    workspace.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
+    workspace.solution?.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
     return cosmosTemplate.insert(
-        "${organizationId}_workspaces",
-        workspace.copy(
-            id = idGenerator.generate("workspace"), ownerId = getCurrentAuthenticatedUserName()))
-        ?: throw IllegalArgumentException("No Workspace returned in response: $workspace")
+      "${organizationId}_workspaces",
+      workspace.copy(
+        id = idGenerator.generate("workspace"), ownerId = getCurrentAuthenticatedUserName()))
+      ?: throw IllegalArgumentException("No Workspace returned in response: $workspace")
   }
 
   override fun deleteAllWorkspaceFiles(organizationId: String, workspaceId: String) {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    rbac(this.rbacConfiguration, workspace, COMMON_PERMISSION_READ)
+    csmRbac.verify(workspace.security, PERMISSION_EDIT)
     logger.debug("Deleting all files for workspace #{} ({})", workspace.id, workspace.name)
 
     GlobalScope.launch {
       // TODO Consider using a smaller coroutine scope
       val workspaceFiles =
-          getWorkspaceFileResources(organizationId, workspaceId).map { it.url }.map {
-            it.toExternalForm()
-          }
+        getWorkspaceFileResources(organizationId, workspaceId).map { it.url }.map {
+          it.toExternalForm()
+        }
       if (workspaceFiles.isEmpty()) {
         logger.debug("No file to delete for workspace $workspaceId")
       } else {
         azureStorageBlobBatchClient.deleteBlobs(workspaceFiles, DeleteSnapshotsOptionType.INCLUDE)
-            .forEach { response ->
-              logger.debug(
-                  "Deleting blob with URL {} completed with status code {}",
-                  response.request.url,
-                  response.statusCode)
-            }
+          .forEach { response ->
+            logger.debug(
+              "Deleting blob with URL {} completed with status code {}",
+              response.request.url,
+              response.statusCode)
+          }
       }
     }
   }
 
   override fun updateWorkspace(
-      organizationId: String,
-      workspaceId: String,
-      workspace: Workspace
+    organizationId: String,
+    workspaceId: String,
+    workspace: Workspace
   ): Workspace {
     val existingWorkspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
-    val rbacObj = rbac(this.rbacConfiguration, existingWorkspace, COMMON_PERMISSION_WRITE, true)
-    if (rbacObj.newSecurity) {
-      logger.warn("Updating workspace ${workspaceId} without any ACL security set")
-    }
-
+    val isNoRbac = existingWorkspace.security == null
+    csmRbac.verify(existingWorkspace.security, PERMISSION_EDIT)
     // Security cannot be changed by updateWorkspace
     var hasChanged =
-        existingWorkspace
-            .compareToAndMutateIfNeeded(workspace, excludedFields = arrayOf("security", "solution"))
-            .isNotEmpty()
+      existingWorkspace
+        .compareToAndMutateIfNeeded(workspace, excludedFields = arrayOf("security", "solution"))
+        .isNotEmpty()
 
     val securityChanged = workspace.changed(existingWorkspace) { security }
-    if ((rbacObj.check(COMMON_PERMISSION_ADMIN) || rbacObj.newSecurity) && securityChanged) {
+    if ((csmRbac.check(existingWorkspace.security, PERMISSION_EDIT_SECURITY) || isNoRbac)
+      && securityChanged) {
       logger.debug("Writing new security information for workspace ${workspace.id}")
       // handle new and deleted users for permission propagation
       existingWorkspace.security = workspace.security
       hasChanged = true
     } else {
       if (securityChanged)
-          logger.warn(
-              "workspace ${workspace.id} security cannot be changed due to missing permission")
+        logger.warn(
+          "workspace ${workspace.id} security cannot be changed due to missing permission")
     }
 
-    if (workspace.solution.solutionId != null) {
+    if (workspace.solution?.solutionId != null) {
       // Validate solution ID
-      workspace.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
+      workspace.solution?.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
       existingWorkspace.solution = workspace.solution
       hasChanged = true
     }
 
     return if (hasChanged) {
       val responseEntity =
-          cosmosTemplate.upsertAndReturnEntity("${organizationId}_workspaces", existingWorkspace)
+        cosmosTemplate.upsertAndReturnEntity("${organizationId}_workspaces", existingWorkspace)
       responseEntity
     } else {
       existingWorkspace
@@ -180,7 +177,7 @@ internal class WorkspaceServiceImpl(
 
   override fun deleteWorkspace(organizationId: String, workspaceId: String): Workspace {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    rbac(this.rbacConfiguration, workspace, COMMON_PERMISSION_DELETE)
+    csmRbac.verify(workspace.security, PERMISSION_EDIT)
     try {
       deleteAllWorkspaceFiles(organizationId, workspaceId)
     } finally {
@@ -191,58 +188,56 @@ internal class WorkspaceServiceImpl(
 
   override fun deleteWorkspaceFile(organizationId: String, workspaceId: String, fileName: String) {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    rbac(this.rbacConfiguration, workspace, COMMON_PERMISSION_READ)
+    csmRbac.verify(workspace.security, PERMISSION_EDIT)
     logger.debug(
-        "Deleting file resource from workspace #{} ({}): {}",
-        workspace.id,
-        workspace.name,
-        fileName)
+      "Deleting file resource from workspace #{} ({}): {}",
+      workspace.id,
+      workspace.name,
+      fileName)
     azureStorageBlobServiceClient
-        .getBlobContainerClient(organizationId.sanitizeForAzureStorage())
-        .getBlobClient("${workspaceId.sanitizeForAzureStorage()}/${fileName}")
-        .delete()
+      .getBlobContainerClient(organizationId.sanitizeForAzureStorage())
+      .getBlobClient("${workspaceId.sanitizeForAzureStorage()}/${fileName}")
+      .delete()
   }
 
   override fun downloadWorkspaceFile(
-      organizationId: String,
-      workspaceId: String,
-      fileName: String
+    organizationId: String,
+    workspaceId: String,
+    fileName: String
   ): Resource {
     if (".." in fileName) {
       throw IllegalArgumentException("Invalid filename: '$fileName'. '..' is not allowed")
     }
-    val workspace = findWorkspaceById(organizationId, workspaceId)
-    rbac(this.rbacConfiguration, workspace, COMMON_PERMISSION_READ)
+    val workspace = findWorkspaceById(organizationId, workspaceId);
+    csmRbac.verify(workspace.security, PERMISSION_READ_DATA)
     logger.debug(
-        "Downloading file resource to workspace #{} ({}): {}",
-        workspace.id,
-        workspace.name,
-        fileName)
+      "Downloading file resource to workspace #{} ({}): {}",
+      workspace.id,
+      workspace.name,
+      fileName)
     return resourceLoader.getResource(
-        "azure-blob://$organizationId/$workspaceId/".sanitizeForAzureStorage() + fileName)
+      "azure-blob://$organizationId/$workspaceId/".sanitizeForAzureStorage() + fileName)
   }
 
   override fun uploadWorkspaceFile(
-      organizationId: String,
-      workspaceId: String,
-      file: Resource,
-      overwrite: Boolean,
-      destination: String?
+    organizationId: String,
+    workspaceId: String,
+    file: Resource,
+    overwrite: Boolean,
+    destination: String?
   ): WorkspaceFile {
     if (destination?.contains("..") == true) {
       throw IllegalArgumentException("Invalid destination: '$destination'. '..' is not allowed")
     }
 
     val workspace = findWorkspaceById(organizationId, workspaceId)
+    csmRbac.verify(workspace.security, PERMISSION_EDIT)
     logger.debug(
-        "Uploading file resource to workspace #{} ({}): {} => {}",
-        workspace.id,
-        workspace.name,
-        file.filename,
-        destination)
-
-    // Create a new custom permission for file upload?
-    rbac(this.rbacConfiguration, workspace, COMMON_PERMISSION_READ)
+      "Uploading file resource to workspace #{} ({}): {} => {}",
+      workspace.id,
+      workspace.name,
+      file.filename,
+      destination)
 
     val fileRelativeDestinationBuilder = StringBuilder()
     if (destination.isNullOrBlank()) {
@@ -258,28 +253,28 @@ internal class WorkspaceServiceImpl(
     }
 
     azureStorageBlobServiceClient
-        .getBlobContainerClient(organizationId.sanitizeForAzureStorage())
-        .getBlobClient("${workspaceId.sanitizeForAzureStorage()}/$fileRelativeDestinationBuilder")
-        .upload(file.inputStream, file.contentLength(), overwrite)
+      .getBlobContainerClient(organizationId.sanitizeForAzureStorage())
+      .getBlobClient("${workspaceId.sanitizeForAzureStorage()}/$fileRelativeDestinationBuilder")
+      .upload(file.inputStream, file.contentLength(), overwrite)
     return WorkspaceFile(fileName = fileRelativeDestinationBuilder.toString())
   }
 
   override fun findAllWorkspaceFiles(
-      organizationId: String,
-      workspaceId: String
+    organizationId: String,
+    workspaceId: String
   ): List<WorkspaceFile> {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    rbac(this.rbacConfiguration, workspace, COMMON_PERMISSION_READ)
+    csmRbac.verify(workspace.security, PERMISSION_READ_DATA)
     logger.debug("List all files for workspace #{} ({})", workspace.id, workspace.name)
     return getWorkspaceFileResources(organizationId, workspaceId)
-        .mapNotNull { it.filename?.removePrefix("${workspaceId.sanitizeForAzureStorage()}/") }
-        .map { WorkspaceFile(fileName = it) }
+      .mapNotNull { it.filename?.removePrefix("${workspaceId.sanitizeForAzureStorage()}/") }
+      .map { WorkspaceFile(fileName = it) }
   }
 
   @EventListener(OrganizationRegistered::class)
   fun onOrganizationRegistered(organizationRegistered: OrganizationRegistered) {
     cosmosCoreDatabase.createContainerIfNotExists(
-        CosmosContainerProperties("${organizationRegistered.organizationId}_workspaces", "/id"))
+      CosmosContainerProperties("${organizationRegistered.organizationId}_workspaces", "/id"))
   }
 
   @EventListener(OrganizationUnregistered::class)
@@ -294,86 +289,80 @@ internal class WorkspaceServiceImpl(
   }
 
   private fun getWorkspaceFileResources(
-      organizationId: String,
-      workspaceId: String
+    organizationId: String,
+    workspaceId: String
   ): List<BlobStorageResource> {
-    val workspace = findWorkspaceById(organizationId, workspaceId)
-    rbac(this.rbacConfiguration, workspace, COMMON_PERMISSION_READ)
+    findWorkspaceById(organizationId, workspaceId)
     return AzureStorageResourcePatternResolver(azureStorageBlobServiceClient)
-        .getResources("azure-blob://$organizationId/$workspaceId/**/*".sanitizeForAzureStorage())
-        .map { it as BlobStorageResource }
+      .getResources("azure-blob://$organizationId/$workspaceId/**/*".sanitizeForAzureStorage())
+      .map { it as BlobStorageResource }
   }
 
-  override fun addWorkspaceAccess(
-      organizationId: kotlin.String,
-      workspaceId: kotlin.String,
-      workspaceAccessControl: WorkspaceAccessControl
-  ): WorkspaceAccessControlWithPermissions {
-    val workspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
-    val rbacObj = rbac(this.rbacConfiguration, workspace, COMMON_PERMISSION_ADMIN, true)
 
-    // add restricted list from organization. Add reader permission to solution
-    rbacObj.setWorkspaceAccess(workspaceAccessControl)
-    rbacObj.update(workspace)
-    this.updateWorkspace(organizationId, workspaceId, workspace)
-    return rbacObj.getWorkspaceAccessControlWithPermissions(workspaceAccessControl.id)
-  }
-
-  override fun getWorkspaceAccess(
-      organizationId: kotlin.String,
-      workspaceId: kotlin.String,
-      identityId: kotlin.String
-  ): WorkspaceAccessControlWithPermissions {
-    val workspace = findWorkspaceById(organizationId, workspaceId)
-    val rbacObj = rbac(this.rbacConfiguration, workspace, COMMON_PERMISSION_READ)
-    return rbacObj.getWorkspaceAccessControlWithPermissions(identityId)
+  override fun getWorkspacePermissions(organizationId: String, workspaceId: String, role: String): List<String> {
+    return getPermissions(role, getCommonRolesDefinition())
   }
 
   override fun getWorkspaceSecurity(
-      organizationId: kotlin.String,
-      workspaceId: kotlin.String
+    organizationId: String,
+    workspaceId: String
   ): WorkspaceSecurity {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    rbac(this.rbacConfiguration, workspace, COMMON_PERMISSION_READ)
-    return workspace.security ?: WorkspaceSecurity()
-  }
-
-  override fun removeWorkspaceAccess(
-      organizationId: kotlin.String,
-      workspaceId: kotlin.String,
-      identityId: kotlin.String
-  ): Unit {
-    val workspace = findWorkspaceById(organizationId, workspaceId)
-    val rbacObj = rbac(this.rbacConfiguration, workspace, COMMON_PERMISSION_ADMIN)
-    rbacObj.removeUser(identityId)
-    // propagate removal to scenario, solution?
-    rbacObj.update(workspace)
-    this.updateWorkspace(organizationId, workspaceId, workspace)
+    csmRbac.verify(workspace.security, PERMISSION_READ_SECURITY)
+    return workspace.security as WorkspaceSecurity
   }
 
   override fun setWorkspaceDefaultSecurity(
-      organizationId: kotlin.String,
-      workspaceId: kotlin.String,
-      workspaceRoleItems: WorkspaceRoleItems
+    organizationId: String,
+    workspaceId: String,
+    workspaceRole: String
   ): WorkspaceSecurity {
     val workspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
-
-    val rbacObj = rbac(this.rbacConfiguration, workspace, COMMON_PERMISSION_ADMIN, true)
-    rbacObj.setDefault(workspaceRoleItems)
-    rbacObj.update(workspace)
-
+    csmRbac.verify(workspace.security, PERMISSION_EDIT_SECURITY)
+    csmRbac.setDefault(workspace.security, workspaceRole)
     this.updateWorkspace(organizationId, workspaceId, workspace)
+    return workspace.security as WorkspaceSecurity
+  }
 
-    return workspace.security ?: WorkspaceSecurity()
+  override fun getWorkspaceAccessControl(
+    organizationId: String,
+    workspaceId: String,
+    identityId: String
+  ): WorkspaceAccessControl {
+    val workspace = findWorkspaceById(organizationId, workspaceId)
+    csmRbac.verify(workspace.security, PERMISSION_READ_SECURITY)
+    return csmRbac.getAccessControl(workspace.security, identityId) as WorkspaceAccessControl
+  }
+
+  override fun addWorkspaceAccessControl(
+    organizationId: String,
+    workspaceId: String,
+    workspaceAccessControl: WorkspaceAccessControl
+  ): WorkspaceAccessControl {
+    val workspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
+    csmRbac.verify(workspace.security, PERMISSION_EDIT_SECURITY)
+    csmRbac.setUserRole(workspace.security, workspaceAccessControl.id, workspaceAccessControl.role)
+    this.updateWorkspace(organizationId, workspaceId, workspace)
+    return csmRbac.getAccessControl(workspace.security, workspaceAccessControl.id) as WorkspaceAccessControl
+  }
+
+  override fun removeWorkspaceAccessControl(
+    organizationId: String,
+    workspaceId: String,
+    identityId: String
+  ) {
+    val workspace = findWorkspaceById(organizationId, workspaceId)
+    csmRbac.verify(workspace.security, PERMISSION_EDIT_SECURITY)
+    csmRbac.removeUser(workspace.security, identityId)
+    this.updateWorkspace(organizationId, workspaceId, workspace)
   }
 
   override fun getWorkspaceSecurityUsers(
-      organizationId: kotlin.String,
-      workspaceId: kotlin.String
-  ): WorkspaceSecurityUsers {
+    organizationId: String,
+    workspaceId: String
+  ): List<String> {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-
-    val rbacObj = rbac(this.rbacConfiguration, workspace, COMMON_PERMISSION_READ)
-    return rbacObj.getWorkspaceUsers()
+    csmRbac.verify(workspace.security, PERMISSION_READ_SECURITY)
+    return csmRbac.getUsers(workspace.security)
   }
 }

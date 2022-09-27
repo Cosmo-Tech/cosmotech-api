@@ -8,29 +8,23 @@ import com.azure.storage.blob.BlobServiceClient
 import com.azure.storage.blob.batch.BlobBatchClient
 import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
-import com.cosmotech.workspace.rbac.RbacConfiguration
-import io.mockk.MockKAnnotations
-import io.mockk.confirmVerified
-import io.mockk.every
+import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.mockk
-import io.mockk.spyk
-import io.mockk.verify
-import java.lang.IllegalArgumentException
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 const val ORGANIZATION_ID = "O-AbCdEf123"
 const val WORKSPACE_ID = "W-BcDeFg123"
@@ -44,7 +38,7 @@ class WorkspaceServiceImplTests {
 
   @MockK private lateinit var azureStorageBlobBatchClient: BlobBatchClient
 
-  @RelaxedMockK private lateinit var rbacConfiguration: RbacConfiguration
+  @RelaxedMockK private lateinit var csmRbac: CsmRbac
 
   @Suppress("unused") @MockK private lateinit var cosmosTemplate: CosmosTemplate
 
@@ -59,9 +53,9 @@ class WorkspaceServiceImplTests {
                 solutionService,
                 azureStorageBlobServiceClient,
                 azureStorageBlobBatchClient,
-                rbacConfiguration))
+                csmRbac))
     MockKAnnotations.init(this, relaxUnitFun = true)
-    this.rbacConfiguration = mockk<RbacConfiguration>(relaxed = true)
+    this.csmRbac = mockk<CsmRbac>(relaxed = true)
   }
 
   @Test
