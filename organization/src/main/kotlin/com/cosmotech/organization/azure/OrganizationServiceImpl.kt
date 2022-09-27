@@ -16,12 +16,22 @@ import com.cosmotech.api.events.UserUnregistered
 import com.cosmotech.api.events.UserUnregisteredForOrganization
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.rbac.CsmRbac
+import com.cosmotech.api.rbac.PERMISSION_EDIT
+import com.cosmotech.api.rbac.PERMISSION_EDIT_SECURITY
+import com.cosmotech.api.rbac.PERMISSION_READ_DATA
+import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
+import com.cosmotech.api.rbac.getAllRolesDefinition
+import com.cosmotech.api.rbac.getScenarioRolesDefinition
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.domain.ComponentRolePermissions
 import com.cosmotech.organization.domain.Organization
+import com.cosmotech.organization.domain.OrganizationAccessControl
+import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.organization.domain.OrganizationService
 import com.cosmotech.organization.domain.OrganizationServices
 import com.cosmotech.organization.domain.OrganizationUser
@@ -37,7 +47,7 @@ import org.springframework.stereotype.Service
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions")
-internal class OrganizationServiceImpl(private val userService: UserApiService) :
+internal class OrganizationServiceImpl(private val userService: UserApiService, private val csmRbac: CsmRbac) :
     CsmAzureService(), OrganizationApiService {
 
   private lateinit var coreOrganizationContainer: String
@@ -60,7 +70,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService) 
     }
 
     val organization = findOrganizationById(organizationId)
-
+    csmRbac.verify(organization.security, PERMISSION_EDIT)
     val organizationUserWithoutNullIds = organizationUser.filter { it.id != null }
     val newUsersLoaded = fetchUsers(organizationUserWithoutNullIds.mapNotNull { it.id })
     val organizationUserWithRightNames =
@@ -95,8 +105,11 @@ internal class OrganizationServiceImpl(private val userService: UserApiService) 
   override fun findAllOrganizations() =
       cosmosTemplate.findAll<Organization>(coreOrganizationContainer)
 
-  override fun findOrganizationById(organizationId: String): Organization =
-      cosmosTemplate.findByIdOrThrow(coreOrganizationContainer, organizationId)
+  override fun findOrganizationById(organizationId: String): Organization {
+      val organization: Organization = cosmosTemplate.findByIdOrThrow(coreOrganizationContainer, organizationId)
+      csmRbac.verify(organization.security, PERMISSION_READ_DATA)
+      return organization
+  }
 
   /**
    * Return list of users with the specified identifiers. TODO It would be better to have
@@ -153,6 +166,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService) 
 
   override fun removeAllUsersInOrganization(organizationId: String) {
     val organization = findOrganizationById(organizationId)
+    csmRbac.verify(organization.security, PERMISSION_EDIT)
     if (!organization.users.isNullOrEmpty()) {
       val userIds = organization.users!!.mapNotNull { it.id }
       organization.users = mutableListOf()
@@ -166,6 +180,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService) 
 
   override fun removeUserFromOrganization(organizationId: String, userId: String) {
     val organization = findOrganizationById(organizationId)
+    csmRbac.verify(organization.security, PERMISSION_EDIT)
     if (!(organization.users?.removeIf { it.id == userId } ?: false)) {
       throw CsmResourceNotFoundException("User '$userId' *not* found")
     } else {
@@ -176,6 +191,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService) 
 
   override fun unregisterOrganization(organizationId: String) {
     val organization = findOrganizationById(organizationId)
+    csmRbac.verify(organization.security, PERMISSION_EDIT)
     if (organization.ownerId != getCurrentAuthenticatedUserName()) {
       // TODO Only the owner or an admin should be able to perform this operation
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
@@ -193,7 +209,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService) 
       organization: Organization
   ): Organization {
     val existingOrganization = findOrganizationById(organizationId)
-
+    csmRbac.verify(existingOrganization.security, PERMISSION_EDIT)
     var hasChanged = false
 
     if (organization.ownerId != null && organization.changed(existingOrganization) { ownerId }) {
@@ -267,6 +283,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService) 
       memberAccessBlock: OrganizationServices.() -> OrganizationService?
   ): OrganizationService {
     val existingOrganization = findOrganizationById(organizationId)
+    csmRbac.verify(existingOrganization.security, PERMISSION_EDIT)
     val existingServices = existingOrganization.services ?: OrganizationServices()
     val existingOrganizationService =
         with(existingServices, memberAccessBlock) ?: OrganizationService()
@@ -298,6 +315,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService) 
       requestBody: Map<String, Any>
   ): Map<String, Any> {
     val existingOrganization = findOrganizationById(organizationId)
+    csmRbac.verify(existingOrganization.security, PERMISSION_EDIT)
     if (requestBody.isEmpty()) {
       return requestBody
     }
@@ -351,5 +369,59 @@ internal class OrganizationServiceImpl(private val userService: UserApiService) 
     } else {
       cosmosTemplate.upsert(coreOrganizationContainer, organization)
     }
+  }
+
+
+  override fun getAllPermissions(): List<ComponentRolePermissions> {
+    return getAllRolesDefinition().mapNotNull { ComponentRolePermissions(it.key, it.value) }
+  }
+
+  override fun getOrganizationPermissions(organizationId: String, role: String): List<String> {
+    return com.cosmotech.api.rbac.getPermissions(role, getScenarioRolesDefinition())
+  }
+
+
+  override fun getOrganizationSecurity(organizationId: String): OrganizationSecurity {
+    val organization = findOrganizationById(organizationId)
+    csmRbac.verify(organization.security, PERMISSION_READ_SECURITY)
+    return organization.security as OrganizationSecurity
+  }
+
+  override fun setOrganizationDefaultSecurity(organizationId: String, organizationRole: String): OrganizationSecurity {
+    val organization = findOrganizationById(organizationId)
+    csmRbac.verify(organization.security, PERMISSION_EDIT_SECURITY)
+    csmRbac.setDefault(organization.security, organizationRole)
+    this.updateOrganization(organizationId, organization)
+    return organization.security as OrganizationSecurity
+  }
+
+  override fun getOrganizationAccessControl(organizationId: String, identityId: String): OrganizationAccessControl {
+    val organization = findOrganizationById(organizationId)
+    csmRbac.verify(organization.security, PERMISSION_READ_SECURITY)
+    return csmRbac.getAccessControl(organization.security, identityId) as OrganizationAccessControl
+  }
+
+  override fun addOrganizationAccessControl(
+    organizationId: String,
+    organizationAccessControl: OrganizationAccessControl
+  ): OrganizationAccessControl {
+    val organization = findOrganizationById(organizationId)
+    csmRbac.verify(organization.security, PERMISSION_EDIT_SECURITY)
+    csmRbac.setUserRole(organization.security, organizationAccessControl.id, organizationAccessControl.role)
+    this.updateOrganization(organizationId, organization)
+    return csmRbac.getAccessControl(organization.security, organizationAccessControl.id) as OrganizationAccessControl
+  }
+
+  override fun removeOrganizationAccessControl(organizationId: String, identityId: String) {
+    val organization = findOrganizationById(organizationId)
+    csmRbac.verify(organization.security, PERMISSION_EDIT_SECURITY)
+    csmRbac.removeUser(organization.security, identityId)
+    this.updateOrganization(organizationId, organization)
+  }
+
+  override fun getOrganizationSecurityUsers(organizationId: String): List<String> {
+    val organization = findOrganizationById(organizationId)
+    csmRbac.verify(organization.security, PERMISSION_READ_SECURITY)
+    return csmRbac.getUsers(organization.security)
   }
 }

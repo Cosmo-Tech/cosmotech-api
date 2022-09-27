@@ -5,7 +5,7 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**addOrReplaceScenarioParameterValues**](ScenarioApi.md#addOrReplaceScenarioParameterValues) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/parameterValues | Add (or replace) Parameter Values for the Scenario specified
-[**addScenarioAccess**](ScenarioApi.md#addScenarioAccess) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/access | add a control acccess to the Scenario
+[**addScenarioAccessControl**](ScenarioApi.md#addScenarioAccessControl) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/access | add a control acccess to the Scenario
 [**compareScenarios**](ScenarioApi.md#compareScenarios) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/compare/{compared_scenario_id} | Compare the Scenario with another one and returns the difference for parameters values
 [**createScenario**](ScenarioApi.md#createScenario) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios | Create a new Scenario
 [**deleteAllScenarios**](ScenarioApi.md#deleteAllScenarios) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios | Delete all Scenarios of the Workspace
@@ -14,14 +14,15 @@ Method | HTTP request | Description
 [**findAllScenarios**](ScenarioApi.md#findAllScenarios) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios | List all Scenarios
 [**findAllScenariosByValidationStatus**](ScenarioApi.md#findAllScenariosByValidationStatus) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/{validationStatus} | List all Scenarios by validation status
 [**findScenarioById**](ScenarioApi.md#findScenarioById) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id} | Get the details of an scenario
-[**getScenarioAccess**](ScenarioApi.md#getScenarioAccess) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/access/{identity_id} | get a control acccess for the Scenario
+[**getScenarioAccessControl**](ScenarioApi.md#getScenarioAccessControl) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/access/{identity_id} | get a control acccess for the Scenario
 [**getScenarioDataDownloadJobInfo**](ScenarioApi.md#getScenarioDataDownloadJobInfo) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/downloads/{download_id} | Get Scenario data download URL
+[**getScenarioPermissions**](ScenarioApi.md#getScenarioPermissions) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/permissions/{role} | Get the Scenario permission by given role
 [**getScenarioSecurity**](ScenarioApi.md#getScenarioSecurity) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security | Get the Scenario security information
 [**getScenarioSecurityUsers**](ScenarioApi.md#getScenarioSecurityUsers) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/users | Get the Scenario security users list
 [**getScenarioValidationStatusById**](ScenarioApi.md#getScenarioValidationStatusById) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/ValidationStatus | Get the validation status of an scenario
 [**getScenariosTree**](ScenarioApi.md#getScenariosTree) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/tree | Get the Scenarios Tree
 [**removeAllScenarioParameterValues**](ScenarioApi.md#removeAllScenarioParameterValues) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/parameterValues | Remove all Parameter Values from the Scenario specified
-[**removeScenarioAccess**](ScenarioApi.md#removeScenarioAccess) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/access/{identity_id} | Remove the specified access from the given Organization Scenario
+[**removeScenarioAccessControl**](ScenarioApi.md#removeScenarioAccessControl) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/access/{identity_id} | Remove the specified access from the given Organization Scenario
 [**setScenarioDefaultSecurity**](ScenarioApi.md#setScenarioDefaultSecurity) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/default | set the Scenario default security
 [**updateScenario**](ScenarioApi.md#updateScenario) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id} | Update a scenario
 
@@ -54,9 +55,9 @@ Name | Type | Description  | Notes
 - **Content-Type**: application/json
 - **Accept**: application/json
 
-<a name="addScenarioAccess"></a>
-# **addScenarioAccess**
-> ScenarioAccessControlWithPermissions addScenarioAccess(organization\_id, workspace\_id, scenario\_id, ScenarioAccessControl)
+<a name="addScenarioAccessControl"></a>
+# **addScenarioAccessControl**
+> ScenarioAccessControl addScenarioAccessControl(organization\_id, workspace\_id, scenario\_id, ScenarioAccessControl)
 
 add a control acccess to the Scenario
 
@@ -71,7 +72,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**ScenarioAccessControlWithPermissions**](../Models/ScenarioAccessControlWithPermissions.md)
+[**ScenarioAccessControl**](../Models/ScenarioAccessControl.md)
 
 ### Authorization
 
@@ -298,9 +299,9 @@ Name | Type | Description  | Notes
 - **Content-Type**: Not defined
 - **Accept**: application/json
 
-<a name="getScenarioAccess"></a>
-# **getScenarioAccess**
-> ScenarioAccessControlWithPermissions getScenarioAccess(organization\_id, workspace\_id, scenario\_id, identity\_id)
+<a name="getScenarioAccessControl"></a>
+# **getScenarioAccessControl**
+> ScenarioAccessControl getScenarioAccessControl(organization\_id, workspace\_id, scenario\_id, identity\_id)
 
 get a control acccess for the Scenario
 
@@ -315,7 +316,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**ScenarioAccessControlWithPermissions**](../Models/ScenarioAccessControlWithPermissions.md)
+[**ScenarioAccessControl**](../Models/ScenarioAccessControl.md)
 
 ### Authorization
 
@@ -344,6 +345,33 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**ScenarioDataDownloadInfo**](../Models/ScenarioDataDownloadInfo.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+<a name="getScenarioPermissions"></a>
+# **getScenarioPermissions**
+> List getScenarioPermissions(organization\_id, workspace\_id, role)
+
+Get the Scenario permission by given role
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **workspace\_id** | **String**| the Workspace identifier | [default to null]
+ **role** | **String**| the Role | [default to null]
+
+### Return type
+
+**List**
 
 ### Authorization
 
@@ -383,7 +411,7 @@ Name | Type | Description  | Notes
 
 <a name="getScenarioSecurityUsers"></a>
 # **getScenarioSecurityUsers**
-> ScenarioSecurityUsers getScenarioSecurityUsers(organization\_id, workspace\_id, scenario\_id)
+> List getScenarioSecurityUsers(organization\_id, workspace\_id, scenario\_id)
 
 Get the Scenario security users list
 
@@ -397,7 +425,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**ScenarioSecurityUsers**](../Models/ScenarioSecurityUsers.md)
+**List**
 
 ### Authorization
 
@@ -488,9 +516,9 @@ null (empty response body)
 - **Content-Type**: Not defined
 - **Accept**: Not defined
 
-<a name="removeScenarioAccess"></a>
-# **removeScenarioAccess**
-> removeScenarioAccess(organization\_id, workspace\_id, scenario\_id, identity\_id)
+<a name="removeScenarioAccessControl"></a>
+# **removeScenarioAccessControl**
+> removeScenarioAccessControl(organization\_id, workspace\_id, scenario\_id, identity\_id)
 
 Remove the specified access from the given Organization Scenario
 
@@ -518,7 +546,7 @@ null (empty response body)
 
 <a name="setScenarioDefaultSecurity"></a>
 # **setScenarioDefaultSecurity**
-> ScenarioSecurity setScenarioDefaultSecurity(organization\_id, workspace\_id, scenario\_id, ScenarioRoleItems)
+> ScenarioSecurity setScenarioDefaultSecurity(organization\_id, workspace\_id, scenario\_id, body)
 
 set the Scenario default security
 
@@ -529,7 +557,7 @@ Name | Type | Description  | Notes
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **workspace\_id** | **String**| the Workspace identifier | [default to null]
  **scenario\_id** | **String**| the Scenario identifier | [default to null]
- **ScenarioRoleItems** | [**ScenarioRoleItems**](../Models/ScenarioRoleItems.md)| the new Scenario default security. |
+ **body** | **String**| the new Scenario default security. |
 
 ### Return type
 
