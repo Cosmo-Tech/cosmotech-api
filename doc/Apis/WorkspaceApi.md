@@ -4,7 +4,7 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**addWorkspaceAccess**](WorkspaceApi.md#addWorkspaceAccess) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/security/access | add a control acccess to the Workspace
+[**addWorkspaceAccessControl**](WorkspaceApi.md#addWorkspaceAccessControl) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/security/access | add a control acccess to the Workspace
 [**createWorkspace**](WorkspaceApi.md#createWorkspace) | **POST** /organizations/{organization_id}/workspaces | Create a new workspace
 [**deleteAllWorkspaceFiles**](WorkspaceApi.md#deleteAllWorkspaceFiles) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/files | Delete all Workspace files
 [**deleteWorkspace**](WorkspaceApi.md#deleteWorkspace) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id} | Delete a workspace
@@ -13,18 +13,19 @@ Method | HTTP request | Description
 [**findAllWorkspaceFiles**](WorkspaceApi.md#findAllWorkspaceFiles) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/files | List all Workspace files
 [**findAllWorkspaces**](WorkspaceApi.md#findAllWorkspaces) | **GET** /organizations/{organization_id}/workspaces | List all Workspaces
 [**findWorkspaceById**](WorkspaceApi.md#findWorkspaceById) | **GET** /organizations/{organization_id}/workspaces/{workspace_id} | Get the details of an workspace
-[**getWorkspaceAccess**](WorkspaceApi.md#getWorkspaceAccess) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id} | get a control acccess for the Workspace
+[**getWorkspaceAccessControl**](WorkspaceApi.md#getWorkspaceAccessControl) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id} | get a control acccess for the Workspace
+[**getWorkspacePermissions**](WorkspaceApi.md#getWorkspacePermissions) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/permissions/{role} | Get the Workspace permission by given role
 [**getWorkspaceSecurity**](WorkspaceApi.md#getWorkspaceSecurity) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/security | Get the Workspace security information
 [**getWorkspaceSecurityUsers**](WorkspaceApi.md#getWorkspaceSecurityUsers) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/security/users | Get the Workspace security users list
-[**removeWorkspaceAccess**](WorkspaceApi.md#removeWorkspaceAccess) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id} | Remove the specified access from the given Organization Workspace
+[**removeWorkspaceAccessControl**](WorkspaceApi.md#removeWorkspaceAccessControl) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id} | Remove the specified access from the given Organization Workspace
 [**setWorkspaceDefaultSecurity**](WorkspaceApi.md#setWorkspaceDefaultSecurity) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/security/default | set the Workspace default security
 [**updateWorkspace**](WorkspaceApi.md#updateWorkspace) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id} | Update a workspace
 [**uploadWorkspaceFile**](WorkspaceApi.md#uploadWorkspaceFile) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/files | Upload a file for the Workspace
 
 
-<a name="addWorkspaceAccess"></a>
-# **addWorkspaceAccess**
-> WorkspaceAccessControlWithPermissions addWorkspaceAccess(organization\_id, workspace\_id, WorkspaceAccessControl)
+<a name="addWorkspaceAccessControl"></a>
+# **addWorkspaceAccessControl**
+> WorkspaceAccessControl addWorkspaceAccessControl(organization\_id, workspace\_id, WorkspaceAccessControl)
 
 Add (or replace) users to the Workspace specified
 
@@ -38,7 +39,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**WorkspaceAccessControlWithPermissions**](../Models/WorkspaceAccessControlWithPermissions.md)
+[**WorkspaceAccessControl**](../Models/WorkspaceAccessControl.md)
 
 ### Authorization
 
@@ -258,9 +259,9 @@ Name | Type | Description  | Notes
 - **Content-Type**: Not defined
 - **Accept**: application/json
 
-<a name="getWorkspaceAccess"></a>
-# **getWorkspaceAccess**
-> WorkspaceAccessControlWithPermissions getWorkspaceAccess(organization\_id, workspace\_id, identity\_id)
+<a name="getWorkspaceAccessControl"></a>
+# **getWorkspaceAccessControl**
+> WorkspaceAccessControl getWorkspaceAccessControl(organization\_id, workspace\_id, identity\_id)
 
 Remove all users from the Workspace specified
 
@@ -273,7 +274,34 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**WorkspaceAccessControlWithPermissions**](../Models/WorkspaceAccessControlWithPermissions.md)
+[**WorkspaceAccessControl**](../Models/WorkspaceAccessControl.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+<a name="getWorkspacePermissions"></a>
+# **getWorkspacePermissions**
+> List getWorkspacePermissions(organization\_id, workspace\_id, role)
+
+Get the Workspace permission by given role
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **workspace\_id** | **String**| the Workspace identifier | [default to null]
+ **role** | **String**| the Role | [default to null]
+
+### Return type
+
+**List**
 
 ### Authorization
 
@@ -312,7 +340,7 @@ Name | Type | Description  | Notes
 
 <a name="getWorkspaceSecurityUsers"></a>
 # **getWorkspaceSecurityUsers**
-> WorkspaceSecurityUsers getWorkspaceSecurityUsers(organization\_id, workspace\_id)
+> List getWorkspaceSecurityUsers(organization\_id, workspace\_id)
 
 Get the Workspace security users list
 
@@ -325,7 +353,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**WorkspaceSecurityUsers**](../Models/WorkspaceSecurityUsers.md)
+**List**
 
 ### Authorization
 
@@ -336,9 +364,9 @@ Name | Type | Description  | Notes
 - **Content-Type**: Not defined
 - **Accept**: application/json
 
-<a name="removeWorkspaceAccess"></a>
-# **removeWorkspaceAccess**
-> removeWorkspaceAccess(organization\_id, workspace\_id, identity\_id)
+<a name="removeWorkspaceAccessControl"></a>
+# **removeWorkspaceAccessControl**
+> removeWorkspaceAccessControl(organization\_id, workspace\_id, identity\_id)
 
 Remove the specified access from the given Organization Workspace
 
@@ -365,7 +393,7 @@ null (empty response body)
 
 <a name="setWorkspaceDefaultSecurity"></a>
 # **setWorkspaceDefaultSecurity**
-> WorkspaceSecurity setWorkspaceDefaultSecurity(organization\_id, workspace\_id, WorkspaceRoleItems)
+> WorkspaceSecurity setWorkspaceDefaultSecurity(organization\_id, workspace\_id, body)
 
 set the Workspace default security
 
@@ -375,7 +403,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **workspace\_id** | **String**| the Workspace identifier | [default to null]
- **WorkspaceRoleItems** | [**WorkspaceRoleItems**](../Models/WorkspaceRoleItems.md)| the new Workspace default security. |
+ **body** | **String**| the new Workspace default security. |
 
 ### Return type
 
