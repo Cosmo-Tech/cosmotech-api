@@ -345,6 +345,45 @@ paths:
         "404":
           description: the Workspace or the file specified is unknown or you don't have access to them
 
+  /organizations/{organization_id}/workspaces/{workspace_id}/permissions/{role}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: role
+        in: path
+        description: the Role
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getWorkspacePermissions
+      tags:
+        - workspace
+      summary: Get the Workspace permission by given role
+      responses:
+        "200":
+          description: The Workspace security permission list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                example:
+                  - "commonpermissiondelete"
+                  - "commonpermissionwrite"
+                  - "commonpermissioncreatechildren"
+
   /organizations/{organization_id}/workspaces/{workspace_id}/security:
     parameters:
       - name: organization_id
@@ -377,38 +416,6 @@ paths:
         "404":
           description: the Workspace specified is unknown or you don't have access to it
 
-  /organizations/{organization_id}/workspaces/{workspace_id}/security/users:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-    get:
-      operationId: getWorkspaceSecurityUsers
-      tags:
-        - workspace
-      summary: Get the Workspace security users list
-      responses:
-        "200":
-          description: The Workspace security users list
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WorkspaceSecurityUsers'
-              examples:
-                WorkspaceSecurity:
-                  $ref: '#/components/examples/BreweryWorkspaceSecurityUsers'
-        "404":
-          description: the Workspace specified is unknown or you don't have access to it
-
   /organizations/{organization_id}/workspaces/{workspace_id}/security/default:
     parameters:
       - name: organization_id
@@ -434,17 +441,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WorkspaceRoleItems'
-            examples:
-              BreweryUpdate:
-                $ref: '#/components/examples/BreweryWorkspaceDefaultSecurity'
+              type: string
+            example: "commonrolewriter"
           application/yaml:
             schema:
               type: string
               format: binary
-            examples:
-              BreweryUpdate:
-                $ref: '#/components/examples/BreweryWorkspaceDefaultSecurity'
+            example: "commonrolewriter"
       responses:
         "200":
           description: The Workspace default visibility
@@ -453,8 +456,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/WorkspaceSecurity'
               examples:
-                NoneWorkspaceSecurity:
-                  $ref: '#/components/examples/BreweryDefaultSecurityRoleNone'
                 WriterWorkspaceSecurity:
                   $ref: '#/components/examples/BreweryDefaultSecurityRoleWriter'
         "404":
@@ -475,7 +476,7 @@ paths:
         schema:
           type: string
     post:
-      operationId: addWorkspaceAccess
+      operationId: addWorkspaceAccessControl
       tags:
         - workspace
       summary: add a control acccess to the Workspace
@@ -502,10 +503,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkspaceAccessControlWithPermissions'
+                $ref: '#/components/schemas/WorkspaceAccessControl'
               examples:
                 WorkspaceAccessControl:
-                  $ref: '#/components/examples/BreweryWorkspaceAccessControlWithPermissions'
+                  $ref: '#/components/examples/BreweryWorkspaceAccessControl'
         "404":
           description: the Workspace specified is unknown or you don't have access to it
 
@@ -530,7 +531,7 @@ paths:
         schema:
           type: string
     get:
-      operationId: getWorkspaceAccess
+      operationId: getWorkspaceAccessControl
       tags:
         - workspace
       summary: get a control acccess for the Workspace
@@ -540,15 +541,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkspaceAccessControlWithPermissions'
+                $ref: '#/components/schemas/WorkspaceAccessControl'
               examples:
                 WorkspaceAccessControl:
-                  $ref: '#/components/examples/BreweryWorkspaceAccessControlWithPermissions'
+                  $ref: '#/components/examples/BreweryWorkspaceAccessControl'
         "404":
           description: the Workspace or user specified is unknown or you don't have access to it
-
     delete:
-      operationId: removeWorkspaceAccess
+      operationId: removeWorkspaceAccessControl
       tags:
         - workspace
       summary: Remove the specified access from the given Organization Workspace
@@ -557,6 +557,40 @@ paths:
           description: Request succeeded
         "404":
           description: the Workspace or the user specified is unknown or you don't have access to them
+
+  /organizations/{organization_id}/workspaces/{workspace_id}/security/users:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getWorkspaceSecurityUsers
+      tags:
+        - workspace
+      summary: Get the Workspace security users list
+      responses:
+        "200":
+          description: The Workspace security users list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                example:
+                  - alice@mycompany.com
+                  - bob@mycompany.com
+        "404":
+          description: the Workspace specified is unknown or you don't have access to it
 
 components:
   securitySchemes:
@@ -618,7 +652,8 @@ components:
             The Event Hub Namespace must be named \'<organization_id\>-<workspace_id\>\' (in lower case).
             This Namespace must also contain two Event Hubs named \'scenariometadata\' and \'scenariorunmetadata\'.
         security:
-          $ref: '#/components/schemas/WorkspaceSecurity'
+          allOf:
+           - $ref: '#/components/schemas/WorkspaceSecurity'
       required:
         - key
         - name
@@ -626,61 +661,37 @@ components:
     WorkspaceSecurity:
       type: object
       description: the workspace security information
+      x-impl: 'com.cosmotech.api.rbac.model.RbacSecurity(default, accessControlList)'
       properties:
         default:
-          $ref: '#/components/schemas/WorkspaceRoleList'
+          x-impl: override
+          type: string
+          description: the role by default
         accessControlList:
           type: list
           description: the list which can access this Workspace with detailed access control information
+          x-impl: override
           items:
-            $ref: '#/components/schemas/WorkspaceAccessControl'
+            $ref: '#/components/schemas/RbacAccessControl'
+      required:
+        - default
+        - accessControlList
     WorkspaceAccessControl:
       type: object
+      x-impl: 'com.cosmotech.api.rbac.model.RbacAccessControl(id, role)'
       description: a Workspace access control item
       properties:
         id:
+          x-impl: override
           type: string
           description: the identity id
-        roles:
-          $ref: '#/components/schemas/WorkspaceRoleList'
+        role:
+          x-impl: override
+          type: string
+          description: a role
       required:
         - id
-        - roles
-    WorkspaceAccessControlWithPermissions:
-      allOf:
-        - $ref: '#/components/schemas/WorkspaceAccessControl'
-        - type: object
-          properties:
-            permissions:
-              type: array
-              description: a list of permissions
-              items:
-                type: string
-                description: a permission id.
-    WorkspaceRoleItems:
-      type: object
-      description: a list of role access list
-      properties:
-        roles:
-          $ref: '#/components/schemas/WorkspaceRoleList'
-      required:
-        - roles
-    WorkspaceRoleList:
-      type: array
-      description: a roles list
-      items:
-        $ref: '#/components/schemas/WorkspaceRole'
-    WorkspaceRole:
-      type: string
-      enum: ["commonroleadmin","commonrolewriter","commonrolecreator","commonrolereader"]
-    WorkspaceSecurityUsers:
-      type: object
-      description: the list of Workspace users
-      properties:
-        users:
-          type: array
-          items:
-            type: string
+        - role
     WorkspaceFile:
       type: object
       description: a Workspace File resource
@@ -757,8 +768,7 @@ components:
           defaultRunTemplateDataset:
             1: "1"
         security:
-          default:
-            - "commonrolereader"
+          default: "commonrolereader"
     BreweryWorkspace:
       summary: Brewery Workspace
       description: Brewery Workspace example
@@ -778,12 +788,10 @@ components:
           defaultRunTemplateDataset:
             1: "1"
         security:
-          default:
-            - "commonrolereader"
+          default: "commonrolereader"
           accessControlList:
             - id: "alice@mycompany.com"
-              roles:
-                - "commonroleadmin"
+              role: "commonroleadmin"
     OneWorkspace:
       summary: One Workspace list
       description: One Workspace list example
@@ -803,12 +811,10 @@ components:
             defaultRunTemplateDataset:
               1: "1"
           security:
-            default:
-              - "commonrolereader"
+            default: "commonrolereader"
             accessControlList:
               - id: "alice@mycompany.com"
-                roles:
-                  - "commonroleadmin"
+                role: "commonroleadmin"
     BreweryWorkspaceUpdate:
       summary: Update the Brewery Workspace
       description: Update the Brewery Workspace by changing its name
@@ -833,64 +839,29 @@ components:
           defaultRunTemplateDataset:
             1: "1"
         security:
-          default:
-            - "commonrolereader"
+          default: "commonrolereader"
           accessControlList:
             - id: "alice@mycompany.com"
-              roles:
-                - "commonroleadmin"
+              role: "commonroleadmin"
     BreweryWorkspaceSecurity:
       summary: Brewery Workspace security
       description: Brewery Workspace security example
       value:
-        default:
-          - "commonrolereader"
+        default: "commonrolereader"
         accessControlList:
           - id: "bob@mycosmocompany.com"
-            roles:
-              - "commonrolewriter"
-    BreweryDefaultSecurityRoleNone:
-      summary: Brewery Workspace None default security
-      description: Brewery Workspace example
-      value:
-        default: []
-    BreweryDefaultSecurityRoleWriter:
-      summary: Brewery Workspace Writer default security
-      description: Brewery Workspace example
-      value:
-        default:
-          - "commonrolewriter"
-    BreweryWorkspaceDefaultSecurity:
-      summary: Set of default security
-      description: An array of default security values
-      value:
-        roles:
-          - commonrolewriter
+            role: "commonrolewriter"
     BreweryWorkspaceAccessControl:
       summary: Set an access control.
       description: Set an access control for a user to a workspace.
       value:
-        id: bob@mycompany.com
-        roles:
-          - commonrolewriter
-    BreweryWorkspaceAccessControlWithPermissions:
-      summary: Access control.
-      description: Access control with permissions for a user to a workspace.
+        id: "bob@mycompany.com"
+        role: "commonrolewriter"
+    BreweryDefaultSecurityRoleWriter:
+      summary: Brewery Workspace Writer default security
+      description: Brewery Workspace example
       value:
-        id: bob@mycompany.com
-        roles:
-          - commonrolewriter
-        permissions:
-          - commonpermissionread
-          - commonpermissionwrite
-          - commonpermissioncreatescenario
-    BreweryWorkspaceSecurityUsers:
-      summary: Security users list
-      description: Example of RBAC security users list
-      value:
-        users:
-          - alice@mycompany.com
-          - bob@mycompany.com
+        default: "commonrolewriter"
     BreweryWorkspaceFile:
       summary: Brewery Workspace file example
       description: Brewery Workspace file uploaded return example
