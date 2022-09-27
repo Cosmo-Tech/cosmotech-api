@@ -257,9 +257,9 @@ internal class ScenarioRunServiceImpl(
           .queryItems(
               SqlQuerySpec(
                   """
-                            SELECT * FROM c
-                              WHERE c.type = 'ScenarioRun'
-                                AND c.workspaceId = @WORKSPACE_ID
+                            SELECT * FROM c 
+                              WHERE c.type = 'ScenarioRun' 
+                                AND c.workspaceId = @WORKSPACE_ID 
                                 AND c.scenarioId = @SCENARIO_ID
                           """.trimIndent(),
                   listOf(
