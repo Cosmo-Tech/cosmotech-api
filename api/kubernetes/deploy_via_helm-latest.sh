@@ -836,7 +836,7 @@ prometheus:
       requests:
         cpu: 1
         memory: $PROM_CPU_MEM_REQUESTS_VAR
-    retention: 12h
+    retention: 35d
     serviceMonitorSelector:
       matchLabels:
         serviceMonitorSelector: prometheus
