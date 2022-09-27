@@ -376,6 +376,234 @@ paths:
         "404":
           description: the Organization specified is unknown or you don't have access to it
 
+  /organizations/permissions:
+    get:
+      operationId: getAllPermissions
+      tags:
+        - organization
+      summary: Get the all permission by given role
+      responses:
+        "200":
+          description: The Scenarios security permission list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ComponentRolePermissions'
+
+
+  /organizations/{organization_id}/permissions/{role}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: role
+        in: path
+        description: the Role
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getOrganizationPermissions
+      tags:
+        - organization
+      summary: Get the Organization permissions by given role
+      responses:
+        "200":
+          description: The Organization security permission list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                example:
+                  - "commonpermissiondelete"
+                  - "commonpermissionwrite"
+                  - "commonpermissioncreatechildren"
+
+  /organizations/{organization_id}/security:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getOrganizationSecurity
+      tags:
+        - organization
+      summary: Get the Organization security information
+      responses:
+        "200":
+          description: The Organization security
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationSecurity'
+              examples:
+                OrganizationSecurity:
+                  $ref: '#/components/examples/BreweryOrganizationSecurity'
+        "404":
+          description: the Organization specified is unknown or you don't have access to it
+
+  /organizations/{organization_id}/security/default:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: setOrganizationDefaultSecurity
+      tags:
+        - organization
+      summary: set the Organization default security
+      requestBody:
+        description: the new Organization default security.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+            example: "commonrolewriter"
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            example: "commonrolewriter"
+      responses:
+        "200":
+          description: The Organization default visibility
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationSecurity'
+              examples:
+                WriterOrganizationSecurity:
+                  $ref: '#/components/examples/BreweryDefaultSecurityRoleWriter'
+        "404":
+          description: the Organization specified is unknown or you don't have access to it
+
+  /organizations/{organization_id}/security/access:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: addOrganizationAccessControl
+      tags:
+        - organization
+      summary: add a control acccess to the Organization
+      requestBody:
+        description: the new Organization security access to add.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizationAccessControl'
+            examples:
+              OrganizationAccess:
+                $ref: '#/components/examples/BreweryOrganizationAccessControl'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            examples:
+              OrganizationAccess:
+                $ref: '#/components/examples/BreweryOrganizationAccessControl'
+      responses:
+        "200":
+          description: The Organization access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationAccessControl'
+              examples:
+                OrganizationAccessControl:
+                  $ref: '#/components/examples/BreweryOrganizationAccessControl'
+        "404":
+          description: the Organization specified is unknown or you don't have access to it
+
+  /organizations/{organization_id}/security/access/{identity_id}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: identity_id
+        in: path
+        description: the User identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getOrganizationAccessControl
+      tags:
+        - organization
+      summary: get a control acccess for the Organization
+      responses:
+        "200":
+          description: The Organization access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationAccessControl'
+              examples:
+                OrganizationAccessControl:
+                  $ref: '#/components/examples/BreweryOrganizationAccessControl'
+        "404":
+          description: the Organization or user specified is unknown or you don't have access to it
+    delete:
+      operationId: removeOrganizationAccessControl
+      tags:
+        - organization
+      summary: Remove the specified access from the given Organization
+      responses:
+        "204":
+          description: Request succeeded
+        "404":
+          description: the Organization or the user specified is unknown or you don't have access to them
+
+  /organizations/{organization_id}/security/users:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getOrganizationSecurityUsers
+      tags:
+        - organization
+      summary: Get the Organization security users list
+      responses:
+        "200":
+          description: The Organization security users list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                example:
+                  - alice@mycompany.com
+                  - bob@mycompany.com
+        "404":
+          description: the Organization specified is unknown or you don't have access to it
+
 components:
   securitySchemes:
     oAuth2AuthCode:
@@ -390,8 +618,10 @@ components:
     Organization:
       type: object
       description: an Organization
+#      x-impl: 'com.cosmotech.api.rbac.model.Rbac'
       properties:
         id:
+#          x-impl: override
           type: string
           readOnly: true
           description: the Organization unique identifier
@@ -409,8 +639,45 @@ components:
         services:
           descriptions: the list of Cloud services specific to the Organization
           $ref: '#/components/schemas/OrganizationServices'
+        security:
+          allOf:
+            - $ref: '#/components/schemas/OrganizationSecurity'
 #      required:
 #        - name
+    OrganizationSecurity:
+      type: object
+      description: the Organization security information
+      x-impl: 'com.cosmotech.api.rbac.model.RbacSecurity(default, accessControlList)'
+      properties:
+        default:
+          x-impl: override
+          type: string
+          description: the role by default
+        accessControlList:
+          type: list
+          description: the list which can access this Organization with detailed access control information
+          x-impl: override
+          items:
+            $ref: '#/components/schemas/RbacAccessControl'
+      required:
+        - default
+        - accessControlList
+    OrganizationAccessControl:
+      type: object
+      x-impl: 'com.cosmotech.api.rbac.model.RbacAccessControl(id, role)'
+      description: a Organization access control item
+      properties:
+        id:
+          x-impl: override
+          type: string
+          description: the identity id
+        role:
+          x-impl: override
+          type: string
+          description: a role
+      required:
+        - id
+        - role
     OrganizationServices:
       type: object
       description: the cloud service resources of the Organization
@@ -469,6 +736,18 @@ components:
       required:
 #        - name
         - roles
+    ComponentRolePermissions:
+      type: object
+      description: a RBAC by component
+      properties:
+        component:
+          type: string
+        roles:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
   examples:
     NewOrganizationIn:
       summary: Create a new organization
@@ -524,6 +803,20 @@ components:
           solutionsContainerRegistry:
             cloudService: AzureContainerRegistries
             baseUri: twinengines-1.azurecr.io
+    BreweryOrganizationSecurity:
+      summary: Brewery Organization security
+      description: Brewery Organization security example
+      value:
+        default: "commonrolereader"
+        accessControlList:
+          - id: "bob@mycosmocompany.com"
+            role: "commonrolewriter"
+    BreweryOrganizationAccessControl:
+      summary: Set an access control.
+      description: Set an access control for a user to an organization.
+      value:
+        id: "bob@mycompany.com"
+        role: "commonrolewriter"
     CosmoThreeUsers:
       summary: Cosmo Tech Organization with 3 users
       description: Cosmo Tech Organization 3 users example
@@ -618,3 +911,4 @@ components:
           name: Alice
           roles:
             - User
+
