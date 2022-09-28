@@ -36,7 +36,7 @@ paths:
         "400":
           description: Bad request
         "404":
-          description: the Scenario specified is unknown or you don't have access to it
+          description: the Organization specified is unknown or you don't have access to it
   /organizations/{organization_id}/scenarioruns/search:
     parameters:
       - name: organization_id
