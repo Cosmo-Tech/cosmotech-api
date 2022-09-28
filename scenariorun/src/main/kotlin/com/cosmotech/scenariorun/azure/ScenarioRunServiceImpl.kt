@@ -142,23 +142,36 @@ internal class ScenarioRunServiceImpl(
       workspaceId: String,
       scenarioId: String
   ) {
+    GlobalScope.launch {
+      this@ScenarioRunServiceImpl.deleteScenarioRunsByScenario(
+          organizationId, workspaceId, scenarioId)
+    }
+  }
+
+  private fun deleteScenarioRunsByScenario(
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String
+  ) {
     val scenarioRuns = getScenarioRuns(organizationId, workspaceId, scenarioId)
     val scenarioRunStatus = mutableListOf<ScenarioRunStatus>()
-    var firstSuccessfulRun = false
+
     for (item in scenarioRuns) {
       scenarioRunStatus.add(getScenarioRunStatus(item.id!!, item))
     }
-    scenarioRunStatus.sortedByDescending { it.endTime }
-    for (item in scenarioRunStatus) {
-      val scenarioRunState = item.state
-      if (scenarioRunState == ScenarioRunState.Failed) {
-        deleteScenarioRun(organizationId, item.id!!)
-      } else if (scenarioRunState == ScenarioRunState.Successful) {
-        if (!firstSuccessfulRun) {
-          firstSuccessfulRun = true
-        } else {
-          deleteScenarioRun(organizationId, item.id!!)
+
+    scenarioRunStatus.filter { it.state == ScenarioRunState.Failed }.forEach {
+      deleteScenarioRun(organizationId, it.id!!)
+    }
+
+    val sortedByEndTimeSuccessFullRuns =
+        scenarioRunStatus.filter { it.state == ScenarioRunState.Successful }.sortedByDescending {
+          it.endTime
         }
+
+    if (sortedByEndTimeSuccessFullRuns.size > 1) {
+      sortedByEndTimeSuccessFullRuns.subList(1, sortedByEndTimeSuccessFullRuns.size).forEach {
+        deleteScenarioRun(organizationId, it.id!!)
       }
     }
   }

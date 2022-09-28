@@ -325,8 +325,10 @@ internal class WorkspaceServiceImpl(
   fun deleteHistoricalDataWorkspace(data: DeleteHistoricalDataOrganization) {
     val organizationId = data.organizationId
     val workspaces: List<Workspace> = findAllWorkspaces(organizationId)
-    for (item in workspaces) this.eventPublisher.publishEvent(
-        DeleteHistoricalDataWorkspace(this, organizationId, item.id!!))
+    for (workspace in workspaces) {
+        this.eventPublisher.publishEvent(
+            DeleteHistoricalDataWorkspace(this, organizationId, workspace.id!!))
+    }
   }
 
   @EventListener(OrganizationRegistered::class)

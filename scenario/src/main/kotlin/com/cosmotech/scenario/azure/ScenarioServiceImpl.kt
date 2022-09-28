@@ -52,8 +52,6 @@ import com.cosmotech.user.domain.User
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
-import java.time.OffsetDateTime
-import java.time.ZonedDateTime
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -62,6 +60,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
+import java.time.OffsetDateTime
+import java.time.ZonedDateTime
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
@@ -856,8 +856,10 @@ internal class ScenarioServiceImpl(
     val organizationId = data.organizationId
     val workspaceId = data.workspaceId
     val scenarios: List<Scenario> = findAllScenarios(organizationId, workspaceId)
-    for (item in scenarios) this.eventPublisher.publishEvent(
-        DeleteHistoricalDataScenario(this, organizationId, workspaceId, item.id!!))
+    for (scenario in scenarios) {
+        this.eventPublisher.publishEvent(
+            DeleteHistoricalDataScenario(this, organizationId, workspaceId, scenario.id!!))
+    }
   }
 
   @EventListener(OrganizationRegistered::class)
