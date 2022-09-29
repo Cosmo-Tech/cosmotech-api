@@ -27,7 +27,6 @@ import com.cosmotech.api.scenariorun.DataIngestionState
 import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
-import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenariorun.CSM_JOB_ID_LABEL_KEY
 import com.cosmotech.scenariorun.ContainerFactory
@@ -70,7 +69,6 @@ internal class ScenarioRunServiceImpl(
     private val containerFactory: ContainerFactory,
     private val workflowService: WorkflowService,
     private val workspaceService: WorkspaceApiService,
-    private val scenarioService: ScenarioApiService,
     private val azureDataExplorerClient: AzureDataExplorerClient,
     private val azureEventHubsClient: AzureEventHubsClient
 ) : CsmAzureService(), ScenariorunApiService {
@@ -144,12 +142,6 @@ internal class ScenarioRunServiceImpl(
       workspaceId: String,
       scenarioId: String
   ) {
-
-    val scenario = scenarioService.findScenarioById(organizationId, workspaceId, scenarioId)
-    if (scenario.ownerId != getCurrentAuthenticatedUserName()) {
-      // TODO Only the owner or an admin should be able to perform this operation
-      throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
-    }
 
     GlobalScope.launch {
       this@ScenarioRunServiceImpl.deleteScenarioRunsByScenarioWithoutAccessEnforcement(
