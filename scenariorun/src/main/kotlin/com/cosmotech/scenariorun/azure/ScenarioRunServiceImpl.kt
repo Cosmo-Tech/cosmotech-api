@@ -29,6 +29,7 @@ import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.scenario.domain.Scenario
+import com.cosmotech.scenario.domain.ScenarioLastRun
 import com.cosmotech.scenariorun.CSM_JOB_ID_LABEL_KEY
 import com.cosmotech.scenariorun.ContainerFactory
 import com.cosmotech.scenariorun.EVENT_HUB_CONTROL_PLANE_VAR
@@ -44,6 +45,7 @@ import com.cosmotech.scenariorun.domain.ScenarioRunStatus
 import com.cosmotech.scenariorun.isTerminal
 import com.cosmotech.scenariorun.withoutSensitiveData
 import com.cosmotech.scenariorun.workflow.WorkflowService
+import com.cosmotech.scenariorun.workflow.argo.CSM_ARGO_WORKFLOWS_TIMEOUT
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
@@ -55,6 +57,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
@@ -65,7 +68,7 @@ private const val MIN_SDK_VERSION_MINOR = 5
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
-@Suppress("TooManyFunctions")
+@Suppress("TooManyFunctions", "LargeClass")
 internal class ScenarioRunServiceImpl(
     private val containerFactory: ContainerFactory,
     private val workflowService: WorkflowService,
@@ -396,7 +399,67 @@ internal class ScenarioRunServiceImpl(
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     sendScenarioRunMetaData(organizationId, workspace, scenarioId, scenarioRun.csmSimulationRun)
 
+    //      Start a thread to check whether a scenariorun is completed
+    //              then delete the previous simulation results
+    logger.debug("Start coroutine to poll simulation status")
+    GlobalScope.launch {
+      withTimeout(CSM_ARGO_WORKFLOWS_TIMEOUT.toLong()) {
+        deletePreviousSimulationDataIfCurrentSimulationIsSuccessful(
+            scenarioRun, startInfo.scenario.lastRun)
+      }
+    }
+    logger.debug("Coroutine to poll simulation status launched")
+
     return scenarioRun.withoutSensitiveData()!!
+  }
+
+  private fun deletePreviousSimulationDataIfCurrentSimulationIsSuccessful(
+      currentRun: ScenarioRun,
+      lastRun: ScenarioLastRun?
+  ) {
+    while (true) {
+      val scenarioRunStatus = getScenarioRunStatus(currentRun.organizationId!!, currentRun.id!!)
+
+      if (scenarioRunStatus.state == ScenarioRunState.Successful) {
+        // deleteScenarioRunsByScenario delete all previous probes data, if it's what we want
+        //                deleteScenarioRunsByScenario(
+        //                    currentRun.organizationId!!, currentRun.workspaceId!!,
+        // currentRun.scenarioId!!)
+
+        deleteLastRunSimulationData(currentRun, lastRun)
+        return
+      } else if (scenarioRunStatus.state == ScenarioRunState.DataIngestionFailure ||
+          scenarioRunStatus.state == ScenarioRunState.Failed) {
+        logger.info("ScenarioRun {} failed", currentRun.csmSimulationRun)
+        break
+      }
+    }
+  }
+
+  private fun deleteLastRunSimulationData(currentRun: ScenarioRun, lastRun: ScenarioLastRun?) {
+    try {
+      logger.debug(
+          "Deleting last run simulation data. Organization: {}, Workspace: {}," +
+              " Scenario Run Id: {}",
+          currentRun.organizationId!!,
+          currentRun.workspaceId!!,
+          lastRun?.scenarioRunId!!)
+
+      azureDataExplorerClient.deleteDataFromADXbyExtentShard(
+          currentRun.organizationId!!,
+          workspaceService.findWorkspaceById(currentRun.organizationId!!, currentRun.workspaceId!!)
+              .key,
+          lastRun?.csmSimulationRun!!)
+      logger.debug(
+          "Last run simulation data deleted from ADX with csmSimulationRun {}",
+          lastRun.csmSimulationRun!!)
+    } catch (exception: IllegalStateException) {
+      logger.debug(
+          "An error occurred while deleting last run simulation data for scenarioRunId {}: {}",
+          lastRun?.scenarioRunId,
+          exception.message,
+          exception)
+    }
   }
 
   override fun searchScenarioRuns(
