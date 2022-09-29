@@ -399,17 +399,18 @@ internal class ScenarioRunServiceImpl(
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     sendScenarioRunMetaData(organizationId, workspace, scenarioId, scenarioRun.csmSimulationRun)
 
-    //      Start a thread to check whether a scenariorun is completed
-    //              then delete the previous simulation results
-    logger.debug("Start coroutine to poll simulation status")
-    GlobalScope.launch {
-      withTimeout(CSM_ARGO_WORKFLOWS_TIMEOUT.toLong()) {
-        deletePreviousSimulationDataIfCurrentSimulationIsSuccessful(
-            scenarioRun, startInfo.scenario.lastRun)
+    if (startInfo.runTemplate.deleteLastRunData == true) {
+      // Start a thread to check whether a scenariorun is completed
+      // then delete the previous simulation results
+      logger.debug("Start coroutine to poll simulation status")
+      GlobalScope.launch {
+        withTimeout(CSM_ARGO_WORKFLOWS_TIMEOUT.toLong()) {
+          deletePreviousSimulationDataIfCurrentSimulationIsSuccessful(
+              scenarioRun, startInfo.scenario.lastRun)
+        }
       }
+      logger.debug("Coroutine to poll simulation status launched")
     }
-    logger.debug("Coroutine to poll simulation status launched")
-
     return scenarioRun.withoutSensitiveData()!!
   }
 

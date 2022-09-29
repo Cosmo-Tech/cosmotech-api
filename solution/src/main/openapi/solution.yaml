@@ -632,6 +632,10 @@ components:
         executionTimeout:
           type: integer
           description: an optional duration in seconds in which a workflow is allowed to run
+        deleteLastRunData:
+          type: boolean
+          default: true
+          description: whether to delete the last simulation's results
       required:
         - id
 #         - name
