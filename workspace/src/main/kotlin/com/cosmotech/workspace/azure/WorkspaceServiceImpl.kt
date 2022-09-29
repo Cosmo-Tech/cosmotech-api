@@ -326,8 +326,8 @@ internal class WorkspaceServiceImpl(
     val organizationId = data.organizationId
     val workspaces: List<Workspace> = findAllWorkspaces(organizationId)
     for (workspace in workspaces) {
-        this.eventPublisher.publishEvent(
-            DeleteHistoricalDataWorkspace(this, organizationId, workspace.id!!))
+      this.eventPublisher.publishEvent(
+          DeleteHistoricalDataWorkspace(this, organizationId, workspace.id!!))
     }
   }
 

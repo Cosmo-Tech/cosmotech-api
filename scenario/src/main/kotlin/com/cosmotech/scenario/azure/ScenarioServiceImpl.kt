@@ -857,8 +857,8 @@ internal class ScenarioServiceImpl(
     val workspaceId = data.workspaceId
     val scenarios: List<Scenario> = findAllScenarios(organizationId, workspaceId)
     for (scenario in scenarios) {
-        this.eventPublisher.publishEvent(
-            DeleteHistoricalDataScenario(this, organizationId, workspaceId, scenario.id!!))
+      this.eventPublisher.publishEvent(
+          DeleteHistoricalDataScenario(this, organizationId, workspaceId, scenario.id!!))
     }
   }
 
