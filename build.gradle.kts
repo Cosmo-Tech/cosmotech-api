@@ -313,11 +313,10 @@ subprojects {
       inputSpec.set("${projectDir}/src/main/openapi/${projectDirName}.yaml")
       outputDir.set(openApiServerSourcesGenerationDir)
       importMappings.set(
-        mapOf(
-          "RbacSecurity" to "com.cosmotech.api.rbac.model.RbacSecurity",
-          "RbacAccessControl" to "com.cosmotech.api.rbac.model.RbacAccessControl",
-        )
-      )
+          mapOf(
+              "RbacSecurity" to "com.cosmotech.api.rbac.model.RbacSecurity",
+              "RbacAccessControl" to "com.cosmotech.api.rbac.model.RbacAccessControl",
+          ))
       templateDir.set("${rootDir}/openapi/templates")
       generatorName.set("kotlin-spring")
       apiPackage.set("com.cosmotech.${projectDirName}.api")

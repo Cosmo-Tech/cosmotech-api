@@ -17,8 +17,11 @@ import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.WorkflowStatusRequest
 import com.cosmotech.api.id.CsmIdGenerator
 import com.cosmotech.api.rbac.CsmRbac
+import com.cosmotech.api.rbac.PERMISSION_EDIT
 import com.cosmotech.api.utils.getCurrentAuthentication
 import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.domain.Organization
+import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioJobState
 import com.cosmotech.scenario.domain.ScenarioLastRun
@@ -29,6 +32,7 @@ import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
+import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
@@ -67,8 +71,7 @@ class ScenarioServiceImplTests {
   @MockK(relaxed = true) private lateinit var azureEventHubsClient: AzureEventHubsClient
   @MockK(relaxed = true) private lateinit var azureDataExplorerClient: AzureDataExplorerClient
 
-  @RelaxedMockK
-  private lateinit var csmRbac: CsmRbac
+  @RelaxedMockK private lateinit var csmRbac: CsmRbac
 
   @Suppress("unused") @MockK(relaxed = true) private lateinit var cosmosTemplate: CosmosTemplate
   @Suppress("unused") @MockK private lateinit var cosmosClient: CosmosClient
@@ -92,12 +95,14 @@ class ScenarioServiceImplTests {
                 organizationService,
                 workspaceService,
                 azureDataExplorerClient,
-                azureEventHubsClient, csmRbac),
+                azureEventHubsClient,
+                csmRbac),
             recordPrivateCalls = true)
 
     every { scenarioServiceImpl getProperty "cosmosTemplate" } returns cosmosTemplate
     every { scenarioServiceImpl getProperty "cosmosClient" } returns cosmosClient
     every { scenarioServiceImpl getProperty "idGenerator" } returns idGenerator
+    every { scenarioServiceImpl getProperty "eventPublisher" } returns eventPublisher
     every { scenarioServiceImpl getProperty "eventPublisher" } returns eventPublisher
 
     val csmPlatformPropertiesAzure = mockk<CsmPlatformProperties.CsmPlatformAzure>()
@@ -130,9 +135,16 @@ class ScenarioServiceImplTests {
 
   @Test
   fun `PROD-7687 - should initialize Child Scenario Parameters values with parent ones`() {
-    every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns mockk()
+    val organization = mockk<Organization>()
+    every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
+    val organizationSecurity = mockk<OrganizationSecurity>()
+    every { organization.security } returns organizationSecurity
+    justRun { csmRbac.verify(organizationSecurity, PERMISSION_EDIT) }
     val workspace = mockk<Workspace>()
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
+    val workspaceSecurity = mockk<WorkspaceSecurity>()
+    every { workspace.security } returns workspaceSecurity
+    justRun { csmRbac.verify(workspaceSecurity, PERMISSION_EDIT) }
     val workspaceSolution = mockk<WorkspaceSolution>()
     every { workspaceSolution.solutionId } returns SOLUTION_ID
     every { workspace.solution } returns workspaceSolution
@@ -240,9 +252,19 @@ class ScenarioServiceImplTests {
 
   @Test
   fun `PROD-7687 - No Parameters Values inherited if no parentId defined`() {
-    every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns mockk()
+    val organization = mockk<Organization>()
+    every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
+
+    val organizationSecurity = mockk<OrganizationSecurity>()
+    every { organization.security } returns organizationSecurity
+    justRun { csmRbac.verify(organizationSecurity, PERMISSION_EDIT) }
+
     val workspace = mockk<Workspace>()
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
+    val workspaceSecurity = mockk<WorkspaceSecurity>()
+    every { workspace.security } returns workspaceSecurity
+    justRun { csmRbac.verify(workspaceSecurity, PERMISSION_EDIT) }
+
     val workspaceSolution = mockk<WorkspaceSolution>()
     every { workspaceSolution.solutionId } returns SOLUTION_ID
     every { workspace.solution } returns workspaceSolution
@@ -329,10 +351,19 @@ class ScenarioServiceImplTests {
 
   @Test
   fun `PROD-7687 - Child Scenario Parameters values take precedence over the parent ones`() {
-    every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns mockk()
+    val organization = mockk<Organization>()
+    every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
+    val organizationSecurity = mockk<OrganizationSecurity>()
+    every { organization.security } returns organizationSecurity
+    justRun { csmRbac.verify(organizationSecurity, PERMISSION_EDIT) }
+
     val workspace = mockk<Workspace>()
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
+    val workspaceSecurity = mockk<WorkspaceSecurity>()
+    every { workspace.security } returns workspaceSecurity
+    justRun { csmRbac.verify(workspaceSecurity, PERMISSION_EDIT) }
     val workspaceSolution = mockk<WorkspaceSolution>()
+
     every { workspaceSolution.solutionId } returns SOLUTION_ID
     every { workspace.solution } returns workspaceSolution
 
