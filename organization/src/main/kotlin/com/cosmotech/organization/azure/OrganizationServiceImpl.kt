@@ -47,8 +47,10 @@ import javax.annotation.PostConstruct
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions")
-internal class OrganizationServiceImpl(private val userService: UserApiService, private val csmRbac: CsmRbac) :
-    CsmAzureService(), OrganizationApiService {
+internal class OrganizationServiceImpl(
+    private val userService: UserApiService,
+    private val csmRbac: CsmRbac
+) : CsmAzureService(), OrganizationApiService {
 
   private lateinit var coreOrganizationContainer: String
 
@@ -106,9 +108,10 @@ internal class OrganizationServiceImpl(private val userService: UserApiService, 
       cosmosTemplate.findAll<Organization>(coreOrganizationContainer)
 
   override fun findOrganizationById(organizationId: String): Organization {
-      val organization: Organization = cosmosTemplate.findByIdOrThrow(coreOrganizationContainer, organizationId)
-      csmRbac.verify(organization.security, PERMISSION_READ_DATA)
-      return organization
+    val organization: Organization =
+        cosmosTemplate.findByIdOrThrow(coreOrganizationContainer, organizationId)
+    csmRbac.verify(organization.security, PERMISSION_READ_DATA)
+    return organization
   }
 
   /**
@@ -371,7 +374,6 @@ internal class OrganizationServiceImpl(private val userService: UserApiService, 
     }
   }
 
-
   override fun getAllPermissions(): List<ComponentRolePermissions> {
     return getAllRolesDefinition().mapNotNull { ComponentRolePermissions(it.key, it.value) }
   }
@@ -380,14 +382,16 @@ internal class OrganizationServiceImpl(private val userService: UserApiService, 
     return com.cosmotech.api.rbac.getPermissions(role, getScenarioRolesDefinition())
   }
 
-
   override fun getOrganizationSecurity(organizationId: String): OrganizationSecurity {
     val organization = findOrganizationById(organizationId)
     csmRbac.verify(organization.security, PERMISSION_READ_SECURITY)
     return organization.security as OrganizationSecurity
   }
 
-  override fun setOrganizationDefaultSecurity(organizationId: String, organizationRole: String): OrganizationSecurity {
+  override fun setOrganizationDefaultSecurity(
+      organizationId: String,
+      organizationRole: String
+  ): OrganizationSecurity {
     val organization = findOrganizationById(organizationId)
     csmRbac.verify(organization.security, PERMISSION_EDIT_SECURITY)
     csmRbac.setDefault(organization.security, organizationRole)
@@ -395,21 +399,26 @@ internal class OrganizationServiceImpl(private val userService: UserApiService, 
     return organization.security as OrganizationSecurity
   }
 
-  override fun getOrganizationAccessControl(organizationId: String, identityId: String): OrganizationAccessControl {
+  override fun getOrganizationAccessControl(
+      organizationId: String,
+      identityId: String
+  ): OrganizationAccessControl {
     val organization = findOrganizationById(organizationId)
     csmRbac.verify(organization.security, PERMISSION_READ_SECURITY)
     return csmRbac.getAccessControl(organization.security, identityId) as OrganizationAccessControl
   }
 
   override fun addOrganizationAccessControl(
-    organizationId: String,
-    organizationAccessControl: OrganizationAccessControl
+      organizationId: String,
+      organizationAccessControl: OrganizationAccessControl
   ): OrganizationAccessControl {
     val organization = findOrganizationById(organizationId)
     csmRbac.verify(organization.security, PERMISSION_EDIT_SECURITY)
-    csmRbac.setUserRole(organization.security, organizationAccessControl.id, organizationAccessControl.role)
+    csmRbac.setUserRole(
+        organization.security, organizationAccessControl.id, organizationAccessControl.role)
     this.updateOrganization(organizationId, organization)
-    return csmRbac.getAccessControl(organization.security, organizationAccessControl.id) as OrganizationAccessControl
+    return csmRbac.getAccessControl(organization.security, organizationAccessControl.id) as
+        OrganizationAccessControl
   }
 
   override fun removeOrganizationAccessControl(organizationId: String, identityId: String) {
