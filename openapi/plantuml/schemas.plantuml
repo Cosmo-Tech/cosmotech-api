@@ -85,7 +85,7 @@ entity Organization {
     ownerId: String
     users: List<OrganizationUser>
     services: OrganizationServices
-    security: RbacSecurity
+    security: OrganizationSecurity
 }
 
 entity OrganizationAccessControl {
@@ -95,7 +95,7 @@ entity OrganizationAccessControl {
 
 entity OrganizationSecurity {
     * default: String
-    accessControlList: List<RbacAccessControl>
+    * accessControlList: List<RbacAccessControl>
 }
 
 entity OrganizationService {
@@ -207,7 +207,7 @@ entity Scenario {
     parentLastRun: ScenarioLastRun
     rootLastRun: ScenarioLastRun
     validationStatus: ScenarioValidationStatus
-    security: RbacSecurity
+    security: ScenarioSecurity
 }
 
 entity ScenarioAccessControl {
@@ -361,7 +361,7 @@ entity ScenarioRunTemplateParameterValue {
 
 entity ScenarioSecurity {
     * default: String
-    accessControlList: List<RbacAccessControl>
+    * accessControlList: List<RbacAccessControl>
 }
 
 entity ScenarioValidationStatus {
@@ -439,7 +439,7 @@ entity Workspace {
     sendInputToDataWarehouse: Boolean
     useDedicatedEventHubNamespace: Boolean
     sendScenarioMetadataToEventHub: Boolean
-    security: RbacSecurity
+    security: WorkspaceSecurity
 }
 
 entity WorkspaceAccessControl {
@@ -453,7 +453,7 @@ entity WorkspaceFile {
 
 entity WorkspaceSecurity {
     * default: String
-    accessControlList: List<RbacAccessControl>
+    * accessControlList: List<RbacAccessControl>
 }
 
 entity WorkspaceSolution {
@@ -477,14 +477,14 @@ Scenario -- "0..*" ScenarioRunTemplateParameterValue : parametersValues
 Scenario -- ScenarioLastRun : lastRun
 Scenario -- ScenarioLastRun : parentLastRun
 Scenario -- ScenarioLastRun : rootLastRun
-Scenario -- RbacSecurity : security
+Scenario -- ScenarioSecurity : security
 ScenarioRun -- "0..*" RunTemplateParameterValue : parametersValues
 ScenarioRun -- "0..*" ScenarioRunContainer : containers
 ScenarioRunStatus -- "0..*" ScenarioRunStatusNode : nodes
 Connector -- "0..*" ConnectorParameterGroup : parameterGroups
 Organization -- "0..*" OrganizationUser : users
 Organization -- OrganizationServices : services
-Organization -- RbacSecurity : security
+Organization -- OrganizationSecurity : security
 User -- "0..*" UserOrganization : organizations
 RunTemplate -- DeleteHistoricalData : deleteHistoricalData
 UserOrganization -- "0..*" UserWorkspace : workspaces
@@ -498,6 +498,6 @@ ScenarioRunStartContainers -- "0..*" ScenarioRunContainer : containers
 Workspace -- WorkspaceSolution : solution
 Workspace -- "0..*" WorkspaceUser : users
 Workspace -- WorkspaceWebApp : webApp
-Workspace -- RbacSecurity : security
+Workspace -- WorkspaceSecurity : security
 
 @enduml
