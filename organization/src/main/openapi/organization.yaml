@@ -774,6 +774,13 @@ components:
           solutionsContainerRegistry:
             cloudService: AzureContainerRegistries
             baseUri: twinengines-1.azurecr.io
+          security:
+            default: commonrolereader
+            accessControlList:
+              - id: "jane.doe@cosmotech.com"
+                role: "commonrolewriter"
+              - id: "john.doe@cosmotech.com"
+                role: "commonrolereader"
     CosmoOrganization:
       summary: Cosmo Tech Organization example
       description: Cosmo Tech Organization example
@@ -803,6 +810,13 @@ components:
           solutionsContainerRegistry:
             cloudService: AzureContainerRegistries
             baseUri: twinengines-1.azurecr.io
+        security:
+          default: commonrolereader
+          accessControlList:
+            - id: "jane.doe@cosmotech.com"
+              role: "commonrolewriter"
+            - id: "john.doe@cosmotech.com"
+              role: "commonrolereader"
     BreweryOrganizationSecurity:
       summary: Brewery Organization security
       description: Brewery Organization security example
@@ -850,6 +864,15 @@ components:
           solutionsContainerRegistry:
             cloudService: AzureContainerRegistries
             baseUri: twinengines-1.azurecr.io
+        security:
+          default: commonrolereader
+          accessControlList:
+            - id: "bob.doe@cosmotech.com"
+              role: "commonrolewriter"
+            - id: "alice.doe@cosmotech.com"
+              role: "commonrolereader"
+            - id: "xavier.doe@cosmotech.com"
+              role: "commonrolewriter"
     TwoOrganizations:
       summary: Two Orgnizations
       description: Two Organizations example
@@ -879,6 +902,13 @@ components:
             solutionsContainerRegistry:
               cloudService: AzureContainerRegistries
               baseUri: twinengines-1.azurecr.io
+          security:
+            default: commonrolereader
+            accessControlList:
+              - id: "bob.doe@cosmotech.com"
+                role: "commonrolewriter"
+              - id: "alice.doe@cosmotech.com"
+                role: "commonrolereader"
         - id: "2"
           name: Phoenix
           users:
@@ -899,6 +929,11 @@ components:
             solutionsContainerRegistry:
               cloudService: AzureContainerRegistries
               baseUri: twinengines-2.azurecr.io
+          security:
+            default: commonrolereader
+            accessControlList:
+              - id: "bob.doe@cosmotech.com"
+                role: "commonrolewriter"
     TwoOrganizationUsers:
       summary: Two users of an Organization
       description: Two Users of an Organization example
