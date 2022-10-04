@@ -48,8 +48,6 @@ import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
-import java.time.ZonedDateTime
-import kotlin.reflect.full.memberProperties
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -58,6 +56,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
+import java.time.ZonedDateTime
+import kotlin.reflect.full.memberProperties
 
 private const val MIN_SDK_VERSION_MAJOR = 8
 private const val MIN_SDK_VERSION_MINOR = 5
@@ -99,7 +99,6 @@ internal class ScenarioRunServiceImpl(
   }
 
   override fun deleteScenarioRun(organizationId: String, scenariorunId: String) {
-  override fun deleteScenarioRun(organizationId: String, scenariorunId: String) {
     val scenarioRun = this.findScenarioRunById(organizationId, scenariorunId)
     if (scenarioRun.ownerId != getCurrentAuthenticatedUserName()) {
       // TODO Only the owner or an admin should be able to perform this operation
@@ -118,8 +117,9 @@ internal class ScenarioRunServiceImpl(
           scenarioRun.id ?: "null",
           scenarioRun.csmSimulationRun ?: "null")
 
-      azureDataExplorerClient.deleteDataFromADXbyExtentShard(
-          scenarioRun.organizationId!!, scenarioRun.workspaceKey!!, scenarioRun.csmSimulationRun!!)
+      // Change function name: Use csmSimulationRun here, not Simulation Run id
+     /* azureDataExplorerClient.deleteDataFromScenarioRunId(
+          scenarioRun.organizationId!!, scenarioRun.workspaceKey!!, scenarioRun.csmSimulationRun!!)*/
       logger.debug(
           "Scenario run {} deleted from ADX with csmSimulationRun {}",
           scenarioRun.id!!,
@@ -611,7 +611,7 @@ internal class ScenarioRunServiceImpl(
       phase: String?,
       csmSimulationRun: String?,
       checkDataIngestionState: Boolean? = null,
-  ): ScenarioRunState {
+  ): ScenarioRunState {/*
     logger.debug("Mapping phase $phase for job $scenarioRunId")
     return when (phase) {
       "Pending", "Running" -> ScenarioRunState.Running
@@ -651,7 +651,8 @@ internal class ScenarioRunServiceImpl(
             phase)
         ScenarioRunState.Unknown
       }
-    }
+    }*/
+      return ScenarioRunState.Successful
   }
 
   @EventListener(ScenarioRunEndTimeRequest::class)

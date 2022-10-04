@@ -1,4 +1,4 @@
-// Copyright (c) Cos.mo Tech.
+// Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
 package com.cosmotech.solution.azure
 
@@ -29,30 +29,29 @@ import redis.clients.jedis.Jedis
 @Suppress("TooManyFunctions")
 internal class SolutionServiceImpl(
     private val resourceLoader: ResourceLoader,
-    var solutionRepository: SolutionRepository
+    val solutionRepository: SolutionRepository
 ) : CsmPhoenixService(), SolutionApiService {
 
-    var jed: Jedis = Jedis()
-    val client: Client = Client("solution_idx", jed)
-    val sc: Schema = Schema().addTextField("$.id", 5.0).addTextField("$.organizationId", 5.0)
-    val def: IndexDefinition = IndexDefinition(IndexDefinition.Type.JSON).setPrefixes("com.cosmotech.solution.domain.Solution:")
+  var jed: Jedis = Jedis()
+  val client: Client = Client("solution_idx", jed)
+  val sc: Schema = Schema().addTextField("$.id", 1.0).addTextField("$.organizationId", 1.0)
+  val def: IndexDefinition =
+      IndexDefinition(IndexDefinition.Type.JSON)
+          .setPrefixes("com.cosmotech.solution.domain.Solution:")
 
-    init {
-        client.createIndex(sc, Client.IndexOptions.defaultOptions().setDefinition(def))
-    }
+  init {
+    client.createIndex(sc, Client.IndexOptions.defaultOptions().setDefinition(def))
+  }
 
-  override fun findAllSolutions(organizationId: String) =
-      solutionRepository.findAll().toList()
+  override fun findAllSolutions(organizationId: String) = solutionRepository.findAll().toList()
 
   override fun findSolutionById(organizationId: String, solutionId: String): Solution {
 
-    //  val filter = Query.Filter("@\\$\\.organizationId:$organizationId")
-      val q = Query("@\\$\\.id:$solutionId")//.addFilter(filter)
+    val query = Query("@\\$\\.id:$solutionId @\\$\\.organizationId:$organizationId")
 
-      val res: SearchResult = client.search(q)
+    val searchResult: SearchResult = client.search(query)
 
-      val sol = res.docs[0] as Solution
-      return sol
+    return searchResult.docs[0] as Solution
   }
 
   override fun removeAllRunTemplates(organizationId: String, solutionId: String) {
@@ -146,14 +145,11 @@ internal class SolutionServiceImpl(
 
   override fun createSolution(organizationId: String, solution: Solution): Solution {
 
-      return solutionRepository.save(
-          solution.copy(
-              id = idGenerator.generate("solution", prependPrefix = "sol-"),
-              ownerId = getCurrentAuthenticatedUserName()
-          )
-      )
+    return solutionRepository.save(
+        solution.copy(
+            id = idGenerator.generate("solution", prependPrefix = "sol-"),
+            ownerId = getCurrentAuthenticatedUserName()))
   }
-
 
   override fun deleteSolution(organizationId: String, solutionId: String) {
     val solution = findSolutionById(organizationId, solutionId)
@@ -161,7 +157,7 @@ internal class SolutionServiceImpl(
       // TODO Only the owner or an admin should be able to perform this operation
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
     }
-      solutionRepository.delete(solution)
+    solutionRepository.delete(solution)
   }
 
   override fun deleteSolutionRunTemplate(
@@ -173,7 +169,7 @@ internal class SolutionServiceImpl(
     if (existingSolution.runTemplates?.removeIf { it.id == runTemplateId } == false) {
       throw CsmResourceNotFoundException("Run Template '$runTemplateId' *not* found")
     }
-      solutionRepository.save(existingSolution)
+    solutionRepository.save(existingSolution)
   }
 
   override fun updateSolution(
@@ -201,7 +197,7 @@ internal class SolutionServiceImpl(
     }
 
     return if (hasChanged) {
-        solutionRepository.save(existingSolution)
+      solutionRepository.save(existingSolution)
     } else {
       existingSolution
     }
@@ -227,7 +223,7 @@ internal class SolutionServiceImpl(
 
     if (hasChanged) {
       existingSolution.runTemplates = runTemplates
-        solutionRepository.save(existingSolution)
+      solutionRepository.save(existingSolution)
     }
     return runTemplates
   }
@@ -240,7 +236,7 @@ internal class SolutionServiceImpl(
       body: Resource,
       overwrite: Boolean
   ) {
-   /* val solution = this.validateRunTemplate(organizationId, solutionId, runTemplateId)
+    /* val solution = this.validateRunTemplate(organizationId, solutionId, runTemplateId)
     logger.debug(
         "Uploading run template handler to solution #{} ({} - {})",
         solution.id,
@@ -293,9 +289,9 @@ internal class SolutionServiceImpl(
       runTemplateId: String,
       handlerId: RunTemplateHandlerId
   ): Resource {
-    //val solution = this.validateRunTemplate(organizationId, solutionId, runTemplateId)
+    // val solution = this.validateRunTemplate(organizationId, solutionId, runTemplateId)
     val blobPath = ""
-        /*"${organizationId.sanitizeForAzureStorage()}/" +
+    /*"${organizationId.sanitizeForAzureStorage()}/" +
             "${solutionId.sanitizeForAzureStorage()}/" +
             "${runTemplateId}/${handlerId.value}.zip"
     logger.debug(
@@ -309,7 +305,7 @@ internal class SolutionServiceImpl(
     return resourceLoader.getResource("azure-blob://${blobPath}")
   }
 
-  private fun validateRunTemplate(
+  /*private fun validateRunTemplate(
       organizationId: String,
       solutionId: String,
       runTemplateId: String,
@@ -328,6 +324,6 @@ internal class SolutionServiceImpl(
     }
 
     return solution
-  }
+  }*/
 
 }

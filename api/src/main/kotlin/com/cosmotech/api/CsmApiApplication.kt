@@ -11,7 +11,6 @@ import org.springframework.context.annotation.FilterType
 import org.springframework.data.redis.connection.RedisConnectionFactory
 import org.springframework.data.redis.core.RedisTemplate
 
-
 @SpringBootApplication
 @EnableRedisDocumentRepositories("com.cosmotech")
 @ComponentScan(
@@ -24,9 +23,9 @@ class CsmApiApplication
 
 @Bean
 fun redisTemplate(connectionFactory: RedisConnectionFactory?): RedisTemplate<*, *>? {
-    val template: RedisTemplate<*, *> = RedisTemplate<Any, Any>()
-    template.setConnectionFactory(connectionFactory!!)
-    return template
+  val template: RedisTemplate<*, *> = RedisTemplate<Any, Any>()
+  template.setConnectionFactory(connectionFactory!!)
+  return template
 }
 
 fun main(args: Array<String>) {

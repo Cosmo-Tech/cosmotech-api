@@ -1,3 +1,5 @@
+// Copyright (c) Cosmo Tech.
+// Licensed under the MIT license.
 package com.cosmotech.workspace.repositories
 
 import com.cosmotech.workspace.domain.Workspace

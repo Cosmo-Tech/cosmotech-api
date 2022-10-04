@@ -22,8 +22,6 @@ import com.cosmotech.organization.domain.OrganizationUser
 import com.cosmotech.organization.repositories.OrganizationRepository
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
-import io.redisearch.Document
-import io.redisearch.Query
 import io.redisearch.Schema
 import io.redisearch.SearchResult
 import io.redisearch.client.Client
@@ -41,7 +39,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
     var organizationRepository: OrganizationRepository) :
     CsmPhoenixService(), OrganizationApiService {
 
-    override fun addOrReplaceUsersInOrganization(
+  override fun addOrReplaceUsersInOrganization(
       organizationId: String,
       organizationUser: List<OrganizationUser>
   ): List<OrganizationUser> {
@@ -97,7 +95,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
       userIds.toSet().map { userService.findUserById(it) }.associateBy { it.id!! }
 
   override fun registerOrganization(organization: Organization): Organization {
-          logger.trace("Registering organization : $organization")
+    logger.trace("Registering organization : $organization")
 
     if (organization.name.isNullOrBlank()) {
       throw IllegalArgumentException("Organization name must not be null or blank")
@@ -105,7 +103,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
 
     val usersLoaded = organization.users?.mapNotNull { it.id }?.let { fetchUsers(it) }
 
-//    val newOrganizationId = idGenerator.generate("organization")
+    //    val newOrganizationId = idGenerator.generate("organization")
 
     val usersWithNames =
         usersLoaded
@@ -119,16 +117,15 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
 
     this.eventPublisher.publishEvent(OrganizationRegistered(this, organizationId))
     organization.users?.forEach { user ->
-        this.eventPublisher.publishEvent(
-            UserAddedToOrganization(
-                this,
-                organizationId,
-                organization.name!!,
-                user.id!!,
-                user.roles.map { role -> role.value }))
+      this.eventPublisher.publishEvent(
+          UserAddedToOrganization(
+              this,
+              organizationId,
+              organization.name!!,
+              user.id!!,
+              user.roles.map { role -> role.value }))
     }
-
-      // TODO Handle rollbacks in case of errors
+    // TODO Handle rollbacks in case of errors
 
     return organizationRepository.save(organization)
   }
@@ -209,8 +206,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
       hasChanged = true
     }
     return if (hasChanged) {
-      val responseEntity =
-        organizationRepository.save(organization)      userIdsRemoved?.forEach {
+      val responseEntity = organizationRepository.save(organization)      userIdsRemoved?.forEach {
         this.eventPublisher.publishEvent(UserRemovedFromOrganization(this, organizationId, it))
       }
       organization.users?.forEach { user ->
@@ -291,21 +287,19 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
   @EventListener(UserUnregistered::class)
   @Async("csm-in-process-event-executor")
   fun onUserUnregistered(userUnregisteredEvent: UserUnregistered) {
-      // FIXME Does not work yet !
-      val userId = userUnregisteredEvent.userId
-      logger.info(
-          "User $userId unregistered => removing them from all organizations they belong to.."
-      )
+    // FIXME Does not work yet !
+    val userId = userUnregisteredEvent.userId
+    logger.info(
+        "User $userId unregistered => removing them from all organizations they belong to..")
+    val query = io.redisearch.Query("\"@\\\\\$\\\\.userId:" + userId)
+    val search: SearchResult = client.search(query)
 
-      val q: io.redisearch.Query = io.redisearch.Query(userId).addFilter(Query.Filter("userId:"))
-      val search: SearchResult = client.search(q)
+    val result = IntArray(search.docs.size)
 
-      val result = IntArray(search.docs.size)
-
-      for ((index, value) in search.docs.withIndex()) {
-          result[index] = search.docs[index].id.toInt()
-          UserUnregisteredForOrganization(this, item.id, userId)
-      }
+    for ((index, value) in search.docs.withIndex()) {
+      result[index] = search.docs[index].id.toInt()
+      UserUnregisteredForOrganization(this, value.id, userId)
+    }
   }
 
   /*@EventListener(UserUnregistered::class)

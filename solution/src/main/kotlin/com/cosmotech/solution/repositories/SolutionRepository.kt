@@ -1,3 +1,5 @@
+// Copyright (c) Cosmo Tech.
+// Licensed under the MIT license.
 package com.cosmotech.solution.repositories
 
 import com.cosmotech.solution.domain.Solution
