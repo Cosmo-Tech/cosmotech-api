@@ -4,9 +4,9 @@ package com.cosmotech.organization.azure
 
 import com.azure.cosmos.models.CosmosContainerProperties
 import com.azure.cosmos.models.CosmosQueryRequestOptions
+import com.azure.cosmos.models.SqlParameter
 import com.azure.cosmos.models.SqlQuerySpec
 import com.cosmotech.api.azure.CsmAzureService
-import com.cosmotech.api.azure.findAll
 import com.cosmotech.api.azure.findByIdOrThrow
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
@@ -25,6 +25,7 @@ import com.cosmotech.api.rbac.getAllRolesDefinition
 import com.cosmotech.api.rbac.getScenarioRolesDefinition
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
+import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.organization.api.OrganizationApiService
@@ -104,8 +105,26 @@ internal class OrganizationServiceImpl(
     return organizationUserWithRightNames
   }
 
-  override fun findAllOrganizations() =
-      cosmosTemplate.findAll<Organization>(coreOrganizationContainer)
+  override fun findAllOrganizations(): List<Organization> {
+    val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+    return cosmosCoreDatabase
+        .getContainer(this.coreOrganizationContainer)
+        .queryItems(
+            SqlQuerySpec(
+                "SELECT * FROM c " +
+                    "WHERE ARRAY_CONTAINS(c.security.accessControlList, { id: @ACL_USER}, true)" +
+                    " OR NOT IS_DEFINED(c.security)" +
+                    " OR ARRAY_LENGTH(c.security.default) > 0",
+                listOf(SqlParameter("@ACL_USER", currentUser))),
+            CosmosQueryRequestOptions(),
+            // It would be much better to specify the Domain Type right away and
+            // avoid the map operation, but we can't due
+            // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
+            // https://github.com/Azure/azure-sdk-for-java/issues/12269
+            JsonNode::class.java)
+        .mapNotNull { it.toDomain<Organization>() }
+        .toList()
+  }
 
   override fun findOrganizationById(organizationId: String): Organization {
     val organization: Organization =
