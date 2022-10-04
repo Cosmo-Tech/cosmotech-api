@@ -1045,7 +1045,7 @@ components:
           default:
             - "commonrolereader"
           accessControlList:
-            - id: "alice@mycompany.com"
+            - id: "alice.doe@cosmotech.com"
               roles:
                 - "commonroleadmin"
     BreweryChildScenarioIn:
@@ -1093,7 +1093,7 @@ components:
           default:
             - "commonrolereader"
           accessControlList:
-            - id: "alice@mycompany.com"
+            - id: "alice.doe@cosmotech.com"
               roles:
                 - "commonroleadmin"
     ThreeScenarios:
@@ -1126,7 +1126,7 @@ components:
             default:
               - "commonrolereader"
             accessControlList:
-              - id: "alice@mycompany.com"
+              - id: "alice.doe@cosmotech.com"
                 roles:
                   - "commonroleadmin"
         - id: "2"
@@ -1161,7 +1161,7 @@ components:
             default:
               - "commonrolereader"
             accessControlList:
-              - id: "alice@mycompany.com"
+              - id: "alice.doe@cosmotech.com"
                 roles:
                   - "commonroleadmin"
         - id: "3"
@@ -1196,7 +1196,7 @@ components:
             default:
               - "commonrolereader"
             accessControlList:
-              - id: "alice@mycompany.com"
+              - id: "alice.doe@cosmotech.com"
                 roles:
                   - "commonroleadmin"
     BreweryScenarioUpdate:
@@ -1234,7 +1234,7 @@ components:
           default:
             - "commonrolereader"
           accessControlList:
-            - id: "alice@mycompany.com"
+            - id: "alice.doe@cosmotech.com"
               roles:
                 - "commonroleadmin"
     BreweryScenarioComparison:
@@ -1278,7 +1278,7 @@ components:
             default:
               - "commonrolereader"
             accessControlList:
-              - id: "alice@mycompany.com"
+              - id: "alice.doe@cosmotech.com"
                 roles:
                   - "commonroleadmin"
         - id: "2"
@@ -1312,7 +1312,7 @@ components:
             default:
               - "commonrolereader"
             accessControlList:
-              - id: "alice@mycompany.com"
+              - id: "alice.doe@cosmotech.com"
                 roles:
                   - "commonroleadmin"
         - id: "3"
@@ -1345,7 +1345,7 @@ components:
             default:
               - "commonrolereader"
             accessControlList:
-              - id: "alice@mycompany.com"
+              - id: "alice.doe@cosmotech.com"
                 roles:
                   - "commonroleadmin"
     TwoScenarioRunTemplateParameterValueToAddOrReplace:
@@ -1371,7 +1371,7 @@ components:
       value:
         default: "commonrolereader"
         accessControlList:
-          - id: "bob@mycosmocompany.com"
+          - id: "alice.doe@cosmotech.com"
             role: "commonrolewriter"
     BreweryDefaultSecurityRoleWriter:
       summary: Brewery Scenario Writer default security
@@ -1382,5 +1382,5 @@ components:
       summary: Set an access control.
       description: Set an access control for a user to a workspace.
       value:
-        id: "bob@mycompany.com"
+        id: "bob.doe@cosmotech.com"
         role: "commonrolewriter"
