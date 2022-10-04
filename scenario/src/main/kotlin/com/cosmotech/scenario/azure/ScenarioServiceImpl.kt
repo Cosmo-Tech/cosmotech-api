@@ -11,7 +11,6 @@ import com.azure.cosmos.models.SqlQuerySpec
 import com.cosmotech.api.azure.CsmAzureService
 import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
-import com.cosmotech.api.azure.findByIdOrThrow
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
 import com.cosmotech.api.events.DeleteHistoricalDataScenario
@@ -37,8 +36,8 @@ import com.cosmotech.api.rbac.getScenarioRolesDefinition
 import com.cosmotech.api.scenario.ScenarioMetaData
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
-import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
+import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.scenario.api.ScenarioApiService
@@ -323,9 +322,8 @@ internal class ScenarioServiceImpl(
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     csmRbac.verify(workspace.security, PERMISSION_READ_DATA)
     return this.findAllScenariosStateOption(organizationId, workspaceId, true)
-      .addLastRunsInfo(this, organizationId, workspaceId)
+        .addLastRunsInfo(this, organizationId, workspaceId)
   }
-
 
   override fun findAllScenariosByValidationStatus(
       organizationId: String,
@@ -341,33 +339,32 @@ internal class ScenarioServiceImpl(
   ): List<Scenario> {
     val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
     return cosmosCoreDatabase
-      .getContainer("${organizationId}_scenario_data")
-      .queryItems(
-        SqlQuerySpec(
-          "SELECT * FROM c " +
-              "WHERE c.type = 'Scenario' " +
-              "AND c.workspaceId = @WORKSPACE_ID " +
-              "AND ( ARRAY_CONTAINS(c.security.accessControlList, { id: @ACL_USER}, true) " +
-              "OR NOT IS_DEFINED(c.security) " +
-              "OR ARRAY_LENGTH(c.security.default) > 0 )",
-          listOf(
-            SqlParameter("@WORKSPACE_ID", workspaceId),
-            SqlParameter("@ACL_USER", currentUser))),
-        CosmosQueryRequestOptions(),
-        // It would be much better to specify the Domain Type right away and
-        // avoid the map operation, but we can't due
-        // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
-        // https://github.com/Azure/azure-sdk-for-java/issues/12269
-        JsonNode::class.java)
-      .mapNotNull {
-        val scenario = it.toDomain<Scenario>()
-        if (addState) {
-          this.addStateToScenario(organizationId, scenario)
+        .getContainer("${organizationId}_scenario_data")
+        .queryItems(
+            SqlQuerySpec(
+                "SELECT * FROM c " +
+                    "WHERE c.type = 'Scenario' " +
+                    "AND c.workspaceId = @WORKSPACE_ID " +
+                    "AND ( ARRAY_CONTAINS(c.security.accessControlList, { id: @ACL_USER}, true) " +
+                    "OR NOT IS_DEFINED(c.security) " +
+                    "OR ARRAY_LENGTH(c.security.default) > 0 )",
+                listOf(
+                    SqlParameter("@WORKSPACE_ID", workspaceId),
+                    SqlParameter("@ACL_USER", currentUser))),
+            CosmosQueryRequestOptions(),
+            // It would be much better to specify the Domain Type right away and
+            // avoid the map operation, but we can't due
+            // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
+            // https://github.com/Azure/azure-sdk-for-java/issues/12269
+            JsonNode::class.java)
+        .mapNotNull {
+          val scenario = it.toDomain<Scenario>()
+          if (addState) {
+            this.addStateToScenario(organizationId, scenario)
+          }
+          return@mapNotNull scenario
         }
-        return@mapNotNull scenario
-      }
   }
-
 
   private fun findAllScenarioByValidationStatus(
       organizationId: String,
@@ -376,29 +373,28 @@ internal class ScenarioServiceImpl(
   ): List<Scenario> {
     val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
     return cosmosCoreDatabase
-      .getContainer("${organizationId}_scenario_data")
-      .queryItems(
-        SqlQuerySpec(
-          "SELECT * FROM c WHERE c.type = 'Scenario' " +
-              "AND c.workspaceId = @WORKSPACE_ID " +
-              "AND c.validationStatus = @VALIDATION_STATUS" +
-              "AND ( ARRAY_CONTAINS(c.security.accessControlList, { id: @ACL_USER}, true) " +
-              "OR NOT IS_DEFINED(c.security) " +
-              "OR ARRAY_LENGTH(c.security.default) > 0 )",
-          listOf(
-            SqlParameter("@WORKSPACE_ID", workspaceId),
-            SqlParameter("@VALIDATION_STATUS", validationStatus),
-            SqlParameter("@ACL_USER", currentUser))),
-        CosmosQueryRequestOptions(),
-        // It would be much better to specify the Domain Type right away and
-        // avoid the map operation, but we can't due
-        // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
-        // https://github.com/Azure/azure-sdk-for-java/issues/12269
-        JsonNode::class.java)
-      .mapNotNull { it.toDomain<Scenario>() }
-      .toList()
+        .getContainer("${organizationId}_scenario_data")
+        .queryItems(
+            SqlQuerySpec(
+                "SELECT * FROM c WHERE c.type = 'Scenario' " +
+                    "AND c.workspaceId = @WORKSPACE_ID " +
+                    "AND c.validationStatus = @VALIDATION_STATUS" +
+                    "AND ( ARRAY_CONTAINS(c.security.accessControlList, { id: @ACL_USER}, true) " +
+                    "OR NOT IS_DEFINED(c.security) " +
+                    "OR ARRAY_LENGTH(c.security.default) > 0 )",
+                listOf(
+                    SqlParameter("@WORKSPACE_ID", workspaceId),
+                    SqlParameter("@VALIDATION_STATUS", validationStatus),
+                    SqlParameter("@ACL_USER", currentUser))),
+            CosmosQueryRequestOptions(),
+            // It would be much better to specify the Domain Type right away and
+            // avoid the map operation, but we can't due
+            // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
+            // https://github.com/Azure/azure-sdk-for-java/issues/12269
+            JsonNode::class.java)
+        .mapNotNull { it.toDomain<Scenario>() }
+        .toList()
   }
-
 
   private fun findAllScenariosByRootId(
       organizationId: String,
@@ -407,28 +403,28 @@ internal class ScenarioServiceImpl(
   ): List<Scenario> {
     val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
     return cosmosCoreDatabase
-      .getContainer("${organizationId}_scenario_data")
-      .queryItems(
-        SqlQuerySpec(
-          "SELECT * FROM c " +
-              "WHERE c.type = 'Scenario' " +
-              "AND c.workspaceId = @WORKSPACE_ID " +
-              "AND c.rootId = @ROOT_ID " +
-              "AND ( ARRAY_CONTAINS(c.security.accessControlList, { id: @ACL_USER}, true) " +
-              "OR NOT IS_DEFINED(c.security) " +
-              "OR ARRAY_LENGTH(c.security.default) > 0 )",
-          listOf(
-            SqlParameter("@WORKSPACE_ID", workspaceId),
-            SqlParameter("@ROOT_ID", rootId),
-            SqlParameter("@ACL_USER", currentUser))),
-        CosmosQueryRequestOptions(),
-        // It would be much better to specify the Domain Type right away and
-        // avoid the map operation, but we can't due
-        // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
-        // https://github.com/Azure/azure-sdk-for-java/issues/12269
-        JsonNode::class.java)
-      .mapNotNull { it.toDomain<Scenario>() }
-      .toList()
+        .getContainer("${organizationId}_scenario_data")
+        .queryItems(
+            SqlQuerySpec(
+                "SELECT * FROM c " +
+                    "WHERE c.type = 'Scenario' " +
+                    "AND c.workspaceId = @WORKSPACE_ID " +
+                    "AND c.rootId = @ROOT_ID " +
+                    "AND ( ARRAY_CONTAINS(c.security.accessControlList, { id: @ACL_USER}, true) " +
+                    "OR NOT IS_DEFINED(c.security) " +
+                    "OR ARRAY_LENGTH(c.security.default) > 0 )",
+                listOf(
+                    SqlParameter("@WORKSPACE_ID", workspaceId),
+                    SqlParameter("@ROOT_ID", rootId),
+                    SqlParameter("@ACL_USER", currentUser))),
+            CosmosQueryRequestOptions(),
+            // It would be much better to specify the Domain Type right away and
+            // avoid the map operation, but we can't due
+            // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
+            // https://github.com/Azure/azure-sdk-for-java/issues/12269
+            JsonNode::class.java)
+        .mapNotNull { it.toDomain<Scenario>() }
+        .toList()
   }
 
   override fun findScenarioById(
