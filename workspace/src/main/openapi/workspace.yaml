@@ -751,6 +751,11 @@ components:
             - "1"
           defaultRunTemplateDataset:
             1: "1"
+        security:
+          default: commonrolereader
+          accessControlList:
+            - id: "bob.doe@cosmotech.com"
+              role: "commonrolewriter"
     BreweryWorkspaceCreateSecurity:
       summary: Brewery Workspace Create with security
       description: Brewery Workspace Create with default security
@@ -768,7 +773,10 @@ components:
           defaultRunTemplateDataset:
             1: "1"
         security:
-          default: "commonrolereader"
+          default: commonrolereader
+          accessControlList:
+            - id: "bob.doe@cosmotech.com"
+              role: "commonrolewriter"
     BreweryWorkspace:
       summary: Brewery Workspace
       description: Brewery Workspace example
@@ -790,7 +798,7 @@ components:
         security:
           default: "commonrolereader"
           accessControlList:
-            - id: "alice@mycompany.com"
+            - id: "alice.doe@cosmotech.com"
               role: "commonroleadmin"
     OneWorkspace:
       summary: One Workspace list
@@ -813,7 +821,7 @@ components:
           security:
             default: "commonrolereader"
             accessControlList:
-              - id: "alice@mycompany.com"
+              - id: "alice.doe@cosmotech.com"
                 role: "commonroleadmin"
     BreweryWorkspaceUpdate:
       summary: Update the Brewery Workspace
@@ -841,7 +849,7 @@ components:
         security:
           default: "commonrolereader"
           accessControlList:
-            - id: "alice@mycompany.com"
+            - id: "alice.doe@cosmotech.com"
               role: "commonroleadmin"
     BreweryWorkspaceSecurity:
       summary: Brewery Workspace security
@@ -849,13 +857,13 @@ components:
       value:
         default: "commonrolereader"
         accessControlList:
-          - id: "bob@mycosmocompany.com"
+          - id: "alice.doe@cosmotech.com"
             role: "commonrolewriter"
     BreweryWorkspaceAccessControl:
       summary: Set an access control.
       description: Set an access control for a user to a workspace.
       value:
-        id: "bob@mycompany.com"
+        id: "bob.doe@cosmotech.com"
         role: "commonrolewriter"
     BreweryDefaultSecurityRoleWriter:
       summary: Brewery Workspace Writer default security
