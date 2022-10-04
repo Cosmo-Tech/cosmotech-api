@@ -485,6 +485,16 @@ class ScenarioServiceImplTests {
   fun `scenario state should be null if scenario has no last run`() {
     val scenarioId = "S-myScenarioId"
     val scenario = Scenario(id = scenarioId, lastRun = null)
+    val organization = Organization(id = ORGANIZATION_ID, security = null)
+    val workspace =
+        Workspace(
+            id = WORKSPACE_ID,
+            security = null,
+            key = "w-myWorkspaceKey",
+            name = "wonderful_workspace",
+            solution = WorkspaceSolution(solutionId = "w-sol-id"))
+    every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
+    every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     every {
       scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
     } returns scenario
@@ -751,9 +761,20 @@ class ScenarioServiceImplTests {
                           scenarioRunId = "SR-myScenarioRunId",
                           workflowId = "workflowId",
                           workflowName = "workflowName"))
+          val organization = Organization(id = ORGANIZATION_ID, security = null)
+          val workspace =
+              Workspace(
+                  id = WORKSPACE_ID,
+                  security = null,
+                  key = "w-myWorkspaceKey",
+                  name = "wonderful_workspace",
+                  solution = WorkspaceSolution(solutionId = "w-sol-id"))
           every {
             scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
           } returns scenario
+          every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
+          every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns
+              workspace
 
           every { scenarioServiceImpl getProperty "eventPublisher" } returns
               object : CsmEventPublisher {
@@ -808,7 +829,16 @@ class ScenarioServiceImplTests {
                     workflowName = "c111-workflowName",
                     workflowId = "c111-workflowId",
                     csmSimulationRun = "c111-csmSimulationRun"))
-
+    val organization = Organization(id = ORGANIZATION_ID, security = null)
+    val workspace =
+        Workspace(
+            id = WORKSPACE_ID,
+            security = null,
+            key = "w-myWorkspaceKey",
+            name = "wonderful_workspace",
+            solution = WorkspaceSolution(solutionId = "w-sol-id"))
+    every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
+    every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     every {
       scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, m1.id!!)
     } returns m1
@@ -848,6 +878,16 @@ class ScenarioServiceImplTests {
   fun `PROD-8051 - findScenarioById adds null parent and master lastRuns if they don't exist`() {
     val parentId = "s-no-longer-existing-parent"
     val rootId = "s-no-longer-existing-root"
+    val organization = Organization(id = ORGANIZATION_ID, security = null)
+    val workspace =
+        Workspace(
+            id = WORKSPACE_ID,
+            security = null,
+            key = "w-myWorkspaceKey",
+            name = "wonderful_workspace",
+            solution = WorkspaceSolution(solutionId = "w-sol-id"))
+    every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
+    every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     every {
       scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, parentId)
     } throws IllegalArgumentException()
@@ -909,6 +949,16 @@ class ScenarioServiceImplTests {
 
     val scenarioId = "S-myScenarioId"
     val scenario = Scenario(id = scenarioId, parentId = parentScenarioId, rootId = rootScenarioId)
+    val organization = Organization(id = ORGANIZATION_ID, security = null)
+    val workspace =
+        Workspace(
+            id = WORKSPACE_ID,
+            security = null,
+            key = "w-myWorkspaceKey",
+            name = "wonderful_workspace",
+            solution = WorkspaceSolution(solutionId = "w-sol-id"))
+    every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
+    every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     every {
       scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
     } returns scenario
