@@ -19,17 +19,22 @@ import com.cosmotech.api.events.DeleteHistoricalDataWorkspace
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.rbac.CsmRbac
+import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.api.rbac.PERMISSION_EDIT
 import com.cosmotech.api.rbac.PERMISSION_EDIT_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_READ_DATA
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
+import com.cosmotech.api.rbac.ROLE_ADMIN
+import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.getPermissions
+import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
+import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
@@ -54,6 +59,7 @@ import org.springframework.stereotype.Service
 @Suppress("TooManyFunctions")
 internal class WorkspaceServiceImpl(
     private val resourceLoader: ResourceLoader,
+    private val organizationService: OrganizationApiService,
     private val solutionService: SolutionApiService,
     private val azureStorageBlobServiceClient: BlobServiceClient,
     private val azureStorageBlobBatchClient: BlobBatchClient,
@@ -97,14 +103,19 @@ internal class WorkspaceServiceImpl(
   }
 
   override fun createWorkspace(organizationId: String, workspace: Workspace): Workspace {
+    val organization = organizationService.findOrganizationById(organizationId)
     // Needs security on Organization to check RBAC
-    csmRbac.verify(workspace.security, PERMISSION_EDIT)
+    csmRbac.verify(organization.security, PERMISSION_CREATE_CHILDREN)
     // Validate Solution ID
     workspace.solution?.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
+    val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+
     return cosmosTemplate.insert(
         "${organizationId}_workspaces",
         workspace.copy(
-            id = idGenerator.generate("workspace"), ownerId = getCurrentAuthenticatedUserName()))
+            id = idGenerator.generate("workspace"),
+            ownerId = getCurrentAuthenticatedUserName(),
+            security = workspace.security ?: initSecurity(currentUser)))
         ?: throw IllegalArgumentException("No Workspace returned in response: $workspace")
   }
 
@@ -379,5 +390,11 @@ internal class WorkspaceServiceImpl(
     val workspace = findWorkspaceById(organizationId, workspaceId)
     csmRbac.verify(workspace.security, PERMISSION_READ_SECURITY)
     return csmRbac.getUsers(workspace.security)
+  }
+
+  private fun initSecurity(userId: String): WorkspaceSecurity {
+    return WorkspaceSecurity(
+        default = ROLE_NONE,
+        accessControlList = mutableListOf(RbacAccessControl(userId, ROLE_ADMIN)))
   }
 }

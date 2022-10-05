@@ -17,11 +17,12 @@ import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.WorkflowStatusRequest
 import com.cosmotech.api.id.CsmIdGenerator
 import com.cosmotech.api.rbac.CsmRbac
-import com.cosmotech.api.rbac.PERMISSION_EDIT
+import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
+import com.cosmotech.api.utils.getCurrentAuthenticatedMail
+import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.getCurrentAuthentication
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
-import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioJobState
 import com.cosmotech.scenario.domain.ScenarioLastRun
@@ -120,10 +121,9 @@ class ScenarioServiceImplTests {
 
     every { scenarioServiceImpl getProperty "csmPlatformProperties" } returns csmPlatformProperties
 
-    mockkStatic(::getCurrentAuthentication)
-    val authentication = mockk<Authentication>()
-    every { authentication.name } returns AUTHENTICATED_USERNAME
-    every { getCurrentAuthentication() } returns authentication
+    mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
+    every { getCurrentAuthenticatedUserName() } returns AUTHENTICATED_USERNAME
+    every { getCurrentAuthenticatedMail(csmPlatformProperties) } returns "dummy@cosmotech.com"
 
     scenarioServiceImpl.init()
   }
@@ -135,16 +135,11 @@ class ScenarioServiceImplTests {
 
   @Test
   fun `PROD-7687 - should initialize Child Scenario Parameters values with parent ones`() {
-    val organization = mockk<Organization>()
-    every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
-    val organizationSecurity = mockk<OrganizationSecurity>()
-    every { organization.security } returns organizationSecurity
-    justRun { csmRbac.verify(organizationSecurity, PERMISSION_EDIT) }
     val workspace = mockk<Workspace>()
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     val workspaceSecurity = mockk<WorkspaceSecurity>()
     every { workspace.security } returns workspaceSecurity
-    justRun { csmRbac.verify(workspaceSecurity, PERMISSION_EDIT) }
+    justRun { csmRbac.verify(workspaceSecurity, PERMISSION_CREATE_CHILDREN) }
     val workspaceSolution = mockk<WorkspaceSolution>()
     every { workspaceSolution.solutionId } returns SOLUTION_ID
     every { workspace.solution } returns workspaceSolution
@@ -252,18 +247,11 @@ class ScenarioServiceImplTests {
 
   @Test
   fun `PROD-7687 - No Parameters Values inherited if no parentId defined`() {
-    val organization = mockk<Organization>()
-    every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
-
-    val organizationSecurity = mockk<OrganizationSecurity>()
-    every { organization.security } returns organizationSecurity
-    justRun { csmRbac.verify(organizationSecurity, PERMISSION_EDIT) }
-
     val workspace = mockk<Workspace>()
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     val workspaceSecurity = mockk<WorkspaceSecurity>()
     every { workspace.security } returns workspaceSecurity
-    justRun { csmRbac.verify(workspaceSecurity, PERMISSION_EDIT) }
+    justRun { csmRbac.verify(workspaceSecurity, PERMISSION_CREATE_CHILDREN) }
 
     val workspaceSolution = mockk<WorkspaceSolution>()
     every { workspaceSolution.solutionId } returns SOLUTION_ID
@@ -351,17 +339,11 @@ class ScenarioServiceImplTests {
 
   @Test
   fun `PROD-7687 - Child Scenario Parameters values take precedence over the parent ones`() {
-    val organization = mockk<Organization>()
-    every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
-    val organizationSecurity = mockk<OrganizationSecurity>()
-    every { organization.security } returns organizationSecurity
-    justRun { csmRbac.verify(organizationSecurity, PERMISSION_EDIT) }
-
     val workspace = mockk<Workspace>()
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     val workspaceSecurity = mockk<WorkspaceSecurity>()
     every { workspace.security } returns workspaceSecurity
-    justRun { csmRbac.verify(workspaceSecurity, PERMISSION_EDIT) }
+    justRun { csmRbac.verify(workspaceSecurity, PERMISSION_CREATE_CHILDREN) }
     val workspaceSolution = mockk<WorkspaceSolution>()
 
     every { workspaceSolution.solutionId } returns SOLUTION_ID

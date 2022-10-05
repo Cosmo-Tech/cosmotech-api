@@ -7,8 +7,11 @@ import com.azure.storage.blob.BlobContainerClient
 import com.azure.storage.blob.BlobServiceClient
 import com.azure.storage.blob.batch.BlobBatchClient
 import com.cosmotech.api.azure.sanitizeForAzureStorage
+import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
+import com.cosmotech.api.utils.getCurrentAuthenticatedMail
+import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
@@ -34,7 +37,9 @@ class WorkspaceServiceImplTests {
 
   @MockK private lateinit var resourceLoader: ResourceLoader
   @MockK private lateinit var solutionService: SolutionApiService
+  @RelaxedMockK private lateinit var organizationService: OrganizationApiService
   @MockK private lateinit var azureStorageBlobServiceClient: BlobServiceClient
+  @RelaxedMockK private lateinit var csmPlatformProperties: CsmPlatformProperties
 
   @MockK private lateinit var azureStorageBlobBatchClient: BlobBatchClient
 
@@ -50,10 +55,14 @@ class WorkspaceServiceImplTests {
         spyk(
             WorkspaceServiceImpl(
                 resourceLoader,
+                organizationService,
                 solutionService,
                 azureStorageBlobServiceClient,
                 azureStorageBlobBatchClient,
                 csmRbac))
+    mockkStatic(::getCurrentAuthenticatedMail)
+    every { getCurrentAuthenticatedMail(csmPlatformProperties) } returns "dummy@cosmotech.com"
+
     MockKAnnotations.init(this, relaxUnitFun = true)
     this.csmRbac = mockk<CsmRbac>(relaxed = true)
   }

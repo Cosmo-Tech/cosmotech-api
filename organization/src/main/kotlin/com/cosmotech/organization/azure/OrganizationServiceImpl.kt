@@ -16,8 +16,11 @@ import com.cosmotech.api.rbac.PERMISSION_EDIT
 import com.cosmotech.api.rbac.PERMISSION_EDIT_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_READ_DATA
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
+import com.cosmotech.api.rbac.ROLE_ADMIN
+import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.getAllRolesDefinition
 import com.cosmotech.api.rbac.getScenarioRolesDefinition
+import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
@@ -88,14 +91,14 @@ internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
 
     val newOrganizationId = idGenerator.generate("organization")
     val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
-    if (organization.security == null) {
-      // organization.security = OrganizationS
-    }
 
     val organizationRegistered =
         cosmosTemplate.insert(
             coreOrganizationContainer,
-            organization.copy(id = newOrganizationId, ownerId = getCurrentAuthenticatedUserName()))
+            organization.copy(
+                id = newOrganizationId,
+                ownerId = getCurrentAuthenticatedUserName(),
+                security = organization.security ?: initSecurity(currentUser)))
 
     val organizationId =
         organizationRegistered.id
@@ -284,5 +287,11 @@ internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
     val organization = findOrganizationById(organizationId)
     csmRbac.verify(organization.security, PERMISSION_READ_SECURITY)
     return csmRbac.getUsers(organization.security)
+  }
+
+  private fun initSecurity(userId: String): OrganizationSecurity {
+    return OrganizationSecurity(
+        default = ROLE_NONE,
+        accessControlList = mutableListOf(RbacAccessControl(userId, ROLE_ADMIN)))
   }
 }
