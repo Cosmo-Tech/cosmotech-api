@@ -77,7 +77,6 @@ entity Organization {
     id: String
     name: String
     ownerId: String
-    users: List<OrganizationUser>
     services: OrganizationServices
     security: OrganizationSecurity
 }
@@ -104,12 +103,6 @@ entity OrganizationServices {
     tenantCredentials: Map
     storage: OrganizationService
     solutionsContainerRegistry: OrganizationService
-}
-
-entity OrganizationUser {
-    id: String
-    name: String
-    * roles: List<String>
 }
 
 entity RunTemplate {
@@ -475,7 +468,6 @@ ScenarioRun -- "0..*" RunTemplateParameterValue : parametersValues
 ScenarioRun -- "0..*" ScenarioRunContainer : containers
 ScenarioRunStatus -- "0..*" ScenarioRunStatusNode : nodes
 Connector -- "0..*" ConnectorParameterGroup : parameterGroups
-Organization -- "0..*" OrganizationUser : users
 Organization -- OrganizationServices : services
 Organization -- OrganizationSecurity : security
 User -- "0..*" UserOrganization : organizations

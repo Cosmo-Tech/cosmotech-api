@@ -11,17 +11,13 @@ import com.cosmotech.api.azure.findByIdOrThrow
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
-import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_EDIT
 import com.cosmotech.api.rbac.PERMISSION_EDIT_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_READ_DATA
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
-import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.getAllRolesDefinition
 import com.cosmotech.api.rbac.getScenarioRolesDefinition
-import com.cosmotech.organization.domain.OrganizationSecurity
-import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
@@ -37,16 +33,13 @@ import com.cosmotech.organization.domain.OrganizationServices
 import com.fasterxml.jackson.databind.JsonNode
 import javax.annotation.PostConstruct
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
-import org.springframework.context.event.EventListener
-import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions")
-internal class OrganizationServiceImpl(
-    private val csmRbac: CsmRbac
-) : CsmAzureService(), OrganizationApiService {
+internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
+    CsmAzureService(), OrganizationApiService {
 
   private lateinit var coreOrganizationContainer: String
 
@@ -96,15 +89,13 @@ internal class OrganizationServiceImpl(
     val newOrganizationId = idGenerator.generate("organization")
     val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
     if (organization.security == null) {
-      organization.security = OrganizationS
+      // organization.security = OrganizationS
     }
 
     val organizationRegistered =
         cosmosTemplate.insert(
             coreOrganizationContainer,
-            organization.copy(
-                id = newOrganizationId,
-                ownerId = getCurrentAuthenticatedUserName()))
+            organization.copy(id = newOrganizationId, ownerId = getCurrentAuthenticatedUserName()))
 
     val organizationId =
         organizationRegistered.id
@@ -158,14 +149,15 @@ internal class OrganizationServiceImpl(
       existingOrganization.services = organization.services
       hasChanged = true
     }
-    return if (hasChanged) {
-      val responseEntity =
+    val responseEntity: Organization
+    responseEntity =
+        if (hasChanged) {
           cosmosTemplate.upsertAndReturnEntity(coreOrganizationContainer, existingOrganization)
-      }
-      responseEntity
-    } else {
-      existingOrganization
-    }
+        } else {
+          existingOrganization
+        }
+
+    return responseEntity
   }
 
   override fun updateSolutionsContainerRegistryByOrganizationId(
