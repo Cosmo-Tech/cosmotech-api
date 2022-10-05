@@ -147,92 +147,6 @@ paths:
           description: Request succeeded
         "404":
           description: the Organization specified is unknown or you don't have access to it
-
-  /organizations/{organization_id}/users:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-    post:
-      operationId: addOrReplaceUsersInOrganization
-      tags:
-        - organization
-      summary: Add (or replace) users in the Organization specified
-      requestBody:
-        description: the Users to add. Any User with the same ID is overwritten
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/OrganizationUser'
-            examples:
-              AddUser:
-                summary: Add a user
-                description: Add the user Bob to organization Cosmo Tech
-                value:
-                  - id: "2"
-                    roles:
-                      - User
-                  - id: "3"
-                    roles:
-                      - Developer
-      responses:
-        "201":
-          description: the Organization Users
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/OrganizationUser'
-              examples:
-                TwoOrganizationUsers:
-                  $ref: '#/components/examples/TwoOrganizationUsers'
-        "400":
-          description: Bad request
-        "404":
-          description: the Organization specified is unknown or you don't have access to it
-    delete:
-      operationId: removeAllUsersInOrganization
-      tags:
-        - organization
-      summary: Remove all users from the Organization specified
-      responses:
-        "204":
-          description: the operation succeeded
-        "404":
-          description: the Organization specified is unknown or you don't have access to it
-
-  /organizations/{organization_id}/users/{user_id}:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: user_id
-        in: path
-        description: the User identifier
-        required: true
-        schema:
-          type: string
-    delete:
-      operationId: removeUserFromOrganization
-      tags:
-        - organization
-      summary: Remove the specified user from the given Organization
-      responses:
-        "204":
-          description: Request succeeded
-        "404":
-          description: the Organization or the User specified is unknown or you don't have access to them
-
   /organizations/{organization_id}/services/tenantCredentials:
     parameters:
       - name: organization_id
@@ -632,10 +546,6 @@ components:
           type: string
           readOnly: true
           description: the Owner User Id
-        users:
-          type: array
-          items:
-            $ref: '#/components/schemas/OrganizationUser'
         services:
           descriptions: the list of Cloud services specific to the Organization
           $ref: '#/components/schemas/OrganizationServices'
@@ -712,30 +622,6 @@ components:
           type: object
           description: a freeform credentials object. Structure depends on service
           additionalProperties: true
-    OrganizationUser:
-      type: object
-      description: a User
-      properties:
-        id:
-          type: string
-          readOnly: true
-          description: the User unique identifier, in response
-        name:
-          type: string
-          description: the User name
-#        organizationId:
-#          type: string
-#          readOnly: true
-#          description: the Organization Id context
-        roles:
-          type: array
-          description: the User's roles for the Organization
-          items:
-            type: string
-            enum: ["Admin","User","Viewer","Developer"]
-      required:
-#        - name
-        - roles
     ComponentRolePermissions:
       type: object
       description: a RBAC by component
@@ -754,26 +640,13 @@ components:
       description: Create a new organization with 2 users
       value:
         name: Cosmo Tech
-        users:
-          - id: "1"
-            name: "admin"
-            roles:
-              - Admin
-          - id: "2"
-            name: "user"
-            roles:
-              - User
-        services:
-          tenantCredentials:
-            azureTenantId: e9641c78-d0d6-4d09-af63-168922724e7g
-            azureClientId: 857bbfb2-ba5b-4482-92e4-bfdda9e278ef
-            azureClientSecret: F6c6..s6CC9-Cu49u~R7_n8y.tCCy~4d3U
-          storage:
-            platformService: storage
-            resourceUri: organization-1/files
-          solutionsContainerRegistry:
-            cloudService: AzureContainerRegistries
-            baseUri: twinengines-1.azurecr.io
+        security:
+          default: rolereader
+          accessControlList:
+            - id: "jane.doe@cosmotech.com"
+              role: "rolewriter"
+            - id: "john.doe@cosmotech.com"
+              role: "rolereader"
     CosmoOrganization:
       summary: Cosmo Tech Organization example
       description: Cosmo Tech Organization example
@@ -781,75 +654,42 @@ components:
         id: "1"
         name: Cosmo Tech
         ownerId: "1"
-        users:
-          - id: "1"
-            name: Bob
-            roles:
-              - Admin
-          - id: "2"
-            name: Alice
-            roles:
-              - User
-        services:
-          tenantCredentials:
-            azureTenantId: e9641c78-d0d6-4d09-af63-168922724e7g
-            azureClientId: 857bbfb2-ba5b-4482-92e4-bfdda9e278ef
-            azureClientSecret: F6c6..s6CC9-Cu49u~R7_n8y.tCCy~4d3U
-          storage:
-            platformService: storage
-            cloudService: AzureStorage
-            baseUri: https://csmphoenix.blob.core.windows.net
-            resourceUri: organization-1/files
-          solutionsContainerRegistry:
-            cloudService: AzureContainerRegistries
-            baseUri: twinengines-1.azurecr.io
+        security:
+          default: rolereader
+          accessControlList:
+            - id: "jane.doe@cosmotech.com"
+              role: "rolewriter"
+            - id: "john.doe@cosmotech.com"
+              role: "rolereader"
     BreweryOrganizationSecurity:
       summary: Brewery Organization security
       description: Brewery Organization security example
       value:
-        default: "commonrolereader"
+        default: "rolereader"
         accessControlList:
           - id: "bob@mycosmocompany.com"
-            role: "commonrolewriter"
+            role: "rolewriter"
     BreweryOrganizationAccessControl:
       summary: Set an access control.
       description: Set an access control for a user to an organization.
       value:
         id: "bob@mycompany.com"
-        role: "commonrolewriter"
+        role: "rolewriter"
     CosmoThreeUsers:
       summary: Cosmo Tech Organization with 3 users
       description: Cosmo Tech Organization 3 users example
       value:
         id: "1"
         name: Cosmo Tech
-        ownerId: "1"
-        users:
-          - id: "1"
-            name: Bob
-            roles:
-              - Admin
-          - id: "2"
-            name: Alice
-            roles:
-              - User
-          - id: "3"
-            name: Xavier
-            roles:
-              - Developer
-        services:
-          tenantCredentials:
-            azureTenantId: e9641c78-d0d6-4d09-af63-168922724e7g
-            azureClientId: 857bbfb2-ba5b-4482-92e4-bfdda9e278ef
-            azureClientSecret: F6c6..s6CC9-Cu49u~R7_n8y.tCCy~4d3U
-          storage:
-            platformService: storage
-            cloudService: AzureStorage
-            baseUri: https://csmphoenix.blob.core.windows.net
-            resourceUri: organization-1/files
-          solutionsContainerRegistry:
-            cloudService: AzureContainerRegistries
-            baseUri: twinengines-1.azurecr.io
+        security:
+          default: rolereader
+          accessControlList:
+            - id: "bob.doe@cosmotech.com"
+              role: "rolewriter"
+            - id: "alice.doe@cosmotech.com"
+              role: "rolereader"
+            - id: "xavier.doe@cosmotech.com"
+              role: "rolewriter"
     TwoOrganizations:
       summary: Two Orgnizations
       description: Two Organizations example
@@ -857,58 +697,18 @@ components:
         - id: "1"
           name: Cosmo Tech
           ownerId: "1"
-          users:
-            - id: "1"
-              name: Bob
-              roles:
-                - Admin
-            - id: "2"
-              name: Alice
-              roles:
-                - User
-          services:
-            tenantCredentials:
-              azureTenantId: e9641c78-d0d6-4d09-af63-168922724e7g
-              azureClientId: 857bbfb2-ba5b-4482-92e4-bfdda9e278ef
-              azureClientSecret: F6c6..s6CC9-Cu49u~R7_n8y.tCCy~4d3U
-            storage:
-              platformService: storage
-              cloudService: AzureStorage
-              baseUri: https://csmphoenix.blob.core.windows.net
-              resourceUri: organization-1/files
-            solutionsContainerRegistry:
-              cloudService: AzureContainerRegistries
-              baseUri: twinengines-1.azurecr.io
+          security:
+            default: rolereader
+            accessControlList:
+              - id: "bob.doe@cosmotech.com"
+                role: "rolewriter"
+              - id: "alice.doe@cosmotech.com"
+                role: "rolereader"
         - id: "2"
           name: Phoenix
-          users:
-            - id: "1"
-              name: Bob
-              roles:
-                - Admin
-          services:
-            tenantCredentials:
-              azureTenantId: e9641c78-d0d6-4d09-af63-168922724e8r
-              azureClientId: 857bbfb2-ba5b-4482-92e4-bfdda9e278fu
-              azureClientSecret: F6c6..s6CC9-Cu49u~R7_n8y.tCCy~4d4A
-            storage:
-              platformService: storage
-              cloudService: AzureStorage
-              baseUri: https://csmphoenix.blob.core.windows.net
-              resourceUri: organization-2/files
-            solutionsContainerRegistry:
-              cloudService: AzureContainerRegistries
-              baseUri: twinengines-2.azurecr.io
-    TwoOrganizationUsers:
-      summary: Two users of an Organization
-      description: Two Users of an Organization example
-      value:
-        - id: "1"
-          name: Bob
-          roles:
-            - Admin
-        - id: "2"
-          name: Alice
-          roles:
-            - User
+          security:
+            default: rolereader
+            accessControlList:
+              - id: "bob.doe@cosmotech.com"
+                role: "rolewriter"
 

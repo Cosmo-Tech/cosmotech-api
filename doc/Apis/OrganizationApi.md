@@ -4,7 +4,6 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**addOrReplaceUsersInOrganization**](OrganizationApi.md#addOrReplaceUsersInOrganization) | **POST** /organizations/{organization_id}/users | Add (or replace) users in the Organization specified
 [**addOrganizationAccessControl**](OrganizationApi.md#addOrganizationAccessControl) | **POST** /organizations/{organization_id}/security/access | add a control acccess to the Organization
 [**findAllOrganizations**](OrganizationApi.md#findAllOrganizations) | **GET** /organizations | List all Organizations
 [**findOrganizationById**](OrganizationApi.md#findOrganizationById) | **GET** /organizations/{organization_id} | Get the details of an Organization
@@ -14,9 +13,7 @@ Method | HTTP request | Description
 [**getOrganizationSecurity**](OrganizationApi.md#getOrganizationSecurity) | **GET** /organizations/{organization_id}/security | Get the Organization security information
 [**getOrganizationSecurityUsers**](OrganizationApi.md#getOrganizationSecurityUsers) | **GET** /organizations/{organization_id}/security/users | Get the Organization security users list
 [**registerOrganization**](OrganizationApi.md#registerOrganization) | **POST** /organizations | Register a new organization
-[**removeAllUsersInOrganization**](OrganizationApi.md#removeAllUsersInOrganization) | **DELETE** /organizations/{organization_id}/users | Remove all users from the Organization specified
 [**removeOrganizationAccessControl**](OrganizationApi.md#removeOrganizationAccessControl) | **DELETE** /organizations/{organization_id}/security/access/{identity_id} | Remove the specified access from the given Organization
-[**removeUserFromOrganization**](OrganizationApi.md#removeUserFromOrganization) | **DELETE** /organizations/{organization_id}/users/{user_id} | Remove the specified user from the given Organization
 [**setOrganizationDefaultSecurity**](OrganizationApi.md#setOrganizationDefaultSecurity) | **POST** /organizations/{organization_id}/security/default | set the Organization default security
 [**unregisterOrganization**](OrganizationApi.md#unregisterOrganization) | **DELETE** /organizations/{organization_id} | Unregister an organization
 [**updateOrganization**](OrganizationApi.md#updateOrganization) | **PATCH** /organizations/{organization_id} | Update an Organization
@@ -24,32 +21,6 @@ Method | HTTP request | Description
 [**updateStorageByOrganizationId**](OrganizationApi.md#updateStorageByOrganizationId) | **PATCH** /organizations/{organization_id}/services/storage | Update storage configuration for the Organization specified
 [**updateTenantCredentialsByOrganizationId**](OrganizationApi.md#updateTenantCredentialsByOrganizationId) | **PATCH** /organizations/{organization_id}/services/tenantCredentials | Update tenant credentials for the Organization specified
 
-
-<a name="addOrReplaceUsersInOrganization"></a>
-# **addOrReplaceUsersInOrganization**
-> List addOrReplaceUsersInOrganization(organization\_id, OrganizationUser)
-
-Add (or replace) users in the Organization specified
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **OrganizationUser** | [**List**](../Models/OrganizationUser.md)| the Users to add. Any User with the same ID is overwritten |
-
-### Return type
-
-[**List**](../Models/OrganizationUser.md)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: application/json
-- **Accept**: application/json
 
 <a name="addOrganizationAccessControl"></a>
 # **addOrganizationAccessControl**
@@ -273,31 +244,6 @@ Name | Type | Description  | Notes
 - **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
-<a name="removeAllUsersInOrganization"></a>
-# **removeAllUsersInOrganization**
-> removeAllUsersInOrganization(organization\_id)
-
-Remove all users from the Organization specified
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
-
-### Return type
-
-null (empty response body)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: Not defined
-
 <a name="removeOrganizationAccessControl"></a>
 # **removeOrganizationAccessControl**
 > removeOrganizationAccessControl(organization\_id, identity\_id)
@@ -310,32 +256,6 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **identity\_id** | **String**| the User identifier | [default to null]
-
-### Return type
-
-null (empty response body)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: Not defined
-
-<a name="removeUserFromOrganization"></a>
-# **removeUserFromOrganization**
-> removeUserFromOrganization(organization\_id, user\_id)
-
-Remove the specified user from the given Organization
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **user\_id** | **String**| the User identifier | [default to null]
 
 ### Return type
 

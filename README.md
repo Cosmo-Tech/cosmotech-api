@@ -11,7 +11,7 @@
 [![Staging Deployment](https://github.com/Cosmo-Tech/cosmotech-api/actions/workflows/deploy_staging.yml/badge.svg)](https://staging.api.cosmotech.com/)
 
 > AKS releases compatibilities
-- latest: 1.23+
+- latest: 1.22+
 - v1: 1.21
 
 > Cosmo Tech Cloud Platform API

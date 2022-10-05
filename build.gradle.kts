@@ -40,8 +40,9 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 val kotlinJvmTarget = 17
-val cosmotechApiCommonVersion = "0.1.8-SNAPSHOT"
-val cosmotechApiAzureVersion = "0.1.5-SNAPSHOT"
+val cosmotechApiCommonVersion = "0.1.11-SNAPSHOT"
+val cosmotechApiAzureVersion = "0.1.6-SNAPSHOT"
+
 val azureSpringBootBomVersion = "3.14.0"
 
 allprojects {
@@ -60,7 +61,6 @@ allprojects {
       content { includeModule("io.argoproj.workflow", "argo-client-java") }
     }
     mavenCentral()
-    mavenLocal()
     maven { url = uri("https://jitpack.io") }
   }
 
@@ -129,7 +129,7 @@ subprojects {
     allRules = false // activate all available (even unstable) rules.
     config.from(file("$rootDir/.detekt/detekt.yaml"))
     jvmTarget = kotlinJvmTarget.toString()
-    ignoreFailures = project.findProperty("detekt.ignoreFailures")?.toString()?.toBoolean() ?: false
+    ignoreFailures = true
     // Specify the base path for file paths in the formatted reports.
     // If not set, all file paths reported will be absolute file path.
     // This is so we can easily map results onto their source files in tools like GitHub Code
@@ -313,11 +313,10 @@ subprojects {
       inputSpec.set("${projectDir}/src/main/openapi/${projectDirName}.yaml")
       outputDir.set(openApiServerSourcesGenerationDir)
       importMappings.set(
-        mapOf(
-          "RbacSecurity" to "com.cosmotech.api.rbac.model.RbacSecurity",
-          "RbacAccessControl" to "com.cosmotech.api.rbac.model.RbacAccessControl",
-        )
-      )
+          mapOf(
+              "RbacSecurity" to "com.cosmotech.api.rbac.model.RbacSecurity",
+              "RbacAccessControl" to "com.cosmotech.api.rbac.model.RbacAccessControl",
+          ))
       templateDir.set("${rootDir}/openapi/templates")
       generatorName.set("kotlin-spring")
       apiPackage.set("com.cosmotech.${projectDirName}.api")

@@ -12,6 +12,8 @@ import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
+import com.cosmotech.api.events.DeleteHistoricalDataOrganization
+import com.cosmotech.api.events.DeleteHistoricalDataScenario
 import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
 import com.cosmotech.api.events.ScenarioDataDownloadRequest
 import com.cosmotech.api.events.ScenarioDeleted
@@ -102,7 +104,7 @@ internal class ScenarioRunServiceImpl(
       // TODO Only the owner or an admin should be able to perform this operation
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
     }
-    this.deleteScenarioRunWithoutAccessEnforcement(scenarioRun)
+    deleteScenarioRunWithoutAccessEnforcement(scenarioRun)
   }
 
   private fun deleteScenarioRunWithoutAccessEnforcement(scenarioRun: ScenarioRun) {
@@ -115,8 +117,7 @@ internal class ScenarioRunServiceImpl(
           scenarioRun.id ?: "null",
           scenarioRun.csmSimulationRun ?: "null")
 
-      // Change function name: Use csmSimulationRun here, not Simulation Run id
-      azureDataExplorerClient.deleteDataFromScenarioRunId(
+      azureDataExplorerClient.deleteDataFromADXbyExtentShard(
           scenarioRun.organizationId!!, scenarioRun.workspaceKey!!, scenarioRun.csmSimulationRun!!)
       logger.debug(
           "Scenario run {} deleted from ADX with csmSimulationRun {}",
@@ -134,6 +135,56 @@ internal class ScenarioRunServiceImpl(
           exception.message,
           exception)
     }
+  }
+
+  override fun deleteHistoricalScenarioRunsByScenario(
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String
+  ) {
+
+    GlobalScope.launch {
+      this@ScenarioRunServiceImpl.deleteScenarioRunsByScenarioWithoutAccessEnforcement(
+          organizationId, workspaceId, scenarioId)
+    }
+  }
+
+  private fun deleteScenarioRunsByScenarioWithoutAccessEnforcement(
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String
+  ) {
+    val scenarioRuns = getScenarioRuns(organizationId, workspaceId, scenarioId)
+    val scenarioRunStatus = mutableListOf<ScenarioRunStatus>()
+
+    for (item in scenarioRuns) {
+      scenarioRunStatus.add(getScenarioRunStatus(item.id!!, item))
+    }
+
+    scenarioRunStatus.filter { it.state == ScenarioRunState.Failed }.forEach { scenarioStatus ->
+      scenarioRuns.find { it.id == scenarioStatus.id }?.let {
+        deleteScenarioRunWithoutAccessEnforcement(it)
+      }
+    }
+
+    val sortedByEndTimeSuccessFullRuns =
+        scenarioRunStatus.filter { it.state == ScenarioRunState.Successful }.sortedByDescending {
+          it.endTime
+        }
+
+    if (sortedByEndTimeSuccessFullRuns.size > 1) {
+      sortedByEndTimeSuccessFullRuns.subList(1, sortedByEndTimeSuccessFullRuns.size).forEach {
+          scenarioStatus ->
+        scenarioRuns.find { it.id == scenarioStatus.id }?.let {
+          deleteScenarioRunWithoutAccessEnforcement(it)
+        }
+      }
+    }
+  }
+
+  override fun deleteHistoricalDataOrganization(organizationId: String) {
+    this.eventPublisher.publishEvent(
+        DeleteHistoricalDataOrganization(this, organizationId = organizationId))
   }
 
   override fun findScenarioRunById(organizationId: String, scenariorunId: String) =
@@ -212,9 +263,9 @@ internal class ScenarioRunServiceImpl(
           .queryItems(
               SqlQuerySpec(
                   """
-                            SELECT * FROM c 
-                              WHERE c.type = 'ScenarioRun' 
-                                AND c.workspaceId = @WORKSPACE_ID 
+                            SELECT * FROM c
+                              WHERE c.type = 'ScenarioRun'
+                                AND c.workspaceId = @WORKSPACE_ID
                                 AND c.scenarioId = @SCENARIO_ID
                           """.trimIndent(),
                   listOf(
@@ -240,8 +291,8 @@ internal class ScenarioRunServiceImpl(
           .queryItems(
               SqlQuerySpec(
                   """
-                            SELECT * FROM c 
-                              WHERE c.type = 'ScenarioRun' 
+                            SELECT * FROM c
+                              WHERE c.type = 'ScenarioRun'
                                 AND c.workspaceId = @WORKSPACE_ID
                           """.trimIndent(),
                   listOf(SqlParameter("@WORKSPACE_ID", workspaceId))),
@@ -255,6 +306,11 @@ internal class ScenarioRunServiceImpl(
             it.toDomain<ScenarioRun>().withStateInformation(organizationId).withoutSensitiveData()
           }
           .toList()
+
+  @EventListener(DeleteHistoricalDataScenario::class)
+  fun deleteHistoricalDataScenarioRun(data: DeleteHistoricalDataScenario) {
+    deleteHistoricalScenarioRunsByScenario(data.organizationId, data.workspaceId, data.scenarioId)
+  }
 
   @EventListener(ScenarioDataDownloadRequest::class)
   fun onScenarioDataDownloadRequest(scenarioDataDownloadRequest: ScenarioDataDownloadRequest) {
@@ -352,8 +408,8 @@ internal class ScenarioRunServiceImpl(
         .queryItems(
             SqlQuerySpec(
                 """
-                            SELECT * FROM c 
-                              WHERE c.type = 'ScenarioRun' 
+                            SELECT * FROM c
+                              WHERE c.type = 'ScenarioRun'
                               $andExpr
                           """.trimIndent(),
                 scenarioRunSearchPredicatePair.second),
@@ -474,7 +530,8 @@ internal class ScenarioRunServiceImpl(
         val minor = splitVersion[1].toIntOrNull()
         if (major == null || minor == null) {
           logger.error(
-              "Malformed SDK version for scenario run status data ingestion check: use int for MAJOR and MINOR version")
+              "Malformed SDK version for scenario run status data ingestion check:" +
+                  " use int for MAJOR and MINOR version")
         } else {
           versionWithDataIngestionState =
               ((major == MIN_SDK_VERSION_MAJOR && minor >= MIN_SDK_VERSION_MINOR) ||

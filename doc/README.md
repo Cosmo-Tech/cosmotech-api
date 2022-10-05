@@ -20,7 +20,6 @@ Class | Method | HTTP request | Description
 *DatasetApi* | [**removeAllDatasetCompatibilityElements**](Apis/DatasetApi.md#removealldatasetcompatibilityelements) | **DELETE** /organizations/{organization_id}/datasets/{dataset_id}/compatibility | Remove all Dataset Compatibility elements from the Dataset specified
 *DatasetApi* | [**searchDatasets**](Apis/DatasetApi.md#searchdatasets) | **POST** /organizations/{organization_id}/datasets/search | Search Datasets
 *DatasetApi* | [**updateDataset**](Apis/DatasetApi.md#updatedataset) | **PATCH** /organizations/{organization_id}/datasets/{dataset_id} | Update a dataset
-*OrganizationApi* | [**addOrReplaceUsersInOrganization**](Apis/OrganizationApi.md#addorreplaceusersinorganization) | **POST** /organizations/{organization_id}/users | Add (or replace) users in the Organization specified
 *OrganizationApi* | [**addOrganizationAccessControl**](Apis/OrganizationApi.md#addorganizationaccesscontrol) | **POST** /organizations/{organization_id}/security/access | add a control acccess to the Organization
 *OrganizationApi* | [**findAllOrganizations**](Apis/OrganizationApi.md#findallorganizations) | **GET** /organizations | List all Organizations
 *OrganizationApi* | [**findOrganizationById**](Apis/OrganizationApi.md#findorganizationbyid) | **GET** /organizations/{organization_id} | Get the details of an Organization
@@ -30,9 +29,7 @@ Class | Method | HTTP request | Description
 *OrganizationApi* | [**getOrganizationSecurity**](Apis/OrganizationApi.md#getorganizationsecurity) | **GET** /organizations/{organization_id}/security | Get the Organization security information
 *OrganizationApi* | [**getOrganizationSecurityUsers**](Apis/OrganizationApi.md#getorganizationsecurityusers) | **GET** /organizations/{organization_id}/security/users | Get the Organization security users list
 *OrganizationApi* | [**registerOrganization**](Apis/OrganizationApi.md#registerorganization) | **POST** /organizations | Register a new organization
-*OrganizationApi* | [**removeAllUsersInOrganization**](Apis/OrganizationApi.md#removeallusersinorganization) | **DELETE** /organizations/{organization_id}/users | Remove all users from the Organization specified
 *OrganizationApi* | [**removeOrganizationAccessControl**](Apis/OrganizationApi.md#removeorganizationaccesscontrol) | **DELETE** /organizations/{organization_id}/security/access/{identity_id} | Remove the specified access from the given Organization
-*OrganizationApi* | [**removeUserFromOrganization**](Apis/OrganizationApi.md#removeuserfromorganization) | **DELETE** /organizations/{organization_id}/users/{user_id} | Remove the specified user from the given Organization
 *OrganizationApi* | [**setOrganizationDefaultSecurity**](Apis/OrganizationApi.md#setorganizationdefaultsecurity) | **POST** /organizations/{organization_id}/security/default | set the Organization default security
 *OrganizationApi* | [**unregisterOrganization**](Apis/OrganizationApi.md#unregisterorganization) | **DELETE** /organizations/{organization_id} | Unregister an organization
 *OrganizationApi* | [**updateOrganization**](Apis/OrganizationApi.md#updateorganization) | **PATCH** /organizations/{organization_id} | Update an Organization
@@ -60,6 +57,8 @@ Class | Method | HTTP request | Description
 *ScenarioApi* | [**removeScenarioAccessControl**](Apis/ScenarioApi.md#removescenarioaccesscontrol) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/access/{identity_id} | Remove the specified access from the given Organization Scenario
 *ScenarioApi* | [**setScenarioDefaultSecurity**](Apis/ScenarioApi.md#setscenariodefaultsecurity) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/default | set the Scenario default security
 *ScenarioApi* | [**updateScenario**](Apis/ScenarioApi.md#updatescenario) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id} | Update a scenario
+*ScenariorunApi* | [**deleteHistoricalDataOrganization**](Apis/ScenariorunApi.md#deletehistoricaldataorganization) | **DELETE** /organizations/{organization_id}/scenarioruns/deletehistoricaldata | Delete all historical ScenarioRuns in the database
+*ScenariorunApi* | [**deleteHistoricalScenarioRunsByScenario**](Apis/ScenariorunApi.md#deletehistoricalscenariorunsbyscenario) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/scenarioruns | Delete all historical ScenarioRuns for the Scenario
 *ScenariorunApi* | [**deleteScenarioRun**](Apis/ScenariorunApi.md#deletescenariorun) | **DELETE** /organizations/{organization_id}/scenarioruns/{scenariorun_id} | Delete a scenariorun
 *ScenariorunApi* | [**findScenarioRunById**](Apis/ScenariorunApi.md#findscenariorunbyid) | **GET** /organizations/{organization_id}/scenarioruns/{scenariorun_id} | Get the details of a scenariorun
 *ScenariorunApi* | [**getScenarioRunCumulatedLogs**](Apis/ScenariorunApi.md#getscenarioruncumulatedlogs) | **GET** /organizations/{organization_id}/scenarioruns/{scenariorun_id}/cumulatedlogs | Get the cumulated logs of a scenariorun
@@ -141,7 +140,6 @@ Class | Method | HTTP request | Description
  - [OrganizationSecurity](./Models/OrganizationSecurity.md)
  - [OrganizationService](./Models/OrganizationService.md)
  - [OrganizationServices](./Models/OrganizationServices.md)
- - [OrganizationUser](./Models/OrganizationUser.md)
  - [RunTemplate](./Models/RunTemplate.md)
  - [RunTemplateHandlerId](./Models/RunTemplateHandlerId.md)
  - [RunTemplateParameter](./Models/RunTemplateParameter.md)
