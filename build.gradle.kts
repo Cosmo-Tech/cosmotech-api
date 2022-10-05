@@ -129,7 +129,7 @@ subprojects {
     allRules = false // activate all available (even unstable) rules.
     config.from(file("$rootDir/.detekt/detekt.yaml"))
     jvmTarget = kotlinJvmTarget.toString()
-    ignoreFailures = project.findProperty("detekt.ignoreFailures")?.toString()?.toBoolean() ?: false
+    ignoreFailures = true
     // Specify the base path for file paths in the formatted reports.
     // If not set, all file paths reported will be absolute file path.
     // This is so we can easily map results onto their source files in tools like GitHub Code
