@@ -27,12 +27,16 @@ import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
+import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.api.rbac.PERMISSION_EDIT
 import com.cosmotech.api.rbac.PERMISSION_EDIT_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_READ_DATA
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
+import com.cosmotech.api.rbac.ROLE_ADMIN
+import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.getScenarioRolesDefinition
+import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.scenario.ScenarioMetaData
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
@@ -119,11 +123,8 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       scenario: Scenario
   ): Scenario {
-    // Validate organizationId
-    var organization = organizationService.findOrganizationById(organizationId)
-    csmRbac.verify(organization.security, PERMISSION_EDIT)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_EDIT)
+    csmRbac.verify(workspace.security, PERMISSION_CREATE_CHILDREN)
     val solution =
         workspace.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
     val runTemplate =
@@ -150,6 +151,7 @@ internal class ScenarioServiceImpl(
           parentId, solution, runTemplate, parent, scenario, newParametersValuesList)
     }
 
+    val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
     val now = OffsetDateTime.now()
     val scenarioToSave =
         scenario.copy(
@@ -165,7 +167,7 @@ internal class ScenarioServiceImpl(
             rootId = rootId,
             parametersValues = newParametersValuesList,
             validationStatus = ScenarioValidationStatus.Draft,
-        )
+            security = scenario.security ?: initSecurity(currentUser))
     val scenarioAsMap = scenarioToSave.asMapWithAdditionalData(workspaceId)
     // We cannot use cosmosTemplate as it expects the Domain object to contain a field named 'id'
     // or annotated with @Id
@@ -914,5 +916,11 @@ internal class ScenarioServiceImpl(
     val scenario = findScenarioById(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.security, PERMISSION_READ_SECURITY, scenarioPermissions)
     return csmRbac.getUsers(scenario.security)
+  }
+
+  private fun initSecurity(userId: String): ScenarioSecurity {
+    return ScenarioSecurity(
+        default = ROLE_NONE,
+        accessControlList = mutableListOf(RbacAccessControl(userId, ROLE_ADMIN)))
   }
 }
