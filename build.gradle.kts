@@ -40,7 +40,7 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 val kotlinJvmTarget = 17
-val cosmotechApiCommonVersion = "0.1.11-SNAPSHOT"
+val cosmotechApiCommonVersion = "0.1.12-SNAPSHOT"
 val cosmotechApiAzureVersion = "0.1.6-SNAPSHOT"
 
 val azureSpringBootBomVersion = "3.14.0"
@@ -129,7 +129,7 @@ subprojects {
     allRules = false // activate all available (even unstable) rules.
     config.from(file("$rootDir/.detekt/detekt.yaml"))
     jvmTarget = kotlinJvmTarget.toString()
-    ignoreFailures = true
+    ignoreFailures = project.findProperty("detekt.ignoreFailures")?.toString()?.toBoolean() ?: false
     // Specify the base path for file paths in the formatted reports.
     // If not set, all file paths reported will be absolute file path.
     // This is so we can easily map results onto their source files in tools like GitHub Code
