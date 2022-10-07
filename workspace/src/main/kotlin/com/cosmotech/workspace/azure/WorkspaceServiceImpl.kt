@@ -151,26 +151,12 @@ internal class WorkspaceServiceImpl(
       workspace: Workspace
   ): Workspace {
     val existingWorkspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
-    val isNoRbac = existingWorkspace.security == null
     csmRbac.verify(existingWorkspace.security, PERMISSION_WRITE)
     // Security cannot be changed by updateWorkspace
     var hasChanged =
         existingWorkspace
-            .compareToAndMutateIfNeeded(workspace, excludedFields = arrayOf("security", "solution"))
+            .compareToAndMutateIfNeeded(workspace, excludedFields = arrayOf("ownerId", "security", "solution"))
             .isNotEmpty()
-
-    val securityChanged = workspace.changed(existingWorkspace) { security }
-    if ((csmRbac.check(existingWorkspace.security, PERMISSION_WRITE_SECURITY) || isNoRbac) &&
-        securityChanged) {
-      logger.debug("Writing new security information for workspace ${workspace.id}")
-      // handle new and deleted users for permission propagation
-      existingWorkspace.security = workspace.security
-      hasChanged = true
-    } else {
-      if (securityChanged)
-          logger.warn(
-              "workspace ${workspace.id} security cannot be changed due to missing permission")
-    }
 
     if (workspace.solution?.solutionId != null) {
       // Validate solution ID

@@ -136,9 +136,6 @@ internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
       existingOrganization.services = organization.services
       hasChanged = true
     }
-    if (organization.security != null && organization.changed(existingOrganization) { security }) {
-      logger.warn("Security cannot be changed in updateOrganization for $organizationId")
-    }
     val responseEntity: Organization
     responseEntity =
         if (hasChanged) {
