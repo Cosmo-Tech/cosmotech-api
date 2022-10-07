@@ -380,9 +380,9 @@ paths:
                 items:
                   type: string
                 example:
-                  - "commonpermissiondelete"
-                  - "commonpermissionwrite"
-                  - "commonpermissioncreatechildren"
+                  - "read"
+                  - "read_security"
+                  - "create_children"
 
   /organizations/{organization_id}/workspaces/{workspace_id}/security:
     parameters:
@@ -442,12 +442,12 @@ paths:
           application/json:
             schema:
               type: string
-            example: "commonrolewriter"
+            example: "writer"
           application/yaml:
             schema:
               type: string
               format: binary
-            example: "commonrolewriter"
+            example: "writer"
       responses:
         "200":
           description: The Workspace default visibility
@@ -752,10 +752,10 @@ components:
           defaultRunTemplateDataset:
             1: "1"
         security:
-          default: commonrolereader
+          default: reader
           accessControlList:
             - id: "bob.doe@cosmotech.com"
-              role: "commonrolewriter"
+              role: "writer"
     BreweryWorkspaceCreateSecurity:
       summary: Brewery Workspace Create with security
       description: Brewery Workspace Create with default security
@@ -773,10 +773,10 @@ components:
           defaultRunTemplateDataset:
             1: "1"
         security:
-          default: commonrolereader
+          default: reader
           accessControlList:
             - id: "bob.doe@cosmotech.com"
-              role: "commonrolewriter"
+              role: "writer"
     BreweryWorkspace:
       summary: Brewery Workspace
       description: Brewery Workspace example
@@ -796,10 +796,10 @@ components:
           defaultRunTemplateDataset:
             1: "1"
         security:
-          default: "commonrolereader"
+          default: "reader"
           accessControlList:
             - id: "alice.doe@cosmotech.com"
-              role: "commonroleadmin"
+              role: "admin"
     OneWorkspace:
       summary: One Workspace list
       description: One Workspace list example
@@ -819,10 +819,10 @@ components:
             defaultRunTemplateDataset:
               1: "1"
           security:
-            default: "commonrolereader"
+            default: "reader"
             accessControlList:
               - id: "alice.doe@cosmotech.com"
-                role: "commonroleadmin"
+                role: "admin"
     BreweryWorkspaceUpdate:
       summary: Update the Brewery Workspace
       description: Update the Brewery Workspace by changing its name
@@ -847,29 +847,29 @@ components:
           defaultRunTemplateDataset:
             1: "1"
         security:
-          default: "commonrolereader"
+          default: "reader"
           accessControlList:
             - id: "alice.doe@cosmotech.com"
-              role: "commonroleadmin"
+              role: "admin"
     BreweryWorkspaceSecurity:
       summary: Brewery Workspace security
       description: Brewery Workspace security example
       value:
-        default: "commonrolereader"
+        default: "reader"
         accessControlList:
           - id: "alice.doe@cosmotech.com"
-            role: "commonrolewriter"
+            role: "writer"
     BreweryWorkspaceAccessControl:
       summary: Set an access control.
       description: Set an access control for a user to a workspace.
       value:
         id: "bob.doe@cosmotech.com"
-        role: "commonrolewriter"
+        role: "writer"
     BreweryDefaultSecurityRoleWriter:
       summary: Brewery Workspace Writer default security
       description: Brewery Workspace example
       value:
-        default: "commonrolewriter"
+        default: "writer"
     BreweryWorkspaceFile:
       summary: Brewery Workspace file example
       description: Brewery Workspace file uploaded return example

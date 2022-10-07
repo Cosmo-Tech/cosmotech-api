@@ -295,7 +295,7 @@ paths:
       operationId: getAllPermissions
       tags:
         - organization
-      summary: Get the all permission by given role
+      summary: Get all permissions per components
       responses:
         "200":
           description: The Scenarios security permission list
@@ -305,6 +305,9 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ComponentRolePermissions'
+              examples:
+                permissions:
+                  $ref: '#/components/examples/Permissions'
 
 
   /organizations/{organization_id}/permissions/{role}:
@@ -336,9 +339,9 @@ paths:
                 items:
                   type: string
                 example:
-                  - "commonpermissiondelete"
-                  - "commonpermissionwrite"
-                  - "commonpermissioncreatechildren"
+                  - "read"
+                  - "read_security"
+                  - "create_children"
 
   /organizations/{organization_id}/security:
     parameters:
@@ -711,4 +714,77 @@ components:
             accessControlList:
               - id: "bob.doe@cosmotech.com"
                 role: "writer"
+    Permissions:
+      summary: Permissions
+      description: Permissions for Organization
+      value:
+        - component: organization
+          roles:
+            none: []
+            viewer:
+              - read
+              - read_security
+            user:
+              - read
+              - read_security
+              - create_children
+            editor:
+              - read
+              - read_security
+              - create_children
+              - write
+            admin:
+              - read
+              - read_security
+              - create_children
+              - write
+              - write_security
+              - delete
+        - component: workspace
+          roles:
+            none: []
+            viewer:
+              - read
+              - read_security
+            user:
+              - read
+              - read_security
+              - create_children
+            editor:
+              - read
+              - read_security
+              - create_children
+              - write
+            admin:
+              - read
+              - read_security
+              - create_children
+              - write
+              - write_security
+              - delete
+        - component: scenario
+          roles:
+            none: []
+            viewer:
+              - read
+              - read_security
+            editor:
+              - read
+              - read_security
+              - launch
+              - write
+            validator:
+              - read
+              - read_security
+              - launch
+              - write
+              - validate
+            admin:
+              - read
+              - read_security
+              - launch
+              - write
+              - validate
+              - write_security
+              - delete
 
