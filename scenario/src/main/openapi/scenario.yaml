@@ -1368,6 +1368,11 @@ components:
       summary: Brewery Scenario Writer default security
       description: Brewery Scenario example
       value:
+        default: "none"
+    BreweryDefaultSecurityRoleWriter:
+      summary: Brewery Scenario Writer default security
+      description: Brewery Scenario example
+      value:
         default: "writer"
     BreweryScenarioAccessControl:
       summary: Set an access control.
