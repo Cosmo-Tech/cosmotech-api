@@ -20,17 +20,16 @@ import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
-import com.cosmotech.api.rbac.PERMISSION_WRITE
-import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
+import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
-import com.cosmotech.api.rbac.PERMISSION_DELETE
+import com.cosmotech.api.rbac.PERMISSION_WRITE
+import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.getPermissions
 import com.cosmotech.api.rbac.model.RbacAccessControl
-import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -155,7 +154,8 @@ internal class WorkspaceServiceImpl(
     // Security cannot be changed by updateWorkspace
     var hasChanged =
         existingWorkspace
-            .compareToAndMutateIfNeeded(workspace, excludedFields = arrayOf("ownerId", "security", "solution"))
+            .compareToAndMutateIfNeeded(
+                workspace, excludedFields = arrayOf("ownerId", "security", "solution"))
             .isNotEmpty()
 
     if (workspace.solution?.solutionId != null) {
