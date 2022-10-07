@@ -706,6 +706,11 @@ components:
             accessControlList:
               - id: "bob.doe@cosmotech.com"
                 role: "writer"
+    BreweryDefaultSecurityRoleWriter:
+      summary: Brewery Scenario Writer default security
+      description: Brewery Scenario example
+      value:
+        default: "writer"
     Permissions:
       summary: Permissions
       description: Permissions for Organization
