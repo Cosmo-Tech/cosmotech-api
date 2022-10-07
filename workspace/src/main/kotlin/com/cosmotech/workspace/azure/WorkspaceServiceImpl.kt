@@ -20,9 +20,9 @@ import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
-import com.cosmotech.api.rbac.PERMISSION_EDIT
-import com.cosmotech.api.rbac.PERMISSION_EDIT_SECURITY
-import com.cosmotech.api.rbac.PERMISSION_READ_DATA
+import com.cosmotech.api.rbac.PERMISSION_WRITE
+import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
+import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
@@ -98,7 +98,7 @@ internal class WorkspaceServiceImpl(
 
   override fun findWorkspaceById(organizationId: String, workspaceId: String): Workspace {
     val workspace: Workspace = this.findWorkspaceByIdNoSecurity(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_READ_DATA)
+    csmRbac.verify(workspace.security, PERMISSION_READ)
     return workspace
   }
 
@@ -121,7 +121,7 @@ internal class WorkspaceServiceImpl(
 
   override fun deleteAllWorkspaceFiles(organizationId: String, workspaceId: String) {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_EDIT)
+    csmRbac.verify(workspace.security, PERMISSION_WRITE)
     logger.debug("Deleting all files for workspace #{} ({})", workspace.id, workspace.name)
 
     GlobalScope.launch {
@@ -151,7 +151,7 @@ internal class WorkspaceServiceImpl(
   ): Workspace {
     val existingWorkspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
     val isNoRbac = existingWorkspace.security == null
-    csmRbac.verify(existingWorkspace.security, PERMISSION_EDIT)
+    csmRbac.verify(existingWorkspace.security, PERMISSION_WRITE)
     // Security cannot be changed by updateWorkspace
     var hasChanged =
         existingWorkspace
@@ -159,7 +159,7 @@ internal class WorkspaceServiceImpl(
             .isNotEmpty()
 
     val securityChanged = workspace.changed(existingWorkspace) { security }
-    if ((csmRbac.check(existingWorkspace.security, PERMISSION_EDIT_SECURITY) || isNoRbac) &&
+    if ((csmRbac.check(existingWorkspace.security, PERMISSION_WRITE_SECURITY) || isNoRbac) &&
         securityChanged) {
       logger.debug("Writing new security information for workspace ${workspace.id}")
       // handle new and deleted users for permission propagation
@@ -189,7 +189,7 @@ internal class WorkspaceServiceImpl(
 
   override fun deleteWorkspace(organizationId: String, workspaceId: String): Workspace {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_EDIT)
+    csmRbac.verify(workspace.security, PERMISSION_WRITE)
     try {
       deleteAllWorkspaceFiles(organizationId, workspaceId)
     } finally {
@@ -200,7 +200,7 @@ internal class WorkspaceServiceImpl(
 
   override fun deleteWorkspaceFile(organizationId: String, workspaceId: String, fileName: String) {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_EDIT)
+    csmRbac.verify(workspace.security, PERMISSION_WRITE)
     logger.debug(
         "Deleting file resource from workspace #{} ({}): {}",
         workspace.id,
@@ -221,7 +221,7 @@ internal class WorkspaceServiceImpl(
       throw IllegalArgumentException("Invalid filename: '$fileName'. '..' is not allowed")
     }
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_READ_DATA)
+    csmRbac.verify(workspace.security, PERMISSION_READ)
     logger.debug(
         "Downloading file resource to workspace #{} ({}): {}",
         workspace.id,
@@ -243,7 +243,7 @@ internal class WorkspaceServiceImpl(
     }
 
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_EDIT)
+    csmRbac.verify(workspace.security, PERMISSION_WRITE)
     logger.debug(
         "Uploading file resource to workspace #{} ({}): {} => {}",
         workspace.id,
@@ -276,7 +276,7 @@ internal class WorkspaceServiceImpl(
       workspaceId: String
   ): List<WorkspaceFile> {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_READ_DATA)
+    csmRbac.verify(workspace.security, PERMISSION_READ)
     logger.debug("List all files for workspace #{} ({})", workspace.id, workspace.name)
     return getWorkspaceFileResources(organizationId, workspaceId)
         .mapNotNull { it.filename?.removePrefix("${workspaceId.sanitizeForAzureStorage()}/") }
@@ -343,7 +343,7 @@ internal class WorkspaceServiceImpl(
       workspaceRole: String
   ): WorkspaceSecurity {
     val workspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_EDIT_SECURITY)
+    csmRbac.verify(workspace.security, PERMISSION_WRITE_SECURITY)
     csmRbac.setDefault(workspace.security, workspaceRole)
     this.updateWorkspace(organizationId, workspaceId, workspace)
     return workspace.security as WorkspaceSecurity
@@ -365,7 +365,7 @@ internal class WorkspaceServiceImpl(
       workspaceAccessControl: WorkspaceAccessControl
   ): WorkspaceAccessControl {
     val workspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_EDIT_SECURITY)
+    csmRbac.verify(workspace.security, PERMISSION_WRITE_SECURITY)
     csmRbac.setUserRole(workspace.security, workspaceAccessControl.id, workspaceAccessControl.role)
     this.updateWorkspace(organizationId, workspaceId, workspace)
     return csmRbac.getAccessControl(workspace.security, workspaceAccessControl.id) as
@@ -378,7 +378,7 @@ internal class WorkspaceServiceImpl(
       identityId: String
   ) {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_EDIT_SECURITY)
+    csmRbac.verify(workspace.security, PERMISSION_WRITE_SECURITY)
     csmRbac.removeUser(workspace.security, identityId)
     this.updateWorkspace(organizationId, workspaceId, workspace)
   }

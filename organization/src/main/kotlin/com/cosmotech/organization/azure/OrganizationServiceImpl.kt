@@ -12,9 +12,9 @@ import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.rbac.CsmRbac
-import com.cosmotech.api.rbac.PERMISSION_EDIT
-import com.cosmotech.api.rbac.PERMISSION_EDIT_SECURITY
-import com.cosmotech.api.rbac.PERMISSION_READ_DATA
+import com.cosmotech.api.rbac.PERMISSION_WRITE
+import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
+import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
@@ -78,7 +78,7 @@ internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
   override fun findOrganizationById(organizationId: String): Organization {
     val organization: Organization =
         cosmosTemplate.findByIdOrThrow(coreOrganizationContainer, organizationId)
-    csmRbac.verify(organization.security, PERMISSION_READ_DATA)
+    csmRbac.verify(organization.security, PERMISSION_READ)
     return organization
   }
 
@@ -112,7 +112,7 @@ internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
 
   override fun unregisterOrganization(organizationId: String) {
     val organization = findOrganizationById(organizationId)
-    csmRbac.verify(organization.security, PERMISSION_EDIT)
+    csmRbac.verify(organization.security, PERMISSION_WRITE)
     if (organization.ownerId != getCurrentAuthenticatedUserName()) {
       // TODO Only the owner or an admin should be able to perform this operation
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
@@ -130,19 +130,8 @@ internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
       organization: Organization
   ): Organization {
     val existingOrganization = findOrganizationById(organizationId)
-    csmRbac.verify(existingOrganization.security, PERMISSION_EDIT)
+    csmRbac.verify(existingOrganization.security, PERMISSION_WRITE)
     var hasChanged = false
-
-    if (organization.ownerId != null && organization.changed(existingOrganization) { ownerId }) {
-      // Allow to change the ownerId as well, but only the owner can transfer the ownership
-      if (existingOrganization.ownerId != getCurrentAuthenticatedUserName()) {
-        // TODO Only the owner or an admin should be able to perform this operation
-        throw CsmAccessForbiddenException(
-            "You are not allowed to change the ownership of this Resource")
-      }
-      existingOrganization.ownerId = organization.ownerId
-      hasChanged = true
-    }
 
     if (organization.name != null && organization.changed(existingOrganization) { name }) {
       existingOrganization.name = organization.name
@@ -151,6 +140,9 @@ internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
     if (organization.services != null && organization.changed(existingOrganization) { services }) {
       existingOrganization.services = organization.services
       hasChanged = true
+    }
+    if (organization.security != null && organization.changed(existingOrganization) { security }) {
+      logger.warn("Security cannot be changed in updateOrganization for $organizationId")
     }
     val responseEntity: Organization
     responseEntity =
@@ -182,7 +174,7 @@ internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
       memberAccessBlock: OrganizationServices.() -> OrganizationService?
   ): OrganizationService {
     val existingOrganization = findOrganizationById(organizationId)
-    csmRbac.verify(existingOrganization.security, PERMISSION_EDIT)
+    csmRbac.verify(existingOrganization.security, PERMISSION_WRITE)
     val existingServices = existingOrganization.services ?: OrganizationServices()
     val existingOrganizationService =
         with(existingServices, memberAccessBlock) ?: OrganizationService()
@@ -214,7 +206,7 @@ internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
       requestBody: Map<String, Any>
   ): Map<String, Any> {
     val existingOrganization = findOrganizationById(organizationId)
-    csmRbac.verify(existingOrganization.security, PERMISSION_EDIT)
+    csmRbac.verify(existingOrganization.security, PERMISSION_WRITE)
     if (requestBody.isEmpty()) {
       return requestBody
     }
@@ -248,7 +240,7 @@ internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
       organizationRole: String
   ): OrganizationSecurity {
     val organization = findOrganizationById(organizationId)
-    csmRbac.verify(organization.security, PERMISSION_EDIT_SECURITY)
+    csmRbac.verify(organization.security, PERMISSION_WRITE_SECURITY)
     csmRbac.setDefault(organization.security, organizationRole)
     this.updateOrganization(organizationId, organization)
     return organization.security as OrganizationSecurity
@@ -268,7 +260,7 @@ internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
       organizationAccessControl: OrganizationAccessControl
   ): OrganizationAccessControl {
     val organization = findOrganizationById(organizationId)
-    csmRbac.verify(organization.security, PERMISSION_EDIT_SECURITY)
+    csmRbac.verify(organization.security, PERMISSION_WRITE_SECURITY)
     csmRbac.setUserRole(
         organization.security, organizationAccessControl.id, organizationAccessControl.role)
     this.updateOrganization(organizationId, organization)
@@ -278,7 +270,7 @@ internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
 
   override fun removeOrganizationAccessControl(organizationId: String, identityId: String) {
     val organization = findOrganizationById(organizationId)
-    csmRbac.verify(organization.security, PERMISSION_EDIT_SECURITY)
+    csmRbac.verify(organization.security, PERMISSION_WRITE_SECURITY)
     csmRbac.removeUser(organization.security, identityId)
     this.updateOrganization(organizationId, organization)
   }
