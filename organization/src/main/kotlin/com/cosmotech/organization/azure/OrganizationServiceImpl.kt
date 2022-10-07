@@ -16,6 +16,7 @@ import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
+import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.getAllRolesDefinition
@@ -112,17 +113,11 @@ internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
 
   override fun unregisterOrganization(organizationId: String) {
     val organization = findOrganizationById(organizationId)
-    csmRbac.verify(organization.security, PERMISSION_WRITE)
-    if (organization.ownerId != getCurrentAuthenticatedUserName()) {
-      // TODO Only the owner or an admin should be able to perform this operation
-      throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
-    }
+    csmRbac.verify(organization.security, PERMISSION_DELETE)
 
     cosmosTemplate.deleteEntity(coreOrganizationContainer, organization)
 
     this.eventPublisher.publishEvent(OrganizationUnregistered(this, organizationId))
-
-    // TODO Handle rollbacks in case of errors
   }
 
   override fun updateOrganization(
