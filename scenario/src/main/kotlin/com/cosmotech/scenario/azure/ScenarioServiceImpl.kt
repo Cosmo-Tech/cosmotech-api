@@ -24,10 +24,10 @@ import com.cosmotech.api.events.ScenarioDeleted
 import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
 import com.cosmotech.api.events.WorkflowPhaseToStateRequest
-import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
+import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_WRITE
@@ -239,11 +239,7 @@ internal class ScenarioServiceImpl(
       waitRelationshipPropagation: Boolean
   ) {
     val scenario = this.findScenarioById(organizationId, workspaceId, scenarioId)
-    csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
-    if (scenario.ownerId != getCurrentAuthenticatedUserName()) {
-      // TODO Only the owner or an admin should be able to perform this operation
-      throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
-    }
+    csmRbac.verify(scenario.getRbac(), PERMISSION_DELETE, scenarioPermissions)
 
     cosmosTemplate.deleteEntity("${organizationId}_scenario_data", scenario)
 
@@ -624,13 +620,9 @@ internal class ScenarioServiceImpl(
                         "datasetList",
                         "solutionId",
                         "runTemplateId",
-                        "parametersValues"))
+                        "parametersValues",
+                        "security"))
             .isNotEmpty()
-
-    if (scenario.ownerId != null && scenario.changed(existingScenario) { ownerId }) {
-      updateScenarioOwner(existingScenario, scenario)
-      hasChanged = true
-    }
 
     var datasetListUpdated = false
     if (scenario.datasetList != null &&
@@ -680,16 +672,6 @@ internal class ScenarioServiceImpl(
     // TODO Need to validate those IDs too ?
     existingScenario.datasetList = scenario.datasetList
     return true
-  }
-
-  private fun updateScenarioOwner(existingScenario: Scenario, scenario: Scenario) {
-    // Allow to change the ownerId as well, but only the owner can transfer the ownership
-    if (existingScenario.ownerId != getCurrentAuthenticatedUserName()) {
-      // TODO Only the owner or an admin should be able to perform this operation
-      throw CsmAccessForbiddenException(
-          "You are not allowed to change the ownership of this Resource")
-    }
-    existingScenario.ownerId = scenario.ownerId
   }
 
   private fun publishDatasetListChangedEvent(

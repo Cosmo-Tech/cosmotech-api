@@ -20,10 +20,11 @@ import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
-import com.cosmotech.api.rbac.PERMISSION_WRITE
-import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
+import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
+import com.cosmotech.api.rbac.PERMISSION_WRITE
+import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.getCommonRolesDefinition
@@ -152,26 +153,13 @@ internal class WorkspaceServiceImpl(
       workspace: Workspace
   ): Workspace {
     val existingWorkspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
-    val isNoRbac = existingWorkspace.security == null
     csmRbac.verify(existingWorkspace.getRbac(), PERMISSION_WRITE)
     // Security cannot be changed by updateWorkspace
     var hasChanged =
         existingWorkspace
-            .compareToAndMutateIfNeeded(workspace, excludedFields = arrayOf("security", "solution"))
+            .compareToAndMutateIfNeeded(
+                workspace, excludedFields = arrayOf("ownerId", "security", "solution"))
             .isNotEmpty()
-
-    val securityChanged = workspace.changed(existingWorkspace) { security }
-    if ((csmRbac.check(existingWorkspace.getRbac(), PERMISSION_WRITE_SECURITY) || isNoRbac) &&
-        securityChanged) {
-      logger.debug("Writing new security information for workspace ${workspace.id}")
-      // handle new and deleted users for permission propagation
-      existingWorkspace.security = workspace.security
-      hasChanged = true
-    } else {
-      if (securityChanged)
-          logger.warn(
-              "workspace ${workspace.id} security cannot be changed due to missing permission")
-    }
 
     if (workspace.solution?.solutionId != null) {
       // Validate solution ID
@@ -182,7 +170,7 @@ internal class WorkspaceServiceImpl(
 
     return if (hasChanged) {
       val responseEntity =
-          cosmosTemplate.upsertAndReturnEntity("${organizationId}_workspaces", existingWorkspace)
+        cosmosTemplate.upsertAndReturnEntity("${organizationId}_workspaces", existingWorkspace)
       responseEntity
     } else {
       existingWorkspace
@@ -191,7 +179,7 @@ internal class WorkspaceServiceImpl(
 
   override fun deleteWorkspace(organizationId: String, workspaceId: String): Workspace {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE)
+    csmRbac.verify(workspace.getRbac(), PERMISSION_DELETE)
     try {
       deleteAllWorkspaceFiles(organizationId, workspaceId)
     } finally {
