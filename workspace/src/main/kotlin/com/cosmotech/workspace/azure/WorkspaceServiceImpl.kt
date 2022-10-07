@@ -31,7 +31,6 @@ import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.getPermissions
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
-import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -170,7 +169,7 @@ internal class WorkspaceServiceImpl(
 
     return if (hasChanged) {
       val responseEntity =
-        cosmosTemplate.upsertAndReturnEntity("${organizationId}_workspaces", existingWorkspace)
+          cosmosTemplate.upsertAndReturnEntity("${organizationId}_workspaces", existingWorkspace)
       responseEntity
     } else {
       existingWorkspace
@@ -358,7 +357,9 @@ internal class WorkspaceServiceImpl(
   ): WorkspaceAccessControl {
     val workspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE_SECURITY)
-    val rbacSecurity = csmRbac.setUserRole(workspace.getRbac(), workspaceAccessControl.id, workspaceAccessControl.role)
+    val rbacSecurity =
+        csmRbac.setUserRole(
+            workspace.getRbac(), workspaceAccessControl.id, workspaceAccessControl.role)
     workspace.setRbac(rbacSecurity)
     this.updateWorkspace(organizationId, workspaceId, workspace)
     var rbacAccessControl = csmRbac.getAccessControl(workspace.getRbac(), workspaceAccessControl.id)
@@ -394,13 +395,19 @@ internal class WorkspaceServiceImpl(
 }
 
 fun Workspace.getRbac(): RbacSecurity {
-  return RbacSecurity(this.id, this.security?.default ?: ROLE_NONE,
-    this.security?.accessControlList
-      ?.map{RbacAccessControl(it.id, it.role)}?.toMutableList() ?: mutableListOf()
-  )
-}
-fun Workspace.setRbac(rbacSecurity: RbacSecurity) {
-  this.security = WorkspaceSecurity(rbacSecurity.default,
-    rbacSecurity.accessControlList.map{WorkspaceAccessControl(it.id, it.role)}.toMutableList())
+  return RbacSecurity(
+      this.id,
+      this.security?.default ?: ROLE_NONE,
+      this.security?.accessControlList?.map { RbacAccessControl(it.id, it.role) }?.toMutableList()
+          ?: mutableListOf())
 }
 
+fun Workspace.setRbac(rbacSecurity: RbacSecurity) {
+  this.security =
+      WorkspaceSecurity(
+          rbacSecurity.default,
+          rbacSecurity
+              .accessControlList
+              .map { WorkspaceAccessControl(it.id, it.role) }
+              .toMutableList())
+}

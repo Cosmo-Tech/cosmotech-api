@@ -255,11 +255,13 @@ internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
   ): OrganizationAccessControl {
     val organization = findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_WRITE_SECURITY)
-    val rbacSecurity = csmRbac.setUserRole(
-        organization.getRbac(), organizationAccessControl.id, organizationAccessControl.role)
+    val rbacSecurity =
+        csmRbac.setUserRole(
+            organization.getRbac(), organizationAccessControl.id, organizationAccessControl.role)
     organization.setRbac(rbacSecurity)
     this.updateOrganization(organizationId, organization)
-    val rbacAccessControl = csmRbac.getAccessControl(organization.getRbac(), organizationAccessControl.id)
+    val rbacAccessControl =
+        csmRbac.getAccessControl(organization.getRbac(), organizationAccessControl.id)
     return OrganizationAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 
@@ -285,12 +287,19 @@ internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
 }
 
 fun Organization.getRbac(): RbacSecurity {
-  return RbacSecurity(this.id, this.security?.default ?: ROLE_NONE,
-    this.security?.accessControlList
-      ?.map{ RbacAccessControl(it.id, it.role) }?.toMutableList() ?: mutableListOf()
-  )
+  return RbacSecurity(
+      this.id,
+      this.security?.default ?: ROLE_NONE,
+      this.security?.accessControlList?.map { RbacAccessControl(it.id, it.role) }?.toMutableList()
+          ?: mutableListOf())
 }
+
 fun Organization.setRbac(rbacSecurity: RbacSecurity) {
-  this.security = OrganizationSecurity(rbacSecurity.default,
-    rbacSecurity.accessControlList.map{OrganizationAccessControl(it.id, it.role)}.toMutableList())
+  this.security =
+      OrganizationSecurity(
+          rbacSecurity.default,
+          rbacSecurity
+              .accessControlList
+              .map { OrganizationAccessControl(it.id, it.role) }
+              .toMutableList())
 }

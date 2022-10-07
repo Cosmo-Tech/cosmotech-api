@@ -62,6 +62,8 @@ import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.azure.getRbac
 import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
+import java.time.OffsetDateTime
+import java.time.ZonedDateTime
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -70,8 +72,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
-import java.time.OffsetDateTime
-import java.time.ZonedDateTime
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
@@ -863,7 +863,7 @@ internal class ScenarioServiceImpl(
   ): ScenarioAccessControl {
     val scenario = findScenarioById(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_READ_SECURITY, scenarioPermissions)
-    val rbacAccessControl =  csmRbac.getAccessControl(scenario.getRbac(), identityId)
+    val rbacAccessControl = csmRbac.getAccessControl(scenario.getRbac(), identityId)
     return ScenarioAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 
@@ -875,10 +875,12 @@ internal class ScenarioServiceImpl(
   ): ScenarioAccessControl {
     val scenario = findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
-    val rbacSecurity = csmRbac.setUserRole(scenario.getRbac(), scenarioAccessControl.id, scenarioAccessControl.role)
+    val rbacSecurity =
+        csmRbac.setUserRole(
+            scenario.getRbac(), scenarioAccessControl.id, scenarioAccessControl.role)
     scenario.setRbac(rbacSecurity)
     this.updateScenario(organizationId, workspaceId, scenarioId, scenario)
-    val rbacAccessControl =  csmRbac.getAccessControl(scenario.getRbac(), scenarioAccessControl.id)
+    val rbacAccessControl = csmRbac.getAccessControl(scenario.getRbac(), scenarioAccessControl.id)
     return ScenarioAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 
