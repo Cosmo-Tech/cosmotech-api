@@ -35,13 +35,18 @@ import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
-import io.mockk.*
+import io.mockk.MockKAnnotations
+import io.mockk.confirmVerified
+import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
-import java.time.Duration
-import java.util.stream.Stream
-import kotlin.test.*
+import io.mockk.justRun
+import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.spyk
+import io.mockk.unmockkStatic
+import io.mockk.verify
 import org.awaitility.kotlin.atMost
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.untilAsserted
@@ -54,7 +59,16 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsProvider
 import org.junit.jupiter.params.provider.ArgumentsSource
-import org.springframework.security.core.Authentication
+import java.time.Duration
+import java.util.stream.Stream
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Ignore
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 const val ORGANIZATION_ID = "O-AbCdEf123"
 const val WORKSPACE_ID = "W-AbCdEf123"
@@ -139,7 +153,9 @@ class ScenarioServiceImplTests {
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     val workspaceSecurity = mockk<WorkspaceSecurity>()
     every { workspace.security } returns workspaceSecurity
-    justRun { csmRbac.verify(workspaceSecurity, PERMISSION_CREATE_CHILDREN) }
+    every { workspace.security?.default } returns String()
+    every { workspace.security?.accessControlList } returns mutableListOf()
+    justRun { csmRbac.verify(any(), PERMISSION_CREATE_CHILDREN) }
     val workspaceSolution = mockk<WorkspaceSolution>()
     every { workspaceSolution.solutionId } returns SOLUTION_ID
     every { workspace.solution } returns workspaceSolution
@@ -251,7 +267,9 @@ class ScenarioServiceImplTests {
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     val workspaceSecurity = mockk<WorkspaceSecurity>()
     every { workspace.security } returns workspaceSecurity
-    justRun { csmRbac.verify(workspaceSecurity, PERMISSION_CREATE_CHILDREN) }
+    every { workspace.security?.default } returns String()
+    every { workspace.security?.accessControlList } returns mutableListOf()
+    justRun { csmRbac.verify(any(), PERMISSION_CREATE_CHILDREN) }
 
     val workspaceSolution = mockk<WorkspaceSolution>()
     every { workspaceSolution.solutionId } returns SOLUTION_ID
@@ -343,7 +361,9 @@ class ScenarioServiceImplTests {
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     val workspaceSecurity = mockk<WorkspaceSecurity>()
     every { workspace.security } returns workspaceSecurity
-    justRun { csmRbac.verify(workspaceSecurity, PERMISSION_CREATE_CHILDREN) }
+    every { workspace.security?.default } returns String()
+    every { workspace.security?.accessControlList } returns mutableListOf()
+    justRun { csmRbac.verify(any(), PERMISSION_CREATE_CHILDREN) }
     val workspaceSolution = mockk<WorkspaceSolution>()
 
     every { workspaceSolution.solutionId } returns SOLUTION_ID

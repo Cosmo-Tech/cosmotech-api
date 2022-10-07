@@ -532,10 +532,8 @@ components:
     Organization:
       type: object
       description: an Organization
-#      x-impl: 'com.cosmotech.api.rbac.model.Rbac'
       properties:
         id:
-#          x-impl: override
           type: string
           readOnly: true
           description: the Organization unique identifier
@@ -557,32 +555,26 @@ components:
     OrganizationSecurity:
       type: object
       description: the Organization security information
-      x-impl: 'com.cosmotech.api.rbac.model.RbacSecurity(default, accessControlList)'
       properties:
         default:
-          x-impl: override
           type: string
           description: the role by default
         accessControlList:
           type: list
           description: the list which can access this Organization with detailed access control information
-          x-impl: override
           items:
-            $ref: '#/components/schemas/RbacAccessControl'
+            $ref: '#/components/schemas/OrganizationAccessControl'
       required:
         - default
         - accessControlList
     OrganizationAccessControl:
       type: object
-      x-impl: 'com.cosmotech.api.rbac.model.RbacAccessControl(id, role)'
       description: a Organization access control item
       properties:
         id:
-          x-impl: override
           type: string
           description: the identity id
         role:
-          x-impl: override
           type: string
           description: a role
       required:

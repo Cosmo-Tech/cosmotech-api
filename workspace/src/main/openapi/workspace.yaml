@@ -661,32 +661,29 @@ components:
     WorkspaceSecurity:
       type: object
       description: the workspace security information
-      x-impl: 'com.cosmotech.api.rbac.model.RbacSecurity(default, accessControlList)'
       properties:
         default:
-          x-impl: override
           type: string
           description: the role by default
         accessControlList:
           type: list
           description: the list which can access this Workspace with detailed access control information
-          x-impl: override
           items:
-            $ref: '#/components/schemas/RbacAccessControl'
+            $ref: '#/components/schemas/WorkspaceAccessControl'
       required:
         - default
         - accessControlList
     WorkspaceAccessControl:
       type: object
-      x-impl: 'com.cosmotech.api.rbac.model.RbacAccessControl(id, role)'
+#      x-impl: 'com.cosmotech.api.rbac.model.RbacAccessControl(id, role)'
       description: a Workspace access control item
       properties:
         id:
-          x-impl: override
+#          x-impl: override
           type: string
           description: the identity id
         role:
-          x-impl: override
+#          x-impl: override
           type: string
           description: a role
       required:
