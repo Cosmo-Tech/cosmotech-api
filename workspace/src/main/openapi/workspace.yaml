@@ -666,7 +666,7 @@ components:
           type: string
           description: the role by default
         accessControlList:
-          type: list
+          type: array
           description: the list which can access this Workspace with detailed access control information
           items:
             $ref: '#/components/schemas/WorkspaceAccessControl'
@@ -675,15 +675,12 @@ components:
         - accessControlList
     WorkspaceAccessControl:
       type: object
-#      x-impl: 'com.cosmotech.api.rbac.model.RbacAccessControl(id, role)'
       description: a Workspace access control item
       properties:
         id:
-#          x-impl: override
           type: string
           description: the identity id
         role:
-#          x-impl: override
           type: string
           description: a role
       required:
