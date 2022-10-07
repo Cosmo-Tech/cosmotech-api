@@ -24,6 +24,7 @@ import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
+import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.getCommonRolesDefinition
@@ -189,7 +190,7 @@ internal class WorkspaceServiceImpl(
 
   override fun deleteWorkspace(organizationId: String, workspaceId: String): Workspace {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_WRITE)
+    csmRbac.verify(workspace.security, PERMISSION_DELETE)
     try {
       deleteAllWorkspaceFiles(organizationId, workspaceId)
     } finally {
