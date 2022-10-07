@@ -32,6 +32,7 @@ import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
+import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.getCommonRolesDefinition
@@ -238,11 +239,7 @@ internal class ScenarioServiceImpl(
       waitRelationshipPropagation: Boolean
   ) {
     val scenario = this.findScenarioById(organizationId, workspaceId, scenarioId)
-    csmRbac.verify(scenario.security, PERMISSION_WRITE_SECURITY, scenarioPermissions)
-    if (scenario.ownerId != getCurrentAuthenticatedUserName()) {
-      // TODO Only the owner or an admin should be able to perform this operation
-      throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
-    }
+    csmRbac.verify(scenario.security, PERMISSION_DELETE, scenarioPermissions)
 
     cosmosTemplate.deleteEntity("${organizationId}_scenario_data", scenario)
 
@@ -606,10 +603,7 @@ internal class ScenarioServiceImpl(
       scenarioId: String,
       scenario: Scenario
   ): Scenario {
-    var organization = organizationService.findOrganizationById(organizationId)
-    csmRbac.verify(organization.security, PERMISSION_READ)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_READ)
     val existingScenario = findScenarioById(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.security, PERMISSION_WRITE)
 
@@ -623,13 +617,9 @@ internal class ScenarioServiceImpl(
                         "datasetList",
                         "solutionId",
                         "runTemplateId",
-                        "parametersValues"))
+                        "parametersValues",
+                        "security"))
             .isNotEmpty()
-
-    if (scenario.ownerId != null && scenario.changed(existingScenario) { ownerId }) {
-      updateScenarioOwner(existingScenario, scenario)
-      hasChanged = true
-    }
 
     var datasetListUpdated = false
     if (scenario.datasetList != null &&
@@ -679,16 +669,6 @@ internal class ScenarioServiceImpl(
     // TODO Need to validate those IDs too ?
     existingScenario.datasetList = scenario.datasetList
     return true
-  }
-
-  private fun updateScenarioOwner(existingScenario: Scenario, scenario: Scenario) {
-    // Allow to change the ownerId as well, but only the owner can transfer the ownership
-    if (existingScenario.ownerId != getCurrentAuthenticatedUserName()) {
-      // TODO Only the owner or an admin should be able to perform this operation
-      throw CsmAccessForbiddenException(
-          "You are not allowed to change the ownership of this Resource")
-    }
-    existingScenario.ownerId = scenario.ownerId
   }
 
   private fun publishDatasetListChangedEvent(
