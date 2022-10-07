@@ -36,7 +36,6 @@ import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.getScenarioRolesDefinition
-import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.scenario.ScenarioMetaData
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
@@ -44,6 +43,7 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.azure.getRbac
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioAccessControl
@@ -59,6 +59,7 @@ import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
+import com.cosmotech.workspace.azure.getRbac
 import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
 import java.time.OffsetDateTime
@@ -94,7 +95,7 @@ internal class ScenarioServiceImpl(
   ): List<ScenarioRunTemplateParameterValue> {
     if (scenarioRunTemplateParameterValue.isNotEmpty()) {
       val scenario = findScenarioById(organizationId, workspaceId, scenarioId)
-      csmRbac.verify(scenario.security, PERMISSION_WRITE, scenarioPermissions)
+      csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE, scenarioPermissions)
       val parametersValuesMap =
           scenario.parametersValues?.associateBy { it.parameterId }?.toMutableMap()
               ?: mutableMapOf()
@@ -124,7 +125,7 @@ internal class ScenarioServiceImpl(
       scenario: Scenario
   ): Scenario {
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_CREATE_CHILDREN)
+    csmRbac.verify(workspace.getRbac(), PERMISSION_CREATE_CHILDREN)
     val solution =
         workspace.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
     val runTemplate =
@@ -238,7 +239,7 @@ internal class ScenarioServiceImpl(
       waitRelationshipPropagation: Boolean
   ) {
     val scenario = this.findScenarioById(organizationId, workspaceId, scenarioId)
-    csmRbac.verify(scenario.security, PERMISSION_DELETE, scenarioPermissions)
+    csmRbac.verify(scenario.getRbac(), PERMISSION_DELETE, scenarioPermissions)
 
     cosmosTemplate.deleteEntity("${organizationId}_scenario_data", scenario)
 
@@ -270,7 +271,7 @@ internal class ScenarioServiceImpl(
       scenarioId: String
   ): ScenarioDataDownloadJob {
     val scenario = this.findScenarioById(organizationId, workspaceId, scenarioId)
-    csmRbac.verify(scenario.security, PERMISSION_READ)
+    csmRbac.verify(scenario.getRbac(), PERMISSION_READ)
     val resourceId =
         this.idGenerator.generate(scope = "scenariodatadownload", prependPrefix = "sdl-")
     val scenarioDataDownloadRequest =
@@ -284,7 +285,7 @@ internal class ScenarioServiceImpl(
   override fun deleteAllScenarios(organizationId: String, workspaceId: String) {
     // TODO Only the workspace owner should be able to do this
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_WRITE, getCommonRolesDefinition())
+    csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE, getCommonRolesDefinition())
     val scenarios = this.findAllScenariosStateOption(organizationId, workspaceId, false)
     scenarios.forEach {
       cosmosTemplate.deleteEntity("${organizationId}_scenario_data", it)
@@ -316,9 +317,9 @@ internal class ScenarioServiceImpl(
 
   override fun findAllScenarios(organizationId: String, workspaceId: String): List<Scenario> {
     var organization = organizationService.findOrganizationById(organizationId)
-    csmRbac.verify(organization.security, PERMISSION_READ)
+    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_READ)
+    csmRbac.verify(workspace.getRbac(), PERMISSION_READ)
     return this.findAllScenariosStateOption(organizationId, workspaceId, true)
         .addLastRunsInfo(this, organizationId, workspaceId)
   }
@@ -431,13 +432,13 @@ internal class ScenarioServiceImpl(
       scenarioId: String
   ): Scenario {
     var organization = organizationService.findOrganizationById(organizationId)
-    csmRbac.verify(organization.security, PERMISSION_READ)
+    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_READ)
+    csmRbac.verify(workspace.getRbac(), PERMISSION_READ)
     val scenario =
         this.findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
             .addLastRunsInfo(this, organizationId, workspaceId)
-    csmRbac.verify(scenario.security, PERMISSION_READ, scenarioPermissions)
+    csmRbac.verify(scenario.getRbac(), PERMISSION_READ, scenarioPermissions)
     this.addStateToScenario(organizationId, scenario)
     return scenario
   }
@@ -448,7 +449,7 @@ internal class ScenarioServiceImpl(
       scenarioId: String
   ): ScenarioValidationStatus {
     val scenario = this.findScenarioById(organizationId, workspaceId, scenarioId)
-    csmRbac.verify(scenario.security, PERMISSION_READ)
+    csmRbac.verify(scenario.getRbac(), PERMISSION_READ)
     return scenario.validationStatus ?: ScenarioValidationStatus.Unknown
   }
 
@@ -459,7 +460,7 @@ internal class ScenarioServiceImpl(
       downloadId: String
   ): ScenarioDataDownloadInfo {
     val scenario = this.findScenarioById(organizationId, workspaceId, scenarioId)
-    csmRbac.verify(scenario.security, PERMISSION_READ)
+    csmRbac.verify(scenario.getRbac(), PERMISSION_READ)
     val scenarioDataDownloadJobInfoRequest =
         ScenarioDataDownloadJobInfoRequest(this, downloadId, organizationId)
     this.eventPublisher.publishEvent(scenarioDataDownloadJobInfoRequest)
@@ -583,11 +584,11 @@ internal class ScenarioServiceImpl(
       scenarioId: String
   ) {
     var organization = organizationService.findOrganizationById(organizationId)
-    csmRbac.verify(organization.security, PERMISSION_READ)
+    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_READ)
+    csmRbac.verify(workspace.getRbac(), PERMISSION_READ)
     val scenario = findScenarioById(organizationId, workspaceId, scenarioId)
-    csmRbac.verify(scenario.security, PERMISSION_WRITE)
+    csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE)
     if (!scenario.parametersValues.isNullOrEmpty()) {
       scenario.parametersValues = mutableListOf()
       scenario.lastUpdate = OffsetDateTime.now()
@@ -602,9 +603,12 @@ internal class ScenarioServiceImpl(
       scenarioId: String,
       scenario: Scenario
   ): Scenario {
+    var organization = organizationService.findOrganizationById(organizationId)
+    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
+    csmRbac.verify(workspace.getRbac(), PERMISSION_READ)
     val existingScenario = findScenarioById(organizationId, workspaceId, scenarioId)
-    csmRbac.verify(scenario.security, PERMISSION_WRITE)
+    csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE)
 
     var hasChanged =
         existingScenario
@@ -833,7 +837,7 @@ internal class ScenarioServiceImpl(
       scenarioId: String
   ): ScenarioSecurity {
     val scenario = findScenarioById(organizationId, workspaceId, scenarioId)
-    csmRbac.verify(scenario.security, PERMISSION_READ_SECURITY, scenarioPermissions)
+    csmRbac.verify(scenario.getRbac(), PERMISSION_READ_SECURITY, scenarioPermissions)
     return scenario.security as ScenarioSecurity
   }
 
@@ -844,8 +848,9 @@ internal class ScenarioServiceImpl(
       scenarioRole: String
   ): ScenarioSecurity {
     val scenario = findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
-    csmRbac.verify(scenario.security, PERMISSION_WRITE_SECURITY, scenarioPermissions)
-    csmRbac.setDefault(scenario.security, scenarioRole)
+    csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
+    val rbacSecurity = csmRbac.setDefault(scenario.getRbac(), scenarioRole)
+    scenario.setRbac(rbacSecurity)
     this.updateScenario(organizationId, workspaceId, scenarioId, scenario)
     return scenario.security as ScenarioSecurity
   }
@@ -857,8 +862,9 @@ internal class ScenarioServiceImpl(
       identityId: String
   ): ScenarioAccessControl {
     val scenario = findScenarioById(organizationId, workspaceId, scenarioId)
-    csmRbac.verify(scenario.security, PERMISSION_READ_SECURITY, scenarioPermissions)
-    return csmRbac.getAccessControl(scenario.security, identityId) as ScenarioAccessControl
+    csmRbac.verify(scenario.getRbac(), PERMISSION_READ_SECURITY, scenarioPermissions)
+    val rbacAccessControl = csmRbac.getAccessControl(scenario.getRbac(), identityId)
+    return ScenarioAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 
   override fun addScenarioAccessControl(
@@ -868,11 +874,14 @@ internal class ScenarioServiceImpl(
       scenarioAccessControl: ScenarioAccessControl
   ): ScenarioAccessControl {
     val scenario = findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
-    csmRbac.verify(scenario.security, PERMISSION_WRITE_SECURITY, scenarioPermissions)
-    csmRbac.setUserRole(scenario.security, scenarioAccessControl.id, scenarioAccessControl.role)
+    csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
+    val rbacSecurity =
+        csmRbac.setUserRole(
+            scenario.getRbac(), scenarioAccessControl.id, scenarioAccessControl.role)
+    scenario.setRbac(rbacSecurity)
     this.updateScenario(organizationId, workspaceId, scenarioId, scenario)
-    return csmRbac.getAccessControl(scenario.security, scenarioAccessControl.id) as
-        ScenarioAccessControl
+    val rbacAccessControl = csmRbac.getAccessControl(scenario.getRbac(), scenarioAccessControl.id)
+    return ScenarioAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 
   override fun removeScenarioAccessControl(
@@ -882,8 +891,9 @@ internal class ScenarioServiceImpl(
       identityId: String
   ) {
     val scenario = findScenarioById(organizationId, workspaceId, scenarioId)
-    csmRbac.verify(scenario.security, PERMISSION_WRITE_SECURITY, scenarioPermissions)
-    csmRbac.removeUser(scenario.security, identityId)
+    csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
+    val rbacSecurity = csmRbac.removeUser(scenario.getRbac(), identityId)
+    scenario.setRbac(rbacSecurity)
     this.updateScenario(organizationId, workspaceId, scenarioId, scenario)
   }
 
@@ -893,13 +903,13 @@ internal class ScenarioServiceImpl(
       scenarioId: String
   ): List<String> {
     val scenario = findScenarioById(organizationId, workspaceId, scenarioId)
-    csmRbac.verify(scenario.security, PERMISSION_READ_SECURITY, scenarioPermissions)
-    return csmRbac.getUsers(scenario.security)
+    csmRbac.verify(scenario.getRbac(), PERMISSION_READ_SECURITY, scenarioPermissions)
+    return csmRbac.getUsers(scenario.getRbac())
   }
 
   private fun initSecurity(userId: String): ScenarioSecurity {
     return ScenarioSecurity(
         default = ROLE_NONE,
-        accessControlList = mutableListOf(RbacAccessControl(userId, ROLE_ADMIN)))
+        accessControlList = mutableListOf(ScenarioAccessControl(userId, ROLE_ADMIN)))
   }
 }

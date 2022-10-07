@@ -30,11 +30,13 @@ import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.getPermissions
 import com.cosmotech.api.rbac.model.RbacAccessControl
+import com.cosmotech.api.rbac.model.RbacSecurity
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.azure.getRbac
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
@@ -98,14 +100,14 @@ internal class WorkspaceServiceImpl(
 
   override fun findWorkspaceById(organizationId: String, workspaceId: String): Workspace {
     val workspace: Workspace = this.findWorkspaceByIdNoSecurity(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_READ)
+    csmRbac.verify(workspace.getRbac(), PERMISSION_READ)
     return workspace
   }
 
   override fun createWorkspace(organizationId: String, workspace: Workspace): Workspace {
     val organization = organizationService.findOrganizationById(organizationId)
     // Needs security on Organization to check RBAC
-    csmRbac.verify(organization.security, PERMISSION_CREATE_CHILDREN)
+    csmRbac.verify(organization.getRbac(), PERMISSION_CREATE_CHILDREN)
     // Validate Solution ID
     workspace.solution?.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
     val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
@@ -121,7 +123,7 @@ internal class WorkspaceServiceImpl(
 
   override fun deleteAllWorkspaceFiles(organizationId: String, workspaceId: String) {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_WRITE)
+    csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE)
     logger.debug("Deleting all files for workspace #{} ({})", workspace.id, workspace.name)
 
     GlobalScope.launch {
@@ -150,7 +152,7 @@ internal class WorkspaceServiceImpl(
       workspace: Workspace
   ): Workspace {
     val existingWorkspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
-    csmRbac.verify(existingWorkspace.security, PERMISSION_WRITE)
+    csmRbac.verify(existingWorkspace.getRbac(), PERMISSION_WRITE)
     // Security cannot be changed by updateWorkspace
     var hasChanged =
         existingWorkspace
@@ -176,7 +178,7 @@ internal class WorkspaceServiceImpl(
 
   override fun deleteWorkspace(organizationId: String, workspaceId: String): Workspace {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_DELETE)
+    csmRbac.verify(workspace.getRbac(), PERMISSION_DELETE)
     try {
       deleteAllWorkspaceFiles(organizationId, workspaceId)
     } finally {
@@ -187,7 +189,7 @@ internal class WorkspaceServiceImpl(
 
   override fun deleteWorkspaceFile(organizationId: String, workspaceId: String, fileName: String) {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_WRITE)
+    csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE)
     logger.debug(
         "Deleting file resource from workspace #{} ({}): {}",
         workspace.id,
@@ -208,7 +210,7 @@ internal class WorkspaceServiceImpl(
       throw IllegalArgumentException("Invalid filename: '$fileName'. '..' is not allowed")
     }
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_READ)
+    csmRbac.verify(workspace.getRbac(), PERMISSION_READ)
     logger.debug(
         "Downloading file resource to workspace #{} ({}): {}",
         workspace.id,
@@ -230,7 +232,7 @@ internal class WorkspaceServiceImpl(
     }
 
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_WRITE)
+    csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE)
     logger.debug(
         "Uploading file resource to workspace #{} ({}): {} => {}",
         workspace.id,
@@ -263,7 +265,7 @@ internal class WorkspaceServiceImpl(
       workspaceId: String
   ): List<WorkspaceFile> {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_READ)
+    csmRbac.verify(workspace.getRbac(), PERMISSION_READ)
     logger.debug("List all files for workspace #{} ({})", workspace.id, workspace.name)
     return getWorkspaceFileResources(organizationId, workspaceId)
         .mapNotNull { it.filename?.removePrefix("${workspaceId.sanitizeForAzureStorage()}/") }
@@ -320,7 +322,7 @@ internal class WorkspaceServiceImpl(
       workspaceId: String
   ): WorkspaceSecurity {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_READ_SECURITY)
+    csmRbac.verify(workspace.getRbac(), PERMISSION_READ_SECURITY)
     return workspace.security as WorkspaceSecurity
   }
 
@@ -330,8 +332,9 @@ internal class WorkspaceServiceImpl(
       workspaceRole: String
   ): WorkspaceSecurity {
     val workspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_WRITE_SECURITY)
-    csmRbac.setDefault(workspace.security, workspaceRole)
+    csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE_SECURITY)
+    val rbacSecurity = csmRbac.setDefault(workspace.getRbac(), workspaceRole)
+    workspace.setRbac(rbacSecurity)
     this.updateWorkspace(organizationId, workspaceId, workspace)
     return workspace.security as WorkspaceSecurity
   }
@@ -342,8 +345,9 @@ internal class WorkspaceServiceImpl(
       identityId: String
   ): WorkspaceAccessControl {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_READ_SECURITY)
-    return csmRbac.getAccessControl(workspace.security, identityId) as WorkspaceAccessControl
+    csmRbac.verify(workspace.getRbac(), PERMISSION_READ_SECURITY)
+    var rbacAccessControl = csmRbac.getAccessControl(workspace.getRbac(), identityId)
+    return WorkspaceAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 
   override fun addWorkspaceAccessControl(
@@ -352,11 +356,14 @@ internal class WorkspaceServiceImpl(
       workspaceAccessControl: WorkspaceAccessControl
   ): WorkspaceAccessControl {
     val workspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_WRITE_SECURITY)
-    csmRbac.setUserRole(workspace.security, workspaceAccessControl.id, workspaceAccessControl.role)
+    csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE_SECURITY)
+    val rbacSecurity =
+        csmRbac.setUserRole(
+            workspace.getRbac(), workspaceAccessControl.id, workspaceAccessControl.role)
+    workspace.setRbac(rbacSecurity)
     this.updateWorkspace(organizationId, workspaceId, workspace)
-    return csmRbac.getAccessControl(workspace.security, workspaceAccessControl.id) as
-        WorkspaceAccessControl
+    var rbacAccessControl = csmRbac.getAccessControl(workspace.getRbac(), workspaceAccessControl.id)
+    return WorkspaceAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 
   override fun removeWorkspaceAccessControl(
@@ -365,8 +372,9 @@ internal class WorkspaceServiceImpl(
       identityId: String
   ) {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_WRITE_SECURITY)
-    csmRbac.removeUser(workspace.security, identityId)
+    csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE_SECURITY)
+    val rbacSecurity = csmRbac.removeUser(workspace.getRbac(), identityId)
+    workspace.setRbac(rbacSecurity)
     this.updateWorkspace(organizationId, workspaceId, workspace)
   }
 
@@ -375,13 +383,31 @@ internal class WorkspaceServiceImpl(
       workspaceId: String
   ): List<String> {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.security, PERMISSION_READ_SECURITY)
-    return csmRbac.getUsers(workspace.security)
+    csmRbac.verify(workspace.getRbac(), PERMISSION_READ_SECURITY)
+    return csmRbac.getUsers(workspace.getRbac())
   }
 
   private fun initSecurity(userId: String): WorkspaceSecurity {
     return WorkspaceSecurity(
         default = ROLE_NONE,
-        accessControlList = mutableListOf(RbacAccessControl(userId, ROLE_ADMIN)))
+        accessControlList = mutableListOf(WorkspaceAccessControl(userId, ROLE_ADMIN)))
   }
+}
+
+fun Workspace.getRbac(): RbacSecurity {
+  return RbacSecurity(
+      this.id,
+      this.security?.default ?: ROLE_NONE,
+      this.security?.accessControlList?.map { RbacAccessControl(it.id, it.role) }?.toMutableList()
+          ?: mutableListOf())
+}
+
+fun Workspace.setRbac(rbacSecurity: RbacSecurity) {
+  this.security =
+      WorkspaceSecurity(
+          rbacSecurity.default,
+          rbacSecurity
+              .accessControlList
+              .map { WorkspaceAccessControl(it.id, it.role) }
+              .toMutableList())
 }
