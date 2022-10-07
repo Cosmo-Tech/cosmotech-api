@@ -2,8 +2,13 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenario.azure
 
+import com.cosmotech.api.rbac.ROLE_NONE
+import com.cosmotech.api.rbac.model.RbacAccessControl
+import com.cosmotech.api.rbac.model.RbacSecurity
 import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.scenario.domain.Scenario
+import com.cosmotech.scenario.domain.ScenarioAccessControl
+import com.cosmotech.scenario.domain.ScenarioSecurity
 import org.slf4j.LoggerFactory
 
 internal fun Scenario.asMapWithAdditionalData(workspaceId: String): Map<String, Any> {
@@ -81,4 +86,15 @@ internal fun List<Scenario>.addLastRunsInfo(
         }
         scenarios
       }
+}
+
+fun Scenario.getRbac(): RbacSecurity {
+  return RbacSecurity(this.id, this.security?.default ?: ROLE_NONE,
+    this.security?.accessControlList
+      ?.map{ RbacAccessControl(it.id, it.role) }?.toMutableList() ?: mutableListOf()
+  )
+}
+fun Scenario.setRbac(rbacSecurity: RbacSecurity) {
+  this.security = ScenarioSecurity(rbacSecurity.default,
+    rbacSecurity.accessControlList.map{ ScenarioAccessControl(it.id, it.role) }.toMutableList())
 }

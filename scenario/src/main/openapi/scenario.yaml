@@ -774,11 +774,9 @@ components:
     Scenario:
       type: object
       description: a Scenario with base information
-#      x-impl: 'com.cosmotech.api.rbac.model.Rbac'
       properties:
         id:
           type: string
-#          x-impl: override
           readOnly: true
           description: the Scenario unique identifier
         name:
@@ -870,39 +868,32 @@ components:
         security:
           allOf:
             - $ref: '#/components/schemas/ScenarioSecurity'
-#          x-impl: override
 #      required:
 #        - name
 #        - runTemplateId
     ScenarioSecurity:
       type: object
-      x-impl: 'com.cosmotech.api.rbac.model.RbacSecurity(default, accessControlList)'
       description: the Scenario security information
       properties:
         default:
-          x-impl: override
           type: string
           description: the role by default
         accessControlList:
           type: list
           description: the list which can access this Scenario with detailed access control information
-          x-impl: override
           items:
-            $ref: '#/components/schemas/RbacAccessControl'
+            $ref: '#/components/schemas/ScenarioAccessControl'
       required:
         - default
         - accessControlList
     ScenarioAccessControl:
       type: object
-      x-impl: 'com.cosmotech.api.rbac.model.RbacAccessControl(id, role)'
       description: a Scenario access control item
       properties:
         id:
-          x-impl: override
           type: string
           description: the identity id
         role:
-          x-impl: override
           type: string
           description: a role
       required:

@@ -94,7 +94,7 @@ entity OrganizationAccessControl {
 
 entity OrganizationSecurity {
     * default: String
-    * accessControlList: List<RbacAccessControl>
+    * accessControlList: List<OrganizationAccessControl>
 }
 
 entity OrganizationService {
@@ -354,7 +354,7 @@ entity ScenarioRunTemplateParameterValue {
 
 entity ScenarioSecurity {
     * default: String
-    * accessControlList: List<RbacAccessControl>
+    * accessControlList: List<ScenarioAccessControl>
 }
 
 entity ScenarioValidationStatus {
@@ -446,7 +446,7 @@ entity WorkspaceFile {
 
 entity WorkspaceSecurity {
     * default: String
-    * accessControlList: List<RbacAccessControl>
+    * accessControlList: List<WorkspaceAccessControl>
 }
 
 entity WorkspaceSolution {
@@ -463,6 +463,7 @@ entity WorkspaceWebApp {
 
 
 ScenarioRunContainer -- "0..*" ScenarioRunContainerArtifact : artifacts
+WorkspaceSecurity -- "0..*" WorkspaceAccessControl : accessControlList
 ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
 OrganizationServices -- OrganizationService : storage
 OrganizationServices -- OrganizationService : solutionsContainerRegistry
@@ -475,6 +476,7 @@ ScenarioRun -- "0..*" RunTemplateParameterValue : parametersValues
 ScenarioRun -- "0..*" ScenarioRunContainer : containers
 ScenarioRunStatus -- "0..*" ScenarioRunStatusNode : nodes
 Connector -- "0..*" ConnectorParameterGroup : parameterGroups
+ScenarioSecurity -- "0..*" ScenarioAccessControl : accessControlList
 Organization -- OrganizationServices : services
 Organization -- OrganizationSecurity : security
 User -- "0..*" UserOrganization : organizations
@@ -486,6 +488,7 @@ Solution -- "0..*" RunTemplate : runTemplates
 ScenarioComparisonResult -- "0..*" ScenarioChangedParameterValue : changedValues
 Dataset -- DatasetConnector : connector
 Dataset -- "0..*" DatasetCompatibility : compatibility
+OrganizationSecurity -- "0..*" OrganizationAccessControl : accessControlList
 ScenarioRunStartContainers -- "0..*" ScenarioRunContainer : containers
 Workspace -- WorkspaceSolution : solution
 Workspace -- "0..*" WorkspaceUser : users
