@@ -89,12 +89,19 @@ internal fun List<Scenario>.addLastRunsInfo(
 }
 
 fun Scenario.getRbac(): RbacSecurity {
-  return RbacSecurity(this.id, this.security?.default ?: ROLE_NONE,
-    this.security?.accessControlList
-      ?.map{ RbacAccessControl(it.id, it.role) }?.toMutableList() ?: mutableListOf()
-  )
+  return RbacSecurity(
+      this.id,
+      this.security?.default ?: ROLE_NONE,
+      this.security?.accessControlList?.map { RbacAccessControl(it.id, it.role) }?.toMutableList()
+          ?: mutableListOf())
 }
+
 fun Scenario.setRbac(rbacSecurity: RbacSecurity) {
-  this.security = ScenarioSecurity(rbacSecurity.default,
-    rbacSecurity.accessControlList.map{ ScenarioAccessControl(it.id, it.role) }.toMutableList())
+  this.security =
+      ScenarioSecurity(
+          rbacSecurity.default,
+          rbacSecurity
+              .accessControlList
+              .map { ScenarioAccessControl(it.id, it.role) }
+              .toMutableList())
 }
