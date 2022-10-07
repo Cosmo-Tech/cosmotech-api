@@ -563,7 +563,7 @@ components:
           type: string
           description: the role by default
         accessControlList:
-          type: list
+          type: array
           description: the list which can access this Organization with detailed access control information
           items:
             $ref: '#/components/schemas/OrganizationAccessControl'
