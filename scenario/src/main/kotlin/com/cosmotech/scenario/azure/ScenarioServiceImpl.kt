@@ -24,15 +24,14 @@ import com.cosmotech.api.events.ScenarioDeleted
 import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
 import com.cosmotech.api.events.WorkflowPhaseToStateRequest
-import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
-import com.cosmotech.api.rbac.PERMISSION_WRITE
-import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
+import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
-import com.cosmotech.api.rbac.PERMISSION_DELETE
+import com.cosmotech.api.rbac.PERMISSION_WRITE
+import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.getCommonRolesDefinition
@@ -840,7 +839,7 @@ internal class ScenarioServiceImpl(
 
   override fun setScenarioDefaultSecurity(
       organizationId: String,
-     workspaceId: String,
+      workspaceId: String,
       scenarioId: String,
       scenarioRole: String
   ): ScenarioSecurity {
