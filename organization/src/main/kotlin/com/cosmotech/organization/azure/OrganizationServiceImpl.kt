@@ -21,6 +21,7 @@ import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.getAllRolesDefinition
 import com.cosmotech.api.rbac.getScenarioRolesDefinition
 import com.cosmotech.api.rbac.model.RbacAccessControl
+import com.cosmotech.api.rbac.model.RbacSecurity
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
@@ -78,7 +79,7 @@ internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
   override fun findOrganizationById(organizationId: String): Organization {
     val organization: Organization =
         cosmosTemplate.findByIdOrThrow(coreOrganizationContainer, organizationId)
-    csmRbac.verify(organization.security, PERMISSION_READ)
+    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
     return organization
   }
 
@@ -112,7 +113,7 @@ internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
 
   override fun unregisterOrganization(organizationId: String) {
     val organization = findOrganizationById(organizationId)
-    csmRbac.verify(organization.security, PERMISSION_DELETE)
+    csmRbac.verify(organization.getRbac(), PERMISSION_DELETE)
 
     cosmosTemplate.deleteEntity(coreOrganizationContainer, organization)
 
@@ -124,7 +125,7 @@ internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
       organization: Organization
   ): Organization {
     val existingOrganization = findOrganizationById(organizationId)
-    csmRbac.verify(existingOrganization.security, PERMISSION_WRITE)
+    csmRbac.verify(existingOrganization.getRbac(), PERMISSION_WRITE)
     var hasChanged = false
 
     if (organization.name != null && organization.changed(existingOrganization) { name }) {
@@ -165,7 +166,7 @@ internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
       memberAccessBlock: OrganizationServices.() -> OrganizationService?
   ): OrganizationService {
     val existingOrganization = findOrganizationById(organizationId)
-    csmRbac.verify(existingOrganization.security, PERMISSION_WRITE)
+    csmRbac.verify(existingOrganization.getRbac(), PERMISSION_WRITE)
     val existingServices = existingOrganization.services ?: OrganizationServices()
     val existingOrganizationService =
         with(existingServices, memberAccessBlock) ?: OrganizationService()
@@ -197,7 +198,7 @@ internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
       requestBody: Map<String, Any>
   ): Map<String, Any> {
     val existingOrganization = findOrganizationById(organizationId)
-    csmRbac.verify(existingOrganization.security, PERMISSION_WRITE)
+    csmRbac.verify(existingOrganization.getRbac(), PERMISSION_WRITE)
     if (requestBody.isEmpty()) {
       return requestBody
     }
@@ -222,7 +223,7 @@ internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
 
   override fun getOrganizationSecurity(organizationId: String): OrganizationSecurity {
     val organization = findOrganizationById(organizationId)
-    csmRbac.verify(organization.security, PERMISSION_READ_SECURITY)
+    csmRbac.verify(organization.getRbac(), PERMISSION_READ_SECURITY)
     return organization.security as OrganizationSecurity
   }
 
@@ -231,8 +232,9 @@ internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
       organizationRole: String
   ): OrganizationSecurity {
     val organization = findOrganizationById(organizationId)
-    csmRbac.verify(organization.security, PERMISSION_WRITE_SECURITY)
-    csmRbac.setDefault(organization.security, organizationRole)
+    csmRbac.verify(organization.getRbac(), PERMISSION_WRITE_SECURITY)
+    val rbacSecurity = csmRbac.setDefault(organization.getRbac(), organizationRole)
+    organization.setRbac(rbacSecurity)
     this.updateOrganization(organizationId, organization)
     return organization.security as OrganizationSecurity
   }
@@ -242,8 +244,9 @@ internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
       identityId: String
   ): OrganizationAccessControl {
     val organization = findOrganizationById(organizationId)
-    csmRbac.verify(organization.security, PERMISSION_READ_SECURITY)
-    return csmRbac.getAccessControl(organization.security, identityId) as OrganizationAccessControl
+    csmRbac.verify(organization.getRbac(), PERMISSION_READ_SECURITY)
+    val rbacAccessControl = csmRbac.getAccessControl(organization.getRbac(), identityId)
+    return OrganizationAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 
   override fun addOrganizationAccessControl(
@@ -251,30 +254,52 @@ internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
       organizationAccessControl: OrganizationAccessControl
   ): OrganizationAccessControl {
     val organization = findOrganizationById(organizationId)
-    csmRbac.verify(organization.security, PERMISSION_WRITE_SECURITY)
-    csmRbac.setUserRole(
-        organization.security, organizationAccessControl.id, organizationAccessControl.role)
+    csmRbac.verify(organization.getRbac(), PERMISSION_WRITE_SECURITY)
+    val rbacSecurity =
+        csmRbac.setUserRole(
+            organization.getRbac(), organizationAccessControl.id, organizationAccessControl.role)
+    organization.setRbac(rbacSecurity)
     this.updateOrganization(organizationId, organization)
-    return csmRbac.getAccessControl(organization.security, organizationAccessControl.id) as
-        OrganizationAccessControl
+    val rbacAccessControl =
+        csmRbac.getAccessControl(organization.getRbac(), organizationAccessControl.id)
+    return OrganizationAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 
   override fun removeOrganizationAccessControl(organizationId: String, identityId: String) {
     val organization = findOrganizationById(organizationId)
-    csmRbac.verify(organization.security, PERMISSION_WRITE_SECURITY)
-    csmRbac.removeUser(organization.security, identityId)
+    csmRbac.verify(organization.getRbac(), PERMISSION_WRITE_SECURITY)
+    val rbacSecurity = csmRbac.removeUser(organization.getRbac(), identityId)
+    organization.setRbac(rbacSecurity)
     this.updateOrganization(organizationId, organization)
   }
 
   override fun getOrganizationSecurityUsers(organizationId: String): List<String> {
     val organization = findOrganizationById(organizationId)
-    csmRbac.verify(organization.security, PERMISSION_READ_SECURITY)
-    return csmRbac.getUsers(organization.security)
+    csmRbac.verify(organization.getRbac(), PERMISSION_READ_SECURITY)
+    return csmRbac.getUsers(organization.getRbac())
   }
 
   private fun initSecurity(userId: String): OrganizationSecurity {
     return OrganizationSecurity(
         default = ROLE_NONE,
-        accessControlList = mutableListOf(RbacAccessControl(userId, ROLE_ADMIN)))
+        accessControlList = mutableListOf(OrganizationAccessControl(userId, ROLE_ADMIN)))
   }
+}
+
+fun Organization.getRbac(): RbacSecurity {
+  return RbacSecurity(
+      this.id,
+      this.security?.default ?: ROLE_NONE,
+      this.security?.accessControlList?.map { RbacAccessControl(it.id, it.role) }?.toMutableList()
+          ?: mutableListOf())
+}
+
+fun Organization.setRbac(rbacSecurity: RbacSecurity) {
+  this.security =
+      OrganizationSecurity(
+          rbacSecurity.default,
+          rbacSecurity
+              .accessControlList
+              .map { OrganizationAccessControl(it.id, it.role) }
+              .toMutableList())
 }
