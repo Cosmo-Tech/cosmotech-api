@@ -633,12 +633,12 @@ components:
       value:
         name: Cosmo Tech
         security:
-          default: rolereader
+          default: reader
           accessControlList:
             - id: "jane.doe@cosmotech.com"
-              role: "rolewriter"
+              role: "writer"
             - id: "john.doe@cosmotech.com"
-              role: "rolereader"
+              role: "reader"
     CosmoOrganization:
       summary: Cosmo Tech Organization example
       description: Cosmo Tech Organization example
@@ -647,26 +647,26 @@ components:
         name: Cosmo Tech
         ownerId: "1"
         security:
-          default: rolereader
+          default: reader
           accessControlList:
             - id: "jane.doe@cosmotech.com"
-              role: "rolewriter"
+              role: "writer"
             - id: "john.doe@cosmotech.com"
-              role: "rolereader"
+              role: "reader"
     BreweryOrganizationSecurity:
       summary: Brewery Organization security
       description: Brewery Organization security example
       value:
-        default: "rolereader"
+        default: "reader"
         accessControlList:
           - id: "bob@mycosmocompany.com"
-            role: "rolewriter"
+            role: "writer"
     BreweryOrganizationAccessControl:
       summary: Set an access control.
       description: Set an access control for a user to an organization.
       value:
         id: "bob@mycompany.com"
-        role: "rolewriter"
+        role: "writer"
     CosmoThreeUsers:
       summary: Cosmo Tech Organization with 3 users
       description: Cosmo Tech Organization 3 users example
@@ -674,14 +674,14 @@ components:
         id: "1"
         name: Cosmo Tech
         security:
-          default: rolereader
+          default: reader
           accessControlList:
             - id: "bob.doe@cosmotech.com"
-              role: "rolewriter"
+              role: "writer"
             - id: "alice.doe@cosmotech.com"
-              role: "rolereader"
+              role: "reader"
             - id: "xavier.doe@cosmotech.com"
-              role: "rolewriter"
+              role: "writer"
     TwoOrganizations:
       summary: Two Orgnizations
       description: Two Organizations example
@@ -690,17 +690,17 @@ components:
           name: Cosmo Tech
           ownerId: "1"
           security:
-            default: rolereader
+            default: reader
             accessControlList:
               - id: "bob.doe@cosmotech.com"
-                role: "rolewriter"
+                role: "writer"
               - id: "alice.doe@cosmotech.com"
-                role: "rolereader"
+                role: "reader"
         - id: "2"
           name: Phoenix
           security:
             default: rolereader
             accessControlList:
               - id: "bob.doe@cosmotech.com"
-                role: "rolewriter"
+                role: "writer"
 
