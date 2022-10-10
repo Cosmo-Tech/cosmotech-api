@@ -9,6 +9,8 @@ import com.azure.storage.blob.batch.BlobBatchClient
 import com.azure.storage.blob.models.DeleteSnapshotsOptionType
 import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.azure.sanitizeForAzureStorage
+import com.cosmotech.api.events.DeleteHistoricalDataOrganization
+import com.cosmotech.api.events.DeleteHistoricalDataWorkspace
 import com.cosmotech.api.events.UserAddedToWorkspace
 import com.cosmotech.api.events.UserRemovedFromOrganization
 import com.cosmotech.api.events.UserRemovedFromWorkspace
@@ -29,6 +31,7 @@ import com.cosmotech.workspace.repositories.WorkspaceRepository
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.context.event.EventListener
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
 import org.springframework.stereotype.Service
@@ -43,7 +46,7 @@ internal class WorkspaceServiceImpl(
     private val solutionService: SolutionApiService,
     private val azureStorageBlobServiceClient: BlobServiceClient,
     private val azureStorageBlobBatchClient: BlobBatchClient,
-    val workspaceRepository: WorkspaceRepository,
+    private val workspaceRepository: WorkspaceRepository,
 ) : CsmPhoenixService(), WorkspaceApiService {
 
   private fun fetchUsers(userIds: Collection<String>): Map<String, User> =
@@ -321,10 +324,11 @@ internal class WorkspaceServiceImpl(
     }
   }
 
-  @EventListener(OrganizationRegistered::class)
+  /*@EventListener(OrganizationRegistered::class)
   fun onOrganizationRegistered(organizationRegistered: OrganizationRegistered) {
     cosmosCoreDatabase.createContainerIfNotExists(
-        CosmosContainerProperties("${organizationRegistered.organizationId}_workspaces", "/id"))
+        CosmosContainerProperties("${organizationRegistered.organizationId}_workspaces", "/id")
+    )
   }
 
   @EventListener(OrganizationUnregistered::class)
@@ -336,15 +340,9 @@ internal class WorkspaceServiceImpl(
     } finally {
       cosmosTemplate.deleteContainer("${organizationId}_workspaces")
     }
-  }
+  }*/
 
   private fun getWorkspaceFileResources(
-      organizationId: String,
-      workspaceId: String
-  ): List<BlobStorageResource> =
-      AzureStorageResourcePatternResolver(azureStorageBlobServiceClient)
-          .getResources("azure-blob://$organizationId/$workspaceId/**/*".sanitizeForAzureStorage())
-          .map { it as BlobStorageResource }private fun getWorkspaceFileResources(
       organizationId: String,
       workspaceId: String
   ): List<BlobStorageResource> =

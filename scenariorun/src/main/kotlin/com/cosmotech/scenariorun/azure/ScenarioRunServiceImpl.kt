@@ -23,7 +23,6 @@ import com.cosmotech.api.events.ScenarioRunStartedForScenario
 import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.scenario.ScenarioRunMetaData
-import com.cosmotech.api.scenariorun.DataIngestionState
 import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
@@ -48,6 +47,8 @@ import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
+import java.time.ZonedDateTime
+import kotlin.reflect.full.memberProperties
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -56,8 +57,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
-import java.time.ZonedDateTime
-import kotlin.reflect.full.memberProperties
 
 private const val MIN_SDK_VERSION_MAJOR = 8
 private const val MIN_SDK_VERSION_MINOR = 5
@@ -83,6 +82,9 @@ internal class ScenarioRunServiceImpl(
   }
 
   private fun ScenarioRunSearch.toQueryPredicate(): Pair<String, List<SqlParameter>> {
+
+    print(azureDataExplorerClient)
+
     val queryPredicateComponents =
         this::class
             .memberProperties
@@ -118,8 +120,8 @@ internal class ScenarioRunServiceImpl(
           scenarioRun.csmSimulationRun ?: "null")
 
       // Change function name: Use csmSimulationRun here, not Simulation Run id
-     /* azureDataExplorerClient.deleteDataFromScenarioRunId(
-          scenarioRun.organizationId!!, scenarioRun.workspaceKey!!, scenarioRun.csmSimulationRun!!)*/
+      /* azureDataExplorerClient.deleteDataFromScenarioRunId(
+      scenarioRun.organizationId!!, scenarioRun.workspaceKey!!, scenarioRun.csmSimulationRun!!)*/
       logger.debug(
           "Scenario run {} deleted from ADX with csmSimulationRun {}",
           scenarioRun.id!!,
@@ -611,7 +613,17 @@ internal class ScenarioRunServiceImpl(
       phase: String?,
       csmSimulationRun: String?,
       checkDataIngestionState: Boolean? = null,
-  ): ScenarioRunState {/*
+  ): ScenarioRunState {
+
+    print(
+        organizationId +
+            workspaceKey +
+            scenarioRunId +
+            phase +
+            csmSimulationRun +
+            checkDataIngestionState)
+
+    /*
     logger.debug("Mapping phase $phase for job $scenarioRunId")
     return when (phase) {
       "Pending", "Running" -> ScenarioRunState.Running
@@ -652,7 +664,7 @@ internal class ScenarioRunServiceImpl(
         ScenarioRunState.Unknown
       }
     }*/
-      return ScenarioRunState.Successful
+    return ScenarioRunState.Successful
   }
 
   @EventListener(ScenarioRunEndTimeRequest::class)

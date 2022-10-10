@@ -13,6 +13,7 @@ import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
+import com.cosmotech.workspace.repositories.WorkspaceRepository
 import io.mockk.MockKAnnotations
 import io.mockk.confirmVerified
 import io.mockk.every
@@ -22,7 +23,6 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
-import java.lang.IllegalArgumentException
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -46,6 +46,8 @@ class WorkspaceServiceImplTests {
 
   @MockK private lateinit var azureStorageBlobBatchClient: BlobBatchClient
 
+  @MockK private lateinit var workspaceRepository: WorkspaceRepository
+
   @Suppress("unused") @MockK private lateinit var cosmosTemplate: CosmosTemplate
 
   @InjectMockKs private lateinit var workspaceServiceImpl: WorkspaceServiceImpl
@@ -60,7 +62,8 @@ class WorkspaceServiceImplTests {
                 organizationService,
                 solutionService,
                 azureStorageBlobServiceClient,
-                azureStorageBlobBatchClient))
+                azureStorageBlobBatchClient,
+                workspaceRepository))
     MockKAnnotations.init(this, relaxUnitFun = true)
   }
 

@@ -22,22 +22,24 @@ import com.cosmotech.organization.domain.OrganizationUser
 import com.cosmotech.organization.repositories.OrganizationRepository
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
-import io.redisearch.Schema
 import io.redisearch.SearchResult
 import io.redisearch.client.Client
-import io.redisearch.client.IndexDefinition
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import redis.clients.jedis.Jedis
 
-
 @Service
-//@ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
+// @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing =
+// true)
 @Suppress("TooManyFunctions")
-internal class OrganizationServiceImpl(private val userService: UserApiService,
-    var organizationRepository: OrganizationRepository) :
-    CsmPhoenixService(), OrganizationApiService {
+internal class OrganizationServiceImpl(
+    private val userService: UserApiService,
+    private val organizationRepository: OrganizationRepository
+) : CsmPhoenixService(), OrganizationApiService {
+
+  private final val jedis: Jedis = Jedis()
+  val client: Client = Client("solution_idx", jedis)
 
   override fun addOrReplaceUsersInOrganization(
       organizationId: String,
@@ -80,8 +82,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
     return organizationUserWithRightNames
   }
 
-  override fun findAllOrganizations() =
-      organizationRepository.findAll().toList()
+  override fun findAllOrganizations() = organizationRepository.findAll().toList()
 
   override fun findOrganizationById(organizationId: String): Organization =
       organizationRepository.findById(organizationId).orElseThrow()
@@ -136,7 +137,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
       val userIds = organization.users!!.mapNotNull { it.id }
       organization.users = mutableListOf()
 
-        organizationRepository.save(organization)
+      organizationRepository.save(organization)
       userIds.forEach {
         this.eventPublisher.publishEvent(UserRemovedFromOrganization(this, organizationId, it))
       }
@@ -148,7 +149,8 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
     if (organization.users?.removeIf { it.id == userId } != true) {
       throw CsmResourceNotFoundException("User '$userId' *not* found")
     } else {
-        organizationRepository.save(organization)     this.eventPublisher.publishEvent(UserRemovedFromOrganization(this, organizationId, userId))
+      organizationRepository.save(organization)
+      this.eventPublisher.publishEvent(UserRemovedFromOrganization(this, organizationId, userId))
     }
   }
 
@@ -206,7 +208,8 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
       hasChanged = true
     }
     return if (hasChanged) {
-      val responseEntity = organizationRepository.save(organization)      userIdsRemoved?.forEach {
+      val responseEntity = organizationRepository.save(organization)
+      userIdsRemoved?.forEach {
         this.eventPublisher.publishEvent(UserRemovedFromOrganization(this, organizationId, it))
       }
       organization.users?.forEach { user ->
@@ -261,7 +264,8 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
     }
     return if (hasChanged) {
       existingOrganization.services = existingServices
-      organizationRepository.save(existingOrganization)      existingOrganizationService
+      organizationRepository.save(existingOrganization)
+      existingOrganizationService
     } else {
       existingOrganizationService
     }
@@ -281,7 +285,8 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
 
     existingServices.tenantCredentials = existingTenantCredentials
     existingOrganization.services = existingServices
-   organizationRepository.save(existingOrganization)   return existingTenantCredentials?.toMap() ?: mapOf()
+    organizationRepository.save(existingOrganization)
+    return existingTenantCredentials?.toMap() ?: mapOf()
   }
 
   @EventListener(UserUnregistered::class)
@@ -339,6 +344,7 @@ internal class OrganizationServiceImpl(private val userService: UserApiService,
       throw CsmResourceNotFoundException(
           "User '${userUnregisteredForOrganization.userId}' *not* found")
     } else {
-      organizationRepository.save(organization)   }
+      organizationRepository.save(organization)
+    }
   }
 }
