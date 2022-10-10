@@ -345,7 +345,6 @@ internal class ScenarioServiceImpl(
                     "WHERE c.type = 'Scenario' " +
                     "AND c.workspaceId = @WORKSPACE_ID " +
                     "AND ( ARRAY_CONTAINS(c.security.accessControlList, { id: @ACL_USER}, true) " +
-                    "OR NOT IS_DEFINED(c.security) " +
                     "OR ARRAY_LENGTH(c.security.default) > 0 )",
                 listOf(
                     SqlParameter("@WORKSPACE_ID", workspaceId),
