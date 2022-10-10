@@ -449,7 +449,7 @@ paths:
               format: binary
             example: "writer"
       responses:
-        "200":
+        "201":
           description: The Workspace default visibility
           content:
             application/json:
@@ -498,7 +498,7 @@ paths:
               WorkspaceAccess:
                 $ref: '#/components/examples/BreweryWorkspaceAccessControl'
       responses:
-        "200":
+        "201":
           description: The Workspace access
           content:
             application/json:

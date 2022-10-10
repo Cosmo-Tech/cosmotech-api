@@ -389,14 +389,14 @@ paths:
           application/json:
             schema:
               type: string
-            example: "commonrolewriter"
+            example: "writer"
           application/yaml:
             schema:
               type: string
               format: binary
-            example: "commonrolewriter"
+            example: "writer"
       responses:
-        "200":
+        "201":
           description: The Organization default visibility
           content:
             application/json:
@@ -439,7 +439,7 @@ paths:
               OrganizationAccess:
                 $ref: '#/components/examples/BreweryOrganizationAccessControl'
       responses:
-        "200":
+        "201":
           description: The Organization access
           content:
             application/json:
@@ -706,6 +706,11 @@ components:
             accessControlList:
               - id: "bob.doe@cosmotech.com"
                 role: "writer"
+    BreweryDefaultSecurityRoleWriter:
+      summary: Brewery Scenario Writer default security
+      description: Brewery Scenario example
+      value:
+        default: "writer"
     Permissions:
       summary: Permissions
       description: Permissions for Organization
