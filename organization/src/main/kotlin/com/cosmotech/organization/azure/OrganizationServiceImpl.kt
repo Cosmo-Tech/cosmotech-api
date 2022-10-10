@@ -259,7 +259,7 @@ internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
         csmRbac.setUserRole(
             organization.getRbac(), organizationAccessControl.id, organizationAccessControl.role)
     organization.setRbac(rbacSecurity)
-    this.updateOrganization(organizationId, organization)
+    cosmosTemplate.upsertAndReturnEntity(coreOrganizationContainer, organization)
     val rbacAccessControl =
         csmRbac.getAccessControl(organization.getRbac(), organizationAccessControl.id)
     return OrganizationAccessControl(rbacAccessControl.id, rbacAccessControl.role)
