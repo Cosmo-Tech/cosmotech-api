@@ -7,9 +7,11 @@ import com.azure.cosmos.models.CosmosQueryRequestOptions
 import com.azure.cosmos.models.SqlParameter
 import com.azure.cosmos.models.SqlQuerySpec
 import com.cosmotech.api.azure.CsmAzureService
+import com.cosmotech.api.azure.findAll
 import com.cosmotech.api.azure.findByIdOrThrow
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
+import com.cosmotech.api.rbac.CsmAdmin
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.PERMISSION_READ
@@ -42,8 +44,10 @@ import org.springframework.stereotype.Service
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions")
-internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
-    CsmAzureService(), OrganizationApiService {
+internal class OrganizationServiceImpl(
+    private val csmRbac: CsmRbac,
+    private val csmAdmin: CsmAdmin
+) : CsmAzureService(), OrganizationApiService {
 
   private lateinit var coreOrganizationContainer: String
 
@@ -57,6 +61,10 @@ internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
 
   override fun findAllOrganizations(): List<Organization> {
     val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+    val isAdmin = csmAdmin.verifyCurrentRolesAdmin()
+    if (isAdmin) {
+      return cosmosTemplate.findAll(coreOrganizationContainer)
+    }
     return cosmosCoreDatabase
         .getContainer(this.coreOrganizationContainer)
         .queryItems(
