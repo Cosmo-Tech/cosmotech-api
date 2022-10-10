@@ -396,7 +396,7 @@ paths:
               format: binary
             example: "writer"
       responses:
-        "200":
+        "201":
           description: The Organization default visibility
           content:
             application/json:
@@ -439,7 +439,7 @@ paths:
               OrganizationAccess:
                 $ref: '#/components/examples/BreweryOrganizationAccessControl'
       responses:
-        "200":
+        "201":
           description: The Organization access
           content:
             application/json:
