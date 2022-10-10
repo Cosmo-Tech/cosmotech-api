@@ -597,7 +597,7 @@ paths:
               format: binary
             example: "writer"
       responses:
-        "200":
+        "201":
           description: The Scenario default visibility
           content:
             application/json:
@@ -654,7 +654,7 @@ paths:
               ScenarioAccess:
                 $ref: '#/components/examples/BreweryScenarioAccessControl'
       responses:
-        "200":
+        "201":
           description: The Scenario access
           content:
             application/json:
