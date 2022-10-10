@@ -879,7 +879,7 @@ internal class ScenarioServiceImpl(
         csmRbac.setUserRole(
             scenario.getRbac(), scenarioAccessControl.id, scenarioAccessControl.role)
     scenario.setRbac(rbacSecurity)
-    this.updateScenario(organizationId, workspaceId, scenarioId, scenario)
+    upsertScenarioData(organizationId, scenario, workspaceId)
     val rbacAccessControl = csmRbac.getAccessControl(scenario.getRbac(), scenarioAccessControl.id)
     return ScenarioAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
