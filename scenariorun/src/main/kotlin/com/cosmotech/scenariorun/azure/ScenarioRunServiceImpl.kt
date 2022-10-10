@@ -101,6 +101,7 @@ internal class ScenarioRunServiceImpl(
   }
 
   override fun deleteScenarioRun(organizationId: String, scenariorunId: String) {
+  override fun deleteScenarioRun(organizationId: String, scenariorunId: String) {
     val scenarioRun = this.findScenarioRunById(organizationId, scenariorunId)
     if (scenarioRun.ownerId != getCurrentAuthenticatedUserName()) {
       // TODO Only the owner or an admin should be able to perform this operation

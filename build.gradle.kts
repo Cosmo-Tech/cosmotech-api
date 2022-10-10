@@ -329,7 +329,8 @@ subprojects {
       outputDir.set(openApiServerSourcesGenerationDir)
       if (projectDirName.equals("connector") ||
           projectDirName.equals("organization") ||
-          projectDirName.equals("organization")) {
+          projectDirName.equals("solution") ||
+          projectDirName.equals("workspace")) {
         templateDir.set("${rootDir}/openapi/templates/kotlin-spring")
       }
       // project.logger.lifecycle("###########################
