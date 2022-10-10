@@ -63,7 +63,6 @@ internal class OrganizationServiceImpl(private val csmRbac: CsmRbac) :
             SqlQuerySpec(
                 "SELECT * FROM c " +
                     "WHERE ARRAY_CONTAINS(c.security.accessControlList, { id: @ACL_USER}, true)" +
-                    " OR NOT IS_DEFINED(c.security)" +
                     " OR ARRAY_LENGTH(c.security.default) > 0",
                 listOf(SqlParameter("@ACL_USER", currentUser))),
             CosmosQueryRequestOptions(),
