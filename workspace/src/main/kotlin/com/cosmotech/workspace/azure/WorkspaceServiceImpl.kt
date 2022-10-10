@@ -12,6 +12,7 @@ import com.azure.storage.blob.BlobServiceClient
 import com.azure.storage.blob.batch.BlobBatchClient
 import com.azure.storage.blob.models.DeleteSnapshotsOptionType
 import com.cosmotech.api.azure.CsmAzureService
+import com.cosmotech.api.azure.findAll
 import com.cosmotech.api.azure.findByIdOrThrow
 import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.events.DeleteHistoricalDataOrganization
@@ -70,12 +71,17 @@ internal class WorkspaceServiceImpl(
 
   override fun findAllWorkspaces(organizationId: String): List<Workspace> {
     val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
-    logger.debug("Getting workspaces for user ${currentUser}")
+    val organization = organizationService.findOrganizationById(organizationId)
+    logger.debug("Getting workspaces for user $currentUser")
+    val isAdmin = csmRbac.isAdmin(organization.getRbac(), currentUser, getCommonRolesDefinition())
+    if (isAdmin) {
+      return cosmosTemplate.findAll("${organizationId}_workspaces")
+    }
     val templateQuery =
         "SELECT * FROM c " +
             "WHERE ARRAY_CONTAINS(c.security.accessControlList, { id: @ACL_USER}, true)" +
             " OR ARRAY_LENGTH(c.security.default) > 0"
-    logger.debug("Template query: ${templateQuery}")
+    logger.debug("Template query: $templateQuery")
 
     return cosmosCoreDatabase
         .getContainer("${organizationId}_workspaces")
