@@ -74,7 +74,6 @@ internal class WorkspaceServiceImpl(
     val templateQuery =
         "SELECT * FROM c " +
             "WHERE ARRAY_CONTAINS(c.security.accessControlList, { id: @ACL_USER}, true)" +
-            " OR NOT IS_DEFINED(c.security)" +
             " OR ARRAY_LENGTH(c.security.default) > 0"
     logger.debug("Template query: ${templateQuery}")
 
