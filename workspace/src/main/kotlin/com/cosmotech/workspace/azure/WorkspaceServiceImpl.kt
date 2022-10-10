@@ -361,7 +361,7 @@ internal class WorkspaceServiceImpl(
         csmRbac.setUserRole(
             workspace.getRbac(), workspaceAccessControl.id, workspaceAccessControl.role)
     workspace.setRbac(rbacSecurity)
-    this.updateWorkspace(organizationId, workspaceId, workspace)
+    cosmosTemplate.upsertAndReturnEntity("${organizationId}_workspaces", workspace)
     var rbacAccessControl = csmRbac.getAccessControl(workspace.getRbac(), workspaceAccessControl.id)
     return WorkspaceAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
