@@ -64,6 +64,13 @@ allprojects {
     maven { url = uri("https://jitpack.io") }
   }
 
+  configurations {
+    implementation.configure {
+      exclude(module = "spring-boot-starter-tomcat")
+      exclude("org.apache.tomcat.embed")
+    }
+  }
+
   configure<SpotlessExtension> {
     isEnforceCheck = false
 
@@ -182,7 +189,7 @@ subprojects {
     implementation("org.springframework.boot:spring-boot-starter-web") {
       exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
     }
-    implementation("org.springframework.boot:spring-boot-starter-jetty")
+    implementation("org.springframework.boot:spring-boot-starter-undertow")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("javax.validation:validation-api:2.0.1.Final")
 
