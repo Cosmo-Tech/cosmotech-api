@@ -27,7 +27,7 @@ plugins {
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.13.6"
   id("com.diffplug.spotless") version "6.9.0"
-  id("org.springframework.boot") version "2.7.2" apply false
+  id("org.springframework.boot") version "2.7.0" apply false
   id("org.openapi.generator") version "5.4.0" apply false
   id("com.google.cloud.tools.jib") version "3.2.1" apply false
   id("io.gitlab.arturbosch.detekt") version "1.21.0"
@@ -62,6 +62,13 @@ allprojects {
     }
     mavenCentral()
     maven { url = uri("https://jitpack.io") }
+  }
+
+  configurations {
+    implementation.configure {
+      exclude(module = "spring-boot-starter-tomcat")
+      exclude("org.apache.tomcat.embed")
+    }
   }
 
   configure<SpotlessExtension> {
@@ -182,7 +189,7 @@ subprojects {
     implementation("org.springframework.boot:spring-boot-starter-web") {
       exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
     }
-    implementation("org.springframework.boot:spring-boot-starter-jetty")
+    implementation("org.springframework.boot:spring-boot-starter-undertow")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("javax.validation:validation-api:2.0.1.Final")
 
