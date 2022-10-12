@@ -491,7 +491,6 @@ Dataset -- "0..*" DatasetCompatibility : compatibility
 OrganizationSecurity -- "0..*" OrganizationAccessControl : accessControlList
 ScenarioRunStartContainers -- "0..*" ScenarioRunContainer : containers
 Workspace -- WorkspaceSolution : solution
-Workspace -- "0..*" WorkspaceUser : users
 Workspace -- WorkspaceWebApp : webApp
 Workspace -- WorkspaceSecurity : security
 
