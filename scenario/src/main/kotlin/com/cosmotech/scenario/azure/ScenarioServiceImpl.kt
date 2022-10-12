@@ -52,6 +52,7 @@ import com.cosmotech.scenario.domain.ScenarioDataDownloadInfo
 import com.cosmotech.scenario.domain.ScenarioDataDownloadJob
 import com.cosmotech.scenario.domain.ScenarioJobState
 import com.cosmotech.scenario.domain.ScenarioLastRun
+import com.cosmotech.scenario.domain.ScenarioRole
 import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
 import com.cosmotech.scenario.domain.ScenarioSecurity
 import com.cosmotech.scenario.domain.ScenarioValidationStatus
@@ -844,11 +845,11 @@ internal class ScenarioServiceImpl(
       organizationId: String,
       workspaceId: String,
       scenarioId: String,
-      scenarioRole: String
+      scenarioRole: ScenarioRole
   ): ScenarioSecurity {
     val scenario = findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
-    val rbacSecurity = csmRbac.setDefault(scenario.getRbac(), scenarioRole)
+    val rbacSecurity = csmRbac.setDefault(scenario.getRbac(), scenarioRole.role)
     scenario.setRbac(rbacSecurity)
     this.updateScenario(organizationId, workspaceId, scenarioId, scenario)
     return scenario.security as ScenarioSecurity

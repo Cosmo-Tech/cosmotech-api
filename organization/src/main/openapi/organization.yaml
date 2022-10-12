@@ -388,13 +388,17 @@ paths:
         content:
           application/json:
             schema:
-              type: string
-            example: "writer"
+              $ref: '#/components/schemas/OrganizationRole'
+            examples:
+              BreweryOrganizationRole:
+                $ref: '#/components/examples/BreweryOrganizationRole'
           application/yaml:
             schema:
               type: string
               format: binary
-            example: "writer"
+            examples:
+              BreweryOrganizationRole:
+                $ref: '#/components/examples/BreweryOrganizationRole'
       responses:
         "201":
           description: The Organization default visibility
@@ -583,6 +587,15 @@ components:
       required:
         - id
         - role
+    OrganizationRole:
+      type: object
+      description: the Organization Role
+      properties:
+        role:
+          type: string
+          description: the Organization Role
+      required:
+        - role
     OrganizationServices:
       type: object
       description: the cloud service resources of the Organization
@@ -639,9 +652,9 @@ components:
           default: reader
           accessControlList:
             - id: "jane.doe@cosmotech.com"
-              role: "writer"
+              role: "editor"
             - id: "john.doe@cosmotech.com"
-              role: "reader"
+              role: "viewer"
     CosmoOrganization:
       summary: Cosmo Tech Organization example
       description: Cosmo Tech Organization example
@@ -653,23 +666,28 @@ components:
           default: reader
           accessControlList:
             - id: "jane.doe@cosmotech.com"
-              role: "writer"
+              role: "editor"
             - id: "john.doe@cosmotech.com"
-              role: "reader"
+              role: "viewer"
     BreweryOrganizationSecurity:
       summary: Brewery Organization security
       description: Brewery Organization security example
       value:
-        default: "reader"
+        default: "viewer"
         accessControlList:
           - id: "bob@mycosmocompany.com"
-            role: "writer"
+            role: "editor"
     BreweryOrganizationAccessControl:
       summary: Set an access control.
       description: Set an access control for a user to an organization.
       value:
         id: "bob@mycompany.com"
-        role: "writer"
+        role: "editor"
+    BreweryOrganizationRole:
+      summary: Set an Organization Role.
+      description: Set an role for a user to an organization.
+      value:
+        role: "editor"
     CosmoThreeUsers:
       summary: Cosmo Tech Organization with 3 users
       description: Cosmo Tech Organization 3 users example
@@ -680,11 +698,11 @@ components:
           default: reader
           accessControlList:
             - id: "bob.doe@cosmotech.com"
-              role: "writer"
+              role: "viewer"
             - id: "alice.doe@cosmotech.com"
-              role: "reader"
+              role: "viewer"
             - id: "xavier.doe@cosmotech.com"
-              role: "writer"
+              role: "editor"
     TwoOrganizations:
       summary: Two Orgnizations
       description: Two Organizations example
@@ -696,21 +714,21 @@ components:
             default: reader
             accessControlList:
               - id: "bob.doe@cosmotech.com"
-                role: "writer"
+                role: "editor"
               - id: "alice.doe@cosmotech.com"
-                role: "reader"
+                role: "viewer"
         - id: "2"
           name: Phoenix
           security:
             default: rolereader
             accessControlList:
               - id: "bob.doe@cosmotech.com"
-                role: "writer"
+                role: "editor"
     BreweryDefaultSecurityRoleWriter:
       summary: Brewery Scenario Writer default security
       description: Brewery Scenario example
       value:
-        default: "writer"
+        default: "editor"
     Permissions:
       summary: Permissions
       description: Permissions for Organization

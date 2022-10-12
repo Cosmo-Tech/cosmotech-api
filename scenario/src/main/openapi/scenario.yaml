@@ -589,13 +589,17 @@ paths:
         content:
           application/json:
             schema:
-              type: string
-            example: "writer"
+              $ref: '#/components/schemas/ScenarioRole'
+            examples:
+              BreweryScenarioRole:
+                $ref: '#/components/examples/BreweryScenarioRole'
           application/yaml:
             schema:
               type: string
               format: binary
-            example: "writer"
+            examples:
+              BreweryScenarioRole:
+                $ref: '#/components/examples/BreweryScenarioRole'
       responses:
         "201":
           description: The Scenario default visibility
@@ -899,6 +903,15 @@ components:
       required:
         - id
         - role
+    ScenarioRole:
+      type: object
+      description: the Scenario Role
+      properties:
+        role:
+          type: string
+          description: the Scenario Role
+      required:
+        - role
     ScenarioLastRun:
       type: object
       properties:
@@ -1034,7 +1047,7 @@ components:
             value: ""
         security:
           default:
-            - "reader"
+            - "viewer"
           accessControlList:
             - id: "alice.doe@cosmotech.com"
               roles:
@@ -1082,7 +1095,7 @@ components:
           workflowName: "workflow-s-dwpxbzmdxn-zkvd7"
         security:
           default:
-            - "reader"
+            - "viewer"
           accessControlList:
             - id: "alice.doe@cosmotech.com"
               roles:
@@ -1115,7 +1128,7 @@ components:
               value: ""
           security:
             default:
-              - "reader"
+              - "viewer"
             accessControlList:
               - id: "alice.doe@cosmotech.com"
                 roles:
@@ -1150,7 +1163,7 @@ components:
             workflowName: "workflow-s-dwpxbzmdxn-zkvd7"
           security:
             default:
-              - "reader"
+              - "viewer"
             accessControlList:
               - id: "alice.doe@cosmotech.com"
                 roles:
@@ -1185,7 +1198,7 @@ components:
             workflowName: "workflow-s-dwpxbzmdxn-zkvd7"
           security:
             default:
-              - "reader"
+              - "viewer"
             accessControlList:
               - id: "alice.doe@cosmotech.com"
                 roles:
@@ -1223,7 +1236,7 @@ components:
             value: ""
         security:
           default:
-            - "reader"
+            - "viewer"
           accessControlList:
             - id: "alice.doe@cosmotech.com"
               roles:
@@ -1267,7 +1280,7 @@ components:
               inherited: true
           security:
             default:
-              - "reader"
+              - "viewer"
             accessControlList:
               - id: "alice.doe@cosmotech.com"
                 roles:
@@ -1301,7 +1314,7 @@ components:
             workflowName: "workflow-s-dwpxbzmdxn-zkvd7"
           security:
             default:
-              - "reader"
+              - "viewer"
             accessControlList:
               - id: "alice.doe@cosmotech.com"
                 roles:
@@ -1334,7 +1347,7 @@ components:
             workflowName: "workflow-s-dwpxbzmdxn-zkvd7"
           security:
             default:
-              - "reader"
+              - "viewer"
             accessControlList:
               - id: "alice.doe@cosmotech.com"
                 roles:
@@ -1360,10 +1373,15 @@ components:
       summary: Brewery Scenario security
       description: Brewery Scenario security example
       value:
-        default: "reader"
+        default: "viewer"
         accessControlList:
           - id: "alice.doe@cosmotech.com"
-            role: "writer"
+            role: "editor"
+    BreweryScenarioRole:
+      summary: Set a Scenario Role.
+      description: Set a Role for a User to a Scenario.
+      value:
+        role: "editor"
     BreweryDefaultSecurityRoleNone:
       summary: Brewery Scenario Writer default security
       description: Brewery Scenario example
@@ -1373,10 +1391,10 @@ components:
       summary: Brewery Scenario Writer default security
       description: Brewery Scenario example
       value:
-        default: "writer"
+        default: "editor"
     BreweryScenarioAccessControl:
       summary: Set an access control.
       description: Set an access control for a user to a workspace.
       value:
         id: "bob.doe@cosmotech.com"
-        role: "writer"
+        role: "editor"

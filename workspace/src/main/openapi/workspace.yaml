@@ -441,13 +441,17 @@ paths:
         content:
           application/json:
             schema:
-              type: string
-            example: "writer"
+              $ref: '#/components/schemas/WorkspaceRole'
+            examples:
+              BreweryWorkspaceRole:
+                $ref: '#/components/examples/BreweryWorkspaceRole'
           application/yaml:
             schema:
               type: string
               format: binary
-            example: "writer"
+            examples:
+              BreweryWorkspaceRole:
+                $ref: '#/components/examples/BreweryWorkspaceRole'
       responses:
         "201":
           description: The Workspace default visibility
@@ -686,6 +690,15 @@ components:
       required:
         - id
         - role
+    WorkspaceRole:
+      type: object
+      description: the Workspace Role
+      properties:
+        role:
+          type: string
+          description: the Workspace Role
+      required:
+        - role
     WorkspaceFile:
       type: object
       description: a Workspace File resource
@@ -749,7 +762,7 @@ components:
           default: reader
           accessControlList:
             - id: "bob.doe@cosmotech.com"
-              role: "writer"
+              role: "editor"
     BreweryWorkspaceCreateSecurity:
       summary: Brewery Workspace Create with security
       description: Brewery Workspace Create with default security
@@ -770,7 +783,7 @@ components:
           default: reader
           accessControlList:
             - id: "bob.doe@cosmotech.com"
-              role: "writer"
+              role: "editor"
     BreweryWorkspace:
       summary: Brewery Workspace
       description: Brewery Workspace example
@@ -790,7 +803,7 @@ components:
           defaultRunTemplateDataset:
             1: "1"
         security:
-          default: "reader"
+          default: "viewer"
           accessControlList:
             - id: "alice.doe@cosmotech.com"
               role: "admin"
@@ -813,7 +826,7 @@ components:
             defaultRunTemplateDataset:
               1: "1"
           security:
-            default: "reader"
+            default: "viewer"
             accessControlList:
               - id: "alice.doe@cosmotech.com"
                 role: "admin"
@@ -841,7 +854,7 @@ components:
           defaultRunTemplateDataset:
             1: "1"
         security:
-          default: "reader"
+          default: "viewer"
           accessControlList:
             - id: "alice.doe@cosmotech.com"
               role: "admin"
@@ -849,21 +862,26 @@ components:
       summary: Brewery Workspace security
       description: Brewery Workspace security example
       value:
-        default: "reader"
+        default: "viewer"
         accessControlList:
           - id: "alice.doe@cosmotech.com"
-            role: "writer"
+            role: "editor"
     BreweryWorkspaceAccessControl:
       summary: Set an access control.
       description: Set an access control for a user to a workspace.
       value:
         id: "bob.doe@cosmotech.com"
-        role: "writer"
+        role: "editor"
+    BreweryWorkspaceRole:
+      summary: Set a Workspace Role.
+      description: Set a Role for a user to a workspace.
+      value:
+        role: "editor"
     BreweryDefaultSecurityRoleWriter:
       summary: Brewery Workspace Writer default security
       description: Brewery Workspace example
       value:
-        default: "writer"
+        default: "editor"
     BreweryWorkspaceFile:
       summary: Brewery Workspace file example
       description: Brewery Workspace file uploaded return example

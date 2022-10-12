@@ -394,7 +394,7 @@ null (empty response body)
 
 <a name="setWorkspaceDefaultSecurity"></a>
 # **setWorkspaceDefaultSecurity**
-> WorkspaceSecurity setWorkspaceDefaultSecurity(organization\_id, workspace\_id, body)
+> WorkspaceSecurity setWorkspaceDefaultSecurity(organization\_id, workspace\_id, WorkspaceRole)
 
 set the Workspace default security
 
@@ -404,7 +404,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **workspace\_id** | **String**| the Workspace identifier | [default to null]
- **body** | **String**| the new Workspace default security. |
+ **WorkspaceRole** | [**WorkspaceRole**](../Models/WorkspaceRole.md)| the new Workspace default security. |
 
 ### Return type
 
