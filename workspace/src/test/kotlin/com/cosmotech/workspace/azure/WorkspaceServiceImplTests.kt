@@ -8,6 +8,7 @@ import com.azure.storage.blob.BlobServiceClient
 import com.azure.storage.blob.batch.BlobBatchClient
 import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.utils.KubernetesClient
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.user.api.UserApiService
@@ -43,6 +44,7 @@ class WorkspaceServiceImplTests {
   @MockK private lateinit var solutionService: SolutionApiService
   @MockK private lateinit var organizationService: OrganizationApiService
   @MockK private lateinit var azureStorageBlobServiceClient: BlobServiceClient
+  @MockK private lateinit var kubernetesClient: KubernetesClient
 
   @MockK private lateinit var azureStorageBlobBatchClient: BlobBatchClient
 
@@ -60,7 +62,8 @@ class WorkspaceServiceImplTests {
                 organizationService,
                 solutionService,
                 azureStorageBlobServiceClient,
-                azureStorageBlobBatchClient))
+                azureStorageBlobBatchClient,
+                kubernetesClient))
     MockKAnnotations.init(this, relaxUnitFun = true)
   }
 
