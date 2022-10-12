@@ -272,7 +272,7 @@ null (empty response body)
 
 <a name="setOrganizationDefaultSecurity"></a>
 # **setOrganizationDefaultSecurity**
-> OrganizationSecurity setOrganizationDefaultSecurity(organization\_id, body)
+> OrganizationSecurity setOrganizationDefaultSecurity(organization\_id, OrganizationRole)
 
 set the Organization default security
 
@@ -281,7 +281,7 @@ set the Organization default security
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
- **body** | **String**| the new Organization default security. |
+ **OrganizationRole** | [**OrganizationRole**](../Models/OrganizationRole.md)| the new Organization default security. |
 
 ### Return type
 
