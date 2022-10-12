@@ -25,6 +25,7 @@ import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.scenario.ScenarioRunMetaData
 import com.cosmotech.api.scenariorun.DataIngestionState
+import com.cosmotech.api.utils.KubernetesClient
 import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
@@ -75,7 +76,8 @@ internal class ScenarioRunServiceImpl(
     private val workspaceService: WorkspaceApiService,
     private val scenarioApiService: ScenarioApiService,
     private val azureDataExplorerClient: AzureDataExplorerClient,
-    private val azureEventHubsClient: AzureEventHubsClient
+    private val azureEventHubsClient: AzureEventHubsClient,
+    private val kubernetesClient: KubernetesClient
 ) : CsmAzureService(), ScenariorunApiService {
 
   private fun ScenarioRun.asMapWithAdditionalData(workspaceId: String? = null): Map<String, Any> {
@@ -771,11 +773,13 @@ internal class ScenarioRunServiceImpl(
 
     when (eventBus.authentication.strategy) {
       SHARED_ACCESS_POLICY -> {
+        val (name, key) = kubernetesClient.getSecretFromKubernetes(eventHubNamespace, "phoenix")
+
         azureEventHubsClient.sendMetaData(
             baseHostName,
             eventHubName,
             eventBus.authentication.sharedAccessPolicy?.namespace?.name!!,
-            eventBus.authentication.sharedAccessPolicy?.namespace?.key!!,
+            key,
             scenarioMetaData)
       }
       TENANT_CLIENT_CREDENTIALS -> {
