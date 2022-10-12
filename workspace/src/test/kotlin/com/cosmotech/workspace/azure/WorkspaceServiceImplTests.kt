@@ -12,6 +12,7 @@ import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
+import com.cosmotech.api.utils.KubernetesClient
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.workspace.domain.Workspace
@@ -41,6 +42,7 @@ class WorkspaceServiceImplTests {
   @RelaxedMockK private lateinit var organizationService: OrganizationApiService
   @MockK private lateinit var azureStorageBlobServiceClient: BlobServiceClient
   @RelaxedMockK private lateinit var csmPlatformProperties: CsmPlatformProperties
+  @MockK private lateinit var kubernetesClient: KubernetesClient
 
   @MockK private lateinit var azureStorageBlobBatchClient: BlobBatchClient
 
@@ -63,6 +65,7 @@ class WorkspaceServiceImplTests {
                 azureStorageBlobBatchClient,
                 csmRbac,
                 resourceScanner,
+                kubernetesClient,
             ))
     mockkStatic(::getCurrentAuthenticatedMail)
     every { getCurrentAuthenticatedMail(csmPlatformProperties) } returns "dummy@cosmotech.com"

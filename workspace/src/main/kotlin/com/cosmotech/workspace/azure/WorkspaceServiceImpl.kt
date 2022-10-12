@@ -34,6 +34,8 @@ import com.cosmotech.api.rbac.getPermissions
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
 import com.cosmotech.api.utils.ResourceScanner
+import com.cosmotech.api.utils.KubernetesClient
+import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -43,6 +45,7 @@ import com.cosmotech.organization.azure.getRbac
 import com.cosmotech.organization.azure.setRbac
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.workspace.api.WorkspaceApiService
+import com.cosmotech.workspace.domain.KubernetesDedicatedEventHubSecret
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceFile
@@ -72,6 +75,7 @@ internal class WorkspaceServiceImpl(
     private val azureStorageBlobBatchClient: BlobBatchClient,
     private val csmRbac: CsmRbac,
     private val resourceScanner: ResourceScanner,
+    private val kubernetesClient: KubernetesClient,
 ) : CsmAzureService(), WorkspaceApiService {
 
   override fun findAllWorkspaces(organizationId: String): List<Workspace> {
@@ -288,6 +292,22 @@ internal class WorkspaceServiceImpl(
     return getWorkspaceFileResources(organizationId, workspaceId)
         .mapNotNull { it.filename?.removePrefix("${workspaceId.sanitizeForAzureStorage()}/") }
         .map { WorkspaceFile(fileName = it) }
+  }
+
+  override fun createNamespacedSecretIntoKubernetes(
+      organizationId: String,
+      workspaceId: String,
+      kubernetesDedicatedEventHubSecret: KubernetesDedicatedEventHubSecret
+  ) {
+    val workspaceKey = findWorkspaceById(organizationId, workspaceId).key
+    val secretName = "${organizationId}-${workspaceKey}"
+    val eventBus = csmPlatformProperties.azure?.eventBus!!
+    kubernetesClient.createSecretIntoKubernetes(
+        secretName,
+        kubernetesDedicatedEventHubSecret.namespace,
+        Pair(
+            eventBus.authentication.sharedAccessPolicy?.namespace?.name!!,
+            kubernetesDedicatedEventHubSecret.secretKey))
   }
 
   @EventListener(DeleteHistoricalDataOrganization::class)

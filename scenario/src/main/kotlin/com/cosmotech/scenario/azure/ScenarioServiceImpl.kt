@@ -37,6 +37,7 @@ import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.getScenarioRolesDefinition
 import com.cosmotech.api.scenario.ScenarioMetaData
+import com.cosmotech.api.utils.KubernetesClient
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
@@ -84,6 +85,8 @@ internal class ScenarioServiceImpl(
     private val azureDataExplorerClient: AzureDataExplorerClient,
     private val azureEventHubsClient: AzureEventHubsClient,
     private val csmRbac: CsmRbac
+    private val azureEventHubsClient: AzureEventHubsClient,
+    private val kubernetesClient: KubernetesClient
 ) : CsmAzureService(), ScenarioApiService {
 
   val scenarioPermissions = getScenarioRolesDefinition()
@@ -184,7 +187,7 @@ internal class ScenarioServiceImpl(
     return scenarioToSave
   }
 
-  @Suppress("NestedBlockDepth")
+  @Suppress("NestedBlockDepth", "UnusedPrivateMember")
   private fun handleScenarioRunTemplateParametersValues(
       parentId: String?,
       solution: Solution?,
@@ -720,11 +723,13 @@ internal class ScenarioServiceImpl(
 
     when (eventBus.authentication.strategy) {
       SHARED_ACCESS_POLICY -> {
+        val (name, key) = kubernetesClient.getSecretFromKubernetes(eventHubNamespace, "phoenix")
+
         azureEventHubsClient.sendMetaData(
             baseHostName,
             eventHubName,
             eventBus.authentication.sharedAccessPolicy?.namespace?.name!!,
-            eventBus.authentication.sharedAccessPolicy?.namespace?.key!!,
+            key,
             scenarioMetaData)
       }
       TENANT_CLIENT_CREDENTIALS -> {

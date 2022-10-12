@@ -621,8 +621,41 @@ paths:
                   - alice@mycompany.com
                   - bob@mycompany.com
         "404":
-          description: the Workspace specified is unknown or you don't have access to it
-
+          description: the Workspace or the User specified is unknown or you don't have access to them
+  /organizations/{organization_id}/workspaces/{workspace_id}/secret:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: createNamespacedSecretIntoKubernetes
+      tags:
+        - workspace
+      summary: Create a namespaced secret into Kubernetes
+      requestBody:
+        description: the definition of the secret
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KubernetesDedicatedEventHubSecret'
+            examples:
+              Workspace:
+                $ref: '#/components/examples/SharedAccessPolicy'
+      responses:
+        "201":
+          description: Request succeeded
+        "404":
+          description: the Workspace or the User specified is unknown or you don't have access to them
 components:
   securitySchemes:
     oAuth2AuthCode:
@@ -768,6 +801,19 @@ components:
           additionalProperties: true
       # required:
         # - solutionId
+    KubernetesDedicatedEventHubSecret:
+      type: object
+      description: the secret definition
+      properties:
+        namespace:
+          type: string
+          description: the namepace in which the secret will be created
+        secret_key:
+          type: string
+          description: the shared access key
+      required:
+        - namespace
+        - secret_key
   examples:
     BreweryWorkspaceCreateIn:
       summary: Brewery Workspace Create input parameters example
@@ -921,3 +967,9 @@ components:
         - fileName: myData.csv
         - fileName: myData2.csv
         - fileName: myData3.csv
+    SharedAccessPolicy:
+      summary: a shared access policy
+      description: a shared policy example
+      value:
+        namespace: phoenix
+        secret_key: xxx
