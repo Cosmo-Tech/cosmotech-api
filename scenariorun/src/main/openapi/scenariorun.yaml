@@ -17,7 +17,7 @@ tags:
     description: ScenarioRun Management
 
 paths:
-  /organizations/{organization_id}/scenarioruns/deletehistoricaldata:
+  /organizations/{organization_id}/scenarioruns/historicaldata:
     parameters:
       - name: organization_id
         in: path
@@ -29,7 +29,7 @@ paths:
       operationId: deleteHistoricalDataOrganization
       tags:
         - scenariorun
-      summary: Delete all historical ScenarioRuns in the database
+      summary: Delete all historical ScenarioRuns in the Organization
       responses:
         "204":
           description: Request succeeded
@@ -37,6 +37,32 @@ paths:
           description: Bad request
         "404":
           description: the Organization specified is unknown or you don't have access to it
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarioruns/historicaldata:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+    delete:
+      operationId: deleteHistoricalDataWorkspace
+      tags:
+        - scenariorun
+      summary: Delete all historical ScenarioRuns in the Workspace
+      responses:
+        "204":
+          description: Request succeeded
+        "400":
+          description: Bad request
+        "404":
+          description: the Organization or Workspace specified is unknown or you don't have access to it
   /organizations/{organization_id}/scenarioruns/search:
     parameters:
       - name: organization_id
