@@ -27,7 +27,7 @@ Method | HTTP request | Description
 # **addWorkspaceAccessControl**
 > WorkspaceAccessControl addWorkspaceAccessControl(organization\_id, workspace\_id, WorkspaceAccessControl)
 
-Add (or replace) users to the Workspace specified
+add a control acccess to the Workspace
 
 ### Parameters
 
@@ -35,7 +35,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **workspace\_id** | **String**| the Workspace identifier | [default to null]
- **WorkspaceUser** | [**List**](../Models/WorkspaceUser.md)| the Users to add. Any User with the same ID is overwritten |
+ **WorkspaceAccessControl** | [**WorkspaceAccessControl**](../Models/WorkspaceAccessControl.md)| the new Workspace security access to add. |
 
 ### Return type
 
@@ -47,7 +47,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="createWorkspace"></a>
@@ -263,7 +263,7 @@ Name | Type | Description  | Notes
 # **getWorkspaceAccessControl**
 > WorkspaceAccessControl getWorkspaceAccessControl(organization\_id, workspace\_id, identity\_id)
 
-Remove all users from the Workspace specified
+get a control acccess for the Workspace
 
 ### Parameters
 
@@ -271,6 +271,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **workspace\_id** | **String**| the Workspace identifier | [default to null]
+ **identity\_id** | **String**| the User identifier | [default to null]
 
 ### Return type
 
@@ -376,7 +377,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **workspace\_id** | **String**| the Workspace identifier | [default to null]
- **user\_id** | **String**| the User identifier | [default to null]
+ **identity\_id** | **String**| the User identifier | [default to null]
 
 ### Return type
 
