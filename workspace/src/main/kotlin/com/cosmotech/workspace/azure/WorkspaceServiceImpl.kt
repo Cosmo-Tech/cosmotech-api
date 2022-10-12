@@ -2,11 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.workspace.azure
 
-import com.azure.spring.autoconfigure.storage.resource.AzureStorageResourcePatternResolver
-import com.azure.spring.autoconfigure.storage.resource.BlobStorageResource
-import com.azure.storage.blob.BlobServiceClient
-import com.azure.storage.blob.batch.BlobBatchClient
-import com.azure.storage.blob.models.DeleteSnapshotsOptionType
 import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.events.DeleteHistoricalDataOrganization
@@ -44,8 +39,6 @@ internal class WorkspaceServiceImpl(
     private val userService: UserApiService,
     private val organizationService: OrganizationApiService,
     private val solutionService: SolutionApiService,
-    private val azureStorageBlobServiceClient: BlobServiceClient,
-    private val azureStorageBlobBatchClient: BlobBatchClient,
     private val workspaceRepository: WorkspaceRepository,
 ) : CsmPhoenixService(), WorkspaceApiService {
 
@@ -142,20 +135,20 @@ internal class WorkspaceServiceImpl(
 
     GlobalScope.launch {
       // TODO Consider using a smaller coroutine scope
-      val workspaceFiles =
+      val workspaceFiles = listOf<WorkspaceFile>() /*=
           getWorkspaceFileResources(organizationId, workspaceId).map { it.url }.map {
             it.toExternalForm()
-          }
+          }*/
       if (workspaceFiles.isEmpty()) {
         logger.debug("No file to delete for workspace $workspaceId")
       } else {
-        azureStorageBlobBatchClient.deleteBlobs(workspaceFiles, DeleteSnapshotsOptionType.INCLUDE)
+        /*azureStorageBlobBatchClient.deleteBlobs(workspaceFiles, DeleteSnapshotsOptionType.INCLUDE)
             .forEach { response ->
               logger.debug(
                   "Deleting blob with URL {} completed with status code {}",
                   response.request.url,
                   response.statusCode)
-            }
+            }*/
       }
     }
   }
@@ -240,10 +233,10 @@ internal class WorkspaceServiceImpl(
         workspace.id,
         workspace.name,
         fileName)
-    azureStorageBlobServiceClient
+    /*azureStorageBlobServiceClient
         .getBlobContainerClient(organizationId.sanitizeForAzureStorage())
         .getBlobClient("${workspaceId.sanitizeForAzureStorage()}/${fileName}")
-        .delete()
+        .delete()*/
   }
 
   override fun downloadWorkspaceFile(
@@ -296,10 +289,10 @@ internal class WorkspaceServiceImpl(
       }
     }
 
-    azureStorageBlobServiceClient
+    /*azureStorageBlobServiceClient
         .getBlobContainerClient(organizationId.sanitizeForAzureStorage())
         .getBlobClient("${workspaceId.sanitizeForAzureStorage()}/$fileRelativeDestinationBuilder")
-        .upload(file.inputStream, file.contentLength(), overwrite)
+        .upload(file.inputStream, file.contentLength(), overwrite)*/
     return WorkspaceFile(fileName = fileRelativeDestinationBuilder.toString())
   }
 
@@ -309,9 +302,9 @@ internal class WorkspaceServiceImpl(
   ): List<WorkspaceFile> {
     val workspace = findWorkspaceById(organizationId, workspaceId)
     logger.debug("List all files for workspace #{} ({})", workspace.id, workspace.name)
-    return getWorkspaceFileResources(organizationId, workspaceId)
+    return listOf(WorkspaceFile())/*getWorkspaceFileResources(organizationId, workspaceId)
         .mapNotNull { it.filename?.removePrefix("${workspaceId.sanitizeForAzureStorage()}/") }
-        .map { WorkspaceFile(fileName = it) }
+        .map { WorkspaceFile(fileName = it) }*/
   }
 
   @EventListener(DeleteHistoricalDataOrganization::class)
@@ -342,11 +335,11 @@ internal class WorkspaceServiceImpl(
     }
   }*/
 
-  private fun getWorkspaceFileResources(
+  /*private fun getWorkspaceFileResources(
       organizationId: String,
       workspaceId: String
   ): List<BlobStorageResource> =
       AzureStorageResourcePatternResolver(azureStorageBlobServiceClient)
           .getResources("azure-blob://$organizationId/$workspaceId/**/*".sanitizeForAzureStorage())
-          .map { it as BlobStorageResource }
+          .map { it as BlobStorageResource }*/
 }

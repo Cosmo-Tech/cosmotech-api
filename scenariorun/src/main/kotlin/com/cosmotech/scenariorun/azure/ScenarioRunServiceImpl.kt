@@ -65,11 +65,8 @@ private const val MIN_SDK_VERSION_MINOR = 5
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions")
 internal class ScenarioRunServiceImpl(
-    private val containerFactory: ContainerFactory,
     private val workflowService: WorkflowService,
     private val workspaceService: WorkspaceApiService,
-    private val azureDataExplorerClient: AzureDataExplorerClient,
-    private val azureEventHubsClient: AzureEventHubsClient
 ) : CsmAzureService(), ScenariorunApiService {
 
   private fun ScenarioRun.asMapWithAdditionalData(workspaceId: String? = null): Map<String, Any> {
