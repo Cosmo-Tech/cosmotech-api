@@ -33,6 +33,7 @@ import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.ComponentRolePermissions
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
+import com.cosmotech.organization.domain.OrganizationRole
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.organization.domain.OrganizationService
 import com.cosmotech.organization.domain.OrganizationServices
@@ -236,13 +237,13 @@ internal class OrganizationServiceImpl(
 
   override fun setOrganizationDefaultSecurity(
       organizationId: String,
-      organizationRole: String
+      organizationRole: OrganizationRole
   ): OrganizationSecurity {
     val organization = findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_WRITE_SECURITY)
-    val rbacSecurity = csmRbac.setDefault(organization.getRbac(), organizationRole)
+    val rbacSecurity = csmRbac.setDefault(organization.getRbac(), organizationRole.role)
     organization.setRbac(rbacSecurity)
-    this.updateOrganization(organizationId, organization)
+    cosmosTemplate.upsertAndReturnEntity(coreOrganizationContainer, organization)
     return organization.security as OrganizationSecurity
   }
 
@@ -277,7 +278,7 @@ internal class OrganizationServiceImpl(
     csmRbac.verify(organization.getRbac(), PERMISSION_WRITE_SECURITY)
     val rbacSecurity = csmRbac.removeUser(organization.getRbac(), identityId)
     organization.setRbac(rbacSecurity)
-    this.updateOrganization(organizationId, organization)
+    cosmosTemplate.upsertAndReturnEntity(coreOrganizationContainer, organization)
   }
 
   override fun getOrganizationSecurityUsers(organizationId: String): List<String> {

@@ -43,6 +43,7 @@ import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceFile
+import com.cosmotech.workspace.domain.WorkspaceRole
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.fasterxml.jackson.databind.JsonNode
 import kotlinx.coroutines.GlobalScope
@@ -334,13 +335,13 @@ internal class WorkspaceServiceImpl(
   override fun setWorkspaceDefaultSecurity(
       organizationId: String,
       workspaceId: String,
-      workspaceRole: String
+      workspaceRole: WorkspaceRole
   ): WorkspaceSecurity {
     val workspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE_SECURITY)
-    val rbacSecurity = csmRbac.setDefault(workspace.getRbac(), workspaceRole)
+    val rbacSecurity = csmRbac.setDefault(workspace.getRbac(), workspaceRole.role)
     workspace.setRbac(rbacSecurity)
-    this.updateWorkspace(organizationId, workspaceId, workspace)
+    cosmosTemplate.upsertAndReturnEntity("${organizationId}_workspaces", workspace)
     return workspace.security as WorkspaceSecurity
   }
 
@@ -380,7 +381,7 @@ internal class WorkspaceServiceImpl(
     csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE_SECURITY)
     val rbacSecurity = csmRbac.removeUser(workspace.getRbac(), identityId)
     workspace.setRbac(rbacSecurity)
-    this.updateWorkspace(organizationId, workspaceId, workspace)
+    cosmosTemplate.upsertAndReturnEntity("${organizationId}_workspaces", workspace)
   }
 
   override fun getWorkspaceSecurityUsers(
