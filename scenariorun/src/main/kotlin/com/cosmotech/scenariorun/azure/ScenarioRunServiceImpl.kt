@@ -14,6 +14,7 @@ import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatfo
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
 import com.cosmotech.api.events.DeleteHistoricalDataOrganization
 import com.cosmotech.api.events.DeleteHistoricalDataScenario
+import com.cosmotech.api.events.DeleteHistoricalDataWorkspace
 import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
 import com.cosmotech.api.events.ScenarioDataDownloadRequest
 import com.cosmotech.api.events.ScenarioDeleted
@@ -185,6 +186,12 @@ internal class ScenarioRunServiceImpl(
   override fun deleteHistoricalDataOrganization(organizationId: String) {
     this.eventPublisher.publishEvent(
         DeleteHistoricalDataOrganization(this, organizationId = organizationId))
+  }
+
+  override fun deleteHistoricalDataWorkspace(organizationId: String, workspaceId: String) {
+    this.eventPublisher.publishEvent(
+        DeleteHistoricalDataWorkspace(
+            this, organizationId = organizationId, workspaceId = workspaceId))
   }
 
   override fun findScenarioRunById(organizationId: String, scenariorunId: String) =
