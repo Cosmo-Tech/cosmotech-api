@@ -546,7 +546,7 @@ null (empty response body)
 
 <a name="setScenarioDefaultSecurity"></a>
 # **setScenarioDefaultSecurity**
-> ScenarioSecurity setScenarioDefaultSecurity(organization\_id, workspace\_id, scenario\_id, body)
+> ScenarioSecurity setScenarioDefaultSecurity(organization\_id, workspace\_id, scenario\_id, ScenarioRole)
 
 set the Scenario default security
 
@@ -557,7 +557,7 @@ Name | Type | Description  | Notes
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **workspace\_id** | **String**| the Workspace identifier | [default to null]
  **scenario\_id** | **String**| the Scenario identifier | [default to null]
- **body** | **String**| the new Scenario default security. |
+ **ScenarioRole** | [**ScenarioRole**](../Models/ScenarioRole.md)| the new Scenario default security. |
 
 ### Return type
 

@@ -86,6 +86,10 @@ entity OrganizationAccessControl {
     * role: String
 }
 
+entity OrganizationRole {
+    * role: String
+}
+
 entity OrganizationSecurity {
     * default: String
     * accessControlList: List<OrganizationAccessControl>
@@ -231,6 +235,10 @@ entity ScenarioLastRun {
     csmSimulationRun: String
     workflowId: String
     workflowName: String
+}
+
+entity ScenarioRole {
+    * role: String
 }
 
 entity ScenarioRun {
@@ -435,6 +443,10 @@ entity WorkspaceAccessControl {
 
 entity WorkspaceFile {
     fileName: String
+}
+
+entity WorkspaceRole {
+    * role: String
 }
 
 entity WorkspaceSecurity {

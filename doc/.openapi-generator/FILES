@@ -18,6 +18,7 @@ Models/DatasetCopyParameters.md
 Models/DatasetSearch.md
 Models/Organization.md
 Models/OrganizationAccessControl.md
+Models/OrganizationRole.md
 Models/OrganizationSecurity.md
 Models/OrganizationService.md
 Models/OrganizationServices.md
@@ -35,6 +36,7 @@ Models/ScenarioDataDownloadInfo.md
 Models/ScenarioDataDownloadJob.md
 Models/ScenarioJobState.md
 Models/ScenarioLastRun.md
+Models/ScenarioRole.md
 Models/ScenarioRun.md
 Models/ScenarioRunContainer.md
 Models/ScenarioRunContainerArtifact.md
@@ -57,6 +59,7 @@ Models/ValidatorRun.md
 Models/Workspace.md
 Models/WorkspaceAccessControl.md
 Models/WorkspaceFile.md
+Models/WorkspaceRole.md
 Models/WorkspaceSecurity.md
 Models/WorkspaceSolution.md
 Models/WorkspaceWebApp.md
