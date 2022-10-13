@@ -582,7 +582,7 @@ paths:
       operationId: setScenarioDefaultSecurity
       tags:
         - scenario
-      summary: set the Scenario default security
+      summary: Set the Scenario default security
       requestBody:
         description: the new Scenario default security.
         required: true
@@ -639,7 +639,7 @@ paths:
       operationId: addScenarioAccessControl
       tags:
         - scenario
-      summary: add a control acccess to the Scenario
+      summary: Add a control access to the Scenario
       requestBody:
         description: the new Scenario security access to add.
         required: true
@@ -700,7 +700,7 @@ paths:
       operationId: getScenarioAccessControl
       tags:
         - scenario
-      summary: get a control acccess for the Scenario
+      summary: Get a control access for the Scenario
       responses:
         "200":
           description: The Scenario access
