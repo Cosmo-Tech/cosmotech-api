@@ -5,7 +5,7 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**addOrReplaceScenarioParameterValues**](ScenarioApi.md#addOrReplaceScenarioParameterValues) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/parameterValues | Add (or replace) Parameter Values for the Scenario specified
-[**addScenarioAccessControl**](ScenarioApi.md#addScenarioAccessControl) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/access | add a control acccess to the Scenario
+[**addScenarioAccessControl**](ScenarioApi.md#addScenarioAccessControl) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/access | Add a control access to the Scenario
 [**compareScenarios**](ScenarioApi.md#compareScenarios) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/compare/{compared_scenario_id} | Compare the Scenario with another one and returns the difference for parameters values
 [**createScenario**](ScenarioApi.md#createScenario) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios | Create a new Scenario
 [**deleteAllScenarios**](ScenarioApi.md#deleteAllScenarios) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios | Delete all Scenarios of the Workspace
@@ -14,7 +14,7 @@ Method | HTTP request | Description
 [**findAllScenarios**](ScenarioApi.md#findAllScenarios) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios | List all Scenarios
 [**findAllScenariosByValidationStatus**](ScenarioApi.md#findAllScenariosByValidationStatus) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/{validationStatus} | List all Scenarios by validation status
 [**findScenarioById**](ScenarioApi.md#findScenarioById) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id} | Get the details of an scenario
-[**getScenarioAccessControl**](ScenarioApi.md#getScenarioAccessControl) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/access/{identity_id} | get a control acccess for the Scenario
+[**getScenarioAccessControl**](ScenarioApi.md#getScenarioAccessControl) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/access/{identity_id} | Get a control access for the Scenario
 [**getScenarioDataDownloadJobInfo**](ScenarioApi.md#getScenarioDataDownloadJobInfo) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/downloads/{download_id} | Get Scenario data download URL
 [**getScenarioPermissions**](ScenarioApi.md#getScenarioPermissions) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/permissions/{role} | Get the Scenario permission by given role
 [**getScenarioSecurity**](ScenarioApi.md#getScenarioSecurity) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security | Get the Scenario security information
@@ -23,7 +23,7 @@ Method | HTTP request | Description
 [**getScenariosTree**](ScenarioApi.md#getScenariosTree) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/tree | Get the Scenarios Tree
 [**removeAllScenarioParameterValues**](ScenarioApi.md#removeAllScenarioParameterValues) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/parameterValues | Remove all Parameter Values from the Scenario specified
 [**removeScenarioAccessControl**](ScenarioApi.md#removeScenarioAccessControl) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/access/{identity_id} | Remove the specified access from the given Organization Scenario
-[**setScenarioDefaultSecurity**](ScenarioApi.md#setScenarioDefaultSecurity) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/default | set the Scenario default security
+[**setScenarioDefaultSecurity**](ScenarioApi.md#setScenarioDefaultSecurity) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/default | Set the Scenario default security
 [**updateScenario**](ScenarioApi.md#updateScenario) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id} | Update a scenario
 
 
@@ -59,7 +59,7 @@ Name | Type | Description  | Notes
 # **addScenarioAccessControl**
 > ScenarioAccessControl addScenarioAccessControl(organization\_id, workspace\_id, scenario\_id, ScenarioAccessControl)
 
-add a control acccess to the Scenario
+Add a control access to the Scenario
 
 ### Parameters
 
@@ -303,7 +303,7 @@ Name | Type | Description  | Notes
 # **getScenarioAccessControl**
 > ScenarioAccessControl getScenarioAccessControl(organization\_id, workspace\_id, scenario\_id, identity\_id)
 
-get a control acccess for the Scenario
+Get a control access for the Scenario
 
 ### Parameters
 
@@ -548,7 +548,7 @@ null (empty response body)
 # **setScenarioDefaultSecurity**
 > ScenarioSecurity setScenarioDefaultSecurity(organization\_id, workspace\_id, scenario\_id, ScenarioRole)
 
-set the Scenario default security
+Set the Scenario default security
 
 ### Parameters
 
