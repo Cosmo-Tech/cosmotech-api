@@ -632,13 +632,26 @@ components:
         executionTimeout:
           type: integer
           description: an optional duration in seconds in which a workflow is allowed to run
-        deleteLastRunData:
-          type: boolean
-          default: true
-          description: whether to delete the last simulation's results
+        deleteHistoricalData:
+          $ref: "#/components/schemas/DeleteHistoricalData"
       required:
         - id
 #         - name
+    DeleteHistoricalData:
+      type: object
+      description: Configuration of scenario runs deletion automatic mecanism
+      properties:
+        enable:
+          type: boolean
+          description: Activate or Deactivate historical data deletion
+          default: true
+        pollFrequency:
+          type: integer
+          description: define the polling frequency of scenario run status (in millis)
+          default: 10000
+      required:
+        - enable
+
     RunTemplateHandlerId:
       type: string
       description: the Run Template step handler identifier
@@ -752,6 +765,9 @@ components:
             computeSize: highcpu
             parameterGroups:
               - consumers
+            deleteHistoricalData:
+              enable: true
+              pollFrequency: 10000
     BreweryUpdate:
       summary: Brewery Solution update
       description: Brewery Solution update example

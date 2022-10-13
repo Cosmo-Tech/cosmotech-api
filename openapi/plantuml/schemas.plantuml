@@ -68,6 +68,11 @@ entity DatasetSearch {
     * datasetTags: List<String>
 }
 
+entity DeleteHistoricalData {
+    * enable: Boolean
+    pollFrequency: Integer
+}
+
 entity Organization {
     id: String
     name: String
@@ -127,6 +132,7 @@ entity RunTemplate {
     gitBranchName: String
     runTemplateSourceDir: String
     executionTimeout: Integer
+    deleteHistoricalData: DeleteHistoricalData
 }
 
 entity RunTemplateHandlerId {
@@ -454,6 +460,7 @@ Connector -- "0..*" ConnectorParameterGroup : parameterGroups
 Organization -- "0..*" OrganizationUser : users
 Organization -- OrganizationServices : services
 User -- "0..*" UserOrganization : organizations
+RunTemplate -- DeleteHistoricalData : deleteHistoricalData
 UserOrganization -- "0..*" UserWorkspace : workspaces
 Solution -- "0..*" RunTemplateParameter : parameters
 Solution -- "0..*" RunTemplateParameterGroup : parameterGroups
