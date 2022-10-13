@@ -15,6 +15,7 @@ Models/DatasetCompatibility.md
 Models/DatasetConnector.md
 Models/DatasetCopyParameters.md
 Models/DatasetSearch.md
+Models/DeleteHistoricalData.md
 Models/Organization.md
 Models/OrganizationService.md
 Models/OrganizationServices.md

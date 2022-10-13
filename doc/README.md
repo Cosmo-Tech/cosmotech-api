@@ -122,6 +122,7 @@ Class | Method | HTTP request | Description
  - [DatasetConnector](./Models/DatasetConnector.md)
  - [DatasetCopyParameters](./Models/DatasetCopyParameters.md)
  - [DatasetSearch](./Models/DatasetSearch.md)
+ - [DeleteHistoricalData](./Models/DeleteHistoricalData.md)
  - [Organization](./Models/Organization.md)
  - [OrganizationService](./Models/OrganizationService.md)
  - [OrganizationServices](./Models/OrganizationServices.md)

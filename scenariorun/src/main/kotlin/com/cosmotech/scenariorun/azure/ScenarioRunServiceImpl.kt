@@ -45,6 +45,7 @@ import com.cosmotech.scenariorun.isTerminal
 import com.cosmotech.scenariorun.withoutSensitiveData
 import com.cosmotech.scenariorun.workflow.WorkflowService
 import com.cosmotech.scenariorun.workflow.argo.CSM_ARGO_WORKFLOWS_TIMEOUT
+import com.cosmotech.solution.domain.DeleteHistoricalData
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
@@ -398,13 +399,13 @@ internal class ScenarioRunServiceImpl(
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     sendScenarioRunMetaData(organizationId, workspace, scenarioId, scenarioRun.csmSimulationRun)
 
-    if (startInfo.runTemplate.deleteLastRunData == true) {
-      // Start a thread to check whether a scenariorun is completed
-      // then delete the previous simulation results
+    val purgeHistoricalDataConfiguration = startInfo.runTemplate?.deleteHistoricalData
+    if (purgeHistoricalDataConfiguration?.enable == true) {
       logger.debug("Start coroutine to poll simulation status")
       GlobalScope.launch {
         withTimeout(CSM_ARGO_WORKFLOWS_TIMEOUT.toLong()) {
-          deletePreviousSimulationDataIfCurrentSimulationIsSuccessful(scenarioRun)
+          deletePreviousSimulationDataIfCurrentSimulationIsSuccessful(
+              scenarioRun, purgeHistoricalDataConfiguration)
         }
       }
       logger.debug("Coroutine to poll simulation status launched")
@@ -412,19 +413,31 @@ internal class ScenarioRunServiceImpl(
     return scenarioRun.withoutSensitiveData()!!
   }
 
-  private fun deletePreviousSimulationDataIfCurrentSimulationIsSuccessful(currentRun: ScenarioRun) {
-    while (true) {
-      val scenarioRunStatus = getScenarioRunStatus(currentRun.organizationId!!, currentRun.id!!)
-
-      if (scenarioRunStatus.state == ScenarioRunState.Successful) {
-        deleteScenarioRunsByScenario(
-            currentRun.organizationId!!, currentRun.workspaceId!!, currentRun.scenarioId!!)
-        return
-      } else if (scenarioRunStatus.state == ScenarioRunState.DataIngestionFailure ||
-          scenarioRunStatus.state == ScenarioRunState.Failed) {
-        logger.info("ScenarioRun {} failed", currentRun.csmSimulationRun)
-        break
-      }
+  private fun deletePreviousSimulationDataIfCurrentSimulationIsSuccessful(
+      currentRun: ScenarioRun,
+      purgeHistoricalDataConfiguration: DeleteHistoricalData
+  ) {
+    val scenarioRunId = currentRun.id!!
+    val workspaceId = currentRun.workspaceId!!
+    val organizationId = currentRun.organizationId!!
+    val scenarioId = currentRun.scenarioId!!
+    val csmSimulationRun = currentRun.csmSimulationRun
+    var scenarioRunStatus = getScenarioRunStatus(organizationId, scenarioRunId)
+    while (scenarioRunStatus.state != ScenarioRunState.Successful ||
+        scenarioRunStatus.state != ScenarioRunState.Failed ||
+        scenarioRunStatus.state != ScenarioRunState.DataIngestionFailure) {
+      logger.info("ScenarioRun {} is still running, waiting for purging data", csmSimulationRun)
+      Thread.sleep(purgeHistoricalDataConfiguration.pollFrequency!!.toLong())
+      scenarioRunStatus = getScenarioRunStatus(organizationId, scenarioRunId)
+    }
+    if (scenarioRunStatus.state == ScenarioRunState.Successful) {
+      logger.info("ScenarioRun {} is Successfull => purging data", csmSimulationRun)
+      deleteHistoricalScenarioRunsByScenario(organizationId, workspaceId, scenarioId)
+    } else {
+      logger.info(
+          "ScenarioRun {} is in error {} => no purging data",
+          csmSimulationRun,
+          scenarioRunStatus.state)
     }
   }
 
