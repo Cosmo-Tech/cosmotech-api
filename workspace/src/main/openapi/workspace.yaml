@@ -434,7 +434,7 @@ paths:
       operationId: setWorkspaceDefaultSecurity
       tags:
         - workspace
-      summary: set the Workspace default security
+      summary: Set the Workspace default security
       requestBody:
         description: the new Workspace default security.
         required: true
@@ -483,7 +483,7 @@ paths:
       operationId: addWorkspaceAccessControl
       tags:
         - workspace
-      summary: add a control acccess to the Workspace
+      summary: Add a control access to the Workspace
       requestBody:
         description: the new Workspace security access to add.
         required: true
@@ -538,7 +538,7 @@ paths:
       operationId: getWorkspaceAccessControl
       tags:
         - workspace
-      summary: get a control acccess for the Workspace
+      summary: Get a control access for the Workspace
       responses:
         "200":
           description: The Workspace access
