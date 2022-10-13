@@ -381,7 +381,7 @@ paths:
       operationId: setOrganizationDefaultSecurity
       tags:
         - organization
-      summary: set the Organization default security
+      summary: Set the Organization default security
       requestBody:
         description: the new Organization default security.
         required: true
@@ -424,7 +424,7 @@ paths:
       operationId: addOrganizationAccessControl
       tags:
         - organization
-      summary: add a control acccess to the Organization
+      summary: Add a control access to the Organization
       requestBody:
         description: the new Organization security access to add.
         required: true
@@ -473,7 +473,7 @@ paths:
       operationId: getOrganizationAccessControl
       tags:
         - organization
-      summary: get a control acccess for the Organization
+      summary: Get a control access for the Organization
       responses:
         "200":
           description: The Organization access
