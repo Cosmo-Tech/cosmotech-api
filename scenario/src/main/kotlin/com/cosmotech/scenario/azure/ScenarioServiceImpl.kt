@@ -34,7 +34,6 @@ import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
-import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.getScenarioRolesDefinition
 import com.cosmotech.api.scenario.ScenarioMetaData
 import com.cosmotech.api.utils.changed
@@ -61,6 +60,7 @@ import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.azure.getRbac
+import com.cosmotech.workspace.azure.setRbac
 import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
 import java.time.OffsetDateTime
@@ -877,10 +877,31 @@ internal class ScenarioServiceImpl(
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
     val rbacSecurity =
         csmRbac.setUserRole(
-            scenario.getRbac(), scenarioAccessControl.id, scenarioAccessControl.role, scenarioPermissions)
+            scenario.getRbac(),
+            scenarioAccessControl.id,
+            scenarioAccessControl.role,
+            scenarioPermissions)
     scenario.setRbac(rbacSecurity)
     upsertScenarioData(organizationId, scenario, workspaceId)
     val rbacAccessControl = csmRbac.getAccessControl(scenario.getRbac(), scenarioAccessControl.id)
+    return ScenarioAccessControl(rbacAccessControl.id, rbacAccessControl.role)
+  }
+
+  override fun updateScenarioAccessControl(
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String,
+      identityId: String,
+      scenarioRole: ScenarioRole
+  ): ScenarioAccessControl {
+    val scenario = findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
+    csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
+    csmRbac.getAccessControl(scenario.getRbac(), identityId)
+    val rbacSecurity =
+        csmRbac.setUserRole(scenario.getRbac(), identityId, scenarioRole.role, scenarioPermissions)
+    scenario.setRbac(rbacSecurity)
+    upsertScenarioData(organizationId, scenario, workspaceId)
+    val rbacAccessControl = csmRbac.getAccessControl(scenario.getRbac(), identityId)
     return ScenarioAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 
