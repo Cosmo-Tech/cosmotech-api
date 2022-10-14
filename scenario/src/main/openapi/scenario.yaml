@@ -713,6 +713,33 @@ paths:
                   $ref: '#/components/examples/BreweryScenarioAccessControl'
         "404":
           description: the Scenario or user specified is unknown or you don't have access to it
+    patch:
+      operationId: updateScenarioAccessControl
+      tags:
+        - scenario
+      summary: Update the specified access to User for a Scenario
+      requestBody:
+        description: The new Scenario Access Control
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScenarioRole'
+            examples:
+              BreweryScenarioRole:
+                $ref: '#/components/examples/BreweryScenarioRole'
+      responses:
+        "200":
+          description: The Scenario access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioAccessControl'
+              examples:
+                ScenarioAccessControl:
+                  $ref: '#/components/examples/BreweryScenarioAccessControl'
+        "404":
+          description: The Organization specified is unknown or you don't have access to it
     delete:
       operationId: removeScenarioAccessControl
       tags:

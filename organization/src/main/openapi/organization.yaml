@@ -485,7 +485,34 @@ paths:
                 OrganizationAccessControl:
                   $ref: '#/components/examples/BreweryOrganizationAccessControl'
         "404":
-          description: the Organization or user specified is unknown or you don't have access to it
+          description: The Organization or user specified is unknown or you don't have access to it
+    patch:
+      operationId: updateOrganizationAccessControl
+      tags:
+        - organization
+      summary: Update the specified access to User for an Organization
+      requestBody:
+        description: The new Organization Access Control
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizationRole'
+            examples:
+              BreweryOrganizationRole:
+                $ref: '#/components/examples/BreweryOrganizationRole'
+      responses:
+        "200":
+          description: The Organization access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationAccessControl'
+              examples:
+                OrganizationAccessControl:
+                  $ref: '#/components/examples/BreweryOrganizationAccessControl'
+        "404":
+          description: The Organization specified is unknown or you don't have access to it
     delete:
       operationId: removeOrganizationAccessControl
       tags:
@@ -501,7 +528,7 @@ paths:
     parameters:
       - name: organization_id
         in: path
-        description: the Organization identifier
+        description: The Organization identifier
         required: true
         schema:
           type: string

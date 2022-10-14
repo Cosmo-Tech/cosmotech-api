@@ -38,6 +38,7 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.azure.getRbac
+import com.cosmotech.organization.azure.setRbac
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
@@ -369,6 +370,22 @@ internal class WorkspaceServiceImpl(
     workspace.setRbac(rbacSecurity)
     cosmosTemplate.upsertAndReturnEntity("${organizationId}_workspaces", workspace)
     var rbacAccessControl = csmRbac.getAccessControl(workspace.getRbac(), workspaceAccessControl.id)
+    return WorkspaceAccessControl(rbacAccessControl.id, rbacAccessControl.role)
+  }
+
+  override fun updateWorkspaceAccessControl(
+      organizationId: String,
+      workspaceId: String,
+      identityId: String,
+      workspaceRole: WorkspaceRole
+  ): WorkspaceAccessControl {
+    val workspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
+    csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE_SECURITY)
+    csmRbac.getAccessControl(workspace.getRbac(), identityId)
+    val rbacSecurity = csmRbac.setUserRole(workspace.getRbac(), identityId, workspaceRole.role)
+    workspace.setRbac(rbacSecurity)
+    cosmosTemplate.upsertAndReturnEntity("${organizationId}_workspaces", workspace)
+    val rbacAccessControl = csmRbac.getAccessControl(workspace.getRbac(), identityId)
     return WorkspaceAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 

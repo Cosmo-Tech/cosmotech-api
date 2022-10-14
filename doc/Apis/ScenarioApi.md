@@ -25,6 +25,7 @@ Method | HTTP request | Description
 [**removeScenarioAccessControl**](ScenarioApi.md#removeScenarioAccessControl) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/access/{identity_id} | Remove the specified access from the given Organization Scenario
 [**setScenarioDefaultSecurity**](ScenarioApi.md#setScenarioDefaultSecurity) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/default | set the Scenario default security
 [**updateScenario**](ScenarioApi.md#updateScenario) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id} | Update a scenario
+[**updateScenarioAccessControl**](ScenarioApi.md#updateScenarioAccessControl) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/access/{identity_id} | Update the specified access to User for a Scenario
 
 
 <a name="addOrReplaceScenarioParameterValues"></a>
@@ -598,5 +599,34 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
+- **Accept**: application/json
+
+<a name="updateScenarioAccessControl"></a>
+# **updateScenarioAccessControl**
+> ScenarioAccessControl updateScenarioAccessControl(organization\_id, workspace\_id, scenario\_id, identity\_id, ScenarioRole)
+
+Update the specified access to User for a Scenario
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **workspace\_id** | **String**| the Workspace identifier | [default to null]
+ **scenario\_id** | **String**| the Scenario identifier | [default to null]
+ **identity\_id** | **String**| the User identifier | [default to null]
+ **ScenarioRole** | [**ScenarioRole**](../Models/ScenarioRole.md)| The new Scenario Access Control |
+
+### Return type
+
+[**ScenarioAccessControl**](../Models/ScenarioAccessControl.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
 - **Accept**: application/json
 
