@@ -69,8 +69,9 @@ class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin
         .queryItems(
             SqlQuerySpec(
                 "SELECT * FROM c " +
-                    "WHERE ARRAY_CONTAINS(c.security.accessControlList, { id: @ACL_USER}, true)" +
-                    " OR ARRAY_LENGTH(c.security.default) > 0",
+                    "WHERE (ARRAY_CONTAINS(c.security.accessControlList, {id: @ACL_USER}, true) " +
+                    "AND NOT ARRAY_CONTAINS(c.security.accessControlList, {role: 'none'}, true)) " +
+                    "OR c.security.default NOT LIKE 'none'",
                 listOf(SqlParameter("@ACL_USER", currentUser))),
             CosmosQueryRequestOptions(),
             // It would be much better to specify the Domain Type right away and
