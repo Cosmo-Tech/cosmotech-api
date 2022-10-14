@@ -81,8 +81,9 @@ internal class WorkspaceServiceImpl(
     }
     val templateQuery =
         "SELECT * FROM c " +
-            "WHERE ARRAY_CONTAINS(c.security.accessControlList, { id: @ACL_USER}, true)" +
-            " OR ARRAY_LENGTH(c.security.default) > 0"
+            "WHERE (ARRAY_CONTAINS(c.security.accessControlList, {id: @ACL_USER}, true)" +
+            "AND NOT ARRAY_CONTAINS(c.security.accessControlList, {role: 'none'}, true)) " +
+            "OR c.security.default NOT LIKE 'none'"
     logger.debug("Template query: $templateQuery")
 
     return cosmosCoreDatabase

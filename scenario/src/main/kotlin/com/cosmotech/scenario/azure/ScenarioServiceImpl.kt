@@ -345,8 +345,9 @@ internal class ScenarioServiceImpl(
                 "SELECT * FROM c " +
                     "WHERE c.type = 'Scenario' " +
                     "AND c.workspaceId = @WORKSPACE_ID " +
-                    "AND ( ARRAY_CONTAINS(c.security.accessControlList, { id: @ACL_USER}, true) " +
-                    "OR ARRAY_LENGTH(c.security.default) > 0 )",
+                    "AND (ARRAY_CONTAINS(c.security.accessControlList, {id: @ACL_USER}, true) " +
+                    "AND NOT ARRAY_CONTAINS(c.security.accessControlList, {role: 'none'}, true)) " +
+                    "OR c.security.default NOT LIKE 'none'",
                 listOf(
                     SqlParameter("@WORKSPACE_ID", workspaceId),
                     SqlParameter("@ACL_USER", currentUser))),
