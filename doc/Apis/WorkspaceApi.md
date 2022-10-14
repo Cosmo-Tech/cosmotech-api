@@ -20,6 +20,7 @@ Method | HTTP request | Description
 [**removeWorkspaceAccessControl**](WorkspaceApi.md#removeWorkspaceAccessControl) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id} | Remove the specified access from the given Organization Workspace
 [**setWorkspaceDefaultSecurity**](WorkspaceApi.md#setWorkspaceDefaultSecurity) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/security/default | Set the Workspace default security
 [**updateWorkspace**](WorkspaceApi.md#updateWorkspace) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id} | Update a workspace
+[**updateWorkspaceAccessControl**](WorkspaceApi.md#updateWorkspaceAccessControl) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/security/access/{identity_id} | Update the specified access to User for a Workspace
 [**uploadWorkspaceFile**](WorkspaceApi.md#uploadWorkspaceFile) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/files | Upload a file for the Workspace
 
 
@@ -431,7 +432,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **workspace\_id** | **String**| the Workspace identifier | [default to null]
- **Workspace** | [**Workspace**](../Models/Workspace.md)| the new Workspace details. |
+ **Workspace** | [**Workspace**](../Models/Workspace.md)| The new Workspace details. |
 
 ### Return type
 
@@ -444,6 +445,34 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
+- **Accept**: application/json
+
+<a name="updateWorkspaceAccessControl"></a>
+# **updateWorkspaceAccessControl**
+> WorkspaceAccessControl updateWorkspaceAccessControl(organization\_id, workspace\_id, identity\_id, WorkspaceRole)
+
+Update the specified access to User for a Workspace
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **workspace\_id** | **String**| the Workspace identifier | [default to null]
+ **identity\_id** | **String**| the User identifier | [default to null]
+ **WorkspaceRole** | [**WorkspaceRole**](../Models/WorkspaceRole.md)| The new Workspace Access Control |
+
+### Return type
+
+[**WorkspaceAccessControl**](../Models/WorkspaceAccessControl.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
 - **Accept**: application/json
 
 <a name="uploadWorkspaceFile"></a>

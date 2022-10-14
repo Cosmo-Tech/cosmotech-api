@@ -45,10 +45,8 @@ import org.springframework.stereotype.Service
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions")
-internal class OrganizationServiceImpl(
-    private val csmRbac: CsmRbac,
-    private val csmAdmin: CsmAdmin
-) : CsmAzureService(), OrganizationApiService {
+class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin: CsmAdmin) :
+    CsmAzureService(), OrganizationApiService {
 
   private lateinit var coreOrganizationContainer: String
 
@@ -270,6 +268,22 @@ internal class OrganizationServiceImpl(
     cosmosTemplate.upsertAndReturnEntity(coreOrganizationContainer, organization)
     val rbacAccessControl =
         csmRbac.getAccessControl(organization.getRbac(), organizationAccessControl.id)
+    return OrganizationAccessControl(rbacAccessControl.id, rbacAccessControl.role)
+  }
+
+  override fun updateOrganizationAccessControl(
+      organizationId: String,
+      identityId: String,
+      organizationRole: OrganizationRole
+  ): OrganizationAccessControl {
+    val organization = findOrganizationById(organizationId)
+    csmRbac.verify(organization.getRbac(), PERMISSION_WRITE_SECURITY)
+    csmRbac.getAccessControl(organization.getRbac(), identityId)
+    val rbacSecurity =
+        csmRbac.setUserRole(organization.getRbac(), identityId, organizationRole.role)
+    organization.setRbac(rbacSecurity)
+    cosmosTemplate.upsertAndReturnEntity(coreOrganizationContainer, organization)
+    val rbacAccessControl = csmRbac.getAccessControl(organization.getRbac(), identityId)
     return OrganizationAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 

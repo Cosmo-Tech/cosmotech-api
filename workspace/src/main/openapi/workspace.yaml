@@ -110,14 +110,14 @@ paths:
                 Workspace:
                   $ref: '#/components/examples/BreweryWorkspace'
         "404":
-          description: the Workspace specified is unknown or you don't have access to it
+          description: The Workspace specified is unknown or you don't have access to it
     patch:
       operationId: updateWorkspace
       tags:
         - workspace
       summary: Update a workspace
       requestBody:
-        description: the new Workspace details.
+        description: The new Workspace details.
         required: true
         content:
           application/json:
@@ -550,7 +550,34 @@ paths:
                 WorkspaceAccessControl:
                   $ref: '#/components/examples/BreweryWorkspaceAccessControl'
         "404":
-          description: the Workspace or user specified is unknown or you don't have access to it
+          description: The Workspace or user specified is unknown or you don't have access to it
+    patch:
+      operationId: updateWorkspaceAccessControl
+      tags:
+        - workspace
+      summary: Update the specified access to User for a Workspace
+      requestBody:
+        description: The new Workspace Access Control
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkspaceRole'
+            examples:
+              BreweryWorkspaceRole:
+                $ref: '#/components/examples/BreweryWorkspaceRole'
+      responses:
+        "200":
+          description: The Workspace access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceAccessControl'
+              examples:
+                WorkspaceAccessControl:
+                  $ref: '#/components/examples/BreweryWorkspaceAccessControl'
+        "404":
+          description: The Workspace specified is unknown or you don't have access to it
     delete:
       operationId: removeWorkspaceAccessControl
       tags:
@@ -560,7 +587,7 @@ paths:
         "204":
           description: Request succeeded
         "404":
-          description: the Workspace or the user specified is unknown or you don't have access to them
+          description: The Workspace or the user specified is unknown or you don't have access to them
 
   /organizations/{organization_id}/workspaces/{workspace_id}/security/users:
     parameters:
