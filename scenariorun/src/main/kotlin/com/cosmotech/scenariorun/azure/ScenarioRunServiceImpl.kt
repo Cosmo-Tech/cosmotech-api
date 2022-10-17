@@ -422,22 +422,21 @@ internal class ScenarioRunServiceImpl(
     val organizationId = currentRun.organizationId!!
     val scenarioId = currentRun.scenarioId!!
     val csmSimulationRun = currentRun.csmSimulationRun
-    var scenarioRunStatus = getScenarioRunStatus(organizationId, scenarioRunId)
-    while (scenarioRunStatus.state != ScenarioRunState.Successful ||
-        scenarioRunStatus.state != ScenarioRunState.Failed ||
-        scenarioRunStatus.state != ScenarioRunState.DataIngestionFailure) {
+    var scenarioRunStatus = getScenarioRunStatus(organizationId, scenarioRunId).state!!.value
+    while (scenarioRunStatus != ScenarioRunState.Successful.value ||
+        scenarioRunStatus != ScenarioRunState.Failed.value ||
+        scenarioRunStatus != ScenarioRunState.DataIngestionFailure.value) {
       logger.info("ScenarioRun {} is still running, waiting for purging data", csmSimulationRun)
+      logger.info("Scenario Status => {}", scenarioRunStatus)
       Thread.sleep(purgeHistoricalDataConfiguration.pollFrequency!!.toLong())
-      scenarioRunStatus = getScenarioRunStatus(organizationId, scenarioRunId)
+      scenarioRunStatus = getScenarioRunStatus(organizationId, scenarioRunId).state!!.value
     }
-    if (scenarioRunStatus.state == ScenarioRunState.Successful) {
+    if (scenarioRunStatus == ScenarioRunState.Successful.value) {
       logger.info("ScenarioRun {} is Successfull => purging data", csmSimulationRun)
       deleteHistoricalScenarioRunsByScenario(organizationId, workspaceId, scenarioId)
     } else {
       logger.info(
-          "ScenarioRun {} is in error {} => no purging data",
-          csmSimulationRun,
-          scenarioRunStatus.state)
+          "ScenarioRun {} is in error {} => no purging data", csmSimulationRun, scenarioRunStatus)
     }
   }
 
