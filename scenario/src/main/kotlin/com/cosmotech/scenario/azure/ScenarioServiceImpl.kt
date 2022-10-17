@@ -875,8 +875,10 @@ internal class ScenarioServiceImpl(
   ): ScenarioAccessControl {
     val scenario = findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
+    val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     val rbacSecurity =
-        csmRbac.setUserRole(
+        csmRbac.addUserRole(
+            workspace.getRbac(),
             scenario.getRbac(),
             scenarioAccessControl.id,
             scenarioAccessControl.role,
@@ -896,7 +898,8 @@ internal class ScenarioServiceImpl(
   ): ScenarioAccessControl {
     val scenario = findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
-    csmRbac.getAccessControl(scenario.getRbac(), identityId)
+    csmRbac.getAccessControlOrThrow(
+        scenario.getRbac(), identityId, "User '$identityId' not found in scenario $workspaceId")
     val rbacSecurity =
         csmRbac.setUserRole(scenario.getRbac(), identityId, scenarioRole.role, scenarioPermissions)
     scenario.setRbac(rbacSecurity)
