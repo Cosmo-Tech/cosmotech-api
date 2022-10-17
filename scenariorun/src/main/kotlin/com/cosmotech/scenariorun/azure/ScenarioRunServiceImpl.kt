@@ -44,7 +44,6 @@ import com.cosmotech.scenariorun.domain.ScenarioRunStatus
 import com.cosmotech.scenariorun.isTerminal
 import com.cosmotech.scenariorun.withoutSensitiveData
 import com.cosmotech.scenariorun.workflow.WorkflowService
-import com.cosmotech.scenariorun.workflow.argo.CSM_ARGO_WORKFLOWS_TIMEOUT
 import com.cosmotech.solution.domain.DeleteHistoricalData
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
@@ -403,7 +402,7 @@ internal class ScenarioRunServiceImpl(
     if (purgeHistoricalDataConfiguration?.enable == true) {
       logger.debug("Start coroutine to poll simulation status")
       GlobalScope.launch {
-        withTimeout(CSM_ARGO_WORKFLOWS_TIMEOUT.toLong()) {
+        withTimeout(purgeHistoricalDataConfiguration.timeOut!!.toLong()) {
           deletePreviousSimulationDataIfCurrentSimulationIsSuccessful(
               scenarioRun, purgeHistoricalDataConfiguration)
         }

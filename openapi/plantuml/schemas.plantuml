@@ -71,6 +71,7 @@ entity DatasetSearch {
 entity DeleteHistoricalData {
     * enable: Boolean
     pollFrequency: Integer
+    timeOut: Integer
 }
 
 entity Organization {

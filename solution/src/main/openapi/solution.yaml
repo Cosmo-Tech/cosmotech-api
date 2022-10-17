@@ -649,6 +649,10 @@ components:
           type: integer
           description: define the polling frequency of scenario run status (in millis)
           default: 10000
+        timeOut:
+          type: integer
+          description: define the polling timeout
+          default: 28800
       required:
         - enable
 
