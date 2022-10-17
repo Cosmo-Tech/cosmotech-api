@@ -851,7 +851,7 @@ internal class ScenarioServiceImpl(
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
     val rbacSecurity = csmRbac.setDefault(scenario.getRbac(), scenarioRole.role)
     scenario.setRbac(rbacSecurity)
-    this.updateScenario(organizationId, workspaceId, scenarioId, scenario)
+    upsertScenarioData(organizationId, scenario, workspaceId)
     return scenario.security as ScenarioSecurity
   }
 
@@ -915,7 +915,7 @@ internal class ScenarioServiceImpl(
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
     val rbacSecurity = csmRbac.removeUser(scenario.getRbac(), identityId, scenarioPermissions)
     scenario.setRbac(rbacSecurity)
-    this.updateScenario(organizationId, workspaceId, scenarioId, scenario)
+    upsertScenarioData(organizationId, scenario, workspaceId)
   }
 
   override fun getScenarioSecurityUsers(
