@@ -385,7 +385,7 @@ internal class WorkspaceServiceImpl(
   ): WorkspaceAccessControl {
     val workspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE_SECURITY)
-    csmRbac.getAccessControlOrThrow(
+    csmRbac.checkUserExists(
         workspace.getRbac(), identityId, "User '$identityId' not found in workspace $workspaceId")
     val rbacSecurity = csmRbac.setUserRole(workspace.getRbac(), identityId, workspaceRole.role)
     workspace.setRbac(rbacSecurity)
