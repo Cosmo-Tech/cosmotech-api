@@ -65,7 +65,7 @@ class OrganizationServiceImplTests {
     every { cosmosTemplate.findByIdOrThrow<Organization, String>(any(), any()) } returns
         organization
     every { csmRbac.verify(any(), any()) } returns Unit
-    every { csmRbac.getAccessControlOrThrow(any(), any(), any()) } returns rbacAccessControl
+    every { csmRbac.checkUserExists(any(), any(), any()) } returns rbacAccessControl
     every { csmRbac.setUserRole(any(), any(), any()) } returns rbacSecurity
 
     assertEquals(organization.security?.default, rbacSecurity.default)
@@ -89,8 +89,7 @@ class OrganizationServiceImplTests {
     every { cosmosTemplate.findByIdOrThrow<Organization, String>(any(), any()) } returns
         organization
     every { csmRbac.verify(any(), any()) } returns Unit
-    every { csmRbac.getAccessControlOrThrow(any(), any(), any()) } throws
-        mockk<ResourceNotFoundException>()
+    every { csmRbac.checkUserExists(any(), any(), any()) } throws mockk<ResourceNotFoundException>()
     val organizationRole = OrganizationRole(role = ROLE_VIEWER)
     assertThrows<ResourceNotFoundException> {
       organizationServiceImpl.updateOrganizationAccessControl(
