@@ -364,9 +364,13 @@ internal class WorkspaceServiceImpl(
   ): WorkspaceAccessControl {
     val workspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE_SECURITY)
+    var organization = organizationService.findOrganizationById(organizationId)
     val rbacSecurity =
-        csmRbac.setUserRole(
-            workspace.getRbac(), workspaceAccessControl.id, workspaceAccessControl.role)
+        csmRbac.addUserRole(
+            organization.getRbac(),
+            workspace.getRbac(),
+            workspaceAccessControl.id,
+            workspaceAccessControl.role)
     workspace.setRbac(rbacSecurity)
     cosmosTemplate.upsertAndReturnEntity("${organizationId}_workspaces", workspace)
     var rbacAccessControl = csmRbac.getAccessControl(workspace.getRbac(), workspaceAccessControl.id)
@@ -381,7 +385,8 @@ internal class WorkspaceServiceImpl(
   ): WorkspaceAccessControl {
     val workspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE_SECURITY)
-    csmRbac.getAccessControl(workspace.getRbac(), identityId)
+    csmRbac.checkUserExists(
+        workspace.getRbac(), identityId, "User '$identityId' not found in workspace $workspaceId")
     val rbacSecurity = csmRbac.setUserRole(workspace.getRbac(), identityId, workspaceRole.role)
     workspace.setRbac(rbacSecurity)
     cosmosTemplate.upsertAndReturnEntity("${organizationId}_workspaces", workspace)
