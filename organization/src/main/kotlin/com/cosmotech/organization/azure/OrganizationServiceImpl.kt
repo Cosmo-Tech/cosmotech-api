@@ -61,18 +61,15 @@ class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin
   override fun findAllOrganizations(): List<Organization> {
     val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
     val isAdmin = csmAdmin.verifyCurrentRolesAdmin()
-    if (isAdmin) {
+    if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
       return cosmosTemplate.findAll(coreOrganizationContainer)
     }
     return cosmosCoreDatabase
         .getContainer(this.coreOrganizationContainer)
-        .queryItems(
-            SqlQuerySpec(
-                "SELECT * FROM c " +
-                    "WHERE (ARRAY_CONTAINS(c.security.accessControlList, {id: @ACL_USER}, true) " +
-                    "AND NOT ARRAY_CONTAINS(c.security.accessControlList, {role: 'none'}, true)) " +
-                    "OR c.security.default NOT LIKE 'none'",
-                listOf(SqlParameter("@ACL_USER", currentUser))),
+        .queryItems(SqlQuerySpec(
+          "SELECT * FROM c WHERE ARRAY_CONTAINS(c.security.accessControlList, {id: @ACL_USER}, true) " +
+                  "OR c.security.default NOT LIKE 'none'",
+                  SqlParameter("@ACL_USER", currentUser)),
             CosmosQueryRequestOptions(),
             // It would be much better to specify the Domain Type right away and
             // avoid the map operation, but we can't due
