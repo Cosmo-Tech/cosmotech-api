@@ -76,13 +76,12 @@ internal class WorkspaceServiceImpl(
     val organization = organizationService.findOrganizationById(organizationId)
     logger.debug("Getting workspaces for user $currentUser")
     val isAdmin = csmRbac.isAdmin(organization.getRbac(), currentUser, getCommonRolesDefinition())
-    if (isAdmin) {
+    if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
       return cosmosTemplate.findAll("${organizationId}_workspaces")
     }
     val templateQuery =
         "SELECT * FROM c " +
-            "WHERE (ARRAY_CONTAINS(c.security.accessControlList, {id: @ACL_USER}, true)" +
-            "AND NOT ARRAY_CONTAINS(c.security.accessControlList, {role: 'none'}, true)) " +
+            "WHERE ARRAY_CONTAINS(c.security.accessControlList, {id: @ACL_USER}, true) " +
             "OR c.security.default NOT LIKE 'none'"
     logger.debug("Template query: $templateQuery")
 

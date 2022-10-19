@@ -338,19 +338,18 @@ internal class ScenarioServiceImpl(
       addState: Boolean
   ): List<Scenario> {
     val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+    var templateQuery  = "SELECT * FROM c " +
+              "WHERE c.type = 'Scenario' AND c.workspaceId = @WORKSPACE_ID"
+    val params = mutableListOf(SqlParameter("@WORKSPACE_ID", workspaceId))
+    if (this.csmPlatformProperties.rbac.enabled) {
+      templateQuery  += " AND ARRAY_CONTAINS(c.security.accessControlList, {id: @ACL_USER}, true) " +
+             "OR c.security.default NOT LIKE 'none'"
+      params.add(SqlParameter("@ACL_USER", currentUser))
+    }
     return cosmosCoreDatabase
         .getContainer("${organizationId}_scenario_data")
         .queryItems(
-            SqlQuerySpec(
-                "SELECT * FROM c " +
-                    "WHERE c.type = 'Scenario' " +
-                    "AND c.workspaceId = @WORKSPACE_ID " +
-                    "AND (ARRAY_CONTAINS(c.security.accessControlList, {id: @ACL_USER}, true) " +
-                    "AND NOT ARRAY_CONTAINS(c.security.accessControlList, {role: 'none'}, true)) " +
-                    "OR c.security.default NOT LIKE 'none'",
-                listOf(
-                    SqlParameter("@WORKSPACE_ID", workspaceId),
-                    SqlParameter("@ACL_USER", currentUser))),
+            SqlQuerySpec(templateQuery, params),
             CosmosQueryRequestOptions(),
             // It would be much better to specify the Domain Type right away and
             // avoid the map operation, but we can't due
