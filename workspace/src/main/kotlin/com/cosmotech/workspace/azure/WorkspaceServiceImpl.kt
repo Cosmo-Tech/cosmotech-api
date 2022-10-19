@@ -164,7 +164,7 @@ internal class WorkspaceServiceImpl(
     var hasChanged =
         existingWorkspace
             .compareToAndMutateIfNeeded(
-                workspace, excludedFields = arrayOf("ownerId", "security", "solution"))
+                workspace, excludedFields = arrayOf("ownerId", "solution"))
             .isNotEmpty()
 
     if (workspace.solution?.solutionId != null) {
