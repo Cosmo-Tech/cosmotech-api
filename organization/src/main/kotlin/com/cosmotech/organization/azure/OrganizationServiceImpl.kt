@@ -278,7 +278,7 @@ class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin
   ): OrganizationAccessControl {
     val organization = findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_WRITE_SECURITY)
-    csmRbac.getAccessControlOrThrow(
+    csmRbac.checkUserExists(
         organization.getRbac(),
         identityId,
         "User '$identityId' not found in workspace $organizationId")
