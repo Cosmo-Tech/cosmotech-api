@@ -140,6 +140,10 @@ class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin
       existingOrganization.services = organization.services
       hasChanged = true
     }
+    if (organization.security != null && organization.changed(existingOrganization) { security }) {
+      existingOrganization.security = organization.security
+      hasChanged = true
+    }
     val responseEntity: Organization
     responseEntity =
         if (hasChanged) {
