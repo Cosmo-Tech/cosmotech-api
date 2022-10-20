@@ -28,6 +28,7 @@ import com.cosmotech.api.scenariorun.DataIngestionState
 import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
+import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenariorun.CSM_JOB_ID_LABEL_KEY
 import com.cosmotech.scenariorun.ContainerFactory
@@ -50,6 +51,8 @@ import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
+import java.time.ZonedDateTime
+import kotlin.reflect.full.memberProperties
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -59,8 +62,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
-import java.time.ZonedDateTime
-import kotlin.reflect.full.memberProperties
 
 private const val MIN_SDK_VERSION_MAJOR = 8
 private const val MIN_SDK_VERSION_MINOR = 5
@@ -72,6 +73,7 @@ internal class ScenarioRunServiceImpl(
     private val containerFactory: ContainerFactory,
     private val workflowService: WorkflowService,
     private val workspaceService: WorkspaceApiService,
+    private val scenarioApiService: ScenarioApiService,
     private val azureDataExplorerClient: AzureDataExplorerClient,
     private val azureEventHubsClient: AzureEventHubsClient
 ) : CsmAzureService(), ScenariorunApiService {
@@ -158,43 +160,20 @@ internal class ScenarioRunServiceImpl(
       scenarioId: String
   ) {
     val scenarioRuns = getScenarioRuns(organizationId, workspaceId, scenarioId).toMutableList()
-    val scenarioRunStatus = mutableListOf<ScenarioRunStatus>()
 
-    for (item in scenarioRuns) {
-      scenarioRunStatus.add(getScenarioRunStatus(item.id!!, item))
+    scenarioRuns.filter { it.state == ScenarioRunState.Failed }.forEach {
+      deleteScenarioRunWithoutAccessEnforcement(it)
     }
 
-    scenarioRuns.filter { it.state == ScenarioRunState.Failed }.forEach { /*scenarioStatus ->
-      scenarioRuns.find { it.id == scenarioStatus.id }?.let {*/
-          deleteScenarioRunWithoutAccessEnforcement(it)
+    val lastRunId =
+        scenarioApiService.findScenarioById(organizationId, workspaceId, scenarioId).lastRun!!
+            .scenarioRunId
+
+    for (run in scenarioRuns.filter { it.state == ScenarioRunState.Successful }) {
+      if (run.id != lastRunId) {
+        deleteScenarioRunWithoutAccessEnforcement(run)
       }
-
-      scenarioRuns.reverse()
-      var successfulRun = false
-
-      for (run in scenarioRuns){
-          if(run.state == ScenarioRunState.Successful){
-              if(!successfulRun){
-                  successfulRun = true
-              }else{
-                  deleteScenarioRunWithoutAccessEnforcement(run)
-              }
-          }
-      }
-
-    /*val sortedByEndTimeSuccessFullRuns =
-        scenarioRunStatus.filter { it.state == ScenarioRunState.Successful }.sortedByDescending {
-          it.endTime
-        }
-
-    if (sortedByEndTimeSuccessFullRuns.size > 1) {
-      sortedByEndTimeSuccessFullRuns.subList(1, sortedByEndTimeSuccessFullRuns.size).forEach {
-          scenarioStatus ->
-        scenarioRuns.find { it.id == scenarioStatus.id }?.let {
-          deleteScenarioRunWithoutAccessEnforcement(it)
-        }
-      }
-    }*/
+    }
   }
 
   override fun deleteHistoricalDataOrganization(organizationId: String) {
