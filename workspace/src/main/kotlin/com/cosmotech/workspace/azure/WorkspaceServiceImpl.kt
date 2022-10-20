@@ -181,6 +181,8 @@ internal class WorkspaceServiceImpl(
           getCommonRolesDefinition())) {
         existingWorkspace.security = workspace.security
         hasChanged = true
+      } else {
+        logger.warn("Security cannot by updated directly without admin permissions for ${workspace.id}")
       }
     }
     return if (hasChanged) {

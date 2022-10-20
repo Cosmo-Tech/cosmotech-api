@@ -149,6 +149,8 @@ class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin
           getCommonRolesDefinition())) {
         existingOrganization.security = organization.security
         hasChanged = true
+      } else {
+        logger.warn("Security cannot by updated directly without admin permissions for ${organization.id}")
       }
     }
     return if (hasChanged) {
