@@ -235,6 +235,7 @@ jobs:
             "networking/traffic-allowed=yes"
           kubectl -n ingress-nginx describe deployment ingress-nginx-controller
 
+      - name: Make scripts executable
         run: |
           chmod +x .github/scripts/*.sh
           chmod +x api/kubernetes/*.sh
