@@ -162,7 +162,7 @@ jobs:
                     kubeletExtraArgs:
                       node-labels: "kubernetes.io/os=linux,cosmotech.com/tier=compute,cosmotech.com/size=basic"
             - role: worker
-              image: kindest/node:${kindest_node_image_tag}
+              image: kindest/node:v1.23.6
               kubeadmConfigPatches:
                 - |
                   kind: JoinConfiguration
@@ -235,7 +235,6 @@ jobs:
             "networking/traffic-allowed=yes"
           kubectl -n ingress-nginx describe deployment ingress-nginx-controller
 
-      - name: Make scripts executable
         run: |
           chmod +x .github/scripts/*.sh
           chmod +x api/kubernetes/*.sh
