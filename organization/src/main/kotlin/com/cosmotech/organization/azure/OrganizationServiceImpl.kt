@@ -21,6 +21,7 @@ import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.getAllRolesDefinition
+import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.getScenarioRolesDefinition
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
@@ -66,10 +67,11 @@ class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin
     }
     return cosmosCoreDatabase
         .getContainer(this.coreOrganizationContainer)
-        .queryItems(SqlQuerySpec(
-          "SELECT * FROM c WHERE ARRAY_CONTAINS(c.security.accessControlList, {id: @ACL_USER}, true) " +
-                  "OR c.security.default NOT LIKE 'none'",
-                  SqlParameter("@ACL_USER", currentUser)),
+        .queryItems(
+            SqlQuerySpec(
+                "SELECT * FROM c WHERE ARRAY_CONTAINS(c.security.accessControlList, {id: @ACL_USER}, true) " +
+                    "OR c.security.default NOT LIKE 'none'",
+                SqlParameter("@ACL_USER", currentUser)),
             CosmosQueryRequestOptions(),
             // It would be much better to specify the Domain Type right away and
             // avoid the map operation, but we can't due
@@ -140,19 +142,20 @@ class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin
       existingOrganization.services = organization.services
       hasChanged = true
     }
-    if (organization.security != null && organization.changed(existingOrganization) { security }) {
-      existingOrganization.security = organization.security
-      hasChanged = true
+    if (organization.security != null && existingOrganization.security == null) {
+      if (csmRbac.isAdmin(
+          organization.getRbac(),
+          getCurrentAuthenticatedMail(this.csmPlatformProperties),
+          getCommonRolesDefinition())) {
+        existingOrganization.security = organization.security
+        hasChanged = true
+      }
     }
-    val responseEntity: Organization
-    responseEntity =
-        if (hasChanged) {
-          cosmosTemplate.upsertAndReturnEntity(coreOrganizationContainer, existingOrganization)
-        } else {
-          existingOrganization
-        }
-
-    return responseEntity
+    return if (hasChanged) {
+      cosmosTemplate.upsertAndReturnEntity(coreOrganizationContainer, existingOrganization)
+    } else {
+      existingOrganization
+    }
   }
 
   override fun updateSolutionsContainerRegistryByOrganizationId(

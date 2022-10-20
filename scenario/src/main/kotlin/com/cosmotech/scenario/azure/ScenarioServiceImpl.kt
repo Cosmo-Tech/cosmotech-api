@@ -63,6 +63,8 @@ import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.azure.getRbac
 import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
+import java.time.OffsetDateTime
+import java.time.ZonedDateTime
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -71,8 +73,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
-import java.time.OffsetDateTime
-import java.time.ZonedDateTime
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
@@ -337,7 +337,7 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       addState: Boolean
   ): List<Scenario> {
-    return findAllScenariosBy(organizationId, workspaceId)
+    return findAllScenariosBy(organizationId, workspaceId, addState = addState)
   }
 
   private fun findAllScenarioByValidationStatus(
@@ -346,71 +346,77 @@ internal class ScenarioServiceImpl(
       validationStatus: String
   ): List<Scenario> {
     return findAllScenariosBy(
-      organizationId,
-      workspaceId,
-      "c.validationStatus = @VALIDATION_STATUS",
-      listOf(SqlParameter("@VALIDATION_STATUS", validationStatus)),
-    false
-    )
+        organizationId,
+        workspaceId,
+        "c.validationStatus = @VALIDATION_STATUS",
+        listOf(SqlParameter("@VALIDATION_STATUS", validationStatus)),
+        false)
   }
 
   private fun findAllScenariosByRootId(
       organizationId: String,
       workspaceId: String,
       rootId: String
-  ) =  findAllScenariosBy(organizationId, workspaceId,
-      "c.rootId = @ROOT_ID",
-      listOf(SqlParameter("@ROOT_ID", rootId)),
-      false)
+  ) =
+      findAllScenariosBy(
+          organizationId,
+          workspaceId,
+          "c.rootId = @ROOT_ID",
+          listOf(SqlParameter("@ROOT_ID", rootId)),
+          false)
 
   internal fun findScenarioChildrenById(
-    organizationId: String,
-    workspaceId: String,
-    parentId: String
-  ) = findAllScenariosBy(organizationId, workspaceId,
-    "c.parentId = @PARENT_ID",
-    listOf(SqlParameter("@PARENT_ID", parentId)),
-    false)
+      organizationId: String,
+      workspaceId: String,
+      parentId: String
+  ) =
+      findAllScenariosBy(
+          organizationId,
+          workspaceId,
+          "c.parentId = @PARENT_ID",
+          listOf(SqlParameter("@PARENT_ID", parentId)),
+          false)
 
   internal fun findAllScenariosBy(
-    organizationId: String,
-    workspaceId: String,
-    sqlCondition: String? = null,
-    sqlParams: List<SqlParameter>? = null,
-    addState: Boolean = true
+      organizationId: String,
+      workspaceId: String,
+      sqlCondition: String? = null,
+      sqlParams: List<SqlParameter>? = null,
+      addState: Boolean = true
   ): List<Scenario> {
     val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
-    var templateQuery  = "SELECT * FROM c " +
-            "WHERE c.type = 'Scenario' AND c.workspaceId = @WORKSPACE_ID"
+    var templateQuery =
+        "SELECT * FROM c " + "WHERE c.type = 'Scenario' AND c.workspaceId = @WORKSPACE_ID"
     val params = mutableListOf(SqlParameter("@WORKSPACE_ID", workspaceId))
     if (sqlCondition != null && sqlParams != null) {
       templateQuery += " AND $sqlCondition"
-      sqlParams.forEach{params.add(it)}
+      sqlParams.forEach { params.add(it) }
     }
     val isAdmin = csmRbac.isAdmin(workspace.getRbac(), currentUser, getCommonRolesDefinition())
     if (!isAdmin && this.csmPlatformProperties.rbac.enabled) {
-      templateQuery  += " AND (ARRAY_CONTAINS(c.security.accessControlList, {id: @ACL_USER}, true) " +
+      templateQuery +=
+          " AND (ARRAY_CONTAINS(c.security.accessControlList, {id: @ACL_USER}, true) " +
               "OR c.security.default NOT LIKE 'none')"
       params.add(SqlParameter("@ACL_USER", currentUser))
     }
     return cosmosCoreDatabase
-      .getContainer("${organizationId}_scenario_data")
-      .queryItems(
-        SqlQuerySpec(templateQuery, params),
-        CosmosQueryRequestOptions(),
-        // It would be much better to specify the Domain Type right away and
-        // avoid the map operation, but we can't due
-        // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
-        // https://github.com/Azure/azure-sdk-for-java/issues/12269
-        JsonNode::class.java)
-      .mapNotNull {
-        val scenario = it.toDomain<Scenario>()
-        if (addState) {
-          this.addStateToScenario(organizationId, scenario)
+        .getContainer("${organizationId}_scenario_data")
+        .queryItems(
+            SqlQuerySpec(templateQuery, params),
+            CosmosQueryRequestOptions(),
+            // It would be much better to specify the Domain Type right away and
+            // avoid the map operation, but we can't due
+            // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
+            // https://github.com/Azure/azure-sdk-for-java/issues/12269
+            JsonNode::class.java)
+        .mapNotNull {
+          val scenario = it.toDomain<Scenario>()
+          if (addState) {
+            this.addStateToScenario(organizationId, scenario)
+          }
+          return@mapNotNull scenario
         }
-        return@mapNotNull scenario
-      }
   }
 
   override fun findScenarioById(
@@ -459,8 +465,6 @@ internal class ScenarioServiceImpl(
         state = mapWorkflowPhaseToState(organizationId, workspaceId, downloadId, response.first),
         url = response.second)
   }
-
-
 
   internal fun findScenarioByIdNoState(
       organizationId: String,
@@ -581,11 +585,12 @@ internal class ScenarioServiceImpl(
                 scenario,
                 excludedFields =
                     arrayOf(
-                      "ownerId",
-                      "datasetList",
-                      "solutionId",
-                      "runTemplateId",
-                      "parametersValues"))
+                        "ownerId",
+                        "datasetList",
+                        "solutionId",
+                        "runTemplateId",
+                        "parametersValues",
+                        "security"))
             .isNotEmpty()
 
     var datasetListUpdated = false
@@ -611,6 +616,16 @@ internal class ScenarioServiceImpl(
         scenario.parametersValues?.toSet() != existingScenario.parametersValues?.toSet()) {
       updateScenarioParametersValues(existingScenario, scenario)
       hasChanged = true
+    }
+
+    if (scenario.security != null && existingScenario.security == null) {
+      if (csmRbac.isAdmin(
+          organization.getRbac(),
+          getCurrentAuthenticatedMail(this.csmPlatformProperties),
+          getCommonRolesDefinition())) {
+        existingScenario.security = scenario.security
+        hasChanged = true
+      }
     }
 
     if (hasChanged) {
