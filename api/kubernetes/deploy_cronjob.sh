@@ -56,9 +56,11 @@ export AZURE_TENANT_ID=$( echo "$AZURE_CREDENTIALS_INFO" | yq e '.tenantId' - )
 export AZURE_CLIENT_SECRET=$( echo "$AZURE_CREDENTIALS_INFO" | yq e '.clientSecret' - )
 export TWIN_CACHE_NAME=$(echo "$AZURE_DIGITAL_TWINS_URL" | sed -e 's|^[^/]*//||' -e 's|/.*$||' -e 's|\..*$||')
 
-mkdir -p "$BASE_PATH/cronjob"
+export CRONJOB_DIR_PATH="$BASE_PATH/cronjob"
 
-cd "$BASE_PATH/cronjob"
+mkdir -p "${CRONJOB_DIR_PATH}"
+
+cd "${CRONJOB_DIR_PATH}"
 
 cat <<EOF > adt-sync-cronjob.yaml
 apiVersion: batch/v1
@@ -101,3 +103,5 @@ spec:
 EOF
 
 kubectl create -n "${NAMESPACE}" -f adt-sync-cronjob.yaml
+
+rm -rf "${CRONJOB_DIR_PATH}"
