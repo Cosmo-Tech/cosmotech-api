@@ -164,7 +164,7 @@ internal class WorkspaceServiceImpl(
     var hasChanged =
         existingWorkspace
             .compareToAndMutateIfNeeded(
-                workspace, excludedFields = arrayOf("ownerId", "solution"))
+                workspace, excludedFields = arrayOf("ownerId", "security", "solution"))
             .isNotEmpty()
 
     if (workspace.solution?.solutionId != null) {
@@ -174,10 +174,17 @@ internal class WorkspaceServiceImpl(
       hasChanged = true
     }
 
+    if (workspace.security != null && existingWorkspace.security == null) {
+      if (csmRbac.isAdmin(
+          workspace.getRbac(),
+          getCurrentAuthenticatedMail(this.csmPlatformProperties),
+          getCommonRolesDefinition())) {
+        existingWorkspace.security = workspace.security
+        hasChanged = true
+      }
+    }
     return if (hasChanged) {
-      val responseEntity =
-          cosmosTemplate.upsertAndReturnEntity("${organizationId}_workspaces", existingWorkspace)
-      responseEntity
+      cosmosTemplate.upsertAndReturnEntity("${organizationId}_workspaces", existingWorkspace)
     } else {
       existingWorkspace
     }
