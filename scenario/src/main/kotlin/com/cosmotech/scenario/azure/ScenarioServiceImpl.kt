@@ -817,7 +817,7 @@ internal class ScenarioServiceImpl(
   ): ScenarioSecurity {
     val scenario = findScenarioById(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_READ_SECURITY, scenarioPermissions)
-    return scenario.security as ScenarioSecurity
+    return scenario.security ?: throw CsmResourceNotFoundException("RBAC not defined for ${scenario.id}")
   }
 
   override fun setScenarioDefaultSecurity(

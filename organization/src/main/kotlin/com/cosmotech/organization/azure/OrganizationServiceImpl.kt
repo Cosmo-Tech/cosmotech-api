@@ -11,6 +11,7 @@ import com.cosmotech.api.azure.findAll
 import com.cosmotech.api.azure.findByIdOrThrow
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
+import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmAdmin
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_DELETE
@@ -237,7 +238,7 @@ class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin
   override fun getOrganizationSecurity(organizationId: String): OrganizationSecurity {
     val organization = findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_READ_SECURITY)
-    return organization.security as OrganizationSecurity
+    return organization.security ?: throw CsmResourceNotFoundException("RBAC not defined for ${organization.id}")
   }
 
   override fun setOrganizationDefaultSecurity(
