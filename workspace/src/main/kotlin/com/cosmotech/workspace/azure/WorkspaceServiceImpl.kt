@@ -76,13 +76,13 @@ internal class WorkspaceServiceImpl(
     val organization = organizationService.findOrganizationById(organizationId)
     logger.debug("Getting workspaces for user $currentUser")
     val isAdmin = csmRbac.isAdmin(organization.getRbac(), currentUser, getCommonRolesDefinition())
-    if (isAdmin) {
+    if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
       return cosmosTemplate.findAll("${organizationId}_workspaces")
     }
     val templateQuery =
         "SELECT * FROM c " +
-            "WHERE ARRAY_CONTAINS(c.security.accessControlList, { id: @ACL_USER}, true)" +
-            " OR ARRAY_LENGTH(c.security.default) > 0"
+            "WHERE ARRAY_CONTAINS(c.security.accessControlList, {id: @ACL_USER}, true) " +
+            "OR c.security.default NOT LIKE 'none'"
     logger.debug("Template query: $templateQuery")
 
     return cosmosCoreDatabase
@@ -174,10 +174,19 @@ internal class WorkspaceServiceImpl(
       hasChanged = true
     }
 
+    if (workspace.security != null && existingWorkspace.security == null) {
+      if (csmRbac.isAdmin(
+          workspace.getRbac(),
+          getCurrentAuthenticatedMail(this.csmPlatformProperties),
+          getCommonRolesDefinition())) {
+        existingWorkspace.security = workspace.security
+        hasChanged = true
+      } else {
+        logger.warn("Security cannot by updated directly without admin permissions for ${workspace.id}")
+      }
+    }
     return if (hasChanged) {
-      val responseEntity =
-          cosmosTemplate.upsertAndReturnEntity("${organizationId}_workspaces", existingWorkspace)
-      responseEntity
+      cosmosTemplate.upsertAndReturnEntity("${organizationId}_workspaces", existingWorkspace)
     } else {
       existingWorkspace
     }

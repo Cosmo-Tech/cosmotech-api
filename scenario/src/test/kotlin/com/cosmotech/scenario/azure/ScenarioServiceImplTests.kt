@@ -544,6 +544,13 @@ class ScenarioServiceImplTests {
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     every { workspace.key } returns "my-workspace-key"
     every { workspace.id } returns "my-workspace-id"
+
+    val workspaceSecurity = mockk<WorkspaceSecurity>()
+    every { workspace.security } returns workspaceSecurity
+    every { workspace.security?.default } returns String()
+    every { workspace.security?.accessControlList } returns mutableListOf()
+    every { csmRbac.isAdmin(any(), any(), any()) } returns true
+
     val authentication =
         mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication>()
     every { eventBus.authentication } returns authentication

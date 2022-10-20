@@ -21,6 +21,7 @@ import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.getAllRolesDefinition
+import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.getScenarioRolesDefinition
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
@@ -61,17 +62,16 @@ class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin
   override fun findAllOrganizations(): List<Organization> {
     val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
     val isAdmin = csmAdmin.verifyCurrentRolesAdmin()
-    if (isAdmin) {
+    if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
       return cosmosTemplate.findAll(coreOrganizationContainer)
     }
     return cosmosCoreDatabase
         .getContainer(this.coreOrganizationContainer)
         .queryItems(
             SqlQuerySpec(
-                "SELECT * FROM c " +
-                    "WHERE ARRAY_CONTAINS(c.security.accessControlList, { id: @ACL_USER}, true)" +
-                    " OR ARRAY_LENGTH(c.security.default) > 0",
-                listOf(SqlParameter("@ACL_USER", currentUser))),
+                "SELECT * FROM c WHERE ARRAY_CONTAINS(c.security.accessControlList, {id: @ACL_USER}, true) " +
+                    "OR c.security.default NOT LIKE 'none'",
+                SqlParameter("@ACL_USER", currentUser)),
             CosmosQueryRequestOptions(),
             // It would be much better to specify the Domain Type right away and
             // avoid the map operation, but we can't due
@@ -142,15 +142,22 @@ class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin
       existingOrganization.services = organization.services
       hasChanged = true
     }
-    val responseEntity: Organization
-    responseEntity =
-        if (hasChanged) {
-          cosmosTemplate.upsertAndReturnEntity(coreOrganizationContainer, existingOrganization)
-        } else {
-          existingOrganization
-        }
-
-    return responseEntity
+    if (organization.security != null && existingOrganization.security == null) {
+      if (csmRbac.isAdmin(
+          organization.getRbac(),
+          getCurrentAuthenticatedMail(this.csmPlatformProperties),
+          getCommonRolesDefinition())) {
+        existingOrganization.security = organization.security
+        hasChanged = true
+      } else {
+        logger.warn("Security cannot by updated directly without admin permissions for ${organization.id}")
+      }
+    }
+    return if (hasChanged) {
+      cosmosTemplate.upsertAndReturnEntity(coreOrganizationContainer, existingOrganization)
+    } else {
+      existingOrganization
+    }
   }
 
   override fun updateSolutionsContainerRegistryByOrganizationId(
