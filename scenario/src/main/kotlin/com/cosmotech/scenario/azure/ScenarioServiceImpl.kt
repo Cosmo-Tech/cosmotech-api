@@ -623,8 +623,8 @@ internal class ScenarioServiceImpl(
           organization.getRbac(),
           getCurrentAuthenticatedMail(this.csmPlatformProperties),
           getCommonRolesDefinition())) {
-        existingScenario.security = scenario.security
-        hasChanged = true
+      } else {
+        logger.warn("Security cannot by updated directly without admin permissions for ${scenario.id}")
       }
     }
 
