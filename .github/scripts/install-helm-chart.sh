@@ -39,9 +39,9 @@ config:
 
 EOF
 
-"${HELM_DEPLOY_SCRIPT_BASE_PATH}"/deploy_via_helm-latest.sh \
+"${HELM_DEPLOY_SCRIPT_BASE_PATH}"/deploy_via_helm-dev.sh \
+  "${IMAGE_TAG}" \
   "${CHART_RELEASE_TEST_NAMESPACE}" \
-  "phoenix" \
   "${PASSWORD_FOR_ARGO_PASSWORD}" \
   "${API_VERSION}" \
   --wait \

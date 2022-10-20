@@ -128,58 +128,79 @@ jobs:
       - name: Generate KinD Config
         run: |
           cat <<EOF > /tmp/csm-kind-config.yaml
-
+          
           kind: Cluster
           apiVersion: kind.x-k8s.io/v1alpha4
           containerdConfigPatches:
-          -  |-
-             [plugins."io.containerd.grpc.v1.cri".containerd]
-               disable_snapshot_annotations = true
-             [plugins."io.containerd.grpc.v1.cri".registry.mirrors."localhost:5000"]
-               endpoint = ["http://kind-registry:5000"]
+            -  |-
+              [plugins."io.containerd.grpc.v1.cri".containerd]
+                disable_snapshot_annotations = true
+              [plugins."io.containerd.grpc.v1.cri".registry.mirrors."localhost:${registry_port}"]
+                endpoint = ["http://kind-registry:5000"]
           nodes:
-              - role: control-plane
-                kubeadmConfigPatches:
+            - role: control-plane
+              image: kindest/node:v1.23.6
+              kubeadmConfigPatches:
                 - |
                   kind: InitConfiguration
                   nodeRegistration:
                     kubeletExtraArgs:
                       node-labels: "ingress-ready=true"
-                extraPortMappings:
+              extraPortMappings:
                 - containerPort: 80
                   hostPort: 80
                   protocol: TCP
                 - containerPort: 443
                   hostPort: 443
                   protocol: TCP
-              - role: worker
-                kubeadmConfigPatches:
+            - role: worker
+              image: kindest/node:v1.23.6
+              kubeadmConfigPatches:
                 - |
                   kind: JoinConfiguration
                   nodeRegistration:
                     kubeletExtraArgs:
-                      node-labels: "kubernetes.io/os=linux,agentpool=basicpool"
-              - role: worker
-                image: kindest/node:v1.23.6
-                kubeadmConfigPatches:
-                  - |
-                    kind: JoinConfiguration
-                    nodeRegistration:
-                      taints:
-                      - key: "vendor"
-                        value: "cosmotech"
-                        effect: "NoSchedule"
-                      kubeletExtraArgs:
-                        node-labels: "kubernetes.io/os=linux,cosmotech.com/tier=monitoring"
+                      node-labels: "kubernetes.io/os=linux,cosmotech.com/tier=compute,cosmotech.com/size=basic"
+            - role: worker
+              image: kindest/node:${kindest_node_image_tag}
+              kubeadmConfigPatches:
+                - |
+                  kind: JoinConfiguration
+                  nodeRegistration:
+                    kubeletExtraArgs:
+                      node-labels: "kubernetes.io/os=linux,cosmotech.com/tier=services"
+            - role: worker
+              image: kindest/node:v1.23.6
+              kubeadmConfigPatches:
+                - |
+                  kind: JoinConfiguration
+                  nodeRegistration:
+                    kubeletExtraArgs:
+                      node-labels: "kubernetes.io/os=linux,cosmotech.com/tier=db"
+            - role: worker
+              image: kindest/node:v1.23.6
+              kubeadmConfigPatches:
+                - |
+                  kind: JoinConfiguration
+                  nodeRegistration:
+                    taints:
+                    - key: "vendor"
+                      value: "cosmotech"
+                      effect: "NoSchedule"
+                    kubeletExtraArgs:
+                      node-labels: "kubernetes.io/os=linux,cosmotech.com/tier=monitoring"
+          
           networking:
+            # disable kindnet, which does not support Network Policies
             disableDefaultCNI: true
+            # set to Calico's default subnet
             podSubnet: 192.168.0.0/16
           featureGates:
             # TTL Controller for finished resources is currently an opt-in alpha feature
             # https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/
             TTLAfterFinished: true
-
-          EOF
+            
+            EOF
 
       - name: Provision Kubernetes KinD Cluster and local Container Registry
         uses: container-tools/kind-action@v2
@@ -244,7 +265,7 @@ jobs:
           PHOENIXAKSDEV_ADX_BASE_URI: ${{ secrets.PHOENIXAKSDEV_ADX_BASE_URI }}
           PHOENIXAKSDEV_ADX_INGESTION_BASE_URI: ${{ secrets.PHOENIXAKSDEV_ADX_INGESTION_BASE_URI }}
           PHOENIXAKSDEV_EVENT_HUBS_BASE_URI: ${{ secrets.PHOENIXAKSDEV_EVENT_HUBS_BASE_URI }}
-        run: .github/scripts/install-helm-chart.sh
+        run: .github/scripts/install-helm-chart.sh latest ${{  github.ref_name }}
 
       - name: Test Helm Release (latest)
         run: .github/scripts/test-helm-release.sh
