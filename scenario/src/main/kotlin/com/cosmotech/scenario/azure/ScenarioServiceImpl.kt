@@ -585,8 +585,7 @@ internal class ScenarioServiceImpl(
                       "datasetList",
                       "solutionId",
                       "runTemplateId",
-                      "parametersValues",
-                      "security"))
+                      "parametersValues"))
             .isNotEmpty()
 
     var datasetListUpdated = false
