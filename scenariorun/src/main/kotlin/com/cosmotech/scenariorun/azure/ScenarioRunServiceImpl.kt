@@ -50,8 +50,6 @@ import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
-import java.time.ZonedDateTime
-import kotlin.reflect.full.memberProperties
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -61,6 +59,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
+import java.time.ZonedDateTime
+import kotlin.reflect.full.memberProperties
 
 private const val MIN_SDK_VERSION_MAJOR = 8
 private const val MIN_SDK_VERSION_MINOR = 5
@@ -157,20 +157,32 @@ internal class ScenarioRunServiceImpl(
       workspaceId: String,
       scenarioId: String
   ) {
-    val scenarioRuns = getScenarioRuns(organizationId, workspaceId, scenarioId)
+    val scenarioRuns = getScenarioRuns(organizationId, workspaceId, scenarioId).toMutableList()
     val scenarioRunStatus = mutableListOf<ScenarioRunStatus>()
 
     for (item in scenarioRuns) {
       scenarioRunStatus.add(getScenarioRunStatus(item.id!!, item))
     }
 
-    scenarioRunStatus.filter { it.state == ScenarioRunState.Failed }.forEach { scenarioStatus ->
-      scenarioRuns.find { it.id == scenarioStatus.id }?.let {
-        deleteScenarioRunWithoutAccessEnforcement(it)
+    scenarioRuns.filter { it.state == ScenarioRunState.Failed }.forEach { /*scenarioStatus ->
+      scenarioRuns.find { it.id == scenarioStatus.id }?.let {*/
+          deleteScenarioRunWithoutAccessEnforcement(it)
       }
-    }
 
-    val sortedByEndTimeSuccessFullRuns =
+      scenarioRuns.reverse()
+      var successfulRun = false
+
+      for (run in scenarioRuns){
+          if(run.state == ScenarioRunState.Successful){
+              if(!successfulRun){
+                  successfulRun = true
+              }else{
+                  deleteScenarioRunWithoutAccessEnforcement(run)
+              }
+          }
+      }
+
+    /*val sortedByEndTimeSuccessFullRuns =
         scenarioRunStatus.filter { it.state == ScenarioRunState.Successful }.sortedByDescending {
           it.endTime
         }
@@ -182,7 +194,7 @@ internal class ScenarioRunServiceImpl(
           deleteScenarioRunWithoutAccessEnforcement(it)
         }
       }
-    }
+    }*/
   }
 
   override fun deleteHistoricalDataOrganization(organizationId: String) {
