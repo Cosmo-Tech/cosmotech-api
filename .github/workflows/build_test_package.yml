@@ -135,7 +135,7 @@ jobs:
             -  |-
               [plugins."io.containerd.grpc.v1.cri".containerd]
                 disable_snapshot_annotations = true
-              [plugins."io.containerd.grpc.v1.cri".registry.mirrors."localhost:${registry_port}"]
+              [plugins."io.containerd.grpc.v1.cri".registry.mirrors."localhost:5000"]
                 endpoint = ["http://kind-registry:5000"]
           nodes:
             - role: control-plane
