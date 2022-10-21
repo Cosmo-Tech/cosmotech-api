@@ -250,7 +250,7 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: |
             :cosmotech-api:jib
-            -Djib.to.image=localhost:5000/cosmotech-api:latest
+            -Djib.to.image=localhost:5000/cosmotech-api:${{  github.ref_name }}
             -Djib.allowInsecureRegistries=true
 
       - name: Install the Helm Chart (latest)
