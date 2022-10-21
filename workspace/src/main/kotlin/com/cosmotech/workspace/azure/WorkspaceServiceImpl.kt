@@ -183,7 +183,8 @@ internal class WorkspaceServiceImpl(
         existingWorkspace.security = workspace.security
         hasChanged = true
       } else {
-        logger.warn("Security cannot by updated directly without admin permissions for ${workspace.id}")
+        logger.warn(
+            "Security cannot by updated directly without admin permissions for ${workspace.id}")
       }
     }
     return if (hasChanged) {
@@ -340,7 +341,8 @@ internal class WorkspaceServiceImpl(
   ): WorkspaceSecurity {
     val workspace = findWorkspaceById(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_READ_SECURITY)
-    return workspace.security ?: throw CsmResourceNotFoundException("RBAC not defined for ${workspace.id}")
+    return workspace.security
+        ?: throw CsmResourceNotFoundException("RBAC not defined for ${workspace.id}")
   }
 
   override fun setWorkspaceDefaultSecurity(
