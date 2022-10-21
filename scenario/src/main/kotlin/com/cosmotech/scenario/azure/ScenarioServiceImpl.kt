@@ -555,7 +555,7 @@ internal class ScenarioServiceImpl(
       upsertScenarioData(organizationId, scenario, workspaceId)
     }
   }
-
+  @Suppress("LongMethod")
   override fun updateScenario(
       organizationId: String,
       workspaceId: String,
@@ -614,7 +614,8 @@ internal class ScenarioServiceImpl(
         existingScenario.security = scenario.security
         hasChanged = true
       } else {
-        logger.warn("Security cannot by updated directly without admin permissions for ${scenario.id}")
+        logger.warn(
+            "Security cannot by updated directly without admin permissions for ${scenario.id}")
       }
     }
 
@@ -807,7 +808,8 @@ internal class ScenarioServiceImpl(
   ): ScenarioSecurity {
     val scenario = findScenarioById(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_READ_SECURITY, scenarioPermissions)
-    return scenario.security ?: throw CsmResourceNotFoundException("RBAC not defined for ${scenario.id}")
+    return scenario.security
+        ?: throw CsmResourceNotFoundException("RBAC not defined for ${scenario.id}")
   }
 
   override fun setScenarioDefaultSecurity(
