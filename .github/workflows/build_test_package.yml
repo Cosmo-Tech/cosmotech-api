@@ -200,7 +200,7 @@ jobs:
             # https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/
             TTLAfterFinished: true
             
-            EOF
+          EOF
 
       - name: Provision Kubernetes KinD Cluster and local Container Registry
         uses: container-tools/kind-action@v2
