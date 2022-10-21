@@ -19,6 +19,7 @@ import com.cosmotech.api.events.DeleteHistoricalDataOrganization
 import com.cosmotech.api.events.DeleteHistoricalDataWorkspace
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
+import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.api.rbac.PERMISSION_DELETE
@@ -339,7 +340,7 @@ internal class WorkspaceServiceImpl(
   ): WorkspaceSecurity {
     val workspace = findWorkspaceById(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_READ_SECURITY)
-    return workspace.security as WorkspaceSecurity
+    return workspace.security ?: throw CsmResourceNotFoundException("RBAC not defined for ${workspace.id}")
   }
 
   override fun setWorkspaceDefaultSecurity(
