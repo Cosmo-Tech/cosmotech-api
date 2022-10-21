@@ -317,8 +317,6 @@ internal class ScenarioServiceImpl(
   }
 
   override fun findAllScenarios(organizationId: String, workspaceId: String): List<Scenario> {
-    var organization = organizationService.findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_READ)
     return this.findAllScenariosStateOption(organizationId, workspaceId, true)
@@ -424,10 +422,6 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       scenarioId: String
   ): Scenario {
-    var organization = organizationService.findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
-    val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.getRbac(), PERMISSION_READ)
     val scenario =
         this.findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
             .addLastRunsInfo(this, organizationId, workspaceId)
@@ -552,10 +546,6 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       scenarioId: String
   ) {
-    var organization = organizationService.findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
-    val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.getRbac(), PERMISSION_READ)
     val scenario = findScenarioById(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE, scenarioPermissions)
     if (!scenario.parametersValues.isNullOrEmpty()) {
@@ -573,9 +563,7 @@ internal class ScenarioServiceImpl(
       scenario: Scenario
   ): Scenario {
     var organization = organizationService.findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.getRbac(), PERMISSION_READ)
     val existingScenario = findScenarioById(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE, scenarioPermissions)
 
