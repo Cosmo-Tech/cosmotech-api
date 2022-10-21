@@ -151,7 +151,8 @@ class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin
         existingOrganization.security = organization.security
         hasChanged = true
       } else {
-        logger.warn("Security cannot by updated directly without admin permissions for ${organization.id}")
+        logger.warn(
+            "Security cannot by updated directly without admin permissions for ${organization.id}")
       }
     }
     return if (hasChanged) {
@@ -238,7 +239,8 @@ class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin
   override fun getOrganizationSecurity(organizationId: String): OrganizationSecurity {
     val organization = findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_READ_SECURITY)
-    return organization.security ?: throw CsmResourceNotFoundException("RBAC not defined for ${organization.id}")
+    return organization.security
+        ?: throw CsmResourceNotFoundException("RBAC not defined for ${organization.id}")
   }
 
   override fun setOrganizationDefaultSecurity(
