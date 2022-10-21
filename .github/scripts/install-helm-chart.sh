@@ -14,7 +14,7 @@ replicaCount: 1
 
 image:
   repository: localhost:5000/cosmotech-api
-
+  tag: ${IMAGE_TAG}
 config:
   csm:
     platform:
@@ -48,7 +48,6 @@ EOF
   --timeout 5m \
   --values "${HELM_DEPLOY_SCRIPT_BASE_PATH}/helm-chart/values-dev.yaml" \
   --values values-ci.yaml \
-  --set image.tag="${IMAGE_TAG}"
 
 retVal=$?
 echo "retVal=$retVal"
