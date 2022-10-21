@@ -565,7 +565,7 @@ internal class ScenarioServiceImpl(
     var organization = organizationService.findOrganizationById(organizationId)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     val existingScenario = findScenarioById(organizationId, workspaceId, scenarioId)
-    csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE, scenarioPermissions)
+    csmRbac.verify(existingScenario.getRbac(), PERMISSION_WRITE, scenarioPermissions)
 
     var hasChanged =
         existingScenario
