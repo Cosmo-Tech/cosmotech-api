@@ -40,8 +40,8 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 val kotlinJvmTarget = 17
-val cosmotechApiCommonVersion = "0.1.9-SNAPSHOT"
-val cosmotechApiAzureVersion = "0.1.6-SNAPSHOT"
+val cosmotechApiCommonVersion = "0.1.18-SNAPSHOT"
+val cosmotechApiAzureVersion = "0.1.7-SNAPSHOT"
 
 val azureSpringBootBomVersion = "3.14.0"
 
@@ -52,6 +52,14 @@ allprojects {
 
   repositories {
     maven {
+      name = "GitHubPackages"
+      url = uri("https://maven.pkg.github.com/Cosmo-Tech/cosmotech-api-common")
+      credentials {
+        username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
+        password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+      }
+    }
+    maven {
       name = "Argo Client Java GitHub Packages"
       url = uri("https://maven.pkg.github.com/argoproj-labs/argo-client-java")
       credentials {
@@ -61,7 +69,6 @@ allprojects {
       content { includeModule("io.argoproj.workflow", "argo-client-java") }
     }
     mavenCentral()
-    maven { url = uri("https://jitpack.io") }
   }
 
   configure<SpotlessExtension> {
