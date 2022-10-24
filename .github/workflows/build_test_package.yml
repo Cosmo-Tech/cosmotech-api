@@ -231,7 +231,7 @@ jobs:
           helm \
             install calico \
             projectcalico/tigera-operator \
-            --version v3.21.2 \
+            --version v3.24.3 \
             --wait \
             --timeout 2m
 
