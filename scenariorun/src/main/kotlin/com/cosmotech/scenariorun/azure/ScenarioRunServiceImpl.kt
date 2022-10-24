@@ -65,6 +65,7 @@ import org.springframework.stereotype.Service
 
 private const val MIN_SDK_VERSION_MAJOR = 8
 private const val MIN_SDK_VERSION_MINOR = 5
+private const val DELETE_SCENARIORUN_DEFAULT_TIMEOUT: Long = 28800
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
@@ -389,11 +390,14 @@ internal class ScenarioRunServiceImpl(
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     sendScenarioRunMetaData(organizationId, workspace, scenarioId, scenarioRun.csmSimulationRun)
 
-    val purgeHistoricalDataConfiguration = startInfo.runTemplate?.deleteHistoricalData
-    if (purgeHistoricalDataConfiguration?.enable == true) {
+    val purgeHistoricalDataConfiguration =
+        startInfo.runTemplate?.deleteHistoricalData ?: DeleteHistoricalData()
+    if (purgeHistoricalDataConfiguration.enable) {
       logger.debug("Start coroutine to poll simulation status")
       GlobalScope.launch {
-        withTimeout(purgeHistoricalDataConfiguration.timeOut!!.toLong()) {
+        withTimeout(
+            purgeHistoricalDataConfiguration.timeOut?.toLong()
+                ?: DELETE_SCENARIORUN_DEFAULT_TIMEOUT) {
           deletePreviousSimulationDataIfCurrentSimulationIsSuccessful(
               scenarioRun, purgeHistoricalDataConfiguration)
         }

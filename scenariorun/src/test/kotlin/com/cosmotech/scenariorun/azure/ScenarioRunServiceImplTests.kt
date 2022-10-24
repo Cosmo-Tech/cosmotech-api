@@ -19,6 +19,7 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.getCurrentAuthentication
 import com.cosmotech.api.utils.objectMapper
 import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenariorun.ContainerFactory
 import com.cosmotech.scenariorun.domain.ScenarioRun
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
@@ -75,6 +76,8 @@ class ScenarioRunServiceImplTests {
 
   @MockK(relaxed = true) private lateinit var workflowService: WorkflowService
 
+  @MockK(relaxed = true) private lateinit var scenarioApiService: ScenarioApiService
+
   @MockK(relaxed = true) private lateinit var azureDataExplorerClient: AzureDataExplorerClient
 
   @MockK(relaxed = true) private lateinit var azureEventHubsClient: AzureEventHubsClient
@@ -91,6 +94,7 @@ class ScenarioRunServiceImplTests {
                 containerFactory,
                 workflowService,
                 workspaceService,
+                scenarioApiService,
                 azureDataExplorerClient,
                 azureEventHubsClient))
 
