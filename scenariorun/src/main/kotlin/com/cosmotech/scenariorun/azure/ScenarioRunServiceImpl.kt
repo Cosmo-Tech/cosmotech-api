@@ -65,7 +65,7 @@ import org.springframework.stereotype.Service
 
 private const val MIN_SDK_VERSION_MAJOR = 8
 private const val MIN_SDK_VERSION_MINOR = 5
-private const val DELETE_SCENARIORUN_DEFAULT_TIMEOUT: Long = 28800
+private const val DELETE_SCENARIO_RUN_DEFAULT_TIMEOUT: Long = 28800
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
@@ -397,7 +397,7 @@ internal class ScenarioRunServiceImpl(
       GlobalScope.launch {
         withTimeout(
             purgeHistoricalDataConfiguration.timeOut?.toLong()
-                ?: DELETE_SCENARIORUN_DEFAULT_TIMEOUT) {
+                ?: DELETE_SCENARIO_RUN_DEFAULT_TIMEOUT) {
           deletePreviousSimulationDataIfCurrentSimulationIsSuccessful(
               scenarioRun, purgeHistoricalDataConfiguration)
         }
@@ -417,8 +417,8 @@ internal class ScenarioRunServiceImpl(
     val scenarioId = currentRun.scenarioId!!
     val csmSimulationRun = currentRun.csmSimulationRun
     var scenarioRunStatus = getScenarioRunStatus(organizationId, scenarioRunId).state!!.value
-    while (scenarioRunStatus != ScenarioRunState.Successful.value ||
-        scenarioRunStatus != ScenarioRunState.Failed.value ||
+    while (scenarioRunStatus != ScenarioRunState.Successful.value &&
+        scenarioRunStatus != ScenarioRunState.Failed.value &&
         scenarioRunStatus != ScenarioRunState.DataIngestionFailure.value) {
       logger.info("ScenarioRun {} is still running, waiting for purging data", csmSimulationRun)
       logger.info("Scenario Status => {}", scenarioRunStatus)
