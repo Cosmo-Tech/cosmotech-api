@@ -247,23 +247,6 @@ jobs:
             --wait \
             --timeout 2m
 
-      - name: Deploy the NGINX Ingress Controller in the KinD Cluster
-        run: |
-          kubectl apply -f \
-            https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.47.0/deploy/static/provider/kind/deploy.yaml
-          kubectl -n ingress-nginx wait deploy/ingress-nginx-controller \
-            --for condition=available \
-            --timeout=60s
-          kubectl -n ingress-nginx \
-            label pods \
-            -l "app.kubernetes.io/instance=ingress-nginx,app.kubernetes.io/component=controller" \
-            "networking/traffic-allowed=yes"
-          kubectl -n ingress-nginx \
-            label services \
-            -l "app.kubernetes.io/instance=ingress-nginx,app.kubernetes.io/component=controller" \
-            "networking/traffic-allowed=yes"
-          kubectl -n ingress-nginx describe deployment ingress-nginx-controller
-
       - name: Make scripts executable
         run: |
           chmod +x .github/scripts/*.sh
