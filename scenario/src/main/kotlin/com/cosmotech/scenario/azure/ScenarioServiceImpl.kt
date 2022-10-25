@@ -820,7 +820,8 @@ internal class ScenarioServiceImpl(
   ): ScenarioSecurity {
     val scenario = findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
-    val rbacSecurity = csmRbac.setDefault(scenario.getRbac(), scenarioRole.role, scenarioPermissions)
+    val rbacSecurity =
+        csmRbac.setDefault(scenario.getRbac(), scenarioRole.role, scenarioPermissions)
     scenario.setRbac(rbacSecurity)
     upsertScenarioData(organizationId, scenario, workspaceId)
     return scenario.security as ScenarioSecurity
