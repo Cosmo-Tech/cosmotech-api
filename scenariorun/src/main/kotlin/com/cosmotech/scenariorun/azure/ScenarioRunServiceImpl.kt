@@ -32,7 +32,6 @@ import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenariorun.CSM_JOB_ID_LABEL_KEY
 import com.cosmotech.scenariorun.ContainerFactory
-import com.cosmotech.scenariorun.EVENT_HUB_CONTROL_PLANE_VAR
 import com.cosmotech.scenariorun.SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME
 import com.cosmotech.scenariorun.api.ScenariorunApiService
 import com.cosmotech.scenariorun.domain.RunTemplateParameterValue
@@ -427,7 +426,7 @@ internal class ScenarioRunServiceImpl(
     }
     if (scenarioRunStatus == ScenarioRunState.Successful.value) {
       logger.info("ScenarioRun {} is Successfull => purging data", csmSimulationRun)
-      deleteHistoricalScenarioRunsByScenario(organizationId, workspaceId, scenarioId)
+      deleteScenarioRunsByScenarioWithoutAccessEnforcement(organizationId, workspaceId, scenarioId)
     } else {
       logger.info(
           "ScenarioRun {} is in error {} => no purging data", csmSimulationRun, scenarioRunStatus)
@@ -551,7 +550,9 @@ internal class ScenarioRunServiceImpl(
   }
 
   override fun getScenarioRunStatus(organizationId: String, scenariorunId: String) =
-      getScenarioRunStatus(organizationId, this.findScenarioRunById(organizationId, scenariorunId))
+      getScenarioRunStatus(
+          organizationId,
+          this.findScenarioRunById(organizationId, scenariorunId, withStateInformation = false))
 
   private fun getScenarioRunStatus(
       organizationId: String,
@@ -594,12 +595,7 @@ internal class ScenarioRunServiceImpl(
                 // CSM_CONTROL_PLANE_TOPIC variable is present in any of the containers
                 // And if the run template send data to datawarehouse with probe consumers
                 checkDataIngestionState =
-                    (scenarioRun.containers?.any {
-                      !it.envVars?.get(EVENT_HUB_CONTROL_PLANE_VAR).isNullOrBlank()
-                    }
-                        ?: false) &&
-                        !(scenarioRun.noDataIngestionState ?: false) &&
-                        versionWithDataIngestionState))
+                    !(scenarioRun.noDataIngestionState ?: false) && versionWithDataIngestionState))
   }
 
   @EventListener(WorkflowPhaseToStateRequest::class)
