@@ -51,6 +51,10 @@ nodes:
       - |
         kind: JoinConfiguration
         nodeRegistration:
+          taints:
+          - key: "vendor"
+            value: "cosmotech"
+            effect: "NoSchedule"
           kubeletExtraArgs:
             node-labels: "kubernetes.io/os=linux,cosmotech.com/tier=compute,cosmotech.com/size=basic"
     - role: worker
@@ -59,6 +63,10 @@ nodes:
       - |
         kind: JoinConfiguration
         nodeRegistration:
+          taints:
+          - key: "vendor"
+            value: "cosmotech"
+            effect: "NoSchedule"
           kubeletExtraArgs:
             node-labels: "kubernetes.io/os=linux,cosmotech.com/tier=services"
     - role: worker
@@ -67,6 +75,10 @@ nodes:
       - |
         kind: JoinConfiguration
         nodeRegistration:
+          taints:
+          - key: "vendor"
+            value: "cosmotech"
+            effect: "NoSchedule"
           kubeletExtraArgs:
             node-labels: "kubernetes.io/os=linux,cosmotech.com/tier=db"
     - role: worker
