@@ -41,8 +41,8 @@ Models/ScenarioDataDownloadInfo.md
 Models/ScenarioDataDownloadJob.md
 Models/ScenarioJobState.md
 Models/ScenarioLastRun.md
-Models/ScenarioRole.md
 Models/ScenarioResourceSizing.md
+Models/ScenarioRole.md
 Models/ScenarioRun.md
 Models/ScenarioRunContainer.md
 Models/ScenarioRunContainerArtifact.md
