@@ -157,6 +157,19 @@ controller:
     limits:
       cpu: 1000m
       memory: 512Mi
+  admissionWebhooks:
+    labels:
+      networking/traffic-allowed: "yes"
+    patch:
+      labels:
+        networking/traffic-allowed: "yes"
+      nodeSelector:
+        "cosmotech.com/tier": "services"
+      tolerations:
+      - key: "vendor"
+        operator: "Equal"
+        value: "cosmotech"
+        effect: "NoSchedule"
 defaultBackend:
   podLabels:
     networking/traffic-allowed: "yes"

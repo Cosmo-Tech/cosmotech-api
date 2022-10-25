@@ -51,6 +51,10 @@ export POSTGRES_RELEASE_NAME=postgrescsmv2
 export ARGO_VERSION="0.16.6"
 export MINIO_VERSION="8.0.10"
 export POSTGRESQL_VERSION="11.6.12"
+export VERSION_REDIS="16.13.0"
+export VERSION_REDIS_COSMOTECH="1.0.0"
+export VERSION_REDIS_INSIGHT="0.1.0"
+export INGRESS_NGINX_VERSION="4.2.5"
 
 export ARGO_DATABASE=argo_workflows
 export ARGO_POSTGRESQL_USER=argo
@@ -66,39 +70,155 @@ pushd "${WORKING_DIR}"
 # Create namespace if it does not exist
 kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
 
+# nginx
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+
+cat <<EOF > /tmp/values-ingress-nginx.yaml
+controller:
+  labels:
+    networking/traffic-allowed: "yes"
+  podLabels:
+    networking/traffic-allowed: "yes"
+  nodeSelector:
+    "cosmotech.com/tier": "services"
+  tolerations:
+  - key: "vendor"
+    operator: "Equal"
+    value: "cosmotech"
+    effect: "NoSchedule"
+  service:
+    labels:
+      networking/traffic-allowed: "yes"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+  admissionWebhooks:
+    labels:
+      networking/traffic-allowed: "yes"
+    patch:
+      labels:
+        networking/traffic-allowed: "yes"
+      nodeSelector:
+        "cosmotech.com/tier": "services"
+      tolerations:
+      - key: "vendor"
+        operator: "Equal"
+        value: "cosmotech"
+        effect: "NoSchedule"
+defaultBackend:
+  podLabels:
+    networking/traffic-allowed: "yes"
+  nodeSelector:
+    "cosmotech.com/tier": "services"
+  tolerations:
+  - key: "vendor"
+    operator: "Equal"
+    value: "cosmotech"
+    effect: "NoSchedule"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+EOF
+
+  helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
+    --namespace "${NAMESPACE}" \
+    --version ${INGRESS_NGINX_VERSION} \
+    --values /tmp/values-ingress-nginx.yaml
+
 # Redis Cluster
 helm repo add bitnami https://charts.bitnami.com/bitnami
 
+cat <<EOF > values-redis.yaml
+image:
+  registry: ghcr.io
+  repository: cosmo-tech/cosmotech-redis
+  tag: ${VERSION_REDIS_COSMOTECH}
+master:
+  podLabels:
+    "networking/traffic-allowed": "yes"
+  tolerations:
+  - key: "vendor"
+    operator: "Equal"
+    value: "cosmotech"
+    effect: "NoSchedule"
+  nodeSelector:
+    cosmotech.com/tier: "db"
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1024Mi
+replica:
+  replicaCount: 1
+  podLabels:
+    "networking/traffic-allowed": "yes"
+  tolerations:
+  - key: "vendor"
+    operator: "Equal"
+    value: "cosmotech"
+    effect: "NoSchedule"
+  nodeSelector:
+    "cosmotech.com/tier": "db"
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1024Mi
+
+EOF
+
 helm upgrade --install \
     --namespace ${NAMESPACE} cosmotechredis bitnami/redis \
+    --version "${VERSION_REDIS}" \
     --values https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-redis/main/values-cosmotech-cluster.yaml \
-    --set replica.replicaCount=1 \
-    --set master.nodeSelector."cosmotech\\.com/tier"=db \
-    --set master.resources.requests.cpu=500m \
-    --set master.resources.limits.cpu=1 \
-    --set master.resources.requests.memory=512Mi \
-    --set master.resources.limits.memory=1024Mi \
-    --set replica.nodeSelector."cosmotech\\.com/tier"=db \
-    --set replica.resources.requests.cpu=500m \
-    --set replica.resources.limits.cpu=1 \
-    --set replica.resources.requests.memory=512Mi \
-    --set replica.resources.limits.memory=1024Mi \
+    --values values-redis.yaml \
     --wait \
     --timeout 10m0s
 
 # Redis Insight
 REDIS_INSIGHT_HELM_CHART="${HELM_CHARTS_BASE_PATH}/charts/redisinsight-chart.tgz"
-wget https://docs.redis.com/latest/pkgs/redisinsight-chart-0.1.0.tgz  -O ${REDIS_INSIGHT_HELM_CHART}
+wget https://docs.redis.com/latest/pkgs/redisinsight-chart-${VERSION_REDIS_INSIGHT}.tgz  -O ${REDIS_INSIGHT_HELM_CHART}
+
+cat <<EOF > values-redis-insight.yaml
+service:
+  type: NodePort
+  port: 80
+tolerations:
+- key: "vendor"
+  operator: "Equal"
+  value: "cosmotech"
+  effect: "NoSchedule"
+nodeSelector:
+  "cosmotech.com/tier": "services"
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 1000m
+    memory: 128Mi
+
+EOF
+
 
 helm upgrade --install \
    --namespace ${NAMESPACE} redisinsight ${REDIS_INSIGHT_HELM_CHART} \
    --set service.type=NodePort \
-   --set nodeSelector."cosmotech\\.com/tier"=services \
-    --set resources.requests.cpu=100m \
-    --set resources.limits.cpu=1 \
-    --set resources.requests.memory=128Mi \
-    --set resources.limits.memory=128Mi \
    --wait \
+   --values values-redis-insight.yaml \
    --timeout 10m0s
 
 REDIS_PASSWORD=$(kubectl get secret --namespace ${NAMESPACE} cosmotechredis -o jsonpath="{.data.redis-password}" | base64 --decode)
@@ -134,8 +254,13 @@ networkPolicy:
   allowExternal: true
 podLabels:
   networking/traffic-allowed: "yes"
+tolerations:
+- key: "vendor"
+  operator: "Equal"
+  value: "cosmotech"
+  effect: "NoSchedule"
 nodeSelector:
-  cosmotech.com/tier: services
+  "cosmotech.com/tier": "services"
 accessKey: "${ARGO_MINIO_ACCESS_KEY:-}"
 secretKey: "${ARGO_MINIO_SECRET_KEY:-}"
 EOF
@@ -152,11 +277,21 @@ auth:
 primary:
   podLabels:
     "networking/traffic-allowed": "yes"
+  tolerations:
+  - key: "vendor"
+    operator: "Equal"
+    value: "cosmotech"
+    effect: "NoSchedule"
   nodeSelector:
-    cosmotech.com/tier: db
+    "cosmotech.com/tier": "db"
 readReplicas:
   nodeSelector:
-    cosmotech.com/tier: db
+    "cosmotech.com/tier": "db"
+  tolerations:
+  - key: "vendor"
+    operator: "Equal"
+    value: "cosmotech"
+    effect: "NoSchedule"
 resources:
   requests:
     memory: "64Mi"
@@ -164,7 +299,6 @@ resources:
   limits:
     memory: "256Mi"
     cpu: "1"
-
 EOF
 
 helm repo add bitnami https://charts.bitnami.com/bitnami
@@ -202,8 +336,6 @@ executor:
     value: 1s
   - name: WAIT_CONTAINER_STATUS_CHECK_INTERVAL
     value: 1s
-  - name: RECENTLY_STARTED_POD_DURATION
-    value: 1s
 useDefaultArtifactRepo: true
 artifactRepository:
   archiveLogs: true
@@ -223,8 +355,13 @@ server:
   secure: false
   podLabels:
     networking/traffic-allowed: "yes"
+  tolerations:
+  - key: "vendor"
+    operator: "Equal"
+    value: "cosmotech"
+    effect: "NoSchedule"
   nodeSelector:
-    cosmotech.com/tier: services
+    "cosmotech.com/tier": "services"
   resources:
     requests:
       memory: "64Mi"
@@ -233,10 +370,15 @@ server:
       memory: "128Mi"
       cpu: "1"
 controller:
-  nodeSelector:
-    cosmotech.com/tier: services
   podLabels:
     networking/traffic-allowed: "yes"
+  tolerations:
+  - key: "vendor"
+    operator: "Equal"
+    value: "cosmotech"
+    effect: "NoSchedule"
+  nodeSelector:
+    "cosmotech.com/tier": "services"
   resources:
     requests:
       memory: "64Mi"
@@ -296,11 +438,12 @@ popd
 export COSMOTECH_API_RELEASE_NAME="cosmotech-api-${API_VERSION}"
 
 cat <<EOF > values-cosmotech-api-deploy.yaml
+replicaCount: 2
 api:
   version: "$API_VERSION"
-replicaCount: 2
 
 image:
+  repository: ghcr.io/cosmo-tech/cosmotech-api
   tag: "$API_IMAGE_TAG"
 
 config:
@@ -316,7 +459,6 @@ config:
         port: "6379"
         username: "default"
         password: "${REDIS_PASSWORD}"
-
 
 ingress:
   enabled: ${COSMOTECH_API_INGRESS_ENABLED}
@@ -342,8 +484,14 @@ resources:
     #   cpu: 100m
     memory: 1024Mi
 
+tolerations:
+- key: "vendor"
+  operator: "Equal"
+  value: "cosmotech"
+  effect: "NoSchedule"
+
 nodeSelector:
-  cosmotech.com/tier: services
+  "cosmotech.com/tier": "services"
 
 EOF
 
