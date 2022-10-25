@@ -1,7 +1,7 @@
 #!/bin/bash
 set -o errexit
 
-reg_name='local-registry'
+reg_name='kind-registry'
 cluster_name=${1:-local-k8s-cluster}
 
 echo -n "Enter yes or no to delete cluster '$cluster_name' : "
