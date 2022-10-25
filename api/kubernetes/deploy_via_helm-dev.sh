@@ -61,6 +61,8 @@ export ARGO_POSTGRESQL_USER=argo
 export ARGO_BUCKET_NAME=argo-workflows
 export ARGO_SERVICE_ACCOUNT=workflowcsmv2
 
+export NAMESPACE_NGINX="ingress-nginx"
+
 HELM_CHARTS_BASE_PATH=$(realpath "$(dirname "$0")")
 
 WORKING_DIR=$(mktemp -d -t cosmotech-api-helm-XXXXXXXXXX)
@@ -71,69 +73,74 @@ pushd "${WORKING_DIR}"
 kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
 
 # nginx
+kubectl create namespace "${NAMESPACE_NGINX}" --dry-run=client -o yaml | kubectl apply -f -
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm repo update
 
 cat <<EOF > /tmp/values-ingress-nginx.yaml
+# https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/hack/manifest-templates/provider/kind/values.yaml
+# Kind - https://kind.sigs.k8s.io/docs/user/ingress/
 controller:
   labels:
     networking/traffic-allowed: "yes"
   podLabels:
     networking/traffic-allowed: "yes"
-  nodeSelector:
-    "cosmotech.com/tier": "services"
-  tolerations:
-  - key: "vendor"
-    operator: "Equal"
-    value: "cosmotech"
-    effect: "NoSchedule"
-  service:
-    type: NodePort
-    labels:
-      networking/traffic-allowed: "yes"
-  resources:
-    requests:
-      cpu: 100m
-      memory: 512Mi
-    limits:
-      cpu: 1000m
-      memory: 512Mi
   admissionWebhooks:
     labels:
       networking/traffic-allowed: "yes"
     patch:
       labels:
         networking/traffic-allowed: "yes"
-      nodeSelector:
-        "cosmotech.com/tier": "services"
       tolerations:
-      - key: "vendor"
-        operator: "Equal"
-        value: "cosmotech"
-        effect: "NoSchedule"
+        - key: "node-role.kubernetes.io/master"
+          operator: "Equal"
+          effect: "NoSchedule"
+        - key: "node-role.kubernetes.io/control-plane"
+          operator: "Equal"
+          effect: "NoSchedule"
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  hostPort:
+    enabled: true
+  terminationGracePeriodSeconds: 0
+  service:
+    type: NodePort
+    labels:
+      networking/traffic-allowed: "yes"
+  watchIngressWithoutClass: true
+
+  nodeSelector:
+    ingress-ready: "true"
+  tolerations:
+    - key: "node-role.kubernetes.io/master"
+      operator: "Equal"
+      effect: "NoSchedule"
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Equal"
+      effect: "NoSchedule"
+
+  publishService:
+    enabled: false
+  extraArgs:
+    publish-status-address: localhost
 defaultBackend:
   podLabels:
     networking/traffic-allowed: "yes"
-  nodeSelector:
-    "cosmotech.com/tier": "services"
   tolerations:
-  - key: "vendor"
-    operator: "Equal"
-    value: "cosmotech"
-    effect: "NoSchedule"
-  resources:
-    requests:
-      cpu: 100m
-      memory: 512Mi
-    limits:
-      cpu: 1000m
-      memory: 512Mi
+    - key: "node-role.kubernetes.io/master"
+      operator: "Equal"
+      effect: "NoSchedule"
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Equal"
+      effect: "NoSchedule"
 EOF
 
-  helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
-    --namespace "${NAMESPACE}" \
-    --version ${INGRESS_NGINX_VERSION} \
-    --values /tmp/values-ingress-nginx.yaml
+helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
+  --namespace ${NAMESPACE_NGINX} \
+  --version ${INGRESS_NGINX_VERSION} \
+  --values /tmp/values-ingress-nginx.yaml
 
 # Redis Cluster
 helm repo add bitnami https://charts.bitnami.com/bitnami
