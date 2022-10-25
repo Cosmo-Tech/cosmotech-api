@@ -170,6 +170,7 @@ controller:
         operator: "Equal"
         value: "cosmotech"
         effect: "NoSchedule"
+
 defaultBackend:
   podLabels:
     networking/traffic-allowed: "yes"
@@ -420,8 +421,8 @@ helm upgrade --install \
     --namespace ${NAMESPACE} cosmotechredis bitnami/redis \
     --version "${VERSION_REDIS}" \
     --values https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-redis/main/values-cosmotech-cluster.yaml \
-    --wait \
     --values values-redis.yaml \
+    --wait \
     --timeout 10m0s
 HELM_CHARTS_BASE_PATH=$(realpath "$(dirname "$0")")
 
