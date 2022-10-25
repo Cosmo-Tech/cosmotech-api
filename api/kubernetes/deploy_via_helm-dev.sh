@@ -88,6 +88,7 @@ controller:
     value: "cosmotech"
     effect: "NoSchedule"
   service:
+    type: NodePort
     labels:
       networking/traffic-allowed: "yes"
   resources:
