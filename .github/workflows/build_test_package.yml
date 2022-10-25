@@ -282,23 +282,6 @@ jobs:
       - name: Test Helm Release (current Version)
         run: .github/scripts/test-helm-release.sh ${{ env.API_VERSION_FROM_REF_NAME }}
 
-      - name: Install the Helm Chart (v1)
-        env:
-          PHOENIXAKSDEV_TENANT_ID: ${{ secrets.PHOENIXAKSDEV_TENANT_ID }}
-          PHOENIXAKSDEV_CLIENT_ID: ${{ secrets.PHOENIXAKSDEV_CLIENT_ID }}
-          PHOENIXAKSDEV_CLIENT_SECRET: ${{ secrets.PHOENIXAKSDEV_CLIENT_SECRET }}
-          PHOENIXAKSDEV_COSMOS_URI: ${{ secrets.PHOENIXAKSDEV_COSMOS_URI }}
-          PHOENIXAKSDEV_COSMOS_KEY: ${{ secrets.PHOENIXAKSDEV_COSMOS_KEY }}
-          PHOENIXAKSDEV_STORAGE_ACCOUNT_NAME: ${{ secrets.PHOENIXAKSDEV_STORAGE_ACCOUNT_NAME }}
-          PHOENIXAKSDEV_STORAGE_ACCOUNT_KEY: ${{ secrets.PHOENIXAKSDEV_STORAGE_ACCOUNT_KEY }}
-          PHOENIXAKSDEV_ADX_BASE_URI: ${{ secrets.PHOENIXAKSDEV_ADX_BASE_URI }}
-          PHOENIXAKSDEV_ADX_INGESTION_BASE_URI: ${{ secrets.PHOENIXAKSDEV_ADX_INGESTION_BASE_URI }}
-          PHOENIXAKSDEV_EVENT_HUBS_BASE_URI: ${{ secrets.PHOENIXAKSDEV_EVENT_HUBS_BASE_URI }}
-        run: .github/scripts/install-helm-chart.sh v1
-
-      - name: Test Helm Release (v1)
-        run: .github/scripts/test-helm-release.sh v1
-
   scan_and_push_container_images_to_registries:
     runs-on: ubuntu-latest
     needs:
