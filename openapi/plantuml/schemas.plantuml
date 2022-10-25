@@ -266,13 +266,13 @@ entity ScenarioLastRun {
     workflowName: String
 }
 
-entity ScenarioRole {
-    * role: String
-}
-
 entity ScenarioResourceSizing {
     * requests: ResourceSizeInfo
     * limits: ResourceSizeInfo
+}
+
+entity ScenarioRole {
+    * role: String
 }
 
 entity ScenarioRun {
@@ -529,8 +529,8 @@ ScenarioSecurity -- "0..*" ScenarioAccessControl : accessControlList
 Organization -- OrganizationServices : services
 Organization -- OrganizationSecurity : security
 User -- "0..*" UserOrganization : organizations
-RunTemplate -- DeleteHistoricalData : deleteHistoricalData
 RunTemplate -- RunTemplateResourceSizing : runSizing
+RunTemplate -- DeleteHistoricalData : deleteHistoricalData
 UserOrganization -- "0..*" UserWorkspace : workspaces
 Solution -- "0..*" RunTemplateParameter : parameters
 Solution -- "0..*" RunTemplateParameterGroup : parameterGroups
