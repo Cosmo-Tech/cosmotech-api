@@ -161,9 +161,9 @@ internal class ScenarioRunServiceImpl(
   ) {
     val scenarioRuns = getScenarioRuns(organizationId, workspaceId, scenarioId).toMutableList()
 
-    scenarioRuns.filter { it.state == ScenarioRunState.Failed }.forEach {
-      deleteScenarioRunWithoutAccessEnforcement(it)
-    }
+    scenarioRuns
+        .filter { it.state == ScenarioRunState.Failed || it.state == ScenarioRunState.Unknown }
+        .forEach { deleteScenarioRunWithoutAccessEnforcement(it) }
 
     val lastRunId =
         scenarioApiService.findScenarioById(organizationId, workspaceId, scenarioId).lastRun!!
