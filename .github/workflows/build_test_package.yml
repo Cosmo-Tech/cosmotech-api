@@ -182,7 +182,7 @@ jobs:
           EOF
 
       - name: Provision Kubernetes KinD Cluster and local Container Registry
-        uses: container-tools/kind-action@v1
+        uses: container-tools/kind-action@v2
         with:
           version: v0.14.0
           config: /tmp/csm-kind-config.yaml
