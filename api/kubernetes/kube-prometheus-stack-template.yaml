@@ -1,0 +1,109 @@
+namespace: $MONITORING_NAMESPACE_VAR
+name: cosmotech-api-latest
+labels:
+  networking/traffic-allowed: "yes"
+defaultRules:
+  create: false
+alertmanager:
+  enabled: false
+grafana:
+  enabled: true
+  adminPassword: $PROM_ADMIN_PASSWORD_VAR
+  defaultDashboardsEnabled: false
+  tolerations:
+    - key: "vendor"
+      operator: "Equal"
+      value: "cosmotech"
+      effect: "NoSchedule"
+  nodeSelector:
+    "cosmotech.com/tier": "monitoring"
+kubeApiServer:
+  enabled: false
+kubelet:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+coreDns:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeStateMetrics:
+  enabled: false
+nodeExporter:
+  enabled: false
+prometheusOperator:
+  tolerations:
+    - key: "vendor"
+      operator: "Equal"
+      value: "cosmotech"
+      effect: "NoSchedule"
+  nodeSelector:
+    "cosmotech.com/tier": "monitoring"
+  admissionWebhooks:
+    patch:
+      labels:
+        networking/traffic-allowed: "yes"
+      nodeSelector:
+        "cosmotech.com/tier": "monitoring"
+      tolerations:
+        - key: "vendor"
+          operator: "Equal"
+          value: "cosmotech"
+          effect: "NoSchedule"
+prometheus:
+  enabled: true
+  crname: prometheus
+  serviceAccount:
+    create: true
+    name: prometheus-service-account
+  prometheusSpec:
+    logLevel: info
+    replicas: $PROM_REPLICAS_NUMBER_VAR
+    tolerations:
+      - key: "vendor"
+        operator: "Equal"
+        value: "cosmotech"
+        effect: "NoSchedule"
+    nodeSelector:
+      "cosmotech.com/tier": "monitoring"
+    podMetadata:
+      annotations:
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+      labels:
+        app: prometheus
+    resources:
+      limits:
+        cpu: 1
+        memory: $PROM_CPU_MEM_LIMITS_VAR
+      requests:
+        cpu: 1
+        memory: $PROM_CPU_MEM_REQUESTS_VAR
+    retention: 35d
+    serviceMonitorSelector:
+      matchLabels:
+        serviceMonitorSelector: prometheus
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: $PROM_STORAGE_CLASS_NAME_VAR
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: $PROM_STORAGE_RESOURCE_REQUEST_VAR
+  additionalServiceMonitors:
+    - name: cosmotech-latest
+      additionalLabels:
+        serviceMonitorSelector: prometheus
+      endpoints:
+        - interval: 30s
+          targetPort: 8081
+          path: /actuator/prometheus
+      namespaceSelector:
+        matchNames:
+        - phoenix
+      selector:
+        matchLabels:
+          app.kubernetes.io/instance: cosmotech-api-latest
