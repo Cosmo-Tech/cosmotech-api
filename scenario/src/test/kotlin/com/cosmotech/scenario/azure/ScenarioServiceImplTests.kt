@@ -9,6 +9,7 @@ import com.azure.cosmos.models.CosmosItemResponse
 import com.azure.cosmos.models.PartitionKey
 import com.azure.spring.data.cosmos.core.CosmosTemplate
 import com.cosmotech.api.azure.adx.AzureDataExplorerClient
+import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEvent
 import com.cosmotech.api.events.CsmEventPublisher
@@ -63,7 +64,8 @@ class ScenarioServiceImplTests {
   @MockK private lateinit var solutionService: SolutionApiService
   @MockK private lateinit var workspaceService: WorkspaceApiService
   @MockK private lateinit var idGenerator: CsmIdGenerator
-  @MockK private lateinit var azureDataExplorerClient: AzureDataExplorerClient
+  @MockK(relaxed = true) private lateinit var azureEventHubsClient: AzureEventHubsClient
+  @MockK(relaxed = true) private lateinit var azureDataExplorerClient: AzureDataExplorerClient
 
   @Suppress("unused") @MockK(relaxed = true) private lateinit var cosmosTemplate: CosmosTemplate
   @Suppress("unused") @MockK private lateinit var cosmosClient: CosmosClient
@@ -87,7 +89,8 @@ class ScenarioServiceImplTests {
                 solutionService,
                 organizationService,
                 workspaceService,
-                azureDataExplorerClient),
+                azureDataExplorerClient,
+                azureEventHubsClient),
             recordPrivateCalls = true)
 
     every { scenarioServiceImpl getProperty "cosmosTemplate" } returns cosmosTemplate
@@ -188,6 +191,17 @@ class ScenarioServiceImplTests {
     // The implementation in ScenarioServiceImpl only needs to know if the response item is null or
     // not
     every { cosmosItemResponse.item } returns mapOf<String, Any>()
+    val eventBus = mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus>()
+    every { csmPlatformProperties.azure?.eventBus!! } returns eventBus
+    every { workspace.key } returns "my-workspace-key"
+    every { workspace.id } returns "my-workspace-id"
+    val authentication =
+        mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication>()
+    every { eventBus.authentication } returns authentication
+    every { eventBus.authentication.strategy } returns
+        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
+            .TENANT_CLIENT_CREDENTIALS
+    every { workspace.sendScenarioMetadataToEventHub } returns false
 
     val scenarioCreated =
         scenarioServiceImpl.createScenario(
@@ -274,6 +288,17 @@ class ScenarioServiceImplTests {
     // The implementation in ScenarioServiceImpl only needs to know if the response item is null or
     // not
     every { cosmosItemResponse.item } returns mapOf<String, Any>()
+    val eventBus = mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus>()
+    every { csmPlatformProperties.azure?.eventBus!! } returns eventBus
+    every { workspace.key } returns "my-workspace-key"
+    every { workspace.id } returns "my-workspace-id"
+    val authentication =
+        mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication>()
+    every { eventBus.authentication } returns authentication
+    every { eventBus.authentication.strategy } returns
+        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
+            .TENANT_CLIENT_CREDENTIALS
+    every { workspace.sendScenarioMetadataToEventHub } returns false
 
     val scenarioCreated =
         scenarioServiceImpl.createScenario(
@@ -365,6 +390,17 @@ class ScenarioServiceImplTests {
     // The implementation in ScenarioServiceImpl only needs to know if the response item is null or
     // not
     every { cosmosItemResponse.item } returns mapOf<String, Any>()
+    val eventBus = mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus>()
+    every { csmPlatformProperties.azure?.eventBus!! } returns eventBus
+    every { workspace.key } returns "my-workspace-key"
+    every { workspace.id } returns "my-workspace-id"
+    val authentication =
+        mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication>()
+    every { eventBus.authentication } returns authentication
+    every { eventBus.authentication.strategy } returns
+        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
+            .TENANT_CLIENT_CREDENTIALS
+    every { workspace.sendScenarioMetadataToEventHub } returns false
 
     val scenarioCreated =
         scenarioServiceImpl.createScenario(
@@ -457,6 +493,19 @@ class ScenarioServiceImplTests {
     val cosmosContainer = mockk<CosmosContainer>(relaxed = true)
     every { cosmosCoreDatabase.getContainer("${ORGANIZATION_ID}_scenario_data") } returns
         cosmosContainer
+    val eventBus = mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus>()
+    every { csmPlatformProperties.azure?.eventBus!! } returns eventBus
+    val workspace = mockk<Workspace>()
+    every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
+    every { workspace.key } returns "my-workspace-key"
+    every { workspace.id } returns "my-workspace-id"
+    val authentication =
+        mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication>()
+    every { eventBus.authentication } returns authentication
+    every { eventBus.authentication.strategy } returns
+        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
+            .TENANT_CLIENT_CREDENTIALS
+    every { workspace.sendScenarioMetadataToEventHub } returns false
 
     this.scenarioServiceImpl.deleteScenario(ORGANIZATION_ID, WORKSPACE_ID, c111.id!!, false)
 
@@ -514,6 +563,19 @@ class ScenarioServiceImplTests {
     val cosmosContainer = mockk<CosmosContainer>(relaxed = true)
     every { cosmosCoreDatabase.getContainer("${ORGANIZATION_ID}_scenario_data") } returns
         cosmosContainer
+    val eventBus = mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus>()
+    every { csmPlatformProperties.azure?.eventBus!! } returns eventBus
+    val workspace = mockk<Workspace>()
+    every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
+    every { workspace.key } returns "my-workspace-key"
+    every { workspace.id } returns "my-workspace-id"
+    val authentication =
+        mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication>()
+    every { eventBus.authentication } returns authentication
+    every { eventBus.authentication.strategy } returns
+        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
+            .TENANT_CLIENT_CREDENTIALS
+    every { workspace.sendScenarioMetadataToEventHub } returns false
 
     this.scenarioServiceImpl.deleteScenario(ORGANIZATION_ID, WORKSPACE_ID, m1.id!!, true)
 
@@ -574,6 +636,19 @@ class ScenarioServiceImplTests {
     val cosmosContainer = mockk<CosmosContainer>(relaxed = true)
     every { cosmosCoreDatabase.getContainer("${ORGANIZATION_ID}_scenario_data") } returns
         cosmosContainer
+    val eventBus = mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus>()
+    every { csmPlatformProperties.azure?.eventBus!! } returns eventBus
+    val workspace = mockk<Workspace>()
+    every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
+    every { workspace.key } returns "my-workspace-key"
+    every { workspace.id } returns "my-workspace-id"
+    val authentication =
+        mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication>()
+    every { eventBus.authentication } returns authentication
+    every { eventBus.authentication.strategy } returns
+        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
+            .TENANT_CLIENT_CREDENTIALS
+    every { workspace.sendScenarioMetadataToEventHub } returns false
 
     this.scenarioServiceImpl.deleteScenario(ORGANIZATION_ID, WORKSPACE_ID, p11.id!!, false)
 

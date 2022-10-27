@@ -35,7 +35,9 @@ internal fun findDatasetsAndConnectors(
   val parameterGroupIds = runTemplate.parameterGroups
   if (parameterGroupIds != null) {
     val parametersIds =
-        (solution.parameterGroups?.filter { it.id in parameterGroupIds }?.map { it.parameters })
+        (solution.parameterGroups?.filter { it.id in parameterGroupIds }?.map {
+              it.parameters ?: listOf()
+            })
             ?.flatten()
     if (parametersIds != null) {
       solution

@@ -68,6 +68,12 @@ entity DatasetSearch {
     * datasetTags: List<String>
 }
 
+entity DeleteHistoricalData {
+    * enable: Boolean
+    pollFrequency: Integer
+    timeOut: Integer
+}
+
 entity Organization {
     id: String
     name: String
@@ -98,7 +104,7 @@ entity OrganizationUser {
 
 entity RunTemplate {
     * id: String
-    * name: String
+    name: String
     description: String
     csmSimulation: String
     tags: List<String>
@@ -126,6 +132,8 @@ entity RunTemplate {
     gitRepositoryUrl: String
     gitBranchName: String
     runTemplateSourceDir: String
+    executionTimeout: Integer
+    deleteHistoricalData: DeleteHistoricalData
 }
 
 entity RunTemplateHandlerId {
@@ -133,8 +141,8 @@ entity RunTemplateHandlerId {
 
 entity RunTemplateParameter {
     * id: String
-    * labels: Map
-    * varType: String
+    labels: Map
+    varType: String
     defaultValue: String
     minValue: String
     maxValue: String
@@ -144,11 +152,11 @@ entity RunTemplateParameter {
 
 entity RunTemplateParameterGroup {
     * id: String
-    * labels: Map
+    labels: Map
     isTable: Boolean
     options: Map
     parentId: String
-    * parameters: List<String>
+    parameters: List<String>
 }
 
 entity RunTemplateParameterValue {
@@ -341,19 +349,19 @@ entity ScenarioValidationStatus {
 
 entity Solution {
     id: String
-    * key: String
-    * name: String
+    key: String
+    name: String
     description: String
-    * repository: String
+    repository: String
     csmSimulator: String
-    * version: String
+    version: String
     ownerId: String
     sdkVersion: String
     url: String
     tags: List<String>
     parameters: List<RunTemplateParameter>
     parameterGroups: List<RunTemplateParameterGroup>
-    * runTemplates: List<RunTemplate>
+    runTemplates: List<RunTemplate>
 }
 
 entity User {
@@ -411,6 +419,7 @@ entity Workspace {
     webApp: WorkspaceWebApp
     sendInputToDataWarehouse: Boolean
     useDedicatedEventHubNamespace: Boolean
+    sendScenarioMetadataToEventHub: Boolean
 }
 
 entity WorkspaceFile {
@@ -452,6 +461,7 @@ Connector -- "0..*" ConnectorParameterGroup : parameterGroups
 Organization -- "0..*" OrganizationUser : users
 Organization -- OrganizationServices : services
 User -- "0..*" UserOrganization : organizations
+RunTemplate -- DeleteHistoricalData : deleteHistoricalData
 UserOrganization -- "0..*" UserWorkspace : workspaces
 Solution -- "0..*" RunTemplateParameter : parameters
 Solution -- "0..*" RunTemplateParameterGroup : parameterGroups

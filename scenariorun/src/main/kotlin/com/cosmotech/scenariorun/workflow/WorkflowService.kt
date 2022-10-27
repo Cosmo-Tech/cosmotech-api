@@ -13,9 +13,13 @@ internal interface WorkflowService : HealthIndicator {
   /**
    * Launch a new Scenario run, using the request specified
    * @param scenarioRunStartContainers the scenario run start request
+   * @param executionTimeout the duration in which the workflow is allowed to run
    * @return a new ScenarioRun
    */
-  fun launchScenarioRun(scenarioRunStartContainers: ScenarioRunStartContainers): ScenarioRun
+  fun launchScenarioRun(
+      scenarioRunStartContainers: ScenarioRunStartContainers,
+      executionTimeout: Int?
+  ): ScenarioRun
 
   fun findWorkflowStatusAndArtifact(
       labelSelector: String,

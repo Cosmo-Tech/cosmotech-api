@@ -10,6 +10,11 @@ import com.azure.cosmos.models.SqlParameter
 import com.azure.cosmos.models.SqlQuerySpec
 import com.cosmotech.api.azure.CsmAzureService
 import com.cosmotech.api.azure.adx.AzureDataExplorerClient
+import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
+import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
+import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
+import com.cosmotech.api.events.DeleteHistoricalDataScenario
+import com.cosmotech.api.events.DeleteHistoricalDataWorkspace
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
@@ -23,6 +28,7 @@ import com.cosmotech.api.events.UserRemovedFromScenario
 import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.scenario.ScenarioMetaData
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -47,6 +53,7 @@ import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
 import java.time.OffsetDateTime
+import java.time.ZonedDateTime
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -65,6 +72,7 @@ internal class ScenarioServiceImpl(
     private val organizationService: OrganizationApiService,
     private val workspaceService: WorkspaceApiService,
     private val azureDataExplorerClient: AzureDataExplorerClient,
+    private val azureEventHubsClient: AzureEventHubsClient
 ) : CsmAzureService(), ScenarioApiService {
 
   override fun addOrReplaceScenarioParameterValues(
@@ -195,6 +203,7 @@ internal class ScenarioServiceImpl(
             datasetList = datasetList,
             rootId = rootId,
             parametersValues = newParametersValuesList,
+            validationStatus = ScenarioValidationStatus.Draft,
         )
     val scenarioAsMap = scenarioToSave.asMapWithAdditionalData(workspaceId)
     // We cannot use cosmosTemplate as it expects the Domain object to contain a field named 'id'
@@ -211,7 +220,7 @@ internal class ScenarioServiceImpl(
       this.eventPublisher.publishEvent(
           UserAddedToScenario(this, organizationId, user.id, user.roles.map { role -> role.value }))
     }
-
+    sendScenarioMetaData(organizationId, workspace, scenarioToSave)
     return scenarioToSave
   }
 
@@ -232,7 +241,7 @@ internal class ScenarioServiceImpl(
             ?.filter { parameterGroup ->
               runTemplate?.parameterGroups?.contains(parameterGroup.id) == true
             }
-            ?.flatMap { parameterGroup -> parameterGroup.parameters }
+            ?.flatMap { parameterGroup -> parameterGroup.parameters ?: mutableListOf() }
     if (!runTemplateParametersIds.isNullOrEmpty()) {
       val parentParameters = parent.parametersValues?.associate { it.parameterId to it }
       val scenarioParameters = scenario.parametersValues?.associate { it.parameterId to it }
@@ -281,7 +290,25 @@ internal class ScenarioServiceImpl(
     // TODO Notify users
 
     this.handleScenarioDeletion(organizationId, workspaceId, scenario, waitRelationshipPropagation)
+    val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
+    deleteScenarioMetadata(organizationId, workspace.key, scenarioId)
+
     eventPublisher.publishEvent(ScenarioDeleted(this, organizationId, workspaceId, scenarioId))
+  }
+
+  private fun deleteScenarioMetadata(
+      organizationId: String,
+      workspaceKey: String,
+      scenarioId: String
+  ) {
+    logger.debug(
+        "Deleting scenario metadata. Organization: {}, Workspace: {}, scenarioId: {}",
+        organizationId ?: "null",
+        workspaceKey ?: "null",
+        scenarioId ?: "null")
+
+    azureDataExplorerClient.deleteDataFromADXbyExtentShard(organizationId, workspaceKey, scenarioId)
+    logger.debug("Scenario metadata deleted from ADX for scenario {}", scenarioId)
   }
 
   override fun downloadScenarioData(
@@ -400,7 +427,8 @@ internal class ScenarioServiceImpl(
           .getContainer("${organizationId}_scenario_data")
           .queryItems(
               SqlQuerySpec(
-                  "SELECT * FROM c WHERE c.type = 'Scenario' AND c.workspaceId = @WORKSPACE_ID AND c.rootId = @ROOT_ID",
+                  "SELECT * FROM c WHERE c.type = 'Scenario' AND c.workspaceId = @WORKSPACE_ID" +
+                      " AND c.rootId = @ROOT_ID",
                   listOf(
                       SqlParameter("@WORKSPACE_ID", workspaceId),
                       SqlParameter("@ROOT_ID", rootId))),
@@ -486,7 +514,8 @@ internal class ScenarioServiceImpl(
           .getContainer("${organizationId}_scenario_data")
           .queryItems(
               SqlQuerySpec(
-                  "SELECT * FROM c WHERE c.type = 'Scenario' AND c.id = @SCENARIO_ID AND c.workspaceId = @WORKSPACE_ID",
+                  "SELECT * FROM c WHERE c.type = 'Scenario' AND c.id = @SCENARIO_ID" +
+                      " AND c.workspaceId = @WORKSPACE_ID",
                   listOf(
                       SqlParameter("@SCENARIO_ID", scenarioId),
                       SqlParameter("@WORKSPACE_ID", workspaceId))),
@@ -674,11 +703,7 @@ internal class ScenarioServiceImpl(
         publishDatasetListChangedEvent(organizationId, workspaceId, scenarioId, scenario)
       }
 
-      azureDataExplorerClient.ingestScenarioValidationStatus(
-          organizationId,
-          workspace.key,
-          scenarioId,
-          scenario.validationStatus?.toString() ?: ScenarioValidationStatus.Unknown.toString())
+      sendScenarioMetaData(organizationId, workspace, existingScenario)
     }
 
     return existingScenario
@@ -776,6 +801,65 @@ internal class ScenarioServiceImpl(
             scenario.asMapWithAdditionalData(workspaceId),
             PartitionKey(scenario.ownerId),
             CosmosItemRequestOptions())
+  }
+
+  private fun sendScenarioMetaData(
+      organizationId: String,
+      workspace: Workspace,
+      scenario: Scenario
+  ) {
+    if (workspace.sendScenarioMetadataToEventHub != true) {
+      return
+    }
+
+    if (workspace.useDedicatedEventHubNamespace != true) {
+      logger.error(
+          "workspace must be configured with useDedicatedEventHubNamespace to true in order to send metadata")
+      return
+    }
+
+    val eventBus = csmPlatformProperties.azure?.eventBus!!
+    val eventHubNamespace = "${organizationId}-${workspace.key}".lowercase()
+    val eventHubName = "scenariometadata"
+    val baseHostName = "${eventHubNamespace}.servicebus.windows.net".lowercase()
+
+    val scenarioMetaData =
+        ScenarioMetaData(
+            organizationId,
+            workspace.id!!,
+            scenario.id!!,
+            scenario.name ?: "",
+            scenario.description ?: "",
+            scenario.parentId ?: "",
+            scenario.solutionName ?: "",
+            scenario.runTemplateName ?: "",
+            scenario.validationStatus.toString(),
+            ZonedDateTime.now().toLocalDateTime().toString())
+
+    when (eventBus.authentication.strategy) {
+      SHARED_ACCESS_POLICY -> {
+        azureEventHubsClient.sendMetaData(
+            baseHostName,
+            eventHubName,
+            eventBus.authentication.sharedAccessPolicy?.namespace?.name!!,
+            eventBus.authentication.sharedAccessPolicy?.namespace?.key!!,
+            scenarioMetaData)
+      }
+      TENANT_CLIENT_CREDENTIALS -> {
+        azureEventHubsClient.sendMetaData(baseHostName, eventHubName, scenarioMetaData)
+      }
+    }
+  }
+
+  @EventListener(DeleteHistoricalDataWorkspace::class)
+  fun deleteHistoricalDataScenario(data: DeleteHistoricalDataWorkspace) {
+    val organizationId = data.organizationId
+    val workspaceId = data.workspaceId
+    val scenarios: List<Scenario> = findAllScenarios(organizationId, workspaceId)
+    for (scenario in scenarios) {
+      this.eventPublisher.publishEvent(
+          DeleteHistoricalDataScenario(this, organizationId, workspaceId, scenario.id!!))
+    }
   }
 
   @EventListener(OrganizationRegistered::class)

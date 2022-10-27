@@ -1,8 +1,4 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
 
-dependencies {
-  api(projects.cosmotechApiCommonParent.cosmotechApiCommon)
-  api(projects.cosmotechApiCommonParent.cosmotechApiCommonAzure)
-  implementation("org.apache.commons:commons-compress:1.21")
-}
+dependencies { implementation("org.apache.commons:commons-compress:1.21") }

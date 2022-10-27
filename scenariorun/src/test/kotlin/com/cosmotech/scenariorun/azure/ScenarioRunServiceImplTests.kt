@@ -11,6 +11,7 @@ import com.azure.cosmos.models.SqlQuerySpec
 import com.azure.cosmos.util.CosmosPagedIterable
 import com.azure.spring.data.cosmos.core.CosmosTemplate
 import com.cosmotech.api.azure.adx.AzureDataExplorerClient
+import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.id.CsmIdGenerator
@@ -18,6 +19,7 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.getCurrentAuthentication
 import com.cosmotech.api.utils.objectMapper
 import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenariorun.ContainerFactory
 import com.cosmotech.scenariorun.domain.ScenarioRun
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
@@ -74,7 +76,11 @@ class ScenarioRunServiceImplTests {
 
   @MockK(relaxed = true) private lateinit var workflowService: WorkflowService
 
+  @MockK(relaxed = true) private lateinit var scenarioApiService: ScenarioApiService
+
   @MockK(relaxed = true) private lateinit var azureDataExplorerClient: AzureDataExplorerClient
+
+  @MockK(relaxed = true) private lateinit var azureEventHubsClient: AzureEventHubsClient
 
   private lateinit var scenarioRunServiceImpl: ScenarioRunServiceImpl
 
@@ -83,7 +89,14 @@ class ScenarioRunServiceImplTests {
     MockKAnnotations.init(this, relaxUnitFun = true)
 
     this.scenarioRunServiceImpl =
-        spyk(ScenarioRunServiceImpl(containerFactory, workflowService, azureDataExplorerClient))
+        spyk(
+            ScenarioRunServiceImpl(
+                containerFactory,
+                workflowService,
+                workspaceService,
+                scenarioApiService,
+                azureDataExplorerClient,
+                azureEventHubsClient))
 
     every { scenarioRunServiceImpl getProperty "cosmosTemplate" } returns cosmosTemplate
     every { scenarioRunServiceImpl getProperty "cosmosClient" } returns cosmosClient
@@ -335,7 +348,7 @@ class ScenarioRunServiceImplTests {
             workflowId = "my-workflow-id",
             workflowName = "my-workflow-name",
             containers = containers)
-    every { workflowService.launchScenarioRun(any()) } returns myScenarioRun
+    every { workflowService.launchScenarioRun(any(), null) } returns myScenarioRun
     every { idGenerator.generate("scenariorun", "sr-") } returns myScenarioRun.id!!
 
     val scenarioRun =
@@ -392,9 +405,18 @@ class ScenarioRunServiceImplTests {
                         name = "my-container1",
                         envVars = mapOf("MY_SECRET_ENV_VAR" to "value"),
                         image = "my-image:latest")))
-    every { workflowService.launchScenarioRun(any()) } returns myScenarioRun
+    every { workflowService.launchScenarioRun(any(), any()) } returns myScenarioRun
     every { idGenerator.generate("scenariorun", "sr-") } returns myScenarioRun.id!!
-
+    val eventBus = mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus>()
+    every { csmPlatformProperties.azure?.eventBus!! } returns eventBus
+    every { workspace.key } returns "my-workspace-key"
+    val authentication =
+        mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication>()
+    every { eventBus.authentication } returns authentication
+    every { eventBus.authentication.strategy } returns
+        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
+            .TENANT_CLIENT_CREDENTIALS
+    every { workspace.sendScenarioMetadataToEventHub } returns false
     val scenarioRunById =
         this.scenarioRunServiceImpl.runScenario(ORGANIZATION_ID, WORKSPACE_ID, "s-myscenarioid")
 
@@ -407,9 +429,9 @@ class ScenarioRunServiceImplTests {
   }
 
   @Test
-  // TODO MIG This test should verify that azureDataExplorerClient#deleteDataFromScenarioRunId is
+  // TODO MIG This test should verify that azureDataExplorerClient#deleteDataFromADXbyExtentShard is
   // called instead
-  fun `PROD-8148 - deleteDataFromScenarioRunId is called once`() {
+  fun `PROD-8148 - deleteDataFromADXbyExtentShard is called once`() {
     val scenarioRun = mockk<ScenarioRun>()
     every { scenarioRunServiceImpl.findScenarioRunById("orgId", "scenariorunId") } returns
         scenarioRun
@@ -420,6 +442,7 @@ class ScenarioRunServiceImplTests {
     every { scenarioRun.organizationId } returns "ownerId"
     every { scenarioRun.workspaceKey } returns "wk"
     every { scenarioRun.csmSimulationRun } returns "csmSimulationRun"
+    every { scenarioRun.scenarioId } returns "scenarioId"
     every { getCurrentAuthenticatedUserName() } returns "ownerId"
     scenarioRun.ownerId != getCurrentAuthenticatedUserName()
     scenarioRunServiceImpl.deleteScenarioRun("orgId", "scenariorunId")

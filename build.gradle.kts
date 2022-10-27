@@ -12,7 +12,6 @@ import org.jetbrains.kotlin.util.capitalizeDecapitalize.capitalizeAsciiOnly
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 import org.springframework.boot.gradle.dsl.SpringBootExtension
-import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 import org.springframework.boot.gradle.tasks.run.BootRun
 import pl.allegro.tech.build.axion.release.domain.TagNameSerializationConfig
@@ -23,15 +22,15 @@ import pl.allegro.tech.build.axion.release.domain.TagNameSerializationConfig
 // See https://docs.gradle.org/current/userguide/organizing_gradle_projects.html#sec:build_sources
 
 plugins {
-  val kotlinVersion = "1.6.0"
+  val kotlinVersion = "1.7.0"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.13.6"
-  id("com.diffplug.spotless") version "6.4.2"
-  id("org.springframework.boot") version "2.6.6" apply false
+  id("com.diffplug.spotless") version "6.9.0"
+  id("org.springframework.boot") version "2.7.2" apply false
   id("org.openapi.generator") version "5.4.0" apply false
   id("com.google.cloud.tools.jib") version "3.2.1" apply false
-  id("io.gitlab.arturbosch.detekt") version "1.20.0"
+  id("io.gitlab.arturbosch.detekt") version "1.21.0"
 }
 
 scmVersion { tag(closureOf<TagNameSerializationConfig> { prefix = "" }) }
@@ -41,6 +40,10 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 val kotlinJvmTarget = 17
+val cosmotechApiCommonVersion = "0.1.18-SNAPSHOT"
+val cosmotechApiAzureVersion = "0.1.7-SNAPSHOT"
+
+val azureSpringBootBomVersion = "3.14.0"
 
 allprojects {
   apply(plugin = "com.diffplug.spotless")
@@ -48,6 +51,14 @@ allprojects {
   apply(plugin = "io.gitlab.arturbosch.detekt")
 
   repositories {
+    maven {
+      name = "GitHubPackages"
+      url = uri("https://maven.pkg.github.com/Cosmo-Tech/cosmotech-api-common")
+      credentials {
+        username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
+        password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+      }
+    }
     maven {
       name = "Argo Client Java GitHub Packages"
       url = uri("https://maven.pkg.github.com/argoproj-labs/argo-client-java")
@@ -90,14 +101,10 @@ allprojects {
 subprojects {
   apply(plugin = "org.jetbrains.kotlin.plugin.spring")
   apply(plugin = "org.springframework.boot")
+  apply(plugin = "org.openapi.generator")
+  apply(plugin = "com.google.cloud.tools.jib")
 
   version = rootProject.scmVersion.version ?: error("Root project did not configure scmVersion!")
-
-  // Apply some plugins to all projects except 'common'
-  if (!name.startsWith("cosmotech-api-common")) {
-    apply(plugin = "org.openapi.generator")
-    apply(plugin = "com.google.cloud.tools.jib")
-  }
 
   java { toolchain { languageVersion.set(JavaLanguageVersion.of(kotlinJvmTarget)) } }
 
@@ -138,24 +145,24 @@ subprojects {
     reports {
       html {
         // observe findings in your browser with structure and code snippets
-        enabled = true
-        destination = file("$buildDir/reports/detekt/${project.name}-detekt.html")
+        required.set(true)
+        outputLocation.set(file("$buildDir/reports/detekt/${project.name}-detekt.html"))
       }
       xml {
         // checkstyle like format mainly for integrations like Jenkins
-        enabled = false
-        destination = file("$buildDir/reports/detekt/${project.name}-detekt.xml")
+        required.set(false)
+        outputLocation.set(file("$buildDir/reports/detekt/${project.name}-detekt.xml"))
       }
       txt {
         // similar to the console output, contains issue signature to manually edit baseline files
-        enabled = true
-        destination = file("$buildDir/reports/detekt/${project.name}-detekt.txt")
+        required.set(true)
+        outputLocation.set(file("$buildDir/reports/detekt/${project.name}-detekt.txt"))
       }
       sarif {
         // standardized SARIF format (https://sarifweb.azurewebsites.net/) to support integrations
         // with Github Code Scanning
-        enabled = true
-        destination = file("$buildDir/reports/detekt/${project.name}-detekt.sarif")
+        required.set(true)
+        outputLocation.set(file("$buildDir/reports/detekt/${project.name}-detekt.sarif"))
       }
     }
   }
@@ -166,13 +173,13 @@ subprojects {
     // See https://github.com/detekt/detekt/issues/4287
     detekt("io.gitlab.arturbosch.detekt:detekt-cli:1.20.0")
     detekt("io.gitlab.arturbosch.detekt:detekt-formatting:1.20.0")
-    detekt("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.6.20")
+    detekt("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.7.10")
 
     val developmentOnly = configurations.getByName("developmentOnly")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1-native-mt")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3-native-mt")
 
     implementation(
         platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES))
@@ -194,15 +201,15 @@ subprojects {
     implementation("org.zalando:problem-spring-web-starter:0.27.0")
 
     implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.security:spring-security-oauth2-jose:5.6.2")
-    implementation("org.springframework.security:spring-security-oauth2-resource-server:5.6.2")
+    implementation("org.springframework.security:spring-security-oauth2-jose:5.7.2")
+    implementation("org.springframework.security:spring-security-oauth2-resource-server:5.7.2")
     val oktaSpringBootVersion = "2.1.5"
     implementation("com.okta.spring:okta-spring-boot-starter:${oktaSpringBootVersion}")
 
     testImplementation(kotlin("test"))
-    testImplementation(platform("org.junit:junit-bom:5.8.2"))
+    testImplementation(platform("org.junit:junit-bom:5.9.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("io.mockk:mockk:1.12.3")
+    testImplementation("io.mockk:mockk:1.12.5")
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
 
     integrationTestImplementation("org.springframework.boot:spring-boot-starter-test") {
@@ -213,15 +220,25 @@ subprojects {
     integrationTestImplementation("com.ninja-squad:springmockk:3.1.1")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
-  }
 
-  if (!name.startsWith("cosmotech-api-common")) {
-    tasks.withType<AbstractCompile> { dependsOn("openApiGenerate") }
+    api("com.github.Cosmo-Tech:cosmotech-api-common:$cosmotechApiCommonVersion")
+    api("com.github.Cosmo-Tech:cosmotech-api-azure:$cosmotechApiAzureVersion") {
+      exclude(group = "org.slf4j", module = "slf4j-api")
+      because(
+          "this depends on org.slf4j:slf4j-api 1.8.0-beta4 (pre 2.x)," +
+              "which is not backward-compatible with 1.7.x." +
+              "See http://www.slf4j.org/faq.html#changesInVersion200")
+    }
+
+    implementation(platform("com.azure.spring:azure-spring-boot-bom:$azureSpringBootBomVersion"))
+    api("com.azure.spring:azure-spring-boot-starter-cosmos")
   }
 
   tasks.withType<KotlinCompile> {
+    dependsOn("openApiGenerate")
+
     kotlinOptions {
-      languageVersion = "1.5"
+      languageVersion = "1.7"
       freeCompilerArgs = listOf("-Xjsr305=strict")
       jvmTarget = kotlinJvmTarget.toString()
       java { toolchain { languageVersion.set(JavaLanguageVersion.of(kotlinJvmTarget)) } }
@@ -328,83 +345,76 @@ subprojects {
     }
   }
 
-  if (name.startsWith("cosmotech-api-common")) {
-    tasks.getByName<BootJar>("bootJar") { enabled = false }
-    tasks.getByName<BootBuildImage>("bootBuildImage") { enabled = false }
-    tasks.getByName<BootRun>("bootRun") { enabled = false }
-  } else {
-
-    val openApiFileDefinition =
-        if (name == "cosmotech-api") {
-          file("${rootDir}/openapi/openapi.yaml")
-        } else {
-          openApiDefinitionFile
-        }
-    tasks.register<Copy>("copyOpenApiYamlToMainResources") {
-      from(openApiFileDefinition)
-      into("$buildDir/resources/main/static")
-      rename { if (it != "openapi.yaml") "openapi.yaml" else it }
-    }
-    tasks.register<Copy>("copyOpenApiYamlToTestResources") {
-      from(openApiFileDefinition)
-      into("$buildDir/resources/test/static")
-      rename { if (it != "openapi.yaml") "openapi.yaml" else it }
-    }
-
-    tasks.getByName<Copy>("processResources") {
-      dependsOn("copyOpenApiYamlToMainResources")
-      filesMatching("**/banner.txt") {
-        filter<ReplaceTokens>("tokens" to mapOf("projectVersion" to project.version))
+  val openApiFileDefinition =
+      if (name == "cosmotech-api") {
+        file("${rootDir}/openapi/openapi.yaml")
+      } else {
+        openApiDefinitionFile
       }
+  tasks.register<Copy>("copyOpenApiYamlToMainResources") {
+    from(openApiFileDefinition)
+    into("$buildDir/resources/main/static")
+    rename { if (it != "openapi.yaml") "openapi.yaml" else it }
+  }
+  tasks.register<Copy>("copyOpenApiYamlToTestResources") {
+    from(openApiFileDefinition)
+    into("$buildDir/resources/test/static")
+    rename { if (it != "openapi.yaml") "openapi.yaml" else it }
+  }
+
+  tasks.getByName<Copy>("processResources") {
+    dependsOn("copyOpenApiYamlToMainResources")
+    filesMatching("**/banner.txt") {
+      filter<ReplaceTokens>("tokens" to mapOf("projectVersion" to project.version))
     }
+  }
 
-    tasks.getByName<Copy>("processTestResources") { dependsOn("copyOpenApiYamlToTestResources") }
+  tasks.getByName<Copy>("processTestResources") { dependsOn("copyOpenApiYamlToTestResources") }
 
-    tasks.getByName<BootJar>("bootJar") { classifier = "uberjar" }
+  tasks.getByName<BootJar>("bootJar") { classifier = "uberjar" }
 
-    tasks.getByName<BootRun>("bootRun") {
-      workingDir = rootDir
+  tasks.getByName<BootRun>("bootRun") {
+    workingDir = rootDir
 
-      environment("CSM_PLATFORM_VENDOR", project.findProperty("platform")?.toString() ?: "azure")
-      project.findProperty("identityProvider")?.toString()?.let {
-        environment("IDENTITY_PROVIDER", it)
-      }
-
-      if (project.hasProperty("jvmArgs")) {
-        jvmArgs = project.property("jvmArgs").toString().split("\\s+".toRegex()).toList()
-      }
-
-      args = listOf("--spring.profiles.active=dev")
+    environment("CSM_PLATFORM_VENDOR", project.findProperty("platform")?.toString() ?: "azure")
+    project.findProperty("identityProvider")?.toString()?.let {
+      environment("IDENTITY_PROVIDER", it)
     }
 
-    configure<SpringBootExtension> {
-      buildInfo {
-        properties {
-          // Unsetting time so the task can be deterministic and cacheable, for performance reasons
-          time = null
-        }
+    if (project.hasProperty("jvmArgs")) {
+      jvmArgs = project.property("jvmArgs").toString().split("\\s+".toRegex()).toList()
+    }
+
+    args = listOf("--spring.profiles.active=dev")
+  }
+
+  configure<SpringBootExtension> {
+    buildInfo {
+      properties {
+        // Unsetting time so the task can be deterministic and cacheable, for performance reasons
+        time = null
       }
     }
-    configure<JibExtension> {
-      from { image = "eclipse-temurin:17-alpine" }
-      to { image = "${project.group}/${project.name}:${project.version}" }
-      container {
-        format = OCI
-        labels.putAll(mapOf("maintainer" to "Cosmo Tech"))
-        environment =
-            mapOf(
-                "JAVA_TOOL_OPTIONS" to
-                    "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=localhost:5005")
-        jvmFlags =
-            listOf(
-                // Make sure Spring DevTools is disabled in production as running it is a
-                // security risk
-                "-Dspring.devtools.restart.enabled=false")
-        ports = listOf("5005", "8080", "8081")
-        // Docker Best Practice : run as non-root.
-        // These are the 'nobody' UID and GID inside the image
-        user = "65534:65534"
-      }
+  }
+  configure<JibExtension> {
+    from { image = "eclipse-temurin:17-alpine" }
+    to { image = "${project.group}/${project.name}:${project.version}" }
+    container {
+      format = OCI
+      labels.putAll(mapOf("maintainer" to "Cosmo Tech"))
+      environment =
+          mapOf(
+              "JAVA_TOOL_OPTIONS" to
+                  "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=localhost:5005")
+      jvmFlags =
+          listOf(
+              // Make sure Spring DevTools is disabled in production as running it is a
+              // security risk
+              "-Dspring.devtools.restart.enabled=false")
+      ports = listOf("5005", "8080", "8081")
+      // Docker Best Practice : run as non-root.
+      // These are the 'nobody' UID and GID inside the image
+      user = "65534:65534"
     }
   }
 }

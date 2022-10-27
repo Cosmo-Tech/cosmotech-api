@@ -111,8 +111,10 @@ private const val SCENARIO_DATA_ABSOLUTE_PATH_ENV_VAR = "CSM_DATA_ABSOLUTE_PATH"
 private const val SCENARIO_DATA_UPLOAD_LOG_LEVEL_ENV_VAR = "CSM_LOG_LEVEL"
 internal const val CSM_JOB_ID_LABEL_KEY = "com.cosmotech/job_id"
 internal const val SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME = "downloadUrl"
+private const val EVENT_HUB_SCENARIO_RUN_NAME = "scenariorun"
+private const val EVENT_HUB_PROBES_MEASURES_NAME = "probesmeasures"
 
-public const val CSM_DAG_ROOT = "DAG_ROOT"
+const val CSM_DAG_ROOT = "DAG_ROOT"
 
 @Component
 @Suppress("LargeClass", "TooManyFunctions")
@@ -1006,7 +1008,7 @@ internal class ContainerFactory(
   }
 
   private fun getRunTemplate(solution: Solution, runTemplateId: String): RunTemplate {
-    return solution.runTemplates.find { runTemplate -> runTemplate.id == runTemplateId }
+    return solution.runTemplates?.find { runTemplate -> runTemplate.id == runTemplateId }
         ?: throw IllegalStateException(
             "runTemplateId $runTemplateId not found in Solution ${solution.id}")
   }
@@ -1024,7 +1026,6 @@ internal class ContainerFactory(
   ): ScenarioRunContainer {
 
     if (step == null) throw IllegalStateException("Solution Container Step Spec is not defined")
-    val template = getRunTemplate(solution, runTemplateId)
     val imageName =
         getImageName(
             csmPlatformProperties.azure?.containerRegistries?.solutions ?: "",
@@ -1043,6 +1044,7 @@ internal class ContainerFactory(
 
     envVars.putAll(getEventHubEnvVars(organization, workspace))
 
+    val template = getRunTemplate(solution, runTemplateId)
     val csmSimulation = template.csmSimulation
     if (csmSimulation != null) {
       envVars[CSM_SIMULATION_VAR] = csmSimulation
@@ -1077,65 +1079,99 @@ internal class ContainerFactory(
       organization: Organization,
       workspace: Workspace
   ): Map<String, String> {
-    val envVars: MutableMap<String, String> = mutableMapOf()
-    val eventBus = csmPlatformProperties.azure?.eventBus!!
     logger.debug(
         "Get Event Hub env vars for workspace {} with dedicated namespace: {}",
         workspace.id,
         workspace.useDedicatedEventHubNamespace ?: "null")
     if (workspace.useDedicatedEventHubNamespace != true) {
-
-      val eventHubBase = "${eventBus.baseUri}/${organization.id}-${workspace.key}".lowercase()
-      envVars[EVENT_HUB_MEASURES_VAR] = eventHubBase
-      val doesEventHubExist =
-          checkEventHubExistenceFromCredentialType(
-              eventBus, eventBus.baseUri, "${organization.id}-${workspace.key}-scenariorun")
-      if (doesEventHubExist) {
-        logger.debug(
-            "Control Plane Event Hub ({}/{}) does exist => " +
-                "instructing engine to send summary message at the end of the simulation",
-            eventBus.baseUri,
-            "${organization.id}-${workspace.key}-scenariorun")
-        envVars[EVENT_HUB_CONTROL_PLANE_VAR] = "${eventHubBase}-scenariorun"
-      } else {
-        logger.debug(
-            "Control Plane Event Hub ({}/{}) does not exist => " +
-                "summary message will *not* be sent at the end of the simulation",
-            eventBus.baseUri,
-            "${organization.id}-${workspace.key}-scenariorun")
-      }
-
-      envVars.putAll(getSpecificEventHubAuthenticationEnvVars(eventBus))
+      return getEventHubEnvVarsShared(organization, workspace)
     } else {
-      val baseUri = "amqps://${organization.id}-${workspace.key}.servicebus.windows.net".lowercase()
-      envVars[EVENT_HUB_MEASURES_VAR] = "${baseUri}/probesmeasures"
+      return getEventHubEnvVarsDedicated(organization, workspace)
+    }
+  }
 
-      val doesEventHubExists =
-          checkEventHubExistenceFromCredentialType(
-              eventBus, "${organization.id}-${workspace.key}.servicebus.windows.net", "scenariorun")
-      if (doesEventHubExists) {
-        logger.debug(
-            "Control Plane Event Hub ({}/{}) does exist => " +
-                "instructing engine to send summary message at the end of the simulation",
-            "${organization.id}-${workspace.key}.servicebus.windows.net",
-            "scenariorun")
-        envVars[EVENT_HUB_CONTROL_PLANE_VAR] = "${baseUri}/scenariorun"
-      } else {
-        logger.debug(
-            "Control Plane Event Hub ({}/{}) does not exist => " +
-                "summary message will *not* be sent at the end of the simulation",
-            eventBus.baseUri,
-            "${organization.id}-${workspace.key}-scenariorun")
-      }
+  private fun getEventHubEnvVarsDedicated(
+      organization: Organization,
+      workspace: Workspace
+  ): Map<String, String> {
+    val envVars: MutableMap<String, String> = mutableMapOf()
+    val eventBus = csmPlatformProperties.azure?.eventBus!!
+    val eventHubName = "${organization.id}-${workspace.key}".lowercase()
+    logger.debug("Event Hub namespace base name: {}", eventHubName)
+    logger.debug("Using dedicated event hub namespace")
+    val baseHostName = "${eventHubName}.servicebus.windows.net".lowercase()
+    logger.debug("Event Hub host name: {}", baseHostName)
+    val baseUri = "amqps://${baseHostName}"
+    logger.debug("Probes measures event hub: {}/{}", baseUri, EVENT_HUB_PROBES_MEASURES_NAME)
+    envVars[EVENT_HUB_MEASURES_VAR] = "${baseUri}/${EVENT_HUB_PROBES_MEASURES_NAME}"
 
+    val doesEventHubExists =
+        checkEventHubExistenceFromCredentialType(
+            eventBus, baseHostName, EVENT_HUB_SCENARIO_RUN_NAME)
+    if (doesEventHubExists) {
       logger.debug(
-          "Workspace ${workspace.id} set to use dedicated eventhub namespace " +
-              " => " +
-              "using tenant id, client id and client secret already put in the " +
-              "common env vars")
+          "Control Plane Event Hub ({}/{}) does exist => " +
+              "instructing engine to send summary message at the end of the simulation",
+          baseUri,
+          EVENT_HUB_SCENARIO_RUN_NAME)
+      envVars[EVENT_HUB_CONTROL_PLANE_VAR] = "${baseUri}/${EVENT_HUB_SCENARIO_RUN_NAME}"
+    } else {
+      logger.debug(
+          "Control Plane Event Hub ({}/{}) does not exist => " +
+              "summary message will *not* be sent at the end of the simulation",
+          eventBus.baseUri,
+          EVENT_HUB_SCENARIO_RUN_NAME)
     }
 
+    logger.debug(
+        "Workspace ${workspace.id} set to use dedicated eventhub namespace " +
+            " => " +
+            "using tenant id, client id and client secret already put in the " +
+            "common env vars")
+
     return envVars.toMap()
+  }
+
+  private fun getEventHubEnvVarsShared(
+      organization: Organization,
+      workspace: Workspace
+  ): Map<String, String> {
+    val envVars: MutableMap<String, String> = mutableMapOf()
+    val eventBus = csmPlatformProperties.azure?.eventBus!!
+    logger.debug("Using shared event hub namespace")
+    val eventHubName = "${organization.id}-${workspace.key}".lowercase()
+    logger.debug("Event Hub Probes Measures name: {}", eventHubName)
+    val eventHubScenarioRunName = "${eventHubName}-${EVENT_HUB_SCENARIO_RUN_NAME}".lowercase()
+    logger.debug("Event Hub Scenarion Run name: {}", eventHubScenarioRunName)
+
+    val eventHubBase = "${eventBus.baseUri}/${eventHubName}".lowercase()
+    envVars[EVENT_HUB_MEASURES_VAR] = eventHubBase
+    val eventHubHostName = removeAMQPProtocol(eventBus.baseUri)
+    logger.debug("Control plane host name: {}", eventHubHostName)
+    val doesEventHubExist =
+        checkEventHubExistenceFromCredentialType(
+            eventBus, eventHubHostName, eventHubScenarioRunName)
+    if (doesEventHubExist) {
+      logger.debug(
+          "Control Plane Event Hub ({}/{}) does exist => " +
+              "instructing engine to send summary message at the end of the simulation",
+          eventBus.baseUri,
+          eventHubScenarioRunName)
+      envVars[EVENT_HUB_CONTROL_PLANE_VAR] = "${eventHubBase}-${EVENT_HUB_SCENARIO_RUN_NAME}"
+    } else {
+      logger.debug(
+          "Control Plane Event Hub ({}/{}) does not exist => " +
+              "summary message will *not* be sent at the end of the simulation",
+          eventBus.baseUri,
+          eventHubScenarioRunName)
+    }
+
+    envVars.putAll(getSpecificEventHubAuthenticationEnvVars(eventBus))
+    return envVars.toMap()
+  }
+
+  internal fun removeAMQPProtocol(uri: String): String {
+    return uri.lowercase().replaceFirst("amqps://", "")
   }
 
   private fun checkEventHubExistenceFromCredentialType(
@@ -1212,9 +1248,11 @@ internal class ContainerFactory(
         }
       }
 
-  private fun getImageName(registry: String, repository: String, version: String? = null): String {
-    val repoVersion = if (version == null) repository else "${repository}:${version}"
-    return if (registry != "") "${registry}/${repoVersion}" else repoVersion
+  private fun getImageName(registry: String, repository: String?, version: String? = null): String {
+    val repoVersion =
+        repository.let { if (version == null) it else "${it}:${version}" }
+            ?: throw IllegalStateException("Solution repository is not defined")
+    return if (registry.isNotEmpty()) "${registry}/${repoVersion}" else repoVersion
   }
 }
 

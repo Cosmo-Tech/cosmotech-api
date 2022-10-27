@@ -9,7 +9,6 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 plugins { id("com.rameshkp.openapi-merger-gradle-plugin") version "1.0.4" }
 
 dependencies {
-  api(projects.cosmotechApiCommonParent.cosmotechApiCommon)
   implementation(projects.cosmotechConnectorApi)
   implementation(projects.cosmotechDatasetApi)
   implementation(projects.cosmotechOrganizationApi)
@@ -28,7 +27,6 @@ tasks.withType<JibTask> {
       parent
           ?.subprojects
           ?.filterNot { it.name == project.name }
-          ?.filterNot { it.name.startsWith("cosmotech-api-common") }
           ?.flatMap { it.tasks.withType<Jar>() }
           ?.toList()
   logger.debug("jibTask ${this.name} needs to depend on : $jarTasks")

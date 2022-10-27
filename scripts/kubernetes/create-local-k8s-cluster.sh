@@ -16,7 +16,8 @@ fi
 
 cluster_name=${1:-local-k8s-cluster}
 
-kindest_node_image_tag='v1.21.2'
+export aks_minor_version="1.23"
+kindest_node_image_tag="v${aks_minor_version}.6"
 
 cat <<EOF | kind create cluster --name "${cluster_name}" --config=-
 
@@ -51,7 +52,19 @@ nodes:
         kind: JoinConfiguration
         nodeRegistration:
           kubeletExtraArgs:
-            node-labels: "kubernetes.io/os=linux,agentpool=basicpool"
+            node-labels: "kubernetes.io/os=linux,agentpool=basicpool,cosmotech.com/tier=services"
+    - role: worker
+      image: kindest/node:${kindest_node_image_tag}
+      kubeadmConfigPatches:
+      - |
+        kind: JoinConfiguration
+        nodeRegistration:
+          taints:
+          - key: "vendor"
+            value: "cosmotech"
+            effect: "NoSchedule"
+          kubeletExtraArgs:
+            node-labels: "kubernetes.io/os=linux,agentpool=basicpool,cosmotech.com/tier=monitoring"
 networking:
   # disable kindnet, which does not support Network Policies
   disableDefaultCNI: true
@@ -102,17 +115,18 @@ for node in $(kind get nodes --name "${cluster_name}"); do
 done
 
 # Install Calico
-helm repo add projectcalico https://docs.projectcalico.org/charts
+helm repo add projectcalico https://projectcalico.docs.tigera.io/charts
 helm --kube-context="${kubectl_ctx}" \
   install calico \
   projectcalico/tigera-operator \
   --version v3.21.2
 
 # cf. https://kind.sigs.k8s.io/docs/user/ingress/#ingress-nginx
-ingress_nginx_controller_tag="controller-v0.47.0"
+# ingress_nginx_controller_tag="controller-v0.47.0"
+# no more generation for different aks version: https://github.com/kubernetes/ingress-nginx/commit/c85765a015ea6709d161eccd42ef6134981c04b4
 kubectl --context="${kubectl_ctx}" \
   apply -f \
-  "https://raw.githubusercontent.com/kubernetes/ingress-nginx/${ingress_nginx_controller_tag}/deploy/static/provider/kind/deploy.yaml"
+  "https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml"
 
 kubectl --context="${kubectl_ctx}" \
   -n ingress-nginx \

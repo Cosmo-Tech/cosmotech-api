@@ -4,7 +4,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **String** | the Solution Run Template id | [default to null]
-**name** | **String** | the Run Template name | [default to null]
+**name** | **String** | the Run Template name | [optional] [default to null]
 **description** | **String** | the Run Template description | [optional] [default to null]
 **csmSimulation** | **String** | the Cosmo Tech simulation name. This information is send to the Engine. Mandatory information if no Engine is defined | [optional] [default to null]
 **tags** | **List** | the list of Run Template tags | [optional] [default to null]
@@ -32,6 +32,8 @@ Name | Type | Description | Notes
 **gitRepositoryUrl** | **String** | an optional URL to the git repository | [optional] [default to null]
 **gitBranchName** | **String** | an optional git branch name | [optional] [default to null]
 **runTemplateSourceDir** | **String** | an optional directory where to find the run template source | [optional] [default to null]
+**executionTimeout** | **Integer** | an optional duration in seconds in which a workflow is allowed to run | [optional] [default to null]
+**deleteHistoricalData** | [**DeleteHistoricalData**](DeleteHistoricalData.md) |  | [optional] [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

@@ -47,8 +47,8 @@ openapi/openapi.yaml
 
 ### Personal directory ###
 perso
-config/application-dev.properties
-config/application-dev.yml
+config/application-dev*.properties
+config/application-dev*.yml
 api/kubernetes/helm-chart/values-vcr.yaml
 /api/kubernetes/helm-chart/values-JREY*.yaml
 
@@ -58,3 +58,5 @@ api/kubernetes/helm-chart/values-vcr.yaml
 ### Helm ###
 # Chart dependencies
 **/charts/*.tgz
+/kube-prometheus-stack.yaml
+/values-cosmotech-api-deploy.yaml
