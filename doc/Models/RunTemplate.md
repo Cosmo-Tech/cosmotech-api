@@ -33,6 +33,7 @@ Name | Type | Description | Notes
 **gitBranchName** | **String** | an optional git branch name | [optional] [default to null]
 **runTemplateSourceDir** | **String** | an optional directory where to find the run template source | [optional] [default to null]
 **executionTimeout** | **Integer** | an optional duration in seconds in which a workflow is allowed to run | [optional] [default to null]
+**deleteHistoricalData** | [**DeleteHistoricalData**](DeleteHistoricalData.md) |  | [optional] [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

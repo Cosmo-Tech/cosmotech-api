@@ -19,6 +19,7 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.getCurrentAuthentication
 import com.cosmotech.api.utils.objectMapper
 import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenariorun.ContainerFactory
 import com.cosmotech.scenariorun.domain.ScenarioRun
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
@@ -75,6 +76,8 @@ class ScenarioRunServiceImplTests {
 
   @MockK(relaxed = true) private lateinit var workflowService: WorkflowService
 
+  @MockK(relaxed = true) private lateinit var scenarioApiService: ScenarioApiService
+
   @MockK(relaxed = true) private lateinit var azureDataExplorerClient: AzureDataExplorerClient
 
   @MockK(relaxed = true) private lateinit var azureEventHubsClient: AzureEventHubsClient
@@ -91,6 +94,7 @@ class ScenarioRunServiceImplTests {
                 containerFactory,
                 workflowService,
                 workspaceService,
+                scenarioApiService,
                 azureDataExplorerClient,
                 azureEventHubsClient))
 
@@ -425,9 +429,9 @@ class ScenarioRunServiceImplTests {
   }
 
   @Test
-  // TODO MIG This test should verify that azureDataExplorerClient#deleteDataFromScenarioRunId is
+  // TODO MIG This test should verify that azureDataExplorerClient#deleteDataFromADXbyExtentShard is
   // called instead
-  fun `PROD-8148 - deleteDataFromScenarioRunId is called once`() {
+  fun `PROD-8148 - deleteDataFromADXbyExtentShard is called once`() {
     val scenarioRun = mockk<ScenarioRun>()
     every { scenarioRunServiceImpl.findScenarioRunById("orgId", "scenariorunId") } returns
         scenarioRun
@@ -438,6 +442,7 @@ class ScenarioRunServiceImplTests {
     every { scenarioRun.organizationId } returns "ownerId"
     every { scenarioRun.workspaceKey } returns "wk"
     every { scenarioRun.csmSimulationRun } returns "csmSimulationRun"
+    every { scenarioRun.scenarioId } returns "scenarioId"
     every { getCurrentAuthenticatedUserName() } returns "ownerId"
     scenarioRun.ownerId != getCurrentAuthenticatedUserName()
     scenarioRunServiceImpl.deleteScenarioRun("orgId", "scenariorunId")

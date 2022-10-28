@@ -22,12 +22,12 @@ import pl.allegro.tech.build.axion.release.domain.TagNameSerializationConfig
 // See https://docs.gradle.org/current/userguide/organizing_gradle_projects.html#sec:build_sources
 
 plugins {
-  val kotlinVersion = "1.7.0"
+  val kotlinVersion = "1.7.20"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.13.6"
   id("com.diffplug.spotless") version "6.11.0"
-  id("org.springframework.boot") version "2.7.2" apply false
+  id("org.springframework.boot") version "2.7.5" apply false
   id("org.openapi.generator") version "5.4.0" apply false
   id("com.google.cloud.tools.jib") version "3.2.1" apply false
   id("io.gitlab.arturbosch.detekt") version "1.21.0"
@@ -40,8 +40,9 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 val kotlinJvmTarget = 17
-val cosmotechApiCommonVersion = "0.1.7-SNAPSHOT"
-val cosmotechApiAzureVersion = "0.1.5-SNAPSHOT"
+val cosmotechApiCommonVersion = "0.1.18-SNAPSHOT"
+val cosmotechApiAzureVersion = "0.1.7-SNAPSHOT"
+
 val azureSpringBootBomVersion = "3.14.0"
 
 allprojects {
@@ -50,6 +51,14 @@ allprojects {
   apply(plugin = "io.gitlab.arturbosch.detekt")
 
   repositories {
+    maven {
+      name = "GitHubPackages"
+      url = uri("https://maven.pkg.github.com/Cosmo-Tech/cosmotech-api-common")
+      credentials {
+        username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
+        password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+      }
+    }
     maven {
       name = "Argo Client Java GitHub Packages"
       url = uri("https://maven.pkg.github.com/argoproj-labs/argo-client-java")
@@ -60,7 +69,6 @@ allprojects {
       content { includeModule("io.argoproj.workflow", "argo-client-java") }
     }
     mavenCentral()
-    maven { url = uri("https://jitpack.io") }
   }
 
   configure<SpotlessExtension> {
@@ -164,7 +172,7 @@ subprojects {
     // Workaround until Detekt adds support for JVM Target 17
     // See https://github.com/detekt/detekt/issues/4287
     detekt("io.gitlab.arturbosch.detekt:detekt-cli:1.19.0")
-    detekt("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.7.10")
+    detekt("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.7.20")
 
     val developmentOnly = configurations.getByName("developmentOnly")
 
@@ -192,15 +200,15 @@ subprojects {
     implementation("org.zalando:problem-spring-web-starter:0.27.0")
 
     implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.security:spring-security-oauth2-jose:5.7.2")
-    implementation("org.springframework.security:spring-security-oauth2-resource-server:5.7.2")
-    val oktaSpringBootVersion = "2.1.5"
+    implementation("org.springframework.security:spring-security-oauth2-jose:5.7.4")
+    implementation("org.springframework.security:spring-security-oauth2-resource-server:5.7.4")
+    val oktaSpringBootVersion = "2.1.6"
     implementation("com.okta.spring:okta-spring-boot-starter:${oktaSpringBootVersion}")
 
     testImplementation(kotlin("test"))
-    testImplementation(platform("org.junit:junit-bom:5.9.0"))
+    testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("io.mockk:mockk:1.12.5")
+    testImplementation("io.mockk:mockk:1.13.2")
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
 
     integrationTestImplementation("org.springframework.boot:spring-boot-starter-test") {

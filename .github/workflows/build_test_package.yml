@@ -159,6 +159,18 @@ jobs:
                   nodeRegistration:
                     kubeletExtraArgs:
                       node-labels: "kubernetes.io/os=linux,agentpool=basicpool"
+              - role: worker
+                image: kindest/node:v1.23.6
+                kubeadmConfigPatches:
+                  - |
+                    kind: JoinConfiguration
+                    nodeRegistration:
+                      taints:
+                      - key: "vendor"
+                        value: "cosmotech"
+                        effect: "NoSchedule"
+                      kubeletExtraArgs:
+                        node-labels: "kubernetes.io/os=linux,cosmotech.com/tier=monitoring"
           networking:
             disableDefaultCNI: true
             podSubnet: 192.168.0.0/16
@@ -172,7 +184,7 @@ jobs:
       - name: Provision Kubernetes KinD Cluster and local Container Registry
         uses: container-tools/kind-action@v1
         with:
-          version: v0.11.1
+          version: v0.14.0
           config: /tmp/csm-kind-config.yaml
 
       - name: Deploy Calico
@@ -188,7 +200,7 @@ jobs:
       - name: Deploy the NGINX Ingress Controller in the KinD Cluster
         run: |
           kubectl apply -f \
-            https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.47.0/deploy/static/provider/kind/deploy.yaml
+            https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
           kubectl -n ingress-nginx wait deploy/ingress-nginx-controller \
             --for condition=available \
             --timeout=60s
