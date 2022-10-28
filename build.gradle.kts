@@ -206,7 +206,7 @@ subprojects {
     implementation("com.okta.spring:okta-spring-boot-starter:${oktaSpringBootVersion}")
 
     testImplementation(kotlin("test"))
-    testImplementation(platform("org.junit:junit-bom:5.9.0"))
+    testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("io.mockk:mockk:1.13.2")
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
