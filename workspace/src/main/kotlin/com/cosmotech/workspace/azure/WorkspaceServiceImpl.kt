@@ -12,6 +12,8 @@ import com.cosmotech.api.azure.CsmAzureService
 import com.cosmotech.api.azure.findAll
 import com.cosmotech.api.azure.findByIdOrThrow
 import com.cosmotech.api.azure.sanitizeForAzureStorage
+import com.cosmotech.api.events.DeleteHistoricalDataOrganization
+import com.cosmotech.api.events.DeleteHistoricalDataWorkspace
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.events.UserAddedToWorkspace
@@ -317,6 +319,16 @@ internal class WorkspaceServiceImpl(
     return getWorkspaceFileResources(organizationId, workspaceId)
         .mapNotNull { it.filename?.removePrefix("${workspaceId.sanitizeForAzureStorage()}/") }
         .map { WorkspaceFile(fileName = it) }
+  }
+
+  @EventListener(DeleteHistoricalDataOrganization::class)
+  fun deleteHistoricalDataWorkspace(data: DeleteHistoricalDataOrganization) {
+    val organizationId = data.organizationId
+    val workspaces: List<Workspace> = findAllWorkspaces(organizationId)
+    for (workspace in workspaces) {
+      this.eventPublisher.publishEvent(
+          DeleteHistoricalDataWorkspace(this, organizationId, workspace.id!!))
+    }
   }
 
   @EventListener(OrganizationRegistered::class)

@@ -48,6 +48,7 @@ export POSTGRESQL_VERSION="11.6.12"
 export ARGO_DATABASE=argo_workflows
 export ARGO_POSTGRESQL_USER=argo
 export ARGO_BUCKET_NAME=argo-workflows
+export ARGO_SERVICE_ACCOUNT=workflowcsmv2
 
 HELM_CHARTS_BASE_PATH=$(realpath "$(dirname "$0")")
 
@@ -129,7 +130,7 @@ images:
 workflow:
   serviceAccount:
     create: true
-    name: workflowcsmv2
+    name: ${ARGO_SERVICE_ACCOUNT}
   rbac:
     create: true
 executor:
@@ -222,6 +223,7 @@ helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "${HELM_CHARTS_BASE_PATH}
     --set api.version="$API_VERSION" \
     --set config.csm.platform.argo.base-uri="http://${ARGO_RELEASE_NAME}-argo-workflows-server.${NAMESPACE}.svc.cluster.local:2746" \
     --set config.csm.platform.argo.workflows.namespace="${NAMESPACE}" \
+    --set config.csm.platform.argo.workflows.service-account-name="${ARGO_SERVICE_ACCOUNT}" \
     --set podAnnotations."com\.cosmotech/deployed-at-timestamp"="\"$(date +%s)\"" \
     "${@:4}"
 
