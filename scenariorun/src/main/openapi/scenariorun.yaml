@@ -25,6 +25,12 @@ paths:
         required: true
         schema:
           type: string
+      - name: delete_unknown
+        in: path
+        description: condition to delete runs with an Unknown status
+        required: false
+        schema:
+          type: boolean
     delete:
       operationId: deleteHistoricalDataOrganization
       tags:
@@ -51,6 +57,12 @@ paths:
         required: true
         schema:
           type: string
+      - name: delete_unknown
+        in: path
+        description: condition to delete runs with an Unknown status
+        required: false
+        schema:
+          type: boolean
     delete:
       operationId: deleteHistoricalDataWorkspace
       tags:
@@ -63,6 +75,44 @@ paths:
           description: Bad request
         "404":
           description: the Organization or Workspace specified is unknown or you don't have access to it
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/historicaldata:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: scenario_id
+        in: path
+        description: the Scenario identifier
+        required: true
+        schema:
+          type: string
+      - name: delete_unknown
+        in: path
+        description: condition to delete runs with an Unknown status
+        required: false
+        schema:
+          type: boolean
+    delete:
+      operationId: deleteHistoricalDataScenario
+      tags:
+        - scenariorun
+      summary: Delete all historical ScenarioRuns in the Scenario
+      responses:
+        "204":
+          description: Request succeeded
+        "400":
+          description: Bad request
+        "404":
+          description: the Scenario specified is unknown or you don't have access to it
   /organizations/{organization_id}/scenarioruns/search:
     parameters:
       - name: organization_id
@@ -348,18 +398,6 @@ paths:
               examples:
                 OneScenarioRun:
                   $ref: '#/components/examples/OneScenarioRun'
-    delete:
-      operationId: deleteHistoricalScenarioRunsByScenario
-      tags:
-        - scenariorun
-      summary: Delete all historical ScenarioRuns for the Scenario
-      responses:
-        "204":
-          description: Request succeeded
-        "400":
-          description: Bad request
-        "404":
-          description: the Scenario specified is unknown or you don't have access to it
   /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/run:
     parameters:
       - name: organization_id
