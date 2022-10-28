@@ -22,7 +22,7 @@ import pl.allegro.tech.build.axion.release.domain.TagNameSerializationConfig
 // See https://docs.gradle.org/current/userguide/organizing_gradle_projects.html#sec:build_sources
 
 plugins {
-  val kotlinVersion = "1.7.0"
+  val kotlinVersion = "1.7.20"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.13.6"
