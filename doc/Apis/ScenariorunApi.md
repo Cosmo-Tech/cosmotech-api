@@ -5,8 +5,8 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**deleteHistoricalDataOrganization**](ScenariorunApi.md#deleteHistoricalDataOrganization) | **DELETE** /organizations/{organization_id}/scenarioruns/historicaldata | Delete all historical ScenarioRuns in the Organization
+[**deleteHistoricalDataScenario**](ScenariorunApi.md#deleteHistoricalDataScenario) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/historicaldata | Delete all historical ScenarioRuns in the Scenario
 [**deleteHistoricalDataWorkspace**](ScenariorunApi.md#deleteHistoricalDataWorkspace) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarioruns/historicaldata | Delete all historical ScenarioRuns in the Workspace
-[**deleteHistoricalScenarioRunsByScenario**](ScenariorunApi.md#deleteHistoricalScenarioRunsByScenario) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/scenarioruns | Delete all historical ScenarioRuns for the Scenario
 [**deleteScenarioRun**](ScenariorunApi.md#deleteScenarioRun) | **DELETE** /organizations/{organization_id}/scenarioruns/{scenariorun_id} | Delete a scenariorun
 [**findScenarioRunById**](ScenariorunApi.md#findScenarioRunById) | **GET** /organizations/{organization_id}/scenarioruns/{scenariorun_id} | Get the details of a scenariorun
 [**getScenarioRunCumulatedLogs**](ScenariorunApi.md#getScenarioRunCumulatedLogs) | **GET** /organizations/{organization_id}/scenarioruns/{scenariorun_id}/cumulatedlogs | Get the cumulated logs of a scenariorun
@@ -22,7 +22,7 @@ Method | HTTP request | Description
 
 <a name="deleteHistoricalDataOrganization"></a>
 # **deleteHistoricalDataOrganization**
-> deleteHistoricalDataOrganization(organization\_id)
+> deleteHistoricalDataOrganization(organization\_id, delete\_unknown)
 
 Delete all historical ScenarioRuns in the Organization
 
@@ -31,6 +31,35 @@ Delete all historical ScenarioRuns in the Organization
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
+ **delete\_unknown** | **Boolean**| condition to delete runs with an Unknown status | [optional] [default to null]
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
+
+<a name="deleteHistoricalDataScenario"></a>
+# **deleteHistoricalDataScenario**
+> deleteHistoricalDataScenario(organization\_id, workspace\_id, scenario\_id, delete\_unknown)
+
+Delete all historical ScenarioRuns in the Scenario
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **workspace\_id** | **String**| the Workspace identifier | [default to null]
+ **scenario\_id** | **String**| the Scenario identifier | [default to null]
+ **delete\_unknown** | **Boolean**| condition to delete runs with an Unknown status | [optional] [default to null]
 
 ### Return type
 
@@ -47,7 +76,7 @@ null (empty response body)
 
 <a name="deleteHistoricalDataWorkspace"></a>
 # **deleteHistoricalDataWorkspace**
-> deleteHistoricalDataWorkspace(organization\_id, workspace\_id)
+> deleteHistoricalDataWorkspace(organization\_id, workspace\_id, delete\_unknown)
 
 Delete all historical ScenarioRuns in the Workspace
 
@@ -57,33 +86,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **workspace\_id** | **String**| the Workspace identifier | [default to null]
-
-### Return type
-
-null (empty response body)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: Not defined
-
-<a name="deleteHistoricalScenarioRunsByScenario"></a>
-# **deleteHistoricalScenarioRunsByScenario**
-> deleteHistoricalScenarioRunsByScenario(organization\_id, workspace\_id, scenario\_id)
-
-Delete all historical ScenarioRuns for the Scenario
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **workspace\_id** | **String**| the Workspace identifier | [default to null]
- **scenario\_id** | **String**| the Scenario identifier | [default to null]
+ **delete\_unknown** | **Boolean**| condition to delete runs with an Unknown status | [optional] [default to null]
 
 ### Return type
 
