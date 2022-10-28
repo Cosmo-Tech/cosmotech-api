@@ -34,7 +34,7 @@ internal const val VOLUME_CLAIM_DATASETS_SUBPATH = "datasetsdir"
 internal const val VOLUME_CLAIM_PARAMETERS_SUBPATH = "parametersdir"
 private const val VOLUME_DATASETS_PATH = "/mnt/scenariorun-data"
 private const val VOLUME_PARAMETERS_PATH = "/mnt/scenariorun-parameters"
-private const val CSM_ARGO_WORKFLOWS_TIMEOUT = 28800
+internal const val CSM_ARGO_WORKFLOWS_TIMEOUT = 28800
 
 internal fun buildTemplate(
     scenarioRunContainer: ScenarioRunContainer,

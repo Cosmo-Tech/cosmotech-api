@@ -15,6 +15,12 @@ help() {
   echo "- ARGO_MINIO_ACCESS_KEY | string | AccessKey for MinIO. Generated when not set"
   echo "- ARGO_MINIO_SECRET_KEY | string | SecretKey for MinIO. Generated when not set"
   echo "- ARGO_MINIO_REQUESTS_MEMORY | units of bytes (default is 4Gi) | Memory requests for the Argo MinIO server"
+  echo "- PROM_STORAGE_CLASS_NAME | storage class name for the prometheus PVC (default is standard)"
+  echo "- PROM_STORAGE_RESOURCE_REQUEST | size requested for prometheusPVC (default is 10Gi)"
+  echo "- PROM_CPU_MEM_LIMITS | memory size limit for prometheus (default is 2Gi)"
+  echo "- PROM_CPU_MEM_REQUESTS | memory size requested for prometheus (default is 2Gi)"
+  echo "- PROM_REPLICAS_NUMBER | number of prometheus replicas (default is 1)"
+  echo "- PROM_ADMIN_PASSWORD | admin password for grafana (generated if not specified)"
   echo
   echo "Usage: ./$(basename "$0") NAMESPACE ARGO_POSTGRESQL_PASSWORD API_VERSION [any additional options to pass as is to the cosmotech-api Helm Chart]"
 }
@@ -32,9 +38,9 @@ export NAMESPACE="$1"
 export ARGO_POSTGRESQL_PASSWORD="$2"
 export API_VERSION="$3"
 
-export ARGO_RELEASE_NAME=argo
-export MINIO_RELEASE_NAME=minio
-export POSTGRES_RELEASE_NAME=postgres
+export ARGO_RELEASE_NAME=argocsmv2
+export MINIO_RELEASE_NAME=miniocsmv2
+export POSTGRES_RELEASE_NAME=postgrescsmv2
 export ARGO_VERSION="0.16.6"
 export MINIO_VERSION="8.0.10"
 export POSTGRESQL_VERSION="11.6.12"
@@ -42,6 +48,7 @@ export POSTGRESQL_VERSION="11.6.12"
 export ARGO_DATABASE=argo_workflows
 export ARGO_POSTGRESQL_USER=argo
 export ARGO_BUCKET_NAME=argo-workflows
+export ARGO_SERVICE_ACCOUNT=workflowcsmv2
 
 HELM_CHARTS_BASE_PATH=$(realpath "$(dirname "$0")")
 
@@ -54,7 +61,7 @@ kubectl create namespace "${NAMESPACE:-phoenix}" --dry-run=client -o yaml | kube
 
 # Minio
 cat <<EOF > values-minio.yaml
-fullnameOverride: argo-${MINIO_RELEASE_NAME}
+fullnameOverride: ${MINIO_RELEASE_NAME}
 defaultBucket:
   enabled: true
   name: ${ARGO_BUCKET_NAME}
@@ -123,7 +130,7 @@ images:
 workflow:
   serviceAccount:
     create: true
-    name: workflowcsmv2
+    name: ${ARGO_SERVICE_ACCOUNT}
   rbac:
     create: true
 executor:
@@ -134,6 +141,7 @@ executor:
     value: 1s
   - name: RECENTLY_STARTED_POD_DURATION
     value: 1s
+useDefaultArtifactRepo: true
 artifactRepository:
   archiveLogs: true
   s3:
@@ -215,5 +223,27 @@ helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "${HELM_CHARTS_BASE_PATH}
     --set api.version="$API_VERSION" \
     --set config.csm.platform.argo.base-uri="http://${ARGO_RELEASE_NAME}-argo-workflows-server.${NAMESPACE}.svc.cluster.local:2746" \
     --set config.csm.platform.argo.workflows.namespace="${NAMESPACE}" \
+    --set config.csm.platform.argo.workflows.service-account-name="${ARGO_SERVICE_ACCOUNT}" \
     --set podAnnotations."com\.cosmotech/deployed-at-timestamp"="\"$(date +%s)\"" \
     "${@:4}"
+
+# kube-prometheus-stack
+# https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
+# https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack
+export MONITORING_NAMESPACE="${NAMESPACE}-monitoring"
+kubectl create namespace "${MONITORING_NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+MONITORING_NAMESPACE_VAR=${MONITORING_NAMESPACE} \
+PROM_STORAGE_CLASS_NAME_VAR=${PROM_STORAGE_CLASS_NAME:-"standard"} \
+PROM_STORAGE_RESOURCE_REQUEST_VAR=${PROM_STORAGE_RESOURCE_REQUEST:-"10Gi"} \
+PROM_CPU_MEM_LIMITS_VAR=${PROM_CPU_MEM_LIMITS:-"2Gi"} \
+PROM_CPU_MEM_REQUESTS_VAR=${PROM_CPU_MEM_REQUESTS:-"2Gi"} \
+PROM_REPLICAS_NUMBER_VAR=${PROM_REPLICAS_NUMBER:-"1"} \
+PROM_ADMIN_PASSWORD_VAR=${PROM_ADMIN_PASSWORD:-$(date +%s | sha256sum | base64 | head -c 32)} \
+envsubst < "${HELM_CHARTS_BASE_PATH}"/kube-prometheus-stack-template.yaml > kube-prometheus-stack.yaml
+
+helm upgrade --install prometheus-operator prometheus-community/kube-prometheus-stack \
+             --namespace "${MONITORING_NAMESPACE}" \
+             --values "kube-prometheus-stack.yaml"

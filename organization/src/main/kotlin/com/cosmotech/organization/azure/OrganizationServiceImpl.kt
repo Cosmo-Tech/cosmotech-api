@@ -28,7 +28,6 @@ import com.cosmotech.organization.domain.OrganizationUser
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
 import com.fasterxml.jackson.databind.JsonNode
-import java.lang.IllegalStateException
 import javax.annotation.PostConstruct
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
