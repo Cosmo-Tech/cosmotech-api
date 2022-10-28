@@ -30,6 +30,13 @@ help() {
   echo "- TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL | Email String | contact email, used for Let's Encrypt certificate requests"
   echo "- TLS_CERTIFICATE_CUSTOM_CERTIFICATE_PATH | File path | path to a file containing the custom TLS certificate to use for HTTPS"
   echo "- TLS_CERTIFICATE_CUSTOM_KEY_PATH | File path | path to a file containing the key for the custom TLS certificate to use for HTTPS"
+  echo "- DEPLOY_PROMETHEUS_STACK | boolean (default is false) | deploy prometheus stack to monitor platform usage"
+  echo "--- PROM_STORAGE_CLASS_NAME | storage class name for the prometheus PVC (default is standard)"
+  echo "--- PROM_STORAGE_RESOURCE_REQUEST | size requested for prometheusPVC (default is 10Gi)"
+  echo "--- PROM_CPU_MEM_LIMITS | memory size limit for prometheus (default is 2Gi)"
+  echo "--- PROM_CPU_MEM_REQUESTS | memory size requested for prometheus (default is 2Gi)"
+  echo "--- PROM_REPLICAS_NUMBER | number of prometheus replicas (default is 1)"
+  echo "--- PROM_ADMIN_PASSWORD | admin password for grafana (generated if not specified)"
   echo
   echo "Usage: ./$(basename "$0") CHART_PACKAGE_VERSION NAMESPACE ARGO_POSTGRESQL_PASSWORD API_VERSION [any additional options to pass as is to the cosmotech-api Helm Chart]"
   echo
@@ -53,9 +60,13 @@ fi
 
 export HELM_EXPERIMENTAL_OCI=1
 
-CHART_PACKAGE_VERSION="$1"
+export CHART_PACKAGE_VERSION="$1"
 export NAMESPACE="$2"
 export API_VERSION="$4"
+
+echo CHART_PACKAGE_VERSION: $CHART_PACKAGE_VERSION
+echo NAMEPSACE: $NAMESPACE
+echo API_VERSION: $API_VERSION
 
 export ARGO_VERSION="0.16.6"
 export ARGO_RELEASE_NAME=argocsmv2
@@ -66,6 +77,8 @@ export POSTGRES_RELEASE_NAME=postgrescsmv2
 export POSTGRESQL_VERSION="11.6.12"
 export ARGO_POSTGRESQL_USER=argo
 export ARGO_POSTGRESQL_PASSWORD="$3"
+export INGRESS_NGINX_VERSION="4.2.5"
+export CERT_MANAGER_VERSION="1.9.1"
 
 export ARGO_DATABASE=argo_workflows
 export ARGO_BUCKET_NAME=argo-workflows
@@ -118,7 +131,7 @@ controller:
     networking/traffic-allowed: "yes"
   replicaCount: "${NGINX_INGRESS_CONTROLLER_REPLICA_COUNT}"
   nodeSelector:
-    beta.kubernetes.io/os: "linux"
+    kubernetes.io/os: "linux"
   service:
     labels:
       networking/traffic-allowed: "yes"
@@ -130,13 +143,13 @@ defaultBackend:
   podLabels:
     networking/traffic-allowed: "yes"
   nodeSelector:
-    "beta.kubernetes.io/os": "linux"
+    "kubernetes.io/os": "linux"
 
 EOF
 
   helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
     --namespace "${NAMESPACE}" \
-    --version 4.1.0 \
+    --version ${INGRESS_NGINX_VERSION} \
     --values values-ingress-nginx.yaml \
     ${NGINX_INGRESS_CONTROLLER_HELM_ADDITIONAL_OPTIONS:-}
 fi
@@ -158,11 +171,11 @@ if [[ "${CERT_MANAGER_ENABLED:-false}" == "true" ]]; then
   kubectl label namespace "${NAMESPACE}" cert-manager.io/disable-validation=true --overwrite=true
   helm upgrade --install cert-manager jetstack/cert-manager \
     --namespace "${NAMESPACE}" \
-    --version v1.3.1 \
+    --version v${CERT_MANAGER_VERSION} \
     --wait \
     --timeout "${CERT_MANAGER_INSTALL_WAIT_TIMEOUT:-3m}" \
     --set installCRDs=true \
-    --set nodeSelector."beta\.kubernetes\.io/os"=linux \
+    --set nodeSelector."kubernetes\.io/os"=linux \
     --set podLabels."networking/traffic-allowed"=yes \
     --set webhook.podLabels."networking/traffic-allowed"=yes \
     --set cainjector.podLabels."networking/traffic-allowed"=yes
@@ -170,11 +183,11 @@ if [[ "${CERT_MANAGER_ENABLED:-false}" == "true" ]]; then
   if [[ "${COSMOTECH_API_DNS_NAME:-}" != "" && "${TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL:-}" != "" ]]; then
     # Wait few seconds until the CertManager WebHook pod is ready.
     # Otherwise, we might run into the following issue :
-    # Error from server: error when creating "STDIN": conversion webhook for cert-manager.io/v1alpha2,
+    # Error from server: error when creating "STDIN": conversion webhook for cert-manager.io/v1,
     # Kind=Certificate failed: Post "https://cert-manager-webhook.${NAMESPACE}.svc:443/convert?timeout=30s"
     sleep 25
 cat <<EOF | kubectl --namespace "${NAMESPACE}" apply --validate=false -f -
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
   name: letsencrypt-${CERT_MANAGER_ACME}
@@ -198,7 +211,7 @@ spec:
 
 ---
 
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: ${TLS_SECRET_NAME}
@@ -221,7 +234,7 @@ fi
 
 # Minio
 cat <<EOF > values-minio.yaml
-fullnameOverride: argo-${MINIO_RELEASE_NAME}
+fullnameOverride: ${MINIO_RELEASE_NAME}
 defaultBucket:
   enabled: true
   name: ${ARGO_BUCKET_NAME}
@@ -285,13 +298,14 @@ EOF
 kubectl apply -n ${NAMESPACE} -f postgres-secret.yaml
 
 # Argo
+export ARGO_SERVICE_ACCOUNT=workflowcsmv2
 cat <<EOF > values-argo.yaml
 images:
   pullPolicy: IfNotPresent
 workflow:
   serviceAccount:
     create: true
-    name: workflowcsmv2
+    name: ${ARGO_SERVICE_ACCOUNT}
   rbac:
     create: true
 executor:
@@ -300,6 +314,7 @@ executor:
     value: 1s
   - name: WAIT_CONTAINER_STATUS_CHECK_INTERVAL
     value: 1s
+useDefaultArtifactRepo: true
 artifactRepository:
   archiveLogs: true
   s3:
@@ -393,6 +408,7 @@ config:
         base-uri: "http://${ARGO_RELEASE_NAME}-argo-workflows-server.${NAMESPACE}.svc.cluster.local:2746"
         workflows:
           namespace: ${NAMESPACE}
+          service-account-name: ${ARGO_SERVICE_ACCOUNT}
 
 ingress:
   enabled: ${COSMOTECH_API_INGRESS_ENABLED}
@@ -431,9 +447,134 @@ fi
 
 HELM_CHARTS_BASE_PATH=$(realpath "$(dirname "$0")")
 
-helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "${HELM_CHARTS_BASE_PATH}/helm-chart" \
+helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "cosmotech-api-chart-${CHART_PACKAGE_VERSION}.tgz" \
     --namespace "${NAMESPACE}" \
     --version ${CHART_PACKAGE_VERSION} \
     --values values-cosmotech-api-deploy.yaml \
     ${CERT_MANAGER_INGRESS_ANNOTATION_SET} \
     "${@:5}"
+
+
+# kube-prometheus-stack
+# https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
+# https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack
+if [[ "${DEPLOY_PROMETHEUS_STACK:-false}" == "true" ]]; then
+  export MONITORING_NAMESPACE="${NAMESPACE}-monitoring"
+  kubectl create namespace "${MONITORING_NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
+  helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+  helm repo update
+
+  MONITORING_NAMESPACE_VAR=${MONITORING_NAMESPACE} \
+  PROM_STORAGE_CLASS_NAME_VAR=${PROM_STORAGE_CLASS_NAME:-"default"} \
+  PROM_STORAGE_RESOURCE_REQUEST_VAR=${PROM_STORAGE_RESOURCE_REQUEST:-"10Gi"} \
+  PROM_CPU_MEM_LIMITS_VAR=${PROM_CPU_MEM_LIMITS:-"2Gi"} \
+  PROM_CPU_MEM_REQUESTS_VAR=${PROM_CPU_MEM_REQUESTS:-"2Gi"} \
+  PROM_REPLICAS_NUMBER_VAR=${PROM_REPLICAS_NUMBER:-"1"} \
+  PROM_ADMIN_PASSWORD_VAR=${PROM_ADMIN_PASSWORD:-$(date +%s | sha256sum | base64 | head -c 32)} \
+  # Cannot use kube-prometheus-stack.yaml here directly since ARM only download deploy_via_helm.sh
+  # envsubst < "${HELM_CHARTS_BASE_PATH}"/kube-prometheus-stack-template.yaml > kube-prometheus-stack.yaml
+
+cat <<EOF > kube-prometheus-stack.yaml
+namespace: $MONITORING_NAMESPACE_VAR
+name: cosmotech-api-latest
+defaultRules:
+  create: false
+alertmanager:
+  enabled: false
+grafana:
+  enabled: true
+  adminPassword: $PROM_ADMIN_PASSWORD_VAR
+  defaultDashboardsEnabled: false
+  tolerations:
+    - key: "vendor"
+      operator: "Equal"
+      value: "cosmotech"
+      effect: "NoSchedule"
+  nodeSelector:
+    "cosmotech.com/tier": "monitoring"
+kubeApiServer:
+  enabled: false
+kubelet:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+coreDns:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeStateMetrics:
+  enabled: false
+nodeExporter:
+  enabled: false
+prometheusOperator:
+  tolerations:
+    - key: "vendor"
+      operator: "Equal"
+      value: "cosmotech"
+      effect: "NoSchedule"
+  nodeSelector:
+    "cosmotech.com/tier": "monitoring"
+prometheus:
+  enabled: true
+  crname: prometheus
+  serviceAccount:
+    create: true
+    name: prometheus-service-account
+  prometheusSpec:
+    logLevel: info
+    replicas: $PROM_REPLICAS_NUMBER_VAR
+    tolerations:
+      - key: "vendor"
+        operator: "Equal"
+        value: "cosmotech"
+        effect: "NoSchedule"
+    nodeSelector:
+      "cosmotech.com/tier": "monitoring"
+    podMetadata:
+      annotations:
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+      labels:
+        app: prometheus
+    resources:
+      limits:
+        cpu: 1
+        memory: $PROM_CPU_MEM_LIMITS_VAR
+      requests:
+        cpu: 1
+        memory: $PROM_CPU_MEM_REQUESTS_VAR
+    retention: 12h
+    serviceMonitorSelector:
+      matchLabels:
+        serviceMonitorSelector: prometheus
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: $PROM_STORAGE_CLASS_NAME_VAR
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: $PROM_STORAGE_RESOURCE_REQUEST_VAR
+  additionalServiceMonitors:
+    - name: cosmotech-latest
+      additionalLabels:
+        serviceMonitorSelector: prometheus
+      endpoints:
+        - interval: 30s
+          targetPort: 8081
+          path: /actuator/prometheus
+      namespaceSelector:
+        matchNames:
+        - phoenix
+      selector:
+        matchLabels:
+          app.kubernetes.io/instance: cosmotech-api-latest
+
+EOF
+
+  helm upgrade --install prometheus-operator prometheus-community/kube-prometheus-stack \
+               --namespace "${MONITORING_NAMESPACE}" \
+               --values "kube-prometheus-stack.yaml"
+fi

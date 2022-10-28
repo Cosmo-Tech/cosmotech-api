@@ -40,8 +40,9 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 val kotlinJvmTarget = 17
-val cosmotechApiCommonVersion = "0.1.7-SNAPSHOT"
-val cosmotechApiAzureVersion = "0.1.5-SNAPSHOT"
+val cosmotechApiCommonVersion = "0.1.18-SNAPSHOT"
+val cosmotechApiAzureVersion = "0.1.7-SNAPSHOT"
+
 val azureSpringBootBomVersion = "3.14.0"
 
 allprojects {
@@ -50,6 +51,14 @@ allprojects {
   apply(plugin = "io.gitlab.arturbosch.detekt")
 
   repositories {
+    maven {
+      name = "GitHubPackages"
+      url = uri("https://maven.pkg.github.com/Cosmo-Tech/cosmotech-api-common")
+      credentials {
+        username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
+        password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+      }
+    }
     maven {
       name = "Argo Client Java GitHub Packages"
       url = uri("https://maven.pkg.github.com/argoproj-labs/argo-client-java")
@@ -60,7 +69,6 @@ allprojects {
       content { includeModule("io.argoproj.workflow", "argo-client-java") }
     }
     mavenCentral()
-    maven { url = uri("https://jitpack.io") }
   }
 
   configure<SpotlessExtension> {
@@ -194,7 +202,7 @@ subprojects {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.security:spring-security-oauth2-jose:5.7.2")
     implementation("org.springframework.security:spring-security-oauth2-resource-server:5.7.2")
-    val oktaSpringBootVersion = "2.1.5"
+    val oktaSpringBootVersion = "2.1.6"
     implementation("com.okta.spring:okta-spring-boot-starter:${oktaSpringBootVersion}")
 
     testImplementation(kotlin("test"))
