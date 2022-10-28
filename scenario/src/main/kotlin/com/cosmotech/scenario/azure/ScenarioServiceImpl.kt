@@ -13,6 +13,8 @@ import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
+import com.cosmotech.api.events.DeleteHistoricalDataScenario
+import com.cosmotech.api.events.DeleteHistoricalDataWorkspace
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
@@ -425,7 +427,8 @@ internal class ScenarioServiceImpl(
           .getContainer("${organizationId}_scenario_data")
           .queryItems(
               SqlQuerySpec(
-                  "SELECT * FROM c WHERE c.type = 'Scenario' AND c.workspaceId = @WORKSPACE_ID AND c.rootId = @ROOT_ID",
+                  "SELECT * FROM c WHERE c.type = 'Scenario' AND c.workspaceId = @WORKSPACE_ID" +
+                      " AND c.rootId = @ROOT_ID",
                   listOf(
                       SqlParameter("@WORKSPACE_ID", workspaceId),
                       SqlParameter("@ROOT_ID", rootId))),
@@ -511,7 +514,8 @@ internal class ScenarioServiceImpl(
           .getContainer("${organizationId}_scenario_data")
           .queryItems(
               SqlQuerySpec(
-                  "SELECT * FROM c WHERE c.type = 'Scenario' AND c.id = @SCENARIO_ID AND c.workspaceId = @WORKSPACE_ID",
+                  "SELECT * FROM c WHERE c.type = 'Scenario' AND c.id = @SCENARIO_ID" +
+                      " AND c.workspaceId = @WORKSPACE_ID",
                   listOf(
                       SqlParameter("@SCENARIO_ID", scenarioId),
                       SqlParameter("@WORKSPACE_ID", workspaceId))),
@@ -844,6 +848,17 @@ internal class ScenarioServiceImpl(
       TENANT_CLIENT_CREDENTIALS -> {
         azureEventHubsClient.sendMetaData(baseHostName, eventHubName, scenarioMetaData)
       }
+    }
+  }
+
+  @EventListener(DeleteHistoricalDataWorkspace::class)
+  fun deleteHistoricalDataScenario(data: DeleteHistoricalDataWorkspace) {
+    val organizationId = data.organizationId
+    val workspaceId = data.workspaceId
+    val scenarios: List<Scenario> = findAllScenarios(organizationId, workspaceId)
+    for (scenario in scenarios) {
+      this.eventPublisher.publishEvent(
+          DeleteHistoricalDataScenario(this, organizationId, workspaceId, scenario.id!!))
     }
   }
 
