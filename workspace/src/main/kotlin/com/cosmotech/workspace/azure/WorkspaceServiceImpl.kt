@@ -304,7 +304,7 @@ internal class WorkspaceServiceImpl(
     val eventBus = csmPlatformProperties.azure?.eventBus!!
     kubernetesClient.createSecretIntoKubernetes(
         secretName,
-        kubernetesDedicatedEventHubSecret.namespace,
+        csmPlatformProperties.namespace,
         Pair(
             eventBus.authentication.sharedAccessPolicy?.namespace?.name!!,
             kubernetesDedicatedEventHubSecret.secretKey))
