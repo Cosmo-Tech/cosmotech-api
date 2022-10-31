@@ -595,14 +595,10 @@ components:
       type: object
       description: the secret definition
       properties:
-        namespace:
-          type: string
-          description: the namepace in which the secret will be created
         secret_key:
           type: string
           description: the shared access key
       required:
-        - namespace
         - secret_key
   examples:
     BreweryWorkspaceCreateIn:

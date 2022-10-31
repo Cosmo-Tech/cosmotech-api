@@ -227,7 +227,7 @@ internal class ScenarioServiceImpl(
     return scenarioToSave
   }
 
-  @Suppress("NestedBlockDepth", "UnusedPrivateMember")
+  @Suppress("NestedBlockDepth")
   private fun handleScenarioRunTemplateParametersValues(
       parentId: String?,
       solution: Solution?,
@@ -843,7 +843,9 @@ internal class ScenarioServiceImpl(
 
     when (eventBus.authentication.strategy) {
       SHARED_ACCESS_POLICY -> {
-        val (name, key) = kubernetesClient.getSecretFromKubernetes(eventHubNamespace, "phoenix")
+        val (name, key) =
+            kubernetesClient.getSecretFromKubernetes(
+                eventHubNamespace, csmPlatformProperties.namespace)
 
         azureEventHubsClient.sendMetaData(
             baseHostName,
