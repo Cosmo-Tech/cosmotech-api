@@ -201,7 +201,7 @@ subprojects {
 
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.security:spring-security-oauth2-jose:5.7.4")
-    implementation("org.springframework.security:spring-security-oauth2-resource-server:5.7.4")
+    implementation("org.springframework.security:spring-security-oauth2-resource-server:5.7.5")
     val oktaSpringBootVersion = "2.1.6"
     implementation("com.okta.spring:okta-spring-boot-starter:${oktaSpringBootVersion}")
 
