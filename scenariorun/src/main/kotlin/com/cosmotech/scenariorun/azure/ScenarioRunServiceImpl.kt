@@ -50,6 +50,8 @@ import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
+import java.time.ZonedDateTime
+import kotlin.reflect.full.memberProperties
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -59,8 +61,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
-import java.time.ZonedDateTime
-import kotlin.reflect.full.memberProperties
 
 private const val MIN_SDK_VERSION_MAJOR = 8
 private const val MIN_SDK_VERSION_MINOR = 5
@@ -142,7 +142,7 @@ internal class ScenarioRunServiceImpl(
     }
   }
 
-  override fun deleteHistoricalDataOrganization(organizationId: String, deleteUnknown: Boolean?) {
+  override fun deleteHistoricalDataOrganization(organizationId: String, deleteUnknown: Boolean) {
     this.eventPublisher.publishEvent(
         DeleteHistoricalDataOrganization(this, organizationId = organizationId, deleteUnknown))
   }
@@ -150,7 +150,7 @@ internal class ScenarioRunServiceImpl(
   override fun deleteHistoricalDataWorkspace(
       organizationId: String,
       workspaceId: String,
-      deleteUnknown: Boolean?
+      deleteUnknown: Boolean
   ) {
     this.eventPublisher.publishEvent(
         DeleteHistoricalDataWorkspace(
@@ -161,12 +161,18 @@ internal class ScenarioRunServiceImpl(
       organizationId: String,
       workspaceId: String,
       scenarioId: String,
-      deleteUnknown: Boolean?
+      deleteUnknown: Boolean
   ) {
     GlobalScope.launch {
       this@ScenarioRunServiceImpl.deleteScenarioRunsByScenarioWithoutAccessEnforcement(
           organizationId, workspaceId, scenarioId, deleteUnknown)
     }
+  }
+
+  @EventListener(DeleteHistoricalDataScenario::class)
+  fun deleteHistoricalDataScenarioRun(data: DeleteHistoricalDataScenario) {
+    deleteHistoricalDataScenario(
+        data.organizationId, data.workspaceId, data.scenarioId, data.deleteUnknown)
   }
 
   private fun deleteScenarioRunsByScenarioWithoutAccessEnforcement(
@@ -177,28 +183,28 @@ internal class ScenarioRunServiceImpl(
   ) {
     val scenarioRuns = getScenarioRuns(organizationId, workspaceId, scenarioId).toMutableList()
 
-      val lastRunId =
-          scenarioApiService.findScenarioById(organizationId, workspaceId, scenarioId).lastRun!!
-              .scenarioRunId
+    val lastRunId =
+        scenarioApiService.findScenarioById(organizationId, workspaceId, scenarioId).lastRun!!
+            .scenarioRunId
 
     scenarioRuns.filter { it.state == ScenarioRunState.Failed }.forEach {
-        if (it.id != lastRunId) {
-            deleteScenarioRunWithoutAccessEnforcement(it)
-        }
+      if (it.id != lastRunId) {
+        deleteScenarioRunWithoutAccessEnforcement(it)
+      }
     }
 
-      if(deleteUnknown!!) {
-          scenarioRuns.filter { it.state == ScenarioRunState.Unknown }.forEach {
-              if (it.id != lastRunId) {
-                  deleteScenarioRunWithoutAccessEnforcement(it)
-              }
-          }
+    if (deleteUnknown == true) {
+      scenarioRuns.filter { it.state == ScenarioRunState.Unknown }.forEach {
+        if (it.id != lastRunId) {
+          deleteScenarioRunWithoutAccessEnforcement(it)
+        }
       }
+    }
 
     scenarioRuns.filter { it.state == ScenarioRunState.Successful }.forEach {
-        if (it.id != lastRunId) {
-            deleteScenarioRunWithoutAccessEnforcement(it)
-        }
+      if (it.id != lastRunId) {
+        deleteScenarioRunWithoutAccessEnforcement(it)
+      }
     }
   }
 
@@ -322,11 +328,6 @@ internal class ScenarioRunServiceImpl(
           }
           .toList()
 
-  @EventListener(DeleteHistoricalDataScenario::class)
-  fun deleteHistoricalDataScenarioRun(data: DeleteHistoricalDataScenario) {
-    deleteHistoricalDataScenario(data.organizationId, data.workspaceId, data.scenarioId, false)
-  }
-
   @EventListener(ScenarioDataDownloadRequest::class)
   fun onScenarioDataDownloadRequest(scenarioDataDownloadRequest: ScenarioDataDownloadRequest) {
     val startInfo =
@@ -405,7 +406,7 @@ internal class ScenarioRunServiceImpl(
     sendScenarioRunMetaData(organizationId, workspace, scenarioId, scenarioRun.csmSimulationRun)
 
     val purgeHistoricalDataConfiguration =
-        startInfo.runTemplate?.deleteHistoricalData ?: DeleteHistoricalData()
+        startInfo.runTemplate.deleteHistoricalData ?: DeleteHistoricalData()
     if (purgeHistoricalDataConfiguration.enable) {
       logger.debug("Start coroutine to poll simulation status")
       GlobalScope.launch {
@@ -441,7 +442,8 @@ internal class ScenarioRunServiceImpl(
     }
     if (scenarioRunStatus == ScenarioRunState.Successful.value) {
       logger.info("ScenarioRun {} is Successfull => purging data", csmSimulationRun)
-      deleteScenarioRunsByScenarioWithoutAccessEnforcement(organizationId, workspaceId, scenarioId, false)
+      deleteScenarioRunsByScenarioWithoutAccessEnforcement(
+          organizationId, workspaceId, scenarioId, false)
     } else {
       logger.info(
           "ScenarioRun {} is in error {} => no purging data", csmSimulationRun, scenarioRunStatus)
@@ -578,9 +580,8 @@ internal class ScenarioRunServiceImpl(
     // >= 8.5
     var versionWithDataIngestionState = true
     if (scenarioRun.sdkVersion != null) {
-      logger.debug(
-          "SDK version for scenario run status detected: {}", scenarioRun.sdkVersion ?: "ERROR")
-      val splitVersion = scenarioRun.sdkVersion?.split(".") ?: listOf()
+      logger.debug("SDK version for scenario run status detected: {}", scenarioRun.sdkVersion)
+      val splitVersion = scenarioRun.sdkVersion.split(".") ?: listOf()
       if (splitVersion.size < 2) {
         logger.error("Malformed SDK version for scenario run status data ingestion check")
       } else {

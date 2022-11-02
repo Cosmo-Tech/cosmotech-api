@@ -25,12 +25,13 @@ paths:
         required: true
         schema:
           type: string
-      - name: delete_unknown
-        in: path
+      - name: deleteUnknown
+        in: query
         description: condition to delete runs with an Unknown status
         required: false
         schema:
           type: boolean
+          default: false
     delete:
       operationId: deleteHistoricalDataOrganization
       tags:
@@ -57,12 +58,13 @@ paths:
         required: true
         schema:
           type: string
-      - name: delete_unknown
-        in: path
+      - name: deleteUnknown
+        in: query
         description: condition to delete runs with an Unknown status
         required: false
         schema:
           type: boolean
+          default: false
     delete:
       operationId: deleteHistoricalDataWorkspace
       tags:
@@ -75,7 +77,7 @@ paths:
           description: Bad request
         "404":
           description: the Organization or Workspace specified is unknown or you don't have access to it
-  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/historicaldata:
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/scenarioruns/historicaldata:
     parameters:
       - name: organization_id
         in: path
@@ -95,12 +97,13 @@ paths:
         required: true
         schema:
           type: string
-      - name: delete_unknown
-        in: path
+      - name: deleteUnknown
+        in: query
         description: condition to delete runs with an Unknown status
         required: false
         schema:
           type: boolean
+          default: false
     delete:
       operationId: deleteHistoricalDataScenario
       tags:
