@@ -331,14 +331,11 @@ internal class WorkspaceServiceImpl(
       kubernetesDedicatedEventHubSecret: KubernetesDedicatedEventHubSecret
   ) {
     val workspaceKey = findWorkspaceById(organizationId, workspaceId).key
-    val secretName = "${organizationId}-${workspaceKey}"
-    val eventBus = csmPlatformProperties.azure?.eventBus!!
+    val secretName = "${organizationId}-${workspaceKey}".lowercase()
     kubernetesClient.createSecretIntoKubernetes(
         secretName,
         csmPlatformProperties.namespace,
-        Pair(
-            eventBus.authentication.sharedAccessPolicy?.namespace?.name!!,
-            kubernetesDedicatedEventHubSecret.secretKey))
+        Pair("RootManageSharedAccessKey", kubernetesDedicatedEventHubSecret.secretKey))
   }
 
   @EventListener(DeleteHistoricalDataOrganization::class)
