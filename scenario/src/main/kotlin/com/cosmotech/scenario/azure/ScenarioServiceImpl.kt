@@ -159,7 +159,7 @@ internal class ScenarioServiceImpl(
       scenario: Scenario
   ): Scenario {
     // Validate organizationId
-    //    organizationService.findOrganizationById(organizationId)
+    organizationService.findOrganizationById(organizationId)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     val solution =
         workspace.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
