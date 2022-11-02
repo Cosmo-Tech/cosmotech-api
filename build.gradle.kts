@@ -42,7 +42,6 @@ version = scmVersion.version
 val kotlinJvmTarget = 17
 val cosmotechApiCommonVersion = "0.1.18-SNAPSHOT"
 val cosmotechApiAzureVersion = "0.1.7-SNAPSHOT"
-
 val azureSpringBootBomVersion = "3.14.0"
 
 allprojects {
@@ -193,15 +192,17 @@ subprojects {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("javax.validation:validation-api:2.0.1.Final")
 
-    val springDocVersion = "1.6.6"
+    val springDocVersion = "1.6.12"
     implementation("org.springdoc:springdoc-openapi-ui:${springDocVersion}")
     implementation("org.springdoc:springdoc-openapi-kotlin:${springDocVersion}")
+    val swaggerParserVersion = "2.1.7"
+    implementation("io.swagger.parser.v3:swagger-parser-v3:${swaggerParserVersion}")
 
     implementation("org.zalando:problem-spring-web-starter:0.27.0")
 
     implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.security:spring-security-oauth2-jose:5.7.4")
-    implementation("org.springframework.security:spring-security-oauth2-resource-server:5.7.4")
+    implementation("org.springframework.security:spring-security-oauth2-jose:5.7.5")
+    implementation("org.springframework.security:spring-security-oauth2-resource-server:5.7.5")
     val oktaSpringBootVersion = "2.1.6"
     implementation("com.okta.spring:okta-spring-boot-starter:${oktaSpringBootVersion}")
 
