@@ -5,7 +5,7 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**deleteHistoricalDataOrganization**](ScenariorunApi.md#deleteHistoricalDataOrganization) | **DELETE** /organizations/{organization_id}/scenarioruns/historicaldata | Delete all historical ScenarioRuns in the Organization
-[**deleteHistoricalDataScenario**](ScenariorunApi.md#deleteHistoricalDataScenario) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/historicaldata | Delete all historical ScenarioRuns in the Scenario
+[**deleteHistoricalDataScenario**](ScenariorunApi.md#deleteHistoricalDataScenario) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/scenarioruns/historicaldata | Delete all historical ScenarioRuns in the Scenario
 [**deleteHistoricalDataWorkspace**](ScenariorunApi.md#deleteHistoricalDataWorkspace) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/scenarioruns/historicaldata | Delete all historical ScenarioRuns in the Workspace
 [**deleteScenarioRun**](ScenariorunApi.md#deleteScenarioRun) | **DELETE** /organizations/{organization_id}/scenarioruns/{scenariorun_id} | Delete a scenariorun
 [**findScenarioRunById**](ScenariorunApi.md#findScenarioRunById) | **GET** /organizations/{organization_id}/scenarioruns/{scenariorun_id} | Get the details of a scenariorun
@@ -22,7 +22,7 @@ Method | HTTP request | Description
 
 <a name="deleteHistoricalDataOrganization"></a>
 # **deleteHistoricalDataOrganization**
-> deleteHistoricalDataOrganization(organization\_id, delete\_unknown)
+> deleteHistoricalDataOrganization(organization\_id, deleteUnknown)
 
 Delete all historical ScenarioRuns in the Organization
 
@@ -31,7 +31,7 @@ Delete all historical ScenarioRuns in the Organization
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
- **delete\_unknown** | **Boolean**| condition to delete runs with an Unknown status | [optional] [default to null]
+ **deleteUnknown** | **Boolean**| condition to delete runs with an Unknown status | [optional] [default to false]
 
 ### Return type
 
@@ -48,7 +48,7 @@ null (empty response body)
 
 <a name="deleteHistoricalDataScenario"></a>
 # **deleteHistoricalDataScenario**
-> deleteHistoricalDataScenario(organization\_id, workspace\_id, scenario\_id, delete\_unknown)
+> deleteHistoricalDataScenario(organization\_id, workspace\_id, scenario\_id, deleteUnknown)
 
 Delete all historical ScenarioRuns in the Scenario
 
@@ -59,7 +59,7 @@ Name | Type | Description  | Notes
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **workspace\_id** | **String**| the Workspace identifier | [default to null]
  **scenario\_id** | **String**| the Scenario identifier | [default to null]
- **delete\_unknown** | **Boolean**| condition to delete runs with an Unknown status | [optional] [default to null]
+ **deleteUnknown** | **Boolean**| condition to delete runs with an Unknown status | [optional] [default to false]
 
 ### Return type
 
@@ -76,7 +76,7 @@ null (empty response body)
 
 <a name="deleteHistoricalDataWorkspace"></a>
 # **deleteHistoricalDataWorkspace**
-> deleteHistoricalDataWorkspace(organization\_id, workspace\_id, delete\_unknown)
+> deleteHistoricalDataWorkspace(organization\_id, workspace\_id, deleteUnknown)
 
 Delete all historical ScenarioRuns in the Workspace
 
@@ -86,7 +86,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **workspace\_id** | **String**| the Workspace identifier | [default to null]
- **delete\_unknown** | **Boolean**| condition to delete runs with an Unknown status | [optional] [default to null]
+ **deleteUnknown** | **Boolean**| condition to delete runs with an Unknown status | [optional] [default to false]
 
 ### Return type
 
