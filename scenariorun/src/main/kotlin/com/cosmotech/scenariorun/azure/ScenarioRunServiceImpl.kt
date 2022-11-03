@@ -161,12 +161,14 @@ internal class ScenarioRunServiceImpl(
   ) {
     val scenarioRuns = getScenarioRuns(organizationId, workspaceId, scenarioId).toMutableList()
 
-    scenarioRuns.filter { it.state == ScenarioRunState.Failed }.forEach {
-      deleteScenarioRunWithoutAccessEnforcement(it)
-    }
+    scenarioRuns
+        .filter { it.state == ScenarioRunState.Failed }
+        .forEach { deleteScenarioRunWithoutAccessEnforcement(it) }
 
     val lastRunId =
-        scenarioApiService.findScenarioById(organizationId, workspaceId, scenarioId).lastRun!!
+        scenarioApiService
+            .findScenarioById(organizationId, workspaceId, scenarioId)
+            .lastRun!!
             .scenarioRunId
 
     for (run in scenarioRuns.filter { it.state == ScenarioRunState.Successful }) {
@@ -267,7 +269,8 @@ internal class ScenarioRunServiceImpl(
                               WHERE c.type = 'ScenarioRun'
                                 AND c.workspaceId = @WORKSPACE_ID
                                 AND c.scenarioId = @SCENARIO_ID
-                          """.trimIndent(),
+          """
+                      .trimIndent(),
                   listOf(
                       SqlParameter("@WORKSPACE_ID", workspaceId),
                       SqlParameter("@SCENARIO_ID", scenarioId))),
@@ -294,7 +297,8 @@ internal class ScenarioRunServiceImpl(
                             SELECT * FROM c
                               WHERE c.type = 'ScenarioRun'
                                 AND c.workspaceId = @WORKSPACE_ID
-                          """.trimIndent(),
+          """
+                      .trimIndent(),
                   listOf(SqlParameter("@WORKSPACE_ID", workspaceId))),
               CosmosQueryRequestOptions(),
               // It would be much better to specify the Domain Type right away and
@@ -335,7 +339,7 @@ internal class ScenarioRunServiceImpl(
     val jobId = scenarioDataDownloadJobInfoRequest.jobId
     val workflowStatusAndArtifactList =
         this.workflowService.findWorkflowStatusAndArtifact(
-            "$CSM_JOB_ID_LABEL_KEY=${jobId}", SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME)
+            "$CSM_JOB_ID_LABEL_KEY=$jobId", SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME)
     if (workflowStatusAndArtifactList.isNotEmpty()) {
       scenarioDataDownloadJobInfoRequest.response =
           workflowStatusAndArtifactList[0].status to
@@ -343,6 +347,7 @@ internal class ScenarioRunServiceImpl(
     }
   }
 
+  @Suppress("LongMethod")
   override fun runScenario(
       organizationId: String,
       workspaceId: String,
@@ -397,9 +402,9 @@ internal class ScenarioRunServiceImpl(
         withTimeout(
             purgeHistoricalDataConfiguration.timeOut?.toLong()
                 ?: DELETE_SCENARIO_RUN_DEFAULT_TIMEOUT) {
-          deletePreviousSimulationDataIfCurrentSimulationIsSuccessful(
-              scenarioRun, purgeHistoricalDataConfiguration)
-        }
+              deletePreviousSimulationDataIfCurrentSimulationIsSuccessful(
+                  scenarioRun, purgeHistoricalDataConfiguration)
+            }
       }
       logger.debug("Coroutine to poll simulation status launched")
     }
@@ -452,7 +457,8 @@ internal class ScenarioRunServiceImpl(
                             SELECT * FROM c
                               WHERE c.type = 'ScenarioRun'
                               $andExpr
-                          """.trimIndent(),
+          """
+                    .trimIndent(),
                 scenarioRunSearchPredicatePair.second),
             CosmosQueryRequestOptions(),
             // It would be much better to specify the Domain Type right away and
@@ -651,7 +657,8 @@ internal class ScenarioRunServiceImpl(
   ): ScenarioRunState {
     logger.debug("Mapping phase $phase for job $scenarioRunId")
     return when (phase) {
-      "Pending", "Running" -> ScenarioRunState.Running
+      "Pending",
+      "Running" -> ScenarioRunState.Running
       "Succeeded" -> {
         logger.trace(
             "checkDataIngestionState=$checkDataIngestionState," +
@@ -671,7 +678,8 @@ internal class ScenarioRunServiceImpl(
               "Data Ingestion status for ScenarioRun $scenarioRunId " +
                   "(csmSimulationRun=$csmSimulationRun): $postProcessingState")
           when (postProcessingState) {
-            null, DataIngestionState.Unknown -> ScenarioRunState.Unknown
+            null,
+            DataIngestionState.Unknown -> ScenarioRunState.Unknown
             DataIngestionState.InProgress -> ScenarioRunState.DataIngestionInProgress
             DataIngestionState.Successful -> ScenarioRunState.Successful
             DataIngestionState.Failure -> ScenarioRunState.Failed
@@ -680,7 +688,10 @@ internal class ScenarioRunServiceImpl(
           ScenarioRunState.Successful
         }
       }
-      "Skipped", "Failed", "Error", "Omitted" -> ScenarioRunState.Failed
+      "Skipped",
+      "Failed",
+      "Error",
+      "Omitted" -> ScenarioRunState.Failed
       else -> {
         logger.warn(
             "Unhandled state response for job {}: {} => returning Unknown as state",
@@ -724,9 +735,9 @@ internal class ScenarioRunServiceImpl(
     }
 
     val eventBus = csmPlatformProperties.azure?.eventBus!!
-    val eventHubNamespace = "${organizationId}-${workspace.key}".lowercase()
+    val eventHubNamespace = "$organizationId-${workspace.key}".lowercase()
     val eventHubName = "scenariorunmetadata"
-    val baseHostName = "${eventHubNamespace}.servicebus.windows.net".lowercase()
+    val baseHostName = "$eventHubNamespace.servicebus.windows.net".lowercase()
 
     val scenarioMetaData =
         ScenarioRunMetaData(

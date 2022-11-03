@@ -150,6 +150,7 @@ internal class ScenarioServiceImpl(
     TODO("Not yet implemented")
   }
 
+  @Suppress("LongMethod")
   override fun createScenario(
       organizationId: String,
       workspaceId: String,
@@ -237,7 +238,8 @@ internal class ScenarioServiceImpl(
 
     logger.debug("Getting runTemplate parameters ids")
     val runTemplateParametersIds =
-        solution?.parameterGroups
+        solution
+            ?.parameterGroups
             ?.filter { parameterGroup ->
               runTemplate?.parameterGroups?.contains(parameterGroup.id) == true
             }
@@ -263,7 +265,7 @@ internal class ScenarioServiceImpl(
             }
           } else {
             logger.debug(
-                "Skipping parameter ${parameterId}, defined neither in the parent nor in this Scenario")
+                "Skipping parameter $parameterId, defined neither in the parent nor in this Scenario")
           }
         } else {
           logger.debug(
@@ -547,7 +549,8 @@ internal class ScenarioServiceImpl(
             "Running" -> ScenarioJobState.Running
             "DataIngestionInProgress" -> ScenarioJobState.DataIngestionInProgress
             "Successful" -> ScenarioJobState.Successful
-            "Failed", "DataIngestionFailure" -> ScenarioJobState.Failed
+            "Failed",
+            "DataIngestionFailure" -> ScenarioJobState.Failed
             else -> ScenarioJobState.Unknown
           }
     }
@@ -776,7 +779,7 @@ internal class ScenarioServiceImpl(
     val runTemplate =
         solution?.runTemplates?.find { it.id == newRunTemplateId }
             ?: throw IllegalArgumentException(
-                "No run template '${newRunTemplateId}' in solution ${solution?.id}")
+                "No run template '$newRunTemplateId' in solution ${solution?.id}")
     existingScenario.runTemplateId = scenario.runTemplateId
     existingScenario.runTemplateName = runTemplate.name
   }
@@ -819,9 +822,9 @@ internal class ScenarioServiceImpl(
     }
 
     val eventBus = csmPlatformProperties.azure?.eventBus!!
-    val eventHubNamespace = "${organizationId}-${workspace.key}".lowercase()
+    val eventHubNamespace = "$organizationId-${workspace.key}".lowercase()
     val eventHubName = "scenariometadata"
-    val baseHostName = "${eventHubNamespace}.servicebus.windows.net".lowercase()
+    val baseHostName = "$eventHubNamespace.servicebus.windows.net".lowercase()
 
     val scenarioMetaData =
         ScenarioMetaData(
@@ -877,7 +880,7 @@ internal class ScenarioServiceImpl(
 
   @EventListener(ScenarioRunStartedForScenario::class)
   fun onScenarioRunStartedForScenario(scenarioRunStarted: ScenarioRunStartedForScenario) {
-    logger.debug("onScenarioRunStartedForScenario ${scenarioRunStarted}")
+    logger.debug("onScenarioRunStartedForScenario $scenarioRunStarted")
     this.updateScenario(
         scenarioRunStarted.organizationId,
         scenarioRunStarted.workspaceId,
@@ -894,7 +897,7 @@ internal class ScenarioServiceImpl(
 
   @EventListener(ScenarioDatasetListChanged::class)
   fun onScenarioDatasetListChanged(scenarioDatasetListChanged: ScenarioDatasetListChanged) {
-    logger.debug("onScenarioDatasetListChanged ${scenarioDatasetListChanged}")
+    logger.debug("onScenarioDatasetListChanged $scenarioDatasetListChanged")
     val children =
         this.findAllScenariosByRootId(
             scenarioDatasetListChanged.organizationId,

@@ -72,6 +72,7 @@ class ContainerFactoryTests {
 
   @InjectMockKs private lateinit var factory: ContainerFactory
 
+  @Suppress("LongMethod")
   @BeforeTest
   fun setUp() {
     MockKAnnotations.init(this)
@@ -889,7 +890,7 @@ class ContainerFactoryTests {
             "CSM_SIMULATION" to "TestSimulation",
             providerEnvVar to "azureStorage",
             "AZURE_STORAGE_CONNECTION_STRING" to "csmphoenix_storage_connection_string",
-            resourceEnvVar to "organizationid/1/${runTemplate}/${resource}.zip",
+            resourceEnvVar to "organizationid/1/$runTemplate/$resource.zip",
         )
     assertEquals(expected, container.envVars)
   }
@@ -1723,7 +1724,7 @@ class ContainerFactoryTests {
             "W-key",
             "csmSimulationId")
 
-    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
+    assertEquals("$CONTAINER_FETCH_DATASET_PARAMETERS-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
@@ -1770,7 +1771,7 @@ class ContainerFactoryTests {
             "W-key",
             "csmSimulationId")
 
-    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
+    assertEquals("$CONTAINER_FETCH_DATASET_PARAMETERS-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
@@ -1817,7 +1818,7 @@ class ContainerFactoryTests {
             "W-key",
             "csmSimulationId")
 
-    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
+    assertEquals("$CONTAINER_FETCH_DATASET_PARAMETERS-1", scenarioRunContainer.name)
     assertEquals(
         mapOf(AZURE_AAD_POD_ID_BINDING_LABEL to "phoenixdev-pod-identity"),
         scenarioRunContainer.labels)
@@ -1864,7 +1865,7 @@ class ContainerFactoryTests {
             "W-key",
             "csmSimulationId")
 
-    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
+    assertEquals("$CONTAINER_FETCH_DATASET_PARAMETERS-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
@@ -1911,7 +1912,7 @@ class ContainerFactoryTests {
             "W-key",
             "csmSimulationId")
 
-    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
+    assertEquals("$CONTAINER_FETCH_DATASET_PARAMETERS-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
@@ -1958,7 +1959,7 @@ class ContainerFactoryTests {
             "W-key",
             "csmSimulationId")
 
-    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
+    assertEquals("$CONTAINER_FETCH_DATASET_PARAMETERS-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
@@ -2159,7 +2160,7 @@ class ContainerFactoryTests {
             CSM_SIMULATION_ID)
     val container =
         containers.find { container ->
-          container.name == "fetchScenarioDatasetParametersContainer-${nameId}"
+          container.name == "fetchScenarioDatasetParametersContainer-$nameId"
         }
     val expected =
         mapOf(
@@ -2179,7 +2180,7 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
-            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/${param}",
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/$param",
             "ENV_PARAM_1" to "env_param1_value",
             "ENV_PARAM_2" to "env_param2_value",
             "ENV_PARAM_3" to "env_param3_value")

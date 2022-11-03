@@ -30,12 +30,26 @@ import com.cosmotech.user.api.UserApiService
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
-import io.mockk.*
+import io.mockk.MockKAnnotations
+import io.mockk.confirmVerified
+import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.spyk
+import io.mockk.unmockkStatic
+import io.mockk.verify
 import java.time.Duration
 import java.util.stream.Stream
-import kotlin.test.*
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Ignore
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import org.awaitility.kotlin.atMost
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.untilAsserted
@@ -730,9 +744,13 @@ class ScenarioServiceImplTests {
                     is ScenarioRunEndToEndStateRequest ->
                         event.response =
                             when (phase) {
-                              "Pending", "Running" -> "Running"
+                              "Pending",
+                              "Running" -> "Running"
                               "Succeeded" -> "Successful"
-                              "Skipped", "Failed", "Error", "Omitted" -> "Failed"
+                              "Skipped",
+                              "Failed",
+                              "Error",
+                              "Omitted" -> "Failed"
                               else -> "Unknown"
                             }
                     else ->

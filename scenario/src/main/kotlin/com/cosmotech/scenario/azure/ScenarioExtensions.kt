@@ -40,7 +40,8 @@ internal fun List<Scenario>.addLastRunsInfo(
         if (!parentId.isNullOrBlank()) {
           val parentLastRun =
               try {
-                scenarioServiceImpl.findScenarioByIdNoState(organizationId, workspaceId, parentId)
+                scenarioServiceImpl
+                    .findScenarioByIdNoState(organizationId, workspaceId, parentId)
                     .lastRun
               } catch (iae: IllegalArgumentException) {
                 // There might be cases where the parent no longer exists
@@ -63,7 +64,8 @@ internal fun List<Scenario>.addLastRunsInfo(
         if (!rootId.isNullOrBlank()) {
           val rootLastRun =
               try {
-                scenarioServiceImpl.findScenarioByIdNoState(organizationId, workspaceId, rootId)
+                scenarioServiceImpl
+                    .findScenarioByIdNoState(organizationId, workspaceId, rootId)
                     .lastRun
               } catch (iae: IllegalArgumentException) {
                 // There might be cases where the root scenario no longer exists

@@ -30,7 +30,7 @@ plugins {
   id("org.springframework.boot") version "2.7.2" apply false
   id("org.openapi.generator") version "5.4.0" apply false
   id("com.google.cloud.tools.jib") version "3.2.1" apply false
-  id("io.gitlab.arturbosch.detekt") version "1.21.0"
+  id("io.gitlab.arturbosch.detekt").version("1.21.0")
 }
 
 scmVersion { tag(closureOf<TagNameSerializationConfig> { prefix = "" }) }
@@ -78,7 +78,8 @@ allprojects {
         """
         // Copyright (c) Cosmo Tech.
         // Licensed under the MIT license.
-      """.trimIndent()
+      """
+            .trimIndent()
 
     java {
       googleJavaFormat()
@@ -86,12 +87,12 @@ allprojects {
       licenseHeader(licenseHeaderComment)
     }
     kotlin {
-      ktfmt("0.30")
+      ktfmt("0.41")
       target("**/*.kt")
       licenseHeader(licenseHeaderComment)
     }
     kotlinGradle {
-      ktfmt("0.30")
+      ktfmt("0.41")
       target("**/*.kts")
       //      licenseHeader(licenseHeaderComment, "import")
     }
@@ -168,12 +169,8 @@ subprojects {
   }
 
   dependencies {
-
-    // Workaround until Detekt adds support for JVM Target 17
-    // See https://github.com/detekt/detekt/issues/4287
-    detekt("io.gitlab.arturbosch.detekt:detekt-cli:1.20.0")
-    detekt("io.gitlab.arturbosch.detekt:detekt-formatting:1.20.0")
-    detekt("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.7.10")
+    detekt("io.gitlab.arturbosch.detekt:detekt-cli:1.21.0")
+    detekt("io.gitlab.arturbosch.detekt:detekt-formatting:1.21.0")
 
     val developmentOnly = configurations.getByName("developmentOnly")
 
@@ -429,12 +426,12 @@ val copySubProjectsDetektReportsTasks =
                     "${subProject.projectDir.relativeTo(rootDir)}"
                         .capitalizeAsciiOnly()
                         .replace("/", "_")) {
-              shouldRunAfter(subProject.tasks.getByName("detekt"))
-              from(
-                  file(
-                      "${subProject.projectDir}/build/reports/detekt/${subProject.name}-detekt.$format"))
-              into("${rootProject.buildDir}/reports/detekt/$format")
-            }
+                  shouldRunAfter(subProject.tasks.getByName("detekt"))
+                  from(
+                      file(
+                          "${subProject.projectDir}/build/reports/detekt/${subProject.name}-detekt.$format"))
+                  into("${rootProject.buildDir}/reports/detekt/$format")
+                }
         subProject.tasks.getByName("detekt") { finalizedBy(copyTask) }
         copyTask
       }

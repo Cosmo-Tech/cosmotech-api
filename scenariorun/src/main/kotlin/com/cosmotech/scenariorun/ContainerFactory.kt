@@ -279,7 +279,7 @@ internal class ContainerFactory(
             scenarioDataDownloadJobId,
         )
     val generateName =
-        "${GENERATE_NAME_PREFIX}${scenario.id}${GENERATE_NAME_SUFFIX}".sanitizeForKubernetes()
+        "${GENERATE_NAME_PREFIX}${scenario.id}$GENERATE_NAME_SUFFIX".sanitizeForKubernetes()
     return ScenarioRunStartContainers(
         generateName = generateName,
         nodeLabel = nodeLabel,
@@ -747,7 +747,7 @@ internal class ContainerFactory(
                     (csmPlatformProperties.azure?.credentials?.core?.aadPodIdBinding!!))
         else null
     return ScenarioRunContainer(
-        name = "${nameBase}-$datasetCount",
+        name = "$nameBase-$datasetCount",
         image =
             getImageName(
                 csmPlatformProperties.azure?.containerRegistries?.core ?: "",
@@ -797,15 +797,13 @@ internal class ContainerFactory(
           datasetIdList.forEachIndexed { index, datasetId ->
             val dataset =
                 datasets?.find { dataset -> dataset.id == datasetId }
-                    ?: throw IllegalStateException(
-                        "Dataset ${datasetId} cannot be found in Datasets")
+                    ?: throw IllegalStateException("Dataset $datasetId cannot be found in Datasets")
             val connector =
                 connectors?.find { connector -> connector.id == dataset.connector?.id }
                     ?: throw IllegalStateException(
                         "Connector id ${dataset.connector?.id} not found in connectors list")
 
-            val fetchId =
-                if (datasetIdList.size == 1) parameter.id else "${parameter.id}-${index.toString()}"
+            val fetchId = if (datasetIdList.size == 1) parameter.id else "${parameter.id}-$index"
             containers.add(
                 buildFromDataset(
                     dataset,
@@ -1099,11 +1097,11 @@ internal class ContainerFactory(
     val eventHubName = "${organization.id}-${workspace.key}".lowercase()
     logger.debug("Event Hub namespace base name: {}", eventHubName)
     logger.debug("Using dedicated event hub namespace")
-    val baseHostName = "${eventHubName}.servicebus.windows.net".lowercase()
+    val baseHostName = "$eventHubName.servicebus.windows.net".lowercase()
     logger.debug("Event Hub host name: {}", baseHostName)
-    val baseUri = "amqps://${baseHostName}"
+    val baseUri = "amqps://$baseHostName"
     logger.debug("Probes measures event hub: {}/{}", baseUri, EVENT_HUB_PROBES_MEASURES_NAME)
-    envVars[EVENT_HUB_MEASURES_VAR] = "${baseUri}/${EVENT_HUB_PROBES_MEASURES_NAME}"
+    envVars[EVENT_HUB_MEASURES_VAR] = "$baseUri/$EVENT_HUB_PROBES_MEASURES_NAME"
 
     val doesEventHubExists =
         checkEventHubExistenceFromCredentialType(
@@ -1114,7 +1112,7 @@ internal class ContainerFactory(
               "instructing engine to send summary message at the end of the simulation",
           baseUri,
           EVENT_HUB_SCENARIO_RUN_NAME)
-      envVars[EVENT_HUB_CONTROL_PLANE_VAR] = "${baseUri}/${EVENT_HUB_SCENARIO_RUN_NAME}"
+      envVars[EVENT_HUB_CONTROL_PLANE_VAR] = "$baseUri/$EVENT_HUB_SCENARIO_RUN_NAME"
     } else {
       logger.debug(
           "Control Plane Event Hub ({}/{}) does not exist => " +
@@ -1141,10 +1139,10 @@ internal class ContainerFactory(
     logger.debug("Using shared event hub namespace")
     val eventHubName = "${organization.id}-${workspace.key}".lowercase()
     logger.debug("Event Hub Probes Measures name: {}", eventHubName)
-    val eventHubScenarioRunName = "${eventHubName}-${EVENT_HUB_SCENARIO_RUN_NAME}".lowercase()
+    val eventHubScenarioRunName = "$eventHubName-$EVENT_HUB_SCENARIO_RUN_NAME".lowercase()
     logger.debug("Event Hub Scenarion Run name: {}", eventHubScenarioRunName)
 
-    val eventHubBase = "${eventBus.baseUri}/${eventHubName}".lowercase()
+    val eventHubBase = "${eventBus.baseUri}/$eventHubName".lowercase()
     envVars[EVENT_HUB_MEASURES_VAR] = eventHubBase
     val eventHubHostName = removeAMQPProtocol(eventBus.baseUri)
     logger.debug("Control plane host name: {}", eventHubHostName)
@@ -1157,7 +1155,7 @@ internal class ContainerFactory(
               "instructing engine to send summary message at the end of the simulation",
           eventBus.baseUri,
           eventHubScenarioRunName)
-      envVars[EVENT_HUB_CONTROL_PLANE_VAR] = "${eventHubBase}-${EVENT_HUB_SCENARIO_RUN_NAME}"
+      envVars[EVENT_HUB_CONTROL_PLANE_VAR] = "$eventHubBase-$EVENT_HUB_SCENARIO_RUN_NAME"
     } else {
       logger.debug(
           "Control Plane Event Hub ({}/{}) does not exist => " +
@@ -1250,9 +1248,9 @@ internal class ContainerFactory(
 
   private fun getImageName(registry: String, repository: String?, version: String? = null): String {
     val repoVersion =
-        repository.let { if (version == null) it else "${it}:${version}" }
+        repository.let { if (version == null) it else "$it:$version" }
             ?: throw IllegalStateException("Solution repository is not defined")
-    return if (registry.isNotEmpty()) "${registry}/${repoVersion}" else repoVersion
+    return if (registry.isNotEmpty()) "$registry/$repoVersion" else repoVersion
   }
 }
 
@@ -1267,11 +1265,11 @@ internal fun getContainerScopes(csmPlatformProperties: CsmPlatformProperties): S
         csmPlatformProperties.identityProvider?.containerScopes?.keys?.joinToString(separator = ",")
             ?: ""
     if (containerScopes.isBlank() && csmPlatformProperties.identityProvider!!.code == "azure") {
-      return "${csmPlatformProperties.azure?.appIdUri}${API_SCOPE_SUFFIX}"
+      return "${csmPlatformProperties.azure?.appIdUri}$API_SCOPE_SUFFIX"
     }
     return containerScopes
   }
-  return "${csmPlatformProperties.azure?.appIdUri}${API_SCOPE_SUFFIX}"
+  return "${csmPlatformProperties.azure?.appIdUri}$API_SCOPE_SUFFIX"
 }
 
 internal fun getCommonEnvVars(
@@ -1330,7 +1328,7 @@ internal fun getCommonEnvVars(
               (csmPlatformProperties.azure?.dataWarehouseCluster?.baseUri ?: ""),
           AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI_VAR to
               (csmPlatformProperties.azure?.dataWarehouseCluster?.options?.ingestionUri ?: ""),
-          AZURE_DATA_EXPLORER_DATABASE_NAME to "${organizationId}-${workspaceKey}",
+          AZURE_DATA_EXPLORER_DATABASE_NAME to "$organizationId-$workspaceKey",
           PARAMETERS_ORGANIZATION_VAR to organizationId,
           PARAMETERS_WORKSPACE_VAR to workspaceId,
           PARAMETERS_SCENARIO_VAR to scenarioId,
@@ -1373,7 +1371,7 @@ private fun mergeSolutionContainer(
 ): ScenarioRunContainer {
   val stackedMode = stackedContainer.envVars?.getOrDefault(CONTAINER_MODE_VAR, "") ?: ""
   val containerMode = container.envVars?.getOrDefault(CONTAINER_MODE_VAR, "") ?: ""
-  val modes = "${stackedMode},${containerMode}"
+  val modes = "$stackedMode,$containerMode"
   val envVars = stackedContainer.envVars?.toMutableMap()
 
   envVars?.put(CONTAINER_MODE_VAR, modes)
@@ -1392,7 +1390,7 @@ internal fun resolvePlatformVars(
 ): String {
   var newValue =
       path.replace(
-          PARAMETERS_WORKSPACE_FILE, "${organizationId}/${workspaceId}".sanitizeForAzureStorage())
+          PARAMETERS_WORKSPACE_FILE, "$organizationId/$workspaceId".sanitizeForAzureStorage())
   newValue =
       newValue.replace(
           PARAMETERS_STORAGE_CONNECTION_STRING,
@@ -1407,13 +1405,16 @@ private fun getDatasetRunArgs(
     organizationId: String,
     workspaceId: String
 ): List<String>? {
-  return connector.parameterGroups?.flatMap { it.parameters }?.filter { it.envVar == null }?.map {
-    resolvePlatformVars(
-        csmPlatformProperties,
-        dataset.connector?.parametersValues?.getOrDefault(it.id, it.default ?: "") ?: "",
-        organizationId,
-        workspaceId)
-  }
+  return connector.parameterGroups
+      ?.flatMap { it.parameters }
+      ?.filter { it.envVar == null }
+      ?.map {
+        resolvePlatformVars(
+            csmPlatformProperties,
+            dataset.connector?.parametersValues?.getOrDefault(it.id, it.default ?: "") ?: "",
+            organizationId,
+            workspaceId)
+      }
 }
 
 private fun getSource(source: RunTemplateStepSource?) =
