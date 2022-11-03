@@ -14,7 +14,6 @@ import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 import org.springframework.boot.gradle.dsl.SpringBootExtension
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 import org.springframework.boot.gradle.tasks.run.BootRun
-import pl.allegro.tech.build.axion.release.domain.TagNameSerializationConfig
 
 // TODO This build script does way too much things.
 // Consider refactoring it by extracting these custom tasks and plugin
@@ -33,7 +32,7 @@ plugins {
   id("io.gitlab.arturbosch.detekt") version "1.21.0"
 }
 
-scmVersion { tag(closureOf<TagNameSerializationConfig> { prefix = "" }) }
+scmVersion { tag { prefix to "" } }
 
 group = "com.cosmotech"
 
