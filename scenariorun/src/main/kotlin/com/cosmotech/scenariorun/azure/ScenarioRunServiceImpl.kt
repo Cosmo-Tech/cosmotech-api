@@ -193,25 +193,31 @@ internal class ScenarioRunServiceImpl(
             .lastRun!!
             .scenarioRunId
 
-    scenarioRuns.filter { it.state == ScenarioRunState.Failed }.forEach {
-      if (it.id != lastRunId) {
-        deleteScenarioRunWithoutAccessEnforcement(it)
-      }
-    }
+    scenarioRuns
+        .filter { it.state == ScenarioRunState.Failed }
+        .forEach {
+          if (it.id != lastRunId) {
+            deleteScenarioRunWithoutAccessEnforcement(it)
+          }
+        }
 
     if (deleteUnknown == true) {
-      scenarioRuns.filter { it.state == ScenarioRunState.Unknown }.forEach {
-        if (it.id != lastRunId) {
-          deleteScenarioRunWithoutAccessEnforcement(it)
-        }
-      }
+      scenarioRuns
+          .filter { it.state == ScenarioRunState.Unknown }
+          .forEach {
+            if (it.id != lastRunId) {
+              deleteScenarioRunWithoutAccessEnforcement(it)
+            }
+          }
     }
 
-    scenarioRuns.filter { it.state == ScenarioRunState.Successful }.forEach {
-      if (it.id != lastRunId) {
-        deleteScenarioRunWithoutAccessEnforcement(it)
-      }
-    }
+    scenarioRuns
+        .filter { it.state == ScenarioRunState.Successful }
+        .forEach {
+          if (it.id != lastRunId) {
+            deleteScenarioRunWithoutAccessEnforcement(it)
+          }
+        }
   }
 
   override fun findScenarioRunById(organizationId: String, scenariorunId: String) =
