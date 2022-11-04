@@ -29,7 +29,7 @@ jobs:
           ref: ${{ github.event.client_payload.gh_sha }}
 
       - name: Set up Helm
-        uses: azure/setup-helm@v3.3
+        uses: azure/setup-helm@v3.4
         with:
           version: v3.6.0
 
@@ -58,7 +58,7 @@ jobs:
 
       - name: Prepare values.yaml
         env:
-          VALUES_YAML: "${{ secrets.STAGING_ENV_VALUES_YAML }}"
+          VALUES_YAML: "${{ secrets.STAGING_ENV_VALUES_YAML_112022 }}"
         run: |
           echo "${VALUES_YAML}" > /tmp/values_for_environment.yaml
 
@@ -98,7 +98,7 @@ jobs:
           # Secret created with: az ad sp create-for-rbac -n "github-actions" --sdk-auth
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
 
-      - uses: Azure/aks-set-context@v3.1
+      - uses: Azure/aks-set-context@v3.2
         with:
           cluster-name: ${{ secrets.STAGING_ENV_CLUSTER_NAME }}
           resource-group: ${{ secrets.STAGING_ENV_CLUSTER_RESOURCE_GROUP }}
@@ -118,7 +118,7 @@ jobs:
           COSMOTECH_API_DNS_NAME: ${{ secrets.STAGING_ENV_COSMOTECH_API_DNS_NAME }}
           TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL: ${{ secrets.STAGING_ENV_TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL }}
         run: |
-          ./api/kubernetes/deploy_via_helm.sh \
+          curl -o- -sSL https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/main/deployment_scripts/${{ steps.apiVersionVar.outputs.apiVersion }}/deploy_via_helm.sh | bash -s -- \
             "${GH_SHA}" \
             "${NAMESPACE}" \
             "${ARGO_POSTGRESQL_PASSSORD}" \

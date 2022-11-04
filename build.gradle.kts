@@ -14,7 +14,6 @@ import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 import org.springframework.boot.gradle.dsl.SpringBootExtension
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 import org.springframework.boot.gradle.tasks.run.BootRun
-import pl.allegro.tech.build.axion.release.domain.TagNameSerializationConfig
 
 // TODO This build script does way too much things.
 // Consider refactoring it by extracting these custom tasks and plugin
@@ -22,27 +21,26 @@ import pl.allegro.tech.build.axion.release.domain.TagNameSerializationConfig
 // See https://docs.gradle.org/current/userguide/organizing_gradle_projects.html#sec:build_sources
 
 plugins {
-  val kotlinVersion = "1.7.0"
+  val kotlinVersion = "1.7.20"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion apply false
-  id("pl.allegro.tech.build.axion-release") version "1.13.6"
-  id("com.diffplug.spotless") version "6.9.0"
+  id("pl.allegro.tech.build.axion-release") version "1.14.2"
+  id("com.diffplug.spotless") version "6.11.0"
   id("org.springframework.boot") version "2.7.2" apply false
   id("org.openapi.generator") version "5.4.0" apply false
-  id("com.google.cloud.tools.jib") version "3.2.1" apply false
-  id("io.gitlab.arturbosch.detekt").version("1.21.0")
+  id("com.google.cloud.tools.jib") version "3.3.1" apply false
+  id("io.gitlab.arturbosch.detekt") version "1.21.0"
 }
 
-scmVersion { tag(closureOf<TagNameSerializationConfig> { prefix = "" }) }
+scmVersion { tag { prefix to "" } }
 
 group = "com.cosmotech"
 
 version = scmVersion.version
 
 val kotlinJvmTarget = 17
-val cosmotechApiCommonVersion = "0.1.18-SNAPSHOT"
+val cosmotechApiCommonVersion = "0.1.19-SNAPSHOT"
 val cosmotechApiAzureVersion = "0.1.7-SNAPSHOT"
-
 val azureSpringBootBomVersion = "3.14.0"
 
 allprojects {
@@ -191,22 +189,24 @@ subprojects {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("javax.validation:validation-api:2.0.1.Final")
 
-    val springDocVersion = "1.6.6"
+    val springDocVersion = "1.6.12"
     implementation("org.springdoc:springdoc-openapi-ui:${springDocVersion}")
     implementation("org.springdoc:springdoc-openapi-kotlin:${springDocVersion}")
+    val swaggerParserVersion = "2.1.8"
+    implementation("io.swagger.parser.v3:swagger-parser-v3:${swaggerParserVersion}")
 
     implementation("org.zalando:problem-spring-web-starter:0.27.0")
 
     implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.security:spring-security-oauth2-jose:5.7.2")
-    implementation("org.springframework.security:spring-security-oauth2-resource-server:5.7.2")
-    val oktaSpringBootVersion = "2.1.5"
+    implementation("org.springframework.security:spring-security-oauth2-jose:5.7.5")
+    implementation("org.springframework.security:spring-security-oauth2-resource-server:5.7.5")
+    val oktaSpringBootVersion = "2.1.6"
     implementation("com.okta.spring:okta-spring-boot-starter:${oktaSpringBootVersion}")
 
     testImplementation(kotlin("test"))
-    testImplementation(platform("org.junit:junit-bom:5.9.0"))
+    testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("io.mockk:mockk:1.12.5")
+    testImplementation("io.mockk:mockk:1.13.2")
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
 
     integrationTestImplementation("org.springframework.boot:spring-boot-starter-test") {

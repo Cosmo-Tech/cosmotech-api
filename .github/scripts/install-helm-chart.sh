@@ -44,7 +44,7 @@ EOF
   "${PASSWORD_FOR_ARGO_PASSWORD}" \
   "${API_VERSION}" \
   --wait \
-  --timeout 5m \
+  --timeout 10m \
   --values "${HELM_DEPLOY_SCRIPT_BASE_PATH}/helm-chart/values-dev.yaml" \
   --values values-ci.yaml \
   --set image.tag="${IMAGE_TAG}"
