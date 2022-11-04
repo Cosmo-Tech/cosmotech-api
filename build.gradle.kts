@@ -32,7 +32,7 @@ plugins {
   id("io.gitlab.arturbosch.detekt") version "1.21.0"
 }
 
-scmVersion { tag { prefix to "" } }
+scmVersion { tag { prefix.set("") } }
 
 group = "com.cosmotech"
 
