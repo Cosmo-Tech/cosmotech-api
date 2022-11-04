@@ -138,15 +138,14 @@ internal class DatasetServiceImpl(
 
     val existingDataset = findDatasetById(organizationId, datasetId)
     val datasetCompatibilityMap =
-        existingDataset
-            .compatibility
+        existingDataset.compatibility
             ?.associateBy { "${it.solutionKey}-${it.minimumVersion}-${it.maximumVersion}" }
             ?.toMutableMap()
             ?: mutableMapOf()
     datasetCompatibilityMap.putAll(
-        datasetCompatibility.filter { it.solutionKey.isNotBlank() }.associateBy {
-          "${it.solutionKey}-${it.minimumVersion}-${it.maximumVersion}"
-        })
+        datasetCompatibility
+            .filter { it.solutionKey.isNotBlank() }
+            .associateBy { "${it.solutionKey}-${it.minimumVersion}-${it.maximumVersion}" })
     existingDataset.compatibility = datasetCompatibilityMap.values.toMutableList()
     cosmosTemplate.upsert("${organizationId}_datasets", existingDataset)
 
@@ -166,15 +165,15 @@ internal class DatasetServiceImpl(
     datasetSearch.datasetTags.toSet().forEachIndexed { index, tag ->
       var operator = "WHERE"
       if (index > 0) operator = "AND"
-      val tagName = "@TAG${index}"
-      arrayContainsList.add("${operator} ARRAY_CONTAINS(c.tags, ${tagName})")
+      val tagName = "@TAG$index"
+      arrayContainsList.add("$operator ARRAY_CONTAINS(c.tags, $tagName)")
       sqlParameters.add(SqlParameter(tagName, tag))
     }
     val arrayContains = arrayContainsList.joinToString(separator = " ")
     return cosmosCoreDatabase
         .getContainer("${organizationId}_datasets")
         .queryItems(
-            SqlQuerySpec("SELECT * FROM c ${arrayContains}", sqlParameters),
+            SqlQuerySpec("SELECT * FROM c $arrayContains", sqlParameters),
             CosmosQueryRequestOptions(),
             JsonNode::class.java)
         .mapNotNull { it.toDomain<Dataset>() }

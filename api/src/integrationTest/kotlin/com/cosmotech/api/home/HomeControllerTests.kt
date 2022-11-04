@@ -39,7 +39,8 @@ class HomeControllerTests(private val context: WebApplicationContext) {
                  ${response.headerNames.associateWith { response.getHeaderValues(it) }.entries.joinToString("\n")}}
                     
                   ${response.contentAsString}
-                """.trimIndent())
+                """
+                        .trimIndent())
               }
             }
             .build()
