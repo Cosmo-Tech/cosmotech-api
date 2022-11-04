@@ -149,21 +149,3 @@ helm --kube-context="${kubectl_ctx}" \
   install calico \
   projectcalico/tigera-operator \
   --version v3.21.2
-
-# cf. https://kind.sigs.k8s.io/docs/user/ingress/#ingress-nginx
-# ingress_nginx_controller_tag="controller-v0.47.0"
-# no more generation for different aks version: https://github.com/kubernetes/ingress-nginx/commit/c85765a015ea6709d161eccd42ef6134981c04b4
-kubectl --context="${kubectl_ctx}" \
-  apply -f \
-  "https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml"
-
-kubectl --context="${kubectl_ctx}" \
-  -n ingress-nginx \
-  label pods \
-  -l "app.kubernetes.io/instance=ingress-nginx,app.kubernetes.io/component=controller" \
-  "networking/traffic-allowed=yes"
-kubectl --context="${kubectl_ctx}" \
-  -n ingress-nginx \
-  label services \
-  -l "app.kubernetes.io/instance=ingress-nginx,app.kubernetes.io/component=controller" \
-  "networking/traffic-allowed=yes"
