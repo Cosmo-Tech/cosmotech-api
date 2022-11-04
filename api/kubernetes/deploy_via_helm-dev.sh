@@ -520,6 +520,9 @@ kubectl create namespace "${MONITORING_NAMESPACE}" --dry-run=client -o yaml | ku
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
 
+curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/main/deployment_scripts/$API_VERSION/kube-prometheus-stack-template.yaml" \
+     -o "${WORKING_DIR}"/kube-prometheus-stack-template.yaml
+
 MONITORING_NAMESPACE_VAR=${MONITORING_NAMESPACE} \
 PROM_STORAGE_CLASS_NAME_VAR=${PROM_STORAGE_CLASS_NAME:-"standard"} \
 PROM_STORAGE_RESOURCE_REQUEST_VAR=${PROM_STORAGE_RESOURCE_REQUEST:-"10Gi"} \
@@ -527,8 +530,8 @@ PROM_CPU_MEM_LIMITS_VAR=${PROM_CPU_MEM_LIMITS:-"2Gi"} \
 PROM_CPU_MEM_REQUESTS_VAR=${PROM_CPU_MEM_REQUESTS:-"2Gi"} \
 PROM_REPLICAS_NUMBER_VAR=${PROM_REPLICAS_NUMBER:-"1"} \
 PROM_ADMIN_PASSWORD_VAR=${PROM_ADMIN_PASSWORD:-$(date +%s | sha256sum | base64 | head -c 32)} \
-envsubst < "${HELM_CHARTS_BASE_PATH}"/kube-prometheus-stack-template.yaml > kube-prometheus-stack.yaml
+envsubst < "${WORKING_DIR}"/kube-prometheus-stack-template.yaml > "${WORKING_DIR}"/kube-prometheus-stack.yaml
 
 helm upgrade --install prometheus-operator prometheus-community/kube-prometheus-stack \
              --namespace "${MONITORING_NAMESPACE}" \
-             --values "kube-prometheus-stack.yaml"
+             --values "${WORKING_DIR}/kube-prometheus-stack.yaml"
