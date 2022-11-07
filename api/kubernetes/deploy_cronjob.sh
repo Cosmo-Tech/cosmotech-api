@@ -76,6 +76,13 @@ spec:
     spec:
       template:
         spec:
+          nodeSelector:
+            "cosmotech.com/tier": "db"
+          tolerations:
+            - key: "vendor"
+              operator: "Equal"
+              value: "cosmotech"
+              effect: "NoSchedule"
           containers:
             - name: adt-connector-full-sync-container
               image: ghcr.io/cosmo-tech/adt-twincache-connector:0.0.4

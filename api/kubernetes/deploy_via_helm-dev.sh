@@ -22,6 +22,7 @@ help() {
   echo "- PROM_CPU_MEM_REQUESTS | memory size requested for prometheus (default is 2Gi)"
   echo "- PROM_REPLICAS_NUMBER | number of prometheus replicas (default is 1)"
   echo "- PROM_ADMIN_PASSWORD | admin password for grafana (generated if not specified)"
+  echo "- REDIS_ADMIN_PASSWORD | admin password for redis (generated if not specified)"
   echo
   echo "Usage: ./$(basename "$0") API_IMAGE_TAG NAMESPACE ARGO_POSTGRESQL_PASSWORD API_VERSION [any additional options to pass as is to the cosmotech-api Helm Chart]"
 }
@@ -143,9 +144,12 @@ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
   --values /tmp/values-ingress-nginx.yaml
 
 # Redis Cluster
+REDIS_ADMIN_PASSWORD_VAR=${REDIS_ADMIN_PASSWORD:-$(date +%s | sha256sum | base64 | head -c 32)}
 helm repo add bitnami https://charts.bitnami.com/bitnami
 
 cat <<EOF > values-redis.yaml
+auth:
+  password: ${REDIS_ADMIN_PASSWORD_VAR}
 image:
   registry: ghcr.io
   repository: cosmo-tech/cosmotech-redis
@@ -229,7 +233,6 @@ helm upgrade --install \
    --values values-redis-insight.yaml \
    --timeout 10m0s
 
-REDIS_PASSWORD=$(kubectl get secret --namespace ${NAMESPACE} cosmotechredis -o jsonpath="{.data.redis-password}" | base64 --decode)
 
 # Minio
 cat <<EOF > values-minio.yaml
@@ -466,7 +469,7 @@ config:
         host: "cosmotechredis-master.${NAMESPACE}.svc.cluster.local"
         port: "6379"
         username: "default"
-        password: "${REDIS_PASSWORD}"
+        password: "${REDIS_ADMIN_PASSWORD_VAR}"
 
 ingress:
   enabled: ${COSMOTECH_API_INGRESS_ENABLED}
