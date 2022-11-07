@@ -215,12 +215,13 @@ internal class ArgoWorkflowService(
         Exception when calling WorkflowServiceApi#workflowServiceCreateWorkflow.
         Status code: ${e.code}
         Reason: ${e.responseBody}
-      """.trimIndent())
+        """
+              .trimIndent())
       logger.debug("Response headers: {}", e.responseHeaders)
       throw IllegalStateException(e)
     }
   }
-
+  @Suppress("LongMethod")
   override fun findWorkflowStatusAndArtifact(
       labelSelector: String,
       artifactNameFilter: String
@@ -268,17 +269,20 @@ internal class ArgoWorkflowService(
       // need to make an additional call to Argo via getActiveWorkflow()
       getActiveWorkflow(workflowId, workflow.metadata.name!!).status?.nodes?.forEach {
           (nodeKey, nodeValue) ->
-        nodeValue.outputs?.artifacts?.filter { it.name == artifactNameFilter }?.forEach {
-          if (it.s3 != null) {
-            val artifactName = it.name ?: ""
-            artifactContent.append(
-                artifactsByUidService
-                    .getArtifactByUid(workflowId, nodeKey, artifactName)
-                    .execute()
-                    .body()
-                    ?: "")
-          }
-        }
+        nodeValue.outputs
+            ?.artifacts
+            ?.filter { it.name == artifactNameFilter }
+            ?.forEach {
+              if (it.s3 != null) {
+                val artifactName = it.name ?: ""
+                artifactContent.append(
+                    artifactsByUidService
+                        .getArtifactByUid(workflowId, nodeKey, artifactName)
+                        .execute()
+                        .body()
+                        ?: "")
+              }
+            }
       }
       WorkflowStatusAndArtifact(
           workflowId = workflowId, status = status, artifactContent = artifactContent.toString())

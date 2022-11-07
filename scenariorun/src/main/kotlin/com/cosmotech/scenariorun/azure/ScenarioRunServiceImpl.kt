@@ -142,49 +142,82 @@ internal class ScenarioRunServiceImpl(
     }
   }
 
-  override fun deleteHistoricalScenarioRunsByScenario(
+  override fun deleteHistoricalDataOrganization(organizationId: String, deleteUnknown: Boolean) {
+    this.eventPublisher.publishEvent(
+        DeleteHistoricalDataOrganization(this, organizationId = organizationId, deleteUnknown))
+  }
+
+  override fun deleteHistoricalDataWorkspace(
       organizationId: String,
       workspaceId: String,
-      scenarioId: String
+      deleteUnknown: Boolean
   ) {
+    this.eventPublisher.publishEvent(
+        DeleteHistoricalDataWorkspace(
+            this, organizationId = organizationId, workspaceId = workspaceId, deleteUnknown))
+  }
 
+  override fun deleteHistoricalDataScenario(
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String,
+      deleteUnknown: Boolean
+  ) {
     GlobalScope.launch {
       this@ScenarioRunServiceImpl.deleteScenarioRunsByScenarioWithoutAccessEnforcement(
-          organizationId, workspaceId, scenarioId)
+          organizationId, workspaceId, scenarioId, deleteUnknown)
     }
+  }
+
+  @EventListener(DeleteHistoricalDataScenario::class)
+  fun deleteHistoricalDataScenarioRun(data: DeleteHistoricalDataScenario) {
+    deleteHistoricalDataScenario(
+        data.organizationId, data.workspaceId, data.scenarioId, data.deleteUnknown)
   }
 
   private fun deleteScenarioRunsByScenarioWithoutAccessEnforcement(
       organizationId: String,
       workspaceId: String,
-      scenarioId: String
+      scenarioId: String,
+      deleteUnknown: Boolean?
   ) {
     val scenarioRuns = getScenarioRuns(organizationId, workspaceId, scenarioId).toMutableList()
 
-    scenarioRuns.filter { it.state == ScenarioRunState.Failed }.forEach {
-      deleteScenarioRunWithoutAccessEnforcement(it)
-    }
+    scenarioRuns
+        .filter { it.state == ScenarioRunState.Failed }
+        .forEach { deleteScenarioRunWithoutAccessEnforcement(it) }
 
     val lastRunId =
-        scenarioApiService.findScenarioById(organizationId, workspaceId, scenarioId).lastRun!!
+        scenarioApiService
+            .findScenarioById(organizationId, workspaceId, scenarioId)
+            .lastRun!!
             .scenarioRunId
 
-    for (run in scenarioRuns.filter { it.state == ScenarioRunState.Successful }) {
-      if (run.id != lastRunId) {
-        deleteScenarioRunWithoutAccessEnforcement(run)
-      }
+    scenarioRuns
+        .filter { it.state == ScenarioRunState.Failed }
+        .forEach {
+          if (it.id != lastRunId) {
+            deleteScenarioRunWithoutAccessEnforcement(it)
+          }
+        }
+
+    if (deleteUnknown == true) {
+      scenarioRuns
+          .filter { it.state == ScenarioRunState.Unknown }
+          .forEach {
+            if (it.id != lastRunId) {
+              deleteScenarioRunWithoutAccessEnforcement(it)
+            }
+          }
     }
-  }
 
-  override fun deleteHistoricalDataOrganization(organizationId: String) {
-    this.eventPublisher.publishEvent(
-        DeleteHistoricalDataOrganization(this, organizationId = organizationId))
-  }
-
-  override fun deleteHistoricalDataWorkspace(organizationId: String, workspaceId: String) {
-    this.eventPublisher.publishEvent(
-        DeleteHistoricalDataWorkspace(
-            this, organizationId = organizationId, workspaceId = workspaceId))
+    scenarioRuns
+        .filter { it.state == ScenarioRunState.Successful }
+        .forEach {
+          if (it.id != lastRunId) {
+            deleteScenarioRunWithoutAccessEnforcement(it)
+          }
+        }
   }
 
   override fun findScenarioRunById(organizationId: String, scenariorunId: String) =
@@ -267,7 +300,8 @@ internal class ScenarioRunServiceImpl(
                               WHERE c.type = 'ScenarioRun'
                                 AND c.workspaceId = @WORKSPACE_ID
                                 AND c.scenarioId = @SCENARIO_ID
-                          """.trimIndent(),
+          """
+                      .trimIndent(),
                   listOf(
                       SqlParameter("@WORKSPACE_ID", workspaceId),
                       SqlParameter("@SCENARIO_ID", scenarioId))),
@@ -294,7 +328,8 @@ internal class ScenarioRunServiceImpl(
                             SELECT * FROM c
                               WHERE c.type = 'ScenarioRun'
                                 AND c.workspaceId = @WORKSPACE_ID
-                          """.trimIndent(),
+          """
+                      .trimIndent(),
                   listOf(SqlParameter("@WORKSPACE_ID", workspaceId))),
               CosmosQueryRequestOptions(),
               // It would be much better to specify the Domain Type right away and
@@ -306,11 +341,6 @@ internal class ScenarioRunServiceImpl(
             it.toDomain<ScenarioRun>().withStateInformation(organizationId).withoutSensitiveData()
           }
           .toList()
-
-  @EventListener(DeleteHistoricalDataScenario::class)
-  fun deleteHistoricalDataScenarioRun(data: DeleteHistoricalDataScenario) {
-    deleteHistoricalScenarioRunsByScenario(data.organizationId, data.workspaceId, data.scenarioId)
-  }
 
   @EventListener(ScenarioDataDownloadRequest::class)
   fun onScenarioDataDownloadRequest(scenarioDataDownloadRequest: ScenarioDataDownloadRequest) {
@@ -335,7 +365,7 @@ internal class ScenarioRunServiceImpl(
     val jobId = scenarioDataDownloadJobInfoRequest.jobId
     val workflowStatusAndArtifactList =
         this.workflowService.findWorkflowStatusAndArtifact(
-            "$CSM_JOB_ID_LABEL_KEY=${jobId}", SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME)
+            "$CSM_JOB_ID_LABEL_KEY=$jobId", SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME)
     if (workflowStatusAndArtifactList.isNotEmpty()) {
       scenarioDataDownloadJobInfoRequest.response =
           workflowStatusAndArtifactList[0].status to
@@ -343,6 +373,7 @@ internal class ScenarioRunServiceImpl(
     }
   }
 
+  @Suppress("LongMethod")
   override fun runScenario(
       organizationId: String,
       workspaceId: String,
@@ -390,16 +421,16 @@ internal class ScenarioRunServiceImpl(
     sendScenarioRunMetaData(organizationId, workspace, scenarioId, scenarioRun.csmSimulationRun)
 
     val purgeHistoricalDataConfiguration =
-        startInfo.runTemplate?.deleteHistoricalData ?: DeleteHistoricalData()
+        startInfo.runTemplate.deleteHistoricalData ?: DeleteHistoricalData()
     if (purgeHistoricalDataConfiguration.enable) {
       logger.debug("Start coroutine to poll simulation status")
       GlobalScope.launch {
         withTimeout(
             purgeHistoricalDataConfiguration.timeOut?.toLong()
                 ?: DELETE_SCENARIO_RUN_DEFAULT_TIMEOUT) {
-          deletePreviousSimulationDataIfCurrentSimulationIsSuccessful(
-              scenarioRun, purgeHistoricalDataConfiguration)
-        }
+              deletePreviousSimulationDataIfCurrentSimulationIsSuccessful(
+                  scenarioRun, purgeHistoricalDataConfiguration)
+            }
       }
       logger.debug("Coroutine to poll simulation status launched")
     }
@@ -426,7 +457,8 @@ internal class ScenarioRunServiceImpl(
     }
     if (scenarioRunStatus == ScenarioRunState.Successful.value) {
       logger.info("ScenarioRun {} is Successfull => purging data", csmSimulationRun)
-      deleteScenarioRunsByScenarioWithoutAccessEnforcement(organizationId, workspaceId, scenarioId)
+      deleteScenarioRunsByScenarioWithoutAccessEnforcement(
+          organizationId, workspaceId, scenarioId, false)
     } else {
       logger.info(
           "ScenarioRun {} is in error {} => no purging data", csmSimulationRun, scenarioRunStatus)
@@ -452,7 +484,8 @@ internal class ScenarioRunServiceImpl(
                             SELECT * FROM c
                               WHERE c.type = 'ScenarioRun'
                               $andExpr
-                          """.trimIndent(),
+          """
+                    .trimIndent(),
                 scenarioRunSearchPredicatePair.second),
             CosmosQueryRequestOptions(),
             // It would be much better to specify the Domain Type right away and
@@ -563,9 +596,8 @@ internal class ScenarioRunServiceImpl(
     // >= 8.5
     var versionWithDataIngestionState = true
     if (scenarioRun.sdkVersion != null) {
-      logger.debug(
-          "SDK version for scenario run status detected: {}", scenarioRun.sdkVersion ?: "ERROR")
-      val splitVersion = scenarioRun.sdkVersion?.split(".") ?: listOf()
+      logger.debug("SDK version for scenario run status detected: {}", scenarioRun.sdkVersion)
+      val splitVersion = scenarioRun.sdkVersion.split(".") ?: listOf()
       if (splitVersion.size < 2) {
         logger.error("Malformed SDK version for scenario run status data ingestion check")
       } else {
@@ -651,7 +683,8 @@ internal class ScenarioRunServiceImpl(
   ): ScenarioRunState {
     logger.debug("Mapping phase $phase for job $scenarioRunId")
     return when (phase) {
-      "Pending", "Running" -> ScenarioRunState.Running
+      "Pending",
+      "Running" -> ScenarioRunState.Running
       "Succeeded" -> {
         logger.trace(
             "checkDataIngestionState=$checkDataIngestionState," +
@@ -671,7 +704,8 @@ internal class ScenarioRunServiceImpl(
               "Data Ingestion status for ScenarioRun $scenarioRunId " +
                   "(csmSimulationRun=$csmSimulationRun): $postProcessingState")
           when (postProcessingState) {
-            null, DataIngestionState.Unknown -> ScenarioRunState.Unknown
+            null,
+            DataIngestionState.Unknown -> ScenarioRunState.Unknown
             DataIngestionState.InProgress -> ScenarioRunState.DataIngestionInProgress
             DataIngestionState.Successful -> ScenarioRunState.Successful
             DataIngestionState.Failure -> ScenarioRunState.Failed
@@ -680,7 +714,10 @@ internal class ScenarioRunServiceImpl(
           ScenarioRunState.Successful
         }
       }
-      "Skipped", "Failed", "Error", "Omitted" -> ScenarioRunState.Failed
+      "Skipped",
+      "Failed",
+      "Error",
+      "Omitted" -> ScenarioRunState.Failed
       else -> {
         logger.warn(
             "Unhandled state response for job {}: {} => returning Unknown as state",
@@ -724,9 +761,9 @@ internal class ScenarioRunServiceImpl(
     }
 
     val eventBus = csmPlatformProperties.azure?.eventBus!!
-    val eventHubNamespace = "${organizationId}-${workspace.key}".lowercase()
+    val eventHubNamespace = "$organizationId-${workspace.key}".lowercase()
     val eventHubName = "scenariorunmetadata"
-    val baseHostName = "${eventHubNamespace}.servicebus.windows.net".lowercase()
+    val baseHostName = "$eventHubNamespace.servicebus.windows.net".lowercase()
 
     val scenarioMetaData =
         ScenarioRunMetaData(

@@ -14,7 +14,6 @@ import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 import org.springframework.boot.gradle.dsl.SpringBootExtension
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 import org.springframework.boot.gradle.tasks.run.BootRun
-import pl.allegro.tech.build.axion.release.domain.TagNameSerializationConfig
 
 // TODO This build script does way too much things.
 // Consider refactoring it by extracting these custom tasks and plugin
@@ -25,22 +24,22 @@ plugins {
   val kotlinVersion = "1.7.20"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion apply false
-  id("pl.allegro.tech.build.axion-release") version "1.13.6"
+  id("pl.allegro.tech.build.axion-release") version "1.14.2"
   id("com.diffplug.spotless") version "6.11.0"
-  id("org.springframework.boot") version "2.7.5" apply false
+  id("org.springframework.boot") version "2.7.2" apply false
   id("org.openapi.generator") version "6.2.1" apply false
   id("com.google.cloud.tools.jib") version "3.3.1" apply false
   id("io.gitlab.arturbosch.detekt") version "1.21.0"
 }
 
-scmVersion { tag(closureOf<TagNameSerializationConfig> { prefix = "" }) }
+scmVersion { tag { prefix.set("") } }
 
 group = "com.cosmotech"
 
 version = scmVersion.version
 
 val kotlinJvmTarget = 17
-val cosmotechApiCommonVersion = "0.1.18-SNAPSHOT"
+val cosmotechApiCommonVersion = "0.1.20-SNAPSHOT"
 val cosmotechApiAzureVersion = "0.1.7-SNAPSHOT"
 val azureSpringBootBomVersion = "3.14.0"
 
@@ -77,7 +76,8 @@ allprojects {
         """
         // Copyright (c) Cosmo Tech.
         // Licensed under the MIT license.
-      """.trimIndent()
+      """
+            .trimIndent()
 
     java {
       googleJavaFormat()
@@ -85,12 +85,12 @@ allprojects {
       licenseHeader(licenseHeaderComment)
     }
     kotlin {
-      ktfmt("0.30")
+      ktfmt("0.41")
       target("**/*.kt")
       licenseHeader(licenseHeaderComment)
     }
     kotlinGradle {
-      ktfmt("0.30")
+      ktfmt("0.41")
       target("**/*.kts")
       //      licenseHeader(licenseHeaderComment, "import")
     }
@@ -167,11 +167,8 @@ subprojects {
   }
 
   dependencies {
-
-    // Workaround until Detekt adds support for JVM Target 17
-    // See https://github.com/detekt/detekt/issues/4287
-    detekt("io.gitlab.arturbosch.detekt:detekt-cli:1.19.0")
-    detekt("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.7.20")
+    detekt("io.gitlab.arturbosch.detekt:detekt-cli:1.21.0")
+    detekt("io.gitlab.arturbosch.detekt:detekt-formatting:1.21.0")
 
     val developmentOnly = configurations.getByName("developmentOnly")
 
@@ -195,7 +192,7 @@ subprojects {
     val springDocVersion = "1.6.12"
     implementation("org.springdoc:springdoc-openapi-ui:${springDocVersion}")
     implementation("org.springdoc:springdoc-openapi-kotlin:${springDocVersion}")
-    val swaggerParserVersion = "2.1.7"
+    val swaggerParserVersion = "2.1.8"
     implementation("io.swagger.parser.v3:swagger-parser-v3:${swaggerParserVersion}")
 
     implementation("org.zalando:problem-spring-web-starter:0.27.0")
@@ -429,12 +426,12 @@ val copySubProjectsDetektReportsTasks =
                     "${subProject.projectDir.relativeTo(rootDir)}"
                         .capitalizeAsciiOnly()
                         .replace("/", "_")) {
-              shouldRunAfter(subProject.tasks.getByName("detekt"))
-              from(
-                  file(
-                      "${subProject.projectDir}/build/reports/detekt/${subProject.name}-detekt.$format"))
-              into("${rootProject.buildDir}/reports/detekt/$format")
-            }
+                  shouldRunAfter(subProject.tasks.getByName("detekt"))
+                  from(
+                      file(
+                          "${subProject.projectDir}/build/reports/detekt/${subProject.name}-detekt.$format"))
+                  into("${rootProject.buildDir}/reports/detekt/$format")
+                }
         subProject.tasks.getByName("detekt") { finalizedBy(copyTask) }
         copyTask
       }
