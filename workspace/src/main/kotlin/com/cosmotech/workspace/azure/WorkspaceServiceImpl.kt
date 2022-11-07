@@ -76,7 +76,7 @@ internal class WorkspaceServiceImpl(
     val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
     val organization = organizationService.findOrganizationById(organizationId)
     logger.debug("Getting workspaces for user $currentUser")
-    val isAdmin = csmRbac.isAdmin(organization.getRbac(), currentUser, getCommonRolesDefinition())
+    val isAdmin = csmRbac.isAdmin(organization.getRbac(), getCommonRolesDefinition())
     if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
       return cosmosTemplate.findAll("${organizationId}_workspaces")
     }
@@ -176,10 +176,7 @@ internal class WorkspaceServiceImpl(
     }
 
     if (workspace.security != null && existingWorkspace.security == null) {
-      if (csmRbac.isAdmin(
-          workspace.getRbac(),
-          getCurrentAuthenticatedMail(this.csmPlatformProperties),
-          getCommonRolesDefinition())) {
+      if (csmRbac.isAdmin(workspace.getRbac(), getCommonRolesDefinition())) {
         existingWorkspace.security = workspace.security
         hasChanged = true
       } else {

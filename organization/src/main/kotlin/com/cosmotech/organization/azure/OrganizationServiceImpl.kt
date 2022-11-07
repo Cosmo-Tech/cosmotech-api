@@ -144,10 +144,7 @@ class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin
       hasChanged = true
     }
     if (organization.security != null && existingOrganization.security == null) {
-      if (csmRbac.isAdmin(
-          organization.getRbac(),
-          getCurrentAuthenticatedMail(this.csmPlatformProperties),
-          getCommonRolesDefinition())) {
+      if (csmRbac.isAdmin(organization.getRbac(), getCommonRolesDefinition())) {
         existingOrganization.security = organization.security
         hasChanged = true
       } else {

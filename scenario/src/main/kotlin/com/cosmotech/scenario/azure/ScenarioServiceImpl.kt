@@ -391,7 +391,7 @@ internal class ScenarioServiceImpl(
       templateQuery += " AND $sqlCondition"
       sqlParams.forEach { params.add(it) }
     }
-    val isAdmin = csmRbac.isAdmin(workspace.getRbac(), currentUser, getCommonRolesDefinition())
+    val isAdmin = csmRbac.isAdmin(workspace.getRbac(), getCommonRolesDefinition())
     if (!isAdmin && this.csmPlatformProperties.rbac.enabled) {
       templateQuery +=
           " AND (ARRAY_CONTAINS(c.security.accessControlList, {id: @ACL_USER}, true) " +
@@ -607,10 +607,7 @@ internal class ScenarioServiceImpl(
     }
 
     if (scenario.security != null && existingScenario.security == null) {
-      if (csmRbac.isAdmin(
-          organization.getRbac(),
-          getCurrentAuthenticatedMail(this.csmPlatformProperties),
-          getCommonRolesDefinition())) {
+      if (csmRbac.isAdmin(organization.getRbac(), getCommonRolesDefinition())) {
         existingScenario.security = scenario.security
         hasChanged = true
       } else {

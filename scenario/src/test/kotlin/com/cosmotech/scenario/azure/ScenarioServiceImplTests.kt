@@ -549,7 +549,7 @@ class ScenarioServiceImplTests {
     every { workspace.security } returns workspaceSecurity
     every { workspace.security?.default } returns String()
     every { workspace.security?.accessControlList } returns mutableListOf()
-    every { csmRbac.isAdmin(any(), any(), any()) } returns true
+    every { csmRbac.isAdmin(any(), any()) } returns true
 
     val authentication =
         mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication>()
