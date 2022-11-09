@@ -240,7 +240,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
@@ -282,7 +282,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
@@ -323,7 +323,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
@@ -364,7 +364,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
@@ -402,7 +402,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
@@ -507,7 +507,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "1-Test",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "1-test",
             "CSM_ORGANIZATION_ID" to "1",
             "CSM_WORKSPACE_ID" to "2",
             "CSM_SCENARIO_ID" to "3",
@@ -537,7 +537,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "1-Test",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "1-test",
             "CSM_ORGANIZATION_ID" to "1",
             "CSM_WORKSPACE_ID" to "2",
             "CSM_SCENARIO_ID" to "3",
@@ -593,7 +593,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
@@ -629,7 +629,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
@@ -665,7 +665,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
@@ -674,7 +674,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
         )
     assertEquals(expected, container.envVars)
   }
@@ -705,7 +705,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
@@ -714,7 +714,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
         )
     assertEquals(expected, container.envVars)
   }
@@ -885,7 +885,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
@@ -923,7 +923,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
@@ -1344,7 +1344,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
@@ -1755,7 +1755,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "o-id-w-key",
             "CSM_ORGANIZATION_ID" to "O-id",
             "CSM_WORKSPACE_ID" to "W-id",
             "CSM_SCENARIO_ID" to "S-id",
@@ -1805,7 +1805,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "o-id-w-key",
             "CSM_ORGANIZATION_ID" to "O-id",
             "CSM_WORKSPACE_ID" to "W-id",
             "CSM_SCENARIO_ID" to "S-id",
@@ -1855,7 +1855,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "o-id-w-key",
             "CSM_ORGANIZATION_ID" to "O-id",
             "CSM_WORKSPACE_ID" to "W-id",
             "CSM_SCENARIO_ID" to "S-id",
@@ -1905,7 +1905,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "o-id-w-key",
             "CSM_ORGANIZATION_ID" to "O-id",
             "CSM_WORKSPACE_ID" to "W-id",
             "CSM_SCENARIO_ID" to "S-id",
@@ -1955,7 +1955,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "o-id-w-key",
             "CSM_ORGANIZATION_ID" to "O-id",
             "CSM_WORKSPACE_ID" to "W-id",
             "CSM_SCENARIO_ID" to "S-id",
@@ -2005,7 +2005,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "O-id-W-key",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "o-id-w-key",
             "CSM_ORGANIZATION_ID" to "O-id",
             "CSM_WORKSPACE_ID" to "W-id",
             "CSM_SCENARIO_ID" to "S-id",
@@ -2042,7 +2042,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
@@ -2084,7 +2084,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
@@ -2131,7 +2131,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
@@ -2218,7 +2218,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
@@ -2251,7 +2251,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
@@ -2290,7 +2290,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
@@ -2370,7 +2370,7 @@ class OktaContainerFactoryTests {
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
             "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
                 "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "Organizationid-Test",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",

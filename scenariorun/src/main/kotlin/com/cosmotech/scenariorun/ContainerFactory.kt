@@ -1328,7 +1328,7 @@ internal fun getCommonEnvVars(
               (csmPlatformProperties.azure?.dataWarehouseCluster?.baseUri ?: ""),
           AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI_VAR to
               (csmPlatformProperties.azure?.dataWarehouseCluster?.options?.ingestionUri ?: ""),
-          AZURE_DATA_EXPLORER_DATABASE_NAME to "$organizationId-$workspaceKey",
+          AZURE_DATA_EXPLORER_DATABASE_NAME to "$organizationId-$workspaceKey".lowercase(),
           PARAMETERS_ORGANIZATION_VAR to organizationId,
           PARAMETERS_WORKSPACE_VAR to workspaceId,
           PARAMETERS_SCENARIO_VAR to scenarioId,
