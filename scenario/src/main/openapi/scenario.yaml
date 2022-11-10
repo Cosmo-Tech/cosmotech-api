@@ -1100,12 +1100,10 @@ components:
             varType: string
             value: ""
         security:
-          default:
-            - "viewer"
+          default: "viewer"
           accessControlList:
             - id: "alice.doe@cosmotech.com"
-              roles:
-                - "admin"
+              role: "admin"
     BreweryChildScenarioIn:
       summary: Brewery Child Scenario input example
       description: Brewery Child Scenario input example
@@ -1148,12 +1146,10 @@ components:
           workflowId: "c7cd3f15-8a3b-4bcd-b3ca-62ee24c13d67"
           workflowName: "workflow-s-dwpxbzmdxn-zkvd7"
         security:
-          default:
-            - "viewer"
+          default: "viewer"
           accessControlList:
             - id: "alice.doe@cosmotech.com"
-              roles:
-                - "admin"
+              role: "admin"
     ThreeScenarios:
       summary: Three Scenarios with parent and children
       description: Three Scenarios with parent master Scenario and two children Scenarios
@@ -1181,12 +1177,10 @@ components:
               varType: string
               value: ""
           security:
-            default:
-              - "viewer"
+            default: "viewer"
             accessControlList:
               - id: "alice.doe@cosmotech.com"
-                roles:
-                  - "admin"
+                role: "admin"
         - id: "2"
           name: Brewery Analysis name example
           description: Brewery analysis with example as name prefix
@@ -1216,12 +1210,10 @@ components:
             workflowId: "c7cd3f15-8a3b-4bcd-b3ca-62ee24c13d67"
             workflowName: "workflow-s-dwpxbzmdxn-zkvd7"
           security:
-            default:
-              - "viewer"
+            default: "viewer"
             accessControlList:
               - id: "alice.doe@cosmotech.com"
-                roles:
-                  - "admin"
+                role: "admin"
         - id: "3"
           name: Brewery Analysis name no change
           description: Brewery analysis with no change on name prefix
@@ -1251,12 +1243,10 @@ components:
             workflowId: "c7cd3f15-8a3b-4bcd-b3ca-62ee24c13d67"
             workflowName: "workflow-s-dwpxbzmdxn-zkvd7"
           security:
-            default:
-              - "viewer"
+            default: "viewer"
             accessControlList:
               - id: "alice.doe@cosmotech.com"
-                roles:
-                  - "admin"
+                role: "admin"
     BreweryScenarioUpdate:
       summary: Update the Brewery Scenario
       description: Update the Brewery Scenario by changing its name
@@ -1289,12 +1279,10 @@ components:
             varType: string
             value: ""
         security:
-          default:
-            - "viewer"
+          default: "viewer"
           accessControlList:
             - id: "alice.doe@cosmotech.com"
-              roles:
-                - "admin"
+              role: "admin"
     BreweryScenarioComparison:
       summary: Brewery comparison result
       description: Brewery comparison result between a parent Scenario and its child
@@ -1333,12 +1321,10 @@ components:
               value: ""
               inherited: true
           security:
-            default:
-              - "viewer"
+            default: "viewer"
             accessControlList:
               - id: "alice.doe@cosmotech.com"
-                roles:
-                  - "admin"
+                role: "admin"
         - id: "2"
           name: Brewery Analysis name example
           description: Brewery analysis with example as name prefix
@@ -1367,12 +1353,10 @@ components:
             workflowId: "c7cd3f15-8a3b-4bcd-b3ca-62ee24c13d67"
             workflowName: "workflow-s-dwpxbzmdxn-zkvd7"
           security:
-            default:
-              - "viewer"
+            default: "viewer"
             accessControlList:
               - id: "alice.doe@cosmotech.com"
-                roles:
-                  - "admin"
+                role: "admin"
         - id: "3"
           name: Brewery Analysis name no change
           description: Brewery analysis with no change on name prefix
@@ -1400,12 +1384,10 @@ components:
             workflowId: "c7cd3f15-8a3b-4bcd-b3ca-62ee24c13d67"
             workflowName: "workflow-s-dwpxbzmdxn-zkvd7"
           security:
-            default:
-              - "viewer"
+            default: "viewer"
             accessControlList:
               - id: "alice.doe@cosmotech.com"
-                roles:
-                  - "admin"
+                role: "admin"
     TwoScenarioRunTemplateParameterValueToAddOrReplace:
       summary: Scenarios Run Templates added
       description: Scenarios Run Templates added
