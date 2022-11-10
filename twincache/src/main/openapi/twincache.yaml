@@ -1,0 +1,44 @@
+openapi: 3.0.3
+
+info:
+  title: Cosmo Tech Twin cache Manager API
+  description: Cosmo Tech Twin cache Manager API
+  version: 0.0.1-SNAPSHOT
+
+servers:
+- url: 'https://api.azure.cosmo-platform.com'
+- url: 'http://localhost:4010'
+
+security:
+- oAuth2AuthCode: [ ]
+
+tags:
+- name: twincache
+  description: Twin Cache Management
+
+paths:
+  /list:
+    get:
+      operationId: get hello world
+      tags:
+        - twincache
+      description: Returns a list of stuff
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+components:
+  securitySchemes:
+    oAuth2AuthCode:
+      type: oauth2
+      description: OAuth2 authentication
+      flows:
+        implicit:
+          authorizationUrl: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
+          scopes:
+            http://dev.api.cosmotech.com/platform: Platform scope
