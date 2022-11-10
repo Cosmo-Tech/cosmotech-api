@@ -4,23 +4,25 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**get hello world**](TwincacheApi.md#get hello world) | **GET** /list | 
+[**cacheQuery**](TwincacheApi.md#cacheQuery) | **POST** /query | 
+[**massDelete**](TwincacheApi.md#massDelete) | **DELETE** /delete | 
+[**massImport**](TwincacheApi.md#massImport) | **POST** /massimport | 
 
 
-<a name="get hello world"></a>
-# **get hello world**
-> List get hello world()
+<a name="cacheQuery"></a>
+# **cacheQuery**
+> String cacheQuery()
 
 
 
-    Returns a list of stuff
+    Run a query on cache
 
 ### Parameters
 This endpoint does not need any parameter.
 
 ### Return type
 
-**List**
+**String**
 
 ### Authorization
 
@@ -29,5 +31,53 @@ This endpoint does not need any parameter.
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: application/json, application/yaml
+
+<a name="massDelete"></a>
+# **massDelete**
+> String massDelete()
+
+
+
+    Launch a mass delete job
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+**String**
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json, application/yaml
+
+<a name="massImport"></a>
+# **massImport**
+> String massImport()
+
+
+
+    Launch a mass import job
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+**String**
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json, application/yaml
 
