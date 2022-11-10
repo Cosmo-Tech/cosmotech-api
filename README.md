@@ -20,6 +20,47 @@ The Cosmo Tech Cloud Platform API exposes a [REST](https://en.wikipedia.org/wiki
 
 It is written in [Kotlin](https://kotlinlang.org/), makes use of the [Spring Boot framework](https://spring.io/projects/spring-boot), and is built with [Gradle](https://gradle.org/). Note that this project contains a set of service implementations interacting with [Azure Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/) for data persistence.
 
+## Configuration changes from previous version
+
+### Version 2.0.0
+
+In this version, several functionnalities were added:
+- RBAC/ACL functionnality: the possibility to manage rights/permissions for users on Organization/Workspace/Scenario
+- TwinCache functionnality: the possibility to cache input dataset in a cache solution
+- fine grade customization : 
+  - Image pull policy
+  - claim used for users email and users roles
+  - data ingestion (ADX) timeout
+  
+You can find the parameters to set in configuration:
+
+```
+csm:
+  platform:
+    ...
+    images:
+      ...
+      imagePullPolicy: "IfNotPresent"
+    ...
+    authorization:
+      ...
+      mailJwtClaim: upn
+      rolesJwtClaim: roles
+    ...
+    dataIngestion:
+      state:
+        noDataTimeOutSeconds: 180
+    ...
+    twincache:
+      host: <twin cache host>
+      password: <twin cache password>
+      port: "6379"
+      username: default
+    ...
+    rbac:
+      enabled: false
+```
+
 ## Swagger UI
 
 This API is continuously deployed at the following URLs, so you can easily explore it :
