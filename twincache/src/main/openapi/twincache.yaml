@@ -17,21 +17,54 @@ tags:
   description: Twin Cache Management
 
 paths:
-  /list:
-    get:
-      operationId: get hello world
+  /massimport:
+    post:
+      operationId: mass_import
       tags:
         - twincache
-      description: Returns a list of stuff
+      description: Launch a mass import job
       responses:
         '200':
           description: Successful response
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
+                type: string
+            application/yaml:
+              schema:
+                type: string
+  /query:
+    post:
+      operationId: cache_query
+      tags:
+        - twincache
+      description: Run a query on cache
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: string
+            application/yaml:
+              schema:
+                type: string
+  /delete:
+    delete:
+      operationId: mass_delete
+      tags:
+        - twincache
+      description: Launch a mass delete job
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: string
+            application/yaml:
+              schema:
+                type: string
 components:
   securitySchemes:
     oAuth2AuthCode:
