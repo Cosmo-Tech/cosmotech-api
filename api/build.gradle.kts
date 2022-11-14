@@ -17,7 +17,7 @@ dependencies {
   implementation(projects.cosmotechSolutionApi)
   implementation(projects.cosmotechUserApi)
   implementation(projects.cosmotechWorkspaceApi)
-  implementation(projects.cosmotechTwincacheApi)
+  implementation(projects.cosmotechTwingraphApi)
 }
 
 tasks.getByName<Delete>("clean") { delete("$rootDir/openapi/openapi.yaml") }

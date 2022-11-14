@@ -88,9 +88,9 @@ Class | Method | HTTP request | Description
 *SolutionApi* | [**updateSolution**](Apis/SolutionApi.md#updatesolution) | **PATCH** /organizations/{organization_id}/solutions/{solution_id} | Update a solution
 *SolutionApi* | [**updateSolutionRunTemplate**](Apis/SolutionApi.md#updatesolutionruntemplate) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id} | Update the specified Solution Run Template
 *SolutionApi* | [**uploadRunTemplateHandler**](Apis/SolutionApi.md#uploadruntemplatehandler) | **POST** /organizations/{organization_id}/solutions/{solution_id}/runtemplates/{run_template_id}/handlers/{handler_id}/upload | Upload a Run Template step handler zip file
-*TwincacheApi* | [**cacheQuery**](Apis/TwincacheApi.md#cachequery) | **POST** /query | Run a query on cache
-*TwincacheApi* | [**massDelete**](Apis/TwincacheApi.md#massdelete) | **DELETE** /delete | Launch a mass delete job
-*TwincacheApi* | [**massImport**](Apis/TwincacheApi.md#massimport) | **POST** /massimport | Launch a mass import job
+*TwingraphApi* | [**create**](Apis/TwingraphApi.md#create) | **POST** /create | Launch a creation job
+*TwingraphApi* | [**delete**](Apis/TwingraphApi.md#delete) | **DELETE** /delete | Launch a mass delete job
+*TwingraphApi* | [**query**](Apis/TwingraphApi.md#query) | **POST** /query | Run a query on a graph instance
 *UserApi* | [**authorizeUser**](Apis/UserApi.md#authorizeuser) | **GET** /oauth2/authorize | Authorize an User with OAuth2. Delegated to configured OAuth2 service
 *UserApi* | [**findAllUsers**](Apis/UserApi.md#findallusers) | **GET** /users | List all Users
 *UserApi* | [**findUserById**](Apis/UserApi.md#finduserbyid) | **GET** /users/{user_id} | Get the details of an user

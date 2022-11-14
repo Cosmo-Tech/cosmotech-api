@@ -23,7 +23,7 @@ include(
     "solution",
     "user",
     "workspace",
-    "twincache")
+    "twingraph")
 
 project(":api").name = "cosmotech-api"
 
@@ -43,4 +43,4 @@ project(":user").name = "cosmotech-user-api"
 
 project(":workspace").name = "cosmotech-workspace-api"
 
-project(":twincache").name = "cosmotech-twincache-api"
+project(":twingraph").name = "cosmotech-twingraph-api"

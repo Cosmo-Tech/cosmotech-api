@@ -1,21 +1,21 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.twincache.api
+package com.cosmotech.twingraph.api
 
 import org.springframework.stereotype.Service
 
 @Service
-class TwinCacheServiceImpl : TwincacheApiService {
+class TwingraphServiceImpl : TwingraphApiService {
 
-  override fun cacheQuery(): String {
+  override fun query(): String {
     TODO("Not yet implemented")
   }
 
-  override fun massDelete(): String {
+  override fun delete() {
     TODO("Not yet implemented")
   }
 
-  override fun massImport(): String {
+  override fun create(): String {
     TODO("Not yet implemented")
   }
 }
