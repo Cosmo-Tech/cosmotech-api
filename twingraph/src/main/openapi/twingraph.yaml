@@ -1,8 +1,8 @@
 openapi: 3.0.3
 
 info:
-  title: Cosmo Tech Twin cache Manager API
-  description: Cosmo Tech Twin cache Manager API
+  title: Cosmo Tech Twin graph Manager API
+  description: Cosmo Tech Twin graph Manager API
   version: 0.0.1-SNAPSHOT
 
 servers:
@@ -13,18 +13,18 @@ security:
 - oAuth2AuthCode: [ ]
 
 tags:
-- name: twincache
-  description: Twin Cache Management
+- name: twingraph
+  description: Twin Graph Management
 
 paths:
-  /massimport:
+  /create:
     post:
-      operationId: mass_import
+      operationId: create
       tags:
-        - twincache
-      description: Launch a mass import job
+        - twingraph
+      description: Launch a creation job
       responses:
-        '200':
+        '202':
           description: Successful response
           content:
             application/json:
@@ -35,10 +35,10 @@ paths:
                 type: string
   /query:
     post:
-      operationId: cache_query
+      operationId: query
       tags:
-        - twincache
-      description: Run a query on cache
+        - twingraph
+      description: Run a query on a graph instance
       responses:
         '200':
           description: Successful response
@@ -51,20 +51,14 @@ paths:
                 type: string
   /delete:
     delete:
-      operationId: mass_delete
+      operationId: delete
       tags:
-        - twincache
+        - twingraph
       description: Launch a mass delete job
       responses:
-        '200':
+        '204':
           description: Successful response
-          content:
-            application/json:
-              schema:
-                type: string
-            application/yaml:
-              schema:
-                type: string
+
 components:
   securitySchemes:
     oAuth2AuthCode:
