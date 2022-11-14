@@ -17,22 +17,36 @@ tags:
   description: Twin Graph Management
 
 paths:
-  /create:
+  /organizations/{organization_id}/import:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
     post:
-      operationId: create
+      operationId: importGraph
       tags:
         - twingraph
-      description: Launch a creation job
+      description: Import a new version of a twin graph
+      requestBody:
+        description: the graph to import
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TwinGraphImport'
+          application/yaml:
+            schema:
+              $ref: '#/components/schemas/TwinGraphImport'
       responses:
         '202':
           description: Successful response
           content:
             application/json:
               schema:
-                type: string
-            application/yaml:
-              schema:
-                type: string
+                $ref: '#/components/schemas/TwinGraphImportInfo'
   /organizations/{organization_id}/query:
     parameters:
       - name: organization_id
@@ -80,6 +94,26 @@ paths:
         query:
           type: string
           description: the query in cypher language
+    TwinGraphImport:
+      type: object
+      description: a twin graph import info
+      properties:
+        storagePath:
+          type: string
+          description: the storage path containing the files to import
+        graphId:
+          type: string
+          description: the graph id to import to
+    TwinGraphImportInfo:
+      type: object
+      description: a twin graph query in cypher language
+      properties:
+        importId:
+          type: string
+          description: the import job id
+        graphId:
+          type: string
+          description: the twin graph id
 components:
   securitySchemes:
     oAuth2AuthCode:
