@@ -4,34 +4,10 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**create**](TwingraphApi.md#create) | **POST** /create | 
 [**delete**](TwingraphApi.md#delete) | **DELETE** /delete | 
-[**query**](TwingraphApi.md#query) | **POST** /query | 
+[**importGraph**](TwingraphApi.md#importGraph) | **POST** /organizations/{organization_id}/import | 
+[**query**](TwingraphApi.md#query) | **POST** /organizations/{organization_id}/query | 
 
-
-<a name="create"></a>
-# **create**
-> String create()
-
-
-
-    Launch a creation job
-
-### Parameters
-This endpoint does not need any parameter.
-
-### Return type
-
-**String**
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: application/json, application/yaml
 
 <a name="delete"></a>
 # **delete**
@@ -57,16 +33,48 @@ null (empty response body)
 - **Content-Type**: Not defined
 - **Accept**: Not defined
 
+<a name="importGraph"></a>
+# **importGraph**
+> TwinGraphImportInfo importGraph(organization\_id, TwinGraphImport)
+
+
+
+    Import a new version of a twin graph
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **TwinGraphImport** | [**TwinGraphImport**](../Models/TwinGraphImport.md)| the graph to import |
+
+### Return type
+
+[**TwinGraphImportInfo**](../Models/TwinGraphImportInfo.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json, application/yaml
+- **Accept**: application/json
+
 <a name="query"></a>
 # **query**
-> String query()
+> String query(organization\_id, TwinGraphQuery)
 
 
 
     Run a query on a graph instance
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **TwinGraphQuery** | [**TwinGraphQuery**](../Models/TwinGraphQuery.md)| the query to run |
 
 ### Return type
 
@@ -78,6 +86,6 @@ This endpoint does not need any parameter.
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
-- **Accept**: application/json, application/yaml
+- **Content-Type**: application/json, application/yaml
+- **Accept**: application/json
 
