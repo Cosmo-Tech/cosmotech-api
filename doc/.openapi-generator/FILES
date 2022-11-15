@@ -58,6 +58,9 @@ Models/ScenarioRunTemplateParameterValue.md
 Models/ScenarioSecurity.md
 Models/ScenarioValidationStatus.md
 Models/Solution.md
+Models/TwinGraphImport.md
+Models/TwinGraphImportInfo.md
+Models/TwinGraphQuery.md
 Models/User.md
 Models/UserOrganization.md
 Models/UserWorkspace.md

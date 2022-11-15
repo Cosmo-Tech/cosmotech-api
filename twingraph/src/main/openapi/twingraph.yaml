@@ -86,11 +86,29 @@ paths:
       responses:
         '204':
           description: Successful response
+
+components:
+  securitySchemes:
+    oAuth2AuthCode:
+      type: oauth2
+      description: OAuth2 authentication
+      flows:
+        implicit:
+          authorizationUrl: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
+          scopes:
+            http://dev.api.cosmotech.com/platform: Platform scope
+
   schemas:
     TwinGraphQuery:
       type: object
       description: a twin graph query in cypher language
       properties:
+        graphId:
+          type: string
+          description: Twin graph name
+        version:
+          type: string
+          description: Twin graph version
         query:
           type: string
           description: the query in cypher language
@@ -114,13 +132,3 @@ paths:
         graphId:
           type: string
           description: the twin graph id
-components:
-  securitySchemes:
-    oAuth2AuthCode:
-      type: oauth2
-      description: OAuth2 authentication
-      flows:
-        implicit:
-          authorizationUrl: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
-          scopes:
-            http://dev.api.cosmotech.com/platform: Platform scope

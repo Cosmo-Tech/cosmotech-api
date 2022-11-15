@@ -414,6 +414,22 @@ entity Solution {
     runTemplates: List<RunTemplate>
 }
 
+entity TwinGraphImport {
+    storagePath: String
+    graphId: String
+}
+
+entity TwinGraphImportInfo {
+    importId: String
+    graphId: String
+}
+
+entity TwinGraphQuery {
+    graphId: String
+    version: String
+    query: String
+}
+
 entity User {
     id: String
     name: String
