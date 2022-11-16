@@ -2,6 +2,12 @@
 // Licensed under the MIT license.
 package com.cosmotech.twingraph.api
 
+import com.cosmotech.api.CsmPhoenixService
+import com.cosmotech.api.events.TwingraphImportEvent
+import com.cosmotech.api.rbac.CsmRbac
+import com.cosmotech.api.rbac.PERMISSION_WRITE
+import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.azure.getRbac
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.utils.objectMapper
 import com.cosmotech.twingraph.domain.TwinGraphImport
@@ -19,7 +25,11 @@ import redis.clients.jedis.params.ScanParams
 import redis.clients.jedis.params.ScanParams.SCAN_POINTER_START
 
 @Service
-class TwingraphServiceImpl(val jedis: UnifiedJedis) : TwingraphApiService {
+class TwingraphServiceImpl(
+    private val organizationService: OrganizationApiService,
+    val jedis: UnifiedJedis,
+    private val csmRbac: CsmRbac
+) : CsmPhoenixService(), TwingraphApiService {
 
   val logger: Logger = LoggerFactory.getLogger(TwingraphServiceImpl::class.java)
 
@@ -27,7 +37,20 @@ class TwingraphServiceImpl(val jedis: UnifiedJedis) : TwingraphApiService {
       organizationId: String,
       twinGraphImport: TwinGraphImport
   ): TwinGraphImportInfo {
-    TODO("Not yet implemented")
+    val organization = organizationService.findOrganizationById(organizationId)
+    csmRbac.verify(organization.getRbac(), PERMISSION_WRITE)
+    val requestJobId = this.idGenerator.generate(scope = "graphdataimport", prependPrefix = "gdi-")
+    val graphImportEvent =
+        TwingraphImportEvent(
+            this,
+            requestJobId,
+            organizationId,
+            twinGraphImport.graphName,
+            twinGraphImport.storagePath,
+            twinGraphImport.version)
+    this.eventPublisher.publishEvent(graphImportEvent)
+    logger.debug("TwingraphImportEventResponse={}", graphImportEvent.response)
+    return TwinGraphImportInfo(jobId = requestJobId, graphName = twinGraphImport.graphName)
   }
 
   override fun delete(graphId: String) {
