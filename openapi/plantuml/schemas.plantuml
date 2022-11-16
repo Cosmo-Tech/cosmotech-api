@@ -415,13 +415,14 @@ entity Solution {
 }
 
 entity TwinGraphImport {
-    storagePath: String
-    graphId: String
+    * storagePath: String
+    * graphName: String
+    version: String
 }
 
 entity TwinGraphImportInfo {
-    importId: String
-    graphId: String
+    jobId: String
+    graphName: String
 }
 
 entity TwinGraphQuery {

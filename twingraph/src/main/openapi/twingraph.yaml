@@ -126,16 +126,25 @@ components:
         storagePath:
           type: string
           description: the storage path containing the files to import
-        graphId:
+        graphName:
           type: string
-          description: the graph id to import to
+          description: the graph name to import to
+        version:
+          type: string
+          description: |
+            The version of the graph to import to. 
+            When not set, the last version before import is upgraded by 1.
+            When set, the targeted graph is replaced
+      required:
+        - storagePath
+        - graphName
     TwinGraphImportInfo:
       type: object
       description: a twin graph query in cypher language
       properties:
-        importId:
+        jobId:
           type: string
           description: the import job id
-        graphId:
+        graphName:
           type: string
-          description: the twin graph id
+          description: the twin graph name

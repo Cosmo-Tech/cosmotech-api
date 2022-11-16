@@ -21,6 +21,7 @@ import com.cosmotech.api.events.ScenarioDeleted
 import com.cosmotech.api.events.ScenarioRunEndTimeRequest
 import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
+import com.cosmotech.api.events.TwingraphImportEvent
 import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.scenario.ScenarioRunMetaData
@@ -34,6 +35,7 @@ import com.cosmotech.scenariorun.CSM_JOB_ID_LABEL_KEY
 import com.cosmotech.scenariorun.ContainerFactory
 import com.cosmotech.scenariorun.SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME
 import com.cosmotech.scenariorun.api.ScenariorunApiService
+import com.cosmotech.scenariorun.config.ContainerConfig
 import com.cosmotech.scenariorun.domain.RunTemplateParameterValue
 import com.cosmotech.scenariorun.domain.ScenarioRun
 import com.cosmotech.scenariorun.domain.ScenarioRunLogs
@@ -57,6 +59,7 @@ import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
@@ -77,6 +80,10 @@ internal class ScenarioRunServiceImpl(
     private val azureDataExplorerClient: AzureDataExplorerClient,
     private val azureEventHubsClient: AzureEventHubsClient
 ) : CsmAzureService(), ScenariorunApiService {
+
+
+  @Autowired
+  protected lateinit var containerConfig: ContainerConfig
 
   private fun ScenarioRun.asMapWithAdditionalData(workspaceId: String? = null): Map<String, Any> {
     val scenarioAsMap = this.convertToMap().toMutableMap()
@@ -326,6 +333,28 @@ internal class ScenarioRunServiceImpl(
         workflowService
             .launchScenarioRun(startInfo.startContainers, null)
             .asMapWithAdditionalData(scenarioDataDownloadRequest.workspaceId)
+  }
+
+  @EventListener(TwingraphImportEvent::class)
+  fun onTwingraphImportEvent(twingraphImportEvent: TwingraphImportEvent) {
+    logger.debug("#####################################")
+    logger.debug(twingraphImportEvent.organizationId)
+    logger.debug(twingraphImportEvent.graphName)
+    logger.debug(twingraphImportEvent.sourceDataPath)
+    logger.debug(twingraphImportEvent.jobId)
+    logger.debug(twingraphImportEvent.version)
+    val adtTwincacheContainerInfo = containerConfig.containers.filter { it.name == "adt2twingraphImportContainer" }[0]
+    val simpleContainer = containerFactory.buildSingleContainerStart(
+      adtTwincacheContainerInfo.name,
+      adtTwincacheContainerInfo.imageName,
+      twingraphImportEvent.jobId,
+      adtTwincacheContainerInfo.imageRegistry,
+      adtTwincacheContainerInfo.imageVersion,
+      //TODO pass graphName sourceDataPath version through envvars
+      mutableMapOf()
+    )
+    twingraphImportEvent.response =
+      workflowService.launchScenarioRun(simpleContainer,null).convertToMap()
   }
 
   @EventListener(ScenarioDataDownloadJobInfoRequest::class)
