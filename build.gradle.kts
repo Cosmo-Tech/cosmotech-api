@@ -205,6 +205,8 @@ subprojects {
     val oktaSpringBootVersion = "2.1.6"
     implementation("com.okta.spring:okta-spring-boot-starter:${oktaSpringBootVersion}")
 
+    implementation("com.redislabs:jredisgraph:2.6.0-rc3")
+
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
