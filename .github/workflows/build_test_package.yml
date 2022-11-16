@@ -224,9 +224,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: gradle/gradle-build-action@v2
         with:
-          cache-disabled: false
+          cache-disabled: true
           # Cache storage space is limited for GitHub actions
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          # cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: |
             :cosmotech-api:jib
             -Djib.to.image=localhost:5000/cosmotech-api:latest
@@ -301,9 +301,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: gradle/gradle-build-action@v2
         with:
-          cache-disabled: false
+          cache-disabled: true
           # Cache storage space is limited for GitHub actions
-          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          # cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: |
             :cosmotech-api:jibDockerBuild
             -Djib.to.image=com.cosmotech/cosmotech-api:${{ github.sha }}
