@@ -11,11 +11,16 @@ import com.redislabs.redisgraph.graph_entities.Node
 import com.redislabs.redisgraph.impl.api.RedisGraph
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import redis.clients.jedis.Jedis
+import redis.clients.jedis.ScanParams
+import redis.clients.jedis.ScanParams.SCAN_POINTER_START
+
 
 @Service
-class TwingraphServiceImpl(val redisGraph: RedisGraph) : TwingraphApiService {
+class TwingraphServiceImpl(val jedis: Jedis, val redisGraph: RedisGraph) : TwingraphApiService {
 
   val logger = LoggerFactory.getLogger(TwingraphServiceImpl::class.java)
+
 
   override fun importGraph(
       organizationId: String,
@@ -24,9 +29,20 @@ class TwingraphServiceImpl(val redisGraph: RedisGraph) : TwingraphApiService {
     TODO("Not yet implemented")
   }
 
-  override fun delete() {
-    TODO("Not yet implemented")
+  override fun delete(graphId: String) {
+
+    val matchingKeys = mutableSetOf<String>()
+    var nextCursor = SCAN_POINTER_START
+    do {
+      var scanResult = jedis.scan(nextCursor, ScanParams().match("$graphId:*"))
+      nextCursor = scanResult.cursor
+      matchingKeys.addAll(scanResult.result)
+    } while (!nextCursor.equals(SCAN_POINTER_START))
+
+    val count = jedis.del(*matchingKeys.toTypedArray())
+    logger.debug("$count keys are removed from Twingraph with prefix $graphId")
   }
+
 
   override fun query(organizationId: String, twinGraphQuery: TwinGraphQuery): String {
 
