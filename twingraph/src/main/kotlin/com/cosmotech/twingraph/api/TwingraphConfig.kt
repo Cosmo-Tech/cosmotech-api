@@ -8,7 +8,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import redis.clients.jedis.Jedis
+import redis.clients.jedis.JedisPool
+import redis.clients.jedis.JedisPoolConfig
 import redis.clients.jedis.exceptions.JedisAccessControlException
 
 @Configuration
@@ -17,12 +18,15 @@ class TwingraphConfig {
   val logger: Logger = LoggerFactory.getLogger(TwingraphConfig::class.java)
 
   @Bean
-  fun jedis(): Jedis? {
+  fun jedisPool(): JedisPool? {
     val properties = twingraphProperties()
     return try {
-      val jedis = Jedis(properties.host, properties.port)
-      jedis.auth(properties.password)
-      jedis
+      JedisPool(
+          JedisPoolConfig(),
+          properties.host,
+          properties.port,
+          properties.timeout,
+          properties.password)
     } catch (e: JedisAccessControlException) {
       logger.warn(
           "Twingraph redis cannot be accessed on ${properties.host}:${properties.port} : ${e.message}")
@@ -32,7 +36,7 @@ class TwingraphConfig {
 
   @Bean
   fun redisGraph(): RedisGraph {
-    return RedisGraph(jedis())
+    return RedisGraph(jedisPool())
   }
 
   @Bean
@@ -41,9 +45,10 @@ class TwingraphConfig {
   }
 }
 
-@ConfigurationProperties(prefix = "twin-graph")
+@ConfigurationProperties(prefix = "csm.platform.twin-graph")
 data class TwinGraphProperties(
     var host: String = "localhost",
     var port: Int = 6379,
-    var password: String = ""
+    var password: String = "",
+    var timeout: Int = 60
 )

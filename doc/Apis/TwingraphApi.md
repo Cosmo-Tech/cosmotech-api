@@ -4,21 +4,24 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**delete**](TwingraphApi.md#delete) | **DELETE** /delete | 
+[**delete**](TwingraphApi.md#delete) | **DELETE** /delete/{graphId} | 
 [**importGraph**](TwingraphApi.md#importGraph) | **POST** /organizations/{organization_id}/import | 
 [**query**](TwingraphApi.md#query) | **POST** /organizations/{organization_id}/query | 
 
 
 <a name="delete"></a>
 # **delete**
-> delete()
+> delete(graphId)
 
 
 
     Launch a mass delete job
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **graphId** | **String**| the Graph Identifier | [default to null]
 
 ### Return type
 
