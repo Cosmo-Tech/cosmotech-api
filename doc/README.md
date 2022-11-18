@@ -88,7 +88,7 @@ Class | Method | HTTP request | Description
 *SolutionApi* | [**updateSolution**](Apis/SolutionApi.md#updatesolution) | **PATCH** /organizations/{organization_id}/solutions/{solution_id} | Update a solution
 *SolutionApi* | [**updateSolutionRunTemplate**](Apis/SolutionApi.md#updatesolutionruntemplate) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id} | Update the specified Solution Run Template
 *SolutionApi* | [**uploadRunTemplateHandler**](Apis/SolutionApi.md#uploadruntemplatehandler) | **POST** /organizations/{organization_id}/solutions/{solution_id}/runtemplates/{run_template_id}/handlers/{handler_id}/upload | Upload a Run Template step handler zip file
-*TwingraphApi* | [**delete**](Apis/TwingraphApi.md#delete) | **DELETE** /delete | Launch a mass delete job
+*TwingraphApi* | [**delete**](Apis/TwingraphApi.md#delete) | **DELETE** /delete/{graphId} | Launch a mass delete job
 *TwingraphApi* | [**importGraph**](Apis/TwingraphApi.md#importgraph) | **POST** /organizations/{organization_id}/import | Import a new version of a twin graph
 *TwingraphApi* | [**query**](Apis/TwingraphApi.md#query) | **POST** /organizations/{organization_id}/query | Run a query on a graph instance
 *UserApi* | [**authorizeUser**](Apis/UserApi.md#authorizeuser) | **GET** /oauth2/authorize | Authorize an User with OAuth2. Delegated to configured OAuth2 service

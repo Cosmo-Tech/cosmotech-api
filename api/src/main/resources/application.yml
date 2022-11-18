@@ -48,11 +48,6 @@ server:
     context-path:
   forward-headers-strategy: native
 
-twin-graph:
-  host: localhost
-  port: 6379
-  password:
-
 csm:
   platform:
     summary: Cosmo Tech Platform
@@ -89,6 +84,11 @@ csm:
           - ReadWriteOnce
         requests:
           storage: 1Gi
+    twin-graph:
+      host: localhost
+      port: 6379
+      password:
+      timeout: 60
     images:
       scenario-fetch-parameters: cosmo-tech/fetch-scenario-parameters
       send-datawarehouse: cosmo-tech/azure-data-explorer-connector
