@@ -458,6 +458,12 @@ image:
   tag: "$API_IMAGE_TAG"
 
 config:
+  workflow:
+    containers:
+      - name : "adt2twingraphImportContainer"
+        imageRegistry: "ghcr.io"
+        imageName: "cosmo-tech/adt-twincache-connector"
+        imageVersion: "0.0.4"
   csm:
     platform:
       argo:
