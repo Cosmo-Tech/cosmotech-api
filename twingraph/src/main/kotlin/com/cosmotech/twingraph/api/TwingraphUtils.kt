@@ -3,8 +3,8 @@
 package com.cosmotech.twingraph.api
 
 import com.cosmotech.api.utils.objectMapper
-import com.redislabs.redisgraph.graph_entities.Node
-import com.redislabs.redisgraph.graph_entities.Property
+import redis.clients.jedis.graph.entities.Node
+import redis.clients.jedis.graph.entities.Property
 
 fun getNodeJson(node: Node): String {
   val graphNode =

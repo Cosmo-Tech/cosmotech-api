@@ -85,10 +85,7 @@ csm:
         requests:
           storage: 1Gi
     twin-graph:
-      host: localhost
-      port: 6379
-      password:
-      timeout: 60
+      uri: redis://localhost:6379
     images:
       scenario-fetch-parameters: cosmo-tech/fetch-scenario-parameters
       send-datawarehouse: cosmo-tech/azure-data-explorer-connector
