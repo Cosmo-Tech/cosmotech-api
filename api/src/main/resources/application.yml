@@ -84,8 +84,6 @@ csm:
           - ReadWriteOnce
         requests:
           storage: 1Gi
-    twin-graph:
-      uri: redis://localhost:6379
     images:
       scenario-fetch-parameters: cosmo-tech/fetch-scenario-parameters
       send-datawarehouse: cosmo-tech/azure-data-explorer-connector

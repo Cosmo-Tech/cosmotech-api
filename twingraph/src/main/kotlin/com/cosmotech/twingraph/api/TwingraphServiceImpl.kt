@@ -33,7 +33,7 @@ class TwingraphServiceImpl(val jedis: UnifiedJedis) : TwingraphApiService {
     val matchingKeys = mutableSetOf<String>()
     var nextCursor = SCAN_POINTER_START
     do {
-      var scanResult = jedis.scan(nextCursor, ScanParams().match("$graphId:*"))
+      var scanResult = jedis.scan(nextCursor, ScanParams().match("$graphId*"))
       nextCursor = scanResult.cursor
       matchingKeys.addAll(scanResult.result)
     } while (!nextCursor.equals(SCAN_POINTER_START))
