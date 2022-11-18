@@ -460,7 +460,7 @@ image:
 config:
   workflow:
     containers:
-      - name : "adt2twingraphImportContainer"
+      - name : "twingraphImportContainer"
         imageRegistry: "ghcr.io"
         imageName: "cosmo-tech/adt-twincache-connector"
         imageVersion: "0.0.4"

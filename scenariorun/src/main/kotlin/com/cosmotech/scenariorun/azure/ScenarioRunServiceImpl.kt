@@ -53,6 +53,7 @@ import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
 import java.time.ZonedDateTime
+import java.util.MissingResourceException
 import kotlin.reflect.full.memberProperties
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
@@ -335,19 +336,16 @@ internal class ScenarioRunServiceImpl(
 
   @EventListener(TwingraphImportEvent::class)
   fun onTwingraphImportEvent(twingraphImportEvent: TwingraphImportEvent) {
-    logger.debug("#####################################")
-    logger.debug(twingraphImportEvent.organizationId)
-    logger.debug(twingraphImportEvent.graphName)
-    logger.debug(twingraphImportEvent.sourceDataPath)
-    logger.debug(twingraphImportEvent.jobId)
-    logger.debug(twingraphImportEvent.version)
-    // TODO handle no container found
-    val adtTwincacheContainerInfo =
-        containerConfig.containers.filter { it.name == "adt2twingraphImportContainer" }[0]
-    logger.debug(adtTwincacheContainerInfo.name)
-    logger.debug(adtTwincacheContainerInfo.imageName)
-    logger.debug(adtTwincacheContainerInfo.imageRegistry)
-    logger.debug(adtTwincacheContainerInfo.imageVersion)
+    val twingraphImportContainerList =
+        containerConfig.containers.filter { it.name == "twingraphImportContainer" }
+
+    if (twingraphImportContainerList.isEmpty()) {
+      throw MissingResourceException(
+          "twingraphImportContainer is not found in configuration (workflow.containers.name)",
+          ScenarioRunServiceImpl::class.simpleName,
+          "workflow.containers.name")
+    }
+    val adtTwincacheContainerInfo = twingraphImportContainerList[0]
     val simpleContainer =
         containerFactory.buildSingleContainerStart(
             adtTwincacheContainerInfo.name,
@@ -359,7 +357,6 @@ internal class ScenarioRunServiceImpl(
                 "TWIN_CACHE_NAME" to twingraphImportEvent.graphName,
                 "LOG_LEVEL" to "DEBUG",
                 "AZURE_DIGITAL_TWINS_URL" to twingraphImportEvent.sourceDataPath))
-    logger.debug(simpleContainer.toString())
     twingraphImportEvent.response =
         workflowService.launchScenarioRun(simpleContainer, null).convertToMap()
   }
