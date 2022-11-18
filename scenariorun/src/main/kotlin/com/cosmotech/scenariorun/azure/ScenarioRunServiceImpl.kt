@@ -81,9 +81,7 @@ internal class ScenarioRunServiceImpl(
     private val azureEventHubsClient: AzureEventHubsClient
 ) : CsmAzureService(), ScenariorunApiService {
 
-
-  @Autowired
-  protected lateinit var containerConfig: ContainerConfig
+  @Autowired private lateinit var containerConfig: ContainerConfig
 
   private fun ScenarioRun.asMapWithAdditionalData(workspaceId: String? = null): Map<String, Any> {
     val scenarioAsMap = this.convertToMap().toMutableMap()
@@ -343,18 +341,27 @@ internal class ScenarioRunServiceImpl(
     logger.debug(twingraphImportEvent.sourceDataPath)
     logger.debug(twingraphImportEvent.jobId)
     logger.debug(twingraphImportEvent.version)
-    val adtTwincacheContainerInfo = containerConfig.containers.filter { it.name == "adt2twingraphImportContainer" }[0]
-    val simpleContainer = containerFactory.buildSingleContainerStart(
-      adtTwincacheContainerInfo.name,
-      adtTwincacheContainerInfo.imageName,
-      twingraphImportEvent.jobId,
-      adtTwincacheContainerInfo.imageRegistry,
-      adtTwincacheContainerInfo.imageVersion,
-      //TODO pass graphName sourceDataPath version through envvars
-      mutableMapOf()
-    )
+    // TODO handle no container found
+    val adtTwincacheContainerInfo =
+        containerConfig.containers.filter { it.name == "adt2twingraphImportContainer" }[0]
+    logger.debug(adtTwincacheContainerInfo.name)
+    logger.debug(adtTwincacheContainerInfo.imageName)
+    logger.debug(adtTwincacheContainerInfo.imageRegistry)
+    logger.debug(adtTwincacheContainerInfo.imageVersion)
+    val simpleContainer =
+        containerFactory.buildSingleContainerStart(
+            adtTwincacheContainerInfo.name,
+            adtTwincacheContainerInfo.imageName,
+            twingraphImportEvent.jobId,
+            adtTwincacheContainerInfo.imageRegistry,
+            adtTwincacheContainerInfo.imageVersion,
+            mutableMapOf(
+                "TWIN_CACHE_NAME" to twingraphImportEvent.graphName,
+                "LOG_LEVEL" to "DEBUG",
+                "AZURE_DIGITAL_TWINS_URL" to twingraphImportEvent.sourceDataPath))
+    logger.debug(simpleContainer.toString())
     twingraphImportEvent.response =
-      workflowService.launchScenarioRun(simpleContainer,null).convertToMap()
+        workflowService.launchScenarioRun(simpleContainer, null).convertToMap()
   }
 
   @EventListener(ScenarioDataDownloadJobInfoRequest::class)
