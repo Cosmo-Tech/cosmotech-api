@@ -7,20 +7,18 @@ import com.cosmotech.api.utils.objectMapper
 import com.cosmotech.twingraph.domain.TwinGraphImport
 import com.cosmotech.twingraph.domain.TwinGraphImportInfo
 import com.cosmotech.twingraph.domain.TwinGraphQuery
-import com.redislabs.redisgraph.Record
-import com.redislabs.redisgraph.ResultSet
-import com.redislabs.redisgraph.graph_entities.Edge
-import com.redislabs.redisgraph.graph_entities.Node
-import com.redislabs.redisgraph.impl.api.RedisGraph
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import redis.clients.jedis.JedisPool
-import redis.clients.jedis.ScanParams
-import redis.clients.jedis.ScanParams.SCAN_POINTER_START
+import redis.clients.jedis.UnifiedJedis
+import redis.clients.jedis.graph.Record
+import redis.clients.jedis.graph.ResultSet
+import redis.clients.jedis.graph.entities.Edge
+import redis.clients.jedis.graph.entities.Node
+import redis.clients.jedis.params.ScanParams
+import redis.clients.jedis.params.ScanParams.SCAN_POINTER_START
 
 @Service
-class TwingraphServiceImpl(val jedisPool: JedisPool, val redisGraph: RedisGraph) :
-    TwingraphApiService {
+class TwingraphServiceImpl(val jedis: UnifiedJedis) : TwingraphApiService {
 
   val logger = LoggerFactory.getLogger(TwingraphServiceImpl::class.java)
 
@@ -32,7 +30,6 @@ class TwingraphServiceImpl(val jedisPool: JedisPool, val redisGraph: RedisGraph)
   }
 
   override fun delete(graphId: String) {
-    val jedis = jedisPool.resource
     val matchingKeys = mutableSetOf<String>()
     var nextCursor = SCAN_POINTER_START
     do {
@@ -41,17 +38,16 @@ class TwingraphServiceImpl(val jedisPool: JedisPool, val redisGraph: RedisGraph)
       matchingKeys.addAll(scanResult.result)
     } while (!nextCursor.equals(SCAN_POINTER_START))
 
-    @Suppress("SpreadOperator")
-    val count = jedis.del(*matchingKeys.toTypedArray())
-    jedisPool.returnResource(jedis)
+    @Suppress("SpreadOperator") val count = jedis.del(*matchingKeys.toTypedArray())
     logger.debug("$count keys are removed from Twingraph with prefix $graphId")
   }
 
   override fun query(organizationId: String, twinGraphQuery: TwinGraphQuery): String {
     val redisGraphId = "${twinGraphQuery.graphId}:${twinGraphQuery.version}"
-    var resultSet: ResultSet = redisGraph.query(redisGraphId, twinGraphQuery.query)
+    var resultSet: ResultSet = jedis.graphQuery(redisGraphId, twinGraphQuery.query)
 
-    if (!resultSet.hasNext()) {
+    val iterator = resultSet.iterator()
+    if (!iterator.hasNext()) {
       throw CsmResourceNotFoundException(
           "TwinGraph empty with given ${twinGraphQuery.graphId} " +
               "and version ${twinGraphQuery.version}")
@@ -59,9 +55,9 @@ class TwingraphServiceImpl(val jedisPool: JedisPool, val redisGraph: RedisGraph)
 
     val result = mutableMapOf<Int, MutableSet<String>>()
 
-    while (resultSet.hasNext()) {
-      val record: Record = resultSet.next()
-      record.values().forEachIndexed { index, element ->
+    while (iterator.hasNext()) {
+      val record: Record? = iterator.next()
+      record?.values()?.forEachIndexed { index, element ->
         val currentValue = result.getOrPut(index) { mutableSetOf() }
         when (element) {
           is Node -> {
