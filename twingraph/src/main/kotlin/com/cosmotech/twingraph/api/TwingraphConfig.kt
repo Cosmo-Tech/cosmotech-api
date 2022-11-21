@@ -12,6 +12,8 @@ import redis.clients.jedis.HostAndPort
 import redis.clients.jedis.UnifiedJedis
 import redis.clients.jedis.providers.PooledConnectionProvider
 
+const val DEFAULT_REDIS_PORT = 6379
+
 @Configuration
 class TwingraphConfig(val csmPlatformProperties: CsmPlatformProperties) {
 
@@ -20,10 +22,8 @@ class TwingraphConfig(val csmPlatformProperties: CsmPlatformProperties) {
   @Bean
   fun jedis(): UnifiedJedis {
     val properties = csmPlatformProperties.twincache
-    val config = HostAndPort(properties?.host, properties?.port?.toInt() ?: 6379)
-    val clientConfig = DefaultJedisClientConfig.builder()
-      .password(properties?.password)
-      .build()
+    val config = HostAndPort(properties?.host, properties?.port?.toInt() ?: DEFAULT_REDIS_PORT)
+    val clientConfig = DefaultJedisClientConfig.builder().password(properties?.password).build()
     return UnifiedJedis(PooledConnectionProvider(config, clientConfig))
   }
 }
