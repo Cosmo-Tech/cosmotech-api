@@ -274,12 +274,11 @@ internal class ContainerFactory(
       nodeLabel: String = NODE_LABEL_DEFAULT
   ): ScenarioRunStartContainers {
 
-    val defaultSizing =
-        if (nodeLabel != null) {
-          (LABEL_SIZING[nodeLabel] ?: BASIC_SIZING)
-        } else {
-          (BASIC_SIZING)
-        }
+    var defaultSizing = BASIC_SIZING
+
+    if (nodeLabel != null) {
+      defaultSizing = LABEL_SIZING[nodeLabel] ?: BASIC_SIZING
+    }
 
     val container =
         buildSimpleContainer(
@@ -324,70 +323,6 @@ internal class ContainerFactory(
         runSizing = nodeSizing.toContainerResourceSizing())
   }
 
-  internal fun getMinimalCommonEnvVars(
-      csmPlatformProperties: CsmPlatformProperties,
-      azureManagedIdentity: Boolean? = null,
-      azureAuthenticationWithCustomerAppRegistration: Boolean? = null,
-  ): MutableMap<String, String> {
-    if (azureManagedIdentity == true && azureAuthenticationWithCustomerAppRegistration == true) {
-      throw IllegalArgumentException(
-          "Don't know which authentication mechanism to use to connect " +
-              "against Azure services. Both azureManagedIdentity and " +
-              "azureAuthenticationWithCustomerAppRegistration cannot be set to true")
-    }
-    val identityEnvVars =
-        if (azureManagedIdentity == true) {
-          mapOf(CSM_AZURE_MANAGED_IDENTITY_VAR to "true")
-        } else if (azureAuthenticationWithCustomerAppRegistration == true) {
-          mapOf(
-              AZURE_TENANT_ID_VAR to
-                  (csmPlatformProperties.azure?.credentials?.customer?.tenantId!!),
-              AZURE_CLIENT_ID_VAR to
-                  (csmPlatformProperties.azure?.credentials?.customer?.clientId!!),
-              AZURE_CLIENT_SECRET_VAR to
-                  (csmPlatformProperties.azure?.credentials?.customer?.clientSecret!!),
-          )
-        } else {
-          mapOf(
-              AZURE_TENANT_ID_VAR to (csmPlatformProperties.azure?.credentials?.core?.tenantId!!),
-              AZURE_CLIENT_ID_VAR to (csmPlatformProperties.azure?.credentials?.core?.clientId!!),
-              AZURE_CLIENT_SECRET_VAR to
-                  (csmPlatformProperties.azure?.credentials?.core?.clientSecret!!),
-          )
-        }
-    val oktaEnvVars: MutableMap<String, String> = mutableMapOf()
-    if (csmPlatformProperties.identityProvider?.code == "okta") {
-      oktaEnvVars.putAll(
-          mapOf(
-              OKTA_CLIENT_ID to (csmPlatformProperties.okta?.clientId!!),
-              OKTA_CLIENT_SECRET to (csmPlatformProperties.okta?.clientSecret!!),
-              OKTA_CLIENT_ISSUER to (csmPlatformProperties.okta?.issuer!!),
-          ))
-    }
-
-    val twinCacheEnvVars: MutableMap<String, String> = mutableMapOf()
-    if (csmPlatformProperties.twincache != null) {
-      val twinCacheInfo = csmPlatformProperties.twincache!!
-      twinCacheEnvVars.putAll(
-          mapOf(
-              TWIN_CACHE_HOST to (twinCacheInfo.host),
-              TWIN_CACHE_PORT to (twinCacheInfo.port),
-              TWIN_CACHE_PASSWORD to (twinCacheInfo.password),
-              TWIN_CACHE_USERNAME to (twinCacheInfo.username),
-          ))
-    }
-    val containerScopes = getContainerScopes(csmPlatformProperties)
-    val commonEnvVars =
-        mapOf(
-            IDENTITY_PROVIDER to (csmPlatformProperties.identityProvider?.code ?: "azure"),
-            API_BASE_URL_VAR to csmPlatformProperties.api.baseUrl,
-            API_BASE_SCOPE_VAR to containerScopes,
-            DATASET_PATH_VAR to DATASET_PATH,
-            PARAMETERS_PATH_VAR to PARAMETERS_PATH,
-        )
-    return (identityEnvVars + commonEnvVars + oktaEnvVars + twinCacheEnvVars).toMutableMap()
-  }
-
   internal fun buildContainersStart(
       scenario: Scenario,
       datasets: List<Dataset>?,
@@ -416,12 +351,11 @@ internal class ContainerFactory(
 
     val runTemplateSizing = template.runSizing?.toSizing()
 
-    val defaultSizing =
-        if (nodeLabel != null) {
-          (LABEL_SIZING[nodeLabel] ?: BASIC_SIZING)
-        } else {
-          (BASIC_SIZING)
-        }
+    var defaultSizing = BASIC_SIZING
+
+    if (nodeLabel != null) {
+      defaultSizing = LABEL_SIZING[nodeLabel] ?: BASIC_SIZING
+    }
 
     val containers =
         buildContainersPipeline(
@@ -1534,14 +1468,8 @@ internal fun getContainerScopes(csmPlatformProperties: CsmPlatformProperties): S
   return "${csmPlatformProperties.azure?.appIdUri}${API_SCOPE_SUFFIX}"
 }
 
-@Suppress("LongMethod")
-internal fun getCommonEnvVars(
+internal fun getMinimalCommonEnvVars(
     csmPlatformProperties: CsmPlatformProperties,
-    csmSimulationId: String,
-    organizationId: String,
-    workspaceId: String,
-    scenarioId: String,
-    workspaceKey: String,
     azureManagedIdentity: Boolean? = null,
     azureAuthenticationWithCustomerAppRegistration: Boolean? = null,
 ): MutableMap<String, String> {
@@ -1590,16 +1518,38 @@ internal fun getCommonEnvVars(
             TWIN_CACHE_USERNAME to (twinCacheInfo.username),
         ))
   }
-
   val containerScopes = getContainerScopes(csmPlatformProperties)
   val commonEnvVars =
       mapOf(
           IDENTITY_PROVIDER to (csmPlatformProperties.identityProvider?.code ?: "azure"),
-          CSM_SIMULATION_ID to csmSimulationId,
           API_BASE_URL_VAR to csmPlatformProperties.api.baseUrl,
           API_BASE_SCOPE_VAR to containerScopes,
           DATASET_PATH_VAR to DATASET_PATH,
           PARAMETERS_PATH_VAR to PARAMETERS_PATH,
+      )
+  return (identityEnvVars + commonEnvVars + oktaEnvVars + twinCacheEnvVars).toMutableMap()
+}
+
+internal fun getCommonEnvVars(
+    csmPlatformProperties: CsmPlatformProperties,
+    csmSimulationId: String,
+    organizationId: String,
+    workspaceId: String,
+    scenarioId: String,
+    workspaceKey: String,
+    azureManagedIdentity: Boolean? = null,
+    azureAuthenticationWithCustomerAppRegistration: Boolean? = null,
+): MutableMap<String, String> {
+
+  val minimalEnvVars =
+      getMinimalCommonEnvVars(
+          csmPlatformProperties,
+          azureManagedIdentity,
+          azureAuthenticationWithCustomerAppRegistration)
+
+  val commonEnvVars =
+      mapOf(
+          CSM_SIMULATION_ID to csmSimulationId,
           AZURE_DATA_EXPLORER_RESOURCE_URI_VAR to
               (csmPlatformProperties.azure?.dataWarehouseCluster?.baseUri ?: ""),
           AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI_VAR to
@@ -1609,7 +1559,7 @@ internal fun getCommonEnvVars(
           PARAMETERS_WORKSPACE_VAR to workspaceId,
           PARAMETERS_SCENARIO_VAR to scenarioId,
       )
-  return (identityEnvVars + commonEnvVars + oktaEnvVars + twinCacheEnvVars).toMutableMap()
+  return (minimalEnvVars + commonEnvVars).toMutableMap()
 }
 
 private fun stackSolutionContainers(

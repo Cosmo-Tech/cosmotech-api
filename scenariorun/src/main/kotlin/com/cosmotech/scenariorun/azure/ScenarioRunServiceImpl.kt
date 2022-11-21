@@ -35,7 +35,6 @@ import com.cosmotech.scenariorun.CSM_JOB_ID_LABEL_KEY
 import com.cosmotech.scenariorun.ContainerFactory
 import com.cosmotech.scenariorun.SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME
 import com.cosmotech.scenariorun.api.ScenariorunApiService
-import com.cosmotech.scenariorun.config.ContainerConfig
 import com.cosmotech.scenariorun.domain.RunTemplateParameterValue
 import com.cosmotech.scenariorun.domain.ScenarioRun
 import com.cosmotech.scenariorun.domain.ScenarioRunLogs
@@ -60,7 +59,6 @@ import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
@@ -81,8 +79,6 @@ internal class ScenarioRunServiceImpl(
     private val azureDataExplorerClient: AzureDataExplorerClient,
     private val azureEventHubsClient: AzureEventHubsClient
 ) : CsmAzureService(), ScenariorunApiService {
-
-  @Autowired private lateinit var containerConfig: ContainerConfig
 
   private fun ScenarioRun.asMapWithAdditionalData(workspaceId: String? = null): Map<String, Any> {
     val scenarioAsMap = this.convertToMap().toMutableMap()
@@ -337,11 +333,11 @@ internal class ScenarioRunServiceImpl(
   @EventListener(TwingraphImportEvent::class)
   fun onTwingraphImportEvent(twingraphImportEvent: TwingraphImportEvent) {
     val twingraphImportContainerList =
-        containerConfig.containers.filter { it.name == "twingraphImportContainer" }
+        csmPlatformProperties.containers.filter { it.name == "twingraphImport" }
 
     if (twingraphImportContainerList.isEmpty()) {
       throw MissingResourceException(
-          "twingraphImportContainer is not found in configuration (workflow.containers.name)",
+          "twingraphImport is not found in configuration (workflow.containers.name)",
           ScenarioRunServiceImpl::class.simpleName,
           "workflow.containers.name")
     }
