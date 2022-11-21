@@ -7,6 +7,7 @@ import com.cosmotech.api.utils.objectMapper
 import com.cosmotech.twingraph.domain.TwinGraphImport
 import com.cosmotech.twingraph.domain.TwinGraphImportInfo
 import com.cosmotech.twingraph.domain.TwinGraphQuery
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import redis.clients.jedis.UnifiedJedis
@@ -20,7 +21,7 @@ import redis.clients.jedis.params.ScanParams.SCAN_POINTER_START
 @Service
 class TwingraphServiceImpl(val jedis: UnifiedJedis) : TwingraphApiService {
 
-  val logger = LoggerFactory.getLogger(TwingraphServiceImpl::class.java)
+  val logger: Logger = LoggerFactory.getLogger(TwingraphServiceImpl::class.java)
 
   override fun importGraph(
       organizationId: String,
@@ -43,6 +44,11 @@ class TwingraphServiceImpl(val jedis: UnifiedJedis) : TwingraphApiService {
   }
 
   override fun query(organizationId: String, twinGraphQuery: TwinGraphQuery): String {
+
+    if (twinGraphQuery.version == null) {
+      twinGraphQuery.version = jedis.hget("${twinGraphQuery.graphId}MetaData", "lastVersion")
+    }
+
     val redisGraphId = "${twinGraphQuery.graphId}:${twinGraphQuery.version}"
     var resultSet: ResultSet = jedis.graphQuery(redisGraphId, twinGraphQuery.query)
 
@@ -54,6 +60,7 @@ class TwingraphServiceImpl(val jedis: UnifiedJedis) : TwingraphApiService {
     }
 
     val result = mutableMapOf<Int, MutableSet<String>>()
+    val elementTypes = mutableMapOf<Int, String>()
 
     while (iterator.hasNext()) {
       val record: Record? = iterator.next()
@@ -63,26 +70,35 @@ class TwingraphServiceImpl(val jedis: UnifiedJedis) : TwingraphApiService {
           is Node -> {
             currentValue.add(getNodeJson(element))
             result[index] = currentValue
+            elementTypes[index] = "nodes"
           }
           is Edge -> {
             currentValue.add(objectMapper().writeValueAsString(element))
             result[index] = currentValue
+            elementTypes[index] = "relationships"
           }
           else -> {
             currentValue.add(objectMapper().writeValueAsString(mapOf("value" to element)))
             result[index] = currentValue
+            elementTypes[index] = "variables"
           }
         }
       }
     }
 
-    var resultJson = mutableSetOf<String>()
+    var resultJson = mutableMapOf<String, String>()
     result.values.forEachIndexed { index, element ->
-      resultJson.add(
-          "\"${resultSet.header.schemaNames[index]}\" : " +
-              "${element.joinToString(",", "[", "]") }")
+      val elementType = elementTypes[index]!!
+      resultJson.computeIfAbsent(elementType) { getJsonValue(resultSet, index, element) }
+      resultJson.computeIfPresent(elementType) { _, value ->
+        value + ", " + getJsonValue(resultSet, index, element)
+      }
     }
+    return resultJson.map { "\"${it.key}\": {${it.value}}" }.joinToString(",", "{", "}")
+  }
 
-    return resultJson.joinToString(",", "{", "}")
+  private fun getJsonValue(resultSet: ResultSet, index: Int, element: MutableSet<String>): String {
+    return "\"${resultSet.header.schemaNames[index]}\" : " +
+        "${element.joinToString(",", "[", "]")}"
   }
 }
