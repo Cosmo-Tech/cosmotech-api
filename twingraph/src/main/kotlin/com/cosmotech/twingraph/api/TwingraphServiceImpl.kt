@@ -5,7 +5,7 @@ package com.cosmotech.twingraph.api
 import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.events.TwingraphImportEvent
 import com.cosmotech.api.rbac.CsmRbac
-import com.cosmotech.api.rbac.PERMISSION_WRITE
+import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.azure.getRbac
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
@@ -38,7 +38,7 @@ class TwingraphServiceImpl(
       twinGraphImport: TwinGraphImport
   ): TwinGraphImportInfo {
     val organization = organizationService.findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_WRITE)
+    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
     val requestJobId = this.idGenerator.generate(scope = "graphdataimport", prependPrefix = "gdi-")
     val graphImportEvent =
         TwingraphImportEvent(
