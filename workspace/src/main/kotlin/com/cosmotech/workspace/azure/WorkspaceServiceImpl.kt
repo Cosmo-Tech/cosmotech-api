@@ -21,7 +21,7 @@ import com.cosmotech.api.events.UserRemovedFromOrganization
 import com.cosmotech.api.events.UserRemovedFromWorkspace
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
-import com.cosmotech.api.utils.KubernetesClient
+import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -53,7 +53,7 @@ internal class WorkspaceServiceImpl(
     private val solutionService: SolutionApiService,
     private val azureStorageBlobServiceClient: BlobServiceClient,
     private val azureStorageBlobBatchClient: BlobBatchClient,
-    private val kubernetesClient: KubernetesClient
+    private val secretManager: SecretManager
 ) : CsmAzureService(), WorkspaceApiService {
 
   private fun fetchUsers(userIds: Collection<String>): Map<String, User> =
@@ -331,11 +331,10 @@ internal class WorkspaceServiceImpl(
       kubernetesDedicatedEventHubSecret: KubernetesDedicatedEventHubSecret
   ) {
     val workspaceKey = findWorkspaceById(organizationId, workspaceId).key
-    val secretName = "${organizationId}-${workspaceKey}".lowercase()
-    kubernetesClient.createSecretIntoKubernetes(
-        secretName,
+    secretManager.createSecret(
         csmPlatformProperties.namespace,
-        Pair("RootManageSharedAccessKey", kubernetesDedicatedEventHubSecret.secretKey))
+        getWorkspaceSecretName(organizationId, workspaceKey),
+        mapOf(WORKSPACE_EVENTHUB_ACCESSKEY_SECRET to kubernetesDedicatedEventHubSecret.secretKey))
   }
 
   @EventListener(DeleteHistoricalDataOrganization::class)

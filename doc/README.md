@@ -97,6 +97,7 @@ Class | Method | HTTP request | Description
 *ValidatorApi* | [**findValidatorRunById**](Apis/ValidatorApi.md#findvalidatorrunbyid) | **GET** /organizations/{organization_id}/datasets/validators/{validator_id}/history/{validatorrun_id} | Get the details of a validator run
 *ValidatorApi* | [**runValidator**](Apis/ValidatorApi.md#runvalidator) | **POST** /organizations/{organization_id}/datasets/validators/{validator_id}/run | Run a Validator
 *WorkspaceApi* | [**addOrReplaceUsersInOrganizationWorkspace**](Apis/WorkspaceApi.md#addorreplaceusersinorganizationworkspace) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/users | Add (or replace) users to the Workspace specified
+*WorkspaceApi* | [**createNamespacedSecretIntoKubernetes**](Apis/WorkspaceApi.md#createnamespacedsecretintokubernetes) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/secret | Create a namespaced secret into Kubernetes
 *WorkspaceApi* | [**createWorkspace**](Apis/WorkspaceApi.md#createworkspace) | **POST** /organizations/{organization_id}/workspaces | Create a new workspace
 *WorkspaceApi* | [**deleteAllWorkspaceFiles**](Apis/WorkspaceApi.md#deleteallworkspacefiles) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/files | Delete all Workspace files
 *WorkspaceApi* | [**deleteWorkspace**](Apis/WorkspaceApi.md#deleteworkspace) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id} | Delete a workspace
@@ -123,6 +124,7 @@ Class | Method | HTTP request | Description
  - [DatasetCopyParameters](./Models/DatasetCopyParameters.md)
  - [DatasetSearch](./Models/DatasetSearch.md)
  - [DeleteHistoricalData](./Models/DeleteHistoricalData.md)
+ - [KubernetesDedicatedEventHubSecret](./Models/KubernetesDedicatedEventHubSecret.md)
  - [Organization](./Models/Organization.md)
  - [OrganizationService](./Models/OrganizationService.md)
  - [OrganizationServices](./Models/OrganizationServices.md)

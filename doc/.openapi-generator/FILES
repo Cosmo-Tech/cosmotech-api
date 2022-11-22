@@ -16,6 +16,7 @@ Models/DatasetConnector.md
 Models/DatasetCopyParameters.md
 Models/DatasetSearch.md
 Models/DeleteHistoricalData.md
+Models/KubernetesDedicatedEventHubSecret.md
 Models/Organization.md
 Models/OrganizationService.md
 Models/OrganizationServices.md
