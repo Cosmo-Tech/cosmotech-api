@@ -17,8 +17,6 @@ import redis.clients.jedis.graph.entities.Edge
 import redis.clients.jedis.graph.entities.Node
 import redis.clients.jedis.params.ScanParams
 import redis.clients.jedis.params.ScanParams.SCAN_POINTER_START
-import kotlin.collections.EmptyMap.keys
-import kotlin.jvm.internal.SpreadBuilder
 
 @Service
 class TwingraphServiceImpl(val jedis: UnifiedJedis) : TwingraphApiService {
@@ -50,7 +48,8 @@ class TwingraphServiceImpl(val jedis: UnifiedJedis) : TwingraphApiService {
     if (twinGraphQuery.version.isNullOrEmpty()) {
       twinGraphQuery.version = jedis.hget("${twinGraphQuery.graphId}MetaData", "lastVersion")
       if (twinGraphQuery.version.isNullOrEmpty()) {
-          throw CsmResourceNotFoundException("Cannot query. Any version found for ${twinGraphQuery.graphId}")
+        throw CsmResourceNotFoundException(
+            "Cannot find lastVersion in ${twinGraphQuery.graphId}MetaData")
       }
     }
 
