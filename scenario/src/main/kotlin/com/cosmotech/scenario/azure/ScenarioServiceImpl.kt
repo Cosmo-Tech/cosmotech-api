@@ -29,7 +29,7 @@ import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.scenario.ScenarioMetaData
-import com.cosmotech.api.utils.KubernetesClient
+import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -51,6 +51,8 @@ import com.cosmotech.solution.domain.Solution
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.user.domain.User
 import com.cosmotech.workspace.api.WorkspaceApiService
+import com.cosmotech.workspace.azure.WORKSPACE_EVENTHUB_ACCESSKEY_SECRET
+import com.cosmotech.workspace.azure.getWorkspaceSecretName
 import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
 import java.time.OffsetDateTime
@@ -74,7 +76,7 @@ internal class ScenarioServiceImpl(
     private val workspaceService: WorkspaceApiService,
     private val azureDataExplorerClient: AzureDataExplorerClient,
     private val azureEventHubsClient: AzureEventHubsClient,
-    private val kubernetesClient: KubernetesClient
+    private val secretManager: SecretManager,
 ) : CsmAzureService(), ScenarioApiService {
 
   override fun addOrReplaceScenarioParameterValues(
@@ -843,9 +845,12 @@ internal class ScenarioServiceImpl(
 
     when (eventBus.authentication.strategy) {
       SHARED_ACCESS_POLICY -> {
-        val (name, key) =
-            kubernetesClient.getSecretFromKubernetes(
-                eventHubNamespace, csmPlatformProperties.namespace)
+        val key =
+            secretManager
+                .readSecret(
+                    csmPlatformProperties.namespace,
+                    getWorkspaceSecretName(organizationId, workspace.key))
+                .getValue(WORKSPACE_EVENTHUB_ACCESSKEY_SECRET)
 
         azureEventHubsClient.sendMetaData(
             baseHostName,

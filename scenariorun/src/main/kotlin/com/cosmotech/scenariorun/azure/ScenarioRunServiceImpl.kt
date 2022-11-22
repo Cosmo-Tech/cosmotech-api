@@ -25,7 +25,7 @@ import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.scenario.ScenarioRunMetaData
 import com.cosmotech.api.scenariorun.DataIngestionState
-import com.cosmotech.api.utils.KubernetesClient
+import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
@@ -49,6 +49,8 @@ import com.cosmotech.solution.domain.DeleteHistoricalData
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
+import com.cosmotech.workspace.azure.WORKSPACE_EVENTHUB_ACCESSKEY_SECRET
+import com.cosmotech.workspace.azure.getWorkspaceSecretName
 import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
 import java.time.ZonedDateTime
@@ -77,7 +79,7 @@ internal class ScenarioRunServiceImpl(
     private val scenarioApiService: ScenarioApiService,
     private val azureDataExplorerClient: AzureDataExplorerClient,
     private val azureEventHubsClient: AzureEventHubsClient,
-    private val kubernetesClient: KubernetesClient
+    private val secretManager: SecretManager,
 ) : CsmAzureService(), ScenariorunApiService {
 
   private fun ScenarioRun.asMapWithAdditionalData(workspaceId: String? = null): Map<String, Any> {
@@ -773,9 +775,12 @@ internal class ScenarioRunServiceImpl(
 
     when (eventBus.authentication.strategy) {
       SHARED_ACCESS_POLICY -> {
-        val (name, key) =
-            kubernetesClient.getSecretFromKubernetes(
-                eventHubNamespace, csmPlatformProperties.namespace)
+        val key =
+            secretManager
+                .readSecret(
+                    csmPlatformProperties.namespace,
+                    getWorkspaceSecretName(organizationId, workspace.key))
+                .getValue(WORKSPACE_EVENTHUB_ACCESSKEY_SECRET)
 
         azureEventHubsClient.sendMetaData(
             baseHostName,
