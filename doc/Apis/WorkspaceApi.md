@@ -5,6 +5,8 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**addWorkspaceAccessControl**](WorkspaceApi.md#addWorkspaceAccessControl) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/security/access | Add a control access to the Workspace
+[**addOrReplaceUsersInOrganizationWorkspace**](WorkspaceApi.md#addOrReplaceUsersInOrganizationWorkspace) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/users | Add (or replace) users to the Workspace specified
+[**createNamespacedSecretIntoKubernetes**](WorkspaceApi.md#createNamespacedSecretIntoKubernetes) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/secret | Create a namespaced secret into Kubernetes
 [**createWorkspace**](WorkspaceApi.md#createWorkspace) | **POST** /organizations/{organization_id}/workspaces | Create a new workspace
 [**deleteAllWorkspaceFiles**](WorkspaceApi.md#deleteAllWorkspaceFiles) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/files | Delete all Workspace files
 [**deleteWorkspace**](WorkspaceApi.md#deleteWorkspace) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id} | Delete a workspace
@@ -50,6 +52,33 @@ Name | Type | Description  | Notes
 
 - **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
+
+<a name="createNamespacedSecretIntoKubernetes"></a>
+# **createNamespacedSecretIntoKubernetes**
+> createNamespacedSecretIntoKubernetes(organization\_id, workspace\_id, KubernetesDedicatedEventHubSecret)
+
+Create a namespaced secret into Kubernetes
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **workspace\_id** | **String**| the Workspace identifier | [default to null]
+ **KubernetesDedicatedEventHubSecret** | [**KubernetesDedicatedEventHubSecret**](../Models/KubernetesDedicatedEventHubSecret.md)| the definition of the secret |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: Not defined
 
 <a name="createWorkspace"></a>
 # **createWorkspace**

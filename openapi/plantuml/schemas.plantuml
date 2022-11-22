@@ -89,6 +89,10 @@ entity DeleteHistoricalData {
     timeOut: Integer
 }
 
+entity KubernetesDedicatedEventHubSecret {
+    * secret_key: String
+}
+
 entity Organization {
     id: String
     name: String

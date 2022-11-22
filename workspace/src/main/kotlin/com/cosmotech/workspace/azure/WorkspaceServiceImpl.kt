@@ -34,7 +34,7 @@ import com.cosmotech.api.rbac.getPermissions
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
 import com.cosmotech.api.utils.ResourceScanner
-import com.cosmotech.api.utils.KubernetesClient
+import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
@@ -76,6 +76,7 @@ internal class WorkspaceServiceImpl(
     private val csmRbac: CsmRbac,
     private val resourceScanner: ResourceScanner,
     private val kubernetesClient: KubernetesClient,
+    private val secretManager: SecretManager,
 ) : CsmAzureService(), WorkspaceApiService {
 
   override fun findAllWorkspaces(organizationId: String): List<Workspace> {
@@ -300,11 +301,10 @@ internal class WorkspaceServiceImpl(
       kubernetesDedicatedEventHubSecret: KubernetesDedicatedEventHubSecret
   ) {
     val workspaceKey = findWorkspaceById(organizationId, workspaceId).key
-    val secretName = "${organizationId}-${workspaceKey}".lowercase()
-    kubernetesClient.createSecretIntoKubernetes(
-        secretName,
+    secretManager.createSecret(
         csmPlatformProperties.namespace,
-        Pair("RootManageSharedAccessKey", kubernetesDedicatedEventHubSecret.secretKey))
+        getWorkspaceSecretName(organizationId, workspaceKey),
+        mapOf(WORKSPACE_EVENTHUB_ACCESSKEY_SECRET to kubernetesDedicatedEventHubSecret.secretKey))
   }
 
   @EventListener(DeleteHistoricalDataOrganization::class)
