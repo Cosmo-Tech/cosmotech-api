@@ -17,6 +17,8 @@ import redis.clients.jedis.graph.entities.Edge
 import redis.clients.jedis.graph.entities.Node
 import redis.clients.jedis.params.ScanParams
 import redis.clients.jedis.params.ScanParams.SCAN_POINTER_START
+import kotlin.collections.EmptyMap.keys
+import kotlin.jvm.internal.SpreadBuilder
 
 @Service
 class TwingraphServiceImpl(val jedis: UnifiedJedis) : TwingraphApiService {
@@ -34,7 +36,7 @@ class TwingraphServiceImpl(val jedis: UnifiedJedis) : TwingraphApiService {
     val matchingKeys = mutableSetOf<String>()
     var nextCursor = SCAN_POINTER_START
     do {
-      var scanResult = jedis.scan(nextCursor, ScanParams().match("$graphId*"))
+      val scanResult = jedis.scan(nextCursor, ScanParams().match("$graphId*"))
       nextCursor = scanResult.cursor
       matchingKeys.addAll(scanResult.result)
     } while (!nextCursor.equals(SCAN_POINTER_START))
@@ -45,12 +47,15 @@ class TwingraphServiceImpl(val jedis: UnifiedJedis) : TwingraphApiService {
 
   override fun query(organizationId: String, twinGraphQuery: TwinGraphQuery): String {
 
-    if (twinGraphQuery.version == null) {
+    if (twinGraphQuery.version.isNullOrEmpty()) {
       twinGraphQuery.version = jedis.hget("${twinGraphQuery.graphId}MetaData", "lastVersion")
+      if (twinGraphQuery.version.isNullOrEmpty()) {
+          throw CsmResourceNotFoundException("Cannot query. Any version found for ${twinGraphQuery.graphId}")
+      }
     }
 
     val redisGraphId = "${twinGraphQuery.graphId}:${twinGraphQuery.version}"
-    var resultSet: ResultSet = jedis.graphQuery(redisGraphId, twinGraphQuery.query)
+    val resultSet: ResultSet = jedis.graphQuery(redisGraphId, twinGraphQuery.query)
 
     val iterator = resultSet.iterator()
     if (!iterator.hasNext()) {
@@ -86,7 +91,7 @@ class TwingraphServiceImpl(val jedis: UnifiedJedis) : TwingraphApiService {
       }
     }
 
-    var resultJson = mutableMapOf<String, String>()
+    val resultJson = mutableMapOf<String, String>()
     result.values.forEachIndexed { index, element ->
       val elementType = elementTypes[index]!!
       resultJson.computeIfAbsent(elementType) { getJsonValue(resultSet, index, element) }
@@ -98,7 +103,6 @@ class TwingraphServiceImpl(val jedis: UnifiedJedis) : TwingraphApiService {
   }
 
   private fun getJsonValue(resultSet: ResultSet, index: Int, element: MutableSet<String>): String {
-    return "\"${resultSet.header.schemaNames[index]}\" : " +
-        "${element.joinToString(",", "[", "]")}"
+    return "\"${resultSet.header.schemaNames[index]}\" : " + element.joinToString(",", "[", "]")
   }
 }
