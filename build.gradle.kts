@@ -29,7 +29,7 @@ plugins {
   id("org.springframework.boot") version "2.7.2" apply false
   id("org.openapi.generator") version "5.4.0" apply false
   id("com.google.cloud.tools.jib") version "3.3.1" apply false
-  id("io.gitlab.arturbosch.detekt") version "1.21.0"
+  id("io.gitlab.arturbosch.detekt") version "1.22.0"
 }
 
 scmVersion { tag { prefix.set("") } }
