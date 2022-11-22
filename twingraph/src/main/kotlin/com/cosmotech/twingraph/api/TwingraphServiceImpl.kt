@@ -4,17 +4,15 @@ package com.cosmotech.twingraph.api
 
 import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.events.TwingraphImportEvent
+import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_READ
+import com.cosmotech.api.utils.objectMapper
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.azure.getRbac
-import com.cosmotech.api.exceptions.CsmResourceNotFoundException
-import com.cosmotech.api.utils.objectMapper
 import com.cosmotech.twingraph.domain.TwinGraphImport
 import com.cosmotech.twingraph.domain.TwinGraphImportInfo
 import com.cosmotech.twingraph.domain.TwinGraphQuery
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import redis.clients.jedis.UnifiedJedis
 import redis.clients.jedis.graph.Record
@@ -30,8 +28,6 @@ class TwingraphServiceImpl(
     val jedis: UnifiedJedis,
     private val csmRbac: CsmRbac
 ) : CsmPhoenixService(), TwingraphApiService {
-
-  val logger: Logger = LoggerFactory.getLogger(TwingraphServiceImpl::class.java)
 
   override fun importGraph(
       organizationId: String,
@@ -52,8 +48,10 @@ class TwingraphServiceImpl(
     logger.debug("TwingraphImportEventResponse={}", graphImportEvent.response)
     return TwinGraphImportInfo(jobId = requestJobId, graphName = twinGraphImport.graphName)
   }
-
-  override fun delete(graphId: String) {
+  @Suppress("SpreadOperator")
+  override fun delete(organizationId: String, graphId: String) {
+    val organization = organizationService.findOrganizationById(organizationId)
+    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
     val matchingKeys = mutableSetOf<String>()
     var nextCursor = SCAN_POINTER_START
     do {
@@ -62,12 +60,13 @@ class TwingraphServiceImpl(
       matchingKeys.addAll(scanResult.result)
     } while (!nextCursor.equals(SCAN_POINTER_START))
 
-    @Suppress("SpreadOperator") val count = jedis.del(*matchingKeys.toTypedArray())
+    val count = jedis.del(*matchingKeys.toTypedArray())
     logger.debug("$count keys are removed from Twingraph with prefix $graphId")
   }
 
   override fun query(organizationId: String, twinGraphQuery: TwinGraphQuery): String {
-
+    val organization = organizationService.findOrganizationById(organizationId)
+    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
     if (twinGraphQuery.version.isNullOrEmpty()) {
       twinGraphQuery.version = jedis.hget("${twinGraphQuery.graphId}MetaData", "lastVersion")
       if (twinGraphQuery.version.isNullOrEmpty()) {

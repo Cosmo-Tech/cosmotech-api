@@ -77,8 +77,14 @@ paths:
             application/json:
               schema:
                 type: string
-  /delete/{graphId}:
+  /organizations/{organization_id}/delete/{graphId}:
     parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
       - name: graphId
         in: path
         description: the Graph Identifier

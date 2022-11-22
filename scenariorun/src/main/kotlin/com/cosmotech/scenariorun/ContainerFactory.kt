@@ -276,7 +276,7 @@ internal class ContainerFactory(
 
     var defaultSizing = BASIC_SIZING
 
-    if (nodeLabel != null) {
+    if (!nodeLabel.isNullOrBlank()) {
       defaultSizing = LABEL_SIZING[nodeLabel] ?: BASIC_SIZING
     }
 
@@ -353,7 +353,7 @@ internal class ContainerFactory(
 
     var defaultSizing = BASIC_SIZING
 
-    if (nodeLabel != null) {
+    if (!nodeLabel.isNullOrBlank()) {
       defaultSizing = LABEL_SIZING[nodeLabel] ?: BASIC_SIZING
     }
 
