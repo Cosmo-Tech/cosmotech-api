@@ -4,14 +4,14 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**delete**](TwingraphApi.md#delete) | **DELETE** /organizations/{organization_id}/delete/{graphId} | 
+[**delete**](TwingraphApi.md#delete) | **DELETE** /organizations/{organization_id}/{graph_id} | 
 [**importGraph**](TwingraphApi.md#importGraph) | **POST** /organizations/{organization_id}/import | 
 [**query**](TwingraphApi.md#query) | **POST** /organizations/{organization_id}/query | 
 
 
 <a name="delete"></a>
 # **delete**
-> delete(organization\_id, graphId)
+> delete(organization\_id, graph\_id)
 
 
 
@@ -22,7 +22,7 @@ Method | HTTP request | Description
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
- **graphId** | **String**| the Graph Identifier | [default to null]
+ **graph\_id** | **String**| the Graph Identifier | [default to null]
 
 ### Return type
 
