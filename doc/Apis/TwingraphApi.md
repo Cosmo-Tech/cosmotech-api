@@ -4,9 +4,9 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**delete**](TwingraphApi.md#delete) | **DELETE** /organizations/{organization_id}/{graph_id} | 
-[**importGraph**](TwingraphApi.md#importGraph) | **POST** /organizations/{organization_id}/import | 
-[**query**](TwingraphApi.md#query) | **POST** /organizations/{organization_id}/query | 
+[**delete**](TwingraphApi.md#delete) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id} | 
+[**importGraph**](TwingraphApi.md#importGraph) | **POST** /organizations/{organization_id}/twingraph/import | 
+[**query**](TwingraphApi.md#query) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/query | 
 
 
 <a name="delete"></a>
@@ -67,7 +67,7 @@ Name | Type | Description  | Notes
 
 <a name="query"></a>
 # **query**
-> String query(organization\_id, TwinGraphQuery)
+> String query(organization\_id, graph\_id, TwinGraphQuery)
 
 
 
@@ -78,6 +78,7 @@ Name | Type | Description  | Notes
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
+ **graph\_id** | **String**| the Graph Identifier | [default to null]
  **TwinGraphQuery** | [**TwinGraphQuery**](../Models/TwinGraphQuery.md)| the query to run |
 
 ### Return type
