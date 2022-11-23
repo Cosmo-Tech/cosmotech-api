@@ -426,7 +426,6 @@ entity TwinGraphImportInfo {
 }
 
 entity TwinGraphQuery {
-    graphId: String
     version: String
     query: String
 }

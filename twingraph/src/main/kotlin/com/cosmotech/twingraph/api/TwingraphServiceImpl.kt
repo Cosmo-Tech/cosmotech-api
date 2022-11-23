@@ -64,25 +64,27 @@ class TwingraphServiceImpl(
     logger.debug("$count keys are removed from Twingraph with prefix $graphId")
   }
 
-  override fun query(organizationId: String, twinGraphQuery: TwinGraphQuery): String {
+  override fun query(
+      organizationId: String,
+      twingraphId: String,
+      twinGraphQuery: TwinGraphQuery
+  ): String {
     val organization = organizationService.findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_READ)
     if (twinGraphQuery.version.isNullOrEmpty()) {
-      twinGraphQuery.version = jedis.hget("${twinGraphQuery.graphId}MetaData", "lastVersion")
+      twinGraphQuery.version = jedis.hget("${twingraphId}MetaData", "lastVersion")
       if (twinGraphQuery.version.isNullOrEmpty()) {
-        throw CsmResourceNotFoundException(
-            "Cannot find lastVersion in ${twinGraphQuery.graphId}MetaData")
+        throw CsmResourceNotFoundException("Cannot find lastVersion in ${twingraphId}MetaData")
       }
     }
 
-    val redisGraphId = "${twinGraphQuery.graphId}:${twinGraphQuery.version}"
+    val redisGraphId = "${twingraphId}:${twinGraphQuery.version}"
     val resultSet: ResultSet = jedis.graphQuery(redisGraphId, twinGraphQuery.query)
 
     val iterator = resultSet.iterator()
     if (!iterator.hasNext()) {
       throw CsmResourceNotFoundException(
-          "TwinGraph empty with given ${twinGraphQuery.graphId} " +
-              "and version ${twinGraphQuery.version}")
+          "TwinGraph empty with given ${twingraphId} " + "and version ${twinGraphQuery.version}")
     }
 
     val result = mutableMapOf<Int, MutableSet<String>>()

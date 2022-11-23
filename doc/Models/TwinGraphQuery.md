@@ -3,7 +3,6 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**graphId** | **String** | Twin graph name | [optional] [default to null]
 **version** | **String** | Twin graph version | [optional] [default to null]
 **query** | **String** | the query in cypher language | [optional] [default to null]
 
