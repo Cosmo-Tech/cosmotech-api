@@ -54,6 +54,7 @@ csm:
     description: Cosmo Tech Digital Twins Simulation Platform
     version: "1.0.0"
     namespace: "phoenix"
+    containers: []
     # Commit ID and Ref have to be set in the config, but a better approach could be to
     # generate such info at build time
     commit-id: ""
