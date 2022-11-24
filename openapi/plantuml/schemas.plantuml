@@ -427,7 +427,7 @@ entity TwinGraphImportInfo {
 
 entity TwinGraphQuery {
     version: String
-    query: String
+    * query: String
 }
 
 entity User {

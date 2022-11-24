@@ -4,6 +4,7 @@ package com.cosmotech.twingraph.api
 
 import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.events.TwingraphImportEvent
+import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_READ
@@ -13,6 +14,7 @@ import com.cosmotech.organization.azure.getRbac
 import com.cosmotech.twingraph.domain.TwinGraphImport
 import com.cosmotech.twingraph.domain.TwinGraphImportInfo
 import com.cosmotech.twingraph.domain.TwinGraphQuery
+import com.cosmotech.twingraph.utils.TwingraphUtils
 import org.springframework.stereotype.Service
 import redis.clients.jedis.UnifiedJedis
 import redis.clients.jedis.graph.Record
@@ -71,6 +73,11 @@ class TwingraphServiceImpl(
   ): String {
     val organization = organizationService.findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_READ)
+
+    if (!TwingraphUtils.checkReadOnlyQuery(twinGraphQuery.query)) {
+      throw CsmClientException("Read Only queries authorized only")
+    }
+
     if (twinGraphQuery.version.isNullOrEmpty()) {
       twinGraphQuery.version = jedis.hget("${twingraphId}MetaData", "lastVersion")
       if (twinGraphQuery.version.isNullOrEmpty()) {
@@ -96,7 +103,7 @@ class TwingraphServiceImpl(
         val currentValue = result.getOrPut(index) { mutableSetOf() }
         when (element) {
           is Node -> {
-            currentValue.add(getNodeJson(element))
+            currentValue.add(TwingraphUtils.getNodeJson(element))
             result[index] = currentValue
             elementTypes[index] = "nodes"
           }
