@@ -294,3 +294,13 @@ tasks.withType<GenerateTask> {
   // Force-run all generation tasks, thus bypassing the Gradle Cache
   outputs.upToDateWhen { false }
 }
+
+tasks.register<Exec>("rolloutKindDeployment") {
+  dependsOn("jib")
+  var apiVersion = "latest"
+  if (project.hasProperty("rollout.apiVersion")) {
+    apiVersion = project.property("rollout.apiVersion").toString()
+  }
+
+  commandLine("kubectl", "--context", "kind-local-k8s-cluster", "-n", "phoenix", "rollout", "restart", "deployment/cosmotech-api-${apiVersion}")
+}
