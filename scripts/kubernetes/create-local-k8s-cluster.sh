@@ -2,7 +2,7 @@
 set -o errexit
 
 # create registry container unless it already exists
-registry_name='local-registry'
+registry_name='kind-registry'
 registry_port='5000'
 running="$(docker container inspect -f '{{.State.Running}}' "${registry_name}" 2>/dev/null || true)"
 if [ "${running}" != 'true' ]; then

@@ -84,6 +84,9 @@ spec:
             - name: http-management
               containerPort: 8081
               protocol: TCP
+            - name: tcp-debug
+              containerPort: 5005
+              protocol: TCP
           startupProbe:
             initialDelaySeconds: 5
             periodSeconds: 5
