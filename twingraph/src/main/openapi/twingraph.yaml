@@ -128,6 +128,8 @@ components:
         query:
           type: string
           description: the query in cypher language
+      required:
+        - query
     TwinGraphImport:
       type: object
       description: a twin graph import info
