@@ -442,20 +442,20 @@ paths:
         schema:
           type: string
     post:
-      operationId: createNamespacedSecretIntoKubernetes
+      operationId: createSecret
       tags:
         - workspace
-      summary: Create a namespaced secret into Kubernetes
+      summary: Create a secret for the Workspace
       requestBody:
         description: the definition of the secret
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/KubernetesDedicatedEventHubSecret'
+              $ref: '#/components/schemas/WorkspaceSecret'
             examples:
               Workspace:
-                $ref: '#/components/examples/SharedAccessPolicy'
+                $ref: '#/components/examples/WorkspaceSecretExample'
       responses:
         "201":
           description: Request succeeded
@@ -591,15 +591,13 @@ components:
           additionalProperties: true
       # required:
         # - solutionId
-    KubernetesDedicatedEventHubSecret:
+    WorkspaceSecret:
       type: object
       description: the secret definition
       properties:
-        secret_key:
+        dedicatedEventHubKey:
           type: string
-          description: the shared access key
-      required:
-        - secret_key
+          description: the dedicated event hub shared access key
   examples:
     BreweryWorkspaceCreateIn:
       summary: Brewery Workspace Create input parameters example
@@ -764,9 +762,8 @@ components:
         - id: "2"
           roles:
             - User
-    SharedAccessPolicy:
+    WorkspaceSecretExample:
       summary: a shared access policy
       description: a shared policy example
       value:
-        namespace: phoenix
-        secret_key: xxx
+        dedicatedEventHubKey: xxx

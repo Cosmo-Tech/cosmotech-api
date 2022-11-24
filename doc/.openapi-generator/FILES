@@ -16,7 +16,6 @@ Models/DatasetConnector.md
 Models/DatasetCopyParameters.md
 Models/DatasetSearch.md
 Models/DeleteHistoricalData.md
-Models/KubernetesDedicatedEventHubSecret.md
 Models/Organization.md
 Models/OrganizationService.md
 Models/OrganizationServices.md
@@ -55,6 +54,7 @@ Models/Validator.md
 Models/ValidatorRun.md
 Models/Workspace.md
 Models/WorkspaceFile.md
+Models/WorkspaceSecret.md
 Models/WorkspaceSolution.md
 Models/WorkspaceUser.md
 Models/WorkspaceWebApp.md
