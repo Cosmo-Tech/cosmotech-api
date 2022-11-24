@@ -5,7 +5,7 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**addOrReplaceUsersInOrganizationWorkspace**](WorkspaceApi.md#addOrReplaceUsersInOrganizationWorkspace) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/users | Add (or replace) users to the Workspace specified
-[**createNamespacedSecretIntoKubernetes**](WorkspaceApi.md#createNamespacedSecretIntoKubernetes) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/secret | Create a namespaced secret into Kubernetes
+[**createSecret**](WorkspaceApi.md#createSecret) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/secret | Create a secret for the Workspace
 [**createWorkspace**](WorkspaceApi.md#createWorkspace) | **POST** /organizations/{organization_id}/workspaces | Create a new workspace
 [**deleteAllWorkspaceFiles**](WorkspaceApi.md#deleteAllWorkspaceFiles) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/files | Delete all Workspace files
 [**deleteWorkspace**](WorkspaceApi.md#deleteWorkspace) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id} | Delete a workspace
@@ -47,11 +47,11 @@ Name | Type | Description  | Notes
 - **Content-Type**: application/json
 - **Accept**: application/json
 
-<a name="createNamespacedSecretIntoKubernetes"></a>
-# **createNamespacedSecretIntoKubernetes**
-> createNamespacedSecretIntoKubernetes(organization\_id, workspace\_id, KubernetesDedicatedEventHubSecret)
+<a name="createSecret"></a>
+# **createSecret**
+> createSecret(organization\_id, workspace\_id, WorkspaceSecret)
 
-Create a namespaced secret into Kubernetes
+Create a secret for the Workspace
 
 ### Parameters
 
@@ -59,7 +59,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **workspace\_id** | **String**| the Workspace identifier | [default to null]
- **KubernetesDedicatedEventHubSecret** | [**KubernetesDedicatedEventHubSecret**](../Models/KubernetesDedicatedEventHubSecret.md)| the definition of the secret |
+ **WorkspaceSecret** | [**WorkspaceSecret**](../Models/WorkspaceSecret.md)| the definition of the secret |
 
 ### Return type
 
