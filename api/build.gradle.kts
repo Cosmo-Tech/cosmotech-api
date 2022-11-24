@@ -302,5 +302,13 @@ tasks.register<Exec>("rolloutKindDeployment") {
     apiVersion = project.property("rollout.apiVersion").toString()
   }
 
-  commandLine("kubectl", "--context", "kind-local-k8s-cluster", "-n", "phoenix", "rollout", "restart", "deployment/cosmotech-api-${apiVersion}")
+  commandLine(
+      "kubectl",
+      "--context",
+      "kind-local-k8s-cluster",
+      "-n",
+      "phoenix",
+      "rollout",
+      "restart",
+      "deployment/cosmotech-api-${apiVersion}")
 }

@@ -89,10 +89,6 @@ entity DeleteHistoricalData {
     timeOut: Integer
 }
 
-entity KubernetesDedicatedEventHubSecret {
-    * secret_key: String
-}
-
 entity Organization {
     id: String
     name: String
@@ -515,6 +511,10 @@ entity WorkspaceRole {
 entity WorkspaceSecurity {
     * default: String
     * accessControlList: List<WorkspaceAccessControl>
+}
+
+entity WorkspaceSecret {
+    dedicatedEventHubKey: String
 }
 
 entity WorkspaceSolution {

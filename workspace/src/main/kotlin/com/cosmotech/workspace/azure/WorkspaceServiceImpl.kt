@@ -45,10 +45,10 @@ import com.cosmotech.organization.azure.getRbac
 import com.cosmotech.organization.azure.setRbac
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.workspace.api.WorkspaceApiService
-import com.cosmotech.workspace.domain.KubernetesDedicatedEventHubSecret
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceFile
+import com.cosmotech.workspace.domain.WorkspaceSecret
 import com.cosmotech.workspace.domain.WorkspaceRole
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.fasterxml.jackson.databind.JsonNode
@@ -295,16 +295,16 @@ internal class WorkspaceServiceImpl(
         .map { WorkspaceFile(fileName = it) }
   }
 
-  override fun createNamespacedSecretIntoKubernetes(
+  override fun createSecret(
       organizationId: String,
       workspaceId: String,
-      kubernetesDedicatedEventHubSecret: KubernetesDedicatedEventHubSecret
+      workspaceSecret: WorkspaceSecret
   ) {
     val workspaceKey = findWorkspaceById(organizationId, workspaceId).key
     secretManager.createSecret(
         csmPlatformProperties.namespace,
         getWorkspaceSecretName(organizationId, workspaceKey),
-        mapOf(WORKSPACE_EVENTHUB_ACCESSKEY_SECRET to kubernetesDedicatedEventHubSecret.secretKey))
+        mapOf(WORKSPACE_EVENTHUB_ACCESSKEY_SECRET to (workspaceSecret.dedicatedEventHubKey ?: "")))
   }
 
   @EventListener(DeleteHistoricalDataOrganization::class)
