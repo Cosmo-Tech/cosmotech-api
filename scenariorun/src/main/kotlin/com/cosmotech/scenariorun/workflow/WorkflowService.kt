@@ -21,10 +21,23 @@ internal interface WorkflowService : HealthIndicator {
       executionTimeout: Int?
   ): ScenarioRun
 
+  /**
+   * Find WorkflowStatus by label and artifact name filter
+   * @param labelSelector a string used to filter workflow (by label)
+   * @param artifactNameFilter a string used to filter workflow (by artifactName)
+   * @return a list of all WorkflowStatus corresponding to the labelSelector and artifactName
+   */
   fun findWorkflowStatusAndArtifact(
       labelSelector: String,
       artifactNameFilter: String
   ): List<WorkflowStatusAndArtifact>
+
+  /**
+   * Find WorkflowStatus by label
+   * @param labelSelector a label used to filter workflow
+   * @return a list of all WorkflowStatus corresponding to the labelSelector
+   */
+  fun findWorkflowStatusByLabel(labelSelector: String): List<WorkflowStatus>
 
   /**
    * Get a ScenarioRun status
@@ -61,3 +74,5 @@ data class WorkflowStatusAndArtifact(
     val status: String? = null,
     val artifactContent: String? = null
 )
+
+data class WorkflowStatus(val workflowId: String, val status: String? = null)

@@ -5,6 +5,7 @@ package com.cosmotech.twingraph.api
 import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.events.TwingraphImportEvent
 import com.cosmotech.api.exceptions.CsmClientException
+import com.cosmotech.api.events.TwingraphImportJobInfoRequest
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_READ
@@ -50,6 +51,16 @@ class TwingraphServiceImpl(
     logger.debug("TwingraphImportEventResponse={}", graphImportEvent.response)
     return TwinGraphImportInfo(jobId = requestJobId, graphName = twinGraphImport.graphName)
   }
+
+  override fun importJobStatus(organizationId: String, jobId: String): String {
+    val organization = organizationService.findOrganizationById(organizationId)
+    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
+    val twingraphImportJobInfoRequest = TwingraphImportJobInfoRequest(this, jobId, organizationId)
+    this.eventPublisher.publishEvent(twingraphImportJobInfoRequest)
+    logger.debug("TwingraphImportEventResponse={}", twingraphImportJobInfoRequest.response)
+    return twingraphImportJobInfoRequest.response ?: "Unknown"
+  }
+
   @Suppress("SpreadOperator")
   override fun delete(organizationId: String, graphId: String) {
     val organization = organizationService.findOrganizationById(organizationId)

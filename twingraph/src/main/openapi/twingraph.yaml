@@ -47,6 +47,35 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TwinGraphImportInfo'
+  /organizations/{organization_id}/twingraph/{job_id}/status:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: job_id
+        in: path
+        description: the job identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: importJobStatus
+      tags:
+        - twingraph
+      description: Get the status of a job
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/yaml:
+              schema:
+                type: string
+            application/json:
+              schema:
+                type: string
   /organizations/{organization_id}/twingraph/{graph_id}/query:
     parameters:
       - name: organization_id

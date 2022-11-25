@@ -22,6 +22,7 @@ import com.cosmotech.api.events.ScenarioRunEndTimeRequest
 import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
 import com.cosmotech.api.events.TwingraphImportEvent
+import com.cosmotech.api.events.TwingraphImportJobInfoRequest
 import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.scenario.ScenarioRunMetaData
@@ -369,6 +370,18 @@ internal class ScenarioRunServiceImpl(
       scenarioDataDownloadJobInfoRequest.response =
           workflowStatusAndArtifactList[0].status to
               (workflowStatusAndArtifactList[0].artifactContent ?: "")
+    }
+  }
+
+  @EventListener(TwingraphImportJobInfoRequest::class)
+  fun onTwingraphImportJobInfoRequest(
+      twingraphImportJobInfoRequest: TwingraphImportJobInfoRequest
+  ) {
+    val jobId = twingraphImportJobInfoRequest.jobId
+    val workflowStatusList =
+        this.workflowService.findWorkflowStatusByLabel("$CSM_JOB_ID_LABEL_KEY=${jobId}")
+    if (workflowStatusList.isNotEmpty()) {
+      twingraphImportJobInfoRequest.response = workflowStatusList[0].status
     }
   }
 

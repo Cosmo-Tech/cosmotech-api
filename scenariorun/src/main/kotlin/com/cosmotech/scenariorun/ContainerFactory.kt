@@ -271,6 +271,7 @@ internal class ContainerFactory(
       imageRegistry: String = "",
       imageVersion: String = "latest",
       containerEnvVars: MutableMap<String, String>,
+      artifacts: Map<String, String> = mapOf(),
       nodeLabel: String = NODE_LABEL_DEFAULT
   ): ScenarioRunStartContainers {
 
@@ -288,6 +289,7 @@ internal class ContainerFactory(
             defaultSizing,
             containerName,
             containerEnvVars,
+            artifacts,
             nodeLabel)
 
     val generateName =
@@ -308,6 +310,7 @@ internal class ContainerFactory(
       nodeSizing: Sizing,
       containerName: String,
       containerEnvVars: MutableMap<String, String>,
+      artifacts: Map<String, String>,
       nodeLabel: String = NODE_LABEL_DEFAULT
   ): ScenarioRunContainer {
 
@@ -320,6 +323,7 @@ internal class ContainerFactory(
         dependencies = listOf(CSM_DAG_ROOT),
         envVars = envVars,
         nodeLabel = nodeLabel,
+        artifacts = artifacts.map { ScenarioRunContainerArtifact(name = it.key, path = it.value) },
         runSizing = nodeSizing.toContainerResourceSizing())
   }
 
