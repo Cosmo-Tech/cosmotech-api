@@ -225,6 +225,48 @@ internal class ArgoWorkflowService(
       labelSelector: String,
       artifactNameFilter: String
   ): List<WorkflowStatusAndArtifact> {
+    var workflowList: WorkflowList? = findWorkflowListByLabel(labelSelector)
+
+    return workflowList?.items?.map { workflow ->
+      val workflowId = workflow.metadata.uid!!
+      val status = workflow.status?.phase
+      val artifactContent = StringBuilder()
+      // Listing Workflows does not return everything in each Workflow object =>
+      // need to make an additional call to Argo via getActiveWorkflow()
+      getActiveWorkflow(workflowId, workflow.metadata.name!!).status?.nodes?.forEach {
+          (nodeKey, nodeValue) ->
+        nodeValue.outputs?.artifacts?.filter { it.name == artifactNameFilter }?.forEach {
+          if (it.s3 != null) {
+            val artifactName = it.name ?: ""
+            artifactContent.append(
+                artifactsByUidService
+                    .getArtifactByUid(workflowId, nodeKey, artifactName)
+                    .execute()
+                    .body()
+                    ?: "")
+          }
+        }
+      }
+      WorkflowStatusAndArtifact(
+          workflowId = workflowId, status = status, artifactContent = artifactContent.toString())
+    }
+        ?: listOf()
+  }
+
+  override fun findWorkflowStatusByLabel(
+      labelSelector: String
+  ): List<com.cosmotech.scenariorun.workflow.WorkflowStatus> {
+    var workflowList: WorkflowList? = findWorkflowListByLabel(labelSelector)
+
+    return workflowList?.items?.map { workflow ->
+      val workflowId = workflow.metadata.uid!!
+      val status = workflow.status?.phase
+      com.cosmotech.scenariorun.workflow.WorkflowStatus(workflowId = workflowId, status = status)
+    }
+        ?: listOf()
+  }
+
+  internal fun findWorkflowListByLabel(labelSelector: String): WorkflowList? {
     var workflowList: WorkflowList? = null
     try {
       // Workflows are auto-archived and auto-deleted more frequently
@@ -259,31 +301,7 @@ internal class ArgoWorkflowService(
                   null,
                   null)!!
     }
-
-    return workflowList.items?.map { workflow ->
-      val workflowId = workflow.metadata.uid!!
-      val status = workflow.status?.phase
-      val artifactContent = StringBuilder()
-      // Listing Workflows does not return everything in each Workflow object =>
-      // need to make an additional call to Argo via getActiveWorkflow()
-      getActiveWorkflow(workflowId, workflow.metadata.name!!).status?.nodes?.forEach {
-          (nodeKey, nodeValue) ->
-        nodeValue.outputs?.artifacts?.filter { it.name == artifactNameFilter }?.forEach {
-          if (it.s3 != null) {
-            val artifactName = it.name ?: ""
-            artifactContent.append(
-                artifactsByUidService
-                    .getArtifactByUid(workflowId, nodeKey, artifactName)
-                    .execute()
-                    .body()
-                    ?: "")
-          }
-        }
-      }
-      WorkflowStatusAndArtifact(
-          workflowId = workflowId, status = status, artifactContent = artifactContent.toString())
-    }
-        ?: listOf()
+    return workflowList
   }
 
   override fun getScenarioRunStatus(scenarioRun: ScenarioRun): ScenarioRunStatus {

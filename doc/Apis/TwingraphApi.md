@@ -6,6 +6,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**delete**](TwingraphApi.md#delete) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id} | 
 [**importGraph**](TwingraphApi.md#importGraph) | **POST** /organizations/{organization_id}/twingraph/import | 
+[**importJobStatus**](TwingraphApi.md#importJobStatus) | **GET** /organizations/{organization_id}/twingraph/{job_id}/status | 
 [**query**](TwingraphApi.md#query) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/query | 
 
 
@@ -64,6 +65,34 @@ Name | Type | Description  | Notes
 
 - **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
+
+<a name="importJobStatus"></a>
+# **importJobStatus**
+> String importJobStatus(organization\_id, job\_id)
+
+
+
+    Get the status of a job
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **job\_id** | **String**| the job identifier | [default to null]
+
+### Return type
+
+**String**
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/yaml, application/json
 
 <a name="query"></a>
 # **query**
