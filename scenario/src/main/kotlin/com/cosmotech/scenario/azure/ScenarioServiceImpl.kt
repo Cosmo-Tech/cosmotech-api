@@ -25,6 +25,7 @@ import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
 import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.exceptions.CsmServerException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.api.rbac.PERMISSION_DELETE
@@ -726,11 +727,15 @@ internal class ScenarioServiceImpl(
     when (eventBus.authentication.strategy) {
       SHARED_ACCESS_POLICY -> {
         val key =
-            secretManager
-                .readSecret(
-                    csmPlatformProperties.namespace,
-                    getWorkspaceSecretName(organizationId, workspace.key))
-                .getValue(WORKSPACE_EVENTHUB_ACCESSKEY_SECRET)
+                try {
+                  secretManager
+                          .readSecret(
+                                  csmPlatformProperties.namespace,
+                                  getWorkspaceSecretName(organizationId, workspace.key))
+                          .getValue(WORKSPACE_EVENTHUB_ACCESSKEY_SECRET)
+                } catch (e: Exception) {
+                  throw CsmServerException("Failed to read workspace secret", e)
+                }
 
         azureEventHubsClient.sendMetaData(
             baseHostName,

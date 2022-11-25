@@ -25,6 +25,7 @@ import com.cosmotech.api.events.TwingraphImportEvent
 import com.cosmotech.api.events.TwingraphImportJobInfoRequest
 import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
+import com.cosmotech.api.exceptions.CsmServerException
 import com.cosmotech.api.scenario.ScenarioRunMetaData
 import com.cosmotech.api.scenariorun.DataIngestionState
 import com.cosmotech.api.utils.SecretManager
@@ -809,11 +810,15 @@ internal class ScenarioRunServiceImpl(
     when (eventBus.authentication.strategy) {
       SHARED_ACCESS_POLICY -> {
         val key =
-            secretManager
-                .readSecret(
-                    csmPlatformProperties.namespace,
-                    getWorkspaceSecretName(organizationId, workspace.key))
-                .getValue(WORKSPACE_EVENTHUB_ACCESSKEY_SECRET)
+                try {
+                  secretManager
+                          .readSecret(
+                                  csmPlatformProperties.namespace,
+                                  getWorkspaceSecretName(organizationId, workspace.key))
+                          .getValue(WORKSPACE_EVENTHUB_ACCESSKEY_SECRET)
+                } catch (e: Exception) {
+                  throw CsmServerException("Failed to read workspace secret", e)
+                }
 
         azureEventHubsClient.sendMetaData(
             baseHostName,
