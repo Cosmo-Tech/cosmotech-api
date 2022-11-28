@@ -51,6 +51,9 @@ import com.cosmotech.solution.domain.DeleteHistoricalData
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
+import com.cosmotech.workspace.azure.EventHubRole
+import com.cosmotech.workspace.azure.IWorkspaceEventHubService
+import com.cosmotech.workspace.azure.NOT_AVAILABLE
 import com.cosmotech.workspace.azure.WORKSPACE_EVENTHUB_ACCESSKEY_SECRET
 import com.cosmotech.workspace.azure.getWorkspaceSecretName
 import com.cosmotech.workspace.domain.Workspace
@@ -82,7 +85,7 @@ internal class ScenarioRunServiceImpl(
     private val scenarioApiService: ScenarioApiService,
     private val azureDataExplorerClient: AzureDataExplorerClient,
     private val azureEventHubsClient: AzureEventHubsClient,
-    private val secretManager: SecretManager,
+    private val workspaceEventHubService: IWorkspaceEventHubService,
 ) : CsmAzureService(), ScenariorunApiService {
 
   private fun ScenarioRun.asMapWithAdditionalData(workspaceId: String? = null): Map<String, Any> {
@@ -787,43 +790,28 @@ internal class ScenarioRunServiceImpl(
       scenarioId: String,
       simulationRun: String
   ) {
-    if (workspace.sendScenarioMetadataToEventHub != true) {
+    val eventHubInfo = this.workspaceEventHubService.getWorkspaceEventHubInfo(organizationId, workspace, EventHubRole.SCENARIO_METADATA)
+    if (eventHubInfo.eventHubName == NOT_AVAILABLE) {
+      logger.warn(
+              "Workspace must be configured with useDedicatedEventHubNamespace and sendScenarioMetadataToEventHub to true in order to send metadata")
       return
     }
-
-    if (workspace.useDedicatedEventHubNamespace != true) {
-      logger.error(
-          "workspace must be configured with useDedicatedEventHubNamespace to true in order to send metadata")
-      return
-    }
-
-    val eventBus = csmPlatformProperties.azure?.eventBus!!
-    val eventHubNamespace = "${organizationId}-${workspace.key}".lowercase()
-    val eventHubName = "scenariorunmetadata"
-    val baseHostName = "${eventHubNamespace}.servicebus.windows.net".lowercase()
 
     val scenarioMetaData =
         ScenarioRunMetaData(
             simulationRun, scenarioId, ZonedDateTime.now().toLocalDateTime().toString())
 
-    when (eventBus.authentication.strategy) {
+    when (eventHubInfo.eventHubCredentialType) {
       SHARED_ACCESS_POLICY -> {
-        val key =
-            secretManager
-                .readSecret(
-                    csmPlatformProperties.namespace,
-                    getWorkspaceSecretName(organizationId, workspace.key))
-                .getValue(WORKSPACE_EVENTHUB_ACCESSKEY_SECRET)
-
         azureEventHubsClient.sendMetaData(
-            baseHostName,
-            eventHubName,
-            eventBus.authentication.sharedAccessPolicy?.namespace?.name!!,
-            key,
-            scenarioMetaData)
+                eventHubInfo.eventHubNamespace,
+                eventHubInfo.eventHubName,
+                eventHubInfo.eventHubSasKeyName,
+                eventHubInfo.eventHubSasKey,
+                scenarioMetaData)
       }
       TENANT_CLIENT_CREDENTIALS -> {
-        azureEventHubsClient.sendMetaData(baseHostName, eventHubName, scenarioMetaData)
+        azureEventHubsClient.sendMetaData(eventHubInfo.eventHubNamespace, eventHubInfo.eventHubName, scenarioMetaData)
       }
     }
   }

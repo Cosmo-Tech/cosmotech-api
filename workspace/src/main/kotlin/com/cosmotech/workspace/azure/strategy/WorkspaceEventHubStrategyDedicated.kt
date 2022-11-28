@@ -5,6 +5,7 @@ package com.cosmotech.workspace.azure.strategy
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.workspace.azure.EventHubRole
+import com.cosmotech.workspace.azure.NOT_AVAILABLE
 import com.cosmotech.workspace.azure.WORKSPACE_EVENTHUB_ACCESSKEY_SECRET
 import com.cosmotech.workspace.azure.getWorkspaceSecretName
 import com.cosmotech.workspace.azure.getWorkspaceUniqueName
@@ -48,14 +49,16 @@ class WorkspaceEventHubStrategyDedicated(
 
   override fun getWorkspaceEventHubName(
       organizationId: String,
-      workspaceKey: String,
+      workspace: Workspace,
       eventHubRole: EventHubRole
   ): String {
     return when (eventHubRole) {
       EventHubRole.PROBES_MEASURES -> EVENTHUB_PROBES_MEASURES
       EventHubRole.CONTROL_PLANE -> EVENTHUB_CONTROL_PLANE
-      EventHubRole.SCENARIO_METADATA -> EVENTHUB_SCENARIO_METADATA
-      EventHubRole.SCENARIO_RUN_METADATA -> EVENTHUB_SCENARIO_RUN_METADATA
+      EventHubRole.SCENARIO_METADATA -> workspace.sendScenarioMetadataToEventHub.takeIf { it == true }
+          ?.let { EVENTHUB_SCENARIO_METADATA } ?: NOT_AVAILABLE
+      EventHubRole.SCENARIO_RUN_METADATA -> workspace.sendScenarioMetadataToEventHub.takeIf { it == true }
+          ?.let { EVENTHUB_SCENARIO_RUN_METADATA } ?: NOT_AVAILABLE
     }
   }
 

@@ -41,10 +41,10 @@ class WorkspaceEventHubStrategyShared(
 
   override fun getWorkspaceEventHubName(
       organizationId: String,
-      workspaceKey: String,
+      workspace: Workspace,
       eventHubRole: EventHubRole
   ): String {
-    val baseName = getWorkspaceUniqueName(organizationId, workspaceKey)
+    val baseName = getWorkspaceUniqueName(organizationId, workspace.key)
     return when (eventHubRole) {
       EventHubRole.PROBES_MEASURES -> baseName
       EventHubRole.CONTROL_PLANE -> "$baseName$CONTROL_PLANE_SUFFIX"
