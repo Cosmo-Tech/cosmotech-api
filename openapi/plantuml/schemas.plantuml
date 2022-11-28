@@ -490,8 +490,9 @@ entity Workspace {
     * solution: WorkspaceSolution
     webApp: WorkspaceWebApp
     sendInputToDataWarehouse: Boolean
-    eventHubSasKeyName: String
     useDedicatedEventHubNamespace: Boolean
+    dedicatedEventHubSasKeyName: String
+    dedicatedEventHubAuthenticationStrategy: String
     sendScenarioMetadataToEventHub: Boolean
     security: WorkspaceSecurity
 }
