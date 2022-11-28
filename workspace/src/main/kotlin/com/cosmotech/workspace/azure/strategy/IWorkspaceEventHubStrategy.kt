@@ -25,7 +25,7 @@ interface IWorkspaceEventHubStrategy {
 
   fun getWorkspaceEventHubName(
       organizationId: String,
-      workspaceKey: String,
+      workspace: Workspace,
       eventHubRole: EventHubRole
   ): String
 
