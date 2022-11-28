@@ -238,6 +238,7 @@ internal class WorkspaceServiceImpl(
     }
     try {
       deleteAllWorkspaceFiles(organizationId, workspaceId)
+      secretManager.deleteSecret(csmPlatformProperties.namespace, getWorkspaceSecretName(organizationId, workspace.key))
     } finally {
       cosmosTemplate.deleteEntity("${organizationId}_workspaces", workspace)
     }
@@ -331,7 +332,7 @@ internal class WorkspaceServiceImpl(
       workspaceSecret: WorkspaceSecret
   ) {
     val workspaceKey = findWorkspaceById(organizationId, workspaceId).key
-    secretManager.createSecret(
+    secretManager.createOrReplaceSecret(
         csmPlatformProperties.namespace,
         getWorkspaceSecretName(organizationId, workspaceKey),
         mapOf(WORKSPACE_EVENTHUB_ACCESSKEY_SECRET to (workspaceSecret.dedicatedEventHubKey ?: "")))
