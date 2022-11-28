@@ -74,7 +74,7 @@ class TwingraphServiceImpl(
     val organization = organizationService.findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_READ)
 
-    if (!TwingraphUtils.checkReadOnlyQuery(twinGraphQuery.query)) {
+    if (!TwingraphUtils.isReadOnlyQuery(twinGraphQuery.query)) {
       throw CsmClientException("Read Only queries authorized only")
     }
 
