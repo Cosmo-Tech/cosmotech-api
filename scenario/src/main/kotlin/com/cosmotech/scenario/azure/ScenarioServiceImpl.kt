@@ -727,15 +727,11 @@ internal class ScenarioServiceImpl(
     when (eventBus.authentication.strategy) {
       SHARED_ACCESS_POLICY -> {
         val key =
-                try {
-                  secretManager
-                          .readSecret(
-                                  csmPlatformProperties.namespace,
-                                  getWorkspaceSecretName(organizationId, workspace.key))
-                          .getValue(WORKSPACE_EVENTHUB_ACCESSKEY_SECRET)
-                } catch (e: Exception) {
-                  throw CsmServerException("Failed to read workspace secret", e)
-                }
+            secretManager
+                .readSecret(
+                    csmPlatformProperties.namespace,
+                    getWorkspaceSecretName(organizationId, workspace.key))
+                .getValue(WORKSPACE_EVENTHUB_ACCESSKEY_SECRET)
 
         azureEventHubsClient.sendMetaData(
             baseHostName,
