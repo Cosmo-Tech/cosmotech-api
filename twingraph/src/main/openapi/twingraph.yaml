@@ -47,7 +47,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TwinGraphImportInfo'
-  /organizations/{organization_id}/twingraph/{job_id}/status:
+  /organizations/{organization_id}/job/{job_id}/status:
     parameters:
       - name: organization_id
         in: path
@@ -62,7 +62,7 @@ paths:
         schema:
           type: string
     get:
-      operationId: importJobStatus
+      operationId: jobStatus
       tags:
         - twingraph
       description: Get the status of a job

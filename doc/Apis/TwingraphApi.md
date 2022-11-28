@@ -6,7 +6,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**delete**](TwingraphApi.md#delete) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id} | 
 [**importGraph**](TwingraphApi.md#importGraph) | **POST** /organizations/{organization_id}/twingraph/import | 
-[**importJobStatus**](TwingraphApi.md#importJobStatus) | **GET** /organizations/{organization_id}/twingraph/{job_id}/status | 
+[**jobStatus**](TwingraphApi.md#jobStatus) | **GET** /organizations/{organization_id}/job/{job_id}/status | 
 [**query**](TwingraphApi.md#query) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/query | 
 
 
@@ -66,9 +66,9 @@ Name | Type | Description  | Notes
 - **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
-<a name="importJobStatus"></a>
-# **importJobStatus**
-> String importJobStatus(organization\_id, job\_id)
+<a name="jobStatus"></a>
+# **jobStatus**
+> String jobStatus(organization\_id, job\_id)
 
 
 

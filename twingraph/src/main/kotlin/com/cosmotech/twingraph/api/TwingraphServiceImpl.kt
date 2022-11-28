@@ -4,8 +4,8 @@ package com.cosmotech.twingraph.api
 
 import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.events.TwingraphImportEvent
-import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.events.TwingraphImportJobInfoRequest
+import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_READ
@@ -52,7 +52,7 @@ class TwingraphServiceImpl(
     return TwinGraphImportInfo(jobId = requestJobId, graphName = twinGraphImport.graphName)
   }
 
-  override fun importJobStatus(organizationId: String, jobId: String): String {
+  override fun jobStatus(organizationId: String, jobId: String): String {
     val organization = organizationService.findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_READ)
     val twingraphImportJobInfoRequest = TwingraphImportJobInfoRequest(this, jobId, organizationId)
