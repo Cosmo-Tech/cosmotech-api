@@ -15,7 +15,7 @@ object TwingraphUtils {
     return objectMapper().writeValueAsString(graphNode)
   }
   @JvmStatic
-  fun checkReadOnlyQuery(query: String): Boolean {
+  fun isReadOnlyQuery(query: String): Boolean {
     val queryNormalized = query.trim().lowercase()
     val matchResults =
         "\\b(create|set|merge|delete|remove)\\b".toRegex().findAll(queryNormalized).toList()
