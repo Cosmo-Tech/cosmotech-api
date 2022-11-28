@@ -144,8 +144,8 @@ internal class ArgoWorkflowService(
     if (workflowId != null) {
       workflow.status?.nodes?.forEach { (nodeKey, nodeValue) ->
         nodeValue.outputs?.artifacts?.forEach {
-          if (it.s3 != null) {
-            val artifactName = it.name ?: ""
+          val artifactName = it.name ?: ""
+          it.s3.let {
             val artifactLogs =
                 artifactsByUidService
                     .getArtifactByUid(workflowId, nodeKey, artifactName)
@@ -236,11 +236,10 @@ internal class ArgoWorkflowService(
       getActiveWorkflow(workflowId, workflow.metadata.name!!).status?.nodes?.forEach {
           (nodeKey, nodeValue) ->
         nodeValue.outputs?.artifacts?.filter { it.name == artifactNameFilter }?.forEach {
-          if (it.s3 != null) {
-            val artifactName = it.name ?: ""
+          it.s3.let {
             artifactContent.append(
                 artifactsByUidService
-                    .getArtifactByUid(workflowId, nodeKey, artifactName)
+                    .getArtifactByUid(workflowId, nodeKey, artifactNameFilter)
                     .execute()
                     .body()
                     ?: "")
