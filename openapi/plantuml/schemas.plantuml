@@ -418,6 +418,7 @@ entity Workspace {
     users: List<WorkspaceUser>
     webApp: WorkspaceWebApp
     sendInputToDataWarehouse: Boolean
+    eventHubSasKeyName: String
     useDedicatedEventHubNamespace: Boolean
     sendScenarioMetadataToEventHub: Boolean
 }
