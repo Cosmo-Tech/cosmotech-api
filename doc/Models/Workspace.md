@@ -14,8 +14,9 @@ Name | Type | Description | Notes
 **users** | [**List**](WorkspaceUser.md) | the list of users Id with their role | [optional] [default to null]
 **webApp** | [**WorkspaceWebApp**](WorkspaceWebApp.md) |  | [optional] [default to null]
 **sendInputToDataWarehouse** | **Boolean** | default setting for all Scenarios and Run Templates to set whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to the ScenarioRun | [optional] [default to null]
-**eventHubSasKeyName** | **String** | the Event Hub SAS key name | [optional] [default to null]
 **useDedicatedEventHubNamespace** | **Boolean** | Set this property to true to use a dedicated Azure Event Hub Namespace for this Workspace. The Event Hub Namespace must be named \\&#39;&lt;organization_id\\&gt;-&lt;workspace_id\\&gt;\\&#39; (in lower case). This Namespace must also contain two Event Hubs named \\&#39;probesmeasures\\&#39; and \\&#39;scenariorun\\&#39;. | [optional] [default to false]
+**dedicatedEventHubSasKeyName** | **String** | the Dedicated Event Hub SAS key name | [optional] [default to null]
+**dedicatedEventHubAuthenticationStrategy** | **String** | the Event Hub authentication strategy | [optional] [default to null]
 **sendScenarioMetadataToEventHub** | **Boolean** | Set this property to false to not send scenario metada to Azure Event Hub Namespace for this Workspace. The Event Hub Namespace must be named \\&#39;&lt;organization_id\\&gt;-&lt;workspace_id\\&gt;\\&#39; (in lower case). This Namespace must also contain two Event Hubs named \\&#39;scenariometadata\\&#39; and \\&#39;scenariorunmetadata\\&#39;. | [optional] [default to false]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
