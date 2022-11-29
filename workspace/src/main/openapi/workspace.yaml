@@ -525,11 +525,10 @@ components:
         dedicatedEventHubAuthenticationStrategy:
           type: string
           description: the Event Hub authentication strategy
-        disableScenarioRunEventHub:
+        sendScenarioRunToEventHub:
           type: boolean
-          default: false
-          description: Set this property to true to disable the Scenario Run Event Hub for this Workspace.
-            This means that the Scenarios will not send any events to the Scenario Run Event Hub.
+          default : true
+          description: default setting for all Scenarios and Run Templates to set whether or not the ScenarioRun is send to the Event Hub
         sendScenarioMetadataToEventHub:
           type: boolean
           default: false

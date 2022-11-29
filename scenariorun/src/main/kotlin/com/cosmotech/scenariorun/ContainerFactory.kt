@@ -1092,8 +1092,6 @@ internal class ContainerFactory(
               AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR to eventHubProbesMeasures.eventHubSasKey,
               CSM_AMQPCONSUMER_USER_ENV_VAR to eventHubProbesMeasures.eventHubSasKeyName,
               CSM_AMQPCONSUMER_PASSWORD_ENV_VAR to eventHubProbesMeasures.eventHubSasKey,
-              CSM_CONTROL_PLANE_USER_ENV_VAR to eventHubProbesMeasures.eventHubSasKeyName,
-              CSM_CONTROL_PLANE_PASSWORD_ENV_VAR to eventHubProbesMeasures.eventHubSasKey,
           ))
     } else {
       logger.debug("Event hub in tenant credential mode")
@@ -1105,6 +1103,13 @@ internal class ContainerFactory(
     if (eventHubControlPlane.eventHubAvailable) {
       logger.debug("Adding control plane event hub information in env vars")
       envVars[EVENT_HUB_CONTROL_PLANE_VAR] = eventHubControlPlane.eventHubUri
+      if (eventHubProbesMeasures.eventHubCredentialType == SHARED_ACCESS_POLICY) {
+        envVars.putAll(
+            mapOf(
+                CSM_CONTROL_PLANE_USER_ENV_VAR to eventHubProbesMeasures.eventHubSasKeyName,
+                CSM_CONTROL_PLANE_PASSWORD_ENV_VAR to eventHubProbesMeasures.eventHubSasKey,
+            ))
+      }
     } else {
       logger.warn("Control plane event hub is not available")
     }
