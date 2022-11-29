@@ -298,16 +298,24 @@ tasks.withType<GenerateTask> {
 tasks.register<Exec>("rolloutKindDeployment") {
   dependsOn("jib")
   var apiVersion = "latest"
+  var namespace = "phoenix"
+  var clusterName = "kind-local-k8s-cluster"
   if (project.hasProperty("rollout.apiVersion")) {
     apiVersion = project.property("rollout.apiVersion").toString()
+  }
+  if (project.hasProperty("rollout.namespace")) {
+    namespace = project.property("rollout.namespace").toString()
+  }
+  if (project.hasProperty("rollout.clusterName")) {
+    clusterName = project.property("rollout.clusterName").toString()
   }
 
   commandLine(
       "kubectl",
       "--context",
-      "kind-local-k8s-cluster",
+      clusterName,
       "-n",
-      "phoenix",
+      namespace,
       "rollout",
       "restart",
       "deployment/cosmotech-api-${apiVersion}")
