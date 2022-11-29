@@ -308,9 +308,9 @@ internal class ScenarioServiceImpl(
   ) {
     logger.debug(
         "Deleting scenario metadata. Organization: {}, Workspace: {}, scenarioId: {}",
-        organizationId ?: "null",
-        workspaceKey ?: "null",
-        scenarioId ?: "null")
+        organizationId,
+        workspaceKey,
+        scenarioId)
 
     azureDataExplorerClient.deleteDataFromADXbyExtentShard(organizationId, workspaceKey, scenarioId)
     logger.debug("Scenario metadata deleted from ADX for scenario {}", scenarioId)
