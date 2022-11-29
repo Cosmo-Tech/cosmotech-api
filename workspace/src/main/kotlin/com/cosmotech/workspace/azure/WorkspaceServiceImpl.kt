@@ -238,7 +238,8 @@ internal class WorkspaceServiceImpl(
     }
     try {
       deleteAllWorkspaceFiles(organizationId, workspaceId)
-      secretManager.deleteSecret(csmPlatformProperties.namespace, getWorkspaceSecretName(organizationId, workspace.key))
+      secretManager.deleteSecret(
+          csmPlatformProperties.namespace, getWorkspaceSecretName(organizationId, workspace.key))
     } finally {
       cosmosTemplate.deleteEntity("${organizationId}_workspaces", workspace)
     }

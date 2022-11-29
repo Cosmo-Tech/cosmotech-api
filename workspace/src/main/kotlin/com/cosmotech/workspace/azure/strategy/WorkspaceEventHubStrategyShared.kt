@@ -5,14 +5,13 @@ package com.cosmotech.workspace.azure.strategy
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.workspace.azure.EventHubRole
 import com.cosmotech.workspace.azure.NOT_AVAILABLE
-import com.cosmotech.workspace.azure.WorkspaceEventHubInfo
 import com.cosmotech.workspace.azure.getWorkspaceUniqueName
 import com.cosmotech.workspace.domain.Workspace
 import org.springframework.stereotype.Component
 
 private const val CONTROL_PLANE_SUFFIX = "-scenariorun"
 
-@Component("WorkspaceEventHubStrategyShared")
+@Component("Shared")
 class WorkspaceEventHubStrategyShared(
     private val csmPlatformProperties: CsmPlatformProperties,
 ) : WorkspaceEventHubStrategyBase() {
@@ -47,7 +46,11 @@ class WorkspaceEventHubStrategyShared(
     val baseName = getWorkspaceUniqueName(organizationId, workspace.key)
     return when (eventHubRole) {
       EventHubRole.PROBES_MEASURES -> baseName
-      EventHubRole.CONTROL_PLANE -> "$baseName$CONTROL_PLANE_SUFFIX"
+      EventHubRole.CONTROL_PLANE ->
+          workspace.disableScenarioRunEventHub
+              .takeIf { it != true }
+              ?.let { "$baseName$CONTROL_PLANE_SUFFIX" }
+              ?: NOT_AVAILABLE
       EventHubRole.SCENARIO_METADATA -> NOT_AVAILABLE
       EventHubRole.SCENARIO_RUN_METADATA -> NOT_AVAILABLE
     }

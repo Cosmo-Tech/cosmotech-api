@@ -15,7 +15,6 @@ import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.id.CsmIdGenerator
-import com.cosmotech.api.utils.KubernetesClient
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.getCurrentAuthentication
 import com.cosmotech.api.utils.objectMapper
@@ -30,6 +29,7 @@ import com.cosmotech.scenariorun.workflow.WorkflowService
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
+import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.fasterxml.jackson.databind.JsonNode
@@ -81,7 +81,7 @@ class ScenarioRunServiceImplTests {
 
   @MockK(relaxed = true) private lateinit var azureDataExplorerClient: AzureDataExplorerClient
   @MockK(relaxed = true) private lateinit var azureEventHubsClient: AzureEventHubsClient
-  @MockK(relaxed = true) private lateinit var kubernetesClient: KubernetesClient
+  @MockK(relaxed = true) private lateinit var workspaceEventHubService: IWorkspaceEventHubService
 
   private lateinit var scenarioRunServiceImpl: ScenarioRunServiceImpl
 
@@ -98,7 +98,7 @@ class ScenarioRunServiceImplTests {
                 scenarioApiService,
                 azureDataExplorerClient,
                 azureEventHubsClient,
-                kubernetesClient))
+                workspaceEventHubService))
 
     every { scenarioRunServiceImpl getProperty "cosmosTemplate" } returns cosmosTemplate
     every { scenarioRunServiceImpl getProperty "cosmosClient" } returns cosmosClient

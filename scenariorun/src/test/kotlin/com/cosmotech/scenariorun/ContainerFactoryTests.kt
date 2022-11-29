@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenariorun
 
-import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCredentials
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCredentials.CsmPlatformAzureCredentialsCore
@@ -13,6 +12,7 @@ import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatfo
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
 import com.cosmotech.api.exceptions.CsmClientException
+import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.connector.domain.Connector.IoTypes
@@ -35,11 +35,15 @@ import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.RunTemplateStepSource
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
+import com.cosmotech.workspace.azure.IWorkspaceEventHubService
+import com.cosmotech.workspace.azure.WorkspaceEventHubService
+import com.cosmotech.workspace.azure.strategy.IWorkspaceEventHubStrategy
+import com.cosmotech.workspace.azure.strategy.WorkspaceEventHubStrategyDedicated
+import com.cosmotech.workspace.azure.strategy.WorkspaceEventHubStrategyShared
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import io.mockk.MockKAnnotations
 import io.mockk.every
-import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
@@ -68,9 +72,10 @@ class ContainerFactoryTests {
   @MockK private lateinit var organizationService: OrganizationApiService
   @MockK private lateinit var connectorService: ConnectorApiService
   @MockK private lateinit var datasetService: DatasetApiService
-  @MockK(relaxed = true) lateinit var azureEventHubsClient: AzureEventHubsClient
+  @MockK private lateinit var secretManager: SecretManager
+  private lateinit var workspaceEventHubService: IWorkspaceEventHubService
 
-  @InjectMockKs private lateinit var factory: ContainerFactory
+  private lateinit var factory: ContainerFactory
 
   @Suppress("LongMethod")
   @BeforeTest
@@ -131,6 +136,26 @@ class ContainerFactoryTests {
             defaultScopes = mapOf("This is a fake scope id" to "This is a fake scope name"),
             authorizationUrl = "http://this_is_a_fake_url.com",
             tokenUrl = "http://this_is_a_fake_token_url.com",
+        )
+
+    val dedicatedStrategy: IWorkspaceEventHubStrategy =
+        WorkspaceEventHubStrategyDedicated(csmPlatformProperties, secretManager)
+    val sharedStrategy: IWorkspaceEventHubStrategy =
+        WorkspaceEventHubStrategyShared(csmPlatformProperties)
+    workspaceEventHubService =
+        WorkspaceEventHubService(
+            mapOf("Dedicated" to dedicatedStrategy, "Shared" to sharedStrategy))
+
+    factory =
+        ContainerFactory(
+            csmPlatformProperties,
+            scenarioService,
+            workspaceService,
+            solutionService,
+            organizationService,
+            connectorService,
+            datasetService,
+            workspaceEventHubService,
         )
   }
 
@@ -887,6 +912,8 @@ class ContainerFactoryTests {
             "CSM_CONTAINER_MODE" to mode,
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
+            "CSM_CONTROL_PLANE_TOPIC" to
+                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
             "CSM_SIMULATION" to "TestSimulation",
             providerEnvVar to "azureStorage",
             "AZURE_STORAGE_CONNECTION_STRING" to "csmphoenix_storage_connection_string",
@@ -922,6 +949,8 @@ class ContainerFactoryTests {
             "CSM_CONTAINER_MODE" to mode,
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
+            "CSM_CONTROL_PLANE_TOPIC" to
+                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
             "CSM_SIMULATION" to "TestSimulation",
             providerEnvVar to "local",
             "AZURE_STORAGE_CONNECTION_STRING" to "csmphoenix_storage_connection_string",
@@ -2017,6 +2046,8 @@ class ContainerFactoryTests {
             "CSM_CONTAINER_MODE" to "handle-parameters",
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
+            "CSM_CONTROL_PLANE_TOPIC" to
+                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
             "CSM_SIMULATION" to "TestSimulation"),
         container.envVars)
   }
@@ -2056,6 +2087,8 @@ class ContainerFactoryTests {
             "CSM_CONTAINER_MODE" to "prerun",
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
+            "CSM_CONTROL_PLANE_TOPIC" to
+                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
             "CSM_SIMULATION" to "TestSimulation"),
         container.envVars)
   }
@@ -2100,6 +2133,8 @@ class ContainerFactoryTests {
             "CSM_CONTAINER_MODE" to "engine",
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
+            "CSM_CONTROL_PLANE_TOPIC" to
+                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
             "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to "my-eventhub-access-policy",
             "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to "a1b2c3d4e5==",
             "CSM_AMQPCONSUMER_USER" to "my-eventhub-access-policy",
@@ -2214,6 +2249,8 @@ class ContainerFactoryTests {
             "CSM_CONTAINER_MODE" to "engine",
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
+            "CSM_CONTROL_PLANE_TOPIC" to
+                "amqps://organizationid-test.servicebus.windows.net/scenariorun",
             "CSM_SIMULATION" to "TestSimulation"),
         container.envVars)
   }
@@ -2250,15 +2287,10 @@ class ContainerFactoryTests {
             "CSM_CONTAINER_MODE" to "engine",
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
+            "CSM_CONTROL_PLANE_TOPIC" to
+                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
             "CSM_SIMULATION" to "TestSimulation"),
         container.envVars)
-  }
-
-  @Test
-  fun `PROD-9174 remove AMQP protocol`() {
-    val uri = "amqps://test.hostname.com"
-    val hostname = factory.removeAMQPProtocol(uri)
-    assertEquals("test.hostname.com", hostname)
   }
 
   private fun buildApplyParametersContainer(): ScenarioRunContainer {
@@ -2334,6 +2366,8 @@ class ContainerFactoryTests {
             "CSM_CONTAINER_MODE" to mode,
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
+            "CSM_CONTROL_PLANE_TOPIC" to
+                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
             "CSM_SIMULATION" to "TestSimulation")
     assertEquals(expected, container?.envVars)
   }
