@@ -4,11 +4,13 @@ package com.cosmotech.workspace.azure
 
 import com.cosmotech.workspace.azure.strategy.IWorkspaceEventHubStrategy
 import com.cosmotech.workspace.domain.Workspace
+import org.springframework.stereotype.Component
 
 const val WORKSPACE_EVENTHUB_ACCESSKEY_SECRET = "eventHubAccessKey"
 private const val STRATEGY_DEDICATED = "Dedicated"
 private const val STRATEGY_SHARED = "Shared"
 
+@Component
 class WorkspaceEventHubService(private val strategies: Map<String, IWorkspaceEventHubStrategy>) :
     IWorkspaceEventHubService {
 
