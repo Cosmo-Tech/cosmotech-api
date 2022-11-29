@@ -16,7 +16,6 @@ import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.WorkflowStatusRequest
 import com.cosmotech.api.id.CsmIdGenerator
-import com.cosmotech.api.utils.KubernetesClient
 import com.cosmotech.api.utils.getCurrentAuthentication
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.scenario.domain.Scenario
@@ -29,6 +28,7 @@ import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.user.api.UserApiService
 import com.cosmotech.workspace.api.WorkspaceApiService
+import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import io.mockk.MockKAnnotations
@@ -81,7 +81,7 @@ class ScenarioServiceImplTests {
   @MockK private lateinit var idGenerator: CsmIdGenerator
   @MockK(relaxed = true) private lateinit var azureEventHubsClient: AzureEventHubsClient
   @MockK(relaxed = true) private lateinit var azureDataExplorerClient: AzureDataExplorerClient
-  @MockK(relaxed = true) private lateinit var kubernetesClient: KubernetesClient
+  @MockK(relaxed = true) private lateinit var workspaceEventHubService: IWorkspaceEventHubService
 
   @Suppress("unused") @MockK(relaxed = true) private lateinit var cosmosTemplate: CosmosTemplate
   @Suppress("unused") @MockK private lateinit var cosmosClient: CosmosClient
@@ -107,7 +107,7 @@ class ScenarioServiceImplTests {
                 workspaceService,
                 azureDataExplorerClient,
                 azureEventHubsClient,
-                kubernetesClient),
+                workspaceEventHubService),
             recordPrivateCalls = true)
 
     every { scenarioServiceImpl getProperty "cosmosTemplate" } returns cosmosTemplate

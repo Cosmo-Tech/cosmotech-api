@@ -29,7 +29,6 @@ import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.scenario.ScenarioMetaData
-import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -53,9 +52,6 @@ import com.cosmotech.user.domain.User
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.azure.EventHubRole
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
-import com.cosmotech.workspace.azure.NOT_AVAILABLE
-import com.cosmotech.workspace.azure.WORKSPACE_EVENTHUB_ACCESSKEY_SECRET
-import com.cosmotech.workspace.azure.getWorkspaceSecretName
 import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
 import java.time.OffsetDateTime
@@ -818,10 +814,13 @@ internal class ScenarioServiceImpl(
       workspace: Workspace,
       scenario: Scenario
   ) {
-    val eventHubInfo = this.workspaceEventHubService.getWorkspaceEventHubInfo(organizationId, workspace, EventHubRole.SCENARIO_METADATA)
-    if (eventHubInfo.eventHubName == NOT_AVAILABLE) {
+    val eventHubInfo =
+        this.workspaceEventHubService.getWorkspaceEventHubInfo(
+            organizationId, workspace, EventHubRole.SCENARIO_METADATA)
+    if (!eventHubInfo.eventHubAvailable) {
       logger.warn(
-              "Workspace must be configured with useDedicatedEventHubNamespace and sendScenarioMetadataToEventHub to true in order to send metadata")
+          "Workspace must be configured with useDedicatedEventHubNamespace " +
+              "and sendScenarioMetadataToEventHub to true in order to send metadata")
       return
     }
 
@@ -848,7 +847,8 @@ internal class ScenarioServiceImpl(
             scenarioMetaData)
       }
       TENANT_CLIENT_CREDENTIALS -> {
-        azureEventHubsClient.sendMetaData(eventHubInfo.eventHubNamespace, eventHubInfo.eventHubName, scenarioMetaData)
+        azureEventHubsClient.sendMetaData(
+            eventHubInfo.eventHubNamespace, eventHubInfo.eventHubName, scenarioMetaData)
       }
     }
   }
