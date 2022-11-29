@@ -711,10 +711,10 @@ components:
             This Namespace must also contain two Event Hubs named \'probesmeasures\' and \'scenariorun\'.
         dedicatedEventHubSasKeyName:
           type: string
-          description: the Dedicated Event Hub SAS key name
+          description: the Dedicated Event Hub SAS key name, default to RootManageSharedAccessKey. Use the /secret endpoint to set the key value
         dedicatedEventHubAuthenticationStrategy:
           type: string
-          description: the Event Hub authentication strategy
+          description: the Event Hub authentication strategy, SHARED_ACCESS_POLICY or TENANT_CLIENT_CREDENTIALS. Default to the one defined for the tenant.
         sendScenarioRunToEventHub:
           type: boolean
           default : true
