@@ -24,7 +24,6 @@ import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowCreateReque
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowList
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowStatus
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowStopRequest
-import io.kubernetes.client.util.ObjectAccessor.namespace
 import java.lang.StringBuilder
 import java.security.cert.X509Certificate
 import javax.net.ssl.SSLContext
@@ -159,7 +158,7 @@ internal class ArgoWorkflowService(
       workflow.status?.nodes?.forEach { (nodeKey, nodeValue) ->
         nodeValue.outputs?.artifacts?.forEach {
           if (it.s3 != null) {
-            val artifactName = it.name ?: ""
+            val artifactName = it.name
             val artifactLogs =
                 artifactsByUidService
                     .getArtifactByUid(workflowId, nodeKey, artifactName)
@@ -258,7 +257,7 @@ internal class ArgoWorkflowService(
       logger.debug(logMessage)
       logger.trace(logMessage, e)
     }
-    if (workflowList == null || workflowList.items.isNullOrEmpty()) {
+    if (workflowList == null || workflowList.items.isEmpty()) {
       workflowList =
           newServiceApiInstance<WorkflowServiceApi>(this.apiClient)
               .workflowServiceListWorkflows(
@@ -275,7 +274,7 @@ internal class ArgoWorkflowService(
                   null)!!
     }
 
-    return workflowList.items?.map { workflow ->
+    return workflowList.items.map { workflow ->
       val workflowId = workflow.metadata.uid!!
       val status = workflow.status?.phase
       val artifactContent = StringBuilder()
@@ -288,7 +287,7 @@ internal class ArgoWorkflowService(
             ?.filter { it.name == artifactNameFilter }
             ?.forEach {
               if (it.s3 != null) {
-                val artifactName = it.name ?: ""
+                val artifactName = it.name
                 artifactContent.append(
                     artifactsByUidService
                         .getArtifactByUid(workflowId, nodeKey, artifactName)
@@ -301,7 +300,6 @@ internal class ArgoWorkflowService(
       WorkflowStatusAndArtifact(
           workflowId = workflowId, status = status, artifactContent = artifactContent.toString())
     }
-        ?: listOf()
   }
 
   override fun getScenarioRunStatus(scenarioRun: ScenarioRun): ScenarioRunStatus {
