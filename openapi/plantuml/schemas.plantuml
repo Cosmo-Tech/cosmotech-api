@@ -493,6 +493,7 @@ entity Workspace {
     useDedicatedEventHubNamespace: Boolean
     dedicatedEventHubSasKeyName: String
     dedicatedEventHubAuthenticationStrategy: String
+    disableScenarioRunEventHub: Boolean
     sendScenarioMetadataToEventHub: Boolean
     security: WorkspaceSecurity
 }

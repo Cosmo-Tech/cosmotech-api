@@ -20,7 +20,6 @@ import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.api.utils.KubernetesClient
 import com.cosmotech.api.utils.getCurrentAuthentication
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
@@ -33,6 +32,7 @@ import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
+import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
@@ -86,7 +86,7 @@ class ScenarioServiceImplTests {
   @MockK private lateinit var idGenerator: CsmIdGenerator
   @MockK(relaxed = true) private lateinit var azureEventHubsClient: AzureEventHubsClient
   @MockK(relaxed = true) private lateinit var azureDataExplorerClient: AzureDataExplorerClient
-  @MockK(relaxed = true) private lateinit var kubernetesClient: KubernetesClient
+  @MockK(relaxed = true) private lateinit var workspaceEventHubService: IWorkspaceEventHubService
 
   @RelaxedMockK private lateinit var csmRbac: CsmRbac
 
@@ -114,7 +114,7 @@ class ScenarioServiceImplTests {
                 azureDataExplorerClient,
                 azureEventHubsClient,
                 csmRbac,
-                kubernetesClient),
+                workspaceEventHubService),
             recordPrivateCalls = true)
 
     every { scenarioServiceImpl getProperty "cosmosTemplate" } returns cosmosTemplate

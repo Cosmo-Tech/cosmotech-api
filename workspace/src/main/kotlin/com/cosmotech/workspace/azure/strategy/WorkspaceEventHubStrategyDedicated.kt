@@ -19,7 +19,7 @@ private const val EVENTHUB_CONTROL_PLANE = "scenariorun"
 private const val EVENTHUB_SCENARIO_METADATA = "scenariometadata"
 private const val EVENTHUB_SCENARIO_RUN_METADATA = "scenariorunmetadata"
 
-@Component("WorkspaceEventHubStrategyDedicated")
+@Component("Dedicated")
 class WorkspaceEventHubStrategyDedicated(
     private val csmPlatformProperties: CsmPlatformProperties,
     private val secretManager: SecretManager,
@@ -54,11 +54,19 @@ class WorkspaceEventHubStrategyDedicated(
   ): String {
     return when (eventHubRole) {
       EventHubRole.PROBES_MEASURES -> EVENTHUB_PROBES_MEASURES
-      EventHubRole.CONTROL_PLANE -> EVENTHUB_CONTROL_PLANE
-      EventHubRole.SCENARIO_METADATA -> workspace.sendScenarioMetadataToEventHub.takeIf { it == true }
-          ?.let { EVENTHUB_SCENARIO_METADATA } ?: NOT_AVAILABLE
-      EventHubRole.SCENARIO_RUN_METADATA -> workspace.sendScenarioMetadataToEventHub.takeIf { it == true }
-          ?.let { EVENTHUB_SCENARIO_RUN_METADATA } ?: NOT_AVAILABLE
+      EventHubRole.CONTROL_PLANE ->
+          workspace.disableScenarioRunEventHub.takeIf { it != true }?.let { EVENTHUB_CONTROL_PLANE }
+              ?: NOT_AVAILABLE
+      EventHubRole.SCENARIO_METADATA ->
+          workspace.sendScenarioMetadataToEventHub
+              .takeIf { it == true }
+              ?.let { EVENTHUB_SCENARIO_METADATA }
+              ?: NOT_AVAILABLE
+      EventHubRole.SCENARIO_RUN_METADATA ->
+          workspace.sendScenarioMetadataToEventHub
+              .takeIf { it == true }
+              ?.let { EVENTHUB_SCENARIO_RUN_METADATA }
+              ?: NOT_AVAILABLE
     }
   }
 

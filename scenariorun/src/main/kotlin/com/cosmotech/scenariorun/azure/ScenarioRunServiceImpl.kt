@@ -27,7 +27,6 @@ import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.scenario.ScenarioRunMetaData
 import com.cosmotech.api.scenariorun.DataIngestionState
-import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
@@ -53,9 +52,6 @@ import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.azure.EventHubRole
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
-import com.cosmotech.workspace.azure.NOT_AVAILABLE
-import com.cosmotech.workspace.azure.WORKSPACE_EVENTHUB_ACCESSKEY_SECRET
-import com.cosmotech.workspace.azure.getWorkspaceSecretName
 import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
 import java.time.ZonedDateTime
@@ -790,10 +786,13 @@ internal class ScenarioRunServiceImpl(
       scenarioId: String,
       simulationRun: String
   ) {
-    val eventHubInfo = this.workspaceEventHubService.getWorkspaceEventHubInfo(organizationId, workspace, EventHubRole.SCENARIO_METADATA)
-    if (eventHubInfo.eventHubName == NOT_AVAILABLE) {
+    val eventHubInfo =
+        this.workspaceEventHubService.getWorkspaceEventHubInfo(
+            organizationId, workspace, EventHubRole.SCENARIO_METADATA)
+    if (!eventHubInfo.eventHubAvailable) {
       logger.warn(
-              "Workspace must be configured with useDedicatedEventHubNamespace and sendScenarioMetadataToEventHub to true in order to send metadata")
+          "Workspace must be configured with useDedicatedEventHubNamespace " +
+              "and sendScenarioMetadataToEventHub to true in order to send metadata")
       return
     }
 
@@ -804,14 +803,15 @@ internal class ScenarioRunServiceImpl(
     when (eventHubInfo.eventHubCredentialType) {
       SHARED_ACCESS_POLICY -> {
         azureEventHubsClient.sendMetaData(
-                eventHubInfo.eventHubNamespace,
-                eventHubInfo.eventHubName,
-                eventHubInfo.eventHubSasKeyName,
-                eventHubInfo.eventHubSasKey,
-                scenarioMetaData)
+            eventHubInfo.eventHubNamespace,
+            eventHubInfo.eventHubName,
+            eventHubInfo.eventHubSasKeyName,
+            eventHubInfo.eventHubSasKey,
+            scenarioMetaData)
       }
       TENANT_CLIENT_CREDENTIALS -> {
-        azureEventHubsClient.sendMetaData(eventHubInfo.eventHubNamespace, eventHubInfo.eventHubName, scenarioMetaData)
+        azureEventHubsClient.sendMetaData(
+            eventHubInfo.eventHubNamespace, eventHubInfo.eventHubName, scenarioMetaData)
       }
     }
   }

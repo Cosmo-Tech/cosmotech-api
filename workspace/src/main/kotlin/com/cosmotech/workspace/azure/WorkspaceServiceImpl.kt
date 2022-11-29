@@ -203,7 +203,8 @@ internal class WorkspaceServiceImpl(
     csmRbac.verify(workspace.getRbac(), PERMISSION_DELETE)
     try {
       deleteAllWorkspaceFiles(organizationId, workspaceId)
-      secretManager.deleteSecret(csmPlatformProperties.namespace, getWorkspaceSecretName(organizationId, workspace.key))
+      secretManager.deleteSecret(
+          csmPlatformProperties.namespace, getWorkspaceSecretName(organizationId, workspace.key))
     } finally {
       cosmosTemplate.deleteEntity("${organizationId}_workspaces", workspace)
     }
