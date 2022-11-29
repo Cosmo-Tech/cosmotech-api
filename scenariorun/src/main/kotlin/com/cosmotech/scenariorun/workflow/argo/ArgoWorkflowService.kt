@@ -24,7 +24,6 @@ import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowCreateReque
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowList
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowStatus
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1WorkflowStopRequest
-import io.kubernetes.client.util.ObjectAccessor.namespace
 import java.lang.StringBuilder
 import java.security.cert.X509Certificate
 import javax.net.ssl.SSLContext
@@ -298,7 +297,7 @@ internal class ArgoWorkflowService(
       logger.debug(logMessage)
       logger.trace(logMessage, e)
     }
-    if (workflowList == null || workflowList.items.isNullOrEmpty()) {
+    if (workflowList == null || workflowList.items.isEmpty()) {
       workflowList =
           newServiceApiInstance<WorkflowServiceApi>(this.apiClient)
               .workflowServiceListWorkflows(
