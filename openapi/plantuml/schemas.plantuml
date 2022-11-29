@@ -421,7 +421,7 @@ entity Workspace {
     useDedicatedEventHubNamespace: Boolean
     dedicatedEventHubSasKeyName: String
     dedicatedEventHubAuthenticationStrategy: String
-    disableScenarioRunEventHub: Boolean
+    sendScenarioRunToEventHub: Boolean
     sendScenarioMetadataToEventHub: Boolean
 }
 
