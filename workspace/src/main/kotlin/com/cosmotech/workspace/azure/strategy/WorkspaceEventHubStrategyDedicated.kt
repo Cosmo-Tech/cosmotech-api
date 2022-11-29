@@ -55,7 +55,7 @@ class WorkspaceEventHubStrategyDedicated(
     return when (eventHubRole) {
       EventHubRole.PROBES_MEASURES -> EVENTHUB_PROBES_MEASURES
       EventHubRole.CONTROL_PLANE ->
-          workspace.disableScenarioRunEventHub.takeIf { it != true }?.let { EVENTHUB_CONTROL_PLANE }
+          workspace.sendScenarioRunToEventHub.takeIf { it == true }?.let { EVENTHUB_CONTROL_PLANE }
               ?: NOT_AVAILABLE
       EventHubRole.SCENARIO_METADATA ->
           workspace.sendScenarioMetadataToEventHub

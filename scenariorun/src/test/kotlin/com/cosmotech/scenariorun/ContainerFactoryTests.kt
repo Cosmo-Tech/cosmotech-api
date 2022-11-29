@@ -37,6 +37,7 @@ import com.cosmotech.solution.domain.RunTemplateStepSource
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
+import com.cosmotech.workspace.azure.WORKSPACE_EVENTHUB_ACCESSKEY_SECRET
 import com.cosmotech.workspace.azure.WorkspaceEventHubService
 import com.cosmotech.workspace.azure.strategy.IWorkspaceEventHubStrategy
 import com.cosmotech.workspace.azure.strategy.WorkspaceEventHubStrategyDedicated
@@ -120,6 +121,7 @@ class ContainerFactoryTests {
         CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureContainerRegistries(
             core = "ghcr.io", solutions = "twinengines.azurecr.io")
     every { csmPlatformProperties.azure } returns azure
+    every { csmPlatformProperties.namespace } returns "csm-phoenix"
     every { csmPlatformProperties.api } returns
         CsmPlatformProperties.Api(
             baseUrl = "https://api.cosmotech.com",
@@ -2365,6 +2367,44 @@ class ContainerFactoryTests {
             .toSortedMap(),
         container.envVars?.toSortedMap())
   }
+  @Test
+  fun `PROD-8072- Tenant credentials are set as env vars to solution container without control plane`() {
+    every { azure.eventBus } returns
+        CsmPlatformAzureEventBus(
+            baseUri = "amqps://csm-phoenix.servicebus.windows.net",
+            authentication = Authentication(strategy = TENANT_CLIENT_CREDENTIALS))
+
+    val container = buildRunContainer(false, false)
+
+    assertNotNull(container.envVars)
+    assertFalse { container.envVars!!.containsKey(AZURE_EVENT_HUB_SHARED_ACCESS_POLICY_ENV_VAR) }
+    assertFalse { container.envVars!!.containsKey(AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR) }
+
+    assertEquals(
+        mapOf(
+            "IDENTITY_PROVIDER" to "azure",
+            "AZURE_TENANT_ID" to "12345678",
+            "AZURE_CLIENT_ID" to "98765432",
+            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "CSM_SIMULATION_ID" to "simulationrunid",
+            "CSM_API_URL" to "https://api.cosmotech.com",
+            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
+            "CSM_ORGANIZATION_ID" to "Organizationid",
+            "CSM_WORKSPACE_ID" to "Workspaceid",
+            "CSM_SCENARIO_ID" to "Scenarioid",
+            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
+            "CSM_CONTAINER_MODE" to "engine",
+            "CSM_PROBES_MEASURES_TOPIC" to
+                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
+            "CSM_SIMULATION" to "TestSimulation"),
+        container.envVars)
+  }
 
   @Test
   fun `PROD-8072- Shared Access key set as env vars to solution container if told so`() {
@@ -2422,6 +2462,54 @@ class ContainerFactoryTests {
                 "TWIN_CACHE_USERNAME" to "default")
             .toSortedMap(),
         container.envVars?.toSortedMap())
+  }
+
+  @Test
+  fun `PROD-8072- Shared Access key set as env vars to solution container without control plane`() {
+    every { azure.eventBus } returns
+        CsmPlatformAzureEventBus(
+            baseUri = "amqps://csm-phoenix.servicebus.windows.net",
+            authentication =
+                Authentication(
+                    strategy = SHARED_ACCESS_POLICY,
+                    sharedAccessPolicy =
+                        SharedAccessPolicyDetails(
+                            namespace =
+                                SharedAccessPolicyCredentials(
+                                    name = "my-eventhub-access-policy", key = "a1b2c3d4e5=="))))
+
+    val container = buildRunContainer(false, false)
+
+    assertNotNull(container.envVars)
+
+    assertEquals(
+        mapOf(
+            "IDENTITY_PROVIDER" to "azure",
+            "AZURE_TENANT_ID" to "12345678",
+            "AZURE_CLIENT_ID" to "98765432",
+            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "CSM_SIMULATION_ID" to "simulationrunid",
+            "CSM_API_URL" to "https://api.cosmotech.com",
+            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
+            "CSM_ORGANIZATION_ID" to "Organizationid",
+            "CSM_WORKSPACE_ID" to "Workspaceid",
+            "CSM_SCENARIO_ID" to "Scenarioid",
+            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
+            "CSM_CONTAINER_MODE" to "engine",
+            "CSM_PROBES_MEASURES_TOPIC" to
+                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
+            "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to "my-eventhub-access-policy",
+            "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to "a1b2c3d4e5==",
+            "CSM_AMQPCONSUMER_USER" to "my-eventhub-access-policy",
+            "CSM_AMQPCONSUMER_PASSWORD" to "a1b2c3d4e5==",
+            "CSM_SIMULATION" to "TestSimulation"),
+        container.envVars)
   }
 
   @Test
@@ -2547,6 +2635,230 @@ class ContainerFactoryTests {
   }
 
   @Test
+  fun `Dedicated EventHub by namespace set to true with default strategy SAS and secret key`() {
+    every { azure.eventBus } returns
+        CsmPlatformAzureEventBus(
+            baseUri = "amqps://csm-phoenix.servicebus.windows.net",
+            authentication = Authentication(strategy = SHARED_ACCESS_POLICY))
+    val name = "RootManageSharedAccessKey"
+    val key = "key_in_secret_manager"
+    every { secretManager.readSecret("csm-phoenix", "organizationid-test") } returns
+        mapOf(WORKSPACE_EVENTHUB_ACCESSKEY_SECRET to key)
+    val container = buildRunContainer(true)
+
+    assertNotNull(container.envVars)
+    assertEquals(
+        mapOf(
+            "IDENTITY_PROVIDER" to "azure",
+            "AZURE_TENANT_ID" to "12345678",
+            "AZURE_CLIENT_ID" to "98765432",
+            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "CSM_SIMULATION_ID" to "simulationrunid",
+            "CSM_API_URL" to "https://api.cosmotech.com",
+            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
+            "CSM_ORGANIZATION_ID" to "Organizationid",
+            "CSM_WORKSPACE_ID" to "Workspaceid",
+            "CSM_SCENARIO_ID" to "Scenarioid",
+            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
+            "CSM_CONTAINER_MODE" to "engine",
+            "CSM_PROBES_MEASURES_TOPIC" to
+                "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
+            "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to name,
+            "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to key,
+            "CSM_AMQPCONSUMER_USER" to name,
+            "CSM_AMQPCONSUMER_PASSWORD" to key,
+            "CSM_CONTROL_PLANE_TOPIC" to
+                "amqps://organizationid-test.servicebus.windows.net/scenariorun",
+            "CSM_CONTROL_PLANE_USER" to name,
+            "CSM_CONTROL_PLANE_PASSWORD" to key,
+            "CSM_SIMULATION" to "TestSimulation"),
+        container.envVars)
+  }
+
+  @Test
+  fun `Dedicated EventHub by namespace set to true with workspace strategy SAS and secret key`() {
+    val name = "RootManageSharedAccessKey"
+    val key = "key_in_secret_manager"
+    every { secretManager.readSecret("csm-phoenix", "organizationid-test") } returns
+        mapOf(WORKSPACE_EVENTHUB_ACCESSKEY_SECRET to key)
+    val container = buildRunContainer(true, true, "SHARED_ACCESS_POLICY")
+
+    assertNotNull(container.envVars)
+    assertEquals(
+        mapOf(
+            "IDENTITY_PROVIDER" to "azure",
+            "AZURE_TENANT_ID" to "12345678",
+            "AZURE_CLIENT_ID" to "98765432",
+            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "CSM_SIMULATION_ID" to "simulationrunid",
+            "CSM_API_URL" to "https://api.cosmotech.com",
+            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
+            "CSM_ORGANIZATION_ID" to "Organizationid",
+            "CSM_WORKSPACE_ID" to "Workspaceid",
+            "CSM_SCENARIO_ID" to "Scenarioid",
+            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
+            "CSM_CONTAINER_MODE" to "engine",
+            "CSM_PROBES_MEASURES_TOPIC" to
+                "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
+            "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to name,
+            "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to key,
+            "CSM_AMQPCONSUMER_USER" to name,
+            "CSM_AMQPCONSUMER_PASSWORD" to key,
+            "CSM_CONTROL_PLANE_TOPIC" to
+                "amqps://organizationid-test.servicebus.windows.net/scenariorun",
+            "CSM_CONTROL_PLANE_USER" to name,
+            "CSM_CONTROL_PLANE_PASSWORD" to key,
+            "CSM_SIMULATION" to "TestSimulation"),
+        container.envVars)
+  }
+
+  @Test
+  fun `Dedicated EventHub by namespace set to true with workspace strategy tenant credential and secret key`() {
+    every { azure.eventBus } returns
+        CsmPlatformAzureEventBus(
+            baseUri = "amqps://csm-phoenix.servicebus.windows.net",
+            authentication = Authentication(strategy = SHARED_ACCESS_POLICY))
+    val container = buildRunContainer(true, true, "TENANT_CLIENT_CREDENTIALS")
+
+    assertNotNull(container.envVars)
+    assertEquals(
+        mapOf(
+            "IDENTITY_PROVIDER" to "azure",
+            "AZURE_TENANT_ID" to "12345678",
+            "AZURE_CLIENT_ID" to "98765432",
+            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "CSM_SIMULATION_ID" to "simulationrunid",
+            "CSM_API_URL" to "https://api.cosmotech.com",
+            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
+            "CSM_ORGANIZATION_ID" to "Organizationid",
+            "CSM_WORKSPACE_ID" to "Workspaceid",
+            "CSM_SCENARIO_ID" to "Scenarioid",
+            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
+            "CSM_CONTAINER_MODE" to "engine",
+            "CSM_PROBES_MEASURES_TOPIC" to
+                "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
+            "CSM_CONTROL_PLANE_TOPIC" to
+                "amqps://organizationid-test.servicebus.windows.net/scenariorun",
+            "CSM_SIMULATION" to "TestSimulation"),
+        container.envVars)
+  }
+
+  @Test
+  fun `Dedicated EventHub by namespace set to true with workspace strategy SAS, custom name and secret key`() {
+    val name = "CustomKeyName"
+    val key = "key_in_secret_manager"
+    every { secretManager.readSecret("csm-phoenix", "organizationid-test") } returns
+        mapOf(WORKSPACE_EVENTHUB_ACCESSKEY_SECRET to key)
+    val container = buildRunContainer(true, true, "SHARED_ACCESS_POLICY", name)
+
+    assertNotNull(container.envVars)
+    assertEquals(
+        mapOf(
+            "IDENTITY_PROVIDER" to "azure",
+            "AZURE_TENANT_ID" to "12345678",
+            "AZURE_CLIENT_ID" to "98765432",
+            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "CSM_SIMULATION_ID" to "simulationrunid",
+            "CSM_API_URL" to "https://api.cosmotech.com",
+            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
+            "CSM_ORGANIZATION_ID" to "Organizationid",
+            "CSM_WORKSPACE_ID" to "Workspaceid",
+            "CSM_SCENARIO_ID" to "Scenarioid",
+            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
+            "CSM_CONTAINER_MODE" to "engine",
+            "CSM_PROBES_MEASURES_TOPIC" to
+                "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
+            "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to name,
+            "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to key,
+            "CSM_AMQPCONSUMER_USER" to name,
+            "CSM_AMQPCONSUMER_PASSWORD" to key,
+            "CSM_CONTROL_PLANE_TOPIC" to
+                "amqps://organizationid-test.servicebus.windows.net/scenariorun",
+            "CSM_CONTROL_PLANE_USER" to name,
+            "CSM_CONTROL_PLANE_PASSWORD" to key,
+            "CSM_SIMULATION" to "TestSimulation"),
+        container.envVars)
+  }
+
+  @Test
+  fun `Exception if dedicated Event Hub Shared Access Policy strategy but no secret configured`() {
+    every { secretManager.readSecret("csm-phoenix", "organizationid-test") } returns mapOf()
+    every { azure.eventBus } returns
+        CsmPlatformAzureEventBus(
+            baseUri = "amqps://csm-phoenix.servicebus.windows.net",
+            authentication = Authentication(strategy = SHARED_ACCESS_POLICY))
+
+    assertThrows(IllegalStateException::class.java) { buildRunContainer(true) }
+  }
+
+  @Test
+  fun `Dedicated EventHub by namespace set to true with default strategy SAS and secret key no control plane`() {
+    every { azure.eventBus } returns
+        CsmPlatformAzureEventBus(
+            baseUri = "amqps://csm-phoenix.servicebus.windows.net",
+            authentication = Authentication(strategy = SHARED_ACCESS_POLICY))
+    val name = "RootManageSharedAccessKey"
+    val key = "key_in_secret_manager"
+    every { secretManager.readSecret("csm-phoenix", "organizationid-test") } returns
+        mapOf(WORKSPACE_EVENTHUB_ACCESSKEY_SECRET to key)
+    val container = buildRunContainer(true, false)
+
+    assertNotNull(container.envVars)
+    assertEquals(
+        mapOf(
+            "IDENTITY_PROVIDER" to "azure",
+            "AZURE_TENANT_ID" to "12345678",
+            "AZURE_CLIENT_ID" to "98765432",
+            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "CSM_SIMULATION_ID" to "simulationrunid",
+            "CSM_API_URL" to "https://api.cosmotech.com",
+            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
+            "CSM_ORGANIZATION_ID" to "Organizationid",
+            "CSM_WORKSPACE_ID" to "Workspaceid",
+            "CSM_SCENARIO_ID" to "Scenarioid",
+            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
+            "CSM_CONTAINER_MODE" to "engine",
+            "CSM_PROBES_MEASURES_TOPIC" to
+                "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
+            "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to name,
+            "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to key,
+            "CSM_AMQPCONSUMER_USER" to name,
+            "CSM_AMQPCONSUMER_PASSWORD" to key,
+            "CSM_SIMULATION" to "TestSimulation"),
+        container.envVars)
+  }
+
+  @Test
   fun `PROD-7623- Dedicated EventHub by namespace set to false`() {
     every { azure.eventBus } returns
         CsmPlatformAzureEventBus(
@@ -2626,10 +2938,15 @@ class ContainerFactoryTests {
         customSizing = BASIC_SIZING)
   }
 
-  private fun buildRunContainer(dedicatedEventHubNamespace: Boolean? = null): ScenarioRunContainer {
+  private fun buildRunContainer(
+      dedicatedEventHubNamespace: Boolean? = null,
+      sendToScenarioRun: Boolean? = true,
+      sasAuthentication: String? = null,
+      sasName: String? = null
+  ): ScenarioRunContainer {
     return factory.buildRunContainer(
         getOrganization(),
-        getWorkspace(dedicatedEventHubNamespace),
+        getWorkspace(dedicatedEventHubNamespace, sendToScenarioRun, sasAuthentication, sasName),
         getScenario(),
         getSolution(),
         "testruntemplate",
@@ -2883,7 +3200,12 @@ class ContainerFactoryTests {
     return Dataset(id = "1", name = "Test Dataset No Vars", connector = connector)
   }
 
-  private fun getWorkspace(dedicatedEventHubNamespace: Boolean? = null): Workspace {
+  private fun getWorkspace(
+      dedicatedEventHubNamespace: Boolean? = null,
+      sendToScenarioRun: Boolean? = true,
+      sasAuthentication: String? = null,
+      sasName: String? = null
+  ): Workspace {
     return Workspace(
         id = "Workspaceid",
         key = "Test",
@@ -2895,6 +3217,9 @@ class ContainerFactoryTests {
                 solutionId = "1",
             ),
         useDedicatedEventHubNamespace = dedicatedEventHubNamespace,
+        sendScenarioRunToEventHub = sendToScenarioRun,
+        dedicatedEventHubAuthenticationStrategy = sasAuthentication,
+        dedicatedEventHubSasKeyName = sasName,
     )
   }
 

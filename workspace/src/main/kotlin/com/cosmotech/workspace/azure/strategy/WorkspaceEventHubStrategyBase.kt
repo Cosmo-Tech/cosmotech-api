@@ -23,7 +23,7 @@ abstract class WorkspaceEventHubStrategyBase : IWorkspaceEventHubStrategy {
     val authenticationStrategy = this.getWorkspaceEventHubAuthenticationStrategy(workspace)
     return if (authenticationStrategy ==
         CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
-            .SHARED_ACCESS_POLICY) {
+            .SHARED_ACCESS_POLICY && available) {
       val sasKeyName = this.getWorkspaceEventHubSasKeyName(workspace)
       val sasKey = this.getWorkspaceEventHubSasKey(organizationId, workspace)
       WorkspaceEventHubInfo(
