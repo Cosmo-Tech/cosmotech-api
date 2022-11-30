@@ -640,6 +640,7 @@ cat <<EOF > values-cosmotech-api-deploy.yaml
 replicaCount: 2
 api:
   version: "$API_VERSION"
+  servletContextPath: "/${NAMESPACE}"
 
 image:
   repository: ghcr.io/cosmo-tech/cosmotech-api
