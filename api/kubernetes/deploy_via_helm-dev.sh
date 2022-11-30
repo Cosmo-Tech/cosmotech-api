@@ -56,7 +56,8 @@ export REQUEUE_TIME="${ARGO_REQUEUE_TIME:-1s}"
 export ARGO_RELEASE_NAME=argocsmv2
 export MINIO_RELEASE_NAME=miniocsmv2
 export POSTGRES_RELEASE_NAME=postgrescsmv2
-export ARGO_VERSION="0.16.6"
+export ARGO_VERSION="3.4.9"
+export ARGO_CHART_VERSION="0.32.2"
 export MINIO_VERSION="12.1.3"
 export POSTGRESQL_VERSION="11.6.12"
 export VERSION_REDIS="17.3.14"
@@ -126,44 +127,44 @@ helm upgrade --install prometheus-operator prometheus-community/kube-prometheus-
 
 
 # Create namespace keycloak if it does not exist
-# kubectl create namespace ${KEYCLOAK_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
+kubectl create namespace ${KEYCLOAK_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
 
-# KEYCLOAK_ADM_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-$(kubectl get secret --namespace ${KEYCLOAK_NAMESPACE} csm-keycloak -o jsonpath="{.data.admin-password}" | base64 -d || "")}
-# if [[ -z "${KEYCLOAK_ADM_PASSWORD}" ]] ; then
-  # KEYCLOAK_ADM_PASSWORD=$(date +%s | sha256sum | base64 | head -c 32)
-# fi
+KEYCLOAK_ADM_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-$(kubectl get secret --namespace ${KEYCLOAK_NAMESPACE} csm-keycloak -o jsonpath="{.data.admin-password}" | base64 -d || "")}
+if [[ -z "${KEYCLOAK_ADM_PASSWORD}" ]] ; then
+  KEYCLOAK_ADM_PASSWORD=$(date +%s | sha256sum | base64 | head -c 32)
+fi
 
-# KEYCLOAK_DB_PASS=${KEYCLOAK_DB_PASSWORD:-$(kubectl get secret --namespace ${KEYCLOAK_NAMESPACE} csm-keycloak-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d || "")}
-# if [[ -z "${KEYCLOAK_DB_PASS}" ]] ; then
-#   KEYCLOAK_DB_PASS=$(date +%s | sha256sum | base64 | head -c 32)
-# fi
+KEYCLOAK_DB_PASS=${KEYCLOAK_DB_PASSWORD:-$(kubectl get secret --namespace ${KEYCLOAK_NAMESPACE} csm-keycloak-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d || "")}
+if [[ -z "${KEYCLOAK_DB_PASS}" ]] ; then
+  KEYCLOAK_DB_PASS=$(date +%s | sha256sum | base64 | head -c 32)
+fi
 
-# KEYCLOAK_DB_USER_PASS=${KEYCLOAK_DB_USER_PASSWORD:-$(kubectl get secret --namespace ${KEYCLOAK_NAMESPACE} csm-keycloak-postgresql -o jsonpath="{.data.password}" | base64 -d || "")}
-# if [[ -z "${KEYCLOAK_DB_USER_PASS}" ]] ; then
-  # KEYCLOAK_DB_USER_PASS=$(date +%s | sha256sum | base64 | head -c 32)
-# fi
+KEYCLOAK_DB_USER_PASS=${KEYCLOAK_DB_USER_PASSWORD:-$(kubectl get secret --namespace ${KEYCLOAK_NAMESPACE} csm-keycloak-postgresql -o jsonpath="{.data.password}" | base64 -d || "")}
+if [[ -z "${KEYCLOAK_DB_USER_PASS}" ]] ; then
+  KEYCLOAK_DB_USER_PASS=$(date +%s | sha256sum | base64 | head -c 32)
+fi
 
-# curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/JREY/keycloak/deployment_scripts/v3.0/values-keycloak-config-map-template.yaml" \
-  #    -o "${WORKING_DIR}"/values-keycloak-config-map-template.yaml
+curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/JREY/keycloak/deployment_scripts/v3.0/values-keycloak-config-map-template.yaml" \
+     -o "${WORKING_DIR}"/values-keycloak-config-map-template.yaml
 
-# curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/JREY/keycloak/deployment_scripts/v3.0/csm-keycloak-config-map.yaml" \
-  #    -o "${WORKING_DIR}"/csm-keycloak-config-map.yaml
+curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/JREY/keycloak/deployment_scripts/v3.0/csm-keycloak-config-map.yaml" \
+     -o "${WORKING_DIR}"/csm-keycloak-config-map.yaml
 
 # Create config map for Keycloak base configuration
-# kubectl create configmap csm-keycloak-map -n ${KEYCLOAK_NAMESPACE} --from-file=csm-keycloak-config-map.yaml -o yaml --dry-run=client | kubectl -n ${KEYCLOAK_NAMESPACE} apply -f -
+kubectl create configmap csm-keycloak-map -n ${KEYCLOAK_NAMESPACE} --from-file=csm-keycloak-config-map.yaml -o yaml --dry-run=client | kubectl -n ${KEYCLOAK_NAMESPACE} apply -f -
 
-# KEYCLOAK_ADM_PASSWORD_VAR=${KEYCLOAK_ADM_PASSWORD} \
-# KEYCLOAK_DB_PASS_VAR=${KEYCLOAK_DB_PASS} \
-# KEYCLOAK_DB_USER_PASS_VAR=${KEYCLOAK_DB_USER_PASS} \
-# envsubst < "${WORKING_DIR}"/values-keycloak-config-map-template.yaml > "${WORKING_DIR}"/values-keycloak-config-map.yaml
+KEYCLOAK_ADM_PASSWORD_VAR=${KEYCLOAK_ADM_PASSWORD} \
+KEYCLOAK_DB_PASS_VAR=${KEYCLOAK_DB_PASS} \
+KEYCLOAK_DB_USER_PASS_VAR=${KEYCLOAK_DB_USER_PASS} \
+envsubst < "${WORKING_DIR}"/values-keycloak-config-map-template.yaml > "${WORKING_DIR}"/values-keycloak-config-map.yaml
 
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
 
-# helm upgrade --install csm-keycloak bitnami/keycloak -n ${KEYCLOAK_NAMESPACE} --version ${KEYCLOAK_VERSION} \
-#       --values values-keycloak-config-map.yaml \
-#       --wait \
-#       --timeout 10m0s
+helm upgrade --install csm-keycloak bitnami/keycloak -n ${KEYCLOAK_NAMESPACE} --version ${KEYCLOAK_VERSION} \
+      --values values-keycloak-config-map.yaml \
+      --wait \
+      --timeout 10m0s
 
 
 # nginx
@@ -431,20 +432,24 @@ type: Opaque
 EOF
 kubectl apply -n ${NAMESPACE} -f postgres-secret.yaml
 
-# To fix CRD errors due to Argo update
-# Only on update case otherwise you'll get an error crd doesn't exist
-#CRD=('clusterworkflowtemplates.argoproj.io' 'cronworkflows.argoproj.io' 'workfloweventbindings.argoproj.io' \
-# 'workflows.argoproj.io' 'workflowtaskresults.argoproj.io' 'workflowtasksets.argoproj.io' 'workflowtemplates.argoproj.io')
-#
-#for crd in "${CRD[@]}"
-#do
-#  kubectl label --overwrite crd $crd app.kubernetes.io/managed-by=Helm
-#  kubectl annotate --overwrite crd $crd meta.helm.sh/release-namespace=phoenix
-#  kubectl annotate --overwrite crd $crd meta.helm.sh/release-name=argocsmv2
-#done
-
 # Argo
+## CRDs
+echo "Installing Argo CRDs"
+kubectl apply -n ${NAMESPACE} -f https://raw.githubusercontent.com/argoproj/argo-workflows/v${ARGO_VERSION}/manifests/base/crds/minimal/argoproj.io_clusterworkflowtemplates.yaml
+kubectl apply -n ${NAMESPACE} -f https://raw.githubusercontent.com/argoproj/argo-workflows/v${ARGO_VERSION}/manifests/base/crds/minimal/argoproj.io_cronworkflows.yaml
+kubectl apply -n ${NAMESPACE} -f https://raw.githubusercontent.com/argoproj/argo-workflows/v${ARGO_VERSION}/manifests/base/crds/minimal/argoproj.io_workflowartifactgctasks.yaml
+kubectl apply -n ${NAMESPACE} -f https://raw.githubusercontent.com/argoproj/argo-workflows/v${ARGO_VERSION}/manifests/base/crds/minimal/argoproj.io_workfloweventbindings.yaml
+kubectl apply -n ${NAMESPACE} -f https://raw.githubusercontent.com/argoproj/argo-workflows/v${ARGO_VERSION}/manifests/base/crds/minimal/argoproj.io_workflows.yaml
+kubectl apply -n ${NAMESPACE} -f https://raw.githubusercontent.com/argoproj/argo-workflows/v${ARGO_VERSION}/manifests/base/crds/minimal/argoproj.io_workflowtaskresults.yaml
+kubectl apply -n ${NAMESPACE} -f https://raw.githubusercontent.com/argoproj/argo-workflows/v${ARGO_VERSION}/manifests/base/crds/minimal/argoproj.io_workflowtasksets.yaml
+kubectl apply -n ${NAMESPACE} -f https://raw.githubusercontent.com/argoproj/argo-workflows/v${ARGO_VERSION}/manifests/base/crds/minimal/argoproj.io_workflowtemplates.yaml
+
+## Chart
 cat <<EOF > values-argo.yaml
+singleNamespace: true
+createAggregateRoles: false
+crds:
+  install: false
 images:
   pullPolicy: IfNotPresent
 workflow:
@@ -473,6 +478,8 @@ artifactRepository:
       name: ${MINIO_RELEASE_NAME}
       key: root-password
 server:
+  clusterWorkflowTemplates:
+    enabled: false
   extraArgs:
   - --auth-mode=server
   secure: false
@@ -496,6 +503,8 @@ controller:
   extraEnv:
   - name: DEFAULT_REQUEUE_TIME
     value: "${REQUEUE_TIME}"
+  clusterWorkflowTemplates:
+    enabled: false
   podLabels:
     networking/traffic-allowed: "yes"
   serviceMonitor:
@@ -559,7 +568,7 @@ mainContainer:
 EOF
 
 helm repo add argo https://argoproj.github.io/argo-helm
-helm upgrade --install -n ${NAMESPACE} ${ARGO_RELEASE_NAME} argo/argo-workflows --version ${ARGO_VERSION} --values values-argo.yaml
+helm upgrade --install -n ${NAMESPACE} ${ARGO_RELEASE_NAME} argo/argo-workflows --version ${ARGO_CHART_VERSION} --values values-argo.yaml
 
 LOKI_RELEASE_NAME="loki"
 helm repo add grafana https://grafana.github.io/helm-charts
