@@ -51,7 +51,8 @@ export REQUEUE_TIME="${ARGO_REQUEUE_TIME:-1s}"
 export ARGO_RELEASE_NAME=argocsmv2
 export MINIO_RELEASE_NAME=miniocsmv2
 export POSTGRES_RELEASE_NAME=postgrescsmv2
-export ARGO_VERSION="0.16.6"
+export ARGO_VERSION="3.4.3"
+export ARGO_CHART_VERSION="0.20.11"
 export MINIO_VERSION="12.1.3"
 export POSTGRESQL_VERSION="11.6.12"
 export VERSION_REDIS="17.3.14"
@@ -382,7 +383,23 @@ EOF
 kubectl apply -n ${NAMESPACE} -f postgres-secret.yaml
 
 # Argo
+## CRDs
+echo "Installing Argo CRDs"
+kubectl apply -n ${NAMESPACE} -f https://raw.githubusercontent.com/argoproj/argo-workflows/v${ARGO_VERSION}/manifests/base/crds/minimal/argoproj.io_clusterworkflowtemplates.yaml
+kubectl apply -n ${NAMESPACE} -f https://raw.githubusercontent.com/argoproj/argo-workflows/v${ARGO_VERSION}/manifests/base/crds/minimal/argoproj.io_cronworkflows.yaml
+kubectl apply -n ${NAMESPACE} -f https://raw.githubusercontent.com/argoproj/argo-workflows/v${ARGO_VERSION}/manifests/base/crds/minimal/argoproj.io_workflowartifactgctasks.yaml
+kubectl apply -n ${NAMESPACE} -f https://raw.githubusercontent.com/argoproj/argo-workflows/v${ARGO_VERSION}/manifests/base/crds/minimal/argoproj.io_workfloweventbindings.yaml
+kubectl apply -n ${NAMESPACE} -f https://raw.githubusercontent.com/argoproj/argo-workflows/v${ARGO_VERSION}/manifests/base/crds/minimal/argoproj.io_workflows.yaml
+kubectl apply -n ${NAMESPACE} -f https://raw.githubusercontent.com/argoproj/argo-workflows/v${ARGO_VERSION}/manifests/base/crds/minimal/argoproj.io_workflowtaskresults.yaml
+kubectl apply -n ${NAMESPACE} -f https://raw.githubusercontent.com/argoproj/argo-workflows/v${ARGO_VERSION}/manifests/base/crds/minimal/argoproj.io_workflowtasksets.yaml
+kubectl apply -n ${NAMESPACE} -f https://raw.githubusercontent.com/argoproj/argo-workflows/v${ARGO_VERSION}/manifests/base/crds/minimal/argoproj.io_workflowtemplates.yaml
+
+## Chart
 cat <<EOF > values-argo.yaml
+singleNamespace: true
+createAggregateRoles: false
+crds:
+  install: false
 images:
   pullPolicy: IfNotPresent
 workflow:
@@ -411,6 +428,8 @@ artifactRepository:
       name: ${MINIO_RELEASE_NAME}
       key: root-password
 server:
+  clusterWorkflowTemplates:
+    enabled: false
   extraArgs:
   - --auth-mode=server
   secure: false
@@ -434,6 +453,8 @@ controller:
   extraEnv:
   - name: DEFAULT_REQUEUE_TIME
     value: "${REQUEUE_TIME}"
+  clusterWorkflowTemplates:
+    enabled: false
   podLabels:
     networking/traffic-allowed: "yes"
   serviceMonitor:
@@ -497,7 +518,7 @@ mainContainer:
 EOF
 
 helm repo add argo https://argoproj.github.io/argo-helm
-helm upgrade --install -n ${NAMESPACE} ${ARGO_RELEASE_NAME} argo/argo-workflows --version ${ARGO_VERSION} --values values-argo.yaml
+helm upgrade --install -n ${NAMESPACE} ${ARGO_RELEASE_NAME} argo/argo-workflows --version ${ARGO_CHART_VERSION} --values values-argo.yaml
 
 popd
 
