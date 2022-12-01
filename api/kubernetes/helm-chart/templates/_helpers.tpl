@@ -88,6 +88,8 @@ Default Ingress path
 {{- end }}
 
 {{/*
+API Base path with servlet context, namespace, version
+*/}}
 {{- define "cosmotech-api.apiBasePath" -}}
 {{- if eq .Values.api.version "latest" }}
 {{- printf "%s/" (include "cosmotech-api.ingressTenantPath" . | trimSuffix "/" ) }}
