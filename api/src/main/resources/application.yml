@@ -97,6 +97,20 @@ csm:
       principal-jwt-claim: "sub"
       tenant-id-jwt-claim: "iss"
       allowed-tenants: []
+    upload:
+      authorized-mime-types:
+        workspaces:
+          - application/zip
+          - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+          - application/x-tika-ooxml
+          - text/csv
+          - text/plain
+          - text/x-yaml
+        handlers:
+          - application/zip
+          - application/x-sh
+          - text/x-python
+          - text/plain
     vendor: azure
     azure:
       appIdUri: "http://dev.api.cosmotech.com"
