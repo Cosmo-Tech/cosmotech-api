@@ -24,6 +24,7 @@ help() {
   echo "- PROM_REPLICAS_NUMBER | number of prometheus replicas (default is 1)"
   echo "- PROM_ADMIN_PASSWORD | admin password for grafana (generated if not specified)"
   echo "- REDIS_ADMIN_PASSWORD | admin password for redis (generated if not specified)"
+  echo "- MULTI_TENANT | boolean | enable multi-tenant mode (default is false)"
   echo
   echo "Usage: ./$(basename "$0") API_IMAGE_TAG NAMESPACE ARGO_POSTGRESQL_PASSWORD API_VERSION [any additional options to pass as is to the cosmotech-api Helm Chart]"
 }
@@ -528,7 +529,7 @@ cat <<EOF > values-cosmotech-api-deploy.yaml
 replicaCount: 2
 api:
   version: "$API_VERSION"
-  servletContextPath: "/${NAMESPACE}"
+  multiTenant: ${MULTI_TENANT:-false}
 
 image:
   repository: ghcr.io/cosmo-tech/cosmotech-api
