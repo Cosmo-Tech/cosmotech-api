@@ -29,6 +29,7 @@ help() {
   echo "- KEYCLOAK_ADMIN_PASSWORD | admin password for keycloak (generated if not specified)"
   echo "- KEYCLOAK_DB_PASSWORD | admin password for keycloak db (generated if not specified)"
   echo "- KEYCLOAK_DB_USER_PASSWORD | admin password for keycloak db user (generated if not specified)"
+  echo "- MULTI_TENANT | boolean | enable multi-tenant mode (default is false)"
   echo
   echo "Usage: ./$(basename "$0") API_IMAGE_TAG NAMESPACE ARGO_POSTGRESQL_PASSWORD API_VERSION [any additional options to pass as is to the cosmotech-api Helm Chart]"
 }
@@ -640,7 +641,7 @@ cat <<EOF > values-cosmotech-api-deploy.yaml
 replicaCount: 2
 api:
   version: "$API_VERSION"
-  servletContextPath: "/${NAMESPACE}"
+  multiTenant: ${MULTI_TENANT:-false}
 
 image:
   repository: ghcr.io/cosmo-tech/cosmotech-api
