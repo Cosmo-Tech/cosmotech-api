@@ -79,11 +79,20 @@ Create Docker secrets so Argo Workflows can pull images from a private container
 {{/*
 Default Ingress path
 */}}
+{{- define "cosmotech-api.ingressTenantPath" -}}
+{{- if .Values.api.multiTenant }}
+{{- printf "%s/%s/" (printf "%s" .Values.api.servletContextPath | trimSuffix "/" ) .Release.Namespace }}
+{{- else }}
+{{- printf "%s/" (printf "%s" .Values.api.servletContextPath | trimSuffix "/" ) }}
+{{- end }}
+{{- end }}
+
+{{/*
 {{- define "cosmotech-api.apiBasePath" -}}
 {{- if eq .Values.api.version "latest" }}
-{{- printf "%s/" (printf "%s" .Values.api.servletContextPath | trimSuffix "/" ) }}
+{{- printf "%s/" (include "cosmotech-api.ingressTenantPath" . | trimSuffix "/" ) }}
 {{- else }}
-{{- printf "%s/%s/" (printf "%s" .Values.api.servletContextPath | trimSuffix "/" ) (printf "%s" .Values.api.version | trimSuffix "/" ) }}
+{{- printf "%s/%s/" (include "cosmotech-api.ingressTenantPath" . | trimSuffix "/" ) (printf "%s" .Values.api.version | trimSuffix "/" ) }}
 {{- end }}
 {{- end }}
 
