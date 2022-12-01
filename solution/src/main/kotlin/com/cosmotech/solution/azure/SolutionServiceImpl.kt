@@ -12,6 +12,7 @@ import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -37,6 +38,7 @@ import org.springframework.stereotype.Service
 internal class SolutionServiceImpl(
     private val resourceLoader: ResourceLoader,
     private val azureStorageBlobServiceClient: BlobServiceClient,
+    private val resourceScanner: ResourceScanner,
 ) : CsmAzureService(), SolutionApiService {
 
   override fun findAllSolutions(organizationId: String) =
@@ -243,9 +245,6 @@ internal class SolutionServiceImpl(
         solution.name,
         solution.version)
 
-    // Security checks
-    // TODO Security-wise, we should also check the content of the archive for potential attack
-    // vectors, like upload of malicious files, zip bombing, path traversal attacks, ...
     try {
       val archiverType = ArchiveStreamFactory.detect(body.inputStream.buffered())
       if (ArchiveStreamFactory.ZIP != archiverType) {
@@ -255,6 +254,8 @@ internal class SolutionServiceImpl(
     } catch (ae: ArchiveException) {
       throw IllegalArgumentException("A Zip Archive is expected.", ae)
     }
+
+    resourceScanner.scanMimeTypes(body, csmPlatformProperties.upload.authorizedMimeTypes.handlers)
 
     azureStorageBlobServiceClient
         .getBlobContainerClient(organizationId.sanitizeForAzureStorage())

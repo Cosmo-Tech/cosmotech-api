@@ -73,6 +73,7 @@ class WorkspaceServiceImplTests {
     every { csmPlatformPropertiesAuthorizedMimeTypes.workspaces } returns
         listOf(
             "application/zip",
+            "application/xml",
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             "application/x-tika-ooxml",
             "text/csv",
