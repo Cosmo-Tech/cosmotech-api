@@ -33,6 +33,7 @@ import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.getPermissions
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
+import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -69,7 +70,8 @@ internal class WorkspaceServiceImpl(
     private val solutionService: SolutionApiService,
     private val azureStorageBlobServiceClient: BlobServiceClient,
     private val azureStorageBlobBatchClient: BlobBatchClient,
-    private val csmRbac: CsmRbac
+    private val csmRbac: CsmRbac,
+    private val resourceScanner: ResourceScanner,
 ) : CsmAzureService(), WorkspaceApiService {
 
   override fun findAllWorkspaces(organizationId: String): List<Workspace> {
@@ -255,6 +257,7 @@ internal class WorkspaceServiceImpl(
         file.filename,
         destination)
 
+    resourceScanner.scanMimeTypes(file, csmPlatformProperties.upload.authorizedMimeTypes.workspaces)
     val fileRelativeDestinationBuilder = StringBuilder()
     if (destination.isNullOrBlank()) {
       fileRelativeDestinationBuilder.append(file.filename)

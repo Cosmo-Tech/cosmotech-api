@@ -10,6 +10,7 @@ import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
+import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.solution.api.SolutionApiService
@@ -44,6 +45,7 @@ class WorkspaceServiceImplTests {
   @MockK private lateinit var azureStorageBlobBatchClient: BlobBatchClient
 
   @RelaxedMockK private lateinit var csmRbac: CsmRbac
+  @RelaxedMockK private lateinit var resourceScanner: ResourceScanner
 
   @Suppress("unused") @MockK private lateinit var cosmosTemplate: CosmosTemplate
 
@@ -59,9 +61,29 @@ class WorkspaceServiceImplTests {
                 solutionService,
                 azureStorageBlobServiceClient,
                 azureStorageBlobBatchClient,
-                csmRbac))
+                csmRbac,
+                resourceScanner,
+            ))
     mockkStatic(::getCurrentAuthenticatedMail)
     every { getCurrentAuthenticatedMail(csmPlatformProperties) } returns "dummy@cosmotech.com"
+
+    val csmPlatformPropertiesUpload = mockk<CsmPlatformProperties.Upload>()
+    val csmPlatformPropertiesAuthorizedMimeTypes =
+        mockk<CsmPlatformProperties.Upload.AuthorizedMimeTypes>()
+    every { csmPlatformPropertiesAuthorizedMimeTypes.workspaces } returns
+        listOf(
+            "application/zip",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "application/x-tika-ooxml",
+            "text/csv",
+            "text/plain",
+            "text/x-yaml",
+        )
+    every { csmPlatformPropertiesUpload.authorizedMimeTypes } returns
+        csmPlatformPropertiesAuthorizedMimeTypes
+    every { csmPlatformProperties.upload } returns csmPlatformPropertiesUpload
+
+    every { workspaceServiceImpl getProperty "csmPlatformProperties" } returns csmPlatformProperties
 
     MockKAnnotations.init(this, relaxUnitFun = true)
     this.csmRbac = mockk<CsmRbac>(relaxed = true)
