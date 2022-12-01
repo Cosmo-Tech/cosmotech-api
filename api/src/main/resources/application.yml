@@ -101,6 +101,7 @@ csm:
       authorized-mime-types:
         workspaces:
           - application/zip
+          - application/xml
           - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
           - application/x-tika-ooxml
           - text/csv
@@ -111,6 +112,7 @@ csm:
           - application/x-sh
           - text/x-python
           - text/plain
+          - text/x-yaml
     vendor: azure
     azure:
       appIdUri: "http://dev.api.cosmotech.com"
