@@ -107,9 +107,11 @@ csm:
           - text/csv
           - text/plain
           - text/x-yaml
+          - application/json
         handlers:
           - application/zip
           - application/x-sh
+          - application/json
           - text/x-python
           - text/plain
           - text/x-yaml
