@@ -819,8 +819,7 @@ internal class ScenarioServiceImpl(
             organizationId, workspace, EventHubRole.SCENARIO_METADATA)
     if (!eventHubInfo.eventHubAvailable) {
       logger.warn(
-          "Workspace must be configured with useDedicatedEventHubNamespace " +
-              "and sendScenarioMetadataToEventHub to true in order to send metadata")
+          "Workspace must be configured with sendScenarioMetadataToEventHub to true in order to send metadata")
       return
     }
 
