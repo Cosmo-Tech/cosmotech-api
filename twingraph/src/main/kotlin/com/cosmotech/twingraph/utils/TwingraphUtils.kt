@@ -8,12 +8,26 @@ import redis.clients.jedis.graph.entities.Property
 
 object TwingraphUtils {
 
+  private const val NODE_ID_PROPERTY_NAME = "id"
+
   @JvmStatic
   fun getNodeJson(node: Node): String {
+    var nodeId = node.id.toString()
+
+    if (node.entityPropertyNames.contains(NODE_ID_PROPERTY_NAME)) {
+      nodeId = node.getProperty(NODE_ID_PROPERTY_NAME).value.toString()
+    }
+
     val graphNode =
-        GraphNode(node.getLabel(0), node.id, node.entityPropertyNames.map { node.getProperty(it) })
+        GraphNode(
+            node.getLabel(0),
+            nodeId,
+            node.entityPropertyNames.filter { it != NODE_ID_PROPERTY_NAME }.map {
+              node.getProperty(it)
+            })
     return objectMapper().writeValueAsString(graphNode)
   }
+
   @JvmStatic
   fun isReadOnlyQuery(query: String): Boolean {
     val queryNormalized = query.trim().lowercase()
@@ -23,4 +37,4 @@ object TwingraphUtils {
   }
 }
 
-data class GraphNode(var label: String, var id: Long, var properties: List<Property<Any>>)
+data class GraphNode(var label: String, var id: String, var properties: List<Property<Any>>)
