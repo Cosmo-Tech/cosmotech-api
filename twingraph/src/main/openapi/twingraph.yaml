@@ -112,9 +112,15 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/TwinGraphQuery'
+            examples:
+              GetAllNodes:
+                $ref: '#/components/examples/GetAllNodes'
           application/yaml:
             schema:
               $ref: '#/components/schemas/TwinGraphQuery'
+            examples:
+              GetAllNodes:
+                $ref: '#/components/examples/GetAllNodes'
       responses:
         '200':
           description: Successful response
@@ -238,3 +244,8 @@ components:
           path: "my-data-folder"
           type: "Storage"
         graphId: "my-graph-id"
+    GetAllNodes:
+      summary: Get all nodes query
+      description: Get all nodes query (be careful if you want to query large graph)
+      value:
+        query: "MATCH(n) RETURN n"
