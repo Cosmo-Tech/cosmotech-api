@@ -37,9 +37,19 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/TwinGraphImport'
+            examples:
+              RunJobImportWithADT:
+                $ref: '#/components/examples/RunJobImportWithADT'
+              RunJobImportWithStorage:
+                $ref: '#/components/examples/RunJobImportWithStorage'
           application/yaml:
             schema:
               $ref: '#/components/schemas/TwinGraphImport'
+            examples:
+              RunJobImportWithADT:
+                $ref: '#/components/examples/RunJobImportWithADT'
+              RunJobImportWithStorage:
+                $ref: '#/components/examples/RunJobImportWithStorage'
       responses:
         '202':
           description: Successful response
@@ -163,12 +173,11 @@ components:
       type: object
       description: a twin graph import info
       properties:
-        storagePath:
+        source:
+          $ref: '#/components/schemas/SourceInfo'
+        graphId:
           type: string
-          description: the storage path containing the files to import
-        graphName:
-          type: string
-          description: the graph name to import to
+          description: the graph id to import to
         version:
           type: string
           description: |
@@ -176,8 +185,28 @@ components:
             When not set, the last version before import is upgraded by 1.
             When set, the targeted graph is replaced
       required:
-        - storagePath
-        - graphName
+        - source
+        - graphId
+    SourceInfo:
+      type: object
+      description: Source job import information
+      properties:
+        name:
+          type: string
+          description: the source name containing the files to import
+        path:
+          type: string
+          description: the source path containing the files to import
+        type:
+          type: string
+          description: the source type containing the files to import
+          enum:
+            - ADT
+            - Storage
+      required:
+        - name
+        - path
+        - type
     TwinGraphImportInfo:
       type: object
       description: a twin graph query in cypher language
@@ -188,3 +217,22 @@ components:
         graphName:
           type: string
           description: the twin graph name
+  examples:
+    RunJobImportWithADT:
+      summary: Run import job with ADT as source
+      description: Run import job with ADT as source
+      value:
+        source:
+          name: "my-adt-name-instance"
+          path: "https://my-adt-name-instance.api.weu.digitaltwins.azure.net"
+          type: "ADT"
+        graphId: "my-graph-id"
+    RunJobImportWithStorage:
+      summary: Run import job with Storage as source
+      description: Run import job with Storage as source
+      value:
+        source:
+          name: "my-storage-account-name"
+          path: "/path/to/dataset/to/import"
+          type: "Storage"
+        graphId: "my-graph-id"

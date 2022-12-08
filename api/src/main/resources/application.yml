@@ -89,10 +89,14 @@ csm:
       send-datawarehouse: cosmo-tech/azure-data-explorer-connector
       scenario-data-upload: cosmo-tech/azure-storage-publish:latest
     containers:
-      - name: "twingraphImport"
+      - name: "ADTTwingraphImport"
         imageRegistry: "ghcr.io"
         imageName: "cosmo-tech/adt-twincache-connector"
         imageVersion: "0.0.5"
+      - name: "StorageTwingraphImport"
+        imageRegistry: "ghcr.io"
+        imageName: "cosmo-tech/azStorage-twincache-connector"
+        imageVersion: "latest"
     authorization:
       principal-jwt-claim: "sub"
       tenant-id-jwt-claim: "iss"
