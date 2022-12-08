@@ -194,9 +194,9 @@ components:
         name:
           type: string
           description: the source name containing the files to import
-        path:
+        location:
           type: string
-          description: the source path containing the files to import
+          description: the source location containing the files to import
         type:
           type: string
           description: the source type containing the files to import
@@ -205,7 +205,7 @@ components:
             - Storage
       required:
         - name
-        - path
+        - location
         - type
     TwinGraphImportInfo:
       type: object
@@ -224,7 +224,7 @@ components:
       value:
         source:
           name: "my-adt-name-instance"
-          path: "https://my-adt-name-instance.api.weu.digitaltwins.azure.net"
+          location: "https://my-adt-name-instance.api.weu.digitaltwins.azure.net"
           type: "ADT"
         graphId: "my-graph-id"
     RunJobImportWithStorage:
@@ -233,6 +233,6 @@ components:
       value:
         source:
           name: "my-storage-account-name"
-          path: "/path/to/dataset/to/import"
+          location: "my-container-name"
           type: "Storage"
         graphId: "my-graph-id"
