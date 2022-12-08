@@ -376,8 +376,8 @@ internal class ScenarioRunServiceImpl(
         mutableMapOf(
             "TWIN_CACHE_NAME" to jobImportInfo.graphId,
             "LOG_LEVEL" to "DEBUG",
-            "STORAGE_NAME" to jobImportInfo.sourceName,
-            "STORAGE_PATH" to jobImportInfo.sourcePath)
+            "ACCOUNT_NAME" to jobImportInfo.sourceName,
+            "CONTAINER_NAME" to jobImportInfo.sourcePath)
       }
       else -> {
         throw IllegalArgumentException(
