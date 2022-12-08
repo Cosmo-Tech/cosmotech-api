@@ -44,12 +44,14 @@ class TwingraphServiceImpl(
             this,
             requestJobId,
             organizationId,
-            twinGraphImport.graphName,
-            twinGraphImport.storagePath,
+            twinGraphImport.graphId,
+            twinGraphImport.source.name,
+            twinGraphImport.source.path,
+            twinGraphImport.source.type.value,
             twinGraphImport.version)
     this.eventPublisher.publishEvent(graphImportEvent)
     logger.debug("TwingraphImportEventResponse={}", graphImportEvent.response)
-    return TwinGraphImportInfo(jobId = requestJobId, graphName = twinGraphImport.graphName)
+    return TwinGraphImportInfo(jobId = requestJobId, graphName = twinGraphImport.graphId)
   }
 
   override fun jobStatus(organizationId: String, jobId: String): String {

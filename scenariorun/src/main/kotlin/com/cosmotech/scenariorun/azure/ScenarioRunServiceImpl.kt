@@ -333,12 +333,17 @@ internal class ScenarioRunServiceImpl(
 
   @EventListener(TwingraphImportEvent::class)
   fun onTwingraphImportEvent(twingraphImportEvent: TwingraphImportEvent) {
+
+    val containerName = "${twingraphImportEvent.sourceType}TwingraphImport"
+
+    val containerEnvVars = getEnvVarsForJobImportInfo(twingraphImportEvent)
+
     val twingraphImportContainerList =
-        csmPlatformProperties.containers.filter { it.name == "twingraphImport" }
+        csmPlatformProperties.containers.filter { it.name == containerName }
 
     if (twingraphImportContainerList.isEmpty()) {
       throw MissingResourceException(
-          "twingraphImport is not found in configuration (workflow.containers.name)",
+          "$containerName is not found in configuration (workflow.containers.name)",
           ScenarioRunServiceImpl::class.simpleName,
           "workflow.containers.name")
     }
@@ -350,12 +355,35 @@ internal class ScenarioRunServiceImpl(
             twingraphImportEvent.jobId,
             adtTwincacheContainerInfo.imageRegistry,
             adtTwincacheContainerInfo.imageVersion,
-            mutableMapOf(
-                "TWIN_CACHE_NAME" to twingraphImportEvent.graphName,
-                "LOG_LEVEL" to "DEBUG",
-                "AZURE_DIGITAL_TWINS_URL" to twingraphImportEvent.sourceDataPath))
+            containerEnvVars)
     twingraphImportEvent.response =
         workflowService.launchScenarioRun(simpleContainer, null).convertToMap()
+  }
+
+  internal fun getEnvVarsForJobImportInfo(
+      jobImportInfo: TwingraphImportEvent
+  ): MutableMap<String, String> {
+
+    return when (jobImportInfo.sourceType) {
+      "ADT" -> {
+        mutableMapOf(
+            "TWIN_CACHE_NAME" to jobImportInfo.graphId,
+            "LOG_LEVEL" to "DEBUG",
+            "AZURE_DIGITAL_TWINS_NAME" to jobImportInfo.sourceName,
+            "AZURE_DIGITAL_TWINS_URL" to jobImportInfo.sourcePath)
+      }
+      "Storage" -> {
+        mutableMapOf(
+            "TWIN_CACHE_NAME" to jobImportInfo.graphId,
+            "LOG_LEVEL" to "DEBUG",
+            "STORAGE_NAME" to jobImportInfo.sourceName,
+            "STORAGE_PATH" to jobImportInfo.sourcePath)
+      }
+      else -> {
+        throw IllegalArgumentException(
+            "${jobImportInfo.sourceType} : Source type for import job is not supported ")
+      }
+    }
   }
 
   @EventListener(ScenarioDataDownloadJobInfoRequest::class)

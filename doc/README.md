@@ -184,6 +184,7 @@ Class | Method | HTTP request | Description
  - [ScenarioSecurity](./Models/ScenarioSecurity.md)
  - [ScenarioValidationStatus](./Models/ScenarioValidationStatus.md)
  - [Solution](./Models/Solution.md)
+ - [SourceInfo](./Models/SourceInfo.md)
  - [TwinGraphImport](./Models/TwinGraphImport.md)
  - [TwinGraphImportInfo](./Models/TwinGraphImportInfo.md)
  - [TwinGraphQuery](./Models/TwinGraphQuery.md)
