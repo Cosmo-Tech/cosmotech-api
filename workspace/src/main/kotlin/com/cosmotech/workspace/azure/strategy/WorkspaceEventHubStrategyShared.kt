@@ -54,15 +54,15 @@ class WorkspaceEventHubStrategyShared(
               ?.let { "$baseName$CONTROL_PLANE_SUFFIX" }
               ?: NOT_AVAILABLE
       EventHubRole.SCENARIO_METADATA ->
-        workspace.sendScenarioMetadataToEventHub
-                .takeIf { it == true }
-                ?.let { "$baseName$SCENARIO_METADATA_SUFFIX" }
-                ?: NOT_AVAILABLE
+          workspace.sendScenarioMetadataToEventHub
+              .takeIf { it == true }
+              ?.let { "$baseName$SCENARIO_METADATA_SUFFIX" }
+              ?: NOT_AVAILABLE
       EventHubRole.SCENARIO_RUN_METADATA ->
-        workspace.sendScenarioMetadataToEventHub
-                .takeIf { it == true }
-                ?.let { "$baseName$SCENARIO_RUN_METADATA_SUFFIX" }
-                ?: NOT_AVAILABLE
+          workspace.sendScenarioMetadataToEventHub
+              .takeIf { it == true }
+              ?.let { "$baseName$SCENARIO_RUN_METADATA_SUFFIX" }
+              ?: NOT_AVAILABLE
     }
   }
 

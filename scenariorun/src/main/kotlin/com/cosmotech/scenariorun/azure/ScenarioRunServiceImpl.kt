@@ -755,7 +755,7 @@ internal class ScenarioRunServiceImpl(
   ) {
     val eventHubInfo =
         this.workspaceEventHubService.getWorkspaceEventHubInfo(
-            organizationId, workspace, EventHubRole.SCENARIO_METADATA)
+            organizationId, workspace, EventHubRole.SCENARIO_RUN_METADATA)
     if (!eventHubInfo.eventHubAvailable) {
       logger.warn(
           "Workspace must be configured with sendScenarioMetadataToEventHub to true in order to send metadata")
