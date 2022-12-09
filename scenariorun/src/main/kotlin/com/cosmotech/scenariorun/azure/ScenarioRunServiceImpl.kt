@@ -369,15 +369,15 @@ internal class ScenarioRunServiceImpl(
         mutableMapOf(
             "TWIN_CACHE_NAME" to jobImportInfo.graphId,
             "LOG_LEVEL" to "DEBUG",
-            "AZURE_DIGITAL_TWINS_NAME" to jobImportInfo.sourceName,
-            "AZURE_DIGITAL_TWINS_URL" to jobImportInfo.sourcePath)
+            "AZURE_DIGITAL_TWINS_URL" to jobImportInfo.sourceLocation)
       }
       "Storage" -> {
         mutableMapOf(
             "TWIN_CACHE_NAME" to jobImportInfo.graphId,
             "LOG_LEVEL" to "DEBUG",
             "ACCOUNT_NAME" to jobImportInfo.sourceName,
-            "CONTAINER_NAME" to jobImportInfo.sourcePath)
+            "CONTAINER_NAME" to jobImportInfo.sourceLocation,
+            "STORAGE_PATH" to jobImportInfo.sourcePath)
       }
       else -> {
         throw IllegalArgumentException(
