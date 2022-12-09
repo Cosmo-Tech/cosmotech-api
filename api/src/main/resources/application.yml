@@ -95,7 +95,7 @@ csm:
         imageVersion: "0.0.5"
       - name: "StorageTwingraphImport"
         imageRegistry: "ghcr.io"
-        imageName: "cosmo-tech/azStorage-twincache-connector"
+        imageName: "cosmo-tech/azstorage-twincache-connector"
         imageVersion: "latest"
     authorization:
       principal-jwt-claim: "sub"

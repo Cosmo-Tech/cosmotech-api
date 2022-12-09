@@ -415,8 +415,9 @@ entity Solution {
 }
 
 entity SourceInfo {
-    * name: String
+    name: String
     * location: String
+    path: String
     * type: String
 }
 

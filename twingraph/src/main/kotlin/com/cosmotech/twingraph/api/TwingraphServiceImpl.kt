@@ -45,8 +45,9 @@ class TwingraphServiceImpl(
             requestJobId,
             organizationId,
             twinGraphImport.graphId,
-            twinGraphImport.source.name,
+            twinGraphImport.source.name ?: "",
             twinGraphImport.source.location,
+            twinGraphImport.source.path ?: "",
             twinGraphImport.source.type.value,
             twinGraphImport.version)
     this.eventPublisher.publishEvent(graphImportEvent)
