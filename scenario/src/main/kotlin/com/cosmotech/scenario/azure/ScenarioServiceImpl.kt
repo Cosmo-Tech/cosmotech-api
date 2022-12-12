@@ -660,14 +660,12 @@ internal class ScenarioServiceImpl(
                         "parametersValues"))
             .isNotEmpty()
 
-    if (scenario.ownerId != null && scenario.changed(existingScenario) { ownerId }) {
-      updateScenarioOwner(existingScenario, scenario)
-      hasChanged = true
-    }
+    hasChanged = updateScenarioOwner(existingScenario, scenario)
 
     var userIdsRemoved = listOf<String>()
     if (scenario.users != null) {
       userIdsRemoved = updateScenarioUsers(scenario, existingScenario)
+      userIdsRemoved.isEmpty()
       hasChanged = true
     }
 
@@ -697,19 +695,40 @@ internal class ScenarioServiceImpl(
     }
 
     if (hasChanged) {
-      existingScenario.lastUpdate = OffsetDateTime.now()
-      upsertScenarioData(organizationId, existingScenario, workspaceId)
-
-      publishUserRelatedEvents(userIdsRemoved, organizationId, workspaceId, scenarioId, scenario)
-
-      if (datasetListUpdated) {
-        publishDatasetListChangedEvent(organizationId, workspaceId, scenarioId, scenario)
-      }
-
-      sendScenarioMetaData(organizationId, workspace, existingScenario)
+      saveUpdatedScenario(
+          organizationId,
+          workspaceId,
+          scenarioId,
+          scenario,
+          existingScenario,
+          userIdsRemoved,
+          datasetListUpdated,
+          workspace)
     }
 
     return existingScenario
+  }
+
+  private fun saveUpdatedScenario(
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String,
+      scenario: Scenario,
+      existingScenario: Scenario,
+      userIdsRemoved: List<String>,
+      datasetListUpdated: Boolean,
+      workspace: Workspace
+  ) {
+    existingScenario.lastUpdate = OffsetDateTime.now()
+    upsertScenarioData(organizationId, existingScenario, workspaceId)
+
+    publishUserRelatedEvents(userIdsRemoved, organizationId, workspaceId, scenarioId, scenario)
+
+    if (datasetListUpdated) {
+      publishDatasetListChangedEvent(organizationId, workspaceId, scenarioId, scenario)
+    }
+
+    sendScenarioMetaData(organizationId, workspace, existingScenario)
   }
 
   private fun updateDatasetList(scenario: Scenario, existingScenario: Scenario): Boolean {
@@ -723,14 +742,20 @@ internal class ScenarioServiceImpl(
     return true
   }
 
-  private fun updateScenarioOwner(existingScenario: Scenario, scenario: Scenario) {
-    // Allow to change the ownerId as well, but only the owner can transfer the ownership
-    if (existingScenario.ownerId != getCurrentAuthenticatedUserName()) {
-      // TODO Only the owner or an admin should be able to perform this operation
-      throw CsmAccessForbiddenException(
-          "You are not allowed to change the ownership of this Resource")
+  private fun updateScenarioOwner(existingScenario: Scenario, scenario: Scenario): Boolean {
+    return if (scenario.ownerId != null && scenario.changed(existingScenario) { ownerId }) {
+      // Allow to change the ownerId as well, but only the owner can transfer the ownership
+      if (existingScenario.ownerId != getCurrentAuthenticatedUserName()) {
+        // TODO Only the owner or an admin should be able to perform this operation
+        throw CsmAccessForbiddenException(
+            "You are not allowed to change the ownership of this Resource")
+      }
+      existingScenario.ownerId = scenario.ownerId
+
+      true
+    } else {
+      false
     }
-    existingScenario.ownerId = scenario.ownerId
   }
 
   private fun publishDatasetListChangedEvent(
