@@ -1020,7 +1020,10 @@ internal class ContainerFactory(
       dependencies: List<String>? = null,
   ): ScenarioRunContainer {
 
+    if (organization.id == null) throw IllegalStateException("Organization id cannot be null")
+    if (workspace.id == null) throw IllegalStateException("Workspace id cannot be null")
     if (step == null) throw IllegalStateException("Solution Container Step Spec is not defined")
+
     val imageName =
         getImageName(
             csmPlatformProperties.azure?.containerRegistries?.solutions ?: "",
@@ -1040,26 +1043,25 @@ internal class ContainerFactory(
     envVars.putAll(getEventHubEnvVars(organization, workspace))
 
     val template = getRunTemplate(solution, runTemplateId)
-    val csmSimulation = template.csmSimulation
-    if (csmSimulation != null) {
-      envVars[CSM_SIMULATION_VAR] = csmSimulation
-    }
-    val source = step.source?.invoke(template)
-    if (source != null) {
-      envVars[step.providerVar] = source
+    template.csmSimulation?.let { envVars[CSM_SIMULATION_VAR] = it }
+
+    step.source?.invoke(template)?.let {
+      envVars[step.providerVar] = it
       envVars[AZURE_STORAGE_CONNECTION_STRING] =
           csmPlatformProperties.azure?.storage?.connectionString ?: ""
-      if (organization.id == null) throw IllegalStateException("Organization id cannot be null")
-      if (workspace.id == null) throw IllegalStateException("Workspace id cannot be null")
-      if (source == STEP_SOURCE_CLOUD || source == STEP_SOURCE_PLATFORM) {
-        envVars[step.pathVar] =
-            (step.path?.invoke(organization.id ?: "", solution.id ?: "", runTemplateId) ?: "")
-      } else if (source == STEP_SOURCE_GIT) {
-        envVars[step.pathVar] = template.gitRepositoryUrl ?: ""
-        envVars["CSM_RUN_TEMPLATE_GIT_BRANCH_NAME"] = template.gitBranchName ?: ""
-        envVars["CSM_RUN_TEMPLATE_SOURCE_DIRECTORY"] = template.runTemplateSourceDir ?: ""
+      when (it) {
+        STEP_SOURCE_CLOUD,
+        STEP_SOURCE_PLATFORM ->
+            envVars[step.pathVar] =
+                (step.path?.invoke(organization.id ?: "", solution.id ?: "", runTemplateId) ?: "")
+        STEP_SOURCE_GIT -> {
+          envVars[step.pathVar] = template.gitRepositoryUrl ?: ""
+          envVars["CSM_RUN_TEMPLATE_GIT_BRANCH_NAME"] = template.gitBranchName ?: ""
+          envVars["CSM_RUN_TEMPLATE_SOURCE_DIRECTORY"] = template.runTemplateSourceDir ?: ""
+        }
       }
     }
+
     return ScenarioRunContainer(
         name = name,
         image = imageName,
