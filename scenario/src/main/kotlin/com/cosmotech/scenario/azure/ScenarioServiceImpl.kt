@@ -663,7 +663,7 @@ internal class ScenarioServiceImpl(
                         "parametersValues"))
             .isNotEmpty()
 
-    hasChanged = updateScenarioOwner(existingScenario, scenario)
+    hasChanged = updateScenarioOwner(existingScenario, scenario, hasChanged)
 
     var userIdsRemoved = listOf<String>()
     if (scenario.users != null) {
@@ -745,7 +745,11 @@ internal class ScenarioServiceImpl(
     return true
   }
 
-  private fun updateScenarioOwner(existingScenario: Scenario, scenario: Scenario): Boolean {
+  private fun updateScenarioOwner(
+      existingScenario: Scenario,
+      scenario: Scenario,
+      hasChanged: Boolean
+  ): Boolean {
     return if (scenario.ownerId != null && scenario.changed(existingScenario) { ownerId }) {
       // Allow to change the ownerId as well, but only the owner can transfer the ownership
       if (existingScenario.ownerId != getCurrentAuthenticatedUserName()) {
@@ -757,7 +761,7 @@ internal class ScenarioServiceImpl(
 
       true
     } else {
-      false
+      hasChanged
     }
   }
 
