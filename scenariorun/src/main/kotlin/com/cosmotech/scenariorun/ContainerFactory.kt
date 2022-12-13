@@ -1045,6 +1045,25 @@ internal class ContainerFactory(
 
     envVars.putAll(getEventHubEnvVars(organization, workspace))
 
+    envVars.putAll(getTemplateEnvVars(solution, runTemplateId, step, organization, envVars))
+
+    return ScenarioRunContainer(
+        name = name,
+        image = imageName,
+        envVars = envVars,
+        dependencies = dependencies,
+        entrypoint = ENTRYPOINT_NAME,
+        solutionContainer = true,
+    )
+  }
+
+  private fun getTemplateEnvVars(
+      solution: Solution,
+      runTemplateId: String,
+      step: SolutionContainerStepSpec,
+      organization: Organization,
+      envVars: MutableMap<String, String>
+  ): MutableMap<String, String> {
     val template = getRunTemplate(solution, runTemplateId)
     template.csmSimulation?.let { envVars[CSM_SIMULATION_VAR] = it }
 
@@ -1065,14 +1084,7 @@ internal class ContainerFactory(
       }
     }
 
-    return ScenarioRunContainer(
-        name = name,
-        image = imageName,
-        envVars = envVars,
-        dependencies = dependencies,
-        entrypoint = ENTRYPOINT_NAME,
-        solutionContainer = true,
-    )
+    return envVars
   }
 
   private fun getEventHubEnvVars(
