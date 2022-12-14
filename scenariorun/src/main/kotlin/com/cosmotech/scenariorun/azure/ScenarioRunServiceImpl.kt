@@ -638,7 +638,7 @@ internal class ScenarioRunServiceImpl(
     if (scenarioRun.sdkVersion != null) {
       logger.debug(
           "SDK version for scenario run status detected: {}", scenarioRun.sdkVersion ?: "ERROR")
-      val splitVersion = scenarioRun.sdkVersion?.split(".")
+      val splitVersion = scenarioRun.sdkVersion?.split(".") ?: listOf()
       if (splitVersion.size < 2) {
         logger.error("Malformed SDK version for scenario run status data ingestion check")
       } else {

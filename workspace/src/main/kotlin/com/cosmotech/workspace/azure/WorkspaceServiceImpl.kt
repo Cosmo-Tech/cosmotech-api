@@ -75,7 +75,6 @@ internal class WorkspaceServiceImpl(
     private val azureStorageBlobBatchClient: BlobBatchClient,
     private val csmRbac: CsmRbac,
     private val resourceScanner: ResourceScanner,
-    private val kubernetesClient: KubernetesClient,
     private val secretManager: SecretManager,
 ) : CsmAzureService(), WorkspaceApiService {
 

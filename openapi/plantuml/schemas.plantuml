@@ -511,13 +511,13 @@ entity WorkspaceRole {
     * role: String
 }
 
+entity WorkspaceSecret {
+    dedicatedEventHubKey: String
+}
+
 entity WorkspaceSecurity {
     * default: String
     * accessControlList: List<WorkspaceAccessControl>
-}
-
-entity WorkspaceSecret {
-    dedicatedEventHubKey: String
 }
 
 entity WorkspaceSolution {

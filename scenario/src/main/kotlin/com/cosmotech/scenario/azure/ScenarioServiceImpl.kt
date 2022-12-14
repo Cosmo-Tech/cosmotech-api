@@ -63,6 +63,7 @@ import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.azure.EventHubRole
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
+import com.cosmotech.workspace.azure.getRbac
 import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
 import java.time.OffsetDateTime
@@ -85,9 +86,8 @@ internal class ScenarioServiceImpl(
     private val workspaceService: WorkspaceApiService,
     private val azureDataExplorerClient: AzureDataExplorerClient,
     private val azureEventHubsClient: AzureEventHubsClient,
-    private val csmRbac: CsmRbac
-    private val azureEventHubsClient: AzureEventHubsClient,
-    private val workspaceEventHubService: IWorkspaceEventHubService
+    private val csmRbac: CsmRbac,
+    private val workspaceEventHubService: IWorkspaceEventHubService,
 ) : CsmAzureService(), ScenarioApiService {
 
   val scenarioPermissions = getScenarioRolesDefinition()

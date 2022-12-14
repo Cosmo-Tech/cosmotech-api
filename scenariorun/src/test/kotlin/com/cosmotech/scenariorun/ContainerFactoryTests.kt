@@ -2312,7 +2312,7 @@ class ContainerFactoryTests {
                     "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
                 "CSM_CONTROL_PLANE_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
-            "CSM_SIMULATION" to "TestSimulation",
+                "CSM_SIMULATION" to "TestSimulation",
                 "TWIN_CACHE_HOST" to "this_is_a_host",
                 "TWIN_CACHE_PORT" to "6973",
                 "TWIN_CACHE_PASSWORD" to "this_is_a_password",
@@ -2359,7 +2359,7 @@ class ContainerFactoryTests {
                     "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
                 "CSM_CONTROL_PLANE_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
-            "CSM_SIMULATION" to "TestSimulation",
+                "CSM_SIMULATION" to "TestSimulation",
                 "TWIN_CACHE_HOST" to "this_is_a_host",
                 "TWIN_CACHE_PORT" to "6973",
                 "TWIN_CACHE_PASSWORD" to "this_is_a_password",
@@ -2402,7 +2402,11 @@ class ContainerFactoryTests {
             "CSM_CONTAINER_MODE" to "engine",
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
-            "CSM_SIMULATION" to "TestSimulation"),
+            "CSM_SIMULATION" to "TestSimulation",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default"),
         container.envVars)
   }
 
@@ -2508,7 +2512,11 @@ class ContainerFactoryTests {
             "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to "a1b2c3d4e5==",
             "CSM_AMQPCONSUMER_USER" to "my-eventhub-access-policy",
             "CSM_AMQPCONSUMER_PASSWORD" to "a1b2c3d4e5==",
-            "CSM_SIMULATION" to "TestSimulation"),
+            "CSM_SIMULATION" to "TestSimulation",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default"),
         container.envVars)
   }
 
@@ -2625,7 +2633,7 @@ class ContainerFactoryTests {
                     "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
                 "CSM_CONTROL_PLANE_TOPIC" to
                 "amqps://organizationid-test.servicebus.windows.net/scenariorun",
-            "CSM_SIMULATION" to "TestSimulation",
+                "CSM_SIMULATION" to "TestSimulation",
                 "TWIN_CACHE_HOST" to "this_is_a_host",
                 "TWIN_CACHE_PORT" to "6973",
                 "TWIN_CACHE_PASSWORD" to "this_is_a_password",
@@ -2677,7 +2685,11 @@ class ContainerFactoryTests {
                 "amqps://organizationid-test.servicebus.windows.net/scenariorun",
             "CSM_CONTROL_PLANE_USER" to name,
             "CSM_CONTROL_PLANE_PASSWORD" to key,
-            "CSM_SIMULATION" to "TestSimulation"),
+            "CSM_SIMULATION" to "TestSimulation",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default"),
         container.envVars)
   }
 
@@ -2720,7 +2732,11 @@ class ContainerFactoryTests {
                 "amqps://organizationid-test.servicebus.windows.net/scenariorun",
             "CSM_CONTROL_PLANE_USER" to name,
             "CSM_CONTROL_PLANE_PASSWORD" to key,
-            "CSM_SIMULATION" to "TestSimulation"),
+            "CSM_SIMULATION" to "TestSimulation",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default"),
         container.envVars)
   }
 
@@ -2757,7 +2773,11 @@ class ContainerFactoryTests {
                 "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
             "CSM_CONTROL_PLANE_TOPIC" to
                 "amqps://organizationid-test.servicebus.windows.net/scenariorun",
-            "CSM_SIMULATION" to "TestSimulation"),
+            "CSM_SIMULATION" to "TestSimulation",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default"),
         container.envVars)
   }
 
@@ -2800,7 +2820,11 @@ class ContainerFactoryTests {
                 "amqps://organizationid-test.servicebus.windows.net/scenariorun",
             "CSM_CONTROL_PLANE_USER" to name,
             "CSM_CONTROL_PLANE_PASSWORD" to key,
-            "CSM_SIMULATION" to "TestSimulation"),
+            "CSM_SIMULATION" to "TestSimulation",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default"),
         container.envVars)
   }
 
@@ -2854,8 +2878,12 @@ class ContainerFactoryTests {
             "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to key,
             "CSM_AMQPCONSUMER_USER" to name,
             "CSM_AMQPCONSUMER_PASSWORD" to key,
-            "CSM_SIMULATION" to "TestSimulation"),
-        container.envVars)
+            "CSM_SIMULATION" to "TestSimulation",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default"),
+    container.envVars)
   }
 
   @Test
@@ -2893,7 +2921,7 @@ class ContainerFactoryTests {
                     "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
                 "CSM_CONTROL_PLANE_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
-            "CSM_SIMULATION" to "TestSimulation",
+                "CSM_SIMULATION" to "TestSimulation",
                 "TWIN_CACHE_HOST" to "this_is_a_host",
                 "TWIN_CACHE_PORT" to "6973",
                 "TWIN_CACHE_PASSWORD" to "this_is_a_password",

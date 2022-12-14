@@ -112,6 +112,7 @@ class OktaContainerFactoryTests {
         CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureContainerRegistries(
             core = "ghcr.io", solutions = "twinengines.azurecr.io")
     every { csmPlatformProperties.azure } returns azure
+    every { csmPlatformProperties.namespace } returns "csm-phoenix"
     every { csmPlatformProperties.api } returns
         CsmPlatformProperties.Api(
             baseUrl = "https://api.cosmotech.com",
