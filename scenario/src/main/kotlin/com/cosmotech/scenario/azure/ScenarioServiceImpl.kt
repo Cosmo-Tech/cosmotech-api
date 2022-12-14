@@ -25,7 +25,6 @@ import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
 import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
-import com.cosmotech.api.exceptions.CsmServerException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.api.rbac.PERMISSION_DELETE

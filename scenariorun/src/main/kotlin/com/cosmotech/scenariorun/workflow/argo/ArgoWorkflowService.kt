@@ -95,8 +95,7 @@ internal class ArgoWorkflowService(
       json =
           json.apply {
             gson =
-                gson
-                    .newBuilder()
+                gson.newBuilder()
                     .registerTypeAdapter(java.time.Instant::class.java, InstantTypeAdapter())
                     .create()
           }
@@ -238,7 +237,8 @@ internal class ArgoWorkflowService(
       labelSelector: String,
       artifactNameFilter: String
   ): List<WorkflowStatusAndArtifact> {
-    var workflowList: IoArgoprojWorkflowV1alpha1WorkflowList? = findWorkflowListByLabel(labelSelector)
+    var workflowList: IoArgoprojWorkflowV1alpha1WorkflowList? =
+        findWorkflowListByLabel(labelSelector)
 
     return workflowList?.items?.map { workflow ->
       val workflowId = workflow.metadata.uid!!
@@ -268,7 +268,8 @@ internal class ArgoWorkflowService(
   override fun findWorkflowStatusByLabel(
       labelSelector: String
   ): List<com.cosmotech.scenariorun.workflow.WorkflowStatus> {
-    var workflowList: IoArgoprojWorkflowV1alpha1WorkflowList? = findWorkflowListByLabel(labelSelector)
+    var workflowList: IoArgoprojWorkflowV1alpha1WorkflowList? =
+        findWorkflowListByLabel(labelSelector)
 
     return workflowList?.items?.map { workflow ->
       val workflowId = workflow.metadata.uid!!
@@ -278,7 +279,9 @@ internal class ArgoWorkflowService(
         ?: listOf()
   }
 
-  internal fun findWorkflowListByLabel(labelSelector: String): IoArgoprojWorkflowV1alpha1WorkflowList? {
+  internal fun findWorkflowListByLabel(
+      labelSelector: String
+  ): IoArgoprojWorkflowV1alpha1WorkflowList? {
     var workflowList: IoArgoprojWorkflowV1alpha1WorkflowList? = null
     try {
       // Workflows are auto-archived and auto-deleted more frequently

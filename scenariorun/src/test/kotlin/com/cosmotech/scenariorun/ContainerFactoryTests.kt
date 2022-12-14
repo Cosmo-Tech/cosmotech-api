@@ -2311,7 +2311,7 @@ class ContainerFactoryTests {
                 "CSM_PROBES_MEASURES_TOPIC" to
                     "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
                 "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
+                    "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
                 "CSM_SIMULATION" to "TestSimulation",
                 "TWIN_CACHE_HOST" to "this_is_a_host",
                 "TWIN_CACHE_PORT" to "6973",
@@ -2358,7 +2358,7 @@ class ContainerFactoryTests {
                 "CSM_PROBES_MEASURES_TOPIC" to
                     "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
                 "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
+                    "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
                 "CSM_SIMULATION" to "TestSimulation",
                 "TWIN_CACHE_HOST" to "this_is_a_host",
                 "TWIN_CACHE_PORT" to "6973",
@@ -2452,8 +2452,8 @@ class ContainerFactoryTests {
                 "CSM_PROBES_MEASURES_TOPIC" to
                     "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
                 "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
-            "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to "my-eventhub-access-policy",
+                    "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
+                "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to "my-eventhub-access-policy",
                 "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to "a1b2c3d4e5==",
                 "CSM_AMQPCONSUMER_USER" to "my-eventhub-access-policy",
                 "CSM_AMQPCONSUMER_PASSWORD" to "a1b2c3d4e5==",
@@ -2632,7 +2632,7 @@ class ContainerFactoryTests {
                 "CSM_PROBES_MEASURES_TOPIC" to
                     "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
                 "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://organizationid-test.servicebus.windows.net/scenariorun",
+                    "amqps://organizationid-test.servicebus.windows.net/scenariorun",
                 "CSM_SIMULATION" to "TestSimulation",
                 "TWIN_CACHE_HOST" to "this_is_a_host",
                 "TWIN_CACHE_PORT" to "6973",
@@ -2883,7 +2883,7 @@ class ContainerFactoryTests {
             "TWIN_CACHE_PORT" to "6973",
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
             "TWIN_CACHE_USERNAME" to "default"),
-    container.envVars)
+        container.envVars)
   }
 
   @Test
@@ -2920,7 +2920,7 @@ class ContainerFactoryTests {
                 "CSM_PROBES_MEASURES_TOPIC" to
                     "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
                 "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
+                    "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
                 "CSM_SIMULATION" to "TestSimulation",
                 "TWIN_CACHE_HOST" to "this_is_a_host",
                 "TWIN_CACHE_PORT" to "6973",
