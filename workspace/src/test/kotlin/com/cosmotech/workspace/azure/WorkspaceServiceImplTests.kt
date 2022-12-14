@@ -11,8 +11,8 @@ import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.utils.ResourceScanner
-import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.SecretManager
+import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.workspace.domain.Workspace
