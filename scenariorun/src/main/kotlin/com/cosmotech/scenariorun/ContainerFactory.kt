@@ -1040,9 +1040,9 @@ internal class ContainerFactory(
     envVars[RUN_TEMPLATE_ID_VAR] = runTemplateId
     envVars[CONTAINER_MODE_VAR] = step.mode
 
-    envVars.putAll(getEventHubEnvVars(organization, workspace))
-
-    envVars.putAll(getTemplateEnvVars(solution, runTemplateId, step, organization, envVars))
+    envVars.putAll(
+        getEventHubEnvVars(organization, workspace) +
+            getTemplateEnvVars(solution, runTemplateId, step, organization))
 
     return ScenarioRunContainer(
         name = name,
@@ -1058,30 +1058,30 @@ internal class ContainerFactory(
       solution: Solution,
       runTemplateId: String,
       step: SolutionContainerStepSpec,
-      organization: Organization,
-      envVars: MutableMap<String, String>
+      organization: Organization
   ): MutableMap<String, String> {
+    val envMap: MutableMap<String, String> = mutableMapOf()
     val template = getRunTemplate(solution, runTemplateId)
-    template.csmSimulation?.let { envVars[CSM_SIMULATION_VAR] = it }
+    template.csmSimulation?.let { envMap[CSM_SIMULATION_VAR] = it }
 
     step.source?.invoke(template)?.let {
-      envVars[step.providerVar] = it
-      envVars[AZURE_STORAGE_CONNECTION_STRING] =
+      envMap[step.providerVar] = it
+      envMap[AZURE_STORAGE_CONNECTION_STRING] =
           csmPlatformProperties.azure?.storage?.connectionString ?: ""
       when (it) {
         STEP_SOURCE_CLOUD,
         STEP_SOURCE_PLATFORM ->
-            envVars[step.pathVar] =
+            envMap[step.pathVar] =
                 (step.path?.invoke(organization.id ?: "", solution.id ?: "", runTemplateId) ?: "")
         STEP_SOURCE_GIT -> {
-          envVars[step.pathVar] = template.gitRepositoryUrl ?: ""
-          envVars["CSM_RUN_TEMPLATE_GIT_BRANCH_NAME"] = template.gitBranchName ?: ""
-          envVars["CSM_RUN_TEMPLATE_SOURCE_DIRECTORY"] = template.runTemplateSourceDir ?: ""
+          envMap[step.pathVar] = template.gitRepositoryUrl ?: ""
+          envMap["CSM_RUN_TEMPLATE_GIT_BRANCH_NAME"] = template.gitBranchName ?: ""
+          envMap["CSM_RUN_TEMPLATE_SOURCE_DIRECTORY"] = template.runTemplateSourceDir ?: ""
         }
       }
     }
 
-    return envVars
+    return envMap
   }
 
   private fun getEventHubEnvVars(
