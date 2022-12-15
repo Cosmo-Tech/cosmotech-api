@@ -144,12 +144,16 @@ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
   --values /tmp/values-ingress-nginx.yaml
 
 # Redis Cluster
-REDIS_ADMIN_PASSWORD_VAR=${REDIS_ADMIN_PASSWORD:-$(date +%s | sha256sum | base64 | head -c 32)}
 helm repo add bitnami https://charts.bitnami.com/bitnami
+
+REDIS_PASSWORD=${REDIS_ADMIN_PASSWORD:-$(kubectl get secret --namespace ${NAMESPACE} cosmotechredis -o jsonpath="{.data.redis-password}" | base64 -d || "")}
+if [[ -z $REDIS_PASSWORD ]] ; then
+  REDIS_PASSWORD=$(date +%s | sha256sum | base64 | head -c 32)
+fi
 
 cat <<EOF > values-redis.yaml
 auth:
-  password: ${REDIS_ADMIN_PASSWORD_VAR}
+  password: ${REDIS_PASSWORD}
 image:
   registry: ghcr.io
   repository: cosmo-tech/cosmotech-redis
@@ -469,7 +473,7 @@ config:
         host: "cosmotechredis-master.${NAMESPACE}.svc.cluster.local"
         port: "6379"
         username: "default"
-        password: "${REDIS_ADMIN_PASSWORD_VAR}"
+        password: "${REDIS_PASSWORD}"
 
 ingress:
   enabled: ${COSMOTECH_API_INGRESS_ENABLED}
