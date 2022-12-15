@@ -747,7 +747,7 @@ internal class ScenarioServiceImpl(
       scenario: Scenario,
       hasChanged: Boolean
   ): Boolean {
-    return if (scenario.ownerId != null && scenario.changed(existingScenario) { ownerId }) {
+    if (scenario.ownerId != null && scenario.changed(existingScenario) { ownerId }) {
       // Allow to change the ownerId as well, but only the owner can transfer the ownership
       if (existingScenario.ownerId != getCurrentAuthenticatedUserName()) {
         // TODO Only the owner or an admin should be able to perform this operation
@@ -756,9 +756,9 @@ internal class ScenarioServiceImpl(
       }
       existingScenario.ownerId = scenario.ownerId
 
-      true
+      return true
     } else {
-      hasChanged
+      return hasChanged
     }
   }
 
