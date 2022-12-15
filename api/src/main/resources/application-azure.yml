@@ -21,6 +21,7 @@ csm:
     authorization:
       principal-jwt-claim: "oid"
       tenant-id-jwt-claim: "tid"
+      mailJwtClaim: "preferred_username"
 
 azure:
   # Required to auto-configure the beans provided by the Azure Spring Boot AutoConfigurations
