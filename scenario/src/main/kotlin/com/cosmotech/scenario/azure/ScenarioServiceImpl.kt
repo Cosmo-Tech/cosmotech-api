@@ -665,7 +665,6 @@ internal class ScenarioServiceImpl(
     var userIdsRemoved = listOf<String>()
     if (scenario.users != null) {
       userIdsRemoved = updateScenarioUsers(scenario, existingScenario)
-      userIdsRemoved.isEmpty()
       hasChanged = true
     }
 
