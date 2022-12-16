@@ -35,6 +35,7 @@ import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenariorun.CSM_JOB_ID_LABEL_KEY
 import com.cosmotech.scenariorun.ContainerFactory
 import com.cosmotech.scenariorun.SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME
+import com.cosmotech.scenariorun.SecurityCoroutineContext
 import com.cosmotech.scenariorun.api.ScenariorunApiService
 import com.cosmotech.scenariorun.domain.RunTemplateParameterValue
 import com.cosmotech.scenariorun.domain.ScenarioRun
@@ -154,7 +155,7 @@ internal class ScenarioRunServiceImpl(
       scenarioId: String
   ) {
 
-    GlobalScope.launch {
+    GlobalScope.launch(SecurityCoroutineContext()) {
       this@ScenarioRunServiceImpl.deleteScenarioRunsByScenarioWithoutAccessEnforcement(
           organizationId, workspaceId, scenarioId)
     }
