@@ -33,6 +33,7 @@ import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.getPermissions
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
+import com.cosmotech.api.security.coroutine.SecurityCoroutineContext
 import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
@@ -139,7 +140,7 @@ internal class WorkspaceServiceImpl(
     csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE)
     logger.debug("Deleting all files for workspace #{} ({})", workspace.id, workspace.name)
 
-    GlobalScope.launch {
+    GlobalScope.launch(SecurityCoroutineContext()) {
       // TODO Consider using a smaller coroutine scope
       val workspaceFiles =
           getWorkspaceFileResources(organizationId, workspaceId).map { it.url }.map {

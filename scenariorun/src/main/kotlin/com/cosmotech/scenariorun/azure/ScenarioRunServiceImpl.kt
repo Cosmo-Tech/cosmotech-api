@@ -27,6 +27,7 @@ import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.scenario.ScenarioRunMetaData
 import com.cosmotech.api.scenariorun.DataIngestionState
+import com.cosmotech.api.security.coroutine.SecurityCoroutineContext
 import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
@@ -35,7 +36,6 @@ import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenariorun.CSM_JOB_ID_LABEL_KEY
 import com.cosmotech.scenariorun.ContainerFactory
 import com.cosmotech.scenariorun.SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME
-import com.cosmotech.scenariorun.SecurityCoroutineContext
 import com.cosmotech.scenariorun.api.ScenariorunApiService
 import com.cosmotech.scenariorun.domain.RunTemplateParameterValue
 import com.cosmotech.scenariorun.domain.ScenarioRun
@@ -467,7 +467,7 @@ internal class ScenarioRunServiceImpl(
         startInfo.runTemplate?.deleteHistoricalData ?: DeleteHistoricalData()
     if (purgeHistoricalDataConfiguration.enable) {
       logger.debug("Start coroutine to poll simulation status")
-      GlobalScope.launch {
+      GlobalScope.launch(SecurityCoroutineContext()) {
         withTimeout(
             purgeHistoricalDataConfiguration.timeOut?.toLong()
                 ?: DELETE_SCENARIO_RUN_DEFAULT_TIMEOUT) {
@@ -698,12 +698,12 @@ internal class ScenarioRunServiceImpl(
   fun onScenarioDeleted(event: ScenarioDeleted) {
     logger.debug(
         "Caught ScenarioDeleted event => deleting all runs linked to scenario {}", event.scenarioId)
-    runBlocking {
+    runBlocking(SecurityCoroutineContext()) {
       val jobs =
           this@ScenarioRunServiceImpl.getScenarioRuns(
                   event.organizationId, event.workspaceId, event.scenarioId)
               .map { scenarioRun ->
-                GlobalScope.launch {
+                GlobalScope.launch(SecurityCoroutineContext()) {
                   // TODO Consider using a smaller coroutine scope
                   this@ScenarioRunServiceImpl.deleteScenarioRunWithoutAccessEnforcement(scenarioRun)
                 }
