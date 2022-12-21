@@ -313,7 +313,7 @@ internal class WorkspaceServiceImpl(
     val workspaces: List<Workspace> = findAllWorkspaces(organizationId)
     for (workspace in workspaces) {
       this.eventPublisher.publishEvent(
-          DeleteHistoricalDataWorkspace(this, organizationId, workspace.id!!))
+          DeleteHistoricalDataWorkspace(this, organizationId, workspace.id!!, data.deleteUnknown))
     }
   }
 
