@@ -257,7 +257,7 @@ internal class ArgoWorkflowService(
       logger.debug(logMessage)
       logger.trace(logMessage, e)
     }
-    if (workflowList == null || workflowList.items.isEmpty()) {
+    if (workflowList == null || workflowList.items == null || workflowList.items.isEmpty()) {
       workflowList =
           newServiceApiInstance<WorkflowServiceApi>(this.apiClient)
               .workflowServiceListWorkflows(
@@ -272,6 +272,10 @@ internal class ArgoWorkflowService(
                   null,
                   null,
                   null)!!
+    }
+
+    if (workflowList == null || workflowList.items == null) {
+      return emptyList()
     }
 
     return workflowList.items.map { workflow ->
