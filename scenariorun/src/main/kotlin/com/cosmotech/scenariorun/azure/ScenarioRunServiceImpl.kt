@@ -18,6 +18,7 @@ import com.cosmotech.api.events.DeleteHistoricalDataWorkspace
 import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
 import com.cosmotech.api.events.ScenarioDataDownloadRequest
 import com.cosmotech.api.events.ScenarioDeleted
+import com.cosmotech.api.events.ScenarioLastRunChanged
 import com.cosmotech.api.events.ScenarioRunEndTimeRequest
 import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
@@ -116,6 +117,8 @@ internal class ScenarioRunServiceImpl(
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
     }
     deleteScenarioRunWithoutAccessEnforcement(scenarioRun)
+
+    updateScenarioLastRun(scenarioRun)
   }
 
   private fun deleteScenarioRunWithoutAccessEnforcement(scenarioRun: ScenarioRun) {
@@ -145,6 +148,20 @@ internal class ScenarioRunServiceImpl(
           scenarioRun.id,
           exception.message,
           exception)
+    }
+  }
+
+  private fun updateScenarioLastRun(scenarioRun: ScenarioRun) {
+    var scenario =
+        scenarioApiService.findScenarioById(
+            scenarioRun.organizationId!!, scenarioRun.workspaceId!!, scenarioRun.scenarioId!!)
+
+    val lastRunId = scenario.lastRun!!.scenarioRunId
+    if (lastRunId == scenarioRun.id) {
+      scenario.lastRun = null
+      eventPublisher.publishEvent(
+          ScenarioLastRunChanged(
+              this, scenarioRun.organizationId, scenarioRun.workspaceId, scenario))
     }
   }
 

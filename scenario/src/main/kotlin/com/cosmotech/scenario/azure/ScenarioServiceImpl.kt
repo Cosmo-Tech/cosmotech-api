@@ -21,6 +21,7 @@ import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
 import com.cosmotech.api.events.ScenarioDataDownloadRequest
 import com.cosmotech.api.events.ScenarioDatasetListChanged
 import com.cosmotech.api.events.ScenarioDeleted
+import com.cosmotech.api.events.ScenarioLastRunChanged
 import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
 import com.cosmotech.api.events.WorkflowPhaseToStateRequest
@@ -786,6 +787,15 @@ internal class ScenarioServiceImpl(
       upsertScenarioData(
           scenarioDatasetListChanged.organizationId, it, scenarioDatasetListChanged.workspaceId)
     }
+  }
+
+  @EventListener(ScenarioLastRunChanged::class)
+  fun onScenarioLastRunChanged(scenarioLastRunChanged: ScenarioLastRunChanged) {
+    logger.debug("onScenarioLastRunChanged ${scenarioLastRunChanged}")
+    this.upsertScenarioData(
+        scenarioLastRunChanged.organizationId,
+        scenarioLastRunChanged.scenario as Scenario,
+        scenarioLastRunChanged.workspaceId)
   }
 
   override fun getScenarioPermissions(
