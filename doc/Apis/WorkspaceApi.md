@@ -71,7 +71,7 @@ null (empty response body)
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/json, application/yaml
 - **Accept**: Not defined
 
 <a name="createWorkspace"></a>
