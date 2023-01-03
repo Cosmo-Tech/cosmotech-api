@@ -651,6 +651,13 @@ paths:
             examples:
               Workspace:
                 $ref: '#/components/examples/WorkspaceSecretExample'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            examples:
+              Workspace:
+                $ref: '#/components/examples/WorkspaceSecretExample'
       responses:
         "201":
           description: Request succeeded
