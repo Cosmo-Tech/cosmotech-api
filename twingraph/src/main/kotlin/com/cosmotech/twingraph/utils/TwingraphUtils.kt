@@ -3,8 +3,8 @@
 package com.cosmotech.twingraph.utils
 
 import com.cosmotech.api.utils.objectMapper
-import redis.clients.jedis.graph.entities.Node
-import redis.clients.jedis.graph.entities.Property
+import com.redislabs.redisgraph.graph_entities.Node
+import com.redislabs.redisgraph.graph_entities.Property
 
 object TwingraphUtils {
 

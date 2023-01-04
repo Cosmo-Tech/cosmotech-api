@@ -2,28 +2,30 @@
 // Licensed under the MIT license.
 package com.cosmotech.twingraph.api
 
-import com.cosmotech.api.config.CsmPlatformProperties
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.boot.autoconfigure.data.redis.RedisProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import redis.clients.jedis.DefaultJedisClientConfig
-import redis.clients.jedis.HostAndPort
-import redis.clients.jedis.UnifiedJedis
-import redis.clients.jedis.providers.PooledConnectionProvider
-
-const val DEFAULT_REDIS_PORT = 6379
+import redis.clients.jedis.JedisPool
+import redis.clients.jedis.JedisPoolConfig
 
 @Configuration
-class TwingraphConfig(val csmPlatformProperties: CsmPlatformProperties) {
+class TwingraphConfig {
 
   val logger: Logger = LoggerFactory.getLogger(TwingraphConfig::class.java)
 
   @Bean
-  fun jedis(): UnifiedJedis {
-    val properties = csmPlatformProperties.twincache
-    val config = HostAndPort(properties?.host, properties?.port?.toInt() ?: DEFAULT_REDIS_PORT)
-    val clientConfig = DefaultJedisClientConfig.builder().password(properties?.password).build()
-    return UnifiedJedis(PooledConnectionProvider(config, clientConfig))
+  fun csmJedisPool(redisProperties: RedisProperties): JedisPool {
+    val password = redisProperties.password ?: ""
+    val timeout = redisProperties.timeout.toMillis().toInt()
+    val poolConfig = JedisPoolConfig()
+    logger.info(
+        "Starting Redis with Host:{}, Port:{}, Timeout(ms):{}, PoolConfig:{}",
+        redisProperties.host,
+        redisProperties.port,
+        timeout,
+        poolConfig)
+    return JedisPool(poolConfig, redisProperties.host, redisProperties.port, timeout, password)
   }
 }

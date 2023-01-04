@@ -6,8 +6,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.FilterType
+import org.springframework.data.redis.repository.configuration.EnableRedisRepositories
 
 @SpringBootApplication
+@EnableRedisRepositories(basePackages = ["com.cosmotech"])
 @ComponentScan(
     basePackages = ["com.cosmotech"],
     excludeFilters =

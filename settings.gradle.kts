@@ -21,7 +21,6 @@ include(
     "scenario",
     "scenariorun",
     "solution",
-    "user",
     "workspace",
     "twingraph")
 
@@ -38,8 +37,6 @@ project(":scenario").name = "cosmotech-scenario-api"
 project(":scenariorun").name = "cosmotech-scenariorun-api"
 
 project(":solution").name = "cosmotech-solution-api"
-
-project(":user").name = "cosmotech-user-api"
 
 project(":workspace").name = "cosmotech-workspace-api"
 
