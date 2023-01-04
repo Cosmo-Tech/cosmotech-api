@@ -5,8 +5,9 @@ logging:
 spring:
   redis:
     host: ${csm.platform.twincache.host}
-    username: ${csm.platform.twincache.username}
+    port: 6379
     password: ${csm.platform.twincache.password}
+    username: ${csm.platform.twincache.username}
   servlet:
     multipart:
       max-file-size: 50MB

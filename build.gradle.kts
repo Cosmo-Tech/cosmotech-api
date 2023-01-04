@@ -229,14 +229,14 @@ subprojects {
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
-    api("com.github.Cosmo-Tech:cosmotech-api-common:$cosmotechApiCommonVersion") {
+    api("com.github.Cosmo-Tech:cosmotech-api-common:$cosmotechApiCommonVersion")
+{
       exclude(group = "org.slf4j", module = "slf4j-api")
       because(
           "this depends on org.slf4j:slf4j-api 2.0.3," +
               "which is not backward-compatible with 1.7.x." +
               "See http://www.slf4j.org/faq.html#changesInVersion200")
     }
-
     api("com.github.Cosmo-Tech:cosmotech-api-azure:$cosmotechApiAzureVersion") {
       exclude(group = "org.slf4j", module = "slf4j-api")
       because(
@@ -254,7 +254,9 @@ subprojects {
                 "and we cannot use 4.X versions as they are not compatible with Spring Boot 2.X")
       }
     }
+
     implementation("com.redis.om:redis-om-spring:0.6.3")
+    implementation("org.springframework.data:spring-data-redis:2.7.3")
   }
 
   tasks.withType<KotlinCompile> {
