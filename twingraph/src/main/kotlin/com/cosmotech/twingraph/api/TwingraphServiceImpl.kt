@@ -65,7 +65,6 @@ class TwingraphServiceImpl(
 
   @Suppress("SpreadOperator")
   override fun delete(organizationId: String, graphId: String) {
-    val jedis = csmJedisPool.resource
     val organization = organizationService.findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_READ)
 
@@ -132,16 +131,16 @@ class TwingraphServiceImpl(
     }
 
     val redisGraphId = "${graphId}:${twinGraphQuery.version}"
-    val redisGraph = RedisGraph(csmJedisPool)
+
     csmJedisPool.resource.use { jedis ->
       val redisGraphMatchingKeys = jedis.keys(redisGraphId)
       if (redisGraphMatchingKeys.size == 0) {
         throw CsmResourceNotFoundException("No graph found with id: $redisGraphId")
       }
     }
-
+    val redisGraph = RedisGraph(csmJedisPool)
     val resultSet =
-        redisGraph.query(
+      redisGraph.query(
             redisGraphId, twinGraphQuery.query, csmPlatformProperties.twincache.queryTimeout)
 
     return resultSet.toJsonString()
