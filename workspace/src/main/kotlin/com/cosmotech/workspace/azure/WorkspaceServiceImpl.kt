@@ -11,9 +11,7 @@ import com.azure.spring.autoconfigure.storage.resource.BlobStorageResource
 import com.azure.storage.blob.BlobServiceClient
 import com.azure.storage.blob.batch.BlobBatchClient
 import com.azure.storage.blob.models.DeleteSnapshotsOptionType
-import com.cosmotech.api.azure.cosmosdb.ext.findAll
-import com.cosmotech.api.azure.cosmosdb.ext.findByIdOrThrow
-import com.cosmotech.api.azure.cosmosdb.service.CsmCosmosDBService
+import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.events.DeleteHistoricalDataOrganization
 import com.cosmotech.api.events.DeleteHistoricalDataWorkspace
@@ -41,7 +39,7 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.organization.api.OrganizationApiService
-import com.cosmotech.organization.azure.getRbac
+import com.cosmotech.organization.services.getRbac
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
@@ -75,7 +73,7 @@ internal class WorkspaceServiceImpl(
     private val csmRbac: CsmRbac,
     private val resourceScanner: ResourceScanner,
     private val secretManager: SecretManager,
-) : CsmCosmosDBService(), WorkspaceApiService {
+) : CsmPhoenixService(), WorkspaceApiService {
 
   override fun findAllWorkspaces(organizationId: String): List<Workspace> {
     val organization = organizationService.findOrganizationById(organizationId)

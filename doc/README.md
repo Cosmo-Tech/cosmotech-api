@@ -94,16 +94,6 @@ Class | Method | HTTP request | Description
 *TwingraphApi* | [**importGraph**](Apis/TwingraphApi.md#importgraph) | **POST** /organizations/{organization_id}/twingraph/import | Import a new version of a twin graph
 *TwingraphApi* | [**jobStatus**](Apis/TwingraphApi.md#jobstatus) | **GET** /organizations/{organization_id}/job/{job_id}/status | Get the status of a job
 *TwingraphApi* | [**query**](Apis/TwingraphApi.md#query) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/query | Run a query on a graph instance
-*UserApi* | [**authorizeUser**](Apis/UserApi.md#authorizeuser) | **GET** /oauth2/authorize | Authorize an User with OAuth2. Delegated to configured OAuth2 service
-*UserApi* | [**findAllUsers**](Apis/UserApi.md#findallusers) | **GET** /users | List all Users
-*UserApi* | [**findUserById**](Apis/UserApi.md#finduserbyid) | **GET** /users/{user_id} | Get the details of an user
-*UserApi* | [**getCurrentUser**](Apis/UserApi.md#getcurrentuser) | **GET** /users/me | Get the details of the logged-in User
-*UserApi* | [**getOrganizationCurrentUser**](Apis/UserApi.md#getorganizationcurrentuser) | **GET** /organizations/{organization_id}/me | Get the details of a logged-in User with roles for an Organization
-*UserApi* | [**getWorkspaceCurrentUser**](Apis/UserApi.md#getworkspacecurrentuser) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/me | Get the details of the logged-in user with roles for a Workspace
-*UserApi* | [**registerUser**](Apis/UserApi.md#registeruser) | **POST** /users | Register a new user
-*UserApi* | [**testPlatform**](Apis/UserApi.md#testplatform) | **GET** /test | test platform API call
-*UserApi* | [**unregisterUser**](Apis/UserApi.md#unregisteruser) | **DELETE** /users/{user_id} | Unregister an user
-*UserApi* | [**updateUser**](Apis/UserApi.md#updateuser) | **PATCH** /users/{user_id} | Update a User
 *ValidatorApi* | [**createValidator**](Apis/ValidatorApi.md#createvalidator) | **POST** /organizations/{organization_id}/datasets/validators | Register a new validator
 *ValidatorApi* | [**createValidatorRun**](Apis/ValidatorApi.md#createvalidatorrun) | **POST** /organizations/{organization_id}/datasets/validators/{validator_id}/history | Register a new validator run
 *ValidatorApi* | [**deleteValidator**](Apis/ValidatorApi.md#deletevalidator) | **DELETE** /organizations/{organization_id}/datasets/validators/{validator_id} | Delete a validator
@@ -191,9 +181,6 @@ Class | Method | HTTP request | Description
  - [TwinGraphImport](./Models/TwinGraphImport.md)
  - [TwinGraphImportInfo](./Models/TwinGraphImportInfo.md)
  - [TwinGraphQuery](./Models/TwinGraphQuery.md)
- - [User](./Models/User.md)
- - [UserOrganization](./Models/UserOrganization.md)
- - [UserWorkspace](./Models/UserWorkspace.md)
  - [Validator](./Models/Validator.md)
  - [ValidatorRun](./Models/ValidatorRun.md)
  - [Workspace](./Models/Workspace.md)

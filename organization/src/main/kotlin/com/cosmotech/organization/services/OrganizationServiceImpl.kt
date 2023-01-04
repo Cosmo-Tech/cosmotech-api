@@ -1,14 +1,8 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.organization.azure
+package com.cosmotech.organization.services
 
-import com.azure.cosmos.models.CosmosContainerProperties
-import com.azure.cosmos.models.CosmosQueryRequestOptions
-import com.azure.cosmos.models.SqlParameter
-import com.azure.cosmos.models.SqlQuerySpec
-import com.cosmotech.api.azure.cosmosdb.ext.findAll
-import com.cosmotech.api.azure.cosmosdb.ext.findByIdOrThrow
-import com.cosmotech.api.azure.cosmosdb.service.CsmCosmosDBService
+import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
@@ -30,7 +24,6 @@ import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.api.utils.toDomain
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.ComponentRolePermissions
 import com.cosmotech.organization.domain.Organization
@@ -39,53 +32,46 @@ import com.cosmotech.organization.domain.OrganizationRole
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.organization.domain.OrganizationService
 import com.cosmotech.organization.domain.OrganizationServices
-import com.fasterxml.jackson.databind.JsonNode
-import javax.annotation.PostConstruct
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import com.cosmotech.organization.repositories.OrganizationRepository
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
 @Service
-@ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions")
-class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin: CsmAdmin) :
-    CsmCosmosDBService(), OrganizationApiService {
-
-  private lateinit var coreOrganizationContainer: String
-
-  @PostConstruct
-  fun initService() {
-    this.coreOrganizationContainer =
-        csmPlatformProperties.azure!!.cosmos.coreDatabase.organizations.container
-    cosmosCoreDatabase.createContainerIfNotExists(
-        CosmosContainerProperties(coreOrganizationContainer, "/id"))
-  }
+class OrganizationServiceImpl(
+    private val csmRbac: CsmRbac,
+    private val csmAdmin: CsmAdmin,
+    private val organizationRepository: OrganizationRepository
+) : CsmPhoenixService(), OrganizationApiService {
 
   override fun findAllOrganizations(): List<Organization> {
     val isAdmin = csmAdmin.verifyCurrentRolesAdmin()
     if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
-      return cosmosTemplate.findAll(coreOrganizationContainer)
+      return organizationRepository.findAll().toList()
     }
-    val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
-    return cosmosCoreDatabase
-        .getContainer(this.coreOrganizationContainer)
-        .queryItems(
-            SqlQuerySpec(
-                "SELECT * FROM c WHERE ARRAY_CONTAINS(c.security.accessControlList, {id: @ACL_USER}, true) " +
-                    "OR c.security.default NOT LIKE 'none'",
-                SqlParameter("@ACL_USER", currentUser)),
-            CosmosQueryRequestOptions(),
-            // It would be much better to specify the Domain Type right away and
-            // avoid the map operation, but we can't due
-            // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
-            // https://github.com/Azure/azure-sdk-for-java/issues/12269
-            JsonNode::class.java)
-        .mapNotNull { it.toDomain<Organization>() }
-        .toList()
+    return organizationRepository.findAll().toList()
+    // TODO Handle parametrized search correctly
+    /*    return cosmosCoreDatabase
+    .getContainer(this.coreOrganizationContainer)
+    .queryItems(
+        SqlQuerySpec(
+            "SELECT * FROM c WHERE ARRAY_CONTAINS(c.security.accessControlList, {id: @ACL_USER}, true) " +
+                "OR c.security.default NOT LIKE 'none'",
+            SqlParameter("@ACL_USER", currentUser)),
+        CosmosQueryRequestOptions(),
+        // It would be much better to specify the Domain Type right away and
+        // avoid the map operation, but we can't due
+        // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
+        // https://github.com/Azure/azure-sdk-for-java/issues/12269
+        JsonNode::class.java)
+    .mapNotNull { it.toDomain<Organization>() }
+    .toList()*/
   }
 
   override fun findOrganizationById(organizationId: String): Organization {
     val organization: Organization =
-        cosmosTemplate.findByIdOrThrow(coreOrganizationContainer, organizationId)
+        organizationRepository.findByIdOrNull(organizationId)
+            ?: throw CsmResourceNotFoundException("Organization $organizationId does not exist!")
     csmRbac.verify(organization.getRbac(), PERMISSION_READ)
     return organization
   }
@@ -101,8 +87,7 @@ class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin
     val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
 
     val organizationRegistered =
-        cosmosTemplate.insert(
-            coreOrganizationContainer,
+        organizationRepository.save(
             organization.copy(
                 id = newOrganizationId,
                 ownerId = getCurrentAuthenticatedUserName(),
@@ -122,7 +107,7 @@ class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin
     val organization = findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_DELETE)
 
-    cosmosTemplate.deleteEntity(coreOrganizationContainer, organization)
+    organizationRepository.delete(organization)
 
     this.eventPublisher.publishEvent(OrganizationUnregistered(this, organizationId))
   }
@@ -153,7 +138,7 @@ class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin
       }
     }
     return if (hasChanged) {
-      cosmosTemplate.upsertAndReturnEntity(coreOrganizationContainer, existingOrganization)
+      organizationRepository.save(existingOrganization)
     } else {
       existingOrganization
     }
@@ -195,14 +180,13 @@ class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin
       existingOrganizationServiceCredentials.putAll(organizationService.credentials ?: emptyMap())
       hasChanged = true
     }
-    return if (hasChanged) {
-      //      existingServices.existingOrganizationService = existingOrganizationService
+
+    if (hasChanged) {
       existingOrganization.services = existingServices
-      cosmosTemplate.upsert(coreOrganizationContainer, existingOrganization)
-      existingOrganizationService
-    } else {
-      existingOrganizationService
+      organizationRepository.save(existingOrganization)
     }
+
+    return existingOrganizationService
   }
 
   override fun updateTenantCredentialsByOrganizationId(
@@ -221,7 +205,7 @@ class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin
     existingServices.tenantCredentials = existingTenantCredentials
     existingOrganization.services = existingServices
 
-    cosmosTemplate.upsert(coreOrganizationContainer, existingOrganization)
+    organizationRepository.save(existingOrganization)
     return existingTenantCredentials?.toMap() ?: mapOf()
   }
 
@@ -248,7 +232,7 @@ class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin
     csmRbac.verify(organization.getRbac(), PERMISSION_WRITE_SECURITY)
     val rbacSecurity = csmRbac.setDefault(organization.getRbac(), organizationRole.role)
     organization.setRbac(rbacSecurity)
-    cosmosTemplate.upsertAndReturnEntity(coreOrganizationContainer, organization)
+    organizationRepository.save(organization)
     return organization.security as OrganizationSecurity
   }
 
@@ -272,7 +256,7 @@ class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin
         csmRbac.setUserRole(
             organization.getRbac(), organizationAccessControl.id, organizationAccessControl.role)
     organization.setRbac(rbacSecurity)
-    cosmosTemplate.upsertAndReturnEntity(coreOrganizationContainer, organization)
+    organizationRepository.save(organization)
     val rbacAccessControl =
         csmRbac.getAccessControl(organization.getRbac(), organizationAccessControl.id)
     return OrganizationAccessControl(rbacAccessControl.id, rbacAccessControl.role)
@@ -292,7 +276,7 @@ class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin
     val rbacSecurity =
         csmRbac.setUserRole(organization.getRbac(), identityId, organizationRole.role)
     organization.setRbac(rbacSecurity)
-    cosmosTemplate.upsertAndReturnEntity(coreOrganizationContainer, organization)
+    organizationRepository.save(organization)
     val rbacAccessControl = csmRbac.getAccessControl(organization.getRbac(), identityId)
     return OrganizationAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
@@ -302,7 +286,7 @@ class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin
     csmRbac.verify(organization.getRbac(), PERMISSION_WRITE_SECURITY)
     val rbacSecurity = csmRbac.removeUser(organization.getRbac(), identityId)
     organization.setRbac(rbacSecurity)
-    cosmosTemplate.upsertAndReturnEntity(coreOrganizationContainer, organization)
+    organizationRepository.save(organization)
   }
 
   override fun getOrganizationSecurityUsers(organizationId: String): List<String> {

@@ -4,6 +4,5 @@
 dependencies {
   implementation(projects.cosmotechOrganizationApi)
   implementation(projects.cosmotechSolutionApi)
-  implementation(projects.cosmotechUserApi)
   implementation(projects.cosmotechWorkspaceApi)
 }

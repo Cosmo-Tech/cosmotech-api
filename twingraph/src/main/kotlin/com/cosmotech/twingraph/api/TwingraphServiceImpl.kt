@@ -10,12 +10,13 @@ import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.organization.api.OrganizationApiService
-import com.cosmotech.organization.azure.getRbac
+import com.cosmotech.organization.services.getRbac
 import com.cosmotech.twingraph.domain.TwinGraphImport
 import com.cosmotech.twingraph.domain.TwinGraphImportInfo
 import com.cosmotech.twingraph.domain.TwinGraphQuery
 import com.cosmotech.twingraph.extension.toJsonString
 import com.cosmotech.twingraph.utils.TwingraphUtils
+import com.redislabs.redisgraph.ResultSet
 import com.redislabs.redisgraph.impl.api.RedisGraph
 import org.springframework.stereotype.Service
 import redis.clients.jedis.JedisPool
@@ -128,16 +129,16 @@ class TwingraphServiceImpl(
     }
 
     val redisGraphId = "${graphId}:${twinGraphQuery.version}"
-    val redisGraph = RedisGraph(csmJedisPool)
+
     csmJedisPool.resource.use { jedis ->
       val redisGraphMatchingKeys = jedis.keys(redisGraphId)
       if (redisGraphMatchingKeys.size == 0) {
         throw CsmResourceNotFoundException("No graph found with id: $redisGraphId")
       }
     }
-
+    val redisGraph = RedisGraph(csmJedisPool)
     val resultSet =
-        redisGraph.query(
+      redisGraph.query(
             redisGraphId, twinGraphQuery.query, csmPlatformProperties.twincache.queryTimeout)
 
     return resultSet.toJsonString()
