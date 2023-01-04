@@ -5,7 +5,6 @@ Apis/ScenarioApi.md
 Apis/ScenariorunApi.md
 Apis/SolutionApi.md
 Apis/TwingraphApi.md
-Apis/UserApi.md
 Apis/ValidatorApi.md
 Apis/WorkspaceApi.md
 Models/ComponentRolePermissions.md
@@ -62,9 +61,6 @@ Models/SourceInfo.md
 Models/TwinGraphImport.md
 Models/TwinGraphImportInfo.md
 Models/TwinGraphQuery.md
-Models/User.md
-Models/UserOrganization.md
-Models/UserWorkspace.md
 Models/Validator.md
 Models/ValidatorRun.md
 Models/Workspace.md

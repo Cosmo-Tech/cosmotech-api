@@ -15,7 +15,6 @@ dependencies {
   implementation(projects.cosmotechScenarioApi)
   implementation(projects.cosmotechScenariorunApi)
   implementation(projects.cosmotechSolutionApi)
-  implementation(projects.cosmotechUserApi)
   implementation(projects.cosmotechWorkspaceApi)
   implementation(projects.cosmotechTwingraphApi)
   implementation(projects.cosmotechMetricsService)
