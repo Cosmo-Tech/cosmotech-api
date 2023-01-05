@@ -250,8 +250,9 @@ subprojects {
     implementation("org.springframework.data:spring-data-redis:2.7.3")
     constraints {
       implementation("redis.clients:jedis:3.9.0") {
-        because("3.9.0 version does not contain the UnifiedClient class that we used previously" +
-            "and we cannot use 4.X versions as they are not compatible with Spring Boot 2.X")
+        because(
+            "3.9.0 version does not contain the UnifiedClient class that we used previously" +
+                "and we cannot use 4.X versions as they are not compatible with Spring Boot 2.X")
       }
     }
     implementation("com.redis.om:redis-om-spring:0.5.1")
