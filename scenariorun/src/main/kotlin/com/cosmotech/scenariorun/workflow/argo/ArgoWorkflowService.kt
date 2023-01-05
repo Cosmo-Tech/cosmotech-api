@@ -300,7 +300,8 @@ internal class ArgoWorkflowService(
       logger.debug(logMessage)
       logger.trace(logMessage, e)
     }
-    if (workflowList == null || workflowList.items.isEmpty()) {
+
+    if (workflowList?.items?.isEmpty() != false) {
       workflowList =
           newServiceApiInstance<WorkflowServiceApi>(this.apiClient)
               .workflowServiceListWorkflows(
