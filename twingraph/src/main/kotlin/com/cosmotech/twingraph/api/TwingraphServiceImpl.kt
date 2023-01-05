@@ -78,7 +78,6 @@ class TwingraphServiceImpl(
 
     val count = jedis.del(*matchingKeys.toTypedArray())
     logger.debug("$count keys are removed from Twingraph with prefix $graphId")
-    jedis.close()
   }
 
   override fun query(
@@ -99,13 +98,11 @@ class TwingraphServiceImpl(
       if (twinGraphQuery.version.isNullOrEmpty()) {
         throw CsmResourceNotFoundException("Cannot find lastVersion in ${graphId}MetaData")
       }
-      jedis.close()
     }
 
     val redisGraphId = "${graphId}:${twinGraphQuery.version}"
     val redisGraph = RedisGraph(csmJedisPool)
     val resultSet = redisGraph.query(redisGraphId, twinGraphQuery.query)
-    redisGraph.close()
     val iterator = resultSet.iterator()
     if (!iterator.hasNext()) {
       throw CsmResourceNotFoundException(
