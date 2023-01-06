@@ -138,10 +138,10 @@ class TwingraphServiceImpl(
     val resultJson = mutableMapOf<String, String>()
     result.values.forEachIndexed { index, element ->
       val elementType = elementTypes[index]!!
-      resultJson.computeIfAbsent(elementType) { getJsonValue(resultSet, index, element) }
       resultJson.computeIfPresent(elementType) { _, value ->
         value + ", " + getJsonValue(resultSet, index, element)
       }
+      resultJson.computeIfAbsent(elementType) { getJsonValue(resultSet, index, element) }
     }
     return resultJson.map { "\"${it.key}\": {${it.value}}" }.joinToString(",", "{", "}")
   }
