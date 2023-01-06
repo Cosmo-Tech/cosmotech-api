@@ -441,7 +441,8 @@ class ScenarioRunServiceImplTests {
     every { cosmosTemplate.deleteEntity("orgId", scenarioRun) }
     every { scenarioRun.id } returns "scenariorunId"
     every { scenarioRun.ownerId } returns "ownerId"
-    every { scenarioRun.organizationId } returns "ownerId"
+    every { scenarioRun.organizationId } returns "organisationId"
+    every { scenarioRun.workspaceId } returns "workspaceId"
     every { scenarioRun.workspaceKey } returns "wk"
     every { scenarioRun.csmSimulationRun } returns "csmSimulationRun"
     every { scenarioRun.scenarioId } returns "scenarioId"

@@ -18,6 +18,7 @@ import com.cosmotech.api.events.DeleteHistoricalDataWorkspace
 import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
 import com.cosmotech.api.events.ScenarioDataDownloadRequest
 import com.cosmotech.api.events.ScenarioDeleted
+import com.cosmotech.api.events.ScenarioLastRunChanged
 import com.cosmotech.api.events.ScenarioRunEndTimeRequest
 import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
@@ -33,6 +34,7 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
+import com.cosmotech.scenario.domain.ScenarioJobState
 import com.cosmotech.scenariorun.CSM_JOB_ID_LABEL_KEY
 import com.cosmotech.scenariorun.ContainerFactory
 import com.cosmotech.scenariorun.SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME
@@ -117,6 +119,8 @@ internal class ScenarioRunServiceImpl(
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
     }
     deleteScenarioRunWithoutAccessEnforcement(scenarioRun)
+
+    deleteScenarioLastRunEvent(scenarioRun)
   }
 
   private fun deleteScenarioRunWithoutAccessEnforcement(scenarioRun: ScenarioRun) {
@@ -147,6 +151,17 @@ internal class ScenarioRunServiceImpl(
           exception.message,
           exception)
     }
+  }
+
+  private fun deleteScenarioLastRunEvent(scenarioRun: ScenarioRun) {
+    var scenario =
+        scenarioApiService.findScenarioById(
+            scenarioRun.organizationId!!, scenarioRun.workspaceId!!, scenarioRun.scenarioId!!)
+
+    scenario.lastRun = null
+    scenario.state = ScenarioJobState.Created
+    eventPublisher.publishEvent(
+        ScenarioLastRunChanged(this, scenarioRun.organizationId, scenarioRun.workspaceId, scenario))
   }
 
   override fun deleteHistoricalDataOrganization(organizationId: String, deleteUnknown: Boolean) {
