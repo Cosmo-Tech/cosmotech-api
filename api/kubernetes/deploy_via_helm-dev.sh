@@ -8,13 +8,14 @@ set -eo errexit
 
 help() {
   echo
-  echo "This script takes at least 5 parameters."
+  echo "This script takes at least 4 parameters."
   echo
   echo "The following optional environment variables can be set to alter this script behavior:"
   echo "- API_IMAGE_TAG | string | V1, V2, latest"
   echo "- NAMESPACE | string | name of the targeted namespace. Generated when not set"
   echo "- ARGO_MINIO_ACCESS_KEY | string | AccessKey for MinIO. Generated when not set"
   echo "- ARGO_MINIO_SECRET_KEY | string | SecretKey for MinIO. Generated when not set"
+  echo "- ARGO_REQUEUE_TIME | string | Workflow requeue time, 1s by default"
   echo "- ARGO_MINIO_REQUESTS_MEMORY | units of bytes (default is 4Gi) | Memory requests for the Argo MinIO server"
   echo "- PROM_STORAGE_CLASS_NAME | storage class name for the prometheus PVC (default is standard)"
   echo "- PROM_STORAGE_RESOURCE_REQUEST | size requested for prometheusPVC (default is 10Gi)"
@@ -45,7 +46,7 @@ else
 fi
 export ARGO_POSTGRESQL_PASSWORD="$3"
 export API_VERSION="$4"
-export REQUEUE_TIME="$5"
+export REQUEUE_TIME="${ARGO_REQUEUE_TIME:-1s}"
 
 export ARGO_RELEASE_NAME=argocsmv2
 export MINIO_RELEASE_NAME=miniocsmv2
@@ -521,7 +522,7 @@ helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "${HELM_CHARTS_BASE_PATH}
     --set config.csm.platform.vcs-ref="$(git rev-parse --abbrev-ref HEAD || "")" \
     --set podAnnotations."com\.cosmotech/deployed-at-timestamp"="\"$(date +%s)\"" \
     --values "values-cosmotech-api-deploy.yaml" \
-    "${@:6}"
+    "${@:5}"
 
 # kube-prometheus-stack
 # https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack

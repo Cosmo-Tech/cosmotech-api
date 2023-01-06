@@ -2,7 +2,6 @@
 
 API_VERSION=${1:-latest}
 IMAGE_TAG=${2:-latest}
-REQUEUE_TIME=${3:-1s}
 
 CURRENT_SCRIPT_DIR=$(realpath "$(dirname "$0")")
 HELM_DEPLOY_SCRIPT_BASE_PATH=$(realpath "${CURRENT_SCRIPT_DIR}"/../../api/kubernetes)
@@ -45,7 +44,6 @@ EOF
   "${CHART_RELEASE_TEST_NAMESPACE}" \
   "${PASSWORD_FOR_ARGO_PASSWORD}" \
   "${API_VERSION}" \
-  "${REQUEUE_TIME}" \
   --wait \
   --timeout 10m \
   --values "${HELM_DEPLOY_SCRIPT_BASE_PATH}/helm-chart/values-dev.yaml" \
