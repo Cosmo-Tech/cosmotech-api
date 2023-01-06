@@ -49,10 +49,13 @@ class WorkspaceEventHubStrategyShared(
     return when (eventHubRole) {
       EventHubRole.PROBES_MEASURES -> baseName
       EventHubRole.CONTROL_PLANE ->
-          workspace.sendScenarioRunToEventHub
-              .takeIf { it == true }
-              ?.let { "$baseName$CONTROL_PLANE_SUFFIX" }
-              ?: NOT_AVAILABLE
+          workspace.sendScenarioRunToEventHub.let {
+            if (it != false) {
+              "$baseName$CONTROL_PLANE_SUFFIX"
+            } else {
+              NOT_AVAILABLE
+            }
+          }
       EventHubRole.SCENARIO_METADATA ->
           workspace.sendScenarioMetadataToEventHub
               .takeIf { it == true }
