@@ -9,11 +9,12 @@ export HELM_EXPERIMENTAL_OCI=1
 
 help() {
   echo
-  echo "This script takes at least 5 parameters."
+  echo "This script takes at least 4 parameters."
   echo
   echo "The following optional environment variables can be set to alter this script behavior:"
   echo "- ARGO_MINIO_ACCESS_KEY | string | AccessKey for MinIO. Generated when not set"
   echo "- ARGO_MINIO_SECRET_KEY | string | SecretKey for MinIO. Generated when not set"
+  echo "- ARGO_REQUEUE_TIME | string | Workflow requeue time, 1s by default"
   echo "- ARGO_MINIO_REQUESTS_MEMORY | units of bytes (default is 4Gi) | Memory requests for the Argo MinIO server"
   echo "- ARGO_MINIO_PERSISTENCE_SIZE | units of bytes (default is 500Gi) | Persistence size for the Argo MinIO server"
   echo "- NGINX_INGRESS_CONTROLLER_ENABLED | boolean (default is false) | indicating whether an NGINX Ingress Controller should be deployed and an Ingress resource created too"
@@ -63,7 +64,7 @@ export HELM_EXPERIMENTAL_OCI=1
 export CHART_PACKAGE_VERSION="$1"
 export NAMESPACE="$2"
 export API_VERSION="$4"
-export REQUEUE_TIME="$5"
+export REQUEUE_TIME="${ARGO_REQUEUE_TIME:-1s}"
 
 echo CHART_PACKAGE_VERSION: $CHART_PACKAGE_VERSION
 echo NAMEPSACE: $NAMESPACE
@@ -456,7 +457,7 @@ helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "cosmotech-api-chart-${CH
     --version ${CHART_PACKAGE_VERSION} \
     --values values-cosmotech-api-deploy.yaml \
     ${CERT_MANAGER_INGRESS_ANNOTATION_SET} \
-    "${@:6}"
+    "${@:5}"
 
 
 # kube-prometheus-stack
