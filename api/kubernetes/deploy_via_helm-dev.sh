@@ -8,7 +8,7 @@ set -eo errexit
 
 help() {
   echo
-  echo "This script takes at least 4 parameters."
+  echo "This script takes at least 5 parameters."
   echo
   echo "The following optional environment variables can be set to alter this script behavior:"
   echo "- API_IMAGE_TAG | string | V1, V2, latest"
@@ -45,6 +45,7 @@ else
 fi
 export ARGO_POSTGRESQL_PASSWORD="$3"
 export API_VERSION="$4"
+export REQUEUE_TIME="$5"
 
 export ARGO_RELEASE_NAME=argocsmv2
 export MINIO_RELEASE_NAME=miniocsmv2
@@ -385,6 +386,9 @@ server:
       memory: "128Mi"
       cpu: "1"
 controller:
+  extraEnv:
+  - name: DEFAULT_REQUEUE_TIME
+    value: "${REQUEUE_TIME}"
   podLabels:
     networking/traffic-allowed: "yes"
   tolerations:
@@ -517,7 +521,7 @@ helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "${HELM_CHARTS_BASE_PATH}
     --set config.csm.platform.vcs-ref="$(git rev-parse --abbrev-ref HEAD || "")" \
     --set podAnnotations."com\.cosmotech/deployed-at-timestamp"="\"$(date +%s)\"" \
     --values "values-cosmotech-api-deploy.yaml" \
-    "${@:5}"
+    "${@:6}"
 
 # kube-prometheus-stack
 # https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
