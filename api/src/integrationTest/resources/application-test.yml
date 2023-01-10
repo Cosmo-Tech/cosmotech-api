@@ -31,3 +31,10 @@ csm:
     vendor: azure
     argo:
       base-uri: "https://argo-server.argo.svc.cluster.local:2746"
+    azure:
+      cosmos:
+        key: "this_is_a_key_base64_encoded"
+        uri: "https://faketestaccount.documents.azure.com:443/"
+      storage:
+        account-name: "faketestaccountname"
+        account-key: "this_is_a_key_base64_encoded"
