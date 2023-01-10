@@ -44,7 +44,7 @@ jobs:
         shell: bash
         run: |
           export gitRefName="${{ steps.refvar.outputs.gitRefName }}"
-          if [[ "$gitRefName" == "main" ]]; then
+          if [[ "$gitRefName" == *"-rc"* ]]; then
             export apiVersion=latest
           else
             export tagFirstPart=$(echo "${{ steps.refvar.outputs.gitRefName }}" | cut -d '.' -f1)
