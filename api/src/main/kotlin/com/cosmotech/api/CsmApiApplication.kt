@@ -2,16 +2,18 @@
 // Licensed under the MIT license.
 package com.cosmotech.api
 
+import com.redis.om.spring.annotations.EnableRedisDocumentRepositories
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.FilterType
 import org.springframework.scheduling.annotation.EnableScheduling
-import org.springframework.data.redis.repository.configuration.EnableRedisRepositories
 
 @SpringBootApplication
+@EnableRedisDocumentRepositories(
+    basePackages = ["com.cosmotech"]
+)
 @EnableScheduling
-@EnableRedisRepositories(basePackages = ["com.cosmotech"])
 @ComponentScan(
     basePackages = ["com.cosmotech"],
     excludeFilters =
