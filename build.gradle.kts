@@ -208,7 +208,7 @@ subprojects {
     implementation("redis.clients:jedis:4.3.1")
 
     testImplementation(kotlin("test"))
-    testImplementation(platform("org.junit:junit-bom:5.9.1"))
+    testImplementation(platform("org.junit:junit-bom:5.9.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("io.mockk:mockk:1.13.2")
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
