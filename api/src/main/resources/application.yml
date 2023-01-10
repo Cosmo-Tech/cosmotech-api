@@ -3,6 +3,10 @@ logging:
     com.cosmotech: INFO
 
 spring:
+  redis:
+    host: ${csm.platform.twincache.host}
+    username: ${csm.platform.twincache.username}
+    password: ${csm.platform.twincache.password}
   servlet:
     multipart:
       max-file-size: 50MB
