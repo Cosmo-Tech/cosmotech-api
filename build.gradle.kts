@@ -229,8 +229,7 @@ subprojects {
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
-    api("com.github.Cosmo-Tech:cosmotech-api-common:$cosmotechApiCommonVersion")
-{
+    api("com.github.Cosmo-Tech:cosmotech-api-common:$cosmotechApiCommonVersion") {
       exclude(group = "org.slf4j", module = "slf4j-api")
       because(
           "this depends on org.slf4j:slf4j-api 2.0.3," +
