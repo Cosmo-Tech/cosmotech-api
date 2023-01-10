@@ -37,24 +37,32 @@ jobs:
         id: refvar
         env:
           GH_REF: ${{ github.event.client_payload.gh_ref }}
-        run: echo "::set-output name=gitRefName::${GH_REF#refs/*/}"
+        run: echo "gitRefName=${GH_REF#refs/*/}" >> $GITHUB_OUTPUT
 
       - name: Compute API version
         id: apiVersionVar
-        # if git ref contains '-rc': deploy to latest, otherwise deploy to the major version
-        # to avoid deploying a mistyped pre-release tag as stable, every version with '-' will go to latest
+        shell: bash
         run: |
           export gitRefName="${{ steps.refvar.outputs.gitRefName }}"
-          if [[ "$gitRefName" == *"-rc"* ]]; then \
-            echo "::set-output name=apiVersion::latest" ; \
-          else \
+          if [[ "$gitRefName" == "main" ]]; then
+            export apiVersion=latest
+          else
             export tagFirstPart=$(echo "${{ steps.refvar.outputs.gitRefName }}" | cut -d '.' -f1)
-            if [[ $tagFirstPart == "v*" ]]; then \
-              echo "::set-output name=apiVersion::${tagFirstPart}" ; \
-            else \
-              echo "::set-output name=apiVersion::v${tagFirstPart}" ; \
-            fi ; \
+            if [[ $tagFirstPart == "v*" ]]; then
+              export apiVersion=${tagFirstPart}
+            else
+              export apiVersion=v${tagFirstPart}
+            fi
           fi
+          echo "apiVersion=${apiVersion}" >> $GITHUB_OUTPUT
+
+          echo "Hack to get last v2.1 install script if needed"
+          if [[ "${apiVersion}" == "v2" ]]; then
+              export apiScriptVersion=v2.1
+          else
+              export apiScriptVersion=${apiVersion}
+          fi
+          echo "apiScriptVersion=${apiScriptVersion}" >> $GITHUB_OUTPUT
 
       - name: Prepare values.yaml
         env:
@@ -117,8 +125,10 @@ jobs:
           TLS_CERTIFICATE_TYPE: let_s_encrypt
           COSMOTECH_API_DNS_NAME: ${{ secrets.STAGING_ENV_COSMOTECH_API_DNS_NAME }}
           TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL: ${{ secrets.STAGING_ENV_TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL }}
+          REDIS_DISK_SIZE: 128
+          REDIS_DISK_RESOURCE: "/subscriptions/a24b131f-bd0b-42e8-872a-bded9b91ab74/resourceGroups/phoenixstaging/providers/Microsoft.Compute/disks/cosmotech-database-disk"
         run: |
-          curl -o- -sSL https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/main/deployment_scripts/${{ steps.apiVersionVar.outputs.apiVersion }}/deploy_via_helm.sh | bash -s -- \
+          curl -o- -sSL https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/main/deployment_scripts/${{ steps.apiVersionVar.outputs.apiScriptVersion }}/deploy_via_helm.sh | bash -s -- \
             "${GH_SHA}" \
             "${NAMESPACE}" \
             "${ARGO_POSTGRESQL_PASSSORD}" \
