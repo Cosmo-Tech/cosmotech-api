@@ -6,11 +6,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.FilterType
-import org.springframework.data.redis.repository.configuration.EnableRedisRepositories
+import com.redis.om.spring.annotations.EnableRedisDocumentRepositories
 import org.springframework.scheduling.annotation.EnableScheduling
 
 @SpringBootApplication
-@EnableRedisRepositories(basePackages = ["com.cosmotech"])
+@EnableRedisDocumentRepositories(
+    basePackages = ["com.cosmotech"]
+)
 @EnableScheduling
 @ComponentScan(
     basePackages = ["com.cosmotech"],
