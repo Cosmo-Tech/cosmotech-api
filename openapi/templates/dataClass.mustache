@@ -7,7 +7,9 @@
 */
 {{#discriminator}}
     {{>typeInfoAnnotation}}{{/discriminator}}
-{{#discriminator}}interface {{classname}}{{/discriminator}}{{^discriminator}}{{#hasVars}}data {{/hasVars}}class {{classname}} (
+{{#discriminator}}interface {{classname}}{{/discriminator}}{{^discriminator}}{{#hasVars}}
+@com.redis.om.spring.annotations.Document
+data {{/hasVars}}class {{classname}} (
 {{#requiredVars}}
     {{>csmDataClassReqVar}}{{^-last}},
     {{/-last}}{{/requiredVars}}{{#hasRequired}}{{#hasOptional}},

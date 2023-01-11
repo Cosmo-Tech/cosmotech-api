@@ -10,9 +10,7 @@ import org.springframework.context.annotation.FilterType
 import org.springframework.scheduling.annotation.EnableScheduling
 
 @SpringBootApplication
-@EnableRedisDocumentRepositories(
-    basePackages = ["com.cosmotech"]
-)
+@EnableRedisDocumentRepositories(basePackages = ["com.cosmotech"])
 @EnableScheduling
 @ComponentScan(
     basePackages = ["com.cosmotech"],
