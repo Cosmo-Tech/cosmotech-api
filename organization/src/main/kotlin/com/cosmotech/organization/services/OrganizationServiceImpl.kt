@@ -33,6 +33,8 @@ import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.organization.domain.OrganizationService
 import com.cosmotech.organization.domain.OrganizationServices
 import com.cosmotech.organization.repositories.OrganizationRepository
+import com.redis.om.spring.search.stream.EntityStream
+import java.util.stream.Collectors
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
