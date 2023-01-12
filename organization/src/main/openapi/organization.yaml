@@ -565,36 +565,44 @@ components:
   schemas:
     Organization:
       type: object
+      x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
       description: an Organization
       properties:
         id:
+          x-field-extra-annotation: "@org.springframework.data.annotation.Id"
           type: string
           readOnly: true
           description: the Organization unique identifier
         name:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           description: the Organization name
         ownerId:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           readOnly: true
           description: the Owner User Id
         services:
           descriptions: the list of Cloud services specific to the Organization
           $ref: '#/components/schemas/OrganizationServices'
         security:
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           allOf:
             - $ref: '#/components/schemas/OrganizationSecurity'
 #      required:
 #        - name
     OrganizationSecurity:
       type: object
+      x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
       description: the Organization security information
       properties:
         default:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the role by default
         accessControlList:
           type: array
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the list which can access this Organization with detailed access control information
           items:
             $ref: '#/components/schemas/OrganizationAccessControl'
@@ -603,19 +611,23 @@ components:
         - accessControlList
     OrganizationAccessControl:
       type: object
+      x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
       description: a Organization access control item
       properties:
         id:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the identity id
         role:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: a role
       required:
         - id
         - role
     OrganizationRole:
       type: object
+      x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
       description: the Organization Role
       properties:
         role:

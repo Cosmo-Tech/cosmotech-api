@@ -46,6 +46,7 @@ class OrganizationServiceImpl(
 
   override fun findAllOrganizations(): List<Organization> {
     val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+    val test = organizationRepository.findFirstBySecurityDefault("reader")
     val isAdmin = csmAdmin.verifyCurrentRolesAdmin()
     if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
       return organizationRepository.findAll().toList()
