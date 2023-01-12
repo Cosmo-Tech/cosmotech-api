@@ -35,6 +35,7 @@ import com.cosmotech.organization.domain.OrganizationServices
 import com.cosmotech.organization.repositories.OrganizationRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import java.net.URLEncoder
 
 @Service
 @Suppress("TooManyFunctions")
@@ -46,12 +47,15 @@ class OrganizationServiceImpl(
 
   override fun findAllOrganizations(): List<Organization> {
     val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
-    val test = organizationRepository.findFirstBySecurityDefault("reader")
     val isAdmin = csmAdmin.verifyCurrentRolesAdmin()
+
     if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
       return organizationRepository.findAll().toList()
     }
-    return organizationRepository.findAll().toList()
+    // To put this to common-api
+    val safeUser = currentUser.replace("@", "\\@").replace(".", "\\.")
+    return organizationRepository.findOrganizationsBySecurity(safeUser)
+
     // TODO Handle parametrized search correctly
     /*    return cosmosCoreDatabase
     .getContainer(this.coreOrganizationContainer)
