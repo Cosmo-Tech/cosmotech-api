@@ -6,6 +6,7 @@ import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.rbac.CsmAdmin
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.PERMISSION_READ
@@ -32,8 +33,6 @@ import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.organization.domain.OrganizationService
 import com.cosmotech.organization.domain.OrganizationServices
 import com.cosmotech.organization.repositories.OrganizationRepository
-import com.redis.om.spring.search.stream.EntityStream
-import java.util.stream.Collectors
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
@@ -41,30 +40,20 @@ import org.springframework.stereotype.Service
 @Suppress("TooManyFunctions")
 class OrganizationServiceImpl(
     private val csmRbac: CsmRbac,
-    private val organizationRepository: OrganizationRepository,
-    private val entityStream: EntityStream
+    private val csmAdmin: CsmAdmin,
+    private val organizationRepository: OrganizationRepository
 ) : CsmPhoenixService(), OrganizationApiService {
 
   override fun findAllOrganizations(): List<Organization> {
     val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
-    /*    val isAdmin = csmAdmin.verifyCurrentRolesAdmin()
+    val test = organizationRepository.findFirstBySecurityDefault("reader")
+    val isAdmin = csmAdmin.verifyCurrentRolesAdmin()
     if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
       return organizationRepository.findAll().toList()
-    }*/
-    return entityStream
-        .of(Organization::class.java)
-        .filter { (it as Organization).security != null }
-        .filter { (it as Organization).security?.default != "none" }
-        .filter { (it as Organization).security?.accessControlList != null }
-        .filter {
-          (it as Organization).security?.accessControlList?.any { it2 -> it2.id == currentUser } !=
-              null
-        }
-        .collect(Collectors.toList())
-  }
-  // return organizationRepository.findAll().toList()
-  // TODO Handle parametrized search correctly
-  /*    return cosmosCoreDatabase
+    }
+    return organizationRepository.findAll().toList()
+    // TODO Handle parametrized search correctly
+    /*    return cosmosCoreDatabase
     .getContainer(this.coreOrganizationContainer)
     .queryItems(
         SqlQuerySpec(
@@ -78,8 +67,8 @@ class OrganizationServiceImpl(
         // https://github.com/Azure/azure-sdk-for-java/issues/12269
         JsonNode::class.java)
     .mapNotNull { it.toDomain<Organization>() }
-    .toList()
-  }*/
+    .toList()*/
+  }
 
   override fun findOrganizationById(organizationId: String): Organization {
     val organization: Organization =
