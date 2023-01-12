@@ -73,7 +73,7 @@ openApiMerger {
   openApi {
     openApiVersion.set("3.0.3")
     info {
-      title.set("Cosmo Tech Plaform API")
+      title.set("Cosmo Tech Platform API")
       description.set("Cosmo Tech Platform API")
       version.set(project.version.toString())
       //      termsOfService.set("http://openapimerger.com/terms-of-service")

@@ -1,4 +1,4 @@
-# Documentation for Cosmo Tech Plaform API
+# Documentation for Cosmo Tech Platform API
 
 <a name="documentation-for-api-endpoints"></a>
 ## Documentation for API Endpoints
@@ -213,6 +213,6 @@ Class | Method | HTTP request | Description
 - **Type**: OAuth
 - **Flow**: implicit
 - **Authorization URL**: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
-- **Scopes**: 
+- **Scopes**:
   - http://dev.api.cosmotech.com/platform: Platform scope
 
