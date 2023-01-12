@@ -3,9 +3,13 @@
 package com.cosmotech.organization.repositories
 
 import com.cosmotech.organization.domain.Organization
+import com.redis.om.spring.annotations.Query
 import com.redis.om.spring.repository.RedisDocumentRepository
+import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 
 @Repository interface OrganizationRepository : RedisDocumentRepository<Organization, String> {
-  fun findFirstByName(name: String): Organization?
+  @Query("(-@security_default:{none}) | (@security_accessControlList_id:{\$userId})")
+  fun findOrganizationsBySecurity(@Param("userId") userId: String): List<Organization>
+
 }
