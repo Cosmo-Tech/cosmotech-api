@@ -35,7 +35,6 @@ import com.cosmotech.organization.domain.OrganizationServices
 import com.cosmotech.organization.repositories.OrganizationRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
-import java.net.URLEncoder
 
 @Service
 @Suppress("TooManyFunctions")
