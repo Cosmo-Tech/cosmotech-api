@@ -615,6 +615,7 @@ components:
           description: the Organization name
         ownerId:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           readOnly: true
           description: the Owner User Id
         services:
@@ -628,6 +629,7 @@ components:
 #        - name
     OrganizationSecurity:
       type: object
+      x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
       description: the Organization security information
       properties:
         default:
@@ -645,6 +647,7 @@ components:
         - accessControlList
     OrganizationAccessControl:
       type: object
+      x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
       description: a Organization access control item
       properties:
         id:
@@ -653,6 +656,7 @@ components:
           description: the identity id
         role:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: a role
       required:
         - id
