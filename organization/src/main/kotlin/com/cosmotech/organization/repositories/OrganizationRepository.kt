@@ -8,8 +8,8 @@ import com.redis.om.spring.repository.RedisDocumentRepository
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 
-@Repository interface OrganizationRepository : RedisDocumentRepository<Organization, String> {
+@Repository
+interface OrganizationRepository : RedisDocumentRepository<Organization, String> {
   @Query("(-@security_default:{none}) | (@security_accessControlList_id:{\$userId})")
   fun findOrganizationsBySecurity(@Param("userId") userId: String): List<Organization>
-
 }
