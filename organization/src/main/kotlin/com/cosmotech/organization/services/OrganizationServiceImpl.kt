@@ -33,8 +33,6 @@ import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.organization.domain.OrganizationService
 import com.cosmotech.organization.domain.OrganizationServices
 import com.cosmotech.organization.repositories.OrganizationRepository
-import com.redis.om.spring.search.stream.EntityStream
-import java.util.stream.Collectors
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
@@ -47,6 +45,8 @@ class OrganizationServiceImpl(
 ) : CsmPhoenixService(), OrganizationApiService {
 
   override fun findAllOrganizations(): List<Organization> {
+    val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+    val test = organizationRepository.findFirstBySecurityDefault("reader")
     val isAdmin = csmAdmin.verifyCurrentRolesAdmin()
     if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
       return organizationRepository.findAll().toList()

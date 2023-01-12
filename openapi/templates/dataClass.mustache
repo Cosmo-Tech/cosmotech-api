@@ -7,15 +7,15 @@
 */
 {{#discriminator}}
     {{>typeInfoAnnotation}}{{/discriminator}}
+{{#vendorExtensions.x-class-extra-annotation}}{{vendorExtensions.x-class-extra-annotation}}{{/vendorExtensions.x-class-extra-annotation}}
 {{#discriminator}}interface {{classname}}{{/discriminator}}{{^discriminator}}{{#hasVars}}
-@com.redis.om.spring.annotations.Document
 data {{/hasVars}}class {{classname}} (
 {{#requiredVars}}
     {{>csmDataClassReqVar}}{{^-last}},
     {{/-last}}{{/requiredVars}}{{#hasRequired}}{{#hasOptional}},
 {{/hasOptional}}{{/hasRequired}}{{#optionalVars}}{{>csmDataClassOptVar}}{{^-last}},
 {{/-last}}{{/optionalVars}}
-){{#vendorExtensions.x-impl}}: {{vendorExtensions.x-impl}}{{/vendorExtensions.x-impl}} {{/discriminator}}{{#parent}}: {{{.}}}{{/parent}}{
+) {{/discriminator}}{{#parent}}: {{{.}}}{{/parent}}{
 {{#discriminator}}
     {{#requiredVars}}
         {{>interfaceReqVar}}
