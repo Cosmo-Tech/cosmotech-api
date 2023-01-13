@@ -118,10 +118,12 @@ components:
   schemas:
     Connector:
       type: object
+      x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
       description: a version of a Connector
       properties:
         id:
           type: string
+          x-field-extra-annotation: "@org.springframework.data.annotation.Id"
           readOnly: true
           description: the Connector version unique identifier
         key:
@@ -129,6 +131,7 @@ components:
           description: the Connector key which group Connector versions
         name:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           description: the Connector name
         description:
           type: string
