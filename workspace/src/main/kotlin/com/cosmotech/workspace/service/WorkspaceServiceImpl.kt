@@ -185,7 +185,8 @@ internal class WorkspaceServiceImpl(
     try {
       deleteAllWorkspaceFiles(organizationId, workspaceId)
       secretManager.deleteSecret(
-          csmPlatformProperties.namespace, getWorkspaceSecretName(organizationId, workspace.key))
+          csmPlatformProperties.namespace, getWorkspaceSecretName(organizationId, workspace.key)
+      )
     } finally {
       workspaceRepository.delete(workspace)
     }
