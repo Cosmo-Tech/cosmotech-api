@@ -20,4 +20,7 @@ interface WorkspaceRepository : RedisDocumentRepository<Workspace, String> {
       @Param("organizationId") organizationId: String,
       @Param("securityConstraint") securityConstraint: String
   ): List<Workspace>
+
+  @Query("(-@security_default:{none}) | (@security_accessControlList_id:{\$userId})")
+  fun findWorkspacesBySecurity(@Param("userId") userId: String): List<Workspace>
 }
