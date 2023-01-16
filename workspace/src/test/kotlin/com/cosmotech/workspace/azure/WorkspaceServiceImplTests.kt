@@ -17,6 +17,7 @@ import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
+import com.cosmotech.workspace.service.WorkspaceServiceImpl
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
@@ -66,7 +67,8 @@ class WorkspaceServiceImplTests {
                 csmRbac,
                 resourceScanner,
                 secretManager,
-            ))
+            )
+        )
     mockkStatic(::getCurrentAuthenticatedMail)
     every { getCurrentAuthenticatedMail(csmPlatformProperties) } returns "dummy@cosmotech.com"
 

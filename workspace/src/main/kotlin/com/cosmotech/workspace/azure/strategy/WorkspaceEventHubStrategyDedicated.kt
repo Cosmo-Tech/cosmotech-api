@@ -7,8 +7,8 @@ import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.workspace.azure.EventHubRole
 import com.cosmotech.workspace.azure.NOT_AVAILABLE
 import com.cosmotech.workspace.azure.WORKSPACE_EVENTHUB_ACCESSKEY_SECRET
-import com.cosmotech.workspace.azure.getWorkspaceSecretName
-import com.cosmotech.workspace.azure.getWorkspaceUniqueName
+import com.cosmotech.workspace.service.getWorkspaceSecretName
+import com.cosmotech.workspace.service.getWorkspaceUniqueName
 import com.cosmotech.workspace.domain.Workspace
 import org.springframework.stereotype.Component
 
