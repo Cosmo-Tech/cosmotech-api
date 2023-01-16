@@ -676,10 +676,12 @@ components:
   schemas:
     Workspace:
       type: object
+      x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
       description: a Workspace
       properties:
         id:
           type: string
+          x-field-extra-annotation: "@org.springframework.data.annotation.Id"
           readOnly: true
           description: the Workspace version unique identifier
         key:
@@ -687,6 +689,7 @@ components:
           description: technical key for resource name convention and version grouping. Must be unique
         name:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           description: the Workspace name
         description:
           type: string
@@ -733,6 +736,7 @@ components:
             The Event Hub Namespace must be named \'<organization_id\>-<workspace_id\>\' (in lower case).
             This Namespace must also contain two Event Hubs named \'scenariometadata\' and \'scenariorunmetadata\'.
         security:
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           allOf:
            - $ref: '#/components/schemas/WorkspaceSecurity'
       required:
@@ -745,9 +749,11 @@ components:
       properties:
         default:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the role by default
         accessControlList:
           type: array
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the list which can access this Workspace with detailed access control information
           items:
             $ref: '#/components/schemas/WorkspaceAccessControl'
@@ -760,9 +766,11 @@ components:
       properties:
         id:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the identity id
         role:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: a role
       required:
         - id

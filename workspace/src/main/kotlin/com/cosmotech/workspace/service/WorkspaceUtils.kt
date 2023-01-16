@@ -1,6 +1,6 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.workspace.azure
+package com.cosmotech.workspace.service
 
 fun getWorkspaceSecretName(organizationId: String, workspaceKey: String) =
     getWorkspaceUniqueName(organizationId, workspaceKey)
