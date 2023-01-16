@@ -1,6 +1,6 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.workspace.azure
+package com.cosmotech.workspace.service
 
 import com.azure.cosmos.models.CosmosContainerProperties
 import com.azure.cosmos.models.CosmosQueryRequestOptions
@@ -41,15 +41,18 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.organization.api.OrganizationApiService
-import com.cosmotech.organization.services.getRbac
+import com.cosmotech.organization.repository.OrganizationRepository
+import com.cosmotech.organization.service.getRbac
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.workspace.api.WorkspaceApiService
+import com.cosmotech.workspace.azure.WORKSPACE_EVENTHUB_ACCESSKEY_SECRET
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceFile
 import com.cosmotech.workspace.domain.WorkspaceRole
 import com.cosmotech.workspace.domain.WorkspaceSecret
 import com.cosmotech.workspace.domain.WorkspaceSecurity
+import com.cosmotech.workspace.repository.WorkspaceRepository
 import com.fasterxml.jackson.databind.JsonNode
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -75,17 +78,24 @@ internal class WorkspaceServiceImpl(
     private val csmRbac: CsmRbac,
     private val resourceScanner: ResourceScanner,
     private val secretManager: SecretManager,
+    private val organizationRepository: OrganizationRepository,
+    private val workspaceRepository: WorkspaceRepository
 ) : CsmAzureService(), WorkspaceApiService {
 
   override fun findAllWorkspaces(organizationId: String): List<Workspace> {
     val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
-    val organization = organizationService.findOrganizationById(organizationId)
+    val organization = organizationRepository.findById(organizationId)
+        .orElseThrow { CsmResourceNotFoundException("Organization " + organizationId) }
+
     logger.debug("Getting workspaces for user $currentUser")
     val isAdmin = csmRbac.isAdmin(organization.getRbac(), getCommonRolesDefinition())
     if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
       return cosmosTemplate.findAll("${organizationId}_workspaces")
     }
-    val templateQuery =
+
+    // To put this to common-api
+    return null
+/*    val templateQuery =
         "SELECT * FROM c " +
             "WHERE ARRAY_CONTAINS(c.security.accessControlList, {id: @ACL_USER}, true) " +
             "OR c.security.default NOT LIKE 'none'"
@@ -102,7 +112,7 @@ internal class WorkspaceServiceImpl(
             // https://github.com/Azure/azure-sdk-for-java/issues/12269
             JsonNode::class.java)
         .mapNotNull { it.toDomain<Workspace>() }
-        .toList()
+        .toList()*/
   }
 
   internal fun findWorkspaceByIdNoSecurity(organizationId: String, workspaceId: String): Workspace =
@@ -125,13 +135,20 @@ internal class WorkspaceServiceImpl(
     workspace.solution?.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
     val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
 
-    return cosmosTemplate.insert(
+    return workspaceRepository.save(
+      workspace.copy(
+        id = idGenerator.generate("workspace"),
+        ownerId = getCurrentAuthenticatedUserName(),
+        security = workspace.security ?: initSecurity(currentUser)))
+
+
+/*    return cosmosTemplate.insert(
         "${organizationId}_workspaces",
         workspace.copy(
             id = idGenerator.generate("workspace"),
             ownerId = getCurrentAuthenticatedUserName(),
             security = workspace.security ?: initSecurity(currentUser)))
-        ?: throw IllegalArgumentException("No Workspace returned in response: $workspace")
+        ?: throw IllegalArgumentException("No Workspace returned in response: $workspace")*/
   }
 
   override fun deleteAllWorkspaceFiles(organizationId: String, workspaceId: String) {
@@ -202,7 +219,8 @@ internal class WorkspaceServiceImpl(
     try {
       deleteAllWorkspaceFiles(organizationId, workspaceId)
       secretManager.deleteSecret(
-          csmPlatformProperties.namespace, getWorkspaceSecretName(organizationId, workspace.key))
+          csmPlatformProperties.namespace, getWorkspaceSecretName(organizationId, workspace.key)
+      )
     } finally {
       cosmosTemplate.deleteEntity("${organizationId}_workspaces", workspace)
     }

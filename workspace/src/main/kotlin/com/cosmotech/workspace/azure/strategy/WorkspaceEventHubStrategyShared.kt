@@ -5,7 +5,7 @@ package com.cosmotech.workspace.azure.strategy
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.workspace.azure.EventHubRole
 import com.cosmotech.workspace.azure.NOT_AVAILABLE
-import com.cosmotech.workspace.azure.getWorkspaceUniqueName
+import com.cosmotech.workspace.service.getWorkspaceUniqueName
 import com.cosmotech.workspace.domain.Workspace
 import org.springframework.stereotype.Component
 
