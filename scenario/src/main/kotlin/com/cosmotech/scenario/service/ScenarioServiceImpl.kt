@@ -67,6 +67,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.time.LocalDateTime
@@ -691,6 +692,12 @@ internal class ScenarioServiceImpl(
           DeleteHistoricalDataScenario(
               this, organizationId, workspaceId, it.id!!, data.deleteUnknown))
     }
+  }
+
+  @EventListener(OrganizationUnregistered::class)
+  @Async("csm-in-process-event-executor")
+  fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
+    cosmosTemplate.deleteContainer("${organizationUnregistered.organizationId}_scenario_data")
   }
 
   @EventListener(ScenarioRunStartedForScenario::class)
