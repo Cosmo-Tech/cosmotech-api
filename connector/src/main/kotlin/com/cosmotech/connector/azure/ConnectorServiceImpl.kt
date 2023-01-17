@@ -45,8 +45,9 @@ internal class ConnectorServiceImpl(var connectorRepository: ConnectorRepository
   }
 
   private fun findByIdOrThrow(id: String, errorMessage: String? = null): Connector =
-      connectorRepository.findById(id).get()
-          ?: throw CsmResourceNotFoundException(
-              errorMessage
-                  ?: "Resource of type '${Connector::class.java.simpleName}' and identifier '$id' not found")
+      connectorRepository.findById(id).orElseThrow {
+        CsmResourceNotFoundException(
+            errorMessage
+                ?: "Resource of type '${Connector::class.java.simpleName}' and identifier '$id' not found")
+      }
 }

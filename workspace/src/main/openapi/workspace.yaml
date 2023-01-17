@@ -684,6 +684,11 @@ components:
           x-field-extra-annotation: "@org.springframework.data.annotation.Id"
           readOnly: true
           description: the Workspace version unique identifier
+        organizationId:
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
+          type: string
+          readOnly: true
+          description: the Organization unique identifier
         key:
           type: string
           description: technical key for resource name convention and version grouping. Must be unique
@@ -770,7 +775,6 @@ components:
           description: the identity id
         role:
           type: string
-          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: a role
       required:
         - id

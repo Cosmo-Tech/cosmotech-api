@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.workspace.azure
 
-import com.azure.spring.data.cosmos.core.CosmosTemplate
 import com.azure.storage.blob.BlobContainerClient
 import com.azure.storage.blob.BlobServiceClient
 import com.azure.storage.blob.batch.BlobBatchClient
@@ -14,10 +13,12 @@ import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.repository.OrganizationRepository
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
-import com.cosmotech.workspace.service.WorkspaceServiceImpl
+import com.cosmotech.workspace.repository.WorkspaceRepository
+import com.cosmotech.workspace.services.WorkspaceServiceImpl
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
@@ -50,7 +51,8 @@ class WorkspaceServiceImplTests {
   @RelaxedMockK private lateinit var csmRbac: CsmRbac
   @RelaxedMockK private lateinit var resourceScanner: ResourceScanner
 
-  @Suppress("unused") @MockK private lateinit var cosmosTemplate: CosmosTemplate
+  @Suppress("unused") @MockK private lateinit var organizationRepository: OrganizationRepository
+  @Suppress("unused") @MockK private lateinit var workspaceRepository: WorkspaceRepository
 
   @InjectMockKs private lateinit var workspaceServiceImpl: WorkspaceServiceImpl
 
@@ -67,8 +69,8 @@ class WorkspaceServiceImplTests {
                 csmRbac,
                 resourceScanner,
                 secretManager,
-            )
-        )
+                organizationRepository,
+                workspaceRepository))
     mockkStatic(::getCurrentAuthenticatedMail)
     every { getCurrentAuthenticatedMail(csmPlatformProperties) } returns "dummy@cosmotech.com"
 
@@ -296,17 +298,13 @@ class WorkspaceServiceImplTests {
               name = "my workspace name",
               solution = WorkspaceSolution(solutionId = "SOL-my-solution-id")))
     }
-    verify(exactly = 0) {
-      cosmosTemplate.insert("${ORGANIZATION_ID}_workspaces", ofType(Workspace::class))
-    }
-    confirmVerified(cosmosTemplate)
+    verify(exactly = 0) { workspaceRepository.save(ofType(Workspace::class)) }
+    confirmVerified(workspaceRepository)
   }
 
   @Test
   fun `should reject update request if solution ID is not valid`() {
-    every {
-      workspaceServiceImpl.findWorkspaceByIdNoSecurity(ORGANIZATION_ID, WORKSPACE_ID)
-    } returns
+    every { workspaceServiceImpl.findWorkspaceByIdNoSecurity(WORKSPACE_ID) } returns
         Workspace(
             id = WORKSPACE_ID,
             key = "my-workspace-key",
@@ -324,13 +322,7 @@ class WorkspaceServiceImplTests {
               solution = WorkspaceSolution(solutionId = "SOL-my-new-solution-id")))
     }
 
-    verify(exactly = 0) {
-      cosmosTemplate.insert("${ORGANIZATION_ID}_workspaces", ofType(Workspace::class))
-    }
-    verify(exactly = 0) {
-      cosmosTemplate.upsertAndReturnEntity(
-          "${ORGANIZATION_ID}_workspaces", ofType(Workspace::class))
-    }
-    confirmVerified(cosmosTemplate)
+    verify(exactly = 0) { workspaceRepository.save(ofType(Workspace::class)) }
+    confirmVerified(workspaceRepository)
   }
 }

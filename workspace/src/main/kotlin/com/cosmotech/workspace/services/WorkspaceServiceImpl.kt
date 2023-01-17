@@ -1,23 +1,16 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.workspace.service
+package com.cosmotech.workspace.services
 
-import com.azure.cosmos.models.CosmosContainerProperties
-import com.azure.cosmos.models.CosmosQueryRequestOptions
-import com.azure.cosmos.models.SqlParameter
-import com.azure.cosmos.models.SqlQuerySpec
 import com.azure.spring.autoconfigure.storage.resource.AzureStorageResourcePatternResolver
 import com.azure.spring.autoconfigure.storage.resource.BlobStorageResource
 import com.azure.storage.blob.BlobServiceClient
 import com.azure.storage.blob.batch.BlobBatchClient
 import com.azure.storage.blob.models.DeleteSnapshotsOptionType
-import com.cosmotech.api.azure.CsmAzureService
-import com.cosmotech.api.azure.findAll
-import com.cosmotech.api.azure.findByIdOrThrow
+import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.events.DeleteHistoricalDataOrganization
 import com.cosmotech.api.events.DeleteHistoricalDataWorkspace
-import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
@@ -39,10 +32,10 @@ import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.api.utils.toDomain
+import com.cosmotech.api.utils.sanitizeForRedis
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.repository.OrganizationRepository
-import com.cosmotech.organization.service.getRbac
+import com.cosmotech.organization.services.getRbac
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.azure.WORKSPACE_EVENTHUB_ACCESSKEY_SECRET
@@ -53,7 +46,6 @@ import com.cosmotech.workspace.domain.WorkspaceRole
 import com.cosmotech.workspace.domain.WorkspaceSecret
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.repository.WorkspaceRepository
-import com.fasterxml.jackson.databind.JsonNode
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
@@ -80,49 +72,31 @@ internal class WorkspaceServiceImpl(
     private val secretManager: SecretManager,
     private val organizationRepository: OrganizationRepository,
     private val workspaceRepository: WorkspaceRepository
-) : CsmAzureService(), WorkspaceApiService {
+) : CsmPhoenixService(), WorkspaceApiService {
 
   override fun findAllWorkspaces(organizationId: String): List<Workspace> {
     val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
-    val organization = organizationRepository.findById(organizationId)
-        .orElseThrow { CsmResourceNotFoundException("Organization " + organizationId) }
+    val organization =
+        organizationRepository.findById(organizationId).orElseThrow {
+          CsmResourceNotFoundException("Organization $organizationId")
+        }
 
     logger.debug("Getting workspaces for user $currentUser")
     val isAdmin = csmRbac.isAdmin(organization.getRbac(), getCommonRolesDefinition())
     if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
-      return cosmosTemplate.findAll("${organizationId}_workspaces")
+      return workspaceRepository.findByOrganizationId(organizationId)
     }
-
-    // To put this to common-api
-    return null
-/*    val templateQuery =
-        "SELECT * FROM c " +
-            "WHERE ARRAY_CONTAINS(c.security.accessControlList, {id: @ACL_USER}, true) " +
-            "OR c.security.default NOT LIKE 'none'"
-    logger.debug("Template query: $templateQuery")
-
-    return cosmosCoreDatabase
-        .getContainer("${organizationId}_workspaces")
-        .queryItems(
-            SqlQuerySpec(templateQuery, listOf(SqlParameter("@ACL_USER", currentUser))),
-            CosmosQueryRequestOptions(),
-            // It would be much better to specify the Domain Type right away and
-            // avoid the map operation, but we can't due
-            // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
-            // https://github.com/Azure/azure-sdk-for-java/issues/12269
-            JsonNode::class.java)
-        .mapNotNull { it.toDomain<Workspace>() }
-        .toList()*/
+    return workspaceRepository.findByOrganizationIdAndSecurity(
+        organizationId.sanitizeForRedis(), currentUser.sanitizeForRedis())
   }
 
-  internal fun findWorkspaceByIdNoSecurity(organizationId: String, workspaceId: String): Workspace =
-      cosmosTemplate.findByIdOrThrow(
-          "${organizationId}_workspaces",
-          workspaceId,
-          "Workspace $workspaceId not found in organization $organizationId")
+  internal fun findWorkspaceByIdNoSecurity(workspaceId: String): Workspace =
+      workspaceRepository.findById(workspaceId).orElseThrow {
+        CsmResourceNotFoundException("Workspace $workspaceId")
+      }
 
   override fun findWorkspaceById(organizationId: String, workspaceId: String): Workspace {
-    val workspace: Workspace = this.findWorkspaceByIdNoSecurity(organizationId, workspaceId)
+    val workspace: Workspace = this.findWorkspaceByIdNoSecurity(workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_READ)
     return workspace
   }
@@ -131,24 +105,16 @@ internal class WorkspaceServiceImpl(
     val organization = organizationService.findOrganizationById(organizationId)
     // Needs security on Organization to check RBAC
     csmRbac.verify(organization.getRbac(), PERMISSION_CREATE_CHILDREN)
-    // Validate Solution ID
+    // Validate Solution IDl
     workspace.solution?.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
     val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
 
     return workspaceRepository.save(
-      workspace.copy(
-        id = idGenerator.generate("workspace"),
-        ownerId = getCurrentAuthenticatedUserName(),
-        security = workspace.security ?: initSecurity(currentUser)))
-
-
-/*    return cosmosTemplate.insert(
-        "${organizationId}_workspaces",
         workspace.copy(
             id = idGenerator.generate("workspace"),
+            organizationId = organizationId,
             ownerId = getCurrentAuthenticatedUserName(),
             security = workspace.security ?: initSecurity(currentUser)))
-        ?: throw IllegalArgumentException("No Workspace returned in response: $workspace")*/
   }
 
   override fun deleteAllWorkspaceFiles(organizationId: String, workspaceId: String) {
@@ -181,7 +147,7 @@ internal class WorkspaceServiceImpl(
       workspaceId: String,
       workspace: Workspace
   ): Workspace {
-    val existingWorkspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
+    val existingWorkspace = findWorkspaceByIdNoSecurity(workspaceId)
     csmRbac.verify(existingWorkspace.getRbac(), PERMISSION_WRITE)
     // Security cannot be changed by updateWorkspace
     var hasChanged =
@@ -207,7 +173,7 @@ internal class WorkspaceServiceImpl(
       }
     }
     return if (hasChanged) {
-      cosmosTemplate.upsertAndReturnEntity("${organizationId}_workspaces", existingWorkspace)
+      workspaceRepository.save(workspace)
     } else {
       existingWorkspace
     }
@@ -219,10 +185,9 @@ internal class WorkspaceServiceImpl(
     try {
       deleteAllWorkspaceFiles(organizationId, workspaceId)
       secretManager.deleteSecret(
-          csmPlatformProperties.namespace, getWorkspaceSecretName(organizationId, workspace.key)
-      )
+          csmPlatformProperties.namespace, getWorkspaceSecretName(organizationId, workspace.key))
     } finally {
-      cosmosTemplate.deleteEntity("${organizationId}_workspaces", workspace)
+      workspaceRepository.delete(workspace)
     }
     return workspace
   }
@@ -335,21 +300,11 @@ internal class WorkspaceServiceImpl(
     }
   }
 
-  @EventListener(OrganizationRegistered::class)
-  fun onOrganizationRegistered(organizationRegistered: OrganizationRegistered) {
-    cosmosCoreDatabase.createContainerIfNotExists(
-        CosmosContainerProperties("${organizationRegistered.organizationId}_workspaces", "/id"))
-  }
-
   @EventListener(OrganizationUnregistered::class)
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
     val organizationId = organizationUnregistered.organizationId
-    try {
-      azureStorageBlobServiceClient.deleteBlobContainer(organizationId)
-    } finally {
-      cosmosTemplate.deleteContainer("${organizationId}_workspaces")
-    }
+    azureStorageBlobServiceClient.deleteBlobContainer(organizationId)
   }
 
   private fun getWorkspaceFileResources(
@@ -385,11 +340,11 @@ internal class WorkspaceServiceImpl(
       workspaceId: String,
       workspaceRole: WorkspaceRole
   ): WorkspaceSecurity {
-    val workspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
+    val workspace = findWorkspaceByIdNoSecurity(workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE_SECURITY)
     val rbacSecurity = csmRbac.setDefault(workspace.getRbac(), workspaceRole.role)
     workspace.setRbac(rbacSecurity)
-    cosmosTemplate.upsertAndReturnEntity("${organizationId}_workspaces", workspace)
+    workspaceRepository.save(workspace)
     return workspace.security as WorkspaceSecurity
   }
 
@@ -409,7 +364,7 @@ internal class WorkspaceServiceImpl(
       workspaceId: String,
       workspaceAccessControl: WorkspaceAccessControl
   ): WorkspaceAccessControl {
-    val workspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
+    val workspace = findWorkspaceByIdNoSecurity(workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE_SECURITY)
     var organization = organizationService.findOrganizationById(organizationId)
     val rbacSecurity =
@@ -419,7 +374,7 @@ internal class WorkspaceServiceImpl(
             workspaceAccessControl.id,
             workspaceAccessControl.role)
     workspace.setRbac(rbacSecurity)
-    cosmosTemplate.upsertAndReturnEntity("${organizationId}_workspaces", workspace)
+    workspaceRepository.save(workspace)
     var rbacAccessControl = csmRbac.getAccessControl(workspace.getRbac(), workspaceAccessControl.id)
     return WorkspaceAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
@@ -430,13 +385,13 @@ internal class WorkspaceServiceImpl(
       identityId: String,
       workspaceRole: WorkspaceRole
   ): WorkspaceAccessControl {
-    val workspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
+    val workspace = findWorkspaceByIdNoSecurity(workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE_SECURITY)
     csmRbac.checkUserExists(
         workspace.getRbac(), identityId, "User '$identityId' not found in workspace $workspaceId")
     val rbacSecurity = csmRbac.setUserRole(workspace.getRbac(), identityId, workspaceRole.role)
     workspace.setRbac(rbacSecurity)
-    cosmosTemplate.upsertAndReturnEntity("${organizationId}_workspaces", workspace)
+    workspaceRepository.save(workspace)
     val rbacAccessControl = csmRbac.getAccessControl(workspace.getRbac(), identityId)
     return WorkspaceAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
@@ -450,7 +405,7 @@ internal class WorkspaceServiceImpl(
     csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE_SECURITY)
     val rbacSecurity = csmRbac.removeUser(workspace.getRbac(), identityId)
     workspace.setRbac(rbacSecurity)
-    cosmosTemplate.upsertAndReturnEntity("${organizationId}_workspaces", workspace)
+    workspaceRepository.save(workspace)
   }
 
   override fun getWorkspaceSecurityUsers(

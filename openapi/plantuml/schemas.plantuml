@@ -462,6 +462,7 @@ entity ValidatorRun {
 
 entity Workspace {
     id: String
+    organizationId: String
     * key: String
     * name: String
     description: String
