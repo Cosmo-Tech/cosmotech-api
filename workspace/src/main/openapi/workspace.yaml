@@ -823,7 +823,6 @@ components:
           description: the identity id
         role:
           type: string
-          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: a role
       required:
         - id
