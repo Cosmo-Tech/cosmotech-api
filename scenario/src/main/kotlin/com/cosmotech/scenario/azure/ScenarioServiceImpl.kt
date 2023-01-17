@@ -44,7 +44,7 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.organization.api.OrganizationApiService
-import com.cosmotech.organization.service.getRbac
+import com.cosmotech.organization.services.getRbac
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioAccessControl
@@ -63,8 +63,8 @@ import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.azure.EventHubRole
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
-import com.cosmotech.workspace.service.getRbac
 import com.cosmotech.workspace.domain.Workspace
+import com.cosmotech.workspace.services.getRbac
 import com.fasterxml.jackson.databind.JsonNode
 import java.time.OffsetDateTime
 import java.time.ZonedDateTime
