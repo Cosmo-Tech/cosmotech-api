@@ -595,13 +595,16 @@ components:
         - datasetTags
     Dataset:
       type: object
+      x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
       description: a Dataset
       properties:
         id:
+          x-field-extra-annotation: "@org.springframework.data.annotation.Id"
           type: string
           readOnly: true
           description: the Dataset unique identifier
         name:
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           type: string
           description: the Dataset name
         description:
@@ -611,14 +614,22 @@ components:
           type: string
           readOnly: true
           description: the User id which own this Dataset
+        organizationId:
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
+          type: string
+          readOnly: true
+          description: the Organization Id related to this Dataset
         tags:
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           type: array
           description: the list of tags
           items:
             type: string
         connector:
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the Connector setup bound to a Dataset
-          $ref: '#/components/schemas/DatasetConnector'
+          allOf:
+            - $ref: '#/components/schemas/DatasetConnector'
         fragmentsIds:
           type: array
           description: the list of other Datasets ids to compose as fragments
@@ -641,9 +652,11 @@ components:
       properties:
         id:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the Connector id
         name:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the Connector name
         version:
           type: string
