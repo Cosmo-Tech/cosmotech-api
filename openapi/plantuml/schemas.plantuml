@@ -53,6 +53,7 @@ entity Dataset {
     name: String
     description: String
     ownerId: String
+    organizationId: String
     tags: List<String>
     connector: DatasetConnector
     fragmentsIds: List<String>

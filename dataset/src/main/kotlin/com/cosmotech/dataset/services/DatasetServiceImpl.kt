@@ -1,23 +1,14 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.dataset.azure
+package com.cosmotech.dataset.services
 
-import com.azure.cosmos.models.CosmosContainerProperties
-import com.azure.cosmos.models.CosmosQueryRequestOptions
-import com.azure.cosmos.models.SqlParameter
-import com.azure.cosmos.models.SqlQuerySpec
-import com.cosmotech.api.azure.cosmosdb.ext.findAll
-import com.cosmotech.api.azure.cosmosdb.ext.findByIdOrThrow
-import com.cosmotech.api.azure.cosmosdb.service.CsmCosmosDBService
+import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.events.ConnectorRemoved
 import com.cosmotech.api.events.ConnectorRemovedForOrganization
-import com.cosmotech.api.events.OrganizationRegistered
-import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.api.utils.toDomain
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.dataset.api.DatasetApiService
 import com.cosmotech.dataset.domain.Dataset
@@ -25,7 +16,7 @@ import com.cosmotech.dataset.domain.DatasetCompatibility
 import com.cosmotech.dataset.domain.DatasetCopyParameters
 import com.cosmotech.dataset.domain.DatasetSearch
 import com.cosmotech.organization.api.OrganizationApiService
-import com.fasterxml.jackson.databind.JsonNode
+import com.cosmotech.organization.repositories.DatasetRepository
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
@@ -36,22 +27,23 @@ import org.springframework.stereotype.Service
 @Suppress("TooManyFunctions")
 internal class DatasetServiceImpl(
     private val organizationService: OrganizationApiService,
-    private val connectorService: ConnectorApiService
-) : CsmCosmosDBService(), DatasetApiService {
+    private val connectorService: ConnectorApiService,
+    private val datasetRepository: DatasetRepository
+) : CsmPhoenixService(), DatasetApiService {
   override fun findAllDatasets(organizationId: String) =
-      cosmosTemplate.findAll<Dataset>("${organizationId}_datasets")
+      datasetRepository.findDatasetByOrganization(organizationId)
 
   override fun findDatasetById(organizationId: String, datasetId: String): Dataset =
-      cosmosTemplate.findByIdOrThrow(
-          "${organizationId}_datasets",
-          datasetId,
-          "Dataset $datasetId not found in organization $organizationId")
+      // TODO add RBAC security with organizationId
+      datasetRepository.findById(datasetId).orElseThrow()
+  // "Dataset $datasetId not found in organization $organizationId"
 
   override fun removeAllDatasetCompatibilityElements(organizationId: String, datasetId: String) {
     val dataset = findDatasetById(organizationId, datasetId)
     if (!dataset.compatibility.isNullOrEmpty()) {
       dataset.compatibility = mutableListOf()
-      cosmosTemplate.upsert("${organizationId}_datasets", dataset)
+      datasetRepository.save(dataset)
+      //      cosmosTemplate.upsert("${organizationId}_datasets", dataset)
     }
   }
 
@@ -67,13 +59,16 @@ internal class DatasetServiceImpl(
 
     val datasetCopy =
         dataset.copy(
-            id = idGenerator.generate("dataset"), ownerId = getCurrentAuthenticatedUserName())
+            id = idGenerator.generate("dataset"),
+            ownerId = getCurrentAuthenticatedUserName(),
+            organizationId = organizationId)
     datasetCopy.connector!!.apply {
       name = existingConnector.name
       version = existingConnector.version
     }
-    return cosmosTemplate.insert("${organizationId}_datasets", datasetCopy)
-        ?: throw IllegalArgumentException("No Dataset returned in response: $dataset")
+    return datasetRepository.save(datasetCopy)
+    //      cosmosTemplate.insert("${organizationId}_datasets", datasetCopy)
+    //        ?: throw IllegalArgumentException("No Dataset returned in response: $dataset")
   }
 
   override fun deleteDataset(organizationId: String, datasetId: String) {
@@ -82,7 +77,8 @@ internal class DatasetServiceImpl(
       // TODO Only the owner or an admin should be able to perform this operation
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
     }
-    cosmosTemplate.deleteEntity("${organizationId}_datasets", dataset)
+    datasetRepository.delete(dataset)
+    //    cosmosTemplate.deleteEntity("${organizationId}_datasets", dataset)
   }
 
   override fun updateDataset(organizationId: String, datasetId: String, dataset: Dataset): Dataset {
@@ -121,7 +117,8 @@ internal class DatasetServiceImpl(
     }
 
     return if (hasChanged) {
-      cosmosTemplate.upsertAndReturnEntity("${organizationId}_datasets", existingDataset)
+      datasetRepository.save(existingDataset)
+      //      cosmosTemplate.upsertAndReturnEntity("${organizationId}_datasets", existingDataset)
     } else {
       existingDataset
     }
@@ -148,7 +145,8 @@ internal class DatasetServiceImpl(
           "${it.solutionKey}-${it.minimumVersion}-${it.maximumVersion}"
         })
     existingDataset.compatibility = datasetCompatibilityMap.values.toMutableList()
-    cosmosTemplate.upsert("${organizationId}_datasets", existingDataset)
+    datasetRepository.save(existingDataset)
+    //    cosmosTemplate.upsert("${organizationId}_datasets", existingDataset)
 
     return datasetCompatibility
   }
@@ -160,8 +158,9 @@ internal class DatasetServiceImpl(
     TODO("Not yet implemented")
   }
 
-  override fun searchDatasets(organizationId: String, datasetSearch: DatasetSearch): List<Dataset> {
-    val arrayContainsList: MutableList<String> = mutableListOf()
+  override fun searchDatasets(organizationId: String, datasetSearch: DatasetSearch): List<Dataset> =
+      datasetRepository.findDatasetByTags(datasetSearch.datasetTags.toSet())
+  /*val arrayContainsList: MutableList<String> = mutableListOf()
     val sqlParameters: MutableList<SqlParameter> = mutableListOf()
     datasetSearch.datasetTags.toSet().forEachIndexed { index, tag ->
       var operator = "WHERE"
@@ -171,27 +170,27 @@ internal class DatasetServiceImpl(
       sqlParameters.add(SqlParameter(tagName, tag))
     }
     val arrayContains = arrayContainsList.joinToString(separator = " ")
-    return cosmosCoreDatabase
-        .getContainer("${organizationId}_datasets")
-        .queryItems(
-            SqlQuerySpec("SELECT * FROM c ${arrayContains}", sqlParameters),
-            CosmosQueryRequestOptions(),
-            JsonNode::class.java)
-        .mapNotNull { it.toDomain<Dataset>() }
-        .toList()
-  }
+    cosmosCoreDatabase
+    .getContainer("${organizationId}_datasets")
+    .queryItems(
+        SqlQuerySpec("SELECT * FROM c ${arrayContains}", sqlParameters),
+        CosmosQueryRequestOptions(),
+        JsonNode::class.java)
+    .mapNotNull { it.toDomain<Dataset>() }
+    .toList()
+  }*/
 
-  @EventListener(OrganizationRegistered::class)
+  /* @EventListener(OrganizationRegistered::class)
   fun onOrganizationRegistered(organizationRegistered: OrganizationRegistered) {
     cosmosCoreDatabase.createContainerIfNotExists(
         CosmosContainerProperties("${organizationRegistered.organizationId}_datasets", "/id"))
-  }
+  }*/
 
-  @EventListener(OrganizationUnregistered::class)
+  /*@EventListener(OrganizationUnregistered::class)
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
     cosmosTemplate.deleteContainer("${organizationUnregistered.organizationId}_datasets")
-  }
+  }*/
 
   @EventListener(ConnectorRemoved::class)
   @Async("csm-in-process-event-executor")
@@ -207,24 +206,28 @@ internal class DatasetServiceImpl(
   fun onConnectorRemovedForOrganization(
       connectorRemovedForOrganization: ConnectorRemovedForOrganization
   ) {
-    val organizationId = connectorRemovedForOrganization.organizationId
     val connectorId = connectorRemovedForOrganization.connectorId
-    cosmosCoreDatabase
-        .getContainer("${organizationId}_datasets")
-        .queryItems(
-            SqlQuerySpec(
-                "SELECT * FROM c WHERE c.connector.id = @CONNECTOR_ID",
-                listOf(SqlParameter("@CONNECTOR_ID", connectorId))),
-            CosmosQueryRequestOptions(),
-            // It would be much better to specify the Domain Type right away and
-            // avoid the map operation, but we can't due
-            // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
-            // https://github.com/Azure/azure-sdk-for-java/issues/12269
-            JsonNode::class.java)
-        .mapNotNull { it.toDomain<Dataset>() }
-        .forEach { dataset ->
-          dataset.connector = null
-          cosmosTemplate.upsert("${organizationId}_datasets", dataset)
-        }
+    val datasetList = datasetRepository.findDatasetByConnectorId(connectorId)
+    datasetList.forEach {
+      it.connector = null
+      datasetRepository.save(it)
+    }
+    /*cosmosCoreDatabase
+    .getContainer("${organizationId}_datasets")
+    .queryItems(
+        SqlQuerySpec(
+            "SELECT * FROM c WHERE c.connector.id = @CONNECTOR_ID",
+            listOf(SqlParameter("@CONNECTOR_ID", connectorId))),
+        CosmosQueryRequestOptions(),
+        // It would be much better to specify the Domain Type right away and
+        // avoid the map operation, but we can't due
+        // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
+        // https://github.com/Azure/azure-sdk-for-java/issues/12269
+        JsonNode::class.java)
+    .mapNotNull { it.toDomain<Dataset>() }
+    .forEach { dataset ->
+      dataset.connector = null
+      cosmosTemplate.upsert("${organizationId}_datasets", dataset)
+    }*/
   }
 }
