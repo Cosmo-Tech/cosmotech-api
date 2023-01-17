@@ -1,9 +1,8 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.organization.service
+package com.cosmotech.organization.services
 
 import com.cosmotech.api.CsmPhoenixService
-import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmAdmin
@@ -24,6 +23,7 @@ import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.api.utils.sanitizeForRedis
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.ComponentRolePermissions
 import com.cosmotech.organization.domain.Organization
@@ -51,26 +51,7 @@ class OrganizationServiceImpl(
     if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
       return organizationRepository.findAll().toList()
     }
-    // To put this to common-api
-    val safeUser = currentUser.replace("@", "\\@").replace(".", "\\.")
-    return organizationRepository.findOrganizationsBySecurity(safeUser)
-
-    // TODO Handle parametrized search correctly
-    /*    return cosmosCoreDatabase
-    .getContainer(this.coreOrganizationContainer)
-    .queryItems(
-        SqlQuerySpec(
-            "SELECT * FROM c WHERE ARRAY_CONTAINS(c.security.accessControlList, {id: @ACL_USER}, true) " +
-                "OR c.security.default NOT LIKE 'none'",
-            SqlParameter("@ACL_USER", currentUser)),
-        CosmosQueryRequestOptions(),
-        // It would be much better to specify the Domain Type right away and
-        // avoid the map operation, but we can't due
-        // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
-        // https://github.com/Azure/azure-sdk-for-java/issues/12269
-        JsonNode::class.java)
-    .mapNotNull { it.toDomain<Organization>() }
-    .toList()*/
+    return organizationRepository.findOrganizationsBySecurity(currentUser.sanitizeForRedis())
   }
 
   override fun findOrganizationById(organizationId: String): Organization {
@@ -101,14 +82,6 @@ class OrganizationServiceImpl(
                 id = newOrganizationId,
                 ownerId = getCurrentAuthenticatedUserName(),
                 security = organizationSecurity))
-
-    val organizationId =
-        organizationRegistered.id
-            ?: throw IllegalStateException(
-                "No ID returned for organization registered: $organizationRegistered")
-
-    this.eventPublisher.publishEvent(OrganizationRegistered(this, organizationId))
-
     return organizationRegistered
   }
 
