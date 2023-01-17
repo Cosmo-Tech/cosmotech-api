@@ -10,15 +10,12 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.connector.repository.ConnectorRepository
-import com.redis.om.spring.annotations.EnableRedisDocumentRepositories
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Service
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
-@EnableRedisDocumentRepositories(basePackages = arrayOf("com.cosmotech.connector.azure.*"))
-internal class ConnectorServiceImpl(var connectorRepository: ConnectorRepository) :
-    CsmPhoenixService(), ConnectorApiService {
+internal class ConnectorServiceImpl(var connectorRepository: ConnectorRepository) : CsmPhoenixService(), ConnectorApiService {
 
   override fun findAllConnectors(): List<Connector> = connectorRepository.findAll().toList()
 

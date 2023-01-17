@@ -10,7 +10,7 @@ import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.organization.api.OrganizationApiService
-import com.cosmotech.organization.service.getRbac
+import com.cosmotech.organization.services.getRbac
 import com.cosmotech.twingraph.domain.TwinGraphImport
 import com.cosmotech.twingraph.domain.TwinGraphImportInfo
 import com.cosmotech.twingraph.domain.TwinGraphQuery
