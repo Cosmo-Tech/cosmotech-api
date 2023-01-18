@@ -696,6 +696,11 @@ internal class ScenarioServiceImpl(
   @EventListener(OrganizationUnregistered::class)
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
+    //    TODO REDIS like this
+    //    val scenarios =
+    // scenarioRepository.findByOrganizationId(organizationUnregistered.organizationId)
+    //    scenarioRepository.deleteAll(scenarios)
+
     cosmosTemplate.deleteContainer("${organizationUnregistered.organizationId}_scenario_data")
   }
 
