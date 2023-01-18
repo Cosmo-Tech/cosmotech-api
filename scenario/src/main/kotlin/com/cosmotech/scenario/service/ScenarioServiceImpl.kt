@@ -18,6 +18,7 @@ import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
 import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.events.ScenarioLastRunChanged
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.api.rbac.PERMISSION_DELETE
@@ -36,6 +37,7 @@ import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toSecurityConstraintQuery
+import com.cosmotech.api.utils.sanitizeForRedis
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.service.getRbac
 import com.cosmotech.scenario.api.ScenarioApiService
@@ -701,7 +703,7 @@ internal class ScenarioServiceImpl(
     // scenarioRepository.findByOrganizationId(organizationUnregistered.organizationId)
     //    scenarioRepository.deleteAll(scenarios)
 
-    cosmosTemplate.deleteContainer("${organizationUnregistered.organizationId}_scenario_data")
+    //cosmosTemplate.deleteContainer("${organizationUnregistered.organizationId}_scenario_data")
   }
 
   @EventListener(ScenarioRunStartedForScenario::class)

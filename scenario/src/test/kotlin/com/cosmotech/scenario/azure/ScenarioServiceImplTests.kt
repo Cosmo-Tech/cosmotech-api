@@ -120,7 +120,6 @@ class ScenarioServiceImplTests {
     every { getCurrentAuthenticatedUserName() } returns AUTHENTICATED_USERNAME
     every { getCurrentAuthenticatedMail(csmPlatformProperties) } returns "dummy@cosmotech.com"
 
-    //    scenarioServiceImpl.init()
   }
 
   @AfterTest
