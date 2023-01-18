@@ -1,6 +1,6 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.connector.azure
+package com.cosmotech.connector.service
 
 import com.cosmotech.api.azure.CsmAzureService
 import com.cosmotech.api.events.ConnectorRemoved
@@ -9,9 +9,8 @@ import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
-import com.cosmotech.connector.redis.ConnectorRepository
+import com.cosmotech.connector.repository.ConnectorRepository
 import com.redis.om.spring.annotations.EnableRedisDocumentRepositories
-import java.util.*
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Service
 
@@ -22,7 +21,7 @@ internal class ConnectorServiceImpl(var connectorRepository: ConnectorRepository
     CsmAzureService(), ConnectorApiService {
 
   override fun findAllConnectors(): List<Connector> =
-      connectorRepository.findAll().iterator().asSequence().toList()
+      connectorRepository.findAll().toList()
 
   override fun findConnectorById(connectorId: String): Connector = findByIdOrThrow(connectorId)
 
