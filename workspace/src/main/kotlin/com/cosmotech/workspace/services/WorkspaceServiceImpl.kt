@@ -35,7 +35,7 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.sanitizeForRedis
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.repository.OrganizationRepository
-import com.cosmotech.organization.services.getRbac
+import com.cosmotech.organization.service.getRbac
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.azure.WORKSPACE_EVENTHUB_ACCESSKEY_SECRET
@@ -304,7 +304,12 @@ internal class WorkspaceServiceImpl(
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
     val organizationId = organizationUnregistered.organizationId
-    azureStorageBlobServiceClient.deleteBlobContainer(organizationId)
+    try {
+      azureStorageBlobServiceClient.deleteBlobContainer(organizationId)
+    } finally {
+      val workspaces = workspaceRepository.findByOrganizationId(organizationId)
+      workspaceRepository.deleteAll(workspaces)
+    }
   }
 
   private fun getWorkspaceFileResources(

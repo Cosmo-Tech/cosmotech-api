@@ -400,6 +400,7 @@ entity ScenarioValidationStatus {
 
 entity Solution {
     id: String
+    organizationId: String
     key: String
     name: String
     description: String
