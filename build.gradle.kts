@@ -192,7 +192,7 @@ subprojects {
     val springDocVersion = "1.6.14"
     implementation("org.springdoc:springdoc-openapi-ui:${springDocVersion}")
     implementation("org.springdoc:springdoc-openapi-kotlin:${springDocVersion}")
-    val swaggerParserVersion = "2.1.9"
+    val swaggerParserVersion = "2.1.11"
     implementation("io.swagger.parser.v3:swagger-parser-v3:${swaggerParserVersion}")
 
     implementation("org.zalando:problem-spring-web-starter:0.27.0")
