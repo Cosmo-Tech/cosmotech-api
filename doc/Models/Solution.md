@@ -4,6 +4,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **String** | the Solution version unique identifier | [optional] [default to null]
+**organizationId** | **String** | the Organization unique identifier | [optional] [default to null]
 **key** | **String** | the Solution key which group Solution versions | [optional] [default to null]
 **name** | **String** | the Solution name | [optional] [default to null]
 **description** | **String** | the Solution description | [optional] [default to null]

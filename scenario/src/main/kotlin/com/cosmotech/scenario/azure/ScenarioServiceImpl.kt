@@ -44,7 +44,7 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.organization.api.OrganizationApiService
-import com.cosmotech.organization.services.getRbac
+import com.cosmotech.organization.service.getRbac
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioAccessControl
@@ -754,6 +754,11 @@ internal class ScenarioServiceImpl(
   @EventListener(OrganizationUnregistered::class)
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
+    //    TODO REDIS like this
+    //    val scenarios =
+    // scenarioRepository.findByOrganizationId(organizationUnregistered.organizationId)
+    //    scenarioRepository.deleteAll(scenarios)
+
     cosmosTemplate.deleteContainer("${organizationUnregistered.organizationId}_scenario_data")
   }
 
