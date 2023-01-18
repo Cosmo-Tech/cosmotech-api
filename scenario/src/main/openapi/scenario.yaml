@@ -804,14 +804,17 @@ components:
   schemas:
     Scenario:
       type: object
+      x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
       description: a Scenario with base information
       properties:
         id:
           type: string
+          x-field-extra-annotation: "@org.springframework.data.annotation.Id"
           readOnly: true
           description: the Scenario unique identifier
         name:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           description: the Scenario name
         description:
           type: string
@@ -823,13 +826,16 @@ components:
             type: string
         parentId:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           description: the Scenario parent id
         ownerId:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           readOnly: true
           description: the user id which own this Scenario
         rootId:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           readOnly: true
           description: the scenario root id
         solutionId:
@@ -841,6 +847,7 @@ components:
           description: the Solution Run Template Id associated with this Scenario
         workspaceId:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           readOnly: true
           description: the associated Workspace Id
         state:
@@ -898,8 +905,10 @@ components:
             - type: object
               description: the last Scenario Run for the root (master) of Scenario
         validationStatus:
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           $ref: '#/components/schemas/ScenarioValidationStatus'
         security:
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           allOf:
             - $ref: '#/components/schemas/ScenarioSecurity'
 #      required:
@@ -911,9 +920,11 @@ components:
       properties:
         default:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the role by default
         accessControlList:
           type: array
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the list which can access this Scenario with detailed access control information
           items:
             $ref: '#/components/schemas/ScenarioAccessControl'
@@ -926,9 +937,11 @@ components:
       properties:
         id:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the identity id
         role:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: a role
       required:
         - id
@@ -1076,6 +1089,7 @@ components:
         - DataIngestionInProgress
     ScenarioValidationStatus:
       type: string
+      x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
       description: the validation status of the scenario
       enum:
         - Draft

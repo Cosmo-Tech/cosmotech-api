@@ -1,31 +1,15 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.scenario.azure
+package com.cosmotech.scenario.service
 
-import com.azure.cosmos.models.CosmosContainerProperties
-import com.azure.cosmos.models.CosmosItemRequestOptions
-import com.azure.cosmos.models.CosmosQueryRequestOptions
-import com.azure.cosmos.models.PartitionKey
-import com.azure.cosmos.models.SqlParameter
-import com.azure.cosmos.models.SqlQuerySpec
+import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.azure.adx.AzureDataExplorerClient
-import com.cosmotech.api.azure.cosmosdb.service.CsmCosmosDBService
 import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
-import com.cosmotech.api.events.DeleteHistoricalDataScenario
-import com.cosmotech.api.events.DeleteHistoricalDataWorkspace
-import com.cosmotech.api.events.OrganizationRegistered
-import com.cosmotech.api.events.OrganizationUnregistered
-import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
-import com.cosmotech.api.events.ScenarioDataDownloadRequest
-import com.cosmotech.api.events.ScenarioDatasetListChanged
-import com.cosmotech.api.events.ScenarioDeleted
-import com.cosmotech.api.events.ScenarioLastRunChanged
-import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
-import com.cosmotech.api.events.ScenarioRunStartedForScenario
-import com.cosmotech.api.events.WorkflowPhaseToStateRequest
+import com.cosmotech.api.events.*
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.events.ScenarioLastRunChanged
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.api.rbac.PERMISSION_DELETE
@@ -42,7 +26,7 @@ import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.api.utils.toDomain
+import com.cosmotech.api.utils.sanitizeForRedis
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.service.getRbac
 import com.cosmotech.scenario.api.ScenarioApiService
@@ -57,6 +41,7 @@ import com.cosmotech.scenario.domain.ScenarioRole
 import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
 import com.cosmotech.scenario.domain.ScenarioSecurity
 import com.cosmotech.scenario.domain.ScenarioValidationStatus
+import com.cosmotech.scenario.repository.ScenarioRepository
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
@@ -65,7 +50,6 @@ import com.cosmotech.workspace.azure.EventHubRole
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.services.getRbac
-import com.fasterxml.jackson.databind.JsonNode
 import java.time.OffsetDateTime
 import java.time.ZonedDateTime
 import kotlinx.coroutines.GlobalScope
@@ -88,7 +72,8 @@ internal class ScenarioServiceImpl(
     private val azureEventHubsClient: AzureEventHubsClient,
     private val csmRbac: CsmRbac,
     private val workspaceEventHubService: IWorkspaceEventHubService,
-) : CsmCosmosDBService(), ScenarioApiService {
+    private val scenarioRepository: ScenarioRepository
+) : CsmPhoenixService(), ScenarioApiService {
 
   val scenarioPermissions = getScenarioRolesDefinition()
 
@@ -110,7 +95,7 @@ internal class ScenarioServiceImpl(
               .map { it.copy(isInherited = false) }
               .associateBy { it.parameterId })
       scenario.parametersValues = parametersValuesMap.values.toMutableList()
-      upsertScenarioData(organizationId, scenario, workspaceId)
+      upsertScenarioData(scenario)
     }
     return scenarioRunTemplateParameterValue
   }
@@ -146,7 +131,7 @@ internal class ScenarioServiceImpl(
 
     if (parentId != null) {
       logger.debug("Applying / Overwriting Dataset list from parent $parentId")
-      val parent = this.findScenarioByIdNoState(organizationId, workspaceId, parentId)
+      val parent = this.findScenarioByIdNoState(parentId)
       datasetList = parent.datasetList
       rootId = parent.rootId
       if (rootId == null) {
@@ -174,15 +159,8 @@ internal class ScenarioServiceImpl(
             parametersValues = newParametersValuesList,
             validationStatus = ScenarioValidationStatus.Draft,
             security = scenario.security ?: initSecurity(currentUser))
-    val scenarioAsMap = scenarioToSave.asMapWithAdditionalData(workspaceId)
-    // We cannot use cosmosTemplate as it expects the Domain object to contain a field named 'id'
-    // or annotated with @Id
-    if (cosmosCoreDatabase
-        .getContainer("${organizationId}_scenario_data")
-        .createItem(scenarioAsMap, PartitionKey(scenarioToSave.ownerId), CosmosItemRequestOptions())
-        .item == null) {
-      throw IllegalArgumentException("No Scenario returned in response: $scenarioAsMap")
-    }
+
+    scenarioRepository.save(scenarioToSave)
 
     sendScenarioMetaData(organizationId, workspace, scenarioToSave)
     return scenarioToSave
@@ -246,7 +224,7 @@ internal class ScenarioServiceImpl(
     val scenario = this.findScenarioById(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_DELETE, scenarioPermissions)
 
-    cosmosTemplate.deleteEntity("${organizationId}_scenario_data", scenario)
+    scenarioRepository.delete(scenario)
 
     this.handleScenarioDeletion(organizationId, workspaceId, scenario, waitRelationshipPropagation)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
@@ -293,7 +271,7 @@ internal class ScenarioServiceImpl(
     csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE)
     val scenarios = this.findAllScenariosStateOption(organizationId, workspaceId, false)
     scenarios.forEach {
-      cosmosTemplate.deleteEntity("${organizationId}_scenario_data", it)
+      scenarioRepository.delete(it)
       eventPublisher.publishEvent(ScenarioDeleted(this, organizationId, workspaceId, it.id!!))
     }
   }
@@ -312,7 +290,7 @@ internal class ScenarioServiceImpl(
           GlobalScope.launch {
             // TODO Consider using a smaller coroutine scope
             child.parentId = parentId
-            this@ScenarioServiceImpl.upsertScenarioData(organizationId, child, workspaceId)
+            this@ScenarioServiceImpl.upsertScenarioData(child)
           }
         }
     if (waitRelationshipPropagation) {
@@ -323,8 +301,7 @@ internal class ScenarioServiceImpl(
   override fun findAllScenarios(organizationId: String, workspaceId: String): List<Scenario> {
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_READ)
-    return this.findAllScenariosStateOption(organizationId, workspaceId, true)
-        .addLastRunsInfo(this, organizationId, workspaceId)
+    return this.findAllScenariosStateOption(organizationId, workspaceId, true).addLastRunsInfo(this)
   }
 
   override fun findAllScenariosByValidationStatus(
@@ -339,7 +316,17 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       addState: Boolean
   ): List<Scenario> {
-    return findAllScenariosBy(organizationId, workspaceId, addState = addState)
+    if (isRbacEnabled(organizationId, workspaceId)) {
+      val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+      return scenarioRepository.findScenariosByWorkspaceIdBySecurity(
+          workspaceId, currentUser.sanitizeForRedis())
+    }
+    return scenarioRepository.findScenariosByWorkspaceId(workspaceId).mapNotNull {
+      if (addState) {
+        this.addStateToScenario(organizationId, it)
+      }
+      return@mapNotNull it
+    }
   }
 
   private fun findAllScenarioByValidationStatus(
@@ -347,78 +334,52 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       validationStatus: String
   ): List<Scenario> {
-    return findAllScenariosBy(
-        organizationId,
-        workspaceId,
-        "c.validationStatus = @VALIDATION_STATUS",
-        listOf(SqlParameter("@VALIDATION_STATUS", validationStatus)),
-        false)
+    if (isRbacEnabled(organizationId, workspaceId)) {
+      val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+      return scenarioRepository.findScenariosByValidationStatusBySecurity(
+          validationStatus, currentUser.sanitizeForRedis())
+    }
+    return scenarioRepository.findScenariosByValidationStatus(validationStatus).mapNotNull {
+      return@mapNotNull it
+    }
   }
 
   private fun findAllScenariosByRootId(
       organizationId: String,
       workspaceId: String,
       rootId: String
-  ) =
-      findAllScenariosBy(
-          organizationId,
-          workspaceId,
-          "c.rootId = @ROOT_ID",
-          listOf(SqlParameter("@ROOT_ID", rootId)),
-          false)
+  ): List<Scenario> {
+    if (isRbacEnabled(organizationId, workspaceId)) {
+      val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+      return scenarioRepository.findScenariosOfRootBySecurity(
+          rootId, currentUser.sanitizeForRedis())
+    }
+    return scenarioRepository.findScenarioOfRoot(rootId).mapNotNull {
+      return@mapNotNull it
+    }
+  }
 
   internal fun findScenarioChildrenById(
       organizationId: String,
       workspaceId: String,
       parentId: String
-  ) =
-      findAllScenariosBy(
-          organizationId,
-          workspaceId,
-          "c.parentId = @PARENT_ID",
-          listOf(SqlParameter("@PARENT_ID", parentId)),
-          false)
-
-  internal fun findAllScenariosBy(
-      organizationId: String,
-      workspaceId: String,
-      sqlCondition: String? = null,
-      sqlParams: List<SqlParameter>? = null,
-      addState: Boolean = true
   ): List<Scenario> {
-    val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
-    var templateQuery =
-        "SELECT * FROM c " + "WHERE c.type = 'Scenario' AND c.workspaceId = @WORKSPACE_ID"
-    val params = mutableListOf(SqlParameter("@WORKSPACE_ID", workspaceId))
-    if (sqlCondition != null && sqlParams != null) {
-      templateQuery += " AND $sqlCondition"
-      sqlParams.forEach { params.add(it) }
-    }
-    val isAdmin = csmRbac.isAdmin(workspace.getRbac(), getCommonRolesDefinition())
-    if (!isAdmin && this.csmPlatformProperties.rbac.enabled) {
+    if (isRbacEnabled(organizationId, workspaceId)) {
+
       val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
-      templateQuery +=
-          " AND (ARRAY_CONTAINS(c.security.accessControlList, {id: @ACL_USER}, true) " +
-              "OR c.security.default NOT LIKE 'none')"
-      params.add(SqlParameter("@ACL_USER", currentUser))
+      return scenarioRepository.findChildScenariosBySecurity(
+          parentId, currentUser.sanitizeForRedis())
     }
-    return cosmosCoreDatabase
-        .getContainer("${organizationId}_scenario_data")
-        .queryItems(
-            SqlQuerySpec(templateQuery, params),
-            CosmosQueryRequestOptions(),
-            // It would be much better to specify the Domain Type right away and
-            // avoid the map operation, but we can't due
-            // to the lack of customization of the Cosmos Client Object Mapper, as reported here :
-            // https://github.com/Azure/azure-sdk-for-java/issues/12269
-            JsonNode::class.java)
-        .mapNotNull {
-          val scenario = it.toDomain<Scenario>()
-          if (addState) {
-            this.addStateToScenario(organizationId, scenario)
-          }
-          return@mapNotNull scenario
-        }
+
+    return scenarioRepository.findChildScenarios(parentId).mapNotNull {
+      return@mapNotNull it
+    }
+  }
+
+  private fun isRbacEnabled(organizationId: String, workspaceId: String): Boolean {
+    val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
+    val isAdmin = csmRbac.isAdmin(workspace.getRbac(), getCommonRolesDefinition())
+    return (!isAdmin && this.csmPlatformProperties.rbac.enabled)
   }
 
   override fun findScenarioById(
@@ -426,9 +387,7 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       scenarioId: String
   ): Scenario {
-    val scenario =
-        this.findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
-            .addLastRunsInfo(this, organizationId, workspaceId)
+    val scenario = this.findScenarioByIdNoState(scenarioId).addLastRunsInfo(this)
     csmRbac.verify(scenario.getRbac(), PERMISSION_READ, scenarioPermissions)
     this.addStateToScenario(organizationId, scenario)
     return scenario
@@ -463,34 +422,10 @@ internal class ScenarioServiceImpl(
         state = mapWorkflowPhaseToState(organizationId, workspaceId, downloadId, response.first),
         url = response.second)
   }
-
-  internal fun findScenarioByIdNoState(
-      organizationId: String,
-      workspaceId: String,
-      scenarioId: String
-  ): Scenario =
-      cosmosCoreDatabase
-          .getContainer("${organizationId}_scenario_data")
-          .queryItems(
-              SqlQuerySpec(
-                  "SELECT * FROM c " +
-                      "WHERE c.type = 'Scenario' " +
-                      "AND c.id = @SCENARIO_ID " +
-                      "AND c.workspaceId = @WORKSPACE_ID",
-                  listOf(
-                      SqlParameter("@SCENARIO_ID", scenarioId),
-                      SqlParameter("@WORKSPACE_ID", workspaceId))),
-              CosmosQueryRequestOptions(),
-              // It would be much better to specify the Domain Type right away and
-              // avoid the map operation, but we can't due
-              // to the lack of customization of the Cosmos Client Object Mapper, as reported here
-              // :
-              // https://github.com/Azure/azure-sdk-for-java/issues/12269
-              JsonNode::class.java)
-          .firstOrNull()
-          ?.toDomain<Scenario>()
-          ?: throw java.lang.IllegalArgumentException(
-              "Scenario #$scenarioId not found in workspace #$workspaceId in organization #$organizationId")
+  internal fun findScenarioByIdNoState(scenarioId: String): Scenario =
+      scenarioRepository.findById(scenarioId).get()
+          ?: throw CsmResourceNotFoundException(
+              "Resource of type '${Scenario::class.java.simpleName}' and identifier '$scenarioId' not found")
 
   private fun addStateToScenario(organizationId: String, scenario: Scenario?) {
     if (scenario?.lastRun != null) {
@@ -556,7 +491,7 @@ internal class ScenarioServiceImpl(
       scenario.parametersValues = mutableListOf()
       scenario.lastUpdate = OffsetDateTime.now()
 
-      upsertScenarioData(organizationId, scenario, workspaceId)
+      upsertScenarioData(scenario)
     }
   }
   @Suppress("LongMethod")
@@ -622,7 +557,7 @@ internal class ScenarioServiceImpl(
 
     if (hasChanged) {
       existingScenario.lastUpdate = OffsetDateTime.now()
-      upsertScenarioData(organizationId, existingScenario, workspaceId)
+      upsertScenarioData(existingScenario)
 
       if (datasetListUpdated) {
         publishDatasetListChangedEvent(organizationId, workspaceId, scenarioId, scenario)
@@ -678,15 +613,10 @@ internal class ScenarioServiceImpl(
     existingScenario.runTemplateId = scenario.runTemplateId
     existingScenario.runTemplateName = runTemplate.name
   }
-
-  internal fun upsertScenarioData(organizationId: String, scenario: Scenario, workspaceId: String) {
+  internal fun upsertScenarioData(scenario: Scenario) {
     scenario.lastUpdate = OffsetDateTime.now()
-    cosmosCoreDatabase
-        .getContainer("${organizationId}_scenario_data")
-        .upsertItem(
-            scenario.asMapWithAdditionalData(workspaceId),
-            PartitionKey(scenario.ownerId),
-            CosmosItemRequestOptions())
+    scenarioRepository.deleteById(scenario.id!!)
+    scenarioRepository.save(scenario)
   }
 
   private fun sendScenarioMetaData(
@@ -744,13 +674,6 @@ internal class ScenarioServiceImpl(
     }
   }
 
-  @EventListener(OrganizationRegistered::class)
-  fun onOrganizationRegistered(organizationRegistered: OrganizationRegistered) {
-    cosmosCoreDatabase.createContainerIfNotExists(
-        CosmosContainerProperties(
-            "${organizationRegistered.organizationId}_scenario_data", "/ownerId"))
-  }
-
   @EventListener(OrganizationUnregistered::class)
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
@@ -759,7 +682,7 @@ internal class ScenarioServiceImpl(
     // scenarioRepository.findByOrganizationId(organizationUnregistered.organizationId)
     //    scenarioRepository.deleteAll(scenarios)
 
-    cosmosTemplate.deleteContainer("${organizationUnregistered.organizationId}_scenario_data")
+    //cosmosTemplate.deleteContainer("${organizationUnregistered.organizationId}_scenario_data")
   }
 
   @EventListener(ScenarioRunStartedForScenario::class)
@@ -790,8 +713,7 @@ internal class ScenarioServiceImpl(
     children.forEach {
       it.datasetList = scenarioDatasetListChanged.datasetList?.toMutableList() ?: mutableListOf()
       it.lastUpdate = OffsetDateTime.now()
-      upsertScenarioData(
-          scenarioDatasetListChanged.organizationId, it, scenarioDatasetListChanged.workspaceId)
+      upsertScenarioData(it)
     }
   }
 
@@ -829,12 +751,12 @@ internal class ScenarioServiceImpl(
       scenarioId: String,
       scenarioRole: ScenarioRole
   ): ScenarioSecurity {
-    val scenario = findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
+    val scenario = findScenarioByIdNoState(scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
     val rbacSecurity =
         csmRbac.setDefault(scenario.getRbac(), scenarioRole.role, scenarioPermissions)
     scenario.setRbac(rbacSecurity)
-    upsertScenarioData(organizationId, scenario, workspaceId)
+    upsertScenarioData(scenario)
     return scenario.security as ScenarioSecurity
   }
 
@@ -856,7 +778,7 @@ internal class ScenarioServiceImpl(
       scenarioId: String,
       scenarioAccessControl: ScenarioAccessControl
   ): ScenarioAccessControl {
-    val scenario = findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
+    val scenario = findScenarioByIdNoState(scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     val rbacSecurity =
@@ -867,7 +789,7 @@ internal class ScenarioServiceImpl(
             scenarioAccessControl.role,
             scenarioPermissions)
     scenario.setRbac(rbacSecurity)
-    upsertScenarioData(organizationId, scenario, workspaceId)
+    upsertScenarioData(scenario)
     val rbacAccessControl = csmRbac.getAccessControl(scenario.getRbac(), scenarioAccessControl.id)
     return ScenarioAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
@@ -879,14 +801,14 @@ internal class ScenarioServiceImpl(
       identityId: String,
       scenarioRole: ScenarioRole
   ): ScenarioAccessControl {
-    val scenario = findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
+    val scenario = findScenarioByIdNoState(scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
     csmRbac.checkUserExists(
         scenario.getRbac(), identityId, "User '$identityId' not found in scenario $workspaceId")
     val rbacSecurity =
         csmRbac.setUserRole(scenario.getRbac(), identityId, scenarioRole.role, scenarioPermissions)
     scenario.setRbac(rbacSecurity)
-    upsertScenarioData(organizationId, scenario, workspaceId)
+    upsertScenarioData(scenario)
     val rbacAccessControl = csmRbac.getAccessControl(scenario.getRbac(), identityId)
     return ScenarioAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
@@ -901,7 +823,7 @@ internal class ScenarioServiceImpl(
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
     val rbacSecurity = csmRbac.removeUser(scenario.getRbac(), identityId, scenarioPermissions)
     scenario.setRbac(rbacSecurity)
-    upsertScenarioData(organizationId, scenario, workspaceId)
+    upsertScenarioData(scenario)
   }
 
   override fun getScenarioSecurityUsers(

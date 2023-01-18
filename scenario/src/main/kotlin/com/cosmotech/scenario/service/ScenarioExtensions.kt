@@ -1,6 +1,6 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.scenario.azure
+package com.cosmotech.scenario.service
 
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.model.RbacAccessControl
@@ -19,13 +19,8 @@ internal fun Scenario.asMapWithAdditionalData(workspaceId: String): Map<String, 
 }
 
 // PROD-8051 : add parent and master last runs data
-internal fun Scenario.addLastRunsInfo(
-    scenarioServiceImpl: ScenarioServiceImpl,
-    organizationId: String,
-    workspaceId: String
-): Scenario {
-  val scenarioWithLastRunsInfo =
-      listOf(this).addLastRunsInfo(scenarioServiceImpl, organizationId, workspaceId).first()
+internal fun Scenario.addLastRunsInfo(scenarioServiceImpl: ScenarioServiceImpl): Scenario {
+  val scenarioWithLastRunsInfo = listOf(this).addLastRunsInfo(scenarioServiceImpl).first()
   this.parentLastRun = scenarioWithLastRunsInfo.parentLastRun
   this.rootLastRun = scenarioWithLastRunsInfo.rootLastRun
   return this
@@ -34,9 +29,7 @@ internal fun Scenario.addLastRunsInfo(
 // Grouping for performance reasons. This allows to issue one call per parentId
 // and one call per rootId
 internal fun List<Scenario>.addLastRunsInfo(
-    scenarioServiceImpl: ScenarioServiceImpl,
-    organizationId: String,
-    workspaceId: String
+    scenarioServiceImpl: ScenarioServiceImpl
 ): List<Scenario> {
   val logger =
       LoggerFactory.getLogger("com.cosmotech.scenario.azure.ScenarioExtensions#addLastRunsInfo")
@@ -45,8 +38,7 @@ internal fun List<Scenario>.addLastRunsInfo(
         if (!parentId.isNullOrBlank()) {
           val parentLastRun =
               try {
-                scenarioServiceImpl.findScenarioByIdNoState(organizationId, workspaceId, parentId)
-                    .lastRun
+                scenarioServiceImpl.findScenarioByIdNoState(parentId).lastRun
               } catch (iae: IllegalArgumentException) {
                 // There might be cases where the parent no longer exists
                 val messageFormat =
@@ -68,8 +60,7 @@ internal fun List<Scenario>.addLastRunsInfo(
         if (!rootId.isNullOrBlank()) {
           val rootLastRun =
               try {
-                scenarioServiceImpl.findScenarioByIdNoState(organizationId, workspaceId, rootId)
-                    .lastRun
+                scenarioServiceImpl.findScenarioByIdNoState(rootId).lastRun
               } catch (iae: IllegalArgumentException) {
                 // There might be cases where the root scenario no longer exists
                 val messageFormat =
