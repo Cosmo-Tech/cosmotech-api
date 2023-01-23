@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **rootId** | **String** | the scenario root id | [optional] [default to null]
 **solutionId** | **String** | the Solution Id associated with this Scenario | [optional] [default to null]
 **runTemplateId** | **String** | the Solution Run Template Id associated with this Scenario | [optional] [default to null]
+**organizationId** | **String** | the associated Organization Id | [optional] [default to null]
 **workspaceId** | **String** | the associated Workspace Id | [optional] [default to null]
 **state** | [**ScenarioJobState**](ScenarioJobState.md) |  | [optional] [default to null]
 **creationDate** | **Date** | the Scenario creation date | [optional] [default to null]

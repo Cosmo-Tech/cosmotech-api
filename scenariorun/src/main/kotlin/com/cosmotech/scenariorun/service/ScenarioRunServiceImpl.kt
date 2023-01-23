@@ -1,3 +1,5 @@
+// Copyright (c) Cosmo Tech.
+// Licensed under the MIT license.
 package com.cosmotech.scenariorun.service
 
 import com.cosmotech.api.CsmPhoenixService
@@ -47,6 +49,8 @@ import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.azure.EventHubRole
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.domain.Workspace
+import java.time.ZonedDateTime
+import java.util.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -57,8 +61,6 @@ import org.springframework.context.event.EventListener
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
-import java.time.ZonedDateTime
-import java.util.*
 
 private const val MIN_SDK_VERSION_MAJOR = 8
 private const val MIN_SDK_VERSION_MINOR = 5
@@ -68,16 +70,15 @@ private const val DELETE_SCENARIO_RUN_DEFAULT_TIMEOUT: Long = 28800
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions", "LargeClass")
 internal class ScenarioRunServiceImpl(
-  private val containerFactory: ContainerFactory,
-  private val workflowService: WorkflowService,
-  private val workspaceService: WorkspaceApiService,
-  private val scenarioApiService: ScenarioApiService,
-  private val azureDataExplorerClient: AzureDataExplorerClient,
-  private val azureEventHubsClient: AzureEventHubsClient,
-  private val workspaceEventHubService: IWorkspaceEventHubService,
-  private val scenarioRunRepository: ScenarioRunRepository
+    private val containerFactory: ContainerFactory,
+    private val workflowService: WorkflowService,
+    private val workspaceService: WorkspaceApiService,
+    private val scenarioApiService: ScenarioApiService,
+    private val azureDataExplorerClient: AzureDataExplorerClient,
+    private val azureEventHubsClient: AzureEventHubsClient,
+    private val workspaceEventHubService: IWorkspaceEventHubService,
+    private val scenarioRunRepository: ScenarioRunRepository
 ) : CsmPhoenixService(), ScenariorunApiService {
-
 
   override fun deleteScenarioRun(organizationId: String, scenariorunId: String) {
     val scenarioRun = this.findScenarioRunById(organizationId, scenariorunId)
@@ -120,8 +121,7 @@ internal class ScenarioRunServiceImpl(
 
   override fun deleteHistoricalDataOrganization(organizationId: String, deleteUnknown: Boolean) {
     this.eventPublisher.publishEvent(
-      DeleteHistoricalDataOrganization(this, organizationId = organizationId, deleteUnknown)
-    )
+        DeleteHistoricalDataOrganization(this, organizationId = organizationId, deleteUnknown))
   }
 
   override fun deleteHistoricalDataWorkspace(
@@ -130,10 +130,8 @@ internal class ScenarioRunServiceImpl(
       deleteUnknown: Boolean
   ) {
     this.eventPublisher.publishEvent(
-      DeleteHistoricalDataWorkspace(
-        this, organizationId = organizationId, workspaceId = workspaceId, deleteUnknown
-      )
-    )
+        DeleteHistoricalDataWorkspace(
+            this, organizationId = organizationId, workspaceId = workspaceId, deleteUnknown))
   }
 
   override fun deleteHistoricalDataScenario(
@@ -194,9 +192,11 @@ internal class ScenarioRunServiceImpl(
       organizationId: String,
       scenariorunId: String,
       withStateInformation: Boolean = true
-  ) = scenarioRunRepository.findByIdOrNull(scenariorunId)
-    .let { if (withStateInformation) it.withStateInformation(organizationId) else it}
-    ?.withoutSensitiveData()
+  ) =
+      scenarioRunRepository
+          .findByIdOrNull(scenariorunId)
+          .let { if (withStateInformation) it.withStateInformation(organizationId) else it }
+          ?.withoutSensitiveData()
 
   private fun findScenarioRunById(
       organizationId: String,
@@ -240,17 +240,17 @@ internal class ScenarioRunServiceImpl(
       workspaceId: String,
       scenarioId: String
   ): List<ScenarioRun> =
-      scenarioRunRepository.findByScenarioId(scenarioId)
-          .map { it.withStateInformation(organizationId).withoutSensitiveData()!! }
-
+      scenarioRunRepository.findByScenarioId(scenarioId).map {
+        it.withStateInformation(organizationId).withoutSensitiveData()!!
+      }
 
   override fun getWorkspaceScenarioRuns(
       organizationId: String,
       workspaceId: String
   ): List<ScenarioRun> =
-    scenarioRunRepository.findByWorkspaceId(workspaceId)
-      .map { it.withStateInformation(organizationId).withoutSensitiveData()!! }
-
+      scenarioRunRepository.findByWorkspaceId(workspaceId).map {
+        it.withStateInformation(organizationId).withoutSensitiveData()!!
+      }
 
   @EventListener(ScenarioDataDownloadRequest::class)
   fun onScenarioDataDownloadRequest(scenarioDataDownloadRequest: ScenarioDataDownloadRequest) {
@@ -288,10 +288,9 @@ internal class ScenarioRunServiceImpl(
 
     if (twingraphImportContainerList.isEmpty()) {
       throw MissingResourceException(
-        "$containerName is not found in configuration (workflow.containers.name)",
-        ScenarioRunServiceImpl::class.simpleName,
-        "workflow.containers.name"
-      )
+          "$containerName is not found in configuration (workflow.containers.name)",
+          ScenarioRunServiceImpl::class.simpleName,
+          "workflow.containers.name")
     }
     val adtTwincacheContainerInfo = twingraphImportContainerList[0]
     val simpleContainer =
@@ -339,8 +338,7 @@ internal class ScenarioRunServiceImpl(
     val jobId = scenarioDataDownloadJobInfoRequest.jobId
     val workflowStatusAndArtifactList =
         this.workflowService.findWorkflowStatusAndArtifact(
-            "$CSM_JOB_ID_LABEL_KEY=${jobId}", SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME
-        )
+            "$CSM_JOB_ID_LABEL_KEY=${jobId}", SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME)
     if (workflowStatusAndArtifactList.isNotEmpty()) {
       scenarioDataDownloadJobInfoRequest.response =
           workflowStatusAndArtifactList[0].status to
@@ -391,20 +389,17 @@ internal class ScenarioRunServiceImpl(
         )
 
     this.eventPublisher.publishEvent(
-      ScenarioRunStartedForScenario(
-        this,
-        scenarioRun.organizationId!!,
-        scenarioRun.workspaceId!!,
-        scenarioRun.scenarioId!!,
-        ScenarioRunStartedForScenario.ScenarioRunData(
-          scenarioRun.id!!,
-          scenarioRun.csmSimulationRun!!,
-        ),
-        ScenarioRunStartedForScenario.WorkflowData(
-          scenarioRun.workflowId!!, scenarioRun.workflowName!!
-        )
-      )
-    )
+        ScenarioRunStartedForScenario(
+            this,
+            scenarioRun.organizationId!!,
+            scenarioRun.workspaceId!!,
+            scenarioRun.scenarioId!!,
+            ScenarioRunStartedForScenario.ScenarioRunData(
+                scenarioRun.id!!,
+                scenarioRun.csmSimulationRun!!,
+            ),
+            ScenarioRunStartedForScenario.WorkflowData(
+                scenarioRun.workflowId!!, scenarioRun.workflowName!!)))
 
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     sendScenarioRunMetaData(organizationId, workspace, scenarioId, scenarioRun.csmSimulationRun)
@@ -415,12 +410,10 @@ internal class ScenarioRunServiceImpl(
       logger.debug("Start coroutine to poll simulation status")
       GlobalScope.launch(SecurityCoroutineContext()) {
         withTimeout(
-          purgeHistoricalDataConfiguration.timeOut?.toLong()
-            ?: DELETE_SCENARIO_RUN_DEFAULT_TIMEOUT
-        ) {
+            purgeHistoricalDataConfiguration.timeOut?.toLong()
+                ?: DELETE_SCENARIO_RUN_DEFAULT_TIMEOUT) {
           deletePreviousSimulationDataIfCurrentSimulationIsSuccessful(
-            scenarioRun, purgeHistoricalDataConfiguration
-          )
+              scenarioRun, purgeHistoricalDataConfiguration)
         }
       }
       logger.debug("Coroutine to poll simulation status launched")
@@ -429,8 +422,8 @@ internal class ScenarioRunServiceImpl(
   }
 
   private fun deletePreviousSimulationDataIfCurrentSimulationIsSuccessful(
-    currentRun: ScenarioRun,
-    purgeHistoricalDataConfiguration: DeleteHistoricalData
+      currentRun: ScenarioRun,
+      purgeHistoricalDataConfiguration: DeleteHistoricalData
   ) {
     val scenarioRunId = currentRun.id!!
     val workspaceId = currentRun.workspaceId!!
@@ -460,9 +453,9 @@ internal class ScenarioRunServiceImpl(
       organizationId: String,
       scenarioRunSearch: ScenarioRunSearch
   ): List<ScenarioRun> {
-    return scenarioRunRepository
-      .findByPredicate(scenarioRunSearch.toRedisPredicate())
-      .map { it.withStateInformation(organizationId).withoutSensitiveData()!!}
+    return scenarioRunRepository.findByPredicate(scenarioRunSearch.toRedisPredicate()).map {
+      it.withStateInformation(organizationId).withoutSensitiveData()!!
+    }
   }
 
   override fun startScenarioRunContainers(
@@ -486,16 +479,16 @@ internal class ScenarioRunServiceImpl(
   }
 
   private fun dbCreateScenarioRun(
-    scenarioRunRequest: ScenarioRun,
-    organizationId: String,
-    workspaceId: String,
-    scenarioId: String,
-    csmSimulationId: String,
-    scenario: Scenario?,
-    workspace: Workspace?,
-    solution: Solution?,
-    runTemplate: RunTemplate?,
-    startContainers: ScenarioRunStartContainers,
+      scenarioRunRequest: ScenarioRun,
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String,
+      csmSimulationId: String,
+      scenario: Scenario?,
+      workspace: Workspace?,
+      solution: Solution?,
+      runTemplate: RunTemplate?,
+      startContainers: ScenarioRunStartContainers,
   ): ScenarioRun {
 
     val sendParameters =
@@ -523,11 +516,10 @@ internal class ScenarioRunServiceImpl(
             datasetList = scenario?.datasetList,
             parametersValues =
                 (scenario?.parametersValues?.map { scenarioValue ->
-                  RunTemplateParameterValue(
-                    parameterId = scenarioValue.parameterId,
-                    varType = scenarioValue.varType,
-                    value = scenarioValue.value
-                  )
+                      RunTemplateParameterValue(
+                          parameterId = scenarioValue.parameterId,
+                          varType = scenarioValue.varType,
+                          value = scenarioValue.value)
                     })
                     ?.toList(),
             nodeLabel = startContainers.nodeLabel,
@@ -544,8 +536,8 @@ internal class ScenarioRunServiceImpl(
           this.findScenarioRunById(organizationId, scenariorunId, withStateInformation = false))
 
   private fun getScenarioRunStatus(
-    organizationId: String,
-    scenarioRun: ScenarioRun,
+      organizationId: String,
+      scenarioRun: ScenarioRun,
   ): ScenarioRunStatus {
     val scenarioRunStatus = this.workflowService.getScenarioRunStatus(scenarioRun)
     // Check if SDK version used to build the Solution enable control plane for data ingestion: SDK
@@ -614,15 +606,14 @@ internal class ScenarioRunServiceImpl(
         "Caught ScenarioDeleted event => deleting all runs linked to scenario {}", event.scenarioId)
     runBlocking(SecurityCoroutineContext()) {
       val jobs =
-        this@ScenarioRunServiceImpl.getScenarioRuns(
-          event.organizationId, event.workspaceId, event.scenarioId
-        )
-          .map { scenarioRun ->
-            GlobalScope.launch(SecurityCoroutineContext()) {
-              // TODO Consider using a smaller coroutine scope
-              this@ScenarioRunServiceImpl.deleteScenarioRunWithoutAccessEnforcement(scenarioRun)
-            }
-          }
+          this@ScenarioRunServiceImpl.getScenarioRuns(
+                  event.organizationId, event.workspaceId, event.scenarioId)
+              .map { scenarioRun ->
+                GlobalScope.launch(SecurityCoroutineContext()) {
+                  // TODO Consider using a smaller coroutine scope
+                  this@ScenarioRunServiceImpl.deleteScenarioRunWithoutAccessEnforcement(scenarioRun)
+                }
+              }
       jobs.joinAll()
       if (jobs.isNotEmpty()) {
         logger.debug("Done deleting {} run(s) linked to scenario {}!", jobs.size, event.scenarioId)
@@ -697,15 +688,14 @@ internal class ScenarioRunServiceImpl(
   }
 
   private fun sendScenarioRunMetaData(
-    organizationId: String,
-    workspace: Workspace,
-    scenarioId: String,
-    simulationRun: String
+      organizationId: String,
+      workspace: Workspace,
+      scenarioId: String,
+      simulationRun: String
   ) {
     val eventHubInfo =
         this.workspaceEventHubService.getWorkspaceEventHubInfo(
-            organizationId, workspace, EventHubRole.SCENARIO_RUN_METADATA
-        )
+            organizationId, workspace, EventHubRole.SCENARIO_RUN_METADATA)
     if (!eventHubInfo.eventHubAvailable) {
       logger.warn(
           "Workspace must be configured with sendScenarioMetadataToEventHub to true in order to send metadata")
@@ -713,12 +703,12 @@ internal class ScenarioRunServiceImpl(
     }
 
     val scenarioMetaData =
-      ScenarioRunMetaData(
-        simulationRun, scenarioId, ZonedDateTime.now().toLocalDateTime().toString()
-      )
+        ScenarioRunMetaData(
+            simulationRun, scenarioId, ZonedDateTime.now().toLocalDateTime().toString())
 
     when (eventHubInfo.eventHubCredentialType) {
-      CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY -> {
+      CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
+          .SHARED_ACCESS_POLICY -> {
         azureEventHubsClient.sendMetaData(
             eventHubInfo.eventHubNamespace,
             eventHubInfo.eventHubName,
@@ -726,7 +716,8 @@ internal class ScenarioRunServiceImpl(
             eventHubInfo.eventHubSasKey,
             scenarioMetaData)
       }
-      CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS -> {
+      CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
+          .TENANT_CLIENT_CREDENTIALS -> {
         azureEventHubsClient.sendMetaData(
             eventHubInfo.eventHubNamespace, eventHubInfo.eventHubName, scenarioMetaData)
       }

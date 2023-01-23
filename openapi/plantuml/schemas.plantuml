@@ -213,6 +213,7 @@ entity Scenario {
     rootId: String
     solutionId: String
     runTemplateId: String
+    organizationId: String
     workspaceId: String
     state: ScenarioJobState
     creationDate: Date
@@ -532,6 +533,7 @@ Scenario -- ScenarioLastRun : lastRun
 Scenario -- ScenarioLastRun : parentLastRun
 Scenario -- ScenarioLastRun : rootLastRun
 Scenario -- ScenarioSecurity : security
+ScenarioRun -- ScenarioRunState : state
 ScenarioRun -- "0..*" RunTemplateParameterValue : parametersValues
 ScenarioRun -- "0..*" ScenarioRunContainer : containers
 ScenarioRunStatus -- "0..*" ScenarioRunStatusNode : nodes
