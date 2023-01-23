@@ -1,3 +1,5 @@
+// Copyright (c) Cosmo Tech.
+// Licensed under the MIT license.
 package com.cosmotech.scenariorun.repository
 
 import com.cosmotech.scenariorun.domain.ScenarioRun
@@ -10,7 +12,6 @@ import org.springframework.stereotype.Repository
 interface ScenarioRunRepository : RedisDocumentRepository<ScenarioRun, String> {
 
   fun findByScenarioId(scenarioId: String): List<ScenarioRun>
-
 
   fun findByWorkspaceId(workspaceId: String): List<ScenarioRun>
 

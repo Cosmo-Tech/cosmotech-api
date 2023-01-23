@@ -20,8 +20,7 @@ import org.springframework.stereotype.Service
 internal class ConnectorServiceImpl(var connectorRepository: ConnectorRepository) :
     CsmAzureService(), ConnectorApiService {
 
-  override fun findAllConnectors(): List<Connector> =
-      connectorRepository.findAll().toList()
+  override fun findAllConnectors(): List<Connector> = connectorRepository.findAll().toList()
 
   override fun findConnectorById(connectorId: String): Connector = findByIdOrThrow(connectorId)
 
