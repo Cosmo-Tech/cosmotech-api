@@ -18,7 +18,7 @@ import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.cosmotech.workspace.repository.WorkspaceRepository
-import com.cosmotech.workspace.services.WorkspaceServiceImpl
+import com.cosmotech.workspace.service.WorkspaceServiceImpl
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK

@@ -8,8 +8,8 @@ import com.cosmotech.workspace.azure.EventHubRole
 import com.cosmotech.workspace.azure.NOT_AVAILABLE
 import com.cosmotech.workspace.azure.WORKSPACE_EVENTHUB_ACCESSKEY_SECRET
 import com.cosmotech.workspace.domain.Workspace
-import com.cosmotech.workspace.services.getWorkspaceSecretName
-import com.cosmotech.workspace.services.getWorkspaceUniqueName
+import com.cosmotech.workspace.utils.getWorkspaceSecretName
+import com.cosmotech.workspace.utils.getWorkspaceUniqueName
 import org.springframework.stereotype.Component
 
 private const val SERVICE_BUS_FQDN_SUFFIX = ".servicebus.windows.net"
