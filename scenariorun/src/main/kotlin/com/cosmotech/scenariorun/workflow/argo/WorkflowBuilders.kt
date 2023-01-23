@@ -10,7 +10,7 @@ import com.cosmotech.scenariorun.container.getRequestsMap
 import com.cosmotech.scenariorun.container.toContainerResourceSizing
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
-import com.cosmotech.scenariorun.getNodeLabelSize
+import com.cosmotech.scenariorun.utils.getNodeLabelSize
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1ArchiveStrategy
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1Artifact
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1DAGTask

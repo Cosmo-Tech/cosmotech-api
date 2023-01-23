@@ -826,16 +826,16 @@ components:
             type: string
         parentId:
           type: string
-          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the Scenario parent id
         ownerId:
           type: string
-          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           readOnly: true
           description: the user id which own this Scenario
         rootId:
           type: string
-          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           readOnly: true
           description: the scenario root id
         solutionId:
@@ -845,9 +845,13 @@ components:
         runTemplateId:
           type: string
           description: the Solution Run Template Id associated with this Scenario
+        organizationId:
+            type: string
+            readOnly: true
+            description: the associated Organization Id
         workspaceId:
           type: string
-          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           readOnly: true
           description: the associated Workspace Id
         state:
