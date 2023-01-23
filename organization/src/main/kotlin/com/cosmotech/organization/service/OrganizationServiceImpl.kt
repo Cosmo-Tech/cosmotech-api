@@ -84,7 +84,6 @@ class OrganizationServiceImpl(
   override fun unregisterOrganization(organizationId: String) {
     val organization = findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_DELETE)
-
     organizationRepository.delete(organization)
 
     this.eventPublisher.publishEvent(OrganizationUnregistered(this, organizationId))
