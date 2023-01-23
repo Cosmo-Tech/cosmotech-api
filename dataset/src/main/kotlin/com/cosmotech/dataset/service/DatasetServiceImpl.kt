@@ -41,7 +41,6 @@ internal class DatasetServiceImpl(
         CsmAccessForbiddenException("Dataset $datasetId not found in organization $organizationId")
       }
 
-
   override fun removeAllDatasetCompatibilityElements(organizationId: String, datasetId: String) {
     val dataset = findDatasetById(organizationId, datasetId)
     if (!dataset.compatibility.isNullOrEmpty()) {
