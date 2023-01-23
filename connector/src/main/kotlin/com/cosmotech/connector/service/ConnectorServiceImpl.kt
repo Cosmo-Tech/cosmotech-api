@@ -17,8 +17,7 @@ import org.springframework.stereotype.Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 internal class ConnectorServiceImpl(var connectorRepository: ConnectorRepository) : CsmPhoenixService(), ConnectorApiService {
 
-  override fun findAllConnectors(): List<Connector> =
-      connectorRepository.findAll().toList()
+  override fun findAllConnectors(): List<Connector> = connectorRepository.findAll().toList()
 
   override fun findConnectorById(connectorId: String): Connector = findByIdOrThrow(connectorId)
 

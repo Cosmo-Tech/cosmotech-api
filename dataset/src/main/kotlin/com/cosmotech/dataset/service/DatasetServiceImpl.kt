@@ -36,8 +36,9 @@ internal class DatasetServiceImpl(
 
   override fun findDatasetById(organizationId: String, datasetId: String): Dataset =
       // TODO add RBAC security with organizationId
-      datasetRepository.findById(datasetId)
-        .orElseThrow{CsmAccessForbiddenException("Dataset $datasetId not found in organization $organizationId")}
+      datasetRepository.findById(datasetId).orElseThrow {
+        CsmAccessForbiddenException("Dataset $datasetId not found in organization $organizationId")
+      }
 
   override fun removeAllDatasetCompatibilityElements(organizationId: String, datasetId: String) {
     val dataset = findDatasetById(organizationId, datasetId)

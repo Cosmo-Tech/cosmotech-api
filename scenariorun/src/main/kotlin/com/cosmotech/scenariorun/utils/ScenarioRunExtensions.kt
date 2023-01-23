@@ -38,15 +38,15 @@ internal fun ScenarioRunContainer.getNodeLabelSize(): Map<String, String> {
 
 internal fun ScenarioRunSearch.toRedisPredicate(): List<String> {
   return this::class
-    .memberProperties
-    .mapNotNull { Pair(it.name, it.getter.call(this)) }
-    .filter { it.second != null }
-    .map {
-      when(it.first) {
-        "state" -> getRedisQuery(it, true)
-        else ->  getRedisQuery(it, false)
+      .memberProperties
+      .mapNotNull { Pair(it.name, it.getter.call(this)) }
+      .filter { it.second != null }
+      .map {
+        when (it.first) {
+          "state" -> getRedisQuery(it, true)
+          else -> getRedisQuery(it, false)
+        }
       }
-    }
 }
 
 internal fun getRedisQuery(pair: Pair<String, Any?>, isSearchable: Boolean): String {
