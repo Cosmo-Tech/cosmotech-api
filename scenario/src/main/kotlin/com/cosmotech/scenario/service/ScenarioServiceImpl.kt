@@ -49,7 +49,7 @@ import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.azure.EventHubRole
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.domain.Workspace
-import com.cosmotech.workspace.services.getRbac
+import com.cosmotech.workspace.service.getRbac
 import java.time.OffsetDateTime
 import java.time.ZonedDateTime
 import kotlinx.coroutines.GlobalScope
@@ -148,6 +148,8 @@ internal class ScenarioServiceImpl(
         scenario.copy(
             id = idGenerator.generate("scenario"),
             ownerId = getCurrentAuthenticatedUserName(),
+            organizationId = organizationId,
+            workspaceId = workspaceId,
             solutionId = solution?.id,
             solutionName = solution?.name,
             runTemplateName = runTemplate?.name,

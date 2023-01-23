@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory
 
 internal fun Scenario.asMapWithAdditionalData(workspaceId: String): Map<String, Any> {
   val scenarioAsMap = this.convertToMap().toMutableMap()
-  scenarioAsMap["type"] = "Scenario"
   scenarioAsMap["workspaceId"] = workspaceId
   return scenarioAsMap
 }

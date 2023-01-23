@@ -1,10 +1,14 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.scenariorun
+package com.cosmotech.scenariorun.utils
 
+import com.cosmotech.api.utils.sanitizeForRedis
+import com.cosmotech.scenariorun.NODE_LABEL_DEFAULT
 import com.cosmotech.scenariorun.domain.ScenarioRun
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
+import com.cosmotech.scenariorun.domain.ScenarioRunSearch
 import com.cosmotech.scenariorun.domain.ScenarioRunState
+import kotlin.reflect.full.memberProperties
 
 /**
  * PROD-8473 : containers listed in a ScenarioRun return environment variables, which are likely to
@@ -30,4 +34,23 @@ internal fun ScenarioRunState.isTerminal() =
 internal fun ScenarioRunContainer.getNodeLabelSize(): Map<String, String> {
   val currentNodeLabel = this.nodeLabel ?: NODE_LABEL_DEFAULT
   return mapOf("cosmotech.com/size" to currentNodeLabel)
+}
+
+internal fun ScenarioRunSearch.toRedisPredicate(): List<String> {
+  return this::class
+    .memberProperties
+    .mapNotNull { Pair(it.name, it.getter.call(this)) }
+    .filter { it.second != null }
+    .map {
+      when(it.first) {
+        "state" -> getRedisQuery(it, true)
+        else ->  getRedisQuery(it, false)
+      }
+    }
+}
+
+internal fun getRedisQuery(pair: Pair<String, Any?>, isSearchable: Boolean): String {
+  val openBracket = if (isSearchable) "" else "{"
+  val closeBracket = if (isSearchable) "" else "}"
+  return "@${pair.first}:$openBracket*${pair.second.toString().sanitizeForRedis()}*$closeBracket"
 }

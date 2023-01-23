@@ -1,6 +1,6 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.workspace.services
+package com.cosmotech.workspace.service
 
 import com.azure.spring.autoconfigure.storage.resource.AzureStorageResourcePatternResolver
 import com.azure.spring.autoconfigure.storage.resource.BlobStorageResource
@@ -46,6 +46,7 @@ import com.cosmotech.workspace.domain.WorkspaceRole
 import com.cosmotech.workspace.domain.WorkspaceSecret
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.repository.WorkspaceRepository
+import com.cosmotech.workspace.utils.getWorkspaceSecretName
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
@@ -185,7 +186,8 @@ internal class WorkspaceServiceImpl(
     try {
       deleteAllWorkspaceFiles(organizationId, workspaceId)
       secretManager.deleteSecret(
-          csmPlatformProperties.namespace, getWorkspaceSecretName(organizationId, workspace.key))
+          csmPlatformProperties.namespace, getWorkspaceSecretName(organizationId, workspace.key)
+      )
     } finally {
       workspaceRepository.delete(workspace)
     }

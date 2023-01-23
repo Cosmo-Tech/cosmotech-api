@@ -6,7 +6,7 @@ import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.workspace.azure.EventHubRole
 import com.cosmotech.workspace.azure.NOT_AVAILABLE
 import com.cosmotech.workspace.domain.Workspace
-import com.cosmotech.workspace.services.getWorkspaceUniqueName
+import com.cosmotech.workspace.utils.getWorkspaceUniqueName
 import org.springframework.stereotype.Component
 
 private const val CONTROL_PLANE_SUFFIX = "-scenariorun"
