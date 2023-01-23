@@ -10,8 +10,8 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface DatasetRepository : RedisDocumentRepository<Dataset, String> {
-  @Query("@organization_id:{\$organizationId")
-  fun findDatasetByOrganization(@Param("organizationId") organizationId: String): List<Dataset>
+
+  fun findByOrganizationId(organizationId: String): List<Dataset>
 
   @Query("@tags:{\$tags}") fun findDatasetByTags(@Param("tags") tags: Set<String>): List<Dataset>
 
