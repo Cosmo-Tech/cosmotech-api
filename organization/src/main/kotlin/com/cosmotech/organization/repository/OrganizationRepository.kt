@@ -10,8 +10,10 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface OrganizationRepository : RedisDocumentRepository<Organization, String> {
-  @Query("(-@security_default:{none}) | (@security_accessControlList_id:{\$userId})")
-  fun findOrganizationsBySecurity(@Param("userId") userId: String): List<Organization>
+  @Query("\$securityConstraint")
+  fun findOrganizationsBySecurity(
+      @Param("securityConstraint") securityConstraint: String
+  ): List<Organization>
 
   @Query("\$securityConstraint")
   fun findOrganizationsBySecurity(

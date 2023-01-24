@@ -23,7 +23,7 @@ import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.api.utils.sanitizeForRedis
+import com.cosmotech.api.utils.toSecurityConstraintQuery
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.ComponentRolePermissions
 import com.cosmotech.organization.domain.Organization
@@ -51,7 +51,8 @@ class OrganizationServiceImpl(
     if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
       return organizationRepository.findAll().toList()
     }
-    return organizationRepository.findOrganizationsBySecurity(currentUser.sanitizeForRedis())
+    return organizationRepository.findOrganizationsBySecurity(
+        currentUser.toSecurityConstraintQuery())
   }
 
   override fun findOrganizationById(organizationId: String): Organization {
