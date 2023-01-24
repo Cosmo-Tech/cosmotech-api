@@ -909,8 +909,9 @@ components:
             - type: object
               description: the last Scenario Run for the root (master) of Scenario
         validationStatus:
-          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
-          $ref: '#/components/schemas/ScenarioValidationStatus'
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
+          allOf:
+            - $ref: '#/components/schemas/ScenarioValidationStatus'
         security:
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           allOf:
@@ -1093,7 +1094,6 @@ components:
         - DataIngestionInProgress
     ScenarioValidationStatus:
       type: string
-      x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
       description: the validation status of the scenario
       enum:
         - Draft

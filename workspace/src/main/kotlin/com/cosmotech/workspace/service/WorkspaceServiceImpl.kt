@@ -298,10 +298,10 @@ internal class WorkspaceServiceImpl(
   @EventListener(DeleteHistoricalDataOrganization::class)
   fun deleteHistoricalDataWorkspace(data: DeleteHistoricalDataOrganization) {
     val organizationId = data.organizationId
-    val workspaces: List<Workspace> = findAllWorkspaces(organizationId)
-    for (workspace in workspaces) {
+    val workspaces = findAllWorkspaces(organizationId)
+    workspaces.forEach {
       this.eventPublisher.publishEvent(
-          DeleteHistoricalDataWorkspace(this, organizationId, workspace.id!!, data.deleteUnknown))
+          DeleteHistoricalDataWorkspace(this, organizationId, it.id!!, data.deleteUnknown))
     }
   }
 

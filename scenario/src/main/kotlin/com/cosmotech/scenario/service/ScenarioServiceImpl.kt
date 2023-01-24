@@ -34,7 +34,7 @@ import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.api.utils.sanitizeForRedis
+import com.cosmotech.api.utils.toSecurityConstraintQuery
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.service.getRbac
 import com.cosmotech.scenario.api.ScenarioApiService
@@ -332,15 +332,16 @@ internal class ScenarioServiceImpl(
   ): List<Scenario> {
     if (isRbacEnabled(organizationId, workspaceId)) {
       val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
-      return scenarioRepository.findScenariosByWorkspaceIdBySecurity(
-          workspaceId, currentUser.sanitizeForRedis())
+      return scenarioRepository.findByWorkspaceIdAndSecurity(
+          workspaceId, currentUser.toSecurityConstraintQuery())
     }
-    return scenarioRepository.findScenariosByWorkspaceId(workspaceId).mapNotNull {
-      if (addState) {
-        this.addStateToScenario(organizationId, it)
-      }
-      return@mapNotNull it
+
+    val scenarios = scenarioRepository.findByWorkspaceId(workspaceId)
+    if (addState) {
+      scenarios.forEach { this.addStateToScenario(organizationId, it) }
     }
+
+    return scenarios
   }
 
   private fun findAllScenarioByValidationStatus(
@@ -350,12 +351,10 @@ internal class ScenarioServiceImpl(
   ): List<Scenario> {
     if (isRbacEnabled(organizationId, workspaceId)) {
       val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
-      return scenarioRepository.findScenariosByValidationStatusBySecurity(
-          validationStatus, currentUser.sanitizeForRedis())
+      return scenarioRepository.findByValidationStatusAndSecurity(
+          validationStatus, currentUser.toSecurityConstraintQuery())
     }
-    return scenarioRepository.findScenariosByValidationStatus(validationStatus).mapNotNull {
-      return@mapNotNull it
-    }
+    return scenarioRepository.findByValidationStatus(validationStatus)
   }
 
   private fun findAllScenariosByRootId(
@@ -365,12 +364,10 @@ internal class ScenarioServiceImpl(
   ): List<Scenario> {
     if (isRbacEnabled(organizationId, workspaceId)) {
       val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
-      return scenarioRepository.findScenariosOfRootBySecurity(
-          rootId, currentUser.sanitizeForRedis())
+      return scenarioRepository.findByRootIdAndSecurity(
+          rootId, currentUser.toSecurityConstraintQuery())
     }
-    return scenarioRepository.findScenarioOfRoot(rootId).mapNotNull {
-      return@mapNotNull it
-    }
+    return scenarioRepository.findByRootId(rootId)
   }
 
   internal fun findScenarioChildrenById(
@@ -381,13 +378,11 @@ internal class ScenarioServiceImpl(
     if (isRbacEnabled(organizationId, workspaceId)) {
 
       val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
-      return scenarioRepository.findChildScenariosBySecurity(
-          parentId, currentUser.sanitizeForRedis())
+      return scenarioRepository.findByParentIdAndSecurity(
+          parentId, currentUser.toSecurityConstraintQuery())
     }
 
-    return scenarioRepository.findChildScenarios(parentId).mapNotNull {
-      return@mapNotNull it
-    }
+    return scenarioRepository.findByParentId(parentId)
   }
 
   private fun isRbacEnabled(organizationId: String, workspaceId: String): Boolean {
@@ -437,9 +432,11 @@ internal class ScenarioServiceImpl(
         url = response.second)
   }
   internal fun findScenarioByIdNoState(scenarioId: String): Scenario =
-      scenarioRepository.findById(scenarioId).get()
-          ?: throw CsmResourceNotFoundException(
-              "Resource of type '${Scenario::class.java.simpleName}' and identifier '$scenarioId' not found")
+      scenarioRepository.findById(scenarioId).orElseThrow {
+        CsmResourceNotFoundException(
+            "Resource of type '${Scenario::class.java.simpleName}'" +
+                " and identifier '$scenarioId' not found")
+      }
 
   private fun addStateToScenario(organizationId: String, scenario: Scenario?) {
     if (scenario?.lastRun != null) {
@@ -629,7 +626,6 @@ internal class ScenarioServiceImpl(
   }
   internal fun upsertScenarioData(scenario: Scenario) {
     scenario.lastUpdate = OffsetDateTime.now()
-    scenarioRepository.deleteById(scenario.id!!)
     scenarioRepository.save(scenario)
   }
 
@@ -680,11 +676,11 @@ internal class ScenarioServiceImpl(
   fun deleteHistoricalDataScenario(data: DeleteHistoricalDataWorkspace) {
     val organizationId = data.organizationId
     val workspaceId = data.workspaceId
-    val scenarios: List<Scenario> = findAllScenarios(organizationId, workspaceId)
-    for (scenario in scenarios) {
+    val scenarios = findAllScenarios(organizationId, workspaceId)
+    scenarios.forEach {
       this.eventPublisher.publishEvent(
           DeleteHistoricalDataScenario(
-              this, organizationId, workspaceId, scenario.id!!, data.deleteUnknown))
+              this, organizationId, workspaceId, it.id!!, data.deleteUnknown))
     }
   }
 
