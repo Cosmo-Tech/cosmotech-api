@@ -951,7 +951,7 @@ components:
             - type: object
               description: the last Scenario Run for the root (master) of Scenario
         validationStatus:
-          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           allOf:
             - $ref: '#/components/schemas/ScenarioValidationStatus'
         security:
