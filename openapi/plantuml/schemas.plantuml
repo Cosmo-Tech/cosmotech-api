@@ -532,6 +532,7 @@ Scenario -- "0..*" ScenarioRunTemplateParameterValue : parametersValues
 Scenario -- ScenarioLastRun : lastRun
 Scenario -- ScenarioLastRun : parentLastRun
 Scenario -- ScenarioLastRun : rootLastRun
+Scenario -- ScenarioValidationStatus : validationStatus
 Scenario -- ScenarioSecurity : security
 ScenarioRun -- ScenarioRunState : state
 ScenarioRun -- "0..*" RunTemplateParameterValue : parametersValues

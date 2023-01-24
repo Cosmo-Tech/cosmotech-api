@@ -10,41 +10,36 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface ScenarioRepository : RedisDocumentRepository<Scenario, String> {
-  @Query("(@validationStatus:{\$validationStatus})")
-  fun findScenariosByValidationStatus(
-      @Param("validationStatus") validationStatus: String
-  ): List<Scenario>
 
-  @Query("(@validationStatus:{\$validationStatus}) (@security_accessControlList_id:{\$userId})")
-  fun findScenariosByValidationStatusBySecurity(
+  fun findByValidationStatus(validationStatus: String): List<Scenario>
+
+  @Query("(@validationStatus:\$validationStatus) \$securityConstraint")
+  fun findByValidationStatusAndSecurity(
       @Param("validationStatus") validationStatus: String,
-      @Param("userId") userId: String
+      @Param("securityConstraint") securityConstraint: String
   ): List<Scenario>
 
-  @Query("(@parentId:{\$parentId})")
-  fun findChildScenarios(@Param("parentId") parentId: String): List<Scenario>
+  fun findByParentId(parentId: String): List<Scenario>
 
-  @Query("(@parentId:{\$parentId}) (@security_accessControlList_id:{\$userId})")
-  fun findChildScenariosBySecurity(
+  @Query("(@parentId:{\$parentId}) \$securityConstraint")
+  fun findByParentIdAndSecurity(
       @Param("parentId") parentId: String,
-      @Param("userId") userId: String
+      @Param("securityConstraint") securityConstraint: String
   ): List<Scenario>
 
-  @Query("(@rootId:{\$rootId})")
-  fun findScenarioOfRoot(@Param("rootId") rootId: String): List<Scenario>
+  fun findByRootId(rootId: String): List<Scenario>
 
-  @Query("(@rootId:{\$rootId}) (@security_accessControlList_id:{\$userId})")
-  fun findScenariosOfRootBySecurity(
+  @Query("(@rootId:{\$rootId}) \$securityConstraint")
+  fun findByRootIdAndSecurity(
       @Param("rootId") rootId: String,
-      @Param("userId") userId: String
+      @Param("securityConstraint") securityConstraint: String
   ): List<Scenario>
 
-  @Query("(@workspaceId:{\$workspaceId}) (@security_accessControlList_id:{\$userId})")
-  fun findScenariosByWorkspaceIdBySecurity(
+  fun findByWorkspaceId(workspaceId: String): List<Scenario>
+
+  @Query("(@workspaceId:{\$workspaceId}) \$securityConstraint")
+  fun findByWorkspaceIdAndSecurity(
       @Param("workspaceId") workspaceId: String,
-      @Param("userId") userId: String
+      @Param("securityConstraint") securityConstraint: String
   ): List<Scenario>
-
-  @Query("(@workspaceId:{\$workspaceId})")
-  fun findScenariosByWorkspaceId(@Param("workspaceId") workspaceId: String): List<Scenario>
 }
