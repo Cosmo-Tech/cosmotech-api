@@ -93,11 +93,11 @@ csm:
       - name: "ADTTwingraphImport"
         imageRegistry: "ghcr.io"
         imageName: "cosmo-tech/adt-twincache-connector"
-        imageVersion: "0.0.5"
+        imageVersion: "0.0.6"
       - name: "StorageTwingraphImport"
         imageRegistry: "ghcr.io"
         imageName: "cosmo-tech/azstorage-twincache-connector"
-        imageVersion: "1.0.1-rc"
+        imageVersion: "1.0.2-rc"
     authorization:
       principal-jwt-claim: "sub"
       tenant-id-jwt-claim: "iss"
