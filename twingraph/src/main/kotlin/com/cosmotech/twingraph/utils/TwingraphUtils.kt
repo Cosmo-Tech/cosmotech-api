@@ -2,31 +2,8 @@
 // Licensed under the MIT license.
 package com.cosmotech.twingraph.utils
 
-import com.cosmotech.api.utils.objectMapper
-import redis.clients.jedis.graph.entities.Node
-import redis.clients.jedis.graph.entities.Property
 
 object TwingraphUtils {
-
-  private const val NODE_ID_PROPERTY_NAME = "id"
-
-  @JvmStatic
-  fun getNodeJson(node: Node): String {
-    var nodeId = node.id.toString()
-
-    if (node.entityPropertyNames.contains(NODE_ID_PROPERTY_NAME)) {
-      nodeId = node.getProperty(NODE_ID_PROPERTY_NAME).value.toString()
-    }
-
-    val graphNode =
-        GraphNode(
-            node.getLabel(0),
-            nodeId,
-            node.entityPropertyNames.filter { it != NODE_ID_PROPERTY_NAME }.map {
-              node.getProperty(it)
-            })
-    return objectMapper().writeValueAsString(graphNode)
-  }
 
   @JvmStatic
   fun isReadOnlyQuery(query: String): Boolean {
@@ -37,4 +14,3 @@ object TwingraphUtils {
   }
 }
 
-data class GraphNode(var label: String, var id: String, var properties: List<Property<Any>>)
