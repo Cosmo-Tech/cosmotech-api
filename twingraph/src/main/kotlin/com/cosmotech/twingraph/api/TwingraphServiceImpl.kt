@@ -9,19 +9,16 @@ import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_READ
-import com.cosmotech.api.utils.objectMapper
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.azure.getRbac
 import com.cosmotech.twingraph.domain.TwinGraphImport
 import com.cosmotech.twingraph.domain.TwinGraphImportInfo
 import com.cosmotech.twingraph.domain.TwinGraphQuery
+import com.cosmotech.twingraph.extension.toJsonString
 import com.cosmotech.twingraph.utils.TwingraphUtils
 import org.springframework.stereotype.Service
 import redis.clients.jedis.UnifiedJedis
-import redis.clients.jedis.graph.Record
 import redis.clients.jedis.graph.ResultSet
-import redis.clients.jedis.graph.entities.Edge
-import redis.clients.jedis.graph.entities.Node
 import redis.clients.jedis.params.ScanParams
 import redis.clients.jedis.params.ScanParams.SCAN_POINTER_START
 
@@ -127,51 +124,11 @@ class TwingraphServiceImpl(
         jedis.graphQuery(
             redisGraphId, twinGraphQuery.query, csmPlatformProperties.twincache.queryTimeout)
 
-    val iterator = resultSet.iterator()
-    if (!iterator.hasNext()) {
+    if (resultSet.size() == 0) {
       throw CsmResourceNotFoundException(
-          "TwinGraph empty with given ${twingraphId} " + "and version ${twinGraphQuery.version}")
+          "TwinGraph empty with given $twingraphId " + "and version ${twinGraphQuery.version}")
     }
 
-    val result = mutableMapOf<Int, MutableSet<String>>()
-    val elementTypes = mutableMapOf<Int, String>()
-
-    while (iterator.hasNext()) {
-      val record: Record? = iterator.next()
-      record?.values()?.forEachIndexed { index, element ->
-        val currentValue = result.getOrPut(index) { mutableSetOf() }
-        when (element) {
-          is Node -> {
-            currentValue.add(TwingraphUtils.getNodeJson(element))
-            result[index] = currentValue
-            elementTypes[index] = "nodes"
-          }
-          is Edge -> {
-            currentValue.add(objectMapper().writeValueAsString(element))
-            result[index] = currentValue
-            elementTypes[index] = "relationships"
-          }
-          else -> {
-            currentValue.add(objectMapper().writeValueAsString(mapOf("value" to element)))
-            result[index] = currentValue
-            elementTypes[index] = "variables"
-          }
-        }
-      }
-    }
-
-    val resultJson = mutableMapOf<String, String>()
-    result.values.forEachIndexed { index, element ->
-      val elementType = elementTypes[index]!!
-      resultJson.computeIfPresent(elementType) { _, value ->
-        value + ", " + getJsonValue(resultSet, index, element)
-      }
-      resultJson.computeIfAbsent(elementType) { getJsonValue(resultSet, index, element) }
-    }
-    return resultJson.map { "\"${it.key}\": {${it.value}}" }.joinToString(",", "{", "}")
-  }
-
-  private fun getJsonValue(resultSet: ResultSet, index: Int, element: MutableSet<String>): String {
-    return "\"${resultSet.header.schemaNames[index]}\" : " + element.joinToString(",", "[", "]")
+    return resultSet.toJsonString()
   }
 }
