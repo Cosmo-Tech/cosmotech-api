@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenario.service
 
-import com.cosmotech.api.azure.CsmAzureService
+import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
@@ -80,7 +80,7 @@ internal class ScenarioServiceImpl(
     private val csmRbac: CsmRbac,
     private val workspaceEventHubService: IWorkspaceEventHubService,
     private val scenarioRepository: ScenarioRepository
-) : CsmAzureService(), ScenarioApiService {
+) : CsmPhoenixService(), ScenarioApiService {
 
   val scenarioPermissions = getScenarioRolesDefinition()
 
