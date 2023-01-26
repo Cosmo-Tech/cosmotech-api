@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.connector.service
 
-import com.cosmotech.api.azure.CsmAzureService
+import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.events.ConnectorRemoved
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @EnableRedisDocumentRepositories(basePackages = arrayOf("com.cosmotech.connector.azure.*"))
 internal class ConnectorServiceImpl(var connectorRepository: ConnectorRepository) :
-    CsmAzureService(), ConnectorApiService {
+    CsmPhoenixService(), ConnectorApiService {
 
   override fun findAllConnectors(): List<Connector> = connectorRepository.findAll().toList()
 

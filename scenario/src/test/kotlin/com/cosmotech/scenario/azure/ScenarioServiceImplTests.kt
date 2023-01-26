@@ -2,12 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenario.azure
 
-import com.azure.cosmos.CosmosClient
-import com.azure.cosmos.CosmosContainer
-import com.azure.cosmos.CosmosDatabase
-import com.azure.cosmos.models.CosmosItemResponse
-import com.azure.cosmos.models.PartitionKey
-import com.azure.spring.data.cosmos.core.CosmosTemplate
 import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
 import com.cosmotech.api.config.CsmPlatformProperties
@@ -87,9 +81,6 @@ class ScenarioServiceImplTests {
 
   @RelaxedMockK private lateinit var csmRbac: CsmRbac
 
-  @Suppress("unused") @MockK(relaxed = true) private lateinit var cosmosTemplate: CosmosTemplate
-  @Suppress("unused") @MockK private lateinit var cosmosClient: CosmosClient
-  @Suppress("unused") @MockK(relaxed = true) private lateinit var cosmosCoreDatabase: CosmosDatabase
   @MockK(relaxed = true) private lateinit var scenarioRepository: ScenarioRepository
   @Suppress("unused") @MockK private lateinit var csmPlatformProperties: CsmPlatformProperties
 
@@ -116,24 +107,12 @@ class ScenarioServiceImplTests {
                 scenarioRepository),
             recordPrivateCalls = true)
 
-    every { scenarioServiceImpl getProperty "cosmosTemplate" } returns cosmosTemplate
-    every { scenarioServiceImpl getProperty "cosmosClient" } returns cosmosClient
     every { scenarioServiceImpl getProperty "idGenerator" } returns idGenerator
     every { scenarioServiceImpl getProperty "eventPublisher" } returns eventPublisher
     every { scenarioServiceImpl getProperty "eventPublisher" } returns eventPublisher
 
     val csmPlatformPropertiesAzure = mockk<CsmPlatformProperties.CsmPlatformAzure>()
-    val csmPlatformPropertiesAzureCosmos =
-        mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCosmos>()
-    val csmPlatformPropertiesAzureCosmosCoreDatabase =
-        mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCosmos.CoreDatabase>()
-    every { csmPlatformPropertiesAzureCosmosCoreDatabase.name } returns "test-db"
-    every { csmPlatformPropertiesAzureCosmos.coreDatabase } returns
-        csmPlatformPropertiesAzureCosmosCoreDatabase
-    every { csmPlatformPropertiesAzure.cosmos } returns csmPlatformPropertiesAzureCosmos
     every { csmPlatformProperties.azure } returns csmPlatformPropertiesAzure
-
-    every { cosmosClient.getDatabase("test-db") } returns cosmosCoreDatabase
 
     every { scenarioServiceImpl getProperty "csmPlatformProperties" } returns csmPlatformProperties
 
@@ -141,7 +120,7 @@ class ScenarioServiceImplTests {
     every { getCurrentAuthenticatedUserName() } returns AUTHENTICATED_USERNAME
     every { getCurrentAuthenticatedMail(csmPlatformProperties) } returns "dummy@cosmotech.com"
 
-    scenarioServiceImpl.init()
+    //    scenarioServiceImpl.init()
   }
 
   @AfterTest
@@ -206,16 +185,8 @@ class ScenarioServiceImplTests {
 
     every { idGenerator.generate("scenario") } returns "S-myScenarioId"
 
-    val cosmosContainer = mockk<CosmosContainer>()
-    every { cosmosCoreDatabase.getContainer("${ORGANIZATION_ID}_scenario_data") } returns
-        cosmosContainer
-    val cosmosItemResponse = mockk<CosmosItemResponse<Map<*, *>>>()
-    every {
-      cosmosContainer.createItem(ofType(Map::class), PartitionKey(AUTHENTICATED_USERNAME), any())
-    } returns cosmosItemResponse
     // The implementation in ScenarioServiceImpl only needs to know if the response item is null or
     // not
-    every { cosmosItemResponse.item } returns mapOf<String, Any>()
     val eventBus = mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus>()
     every { csmPlatformProperties.azure?.eventBus!! } returns eventBus
     every { workspace.key } returns "my-workspace-key"
@@ -310,16 +281,8 @@ class ScenarioServiceImplTests {
 
     every { idGenerator.generate("scenario") } returns "S-myScenarioId"
 
-    val cosmosContainer = mockk<CosmosContainer>()
-    every { cosmosCoreDatabase.getContainer("${ORGANIZATION_ID}_scenario_data") } returns
-        cosmosContainer
-    val cosmosItemResponse = mockk<CosmosItemResponse<Map<*, *>>>()
-    every {
-      cosmosContainer.createItem(ofType(Map::class), PartitionKey(AUTHENTICATED_USERNAME), any())
-    } returns cosmosItemResponse
     // The implementation in ScenarioServiceImpl only needs to know if the response item is null or
     // not
-    every { cosmosItemResponse.item } returns mapOf<String, Any>()
     val eventBus = mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus>()
     every { csmPlatformProperties.azure?.eventBus!! } returns eventBus
     every { workspace.key } returns "my-workspace-key"
@@ -417,16 +380,6 @@ class ScenarioServiceImplTests {
 
     every { idGenerator.generate("scenario") } returns "S-myScenarioId"
 
-    val cosmosContainer = mockk<CosmosContainer>()
-    every { cosmosCoreDatabase.getContainer("${ORGANIZATION_ID}_scenario_data") } returns
-        cosmosContainer
-    val cosmosItemResponse = mockk<CosmosItemResponse<Map<*, *>>>()
-    every {
-      cosmosContainer.createItem(ofType(Map::class), PartitionKey(AUTHENTICATED_USERNAME), any())
-    } returns cosmosItemResponse
-    // The implementation in ScenarioServiceImpl only needs to know if the response item is null or
-    // not
-    every { cosmosItemResponse.item } returns mapOf<String, Any>()
     val eventBus = mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus>()
     every { csmPlatformProperties.azure?.eventBus!! } returns eventBus
     every { workspace.key } returns "my-workspace-key"
@@ -535,9 +488,6 @@ class ScenarioServiceImplTests {
       every { scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, it.id!!) } returns
           it
     }
-    val cosmosContainer = mockk<CosmosContainer>(relaxed = true)
-    every { cosmosCoreDatabase.getContainer("${ORGANIZATION_ID}_scenario_data") } returns
-        cosmosContainer
     val eventBus = mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus>()
     every { csmPlatformProperties.azure?.eventBus!! } returns eventBus
     val workspace = mockk<Workspace>()
@@ -603,9 +553,6 @@ class ScenarioServiceImplTests {
       every { scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, it.id!!) } returns
           it
     }
-    val cosmosContainer = mockk<CosmosContainer>(relaxed = true)
-    every { cosmosCoreDatabase.getContainer("${ORGANIZATION_ID}_scenario_data") } returns
-        cosmosContainer
     val eventBus = mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus>()
     every { csmPlatformProperties.azure?.eventBus!! } returns eventBus
     val workspace = mockk<Workspace>()
@@ -662,9 +609,6 @@ class ScenarioServiceImplTests {
       every { scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, it.id!!) } returns
           it
     }
-    val cosmosContainer = mockk<CosmosContainer>(relaxed = true)
-    every { cosmosCoreDatabase.getContainer("${ORGANIZATION_ID}_scenario_data") } returns
-        cosmosContainer
     val eventBus = mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus>()
     every { csmPlatformProperties.azure?.eventBus!! } returns eventBus
     val workspace = mockk<Workspace>()
