@@ -123,7 +123,9 @@ class TwingraphServiceImpl(
     }
 
     val redisGraphId = "${twingraphId}:${twinGraphQuery.version}"
-    val resultSet: ResultSet = jedis.graphQuery(redisGraphId, twinGraphQuery.query)
+    val resultSet: ResultSet =
+        jedis.graphQuery(
+            redisGraphId, twinGraphQuery.query, csmPlatformProperties.twincache.queryTimeout)
 
     val iterator = resultSet.iterator()
     if (!iterator.hasNext()) {
