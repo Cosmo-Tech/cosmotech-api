@@ -45,6 +45,9 @@ nodes:
       - containerPort: 443
         hostPort: 443
         protocol: TCP
+      - containerPort: 5005
+        hostPort: 5005
+        protocol: TCP
     - role: worker
       image: kindest/node:${kindest_node_image_tag}
       kubeadmConfigPatches:
