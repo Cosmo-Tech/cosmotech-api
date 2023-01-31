@@ -84,7 +84,7 @@ class TwingraphServiceImpl(
     val matchingKeys = mutableSetOf<String>()
     var nextCursor = SCAN_POINTER_START
     do {
-      val scanResult = jedis.scan(nextCursor, ScanParams().match(""), "GraphEntity")
+      val scanResult = jedis.scan(nextCursor, ScanParams().match("*"), "graphdata")
       nextCursor = scanResult.cursor
       matchingKeys.addAll(scanResult.result)
     } while (!nextCursor.equals(SCAN_POINTER_START))
