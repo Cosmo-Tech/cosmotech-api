@@ -266,10 +266,11 @@ internal class ArgoWorkflowService(
   }
 
   override fun findWorkflowStatusByLabel(
-      labelSelector: String
+      labelSelector: String,
+      skipArchive: Boolean,
   ): List<com.cosmotech.scenariorun.workflow.WorkflowStatus> {
     var workflowList: IoArgoprojWorkflowV1alpha1WorkflowList? =
-        findWorkflowListByLabel(labelSelector)
+        findWorkflowListByLabel(labelSelector, skipArchive)
 
     return workflowList?.items?.map { workflow ->
       val workflowId = workflow.metadata.uid!!
@@ -280,25 +281,29 @@ internal class ArgoWorkflowService(
   }
 
   internal fun findWorkflowListByLabel(
-      labelSelector: String
+      labelSelector: String,
+      skipArchive: Boolean = false,
   ): IoArgoprojWorkflowV1alpha1WorkflowList? {
     var workflowList: IoArgoprojWorkflowV1alpha1WorkflowList? = null
-    try {
-      // Workflows are auto-archived and auto-deleted more frequently
-      // (as soon as they succeed or after a TTL).
-      // Therefore, it is more likely to have more archived workflows.
-      // So we are calling the ArchivedWorkflow API first, to reduce the number of round trips to
-      // Argo
-      workflowList =
-          newServiceApiInstance<ArchivedWorkflowServiceApi>(this.apiClient)
-              .archivedWorkflowServiceListArchivedWorkflows(
-                  labelSelector, null, null, null, null, null, null, null, null, null)
-      logger.trace("workflowList: {}", workflowList)
-    } catch (e: ApiException) {
-      val logMessage =
-          "No archived workflow found for label selector $labelSelector - trying to find in the active ones"
-      logger.debug(logMessage)
-      logger.trace(logMessage, e)
+    if (!skipArchive) {
+        try {
+            // Workflows are auto-archived and auto-deleted more frequently
+            // (as soon as they succeed or after a TTL).
+            // Therefore, it is more likely to have more archived workflows.
+            // So we are calling the ArchivedWorkflow API first, to reduce the number of round trips to
+            // Argo
+            workflowList =
+                newServiceApiInstance<ArchivedWorkflowServiceApi>(this.apiClient)
+                    .archivedWorkflowServiceListArchivedWorkflows(
+                        labelSelector, null, null, null, null, null, null, null, null, null
+                    )
+            logger.trace("workflowList: {}", workflowList)
+        } catch (e: ApiException) {
+            val logMessage =
+                "No archived workflow found for label selector $labelSelector - trying to find in the active ones"
+            logger.debug(logMessage)
+            logger.trace(logMessage, e)
+        }
     }
 
     if (workflowList?.items?.isEmpty() != false) {

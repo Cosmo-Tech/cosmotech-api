@@ -122,6 +122,7 @@ private const val SCENARIO_DATA_ABSOLUTE_PATH_ENV_VAR = "CSM_DATA_ABSOLUTE_PATH"
 private const val SCENARIO_DATA_UPLOAD_LOG_LEVEL_ENV_VAR = "CSM_LOG_LEVEL"
 internal const val CSM_JOB_ID_LABEL_KEY = "com.cosmotech/job_id"
 internal const val SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME = "downloadUrl"
+internal const val WORKFLOW_TYPE_LABEL = "cosmotech.com/workflowtype"
 
 const val CSM_DAG_ROOT = "DAG_ROOT"
 
@@ -225,6 +226,7 @@ internal class ContainerFactory(
       organizationId: String,
       workspaceId: String,
       scenarioId: String,
+      workflowType: String,
       scenarioDataDownload: Boolean = false,
       scenarioDataDownloadJobId: String? = null,
   ): StartInfo {
@@ -251,6 +253,7 @@ internal class ContainerFactory(
                 organization,
                 solution,
                 csmSimulationId,
+                workflowType,
                 scenarioDataDownload,
                 scenarioDataDownloadJobId),
         scenario = scenario,
@@ -268,6 +271,7 @@ internal class ContainerFactory(
       imageRegistry: String = "",
       imageVersion: String = "latest",
       containerEnvVars: MutableMap<String, String>,
+      workflowType: String,
       artifacts: Map<String, String> = mapOf(),
       nodeLabel: String = NODE_LABEL_DEFAULT
   ): ScenarioRunStartContainers {
@@ -297,7 +301,11 @@ internal class ContainerFactory(
         nodeLabel = nodeLabel?.plus(NODE_LABEL_SUFFIX),
         containers = listOf(container),
         csmSimulationId = jobId,
-        labels = mapOf(CSM_JOB_ID_LABEL_KEY to jobId))
+        labels = mapOf(
+            CSM_JOB_ID_LABEL_KEY to jobId,
+            WORKFLOW_TYPE_LABEL to workflowType,
+        )
+    )
   }
 
   internal fun buildSimpleContainer(
@@ -332,6 +340,7 @@ internal class ContainerFactory(
       organization: Organization,
       solution: Solution,
       csmSimulationId: String,
+      workflowType: String,
       scenarioDataDownload: Boolean = false,
       scenarioDataDownloadJobId: String? = null,
   ): ScenarioRunStartContainers {
@@ -378,7 +387,11 @@ internal class ContainerFactory(
         nodeLabel = nodeLabel?.plus(NODE_LABEL_SUFFIX),
         containers = containers,
         csmSimulationId = csmSimulationId,
-        labels = mapOf(CSM_JOB_ID_LABEL_KEY to (scenarioDataDownloadJobId ?: "")))
+        labels = mapOf(
+            CSM_JOB_ID_LABEL_KEY to (scenarioDataDownloadJobId ?: (scenario.id ?: "")),
+            WORKFLOW_TYPE_LABEL to workflowType,
+        )
+    )
   }
 
   @Suppress("LongMethod", "LongParameterList") // Exception for this method - too tedious to update

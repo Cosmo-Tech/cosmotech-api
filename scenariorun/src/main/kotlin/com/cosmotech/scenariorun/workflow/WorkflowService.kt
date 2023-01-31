@@ -35,9 +35,10 @@ internal interface WorkflowService : HealthIndicator {
   /**
    * Find WorkflowStatus by label
    * @param labelSelector a label used to filter workflow
+   * @param skipArchive Do not search workflows in archive
    * @return a list of all WorkflowStatus corresponding to the labelSelector
    */
-  fun findWorkflowStatusByLabel(labelSelector: String): List<WorkflowStatus>
+  fun findWorkflowStatusByLabel(labelSelector: String, skipArchive: Boolean = false): List<WorkflowStatus>
 
   /**
    * Get a ScenarioRun status
