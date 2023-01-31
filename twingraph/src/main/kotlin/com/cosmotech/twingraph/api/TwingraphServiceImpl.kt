@@ -126,7 +126,10 @@ class TwingraphServiceImpl(
 
     if (resultSet.size() == 0) {
       throw CsmResourceNotFoundException(
-          "TwinGraph empty with given $twingraphId " + "and version ${twinGraphQuery.version}")
+          "No result found for:"
+              + " graphId:  $twingraphId "
+              + ", version: ${twinGraphQuery.version}"
+              + ", query: ${twinGraphQuery.query}")
     }
 
     return resultSet.toJsonString()
