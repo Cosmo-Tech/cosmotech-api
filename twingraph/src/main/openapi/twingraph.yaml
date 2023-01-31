@@ -86,6 +86,28 @@ paths:
             application/json:
               schema:
                 type: string
+  /organizations/{organization_id}/twingraph/listgraphs:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: listGraphs
+      tags:
+        - twingraph
+      description: Return the list of all graphs stored in the organization
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
   /organizations/{organization_id}/twingraph/{graph_id}/query:
     parameters:
       - name: organization_id

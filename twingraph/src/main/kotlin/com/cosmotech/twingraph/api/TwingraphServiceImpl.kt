@@ -80,6 +80,17 @@ class TwingraphServiceImpl(
     logger.debug("$count keys are removed from Twingraph with prefix $graphId")
   }
 
+  override fun listGraphs(organizationId: String): List<String> {
+    val matchingKeys = mutableSetOf<String>()
+    var nextCursor = SCAN_POINTER_START
+    do {
+      val scanResult = jedis.scan(nextCursor, ScanParams().match(""), "GraphEntity")
+      nextCursor = scanResult.cursor
+      matchingKeys.addAll(scanResult.result)
+    } while (!nextCursor.equals(SCAN_POINTER_START))
+    return matchingKeys.toList()
+  }
+
   override fun query(
       organizationId: String,
       twingraphId: String,
