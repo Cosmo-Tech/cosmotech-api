@@ -1,3 +1,5 @@
+// Copyright (c) Cosmo Tech.
+// Licensed under the MIT license.
 package com.cosmotech.twingraph.extension
 
 import com.cosmotech.api.utils.objectMapper
@@ -15,16 +17,19 @@ import redis.clients.jedis.graph.entities.Node
 private const val ID_PROPERTY_NAME = "id"
 
 data class CsmGraphEntity(
-  var label: String,
-  var id: String,
-  var properties: Map<String,Any?>,
-  var type: String
+    var label: String,
+    var id: String,
+    var properties: Map<String, Any?>,
+    var type: String
 )
+
 enum class CsmGraphEntityType {
-  RELATION, NODE
+  RELATION,
+  NODE
 }
 
-val jsonObjectMapper: ObjectMapper = objectMapper().configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
+val jsonObjectMapper: ObjectMapper =
+    objectMapper().configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
 
 @Suppress("SwallowedException")
 fun GraphEntity.toCsmGraphEntity(type: CsmGraphEntityType): CsmGraphEntity {
@@ -34,43 +39,41 @@ fun GraphEntity.toCsmGraphEntity(type: CsmGraphEntityType): CsmGraphEntity {
     entityId = this.getProperty(ID_PROPERTY_NAME).value.toString()
   }
 
-  val properties = this.entityPropertyNames
-    .filter { it != ID_PROPERTY_NAME }
-    .associateWith {
-      getJsonCompliantPropertyByName(it)
-    }
+  val properties =
+      this.entityPropertyNames.filter { it != ID_PROPERTY_NAME }.associateWith {
+        getJsonCompliantPropertyByName(it)
+      }
 
-  val label = if (type == CsmGraphEntityType.RELATION)
-                (this as Edge).relationshipType
-              else (this as Node).getLabel(0)
+  val label =
+      if (type == CsmGraphEntityType.RELATION) (this as Edge).relationshipType
+      else (this as Node).getLabel(0)
 
-  return CsmGraphEntity(
-    label,
-    entityId,
-    properties,
-    type.toString()
-  )
+  return CsmGraphEntity(label, entityId, properties, type.toString())
 }
 
 fun GraphEntity.getJsonCompliantPropertyByName(propertyName: String): Any {
   val propertyValue = this.getProperty(propertyName).value
-  return if (propertyValue is String) {
-    try {
-      val firstTry = jsonObjectMapper.readValue<JSONObject>(propertyValue)
-      if (firstTry.isEmpty) {
-        jsonObjectMapper.readValue(propertyValue)
-      } else {
-        firstTry
-      }
-    } catch (e: JacksonException) {
-      propertyValue
-    }
-  } else {
-    propertyValue
-  }
+  return propertyValue.convertToJsonValue()
 }
 
-fun ResultSet.toJsonString() : String {
+@Suppress("SwallowedException")
+fun Any.convertToJsonValue(): Any =
+    if (this is String) {
+      try {
+        val firstTry = jsonObjectMapper.readValue<JSONObject>(this)
+        if (firstTry.isEmpty) {
+          jsonObjectMapper.readValue(this)
+        } else {
+          firstTry
+        }
+      } catch (e: JacksonException) {
+        this
+      }
+    } else {
+      this
+    }
+
+fun ResultSet.toJsonString(): String {
   val result = mutableListOf<MutableMap<String, Any>>()
   this.forEach { record: Record ->
     val header = record.keys()
@@ -86,7 +89,7 @@ fun ResultSet.toJsonString() : String {
           entries[columnName] = JSONObject(element.toCsmGraphEntity(CsmGraphEntityType.RELATION))
         }
         else -> {
-          entries[columnName] = element
+          entries[columnName] = element.convertToJsonValue()
         }
       }
     }
