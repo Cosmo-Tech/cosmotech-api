@@ -120,17 +120,14 @@ class TwingraphServiceImpl(
     }
 
     val redisGraphId = "${twingraphId}:${twinGraphQuery.version}"
+    val redisGraphMatchingKeys = jedis.keys(redisGraphId)
+    if (redisGraphMatchingKeys.size == 0) {
+      throw CsmResourceNotFoundException("No graph found with id: $redisGraphId")
+    }
+
     val resultSet: ResultSet =
         jedis.graphQuery(
             redisGraphId, twinGraphQuery.query, csmPlatformProperties.twincache.queryTimeout)
-
-    if (resultSet.size() == 0) {
-      throw CsmResourceNotFoundException(
-          "No result found for:"
-              + " graphId:  $twingraphId "
-              + ", version: ${twinGraphQuery.version}"
-              + ", query: ${twinGraphQuery.query}")
-    }
 
     return resultSet.toJsonString()
   }

@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.twingraph.utils
 
-
 object TwingraphUtils {
 
   @JvmStatic
@@ -13,4 +12,3 @@ object TwingraphUtils {
     return matchResults.isEmpty()
   }
 }
-
