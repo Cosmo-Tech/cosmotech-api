@@ -80,7 +80,9 @@ class TwingraphServiceImpl(
     logger.debug("$count keys are removed from Twingraph with prefix $graphId")
   }
 
-  override fun listGraphs(organizationId: String): List<String> {
+  override fun findAllTwingraphs(organizationId: String): List<String> {
+    val organization = organizationService.findOrganizationById(organizationId)
+    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
     val matchingKeys = mutableSetOf<String>()
     var nextCursor = SCAN_POINTER_START
     do {
@@ -89,6 +91,16 @@ class TwingraphServiceImpl(
       matchingKeys.addAll(scanResult.result)
     } while (!nextCursor.equals(SCAN_POINTER_START))
     return matchingKeys.toList()
+  }
+
+  override fun getGraphMetaData(organizationId: String, graphId: String): Map<String, String> {
+    val organization = organizationService.findOrganizationById(organizationId)
+    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
+    val metaDataKey = "${graphId}MetaData"
+    if (jedis.exists(metaDataKey)) {
+      return jedis.hgetAll(metaDataKey)
+    }
+    throw CsmResourceNotFoundException("No metadata found for graphId $graphId")
   }
 
   override fun query(
