@@ -53,6 +53,8 @@ import org.junit.jupiter.api.extension.ExtendWith
 
 private const val CSM_SIMULATION_ID = "simulationrunid"
 
+private const val DEFAULT_WORKFLOW_TYPE = "testruntype"
+
 @Suppress("TooManyFunctions", "LargeClass")
 @ExtendWith(MockKExtension::class)
 class OktaContainerFactoryTests {
@@ -1600,7 +1602,9 @@ class OktaContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            DEFAULT_WORKFLOW_TYPE,
+        )
     assertEquals("highcpupool", startContainers.nodeLabel)
   }
 
@@ -1619,7 +1623,9 @@ class OktaContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            DEFAULT_WORKFLOW_TYPE,
+        )
     assertEquals("basicpool", startContainers.nodeLabel)
   }
 
@@ -1638,7 +1644,9 @@ class OktaContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            DEFAULT_WORKFLOW_TYPE,
+        )
     assertNull(startContainers.nodeLabel)
   }
 
@@ -1657,7 +1665,9 @@ class OktaContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            DEFAULT_WORKFLOW_TYPE,
+        )
     assertEquals("workflow-scenarioid-", startContainers.generateName)
   }
 
@@ -2477,6 +2487,7 @@ class OktaContainerFactoryTests {
         organizationId,
         workspaceId,
         scenarioId,
+        DEFAULT_WORKFLOW_TYPE,
     )
   }
 

@@ -16,16 +16,18 @@ import com.cosmotech.twingraph.domain.TwinGraphImportInfo
 import com.cosmotech.twingraph.domain.TwinGraphQuery
 import com.cosmotech.twingraph.extension.toJsonString
 import com.cosmotech.twingraph.utils.TwingraphUtils
+import com.redislabs.redisgraph.ResultSet
+import com.redislabs.redisgraph.graph_entities.Edge
+import com.redislabs.redisgraph.graph_entities.Node
+import com.redislabs.redisgraph.impl.api.RedisGraph
 import org.springframework.stereotype.Service
-import redis.clients.jedis.UnifiedJedis
-import redis.clients.jedis.graph.ResultSet
-import redis.clients.jedis.params.ScanParams
-import redis.clients.jedis.params.ScanParams.SCAN_POINTER_START
+import redis.clients.jedis.JedisPool
+import redis.clients.jedis.ScanParams
 
 @Service
 class TwingraphServiceImpl(
     private val organizationService: OrganizationApiService,
-    val jedis: UnifiedJedis,
+    private val csmJedisPool: JedisPool,
     private val csmRbac: CsmRbac
 ) : CsmPhoenixService(), TwingraphApiService {
 
@@ -63,15 +65,16 @@ class TwingraphServiceImpl(
 
   @Suppress("SpreadOperator")
   override fun delete(organizationId: String, graphId: String) {
+    val jedis = csmJedisPool.resource
     val organization = organizationService.findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_READ)
     val matchingKeys = mutableSetOf<String>()
-    var nextCursor = SCAN_POINTER_START
+    var nextCursor = ScanParams.SCAN_POINTER_START
     do {
       val scanResult = jedis.scan(nextCursor, ScanParams().match("$graphId*"))
       nextCursor = scanResult.cursor
       matchingKeys.addAll(scanResult.result)
-    } while (!nextCursor.equals(SCAN_POINTER_START))
+    } while (!nextCursor.equals(ScanParams.SCAN_POINTER_START))
 
     val count = jedis.del(*matchingKeys.toTypedArray())
     logger.debug("$count keys are removed from Twingraph with prefix $graphId")
@@ -102,7 +105,7 @@ class TwingraphServiceImpl(
 
   override fun query(
       organizationId: String,
-      twingraphId: String,
+      graphId: String,
       twinGraphQuery: TwinGraphQuery
   ): String {
     val organization = organizationService.findOrganizationById(organizationId)
@@ -113,20 +116,21 @@ class TwingraphServiceImpl(
     }
 
     if (twinGraphQuery.version.isNullOrEmpty()) {
-      twinGraphQuery.version = jedis.hget("${twingraphId}MetaData", "lastVersion")
+      val jedis = csmJedisPool.resource
+      twinGraphQuery.version = jedis.hget("${graphId}MetaData", "lastVersion")
       if (twinGraphQuery.version.isNullOrEmpty()) {
-        throw CsmResourceNotFoundException("Cannot find lastVersion in ${twingraphId}MetaData")
+        throw CsmResourceNotFoundException("Cannot find lastVersion in ${graphId}MetaData")
       }
     }
 
-    val redisGraphId = "${twingraphId}:${twinGraphQuery.version}"
+    val redisGraphId = "${graphId}:${twinGraphQuery.version}"
+    val redisGraph = RedisGraph(csmJedisPool)
     val redisGraphMatchingKeys = jedis.keys(redisGraphId)
     if (redisGraphMatchingKeys.size == 0) {
       throw CsmResourceNotFoundException("No graph found with id: $redisGraphId")
     }
 
-    val resultSet: ResultSet =
-        jedis.graphQuery(
+    val resultSet = redisGraph.query(
             redisGraphId, twinGraphQuery.query, csmPlatformProperties.twincache.queryTimeout)
 
     return resultSet.toJsonString()
