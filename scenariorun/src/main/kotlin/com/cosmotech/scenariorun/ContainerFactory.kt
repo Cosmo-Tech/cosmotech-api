@@ -301,11 +301,11 @@ internal class ContainerFactory(
         nodeLabel = nodeLabel?.plus(NODE_LABEL_SUFFIX),
         containers = listOf(container),
         csmSimulationId = jobId,
-        labels = mapOf(
-            CSM_JOB_ID_LABEL_KEY to jobId,
-            WORKFLOW_TYPE_LABEL to workflowType,
-        )
-    )
+        labels =
+            mapOf(
+                CSM_JOB_ID_LABEL_KEY to jobId,
+                WORKFLOW_TYPE_LABEL to workflowType,
+            ))
   }
 
   internal fun buildSimpleContainer(
@@ -387,11 +387,11 @@ internal class ContainerFactory(
         nodeLabel = nodeLabel?.plus(NODE_LABEL_SUFFIX),
         containers = containers,
         csmSimulationId = csmSimulationId,
-        labels = mapOf(
-            CSM_JOB_ID_LABEL_KEY to (scenarioDataDownloadJobId ?: (scenario.id ?: "")),
-            WORKFLOW_TYPE_LABEL to workflowType,
-        )
-    )
+        labels =
+            mapOf(
+                CSM_JOB_ID_LABEL_KEY to (scenarioDataDownloadJobId ?: (scenario.id ?: "")),
+                WORKFLOW_TYPE_LABEL to workflowType,
+            ))
   }
 
   @Suppress("LongMethod", "LongParameterList") // Exception for this method - too tedious to update

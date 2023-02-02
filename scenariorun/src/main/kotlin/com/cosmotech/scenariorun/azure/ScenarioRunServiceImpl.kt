@@ -38,7 +38,6 @@ import com.cosmotech.scenario.domain.ScenarioJobState
 import com.cosmotech.scenariorun.CSM_JOB_ID_LABEL_KEY
 import com.cosmotech.scenariorun.ContainerFactory
 import com.cosmotech.scenariorun.SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME
-import com.cosmotech.scenariorun.WORKFLOW_TYPE_LABEL
 import com.cosmotech.scenariorun.api.ScenariorunApiService
 import com.cosmotech.scenariorun.domain.RunTemplateParameterValue
 import com.cosmotech.scenariorun.domain.ScenarioRun
@@ -58,8 +57,6 @@ import com.cosmotech.workspace.azure.EventHubRole
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.domain.Workspace
 import com.fasterxml.jackson.databind.JsonNode
-import io.micrometer.core.instrument.Gauge
-import io.micrometer.core.instrument.MeterRegistry
 import java.time.ZonedDateTime
 import java.util.MissingResourceException
 import kotlin.reflect.full.memberProperties
@@ -81,7 +78,6 @@ internal const val WORKFLOW_TYPE_DATA_DOWNLOAD = "data-download"
 internal const val WORKFLOW_TYPE_SCENARIO_RUN = "scenario-run"
 internal const val WORKFLOW_TYPE_TWIN_GRAPH_IMPORT = "twin-graph-import"
 
-
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions", "LargeClass")
@@ -93,7 +89,6 @@ internal class ScenarioRunServiceImpl(
     private val azureDataExplorerClient: AzureDataExplorerClient,
     private val azureEventHubsClient: AzureEventHubsClient,
     private val workspaceEventHubService: IWorkspaceEventHubService,
-    private val meterRegistry: MeterRegistry,
 ) : CsmCosmosDBService(), ScenariorunApiService {
 
   private fun ScenarioRun.asMapWithAdditionalData(workspaceId: String? = null): Map<String, Any> {
@@ -402,7 +397,7 @@ internal class ScenarioRunServiceImpl(
             adtTwincacheContainerInfo.imageVersion,
             containerEnvVars,
             WORKFLOW_TYPE_TWIN_GRAPH_IMPORT,
-            )
+        )
     twingraphImportEvent.response =
         workflowService.launchScenarioRun(simpleContainer, null).convertToMap()
   }
@@ -468,11 +463,7 @@ internal class ScenarioRunServiceImpl(
 
     val startInfo =
         containerFactory.getStartInfo(
-            organizationId,
-            workspaceId,
-            scenarioId,
-            WORKFLOW_TYPE_SCENARIO_RUN
-        )
+            organizationId, workspaceId, scenarioId, WORKFLOW_TYPE_SCENARIO_RUN)
     logger.debug(startInfo.toString())
     val scenarioRunRequest =
         workflowService.launchScenarioRun(
@@ -523,11 +514,6 @@ internal class ScenarioRunServiceImpl(
     }
     return scenarioRun.withoutSensitiveData()!!
   }
-  private fun getCurrentRunningScenario():Double {
-      val runWorkflows=this.workflowService.findWorkflowStatusByLabel("${WORKFLOW_TYPE_LABEL}=${WORKFLOW_TYPE_SCENARIO_RUN}")
-      return runWorkflows.filter { it.status == "Running" }.size.toDouble()
-  }
-
   private fun deletePreviousSimulationDataIfCurrentSimulationIsSuccessful(
       currentRun: ScenarioRun,
       purgeHistoricalDataConfiguration: DeleteHistoricalData

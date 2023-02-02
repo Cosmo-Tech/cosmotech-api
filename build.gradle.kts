@@ -39,10 +39,11 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 val kotlinJvmTarget = 17
-val cosmotechApiCommonVersion = "0.1.32-SNAPSHOT"
+val cosmotechApiCommonVersion = "0.1.33-SNAPSHOT"
 val cosmotechApiAzureVersion = "0.1.8-SNAPSHOT"
 val cosmotechApiCosmosDBVersion = "0.1.0-SNAPSHOT"
 val azureSpringBootBomVersion = "3.14.0"
+val jedisVersion = "3.9.0"
 
 allprojects {
   apply(plugin = "com.diffplug.spotless")
@@ -50,6 +51,7 @@ allprojects {
   apply(plugin = "io.gitlab.arturbosch.detekt")
 
   repositories {
+    mavenLocal()
     maven {
       name = "GitHubPackages"
       url = uri("https://maven.pkg.github.com/Cosmo-Tech/cosmotech-api-common")
@@ -164,6 +166,9 @@ subprojects {
         outputLocation.set(file("$buildDir/reports/detekt/${project.name}-detekt.sarif"))
       }
     }
+
+    tasks.getByName<BootJar>("bootJar") { enabled = false }
+    tasks.getByName<Jar>("jar") { enabled = true }
   }
 
   dependencies {
@@ -207,7 +212,7 @@ subprojects {
     val oktaSpringBootVersion = "2.1.6"
     implementation("com.okta.spring:okta-spring-boot-starter:${oktaSpringBootVersion}")
 
-    implementation("redis.clients:jedis:4.3.1")
+    implementation("redis.clients:jedis:${jedisVersion}")
 
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:5.9.2"))
@@ -253,7 +258,9 @@ subprojects {
   }
 
   tasks.withType<KotlinCompile> {
-    dependsOn("openApiGenerate")
+    if (openApiDefinitionFile.exists()) {
+      dependsOn("openApiGenerate")
+    }
 
     kotlinOptions {
       languageVersion = "1.7"

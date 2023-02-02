@@ -61,6 +61,8 @@ import org.junit.jupiter.api.extension.ExtendWith
 
 private const val CSM_SIMULATION_ID = "simulationrunid"
 
+private const val DEFAULT_WORKFLOW_TYPE = "testruntype"
+
 @Suppress("TooManyFunctions", "LargeClass")
 @ExtendWith(MockKExtension::class)
 class ContainerFactoryTests {
@@ -1607,7 +1609,9 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            DEFAULT_WORKFLOW_TYPE,
+        )
     assertEquals("highcpupool", startContainers.nodeLabel)
   }
 
@@ -1626,7 +1630,9 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            DEFAULT_WORKFLOW_TYPE,
+        )
     assertEquals("basicpool", startContainers.nodeLabel)
   }
 
@@ -1645,7 +1651,9 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            DEFAULT_WORKFLOW_TYPE,
+        )
     assertNull(startContainers.nodeLabel)
   }
 
@@ -1664,7 +1672,9 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            DEFAULT_WORKFLOW_TYPE,
+        )
     assertEquals("workflow-scenarioid-", startContainers.generateName)
   }
 
@@ -1872,6 +1882,18 @@ class ContainerFactoryTests {
   fun `Full get Start Info pool`() {
     val startInfo = getStartInfoFromIds()
     assertEquals("highcpupool", startInfo.startContainers.nodeLabel)
+  }
+
+  @Test
+  fun `Full get Start node labels`() {
+    val startInfo = getStartInfoFromIds()
+    assertEquals(
+        mapOf(
+            "com.cosmotech/job_id" to "Scenarioid",
+            "cosmotech.com/workflowtype" to DEFAULT_WORKFLOW_TYPE,
+        ),
+        startInfo.startContainers.labels,
+    )
   }
 
   @Test
@@ -2551,6 +2573,7 @@ class ContainerFactoryTests {
         organizationId,
         workspaceId,
         scenarioId,
+        DEFAULT_WORKFLOW_TYPE,
     )
   }
 
