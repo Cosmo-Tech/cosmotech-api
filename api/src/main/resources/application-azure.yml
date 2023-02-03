@@ -12,6 +12,7 @@ management:
       enabled: true
   endpoint:
     health:
+      show-details: always
       group:
         readiness:
           include: "readinessState,argo,csmCosmos,blobStorage,csmADX"
