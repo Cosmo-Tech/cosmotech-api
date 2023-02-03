@@ -5,7 +5,7 @@ package com.cosmotech.organization.azure
 import com.azure.core.exception.ResourceNotFoundException
 import com.azure.cosmos.CosmosDatabase
 import com.azure.spring.data.cosmos.core.CosmosTemplate
-import com.cosmotech.api.azure.findByIdOrThrow
+import com.cosmotech.api.azure.cosmosdb.ext.findByIdOrThrow
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.rbac.CsmAdmin
 import com.cosmotech.api.rbac.CsmRbac

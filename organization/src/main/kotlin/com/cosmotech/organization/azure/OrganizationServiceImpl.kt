@@ -6,9 +6,9 @@ import com.azure.cosmos.models.CosmosContainerProperties
 import com.azure.cosmos.models.CosmosQueryRequestOptions
 import com.azure.cosmos.models.SqlParameter
 import com.azure.cosmos.models.SqlQuerySpec
-import com.cosmotech.api.azure.CsmAzureService
-import com.cosmotech.api.azure.findAll
-import com.cosmotech.api.azure.findByIdOrThrow
+import com.cosmotech.api.azure.cosmosdb.ext.findAll
+import com.cosmotech.api.azure.cosmosdb.ext.findByIdOrThrow
+import com.cosmotech.api.azure.cosmosdb.service.CsmCosmosDBService
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
@@ -48,7 +48,7 @@ import org.springframework.stereotype.Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions")
 class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin: CsmAdmin) :
-    CsmAzureService(), OrganizationApiService {
+    CsmCosmosDBService(), OrganizationApiService {
 
   private lateinit var coreOrganizationContainer: String
 

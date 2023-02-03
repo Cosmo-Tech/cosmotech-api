@@ -40,7 +40,8 @@ version = scmVersion.version
 
 val kotlinJvmTarget = 17
 val cosmotechApiCommonVersion = "0.1.32-SNAPSHOT"
-val cosmotechApiAzureVersion = "0.1.7-SNAPSHOT"
+val cosmotechApiAzureVersion = "0.1.8-SNAPSHOT"
+val cosmotechApiCosmosDBVersion = "0.1.0-SNAPSHOT"
 val azureSpringBootBomVersion = "3.14.0"
 
 allprojects {
