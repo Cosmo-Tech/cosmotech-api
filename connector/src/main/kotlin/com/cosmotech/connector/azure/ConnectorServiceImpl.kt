@@ -3,9 +3,9 @@
 package com.cosmotech.connector.azure
 
 import com.azure.cosmos.models.CosmosContainerProperties
-import com.cosmotech.api.azure.CsmAzureService
-import com.cosmotech.api.azure.findAll
-import com.cosmotech.api.azure.findByIdOrThrow
+import com.cosmotech.api.azure.cosmosdb.ext.findAll
+import com.cosmotech.api.azure.cosmosdb.ext.findByIdOrThrow
+import com.cosmotech.api.azure.cosmosdb.service.CsmCosmosDBService
 import com.cosmotech.api.events.ConnectorRemoved
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
-internal class ConnectorServiceImpl : CsmAzureService(), ConnectorApiService {
+internal class ConnectorServiceImpl : CsmCosmosDBService(), ConnectorApiService {
 
   private lateinit var coreConnectorContainer: String
 

@@ -7,8 +7,8 @@ import com.azure.cosmos.models.CosmosQueryRequestOptions
 import com.azure.cosmos.models.PartitionKey
 import com.azure.cosmos.models.SqlParameter
 import com.azure.cosmos.models.SqlQuerySpec
-import com.cosmotech.api.azure.CsmAzureService
 import com.cosmotech.api.azure.adx.AzureDataExplorerClient
+import com.cosmotech.api.azure.cosmosdb.service.CsmCosmosDBService
 import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
@@ -85,7 +85,7 @@ internal class ScenarioRunServiceImpl(
     private val azureDataExplorerClient: AzureDataExplorerClient,
     private val azureEventHubsClient: AzureEventHubsClient,
     private val workspaceEventHubService: IWorkspaceEventHubService,
-) : CsmAzureService(), ScenariorunApiService {
+) : CsmCosmosDBService(), ScenariorunApiService {
 
   private fun ScenarioRun.asMapWithAdditionalData(workspaceId: String? = null): Map<String, Any> {
     val scenarioAsMap = this.convertToMap().toMutableMap()

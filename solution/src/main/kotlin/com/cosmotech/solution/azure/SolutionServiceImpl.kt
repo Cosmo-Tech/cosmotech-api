@@ -4,9 +4,9 @@ package com.cosmotech.solution.azure
 
 import com.azure.cosmos.models.CosmosContainerProperties
 import com.azure.storage.blob.BlobServiceClient
-import com.cosmotech.api.azure.CsmAzureService
-import com.cosmotech.api.azure.findAll
-import com.cosmotech.api.azure.findByIdOrThrow
+import com.cosmotech.api.azure.cosmosdb.ext.findAll
+import com.cosmotech.api.azure.cosmosdb.ext.findByIdOrThrow
+import com.cosmotech.api.azure.cosmosdb.service.CsmCosmosDBService
 import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
@@ -39,7 +39,7 @@ internal class SolutionServiceImpl(
     private val resourceLoader: ResourceLoader,
     private val azureStorageBlobServiceClient: BlobServiceClient,
     private val resourceScanner: ResourceScanner,
-) : CsmAzureService(), SolutionApiService {
+) : CsmCosmosDBService(), SolutionApiService {
 
   override fun findAllSolutions(organizationId: String) =
       cosmosTemplate.findAll<Solution>("${organizationId}_solutions")

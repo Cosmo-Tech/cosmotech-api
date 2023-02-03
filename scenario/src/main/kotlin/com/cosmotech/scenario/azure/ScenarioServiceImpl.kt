@@ -8,8 +8,8 @@ import com.azure.cosmos.models.CosmosQueryRequestOptions
 import com.azure.cosmos.models.PartitionKey
 import com.azure.cosmos.models.SqlParameter
 import com.azure.cosmos.models.SqlQuerySpec
-import com.cosmotech.api.azure.CsmAzureService
 import com.cosmotech.api.azure.adx.AzureDataExplorerClient
+import com.cosmotech.api.azure.cosmosdb.service.CsmCosmosDBService
 import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
@@ -88,7 +88,7 @@ internal class ScenarioServiceImpl(
     private val azureEventHubsClient: AzureEventHubsClient,
     private val csmRbac: CsmRbac,
     private val workspaceEventHubService: IWorkspaceEventHubService,
-) : CsmAzureService(), ScenarioApiService {
+) : CsmCosmosDBService(), ScenarioApiService {
 
   val scenarioPermissions = getScenarioRolesDefinition()
 

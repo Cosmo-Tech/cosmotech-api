@@ -18,6 +18,8 @@ management:
 
 csm:
   platform:
+    cosmosdb:
+      enable: true
     authorization:
       principal-jwt-claim: "oid"
       tenant-id-jwt-claim: "tid"
