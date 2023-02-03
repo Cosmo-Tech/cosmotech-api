@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service
 import redis.clients.jedis.JedisPool
 
 private const val MILLISECONDS_IN_DAY = 86400000
+private const val KEY_PREFIX = "ts"
 
 @Service
 class MetricsServiceImpl(
@@ -87,6 +88,7 @@ class MetricsServiceImpl(
 
   private fun getMetricLabels(metric: PersistentMetric): Map<String, String> {
     val labels = mutableMapOf(
+        "scope" to metric.scope,
         "service" to metric.service,
         "name" to metric.name,
         "qualifier" to metric.qualifier,
@@ -99,7 +101,7 @@ class MetricsServiceImpl(
   }
 
   private fun getMetricKey(metric: PersistentMetric) =
-      metric.vendor + ":" + metric.service + ":" + metric.name + ":" + metric.qualifier
+      "$KEY_PREFIX:${metric.scope}:${metric.vendor}:${metric.service}:${metric.name}:${metric.qualifier}"
 
   private fun getMetricRetention(metric: PersistentMetric) =
       when (metric.retention) {

@@ -29,7 +29,8 @@ internal class ScenarioRunMetrics(
   private fun getCurrentRunningScenario(): Double {
     val runWorkflows =
         this.workflowService.findWorkflowStatusByLabel(
-            "$WORKFLOW_TYPE_LABEL=$WORKFLOW_TYPE_SCENARIO_RUN")
+            "$WORKFLOW_TYPE_LABEL=$WORKFLOW_TYPE_SCENARIO_RUN",
+          true,)
     return runWorkflows.filter { it.status == RUNNING_STATUS }.size.toDouble()
   }
 
