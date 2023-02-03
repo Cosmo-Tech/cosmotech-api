@@ -135,11 +135,11 @@ csm:
       appIdUri: "http://dev.api.cosmotech.com"
       credentials:
         # Deprecated - use csm.platform.azure.credentials.core.tenantId instead
-        tenantId: ""
+        tenantId: "credentials-tenant-id"
         # Deprecated - use csm.platform.azure.credentials.core.clientId instead
-        clientId: ""
+        clientId: "credentials-client-id"
         # Deprecated - use csm.platform.azure.credentials.core.clientSecret instead
-        clientSecret: ""
+        clientSecret: "credentials-secret-id"
         # Deprecated - use csm.platform.azure.credentials.core.aadPodIdBinding instead
         aadPodIdBinding: "phoenix-pod-identity"
         core:
@@ -155,7 +155,7 @@ csm:
         baseUri: ""
         resourceUri: ""
         # Storage account name length should be between 3 and 24 and use numbers and lower-case letters only
-        account-name: "[storage-account-name]"
+        account-name: "storageaccountname"
         # Fill storage account access key copied from portal
         account-key: "[storage-account-access-key]"
         # Fill storage endpoint URL copied from portal
@@ -177,9 +177,11 @@ csm:
               name: RootManageSharedAccessKey
               key: null
       dataWarehouseCluster:
-        baseUri: ""
+        # e.g. https://{account-name}.{location}.kusto.windows.net
+        baseUri: "adx-base-uri"
         options:
-          ingestionUri: ""
+          # e.g. https://ingest-{account-name}.{location}.kusto.windows.net
+          ingestionUri: "adx-ingestion-uri"
       keyVault:
       analytics:
         resourceUri: ""
