@@ -1,8 +1,5 @@
 spring:
   redis:
-    host: ${csm.platform.twincache.host}
-    username: ${csm.platform.twincache.username}
-    password: ${csm.platform.twincache.password}
     client-type: jedis
   main:
     lazy-initialization: true
@@ -10,6 +7,7 @@ spring:
 management:
   endpoints:
     enabled-by-default: false
+
 
 #csm:
 #  platform:
@@ -22,8 +20,6 @@ management:
 #        uri: "https://faketestaccount.documents.azure.com:443/"
 csm:
   platform:
-    metrics:
-      enabled: false
     api:
       # API Base Path for OpenAPI-generated controllers.
       # Might conflict with the SpringBoot context path, hence leaving it at the root
