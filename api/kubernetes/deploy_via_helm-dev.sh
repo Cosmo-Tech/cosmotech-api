@@ -65,12 +65,14 @@ export ARGO_BUCKET_NAME=argo-workflows
 export ARGO_SERVICE_ACCOUNT=workflowcsmv2
 
 export NAMESPACE_NGINX="ingress-nginx"
+export MONITORING_NAMESPACE="${NAMESPACE}-monitoring"
 
 HELM_CHARTS_BASE_PATH=$(realpath "$(dirname "$0")")
 
 WORKING_DIR=$(mktemp -d -t cosmotech-api-helm-XXXXXXXXXX)
 echo "[info] Working directory: ${WORKING_DIR}"
 pushd "${WORKING_DIR}"
+
 
 # Create namespace if it does not exist
 kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
@@ -86,6 +88,9 @@ cat <<EOF > /tmp/values-ingress-nginx.yaml
 controller:
   metrics:
     enabled: true
+    serviceMonitor:
+      enabled: true
+      namespace: $MONITORING_NAMESPACE
   labels:
     networking/traffic-allowed: "yes"
   podLabels:
@@ -282,6 +287,13 @@ nodeSelector:
   "cosmotech.com/tier": "services"
 accessKey: "${ARGO_MINIO_ACCESS_KEY:-}"
 secretKey: "${ARGO_MINIO_SECRET_KEY:-}"
+metrics:
+  # Metrics can not be disabled yet: https://github.com/minio/minio/issues/7493
+  serviceMonitor:
+    enabled: true
+    namespace: $MONITORING_NAMESPACE
+    interval: 30s
+    scrapeTimeout: 10s
 EOF
 
 helm repo add minio https://helm.min.io/
@@ -318,6 +330,13 @@ resources:
   limits:
     memory: "256Mi"
     cpu: "1"
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    namespace: $MONITORING_NAMESPACE
+    interval: 30s
+    scrapeTimeout: 10s
 EOF
 
 helm repo add bitnami https://charts.bitnami.com/bitnami
@@ -394,6 +413,9 @@ controller:
     value: "${REQUEUE_TIME}"
   podLabels:
     networking/traffic-allowed: "yes"
+  serviceMonitor:
+    enabled: true
+    namespace: $MONITORING_NAMESPACE
   tolerations:
   - key: "vendor"
     operator: "Equal"
@@ -530,7 +552,6 @@ helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "${HELM_CHARTS_BASE_PATH}
 # kube-prometheus-stack
 # https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
 # https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack
-export MONITORING_NAMESPACE="${NAMESPACE}-monitoring"
 kubectl create namespace "${MONITORING_NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
