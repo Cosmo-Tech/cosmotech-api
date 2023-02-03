@@ -84,6 +84,8 @@ cat <<EOF > /tmp/values-ingress-nginx.yaml
 # https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/hack/manifest-templates/provider/kind/values.yaml
 # Kind - https://kind.sigs.k8s.io/docs/user/ingress/
 controller:
+  metrics:
+    enabled: true
   labels:
     networking/traffic-allowed: "yes"
   podLabels:
