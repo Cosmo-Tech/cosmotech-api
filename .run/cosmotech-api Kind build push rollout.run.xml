@@ -4,7 +4,7 @@
       <option name="executionName" />
       <option name="externalProjectPath" value="$PROJECT_DIR$" />
       <option name="externalSystemIdString" value="GRADLE" />
-      <option name="scriptParameters" value="-Djib.allowInsecureRegistries=true -Djib.to.image=localhost:5000/cosmotech-api:latest -Prollout.apiVersion=latest" />
+      <option name="scriptParameters" value="-Djib.allowInsecureRegistries=true -Djib.to.image=localhost:5000/cosmotech-api:latest -Prollout.apiVersion=v2" />
       <option name="taskDescriptions">
         <list />
       </option>
