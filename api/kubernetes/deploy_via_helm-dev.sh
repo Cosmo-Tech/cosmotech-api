@@ -52,7 +52,7 @@ export ARGO_RELEASE_NAME=argocsmv2
 export MINIO_RELEASE_NAME=miniocsmv2
 export POSTGRES_RELEASE_NAME=postgrescsmv2
 export ARGO_VERSION="0.16.6"
-export MINIO_VERSION="8.0.10"
+export MINIO_VERSION="12.1.3"
 export POSTGRESQL_VERSION="11.6.12"
 export VERSION_REDIS="16.13.0"
 export VERSION_REDIS_COSMOTECH="1.0.0"
@@ -250,9 +250,7 @@ helm upgrade --install \
 # Minio
 cat <<EOF > values-minio.yaml
 fullnameOverride: ${MINIO_RELEASE_NAME}
-defaultBucket:
-  enabled: true
-  name: ${ARGO_BUCKET_NAME}
+defaultBuckets: "${ARGO_BUCKET_NAME}"
 persistence:
   enabled: true
 resources:
@@ -264,18 +262,6 @@ resources:
     cpu: "1"
 service:
   type: ClusterIP
-DeploymentUpdate:
-  # As Minio uses a ReadWriteOnce PVC by default, using a RollingUpdate strategy will not
-  # work if the new pod is scheduled on a different node.
-  # It is possible to force the replicas scheduling on a same node, but this requires that node
-  # to have a minimum of 4Gi additional memory available, which is the default memory request
-  # set by Argo.
-  type: Recreate
-networkPolicy:
-  # Enabling networking policy returns the following error: unable to recognize "": no matches for kind "NetworkPolicy" in version "networking.k8s.io/v1beta1"
-  # => will use the 'networking/traffic-allowed: "yes"' label instead to allow traffic.
-  enabled: false
-  allowExternal: true
 podLabels:
   networking/traffic-allowed: "yes"
 tolerations:
@@ -285,8 +271,9 @@ tolerations:
   effect: "NoSchedule"
 nodeSelector:
   "cosmotech.com/tier": "services"
-accessKey: "${ARGO_MINIO_ACCESS_KEY:-}"
-secretKey: "${ARGO_MINIO_SECRET_KEY:-}"
+auth:
+  rootUser: "${ARGO_MINIO_ACCESS_KEY:-}"
+  rootPassword: "${ARGO_MINIO_SECRET_KEY:-}"
 metrics:
   # Metrics can not be disabled yet: https://github.com/minio/minio/issues/7493
   serviceMonitor:
@@ -296,8 +283,8 @@ metrics:
     scrapeTimeout: 10s
 EOF
 
-helm repo add minio https://helm.min.io/
-helm upgrade --install ${MINIO_RELEASE_NAME} minio/minio --namespace ${NAMESPACE} --version ${MINIO_VERSION} --values values-minio.yaml
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm upgrade --install ${MINIO_RELEASE_NAME} bitnami/minio --namespace ${NAMESPACE} --version ${MINIO_VERSION} --values values-minio.yaml
 
 # Postgres
 cat <<EOF > values-postgresql.yaml
@@ -383,10 +370,10 @@ artifactRepository:
     insecure: true
     accessKeySecret:
       name: ${MINIO_RELEASE_NAME}
-      key: accesskey
+      key: root-user
     secretKeySecret:
       name: ${MINIO_RELEASE_NAME}
-      key: secretkey
+      key: root-password
 server:
   extraArgs:
   - --auth-mode=server
