@@ -30,7 +30,8 @@ internal class ScenarioRunMetrics(
     val runWorkflows =
         this.workflowService.findWorkflowStatusByLabel(
             "$WORKFLOW_TYPE_LABEL=$WORKFLOW_TYPE_SCENARIO_RUN",
-          true,)
+            true,
+        )
     return runWorkflows.filter { it.status == RUNNING_STATUS }.size.toDouble()
   }
 
@@ -44,9 +45,10 @@ internal class ScenarioRunMetrics(
             name = "running",
             value = currentRunningScenario.toDouble(),
             qualifier = "total",
-            labels = mapOf(
-              "usage" to "licensing",
-            ),
+            labels =
+                mapOf(
+                    "usage" to "licensing",
+                ),
             type = PersitentMetricType.GAUGE,
         )
     eventPublisher.publishEvent(PersistentMetricEvent(this, metric))
@@ -63,9 +65,10 @@ internal class ScenarioRunMetrics(
             value = 0.0,
             incrementBy = 1,
             qualifier = "total",
-            labels = mapOf(
-              "usage" to "licensing",
-            ),
+            labels =
+                mapOf(
+                    "usage" to "licensing",
+                ),
             type = PersitentMetricType.COUNTER,
         )
     eventPublisher.publishEvent(PersistentMetricEvent(this, metric))

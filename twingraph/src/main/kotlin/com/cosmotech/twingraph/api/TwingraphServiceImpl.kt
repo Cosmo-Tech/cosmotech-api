@@ -65,19 +65,20 @@ class TwingraphServiceImpl(
 
   @Suppress("SpreadOperator")
   override fun delete(organizationId: String, graphId: String) {
-    val jedis = csmJedisPool.resource
-    val organization = organizationService.findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
-    val matchingKeys = mutableSetOf<String>()
-    var nextCursor = ScanParams.SCAN_POINTER_START
-    do {
-      val scanResult = jedis.scan(nextCursor, ScanParams().match("$graphId*"))
-      nextCursor = scanResult.cursor
-      matchingKeys.addAll(scanResult.result)
-    } while (!nextCursor.equals(ScanParams.SCAN_POINTER_START))
+    csmJedisPool.resource.use { jedis ->
+      val organization = organizationService.findOrganizationById(organizationId)
+      csmRbac.verify(organization.getRbac(), PERMISSION_READ)
+      val matchingKeys = mutableSetOf<String>()
+      var nextCursor = ScanParams.SCAN_POINTER_START
+      do {
+        val scanResult = jedis.scan(nextCursor, ScanParams().match("$graphId*"))
+        nextCursor = scanResult.cursor
+        matchingKeys.addAll(scanResult.result)
+      } while (!nextCursor.equals(ScanParams.SCAN_POINTER_START))
 
-    val count = jedis.del(*matchingKeys.toTypedArray())
-    logger.debug("$count keys are removed from Twingraph with prefix $graphId")
+      val count = jedis.del(*matchingKeys.toTypedArray())
+      logger.debug("$count keys are removed from Twingraph with prefix $graphId")
+    }
   }
 
   override fun findAllTwingraphs(organizationId: String): List<String> {
@@ -116,10 +117,11 @@ class TwingraphServiceImpl(
     }
 
     if (twinGraphQuery.version.isNullOrEmpty()) {
-      val jedis = csmJedisPool.resource
-      twinGraphQuery.version = jedis.hget("${graphId}MetaData", "lastVersion")
-      if (twinGraphQuery.version.isNullOrEmpty()) {
-        throw CsmResourceNotFoundException("Cannot find lastVersion in ${graphId}MetaData")
+      csmJedisPool.resource.use { jedis ->
+        twinGraphQuery.version = jedis.hget("${graphId}MetaData", "lastVersion")
+        if (twinGraphQuery.version.isNullOrEmpty()) {
+          throw CsmResourceNotFoundException("Cannot find lastVersion in ${graphId}MetaData")
+        }
       }
     }
 
