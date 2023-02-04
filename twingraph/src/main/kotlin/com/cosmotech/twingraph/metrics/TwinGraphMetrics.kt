@@ -26,7 +26,8 @@ internal class TwinGraphMetrics(
     }
   }
 
-  @Scheduled(fixedDelay = 10000)
+  // Every 30mn
+  @Scheduled(fixedDelay = 1800000)
   fun publishTwinGraphCount() {
     logger.debug("METRICS: publishTwinGraphCount")
     val count = this.getTwinGraphList().size.toDouble()
