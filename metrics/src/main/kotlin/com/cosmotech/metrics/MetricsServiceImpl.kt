@@ -5,7 +5,6 @@ package com.cosmotech.metrics
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.PersistentMetricEvent
 import com.cosmotech.api.metrics.PersistentMetric
-import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.redislabs.redistimeseries.RedisTimeSeries
 import org.slf4j.LoggerFactory
 import org.springframework.context.event.EventListener
@@ -36,25 +35,26 @@ class MetricsServiceImpl(
       throw IllegalArgumentException("Cannot set both incrementBy and value")
     }
 
-    val timestamp = when (metric.incrementBy) {
-      0 ->
-        timeSeries.add(
-          key,
-          metric.timestamp,
-          metric.value,
-        )
-
-      else ->
-        timeSeries.incrBy(
-          key,
-          metric.incrementBy,
-          metric.timestamp,
-        )
-    }
+    val timestamp =
+        when (metric.incrementBy) {
+          0 ->
+              timeSeries.add(
+                  key,
+                  metric.timestamp,
+                  metric.value,
+              )
+          else ->
+              timeSeries.incrBy(
+                  key,
+                  metric.incrementBy,
+                  metric.timestamp,
+              )
+        }
 
     logger.debug("METRICS: addMetricToTimeSeries done for $key at $timestamp")
   }
 
+  @Suppress("EmptyElseBlock")
   private fun createTimeSeries(metric: PersistentMetric) {
     logger.debug("METRICS: createTimeSeries")
     jedisPool.resource.use { jedis ->
@@ -67,7 +67,8 @@ class MetricsServiceImpl(
 
       if (!exist) {
         val metricLabels = getMetricLabels(metric)
-        logger.debug("Creating Redis TS: $key with retention: $metricRetention and ${metricLabels.count()} labels")
+        logger.debug(
+            "Creating Redis TS: $key with retention: $metricRetention and ${metricLabels.count()} labels")
         timeSeries.create(
             key,
             metricRetention,
@@ -77,8 +78,10 @@ class MetricsServiceImpl(
         val timeSeriesRetention = timeSeries.info(key).getProperty("retentionTime")
 
         if (!timeSeriesRetention.equals(metricRetention)) {
-          logger.debug("Redis TS retention changed: $key from $timeSeriesRetention to $metricRetention")
-          logger.debug("Redis TS library cannot get current labels so it is not possible to check if labels changed")
+          logger.debug(
+              "Redis TS retention changed: $key from $timeSeriesRetention to $metricRetention")
+          logger.debug(
+              "Redis TS library cannot get current labels so it is not possible to check if labels changed")
           val metricLabels = getMetricLabels(metric)
           timeSeries.alter(key, metricRetention, metricLabels)
         } else {}
@@ -87,14 +90,15 @@ class MetricsServiceImpl(
   }
 
   private fun getMetricLabels(metric: PersistentMetric): Map<String, String> {
-    val labels = mutableMapOf(
-        "scope" to metric.scope,
-        "service" to metric.service,
-        "name" to metric.name,
-        "qualifier" to metric.qualifier,
-        "vendor" to metric.vendor,
-        "type" to metric.type.name,
-    )
+    val labels =
+        mutableMapOf(
+            "scope" to metric.scope,
+            "service" to metric.service,
+            "name" to metric.name,
+            "qualifier" to metric.qualifier,
+            "vendor" to metric.vendor,
+            "type" to metric.type.name,
+        )
 
     labels.putAll(metric.labels)
     return labels.toMap()

@@ -61,6 +61,11 @@ csm:
     vcs-ref: ""
     rbac:
       enabled: true
+    twincache:
+      host: "localhost"
+      port: 6379
+      username: "default"
+      password: ""
 
     api:
       # API Base Path for OpenAPI-generated controllers.
