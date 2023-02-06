@@ -17,6 +17,8 @@ management:
 #        uri: "https://faketestaccount.documents.azure.com:443/"
 csm:
   platform:
+    metrics:
+      enabled: true
     identityProvider :
       code: azure
       defaultScopes:
