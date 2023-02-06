@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenariorun.metrics
 
+import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.events.PersistentMetricEvent
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
@@ -23,6 +24,7 @@ private const val SERVICE_NAME = "scenariorun"
 internal class ScenarioRunMetrics(
     private val workflowService: WorkflowService,
     private val eventPublisher: CsmEventPublisher,
+    private val csmPlatformProperties: CsmPlatformProperties,
 ) {
   private val logger = LoggerFactory.getLogger(ScenarioRunMetrics::class.java)
 
@@ -37,6 +39,7 @@ internal class ScenarioRunMetrics(
 
   @Scheduled(fixedDelay = 10000)
   fun publishCurrentRunningScenario() {
+    if (!csmPlatformProperties.metrics.enabled) return
     logger.debug("METRICS: publishCurrentRunningScenario")
     val currentRunningScenario = getCurrentRunningScenario()
     val metric =
@@ -57,6 +60,7 @@ internal class ScenarioRunMetrics(
   @EventListener(ScenarioRunStartedForScenario::class)
   @Suppress("UnusedPrivateMember")
   fun onScenarioRunStartedForScenario(event: ScenarioRunStartedForScenario) {
+    if (!csmPlatformProperties.metrics.enabled) return
     logger.debug("METRICS: onScenarioRunStartedForScenario")
     val metric =
         PersistentMetric(

@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.twingraph.metrics
 
+import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.events.PersistentMetricEvent
 import com.cosmotech.api.metrics.PersistentMetric
@@ -17,6 +18,7 @@ private const val SERVICE_NAME = "twingraph"
 internal class TwinGraphMetrics(
     private val jedisPool: JedisPool,
     private val eventPublisher: CsmEventPublisher,
+    private val csmPlatformProperties: CsmPlatformProperties,
 ) {
   private val logger = LoggerFactory.getLogger(TwinGraphMetrics::class.java)
 
@@ -29,6 +31,7 @@ internal class TwinGraphMetrics(
   // Every 30mn
   @Scheduled(fixedDelay = 1800000)
   fun publishTwinGraphCount() {
+    if (!csmPlatformProperties.metrics.enabled) return
     logger.debug("METRICS: publishTwinGraphCount")
     val count = this.getTwinGraphList().size.toDouble()
     val metric =
