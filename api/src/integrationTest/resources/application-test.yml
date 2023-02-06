@@ -18,7 +18,7 @@ management:
 csm:
   platform:
     metrics:
-      enabled: true
+      enabled: false
     identityProvider :
       code: azure
       defaultScopes:
