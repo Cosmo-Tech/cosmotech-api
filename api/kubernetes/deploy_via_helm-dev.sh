@@ -54,10 +54,11 @@ export POSTGRES_RELEASE_NAME=postgrescsmv2
 export ARGO_VERSION="0.16.6"
 export MINIO_VERSION="12.1.3"
 export POSTGRESQL_VERSION="11.6.12"
-export VERSION_REDIS="16.13.0"
+export VERSION_REDIS="17.3.14"
 export VERSION_REDIS_COSMOTECH="1.0.0"
 export VERSION_REDIS_INSIGHT="0.1.0"
 export INGRESS_NGINX_VERSION="4.2.5"
+export PROMETHEUS_STACK_VERSION="44.3.1"
 
 export ARGO_DATABASE=argo_workflows
 export ARGO_POSTGRESQL_USER=argo
@@ -76,6 +77,41 @@ pushd "${WORKING_DIR}"
 
 # Create namespace if it does not exist
 kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
+
+# common exports
+export COSMOTECH_API_RELEASE_NAME="cosmotech-api-${API_VERSION}"
+export REDIS_PORT=6379
+REDIS_PASSWORD=${REDIS_ADMIN_PASSWORD:-$(kubectl get secret --namespace ${NAMESPACE} cosmotechredis -o jsonpath="{.data.redis-password}" | base64 -d || "")}
+if [[ -z $REDIS_PASSWORD ]] ; then
+  REDIS_PASSWORD=$(date +%s | sha256sum | base64 | head -c 32)
+fi
+
+# kube-prometheus-stack
+# https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
+# https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack
+kubectl create namespace "${MONITORING_NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/main/deployment_scripts/v2.1/kube-prometheus-stack-template.yaml" \
+     -o "${WORKING_DIR}"/kube-prometheus-stack-template.yaml
+
+MONITORING_NAMESPACE_VAR=${MONITORING_NAMESPACE} \
+PROM_STORAGE_CLASS_NAME_VAR=${PROM_STORAGE_CLASS_NAME:-"standard"} \
+PROM_STORAGE_RESOURCE_REQUEST_VAR=${PROM_STORAGE_RESOURCE_REQUEST:-"10Gi"} \
+PROM_CPU_MEM_LIMITS_VAR=${PROM_CPU_MEM_LIMITS:-"2Gi"} \
+PROM_CPU_MEM_REQUESTS_VAR=${PROM_CPU_MEM_REQUESTS:-"2Gi"} \
+PROM_REPLICAS_NUMBER_VAR=${PROM_REPLICAS_NUMBER:-"1"} \
+PROM_ADMIN_PASSWORD_VAR=${PROM_ADMIN_PASSWORD:-$(date +%s | sha256sum | base64 | head -c 32)} \
+REDIS_ADMIN_PASSWORD_VAR=${REDIS_ADMIN_PASSWORD} \
+REDIS_HOST_VAR=cosmotechredis-master.${NAMESPACE}.svc.cluster.local \
+REDIS_PORT_VAR=${REDIS_PORT} \
+envsubst < "${WORKING_DIR}"/kube-prometheus-stack-template.yaml > "${WORKING_DIR}"/kube-prometheus-stack.yaml
+
+helm upgrade --install prometheus-operator prometheus-community/kube-prometheus-stack \
+             --namespace "${MONITORING_NAMESPACE}" \
+             --version ${PROMETHEUS_STACK_VERSION} \
+             --values "${WORKING_DIR}/kube-prometheus-stack.yaml"
 
 # nginx
 kubectl create namespace "${NAMESPACE_NGINX}" --dry-run=client -o yaml | kubectl apply -f -
@@ -154,11 +190,6 @@ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
 
 # Redis Cluster
 helm repo add bitnami https://charts.bitnami.com/bitnami
-
-REDIS_PASSWORD=${REDIS_ADMIN_PASSWORD:-$(kubectl get secret --namespace ${NAMESPACE} cosmotechredis -o jsonpath="{.data.redis-password}" | base64 -d || "")}
-if [[ -z $REDIS_PASSWORD ]] ; then
-  REDIS_PASSWORD=$(date +%s | sha256sum | base64 | head -c 32)
-fi
 
 cat <<EOF > values-redis.yaml
 auth:
@@ -466,8 +497,6 @@ helm upgrade --install -n ${NAMESPACE} ${ARGO_RELEASE_NAME} argo/argo-workflows 
 popd
 
 # cosmotech-api
-export COSMOTECH_API_RELEASE_NAME="cosmotech-api-${API_VERSION}"
-export REDIS_PORT=6379
 
 cat <<EOF > values-cosmotech-api-deploy.yaml
 replicaCount: 2
@@ -536,28 +565,3 @@ helm upgrade --install "${COSMOTECH_API_RELEASE_NAME}" "${HELM_CHARTS_BASE_PATH}
     --values "values-cosmotech-api-deploy.yaml" \
     "${@:5}"
 
-# kube-prometheus-stack
-# https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
-# https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack
-kubectl create namespace "${MONITORING_NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo update
-
-curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/main/deployment_scripts/v2.1/kube-prometheus-stack-template.yaml" \
-     -o "${WORKING_DIR}"/kube-prometheus-stack-template.yaml
-
-MONITORING_NAMESPACE_VAR=${MONITORING_NAMESPACE} \
-PROM_STORAGE_CLASS_NAME_VAR=${PROM_STORAGE_CLASS_NAME:-"standard"} \
-PROM_STORAGE_RESOURCE_REQUEST_VAR=${PROM_STORAGE_RESOURCE_REQUEST:-"10Gi"} \
-PROM_CPU_MEM_LIMITS_VAR=${PROM_CPU_MEM_LIMITS:-"2Gi"} \
-PROM_CPU_MEM_REQUESTS_VAR=${PROM_CPU_MEM_REQUESTS:-"2Gi"} \
-PROM_REPLICAS_NUMBER_VAR=${PROM_REPLICAS_NUMBER:-"1"} \
-PROM_ADMIN_PASSWORD_VAR=${PROM_ADMIN_PASSWORD:-$(date +%s | sha256sum | base64 | head -c 32)} \
-REDIS_ADMIN_PASSWORD_VAR=${REDIS_ADMIN_PASSWORD} \
-REDIS_HOST_VAR=cosmotechredis-master.${NAMESPACE}.svc.cluster.local \
-REDIS_PORT_VAR=${REDIS_PORT} \
-envsubst < "${WORKING_DIR}"/kube-prometheus-stack-template.yaml > "${WORKING_DIR}"/kube-prometheus-stack.yaml
-
-helm upgrade --install prometheus-operator prometheus-community/kube-prometheus-stack \
-             --namespace "${MONITORING_NAMESPACE}" \
-             --values "${WORKING_DIR}/kube-prometheus-stack.yaml"
