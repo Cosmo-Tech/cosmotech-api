@@ -61,11 +61,11 @@ class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin
   }
 
   override fun findAllOrganizations(): List<Organization> {
-    val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
     val isAdmin = csmAdmin.verifyCurrentRolesAdmin()
     if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
       return cosmosTemplate.findAll(coreOrganizationContainer)
     }
+    val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
     return cosmosCoreDatabase
         .getContainer(this.coreOrganizationContainer)
         .queryItems(

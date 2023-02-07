@@ -79,9 +79,7 @@ internal class WorkspaceServiceImpl(
 ) : CsmAzureService(), WorkspaceApiService {
 
   override fun findAllWorkspaces(organizationId: String): List<Workspace> {
-    val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
     val organization = organizationService.findOrganizationById(organizationId)
-    logger.debug("Getting workspaces for user $currentUser")
     val isAdmin = csmRbac.isAdmin(organization.getRbac(), getCommonRolesDefinition())
     if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
       return cosmosTemplate.findAll("${organizationId}_workspaces")
@@ -92,6 +90,8 @@ internal class WorkspaceServiceImpl(
             "OR c.security.default NOT LIKE 'none'"
     logger.debug("Template query: $templateQuery")
 
+    val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+    logger.debug("Getting workspaces for user $currentUser")
     return cosmosCoreDatabase
         .getContainer("${organizationId}_workspaces")
         .queryItems(
