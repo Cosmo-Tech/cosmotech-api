@@ -93,7 +93,7 @@ kubectl create namespace "${MONITORING_NAMESPACE}" --dry-run=client -o yaml | ku
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
 
-curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/main/deployment_scripts/v2.1/kube-prometheus-stack-template.yaml" \
+curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/main/deployment_scripts/v2.3/kube-prometheus-stack-template.yaml" \
      -o "${WORKING_DIR}"/kube-prometheus-stack-template.yaml
 
 MONITORING_NAMESPACE_VAR=${MONITORING_NAMESPACE} \
