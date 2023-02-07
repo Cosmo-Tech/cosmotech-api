@@ -61,12 +61,6 @@ csm:
     vcs-ref: ""
     rbac:
       enabled: true
-    twincache:
-      host: "localhost"
-      port: 6379
-      username: "default"
-      password: ""
-
     api:
       # API Base Path for OpenAPI-generated controllers.
       # Might conflict with the SpringBoot context path, hence leaving it at the root

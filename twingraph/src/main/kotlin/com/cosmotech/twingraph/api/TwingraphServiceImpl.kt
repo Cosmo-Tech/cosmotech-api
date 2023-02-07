@@ -65,9 +65,10 @@ class TwingraphServiceImpl(
 
   @Suppress("SpreadOperator")
   override fun delete(organizationId: String, graphId: String) {
+    val organization = organizationService.findOrganizationById(organizationId)
+    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
+
     csmJedisPool.resource.use { jedis ->
-      val organization = organizationService.findOrganizationById(organizationId)
-      csmRbac.verify(organization.getRbac(), PERMISSION_READ)
       val matchingKeys = mutableSetOf<String>()
       var nextCursor = ScanParams.SCAN_POINTER_START
       do {
@@ -85,12 +86,14 @@ class TwingraphServiceImpl(
     val organization = organizationService.findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_READ)
     val matchingKeys = mutableSetOf<String>()
-    var nextCursor = SCAN_POINTER_START
-    do {
-      val scanResult = jedis.scan(nextCursor, ScanParams().match("*"), "graphdata")
-      nextCursor = scanResult.cursor
-      matchingKeys.addAll(scanResult.result)
-    } while (!nextCursor.equals(SCAN_POINTER_START))
+    csmJedisPool.resource.use { jedis ->
+      var nextCursor = ScanParams.SCAN_POINTER_START
+      do {
+        val scanResult = jedis.scan(nextCursor, ScanParams().match("*"), "graphdata")
+        nextCursor = scanResult.cursor
+        matchingKeys.addAll(scanResult.result)
+      } while (!nextCursor.equals(ScanParams.SCAN_POINTER_START))
+    }
     return matchingKeys.toList()
   }
 
@@ -98,10 +101,12 @@ class TwingraphServiceImpl(
     val organization = organizationService.findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_READ)
     val metaDataKey = "${graphId}MetaData"
-    if (jedis.exists(metaDataKey)) {
-      return jedis.hgetAll(metaDataKey)
+    csmJedisPool.resource.use { jedis ->
+      if (jedis.exists(metaDataKey)) {
+        return jedis.hgetAll(metaDataKey)
+      }
+      throw CsmResourceNotFoundException("No metadata found for graphId $graphId")
     }
-    throw CsmResourceNotFoundException("No metadata found for graphId $graphId")
   }
 
   override fun query(
@@ -132,7 +137,8 @@ class TwingraphServiceImpl(
       throw CsmResourceNotFoundException("No graph found with id: $redisGraphId")
     }
 
-    val resultSet = redisGraph.query(
+    val resultSet =
+        redisGraph.query(
             redisGraphId, twinGraphQuery.query, csmPlatformProperties.twincache.queryTimeout)
 
     return resultSet.toJsonString()
