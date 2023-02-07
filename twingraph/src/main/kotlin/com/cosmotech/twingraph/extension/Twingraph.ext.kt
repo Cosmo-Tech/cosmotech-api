@@ -7,12 +7,12 @@ import com.fasterxml.jackson.core.JacksonException
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.redislabs.redisgraph.Record
+import com.redislabs.redisgraph.ResultSet
+import com.redislabs.redisgraph.graph_entities.Edge
+import com.redislabs.redisgraph.graph_entities.GraphEntity
+import com.redislabs.redisgraph.graph_entities.Node
 import org.json.JSONObject
-import redis.clients.jedis.graph.Record
-import redis.clients.jedis.graph.ResultSet
-import redis.clients.jedis.graph.entities.Edge
-import redis.clients.jedis.graph.entities.GraphEntity
-import redis.clients.jedis.graph.entities.Node
 
 private const val ID_PROPERTY_NAME = "id"
 
@@ -60,28 +60,28 @@ fun GraphEntity.getJsonCompliantPropertyByName(propertyName: String): Any {
 fun Any.convertToJsonValue(): Any {
   var result = this
   if (this is String) {
-    if ( this.startsWith("{") || this.startsWith("[") || this.startsWith("\"")) {
-      result = try {
-        val firstTry = jsonObjectMapper.readValue<JSONObject>(this)
-        if (firstTry.isEmpty) {
-          jsonObjectMapper.readValue(this)
-        } else {
-          firstTry
-        }
-      } catch (e: JacksonException) {
-        return result
-      }
+    if (this.startsWith("{") || this.startsWith("[") || this.startsWith("\"")) {
+      result =
+          try {
+            val firstTry = jsonObjectMapper.readValue<JSONObject>(this)
+            if (firstTry.isEmpty) {
+              jsonObjectMapper.readValue(this)
+            } else {
+              firstTry
+            }
+          } catch (e: JacksonException) {
+            return result
+          }
     }
   }
   return result
 }
 
-
 fun ResultSet.toJsonString(): String {
   val result = mutableListOf<MutableMap<String, Any>>()
-  this.forEach { record: Record ->
-    val header = record.keys()
-    val values = record.values()
+  this.forEach { record: Record? ->
+    val header = record?.keys() ?: listOf()
+    val values = record?.values() ?: listOf()
     val entries = mutableMapOf<String, Any>()
     values.forEachIndexed { valueIndex, element ->
       val columnName = header[valueIndex]

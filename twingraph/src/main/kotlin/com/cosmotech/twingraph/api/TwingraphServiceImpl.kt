@@ -16,9 +16,6 @@ import com.cosmotech.twingraph.domain.TwinGraphImportInfo
 import com.cosmotech.twingraph.domain.TwinGraphQuery
 import com.cosmotech.twingraph.extension.toJsonString
 import com.cosmotech.twingraph.utils.TwingraphUtils
-import com.redislabs.redisgraph.ResultSet
-import com.redislabs.redisgraph.graph_entities.Edge
-import com.redislabs.redisgraph.graph_entities.Node
 import com.redislabs.redisgraph.impl.api.RedisGraph
 import org.springframework.stereotype.Service
 import redis.clients.jedis.JedisPool
@@ -132,9 +129,11 @@ class TwingraphServiceImpl(
 
     val redisGraphId = "${graphId}:${twinGraphQuery.version}"
     val redisGraph = RedisGraph(csmJedisPool)
-    val redisGraphMatchingKeys = jedis.keys(redisGraphId)
-    if (redisGraphMatchingKeys.size == 0) {
-      throw CsmResourceNotFoundException("No graph found with id: $redisGraphId")
+    csmJedisPool.resource.use { jedis ->
+      val redisGraphMatchingKeys = jedis.keys(redisGraphId)
+      if (redisGraphMatchingKeys.size == 0) {
+        throw CsmResourceNotFoundException("No graph found with id: $redisGraphId")
+      }
     }
 
     val resultSet =
