@@ -27,7 +27,7 @@ enum class CsmGraphEntityType {
   RELATION,
   NODE
 }
-
+// To support simple quoted jsonstring from ADT
 val jsonObjectMapper: ObjectMapper =
     objectMapper().configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
 
@@ -57,9 +57,11 @@ fun GraphEntity.getJsonCompliantPropertyByName(propertyName: String): Any {
 }
 
 @Suppress("SwallowedException")
-fun Any.convertToJsonValue(): Any =
-    if (this is String) {
-      try {
+fun Any.convertToJsonValue(): Any {
+  var result = this
+  if (this is String) {
+    if ( this.startsWith("{") || this.startsWith("[") || this.startsWith("\"")) {
+      result = try {
         val firstTry = jsonObjectMapper.readValue<JSONObject>(this)
         if (firstTry.isEmpty) {
           jsonObjectMapper.readValue(this)
@@ -67,11 +69,13 @@ fun Any.convertToJsonValue(): Any =
           firstTry
         }
       } catch (e: JacksonException) {
-        this
+        return result
       }
-    } else {
-      this
     }
+  }
+  return result
+}
+
 
 fun ResultSet.toJsonString(): String {
   val result = mutableListOf<MutableMap<String, Any>>()
