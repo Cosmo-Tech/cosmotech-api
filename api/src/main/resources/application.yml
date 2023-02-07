@@ -71,6 +71,11 @@ csm:
       type: hashid
     event-publisher:
       type: in_process
+    twincache:
+      host: "localhost"
+      port: "6379"
+      username: "default_user"
+      password: "default_password"
     argo:
       base-uri: "https://localhost:2746"
       image-pull-secrets: []
