@@ -17,11 +17,6 @@ management:
 #        uri: "https://faketestaccount.documents.azure.com:443/"
 csm:
   platform:
-    twincache:
-      host: "localhost"
-      port: "6379"
-      username: "default"
-      password: ""
     identityProvider :
       code: azure
       defaultScopes:
