@@ -44,6 +44,7 @@ val cosmotechApiAzureVersion = "0.1.8-SNAPSHOT"
 val cosmotechApiCosmosDBVersion = "0.1.0-SNAPSHOT"
 val azureSpringBootBomVersion = "3.14.0"
 val jedisVersion = "3.9.0"
+val jredistimeseriesVersion = "1.6.0"
 
 allprojects {
   apply(plugin = "com.diffplug.spotless")
@@ -212,6 +213,7 @@ subprojects {
     implementation("com.okta.spring:okta-spring-boot-starter:${oktaSpringBootVersion}")
 
     implementation("redis.clients:jedis:${jedisVersion}")
+    implementation("com.redislabs:jredistimeseries:${jredistimeseriesVersion}")
 
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:5.9.2"))
