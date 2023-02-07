@@ -386,7 +386,6 @@ internal class ScenarioServiceImpl(
       sqlParams: List<SqlParameter>? = null,
       addState: Boolean = true
   ): List<Scenario> {
-    val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     var templateQuery =
         "SELECT * FROM c " + "WHERE c.type = 'Scenario' AND c.workspaceId = @WORKSPACE_ID"
@@ -397,6 +396,7 @@ internal class ScenarioServiceImpl(
     }
     val isAdmin = csmRbac.isAdmin(workspace.getRbac(), getCommonRolesDefinition())
     if (!isAdmin && this.csmPlatformProperties.rbac.enabled) {
+      val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
       templateQuery +=
           " AND (ARRAY_CONTAINS(c.security.accessControlList, {id: @ACL_USER}, true) " +
               "OR c.security.default NOT LIKE 'none')"
