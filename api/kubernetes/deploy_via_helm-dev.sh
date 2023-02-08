@@ -191,6 +191,43 @@ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
 # Redis Cluster
 helm repo add bitnami https://charts.bitnami.com/bitnami
 
+export REDIS_PV_NAME="redis-persistence-volume"
+export REDIS_PVC_NAME="redis-persistence-volume-claim"
+
+cat <<EOF > redis-pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: ${REDIS_PV_NAME}
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /data/
+  persistentVolumeReclaimPolicy: Retain
+EOF
+
+kubectl apply -n ${NAMESPACE} -f redis-pv.yaml
+
+cat <<EOF > redis-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ${REDIS_PVC_NAME}
+spec:
+  volumeName: ${REDIS_PV_NAME}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+EOF
+
+kubectl apply -n ${NAMESPACE} -f redis-pvc.yaml
+
 cat <<EOF > values-redis.yaml
 auth:
   password: ${REDIS_PASSWORD}
@@ -199,6 +236,8 @@ image:
   repository: cosmo-tech/cosmotech-redis
   tag: ${VERSION_REDIS_COSMOTECH}
 master:
+  persistence:
+    existingClaim: ${REDIS_PVC_NAME}
   podLabels:
     "networking/traffic-allowed": "yes"
   tolerations:
