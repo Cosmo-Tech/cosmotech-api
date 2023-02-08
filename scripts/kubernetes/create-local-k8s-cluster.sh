@@ -147,7 +147,7 @@ for node in $(kind get nodes --name "${cluster_name}"); do
 done
 
 # Install Calico
-helm repo add projectcalico https://projectcalico.docs.tigera.io/charts
+helm repo add projectcalico https://docs.tigera.io/calico/charts
 helm --kube-context="${kubectl_ctx}" \
   install calico \
   projectcalico/tigera-operator \
