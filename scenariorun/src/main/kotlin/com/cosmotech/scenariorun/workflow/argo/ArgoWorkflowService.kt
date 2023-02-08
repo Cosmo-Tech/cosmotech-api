@@ -137,7 +137,6 @@ internal class ArgoWorkflowService(
     } catch (e: ApiException) {
       val logMessage =
           "Workflow $workflowName not found in the archived workflows - trying to find it in the active ones"
-      logger.debug(logMessage)
       logger.trace(logMessage, e)
     }
     if (workflow == null) {

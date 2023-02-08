@@ -24,7 +24,7 @@ class MetricsServiceImpl(
   private val logger = LoggerFactory.getLogger(MetricsServiceImpl::class.java)
 
   override fun storeMetric(metric: PersistentMetric) {
-    createTimeSeries(metric)
+    createOrAlterTimeSeries(metric)
     addMetricToTimeSeries(metric)
   }
 
@@ -55,7 +55,7 @@ class MetricsServiceImpl(
   }
 
   @Suppress("EmptyElseBlock")
-  private fun createTimeSeries(metric: PersistentMetric) {
+  private fun createOrAlterTimeSeries(metric: PersistentMetric) {
     logger.debug("METRICS: createTimeSeries")
     jedisPool.resource.use { jedis ->
       val key = getMetricKey(metric)
