@@ -673,6 +673,13 @@ internal class ScenarioRunServiceImpl(
             DataIngestionState.InProgress -> ScenarioRunState.DataIngestionInProgress
             DataIngestionState.Successful -> ScenarioRunState.Successful
             DataIngestionState.Failure -> ScenarioRunState.Failed
+            else -> {
+              logger.warn(
+                "Unhandled state response for job {}: {} => returning Unknown as state",
+                scenarioRunId,
+                phase)
+              ScenarioRunState.Unknown
+            }
           }
         } else {
           ScenarioRunState.Successful
