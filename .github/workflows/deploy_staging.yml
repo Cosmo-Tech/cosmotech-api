@@ -56,9 +56,9 @@ jobs:
           fi
           echo "apiVersion=${apiVersion}" >> $GITHUB_OUTPUT
 
-          echo "Hack to get last v2.1 install script if needed"
+          echo "Hack to get last v2.3 install script if needed"
           if [[ "${apiVersion}" == "v2" ]]; then
-              export apiScriptVersion=v2.1
+              export apiScriptVersion=v2.3
           else
               export apiScriptVersion=${apiVersion}
           fi
