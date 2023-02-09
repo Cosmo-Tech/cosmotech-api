@@ -73,7 +73,6 @@ internal const val WORKFLOW_TYPE_SCENARIO_RUN = "scenario-run"
 internal const val WORKFLOW_TYPE_TWIN_GRAPH_IMPORT = "twin-graph-import"
 
 @Service
-@ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions", "LargeClass")
 internal class ScenarioRunServiceImpl(
     private val containerFactory: ContainerFactory,

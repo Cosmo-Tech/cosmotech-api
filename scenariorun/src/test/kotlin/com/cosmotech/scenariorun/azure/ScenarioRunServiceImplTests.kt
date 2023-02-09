@@ -2,14 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenariorun.azure
 
-import com.azure.cosmos.CosmosClient
-import com.azure.cosmos.CosmosContainer
-import com.azure.cosmos.CosmosDatabase
-import com.azure.cosmos.models.CosmosItemResponse
-import com.azure.cosmos.models.PartitionKey
-import com.azure.cosmos.models.SqlQuerySpec
-import com.azure.cosmos.util.CosmosPagedIterable
-import com.azure.spring.data.cosmos.core.CosmosTemplate
 import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
 import com.cosmotech.api.config.CsmPlatformProperties
@@ -25,6 +17,8 @@ import com.cosmotech.scenariorun.domain.ScenarioRun
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.scenariorun.domain.ScenarioRunSearch
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
+import com.cosmotech.scenariorun.repository.ScenarioRunRepository
+import com.cosmotech.scenariorun.service.ScenarioRunServiceImpl
 import com.cosmotech.scenariorun.workflow.WorkflowService
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.Solution
@@ -32,7 +26,6 @@ import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
-import com.fasterxml.jackson.databind.JsonNode
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -49,6 +42,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import org.junit.jupiter.api.extension.ExtendWith
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.core.Authentication
 
 private const val ORGANIZATION_ID = "O-AbCdEf123"
@@ -65,10 +59,8 @@ class ScenarioRunServiceImplTests {
   @MockK(relaxed = true) private lateinit var containerFactory: ContainerFactory
   @MockK private lateinit var solutionService: SolutionApiService
   @MockK private lateinit var workspaceService: WorkspaceApiService
+  @MockK private lateinit var scenarioRunRepository: ScenarioRunRepository
   @MockK private lateinit var idGenerator: CsmIdGenerator
-  @Suppress("unused") @MockK(relaxed = true) private lateinit var cosmosTemplate: CosmosTemplate
-  @Suppress("unused") @MockK private lateinit var cosmosClient: CosmosClient
-  @Suppress("unused") @MockK(relaxed = true) private lateinit var cosmosCoreDatabase: CosmosDatabase
   @Suppress("unused") @MockK private lateinit var csmPlatformProperties: CsmPlatformProperties
 
   @Suppress("unused")
@@ -98,10 +90,9 @@ class ScenarioRunServiceImplTests {
                 scenarioApiService,
                 azureDataExplorerClient,
                 azureEventHubsClient,
-                workspaceEventHubService))
+                workspaceEventHubService,
+                scenarioRunRepository))
 
-    every { scenarioRunServiceImpl getProperty "cosmosTemplate" } returns cosmosTemplate
-    every { scenarioRunServiceImpl getProperty "cosmosClient" } returns cosmosClient
     every { scenarioRunServiceImpl getProperty "idGenerator" } returns idGenerator
     every { scenarioRunServiceImpl getProperty "eventPublisher" } returns eventPublisher
 
@@ -116,8 +107,6 @@ class ScenarioRunServiceImplTests {
     every { csmPlatformPropertiesAzure.cosmos } returns csmPlatformPropertiesAzureCosmos
     every { csmPlatformProperties.azure } returns csmPlatformPropertiesAzure
 
-    every { cosmosClient.getDatabase("test-db") } returns cosmosCoreDatabase
-
     every { scenarioRunServiceImpl getProperty "csmPlatformProperties" } returns
         csmPlatformProperties
 
@@ -125,8 +114,6 @@ class ScenarioRunServiceImplTests {
     val authentication = mockk<Authentication>()
     every { authentication.name } returns AUTHENTICATED_USERNAME
     every { getCurrentAuthentication() } returns authentication
-
-    scenarioRunServiceImpl.init()
   }
 
   @AfterTest
@@ -136,12 +123,10 @@ class ScenarioRunServiceImplTests {
 
   @Test
   fun `PROD-8473 - findScenarioRunById does not leak sensitive container data`() {
-    val cosmosContainer = mockk<CosmosContainer>(relaxed = true)
-    every { cosmosCoreDatabase.getContainer("${ORGANIZATION_ID}_scenario_data") } returns
-        cosmosContainer
+    val scenarioRunId = "sr-myscenariorun1"
     val myScenarioRun =
         ScenarioRun(
-            id = "sr-myscenariorun1",
+            id = scenarioRunId,
             workspaceKey = "my-workspaceKey",
             containers =
                 listOf(
@@ -149,15 +134,7 @@ class ScenarioRunServiceImplTests {
                         name = "my-container1",
                         envVars = mapOf("MY_SECRET_ENV_VAR" to "value"),
                         image = "my-image:latest")))
-    val queryResponse = mockk<CosmosPagedIterable<JsonNode>>()
-    every { queryResponse.iterator() } returns
-        listOf(myScenarioRun)
-            .map { objectMapper.valueToTree<JsonNode>(it) }
-            .toMutableList()
-            .iterator()
-    every {
-      cosmosContainer.queryItems(any<SqlQuerySpec>(), any(), eq(JsonNode::class.java))
-    } returns queryResponse
+    every { scenarioRunRepository.findByIdOrNull(scenarioRunId) } returns myScenarioRun
 
     val scenarioRunById =
         this.scenarioRunServiceImpl.findScenarioRunById(ORGANIZATION_ID, myScenarioRun.id!!)
@@ -172,9 +149,6 @@ class ScenarioRunServiceImplTests {
 
   @Test
   fun `PROD-8473 - getScenarioRuns does not leak sensitive container data`() {
-    val cosmosContainer = mockk<CosmosContainer>(relaxed = true)
-    every { cosmosCoreDatabase.getContainer("${ORGANIZATION_ID}_scenario_data") } returns
-        cosmosContainer
     val myScenarioRun1 =
         ScenarioRun(
             id = "sr-myscenariorun1",
@@ -199,15 +173,9 @@ class ScenarioRunServiceImplTests {
                         name = "my-container22",
                         envVars = mapOf("KEY" to "value"),
                         image = "rhel:7")))
-    val queryResponse = mockk<CosmosPagedIterable<JsonNode>>()
-    every { queryResponse.iterator() } returns
+
+    every { scenarioRunRepository.findByScenarioId(any()) } returns
         listOf(myScenarioRun1, myScenarioRun2)
-            .map { objectMapper.valueToTree<JsonNode>(it) }
-            .toMutableList()
-            .iterator()
-    every {
-      cosmosContainer.queryItems(any<SqlQuerySpec>(), any(), eq(JsonNode::class.java))
-    } returns queryResponse
 
     val scenarioRuns =
         this.scenarioRunServiceImpl.getScenarioRuns(ORGANIZATION_ID, WORKSPACE_ID, "my-scenario-id")
@@ -222,9 +190,6 @@ class ScenarioRunServiceImplTests {
 
   @Test
   fun `PROD-8473 - getWorkspaceScenarioRuns does not leak sensitive container data`() {
-    val cosmosContainer = mockk<CosmosContainer>(relaxed = true)
-    every { cosmosCoreDatabase.getContainer("${ORGANIZATION_ID}_scenario_data") } returns
-        cosmosContainer
     val myScenarioRun1 =
         ScenarioRun(
             id = "sr-myscenariorun1",
@@ -249,15 +214,9 @@ class ScenarioRunServiceImplTests {
                         name = "my-container22",
                         envVars = mapOf("KEY" to "value"),
                         image = "rhel:7")))
-    val queryResponse = mockk<CosmosPagedIterable<JsonNode>>()
-    every { queryResponse.iterator() } returns
+
+    every { scenarioRunRepository.findByWorkspaceId(any()) } returns
         listOf(myScenarioRun1, myScenarioRun2)
-            .map { objectMapper.valueToTree<JsonNode>(it) }
-            .toMutableList()
-            .iterator()
-    every {
-      cosmosContainer.queryItems(any<SqlQuerySpec>(), any(), eq(JsonNode::class.java))
-    } returns queryResponse
 
     val scenarioRuns =
         this.scenarioRunServiceImpl.getWorkspaceScenarioRuns(ORGANIZATION_ID, WORKSPACE_ID)
@@ -272,9 +231,6 @@ class ScenarioRunServiceImplTests {
 
   @Test
   fun `PROD-8473 - searchScenarioRuns does not leak sensitive container data`() {
-    val cosmosContainer = mockk<CosmosContainer>(relaxed = true)
-    every { cosmosCoreDatabase.getContainer("${ORGANIZATION_ID}_scenario_data") } returns
-        cosmosContainer
     val myScenarioRun1 =
         ScenarioRun(
             id = "sr-myscenariorun1",
@@ -299,15 +255,9 @@ class ScenarioRunServiceImplTests {
                         name = "my-container22",
                         envVars = mapOf("KEY" to "value"),
                         image = "rhel:7")))
-    val queryResponse = mockk<CosmosPagedIterable<JsonNode>>()
-    every { queryResponse.iterator() } returns
+
+    every { scenarioRunRepository.findByPredicate(any()) } returns
         listOf(myScenarioRun1, myScenarioRun2)
-            .map { objectMapper.valueToTree<JsonNode>(it) }
-            .toMutableList()
-            .iterator()
-    every {
-      cosmosContainer.queryItems(any<SqlQuerySpec>(), any(), eq(JsonNode::class.java))
-    } returns queryResponse
 
     val scenarioRuns =
         this.scenarioRunServiceImpl.searchScenarioRuns(ORGANIZATION_ID, ScenarioRunSearch())
@@ -322,18 +272,6 @@ class ScenarioRunServiceImplTests {
 
   @Test
   fun `PROD-8473 - startScenarioRunContainers does not leak sensitive container data`() {
-    val cosmosContainer = mockk<CosmosContainer>(relaxed = true)
-    every { cosmosCoreDatabase.getContainer("${ORGANIZATION_ID}_scenario_data") } returns
-        cosmosContainer
-    val cosmosItemResponse = mockk<CosmosItemResponse<Map<*, *>>>()
-    every {
-      cosmosContainer.createItem(ofType(Map::class), PartitionKey(AUTHENTICATED_USERNAME), any())
-    } returns cosmosItemResponse
-    // The implementation in ScenarioRunServiceImpl only needs to know if the response item is null
-    // or
-    // not
-    every { cosmosItemResponse.item } returns mapOf<String, Any>()
-
     val containers =
         listOf(
             ScenarioRunContainer(
@@ -352,7 +290,7 @@ class ScenarioRunServiceImplTests {
             containers = containers)
     every { workflowService.launchScenarioRun(any(), null) } returns myScenarioRun
     every { idGenerator.generate("scenariorun", "sr-") } returns myScenarioRun.id!!
-
+    every { scenarioRunRepository.save(any()) } returns myScenarioRun
     val scenarioRun =
         this.scenarioRunServiceImpl.startScenarioRunContainers(
             ORGANIZATION_ID,
@@ -379,19 +317,6 @@ class ScenarioRunServiceImplTests {
     every { solution.id } returns SOLUTION_ID
     every { solution.name } returns "test solution"
     every { solutionService.findSolutionById(ORGANIZATION_ID, SOLUTION_ID) } returns solution
-
-    val cosmosContainer = mockk<CosmosContainer>(relaxed = true)
-    every { cosmosCoreDatabase.getContainer("${ORGANIZATION_ID}_scenario_data") } returns
-        cosmosContainer
-    val cosmosItemResponse = mockk<CosmosItemResponse<Map<*, *>>>()
-    every {
-      cosmosContainer.createItem(ofType(Map::class), PartitionKey(AUTHENTICATED_USERNAME), any())
-    } returns cosmosItemResponse
-    // The implementation in ScenarioRunServiceImpl only needs to know if the response item is null
-    // or
-    // not
-    every { cosmosItemResponse.item } returns mapOf<String, Any>()
-
     val myScenarioRun =
         ScenarioRun(
             id = "sr-myscenariorun1",
@@ -419,6 +344,7 @@ class ScenarioRunServiceImplTests {
         CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
             .TENANT_CLIENT_CREDENTIALS
     every { workspace.sendScenarioMetadataToEventHub } returns false
+    every { scenarioRunRepository.save(any()) } returns myScenarioRun
     val scenarioRunById =
         this.scenarioRunServiceImpl.runScenario(ORGANIZATION_ID, WORKSPACE_ID, "s-myscenarioid")
 
@@ -437,8 +363,6 @@ class ScenarioRunServiceImplTests {
     val scenarioRun = mockk<ScenarioRun>()
     every { scenarioRunServiceImpl.findScenarioRunById("orgId", "scenariorunId") } returns
         scenarioRun
-    val cosmosTemplate = mockk<CosmosTemplate>()
-    every { cosmosTemplate.deleteEntity("orgId", scenarioRun) }
     every { scenarioRun.id } returns "scenariorunId"
     every { scenarioRun.ownerId } returns "ownerId"
     every { scenarioRun.organizationId } returns "organisationId"
@@ -447,6 +371,7 @@ class ScenarioRunServiceImplTests {
     every { scenarioRun.csmSimulationRun } returns "csmSimulationRun"
     every { scenarioRun.scenarioId } returns "scenarioId"
     every { getCurrentAuthenticatedUserName() } returns "ownerId"
+    every { scenarioRunRepository.delete(scenarioRun) } returns Unit
     scenarioRun.ownerId != getCurrentAuthenticatedUserName()
     scenarioRunServiceImpl.deleteScenarioRun("orgId", "scenariorunId")
     verify(exactly = 1) { scenarioRunServiceImpl.deleteScenarioRun("orgId", "scenariorunId") }

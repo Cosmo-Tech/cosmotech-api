@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenariorun.service
 
-import com.azure.spring.data.cosmos.core.CosmosTemplate
 import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
 import com.cosmotech.api.config.CsmPlatformProperties
@@ -366,23 +365,25 @@ class ScenarioRunServiceImplTests {
   }
 
   @Test
-  // TODO MIG This test should verify that azureDataExplorerClient#deleteDataFromADXbyExtentShard is
-  // called instead
   fun `PROD-8148 - deleteDataFromADXbyExtentShard is called once`() {
     val scenarioRun = mockk<ScenarioRun>()
-    every { scenarioRunServiceImpl.findScenarioRunById("orgId", "scenariorunId") } returns
+    val organizationId = "orgId"
+    val workspaceKey = "wk"
+    val simulationRunId = "csmSimulationRun"
+    every { scenarioRunServiceImpl.findScenarioRunById(organizationId, "scenariorunId") } returns
         scenarioRun
-    val cosmosTemplate = mockk<CosmosTemplate>()
-    every { cosmosTemplate.deleteEntity("orgId", scenarioRun) }
     every { scenarioRun.id } returns "scenariorunId"
     every { scenarioRun.ownerId } returns "ownerId"
-    every { scenarioRun.organizationId } returns "ownerId"
-    every { scenarioRun.workspaceKey } returns "wk"
-    every { scenarioRun.csmSimulationRun } returns "csmSimulationRun"
+    every { scenarioRun.organizationId } returns organizationId
+    every { scenarioRun.workspaceKey } returns workspaceKey
+    every { scenarioRun.workspaceId } returns "workspaceId"
+    every { scenarioRun.csmSimulationRun } returns simulationRunId
     every { scenarioRun.scenarioId } returns "scenarioId"
     every { getCurrentAuthenticatedUserName() } returns "ownerId"
-    scenarioRun.ownerId != getCurrentAuthenticatedUserName()
     scenarioRunServiceImpl.deleteScenarioRun("orgId", "scenariorunId")
-    verify(exactly = 1) { scenarioRunServiceImpl.deleteScenarioRun("orgId", "scenariorunId") }
+    verify(exactly = 1) {
+      azureDataExplorerClient.deleteDataFromADXbyExtentShard(
+          organizationId, workspaceKey, simulationRunId)
+    }
   }
 }

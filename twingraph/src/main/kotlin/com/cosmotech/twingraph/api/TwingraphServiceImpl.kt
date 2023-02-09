@@ -138,7 +138,7 @@ class TwingraphServiceImpl(
     }
     val redisGraph = RedisGraph(csmJedisPool)
     val resultSet =
-      redisGraph.query(
+        redisGraph.query(
             redisGraphId, twinGraphQuery.query, csmPlatformProperties.twincache.queryTimeout)
 
     return resultSet.toJsonString()

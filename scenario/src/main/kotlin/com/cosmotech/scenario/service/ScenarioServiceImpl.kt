@@ -7,9 +7,18 @@ import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
-import com.cosmotech.api.events.*
-import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.events.DeleteHistoricalDataScenario
+import com.cosmotech.api.events.DeleteHistoricalDataWorkspace
+import com.cosmotech.api.events.OrganizationUnregistered
+import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
+import com.cosmotech.api.events.ScenarioDataDownloadRequest
+import com.cosmotech.api.events.ScenarioDatasetListChanged
+import com.cosmotech.api.events.ScenarioDeleted
 import com.cosmotech.api.events.ScenarioLastRunChanged
+import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
+import com.cosmotech.api.events.ScenarioRunStartedForScenario
+import com.cosmotech.api.events.WorkflowPhaseToStateRequest
+import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.api.rbac.PERMISSION_DELETE
@@ -56,13 +65,11 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
 @Service
-@ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("LargeClass", "TooManyFunctions")
 internal class ScenarioServiceImpl(
     private val solutionService: SolutionApiService,
@@ -675,12 +682,8 @@ internal class ScenarioServiceImpl(
   @EventListener(OrganizationUnregistered::class)
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
-    //    TODO REDIS like this
-    //    val scenarios =
-    // scenarioRepository.findByOrganizationId(organizationUnregistered.organizationId)
-    //    scenarioRepository.deleteAll(scenarios)
-
-    //cosmosTemplate.deleteContainer("${organizationUnregistered.organizationId}_scenario_data")
+    val scenarios = scenarioRepository.findByOrganizationId(organizationUnregistered.organizationId)
+    scenarioRepository.deleteAll(scenarios)
   }
 
   @EventListener(ScenarioRunStartedForScenario::class)
@@ -702,7 +705,7 @@ internal class ScenarioServiceImpl(
 
   @EventListener(ScenarioDatasetListChanged::class)
   fun onScenarioDatasetListChanged(scenarioDatasetListChanged: ScenarioDatasetListChanged) {
-    logger.debug("onScenarioDatasetListChanged ${scenarioDatasetListChanged}")
+    logger.debug("onScenarioDatasetListChanged $scenarioDatasetListChanged")
     val children =
         this.findAllScenariosByRootId(
             scenarioDatasetListChanged.organizationId,
@@ -717,11 +720,8 @@ internal class ScenarioServiceImpl(
 
   @EventListener(ScenarioLastRunChanged::class)
   fun onScenarioLastRunChanged(scenarioLastRunChanged: ScenarioLastRunChanged) {
-    logger.debug("onScenarioLastRunChanged ${scenarioLastRunChanged}")
-    this.upsertScenarioData(
-        scenarioLastRunChanged.organizationId,
-        scenarioLastRunChanged.scenario as Scenario,
-        scenarioLastRunChanged.workspaceId)
+    logger.debug("onScenarioLastRunChanged $scenarioLastRunChanged")
+    this.upsertScenarioData(scenarioLastRunChanged.scenario as Scenario)
   }
 
   override fun getScenarioPermissions(

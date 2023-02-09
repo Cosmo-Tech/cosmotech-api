@@ -45,12 +45,12 @@ class OrganizationServiceImpl(
 ) : CsmPhoenixService(), OrganizationApiService {
 
   override fun findAllOrganizations(): List<Organization> {
-    val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
     val isAdmin = csmAdmin.verifyCurrentRolesAdmin()
 
     if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
       return organizationRepository.findAll().toList()
     }
+    val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
     return organizationRepository.findOrganizationsBySecurity(
         currentUser.toSecurityConstraintQuery())
   }
@@ -73,13 +73,13 @@ class OrganizationServiceImpl(
     val newOrganizationId = idGenerator.generate("organization")
     val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
 
-    val organizationRegistered =
-        organizationRepository.save(
-            organization.copy(
-                id = newOrganizationId,
-                ownerId = getCurrentAuthenticatedUserName(),
-                security = organization.security ?: initSecurity(currentUser)))
-    return organizationRegistered
+    return organizationRepository.save(
+      organization.copy(
+        id = newOrganizationId,
+        ownerId = getCurrentAuthenticatedUserName(),
+        security = organization.security ?: initSecurity(currentUser)
+      )
+    )
   }
 
   override fun unregisterOrganization(organizationId: String) {
