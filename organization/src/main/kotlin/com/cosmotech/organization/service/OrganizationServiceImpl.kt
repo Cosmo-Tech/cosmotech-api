@@ -74,12 +74,10 @@ class OrganizationServiceImpl(
     val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
 
     return organizationRepository.save(
-      organization.copy(
-        id = newOrganizationId,
-        ownerId = getCurrentAuthenticatedUserName(),
-        security = organization.security ?: initSecurity(currentUser)
-      )
-    )
+        organization.copy(
+            id = newOrganizationId,
+            ownerId = getCurrentAuthenticatedUserName(),
+            security = organization.security ?: initSecurity(currentUser)))
   }
 
   override fun unregisterOrganization(organizationId: String) {

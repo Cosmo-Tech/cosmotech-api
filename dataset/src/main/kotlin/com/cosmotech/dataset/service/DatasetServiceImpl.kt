@@ -16,8 +16,8 @@ import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetCompatibility
 import com.cosmotech.dataset.domain.DatasetCopyParameters
 import com.cosmotech.dataset.domain.DatasetSearch
-import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.dataset.repository.DatasetRepository
+import com.cosmotech.organization.api.OrganizationApiService
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
