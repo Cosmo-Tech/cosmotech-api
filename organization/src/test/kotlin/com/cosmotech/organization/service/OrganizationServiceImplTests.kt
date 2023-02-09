@@ -21,7 +21,6 @@ import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -38,8 +37,7 @@ class OrganizationServiceImplTests {
   @Suppress("unused") @MockK private lateinit var csmAdmin: CsmAdmin
   @MockK private lateinit var csmRbac: CsmRbac
   @Suppress("unused") @MockK private lateinit var csmPlatformProperties: CsmPlatformProperties
-  @MockK
-  private var organizationRepository: OrganizationRepository = mockk(relaxed = true)
+  @MockK private var organizationRepository: OrganizationRepository = mockk(relaxed = true)
   @InjectMockKs lateinit var organizationServiceImpl: OrganizationServiceImpl
 
   @BeforeEach

@@ -9,7 +9,7 @@ import com.cosmotech.api.events.ScenarioRunStartedForScenario
 import com.cosmotech.api.metrics.PersistentMetric
 import com.cosmotech.api.metrics.PersitentMetricType
 import com.cosmotech.scenariorun.WORKFLOW_TYPE_LABEL
-import com.cosmotech.scenariorun.azure.WORKFLOW_TYPE_SCENARIO_RUN
+import com.cosmotech.scenariorun.service.WORKFLOW_TYPE_SCENARIO_RUN
 import com.cosmotech.scenariorun.workflow.WorkflowService
 import org.slf4j.LoggerFactory
 import org.springframework.context.event.EventListener
