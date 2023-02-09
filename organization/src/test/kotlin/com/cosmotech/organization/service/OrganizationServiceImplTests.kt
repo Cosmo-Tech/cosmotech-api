@@ -38,12 +38,8 @@ class OrganizationServiceImplTests {
   @Suppress("unused") @MockK private lateinit var csmAdmin: CsmAdmin
   @MockK private lateinit var csmRbac: CsmRbac
   @Suppress("unused") @MockK private lateinit var csmPlatformProperties: CsmPlatformProperties
-  @Suppress("unused")
   @MockK
   private var organizationRepository: OrganizationRepository = mockk(relaxed = true)
-  @Suppress("unused")
-  @MockK
-  private var coreOrganizationContainer = mockkStatic("kotlin.text.StringsKt")
   @InjectMockKs lateinit var organizationServiceImpl: OrganizationServiceImpl
 
   @BeforeEach

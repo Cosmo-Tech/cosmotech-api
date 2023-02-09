@@ -66,7 +66,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
@@ -80,7 +79,6 @@ import kotlin.reflect.full.isSupertypeOf
 import kotlin.reflect.full.memberProperties
 
 @Service
-@ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("LargeClass", "TooManyFunctions")
 internal class ScenarioServiceImpl(
     private val solutionService: SolutionApiService,
@@ -698,12 +696,8 @@ internal class ScenarioServiceImpl(
   @EventListener(OrganizationUnregistered::class)
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
-    //    TODO REDIS like this
-    //    val scenarios =
-    // scenarioRepository.findByOrganizationId(organizationUnregistered.organizationId)
-    //    scenarioRepository.deleteAll(scenarios)
-
-    //cosmosTemplate.deleteContainer("${organizationUnregistered.organizationId}_scenario_data")
+    val scenarios = scenarioRepository.findByOrganizationId(organizationUnregistered.organizationId)
+    scenarioRepository.deleteAll(scenarios)
   }
 
   @EventListener(ScenarioRunStartedForScenario::class)
@@ -725,7 +719,7 @@ internal class ScenarioServiceImpl(
 
   @EventListener(ScenarioDatasetListChanged::class)
   fun onScenarioDatasetListChanged(scenarioDatasetListChanged: ScenarioDatasetListChanged) {
-    logger.debug("onScenarioDatasetListChanged ${scenarioDatasetListChanged}")
+    logger.debug("onScenarioDatasetListChanged $scenarioDatasetListChanged")
     val children =
         this.findAllScenariosByRootId(
             scenarioDatasetListChanged.organizationId,
@@ -740,11 +734,8 @@ internal class ScenarioServiceImpl(
 
   @EventListener(ScenarioLastRunChanged::class)
   fun onScenarioLastRunChanged(scenarioLastRunChanged: ScenarioLastRunChanged) {
-    logger.debug("onScenarioLastRunChanged ${scenarioLastRunChanged}")
-    this.upsertScenarioData(
-        scenarioLastRunChanged.organizationId,
-        scenarioLastRunChanged.scenario as Scenario,
-        scenarioLastRunChanged.workspaceId)
+    logger.debug("onScenarioLastRunChanged $scenarioLastRunChanged")
+    this.upsertScenarioData(scenarioLastRunChanged.scenario as Scenario)
   }
 
   override fun getScenarioPermissions(

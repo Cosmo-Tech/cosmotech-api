@@ -1,6 +1,6 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.organization.repositories
+package com.cosmotech.dataset.repository
 
 import com.cosmotech.dataset.domain.Dataset
 import com.redis.om.spring.annotations.Query

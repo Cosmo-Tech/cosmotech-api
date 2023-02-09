@@ -64,6 +64,7 @@ fun Any.convertToJsonValue(): Any {
       result =
           try {
             val firstTry = jsonObjectMapper.readValue<JSONObject>(this)
+            // Ugly trick to handle nested json parameters in jsonobject
             if (firstTry.isEmpty) {
               jsonObjectMapper.readValue(this)
             } else {
@@ -80,24 +81,26 @@ fun Any.convertToJsonValue(): Any {
 fun ResultSet.toJsonString(): String {
   val result = mutableListOf<MutableMap<String, Any>>()
   this.forEach { record: Record? ->
-    val header = record?.keys() ?: listOf()
-    val values = record?.values() ?: listOf()
-    val entries = mutableMapOf<String, Any>()
-    values.forEachIndexed { valueIndex, element ->
-      val columnName = header[valueIndex]
-      when (element) {
-        is Node -> {
-          entries[columnName] = JSONObject(element.toCsmGraphEntity(CsmGraphEntityType.NODE))
-        }
-        is Edge -> {
-          entries[columnName] = JSONObject(element.toCsmGraphEntity(CsmGraphEntityType.RELATION))
-        }
-        else -> {
-          entries[columnName] = element.convertToJsonValue()
+    if (record != null) {
+      val header = record.keys()
+      val values = record.values()
+      val entries = mutableMapOf<String, Any>()
+      values.forEachIndexed { valueIndex, element ->
+        val columnName = header[valueIndex]
+        when (element) {
+          is Node -> {
+            entries[columnName] = JSONObject(element.toCsmGraphEntity(CsmGraphEntityType.NODE))
+          }
+          is Edge -> {
+            entries[columnName] = JSONObject(element.toCsmGraphEntity(CsmGraphEntityType.RELATION))
+          }
+          else -> {
+            entries[columnName] = element.convertToJsonValue()
+          }
         }
       }
+      result.add(entries)
     }
-    result.add(entries)
   }
   return result.map { element -> JSONObject(element) }.joinToString(",", "[", "]")
 }

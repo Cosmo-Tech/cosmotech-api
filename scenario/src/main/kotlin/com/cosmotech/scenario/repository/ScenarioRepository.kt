@@ -21,6 +21,8 @@ interface ScenarioRepository : RedisDocumentRepository<Scenario, String> {
 
   fun findByParentId(parentId: String): List<Scenario>
 
+  fun findByOrganizationId(organizationId: String): List<Scenario>
+
   @Query("(@parentId:{\$parentId}) \$securityConstraint")
   fun findByParentIdAndSecurity(
       @Param("parentId") parentId: String,

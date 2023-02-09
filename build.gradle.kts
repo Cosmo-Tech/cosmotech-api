@@ -245,7 +245,7 @@ subprojects {
               "See http://www.slf4j.org/faq.html#changesInVersion200")
     }
     implementation(platform("com.azure.spring:azure-spring-boot-bom:$azureSpringBootBomVersion"))
-    api("com.azure.spring:azure-spring-boot-starter-cosmos")
+    api("com.azure.spring:azure-spring-boot-starter-storage")
     constraints {
       implementation("redis.clients:jedis:3.9.0") {
         because(

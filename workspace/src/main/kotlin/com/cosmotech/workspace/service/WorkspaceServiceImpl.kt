@@ -51,7 +51,6 @@ import com.cosmotech.workspace.utils.getWorkspaceSecretName
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Scope
 import org.springframework.context.event.EventListener
 import org.springframework.core.io.Resource
@@ -61,7 +60,6 @@ import org.springframework.stereotype.Service
 
 @Service
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-@ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions")
 internal class WorkspaceServiceImpl(
     private val resourceLoader: ResourceLoader,
@@ -77,17 +75,17 @@ internal class WorkspaceServiceImpl(
 ) : CsmPhoenixService(), WorkspaceApiService {
 
   override fun findAllWorkspaces(organizationId: String): List<Workspace> {
-    val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
     val organization =
         organizationRepository.findById(organizationId).orElseThrow {
           CsmResourceNotFoundException("Organization $organizationId")
         }
 
-    logger.debug("Getting workspaces for user $currentUser")
     val isAdmin = csmRbac.isAdmin(organization.getRbac(), getCommonRolesDefinition())
     if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
       return workspaceRepository.findByOrganizationId(organizationId)
     }
+    val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+    logger.debug("Getting workspaces for user $currentUser")
     return workspaceRepository.findByOrganizationIdAndSecurity(
         organizationId.sanitizeForRedis(), currentUser.toSecurityConstraintQuery())
   }
@@ -107,7 +105,7 @@ internal class WorkspaceServiceImpl(
     val organization = organizationService.findOrganizationById(organizationId)
     // Needs security on Organization to check RBAC
     csmRbac.verify(organization.getRbac(), PERMISSION_CREATE_CHILDREN)
-    // Validate Solution IDl
+    // Validate Solution ID
     workspace.solution?.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
 
     var workspaceSecurity = workspace.security
