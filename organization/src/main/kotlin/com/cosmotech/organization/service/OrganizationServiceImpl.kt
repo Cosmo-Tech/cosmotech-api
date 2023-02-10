@@ -277,6 +277,13 @@ class OrganizationServiceImpl(
     return csmRbac.getUsers(organization.getRbac())
   }
 
+  override fun importOrganization(organization: Organization): Organization {
+    if (organization.id == null) {
+      throw CsmResourceNotFoundException("Organization id is null")
+    }
+    return organizationRepository.save(organization)
+  }
+
   private fun initSecurity(userId: String): OrganizationSecurity {
     return OrganizationSecurity(
         default = ROLE_NONE,

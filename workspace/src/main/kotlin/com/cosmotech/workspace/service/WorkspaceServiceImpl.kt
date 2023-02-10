@@ -428,6 +428,13 @@ internal class WorkspaceServiceImpl(
     return csmRbac.getUsers(workspace.getRbac())
   }
 
+  override fun importWorkspace(organizationId: String, workspace: Workspace): Workspace {
+    if (workspace.id == null) {
+      throw CsmResourceNotFoundException("Workspace id is null")
+    }
+    return workspaceRepository.save(workspace)
+  }
+
   private fun initSecurity(userId: String): WorkspaceSecurity {
     return WorkspaceSecurity(
         default = ROLE_NONE,

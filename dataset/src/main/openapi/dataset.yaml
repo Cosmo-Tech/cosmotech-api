@@ -571,6 +571,42 @@ paths:
           description: Request succeeded
         "404":
           description: the ValidatorRun specified is unknown or you don't have access to it
+
+  /organizations/{organization_id}/datasets/import:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: importDataset
+      tags:
+        - dataset
+      summary: Import a new Dataset
+      requestBody:
+        description: the Dataset to import
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Dataset'
+            examples:
+              BreweryADT:
+                $ref: '#/components/examples/BreweryADT'
+      responses:
+        "201":
+          description: the dataset details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dataset'
+              examples:
+                BreweryADT:
+                  $ref: '#/components/examples/BreweryADT'
+        "400":
+          description: Bad request
 components:
   securitySchemes:
     oAuth2AuthCode:

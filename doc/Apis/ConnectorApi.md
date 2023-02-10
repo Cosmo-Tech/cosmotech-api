@@ -6,6 +6,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**findAllConnectors**](ConnectorApi.md#findAllConnectors) | **GET** /connectors | List all Connectors
 [**findConnectorById**](ConnectorApi.md#findConnectorById) | **GET** /connectors/{connector_id} | Get the details of a connector
+[**importConnector**](ConnectorApi.md#importConnector) | **POST** /connectors/import | Import existing connector
 [**registerConnector**](ConnectorApi.md#registerConnector) | **POST** /connectors | Register a new connector
 [**unregisterConnector**](ConnectorApi.md#unregisterConnector) | **DELETE** /connectors/{connector_id} | Unregister a connector
 
@@ -55,6 +56,31 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
 - **Content-Type**: Not defined
+- **Accept**: application/json
+
+<a name="importConnector"></a>
+# **importConnector**
+> Connector importConnector(Connector)
+
+Import existing connector
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **Connector** | [**Connector**](../Models/Connector.md)| the Connector to import |
+
+### Return type
+
+[**Connector**](../Models/Connector.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
 - **Accept**: application/json
 
 <a name="registerConnector"></a>

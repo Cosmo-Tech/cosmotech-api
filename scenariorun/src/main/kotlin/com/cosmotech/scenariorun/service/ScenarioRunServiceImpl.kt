@@ -20,6 +20,7 @@ import com.cosmotech.api.events.TwingraphImportEvent
 import com.cosmotech.api.events.TwingraphImportJobInfoRequest
 import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
+import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.scenario.ScenarioRunMetaData
 import com.cosmotech.api.scenariorun.DataIngestionState
 import com.cosmotech.api.security.coroutine.SecurityCoroutineContext
@@ -270,6 +271,7 @@ internal class ScenarioRunServiceImpl(
       scenarioRunRepository.findByWorkspaceId(workspaceId).map {
         it.withStateInformation(organizationId).withoutSensitiveData()!!
       }
+
 
   @EventListener(ScenarioDataDownloadRequest::class)
   fun onScenarioDataDownloadRequest(scenarioDataDownloadRequest: ScenarioDataDownloadRequest) {
@@ -741,4 +743,17 @@ internal class ScenarioRunServiceImpl(
       }
     }
   }
+
+  override fun importScenarioRun(
+    organizationId: String,
+    workspaceId: String,
+    scenarioId: String,
+    scenarioRun: ScenarioRun
+  ): ScenarioRun {
+    if (scenarioRun.id == null) {
+      throw CsmResourceNotFoundException("ScenarioRun id is null")
+    }
+    return scenarioRunRepository.save(scenarioRun)
+  }
+
 }

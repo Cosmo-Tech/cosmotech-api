@@ -32,6 +32,7 @@ import com.cosmotech.api.rbac.getScenarioRolesDefinition
 import com.cosmotech.api.scenario.ScenarioMetaData
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
+import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toSecurityConstraintQuery
@@ -67,6 +68,14 @@ import kotlinx.coroutines.runBlocking
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import kotlin.reflect.KMutableProperty
+import kotlin.reflect.KProperty
+import kotlin.reflect.full.isSupertypeOf
+import kotlin.reflect.full.memberProperties
 
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
@@ -154,7 +163,7 @@ internal class ScenarioServiceImpl(
       scenarioSecurity = initSecurity(getCurrentAuthenticatedMail(this.csmPlatformProperties))
     }
 
-    val now = OffsetDateTime.now()
+    val now = Instant.now().toEpochMilli()
     val scenarioToSave =
         scenario.copy(
             id = idGenerator.generate("scenario"),
@@ -500,7 +509,7 @@ internal class ScenarioServiceImpl(
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE, scenarioPermissions)
     if (!scenario.parametersValues.isNullOrEmpty()) {
       scenario.parametersValues = mutableListOf()
-      scenario.lastUpdate = OffsetDateTime.now()
+      scenario.lastUpdate = Instant.now().toEpochMilli()
 
       upsertScenarioData(scenario)
     }
@@ -567,7 +576,7 @@ internal class ScenarioServiceImpl(
     }
 
     if (hasChanged) {
-      existingScenario.lastUpdate = OffsetDateTime.now()
+      existingScenario.lastUpdate = Instant.now().toEpochMilli()
       upsertScenarioData(existingScenario)
 
       if (datasetListUpdated) {
@@ -625,7 +634,7 @@ internal class ScenarioServiceImpl(
     existingScenario.runTemplateName = runTemplate.name
   }
   internal fun upsertScenarioData(scenario: Scenario) {
-    scenario.lastUpdate = OffsetDateTime.now()
+    scenario.lastUpdate = Instant.now().toEpochMilli()
     scenarioRepository.save(scenario)
   }
 
@@ -711,7 +720,7 @@ internal class ScenarioServiceImpl(
             scenarioDatasetListChanged.scenarioId)
     children.forEach {
       it.datasetList = scenarioDatasetListChanged.datasetList?.toMutableList() ?: mutableListOf()
-      it.lastUpdate = OffsetDateTime.now()
+      it.lastUpdate = Instant.now().toEpochMilli()
       upsertScenarioData(it)
     }
   }
@@ -840,4 +849,15 @@ internal class ScenarioServiceImpl(
         default = ROLE_NONE,
         accessControlList = mutableListOf(ScenarioAccessControl(userId, ROLE_ADMIN)))
   }
+
+  override fun importScenario(organizationId: String, workspaceId: String, scenario: Scenario): Scenario {
+    if (scenario.id == null) {
+      throw CsmResourceNotFoundException("Scenario id is null")
+    }
+
+    return scenarioRepository.save(scenario)
+  }
+
+
+
 }
