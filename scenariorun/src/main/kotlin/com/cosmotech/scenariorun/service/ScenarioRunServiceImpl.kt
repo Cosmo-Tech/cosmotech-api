@@ -12,6 +12,7 @@ import com.cosmotech.api.events.DeleteHistoricalDataWorkspace
 import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
 import com.cosmotech.api.events.ScenarioDataDownloadRequest
 import com.cosmotech.api.events.ScenarioDeleted
+import com.cosmotech.api.events.ScenarioLastRunChanged
 import com.cosmotech.api.events.ScenarioRunEndTimeRequest
 import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
@@ -27,6 +28,7 @@ import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
+import com.cosmotech.scenario.domain.ScenarioJobState
 import com.cosmotech.scenariorun.CSM_JOB_ID_LABEL_KEY
 import com.cosmotech.scenariorun.ContainerFactory
 import com.cosmotech.scenariorun.SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME
@@ -57,7 +59,6 @@ import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.scheduling.annotation.Async
@@ -67,8 +68,11 @@ private const val MIN_SDK_VERSION_MAJOR = 8
 private const val MIN_SDK_VERSION_MINOR = 5
 private const val DELETE_SCENARIO_RUN_DEFAULT_TIMEOUT: Long = 28800
 
+internal const val WORKFLOW_TYPE_DATA_DOWNLOAD = "data-download"
+internal const val WORKFLOW_TYPE_SCENARIO_RUN = "scenario-run"
+internal const val WORKFLOW_TYPE_TWIN_GRAPH_IMPORT = "twin-graph-import"
+
 @Service
-@ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions", "LargeClass")
 internal class ScenarioRunServiceImpl(
     private val containerFactory: ContainerFactory,
@@ -88,6 +92,8 @@ internal class ScenarioRunServiceImpl(
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
     }
     deleteScenarioRunWithoutAccessEnforcement(scenarioRun)
+
+    deleteScenarioLastRunEvent(scenarioRun)
   }
 
   private fun deleteScenarioRunWithoutAccessEnforcement(scenarioRun: ScenarioRun) {
@@ -118,6 +124,17 @@ internal class ScenarioRunServiceImpl(
           exception.message,
           exception)
     }
+  }
+
+  private fun deleteScenarioLastRunEvent(scenarioRun: ScenarioRun) {
+    var scenario =
+        scenarioApiService.findScenarioById(
+            scenarioRun.organizationId!!, scenarioRun.workspaceId!!, scenarioRun.scenarioId!!)
+
+    scenario.lastRun = null
+    scenario.state = ScenarioJobState.Created
+    eventPublisher.publishEvent(
+        ScenarioLastRunChanged(this, scenarioRun.organizationId, scenarioRun.workspaceId, scenario))
   }
 
   override fun deleteHistoricalDataOrganization(organizationId: String, deleteUnknown: Boolean) {
@@ -253,7 +270,6 @@ internal class ScenarioRunServiceImpl(
         it.withStateInformation(organizationId).withoutSensitiveData()!!
       }
 
-
   @EventListener(ScenarioDataDownloadRequest::class)
   fun onScenarioDataDownloadRequest(scenarioDataDownloadRequest: ScenarioDataDownloadRequest) {
     val startInfo =
@@ -261,6 +277,7 @@ internal class ScenarioRunServiceImpl(
             scenarioDataDownloadRequest.organizationId,
             scenarioDataDownloadRequest.workspaceId,
             scenarioDataDownloadRequest.scenarioId,
+            WORKFLOW_TYPE_DATA_DOWNLOAD,
             scenarioDataDownload = true,
             scenarioDataDownloadJobId = scenarioDataDownloadRequest.jobId)
     logger.debug(startInfo.toString())
@@ -272,6 +289,7 @@ internal class ScenarioRunServiceImpl(
 
   private fun ScenarioRun.asMapWithAdditionalData(workspaceId: String? = null): Map<String, Any> {
     val scenarioAsMap = this.convertToMap().toMutableMap()
+    scenarioAsMap["type"] = WORKFLOW_TYPE_SCENARIO_RUN
     if (workspaceId != null) {
       scenarioAsMap["workspaceId"] = workspaceId
     }
@@ -302,7 +320,9 @@ internal class ScenarioRunServiceImpl(
             twingraphImportEvent.jobId,
             adtTwincacheContainerInfo.imageRegistry,
             adtTwincacheContainerInfo.imageVersion,
-            containerEnvVars)
+            containerEnvVars,
+            WORKFLOW_TYPE_TWIN_GRAPH_IMPORT,
+        )
     twingraphImportEvent.response =
         workflowService.launchScenarioRun(simpleContainer, null).convertToMap()
   }
@@ -368,10 +388,7 @@ internal class ScenarioRunServiceImpl(
 
     val startInfo =
         containerFactory.getStartInfo(
-            organizationId,
-            workspaceId,
-            scenarioId,
-        )
+            organizationId, workspaceId, scenarioId, WORKFLOW_TYPE_SCENARIO_RUN)
     logger.debug(startInfo.toString())
     val scenarioRunRequest =
         workflowService.launchScenarioRun(
@@ -422,7 +439,6 @@ internal class ScenarioRunServiceImpl(
     }
     return scenarioRun.withoutSensitiveData()!!
   }
-
   private fun deletePreviousSimulationDataIfCurrentSimulationIsSuccessful(
       currentRun: ScenarioRun,
       purgeHistoricalDataConfiguration: DeleteHistoricalData
@@ -727,15 +743,14 @@ internal class ScenarioRunServiceImpl(
   }
 
   override fun importScenarioRun(
-    organizationId: String,
-    workspaceId: String,
-    scenarioId: String,
-    scenarioRun: ScenarioRun
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String,
+      scenarioRun: ScenarioRun
   ): ScenarioRun {
     if (scenarioRun.id == null) {
       throw CsmResourceNotFoundException("ScenarioRun id is null")
     }
     return scenarioRunRepository.save(scenarioRun)
   }
-
 }

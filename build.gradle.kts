@@ -21,7 +21,7 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 // See https://docs.gradle.org/current/userguide/organizing_gradle_projects.html#sec:build_sources
 
 plugins {
-  val kotlinVersion = "1.7.20"
+  val kotlinVersion = "1.8.0"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.14.2"
@@ -39,9 +39,11 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 val kotlinJvmTarget = 17
-val cosmotechApiCommonVersion = "0.1.31-SNAPSHOT"
-val cosmotechApiAzureVersion = "0.1.7-SNAPSHOT"
+val cosmotechApiCommonVersion = "0.1.34-SNAPSHOT"
+val cosmotechApiAzureVersion = "0.1.8-SNAPSHOT"
 val azureSpringBootBomVersion = "3.14.0"
+val jedisVersion = "3.9.0"
+val jredistimeseriesVersion = "1.6.0"
 
 allprojects {
   apply(plugin = "com.diffplug.spotless")
@@ -163,6 +165,9 @@ subprojects {
         outputLocation.set(file("$buildDir/reports/detekt/${project.name}-detekt.sarif"))
       }
     }
+
+    tasks.getByName<BootJar>("bootJar") { enabled = false }
+    tasks.getByName<Jar>("jar") { enabled = true }
   }
 
   dependencies {
@@ -184,6 +189,7 @@ subprojects {
         platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES))
 
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("org.springframework.boot:spring-boot-starter-web") {
       exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
     }
@@ -191,7 +197,7 @@ subprojects {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("javax.validation:validation-api:2.0.1.Final")
 
-    val springDocVersion = "1.6.12"
+    val springDocVersion = "1.6.14"
     implementation("org.springdoc:springdoc-openapi-ui:${springDocVersion}")
     implementation("org.springdoc:springdoc-openapi-kotlin:${springDocVersion}")
     val swaggerParserVersion = "2.1.8"
@@ -205,8 +211,11 @@ subprojects {
     val oktaSpringBootVersion = "2.1.6"
     implementation("com.okta.spring:okta-spring-boot-starter:${oktaSpringBootVersion}")
 
+    implementation("redis.clients:jedis:${jedisVersion}")
+    implementation("com.redislabs:jredistimeseries:${jredistimeseriesVersion}")
+
     testImplementation(kotlin("test"))
-    testImplementation(platform("org.junit:junit-bom:5.9.1"))
+    testImplementation(platform("org.junit:junit-bom:5.9.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("io.mockk:mockk:1.13.2")
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
@@ -235,8 +244,9 @@ subprojects {
               "which is not backward-compatible with 1.7.x." +
               "See http://www.slf4j.org/faq.html#changesInVersion200")
     }
+
     implementation(platform("com.azure.spring:azure-spring-boot-bom:$azureSpringBootBomVersion"))
-    api("com.azure.spring:azure-spring-boot-starter-cosmos")
+    api("com.azure.spring:azure-spring-boot-starter-storage")
     constraints {
       implementation("redis.clients:jedis:3.9.0") {
         because(
@@ -248,7 +258,9 @@ subprojects {
   }
 
   tasks.withType<KotlinCompile> {
-    dependsOn("openApiGenerate")
+    if (openApiDefinitionFile.exists()) {
+      dependsOn("openApiGenerate")
+    }
 
     kotlinOptions {
       languageVersion = "1.7"

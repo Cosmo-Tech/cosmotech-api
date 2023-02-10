@@ -1,0 +1,27 @@
+{{- if .Values.api.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "cosmotech-api.fullname" . }}
+  {{- with .Values.api.serviceMonitor.namespace }}
+  namespace: {{ . }}
+  {{- end }}
+  labels:
+    {{- include "cosmotech-api.labels" . | nindent 4 }}
+    {{- with .Values.api.serviceMonitor.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  endpoints:
+  - port: http-management
+    path: "/actuator/prometheus"
+    interval: 30s
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      owner: csm-platform
+      app.kubernetes.io/name: cosmotech-api
+      app.kubernetes.io/instance: {{ include "cosmotech-api.fullname" . }}
+{{- end }}

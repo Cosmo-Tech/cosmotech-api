@@ -14,6 +14,7 @@ help() {
   echo "The following optional environment variables can be set to alter this script behavior:"
   echo "- ARGO_MINIO_ACCESS_KEY | string | AccessKey for MinIO. Generated when not set"
   echo "- ARGO_MINIO_SECRET_KEY | string | SecretKey for MinIO. Generated when not set"
+  echo "- ARGO_REQUEUE_TIME | string | Workflow requeue time, 1s by default"
   echo "- ARGO_MINIO_REQUESTS_MEMORY | units of bytes (default is 4Gi) | Memory requests for the Argo MinIO server"
   echo "- ARGO_MINIO_PERSISTENCE_SIZE | units of bytes (default is 500Gi) | Persistence size for the Argo MinIO server"
   echo "- NGINX_INGRESS_CONTROLLER_ENABLED | boolean (default is false) | indicating whether an NGINX Ingress Controller should be deployed and an Ingress resource created too"
@@ -63,6 +64,7 @@ export HELM_EXPERIMENTAL_OCI=1
 export CHART_PACKAGE_VERSION="$1"
 export NAMESPACE="$2"
 export API_VERSION="$4"
+export REQUEUE_TIME="${ARGO_REQUEUE_TIME:-1s}"
 
 echo CHART_PACKAGE_VERSION: $CHART_PACKAGE_VERSION
 echo NAMEPSACE: $NAMESPACE
@@ -334,6 +336,9 @@ server:
   podLabels:
     networking/traffic-allowed: "yes"
 controller:
+  extraEnv:
+  - name: DEFAULT_REQUEUE_TIME
+    value: "${REQUEUE_TIME}"
   podLabels:
     networking/traffic-allowed: "yes"
   containerRuntimeExecutor: k8sapi

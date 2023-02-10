@@ -3,9 +3,9 @@
 package com.cosmotech.user.azure
 
 import com.azure.cosmos.models.CosmosContainerProperties
-import com.cosmotech.api.azure.CsmAzureService
-import com.cosmotech.api.azure.findAll
-import com.cosmotech.api.azure.findByIdOrThrow
+import com.cosmotech.api.azure.cosmosdb.ext.findAll
+import com.cosmotech.api.azure.cosmosdb.ext.findByIdOrThrow
+import com.cosmotech.api.azure.cosmosdb.service.CsmCosmosDBService
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.events.UserAddedToOrganization
@@ -28,7 +28,7 @@ import org.springframework.stereotype.Service
 @Service
 @ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions")
-internal class UserServiceImpl : CsmAzureService(), UserApiService {
+internal class UserServiceImpl : CsmCosmosDBService(), UserApiService {
 
   private lateinit var coreUserContainer: String
 

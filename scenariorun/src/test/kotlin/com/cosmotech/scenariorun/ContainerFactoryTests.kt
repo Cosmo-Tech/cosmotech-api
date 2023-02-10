@@ -61,6 +61,8 @@ import org.junit.jupiter.api.extension.ExtendWith
 
 private const val CSM_SIMULATION_ID = "simulationrunid"
 
+private const val DEFAULT_WORKFLOW_TYPE = "testruntype"
+
 @Suppress("TooManyFunctions", "LargeClass")
 @ExtendWith(MockKExtension::class)
 class ContainerFactoryTests {
@@ -1607,7 +1609,9 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            DEFAULT_WORKFLOW_TYPE,
+        )
     assertEquals("highcpupool", startContainers.nodeLabel)
   }
 
@@ -1626,7 +1630,9 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            DEFAULT_WORKFLOW_TYPE,
+        )
     assertEquals("basicpool", startContainers.nodeLabel)
   }
 
@@ -1645,7 +1651,9 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            DEFAULT_WORKFLOW_TYPE,
+        )
     assertNull(startContainers.nodeLabel)
   }
 
@@ -1664,7 +1672,9 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
-            CSM_SIMULATION_ID)
+            CSM_SIMULATION_ID,
+            DEFAULT_WORKFLOW_TYPE,
+        )
     assertEquals("workflow-scenarioid-", startContainers.generateName)
   }
 
@@ -1872,6 +1882,18 @@ class ContainerFactoryTests {
   fun `Full get Start Info pool`() {
     val startInfo = getStartInfoFromIds()
     assertEquals("highcpupool", startInfo.startContainers.nodeLabel)
+  }
+
+  @Test
+  fun `Full get Start node labels`() {
+    val startInfo = getStartInfoFromIds()
+    assertEquals(
+        mapOf(
+            "com.cosmotech/job_id" to "Scenarioid",
+            "cosmotech.com/workflowtype" to DEFAULT_WORKFLOW_TYPE,
+        ),
+        startInfo.startContainers.labels,
+    )
   }
 
   @Test
@@ -2551,6 +2573,7 @@ class ContainerFactoryTests {
         organizationId,
         workspaceId,
         scenarioId,
+        DEFAULT_WORKFLOW_TYPE,
     )
   }
 
@@ -2601,6 +2624,82 @@ class ContainerFactoryTests {
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
             "TWIN_CACHE_USERNAME" to "default")
     assertEquals(expected.toSortedMap(), container?.envVars?.toSortedMap())
+  }
+
+  @Test
+  fun `PROD-7623- Dedicated EventHub by namespace set to true and send control plane to true`() {
+    val container = buildRunContainer(true, true)
+
+    assertNotNull(container.envVars)
+    assertEquals(
+        mapOf(
+                "IDENTITY_PROVIDER" to "azure",
+                "AZURE_TENANT_ID" to "12345678",
+                "AZURE_CLIENT_ID" to "98765432",
+                "AZURE_CLIENT_SECRET" to "azertyuiop",
+                "CSM_SIMULATION_ID" to "simulationrunid",
+                "CSM_API_URL" to "https://api.cosmotech.com",
+                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
+                    "https://phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                    "https://ingest-phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
+                "CSM_ORGANIZATION_ID" to "Organizationid",
+                "CSM_WORKSPACE_ID" to "Workspaceid",
+                "CSM_SCENARIO_ID" to "Scenarioid",
+                "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
+                "CSM_CONTAINER_MODE" to "engine",
+                "CSM_PROBES_MEASURES_TOPIC" to
+                    "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
+                "CSM_CONTROL_PLANE_TOPIC" to
+                    "amqps://organizationid-test.servicebus.windows.net/scenariorun",
+                "CSM_SIMULATION" to "TestSimulation",
+                "TWIN_CACHE_HOST" to "this_is_a_host",
+                "TWIN_CACHE_PORT" to "6973",
+                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+                "TWIN_CACHE_USERNAME" to "default")
+            .toSortedMap(),
+        container.envVars?.toSortedMap())
+  }
+
+  @Test
+  fun `PROD-7623- Dedicated EventHub by namespace set to true and send control plane to false`() {
+    val container = buildRunContainer(true, false)
+
+    assertNotNull(container.envVars)
+    assertEquals(
+        mapOf(
+                "IDENTITY_PROVIDER" to "azure",
+                "AZURE_TENANT_ID" to "12345678",
+                "AZURE_CLIENT_ID" to "98765432",
+                "AZURE_CLIENT_SECRET" to "azertyuiop",
+                "CSM_SIMULATION_ID" to "simulationrunid",
+                "CSM_API_URL" to "https://api.cosmotech.com",
+                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
+                    "https://phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                    "https://ingest-phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
+                "CSM_ORGANIZATION_ID" to "Organizationid",
+                "CSM_WORKSPACE_ID" to "Workspaceid",
+                "CSM_SCENARIO_ID" to "Scenarioid",
+                "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
+                "CSM_CONTAINER_MODE" to "engine",
+                "CSM_PROBES_MEASURES_TOPIC" to
+                    "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
+                "CSM_SIMULATION" to "TestSimulation",
+                "TWIN_CACHE_HOST" to "this_is_a_host",
+                "TWIN_CACHE_PORT" to "6973",
+                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+                "TWIN_CACHE_USERNAME" to "default")
+            .toSortedMap(),
+        container.envVars?.toSortedMap())
   }
 
   @Test
@@ -2968,7 +3067,7 @@ class ContainerFactoryTests {
 
   private fun buildRunContainer(
       dedicatedEventHubNamespace: Boolean? = null,
-      sendToScenarioRun: Boolean? = true,
+      sendToScenarioRun: Boolean? = null,
       sasAuthentication: String? = null,
       sasName: String? = null
   ): ScenarioRunContainer {

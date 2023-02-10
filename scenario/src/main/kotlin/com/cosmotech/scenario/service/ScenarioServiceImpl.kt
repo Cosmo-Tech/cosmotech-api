@@ -9,10 +9,12 @@ import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatfo
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
 import com.cosmotech.api.events.DeleteHistoricalDataScenario
 import com.cosmotech.api.events.DeleteHistoricalDataWorkspace
+import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
 import com.cosmotech.api.events.ScenarioDataDownloadRequest
 import com.cosmotech.api.events.ScenarioDatasetListChanged
 import com.cosmotech.api.events.ScenarioDeleted
+import com.cosmotech.api.events.ScenarioLastRunChanged
 import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
 import com.cosmotech.api.events.WorkflowPhaseToStateRequest
@@ -31,7 +33,6 @@ import com.cosmotech.api.rbac.getScenarioRolesDefinition
 import com.cosmotech.api.scenario.ScenarioMetaData
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
-import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toSecurityConstraintQuery
@@ -58,26 +59,17 @@ import com.cosmotech.workspace.azure.EventHubRole
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.service.getRbac
-import java.time.OffsetDateTime
+import java.time.Instant
 import java.time.ZonedDateTime
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
-import kotlin.reflect.KMutableProperty
-import kotlin.reflect.KProperty
-import kotlin.reflect.full.isSupertypeOf
-import kotlin.reflect.full.memberProperties
 
 @Service
-@ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("LargeClass", "TooManyFunctions")
 internal class ScenarioServiceImpl(
     private val solutionService: SolutionApiService,
@@ -687,6 +679,13 @@ internal class ScenarioServiceImpl(
     }
   }
 
+  @EventListener(OrganizationUnregistered::class)
+  @Async("csm-in-process-event-executor")
+  fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
+    val scenarios = scenarioRepository.findByOrganizationId(organizationUnregistered.organizationId)
+    scenarioRepository.deleteAll(scenarios)
+  }
+
   @EventListener(ScenarioRunStartedForScenario::class)
   fun onScenarioRunStartedForScenario(scenarioRunStarted: ScenarioRunStartedForScenario) {
     logger.debug("onScenarioRunStartedForScenario ${scenarioRunStarted}")
@@ -706,7 +705,7 @@ internal class ScenarioServiceImpl(
 
   @EventListener(ScenarioDatasetListChanged::class)
   fun onScenarioDatasetListChanged(scenarioDatasetListChanged: ScenarioDatasetListChanged) {
-    logger.debug("onScenarioDatasetListChanged ${scenarioDatasetListChanged}")
+    logger.debug("onScenarioDatasetListChanged $scenarioDatasetListChanged")
     val children =
         this.findAllScenariosByRootId(
             scenarioDatasetListChanged.organizationId,
@@ -717,6 +716,12 @@ internal class ScenarioServiceImpl(
       it.lastUpdate = Instant.now().toEpochMilli()
       upsertScenarioData(it)
     }
+  }
+
+  @EventListener(ScenarioLastRunChanged::class)
+  fun onScenarioLastRunChanged(scenarioLastRunChanged: ScenarioLastRunChanged) {
+    logger.debug("onScenarioLastRunChanged $scenarioLastRunChanged")
+    this.upsertScenarioData(scenarioLastRunChanged.scenario as Scenario)
   }
 
   override fun getScenarioPermissions(
@@ -835,14 +840,15 @@ internal class ScenarioServiceImpl(
         accessControlList = mutableListOf(ScenarioAccessControl(userId, ROLE_ADMIN)))
   }
 
-  override fun importScenario(organizationId: String, workspaceId: String, scenario: Scenario): Scenario {
+  override fun importScenario(
+      organizationId: String,
+      workspaceId: String,
+      scenario: Scenario
+  ): Scenario {
     if (scenario.id == null) {
       throw CsmResourceNotFoundException("Scenario id is null")
     }
 
     return scenarioRepository.save(scenario)
   }
-
-
-
 }

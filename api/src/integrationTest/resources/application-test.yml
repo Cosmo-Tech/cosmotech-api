@@ -17,6 +17,8 @@ management:
 #        uri: "https://faketestaccount.documents.azure.com:443/"
 csm:
   platform:
+    metrics:
+      enabled: false
     identityProvider :
       code: azure
       defaultScopes:
@@ -31,10 +33,12 @@ csm:
     vendor: azure
     argo:
       base-uri: "https://argo-server.argo.svc.cluster.local:2746"
+    twincache:
+      host: "localhost"
+      port: "6379"
+      username: "default_user"
+      password: "default_password"
     azure:
-      cosmos:
-        key: "this_is_a_key_base64_encoded"
-        uri: "https://faketestaccount.documents.azure.com:443/"
       storage:
         account-name: "faketestaccountname"
         account-key: "this_is_a_key_base64_encoded"

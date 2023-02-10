@@ -12,12 +12,15 @@ management:
       enabled: true
   endpoint:
     health:
+      show-details: always
       group:
         readiness:
           include: "readinessState,argo,csmCosmos,blobStorage,csmADX"
 
 csm:
   platform:
+    cosmosdb:
+      enable: true
     authorization:
       principal-jwt-claim: "oid"
       tenant-id-jwt-claim: "tid"

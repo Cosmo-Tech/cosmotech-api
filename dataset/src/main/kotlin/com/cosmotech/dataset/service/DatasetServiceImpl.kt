@@ -17,15 +17,13 @@ import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetCompatibility
 import com.cosmotech.dataset.domain.DatasetCopyParameters
 import com.cosmotech.dataset.domain.DatasetSearch
+import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.organization.api.OrganizationApiService
-import com.cosmotech.organization.repositories.DatasetRepository
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
 @Service
-@ConditionalOnProperty(name = ["csm.platform.vendor"], havingValue = "azure", matchIfMissing = true)
 @Suppress("TooManyFunctions")
 internal class DatasetServiceImpl(
     private val organizationService: OrganizationApiService,
@@ -36,11 +34,9 @@ internal class DatasetServiceImpl(
       datasetRepository.findByOrganizationId(organizationId)
 
   override fun findDatasetById(organizationId: String, datasetId: String): Dataset =
-      // TODO add RBAC security with organizationId
       datasetRepository.findById(datasetId).orElseThrow {
         CsmAccessForbiddenException("Dataset $datasetId not found in organization $organizationId")
       }
-
 
   override fun removeAllDatasetCompatibilityElements(organizationId: String, datasetId: String) {
     val dataset = findDatasetById(organizationId, datasetId)
@@ -187,7 +183,6 @@ internal class DatasetServiceImpl(
       datasetRepository.save(it)
     }
   }
-
 
   override fun importDataset(organizationId: String, dataset: Dataset): Dataset {
     if (dataset.id == null) {

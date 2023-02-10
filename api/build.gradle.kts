@@ -17,6 +17,7 @@ dependencies {
   implementation(projects.cosmotechSolutionApi)
   implementation(projects.cosmotechWorkspaceApi)
   implementation(projects.cosmotechTwingraphApi)
+  implementation(projects.cosmotechMetricsService)
 }
 
 tasks.getByName<Delete>("clean") { delete("$rootDir/openapi/openapi.yaml") }
@@ -72,7 +73,7 @@ openApiMerger {
   openApi {
     openApiVersion.set("3.0.3")
     info {
-      title.set("Cosmo Tech Plaform API")
+      title.set("Cosmo Tech Platform API")
       description.set("Cosmo Tech Platform API")
       version.set(project.version.toString())
       //      termsOfService.set("http://openapimerger.com/terms-of-service")

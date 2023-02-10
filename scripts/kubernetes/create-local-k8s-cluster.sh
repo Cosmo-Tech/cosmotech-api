@@ -15,6 +15,8 @@ if [ "${running}" != 'true' ]; then
 fi
 
 cluster_name=${1:-local-k8s-cluster}
+host_path_to_mount=${2:-/home/${USER}/data}
+container_path="/data"
 
 export aks_minor_version="1.23"
 kindest_node_image_tag="v${aks_minor_version}.6"
@@ -31,6 +33,9 @@ containerdConfigPatches:
      endpoint = ["http://${registry_name}:${registry_port}"]
 nodes:
     - role: control-plane
+      extraMounts:
+        - hostPath: ${host_path_to_mount}
+          containerPath: ${container_path}
       image: kindest/node:${kindest_node_image_tag}
       kubeadmConfigPatches:
       - |
@@ -45,7 +50,13 @@ nodes:
       - containerPort: 443
         hostPort: 443
         protocol: TCP
+      - containerPort: 5005
+        hostPort: 5005
+        protocol: TCP
     - role: worker
+      extraMounts:
+        - hostPath: ${host_path_to_mount}
+          containerPath: ${container_path}
       image: kindest/node:${kindest_node_image_tag}
       kubeadmConfigPatches:
       - |
@@ -58,6 +69,9 @@ nodes:
           kubeletExtraArgs:
             node-labels: "kubernetes.io/os=linux,cosmotech.com/tier=compute,cosmotech.com/size=basic"
     - role: worker
+      extraMounts:
+        - hostPath: ${host_path_to_mount}
+          containerPath: ${container_path}
       image: kindest/node:${kindest_node_image_tag}
       kubeadmConfigPatches:
       - |
@@ -70,6 +84,9 @@ nodes:
           kubeletExtraArgs:
             node-labels: "kubernetes.io/os=linux,cosmotech.com/tier=services"
     - role: worker
+      extraMounts:
+        - hostPath: ${host_path_to_mount}
+          containerPath: ${container_path}
       image: kindest/node:${kindest_node_image_tag}
       kubeadmConfigPatches:
       - |
@@ -82,6 +99,9 @@ nodes:
           kubeletExtraArgs:
             node-labels: "kubernetes.io/os=linux,cosmotech.com/tier=db"
     - role: worker
+      extraMounts:
+        - hostPath: ${host_path_to_mount}
+          containerPath: ${container_path}
       image: kindest/node:${kindest_node_image_tag}
       kubeadmConfigPatches:
       - |
@@ -144,7 +164,7 @@ for node in $(kind get nodes --name "${cluster_name}"); do
 done
 
 # Install Calico
-helm repo add projectcalico https://projectcalico.docs.tigera.io/charts
+helm repo add projectcalico https://docs.tigera.io/calico/charts
 helm --kube-context="${kubectl_ctx}" \
   install calico \
   projectcalico/tigera-operator \
