@@ -39,7 +39,7 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 val kotlinJvmTarget = 17
-val cosmotechApiCommonVersion = "0.1.34-SNAPSHOT"
+val cosmotechApiCommonVersion = "0.1.35-SNAPSHOT"
 val cosmotechApiAzureVersion = "0.1.8-SNAPSHOT"
 val azureSpringBootBomVersion = "3.14.0"
 val jedisVersion = "3.9.0"
@@ -51,6 +51,7 @@ allprojects {
   apply(plugin = "io.gitlab.arturbosch.detekt")
 
   repositories {
+    mavenLocal()
     maven {
       name = "GitHubPackages"
       url = uri("https://maven.pkg.github.com/Cosmo-Tech/cosmotech-api-common")
@@ -247,8 +248,6 @@ subprojects {
 
     implementation(platform("com.azure.spring:azure-spring-boot-bom:$azureSpringBootBomVersion"))
     api("com.azure.spring:azure-spring-boot-starter-storage")
-    api("com.azure:azure-storage-blob")
-    api("com.azure:azure-storage-blob-batch")
     constraints {
       implementation("redis.clients:jedis:3.9.0") {
         because(
@@ -278,7 +277,7 @@ subprojects {
       task<Test>("integrationTest") {
         description = "Runs integration tests"
         group = "verification"
-
+        useJUnitPlatform()
         shouldRunAfter("test")
         classpath = sourceSets["integrationTest"].runtimeClasspath
         testClassesDirs = sourceSets["integrationTest"].output.classesDirs

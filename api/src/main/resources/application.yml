@@ -8,6 +8,7 @@ spring:
     port: 6379
     password: ${csm.platform.twincache.password}
     username: ${csm.platform.twincache.username}
+    client-type: jedis
   servlet:
     multipart:
       max-file-size: 50MB

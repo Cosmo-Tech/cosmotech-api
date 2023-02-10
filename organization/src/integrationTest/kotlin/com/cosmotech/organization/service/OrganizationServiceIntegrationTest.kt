@@ -1,7 +1,8 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.api.home
+package com.cosmotech.organization.service
 
+import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.api.OrganizationApiService
@@ -20,16 +21,18 @@ import org.junit.runner.RunWith
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 
+@ActiveProfiles(profiles = ["organization-test"])
 @ExtendWith(MockKExtension::class)
 @ExtendWith(SpringExtension::class)
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class OrganizationServiceSecImplTests : CsmRedisTestBase() {
+class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
 
-  private val logger = LoggerFactory.getLogger(OrganizationServiceSecImplTests::class.java)
+  private val logger = LoggerFactory.getLogger(OrganizationServiceIntegrationTest::class.java)
 
   @Autowired lateinit var organizationApiService: OrganizationApiService
 

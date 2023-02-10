@@ -1,5 +1,8 @@
 spring:
   redis:
+    host: ${csm.platform.twincache.host}
+    username: ${csm.platform.twincache.username}
+    password: ${csm.platform.twincache.password}
     client-type: jedis
   main:
     lazy-initialization: true
@@ -8,18 +11,16 @@ management:
   endpoints:
     enabled-by-default: false
 
+azure:
+  storage:
+    account-name: "faketestaccountname"
+    account-key: "this_is_a_key_base64_encoded"
+    blob-endpoint: "https://faketestaccountname.blob.core.windows.net"
 
-#csm:
-#  platform:
-#    # TODO ASO : use a dedicated 'test' value, with specific test implementations for services
-#    vendor: azure
-#    azure:
-#      cosmos:
-#        # Base64
-#        key: "ZmFrZS1rZXkK"
-#        uri: "https://faketestaccount.documents.azure.com:443/"
 csm:
   platform:
+    metrics:
+      enabled: false
     api:
       # API Base Path for OpenAPI-generated controllers.
       # Might conflict with the SpringBoot context path, hence leaving it at the root
@@ -84,8 +85,4 @@ csm:
       port: "6379"
       username: "default"
       password: "my-wonderful-password"
-    azure:
-      storage:
-        account-name: "faketestaccountname"
-        account-key: "this_is_a_key_base64_encoded"
-        blob-endpoint: "https://faketestaccountname.blob.core.windows.net"
+
