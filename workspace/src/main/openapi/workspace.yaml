@@ -663,6 +663,54 @@ paths:
           description: Request succeeded
         "404":
           description: the Workspace or the User specified is unknown or you don't have access to them
+
+  /organizations/{organization_id}/workspaces/import:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: importWorkspace
+      tags:
+        - workspace
+      summary: Import a workspace
+      requestBody:
+        description: the Workspace to import
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Workspace'
+            examples:
+              Workspace:
+                $ref: '#/components/examples/BreweryWorkspaceCreateIn'
+              WorkspaceWithSecurity:
+                $ref: '#/components/examples/BreweryWorkspaceCreateSecurity'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            examples:
+              Workspace:
+                $ref: '#/components/examples/BreweryWorkspaceCreateIn'
+              WorkspaceWithSecurity:
+                $ref: '#/components/examples/BreweryWorkspaceCreateSecurity'
+      responses:
+        "201":
+          description: the workspace details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+              examples:
+                Workspace:
+                  $ref: '#/components/examples/BreweryWorkspace'
+        "400":
+          description: Bad request
+
 components:
   securitySchemes:
     oAuth2AuthCode:

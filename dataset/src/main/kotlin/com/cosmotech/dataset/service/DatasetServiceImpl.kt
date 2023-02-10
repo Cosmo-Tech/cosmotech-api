@@ -7,6 +7,7 @@ import com.cosmotech.api.events.ConnectorRemoved
 import com.cosmotech.api.events.ConnectorRemovedForOrganization
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
+import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -39,6 +40,7 @@ internal class DatasetServiceImpl(
       datasetRepository.findById(datasetId).orElseThrow {
         CsmAccessForbiddenException("Dataset $datasetId not found in organization $organizationId")
       }
+
 
   override fun removeAllDatasetCompatibilityElements(organizationId: String, datasetId: String) {
     val dataset = findDatasetById(organizationId, datasetId)
@@ -184,5 +186,13 @@ internal class DatasetServiceImpl(
       it.connector = null
       datasetRepository.save(it)
     }
+  }
+
+
+  override fun importDataset(organizationId: String, dataset: Dataset): Dataset {
+    if (dataset.id == null) {
+      throw CsmResourceNotFoundException("Solution id is null")
+    }
+    return datasetRepository.save(dataset)
   }
 }

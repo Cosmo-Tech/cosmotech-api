@@ -48,4 +48,11 @@ internal class ConnectorServiceImpl(var connectorRepository: ConnectorRepository
             errorMessage
                 ?: "Resource of type '${Connector::class.java.simpleName}' and identifier '$id' not found")
       }
+
+  override fun importConnector(connector: Connector): Connector {
+    if (connector.id == null) {
+      throw CsmResourceNotFoundException("Connector id is null")
+    }
+    return connectorRepository.save(connector)
+  }
 }
