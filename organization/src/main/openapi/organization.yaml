@@ -628,7 +628,6 @@ components:
 #        - name
     OrganizationSecurity:
       type: object
-      x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
       description: the Organization security information
       properties:
         default:
@@ -646,7 +645,6 @@ components:
         - accessControlList
     OrganizationAccessControl:
       type: object
-      x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
       description: a Organization access control item
       properties:
         id:
