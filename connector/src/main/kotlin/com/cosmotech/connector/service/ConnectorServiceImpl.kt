@@ -18,11 +18,11 @@ internal class ConnectorServiceImpl(var connectorRepository: ConnectorRepository
 
   override fun findAllConnectors(): List<Connector> = connectorRepository.findAll().toList()
 
-  override fun findConnectorById(connectorId: String): Connector{
-      return connectorRepository.findById(connectorId).orElseThrow {
-          CsmResourceNotFoundException(
-              "Resource of type '${Connector::class.java.simpleName}' and identifier '$connectorRepository' not found")
-      }
+  override fun findConnectorById(connectorId: String): Connector {
+    return connectorRepository.findById(connectorId).orElseThrow {
+      CsmResourceNotFoundException(
+          "Resource of type '${Connector::class.java.simpleName}' and identifier '$connectorRepository' not found")
+    }
   }
 
   override fun registerConnector(connector: Connector): Connector {
