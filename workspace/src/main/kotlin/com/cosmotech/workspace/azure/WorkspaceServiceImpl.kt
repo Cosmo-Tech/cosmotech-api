@@ -123,14 +123,18 @@ internal class WorkspaceServiceImpl(
     csmRbac.verify(organization.getRbac(), PERMISSION_CREATE_CHILDREN)
     // Validate Solution ID
     workspace.solution?.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
-    val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+
+    var workspaceSecurity = workspace.security
+    if (workspaceSecurity == null) {
+      workspaceSecurity = initSecurity(getCurrentAuthenticatedMail(this.csmPlatformProperties))
+    }
 
     return cosmosTemplate.insert(
         "${organizationId}_workspaces",
         workspace.copy(
             id = idGenerator.generate("workspace"),
             ownerId = getCurrentAuthenticatedUserName(),
-            security = workspace.security ?: initSecurity(currentUser)))
+            security = workspaceSecurity))
         ?: throw IllegalArgumentException("No Workspace returned in response: $workspace")
   }
 

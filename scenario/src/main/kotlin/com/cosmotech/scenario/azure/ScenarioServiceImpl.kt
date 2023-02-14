@@ -157,7 +157,11 @@ internal class ScenarioServiceImpl(
           parentId, solution, runTemplate, parent, scenario, newParametersValuesList)
     }
 
-    val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+    var scenarioSecurity = scenario.security
+    if (scenarioSecurity == null) {
+      scenarioSecurity = initSecurity(getCurrentAuthenticatedMail(this.csmPlatformProperties))
+    }
+
     val now = OffsetDateTime.now()
     val scenarioToSave =
         scenario.copy(
@@ -173,7 +177,8 @@ internal class ScenarioServiceImpl(
             rootId = rootId,
             parametersValues = newParametersValuesList,
             validationStatus = ScenarioValidationStatus.Draft,
-            security = scenario.security ?: initSecurity(currentUser))
+            security = scenarioSecurity)
+
     val scenarioAsMap = scenarioToSave.asMapWithAdditionalData(workspaceId)
     // We cannot use cosmosTemplate as it expects the Domain object to contain a field named 'id'
     // or annotated with @Id
