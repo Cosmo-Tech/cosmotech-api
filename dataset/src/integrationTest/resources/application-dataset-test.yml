@@ -1,0 +1,88 @@
+spring:
+  redis:
+    host: ${csm.platform.twincache.host}
+    username: ${csm.platform.twincache.username}
+    password: ${csm.platform.twincache.password}
+    client-type: jedis
+  main:
+    lazy-initialization: true
+
+management:
+  endpoints:
+    enabled-by-default: false
+
+azure:
+  storage:
+    account-name: "faketestaccountname"
+    account-key: "this_is_a_key_base64_encoded"
+    blob-endpoint: "https://faketestaccountname.blob.core.windows.net"
+
+csm:
+  platform:
+    metrics:
+      enabled: false
+    api:
+      # API Base Path for OpenAPI-generated controllers.
+      # Might conflict with the SpringBoot context path, hence leaving it at the root
+      base-path: /
+      base-url: "http://fake_url:8080"
+      version: latest
+    id-generator:
+      type: hashid
+    event-publisher:
+      type: in_process
+    images:
+      scenario-fetch-parameters: cosmo-tech/fetch-scenario-parameters
+      send-datawarehouse: cosmo-tech/azure-data-explorer-connector
+      scenario-data-upload: cosmo-tech/azure-storage-publish:latest
+    containers:
+      - name: "ADTTwingraphImport"
+        imageRegistry: "ghcr.io"
+        imageName: "cosmo-tech/adt-twincache-connector"
+        imageVersion: "0.0.5"
+      - name: "StorageTwingraphImport"
+        imageRegistry: "ghcr.io"
+        imageName: "cosmo-tech/azstorage-twincache-connector"
+        imageVersion: "latest"
+    upload:
+      authorized-mime-types:
+        workspaces:
+          - application/zip
+          - application/xml
+          - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+          - application/x-tika-ooxml
+          - text/csv
+          - text/plain
+          - text/x-yaml
+          - application/json
+        handlers:
+          - application/zip
+          - application/x-sh
+          - application/json
+          - text/x-python
+          - text/plain
+          - text/x-yaml
+    authorization:
+      tenant-id-jwt-claim: "iss"
+      # Note that the way @Value works in Spring does not make it possible to inject this sole YAML list.
+      # Use CsmPlatformProperties instead !
+      allowed-tenants: ["test"]
+    vendor: azure
+    argo:
+      base-uri: "https://argo-server.argo.svc.cluster.local:2746"
+      workflows:
+        namespace: phoenix
+        node-pool-label: ""
+        service-account-name: workflowcsmv2
+        storage-class: null
+        access-modes:
+          # Any in the following list: ReadWriteOnce, ReadOnlyMany, ReadWriteMany, ReadWriteOncePod (K8s 1.22+)
+          - ReadWriteOnce
+        requests:
+          storage: 1Gi
+    twincache:
+      host: "localhost"
+      port: "6379"
+      username: "default"
+      password: "my-wonderful-password"
+
