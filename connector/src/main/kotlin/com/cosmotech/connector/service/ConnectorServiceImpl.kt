@@ -18,7 +18,12 @@ internal class ConnectorServiceImpl(var connectorRepository: ConnectorRepository
 
   override fun findAllConnectors(): List<Connector> = connectorRepository.findAll().toList()
 
-  override fun findConnectorById(connectorId: String): Connector = findByIdOrThrow(connectorId)
+  override fun findConnectorById(connectorId: String): Connector{
+      return connectorRepository.findById(connectorId).orElseThrow {
+          CsmResourceNotFoundException(
+              "Resource of type '${Connector::class.java.simpleName}' and identifier '$connectorRepository' not found")
+      }
+  }
 
   override fun registerConnector(connector: Connector): Connector {
     val connectorToSave =
@@ -37,13 +42,6 @@ internal class ConnectorServiceImpl(var connectorRepository: ConnectorRepository
     connectorRepository.delete(connector)
     this.eventPublisher.publishEvent(ConnectorRemoved(this, connectorId))
   }
-
-  private fun findByIdOrThrow(id: String, errorMessage: String? = null): Connector =
-      connectorRepository.findById(id).orElseThrow {
-        CsmResourceNotFoundException(
-            errorMessage
-                ?: "Resource of type '${Connector::class.java.simpleName}' and identifier '$id' not found")
-      }
 
   override fun importConnector(connector: Connector): Connector {
     if (connector.id == null) {
