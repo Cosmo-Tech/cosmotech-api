@@ -98,7 +98,11 @@ class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin
     }
 
     val newOrganizationId = idGenerator.generate("organization")
-    val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+
+    var organizationSecurity = organization.security
+    if (organizationSecurity == null) {
+      organizationSecurity = initSecurity(getCurrentAuthenticatedMail(this.csmPlatformProperties))
+    }
 
     val organizationRegistered =
         cosmosTemplate.insert(
@@ -106,7 +110,7 @@ class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin
             organization.copy(
                 id = newOrganizationId,
                 ownerId = getCurrentAuthenticatedUserName(),
-                security = organization.security ?: initSecurity(currentUser)))
+                security = organizationSecurity))
 
     val organizationId =
         organizationRegistered.id
