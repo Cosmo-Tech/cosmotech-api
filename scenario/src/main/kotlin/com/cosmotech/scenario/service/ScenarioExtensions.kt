@@ -5,17 +5,10 @@ package com.cosmotech.scenario.service
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
-import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioAccessControl
 import com.cosmotech.scenario.domain.ScenarioSecurity
 import org.slf4j.LoggerFactory
-
-internal fun Scenario.asMapWithAdditionalData(workspaceId: String): Map<String, Any> {
-  val scenarioAsMap = this.convertToMap().toMutableMap()
-  scenarioAsMap["workspaceId"] = workspaceId
-  return scenarioAsMap
-}
 
 // PROD-8051 : add parent and master last runs data
 internal fun Scenario.addLastRunsInfo(scenarioServiceImpl: ScenarioServiceImpl): Scenario {

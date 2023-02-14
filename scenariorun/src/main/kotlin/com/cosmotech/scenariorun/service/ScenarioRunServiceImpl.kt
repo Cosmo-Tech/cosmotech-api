@@ -750,15 +750,14 @@ internal class ScenarioRunServiceImpl(
   }
 
   override fun importScenarioRun(
-    organizationId: String,
-    workspaceId: String,
-    scenarioId: String,
-    scenarioRun: ScenarioRun
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String,
+      scenarioRun: ScenarioRun
   ): ScenarioRun {
     if (scenarioRun.id == null) {
       throw CsmResourceNotFoundException("ScenarioRun id is null")
     }
     return scenarioRunRepository.save(scenarioRun)
   }
-
 }

@@ -119,7 +119,6 @@ class ScenarioServiceImplTests {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
     every { getCurrentAuthenticatedUserName() } returns AUTHENTICATED_USERNAME
     every { getCurrentAuthenticatedMail(csmPlatformProperties) } returns "dummy@cosmotech.com"
-
   }
 
   @AfterTest

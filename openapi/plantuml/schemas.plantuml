@@ -216,8 +216,8 @@ entity Scenario {
     organizationId: String
     workspaceId: String
     state: ScenarioJobState
-    creationDate: Date
-    lastUpdate: Date
+    creationDate: Long
+    lastUpdate: Long
     ownerName: String
     solutionName: String
     runTemplateName: String

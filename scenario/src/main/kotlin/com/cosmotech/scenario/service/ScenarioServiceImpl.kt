@@ -9,6 +9,7 @@ import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatfo
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
 import com.cosmotech.api.events.DeleteHistoricalDataScenario
 import com.cosmotech.api.events.DeleteHistoricalDataWorkspace
+import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
 import com.cosmotech.api.events.ScenarioDataDownloadRequest
 import com.cosmotech.api.events.ScenarioDatasetListChanged
@@ -18,7 +19,6 @@ import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
 import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
-import com.cosmotech.api.events.ScenarioLastRunChanged
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.api.rbac.PERMISSION_DELETE
@@ -33,11 +33,9 @@ import com.cosmotech.api.rbac.getScenarioRolesDefinition
 import com.cosmotech.api.scenario.ScenarioMetaData
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
-import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toSecurityConstraintQuery
-import com.cosmotech.api.utils.sanitizeForRedis
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.service.getRbac
 import com.cosmotech.scenario.api.ScenarioApiService
@@ -60,7 +58,8 @@ import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.azure.EventHubRole
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.domain.Workspace
-import java.time.OffsetDateTime
+import com.cosmotech.workspace.service.getRbac
+import java.time.Instant
 import java.time.ZonedDateTime
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
@@ -69,14 +68,6 @@ import kotlinx.coroutines.runBlocking
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
-import kotlin.reflect.KMutableProperty
-import kotlin.reflect.KProperty
-import kotlin.reflect.full.isSupertypeOf
-import kotlin.reflect.full.memberProperties
 
 @Service
 @Suppress("LargeClass", "TooManyFunctions")
@@ -181,7 +172,6 @@ internal class ScenarioServiceImpl(
             parametersValues = newParametersValuesList,
             validationStatus = ScenarioValidationStatus.Draft,
             security = scenarioSecurity)
-
 
     scenarioRepository.save(scenarioToSave)
 
@@ -854,14 +844,15 @@ internal class ScenarioServiceImpl(
         accessControlList = mutableListOf(ScenarioAccessControl(userId, ROLE_ADMIN)))
   }
 
-  override fun importScenario(organizationId: String, workspaceId: String, scenario: Scenario): Scenario {
+  override fun importScenario(
+      organizationId: String,
+      workspaceId: String,
+      scenario: Scenario
+  ): Scenario {
     if (scenario.id == null) {
       throw CsmResourceNotFoundException("Scenario id is null")
     }
 
     return scenarioRepository.save(scenario)
   }
-
-
-
 }

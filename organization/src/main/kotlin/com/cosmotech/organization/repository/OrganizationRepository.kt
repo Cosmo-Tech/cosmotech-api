@@ -14,9 +14,4 @@ interface OrganizationRepository : RedisDocumentRepository<Organization, String>
   fun findOrganizationsBySecurity(
       @Param("securityConstraint") securityConstraint: String
   ): List<Organization>
-
-  @Query("\$securityConstraint")
-  fun findOrganizationsBySecurity(
-      @Param("securityConstraint") securityConstraint: String
-  ): List<Organization>
 }

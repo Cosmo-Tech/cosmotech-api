@@ -46,7 +46,6 @@ internal class SolutionServiceImpl(
             "Solution $solutionId not found in organization $organizationId")
       }
 
-
   override fun removeAllRunTemplates(organizationId: String, solutionId: String) {
     val solution = findSolutionById(organizationId, solutionId)
     if (!solution.runTemplates.isNullOrEmpty()) {
@@ -317,7 +316,6 @@ internal class SolutionServiceImpl(
 
     return solution
   }
-
 
   override fun importSolution(organizationId: String, solution: Solution): Solution {
     if (solution.id == null) {

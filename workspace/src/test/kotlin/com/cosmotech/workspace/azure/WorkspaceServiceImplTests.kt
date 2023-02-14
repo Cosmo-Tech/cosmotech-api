@@ -70,8 +70,7 @@ class WorkspaceServiceImplTests {
                 resourceScanner,
                 secretManager,
                 organizationRepository,
-                workspaceRepository)
-        )
+                workspaceRepository))
     mockkStatic(::getCurrentAuthenticatedMail)
     every { getCurrentAuthenticatedMail(csmPlatformProperties) } returns "dummy@cosmotech.com"
 

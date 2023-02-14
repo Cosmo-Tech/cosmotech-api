@@ -71,13 +71,17 @@ class OrganizationServiceImpl(
     }
 
     val newOrganizationId = idGenerator.generate("organization")
-    val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+    var organizationSecurity = organization.security
+    if (organizationSecurity == null) {
+      val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+      organizationSecurity = initSecurity(currentUser)
+    }
 
     return organizationRepository.save(
         organization.copy(
             id = newOrganizationId,
             ownerId = getCurrentAuthenticatedUserName(),
-            security = organization.security ?: initSecurity(currentUser)))
+            security = organizationSecurity))
   }
 
   override fun unregisterOrganization(organizationId: String) {
@@ -269,6 +273,13 @@ class OrganizationServiceImpl(
     val organization = findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_READ_SECURITY)
     return csmRbac.getUsers(organization.getRbac())
+  }
+
+  override fun importOrganization(organization: Organization): Organization {
+    if (organization.id == null) {
+      throw CsmResourceNotFoundException("Organization id is null")
+    }
+    return organizationRepository.save(organization)
   }
 
   private fun initSecurity(userId: String): OrganizationSecurity {

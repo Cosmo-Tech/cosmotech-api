@@ -111,7 +111,6 @@ class ScenarioRunServiceImplTests {
     val authentication = mockk<Authentication>()
     every { authentication.name } returns AUTHENTICATED_USERNAME
     every { getCurrentAuthentication() } returns authentication
-
   }
 
   @AfterTest
