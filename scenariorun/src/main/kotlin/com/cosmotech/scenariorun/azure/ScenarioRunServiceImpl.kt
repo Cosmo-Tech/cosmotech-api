@@ -93,7 +93,7 @@ internal class ScenarioRunServiceImpl(
 
   private fun ScenarioRun.asMapWithAdditionalData(workspaceId: String? = null): Map<String, Any> {
     val scenarioAsMap = this.convertToMap().toMutableMap()
-    scenarioAsMap["type"] = WORKFLOW_TYPE_SCENARIO_RUN
+    scenarioAsMap["type"] = "ScenarioRun"
     if (workspaceId != null) {
       scenarioAsMap["workspaceId"] = workspaceId
     }
