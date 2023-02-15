@@ -10,12 +10,14 @@ import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
+import com.cosmotech.organization.domain.OrganizationService
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
 import java.util.*
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -68,18 +70,40 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun test_register_organization() {
-    val organization1 = mockOrganization("o-organization-test-1", "Organization-test-1")
+    var organization1 = mockOrganization("o-organization-test-1", "Organization-test-1")
     val organization2 = mockOrganization("o-organization-test-2", "Organization-test-2")
-    logger.info("Create new organization...")
+    logger.info("Create new organizations...")
     val organizationRegistered1 = organizationApiService.registerOrganization(organization1)
     val organizationRegistered2 = organizationApiService.registerOrganization(organization2)
-    logger.info("New organization created : ${organizationRegistered1.id}")
+    logger.info("New organizations created : ${organizationRegistered1.id}")
     logger.info("Fetch new organization created...")
-    val organizationRetrieved =
+    var organizationRetrieved1 =
         organizationApiService.findOrganizationById(organizationRegistered1.id!!)
-    assertEquals(organizationRegistered1, organizationRetrieved)
+    assertEquals(organizationRegistered1, organizationRetrieved1)
     logger.info("Fetch all Organizations...")
-    val organizationList = organizationApiService.findAllOrganizations()
+    var organizationList = organizationApiService.findAllOrganizations()
     assertTrue(organizationList.size == 2)
+
+    logger.info("Updating organization : ${organizationRegistered1.id}...")
+    organization1 = mockOrganization("o-organization-test-1", "Organization-test-1.2")
+    organizationApiService.updateOrganization(organizationRegistered1.id!!, organization1)
+    var organizationRetrieved2 =
+        organizationApiService.findOrganizationById(organizationRegistered1.id!!)
+    assertNotEquals(organizationRetrieved2, organizationRetrieved1)
+    logger.info("Updated organization")
+
+    logger.info("Update Solution Container Registry...")
+    organizationApiService.updateSolutionsContainerRegistryByOrganizationId(
+        organizationRegistered1.id!!,
+        organizationService = OrganizationService(baseUri = "dummyURI"))
+    organizationRetrieved1 =
+        organizationApiService.findOrganizationById(organizationRegistered1.id!!)
+    assertNotEquals(organizationRetrieved1, organizationRetrieved2)
+
+    logger.info("Deleting organization...")
+    organizationApiService.unregisterOrganization(organizationRegistered1.id!!)
+    organizationList = organizationApiService.findAllOrganizations()
+    assertTrue { organizationList.size == 1 }
+    logger.info("Deleted organization successfully")
   }
 }
