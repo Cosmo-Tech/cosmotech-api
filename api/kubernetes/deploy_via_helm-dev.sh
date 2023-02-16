@@ -57,6 +57,9 @@ export POSTGRESQL_VERSION="11.6.12"
 export VERSION_REDIS="17.3.14"
 export VERSION_REDIS_COSMOTECH="1.0.2"
 export VERSION_REDIS_INSIGHT="0.1.0"
+export REDIS_NUMBER_POD_MAX=5
+export REDIS_CPU_UTILIZATION_MAX=50
+export REDIS_MEMORY_MAX=1gb
 export INGRESS_NGINX_VERSION="4.2.5"
 export PROMETHEUS_STACK_VERSION="45.0.0"
 
@@ -235,6 +238,15 @@ image:
   registry: ghcr.io
   repository: cosmo-tech/cosmotech-redis
   tag: ${VERSION_REDIS_COSMOTECH}
+extraDeploy:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: cosmotech-redis-configmap
+    data:
+      redis-config: |
+        maxmemory ${REDIS_MEMORY_MAX}
+        maxmemory-policy allkeys-lru
 master:
   persistence:
     existingClaim: ${REDIS_PVC_NAME}
@@ -282,6 +294,50 @@ helm upgrade --install \
     --values values-redis.yaml \
     --wait \
     --timeout 10m0s
+
+# Metrics server needed for autoscaling
+cat <<EOF > metrics-sever-values.yaml
+apiService:
+  create: true
+args:
+  - --cert-dir=/tmp
+  - --secure-port=8443
+  - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+  - --kubelet-use-node-status-port
+  - --metric-resolution=15s
+  - --kubelet-insecure-tls
+livenessProbe:
+  failureThreshold: 3
+  periodSeconds: 10
+name: metrics-server
+containerPort:
+  containerPorts.https
+readinessProbe:
+  failureThreshold: 3
+  initialDelaySeconds: 20
+  periodSeconds: 10
+resources:
+  requests:
+    cpu: 100m
+    memory: 200Mi
+containerSecurityContext:
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+extraVolumes:
+  - emptyDir: {}
+    name: tmp-dir
+extraVolumeMounts:
+  - mountPath: /tmp
+    name: tmp-dir
+EOF
+
+helm upgrade --install metrics-server bitnami/metrics-server \
+  --values metrics-sever-values.yaml
+
+##Auto scale Redis, with the number of pods between 1 and 5, target CPU utilization at XX
+kubectl autoscale -n ${NAMESPACE} statefulset cosmotechredis-master --max=${REDIS_NUMBER_POD_MAX} --cpu-percent=${REDIS_CPU_UTILIZATION_MAX}
+kubectl autoscale -n ${NAMESPACE} statefulset cosmotechredis-replicas --max=${REDIS_NUMBER_POD_MAX} --cpu-percent=${REDIS_CPU_UTILIZATION_MAX}
 
 # Redis Insight
 REDIS_INSIGHT_HELM_CHART="${HELM_CHARTS_BASE_PATH}/charts/redisinsight-chart.tgz"

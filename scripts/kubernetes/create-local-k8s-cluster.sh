@@ -164,8 +164,30 @@ for node in $(kind get nodes --name "${cluster_name}"); do
 done
 
 # Install Calico
+cat <<EOF > calico-values.yaml
+volumes:
+  # Used by calico-node.
+  - name: lib-modules
+    hostPath:
+      path: /lib/modules
+  - name: var-run-calico
+    hostPath:
+      path: /var/run/calico
+  - name: var-lib-calico
+    hostPath:
+      path: /var/lib/calico
+volumeMounts:
+  - mountPath: /lib/modules
+    name: lib-modules
+    readOnly: true
+  - mountPath: /var/lib/calico
+    name: var-lib-calico
+    readOnly: false
+EOF
+
 helm repo add projectcalico https://docs.tigera.io/calico/charts
 helm --kube-context="${kubectl_ctx}" \
   install calico \
   projectcalico/tigera-operator \
-  --version v3.21.2
+  --version v3.21.2 \
+  --values calico-values.yaml
