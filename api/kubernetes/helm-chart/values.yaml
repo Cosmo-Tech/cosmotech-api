@@ -84,6 +84,12 @@ api:
   servletContextPath: /
   # Examples: latest, v1, v2
   version: latest
+  # Configure probes failure thresholds to higher values if you are in debug mode to avoid pod restart
+  probes:
+    liveness:
+      failureThreshold: 2
+    readiness:
+      failureThreshold: 1
   serviceMonitor:
     enabled: true
     namespace: "phoenix-monitoring"

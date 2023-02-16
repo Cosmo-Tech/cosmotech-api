@@ -96,12 +96,13 @@ spec:
           livenessProbe:
             timeoutSeconds: 5
             periodSeconds: 5
-            failureThreshold: 2
+            failureThreshold: {{ .Values.api.probes.liveness.failureThreshold }}
             httpGet:
               path: /actuator/health/liveness
               port: http-management
           readinessProbe:
             timeoutSeconds: 5
+            failureThreshold: {{ .Values.api.probes.readiness.failureThreshold }}
             httpGet:
               path: /actuator/health/readiness
               port: http-management
