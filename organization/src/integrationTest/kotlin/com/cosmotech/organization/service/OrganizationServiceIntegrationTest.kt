@@ -11,6 +11,7 @@ import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.organization.domain.OrganizationService
+import com.cosmotech.organization.domain.OrganizationServices
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
@@ -43,6 +44,9 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
 
   @Autowired lateinit var organizationApiService: OrganizationApiService
 
+  val orgaId1 = "o-organization-1"
+  val orgaId2 = "o-organization-2"
+
   @BeforeEach
   fun setUp() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
@@ -57,6 +61,25 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
         id = id,
         name = name,
         ownerId = "my.account-tester@cosmotech.com",
+        services =
+            OrganizationServices(
+                tenantCredentials = mutableMapOf(),
+                storage =
+                    OrganizationService(
+                        cloudService = "cloud",
+                        baseUri = "base",
+                        platformService = "platform",
+                        resourceUri = "resource",
+                        credentials =
+                            mutableMapOf(Pair("my.account-tester@cosmotech.com", "reader"))),
+                solutionsContainerRegistry =
+                    OrganizationService(
+                        cloudService = "cloud",
+                        baseUri = "base",
+                        platformService = "platform",
+                        resourceUri = "resource",
+                        credentials =
+                            mutableMapOf(Pair("my.account-tester@cosmotech.com", "reader")))),
         security =
             OrganizationSecurity(
                 default = "none",
@@ -68,24 +91,29 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
                             id = "my.account-tester@cosmotech.com", role = "admin"))))
   }
 
+  // TODO find a way to make assertNonEquals less verbose
+
   @Test
   fun test_register_organization() {
-    var organization1 = mockOrganization("o-organization-test-1", "Organization-test-1")
-    val organization2 = mockOrganization("o-organization-test-2", "Organization-test-2")
+    var organization1 = mockOrganization(orgaId1, "Organization-1")
+    val organization2 = mockOrganization(orgaId2, "Organization-2")
     logger.info("Create new organizations...")
     val organizationRegistered1 = organizationApiService.registerOrganization(organization1)
     val organizationRegistered2 = organizationApiService.registerOrganization(organization2)
     logger.info("New organizations created : ${organizationRegistered1.id}")
+
     logger.info("Fetch new organization created...")
     var organizationRetrieved1 =
         organizationApiService.findOrganizationById(organizationRegistered1.id!!)
     assertEquals(organizationRegistered1, organizationRetrieved1)
+
     logger.info("Fetch all Organizations...")
     var organizationList = organizationApiService.findAllOrganizations()
     assertTrue(organizationList.size == 2)
 
     logger.info("Updating organization : ${organizationRegistered1.id}...")
-    organization1 = mockOrganization("o-organization-test-1", "Organization-test-1.2")
+    // TODO Change the next line
+    organization1 = mockOrganization("o-organization-1", "Organization-1.2")
     organizationApiService.updateOrganization(organizationRegistered1.id!!, organization1)
     var organizationRetrieved2 =
         organizationApiService.findOrganizationById(organizationRegistered1.id!!)
@@ -99,9 +127,41 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     organizationRetrieved1 =
         organizationApiService.findOrganizationById(organizationRegistered1.id!!)
     assertNotEquals(organizationRetrieved1, organizationRetrieved2)
+    organizationRetrieved2 =
+        organizationApiService.findOrganizationById(organizationRegistered1.id!!)
+
+    logger.info("Update Tenant credentials for organization : ${organizationRegistered1.id}...")
+    organizationApiService.updateTenantCredentialsByOrganizationId(
+        organizationRegistered1.id!!, mapOf(Pair("my.account-tester2@cosmotech.com", "admin")))
+    organizationRetrieved1 =
+        organizationApiService.findOrganizationById(organizationRegistered1.id!!)
+    assertNotEquals(organizationRetrieved1, organizationRetrieved2)
+    organizationRetrieved2 =
+        organizationApiService.findOrganizationById(organizationRegistered1.id!!)
+
+    logger.info("Update storage configuration for organization : ${organizationRegistered1.id}...")
+    organizationApiService.updateStorageByOrganizationId(
+        organizationRegistered1.id!!,
+        OrganizationService(baseUri = "https://csmphoenixcontainer.blob.core.windows.net"))
+    organizationRetrieved1 =
+        organizationApiService.findOrganizationById(organizationRegistered1.id!!)
+    assertNotEquals(organizationRetrieved1, organizationRetrieved2)
+    organizationRetrieved2 =
+        organizationApiService.findOrganizationById(organizationRegistered1.id!!)
+
+    logger.info(
+        "Update solutions container registry configuration for organization : " +
+            "${organizationRegistered1}...")
+    organizationApiService.updateSolutionsContainerRegistryByOrganizationId(
+        organizationRegistered1.id!!, OrganizationService(baseUri = "newBaseUri"))
+    organizationRetrieved1 =
+        organizationApiService.findOrganizationById(organizationRegistered1.id!!)
+    assertNotEquals(organizationRetrieved1, organizationRetrieved2)
+    organizationRetrieved2 =
+        organizationApiService.findOrganizationById(organizationRegistered1.id!!)
 
     logger.info("Deleting organization...")
-    organizationApiService.unregisterOrganization(organizationRegistered1.id!!)
+    organizationApiService.unregisterOrganization(organizationRegistered2.id!!)
     organizationList = organizationApiService.findAllOrganizations()
     assertTrue { organizationList.size == 1 }
     logger.info("Deleted organization successfully")
