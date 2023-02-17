@@ -10,6 +10,7 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
+import com.cosmotech.organization.domain.OrganizationRole
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.organization.domain.OrganizationService
 import com.cosmotech.organization.domain.OrganizationServices
@@ -19,7 +20,9 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
 import java.util.*
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -150,6 +153,12 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     var organizationList = organizationApiService.findAllOrganizations()
     assertTrue(organizationList.size == 2)
 
+    logger.info("Deleting organization...")
+    organizationApiService.unregisterOrganization(organizationRegistered2.id!!)
+    organizationList = organizationApiService.findAllOrganizations()
+    assertTrue { organizationList.size == 1 }
+    logger.info("Deleted organization successfully")
+
     logger.info("Updating organization : ${organizationRegistered1.id}...")
     // TODO Change the next line
     organization1 = mockOrganization("o-organization-1", "Organization-1.2")
@@ -166,17 +175,13 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     organizationRetrieved1 =
         organizationApiService.findOrganizationById(organizationRegistered1.id!!)
     assertNotEquals(organizationRetrieved1, organizationRetrieved2)
-    organizationRetrieved2 =
-        organizationApiService.findOrganizationById(organizationRegistered1.id!!)
 
     logger.info("Update Tenant credentials for organization : ${organizationRegistered1.id}...")
     organizationApiService.updateTenantCredentialsByOrganizationId(
         organizationRegistered1.id!!, mapOf(Pair("my.account-tester2@cosmotech.com", "admin")))
-    organizationRetrieved1 =
-        organizationApiService.findOrganizationById(organizationRegistered1.id!!)
-    assertNotEquals(organizationRetrieved1, organizationRetrieved2)
     organizationRetrieved2 =
         organizationApiService.findOrganizationById(organizationRegistered1.id!!)
+    assertNotEquals(organizationRetrieved1, organizationRetrieved2)
 
     logger.info("Update storage configuration for organization : ${organizationRegistered1.id}...")
     organizationApiService.updateStorageByOrganizationId(
@@ -185,24 +190,87 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     organizationRetrieved1 =
         organizationApiService.findOrganizationById(organizationRegistered1.id!!)
     assertNotEquals(organizationRetrieved1, organizationRetrieved2)
-    organizationRetrieved2 =
-        organizationApiService.findOrganizationById(organizationRegistered1.id!!)
 
     logger.info(
         "Update solutions container registry configuration for organization : " +
             "${organizationRegistered1}...")
     organizationApiService.updateSolutionsContainerRegistryByOrganizationId(
         organizationRegistered1.id!!, OrganizationService(baseUri = "newBaseUri"))
+    organizationRetrieved2 =
+        organizationApiService.findOrganizationById(organizationRegistered1.id!!)
+    assertNotEquals(organizationRetrieved1, organizationRetrieved2)
+
+    logger.info("Get all permissions per component...")
+    val permissionList = organizationApiService.getAllPermissions()
+    assertNotNull(permissionList)
+
+    logger.info("Get organization : ${organizationRegistered1.id} permissions for role 'XXXX'...")
+    val permission =
+        organizationApiService.getOrganizationPermissions(organizationRegistered1.id!!, "admin")
+    assertNotNull(permission)
+
+    logger.info("Get the security information for organization : ${organizationRegistered1.id}...")
+    logger.warn(organizationRegistered1.toString())
+    var organizationSecurity =
+        organizationApiService.getOrganizationSecurity(organizationRegistered1.id!!)
+    assertNotNull(organizationSecurity)
+
+    logger.info("Set the organization default security...")
+    organizationApiService.setOrganizationDefaultSecurity(
+        organizationRegistered1.id!!, OrganizationRole("editor"))
     organizationRetrieved1 =
         organizationApiService.findOrganizationById(organizationRegistered1.id!!)
     assertNotEquals(organizationRetrieved1, organizationRetrieved2)
+
+    logger.info("Add a control access to organization : ${organizationRegistered1.id}...")
+    organizationApiService.addOrganizationAccessControl(
+        organizationRegistered1.id!!,
+        OrganizationAccessControl("my.account-tester3@cosmotech.com", "admin"))
     organizationRetrieved2 =
         organizationApiService.findOrganizationById(organizationRegistered1.id!!)
+    assertNotEquals(organizationRetrieved1, organizationRetrieved2)
 
-    logger.info("Deleting organization...")
-    organizationApiService.unregisterOrganization(organizationRegistered2.id!!)
-    organizationList = organizationApiService.findAllOrganizations()
-    assertTrue { organizationList.size == 1 }
-    logger.info("Deleted organization successfully")
+    logger.info("Get a control access for organization : ${organizationRegistered1.id}...")
+    val accessControl1 =
+        organizationApiService.getOrganizationAccessControl(
+            organizationRegistered1.id!!, "my.account-tester@cosmotech.com")
+    assertNotNull(accessControl1)
+
+    logger.info("Update access control for organization : ${organizationRegistered1.id}...")
+    organizationApiService.updateOrganizationAccessControl(
+        organizationRegistered1.id!!, "my.account-tester@cosmotech.com", OrganizationRole("editor"))
+    val accessControl2 =
+        organizationApiService.getOrganizationAccessControl(
+            organizationRegistered1.id!!, "my.account-tester@cosmotech.com")
+    assertNotEquals(accessControl1, accessControl2)
+
+    logger.info("Remove access control from organization : ${organizationRegistered1.id}...")
+    organizationApiService.removeOrganizationAccessControl(
+        organizationRegistered1.id!!, "my.account-tester@cosmotech.com")
+    organizationSecurity =
+        organizationApiService.getOrganizationSecurity(organizationRegistered1.id!!)
+    assertFalse { organizationSecurity.accessControlList.size < 2 }
+
+    logger.info("Get the security users list for organization : ${organizationRegistered1.id}...")
+    val securityUserList =
+        organizationApiService.getOrganizationSecurityUsers(organizationRegistered1.id!!)
+    assertNotNull(securityUserList)
+
+    logger.info("Import organization...")
+    organizationApiService.importOrganization(
+        Organization(
+            id = "organization-3",
+            name = "Cosmo Tech",
+            security =
+                OrganizationSecurity(
+                    default = "reader",
+                    accessControlList =
+                        mutableListOf(
+                            OrganizationAccessControl(
+                                id = "jane.doe@cosmotech.com", role = "editor"),
+                            OrganizationAccessControl(
+                                id = "john.doe@cosmotech.com", role = "viewer")))))
+    organizationRetrieved1 = organizationApiService.findOrganizationById("organization-3")
+    assertNotNull(organizationRetrieved1)
   }
 }
