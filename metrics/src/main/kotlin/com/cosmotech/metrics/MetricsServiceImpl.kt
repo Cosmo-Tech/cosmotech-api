@@ -5,6 +5,7 @@ package com.cosmotech.metrics
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.PersistentMetricEvent
 import com.cosmotech.api.metrics.PersistentMetric
+import com.cosmotech.api.metrics.toRedisAggregation
 import com.redislabs.redistimeseries.RedisTimeSeries
 import org.slf4j.LoggerFactory
 import org.springframework.context.event.EventListener
@@ -29,7 +30,6 @@ class MetricsServiceImpl(
   }
 
   private fun addMetricToTimeSeries(metric: PersistentMetric) {
-    logger.debug("METRICS: addMetricToTimeSeries")
     val key = getMetricKey(metric)
     if (metric.incrementBy > 0 && metric.value > 0) {
       throw IllegalArgumentException("Cannot set both incrementBy and value")
@@ -56,7 +56,6 @@ class MetricsServiceImpl(
 
   @Suppress("EmptyElseBlock")
   private fun createOrAlterTimeSeries(metric: PersistentMetric) {
-    logger.debug("METRICS: createTimeSeries")
     jedisPool.resource.use { jedis ->
       val key = getMetricKey(metric)
       logger.debug("Testing Redis TS exist: $key")
@@ -74,6 +73,29 @@ class MetricsServiceImpl(
             metricRetention,
             metricLabels,
         )
+        if (metric.downSampling || csmPlatformProperties.metrics.downSamplingDefaultEnabled) {
+          val downSamplingKey = getDownSamplingKey(metric)
+          val downSamplingMetricLabels = getDownSamplingMetricLabels(metricLabels)
+          val downSamplingRetention = getDownSamplingRetention(metric)
+          val downSamplingBucketDuration = getDownSamplingBucketDuration(metric)
+          logger.debug(
+              "Creating Redis DownSampling TS: $downSamplingKey with retention: $metricRetention " +
+                  "and ${downSamplingMetricLabels.count()} labels")
+          timeSeries.create(
+              downSamplingKey,
+              downSamplingRetention,
+              downSamplingMetricLabels,
+          )
+          logger.debug(
+              "Creating Redis DownSampling TS rule: from $key to $downSamplingKey, " +
+                  "aggregation: ${metric.downSamplingAggregation.value}, bucketDuration: $downSamplingBucketDuration")
+          timeSeries.createRule(
+              key,
+              metric.downSamplingAggregation.toRedisAggregation(),
+              downSamplingBucketDuration,
+              downSamplingKey,
+          )
+        } else {}
       } else {
         val timeSeriesRetention = timeSeries.info(key).getProperty("retentionTime")
 
@@ -87,6 +109,25 @@ class MetricsServiceImpl(
         } else {}
       }
     }
+  }
+
+  private fun getDownSamplingBucketDuration(metric: PersistentMetric): Long =
+      when (metric.downSamplingBucketDuration) {
+        0L -> csmPlatformProperties.metrics.downSamplingBucketDurationMs.toLong()
+        else -> metric.downSamplingBucketDuration
+      }
+
+  private fun getDownSamplingKey(metric: PersistentMetric): String =
+      "${getMetricKey(metric)}${metric.downSamplingSuffix}"
+
+  private fun getDownSamplingMetricLabels(metricLabels: Map<String, String>): Map<String, String> {
+    val labels =
+        mutableMapOf(
+            "downsampling" to "yes",
+        )
+
+    labels.putAll(metricLabels)
+    return labels.toMap()
   }
 
   private fun getMetricLabels(metric: PersistentMetric): Map<String, String> {
@@ -113,9 +154,14 @@ class MetricsServiceImpl(
         else -> metric.retention
       }
 
+  private fun getDownSamplingRetention(metric: PersistentMetric) =
+      when (metric.downSamplingRetention) {
+        0L -> csmPlatformProperties.metrics.downSamplingRetentionDays.toLong() * MILLISECONDS_IN_DAY
+        else -> metric.downSamplingRetention
+      }
+
   @EventListener(PersistentMetricEvent::class)
   fun onMetricEvent(event: PersistentMetricEvent) {
-    logger.debug("METRICS: onMetricEvent")
     storeMetric(event.metric)
   }
 }

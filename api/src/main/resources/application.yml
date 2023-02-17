@@ -71,6 +71,12 @@ csm:
       type: hashid
     event-publisher:
       type: in_process
+    metrics:
+      enabled: true
+      retentionDays: 7
+      downSamplingDefaultEnabled: true
+      downSamplingRetentionDays: 400
+      downSamplingBucketDurationMs: 3600
     twincache:
       host: "localhost"
       port: "6379"
