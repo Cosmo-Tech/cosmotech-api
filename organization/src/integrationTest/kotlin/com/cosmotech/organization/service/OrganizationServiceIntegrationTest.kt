@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.organization.service
 
+import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
@@ -47,11 +48,13 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   val orgaId1 = "o-organization-1"
   val orgaId2 = "o-organization-2"
 
+  @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
+
   @BeforeEach
   fun setUp() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
-    every { getCurrentAuthenticatedMail(any()) } returns "test.user@cosmotech.com"
-    every { getCurrentAuthenticatedUserName() } returns "test.user"
+    every { getCurrentAuthenticatedMail(any()) } returns "my.account-tester@cosmotech.com"
+    every { getCurrentAuthenticatedUserName() } returns "my.account-tester"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
     rediSearchIndexer.createIndexFor(Organization::class.java)
   }
@@ -91,7 +94,43 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
                             id = "my.account-tester@cosmotech.com", role = "admin"))))
   }
 
-  // TODO find a way to make assertNonEquals less verbose
+  @Test
+  fun `test findAllOrganizations() when limit configured is exceeded`() {
+    val organizationFetchedLimitMax = csmPlatformProperties.twincache.organization.maxResult
+    val beyondMaxNumber = organizationFetchedLimitMax + 1
+
+    logger.info(
+        "Creating $beyondMaxNumber organizations with $organizationFetchedLimitMax fetchable ...")
+    IntRange(1, beyondMaxNumber).forEach {
+      var newOrganization = mockOrganization("o-organization-test-$it", "Organization-test-$it")
+      organizationApiService.registerOrganization(newOrganization)
+    }
+    var organizationList = organizationApiService.findAllOrganizations()
+    val numberOfOrganizationFetched = organizationList.size
+    logger.info("findAllOrganizations() have fetched $numberOfOrganizationFetched organizations")
+
+    assertEquals(numberOfOrganizationFetched, organizationFetchedLimitMax)
+    assertNotEquals(numberOfOrganizationFetched, beyondMaxNumber)
+  }
+
+  @Test
+  fun `test findAllOrganizations() when limit configured is not exceeded`() {
+    val organizationFetchedLimitMax = csmPlatformProperties.twincache.organization.maxResult
+    val underMaxNumber = organizationFetchedLimitMax - 1
+
+    logger.info(
+        "Creating $underMaxNumber organizations with $organizationFetchedLimitMax fetchable ...")
+    IntRange(1, underMaxNumber).forEach {
+      var newOrganization = mockOrganization("o-organization-test-$it", "Organization-test-$it")
+      organizationApiService.registerOrganization(newOrganization)
+    }
+    var organizationList = organizationApiService.findAllOrganizations()
+    val numberOfOrganizationFetched = organizationList.size
+    logger.info("findAllOrganizations() have fetched $numberOfOrganizationFetched organizations")
+
+    assertEquals(numberOfOrganizationFetched, underMaxNumber)
+    assertNotEquals(numberOfOrganizationFetched, organizationFetchedLimitMax)
+  }
 
   @Test
   fun test_register_organization() {

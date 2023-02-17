@@ -82,6 +82,13 @@ csm:
       port: "6379"
       username: "default_user"
       password: "default_password"
+      dataset:
+        # TODO: Should be way less than a thousand. See open ticket
+        maxResult: 1000
+      scenariorun:
+        maxResult: 200
+      scenario:
+        maxResult: 200
     argo:
       base-uri: "https://localhost:2746"
       image-pull-secrets: []

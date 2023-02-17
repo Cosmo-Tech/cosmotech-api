@@ -60,6 +60,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.springframework.context.event.EventListener
+import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
@@ -257,18 +258,22 @@ internal class ScenarioRunServiceImpl(
       organizationId: String,
       workspaceId: String,
       scenarioId: String
-  ): List<ScenarioRun> =
-      scenarioRunRepository.findByScenarioId(scenarioId).map {
-        it.withStateInformation(organizationId).withoutSensitiveData()!!
-      }
+  ): List<ScenarioRun> {
+    val pageable: Pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenariorun.maxResult)
+    return scenarioRunRepository.findByScenarioId(scenarioId, pageable).toList().map {
+      it.withStateInformation(organizationId).withoutSensitiveData()!!
+    }
+  }
 
   override fun getWorkspaceScenarioRuns(
       organizationId: String,
       workspaceId: String
-  ): List<ScenarioRun> =
-      scenarioRunRepository.findByWorkspaceId(workspaceId).map {
-        it.withStateInformation(organizationId).withoutSensitiveData()!!
-      }
+  ): List<ScenarioRun> {
+    val pageable: Pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenariorun.maxResult)
+    return scenarioRunRepository.findByWorkspaceId(workspaceId, pageable).toList().map {
+      it.withStateInformation(organizationId).withoutSensitiveData()!!
+    }
+  }
 
   @EventListener(ScenarioDataDownloadRequest::class)
   fun onScenarioDataDownloadRequest(scenarioDataDownloadRequest: ScenarioDataDownloadRequest) {
@@ -471,9 +476,11 @@ internal class ScenarioRunServiceImpl(
       organizationId: String,
       scenarioRunSearch: ScenarioRunSearch
   ): List<ScenarioRun> {
-    return scenarioRunRepository.findByPredicate(scenarioRunSearch.toRedisPredicate()).map {
-      it.withStateInformation(organizationId).withoutSensitiveData()!!
-    }
+    val pageable: Pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenariorun.maxResult)
+    return scenarioRunRepository
+        .findByPredicate(scenarioRunSearch.toRedisPredicate(), pageable)
+        .toList()
+        .map { it.withStateInformation(organizationId).withoutSensitiveData()!! }
   }
 
   override fun startScenarioRunContainers(
