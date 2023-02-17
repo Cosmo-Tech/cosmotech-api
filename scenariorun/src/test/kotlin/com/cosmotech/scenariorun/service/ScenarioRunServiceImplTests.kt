@@ -107,6 +107,8 @@ class ScenarioRunServiceImplTests {
     every { scenarioRunServiceImpl getProperty "csmPlatformProperties" } returns
         csmPlatformProperties
 
+    val csmPlatformPropertiesTwincache = mockk<CsmPlatformProperties.CsmTwinCacheProperties>()
+    every { csmPlatformProperties.twincache } returns csmPlatformPropertiesTwincache
     mockkStatic(::getCurrentAuthentication)
     val authentication = mockk<Authentication>()
     every { authentication.name } returns AUTHENTICATED_USERNAME
@@ -171,8 +173,9 @@ class ScenarioRunServiceImplTests {
                         envVars = mapOf("KEY" to "value"),
                         image = "rhel:7")))
 
-    every { scenarioRunRepository.findByScenarioId(any()) } returns
+    every { scenarioRunRepository.findByScenarioId(any(), any()).toList() } returns
         listOf(myScenarioRun1, myScenarioRun2).toMutableList()
+    every { csmPlatformProperties.twincache.scenariorun.maxResult } returns 5
 
     val scenarioRuns =
         this.scenarioRunServiceImpl.getScenarioRuns(ORGANIZATION_ID, WORKSPACE_ID, "my-scenario-id")
@@ -212,8 +215,9 @@ class ScenarioRunServiceImplTests {
                         envVars = mapOf("KEY" to "value"),
                         image = "rhel:7")))
 
-    every { scenarioRunRepository.findByWorkspaceId(any()) } returns
+    every { scenarioRunRepository.findByWorkspaceId(any(), any()).toList() } returns
         listOf(myScenarioRun1, myScenarioRun2).toMutableList()
+    every { csmPlatformProperties.twincache.scenariorun.maxResult } returns 5
 
     val scenarioRuns =
         this.scenarioRunServiceImpl.getWorkspaceScenarioRuns(ORGANIZATION_ID, WORKSPACE_ID)

@@ -659,7 +659,6 @@ components:
         - role
     OrganizationRole:
       type: object
-      x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
       description: the Organization Role
       properties:
         role:

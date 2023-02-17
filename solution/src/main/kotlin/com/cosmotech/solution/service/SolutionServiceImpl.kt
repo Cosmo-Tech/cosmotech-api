@@ -25,6 +25,7 @@ import org.apache.commons.compress.archivers.ArchiveStreamFactory
 import org.springframework.context.event.EventListener
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
+import org.springframework.data.domain.Pageable
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
@@ -37,8 +38,10 @@ internal class SolutionServiceImpl(
     private val solutionRepository: SolutionRepository,
 ) : CsmPhoenixService(), SolutionApiService {
 
-  override fun findAllSolutions(organizationId: String) =
-      solutionRepository.findByOrganizationId(organizationId)
+  override fun findAllSolutions(organizationId: String): List<Solution> {
+    val pageable: Pageable = Pageable.ofSize(csmPlatformProperties.twincache.solution.maxResult)
+    return solutionRepository.findByOrganizationId(organizationId, pageable).toList()
+  }
 
   override fun findSolutionById(organizationId: String, solutionId: String): Solution =
       solutionRepository.findById(solutionId).orElseThrow {
@@ -216,7 +219,11 @@ internal class SolutionServiceImpl(
   @EventListener(OrganizationUnregistered::class)
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
-    val solutions = solutionRepository.findByOrganizationId(organizationUnregistered.organizationId)
+    val pageable: Pageable = Pageable.ofSize(csmPlatformProperties.twincache.solution.maxResult)
+    val solutions =
+        solutionRepository
+            .findByOrganizationId(organizationUnregistered.organizationId, pageable)
+            .toList()
     solutionRepository.deleteAll(solutions)
   }
 

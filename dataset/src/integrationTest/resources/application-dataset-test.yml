@@ -19,8 +19,6 @@ azure:
 
 csm:
   platform:
-    rbac:
-      enabled: true
     metrics:
       enabled: false
     api:
@@ -87,6 +85,4 @@ csm:
       port: "6379"
       username: "default"
       password: "my-wonderful-password"
-      organization:
-        max-result: 5
 

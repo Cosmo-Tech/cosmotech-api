@@ -55,6 +55,7 @@ import org.springframework.context.annotation.Scope
 import org.springframework.context.event.EventListener
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
+import org.springframework.data.domain.Pageable
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
@@ -75,6 +76,7 @@ internal class WorkspaceServiceImpl(
 ) : CsmPhoenixService(), WorkspaceApiService {
 
   override fun findAllWorkspaces(organizationId: String): List<Workspace> {
+    val pageable: Pageable = Pageable.ofSize(csmPlatformProperties.twincache.workspace.maxResult)
     val organization =
         organizationRepository.findById(organizationId).orElseThrow {
           CsmResourceNotFoundException("Organization $organizationId")
@@ -82,12 +84,14 @@ internal class WorkspaceServiceImpl(
 
     val isAdmin = csmRbac.isAdmin(organization.getRbac(), getCommonRolesDefinition())
     if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
-      return workspaceRepository.findByOrganizationId(organizationId)
+      return workspaceRepository.findByOrganizationId(organizationId, pageable).toList()
     }
     val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
     logger.debug("Getting workspaces for user $currentUser")
-    return workspaceRepository.findByOrganizationIdAndSecurity(
-        organizationId.sanitizeForRedis(), currentUser.toSecurityConstraintQuery())
+    return workspaceRepository
+        .findByOrganizationIdAndSecurity(
+            organizationId.sanitizeForRedis(), currentUser.toSecurityConstraintQuery(), pageable)
+        .toList()
   }
 
   internal fun findWorkspaceByIdNoSecurity(workspaceId: String): Workspace =
@@ -311,7 +315,8 @@ internal class WorkspaceServiceImpl(
     try {
       azureStorageBlobServiceClient.deleteBlobContainer(organizationId)
     } finally {
-      val workspaces = workspaceRepository.findByOrganizationId(organizationId)
+      val pageable: Pageable = Pageable.ofSize(csmPlatformProperties.twincache.workspace.maxResult)
+      val workspaces = workspaceRepository.findByOrganizationId(organizationId, pageable).toList()
       workspaceRepository.deleteAll(workspaces)
     }
   }
