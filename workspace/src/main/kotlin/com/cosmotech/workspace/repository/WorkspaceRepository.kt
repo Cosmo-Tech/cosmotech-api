@@ -10,8 +10,6 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface WorkspaceRepository : RedisDocumentRepository<Workspace, String> {
-  @Query("(-@security_default:{none}) | (@security_accessControlList_id:{\$userId})")
-  fun findWorkspacesBySecurity(@Param("userId") userId: String): List<Workspace>
 
   fun findByOrganizationId(organizationId: String): List<Workspace>
 
