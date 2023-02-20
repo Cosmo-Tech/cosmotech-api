@@ -1490,9 +1490,28 @@ private fun mergeSolutionContainer(
 
   envVars?.put(CONTAINER_MODE_VAR, modes)
 
+  // Node label and sizing is the first none basic node label
+  val nodeLabel =
+      if (stackedContainer.nodeLabel == NODE_LABEL_DEFAULT &&
+          container.nodeLabel != NODE_LABEL_DEFAULT) {
+        container.nodeLabel
+      } else {
+        stackedContainer.nodeLabel
+      }
+
+  val runSizing =
+      if (stackedContainer.nodeLabel == NODE_LABEL_DEFAULT &&
+          container.nodeLabel != NODE_LABEL_DEFAULT) {
+        container.runSizing
+      } else {
+        stackedContainer.runSizing
+      }
+
   return stackedContainer.copy(
       name = MULTIPLE_STEPS_NAME + stackedIndex.toString(),
       envVars = envVars,
+      nodeLabel = nodeLabel,
+      runSizing = runSizing,
   )
 }
 
