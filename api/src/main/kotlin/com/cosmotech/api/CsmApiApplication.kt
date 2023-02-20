@@ -2,13 +2,14 @@
 // Licensed under the MIT license.
 package com.cosmotech.api
 
+import com.redis.om.spring.RedisModulesConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.FilterType
 import org.springframework.scheduling.annotation.EnableScheduling
 
-@SpringBootApplication
+@SpringBootApplication(exclude = [RedisModulesConfiguration::class])
 @EnableScheduling
 @ComponentScan(
     basePackages = ["com.cosmotech"],
