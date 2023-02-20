@@ -76,7 +76,7 @@ csm:
       retentionDays: 7
       downSamplingDefaultEnabled: true
       downSamplingRetentionDays: 400
-      downSamplingBucketDurationMs: 3600
+      downSamplingBucketDurationMs: 3600000
     twincache:
       host: "localhost"
       port: "6379"
