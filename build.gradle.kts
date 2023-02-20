@@ -39,7 +39,7 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 val kotlinJvmTarget = 17
-val cosmotechApiCommonVersion = "0.1.36-SNAPSHOT"
+val cosmotechApiCommonVersion = "0.1.34-SNAPSHOT"
 val cosmotechApiAzureVersion = "0.1.8-SNAPSHOT"
 val cosmotechApiCosmosDBVersion = "0.1.0-SNAPSHOT"
 val azureSpringBootBomVersion = "3.14.0"
@@ -214,7 +214,6 @@ subprojects {
 
     implementation("redis.clients:jedis:${jedisVersion}")
     implementation("com.redislabs:jredistimeseries:${jredistimeseriesVersion}")
-    implementation("com.redis.om:redis-om-spring:0.6.3")
 
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:5.9.2"))

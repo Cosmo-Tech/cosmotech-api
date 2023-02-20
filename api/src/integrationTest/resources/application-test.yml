@@ -6,91 +6,17 @@ management:
   endpoints:
     enabled-by-default: false
 
+#csm:
+#  platform:
+#    # TODO ASO : use a dedicated 'test' value, with specific test implementations for services
+#    vendor: azure
+#    azure:
+#      cosmos:
+#        # Base64
+#        key: "ZmFrZS1rZXkK"
+#        uri: "https://faketestaccount.documents.azure.com:443/"
 csm:
   platform:
-    azure:
-      appIdUri: "http://dev.api.cosmotech.com"
-      credentials:
-        # Deprecated - use csm.platform.azure.credentials.core.tenantId instead
-        tenantId: ""
-        # Deprecated - use csm.platform.azure.credentials.core.clientId instead
-        clientId: ""
-        # Deprecated - use csm.platform.azure.credentials.core.clientSecret instead
-        clientSecret: ""
-        # Deprecated - use csm.platform.azure.credentials.core.aadPodIdBinding instead
-        aadPodIdBinding: "phoenix-pod-identity"
-        core:
-          tenantId: "${csm.platform.azure.credentials.tenantId}"
-          clientId: "${csm.platform.azure.credentials.clientId}"
-          clientSecret: "${csm.platform.azure.credentials.clientSecret}"
-          aadPodIdBinding: "${csm.platform.azure.credentials.aadPodIdBinding}"
-        customer:
-          tenantId: null
-          clientId: null
-          clientSecret: null
-      storage:
-        baseUri: ""
-        resourceUri: ""
-        # Storage account name length should be between 3 and 24 and use numbers and lower-case letters only
-        account-name: "storageaccountname"
-        # Fill storage account access key copied from portal
-        account-key: "[storage-account-access-key]"
-        # Fill storage endpoint URL copied from portal
-        blob-endpoint: "https://${csm.platform.azure.storage.account-name}.blob.core.windows.net"
-        connection-string: "DefaultEndpointsProtocol=https;AccountName=${csm.platform.azure.storage.account-name};AccountKey=${csm.platform.azure.storage.account-key};EndpointSuffix=core.windows.net"
-      containerRegistries:
-        core: ghcr.io
-        solutions: ""
-      eventBus:
-        baseUri: ""
-        # One of 'tenant_client_credentials' or 'shared_access_policy'.
-        # Due to PROD-8071, shared_access_policy is needed when the platform is deployed in a tenant
-        # different from the core Platform one. This is applicable to managed applications
-        # provisioned via the Azure Marketplace
-        authentication:
-          strategy: tenant_client_credentials
-          sharedAccessPolicy:
-            namespace:
-              name: RootManageSharedAccessKey
-              key: null
-      dataWarehouseCluster:
-        baseUri: ""
-        options:
-          ingestionUri: ""
-      keyVault:
-      analytics:
-        resourceUri: ""
-        instrumentationKey: ""
-        connectionString: "InstrumentationKey=${csm.platform.azure.analytics.instrumentationKey};IngestionEndpoint=https://francecentral-0.in.applicationinsights.azure.com/"
-      cosmos:
-        connectionMode: ""
-        consistencyLevel: ""
-        core-database:
-          name: phoenix-core
-          connectors:
-            container: connectors
-          organizations:
-            container: organizations
-          users:
-            container: users
-        key: "azurecosmosdbkey"
-        populateQueryMetrics: true
-        uri: "https://azurecosmosdbkey.documents.azure.com:443/"
-    data-ingestion:
-      # Number of seconds to wait after a scenario run workflow end time, before
-      # starting to check ADX for data ingestion state.
-      # See https://bit.ly/3FXshzE for the rationale
-      waiting-time-before-ingestion-seconds: 15
-      # number of minutes after a scenario run workflow end time during which an ingestion failure
-      # detected is considered linked to the current scenario run
-      ingestion-observation-window-to-be-considered-a-failure-minutes: 5
-      # number of seconds to wait after the checking the scenario validation ingestion status
-      sleeping-time-before-querying-scenario-validation-status-seconds: 5
-      # number of retry to query the scenario validation status
-      max-retry-authorized: 5
-      state:
-        # the timeout in second before considering no data in probes measures and control plane is an issue
-        no-data-time-out-seconds: 60
     metrics:
       enabled: false
     identityProvider :
