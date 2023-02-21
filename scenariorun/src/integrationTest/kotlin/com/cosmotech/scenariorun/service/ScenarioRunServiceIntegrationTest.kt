@@ -41,6 +41,7 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
 import java.util.*
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -177,24 +178,24 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
     var scenarioRuns =
         scenariorunApiService.getScenarioRuns(
             organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
-    assertEquals(scenarioRuns.size, 2)
+    assertTrue(scenarioRuns.size == 2)
 
     logger.info("should find all ScenarioRuns by Workspace id and assert size is 2")
     val scenarioWorkspaceRuns =
         scenariorunApiService.getWorkspaceScenarioRuns(organizationSaved.id!!, workspaceSaved.id!!)
-    assertEquals(scenarioWorkspaceRuns.size, 2)
+    assertTrue(scenarioWorkspaceRuns.size == 2)
 
     logger.info("should find all ScenarioRuns by Scenario id and assert size is 2")
     val scenarioRunSearch = ScenarioRunSearch(scenarioId = scenarioSaved.id!!)
     scenariorunApiService.searchScenarioRuns(organizationSaved.id!!, scenarioRunSearch)
-    assertEquals(scenarioRuns.size, 2)
+    assertTrue(scenarioRuns.size == 2)
 
     logger.info("should delete second ScenarioRun and assert size is 1")
     scenariorunApiService.deleteScenarioRun(organizationSaved.id!!, scenarioRunSaved2.id!!)
     scenarioRuns =
         scenariorunApiService.getScenarioRuns(
             organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
-    assertEquals(scenarioRuns.size, 1)
+    assertTrue(scenarioRuns.size == 1)
   }
 
   private fun mockWorkspaceEventHubInfo(eventHubAvailable: Boolean): WorkspaceEventHubInfo {
