@@ -31,7 +31,7 @@ internal class DatasetServiceImpl(
     private val connectorService: ConnectorApiService,
     private val datasetRepository: DatasetRepository
 ) : CsmPhoenixService(), DatasetApiService {
-  @Suppress("MagicNumber")
+
   override fun findAllDatasets(organizationId: String, page: Int, size: Int): List<Dataset> {
     val pageRequest = PageRequest.of(page, size)
     return datasetRepository.findByOrganizationId(organizationId, pageRequest).toList()
@@ -156,7 +156,6 @@ internal class DatasetServiceImpl(
     TODO("Not yet implemented")
   }
 
-  @Suppress("MagicNumber")
   override fun searchDatasets(
       organizationId: String,
       page: Int,
@@ -169,16 +168,18 @@ internal class DatasetServiceImpl(
         .toList()
   }
 
-  @Suppress("MagicNumber")
   @EventListener(OrganizationUnregistered::class)
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
-    val pageable = PageRequest.of(0, 100)
-    val datasets =
+    val pageable = PageRequest.ofSize(csmPlatformProperties.twincache.organization.maxResult)
+    do {
+      val datasetList =
         datasetRepository
-            .findByOrganizationId(organizationUnregistered.organizationId, pageable)
-            .toList()
-    datasetRepository.deleteAll(datasets)
+          .findByOrganizationId(organizationUnregistered.organizationId, pageable)
+          .toList()
+      datasetRepository.deleteAll(datasetList)
+      pageable.next()
+    } while (datasetList.isNotEmpty())
   }
 
   @EventListener(ConnectorRemoved::class)
@@ -190,14 +191,13 @@ internal class DatasetServiceImpl(
     }
   }
 
-  @Suppress("MagicNumber")
   @EventListener(ConnectorRemovedForOrganization::class)
   @Async("csm-in-process-event-executor")
   fun onConnectorRemovedForOrganization(
       connectorRemovedForOrganization: ConnectorRemovedForOrganization
   ) {
     val connectorId = connectorRemovedForOrganization.connectorId
-    val pageable = PageRequest.of(0, 100)
+    val pageable = PageRequest.ofSize(csmPlatformProperties.twincache.dataset.maxResult)
     do {
       val datasetList = datasetRepository.findDatasetByConnectorId(connectorId, pageable).toList()
       datasetList.forEach {
