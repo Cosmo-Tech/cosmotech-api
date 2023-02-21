@@ -174,9 +174,9 @@ internal class DatasetServiceImpl(
     val pageable = PageRequest.ofSize(csmPlatformProperties.twincache.organization.maxResult)
     do {
       val datasetList =
-        datasetRepository
-          .findByOrganizationId(organizationUnregistered.organizationId, pageable)
-          .toList()
+          datasetRepository
+              .findByOrganizationId(organizationUnregistered.organizationId, pageable)
+              .toList()
       datasetRepository.deleteAll(datasetList)
       pageable.next()
     } while (datasetList.isNotEmpty())
