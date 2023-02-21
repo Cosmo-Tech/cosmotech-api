@@ -60,6 +60,19 @@ paths:
         "400":
           description: Bad request
     get:
+      parameters:
+        - name: page
+          in: query
+          description: page number to query
+          required: true
+          schema:
+            type: integer
+        - name: size
+          in: query
+          description: amount of result by page
+          required: true
+          schema:
+            type: integer
       operationId: findAllDatasets
       tags:
         - dataset
@@ -85,6 +98,19 @@ paths:
         schema:
           type: string
     post:
+      parameters:
+      - name: page
+        in: query
+        description: page number to query
+        required: true
+        schema:
+          type: integer
+      - name: size
+        in: query
+        description: amount of result by page
+        required: true
+        schema:
+          type: integer
       operationId: searchDatasets
       tags:
         - dataset

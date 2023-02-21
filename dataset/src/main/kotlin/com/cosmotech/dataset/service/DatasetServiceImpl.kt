@@ -20,7 +20,7 @@ import com.cosmotech.dataset.domain.DatasetSearch
 import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.organization.api.OrganizationApiService
 import org.springframework.context.event.EventListener
-import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.PageRequest
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
@@ -31,9 +31,10 @@ internal class DatasetServiceImpl(
     private val connectorService: ConnectorApiService,
     private val datasetRepository: DatasetRepository
 ) : CsmPhoenixService(), DatasetApiService {
-  override fun findAllDatasets(organizationId: String): List<Dataset> {
-    val pageable: Pageable = Pageable.ofSize(csmPlatformProperties.twincache.dataset.maxResult)
-    return datasetRepository.findByOrganizationId(organizationId, pageable).toList()
+  @Suppress("MagicNumber")
+  override fun findAllDatasets(organizationId: String, page: Int, size: Int): List<Dataset> {
+    val pageRequest = PageRequest.of(page, size)
+    return datasetRepository.findByOrganizationId(organizationId, pageRequest).toList()
   }
 
   override fun findDatasetById(organizationId: String, datasetId: String): Dataset =
@@ -155,15 +156,24 @@ internal class DatasetServiceImpl(
     TODO("Not yet implemented")
   }
 
-  override fun searchDatasets(organizationId: String, datasetSearch: DatasetSearch): List<Dataset> {
-    val pageable: Pageable = Pageable.ofSize(csmPlatformProperties.twincache.dataset.maxResult)
-    return datasetRepository.findDatasetByTags(datasetSearch.datasetTags.toSet(), pageable).toList()
+  @Suppress("MagicNumber")
+  override fun searchDatasets(
+      organizationId: String,
+      page: Int,
+      size: Int,
+      datasetSearch: DatasetSearch
+  ): List<Dataset> {
+    val pageRequest = PageRequest.of(page, size)
+    return datasetRepository
+        .findDatasetByTags(datasetSearch.datasetTags.toSet(), pageRequest)
+        .toList()
   }
 
+  @Suppress("MagicNumber")
   @EventListener(OrganizationUnregistered::class)
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
-    val pageable: Pageable = Pageable.ofSize(csmPlatformProperties.twincache.dataset.maxResult)
+    val pageable = PageRequest.of(0, 100)
     val datasets =
         datasetRepository
             .findByOrganizationId(organizationUnregistered.organizationId, pageable)
@@ -180,18 +190,22 @@ internal class DatasetServiceImpl(
     }
   }
 
+  @Suppress("MagicNumber")
   @EventListener(ConnectorRemovedForOrganization::class)
   @Async("csm-in-process-event-executor")
   fun onConnectorRemovedForOrganization(
       connectorRemovedForOrganization: ConnectorRemovedForOrganization
   ) {
     val connectorId = connectorRemovedForOrganization.connectorId
-    val pageable: Pageable = Pageable.ofSize(csmPlatformProperties.twincache.dataset.maxResult)
-    val datasetList = datasetRepository.findDatasetByConnectorId(connectorId, pageable).toList()
-    datasetList.forEach {
-      it.connector = null
-      datasetRepository.save(it)
-    }
+    val pageable = PageRequest.of(0, 100)
+    do {
+      val datasetList = datasetRepository.findDatasetByConnectorId(connectorId, pageable).toList()
+      datasetList.forEach {
+        it.connector = null
+        datasetRepository.save(it)
+      }
+      pageable.next()
+    } while (datasetList.isNotEmpty())
   }
 
   override fun importDataset(organizationId: String, dataset: Dataset): Dataset {

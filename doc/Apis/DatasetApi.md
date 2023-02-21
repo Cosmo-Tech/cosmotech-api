@@ -123,7 +123,7 @@ null (empty response body)
 
 <a name="findAllDatasets"></a>
 # **findAllDatasets**
-> List findAllDatasets(organization\_id)
+> List findAllDatasets(organization\_id, page, size)
 
 List all Datasets
 
@@ -132,6 +132,8 @@ List all Datasets
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
+ **page** | **Integer**| page number to query | [default to null]
+ **size** | **Integer**| amount of result by page | [default to null]
 
 ### Return type
 
@@ -226,7 +228,7 @@ null (empty response body)
 
 <a name="searchDatasets"></a>
 # **searchDatasets**
-> List searchDatasets(organization\_id, DatasetSearch)
+> List searchDatasets(organization\_id, page, size, DatasetSearch)
 
 Search Datasets
 
@@ -235,6 +237,8 @@ Search Datasets
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
+ **page** | **Integer**| page number to query | [default to null]
+ **size** | **Integer**| amount of result by page | [default to null]
  **DatasetSearch** | [**DatasetSearch**](../Models/DatasetSearch.md)| the Dataset search parameters |
 
 ### Return type
