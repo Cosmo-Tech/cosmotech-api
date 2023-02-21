@@ -60,6 +60,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.springframework.context.event.EventListener
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.scheduling.annotation.Async
@@ -177,27 +178,40 @@ class ScenarioRunServiceImpl(
       scenarioId: String,
       deleteUnknown: Boolean?
   ) {
-    val scenarioRuns = getScenarioRuns(organizationId, workspaceId, scenarioId).toMutableList()
+    var pageRequest = PageRequest.ofSize(csmPlatformProperties.twincache.scenariorun.maxResult)
+    var scenarioRunList = mutableListOf<ScenarioRun>()
+    do {
+      val scenarioRuns =
+          getScenarioRuns(
+                  organizationId,
+                  workspaceId,
+                  scenarioId,
+                  pageRequest.pageNumber,
+                  pageRequest.pageSize)
+              .toMutableList()
+      scenarioRunList.addAll(scenarioRuns)
+      pageRequest = pageRequest.next()
+    } while (scenarioRuns.isNotEmpty())
 
     val lastRunId =
         scenarioApiService.findScenarioById(organizationId, workspaceId, scenarioId).lastRun!!
             .scenarioRunId
 
-    scenarioRuns.filter { it.state == ScenarioRunState.Failed }.forEach {
+    scenarioRunList.filter { it.state == ScenarioRunState.Failed }.forEach {
       if (it.id != lastRunId) {
         deleteScenarioRunWithoutAccessEnforcement(it)
       }
     }
 
     if (deleteUnknown == true) {
-      scenarioRuns.filter { it.state == ScenarioRunState.Unknown }.forEach {
+      scenarioRunList.filter { it.state == ScenarioRunState.Unknown }.forEach {
         if (it.id != lastRunId) {
           deleteScenarioRunWithoutAccessEnforcement(it)
         }
       }
     }
 
-    scenarioRuns.filter { it.state == ScenarioRunState.Successful }.forEach {
+    scenarioRunList.filter { it.state == ScenarioRunState.Successful }.forEach {
       if (it.id != lastRunId) {
         deleteScenarioRunWithoutAccessEnforcement(it)
       }
@@ -257,9 +271,11 @@ class ScenarioRunServiceImpl(
   override fun getScenarioRuns(
       organizationId: String,
       workspaceId: String,
-      scenarioId: String
+      scenarioId: String,
+      page: Int,
+      size: Int
   ): List<ScenarioRun> {
-    val pageable: Pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenariorun.maxResult)
+    val pageable = PageRequest.of(page, size)
     return scenarioRunRepository.findByScenarioId(scenarioId, pageable).toList().map {
       it.withStateInformation(organizationId).withoutSensitiveData()!!
     }
@@ -267,9 +283,11 @@ class ScenarioRunServiceImpl(
 
   override fun getWorkspaceScenarioRuns(
       organizationId: String,
-      workspaceId: String
+      workspaceId: String,
+      page: Int,
+      size: Int
   ): List<ScenarioRun> {
-    val pageable: Pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenariorun.maxResult)
+    val pageable = PageRequest.of(page, size)
     return scenarioRunRepository.findByWorkspaceId(workspaceId, pageable).toList().map {
       it.withStateInformation(organizationId).withoutSensitiveData()!!
     }
@@ -474,6 +492,8 @@ class ScenarioRunServiceImpl(
 
   override fun searchScenarioRuns(
       organizationId: String,
+      page: Int,
+      size: Int,
       scenarioRunSearch: ScenarioRunSearch
   ): List<ScenarioRun> {
     val pageable: Pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenariorun.maxResult)
@@ -630,15 +650,27 @@ class ScenarioRunServiceImpl(
     logger.debug(
         "Caught ScenarioDeleted event => deleting all runs linked to scenario {}", event.scenarioId)
     runBlocking(SecurityCoroutineContext()) {
+      var pageRequest = PageRequest.ofSize(csmPlatformProperties.twincache.scenariorun.maxResult)
+      var scenarioRunList = mutableListOf<ScenarioRun>()
+      do {
+        val scenarioRuns =
+            this@ScenarioRunServiceImpl.getScenarioRuns(
+                event.organizationId,
+                event.workspaceId,
+                event.scenarioId,
+                pageRequest.pageNumber,
+                pageRequest.pageSize)
+        scenarioRunList.addAll(scenarioRuns)
+        pageRequest = pageRequest.next()
+      } while (scenarioRuns.isNotEmpty())
+
       val jobs =
-          this@ScenarioRunServiceImpl.getScenarioRuns(
-                  event.organizationId, event.workspaceId, event.scenarioId)
-              .map { scenarioRun ->
-                GlobalScope.launch(SecurityCoroutineContext()) {
-                  // TODO Consider using a smaller coroutine scope
-                  this@ScenarioRunServiceImpl.deleteScenarioRunWithoutAccessEnforcement(scenarioRun)
-                }
-              }
+          scenarioRunList.map { scenarioRun ->
+            GlobalScope.launch(SecurityCoroutineContext()) {
+              // TODO Consider using a smaller coroutine scope
+              this@ScenarioRunServiceImpl.deleteScenarioRunWithoutAccessEnforcement(scenarioRun)
+            }
+          }
       jobs.joinAll()
       if (jobs.isNotEmpty()) {
         logger.debug("Done deleting {} run(s) linked to scenario {}!", jobs.size, event.scenarioId)

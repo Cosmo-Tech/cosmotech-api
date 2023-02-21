@@ -178,7 +178,8 @@ class ScenarioRunServiceImplTests {
     every { csmPlatformProperties.twincache.scenariorun.maxResult } returns 5
 
     val scenarioRuns =
-        this.scenarioRunServiceImpl.getScenarioRuns(ORGANIZATION_ID, WORKSPACE_ID, "my-scenario-id")
+        this.scenarioRunServiceImpl.getScenarioRuns(
+            ORGANIZATION_ID, WORKSPACE_ID, "my-scenario-id", 0, 10)
 
     assertEquals(2, scenarioRuns.size)
     assertNotNull(scenarioRuns[0].id)
@@ -220,7 +221,7 @@ class ScenarioRunServiceImplTests {
     every { csmPlatformProperties.twincache.scenariorun.maxResult } returns 5
 
     val scenarioRuns =
-        this.scenarioRunServiceImpl.getWorkspaceScenarioRuns(ORGANIZATION_ID, WORKSPACE_ID)
+        this.scenarioRunServiceImpl.getWorkspaceScenarioRuns(ORGANIZATION_ID, WORKSPACE_ID, 0, 10)
 
     assertEquals(2, scenarioRuns.size)
     assertNotNull(scenarioRuns[0].id)
