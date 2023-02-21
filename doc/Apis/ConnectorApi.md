@@ -13,12 +13,16 @@ Method | HTTP request | Description
 
 <a name="findAllConnectors"></a>
 # **findAllConnectors**
-> List findAllConnectors()
+> List findAllConnectors(page, size)
 
 List all Connectors
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **page** | **Integer**| page number to query | [default to null]
+ **size** | **Integer**| amount of result by page | [default to null]
 
 ### Return type
 

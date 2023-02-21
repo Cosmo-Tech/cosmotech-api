@@ -56,6 +56,19 @@ paths:
       operationId: findAllConnectors
       tags:
         - connector
+      parameters:
+        - name: page
+          in: query
+          description: page number to query
+          required: true
+          schema:
+            type: integer
+        - name: size
+          in: query
+          description: amount of result by page
+          required: true
+          schema:
+            type: integer
       summary: List all Connectors
       responses:
         "200":

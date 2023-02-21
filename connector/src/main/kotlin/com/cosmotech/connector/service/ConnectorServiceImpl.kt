@@ -10,13 +10,17 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.connector.repository.ConnectorRepository
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 
 @Service
 internal class ConnectorServiceImpl(var connectorRepository: ConnectorRepository) :
     CsmPhoenixService(), ConnectorApiService {
 
-  override fun findAllConnectors(): List<Connector> = connectorRepository.findAll().toList()
+  override fun findAllConnectors(page: Int, size: Int): List<Connector> {
+    val pageRequest = PageRequest.of(page, size)
+    return connectorRepository.findAll(pageRequest).toList()
+  }
 
   override fun findConnectorById(connectorId: String): Connector {
     return connectorRepository.findById(connectorId).orElseThrow {
