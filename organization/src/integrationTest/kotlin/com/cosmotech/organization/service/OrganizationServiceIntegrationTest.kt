@@ -48,8 +48,16 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
 
   @Autowired lateinit var organizationApiService: OrganizationApiService
 
-  val orgaId1 = "o-organization-1"
-  val orgaId2 = "o-organization-2"
+  var organization1 = mockOrganization("o-organization-1", "Organization-1")
+  val organization2 = mockOrganization("o-organization-2", "Organization-2")
+
+  var organizationRegistered1 = Organization()
+  var organizationRegistered2 = Organization()
+
+  var organizationRetrieved1 = Organization()
+  var organizationRetrieved2 = Organization()
+
+  var organizationSecurity = OrganizationSecurity("", mutableListOf())
 
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
@@ -136,13 +144,10 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
-  fun test_register_organization() {
-    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    var organization1 = mockOrganization(orgaId1, "Organization-1")
-    val organization2 = mockOrganization(orgaId2, "Organization-2")
+  fun `test CRUD organization`() {
     logger.info("Create new organizations...")
-    val organizationRegistered1 = organizationApiService.registerOrganization(organization1)
-    val organizationRegistered2 = organizationApiService.registerOrganization(organization2)
+    organizationRegistered1 = organizationApiService.registerOrganization(organization1)
+    organizationRegistered2 = organizationApiService.registerOrganization(organization2)
     logger.info("New organizations created : ${organizationRegistered1.id}")
 
     logger.info("Fetch new organization created...")
@@ -160,11 +165,31 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     assertTrue { organizationList.size == 1 }
     logger.info("Deleted organization successfully")
 
+    logger.info("Import organization...")
+    organizationApiService.importOrganization(
+        Organization(
+            id = "organization-3",
+            name = "Cosmo Tech",
+            security =
+                OrganizationSecurity(
+                    default = "editor",
+                    accessControlList =
+                        mutableListOf(
+                            OrganizationAccessControl(
+                                id = "jane.doe@cosmotech.com", role = "editor"),
+                            OrganizationAccessControl(
+                                id = "john.doe@cosmotech.com", role = "viewer")))))
+    organizationRetrieved1 = organizationApiService.findOrganizationById("organization-3")
+    assertNotNull(organizationRetrieved1)
+  }
+
+  fun `test updating organization`() {
+
     logger.info("Updating organization : ${organizationRegistered1.id}...")
     // TODO Change the next line
     organization1 = mockOrganization("o-organization-1", "Organization-1.2")
     organizationApiService.updateOrganization(organizationRegistered1.id!!, organization1)
-    var organizationRetrieved2 =
+    organizationRetrieved2 =
         organizationApiService.findOrganizationById(organizationRegistered1.id!!)
     assertNotEquals(organizationRetrieved2, organizationRetrieved1)
     logger.info("Updated organization")
@@ -200,7 +225,9 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     organizationRetrieved2 =
         organizationApiService.findOrganizationById(organizationRegistered1.id!!)
     assertNotEquals(organizationRetrieved1, organizationRetrieved2)
+  }
 
+  fun `test security for organization`() {
     logger.info("Get all permissions per component...")
     val permissionList = organizationApiService.getAllPermissions()
     assertNotNull(permissionList)
@@ -212,7 +239,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("Get the security information for organization : ${organizationRegistered1.id}...")
     logger.warn(organizationRegistered1.toString())
-    var organizationSecurity =
+    organizationSecurity =
         organizationApiService.getOrganizationSecurity(organizationRegistered1.id!!)
     assertNotNull(organizationSecurity)
 
@@ -223,6 +250,13 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
         organizationApiService.findOrganizationById(organizationRegistered1.id!!)
     assertNotEquals(organizationRetrieved1, organizationRetrieved2)
 
+    logger.info("Get the security users list for organization : ${organizationRegistered1.id}...")
+    val securityUserList =
+        organizationApiService.getOrganizationSecurityUsers(organizationRegistered1.id!!)
+    assertNotNull(securityUserList)
+  }
+
+  fun `test access control for organization`() {
     logger.info("Add a control access to organization : ${organizationRegistered1.id}...")
     organizationApiService.addOrganizationAccessControl(
         organizationRegistered1.id!!,
@@ -251,27 +285,5 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     organizationSecurity =
         organizationApiService.getOrganizationSecurity(organizationRegistered1.id!!)
     assertFalse { organizationSecurity.accessControlList.size < 2 }
-
-    logger.info("Get the security users list for organization : ${organizationRegistered1.id}...")
-    val securityUserList =
-        organizationApiService.getOrganizationSecurityUsers(organizationRegistered1.id!!)
-    assertNotNull(securityUserList)
-
-    logger.info("Import organization...")
-    organizationApiService.importOrganization(
-        Organization(
-            id = "organization-3",
-            name = "Cosmo Tech",
-            security =
-                OrganizationSecurity(
-                    default = "reader",
-                    accessControlList =
-                        mutableListOf(
-                            OrganizationAccessControl(
-                                id = "jane.doe@cosmotech.com", role = "editor"),
-                            OrganizationAccessControl(
-                                id = "john.doe@cosmotech.com", role = "viewer")))))
-    organizationRetrieved1 = organizationApiService.findOrganizationById("organization-3")
-    assertNotNull(organizationRetrieved1)
   }
 }
