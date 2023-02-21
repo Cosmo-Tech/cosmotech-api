@@ -212,7 +212,7 @@ Name | Type | Description  | Notes
 
 <a name="findAllSolutions"></a>
 # **findAllSolutions**
-> List findAllSolutions(organization\_id)
+> List findAllSolutions(organization\_id, page, size)
 
 List all Solutions
 
@@ -221,6 +221,8 @@ List all Solutions
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
+ **page** | **Integer**| page number to query | [default to null]
+ **size** | **Integer**| amount of result by page | [default to null]
 
 ### Return type
 

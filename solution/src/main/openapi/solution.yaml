@@ -61,6 +61,19 @@ paths:
           description: Bad request
     get:
       operationId: findAllSolutions
+      parameters:
+        - name: page
+          in: query
+          description: page number to query
+          required: true
+          schema:
+            type: integer
+        - name: size
+          in: query
+          description: amount of result by page
+          required: true
+          schema:
+            type: integer
       tags:
         - solution
       summary: List all Solutions

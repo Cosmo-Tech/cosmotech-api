@@ -25,6 +25,7 @@ import org.apache.commons.compress.archivers.ArchiveStreamFactory
 import org.springframework.context.event.EventListener
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
@@ -38,8 +39,8 @@ internal class SolutionServiceImpl(
     private val solutionRepository: SolutionRepository,
 ) : CsmPhoenixService(), SolutionApiService {
 
-  override fun findAllSolutions(organizationId: String): List<Solution> {
-    val pageable: Pageable = Pageable.ofSize(csmPlatformProperties.twincache.solution.maxResult)
+  override fun findAllSolutions(organizationId: String, page: Int, size: Int): List<Solution> {
+    val pageable = PageRequest.of(page, size)
     return solutionRepository.findByOrganizationId(organizationId, pageable).toList()
   }
 
