@@ -71,6 +71,19 @@ paths:
           description: Bad request
     get:
       operationId: findAllScenarios
+      parameters:
+        - name: page
+          in: query
+          description: page number to query
+          required: true
+          schema:
+            type: integer
+        - name: size
+          in: query
+          description: amount of result by page
+          required: true
+          schema:
+            type: integer
       tags:
         - scenario
       summary: List all Scenarios
@@ -121,6 +134,19 @@ paths:
       tags:
         - scenario
       summary: List all Scenarios by validation status
+      parameters:
+        - name: page
+          in: query
+          description: page number to query
+          required: true
+          schema:
+            type: integer
+        - name: size
+          in: query
+          description: amount of result by page
+          required: true
+          schema:
+            type: integer
       responses:
         "200":
           description: the list of Scenarios by a given validation status

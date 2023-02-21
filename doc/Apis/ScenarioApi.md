@@ -223,7 +223,7 @@ Name | Type | Description  | Notes
 
 <a name="findAllScenarios"></a>
 # **findAllScenarios**
-> List findAllScenarios(organization\_id, workspace\_id)
+> List findAllScenarios(organization\_id, workspace\_id, page, size)
 
 List all Scenarios
 
@@ -233,6 +233,8 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **workspace\_id** | **String**| the Workspace identifier | [default to null]
+ **page** | **Integer**| page number to query | [default to null]
+ **size** | **Integer**| amount of result by page | [default to null]
 
 ### Return type
 
@@ -249,7 +251,7 @@ Name | Type | Description  | Notes
 
 <a name="findAllScenariosByValidationStatus"></a>
 # **findAllScenariosByValidationStatus**
-> List findAllScenariosByValidationStatus(organization\_id, workspace\_id, validationStatus)
+> List findAllScenariosByValidationStatus(organization\_id, workspace\_id, validationStatus, page, size)
 
 List all Scenarios by validation status
 
@@ -260,6 +262,8 @@ Name | Type | Description  | Notes
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **workspace\_id** | **String**| the Workspace identifier | [default to null]
  **validationStatus** | [**ScenarioValidationStatus**](../Models/.md)| the Scenario Validation Status | [default to null] [enum: Draft, Rejected, Unknown, Validated]
+ **page** | **Integer**| page number to query | [default to null]
+ **size** | **Integer**| amount of result by page | [default to null]
 
 ### Return type
 

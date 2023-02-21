@@ -756,12 +756,12 @@ class ScenarioServiceImplTests {
     every { scenarioServiceImpl.findScenarioByIdNoState(p11.id!!) } returns p11
     every { scenarioServiceImpl.findScenarioByIdNoState(c111.id!!) } returns c111
     every {
-      scenarioServiceImpl.findAllScenariosStateOption(ORGANIZATION_ID, WORKSPACE_ID, true)
+      scenarioServiceImpl.findAllScenariosStateOption(ORGANIZATION_ID, WORKSPACE_ID, 0, 100, true)
     } returns listOf(m1, p11, c111)
 
     val allScenariosById =
         scenarioServiceImpl
-            .findAllScenarios(ORGANIZATION_ID, WORKSPACE_ID)
+            .findAllScenarios(ORGANIZATION_ID, WORKSPACE_ID, 0, 100)
             .associateBy(Scenario::id)
     assertEquals(3, allScenariosById.size)
     assertTrue { allScenariosById.containsKey(m1.id) }

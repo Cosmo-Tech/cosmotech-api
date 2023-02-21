@@ -66,6 +66,7 @@ import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.springframework.context.event.EventListener
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
@@ -283,11 +284,18 @@ internal class ScenarioServiceImpl(
     // TODO Only the workspace owner should be able to do this
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE)
-    val scenarios = this.findAllScenariosStateOption(organizationId, workspaceId, false)
-    scenarios.forEach {
-      scenarioRepository.delete(it)
-      eventPublisher.publishEvent(ScenarioDeleted(this, organizationId, workspaceId, it.id!!))
-    }
+    var pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenario.maxResult)
+
+    do {
+      val scenarioList =
+          this.findAllScenariosStateOption(
+              organizationId, workspaceId, pageable.pageNumber, pageable.pageSize, false)
+      scenarioList.forEach {
+        scenarioRepository.delete(it)
+        eventPublisher.publishEvent(ScenarioDeleted(this, organizationId, workspaceId, it.id!!))
+      }
+      pageable = pageable.next()
+    } while (scenarioList.isNotEmpty())
   }
 
   /** See https://spaceport.cosmotech.com/jira/browse/PROD-7939 */
@@ -315,25 +323,35 @@ internal class ScenarioServiceImpl(
     }
   }
 
-  override fun findAllScenarios(organizationId: String, workspaceId: String): List<Scenario> {
+  override fun findAllScenarios(
+      organizationId: String,
+      workspaceId: String,
+      page: Int,
+      size: Int
+  ): List<Scenario> {
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_READ)
-    return this.findAllScenariosStateOption(organizationId, workspaceId, true).addLastRunsInfo(this)
+    return this.findAllScenariosStateOption(organizationId, workspaceId, page, size, true)
+        .addLastRunsInfo(this)
   }
 
   override fun findAllScenariosByValidationStatus(
       organizationId: String,
       workspaceId: String,
-      validationStatus: ScenarioValidationStatus
+      validationStatus: ScenarioValidationStatus,
+      page: Int,
+      size: Int
   ): List<Scenario> =
       findAllScenarioByValidationStatus(organizationId, workspaceId, validationStatus.toString())
 
   internal fun findAllScenariosStateOption(
       organizationId: String,
       workspaceId: String,
+      page: Int,
+      size: Int,
       addState: Boolean
   ): List<Scenario> {
-    val pageable: Pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenario.maxResult)
+    val pageable = PageRequest.of(page, size)
     if (isRbacEnabled(organizationId, workspaceId)) {
       val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
       return scenarioRepository
@@ -500,7 +518,22 @@ internal class ScenarioServiceImpl(
   }
 
   override fun getScenariosTree(organizationId: String, workspaceId: String): List<Scenario> {
-    return this.findAllScenarios(organizationId, workspaceId)
+    val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
+    csmRbac.verify(workspace.getRbac(), PERMISSION_READ)
+
+    var pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenario.maxResult)
+    val scenarioTree = mutableListOf<Scenario>()
+
+    do {
+      val scenarioList =
+          this.findAllScenariosStateOption(
+                  organizationId, workspaceId, pageable.pageNumber, pageable.pageSize, true)
+              .addLastRunsInfo(this)
+      scenarioTree.addAll(scenarioList)
+      pageable = pageable.next()
+    } while (scenarioList.isNotEmpty())
+
+    return scenarioTree
   }
 
   override fun removeAllScenarioParameterValues(
@@ -688,12 +721,17 @@ internal class ScenarioServiceImpl(
   fun deleteHistoricalDataScenario(data: DeleteHistoricalDataWorkspace) {
     val organizationId = data.organizationId
     val workspaceId = data.workspaceId
-    val scenarios = findAllScenarios(organizationId, workspaceId)
-    scenarios.forEach {
-      this.eventPublisher.publishEvent(
-          DeleteHistoricalDataScenario(
-              this, organizationId, workspaceId, it.id!!, data.deleteUnknown))
-    }
+    var pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenario.maxResult)
+    do {
+      val scenarioList =
+          this.findAllScenarios(organizationId, workspaceId, pageable.pageNumber, pageable.pageSize)
+      scenarioList.forEach {
+        this.eventPublisher.publishEvent(
+            DeleteHistoricalDataScenario(
+                this, organizationId, workspaceId, it.id!!, data.deleteUnknown))
+      }
+      pageable = pageable.next()
+    } while (scenarioList.isNotEmpty())
   }
 
   @EventListener(OrganizationUnregistered::class)
