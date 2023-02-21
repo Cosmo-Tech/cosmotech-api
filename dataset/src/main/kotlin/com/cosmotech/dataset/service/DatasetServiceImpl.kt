@@ -185,18 +185,7 @@ internal class DatasetServiceImpl(
   @EventListener(ConnectorRemoved::class)
   @Async("csm-in-process-event-executor")
   fun onConnectorRemoved(connectorRemoved: ConnectorRemoved) {
-    organizationService.findAllOrganizations().forEach {
-      this.eventPublisher.publishEvent(
-          ConnectorRemovedForOrganization(this, it.id!!, connectorRemoved.connectorId))
-    }
-  }
-
-  @EventListener(ConnectorRemovedForOrganization::class)
-  @Async("csm-in-process-event-executor")
-  fun onConnectorRemovedForOrganization(
-      connectorRemovedForOrganization: ConnectorRemovedForOrganization
-  ) {
-    val connectorId = connectorRemovedForOrganization.connectorId
+    val connectorId = connectorRemoved.connectorId
     val pageable = PageRequest.ofSize(csmPlatformProperties.twincache.dataset.maxResult)
     do {
       val datasetList = datasetRepository.findDatasetByConnectorId(connectorId, pageable).toList()
