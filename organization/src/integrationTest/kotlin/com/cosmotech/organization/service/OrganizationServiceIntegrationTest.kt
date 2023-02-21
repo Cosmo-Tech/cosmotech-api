@@ -106,41 +106,40 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
-  fun `test findAllOrganizations() when limit configured is exceeded`() {
-    val organizationFetchedLimitMax = csmPlatformProperties.twincache.organization.maxResult
-    val beyondMaxNumber = organizationFetchedLimitMax + 1
-
-    logger.info(
-        "Creating $beyondMaxNumber organizations with $organizationFetchedLimitMax fetchable ...")
-    IntRange(1, beyondMaxNumber).forEach {
+  fun `test findAllOrganizations() within a single page`() {
+    logger.info("Creating 10 organization with 100 organizations by page...")
+    IntRange(1, 10).forEach {
       var newOrganization = mockOrganization("o-organization-test-$it", "Organization-test-$it")
       organizationApiService.registerOrganization(newOrganization)
     }
-    var organizationList = organizationApiService.findAllOrganizations()
+    var organizationList = organizationApiService.findAllOrganizations(0, 100)
     val numberOfOrganizationFetched = organizationList.size
     logger.info("findAllOrganizations() have fetched $numberOfOrganizationFetched organizations")
 
-    assertEquals(numberOfOrganizationFetched, organizationFetchedLimitMax)
-    assertNotEquals(numberOfOrganizationFetched, beyondMaxNumber)
+    assertEquals(10, numberOfOrganizationFetched)
   }
 
   @Test
-  fun `test findAllOrganizations() when limit configured is not exceeded`() {
-    val organizationFetchedLimitMax = csmPlatformProperties.twincache.organization.maxResult
-    val underMaxNumber = organizationFetchedLimitMax - 1
-
-    logger.info(
-        "Creating $underMaxNumber organizations with $organizationFetchedLimitMax fetchable ...")
-    IntRange(1, underMaxNumber).forEach {
-      var newOrganization = mockOrganization("o-organization-test-$it", "Organization-test-$it")
+  fun `test findAllOrganizations() within 2 pages`() {
+    logger.info("Creating 10 organizations with 6 organizations by page ...")
+    val organizationNames = mutableListOf<String>()
+    IntRange(1, 10).forEach {
+      val organizationName = "Organization-test-$it"
+      var newOrganization = mockOrganization("o-organization-test-$it", organizationName)
       organizationApiService.registerOrganization(newOrganization)
+      organizationNames.add(organizationName)
     }
-    var organizationList = organizationApiService.findAllOrganizations()
-    val numberOfOrganizationFetched = organizationList.size
-    logger.info("findAllOrganizations() have fetched $numberOfOrganizationFetched organizations")
 
-    assertEquals(numberOfOrganizationFetched, underMaxNumber)
-    assertNotEquals(numberOfOrganizationFetched, organizationFetchedLimitMax)
+    val organizationListFetched = organizationApiService.findAllOrganizations(0, 6).toMutableList()
+    val numberOfOrganizationFetched = organizationListFetched.size
+    logger.info(
+        "findAllOrganizations() have fetched $numberOfOrganizationFetched organizations within the page 0")
+    assertEquals(6, numberOfOrganizationFetched)
+    assertNotEquals(10, numberOfOrganizationFetched)
+
+    organizationListFetched.addAll(organizationApiService.findAllOrganizations(1, 6))
+    assertEquals(10, organizationListFetched.size)
+    assertEquals(organizationNames, organizationListFetched.stream().map { it.name }.toList())
   }
 
   @Test
@@ -158,7 +157,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     assertNotNull(organizationRegistered2)
 
     logger.info("Fetch all Organizations...")
-    var organizationList = organizationApiService.findAllOrganizations()
+    var organizationList = organizationApiService.findAllOrganizations(0, 100)
     assertTrue(organizationList.size == 2)
 
     logger.info("Deleting organization...")

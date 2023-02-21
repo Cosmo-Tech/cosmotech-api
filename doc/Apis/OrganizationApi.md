@@ -52,12 +52,16 @@ Name | Type | Description  | Notes
 
 <a name="findAllOrganizations"></a>
 # **findAllOrganizations**
-> List findAllOrganizations()
+> List findAllOrganizations(page, size)
 
 List all Organizations
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **page** | **Integer**| page number to query | [default to null]
+ **size** | **Integer**| amount of result by page | [default to null]
 
 ### Return type
 

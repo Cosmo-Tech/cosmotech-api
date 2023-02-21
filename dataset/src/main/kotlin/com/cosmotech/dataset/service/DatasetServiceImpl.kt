@@ -4,7 +4,6 @@ package com.cosmotech.dataset.service
 
 import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.events.ConnectorRemoved
-import com.cosmotech.api.events.ConnectorRemovedForOrganization
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
@@ -18,7 +17,6 @@ import com.cosmotech.dataset.domain.DatasetCompatibility
 import com.cosmotech.dataset.domain.DatasetCopyParameters
 import com.cosmotech.dataset.domain.DatasetSearch
 import com.cosmotech.dataset.repository.DatasetRepository
-import com.cosmotech.organization.api.OrganizationApiService
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.PageRequest
 import org.springframework.scheduling.annotation.Async
@@ -170,14 +168,14 @@ internal class DatasetServiceImpl(
   @EventListener(OrganizationUnregistered::class)
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
-    val pageable = PageRequest.ofSize(csmPlatformProperties.twincache.organization.maxResult)
+    var pageable = PageRequest.ofSize(csmPlatformProperties.twincache.organization.maxResult)
     do {
       val datasetList =
           datasetRepository
               .findByOrganizationId(organizationUnregistered.organizationId, pageable)
               .toList()
       datasetRepository.deleteAll(datasetList)
-      pageable.next()
+      pageable = pageable.next()
     } while (datasetList.isNotEmpty())
   }
 
@@ -185,14 +183,14 @@ internal class DatasetServiceImpl(
   @Async("csm-in-process-event-executor")
   fun onConnectorRemoved(connectorRemoved: ConnectorRemoved) {
     val connectorId = connectorRemoved.connectorId
-    val pageable = PageRequest.ofSize(csmPlatformProperties.twincache.dataset.maxResult)
+    var pageable = PageRequest.ofSize(csmPlatformProperties.twincache.dataset.maxResult)
     do {
       val datasetList = datasetRepository.findDatasetByConnectorId(connectorId, pageable).toList()
       datasetList.forEach {
         it.connector = null
         datasetRepository.save(it)
       }
-      pageable.next()
+      pageable = pageable.next()
     } while (datasetList.isNotEmpty())
   }
 
