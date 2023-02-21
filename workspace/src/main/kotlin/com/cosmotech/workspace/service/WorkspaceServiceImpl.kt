@@ -55,6 +55,7 @@ import org.springframework.context.annotation.Scope
 import org.springframework.context.event.EventListener
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
@@ -75,8 +76,8 @@ internal class WorkspaceServiceImpl(
     private val workspaceRepository: WorkspaceRepository
 ) : CsmPhoenixService(), WorkspaceApiService {
 
-  override fun findAllWorkspaces(organizationId: String): List<Workspace> {
-    val pageable: Pageable = Pageable.ofSize(csmPlatformProperties.twincache.workspace.maxResult)
+  override fun findAllWorkspaces(organizationId: String, page: Int, size: Int): List<Workspace> {
+    val pageable = PageRequest.of(page, size)
     val organization =
         organizationRepository.findById(organizationId).orElseThrow {
           CsmResourceNotFoundException("Organization $organizationId")
@@ -301,8 +302,16 @@ internal class WorkspaceServiceImpl(
   @EventListener(DeleteHistoricalDataOrganization::class)
   fun deleteHistoricalDataWorkspace(data: DeleteHistoricalDataOrganization) {
     val organizationId = data.organizationId
-    val workspaces = findAllWorkspaces(organizationId)
-    workspaces.forEach {
+    var pageable = Pageable.ofSize(csmPlatformProperties.twincache.workspace.maxResult)
+    var workspaceList = mutableListOf<Workspace>()
+
+    do {
+      val workspaces = findAllWorkspaces(organizationId, pageable.pageNumber, pageable.pageSize)
+      workspaceList.addAll(workspaces)
+      pageable = pageable.next()
+    } while (workspaces.isNotEmpty())
+
+    workspaceList.forEach {
       this.eventPublisher.publishEvent(
           DeleteHistoricalDataWorkspace(this, organizationId, it.id!!, data.deleteUnknown))
     }

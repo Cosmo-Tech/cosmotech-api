@@ -65,6 +65,19 @@ paths:
           description: Bad request
     get:
       operationId: findAllWorkspaces
+      parameters:
+        - name: page
+          in: query
+          description: page number to query
+          required: true
+          schema:
+            type: integer
+        - name: size
+          in: query
+          description: amount of result by page
+          required: true
+          schema:
+            type: integer
       tags:
         - workspace
       summary: List all Workspaces

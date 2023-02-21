@@ -240,7 +240,7 @@ Name | Type | Description  | Notes
 
 <a name="findAllWorkspaces"></a>
 # **findAllWorkspaces**
-> List findAllWorkspaces(organization\_id)
+> List findAllWorkspaces(organization\_id, page, size)
 
 List all Workspaces
 
@@ -249,6 +249,8 @@ List all Workspaces
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
+ **page** | **Integer**| page number to query | [default to null]
+ **size** | **Integer**| amount of result by page | [default to null]
 
 ### Return type
 
