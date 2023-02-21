@@ -1,14 +1,10 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.scenario.service
+package com.cosmotech.scenariorun.service
 
 import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.config.CsmPlatformProperties
-import com.cosmotech.api.exceptions.CsmAccessForbiddenException
-import com.cosmotech.api.exceptions.CsmResourceNotFoundException
-import com.cosmotech.api.rbac.ROLE_EDITOR
 import com.cosmotech.api.rbac.ROLE_NONE
-import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
@@ -24,11 +20,13 @@ import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
-import com.cosmotech.scenario.domain.ScenarioAccessControl
-import com.cosmotech.scenario.domain.ScenarioRole
-import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
-import com.cosmotech.scenario.domain.ScenarioValidationStatus
+import com.cosmotech.scenariorun.ContainerFactory
+import com.cosmotech.scenariorun.api.ScenariorunApiService
+import com.cosmotech.scenariorun.domain.ScenarioRun
+import com.cosmotech.scenariorun.domain.ScenarioRunSearch
+import com.cosmotech.scenariorun.workflow.WorkflowService
 import com.cosmotech.solution.api.SolutionApiService
+import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
@@ -43,10 +41,8 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
 import java.util.*
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
 import org.slf4j.LoggerFactory
@@ -59,20 +55,21 @@ import org.springframework.test.util.ReflectionTestUtils
 
 const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
 const val CONNECTED_READER_USER = "test.user@cosmotech.com"
-const val FAKE_MAIL = "fake@mail.fr"
 
-@ActiveProfiles(profiles = ["scenario-test"])
+@ActiveProfiles(profiles = ["scenariorun-test"])
 @ExtendWith(MockKExtension::class)
 @ExtendWith(SpringExtension::class)
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
+class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
 
-  private val logger = LoggerFactory.getLogger(ScenarioServiceIntegrationTest::class.java)
+  private val logger = LoggerFactory.getLogger(ScenarioRunServiceIntegrationTest::class.java)
 
   @MockkBean lateinit var csmADX: AzureDataExplorerClient
-  @MockK(relaxed = true) private lateinit var workspaceEventHubService: IWorkspaceEventHubService
+  @MockK private lateinit var workspaceEventHubService: IWorkspaceEventHubService
   @MockK(relaxed = true) private lateinit var azureDataExplorerClient: AzureDataExplorerClient
+  @MockK(relaxed = true) private lateinit var containerFactory: ContainerFactory
+  @MockK(relaxed = true) private lateinit var workflowService: WorkflowService
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var connectorApiService: ConnectorApiService
@@ -81,6 +78,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var solutionApiService: SolutionApiService
   @Autowired lateinit var workspaceApiService: WorkspaceApiService
   @Autowired lateinit var scenarioApiService: ScenarioApiService
+  @Autowired lateinit var scenariorunApiService: ScenariorunApiService
 
   lateinit var connector: Connector
   lateinit var dataset: Dataset
@@ -95,6 +93,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   lateinit var organizationSaved: Organization
   lateinit var workspaceSaved: Workspace
   lateinit var scenarioSaved: Scenario
+  lateinit var scenarioRunSaved: ScenarioRun
 
   @BeforeEach
   fun setUp() {
@@ -103,14 +102,21 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAuthenticatedUserName() } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")
 
-    ReflectionTestUtils.setField(
-        scenarioApiService, "workspaceEventHubService", workspaceEventHubService)
-    ReflectionTestUtils.setField(
-        scenarioApiService, "azureDataExplorerClient", azureDataExplorerClient)
     every { workspaceEventHubService.getWorkspaceEventHubInfo(any(), any(), any()) } returns
         mockWorkspaceEventHubInfo(false)
 
-    rediSearchIndexer.createIndexFor(Scenario::class.java)
+    ReflectionTestUtils.setField(
+        scenarioApiService, "workspaceEventHubService", workspaceEventHubService)
+    ReflectionTestUtils.setField(
+        scenariorunApiService, "workspaceEventHubService", workspaceEventHubService)
+    ReflectionTestUtils.setField(
+        scenarioApiService, "azureDataExplorerClient", azureDataExplorerClient)
+    ReflectionTestUtils.setField(
+        scenariorunApiService, "azureDataExplorerClient", azureDataExplorerClient)
+    ReflectionTestUtils.setField(scenariorunApiService, "containerFactory", containerFactory)
+    ReflectionTestUtils.setField(scenariorunApiService, "workflowService", workflowService)
+
+    rediSearchIndexer.createIndexFor(ScenarioRun::class.java)
 
     connector = mockConnector("Connector")
     connectorSaved = connectorApiService.registerConnector(connector)
@@ -132,186 +138,63 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
             organizationSaved.id!!,
             workspaceSaved.id!!,
             solutionSaved.id!!,
+            solutionSaved.runTemplates?.get(0)?.id!!,
             "Scenario",
             mutableListOf(datasetSaved.id!!))
 
     scenarioSaved =
         scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, scenario)
-  }
 
-  @Test
-  fun `test CRUD operations on Scenario as User Admin`() {
-
-    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-
-    val scenario2 =
-        mockScenario(
-            organizationSaved.id!!,
-            workspaceSaved.id!!,
-            solutionSaved.id!!,
-            "Scenario2",
-            mutableListOf(datasetSaved.id!!))
-    val scenarioSaved2 =
-        scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, scenario2)
-
-    var scenarioList =
-        scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!)
-    assertEquals(2, scenarioList.size)
-
-    scenarioList =
-        scenarioApiService.findAllScenariosByValidationStatus(
-            organizationSaved.id!!, workspaceSaved.id!!, ScenarioValidationStatus.Draft)
-    assertEquals(2, scenarioList.size)
-
-    val scenarioRetrieved =
-        scenarioApiService.findScenarioById(
-            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
-    assertEquals(scenarioSaved, scenarioRetrieved)
-
-    val scenarioValidationStatus =
-        scenarioApiService.getScenarioValidationStatusById(
-            organizationSaved.id!!, workspaceSaved.id!!, scenarioRetrieved.id!!)
-    assertEquals(ScenarioValidationStatus.Draft, scenarioValidationStatus)
-
-    val scenarioUpdated =
-        scenarioApiService.updateScenario(
-            organizationSaved.id!!,
-            workspaceSaved.id!!,
-            scenarioRetrieved.id!!,
-            scenarioRetrieved.copy(name = "Scenario Updated"))
-    assertEquals("Scenario Updated", scenarioUpdated.name)
-
-    scenarioApiService.deleteScenario(
-        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved2.id!!, false)
-    val scenarioListAfterDelete =
-        scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!)
-    assertEquals(1, scenarioListAfterDelete.size)
-
-    scenarioApiService.deleteAllScenarios(organizationSaved.id!!, workspaceSaved.id!!)
-    val scenarioListAfterDeleteAll =
-        scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!)
-    assertEquals(0, scenarioListAfterDeleteAll.size)
-  }
-
-  @Test
-  fun `test Scenario Parameter Values as User Admin`() {
-
-    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-
-    assertTrue(scenarioSaved.parametersValues!!.isEmpty())
-    val params =
-        mutableListOf(
-            ScenarioRunTemplateParameterValue("param1", "value1", "description1", false),
-            ScenarioRunTemplateParameterValue("param2", "value2", "description2", false))
-    scenarioApiService.addOrReplaceScenarioParameterValues(
-        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, params)
-    val scenarioRetrievedAfterUpdate =
-        scenarioApiService.findScenarioById(
-            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
-    assertEquals(params, scenarioRetrievedAfterUpdate.parametersValues)
-
-    scenarioApiService.removeAllScenarioParameterValues(
-        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
-    val scenarioRetrievedAfterRemove =
-        scenarioApiService.findScenarioById(
-            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
-    assertTrue(scenarioRetrievedAfterRemove.parametersValues!!.isEmpty())
-  }
-
-  @Test
-  fun `test RBAC ScenarioSecurity as User Admin`() {
-
-    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-
-    // Test default security
-    val scenarioSecurity =
-        scenarioApiService.getScenarioSecurity(
-            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
-    assertEquals(ROLE_NONE, scenarioSecurity.default)
-
-    val scenarioRole = ScenarioRole(ROLE_VIEWER)
-    val scenarioSecurityRegistered =
-        scenarioApiService.setScenarioDefaultSecurity(
-            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, scenarioRole)
-    assertEquals(scenarioRole.role, scenarioSecurityRegistered.default)
-  }
-
-  @Test
-  fun `test RBAC ScenarioSecurity as User Unauthorized`() {
-
-    every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_READER_USER
-
-    // Test default security
-    assertThrows<CsmAccessForbiddenException> {
-      scenarioApiService.getScenarioSecurity(
-          organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
-    }
-
-    val scenarioRole = ScenarioRole(ROLE_VIEWER)
-    assertThrows<CsmAccessForbiddenException> {
-      scenarioApiService.setScenarioDefaultSecurity(
-          organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, scenarioRole)
-    }
-  }
-
-  @Test
-  fun `test RBAC AccessControls on Scenario as User Admin`() {
-
-    val scenarioAccessControl = ScenarioAccessControl(FAKE_MAIL, ROLE_VIEWER)
-    var scenarioAccessControlRegistered =
-        scenarioApiService.addScenarioAccessControl(
-            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, scenarioAccessControl)
-    assertEquals(scenarioAccessControl, scenarioAccessControlRegistered)
-
-    scenarioAccessControlRegistered =
-        scenarioApiService.getScenarioAccessControl(
-            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, FAKE_MAIL)
-    assertEquals(scenarioAccessControl, scenarioAccessControlRegistered)
-
-    scenarioAccessControlRegistered =
-        scenarioApiService.updateScenarioAccessControl(
+    every { workflowService.launchScenarioRun(any(), any()) } returns
+        mockScenarioRun(
             organizationSaved.id!!,
             workspaceSaved.id!!,
             scenarioSaved.id!!,
-            FAKE_MAIL,
-            ScenarioRole(ROLE_EDITOR))
-    assertEquals(ROLE_EDITOR, scenarioAccessControlRegistered.role)
+            solutionSaved.id!!,
+            mutableListOf())
 
-    scenarioApiService.removeScenarioAccessControl(
-        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, FAKE_MAIL)
-    assertThrows<CsmResourceNotFoundException> {
-      scenarioAccessControlRegistered =
-          scenarioApiService.getScenarioAccessControl(
-              organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, FAKE_MAIL)
-    }
+    scenarioRunSaved =
+        scenariorunApiService.runScenario(
+            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
   }
 
   @Test
-  fun `test RBAC AccessControls on Scenario as User Unauthorized`() {
+  fun `test CRUD operations on ScenarioRun`() {
+    logger.info("test CRUD operations on ScenarioRun")
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
 
-    every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_READER_USER
+    logger.info("should find ScenarioRun by id")
+    val foundScenarioRun =
+        scenariorunApiService.findScenarioRunById(organizationSaved.id!!, scenarioRunSaved.id!!)
+    assertEquals(foundScenarioRun.id, scenarioRunSaved.id)
 
-    val scenarioAccessControl = ScenarioAccessControl(FAKE_MAIL, ROLE_VIEWER)
-    assertThrows<CsmAccessForbiddenException> {
-      scenarioApiService.addScenarioAccessControl(
-          organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, scenarioAccessControl)
-    }
-    assertThrows<CsmAccessForbiddenException> {
-      scenarioApiService.getScenarioAccessControl(
-          organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, FAKE_MAIL)
-    }
-    assertThrows<CsmAccessForbiddenException> {
-      scenarioApiService.updateScenarioAccessControl(
-          organizationSaved.id!!,
-          workspaceSaved.id!!,
-          scenarioSaved.id!!,
-          FAKE_MAIL,
-          ScenarioRole(ROLE_VIEWER))
-    }
-    assertThrows<CsmAccessForbiddenException> {
-      scenarioApiService.removeScenarioAccessControl(
-          organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, FAKE_MAIL)
-    }
+    logger.info("should create second ScenarioRun")
+    val scenarioRunSaved2 =
+        scenariorunApiService.runScenario(
+            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+
+    logger.info("should find all ScenarioRuns by Scenario id and assert size is 2")
+    var scenarioRuns =
+        scenariorunApiService.getScenarioRuns(
+            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+    assertEquals(scenarioRuns.size, 2)
+
+    logger.info("should find all ScenarioRuns by Workspace id and assert size is 2")
+    val scenarioWorkspaceRuns =
+        scenariorunApiService.getWorkspaceScenarioRuns(organizationSaved.id!!, workspaceSaved.id!!)
+    assertEquals(scenarioWorkspaceRuns.size, 2)
+
+    logger.info("should find all ScenarioRuns by Scenario id and assert size is 2")
+    val scenarioRunSearch = ScenarioRunSearch(scenarioId = scenarioSaved.id!!)
+    scenariorunApiService.searchScenarioRuns(organizationSaved.id!!, scenarioRunSearch)
+    assertEquals(scenarioRuns.size, 2)
+
+    logger.info("should delete second ScenarioRun and assert size is 1")
+    scenariorunApiService.deleteScenarioRun(organizationSaved.id!!, scenarioRunSaved2.id!!)
+    scenarioRuns =
+        scenariorunApiService.getScenarioRuns(
+            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+    assertEquals(scenarioRuns.size, 1)
   }
 
   private fun mockWorkspaceEventHubInfo(eventHubAvailable: Boolean): WorkspaceEventHubInfo {
@@ -356,7 +239,13 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
         key = UUID.randomUUID().toString(),
         name = "My solution",
         organizationId = organizationId,
-        ownerId = "ownerId")
+        ownerId = "ownerId",
+        runTemplates =
+            mutableListOf(
+                RunTemplate(
+                    id = UUID.randomUUID().toString(),
+                    name = "RunTemplate1",
+                    description = "RunTemplate1 description")))
   }
 
   fun mockOrganization(id: String): Organization {
@@ -390,6 +279,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
       organizationId: String,
       workspaceId: String,
       solutionId: String,
+      runTemplateId: String,
       name: String,
       datasetList: MutableList<String>
   ): Scenario {
@@ -398,7 +288,26 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
         organizationId = organizationId,
         workspaceId = workspaceId,
         solutionId = solutionId,
+        runTemplateId = runTemplateId,
         ownerId = "ownerId",
+        datasetList = datasetList)
+  }
+
+  fun mockScenarioRun(
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String,
+      solutionId: String,
+      datasetList: MutableList<String>
+  ): ScenarioRun {
+    return ScenarioRun(
+        organizationId = organizationId,
+        workspaceId = workspaceId,
+        solutionId = solutionId,
+        scenarioId = scenarioId,
+        ownerId = "ownerId",
+        workflowId = "workflowId",
+        workflowName = "workflowName",
         datasetList = datasetList)
   }
 }

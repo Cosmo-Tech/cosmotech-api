@@ -102,19 +102,21 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
 
+    logger.info("should create a second new workspace")
     val workspace2 =
         mockWorkspace(organizationRegistered.id!!, solutionRegistered.id!!, "Workspace 2")
     val workspaceRegistered2 =
         workspaceApiService.createWorkspace(organizationRegistered.id!!, workspace2)
-    logger.info("New workspaces created : ${workspaceRegistered.id} and ${workspaceRegistered2.id}")
     val workspaceRetrieved =
         workspaceApiService.findWorkspaceById(organizationRegistered.id!!, workspaceRegistered.id!!)
     assertEquals(workspaceRegistered, workspaceRetrieved)
 
+    logger.info("should find all workspaces and assert there are 2")
     val workspacesList: List<Workspace> =
         workspaceApiService.findAllWorkspaces(organizationRegistered.id!!)
     assertTrue(workspacesList.size == 2)
 
+    logger.info("should update the name of the first workspace")
     val updatedWorkspace =
         workspaceApiService.updateWorkspace(
             organizationRegistered.id!!,
@@ -122,7 +124,8 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
             workspaceRegistered.copy(name = "Workspace 1 updated"))
     assertEquals("Workspace 1 updated", updatedWorkspace.name)
 
-    workspaceApiService.deleteWorkspace(organizationRegistered.id!!, workspaceRegistered.id!!)
+    logger.info("should delete the first workspace")
+    workspaceApiService.deleteWorkspace(organizationRegistered.id!!, workspaceRegistered2.id!!)
     val workspacesListAfterDelete: List<Workspace> =
         workspaceApiService.findAllWorkspaces(organizationRegistered.id!!)
     assertTrue(workspacesListAfterDelete.size == 1)
@@ -133,28 +136,32 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
     every { getCurrentAuthenticatedMail(any()) } returns FAKE_MAIL
 
-    // User can't create a workspace
+    logger.info("should not create a new workspace")
     val workspace2 =
         mockWorkspace(organizationRegistered.id!!, solutionRegistered.id!!, "Workspace 2")
     assertThrows<CsmAccessForbiddenException> {
       workspaceApiService.createWorkspace(organizationRegistered.id!!, workspace2)
     }
-    // User can't retrieve a workspace
+
+    logger.info("should not retrieve a workspace")
     assertThrows<CsmAccessForbiddenException> {
       workspaceApiService.findWorkspaceById(organizationRegistered.id!!, workspaceRegistered.id!!)
     }
-    // User can't retrieve all workspaces
+
+    logger.info("should not find all workspaces")
     val workspacesList: List<Workspace> =
         workspaceApiService.findAllWorkspaces(organizationRegistered.id!!)
     assertTrue(workspacesList.isEmpty())
-    // User can't update a workspace
+
+    logger.info("should not update a workspace")
     assertThrows<CsmAccessForbiddenException> {
       workspaceApiService.updateWorkspace(
           organizationRegistered.id!!,
           workspaceRegistered.id!!,
           workspaceRegistered.copy(name = "Workspace 1 updated"))
     }
-    // User can't delete a workspace
+
+    logger.info("should not delete a workspace")
     assertThrows<CsmAccessForbiddenException> {
       workspaceApiService.deleteWorkspace(organizationRegistered.id!!, workspaceRegistered.id!!)
     }
@@ -165,12 +172,13 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
 
-    // Test default security
+    logger.info("should get default security with role NONE")
     val workspaceSecurity =
         workspaceApiService.getWorkspaceSecurity(
             organizationRegistered.id!!, workspaceRegistered.id!!)
     assertEquals(ROLE_NONE, workspaceSecurity.default)
 
+    logger.info("should set default security with role VIEWER")
     val workspaceRole = WorkspaceRole(ROLE_VIEWER)
     val workspaceSecurityRegistered =
         workspaceApiService.setWorkspaceDefaultSecurity(
@@ -183,12 +191,13 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
     every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_READER_USER
 
-    // Test default security
+    logger.info("should throw CsmAccessForbiddenException when getting default security")
     assertThrows<CsmAccessForbiddenException> {
       workspaceApiService.getWorkspaceSecurity(
           organizationRegistered.id!!, workspaceRegistered.id!!)
     }
 
+    logger.info("should throw CsmAccessForbiddenException when setting default security")
     val workspaceRole = WorkspaceRole(ROLE_VIEWER)
     assertThrows<CsmAccessForbiddenException> {
       workspaceApiService.setWorkspaceDefaultSecurity(
@@ -199,17 +208,20 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `test RBAC AccessControls on Workspace as User Admin`() {
 
+    logger.info("should add a new access control")
     val workspaceAccessControl = WorkspaceAccessControl(FAKE_MAIL, ROLE_VIEWER)
     var workspaceAccessControlRegistered =
         workspaceApiService.addWorkspaceAccessControl(
             organizationRegistered.id!!, workspaceRegistered.id!!, workspaceAccessControl)
     assertEquals(workspaceAccessControl, workspaceAccessControlRegistered)
 
+    logger.info("should get the access control")
     workspaceAccessControlRegistered =
         workspaceApiService.getWorkspaceAccessControl(
             organizationRegistered.id!!, workspaceRegistered.id!!, FAKE_MAIL)
     assertEquals(workspaceAccessControl, workspaceAccessControlRegistered)
 
+    logger.info("should update the access control")
     workspaceAccessControlRegistered =
         workspaceApiService.updateWorkspaceAccessControl(
             organizationRegistered.id!!,
@@ -218,6 +230,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
             WorkspaceRole(ROLE_EDITOR))
     assertEquals(ROLE_EDITOR, workspaceAccessControlRegistered.role)
 
+    logger.info("should remove the access control")
     workspaceApiService.removeWorkspaceAccessControl(
         organizationRegistered.id!!, workspaceRegistered.id!!, FAKE_MAIL)
     assertThrows<CsmResourceNotFoundException> {
@@ -232,15 +245,20 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
     every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_READER_USER
 
+    logger.info("should throw CsmAccessForbiddenException when adding a new access control")
     val workspaceAccessControl = WorkspaceAccessControl(FAKE_MAIL, ROLE_VIEWER)
     assertThrows<CsmAccessForbiddenException> {
       workspaceApiService.addWorkspaceAccessControl(
           organizationRegistered.id!!, workspaceRegistered.id!!, workspaceAccessControl)
     }
+
+    logger.info("should throw CsmAccessForbiddenException when getting the access control")
     assertThrows<CsmAccessForbiddenException> {
       workspaceApiService.getWorkspaceAccessControl(
           organizationRegistered.id!!, workspaceRegistered.id!!, FAKE_MAIL)
     }
+
+    logger.info("should throw CsmAccessForbiddenException when updating the access control")
     assertThrows<CsmAccessForbiddenException> {
       workspaceApiService.updateWorkspaceAccessControl(
           organizationRegistered.id!!,
@@ -248,6 +266,8 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
           FAKE_MAIL,
           WorkspaceRole(ROLE_VIEWER))
     }
+
+    logger.info("should throw CsmAccessForbiddenException when removing the access control")
     assertThrows<CsmAccessForbiddenException> {
       workspaceApiService.removeWorkspaceAccessControl(
           organizationRegistered.id!!, workspaceRegistered.id!!, FAKE_MAIL)

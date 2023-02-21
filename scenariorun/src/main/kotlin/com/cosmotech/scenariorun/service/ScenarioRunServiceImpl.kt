@@ -75,7 +75,7 @@ internal const val WORKFLOW_TYPE_TWIN_GRAPH_IMPORT = "twin-graph-import"
 
 @Service
 @Suppress("TooManyFunctions", "LargeClass")
-internal class ScenarioRunServiceImpl(
+class ScenarioRunServiceImpl(
     private val containerFactory: ContainerFactory,
     private val workflowService: WorkflowService,
     private val workspaceService: WorkspaceApiService,

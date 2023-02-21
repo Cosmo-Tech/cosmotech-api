@@ -137,6 +137,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun test_register_organization() {
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
     var organization1 = mockOrganization(orgaId1, "Organization-1")
     val organization2 = mockOrganization(orgaId2, "Organization-2")
     logger.info("Create new organizations...")

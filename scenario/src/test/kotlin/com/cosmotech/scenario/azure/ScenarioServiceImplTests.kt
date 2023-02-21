@@ -22,7 +22,7 @@ import com.cosmotech.scenario.domain.ScenarioJobState
 import com.cosmotech.scenario.domain.ScenarioLastRun
 import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
 import com.cosmotech.scenario.repository.ScenarioRepository
-import com.cosmotech.scenario.service.ScenarioServiceImpl
+import com.cosmotech.scenariorun.service.ScenarioServiceImpl
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateParameterGroup

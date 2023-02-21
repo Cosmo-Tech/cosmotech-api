@@ -1,6 +1,6 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.scenario.service
+package com.cosmotech.scenariorun.service
 
 import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.azure.adx.AzureDataExplorerClient
