@@ -27,7 +27,6 @@ import org.springframework.stereotype.Service
 @Service
 @Suppress("TooManyFunctions")
 internal class DatasetServiceImpl(
-    private val organizationService: OrganizationApiService,
     private val connectorService: ConnectorApiService,
     private val datasetRepository: DatasetRepository
 ) : CsmPhoenixService(), DatasetApiService {

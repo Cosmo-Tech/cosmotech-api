@@ -33,7 +33,7 @@ import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.organization.domain.OrganizationService
 import com.cosmotech.organization.domain.OrganizationServices
 import com.cosmotech.organization.repository.OrganizationRepository
-import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
@@ -45,12 +45,12 @@ class OrganizationServiceImpl(
     private val organizationRepository: OrganizationRepository
 ) : CsmPhoenixService(), OrganizationApiService {
 
-  override fun findAllOrganizations(): List<Organization> {
-    val pageable: Pageable = Pageable.ofSize(csmPlatformProperties.twincache.organization.maxResult)
+  override fun findAllOrganizations(page: Int, size: Int): List<Organization> {
+    val pageable = PageRequest.of(page, size)
     val isAdmin = csmAdmin.verifyCurrentRolesAdmin()
 
     if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
-      return organizationRepository.findAll().toList()
+      return organizationRepository.findAll(pageable).toList()
     }
     val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
     return organizationRepository

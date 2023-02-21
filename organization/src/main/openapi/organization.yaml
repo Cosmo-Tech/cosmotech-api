@@ -54,6 +54,19 @@ paths:
           description: Bad request
     get:
       operationId: findAllOrganizations
+      parameters:
+        - name: page
+          in: query
+          description: page number to query
+          required: true
+          schema:
+            type: integer
+        - name: size
+          in: query
+          description: amount of result by page
+          required: true
+          schema:
+            type: integer
       tags:
         - organization
       summary: List all Organizations
