@@ -201,6 +201,24 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
+  fun `test parent scenario operations as User Admin`() {
+
+    val childrenScenario = mockScenario(
+        organizationSaved.id!!,
+        workspaceSaved.id!!,
+        solutionSaved.id!!,
+        "ChildrenScenario",
+        mutableListOf(datasetSaved.id!!),
+        parentId = scenarioSaved.id!!)
+    scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, childrenScenario)
+    scenarioApiService.deleteScenario(
+        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, true)
+    val scenarioListAfterDelete = scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!)
+    assertTrue(scenarioListAfterDelete.isEmpty())
+
+  }
+
+  @Test
   fun `test Scenario Parameter Values as User Admin`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
 
@@ -291,6 +309,11 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
             ScenarioRole(ROLE_EDITOR))
     assertEquals(ROLE_EDITOR, scenarioAccessControlRegistered.role)
 
+    logger.info("should get the list of users and assert there are 2")
+    var userList = scenarioApiService.getScenarioSecurityUsers(organizationSaved.id!!, workspaceSaved.id!!,
+      scenarioSaved.id!!)
+    assertTrue(userList.size == 2)
+
     logger.info("should remove the Access Control and assert it has been removed")
     scenarioApiService.removeScenarioAccessControl(
         organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, FAKE_MAIL)
@@ -328,6 +351,11 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
           scenarioSaved.id!!,
           FAKE_MAIL,
           ScenarioRole(ROLE_VIEWER))
+    }
+
+    logger.info("should throw CsmAccessForbiddenException when getting the list of users")
+    assertThrows<CsmAccessForbiddenException> {
+      scenarioApiService.getScenarioSecurityUsers(organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
     }
 
     logger.info(
@@ -415,7 +443,8 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
       workspaceId: String,
       solutionId: String,
       name: String,
-      datasetList: MutableList<String>
+      datasetList: MutableList<String>,
+      parentId : String? = null
   ): Scenario {
     return Scenario(
         name = name,
@@ -423,6 +452,8 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
         workspaceId = workspaceId,
         solutionId = solutionId,
         ownerId = "ownerId",
-        datasetList = datasetList)
+        datasetList = datasetList,
+        parentId = parentId,
+      )
   }
 }

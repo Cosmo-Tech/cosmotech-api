@@ -203,6 +203,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
       workspaceApiService.setWorkspaceDefaultSecurity(
           organizationRegistered.id!!, workspaceRegistered.id!!, workspaceRole)
     }
+
   }
 
   @Test
@@ -229,6 +230,10 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
             FAKE_MAIL,
             WorkspaceRole(ROLE_EDITOR))
     assertEquals(ROLE_EDITOR, workspaceAccessControlRegistered.role)
+
+    logger.info("should get the list of users and assert there are 2")
+    var userList = workspaceApiService.getWorkspaceSecurityUsers(organizationRegistered.id!!, workspaceRegistered.id!!)
+    assertTrue(userList.size == 2)
 
     logger.info("should remove the access control")
     workspaceApiService.removeWorkspaceAccessControl(
@@ -265,6 +270,11 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
           workspaceRegistered.id!!,
           FAKE_MAIL,
           WorkspaceRole(ROLE_VIEWER))
+    }
+
+    logger.info("should throw CsmAccessForbiddenException when getting the list of users")
+    assertThrows<CsmAccessForbiddenException> {
+      workspaceApiService.getWorkspaceSecurityUsers(organizationRegistered.id!!, workspaceRegistered.id!!)
     }
 
     logger.info("should throw CsmAccessForbiddenException when removing the access control")
