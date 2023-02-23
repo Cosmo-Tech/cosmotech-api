@@ -43,6 +43,7 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
 import java.util.*
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -56,7 +57,6 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
-import kotlin.test.assertNull
 
 const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
 const val CONNECTED_READER_USER = "test.user@cosmotech.com"
@@ -204,29 +204,33 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `test parent scenario operations as User Admin`() {
 
-    logger.info("should create a child Scenario with dataset different from parent and " +
-      "assert the dataset list is the same as parent")
+    logger.info(
+        "should create a child Scenario with dataset different from parent and " +
+            "assert the dataset list is the same as parent")
     val dataset2 = mockDataset(organizationSaved.id!!, "Dataset2", connectorSaved)
     val datasetSaved2 = datasetApiService.createDataset(organizationSaved.id!!, dataset2)
-    val childrenScenario = mockScenario(
-        organizationSaved.id!!,
-        workspaceSaved.id!!,
-        solutionSaved.id!!,
-        "ChildrenScenario",
-        mutableListOf(datasetSaved2.id!!),
-        parentId = scenarioSaved.id!!)
-    val child = scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, childrenScenario)
+    val childrenScenario =
+        mockScenario(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            solutionSaved.id!!,
+            "ChildrenScenario",
+            mutableListOf(datasetSaved2.id!!),
+            parentId = scenarioSaved.id!!)
+    val child =
+        scenarioApiService.createScenario(
+            organizationSaved.id!!, workspaceSaved.id!!, childrenScenario)
     assertEquals(child.datasetList, scenarioSaved.datasetList)
 
     logger.info("should delete the parent Scenario and assert there is only child Scenario left")
     scenarioApiService.deleteScenario(
         organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, true)
-    val scenarioListAfterDelete = scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!)
+    val scenarioListAfterDelete =
+        scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!)
     assertTrue(scenarioListAfterDelete.size == 1)
     assertNull(scenarioListAfterDelete[0].parentId)
     assertNull(scenarioListAfterDelete[0].rootId)
   }
-
 
   @Test
   fun `test Scenario Parameter Values as User Admin`() {
@@ -320,8 +324,9 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(ROLE_EDITOR, scenarioAccessControlRegistered.role)
 
     logger.info("should get the list of users and assert there are 2")
-    var userList = scenarioApiService.getScenarioSecurityUsers(organizationSaved.id!!, workspaceSaved.id!!,
-      scenarioSaved.id!!)
+    var userList =
+        scenarioApiService.getScenarioSecurityUsers(
+            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
     assertTrue(userList.size == 2)
 
     logger.info("should remove the Access Control and assert it has been removed")
@@ -365,7 +370,8 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("should throw CsmAccessForbiddenException when getting the list of users")
     assertThrows<CsmAccessForbiddenException> {
-      scenarioApiService.getScenarioSecurityUsers(organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+      scenarioApiService.getScenarioSecurityUsers(
+          organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
     }
 
     logger.info(
@@ -454,7 +460,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
       solutionId: String,
       name: String,
       datasetList: MutableList<String>,
-      parentId : String? = null
+      parentId: String? = null
   ): Scenario {
     return Scenario(
         name = name,
@@ -464,6 +470,6 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
         ownerId = "ownerId",
         datasetList = datasetList,
         parentId = parentId,
-      )
+    )
   }
 }

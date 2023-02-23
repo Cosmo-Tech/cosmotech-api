@@ -147,13 +147,15 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   fun `test CRUD organization`() {
     logger.info("Create new organizations...")
     organizationRegistered1 = organizationApiService.registerOrganization(organization1)
-    organizationRegistered2 = organizationApiService.registerOrganization(organization2)
-    logger.info("New organizations created : ${organizationRegistered1.id}")
 
     logger.info("Fetch new organization created...")
     var organizationRetrieved1 =
         organizationApiService.findOrganizationById(organizationRegistered1.id!!)
     assertEquals(organizationRegistered1, organizationRetrieved1)
+
+    logger.info("Import organization...")
+    organizationRegistered2 = organizationApiService.importOrganization(organization2)
+    assertNotNull(organizationRegistered2)
 
     logger.info("Fetch all Organizations...")
     var organizationList = organizationApiService.findAllOrganizations()
@@ -163,24 +165,6 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     organizationApiService.unregisterOrganization(organizationRegistered2.id!!)
     organizationList = organizationApiService.findAllOrganizations()
     assertTrue { organizationList.size == 1 }
-    logger.info("Deleted organization successfully")
-
-    logger.info("Import organization...")
-    organizationApiService.importOrganization(
-        Organization(
-            id = "organization-3",
-            name = "Cosmo Tech",
-            security =
-                OrganizationSecurity(
-                    default = "editor",
-                    accessControlList =
-                        mutableListOf(
-                            OrganizationAccessControl(
-                                id = "jane.doe@cosmotech.com", role = "editor"),
-                            OrganizationAccessControl(
-                                id = "john.doe@cosmotech.com", role = "viewer")))))
-    organizationRetrieved1 = organizationApiService.findOrganizationById("organization-3")
-    assertNotNull(organizationRetrieved1)
   }
 
   fun `test updating organization`() {

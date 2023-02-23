@@ -195,8 +195,8 @@ internal class DatasetServiceImpl(
   }
 
   override fun importDataset(organizationId: String, dataset: Dataset): Dataset {
-    if (dataset.id == null) {
-      throw CsmResourceNotFoundException("Dataset id is null")
+    if (dataset.id == null || organizationId == null) {
+      throw CsmResourceNotFoundException("Dataset or Organization id is null")
     }
     return datasetRepository.save(dataset)
   }

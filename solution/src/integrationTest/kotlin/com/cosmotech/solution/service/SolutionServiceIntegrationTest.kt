@@ -201,7 +201,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             solutionRegistered.organizationId!!, solutionRegistered.id!!)
     assertTrue(foundSolution.runTemplates!!.size == 2)
 
-    logger.info("should replace the first run template and assert that the list contains 2 elements")
+    logger.info(
+        "should replace the first run template and assert that the list contains 2 elements")
     val runTemplate3 = RunTemplate(id = "runTemplateId1", name = "runTemplateName")
     solutionApiService.addOrReplaceRunTemplates(
         solutionRegistered.organizationId!!, solutionRegistered.id!!, listOf(runTemplate3))
@@ -219,8 +220,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
         runTemplate4.id!!,
         runTemplate4)
     val foundSolutionAfterUpdate =
-      solutionApiService.findSolutionById(
-        solutionRegistered.organizationId!!, solutionRegistered.id!!)
+        solutionApiService.findSolutionById(
+            solutionRegistered.organizationId!!, solutionRegistered.id!!)
     assertTrue(foundSolutionAfterUpdate.runTemplates!!.first().name == "runTemplateNameNew")
 
     logger.info("should remove all run templates and assert that the list is empty")

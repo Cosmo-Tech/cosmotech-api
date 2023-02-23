@@ -44,6 +44,7 @@ class ConnectorServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAuthenticatedMail(any()) } returns "test.user@cosmotech.com"
     every { getCurrentAuthenticatedUserName() } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
+    rediSearchIndexer.createIndexFor(Connector::class.java)
   }
 
   // TODO Import Connector
@@ -61,19 +62,19 @@ class ConnectorServiceIntegrationTest : CsmRedisTestBase() {
   fun registerConnector() {
     val connector1 = mockConnector("connector1")
     val connector2 = mockConnector("connector2")
+
     logger.info("Create new connector...")
     val connectorRegistered1 = connectorApiService.registerConnector(connector1)
     val connectorRegistered2 = connectorApiService.registerConnector(connector2)
-    logger.info("New connector created : ${connectorRegistered1.id}")
+
     logger.info("Fetch new connector created ...")
     val connectorRetrieved = connectorApiService.findConnectorById(connectorRegistered1.id!!)
     assertEquals(connectorRegistered1, connectorRetrieved)
-    logger.info("Fetched Connector : ${connectorRetrieved.id}")
+
     logger.info("Deleting connector ...")
     connectorApiService.unregisterConnector(connectorRegistered1.id!!)
     assertThrows<CsmResourceNotFoundException> {
       connectorApiService.findConnectorById(connectorRegistered1.id!!)
     }
-    logger.info("Deleted connector")
   }
 }
