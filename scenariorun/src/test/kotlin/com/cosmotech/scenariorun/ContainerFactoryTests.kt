@@ -1889,7 +1889,7 @@ class ContainerFactoryTests {
     val startInfo = getStartInfoFromIds()
     assertEquals(
         mapOf(
-            "com.cosmotech/job_id" to "Scenarioid",
+            "cosmotech.com/job_id" to "Scenarioid",
             "cosmotech.com/workflowtype" to DEFAULT_WORKFLOW_TYPE,
         ),
         startInfo.startContainers.labels,

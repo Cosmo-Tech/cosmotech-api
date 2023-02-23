@@ -120,7 +120,7 @@ private const val CSM_CONTROL_PLANE_PASSWORD_ENV_VAR = "CSM_CONTROL_PLANE_PASSWO
 internal const val AZURE_AAD_POD_ID_BINDING_LABEL = "aadpodidbinding"
 private const val SCENARIO_DATA_ABSOLUTE_PATH_ENV_VAR = "CSM_DATA_ABSOLUTE_PATH"
 private const val SCENARIO_DATA_UPLOAD_LOG_LEVEL_ENV_VAR = "CSM_LOG_LEVEL"
-internal const val CSM_JOB_ID_LABEL_KEY = "com.cosmotech/job_id"
+internal const val CSM_JOB_ID_LABEL_KEY = "cosmotech.com/job_id"
 internal const val SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME = "downloadUrl"
 internal const val WORKFLOW_TYPE_LABEL = "cosmotech.com/workflowtype"
 
