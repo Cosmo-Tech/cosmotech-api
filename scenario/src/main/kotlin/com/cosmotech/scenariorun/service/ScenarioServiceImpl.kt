@@ -59,6 +59,7 @@ import com.cosmotech.workspace.azure.EventHubRole
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.service.getRbac
+import kotlinx.coroutines.Dispatchers
 import java.time.Instant
 import java.time.ZonedDateTime
 import kotlinx.coroutines.GlobalScope
@@ -304,6 +305,9 @@ internal class ScenarioServiceImpl(
           GlobalScope.launch {
             // TODO Consider using a smaller coroutine scope
             child.parentId = parentId
+            if (child.parentId == null) {
+              child.rootId = null
+            }
             this@ScenarioServiceImpl.upsertScenarioData(child)
           }
         }

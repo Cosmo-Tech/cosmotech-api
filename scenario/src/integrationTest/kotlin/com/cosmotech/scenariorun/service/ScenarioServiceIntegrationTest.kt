@@ -56,6 +56,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
+import kotlin.test.assertNull
 
 const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
 const val CONNECTED_READER_USER = "test.user@cosmotech.com"
@@ -203,20 +204,29 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `test parent scenario operations as User Admin`() {
 
+    logger.info("should create a child Scenario with dataset different from parent and " +
+      "assert the dataset list is the same as parent")
+    val dataset2 = mockDataset(organizationSaved.id!!, "Dataset2", connectorSaved)
+    val datasetSaved2 = datasetApiService.createDataset(organizationSaved.id!!, dataset2)
     val childrenScenario = mockScenario(
         organizationSaved.id!!,
         workspaceSaved.id!!,
         solutionSaved.id!!,
         "ChildrenScenario",
-        mutableListOf(datasetSaved.id!!),
+        mutableListOf(datasetSaved2.id!!),
         parentId = scenarioSaved.id!!)
-    scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, childrenScenario)
+    val child = scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, childrenScenario)
+    assertEquals(child.datasetList, scenarioSaved.datasetList)
+
+    logger.info("should delete the parent Scenario and assert there is only child Scenario left")
     scenarioApiService.deleteScenario(
         organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, true)
     val scenarioListAfterDelete = scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!)
-    assertTrue(scenarioListAfterDelete.isEmpty())
-
+    assertTrue(scenarioListAfterDelete.size == 1)
+    assertNull(scenarioListAfterDelete[0].parentId)
+    assertNull(scenarioListAfterDelete[0].rootId)
   }
+
 
   @Test
   fun `test Scenario Parameter Values as User Admin`() {
