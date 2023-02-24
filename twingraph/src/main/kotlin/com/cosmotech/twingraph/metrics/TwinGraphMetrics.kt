@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service
 import redis.clients.jedis.JedisPool
 
 private const val SERVICE_NAME = "twingraph"
+private const val MILLISECONDS_IN_DAY = 86400000
 
 @Service
 internal class TwinGraphMetrics(
@@ -41,7 +42,9 @@ internal class TwinGraphMetrics(
                     "usage" to "licensing",
                 ),
             type = PersitentMetricType.GAUGE,
-        )
+            retention =
+                csmPlatformProperties.metrics.downSamplingRetentionDays.toLong() *
+                    MILLISECONDS_IN_DAY)
     eventPublisher.publishEvent(PersistentMetricEvent(this, metric))
   }
 }
