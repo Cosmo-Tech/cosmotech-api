@@ -133,9 +133,9 @@ class MetricsServiceImpl(
 
   private fun getMetricLabels(metricLabels: Map<String, String>): Map<String, String> {
     val labels =
-      mutableMapOf(
-        "downsampling" to "false",
-      )
+        mutableMapOf(
+            "downsampling" to "false",
+        )
 
     labels.putAll(metricLabels)
     return labels.toMap()
