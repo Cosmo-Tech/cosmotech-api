@@ -74,7 +74,7 @@ csm:
     metrics:
       enabled: true
       retentionDays: 7
-      downSamplingDefaultEnabled: true
+      downSamplingDefaultEnabled: false
       downSamplingRetentionDays: 400
       downSamplingBucketDurationMs: 3600000
     twincache:

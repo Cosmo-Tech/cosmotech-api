@@ -64,8 +64,9 @@ class MetricsServiceImpl(
 
       val metricRetention = getMetricRetention(metric)
 
+      val commonLabels = getCommonLabels(metric)
       if (!exist) {
-        val metricLabels = getMetricLabels(metric)
+        val metricLabels = getMetricLabels(commonLabels)
         logger.debug(
             "Creating Redis TS: $key with retention: $metricRetention and ${metricLabels.count()} labels")
         timeSeries.create(
@@ -75,7 +76,7 @@ class MetricsServiceImpl(
         )
         if (metric.downSampling || csmPlatformProperties.metrics.downSamplingDefaultEnabled) {
           val downSamplingKey = getDownSamplingKey(metric)
-          val downSamplingMetricLabels = getDownSamplingMetricLabels(metricLabels)
+          val downSamplingMetricLabels = getDownSamplingMetricLabels(commonLabels)
           val downSamplingRetention = getDownSamplingRetention(metric)
           val downSamplingBucketDuration = getDownSamplingBucketDuration(metric)
           logger.debug(
@@ -104,7 +105,7 @@ class MetricsServiceImpl(
               "Redis TS retention changed: $key from $timeSeriesRetention to $metricRetention")
           logger.debug(
               "Redis TS library cannot get current labels so it is not possible to check if labels changed")
-          val metricLabels = getMetricLabels(metric)
+          val metricLabels = getMetricLabels(commonLabels)
           timeSeries.alter(key, metricRetention, metricLabels)
         } else {}
       }
@@ -123,14 +124,24 @@ class MetricsServiceImpl(
   private fun getDownSamplingMetricLabels(metricLabels: Map<String, String>): Map<String, String> {
     val labels =
         mutableMapOf(
-            "downsampling" to "yes",
+            "downsampling" to "true",
         )
 
     labels.putAll(metricLabels)
     return labels.toMap()
   }
 
-  private fun getMetricLabels(metric: PersistentMetric): Map<String, String> {
+  private fun getMetricLabels(metricLabels: Map<String, String>): Map<String, String> {
+    val labels =
+      mutableMapOf(
+        "downsampling" to "false",
+      )
+
+    labels.putAll(metricLabels)
+    return labels.toMap()
+  }
+
+  private fun getCommonLabels(metric: PersistentMetric): Map<String, String> {
     val labels =
         mutableMapOf(
             "scope" to metric.scope,
