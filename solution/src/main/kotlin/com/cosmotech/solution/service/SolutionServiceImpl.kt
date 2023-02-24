@@ -39,9 +39,35 @@ internal class SolutionServiceImpl(
     private val solutionRepository: SolutionRepository,
 ) : CsmPhoenixService(), SolutionApiService {
 
-  override fun findAllSolutions(organizationId: String, page: Int, size: Int): List<Solution> {
-    val pageable = PageRequest.of(page, size)
-    return solutionRepository.findByOrganizationId(organizationId, pageable).toList()
+  override fun findAllSolutions(organizationId: String, page: Int?, size: Int?): List<Solution> {
+    var pageable = constructPageRequest(page, size)
+    if (pageable != null) {
+      return solutionRepository.findByOrganizationId(organizationId, pageable).toList()
+    }
+
+    var allSolutionsByOrganizationId = mutableListOf<Solution>()
+    pageable = PageRequest.ofSize(csmPlatformProperties.twincache.solution.maxResult)
+    do {
+      val paginatedSolutions =
+          solutionRepository.findByOrganizationId(organizationId, pageable!!).toList()
+      allSolutionsByOrganizationId.addAll(paginatedSolutions)
+      pageable = pageable!!.next()
+    } while (paginatedSolutions.isNotEmpty())
+    return allSolutionsByOrganizationId
+  }
+
+  internal fun constructPageRequest(page: Int?, size: Int?): PageRequest? {
+    var result: PageRequest? = null
+    if (page != null && size != null) {
+      result = PageRequest.of(page, size)
+    }
+    if (page != null && size == null) {
+      result = PageRequest.of(page, csmPlatformProperties.twincache.solution.maxResult)
+    }
+    if (page == null && size != null) {
+      result = PageRequest.of(0, size)
+    }
+    return result
   }
 
   override fun findSolutionById(organizationId: String, solutionId: String): Solution =

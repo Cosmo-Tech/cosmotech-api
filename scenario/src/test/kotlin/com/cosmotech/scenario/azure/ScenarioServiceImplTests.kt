@@ -756,7 +756,8 @@ class ScenarioServiceImplTests {
     every { scenarioServiceImpl.findScenarioByIdNoState(p11.id!!) } returns p11
     every { scenarioServiceImpl.findScenarioByIdNoState(c111.id!!) } returns c111
     every {
-      scenarioServiceImpl.findAllScenariosStateOption(ORGANIZATION_ID, WORKSPACE_ID, 0, 100, true)
+      scenarioServiceImpl.findPaginatedScenariosStateOption(
+          ORGANIZATION_ID, WORKSPACE_ID, 0, 100, true)
     } returns listOf(m1, p11, c111)
 
     val allScenariosById =

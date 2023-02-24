@@ -45,17 +45,56 @@ class OrganizationServiceImpl(
     private val organizationRepository: OrganizationRepository
 ) : CsmPhoenixService(), OrganizationApiService {
 
-  override fun findAllOrganizations(page: Int, size: Int): List<Organization> {
-    val pageable = PageRequest.of(page, size)
+  override fun findAllOrganizations(page: Int?, size: Int?): List<Organization> {
+    var pageable = constructPageRequest(page, size)
     val isAdmin = csmAdmin.verifyCurrentRolesAdmin()
+    var result = mutableListOf<Organization>()
 
-    if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
-      return organizationRepository.findAll(pageable).toList()
+    val rbacEnabled = !isAdmin && this.csmPlatformProperties.rbac.enabled
+
+    if (pageable == null) {
+      pageable = PageRequest.ofSize(csmPlatformProperties.twincache.organization.maxResult)
+
+      do {
+        var paginatedOrganizations : MutableList<Organization>
+        if (rbacEnabled) {
+          val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+          paginatedOrganizations = organizationRepository
+            .findOrganizationsBySecurity(currentUser.toSecurityConstraintQuery(), pageable!!)
+            .toList()
+        } else {
+          paginatedOrganizations = organizationRepository.findAll(pageable!!).toList()
+        }
+        result.addAll(paginatedOrganizations)
+        pageable = pageable!!.next()
+      } while (paginatedOrganizations.isNotEmpty())
+
+    } else {
+      if (rbacEnabled) {
+        val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+        result =
+          organizationRepository
+            .findOrganizationsBySecurity(currentUser.toSecurityConstraintQuery(), pageable)
+            .toList()
+      } else {
+        result = organizationRepository.findAll(pageable).toList()
+      }
     }
-    val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
-    return organizationRepository
-        .findOrganizationsBySecurity(currentUser.toSecurityConstraintQuery(), pageable)
-        .toList()
+
+    return result
+  }
+  internal fun constructPageRequest(page: Int?, size: Int?): PageRequest? {
+    var result: PageRequest? = null
+    if (page != null && size != null) {
+      result = PageRequest.of(page, size)
+    }
+    if (page != null && size == null) {
+      result = PageRequest.of(page, csmPlatformProperties.twincache.organization.maxResult)
+    }
+    if (page == null && size != null) {
+      result = PageRequest.of(0, size)
+    }
+    return result
   }
 
   override fun findOrganizationById(organizationId: String): Organization {

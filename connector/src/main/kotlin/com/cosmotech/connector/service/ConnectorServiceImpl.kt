@@ -17,9 +17,35 @@ import org.springframework.stereotype.Service
 internal class ConnectorServiceImpl(var connectorRepository: ConnectorRepository) :
     CsmPhoenixService(), ConnectorApiService {
 
-  override fun findAllConnectors(page: Int, size: Int): List<Connector> {
-    val pageRequest = PageRequest.of(page, size)
-    return connectorRepository.findAll(pageRequest).toList()
+  override fun findAllConnectors(page: Int?, size: Int?): List<Connector> {
+    var pageRequest = constructPageRequest(page, size)
+    if (pageRequest != null) {
+      return connectorRepository.findAll(pageRequest).toList()
+    }
+
+    var connectorList = mutableListOf<Connector>()
+    pageRequest = PageRequest.ofSize(csmPlatformProperties.twincache.connector.maxResult)
+    do {
+      var connectors = connectorRepository.findAll(pageRequest!!).toList()
+      connectorList.addAll(connectors)
+      pageRequest = pageRequest.next()
+    } while (connectors.isNotEmpty())
+
+    return connectorList
+  }
+
+  internal fun constructPageRequest(page: Int?, size: Int?): PageRequest? {
+    var result: PageRequest? = null
+    if (page != null && size != null) {
+      result = PageRequest.of(page, size)
+    }
+    if (page != null && size == null) {
+      result = PageRequest.of(page, csmPlatformProperties.twincache.connector.maxResult)
+    }
+    if (page == null && size != null) {
+      result = PageRequest.of(0, size)
+    }
+    return result
   }
 
   override fun findConnectorById(connectorId: String): Connector {

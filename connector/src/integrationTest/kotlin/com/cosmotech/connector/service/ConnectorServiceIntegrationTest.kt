@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.connector.service
 
+import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
@@ -37,6 +38,7 @@ class ConnectorServiceIntegrationTest : CsmRedisTestBase() {
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var connectorApiService: ConnectorApiService
+  @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   @BeforeEach
   fun setUp() {
@@ -56,6 +58,88 @@ class ConnectorServiceIntegrationTest : CsmRedisTestBase() {
         repository = "repository",
         version = "version",
         ioTypes = listOf())
+  }
+
+  @Test
+  fun `test find All Connector without pagination`() {
+    val numberOfConnector = 100
+    logger.info("Creating $numberOfConnector organizations...")
+    IntRange(1, numberOfConnector).forEach {
+      var newConnector = mockConnector("o-connector-test-$it")
+      connectorApiService.registerConnector(newConnector)
+    }
+    val connectorList = connectorApiService.findAllConnectors(null, null)
+    logger.info("Connector list retrieved contains : ${connectorList.size} elements")
+    assertEquals(numberOfConnector, connectorList.size)
+
+  }
+
+  @Test
+  fun `test find All Connector - get first page without size `() {
+    val numberOfConnector = 100
+    logger.info("Creating $numberOfConnector organizations...")
+    IntRange(1, numberOfConnector).forEach {
+      var newConnector = mockConnector("o-connector-test-$it")
+      connectorApiService.registerConnector(newConnector)
+    }
+    val connectorList = connectorApiService.findAllConnectors(0, null)
+    logger.info("Connector list retrieved contains : ${connectorList.size} elements")
+    assertEquals(csmPlatformProperties.twincache.connector.maxResult, connectorList.size)
+  }
+
+  @Test
+  fun `test find All Connector - get first page with size `() {
+    val numberOfConnector = 100
+    val expectedSize = 75
+    logger.info("Creating $numberOfConnector organizations...")
+    IntRange(1, numberOfConnector).forEach {
+      var newConnector = mockConnector("o-connector-test-$it")
+      connectorApiService.registerConnector(newConnector)
+    }
+    val connectorList = connectorApiService.findAllConnectors(0, expectedSize)
+    logger.info("Connector list retrieved contains : ${connectorList.size} elements")
+    assertEquals(expectedSize, connectorList.size)
+  }
+
+  @Test
+  fun `test find All Connector - without page but size `() {
+    val numberOfConnector = 100
+    val expectedSize = 75
+    logger.info("Creating $numberOfConnector organizations...")
+    IntRange(1, numberOfConnector).forEach {
+      var newConnector = mockConnector("o-connector-test-$it")
+      connectorApiService.registerConnector(newConnector)
+    }
+    val connectorList = connectorApiService.findAllConnectors(null, expectedSize)
+    logger.info("Connector list retrieved contains : ${connectorList.size} elements")
+    assertEquals(expectedSize, connectorList.size)
+  }
+
+  @Test
+  fun `test find All Connector - with size less than 1`() {
+    val numberOfConnector = 1
+    logger.info("Creating $numberOfConnector organization...")
+    var newConnector = mockConnector("o-connector-test-1")
+    connectorApiService.registerConnector(newConnector)
+    assertThrows<IllegalArgumentException> {  connectorApiService.findAllConnectors(0, 0) }
+  }
+
+  @Test
+  fun `test find All Connector - with illegal value as page`() {
+    val numberOfConnector = 1
+    logger.info("Creating $numberOfConnector organization...")
+    var newConnector = mockConnector("o-connector-test-1")
+    connectorApiService.registerConnector(newConnector)
+    assertThrows<IllegalArgumentException> {  connectorApiService.findAllConnectors(-1, 10) }
+  }
+
+  @Test
+  fun `test find All Connector - with illegal value as size`() {
+    val numberOfConnector = 1
+    logger.info("Creating $numberOfConnector organization...")
+    var newConnector = mockConnector("o-connector-test-1")
+    connectorApiService.registerConnector(newConnector)
+    assertThrows<IllegalArgumentException> {  connectorApiService.findAllConnectors(0, -1) }
   }
 
   @Test

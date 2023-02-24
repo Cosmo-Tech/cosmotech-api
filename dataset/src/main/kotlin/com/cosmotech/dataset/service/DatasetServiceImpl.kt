@@ -29,9 +29,36 @@ internal class DatasetServiceImpl(
     private val datasetRepository: DatasetRepository
 ) : CsmPhoenixService(), DatasetApiService {
 
-  override fun findAllDatasets(organizationId: String, page: Int, size: Int): List<Dataset> {
-    val pageRequest = PageRequest.of(page, size)
-    return datasetRepository.findByOrganizationId(organizationId, pageRequest).toList()
+  override fun findAllDatasets(organizationId: String, page: Int?, size: Int?): List<Dataset> {
+    var pageRequest = constructPageRequest(page, size)
+    if (pageRequest != null) {
+      return datasetRepository.findByOrganizationId(organizationId, pageRequest).toList()
+    }
+
+    var allDatasetByOrganizationId = mutableListOf<Dataset>()
+    pageRequest = PageRequest.ofSize(csmPlatformProperties.twincache.dataset.maxResult)
+    do {
+      val paginatedSolutions =
+          datasetRepository.findByOrganizationId(organizationId, pageRequest!!).toList()
+      allDatasetByOrganizationId.addAll(paginatedSolutions)
+      pageRequest = pageRequest!!.next()
+    } while (paginatedSolutions.isNotEmpty())
+
+    return allDatasetByOrganizationId
+  }
+
+  internal fun constructPageRequest(page: Int?, size: Int?): PageRequest? {
+    var result: PageRequest? = null
+    if (page != null && size != null) {
+      result = PageRequest.of(page, size)
+    }
+    if (page != null && size == null) {
+      result = PageRequest.of(page, csmPlatformProperties.twincache.dataset.maxResult)
+    }
+    if (page == null && size != null) {
+      result = PageRequest.of(0, size)
+    }
+    return result
   }
 
   override fun findDatasetById(organizationId: String, datasetId: String): Dataset =

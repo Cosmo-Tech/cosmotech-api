@@ -76,23 +76,67 @@ internal class WorkspaceServiceImpl(
     private val workspaceRepository: WorkspaceRepository
 ) : CsmPhoenixService(), WorkspaceApiService {
 
-  override fun findAllWorkspaces(organizationId: String, page: Int, size: Int): List<Workspace> {
-    val pageable = PageRequest.of(page, size)
+  override fun findAllWorkspaces(organizationId: String, page: Int?, size: Int?): List<Workspace> {
     val organization =
         organizationRepository.findById(organizationId).orElseThrow {
           CsmResourceNotFoundException("Organization $organizationId")
         }
-
     val isAdmin = csmRbac.isAdmin(organization.getRbac(), getCommonRolesDefinition())
-    if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
-      return workspaceRepository.findByOrganizationId(organizationId, pageable).toList()
+    var result: List<Workspace>
+    var pageable = constructPageRequest(page, size)
+
+    if (pageable == null) {
+      var allWorkspaceByOrganizationId = mutableListOf<Workspace>()
+      pageable = PageRequest.ofSize(csmPlatformProperties.twincache.workspace.maxResult)
+
+      do {
+        var paginatedWorkspaces: List<Workspace>
+        if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
+          paginatedWorkspaces =
+              workspaceRepository.findByOrganizationId(organizationId, pageable!!).toList()
+        } else {
+          val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+          paginatedWorkspaces =
+              workspaceRepository
+                  .findByOrganizationIdAndSecurity(
+                      organizationId.sanitizeForRedis(),
+                      currentUser.toSecurityConstraintQuery(),
+                      pageable!!)
+                  .toList()
+        }
+        allWorkspaceByOrganizationId.addAll(paginatedWorkspaces)
+        pageable = pageable!!.next()
+      } while (paginatedWorkspaces.isNotEmpty())
+      result = allWorkspaceByOrganizationId
+    } else {
+      if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
+        result = workspaceRepository.findByOrganizationId(organizationId, pageable).toList()
+      } else {
+        val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+        result =
+            workspaceRepository
+                .findByOrganizationIdAndSecurity(
+                    organizationId.sanitizeForRedis(),
+                    currentUser.toSecurityConstraintQuery(),
+                    pageable)
+                .toList()
+      }
     }
-    val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
-    logger.debug("Getting workspaces for user $currentUser")
-    return workspaceRepository
-        .findByOrganizationIdAndSecurity(
-            organizationId.sanitizeForRedis(), currentUser.toSecurityConstraintQuery(), pageable)
-        .toList()
+    return result
+  }
+
+  internal fun constructPageRequest(page: Int?, size: Int?): PageRequest? {
+    var result: PageRequest? = null
+    if (page != null && size != null) {
+      result = PageRequest.of(page, size)
+    }
+    if (page != null && size == null) {
+      result = PageRequest.of(page, csmPlatformProperties.twincache.workspace.maxResult)
+    }
+    if (page == null && size != null) {
+      result = PageRequest.of(0, size)
+    }
+    return result
   }
 
   internal fun findWorkspaceByIdNoSecurity(workspaceId: String): Workspace =
@@ -111,7 +155,7 @@ internal class WorkspaceServiceImpl(
     // Needs security on Organization to check RBAC
     csmRbac.verify(organization.getRbac(), PERMISSION_CREATE_CHILDREN)
     // Validate Solution ID
-    workspace.solution?.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
+    workspace.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
 
     var workspaceSecurity = workspace.security
     if (workspaceSecurity == null) {
@@ -165,9 +209,9 @@ internal class WorkspaceServiceImpl(
                 workspace, excludedFields = arrayOf("ownerId", "security", "solution"))
             .isNotEmpty()
 
-    if (workspace.solution?.solutionId != null) {
+    if (workspace.solution.solutionId != null) {
       // Validate solution ID
-      workspace.solution?.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
+      workspace.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
       existingWorkspace.solution = workspace.solution
       hasChanged = true
     }

@@ -288,7 +288,7 @@ internal class ScenarioServiceImpl(
 
     do {
       val scenarioList =
-          this.findAllScenariosStateOption(
+          this.findPaginatedScenariosStateOption(
               organizationId, workspaceId, pageable.pageNumber, pageable.pageSize, false)
       scenarioList.forEach {
         scenarioRepository.delete(it)
@@ -326,25 +326,63 @@ internal class ScenarioServiceImpl(
   override fun findAllScenarios(
       organizationId: String,
       workspaceId: String,
-      page: Int,
-      size: Int
+      page: Int?,
+      size: Int?
   ): List<Scenario> {
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_READ)
-    return this.findAllScenariosStateOption(organizationId, workspaceId, page, size, true)
-        .addLastRunsInfo(this)
+    var pageable = constructPageRequest(page, size)
+    if (pageable != null) {
+      return this.findPaginatedScenariosStateOption(
+              organizationId, workspaceId, pageable.pageNumber, pageable.pageSize, true)
+          .addLastRunsInfo(this)
+    }
+    var allScenariosByOrganizationIdAndWorkspaceId = mutableListOf<Scenario>()
+    pageable = PageRequest.ofSize(csmPlatformProperties.twincache.scenario.maxResult)
+    do {
+      var paginatedScenarios =
+          this.findPaginatedScenariosStateOption(
+                  organizationId, workspaceId, pageable!!.pageNumber, pageable!!.pageSize, true)
+              .addLastRunsInfo(this)
+
+      allScenariosByOrganizationIdAndWorkspaceId.addAll(paginatedScenarios)
+      pageable = pageable!!.next()
+    } while (paginatedScenarios.isNotEmpty())
+    return allScenariosByOrganizationIdAndWorkspaceId
   }
 
   override fun findAllScenariosByValidationStatus(
       organizationId: String,
       workspaceId: String,
       validationStatus: ScenarioValidationStatus,
-      page: Int,
-      size: Int
-  ): List<Scenario> =
-      findAllScenarioByValidationStatus(organizationId, workspaceId, validationStatus.toString())
+      page: Int?,
+      size: Int?
+  ): List<Scenario> {
+    val status = validationStatus.toString()
+    var pageRequest = constructPageRequest(page, size)
+    var findAllScenarioByValidationStatus = mutableListOf<Scenario>()
 
-  internal fun findAllScenariosStateOption(
+    val rbacEnabled = isRbacEnabled(organizationId, workspaceId)
+    do {
+      var scenarioList: List<Scenario>
+      if (rbacEnabled) {
+        val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+        scenarioList =
+            scenarioRepository
+                .findByValidationStatusAndSecurity(
+                    status, currentUser.toSecurityConstraintQuery(), pageRequest!!)
+                .toList()
+      } else {
+        scenarioList = scenarioRepository.findByValidationStatus(status, pageRequest!!).toList()
+      }
+      findAllScenarioByValidationStatus.addAll(scenarioList)
+      pageRequest = pageRequest.next()
+    } while (scenarioList.isNotEmpty())
+
+    return findAllScenarioByValidationStatus
+  }
+
+  internal fun findPaginatedScenariosStateOption(
       organizationId: String,
       workspaceId: String,
       page: Int,
@@ -368,35 +406,30 @@ internal class ScenarioServiceImpl(
     return scenarios
   }
 
-  private fun findAllScenarioByValidationStatus(
-      organizationId: String,
-      workspaceId: String,
-      validationStatus: String
-  ): List<Scenario> {
-    val pageable: Pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenario.maxResult)
-    if (isRbacEnabled(organizationId, workspaceId)) {
-      val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
-      return scenarioRepository
-          .findByValidationStatusAndSecurity(
-              validationStatus, currentUser.toSecurityConstraintQuery(), pageable)
-          .toList()
-    }
-    return scenarioRepository.findByValidationStatus(validationStatus, pageable).toList()
-  }
-
   private fun findAllScenariosByRootId(
       organizationId: String,
       workspaceId: String,
       rootId: String
   ): List<Scenario> {
-    val pageable: Pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenario.maxResult)
-    if (isRbacEnabled(organizationId, workspaceId)) {
-      val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
-      return scenarioRepository
-          .findByRootIdAndSecurity(rootId, currentUser.toSecurityConstraintQuery(), pageable)
-          .toList()
-    }
-    return scenarioRepository.findByRootId(rootId, pageable).toList()
+    var pageable = PageRequest.ofSize(csmPlatformProperties.twincache.scenario.maxResult)
+    var findAllScenariosByRootId = mutableListOf<Scenario>()
+    val rbacEnabled = isRbacEnabled(organizationId, workspaceId)
+    do {
+      var scenarioList: List<Scenario>
+      if (rbacEnabled) {
+        val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+        scenarioList =
+            scenarioRepository
+                .findByRootIdAndSecurity(rootId, currentUser.toSecurityConstraintQuery(), pageable)
+                .toList()
+      } else {
+        scenarioList = scenarioRepository.findByRootId(rootId, pageable).toList()
+      }
+      findAllScenariosByRootId.addAll(scenarioList)
+      pageable = pageable.next()
+    } while (scenarioList.isNotEmpty())
+
+    return findAllScenariosByRootId
   }
 
   internal fun findScenarioChildrenById(
@@ -404,15 +437,26 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       parentId: String
   ): List<Scenario> {
-    val pageable: Pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenario.maxResult)
-    if (isRbacEnabled(organizationId, workspaceId)) {
-      val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
-      return scenarioRepository
-          .findByParentIdAndSecurity(parentId, currentUser.toSecurityConstraintQuery(), pageable)
-          .toList()
-    }
+    var pageable = PageRequest.ofSize(csmPlatformProperties.twincache.scenario.maxResult)
+    var findScenarioChildrenById = mutableListOf<Scenario>()
+    val rbacEnabled = isRbacEnabled(organizationId, workspaceId)
+    do {
+      var scenarioList: List<Scenario>
+      if (rbacEnabled) {
+        val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+        scenarioList =
+            scenarioRepository
+                .findByParentIdAndSecurity(
+                    parentId, currentUser.toSecurityConstraintQuery(), pageable)
+                .toList()
+      } else {
+        scenarioList = scenarioRepository.findByParentId(parentId, pageable).toList()
+      }
+      findScenarioChildrenById.addAll(scenarioList)
+      pageable = pageable.next()
+    } while (scenarioList.isNotEmpty())
 
-    return scenarioRepository.findByParentId(parentId, pageable).toList()
+    return findScenarioChildrenById
   }
 
   private fun isRbacEnabled(organizationId: String, workspaceId: String): Boolean {
@@ -526,7 +570,7 @@ internal class ScenarioServiceImpl(
 
     do {
       val scenarioList =
-          this.findAllScenariosStateOption(
+          this.findPaginatedScenariosStateOption(
                   organizationId, workspaceId, pageable.pageNumber, pageable.pageSize, true)
               .addLastRunsInfo(this)
       scenarioTree.addAll(scenarioList)
@@ -721,28 +765,26 @@ internal class ScenarioServiceImpl(
   fun deleteHistoricalDataScenario(data: DeleteHistoricalDataWorkspace) {
     val organizationId = data.organizationId
     val workspaceId = data.workspaceId
-    var pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenario.maxResult)
-    do {
-      val scenarioList =
-          this.findAllScenarios(organizationId, workspaceId, pageable.pageNumber, pageable.pageSize)
-      scenarioList.forEach {
-        this.eventPublisher.publishEvent(
-            DeleteHistoricalDataScenario(
-                this, organizationId, workspaceId, it.id!!, data.deleteUnknown))
-      }
-      pageable = pageable.next()
-    } while (scenarioList.isNotEmpty())
+    val scenarioList = this.findAllScenarios(organizationId, workspaceId, null, null)
+    scenarioList.forEach {
+      this.eventPublisher.publishEvent(
+          DeleteHistoricalDataScenario(
+              this, organizationId, workspaceId, it.id!!, data.deleteUnknown))
+    }
   }
 
   @EventListener(OrganizationUnregistered::class)
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
-    val pageable: Pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenario.maxResult)
-    val scenarios =
-        scenarioRepository
-            .findByOrganizationId(organizationUnregistered.organizationId, pageable)
-            .toList()
-    scenarioRepository.deleteAll(scenarios)
+    var pageable: Pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenario.maxResult)
+    do {
+      var scenarioToDelete =
+          scenarioRepository
+              .findByOrganizationId(organizationUnregistered.organizationId, pageable)
+              .toList()
+      scenarioRepository.deleteAll(scenarioToDelete)
+      pageable = pageable.next()
+    } while (scenarioToDelete.isNotEmpty())
   }
 
   @EventListener(ScenarioRunStartedForScenario::class)
@@ -909,5 +951,19 @@ internal class ScenarioServiceImpl(
     }
 
     return scenarioRepository.save(scenario)
+  }
+
+  internal fun constructPageRequest(page: Int?, size: Int?): PageRequest? {
+    var result: PageRequest? = null
+    if (page != null && size != null) {
+      result = PageRequest.of(page, size)
+    }
+    if (page != null && size == null) {
+      result = PageRequest.of(page, csmPlatformProperties.twincache.scenario.maxResult)
+    }
+    if (page == null && size != null) {
+      result = PageRequest.of(0, size)
+    }
+    return result
   }
 }
