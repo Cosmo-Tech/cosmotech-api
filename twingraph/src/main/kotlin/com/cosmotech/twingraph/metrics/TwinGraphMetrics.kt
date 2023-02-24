@@ -5,7 +5,6 @@ package com.cosmotech.twingraph.metrics
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.events.PersistentMetricEvent
-import com.cosmotech.api.metrics.DownSamplingAggregationType
 import com.cosmotech.api.metrics.PersistentMetric
 import com.cosmotech.api.metrics.PersitentMetricType
 import org.springframework.scheduling.annotation.Scheduled
@@ -27,7 +26,7 @@ internal class TwinGraphMetrics(
   }
 
   // Every 30mn
-  @Scheduled(fixedDelay = 1800000)
+  @Scheduled(fixedDelay = 3600000)
   fun publishTwinGraphCount() {
     if (!csmPlatformProperties.metrics.enabled) return
     val count = this.getTwinGraphList().size.toDouble()
@@ -42,8 +41,6 @@ internal class TwinGraphMetrics(
                     "usage" to "licensing",
                 ),
             type = PersitentMetricType.GAUGE,
-            downSampling = true,
-            downSamplingAggregation = DownSamplingAggregationType.MAX,
         )
     eventPublisher.publishEvent(PersistentMetricEvent(this, metric))
   }
