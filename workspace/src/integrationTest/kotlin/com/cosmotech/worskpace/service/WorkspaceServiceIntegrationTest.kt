@@ -113,7 +113,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("should find all workspaces and assert there are 2")
     val workspacesList: List<Workspace> =
-        workspaceApiService.findAllWorkspaces(organizationRegistered.id!!)
+        workspaceApiService.findAllWorkspaces(organizationRegistered.id!!, null, null)
     assertTrue(workspacesList.size == 2)
 
     logger.info("should update the name of the first workspace")
@@ -127,7 +127,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("should delete the first workspace")
     workspaceApiService.deleteWorkspace(organizationRegistered.id!!, workspaceRegistered2.id!!)
     val workspacesListAfterDelete: List<Workspace> =
-        workspaceApiService.findAllWorkspaces(organizationRegistered.id!!)
+        workspaceApiService.findAllWorkspaces(organizationRegistered.id!!, null, null)
     assertTrue(workspacesListAfterDelete.size == 1)
   }
 
@@ -150,7 +150,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("should not find all workspaces")
     val workspacesList: List<Workspace> =
-        workspaceApiService.findAllWorkspaces(organizationRegistered.id!!)
+        workspaceApiService.findAllWorkspaces(organizationRegistered.id!!, null, null)
     assertTrue(workspacesList.isEmpty())
 
     logger.info("should not update a workspace")

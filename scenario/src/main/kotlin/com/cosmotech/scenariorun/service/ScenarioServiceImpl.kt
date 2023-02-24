@@ -360,9 +360,22 @@ internal class ScenarioServiceImpl(
   ): List<Scenario> {
     val status = validationStatus.toString()
     var pageRequest = constructPageRequest(page, size)
-    var findAllScenarioByValidationStatus = mutableListOf<Scenario>()
-
     val rbacEnabled = isRbacEnabled(organizationId, workspaceId)
+
+    if (pageRequest != null) {
+      if (rbacEnabled) {
+        val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+        return scenarioRepository
+            .findByValidationStatusAndSecurity(
+                status, currentUser.toSecurityConstraintQuery(), pageRequest!!)
+            .toList()
+      } else {
+        return scenarioRepository.findByValidationStatus(status, pageRequest!!).toList()
+      }
+    }
+
+    var findAllScenarioByValidationStatus = mutableListOf<Scenario>()
+    pageRequest = PageRequest.ofSize(csmPlatformProperties.twincache.scenario.maxResult)
     do {
       var scenarioList: List<Scenario>
       if (rbacEnabled) {

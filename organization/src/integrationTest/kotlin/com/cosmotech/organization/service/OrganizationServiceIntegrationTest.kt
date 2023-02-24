@@ -162,7 +162,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("Deleting organization...")
     organizationApiService.unregisterOrganization(organizationRegistered2.id!!)
-    organizationList = organizationApiService.findAllOrganizations()
+    organizationList = organizationApiService.findAllOrganizations(null, null)
     assertTrue { organizationList.size == 1 }
   }
 

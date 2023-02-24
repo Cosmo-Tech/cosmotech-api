@@ -56,26 +56,26 @@ class OrganizationServiceImpl(
       pageable = PageRequest.ofSize(csmPlatformProperties.twincache.organization.maxResult)
 
       do {
-        var paginatedOrganizations : MutableList<Organization>
+        var paginatedOrganizations: MutableList<Organization>
         if (rbacEnabled) {
           val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
-          paginatedOrganizations = organizationRepository
-            .findOrganizationsBySecurity(currentUser.toSecurityConstraintQuery(), pageable!!)
-            .toList()
+          paginatedOrganizations =
+              organizationRepository
+                  .findOrganizationsBySecurity(currentUser.toSecurityConstraintQuery(), pageable!!)
+                  .toList()
         } else {
           paginatedOrganizations = organizationRepository.findAll(pageable!!).toList()
         }
         result.addAll(paginatedOrganizations)
         pageable = pageable!!.next()
       } while (paginatedOrganizations.isNotEmpty())
-
     } else {
       if (rbacEnabled) {
         val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
         result =
-          organizationRepository
-            .findOrganizationsBySecurity(currentUser.toSecurityConstraintQuery(), pageable)
-            .toList()
+            organizationRepository
+                .findOrganizationsBySecurity(currentUser.toSecurityConstraintQuery(), pageable)
+                .toList()
       } else {
         result = organizationRepository.findAll(pageable).toList()
       }

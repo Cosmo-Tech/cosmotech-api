@@ -157,13 +157,13 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("should find all Scenarios and assert there are 2")
     var scenarioList =
-        scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!)
+        scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!, null, null)
     assertTrue(scenarioList.size == 2)
 
     logger.info("should find all Scenarios by Validation Status Draft and assert there are 2")
     scenarioList =
         scenarioApiService.findAllScenariosByValidationStatus(
-            organizationSaved.id!!, workspaceSaved.id!!, ScenarioValidationStatus.Draft)
+            organizationSaved.id!!, workspaceSaved.id!!, ScenarioValidationStatus.Draft, null, null)
     assertTrue(scenarioList.size == 2)
 
     logger.info("should find a Scenario by Id and assert it is the one created")
@@ -191,13 +191,13 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     scenarioApiService.deleteScenario(
         organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved2.id!!, false)
     val scenarioListAfterDelete =
-        scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!)
+        scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!, null, null)
     assertTrue(scenarioListAfterDelete.size == 1)
 
     logger.info("should delete all Scenarios and assert there is no Scenario left")
     scenarioApiService.deleteAllScenarios(organizationSaved.id!!, workspaceSaved.id!!)
     val scenarioListAfterDeleteAll =
-        scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!)
+        scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!, null, null)
     assertTrue(scenarioListAfterDeleteAll.isEmpty())
   }
 
@@ -226,7 +226,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     scenarioApiService.deleteScenario(
         organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, true)
     val scenarioListAfterDelete =
-        scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!)
+        scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!, null, null)
     assertTrue(scenarioListAfterDelete.size == 1)
     assertNull(scenarioListAfterDelete[0].parentId)
     assertNull(scenarioListAfterDelete[0].rootId)

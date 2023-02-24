@@ -94,7 +94,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info(
         "should find all solutions for the organization and assert the list contains 2 elements")
-    val solutionsFound = solutionApiService.findAllSolutions(organizationRegistered.id!!)
+    val solutionsFound =
+        solutionApiService.findAllSolutions(organizationRegistered.id!!, null, null)
     assertTrue(solutionsFound.size == 2)
 
     logger.info("should update the solution and assert that the name has been updated")
@@ -107,7 +108,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     logger.info(
         "should delete the solution and assert that the list of solutions contains only 1 element")
     solutionApiService.deleteSolution(organizationRegistered.id!!, solutionCreated.id!!)
-    val solutionsFoundAfterDelete = solutionApiService.findAllSolutions(organizationRegistered.id!!)
+    val solutionsFoundAfterDelete =
+        solutionApiService.findAllSolutions(organizationRegistered.id!!, null, null)
     assertTrue(solutionsFoundAfterDelete.size == 1)
   }
 

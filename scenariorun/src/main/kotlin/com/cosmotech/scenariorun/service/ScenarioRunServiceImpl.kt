@@ -61,7 +61,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
@@ -272,25 +271,69 @@ class ScenarioRunServiceImpl(
       organizationId: String,
       workspaceId: String,
       scenarioId: String,
-      page: Int,
-      size: Int
+      page: Int?,
+      size: Int?
   ): List<ScenarioRun> {
-    val pageable = PageRequest.of(page, size)
-    return scenarioRunRepository.findByScenarioId(scenarioId, pageable).toList().map {
-      it.withStateInformation(organizationId).withoutSensitiveData()!!
+    var pageable = constructPageRequest(page, size)
+    if (pageable != null) {
+      return scenarioRunRepository.findByScenarioId(scenarioId, pageable).toList().map {
+        it.withStateInformation(organizationId).withoutSensitiveData()!!
+      }
     }
+
+    var result = mutableListOf<ScenarioRun>()
+    pageable = PageRequest.ofSize(csmPlatformProperties.twincache.scenariorun.maxResult)
+    do {
+      val scenarioRuns =
+          scenarioRunRepository.findByScenarioId(scenarioId, pageable!!).toList().map {
+            it.withStateInformation(organizationId).withoutSensitiveData()!!
+          }
+      result.addAll(scenarioRuns)
+      pageable = pageable.next()
+    } while (scenarioRuns.isNotEmpty())
+
+    return result
+  }
+
+  internal fun constructPageRequest(page: Int?, size: Int?): PageRequest? {
+    var result: PageRequest? = null
+    if (page != null && size != null) {
+      result = PageRequest.of(page, size)
+    }
+    if (page != null && size == null) {
+      result = PageRequest.of(page, csmPlatformProperties.twincache.scenariorun.maxResult)
+    }
+    if (page == null && size != null) {
+      result = PageRequest.of(0, size)
+    }
+    return result
   }
 
   override fun getWorkspaceScenarioRuns(
       organizationId: String,
       workspaceId: String,
-      page: Int,
-      size: Int
+      page: Int?,
+      size: Int?
   ): List<ScenarioRun> {
-    val pageable = PageRequest.of(page, size)
-    return scenarioRunRepository.findByWorkspaceId(workspaceId, pageable).toList().map {
-      it.withStateInformation(organizationId).withoutSensitiveData()!!
+    var pageable = constructPageRequest(page, size)
+    if (pageable != null) {
+      return scenarioRunRepository.findByWorkspaceId(workspaceId, pageable).toList().map {
+        it.withStateInformation(organizationId).withoutSensitiveData()!!
+      }
     }
+
+    var result = mutableListOf<ScenarioRun>()
+    pageable = PageRequest.ofSize(csmPlatformProperties.twincache.scenariorun.maxResult)
+    do {
+      val scenarioRuns =
+          scenarioRunRepository.findByWorkspaceId(workspaceId, pageable!!).toList().map {
+            it.withStateInformation(organizationId).withoutSensitiveData()!!
+          }
+      result.addAll(scenarioRuns)
+      pageable = pageable.next()
+    } while (scenarioRuns.isNotEmpty())
+
+    return result
   }
 
   @EventListener(ScenarioDataDownloadRequest::class)
@@ -492,15 +535,30 @@ class ScenarioRunServiceImpl(
 
   override fun searchScenarioRuns(
       organizationId: String,
-      page: Int,
-      size: Int,
-      scenarioRunSearch: ScenarioRunSearch
+      scenarioRunSearch: ScenarioRunSearch,
+      page: Int?,
+      size: Int?
   ): List<ScenarioRun> {
-    val pageable: Pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenariorun.maxResult)
-    return scenarioRunRepository
-        .findByPredicate(scenarioRunSearch.toRedisPredicate(), pageable)
-        .toList()
-        .map { it.withStateInformation(organizationId).withoutSensitiveData()!! }
+    var pageable = constructPageRequest(page, size)
+    if (pageable != null) {
+      return scenarioRunRepository
+          .findByPredicate(scenarioRunSearch.toRedisPredicate(), pageable)
+          .toList()
+          .map { it.withStateInformation(organizationId).withoutSensitiveData()!! }
+    }
+    pageable = PageRequest.ofSize(csmPlatformProperties.twincache.scenariorun.maxResult)
+    var result = mutableListOf<ScenarioRun>()
+    do {
+      var scenarioRuns =
+          scenarioRunRepository
+              .findByPredicate(scenarioRunSearch.toRedisPredicate(), pageable!!)
+              .toList()
+              .map { it.withStateInformation(organizationId).withoutSensitiveData()!! }
+      result.addAll(scenarioRuns)
+      pageable = pageable.next()
+    } while (scenarioRuns.isNotEmpty())
+
+    return result
   }
 
   override fun startScenarioRunContainers(

@@ -71,7 +71,6 @@ class ConnectorServiceIntegrationTest : CsmRedisTestBase() {
     val connectorList = connectorApiService.findAllConnectors(null, null)
     logger.info("Connector list retrieved contains : ${connectorList.size} elements")
     assertEquals(numberOfConnector, connectorList.size)
-
   }
 
   @Test
@@ -121,7 +120,7 @@ class ConnectorServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("Creating $numberOfConnector organization...")
     var newConnector = mockConnector("o-connector-test-1")
     connectorApiService.registerConnector(newConnector)
-    assertThrows<IllegalArgumentException> {  connectorApiService.findAllConnectors(0, 0) }
+    assertThrows<IllegalArgumentException> { connectorApiService.findAllConnectors(0, 0) }
   }
 
   @Test
@@ -130,7 +129,7 @@ class ConnectorServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("Creating $numberOfConnector organization...")
     var newConnector = mockConnector("o-connector-test-1")
     connectorApiService.registerConnector(newConnector)
-    assertThrows<IllegalArgumentException> {  connectorApiService.findAllConnectors(-1, 10) }
+    assertThrows<IllegalArgumentException> { connectorApiService.findAllConnectors(-1, 10) }
   }
 
   @Test
@@ -139,7 +138,7 @@ class ConnectorServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("Creating $numberOfConnector organization...")
     var newConnector = mockConnector("o-connector-test-1")
     connectorApiService.registerConnector(newConnector)
-    assertThrows<IllegalArgumentException> {  connectorApiService.findAllConnectors(0, -1) }
+    assertThrows<IllegalArgumentException> { connectorApiService.findAllConnectors(0, -1) }
   }
 
   @Test

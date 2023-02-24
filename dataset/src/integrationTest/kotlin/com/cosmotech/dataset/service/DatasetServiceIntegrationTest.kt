@@ -102,7 +102,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     assertNotNull(retrievedDataset1)
 
     logger.info("Fetch all datasets...")
-    var datasetList = datasetApiService.findAllDatasets(organizationId)
+    var datasetList = datasetApiService.findAllDatasets(organizationId, null, null)
     for (item in datasetList) {
       logger.warn(item.id)
     }
@@ -110,7 +110,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("Delete Dataset : ${registeredDataset2.id}...")
     datasetApiService.deleteDataset(organizationId, registeredDataset2.id!!)
-    datasetList = datasetApiService.findAllDatasets(organizationId)
+    datasetList = datasetApiService.findAllDatasets(organizationId, null, null)
     assertTrue { datasetList.size == 1 }
   }
 
@@ -120,7 +120,8 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("Search Datasets...")
     val datasetList =
-        datasetApiService.searchDatasets(organizationId, DatasetSearch(mutableListOf("data")))
+        datasetApiService.searchDatasets(
+            organizationId, DatasetSearch(mutableListOf("data")), null, null)
     assertTrue { datasetList.size == 2 }
 
     logger.info("Update Dataset : ${registeredDataset1.id}...")

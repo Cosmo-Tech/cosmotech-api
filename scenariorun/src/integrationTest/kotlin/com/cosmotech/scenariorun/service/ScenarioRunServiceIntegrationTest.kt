@@ -177,24 +177,25 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("should find all ScenarioRuns by Scenario id and assert size is 2")
     var scenarioRuns =
         scenariorunApiService.getScenarioRuns(
-            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, null, null)
     assertTrue(scenarioRuns.size == 2)
 
     logger.info("should find all ScenarioRuns by Workspace id and assert size is 2")
     val scenarioWorkspaceRuns =
-        scenariorunApiService.getWorkspaceScenarioRuns(organizationSaved.id!!, workspaceSaved.id!!)
+        scenariorunApiService.getWorkspaceScenarioRuns(
+            organizationSaved.id!!, workspaceSaved.id!!, null, null)
     assertTrue(scenarioWorkspaceRuns.size == 2)
 
     logger.info("should find all ScenarioRuns by Scenario id and assert size is 2")
     val scenarioRunSearch = ScenarioRunSearch(scenarioId = scenarioSaved.id!!)
-    scenariorunApiService.searchScenarioRuns(organizationSaved.id!!, scenarioRunSearch)
+    scenariorunApiService.searchScenarioRuns(organizationSaved.id!!, scenarioRunSearch, null, null)
     assertTrue(scenarioRuns.size == 2)
 
     logger.info("should delete second ScenarioRun and assert size is 1")
     scenariorunApiService.deleteScenarioRun(organizationSaved.id!!, scenarioRunSaved2.id!!)
     scenarioRuns =
         scenariorunApiService.getScenarioRuns(
-            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, null, null)
     assertTrue(scenarioRuns.size == 1)
   }
 

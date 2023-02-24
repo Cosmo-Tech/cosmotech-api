@@ -182,14 +182,27 @@ internal class DatasetServiceImpl(
 
   override fun searchDatasets(
       organizationId: String,
-      page: Int,
-      size: Int,
-      datasetSearch: DatasetSearch
+      datasetSearch: DatasetSearch,
+      page: Int?,
+      size: Int?,
   ): List<Dataset> {
-    val pageRequest = PageRequest.of(page, size)
-    return datasetRepository
-        .findDatasetByTags(datasetSearch.datasetTags.toSet(), pageRequest)
-        .toList()
+    var pageRequest = constructPageRequest(page, size)
+    if (pageRequest != null) {
+      return datasetRepository
+          .findDatasetByTags(datasetSearch.datasetTags.toSet(), pageRequest)
+          .toList()
+    }
+    pageRequest = PageRequest.ofSize(csmPlatformProperties.twincache.dataset.maxResult)
+    var result = mutableListOf<Dataset>()
+    do {
+      var datasets =
+          datasetRepository
+              .findDatasetByTags(datasetSearch.datasetTags.toSet(), pageRequest!!)
+              .toList()
+      result.addAll(datasets)
+      pageRequest = pageRequest.next()
+    } while (datasets.isNotEmpty())
+    return result
   }
 
   @EventListener(OrganizationUnregistered::class)

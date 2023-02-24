@@ -127,13 +127,13 @@ paths:
       - name: page
         in: query
         description: page number to query
-        required: true
+        required: false
         schema:
           type: integer
       - name: size
         in: query
         description: amount of result by page
-        required: true
+        required: false
         schema:
           type: integer
     post:
@@ -362,13 +362,13 @@ paths:
       - name: page
         in: query
         description: page number to query
-        required: true
+        required: false
         schema:
           type: integer
       - name: size
         in: query
         description: amount of result by page
-        required: true
+        required: false
         schema:
           type: integer
     get:
@@ -411,13 +411,13 @@ paths:
       - name: page
         in: query
         description: page number to query
-        required: true
+        required: false
         schema:
           type: integer
       - name: size
         in: query
         description: amount of result by page
-        required: true
+        required: false
         schema:
           type: integer
     get:
