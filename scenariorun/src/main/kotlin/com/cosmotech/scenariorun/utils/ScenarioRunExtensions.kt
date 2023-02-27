@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenariorun.utils
 
-import com.cosmotech.api.utils.sanitizeForRedis
 import com.cosmotech.scenariorun.NODE_LABEL_DEFAULT
 import com.cosmotech.scenariorun.domain.ScenarioRun
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
@@ -56,10 +55,7 @@ internal fun getRedisQuery(pair: Pair<String, Any?>, isSearchable: Boolean): Str
 }
 
 fun String.sanitizeForRedisQuery(searchable: Boolean = false): String {
-  val result = this
-    .replace("@", "\\@")
-    .replace(".", "\\.")
-    .replace("-", "\\-")
+  val result = this.replace("@", "\\@").replace(".", "\\.").replace("-", "\\-")
   return if (searchable) {
     if (result.startsWith("*") || result.endsWith("*")) {
       return result
@@ -69,4 +65,3 @@ fun String.sanitizeForRedisQuery(searchable: Boolean = false): String {
     result
   }
 }
-

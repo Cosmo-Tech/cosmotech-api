@@ -20,8 +20,8 @@ class ScenarioRunExtensionsTests {
         )
 
     val redisQuery = scenarioSearch.toRedisPredicate()
-    assertContains(redisQuery, "@scenarioId:{*scenario\\-Id*}")
-    assertContains(redisQuery, "@workspaceId:{*workspace\\-Id*}")
+    assertContains(redisQuery, "@scenarioId:{scenario\\-Id}")
+    assertContains(redisQuery, "@workspaceId:{workspace\\-Id}")
     assertContains(redisQuery, "@state:*Running*")
     assertTrue { redisQuery.size == 3 }
   }
