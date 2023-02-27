@@ -30,6 +30,7 @@ plugins {
   id("org.openapi.generator") version "5.4.0" apply false
   id("com.google.cloud.tools.jib") version "3.3.1" apply false
   id("io.gitlab.arturbosch.detekt") version "1.21.0"
+  id("org.jetbrains.kotlinx.kover") version "0.6.1"
 }
 
 scmVersion { tag { prefix.set("") } }
@@ -473,3 +474,14 @@ tasks.register<Copy>("copySubProjectsDetektReports") {
 }
 
 tasks.getByName("detekt") { finalizedBy("copySubProjectsDetektReports") }
+
+koverMerged {
+  enable()
+  filters {
+    classes {
+      excludes +=
+          listOf("com.cosmotech.Application*", "com.cosmotech.*.api.*", "com.cosmotech.*.domain.*")
+    }
+    projects { excludes += listOf("cosmotech-api") }
+  }
+}

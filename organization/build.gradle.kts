@@ -1,5 +1,6 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
+plugins { id("org.jetbrains.kotlinx.kover") }
 
 dependencies {
   testImplementation("org.testng:testng:7.7.0")

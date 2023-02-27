@@ -1,6 +1,6 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.scenariorun.service
+package com.cosmotech.scenario.service
 
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.model.RbacAccessControl

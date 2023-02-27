@@ -1,6 +1,6 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.scenario.azure
+package com.cosmotech.scenario.service
 
 import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
@@ -22,7 +22,6 @@ import com.cosmotech.scenario.domain.ScenarioJobState
 import com.cosmotech.scenario.domain.ScenarioLastRun
 import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
 import com.cosmotech.scenario.repository.ScenarioRepository
-import com.cosmotech.scenariorun.service.ScenarioServiceImpl
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateParameterGroup

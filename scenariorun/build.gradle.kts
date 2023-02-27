@@ -3,6 +3,8 @@
 
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
+plugins { id("org.jetbrains.kotlinx.kover") }
+
 dependencies {
   implementation("io.argoproj.workflow:argo-client-java:v3.4.3")
   implementation("com.squareup.retrofit2:retrofit:2.9.0")
