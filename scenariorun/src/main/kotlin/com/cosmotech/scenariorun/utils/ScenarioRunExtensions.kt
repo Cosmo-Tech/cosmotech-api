@@ -52,5 +52,21 @@ internal fun ScenarioRunSearch.toRedisPredicate(): List<String> {
 internal fun getRedisQuery(pair: Pair<String, Any?>, isSearchable: Boolean): String {
   val openBracket = if (isSearchable) "" else "{"
   val closeBracket = if (isSearchable) "" else "}"
-  return "@${pair.first}:$openBracket*${pair.second.toString().sanitizeForRedis()}*$closeBracket"
+  return "@${pair.first}:$openBracket${pair.second.toString().sanitizeForRedisQuery(isSearchable)}$closeBracket"
 }
+
+fun String.sanitizeForRedisQuery(searchable: Boolean = false): String {
+  val result = this
+    .replace("@", "\\@")
+    .replace(".", "\\.")
+    .replace("-", "\\-")
+  return if (searchable) {
+    if (result.startsWith("*") || result.endsWith("*")) {
+      return result
+    }
+    return "*$result*"
+  } else {
+    result
+  }
+}
+
