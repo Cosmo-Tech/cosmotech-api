@@ -4,8 +4,6 @@ package com.cosmotech.organization.service
 
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
-import com.cosmotech.api.rbac.ROLE_ADMIN
-import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
@@ -58,7 +56,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   var organization1 = makeOrganization("o-organization-1", "Organization-1")
   val organization2 = makeOrganization("o-organization-2", "Organization-2")
 
-    val name = "my.account-tester@cosmotech.com"
+  val name = "my.account-tester@cosmotech.com"
 
   var organizationRegistered1 = Organization()
   var organizationRegistered2 = Organization()
@@ -120,23 +118,19 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
                         baseUri = "base",
                         platformService = "platform",
                         resourceUri = "resource",
-                        credentials =
-                            mutableMapOf(Pair(name, "reader"))),
+                        credentials = mutableMapOf(Pair(name, "reader"))),
                 solutionsContainerRegistry =
                     OrganizationService(
                         cloudService = "cloud",
                         baseUri = "base",
                         platformService = "platform",
                         resourceUri = "resource",
-                        credentials =
-                            mutableMapOf(Pair(name, "reader")))),
+                        credentials = mutableMapOf(Pair(name, "reader")))),
         security =
             OrganizationSecurity(
                 default = "none",
                 accessControlList =
-                    mutableListOf(
-                        OrganizationAccessControl(
-                            id = name, role = "reader"))))
+                    mutableListOf(OrganizationAccessControl(id = name, role = "reader"))))
   }
 
   @Test
@@ -363,10 +357,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
             dynamicTest("Test read : $role") {
               val organizationCreated =
                   organizationApiService.registerOrganization(
-                      makeOrganizationWithRole(
-                          "id",
-                          name,
-                          role))
+                      makeOrganizationWithRole("id", name, role))
               if (shouldThrow) {
                 assertThrows<CsmAccessForbiddenException> {
                   organizationApiService.findOrganizationById(organizationCreated.id!!)
@@ -421,10 +412,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
             dynamicTest("Test unregister : $role") {
               val organizationRegistered =
                   organizationApiService.registerOrganization(
-                      makeOrganizationWithRole(
-                          "id",
-                          name,
-                          role))
+                      makeOrganizationWithRole("id", name, role))
               if (shouldThrow) {
                 assertThrows<CsmAccessForbiddenException> {
                   organizationApiService.unregisterOrganization(organizationRegistered.id!!)
@@ -437,42 +425,91 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
             }
           }
 
-    @TestFactory
-    fun `test update organization`() =
-        mapOf(
-            "viewer" to true,
-            "editor" to false,
-            "admin" to false,
-            "validator" to true,
-            "user" to true,
-            "none" to true)
-            .map { (role, shouldThrow) ->
-                dynamicTest("Test update : $role") {
-                    val organizationRegistered =
-                        organizationApiService.registerOrganization(
-                            makeOrganizationWithRole(
-                                "id",
-                                name,
-                                role))
-                    if (shouldThrow) {
-                        assertThrows<CsmAccessForbiddenException> {
-                            organizationApiService.updateOrganization(
-                                organizationRegistered.id!!,
-                                makeOrganizationWithRole(
-                                    organizationRegistered.id!!,
-                                    "modifiedOrganization",
-                                    role))
-                        }
-                    } else {
-                        assertDoesNotThrow {
-                            organizationApiService.updateOrganization(
-                                organizationRegistered.id!!,
-                                makeOrganizationWithRole(
-                                    organizationRegistered.id!!,
-                                    "modifiedOrganization",
-                                    role))
-                        }
-                    }
+  @TestFactory
+  fun `test update organization`() =
+      mapOf(
+          "viewer" to true,
+          "editor" to false,
+          "admin" to false,
+          "validator" to true,
+          "user" to true,
+          "none" to true)
+          .map { (role, shouldThrow) ->
+            dynamicTest("Test update : $role") {
+              val organizationRegistered =
+                  organizationApiService.registerOrganization(
+                      makeOrganizationWithRole("id", name, role))
+              if (shouldThrow) {
+                assertThrows<CsmAccessForbiddenException> {
+                  organizationApiService.updateOrganization(
+                      organizationRegistered.id!!,
+                      makeOrganizationWithRole(
+                          organizationRegistered.id!!, "modifiedOrganization", role))
                 }
+              } else {
+                assertDoesNotThrow {
+                  organizationApiService.updateOrganization(
+                      organizationRegistered.id!!,
+                      makeOrganizationWithRole(
+                          organizationRegistered.id!!, "modifiedOrganization", role))
+                }
+              }
             }
+          }
+
+  @TestFactory
+  fun `test updateTenantCredentials organization`() =
+      mapOf(
+          "viewer" to true,
+          "editor" to false,
+          "admin" to false,
+          "validator" to true,
+          "user" to true,
+          "none" to true)
+          .map { (role, shouldThrow) ->
+            dynamicTest("Test updateTenantCredentials : $role") {
+              val organizationRegistered =
+                  organizationApiService.registerOrganization(
+                      makeOrganizationWithRole("id", name, role))
+              if (shouldThrow) {
+                assertThrows<CsmAccessForbiddenException> {
+                  organizationApiService.updateTenantCredentialsByOrganizationId(
+                      organizationRegistered.id!!, mapOf(Pair("", "")))
+                }
+              } else {
+                assertDoesNotThrow {
+                  organizationApiService.updateTenantCredentialsByOrganizationId(
+                      organizationRegistered.id!!, mapOf(Pair("", "")))
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test updateStorageConfiguration organization`() =
+      mapOf(
+          "viewer" to true,
+          "editor" to false,
+          "admin" to false,
+          "validator" to true,
+          "user" to true,
+          "none" to true)
+          .map { (role, shouldThrow) ->
+            dynamicTest("Test updateStorageConfiguration : $role") {
+              val organizationRegistered =
+                  organizationApiService.registerOrganization(
+                      makeOrganizationWithRole("id", name, role))
+              if (shouldThrow) {
+                assertThrows<CsmAccessForbiddenException> {
+                  organizationApiService.updateStorageByOrganizationId(
+                      organizationRegistered.id!!, OrganizationService())
+                }
+              } else {
+                assertDoesNotThrow {
+                  organizationApiService.updateStorageByOrganizationId(
+                      organizationRegistered.id!!, OrganizationService())
+                }
+              }
+            }
+          }
 }
