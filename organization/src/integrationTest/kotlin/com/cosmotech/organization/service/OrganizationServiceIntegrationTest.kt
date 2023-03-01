@@ -739,4 +739,27 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
               }
             }
           }
+
+    @TestFactory
+    fun `test getOrganizationSecurityUsers`() =
+        mapOf(
+            "viewer" to false,
+            "editor" to false,
+            "admin" to false,
+            "validator" to true,
+            "user" to false,
+            "none" to true)
+            .map { (role, shouldThrow) ->
+                dynamicTest("Test get users with role $role") {
+                    val organizationCreated = organizationApiService.registerOrganization(makeOrganizationWithRole("id", name, role))
+
+                    if (shouldThrow) {
+                        assertThrows<CsmAccessForbiddenException> {
+                            organizationApiService.getOrganizationSecurityUsers(organizationCreated.id!!)
+                        }
+                    } else {
+                        assertDoesNotThrow { organizationApiService.getOrganizationSecurityUsers(organizationCreated.id!!) }
+                    }
+                }
+            }
 }
