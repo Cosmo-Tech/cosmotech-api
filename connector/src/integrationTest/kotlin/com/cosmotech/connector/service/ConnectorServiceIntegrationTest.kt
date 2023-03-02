@@ -83,7 +83,7 @@ class ConnectorServiceIntegrationTest : CsmRedisTestBase() {
     }
     val connectorList = connectorApiService.findAllConnectors(0, null)
     logger.info("Connector list retrieved contains : ${connectorList.size} elements")
-    assertEquals(csmPlatformProperties.twincache.connector.maxResult, connectorList.size)
+    assertEquals(csmPlatformProperties.twincache.connector.defaultPageSize, connectorList.size)
   }
 
   @Test

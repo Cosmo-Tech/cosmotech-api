@@ -36,7 +36,7 @@ internal class DatasetServiceImpl(
     }
 
     var allDatasetByOrganizationId = mutableListOf<Dataset>()
-    pageRequest = PageRequest.ofSize(csmPlatformProperties.twincache.dataset.maxResult)
+    pageRequest = PageRequest.ofSize(csmPlatformProperties.twincache.dataset.defaultPageSize)
     do {
       val paginatedSolutions =
           datasetRepository.findByOrganizationId(organizationId, pageRequest!!).toList()
@@ -53,7 +53,7 @@ internal class DatasetServiceImpl(
       result = PageRequest.of(page, size)
     }
     if (page != null && size == null) {
-      result = PageRequest.of(page, csmPlatformProperties.twincache.dataset.maxResult)
+      result = PageRequest.of(page, csmPlatformProperties.twincache.dataset.defaultPageSize)
     }
     if (page == null && size != null) {
       result = PageRequest.of(0, size)
@@ -192,7 +192,7 @@ internal class DatasetServiceImpl(
           .findDatasetByTags(datasetSearch.datasetTags.toSet(), pageRequest)
           .toList()
     }
-    pageRequest = PageRequest.ofSize(csmPlatformProperties.twincache.dataset.maxResult)
+    pageRequest = PageRequest.ofSize(csmPlatformProperties.twincache.dataset.defaultPageSize)
     var result = mutableListOf<Dataset>()
     do {
       var datasets =
@@ -208,7 +208,7 @@ internal class DatasetServiceImpl(
   @EventListener(OrganizationUnregistered::class)
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
-    var pageable = PageRequest.ofSize(csmPlatformProperties.twincache.organization.maxResult)
+    var pageable = PageRequest.ofSize(csmPlatformProperties.twincache.organization.defaultPageSize)
     do {
       val datasetList =
           datasetRepository
@@ -223,7 +223,7 @@ internal class DatasetServiceImpl(
   @Async("csm-in-process-event-executor")
   fun onConnectorRemoved(connectorRemoved: ConnectorRemoved) {
     val connectorId = connectorRemoved.connectorId
-    var pageable = PageRequest.ofSize(csmPlatformProperties.twincache.dataset.maxResult)
+    var pageable = PageRequest.ofSize(csmPlatformProperties.twincache.dataset.defaultPageSize)
     do {
       val datasetList = datasetRepository.findDatasetByConnectorId(connectorId, pageable).toList()
       datasetList.forEach {

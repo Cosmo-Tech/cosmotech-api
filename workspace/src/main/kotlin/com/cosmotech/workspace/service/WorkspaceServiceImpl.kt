@@ -83,13 +83,13 @@ internal class WorkspaceServiceImpl(
           CsmResourceNotFoundException("Organization $organizationId")
         }
     val isAdmin = csmRbac.isAdmin(organization.getRbac(), getCommonRolesDefinition())
-    val maxResult = csmPlatformProperties.twincache.connector.maxResult
+    val defaultPageSize = csmPlatformProperties.twincache.connector.defaultPageSize
     var result: List<Workspace>
-    var pageable = constructPageRequest(page, size, maxResult)
+    var pageable = constructPageRequest(page, size, defaultPageSize)
 
     if (pageable == null) {
       result =
-          findAllPaginated(maxResult) {
+          findAllPaginated(defaultPageSize) {
             if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
               workspaceRepository.findByOrganizationId(organizationId, it).toList()
             } else {
@@ -326,7 +326,7 @@ internal class WorkspaceServiceImpl(
   @EventListener(DeleteHistoricalDataOrganization::class)
   fun deleteHistoricalDataWorkspace(data: DeleteHistoricalDataOrganization) {
     val organizationId = data.organizationId
-    var pageable = Pageable.ofSize(csmPlatformProperties.twincache.workspace.maxResult)
+    var pageable = Pageable.ofSize(csmPlatformProperties.twincache.workspace.defaultPageSize)
     var workspaceList = mutableListOf<Workspace>()
 
     do {
@@ -348,7 +348,8 @@ internal class WorkspaceServiceImpl(
     try {
       azureStorageBlobServiceClient.deleteBlobContainer(organizationId)
     } finally {
-      val pageable: Pageable = Pageable.ofSize(csmPlatformProperties.twincache.workspace.maxResult)
+      val pageable: Pageable =
+          Pageable.ofSize(csmPlatformProperties.twincache.workspace.defaultPageSize)
       val workspaces = workspaceRepository.findByOrganizationId(organizationId, pageable).toList()
       workspaceRepository.deleteAll(workspaces)
     }
