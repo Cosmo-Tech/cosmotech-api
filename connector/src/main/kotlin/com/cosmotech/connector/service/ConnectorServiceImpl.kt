@@ -19,12 +19,12 @@ internal class ConnectorServiceImpl(var connectorRepository: ConnectorRepository
     CsmPhoenixService(), ConnectorApiService {
 
   override fun findAllConnectors(page: Int?, size: Int?): List<Connector> {
-    val maxResult = csmPlatformProperties.twincache.connector.maxResult
-    var pageRequest = constructPageRequest(page, size, maxResult)
+    val defaultPageSize = csmPlatformProperties.twincache.connector.defaultPageSize
+    var pageRequest = constructPageRequest(page, size, defaultPageSize)
     if (pageRequest != null) {
       return connectorRepository.findAll(pageRequest).toList()
     }
-    return findAllPaginated(maxResult) { connectorRepository.findAll(it).toList() }
+    return findAllPaginated(defaultPageSize) { connectorRepository.findAll(it).toList() }
   }
 
   override fun findConnectorById(connectorId: String): Connector {

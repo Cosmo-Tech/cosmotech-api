@@ -46,7 +46,7 @@ internal class SolutionServiceImpl(
     }
 
     var allSolutionsByOrganizationId = mutableListOf<Solution>()
-    pageable = PageRequest.ofSize(csmPlatformProperties.twincache.solution.maxResult)
+    pageable = PageRequest.ofSize(csmPlatformProperties.twincache.solution.defaultPageSize)
     do {
       val paginatedSolutions =
           solutionRepository.findByOrganizationId(organizationId, pageable!!).toList()
@@ -62,7 +62,7 @@ internal class SolutionServiceImpl(
       result = PageRequest.of(page, size)
     }
     if (page != null && size == null) {
-      result = PageRequest.of(page, csmPlatformProperties.twincache.solution.maxResult)
+      result = PageRequest.of(page, csmPlatformProperties.twincache.solution.defaultPageSize)
     }
     if (page == null && size != null) {
       result = PageRequest.of(0, size)
@@ -246,7 +246,8 @@ internal class SolutionServiceImpl(
   @EventListener(OrganizationUnregistered::class)
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
-    val pageable: Pageable = Pageable.ofSize(csmPlatformProperties.twincache.solution.maxResult)
+    val pageable: Pageable =
+        Pageable.ofSize(csmPlatformProperties.twincache.solution.defaultPageSize)
     val solutions =
         solutionRepository
             .findByOrganizationId(organizationUnregistered.organizationId, pageable)

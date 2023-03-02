@@ -177,7 +177,8 @@ class ScenarioRunServiceImpl(
       scenarioId: String,
       deleteUnknown: Boolean?
   ) {
-    var pageRequest = PageRequest.ofSize(csmPlatformProperties.twincache.scenariorun.maxResult)
+    var pageRequest =
+        PageRequest.ofSize(csmPlatformProperties.twincache.scenariorun.defaultPageSize)
     var scenarioRunList = mutableListOf<ScenarioRun>()
     do {
       val scenarioRuns =
@@ -282,7 +283,7 @@ class ScenarioRunServiceImpl(
     }
 
     var result = mutableListOf<ScenarioRun>()
-    pageable = PageRequest.ofSize(csmPlatformProperties.twincache.scenariorun.maxResult)
+    pageable = PageRequest.ofSize(csmPlatformProperties.twincache.scenariorun.defaultPageSize)
     do {
       val scenarioRuns =
           scenarioRunRepository.findByScenarioId(scenarioId, pageable!!).toList().map {
@@ -301,7 +302,7 @@ class ScenarioRunServiceImpl(
       result = PageRequest.of(page, size)
     }
     if (page != null && size == null) {
-      result = PageRequest.of(page, csmPlatformProperties.twincache.scenariorun.maxResult)
+      result = PageRequest.of(page, csmPlatformProperties.twincache.scenariorun.defaultPageSize)
     }
     if (page == null && size != null) {
       result = PageRequest.of(0, size)
@@ -323,7 +324,7 @@ class ScenarioRunServiceImpl(
     }
 
     var result = mutableListOf<ScenarioRun>()
-    pageable = PageRequest.ofSize(csmPlatformProperties.twincache.scenariorun.maxResult)
+    pageable = PageRequest.ofSize(csmPlatformProperties.twincache.scenariorun.defaultPageSize)
     do {
       val scenarioRuns =
           scenarioRunRepository.findByWorkspaceId(workspaceId, pageable!!).toList().map {
@@ -546,7 +547,7 @@ class ScenarioRunServiceImpl(
           .toList()
           .map { it.withStateInformation(organizationId).withoutSensitiveData()!! }
     }
-    pageable = PageRequest.ofSize(csmPlatformProperties.twincache.scenariorun.maxResult)
+    pageable = PageRequest.ofSize(csmPlatformProperties.twincache.scenariorun.defaultPageSize)
     var result = mutableListOf<ScenarioRun>()
     do {
       var scenarioRuns =
@@ -708,7 +709,8 @@ class ScenarioRunServiceImpl(
     logger.debug(
         "Caught ScenarioDeleted event => deleting all runs linked to scenario {}", event.scenarioId)
     runBlocking(SecurityCoroutineContext()) {
-      var pageRequest = PageRequest.ofSize(csmPlatformProperties.twincache.scenariorun.maxResult)
+      var pageRequest =
+          PageRequest.ofSize(csmPlatformProperties.twincache.scenariorun.defaultPageSize)
       var scenarioRunList = mutableListOf<ScenarioRun>()
       do {
         val scenarioRuns =

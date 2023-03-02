@@ -175,7 +175,7 @@ class ScenarioRunServiceImplTests {
 
     every { scenarioRunRepository.findByScenarioId(any(), any()).toList() } returns
         listOf(myScenarioRun1, myScenarioRun2).toMutableList()
-    every { csmPlatformProperties.twincache.scenariorun.maxResult } returns 5
+    every { csmPlatformProperties.twincache.scenariorun.defaultPageSize } returns 5
 
     val scenarioRuns =
         this.scenarioRunServiceImpl.getScenarioRuns(
@@ -218,7 +218,7 @@ class ScenarioRunServiceImplTests {
 
     every { scenarioRunRepository.findByWorkspaceId(any(), any()).toList() } returns
         listOf(myScenarioRun1, myScenarioRun2).toMutableList()
-    every { csmPlatformProperties.twincache.scenariorun.maxResult } returns 5
+    every { csmPlatformProperties.twincache.scenariorun.defaultPageSize } returns 5
 
     val scenarioRuns =
         this.scenarioRunServiceImpl.getWorkspaceScenarioRuns(ORGANIZATION_ID, WORKSPACE_ID, 0, 10)

@@ -188,16 +188,16 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   fun `test find All Workspaces - get first page without size `() {
 
     val workspaceNumber = 100
-    val maxResult = csmPlatformProperties.twincache.connector.maxResult
+    val defaultPageSize = csmPlatformProperties.twincache.connector.defaultPageSize
     IntRange(1, workspaceNumber).forEach {
       val workspace =
           mockWorkspace(organizationRegistered.id!!, solutionRegistered.id!!, "w-workspace-$it")
       workspaceApiService.createWorkspace(organizationRegistered.id!!, workspace)
     }
-    logger.info("should find all workspaces and assert there are at max: $maxResult")
+    logger.info("should find all workspaces and assert there are at max: $defaultPageSize")
     val workspacesList: List<Workspace> =
         workspaceApiService.findAllWorkspaces(organizationRegistered.id!!, 0, null)
-    assertEquals(maxResult, workspacesList.size)
+    assertEquals(defaultPageSize, workspacesList.size)
   }
 
   @Test

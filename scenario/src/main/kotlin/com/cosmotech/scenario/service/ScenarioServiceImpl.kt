@@ -284,7 +284,7 @@ internal class ScenarioServiceImpl(
     // TODO Only the workspace owner should be able to do this
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE)
-    var pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenario.maxResult)
+    var pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenario.defaultPageSize)
 
     do {
       val scenarioList =
@@ -338,7 +338,7 @@ internal class ScenarioServiceImpl(
           .addLastRunsInfo(this)
     }
     var allScenariosByOrganizationIdAndWorkspaceId = mutableListOf<Scenario>()
-    pageable = PageRequest.ofSize(csmPlatformProperties.twincache.scenario.maxResult)
+    pageable = PageRequest.ofSize(csmPlatformProperties.twincache.scenario.defaultPageSize)
     do {
       var paginatedScenarios =
           this.findPaginatedScenariosStateOption(
@@ -375,7 +375,7 @@ internal class ScenarioServiceImpl(
     }
 
     var findAllScenarioByValidationStatus = mutableListOf<Scenario>()
-    pageRequest = PageRequest.ofSize(csmPlatformProperties.twincache.scenario.maxResult)
+    pageRequest = PageRequest.ofSize(csmPlatformProperties.twincache.scenario.defaultPageSize)
     do {
       var scenarioList: List<Scenario>
       if (rbacEnabled) {
@@ -424,7 +424,7 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       rootId: String
   ): List<Scenario> {
-    var pageable = PageRequest.ofSize(csmPlatformProperties.twincache.scenario.maxResult)
+    var pageable = PageRequest.ofSize(csmPlatformProperties.twincache.scenario.defaultPageSize)
     var findAllScenariosByRootId = mutableListOf<Scenario>()
     val rbacEnabled = isRbacEnabled(organizationId, workspaceId)
     do {
@@ -450,7 +450,7 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       parentId: String
   ): List<Scenario> {
-    var pageable = PageRequest.ofSize(csmPlatformProperties.twincache.scenario.maxResult)
+    var pageable = PageRequest.ofSize(csmPlatformProperties.twincache.scenario.defaultPageSize)
     var findScenarioChildrenById = mutableListOf<Scenario>()
     val rbacEnabled = isRbacEnabled(organizationId, workspaceId)
     do {
@@ -578,7 +578,7 @@ internal class ScenarioServiceImpl(
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_READ)
 
-    var pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenario.maxResult)
+    var pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenario.defaultPageSize)
     val scenarioTree = mutableListOf<Scenario>()
 
     do {
@@ -789,7 +789,8 @@ internal class ScenarioServiceImpl(
   @EventListener(OrganizationUnregistered::class)
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
-    var pageable: Pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenario.maxResult)
+    var pageable: Pageable =
+        Pageable.ofSize(csmPlatformProperties.twincache.scenario.defaultPageSize)
     do {
       var scenarioToDelete =
           scenarioRepository
@@ -972,7 +973,7 @@ internal class ScenarioServiceImpl(
       result = PageRequest.of(page, size)
     }
     if (page != null && size == null) {
-      result = PageRequest.of(page, csmPlatformProperties.twincache.scenario.maxResult)
+      result = PageRequest.of(page, csmPlatformProperties.twincache.scenario.defaultPageSize)
     }
     if (page == null && size != null) {
       result = PageRequest.of(0, size)

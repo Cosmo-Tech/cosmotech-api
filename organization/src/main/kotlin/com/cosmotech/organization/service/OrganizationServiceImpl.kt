@@ -53,7 +53,7 @@ class OrganizationServiceImpl(
     val rbacEnabled = !isAdmin && this.csmPlatformProperties.rbac.enabled
 
     if (pageable == null) {
-      pageable = PageRequest.ofSize(csmPlatformProperties.twincache.organization.maxResult)
+      pageable = PageRequest.ofSize(csmPlatformProperties.twincache.organization.defaultPageSize)
 
       do {
         var paginatedOrganizations: MutableList<Organization>
@@ -89,7 +89,7 @@ class OrganizationServiceImpl(
       result = PageRequest.of(page, size)
     }
     if (page != null && size == null) {
-      result = PageRequest.of(page, csmPlatformProperties.twincache.organization.maxResult)
+      result = PageRequest.of(page, csmPlatformProperties.twincache.organization.defaultPageSize)
     }
     if (page == null && size != null) {
       result = PageRequest.of(0, size)
