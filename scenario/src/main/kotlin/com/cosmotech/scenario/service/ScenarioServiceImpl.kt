@@ -33,6 +33,8 @@ import com.cosmotech.api.rbac.getScenarioRolesDefinition
 import com.cosmotech.api.scenario.ScenarioMetaData
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
+import com.cosmotech.api.utils.constructPageRequest
+import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toSecurityConstraintQuery
@@ -331,24 +333,19 @@ internal class ScenarioServiceImpl(
   ): List<Scenario> {
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_READ)
-    var pageable = constructPageRequest(page, size)
+    val defaultPageSize = csmPlatformProperties.twincache.scenario.defaultPageSize
+    var pageable = constructPageRequest(page, size, defaultPageSize)
     if (pageable != null) {
       return this.findPaginatedScenariosStateOption(
               organizationId, workspaceId, pageable.pageNumber, pageable.pageSize, true)
           .addLastRunsInfo(this)
     }
-    var allScenariosByOrganizationIdAndWorkspaceId = mutableListOf<Scenario>()
-    pageable = PageRequest.ofSize(csmPlatformProperties.twincache.scenario.defaultPageSize)
-    do {
-      var paginatedScenarios =
-          this.findPaginatedScenariosStateOption(
-                  organizationId, workspaceId, pageable!!.pageNumber, pageable!!.pageSize, true)
-              .addLastRunsInfo(this)
-
-      allScenariosByOrganizationIdAndWorkspaceId.addAll(paginatedScenarios)
-      pageable = pageable!!.next()
-    } while (paginatedScenarios.isNotEmpty())
-    return allScenariosByOrganizationIdAndWorkspaceId
+    return findAllPaginated(defaultPageSize) {
+      this.findPaginatedScenariosStateOption(
+              organizationId, workspaceId, it.pageNumber, it.pageSize, true)
+          .addLastRunsInfo(this)
+          .toMutableList()
+    }
   }
 
   override fun findAllScenariosByValidationStatus(
@@ -359,7 +356,8 @@ internal class ScenarioServiceImpl(
       size: Int?
   ): List<Scenario> {
     val status = validationStatus.toString()
-    var pageRequest = constructPageRequest(page, size)
+    val defaultPageSize = csmPlatformProperties.twincache.scenario.defaultPageSize
+    var pageRequest = constructPageRequest(page, size, defaultPageSize)
     val rbacEnabled = isRbacEnabled(organizationId, workspaceId)
 
     if (pageRequest != null) {
@@ -965,19 +963,5 @@ internal class ScenarioServiceImpl(
     }
 
     return scenarioRepository.save(scenario)
-  }
-
-  internal fun constructPageRequest(page: Int?, size: Int?): PageRequest? {
-    var result: PageRequest? = null
-    if (page != null && size != null) {
-      result = PageRequest.of(page, size)
-    }
-    if (page != null && size == null) {
-      result = PageRequest.of(page, csmPlatformProperties.twincache.scenario.defaultPageSize)
-    }
-    if (page == null && size != null) {
-      result = PageRequest.of(0, size)
-    }
-    return result
   }
 }

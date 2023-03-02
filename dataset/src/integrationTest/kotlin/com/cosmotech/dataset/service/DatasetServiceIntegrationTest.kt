@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.dataset.service
 
+import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
@@ -17,12 +18,14 @@ import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
+import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
 import org.slf4j.LoggerFactory
@@ -42,10 +45,9 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   private val logger = LoggerFactory.getLogger(DatasetServiceIntegrationTest::class.java)
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
-
   @Autowired lateinit var datasetApiService: DatasetApiService
-
   @Autowired lateinit var connectorApiService: ConnectorApiService
+  @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   val organizationId = "O-AbCdEf123"
   var connector =
@@ -148,5 +150,52 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     datasetCompatibilityList =
         datasetApiService.findDatasetById(organizationId, registeredDataset1.id!!).compatibility!!
     assertTrue { datasetCompatibilityList.isEmpty() }
+  }
+
+  @Test
+  fun `test find All Datasets with different pagination params`() {
+    val numberOfDatasets = 20
+    val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
+    val expectedSize = 15
+    IntRange(1, numberOfDatasets).forEach {
+      datasetApiService.createDataset(organizationId, mockDataset("d-dataset-$it", "dataset-$it"))
+    }
+
+    logger.info("should find all datasets and assert there are $numberOfDatasets")
+    var datasetList = datasetApiService.findAllDatasets(organizationId!!, null, null)
+    assertEquals(numberOfDatasets, datasetList.size)
+
+    logger.info("should find all datasets and assert it equals defaultPageSize: $defaultPageSize")
+    datasetList = datasetApiService.findAllDatasets(organizationId!!, 0, null)
+    assertEquals(defaultPageSize, datasetList.size)
+
+    logger.info("should find all datasets and assert there are expected size: $expectedSize")
+    datasetList = datasetApiService.findAllDatasets(organizationId!!, 0, expectedSize)
+    assertEquals(expectedSize, datasetList.size)
+
+    logger.info("should find all solutions and assert it returns the second / last page")
+    datasetList = datasetApiService.findAllDatasets(organizationId!!, 1, expectedSize)
+    assertEquals(numberOfDatasets - expectedSize, datasetList.size)
+  }
+
+  @Test
+  fun `test find All Datasets with wrong pagination params`() {
+
+    datasetApiService.createDataset(organizationId, dataset1)
+
+    logger.info("Should throw IllegalArgumentException when page and size are zeros")
+    assertThrows<IllegalArgumentException> {
+      datasetApiService.findAllDatasets(organizationId!!, 0, 0)
+    }
+
+    logger.info("Should throw IllegalArgumentException when page is negative")
+    assertThrows<IllegalArgumentException> {
+      datasetApiService.findAllDatasets(organizationId!!, -1, 10)
+    }
+
+    logger.info("Should throw IllegalArgumentException when size is negative")
+    assertThrows<IllegalArgumentException> {
+      datasetApiService.findAllDatasets(organizationId!!, 0, -1)
+    }
   }
 }

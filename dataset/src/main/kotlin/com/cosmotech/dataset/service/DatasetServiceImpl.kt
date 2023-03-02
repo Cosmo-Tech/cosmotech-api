@@ -9,6 +9,8 @@ import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
+import com.cosmotech.api.utils.constructPageRequest
+import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.dataset.api.DatasetApiService
@@ -30,35 +32,14 @@ internal class DatasetServiceImpl(
 ) : CsmPhoenixService(), DatasetApiService {
 
   override fun findAllDatasets(organizationId: String, page: Int?, size: Int?): List<Dataset> {
-    var pageRequest = constructPageRequest(page, size)
-    if (pageRequest != null) {
-      return datasetRepository.findByOrganizationId(organizationId, pageRequest).toList()
+    val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
+    var pageable = constructPageRequest(page, size, defaultPageSize)
+    if (pageable != null) {
+      return datasetRepository.findByOrganizationId(organizationId, pageable).toList()
     }
-
-    var allDatasetByOrganizationId = mutableListOf<Dataset>()
-    pageRequest = PageRequest.ofSize(csmPlatformProperties.twincache.dataset.defaultPageSize)
-    do {
-      val paginatedSolutions =
-          datasetRepository.findByOrganizationId(organizationId, pageRequest!!).toList()
-      allDatasetByOrganizationId.addAll(paginatedSolutions)
-      pageRequest = pageRequest!!.next()
-    } while (paginatedSolutions.isNotEmpty())
-
-    return allDatasetByOrganizationId
-  }
-
-  internal fun constructPageRequest(page: Int?, size: Int?): PageRequest? {
-    var result: PageRequest? = null
-    if (page != null && size != null) {
-      result = PageRequest.of(page, size)
+    return findAllPaginated(defaultPageSize) {
+      datasetRepository.findByOrganizationId(organizationId, it).toList()
     }
-    if (page != null && size == null) {
-      result = PageRequest.of(page, csmPlatformProperties.twincache.dataset.defaultPageSize)
-    }
-    if (page == null && size != null) {
-      result = PageRequest.of(0, size)
-    }
-    return result
   }
 
   override fun findDatasetById(organizationId: String, datasetId: String): Dataset =
@@ -186,29 +167,22 @@ internal class DatasetServiceImpl(
       page: Int?,
       size: Int?,
   ): List<Dataset> {
-    var pageRequest = constructPageRequest(page, size)
-    if (pageRequest != null) {
+    val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
+    var pageable = constructPageRequest(page, size, defaultPageSize)
+    if (pageable != null) {
       return datasetRepository
-          .findDatasetByTags(datasetSearch.datasetTags.toSet(), pageRequest)
+          .findDatasetByTags(datasetSearch.datasetTags.toSet(), pageable)
           .toList()
     }
-    pageRequest = PageRequest.ofSize(csmPlatformProperties.twincache.dataset.defaultPageSize)
-    var result = mutableListOf<Dataset>()
-    do {
-      var datasets =
-          datasetRepository
-              .findDatasetByTags(datasetSearch.datasetTags.toSet(), pageRequest!!)
-              .toList()
-      result.addAll(datasets)
-      pageRequest = pageRequest.next()
-    } while (datasets.isNotEmpty())
-    return result
+    return findAllPaginated(defaultPageSize) {
+      datasetRepository.findDatasetByTags(datasetSearch.datasetTags.toSet(), it).toList()
+    }
   }
 
   @EventListener(OrganizationUnregistered::class)
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
-    var pageable = PageRequest.ofSize(csmPlatformProperties.twincache.organization.defaultPageSize)
+    var pageable = PageRequest.ofSize(csmPlatformProperties.twincache.dataset.defaultPageSize)
     do {
       val datasetList =
           datasetRepository

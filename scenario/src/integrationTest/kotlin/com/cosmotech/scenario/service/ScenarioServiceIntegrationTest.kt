@@ -82,6 +82,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var solutionApiService: SolutionApiService
   @Autowired lateinit var workspaceApiService: WorkspaceApiService
   @Autowired lateinit var scenarioApiService: ScenarioApiService
+  @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   lateinit var connector: Connector
   lateinit var dataset: Dataset
@@ -199,6 +200,63 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     val scenarioListAfterDeleteAll =
         scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!, null, null)
     assertTrue(scenarioListAfterDeleteAll.isEmpty())
+  }
+
+  @Test
+  fun `test find All Scenarios with different pagination params`() {
+    val numberOfScenarios = 20
+    val defaultPageSize = csmPlatformProperties.twincache.scenario.defaultPageSize
+    val expectedSize = 15
+    IntRange(1, numberOfScenarios - 1).forEach {
+      val scenario =
+          mockScenario(
+              organizationSaved.id!!,
+              workspaceSaved.id!!,
+              solutionSaved.id!!,
+              "Scenario$it",
+              mutableListOf(datasetSaved.id!!))
+      scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, scenario)
+    }
+
+    logger.info("should find all Scenarios and assert there are $numberOfScenarios")
+    var scenarioList =
+        scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!, null, null)
+    assertEquals(numberOfScenarios, scenarioList.size)
+
+    logger.info("should find all Scenarios and assert it equals defaultPageSize: $defaultPageSize")
+    scenarioList =
+        scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!, 0, null)
+    assertEquals(scenarioList.size, defaultPageSize)
+
+    logger.info("should find all Scenarios and assert there are expected size: $expectedSize")
+    scenarioList =
+        scenarioApiService.findAllScenarios(
+            organizationSaved.id!!, workspaceSaved.id!!, 0, expectedSize)
+    assertEquals(scenarioList.size, expectedSize)
+
+    logger.info("should find all Scenarios and assert it returns the second / last page")
+    scenarioList =
+        scenarioApiService.findAllScenarios(
+            organizationSaved.id!!, workspaceSaved.id!!, 1, defaultPageSize)
+    assertEquals(numberOfScenarios - defaultPageSize, scenarioList.size)
+  }
+
+  @Test
+  fun `test find All Scenarios with wrong pagination params`() {
+    logger.info("Should throw IllegalArgumentException when page and size are zeros")
+    assertThrows<IllegalArgumentException> {
+      scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!, 0, 0)
+    }
+
+    logger.info("Should throw IllegalArgumentException when page is negative")
+    assertThrows<IllegalArgumentException> {
+      scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!, -1, 10)
+    }
+
+    logger.info("Should throw IllegalArgumentException when size is negative")
+    assertThrows<IllegalArgumentException> {
+      scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!, 0, -1)
+    }
   }
 
   @Test

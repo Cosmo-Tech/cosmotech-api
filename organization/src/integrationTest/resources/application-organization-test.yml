@@ -88,5 +88,5 @@ csm:
       username: "default"
       password: "my-wonderful-password"
       organization:
-        max-result: 5
+        default-page-size: 5
 

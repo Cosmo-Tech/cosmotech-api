@@ -24,7 +24,9 @@ import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.scenario.ScenarioRunMetaData
 import com.cosmotech.api.scenariorun.DataIngestionState
 import com.cosmotech.api.security.coroutine.SecurityCoroutineContext
+import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.convertToMap
+import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
@@ -275,39 +277,17 @@ class ScenarioRunServiceImpl(
       page: Int?,
       size: Int?
   ): List<ScenarioRun> {
-    var pageable = constructPageRequest(page, size)
+    val defaultPageSize = csmPlatformProperties.twincache.scenariorun.defaultPageSize
+    var pageable = constructPageRequest(page, size, defaultPageSize)
     if (pageable != null) {
       return scenarioRunRepository.findByScenarioId(scenarioId, pageable).toList().map {
         it.withStateInformation(organizationId).withoutSensitiveData()!!
       }
     }
-
-    var result = mutableListOf<ScenarioRun>()
-    pageable = PageRequest.ofSize(csmPlatformProperties.twincache.scenariorun.defaultPageSize)
-    do {
-      val scenarioRuns =
-          scenarioRunRepository.findByScenarioId(scenarioId, pageable!!).toList().map {
-            it.withStateInformation(organizationId).withoutSensitiveData()!!
-          }
-      result.addAll(scenarioRuns)
-      pageable = pageable.next()
-    } while (scenarioRuns.isNotEmpty())
-
-    return result
-  }
-
-  internal fun constructPageRequest(page: Int?, size: Int?): PageRequest? {
-    var result: PageRequest? = null
-    if (page != null && size != null) {
-      result = PageRequest.of(page, size)
+    return findAllPaginated(defaultPageSize) {
+      scenarioRunRepository.findByScenarioId(scenarioId, it).toList()
     }
-    if (page != null && size == null) {
-      result = PageRequest.of(page, csmPlatformProperties.twincache.scenariorun.defaultPageSize)
-    }
-    if (page == null && size != null) {
-      result = PageRequest.of(0, size)
-    }
-    return result
+        .map { it.withStateInformation(organizationId).withoutSensitiveData()!! }
   }
 
   override fun getWorkspaceScenarioRuns(
@@ -316,25 +296,17 @@ class ScenarioRunServiceImpl(
       page: Int?,
       size: Int?
   ): List<ScenarioRun> {
-    var pageable = constructPageRequest(page, size)
+    val defaultPageSize = csmPlatformProperties.twincache.scenariorun.defaultPageSize
+    var pageable = constructPageRequest(page, size, defaultPageSize)
     if (pageable != null) {
       return scenarioRunRepository.findByWorkspaceId(workspaceId, pageable).toList().map {
         it.withStateInformation(organizationId).withoutSensitiveData()!!
       }
     }
-
-    var result = mutableListOf<ScenarioRun>()
-    pageable = PageRequest.ofSize(csmPlatformProperties.twincache.scenariorun.defaultPageSize)
-    do {
-      val scenarioRuns =
-          scenarioRunRepository.findByWorkspaceId(workspaceId, pageable!!).toList().map {
-            it.withStateInformation(organizationId).withoutSensitiveData()!!
-          }
-      result.addAll(scenarioRuns)
-      pageable = pageable.next()
-    } while (scenarioRuns.isNotEmpty())
-
-    return result
+    return findAllPaginated(defaultPageSize) {
+      scenarioRunRepository.findByWorkspaceId(workspaceId, it).toList()
+    }
+        .map { it.withStateInformation(organizationId).withoutSensitiveData()!! }
   }
 
   @EventListener(ScenarioDataDownloadRequest::class)
@@ -540,26 +512,18 @@ class ScenarioRunServiceImpl(
       page: Int?,
       size: Int?
   ): List<ScenarioRun> {
-    var pageable = constructPageRequest(page, size)
+    val defaultPageSize = csmPlatformProperties.twincache.scenariorun.defaultPageSize
+    var pageable = constructPageRequest(page, size, defaultPageSize)
     if (pageable != null) {
       return scenarioRunRepository
           .findByPredicate(scenarioRunSearch.toRedisPredicate(), pageable)
           .toList()
           .map { it.withStateInformation(organizationId).withoutSensitiveData()!! }
     }
-    pageable = PageRequest.ofSize(csmPlatformProperties.twincache.scenariorun.defaultPageSize)
-    var result = mutableListOf<ScenarioRun>()
-    do {
-      var scenarioRuns =
-          scenarioRunRepository
-              .findByPredicate(scenarioRunSearch.toRedisPredicate(), pageable!!)
-              .toList()
-              .map { it.withStateInformation(organizationId).withoutSensitiveData()!! }
-      result.addAll(scenarioRuns)
-      pageable = pageable.next()
-    } while (scenarioRuns.isNotEmpty())
-
-    return result
+    return findAllPaginated(defaultPageSize) {
+      scenarioRunRepository.findByPredicate(scenarioRunSearch.toRedisPredicate(), it).toList()
+    }
+        .map { it.withStateInformation(organizationId).withoutSensitiveData()!! }
   }
 
   override fun startScenarioRunContainers(

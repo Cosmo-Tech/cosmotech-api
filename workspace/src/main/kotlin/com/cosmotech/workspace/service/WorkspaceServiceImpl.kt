@@ -83,7 +83,7 @@ internal class WorkspaceServiceImpl(
           CsmResourceNotFoundException("Organization $organizationId")
         }
     val isAdmin = csmRbac.isAdmin(organization.getRbac(), getCommonRolesDefinition())
-    val defaultPageSize = csmPlatformProperties.twincache.connector.defaultPageSize
+    val defaultPageSize = csmPlatformProperties.twincache.workspace.defaultPageSize
     var result: List<Workspace>
     var pageable = constructPageRequest(page, size, defaultPageSize)
 

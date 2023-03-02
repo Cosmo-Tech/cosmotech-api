@@ -44,6 +44,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
 import org.slf4j.LoggerFactory
@@ -80,6 +81,7 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var workspaceApiService: WorkspaceApiService
   @Autowired lateinit var scenarioApiService: ScenarioApiService
   @Autowired lateinit var scenariorunApiService: ScenariorunApiService
+  @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   lateinit var connector: Connector
   lateinit var dataset: Dataset
@@ -197,6 +199,62 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
         scenariorunApiService.getScenarioRuns(
             organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, null, null)
     assertTrue(scenarioRuns.size == 1)
+  }
+
+  @Test
+  fun `test find All ScenarioRuns with different pagination params`() {
+    val numberOfScenarioRuns = 20
+    val defaultPageSize = csmPlatformProperties.twincache.scenariorun.defaultPageSize
+    val expectedSize = 15
+    IntRange(1, numberOfScenarioRuns - 1).forEach {
+      scenariorunApiService.runScenario(
+          organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+    }
+    logger.info("should find all ScenarioRuns and assert there are $numberOfScenarioRuns")
+    var scenarioRuns =
+        scenariorunApiService.getScenarioRuns(
+            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, null, null)
+    assertEquals(numberOfScenarioRuns, scenarioRuns.size)
+
+    logger.info(
+        "should find all ScenarioRuns and assert it equals defaultPageSize: $defaultPageSize")
+    scenarioRuns =
+        scenariorunApiService.getScenarioRuns(
+            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, 0, null)
+    assertEquals(defaultPageSize, scenarioRuns.size)
+
+    logger.info("should find all ScenarioRuns and assert there are expected size: $expectedSize")
+    scenarioRuns =
+        scenariorunApiService.getScenarioRuns(
+            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, 0, expectedSize)
+    assertEquals(expectedSize, scenarioRuns.size)
+
+    logger.info("should find all ScenarioRuns and assert it returns the second / last page")
+    scenarioRuns =
+        scenariorunApiService.getScenarioRuns(
+            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, 1, expectedSize)
+    assertEquals(numberOfScenarioRuns - expectedSize, scenarioRuns.size)
+  }
+
+  @Test
+  fun `test find All ScenarioRuns with wrong pagination params`() {
+    logger.info("Should throw IllegalArgumentException when page and size are zeros")
+    assertThrows<IllegalArgumentException> {
+      scenariorunApiService.getScenarioRuns(
+          organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, 0, 0)
+    }
+
+    logger.info("Should throw IllegalArgumentException when page is negative")
+    assertThrows<IllegalArgumentException> {
+      scenariorunApiService.getScenarioRuns(
+          organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, -1, 10)
+    }
+
+    logger.info("Should throw IllegalArgumentException when size is negative")
+    assertThrows<IllegalArgumentException> {
+      scenariorunApiService.getScenarioRuns(
+          organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, 0, -1)
+    }
   }
 
   private fun mockWorkspaceEventHubInfo(eventHubAvailable: Boolean): WorkspaceEventHubInfo {

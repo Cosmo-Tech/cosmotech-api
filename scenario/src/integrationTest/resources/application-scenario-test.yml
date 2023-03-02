@@ -85,6 +85,8 @@ csm:
       port: "6379"
       username: "default"
       password: "my-wonderful-password"
+      scenario:
+        default-page-size: 20
     rbac:
       enabled: true
 

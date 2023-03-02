@@ -3,6 +3,7 @@
 package com.cosmotech.solution.service
 
 import com.azure.storage.blob.BlobServiceClient
+import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
@@ -27,6 +28,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
 import org.slf4j.LoggerFactory
@@ -54,6 +56,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var organizationApiService: OrganizationApiService
   @Autowired lateinit var solutionApiService: SolutionApiService
+  @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   lateinit var organization: Organization
   lateinit var solution: Solution
@@ -217,10 +220,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("should update the run template and assert that the name has been updated")
     val runTemplate4 = RunTemplate(id = "runTemplateId1", name = "runTemplateNameNew")
     solutionApiService.updateSolutionRunTemplate(
-        solutionRegistered.organizationId!!,
-        solutionRegistered.id!!,
-        runTemplate4.id!!,
-        runTemplate4)
+        solutionRegistered.organizationId!!, solutionRegistered.id!!, runTemplate4.id, runTemplate4)
     val foundSolutionAfterUpdate =
         solutionApiService.findSolutionById(
             solutionRegistered.organizationId!!, solutionRegistered.id!!)
@@ -233,6 +233,49 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
         solutionApiService.findSolutionById(
             solutionRegistered.organizationId!!, solutionRegistered.id!!)
     assertTrue(foundSolutionAfterRemove.runTemplates!!.isEmpty())
+  }
+
+  @Test
+  fun `test find All Solutions with different pagination params`() {
+    val numberOfSolutions = 20
+    val defaultPageSize = csmPlatformProperties.twincache.solution.defaultPageSize
+    val expectedSize = 15
+    IntRange(1, numberOfSolutions - 1).forEach {
+      solutionApiService.createSolution(
+          organizationId = organizationRegistered.id!!,
+          solution = mockSolution(organizationRegistered.id!!))
+    }
+    logger.info("should find all solutions and assert there are $numberOfSolutions")
+    var solutions = solutionApiService.findAllSolutions(organizationRegistered.id!!, null, null)
+    assertEquals(numberOfSolutions, solutions.size)
+
+    logger.info("should find all solutions and assert it equals defaultPageSize: $defaultPageSize")
+    solutions = solutionApiService.findAllSolutions(organizationRegistered.id!!, 0, null)
+    assertEquals(defaultPageSize, solutions.size)
+
+    logger.info("should find all solutions and assert there are expected size: $expectedSize")
+    solutions = solutionApiService.findAllSolutions(organizationRegistered.id!!, 0, expectedSize)
+    assertEquals(expectedSize, solutions.size)
+
+    logger.info("should find all solutions and assert it returns the second / last page")
+    solutions = solutionApiService.findAllSolutions(organizationRegistered.id!!, 1, expectedSize)
+    assertEquals(numberOfSolutions - expectedSize, solutions.size)
+  }
+
+  @Test
+  fun `test find All Solutions with wrong pagination params`() {
+    logger.info("should throw IllegalArgumentException when page and size are zero")
+    assertThrows<IllegalArgumentException> {
+      solutionApiService.findAllSolutions(organizationRegistered.id!!, null, 0)
+    }
+    logger.info("should throw IllegalArgumentException when page is negative")
+    assertThrows<IllegalArgumentException> {
+      solutionApiService.findAllSolutions(organizationRegistered.id!!, -1, 1)
+    }
+    logger.info("should throw IllegalArgumentException when size is negative")
+    assertThrows<IllegalArgumentException> {
+      solutionApiService.findAllSolutions(organizationRegistered.id!!, 0, -1)
+    }
   }
 
   fun mockOrganization(id: String): Organization {

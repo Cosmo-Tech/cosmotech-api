@@ -21,6 +21,8 @@ import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
+import com.cosmotech.api.utils.constructPageRequest
+import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toSecurityConstraintQuery
@@ -33,7 +35,6 @@ import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.organization.domain.OrganizationService
 import com.cosmotech.organization.domain.OrganizationServices
 import com.cosmotech.organization.repository.OrganizationRepository
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
@@ -46,29 +47,26 @@ class OrganizationServiceImpl(
 ) : CsmPhoenixService(), OrganizationApiService {
 
   override fun findAllOrganizations(page: Int?, size: Int?): List<Organization> {
-    var pageable = constructPageRequest(page, size)
+    val defaultPageSize = csmPlatformProperties.twincache.organization.defaultPageSize
+    var pageable = constructPageRequest(page, size, defaultPageSize)
     val isAdmin = csmAdmin.verifyCurrentRolesAdmin()
     var result = mutableListOf<Organization>()
 
     val rbacEnabled = !isAdmin && this.csmPlatformProperties.rbac.enabled
 
     if (pageable == null) {
-      pageable = PageRequest.ofSize(csmPlatformProperties.twincache.organization.defaultPageSize)
 
-      do {
-        var paginatedOrganizations: MutableList<Organization>
-        if (rbacEnabled) {
-          val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
-          paginatedOrganizations =
+      result =
+          findAllPaginated(defaultPageSize) {
+            if (rbacEnabled) {
+              val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
               organizationRepository
-                  .findOrganizationsBySecurity(currentUser.toSecurityConstraintQuery(), pageable!!)
+                  .findOrganizationsBySecurity(currentUser.toSecurityConstraintQuery(), it)
                   .toList()
-        } else {
-          paginatedOrganizations = organizationRepository.findAll(pageable!!).toList()
-        }
-        result.addAll(paginatedOrganizations)
-        pageable = pageable!!.next()
-      } while (paginatedOrganizations.isNotEmpty())
+            } else {
+              organizationRepository.findAll(it).toList()
+            }
+          }
     } else {
       if (rbacEnabled) {
         val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
@@ -81,19 +79,6 @@ class OrganizationServiceImpl(
       }
     }
 
-    return result
-  }
-  internal fun constructPageRequest(page: Int?, size: Int?): PageRequest? {
-    var result: PageRequest? = null
-    if (page != null && size != null) {
-      result = PageRequest.of(page, size)
-    }
-    if (page != null && size == null) {
-      result = PageRequest.of(page, csmPlatformProperties.twincache.organization.defaultPageSize)
-    }
-    if (page == null && size != null) {
-      result = PageRequest.of(0, size)
-    }
     return result
   }
 

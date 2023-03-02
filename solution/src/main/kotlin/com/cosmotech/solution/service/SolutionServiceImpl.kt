@@ -11,6 +11,8 @@ import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
+import com.cosmotech.api.utils.constructPageRequest
+import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
@@ -25,7 +27,6 @@ import org.apache.commons.compress.archivers.ArchiveStreamFactory
 import org.springframework.context.event.EventListener
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
@@ -40,34 +41,14 @@ internal class SolutionServiceImpl(
 ) : CsmPhoenixService(), SolutionApiService {
 
   override fun findAllSolutions(organizationId: String, page: Int?, size: Int?): List<Solution> {
-    var pageable = constructPageRequest(page, size)
+    val defaultPageSize = csmPlatformProperties.twincache.solution.defaultPageSize
+    var pageable = constructPageRequest(page, size, defaultPageSize)
     if (pageable != null) {
       return solutionRepository.findByOrganizationId(organizationId, pageable).toList()
     }
-
-    var allSolutionsByOrganizationId = mutableListOf<Solution>()
-    pageable = PageRequest.ofSize(csmPlatformProperties.twincache.solution.defaultPageSize)
-    do {
-      val paginatedSolutions =
-          solutionRepository.findByOrganizationId(organizationId, pageable!!).toList()
-      allSolutionsByOrganizationId.addAll(paginatedSolutions)
-      pageable = pageable!!.next()
-    } while (paginatedSolutions.isNotEmpty())
-    return allSolutionsByOrganizationId
-  }
-
-  internal fun constructPageRequest(page: Int?, size: Int?): PageRequest? {
-    var result: PageRequest? = null
-    if (page != null && size != null) {
-      result = PageRequest.of(page, size)
+    return findAllPaginated(defaultPageSize) {
+      solutionRepository.findByOrganizationId(organizationId, it).toList()
     }
-    if (page != null && size == null) {
-      result = PageRequest.of(page, csmPlatformProperties.twincache.solution.defaultPageSize)
-    }
-    if (page == null && size != null) {
-      result = PageRequest.of(0, size)
-    }
-    return result
   }
 
   override fun findSolutionById(organizationId: String, solutionId: String): Solution =

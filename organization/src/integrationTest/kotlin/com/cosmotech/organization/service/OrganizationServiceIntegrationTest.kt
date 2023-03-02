@@ -26,6 +26,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
 import org.slf4j.LoggerFactory
@@ -106,40 +107,40 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
-  fun `test findAllOrganizations() within a single page`() {
-    logger.info("Creating 10 organization with 100 organizations by page...")
-    IntRange(1, 10).forEach {
+  fun `test find All Organization with different pagination params`() {
+    val numberOfOrganization = 20
+    val defaultPageSize = csmPlatformProperties.twincache.organization.defaultPageSize
+    val expectedSize = 15
+    IntRange(1, numberOfOrganization).forEach {
       var newOrganization = mockOrganization("o-organization-test-$it", "Organization-test-$it")
       organizationApiService.registerOrganization(newOrganization)
     }
-    var organizationList = organizationApiService.findAllOrganizations(0, 100)
-    val numberOfOrganizationFetched = organizationList.size
-    logger.info("findAllOrganizations() have fetched $numberOfOrganizationFetched organizations")
+    logger.info("should find all Organizations and assert there are $numberOfOrganization")
+    var organizationList = organizationApiService.findAllOrganizations(null, null)
+    assertEquals(numberOfOrganization, organizationList.size)
 
-    assertEquals(10, numberOfOrganizationFetched)
+    logger.info(
+        "should find all Organizations and assert it equals defaultPageSize: $defaultPageSize")
+    organizationList = organizationApiService.findAllOrganizations(0, null)
+    assertEquals(defaultPageSize, organizationList.size)
+
+    logger.info("should find all Organizations and assert there are expected size: $expectedSize")
+    organizationList = organizationApiService.findAllOrganizations(0, expectedSize)
+    assertEquals(expectedSize, organizationList.size)
+
+    logger.info("should find all Organizations and assert it returns the  second / last page")
+    organizationList = organizationApiService.findAllOrganizations(1, expectedSize)
+    assertEquals(numberOfOrganization - expectedSize, organizationList.size)
   }
 
   @Test
-  fun `test findAllOrganizations() within 2 pages`() {
-    logger.info("Creating 10 organizations with 6 organizations by page ...")
-    val organizationNames = mutableListOf<String>()
-    IntRange(1, 10).forEach {
-      val organizationName = "Organization-test-$it"
-      var newOrganization = mockOrganization("o-organization-test-$it", organizationName)
-      organizationApiService.registerOrganization(newOrganization)
-      organizationNames.add(organizationName)
-    }
-
-    val organizationListFetched = organizationApiService.findAllOrganizations(0, 6).toMutableList()
-    val numberOfOrganizationFetched = organizationListFetched.size
-    logger.info(
-        "findAllOrganizations() have fetched $numberOfOrganizationFetched organizations within the page 0")
-    assertEquals(6, numberOfOrganizationFetched)
-    assertNotEquals(10, numberOfOrganizationFetched)
-
-    organizationListFetched.addAll(organizationApiService.findAllOrganizations(1, 6))
-    assertEquals(10, organizationListFetched.size)
-    assertEquals(organizationNames, organizationListFetched.stream().map { it.name }.toList())
+  fun `test find All Organizations with wrong pagination params`() {
+    logger.info("should throw IllegalArgumentException when page and size are zero")
+    assertThrows<IllegalArgumentException> { organizationApiService.findAllOrganizations(0, 0) }
+    logger.info("should throw IllegalArgumentException when page is negative")
+    assertThrows<IllegalArgumentException> { organizationApiService.findAllOrganizations(-1, 1) }
+    logger.info("should throw IllegalArgumentException when size is negative")
+    assertThrows<IllegalArgumentException> { organizationApiService.findAllOrganizations(0, -1) }
   }
 
   @Test

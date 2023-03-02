@@ -170,68 +170,47 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
-  fun `test find All Workspaces without pagination`() {
+  fun `test find All Workspaces with different pagination params`() {
 
-    val workspaceNumber = 9
-    IntRange(1, workspaceNumber).forEach {
+    val workspaceNumber = 20
+    val defaultPageSize = csmPlatformProperties.twincache.workspace.defaultPageSize
+    val expectedSize = 15
+    IntRange(1, workspaceNumber - 1).forEach {
       val workspace =
           mockWorkspace(organizationRegistered.id!!, solutionRegistered.id!!, "w-workspace-$it")
       workspaceApiService.createWorkspace(organizationRegistered.id!!, workspace)
     }
-    logger.info("should find all workspaces and assert there are $workspaceNumber + 1 (default)")
-    val workspacesList: List<Workspace> =
+    logger.info("should find all workspaces and assert there are $workspaceNumber")
+    var workspacesList =
         workspaceApiService.findAllWorkspaces(organizationRegistered.id!!, null, null)
-    assertEquals(workspacesList.size, workspaceNumber + 1)
-  }
+    assertEquals(workspaceNumber, workspacesList.size)
 
-  @Test
-  fun `test find All Workspaces - get first page without size `() {
-
-    val workspaceNumber = 100
-    val defaultPageSize = csmPlatformProperties.twincache.connector.defaultPageSize
-    IntRange(1, workspaceNumber).forEach {
-      val workspace =
-          mockWorkspace(organizationRegistered.id!!, solutionRegistered.id!!, "w-workspace-$it")
-      workspaceApiService.createWorkspace(organizationRegistered.id!!, workspace)
-    }
-    logger.info("should find all workspaces and assert there are at max: $defaultPageSize")
-    val workspacesList: List<Workspace> =
-        workspaceApiService.findAllWorkspaces(organizationRegistered.id!!, 0, null)
+    logger.info("should find all workspaces and assert it equals defaultPageSize: $defaultPageSize")
+    workspacesList = workspaceApiService.findAllWorkspaces(organizationRegistered.id!!, 0, null)
     assertEquals(defaultPageSize, workspacesList.size)
-  }
 
-  @Test
-  fun `test find All Workspaces - without page but size `() {
-
-    val workspaceNumber = 100
-    val expectedSize = 75
-    IntRange(1, workspaceNumber).forEach {
-      val workspace =
-          mockWorkspace(organizationRegistered.id!!, solutionRegistered.id!!, "w-workspace-$it")
-      workspaceApiService.createWorkspace(organizationRegistered.id!!, workspace)
-    }
     logger.info("should find all workspaces and assert there are expected size: $expectedSize")
-    val workspacesList: List<Workspace> =
-        workspaceApiService.findAllWorkspaces(organizationRegistered.id!!, null, expectedSize)
+    workspacesList =
+        workspaceApiService.findAllWorkspaces(organizationRegistered.id!!, 0, expectedSize)
     assertEquals(expectedSize, workspacesList.size)
+
+    logger.info("should find all workspaces and assert it returns the  second / last page")
+    workspacesList =
+        workspaceApiService.findAllWorkspaces(organizationRegistered.id!!, 1, expectedSize)
+    assertEquals(workspaceNumber - expectedSize, workspacesList.size)
   }
 
   @Test
-  fun `test find All Workspaces - with size less than 1`() {
+  fun `test find All Workspaces with wrong pagination params`() {
+    logger.info("should throw IllegalArgumentException when page and size are zero")
     assertThrows<IllegalArgumentException> {
       workspaceApiService.findAllWorkspaces(organizationRegistered.id!!, 0, 0)
     }
-  }
-
-  @Test
-  fun `test find All Workspaces - with illegal value as page`() {
+    logger.info("should throw IllegalArgumentException when page is negative")
     assertThrows<IllegalArgumentException> {
       workspaceApiService.findAllWorkspaces(organizationRegistered.id!!, -1, 1)
     }
-  }
-
-  @Test
-  fun `test find All Workspaces - with illegal value as size`() {
+    logger.info("should throw IllegalArgumentException when size is negative")
     assertThrows<IllegalArgumentException> {
       workspaceApiService.findAllWorkspaces(organizationRegistered.id!!, 0, -1)
     }

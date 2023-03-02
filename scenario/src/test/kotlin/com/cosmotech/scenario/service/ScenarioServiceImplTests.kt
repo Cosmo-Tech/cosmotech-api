@@ -620,6 +620,7 @@ class ScenarioServiceImplTests {
         CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
             .TENANT_CLIENT_CREDENTIALS
     every { workspace.sendScenarioMetadataToEventHub } returns false
+    every { scenarioRepository.save(any()) } returns mockk()
 
     this.scenarioServiceImpl.deleteScenario(ORGANIZATION_ID, WORKSPACE_ID, p11.id!!, false)
 
@@ -749,6 +750,7 @@ class ScenarioServiceImplTests {
             key = "w-myWorkspaceKey",
             name = "wonderful_workspace",
             solution = WorkspaceSolution(solutionId = "w-sol-id"))
+    every { csmPlatformProperties.twincache.scenario.defaultPageSize } returns 100
     every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     every { scenarioServiceImpl.findScenarioByIdNoState(m1.id!!) } returns m1
