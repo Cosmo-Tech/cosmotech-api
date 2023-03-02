@@ -30,6 +30,8 @@ import com.cosmotech.api.security.coroutine.SecurityCoroutineContext
 import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
+import com.cosmotech.api.utils.constructPageRequest
+import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.sanitizeForRedis
@@ -55,7 +57,6 @@ import org.springframework.context.annotation.Scope
 import org.springframework.context.event.EventListener
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
@@ -82,32 +83,25 @@ internal class WorkspaceServiceImpl(
           CsmResourceNotFoundException("Organization $organizationId")
         }
     val isAdmin = csmRbac.isAdmin(organization.getRbac(), getCommonRolesDefinition())
+    val maxResult = csmPlatformProperties.twincache.connector.maxResult
     var result: List<Workspace>
-    var pageable = constructPageRequest(page, size)
+    var pageable = constructPageRequest(page, size, maxResult)
 
     if (pageable == null) {
-      var allWorkspaceByOrganizationId = mutableListOf<Workspace>()
-      pageable = PageRequest.ofSize(csmPlatformProperties.twincache.workspace.maxResult)
-
-      do {
-        var paginatedWorkspaces: List<Workspace>
-        if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
-          paginatedWorkspaces =
-              workspaceRepository.findByOrganizationId(organizationId, pageable!!).toList()
-        } else {
-          val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
-          paginatedWorkspaces =
+      result =
+          findAllPaginated(maxResult) {
+            if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
+              workspaceRepository.findByOrganizationId(organizationId, it).toList()
+            } else {
+              val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
               workspaceRepository
                   .findByOrganizationIdAndSecurity(
                       organizationId.sanitizeForRedis(),
                       currentUser.toSecurityConstraintQuery(),
-                      pageable!!)
+                      it)
                   .toList()
-        }
-        allWorkspaceByOrganizationId.addAll(paginatedWorkspaces)
-        pageable = pageable!!.next()
-      } while (paginatedWorkspaces.isNotEmpty())
-      result = allWorkspaceByOrganizationId
+            }
+          }
     } else {
       if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
         result = workspaceRepository.findByOrganizationId(organizationId, pageable).toList()
@@ -121,20 +115,6 @@ internal class WorkspaceServiceImpl(
                     pageable)
                 .toList()
       }
-    }
-    return result
-  }
-
-  internal fun constructPageRequest(page: Int?, size: Int?): PageRequest? {
-    var result: PageRequest? = null
-    if (page != null && size != null) {
-      result = PageRequest.of(page, size)
-    }
-    if (page != null && size == null) {
-      result = PageRequest.of(page, csmPlatformProperties.twincache.workspace.maxResult)
-    }
-    if (page == null && size != null) {
-      result = PageRequest.of(0, size)
     }
     return result
   }

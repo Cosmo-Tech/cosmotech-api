@@ -6,11 +6,12 @@ import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.events.ConnectorRemoved
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.utils.constructPageRequest
+import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.connector.repository.ConnectorRepository
-import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 
 @Service
@@ -18,34 +19,12 @@ internal class ConnectorServiceImpl(var connectorRepository: ConnectorRepository
     CsmPhoenixService(), ConnectorApiService {
 
   override fun findAllConnectors(page: Int?, size: Int?): List<Connector> {
-    var pageRequest = constructPageRequest(page, size)
+    val maxResult = csmPlatformProperties.twincache.connector.maxResult
+    var pageRequest = constructPageRequest(page, size, maxResult)
     if (pageRequest != null) {
       return connectorRepository.findAll(pageRequest).toList()
     }
-
-    var connectorList = mutableListOf<Connector>()
-    pageRequest = PageRequest.ofSize(csmPlatformProperties.twincache.connector.maxResult)
-    do {
-      var connectors = connectorRepository.findAll(pageRequest!!).toList()
-      connectorList.addAll(connectors)
-      pageRequest = pageRequest.next()
-    } while (connectors.isNotEmpty())
-
-    return connectorList
-  }
-
-  internal fun constructPageRequest(page: Int?, size: Int?): PageRequest? {
-    var result: PageRequest? = null
-    if (page != null && size != null) {
-      result = PageRequest.of(page, size)
-    }
-    if (page != null && size == null) {
-      result = PageRequest.of(page, csmPlatformProperties.twincache.connector.maxResult)
-    }
-    if (page == null && size != null) {
-      result = PageRequest.of(0, size)
-    }
-    return result
+    return findAllPaginated(maxResult) { connectorRepository.findAll(it).toList() }
   }
 
   override fun findConnectorById(connectorId: String): Connector {
