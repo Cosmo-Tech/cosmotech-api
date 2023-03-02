@@ -4,6 +4,7 @@ package com.cosmotech.worskpace.service // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
 
 import com.azure.storage.blob.BlobServiceClient
+import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.ROLE_EDITOR
@@ -64,6 +65,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var organizationApiService: OrganizationApiService
   @Autowired lateinit var solutionApiService: SolutionApiService
   @Autowired lateinit var workspaceApiService: WorkspaceApiService
+  @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   lateinit var organization: Organization
   lateinit var solution: Solution
@@ -164,6 +166,74 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("should not delete a workspace")
     assertThrows<CsmAccessForbiddenException> {
       workspaceApiService.deleteWorkspace(organizationRegistered.id!!, workspaceRegistered.id!!)
+    }
+  }
+
+  @Test
+  fun `test find All Workspaces without pagination`() {
+
+    val workspaceNumber = 9
+    IntRange(1, workspaceNumber).forEach {
+      val workspace =
+          mockWorkspace(organizationRegistered.id!!, solutionRegistered.id!!, "w-workspace-$it")
+      workspaceApiService.createWorkspace(organizationRegistered.id!!, workspace)
+    }
+    logger.info("should find all workspaces and assert there are $workspaceNumber + 1 (default)")
+    val workspacesList: List<Workspace> =
+        workspaceApiService.findAllWorkspaces(organizationRegistered.id!!, null, null)
+    assertEquals(workspacesList.size, workspaceNumber + 1)
+  }
+
+  @Test
+  fun `test find All Workspaces - get first page without size `() {
+
+    val workspaceNumber = 100
+    val maxResult = csmPlatformProperties.twincache.connector.maxResult
+    IntRange(1, workspaceNumber).forEach {
+      val workspace =
+          mockWorkspace(organizationRegistered.id!!, solutionRegistered.id!!, "w-workspace-$it")
+      workspaceApiService.createWorkspace(organizationRegistered.id!!, workspace)
+    }
+    logger.info("should find all workspaces and assert there are at max: $maxResult")
+    val workspacesList: List<Workspace> =
+        workspaceApiService.findAllWorkspaces(organizationRegistered.id!!, 0, null)
+    assertEquals(maxResult, workspacesList.size)
+  }
+
+  @Test
+  fun `test find All Workspaces - without page but size `() {
+
+    val workspaceNumber = 100
+    val expectedSize = 75
+    IntRange(1, workspaceNumber).forEach {
+      val workspace =
+          mockWorkspace(organizationRegistered.id!!, solutionRegistered.id!!, "w-workspace-$it")
+      workspaceApiService.createWorkspace(organizationRegistered.id!!, workspace)
+    }
+    logger.info("should find all workspaces and assert there are expected size: $expectedSize")
+    val workspacesList: List<Workspace> =
+        workspaceApiService.findAllWorkspaces(organizationRegistered.id!!, null, expectedSize)
+    assertEquals(expectedSize, workspacesList.size)
+  }
+
+  @Test
+  fun `test find All Workspaces - with size less than 1`() {
+    assertThrows<IllegalArgumentException> {
+      workspaceApiService.findAllWorkspaces(organizationRegistered.id!!, 0, 0)
+    }
+  }
+
+  @Test
+  fun `test find All Workspaces - with illegal value as page`() {
+    assertThrows<IllegalArgumentException> {
+      workspaceApiService.findAllWorkspaces(organizationRegistered.id!!, -1, 1)
+    }
+  }
+
+  @Test
+  fun `test find All Workspaces - with illegal value as size`() {
+    assertThrows<IllegalArgumentException> {
+      workspaceApiService.findAllWorkspaces(organizationRegistered.id!!, 0, -1)
     }
   }
 
