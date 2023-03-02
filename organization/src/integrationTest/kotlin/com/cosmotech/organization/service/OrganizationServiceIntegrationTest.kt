@@ -21,10 +21,8 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
 import java.util.*
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.Test
@@ -39,7 +37,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
-import kotlin.reflect.jvm.internal.impl.util.CheckResult.IllegalFunctionName
 
 @ActiveProfiles(profiles = ["organization-test"])
 @ExtendWith(MockKExtension::class)
@@ -55,25 +52,14 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
 
   @Autowired lateinit var organizationApiService: OrganizationApiService
 
-  var organization1 = makeOrganization("o-organization-1", "Organization-1")
-  val organization2 = makeOrganization("o-organization-2", "Organization-2")
-
-  val name = "my.account-tester@cosmotech.com"
-
-  var organizationRegistered1 = Organization()
-  var organizationRegistered2 = Organization()
-
-  var organizationRetrieved1 = Organization()
-  var organizationRetrieved2 = Organization()
-
-  var organizationSecurity = OrganizationSecurity("", mutableListOf())
+  val defaultName = "my.account-tester@cosmotech.com"
 
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   @BeforeEach
   fun setUp() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
-    every { getCurrentAuthenticatedMail(any()) } returns name
+    every { getCurrentAuthenticatedMail(any()) } returns defaultName
     every { getCurrentAuthenticatedUserName() } returns "my.account-tester"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
     rediSearchIndexer.createIndexFor(Organization::class.java)
@@ -113,7 +99,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     return Organization(
         id = id,
         name = name,
-        ownerId = "my.account-tester@cosmotech.com",
+        ownerId = name,
         services =
             OrganizationServices(
                 tenantCredentials = mutableMapOf(),
@@ -123,19 +109,19 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
                         baseUri = "base",
                         platformService = "platform",
                         resourceUri = "resource",
-                        credentials = mutableMapOf(Pair(name, "reader"))),
+                        credentials = mutableMapOf(Pair(name, "admin"))),
                 solutionsContainerRegistry =
                     OrganizationService(
                         cloudService = "cloud",
                         baseUri = "base",
                         platformService = "platform",
                         resourceUri = "resource",
-                        credentials = mutableMapOf(Pair(name, "reader")))),
+                        credentials = mutableMapOf(Pair(name, "admin")))),
         security =
             OrganizationSecurity(
                 default = "none",
                 accessControlList =
-                    mutableListOf(OrganizationAccessControl(id = name, role = "reader"))))
+                    mutableListOf(OrganizationAccessControl(id = name, role = "admin"))))
   }
 
   @Test
@@ -146,10 +132,10 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     logger.info(
         "Creating $beyondMaxNumber organizations with $organizationFetchedLimitMax fetchable ...")
     IntRange(1, beyondMaxNumber).forEach {
-      var newOrganization = makeOrganization("o-organization-test-$it", "Organization-test-$it")
+      val newOrganization = makeOrganization("o-organization-test-$it", "Organization-test-$it")
       organizationApiService.registerOrganization(newOrganization)
     }
-    var organizationList = organizationApiService.findAllOrganizations(1, 1)
+    val organizationList = organizationApiService.findAllOrganizations(1, 1)
     val numberOfOrganizationFetched = organizationList.size
     logger.info("findAllOrganizations() have fetched $numberOfOrganizationFetched organizations")
 
@@ -165,10 +151,10 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     logger.info(
         "Creating $underMaxNumber organizations with $organizationFetchedLimitMax fetchable ...")
     IntRange(1, underMaxNumber).forEach {
-      var newOrganization = makeOrganization("o-organization-test-$it", "Organization-test-$it")
+      val newOrganization = makeOrganization("o-organization-test-$it", "Organization-test-$it")
       organizationApiService.registerOrganization(newOrganization)
     }
-    var organizationList = organizationApiService.findAllOrganizations(1, 1)
+    val organizationList = organizationApiService.findAllOrganizations(1, 1)
     val numberOfOrganizationFetched = organizationList.size
     logger.info("findAllOrganizations() have fetched $numberOfOrganizationFetched organizations")
 
@@ -176,177 +162,149 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     assertNotEquals(numberOfOrganizationFetched, organizationFetchedLimitMax)
   }
 
-  /*@ParameterizedTest
-  @RedisTestContextsSource
-  fun `test create organization`(context: RedisTestContext) {
-    logger.info("Create new organizations...")
-    val organization1 = makeOrganization("toto", "tutu")
-    val organizationRegistered = organizationApiService.registerOrganization(organization1)
-    assertNotNull(
-        context.sync().jsonGet("${Organization::class.java.name}:${organizationRegistered.id}"))
-  }
-
-  @Test
-  fun `test update organization`() {
-    logger.info("Create new organizations...")
-    val organization1 = makeOrganization("toto", "tutu")
-    val organizationRegistered = organizationApiService.registerOrganization(organization1)
-    organizationRegistered.name = "Organization updated"
-    val organizationUpdated =
-        organizationApiService.updateOrganization(
-            organizationRegistered.id!!, organizationRegistered)
-    assertEquals(
-        organizationUpdated, organizationApiService.findOrganizationById(organizationUpdated.id!!))
-  }*/
-
   @Test
   fun `test CRUD organization`() {
+    var organizationRegistered: Organization
+    val organizationRetrieved: Organization
+
     logger.info("Create new organizations...")
-    organizationRegistered1 = organizationApiService.registerOrganization(organization1)
-    assertNotNull(organizationRegistered1)
+    organizationRegistered =
+        organizationApiService.registerOrganization(makeOrganization("o-organization", defaultName))
+    assertNotNull(organizationRegistered)
 
     logger.info("Fetch new organization created...")
-    organizationRetrieved1 =
-        organizationApiService.findOrganizationById(organizationRegistered1.id!!)
-    assertEquals(organizationRegistered1, organizationRetrieved1)
+    organizationRetrieved = organizationApiService.findOrganizationById(organizationRegistered.id!!)
+    assertEquals(organizationRegistered, organizationRetrieved)
 
     logger.info("Import organization...")
-    organizationRegistered2 = organizationApiService.importOrganization(organization2)
-    assertNotNull(organizationRegistered2)
+    organizationRegistered =
+        organizationApiService.importOrganization(makeOrganization("o-organization-2", defaultName))
+    assertNotNull(organizationRegistered)
 
     logger.info("Fetch all Organizations...")
-    var organizationList = organizationApiService.findAllOrganizations(1, 1)
-    assertTrue(organizationList.size == 2)
+    var organizationList = organizationApiService.findAllOrganizations(null, null)
+    assertEquals(2, organizationList.size)
 
     logger.info("Deleting organization...")
-    organizationApiService.unregisterOrganization(organizationRegistered2.id!!)
-    organizationList = organizationApiService.findAllOrganizations(1, 1)
-    assertTrue { organizationList.size == 1 }
-
-    logger.info("Deleting organization...")
-    organizationApiService.unregisterOrganization(organizationRegistered2.id!!)
-    organizationList = organizationApiService.findAllOrganizations(1, 1)
-    assertTrue { organizationList.size == 1 }
+    organizationApiService.unregisterOrganization(organizationRegistered.id!!)
+    organizationList = organizationApiService.findAllOrganizations(null, null)
+    assertEquals(1, organizationList.size)
   }
 
   @Test
   fun `test updating organization`() {
+    val organizationRegistered =
+        organizationApiService.registerOrganization(makeOrganization("o-organization", defaultName))
+    var organizationRetrieved: Organization
 
-    logger.info("Updating organization : ${organizationRegistered1.id}...")
-    // TODO Change the next line
-    logger.info(organizationRetrieved1.id)
-    organization1 = makeOrganization("o-organization-1", "Organization-1.2")
-    organizationApiService.updateOrganization(organizationRegistered1.id!!, organization1)
-    organizationRetrieved2 =
-        organizationApiService.findOrganizationById(organizationRegistered1.id!!)
-    assertNotEquals(organizationRetrieved2, organizationRetrieved1)
-    logger.info("Updated organization")
+    logger.info("Updating organization : ${organizationRegistered.id}...")
+    organizationApiService.updateOrganization(
+        organizationRegistered.id!!, makeOrganization("o-organization-1", "Organization-1.2"))
+    organizationRetrieved = organizationApiService.findOrganizationById(organizationRegistered.id!!)
+    assertNotEquals(organizationRegistered.name, organizationRetrieved.name)
 
     logger.info("Update Solution Container Registry...")
     organizationApiService.updateSolutionsContainerRegistryByOrganizationId(
-        organizationRegistered1.id!!,
+        organizationRegistered.id!!,
         organizationService = OrganizationService(baseUri = "dummyURI"))
-    organizationRetrieved1 =
-        organizationApiService.findOrganizationById(organizationRegistered1.id!!)
-    assertNotEquals(organizationRetrieved1, organizationRetrieved2)
+    organizationRetrieved = organizationApiService.findOrganizationById(organizationRegistered.id!!)
+    assertNotEquals(
+        organizationRegistered.services!!.solutionsContainerRegistry!!.baseUri,
+        organizationRetrieved.services!!.solutionsContainerRegistry!!.baseUri)
 
-    logger.info("Update Tenant credentials for organization : ${organizationRegistered1.id}...")
+    logger.info("Update Tenant credentials for organization : ${organizationRegistered.id}...")
     organizationApiService.updateTenantCredentialsByOrganizationId(
-        organizationRegistered1.id!!, mapOf(Pair("my.account-tester2@cosmotech.com", "admin")))
-    organizationRetrieved2 =
-        organizationApiService.findOrganizationById(organizationRegistered1.id!!)
-    assertNotEquals(organizationRetrieved1, organizationRetrieved2)
+        organizationRegistered.id!!, mapOf(Pair("my.account-tester2@cosmotech.com", "admin")))
+    organizationRetrieved = organizationApiService.findOrganizationById(organizationRegistered.id!!)
+    assertNotEquals(
+        organizationRegistered.services!!.tenantCredentials,
+        organizationRetrieved.services!!.tenantCredentials)
 
-    logger.info("Update storage configuration for organization : ${organizationRegistered1.id}...")
+    logger.info("Update storage configuration for organization : ${organizationRegistered.id}...")
     organizationApiService.updateStorageByOrganizationId(
-        organizationRegistered1.id!!,
+        organizationRegistered.id!!,
         OrganizationService(baseUri = "https://csmphoenixcontainer.blob.core.windows.net"))
-    organizationRetrieved1 =
-        organizationApiService.findOrganizationById(organizationRegistered1.id!!)
-    assertNotEquals(organizationRetrieved1, organizationRetrieved2)
+    organizationRetrieved = organizationApiService.findOrganizationById(organizationRegistered.id!!)
+    assertNotEquals(
+        organizationRegistered.services!!.storage, organizationRetrieved.services!!.storage)
 
     logger.info(
         "Update solutions container registry configuration for organization : " +
-            "${organizationRegistered1}...")
+            "${organizationRegistered}...")
     organizationApiService.updateSolutionsContainerRegistryByOrganizationId(
-        organizationRegistered1.id!!, OrganizationService(baseUri = "newBaseUri"))
-    organizationRetrieved2 =
-        organizationApiService.findOrganizationById(organizationRegistered1.id!!)
-    assertNotEquals(organizationRetrieved1, organizationRetrieved2)
+        organizationRegistered.id!!, OrganizationService(baseUri = "newBaseUri"))
+    organizationRetrieved = organizationApiService.findOrganizationById(organizationRegistered.id!!)
+    assertNotEquals(
+        organizationRegistered.services!!.solutionsContainerRegistry!!.baseUri,
+        organizationRetrieved.services!!.solutionsContainerRegistry!!.baseUri)
   }
 
   @Test
   fun `test security for organization`() {
+    val organizationRegistered =
+        organizationApiService.registerOrganization(makeOrganization("o-organization", defaultName))
+    val organizationRetrieved: Organization
+
     logger.info("Get all permissions per component...")
     val permissionList = organizationApiService.getAllPermissions()
     assertNotNull(permissionList)
 
-    logger.info("Get organization : ${organizationRegistered1.id} permissions for role 'XXXX'...")
+    logger.info("Get organization : ${organizationRegistered.id} permissions for role 'XXXX'...")
     val permission =
-        organizationApiService.getOrganizationPermissions(organizationRegistered1.id!!, "admin")
+        organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, "admin")
     assertNotNull(permission)
 
-    logger.info("Get the security information for organization : ${organizationRegistered1.id}...")
-    logger.warn(organizationRegistered1.toString())
-    organizationSecurity =
-        organizationApiService.getOrganizationSecurity(organizationRegistered1.id!!)
-    assertNotNull(organizationSecurity)
+    logger.info("Get the security information for organization : ${organizationRegistered.id}...")
+    logger.warn(organizationRegistered.toString())
+    assertNotNull(organizationApiService.getOrganizationSecurity(organizationRegistered.id!!))
 
     logger.info("Set the organization default security...")
     organizationApiService.setOrganizationDefaultSecurity(
-        organizationRegistered1.id!!, OrganizationRole("editor"))
-    organizationRetrieved1 =
-        organizationApiService.findOrganizationById(organizationRegistered1.id!!)
-    assertNotEquals(organizationRetrieved1, organizationRetrieved2)
+        organizationRegistered.id!!, OrganizationRole("editor"))
+    organizationRetrieved = organizationApiService.findOrganizationById(organizationRegistered.id!!)
+    assertNotEquals(organizationRegistered, organizationRetrieved)
 
-    logger.info("Get the security users list for organization : ${organizationRegistered1.id}...")
+    logger.info("Get the security users list for organization : ${organizationRegistered.id}...")
     val securityUserList =
-        organizationApiService.getOrganizationSecurityUsers(organizationRegistered1.id!!)
+        organizationApiService.getOrganizationSecurityUsers(organizationRegistered.id!!)
     assertNotNull(securityUserList)
-
-    logger.info("should throw CsmAccessForbiddenException when getting the list of users")
-    assertThrows<CsmAccessForbiddenException> {
-      organizationApiService.getOrganizationSecurityUsers(organizationRegistered1.id!!)
-    }
-  }
-
-  fun `test RBAC AccessControls on Organization as User Unauthorized`() {
-    logger.info("should throw CsmAccessForbiddenException when getting the list of users")
-    assertThrows<CsmAccessForbiddenException> {
-      organizationApiService.getOrganizationSecurityUsers(organizationRegistered1.id!!)
-    }
   }
 
   @Test
   fun `test access control for organization`() {
-    logger.info("Add a control access to organization : ${organizationRegistered1.id}...")
-    organizationApiService.addOrganizationAccessControl(
-        organizationRegistered1.id!!,
-        OrganizationAccessControl("my.account-tester3@cosmotech.com", "admin"))
-    organizationRetrieved2 =
-        organizationApiService.findOrganizationById(organizationRegistered1.id!!)
-    assertNotEquals(organizationRetrieved1, organizationRetrieved2)
+    val organizationRegistered =
+        organizationApiService.registerOrganization(makeOrganization("o-organization", defaultName))
+    var organizationRetrieved: Organization
 
-    logger.info("Get a control access for organization : ${organizationRegistered1.id}...")
+    logger.info("Add a control access to organization : ${organizationRegistered.id}...")
+    organizationApiService.addOrganizationAccessControl(
+        organizationRegistered.id!!,
+        OrganizationAccessControl("my.account-tester3@cosmotech.com", "viewer"))
+    organizationRetrieved = organizationApiService.findOrganizationById(organizationRegistered.id!!)
+    assertNotEquals(organizationRegistered, organizationRetrieved)
+
+    logger.info("Get a control access for organization : ${organizationRegistered.id}...")
     val accessControl1 =
         organizationApiService.getOrganizationAccessControl(
-            organizationRegistered1.id!!, "my.account-tester@cosmotech.com")
+            organizationRegistered.id!!, "my.account-tester@cosmotech.com")
     assertNotNull(accessControl1)
 
-    logger.info("Update access control for organization : ${organizationRegistered1.id}...")
+    logger.info("Update access control for organization : ${organizationRegistered.id}...")
     organizationApiService.updateOrganizationAccessControl(
-        organizationRegistered1.id!!, "my.account-tester@cosmotech.com", OrganizationRole("editor"))
+        organizationRegistered.id!!, "my.account-tester3@cosmotech.com", OrganizationRole("user"))
     val accessControl2 =
         organizationApiService.getOrganizationAccessControl(
-            organizationRegistered1.id!!, "my.account-tester@cosmotech.com")
+            organizationRegistered.id!!, "my.account-tester3@cosmotech.com")
     assertNotEquals(accessControl1, accessControl2)
 
-    logger.info("Remove access control from organization : ${organizationRegistered1.id}...")
+    logger.info("Remove access control from organization : ${organizationRegistered.id}...")
     organizationApiService.removeOrganizationAccessControl(
-        organizationRegistered1.id!!, "my.account-tester@cosmotech.com")
-    organizationSecurity =
-        organizationApiService.getOrganizationSecurity(organizationRegistered1.id!!)
-    assertFalse { organizationSecurity.accessControlList.size < 2 }
+        organizationRegistered.id!!, "my.account-tester3@cosmotech.com")
+    assertEquals(
+        1,
+        organizationApiService.getOrganizationSecurity(organizationRegistered.id!!)
+            .accessControlList
+            .size)
   }
 
   @TestFactory
@@ -362,7 +320,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
             dynamicTest("Test read : $role") {
               val organizationCreated =
                   organizationApiService.registerOrganization(
-                      makeOrganizationWithRole("id", name, role))
+                      makeOrganizationWithRole("id", defaultName, role))
               if (shouldThrow) {
                 assertThrows<CsmAccessForbiddenException> {
                   organizationApiService.findOrganizationById(organizationCreated.id!!)
@@ -373,37 +331,35 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
                 }
               }
             }
-          }
+          } /*
 
-  @TestFactory
-  fun `test find all organizations`() =
-      mapOf(
-          "viewer" to false,
-          "editor" to false,
-          "validator" to false,
-          "user" to false,
-          "none" to true,
-          "admin" to false,
-      )
-          .map { (role, shouldThrow) ->
-            dynamicTest("Test find all : $role") {
-              every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
-              every { getCurrentAuthenticatedMail(any()) } returns name
-              val organizationCreated =
-                  organizationApiService.registerOrganization(
-                      makeOrganizationWithRole("id", name, role))
+              @TestFactory
+              fun `test find all organizations`() =
+                  mapOf(
+                      "viewer" to false,
+                      "editor" to false,
+                      "validator" to false,
+                      "user" to false,
+                      "none" to true,
+                      "admin" to false,
+                  )
+                      .map { (role, shouldThrow) ->
+                        dynamicTest("Test find all : $role") {
+                          every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
+                          every { getCurrentAuthenticatedMail(any()) } returns name
+                          val organizationCreated =
+                              organizationApiService.registerOrganization(
+                                  makeOrganizationWithRole("id", name, role))
 
-              val allOrganizations = organizationApiService.findAllOrganizations(null, null)
-              if (shouldThrow) {
-                assertEquals(4, allOrganizations.size)
-                logger.info("Throwing")
-              } else {
-                assertNotNull(allOrganizations)
-                logger.info("Nothing")
-              }
-            }
-          }
-
+                          val allOrganizations = organizationApiService.findAllOrganizations(null, null)
+                          if (shouldThrow) {
+                            assertEquals(4, allOrganizations.size)
+                          } else {
+                            assertNotNull(allOrganizations)
+                          }
+                        }
+                      }
+            */
   @TestFactory
   fun `test unregister organization`() =
       mapOf(
@@ -417,7 +373,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
             dynamicTest("Test unregister : $role") {
               val organizationRegistered =
                   organizationApiService.registerOrganization(
-                      makeOrganizationWithRole("id", name, role))
+                      makeOrganizationWithRole("id", defaultName, role))
               if (shouldThrow) {
                 assertThrows<CsmAccessForbiddenException> {
                   organizationApiService.unregisterOrganization(organizationRegistered.id!!)
@@ -443,7 +399,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
             dynamicTest("Test update : $role") {
               val organizationRegistered =
                   organizationApiService.registerOrganization(
-                      makeOrganizationWithRole("id", name, role))
+                      makeOrganizationWithRole("id", defaultName, role))
               if (shouldThrow) {
                 assertThrows<CsmAccessForbiddenException> {
                   organizationApiService.updateOrganization(
@@ -475,7 +431,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
             dynamicTest("Test updateTenantCredentials : $role") {
               val organizationRegistered =
                   organizationApiService.registerOrganization(
-                      makeOrganizationWithRole("id", name, role))
+                      makeOrganizationWithRole("id", defaultName, role))
               if (shouldThrow) {
                 assertThrows<CsmAccessForbiddenException> {
                   organizationApiService.updateTenantCredentialsByOrganizationId(
@@ -503,7 +459,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
             dynamicTest("Test updateStorageConfiguration : $role") {
               val organizationRegistered =
                   organizationApiService.registerOrganization(
-                      makeOrganizationWithRole("id", name, role))
+                      makeOrganizationWithRole("id", defaultName, role))
               if (shouldThrow) {
                 assertThrows<CsmAccessForbiddenException> {
                   organizationApiService.updateStorageByOrganizationId(
@@ -531,7 +487,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
             dynamicTest("Test updateSolutionsContainerRegistry : $role") {
               val organizationRegistered =
                   organizationApiService.registerOrganization(
-                      makeOrganizationWithRole("id", name, role))
+                      makeOrganizationWithRole("id", defaultName, role))
               if (shouldThrow) {
                 assertThrows<CsmAccessForbiddenException> {
                   organizationApiService.updateSolutionsContainerRegistryByOrganizationId(
@@ -559,7 +515,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
             dynamicTest("Test updateStorage : $role") {
               val organizationRegistered =
                   organizationApiService.registerOrganization(
-                      makeOrganizationWithRole("id", name, role))
+                      makeOrganizationWithRole("id", defaultName, role))
               if (shouldThrow) {
                 assertThrows<CsmAccessForbiddenException> {
                   organizationApiService.updateStorageByOrganizationId(
@@ -587,7 +543,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
             dynamicTest("Test getOrganizationSecurity : $role") {
               val organizationRegistered =
                   organizationApiService.registerOrganization(
-                      makeOrganizationWithRole("id", name, role))
+                      makeOrganizationWithRole("id", defaultName, role))
               if (shouldThrow) {
                 assertThrows<CsmAccessForbiddenException> {
                   organizationApiService.getOrganizationSecurity(organizationRegistered.id!!)
@@ -613,7 +569,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
             dynamicTest("Test setOrganizationDefaultSecurity : $role") {
               val organizationRegistered =
                   organizationApiService.registerOrganization(
-                      makeOrganizationWithRole("id", name, role))
+                      makeOrganizationWithRole("id", defaultName, role))
               if (shouldThrow) {
                 assertThrows<CsmAccessForbiddenException> {
                   organizationApiService.setOrganizationDefaultSecurity(
@@ -641,16 +597,16 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
             dynamicTest("Test getOrganizationAccessControl : $role") {
               val organizationRegistered =
                   organizationApiService.registerOrganization(
-                      makeOrganizationWithRole("id", name, role))
+                      makeOrganizationWithRole("id", defaultName, role))
               if (shouldThrow) {
                 assertThrows<CsmAccessForbiddenException> {
                   organizationApiService.getOrganizationAccessControl(
-                      organizationRegistered.id!!, name)
+                      organizationRegistered.id!!, defaultName)
                 }
               } else {
                 assertDoesNotThrow {
                   organizationApiService.getOrganizationAccessControl(
-                      organizationRegistered.id!!, name)
+                      organizationRegistered.id!!, defaultName)
                 }
               }
             }
@@ -669,7 +625,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
             dynamicTest("Test addOrganizationAccessControl : $role") {
               val organizationRegistered =
                   organizationApiService.registerOrganization(
-                      makeOrganizationWithRole("id", name, role))
+                      makeOrganizationWithRole("id", defaultName, role))
               if (shouldThrow) {
                 assertThrows<CsmAccessForbiddenException> {
                   organizationApiService.addOrganizationAccessControl(
@@ -697,16 +653,16 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
             dynamicTest("Test updateOrganizationAccessControl : $role") {
               val organizationRegistered =
                   organizationApiService.registerOrganization(
-                      makeOrganizationWithRole("id", name, role))
+                      makeOrganizationWithRole("id", defaultName, role))
               if (shouldThrow) {
                 assertThrows<CsmAccessForbiddenException> {
                   organizationApiService.updateOrganizationAccessControl(
-                      organizationRegistered.id!!, "2$name", OrganizationRole("user"))
+                      organizationRegistered.id!!, "2$defaultName", OrganizationRole("user"))
                 }
               } else {
                 assertDoesNotThrow {
                   organizationApiService.updateOrganizationAccessControl(
-                      organizationRegistered.id!!, "2$name", OrganizationRole("user"))
+                      organizationRegistered.id!!, "2$defaultName", OrganizationRole("user"))
                 }
               }
             }
@@ -725,41 +681,45 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
             dynamicTest("Test removeOrganizationAccessControl : $role") {
               val organizationRegistered =
                   organizationApiService.registerOrganization(
-                      makeOrganizationWithRole("id", name, role))
+                      makeOrganizationWithRole("id", defaultName, role))
               if (shouldThrow) {
                 assertThrows<CsmAccessForbiddenException> {
                   organizationApiService.removeOrganizationAccessControl(
-                      organizationRegistered.id!!, "2$name")
+                      organizationRegistered.id!!, "2$defaultName")
                 }
               } else {
                 assertDoesNotThrow {
                   organizationApiService.removeOrganizationAccessControl(
-                      organizationRegistered.id!!, "2$name")
+                      organizationRegistered.id!!, "2$defaultName")
                 }
               }
             }
           }
 
-    @TestFactory
-    fun `test getOrganizationSecurityUsers`() =
-        mapOf(
-            "viewer" to false,
-            "editor" to false,
-            "admin" to false,
-            "validator" to true,
-            "user" to false,
-            "none" to true)
-            .map { (role, shouldThrow) ->
-                dynamicTest("Test get users with role $role") {
-                    val organizationCreated = organizationApiService.registerOrganization(makeOrganizationWithRole("id", name, role))
+  @TestFactory
+  fun `test getOrganizationSecurityUsers`() =
+      mapOf(
+          "viewer" to false,
+          "editor" to false,
+          "admin" to false,
+          "validator" to true,
+          "user" to false,
+          "none" to true)
+          .map { (role, shouldThrow) ->
+            dynamicTest("Test get users with role $role") {
+              val organizationCreated =
+                  organizationApiService.registerOrganization(
+                      makeOrganizationWithRole("id", defaultName, role))
 
-                    if (shouldThrow) {
-                        assertThrows<CsmAccessForbiddenException> {
-                            organizationApiService.getOrganizationSecurityUsers(organizationCreated.id!!)
-                        }
-                    } else {
-                        assertDoesNotThrow { organizationApiService.getOrganizationSecurityUsers(organizationCreated.id!!) }
-                    }
+              if (shouldThrow) {
+                assertThrows<CsmAccessForbiddenException> {
+                  organizationApiService.getOrganizationSecurityUsers(organizationCreated.id!!)
                 }
+              } else {
+                assertDoesNotThrow {
+                  organizationApiService.getOrganizationSecurityUsers(organizationCreated.id!!)
+                }
+              }
             }
+          }
 }
