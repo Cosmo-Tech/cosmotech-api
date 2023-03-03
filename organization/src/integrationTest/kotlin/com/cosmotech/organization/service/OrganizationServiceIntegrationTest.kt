@@ -4,6 +4,12 @@ package com.cosmotech.organization.service
 
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
+import com.cosmotech.api.rbac.ROLE_ADMIN
+import com.cosmotech.api.rbac.ROLE_EDITOR
+import com.cosmotech.api.rbac.ROLE_NONE
+import com.cosmotech.api.rbac.ROLE_USER
+import com.cosmotech.api.rbac.ROLE_VALIDATOR
+import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
@@ -311,12 +317,12 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   @TestFactory
   fun `test read organization`() =
       mapOf(
-          "viewer" to false,
-          "editor" to false,
-          "admin" to false,
-          "validator" to true,
-          "user" to false,
-          "none" to true)
+          ROLE_VIEWER to false,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to false,
+          ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             dynamicTest("Test read : $role") {
               val organizationCreated =
@@ -338,11 +344,11 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
               fun `test find all organizations`() =
                   mapOf(
                       "viewer" to false,
-                      "editor" to false,
-                      "validator" to false,
-                      "user" to false,
-                      "none" to true,
-                      "admin" to false,
+                      ROLE_EDITOR to false,
+                      ROLE_VALIDATOR to false,
+                      ROLE_USER to false,
+                      ROLE_NONE to true,
+                      ROLE_ADMIN to false,
                   )
                       .map { (role, shouldThrow) ->
                         dynamicTest("Test find all : $role") {
@@ -364,12 +370,12 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   @TestFactory
   fun `test unregister organization`() =
       mapOf(
-          "viewer" to true,
-          "editor" to true,
-          "admin" to false,
-          "validator" to true,
-          "user" to true,
-          "none" to true)
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to true,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to true,
+          ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             dynamicTest("Test unregister : $role") {
               val organizationRegistered =
@@ -390,12 +396,12 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   @TestFactory
   fun `test update organization`() =
       mapOf(
-          "viewer" to true,
-          "editor" to false,
-          "admin" to false,
-          "validator" to true,
-          "user" to true,
-          "none" to true)
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to true,
+          ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             dynamicTest("Test update : $role") {
               val organizationRegistered =
@@ -422,12 +428,12 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   @TestFactory
   fun `test updateTenantCredentials organization`() =
       mapOf(
-          "viewer" to true,
-          "editor" to false,
-          "admin" to false,
-          "validator" to true,
-          "user" to true,
-          "none" to true)
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to true,
+          ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             dynamicTest("Test updateTenantCredentials : $role") {
               val organizationRegistered =
@@ -450,12 +456,12 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   @TestFactory
   fun `test updateStorageConfiguration organization`() =
       mapOf(
-          "viewer" to true,
-          "editor" to false,
-          "admin" to false,
-          "validator" to true,
-          "user" to true,
-          "none" to true)
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to true,
+          ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             dynamicTest("Test updateStorageConfiguration : $role") {
               val organizationRegistered =
@@ -478,12 +484,12 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   @TestFactory
   fun `test updateSolutionsContainerRegistry organization`() =
       mapOf(
-          "viewer" to true,
-          "editor" to false,
-          "admin" to false,
-          "validator" to true,
-          "user" to true,
-          "none" to true)
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to true,
+          ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             dynamicTest("Test updateSolutionsContainerRegistry : $role") {
               val organizationRegistered =
@@ -506,12 +512,12 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   @TestFactory
   fun `test updateStorage organization`() =
       mapOf(
-          "viewer" to true,
-          "editor" to false,
-          "admin" to false,
-          "validator" to true,
-          "user" to true,
-          "none" to true)
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to true,
+          ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             dynamicTest("Test updateStorage : $role") {
               val organizationRegistered =
@@ -534,12 +540,12 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   @TestFactory
   fun `test getOrganizationSecurity organization`() =
       mapOf(
-          "viewer" to false,
-          "editor" to false,
-          "admin" to false,
-          "validator" to true,
-          "user" to false,
-          "none" to true)
+          ROLE_VIEWER to false,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to false,
+          ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             dynamicTest("Test getOrganizationSecurity : $role") {
               val organizationRegistered =
@@ -560,12 +566,12 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   @TestFactory
   fun `test setOrganizationDefaultSecurity organization`() =
       mapOf(
-          "viewer" to true,
-          "editor" to true,
-          "admin" to false,
-          "validator" to true,
-          "user" to true,
-          "none" to true)
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to true,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to true,
+          ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             dynamicTest("Test setOrganizationDefaultSecurity : $role") {
               val organizationRegistered =
@@ -588,12 +594,12 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   @TestFactory
   fun `test getOrganizationAccessControl organization`() =
       mapOf(
-          "viewer" to false,
-          "editor" to false,
-          "admin" to false,
-          "validator" to true,
-          "user" to false,
-          "none" to true)
+          ROLE_VIEWER to false,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to false,
+          ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             dynamicTest("Test getOrganizationAccessControl : $role") {
               val organizationRegistered =
@@ -616,12 +622,12 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   @TestFactory
   fun `test addOrganizationAccessControl organization`() =
       mapOf(
-          "viewer" to true,
-          "editor" to true,
-          "admin" to false,
-          "validator" to true,
-          "user" to true,
-          "none" to true)
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to true,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to true,
+          ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             dynamicTest("Test addOrganizationAccessControl : $role") {
               val organizationRegistered =
@@ -644,12 +650,12 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   @TestFactory
   fun `test updateOrganizationAccessControl organization`() =
       mapOf(
-          "viewer" to true,
-          "editor" to true,
-          "admin" to false,
-          "validator" to true,
-          "user" to true,
-          "none" to true)
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to true,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to true,
+          ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             dynamicTest("Test updateOrganizationAccessControl : $role") {
               val organizationRegistered =
@@ -672,12 +678,12 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   @TestFactory
   fun `test removeOrganizationAccessControl organization`() =
       mapOf(
-          "viewer" to true,
-          "editor" to true,
-          "admin" to false,
-          "validator" to true,
-          "user" to true,
-          "none" to true)
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to true,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to true,
+          ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             dynamicTest("Test removeOrganizationAccessControl : $role") {
               val organizationRegistered =
@@ -700,12 +706,12 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   @TestFactory
   fun `test getOrganizationSecurityUsers`() =
       mapOf(
-          "viewer" to false,
-          "editor" to false,
-          "admin" to false,
-          "validator" to true,
-          "user" to false,
-          "none" to true)
+          ROLE_VIEWER to false,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to false,
+          ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             dynamicTest("Test get users with role $role") {
               val organizationCreated =
