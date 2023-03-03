@@ -43,6 +43,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
+import org.testcontainers.shaded.org.bouncycastle.asn1.x500.style.RFC4519Style.name
 
 @ActiveProfiles(profiles = ["organization-test"])
 @ExtendWith(MockKExtension::class)
@@ -338,35 +339,34 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
                 }
               }
             }
-          } /*
+          }
 
-              @TestFactory
-              fun `test find all organizations`() =
-                  mapOf(
-                      "viewer" to false,
-                      ROLE_EDITOR to false,
-                      ROLE_VALIDATOR to false,
-                      ROLE_USER to false,
-                      ROLE_NONE to true,
-                      ROLE_ADMIN to false,
-                  )
-                      .map { (role, shouldThrow) ->
-                        dynamicTest("Test find all : $role") {
-                          every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
-                          every { getCurrentAuthenticatedMail(any()) } returns name
-                          val organizationCreated =
-                              organizationApiService.registerOrganization(
-                                  makeOrganizationWithRole("id", name, role))
+  @TestFactory
+  fun `test find all organizations`() =
+      mapOf(
+          ROLE_VIEWER to false,
+          ROLE_EDITOR to false,
+          ROLE_VALIDATOR to false,
+          ROLE_USER to false,
+          ROLE_NONE to true,
+          ROLE_ADMIN to false,
+      )
+          .map { (role, shouldThrow) ->
+            dynamicTest("Test find all : $role") {
+              every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
+              every { getCurrentAuthenticatedMail(any()) } returns defaultName
+              organizationApiService.registerOrganization(
+                  makeOrganizationWithRole("id", defaultName, role))
 
-                          val allOrganizations = organizationApiService.findAllOrganizations(null, null)
-                          if (shouldThrow) {
-                            assertEquals(4, allOrganizations.size)
-                          } else {
-                            assertNotNull(allOrganizations)
-                          }
-                        }
-                      }
-            */
+              val allOrganizations = organizationApiService.findAllOrganizations(null, null)
+              if (shouldThrow) {
+                assertEquals(4, allOrganizations.size)
+              } else {
+                assertNotNull(allOrganizations)
+              }
+            }
+          }
+
   @TestFactory
   fun `test unregister organization`() =
       mapOf(
