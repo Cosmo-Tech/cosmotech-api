@@ -74,51 +74,74 @@ class ConnectorServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("Connector list retrieved contains : ${connectorList.size} elements")
     assertEquals(numberOfConnector, connectorList.size)
 
-    connectorList = connectorApiService.findAllConnectors(0, null)
-    logger.info("Connector list retrieved contains : ${connectorList.size} elements")
-    assertEquals(defaultPageSize, connectorList.size)
+    @Test
+    fun `test find All Connector - get first page without size `() {
+      val numberOfConnector = 100
+      logger.info("Creating $numberOfConnector organizations...")
+      IntRange(1, numberOfConnector).forEach {
+        var newConnector = mockConnector("o-connector-test-$it")
+        connectorApiService.registerConnector(newConnector)
+      }
+      val connectorList = connectorApiService.findAllConnectors(0, null)
+      logger.info("Connector list retrieved contains : ${connectorList.size} elements")
+      assertEquals(csmPlatformProperties.twincache.connector.defaultPageSize, connectorList.size)
+    }
 
-    connectorList = connectorApiService.findAllConnectors(0, expectedSize)
-    logger.info("Connector list retrieved contains : ${connectorList.size} elements")
-    assertEquals(expectedSize, connectorList.size)
+    @Test
+    fun `test find All Connector - get first page with size `() {
+      val numberOfConnector = 100
+      val expectedSize = 75
+      logger.info("Creating $numberOfConnector organizations...")
+      IntRange(1, numberOfConnector).forEach {
+        var newConnector = mockConnector("o-connector-test-$it")
+        connectorApiService.registerConnector(newConnector)
+      }
+      var connectorList = connectorApiService.findAllConnectors(0, expectedSize)
+      logger.info("Connector list retrieved contains : ${connectorList.size} elements")
+      assertEquals(defaultPageSize, connectorList.size)
 
-    logger.info("Should return the last page")
-    connectorList = connectorApiService.findAllConnectors(1, expectedSize)
-    assertEquals(numberOfConnector - expectedSize, connectorList.size)
-  }
+      connectorList = connectorApiService.findAllConnectors(0, expectedSize)
+      logger.info("Connector list retrieved contains : ${connectorList.size} elements")
+      assertEquals(expectedSize, connectorList.size)
 
-  @Test
-  fun `test find All Connector with wrong pagination params`() {
-    var newConnector = mockConnector("o-connector-test-1")
-    connectorApiService.registerConnector(newConnector)
+      logger.info("Should return the last page")
+      connectorList = connectorApiService.findAllConnectors(1, expectedSize)
+      assertEquals(numberOfConnector - expectedSize, connectorList.size)
+    }
 
-    logger.info("Should throw IllegalArgumentException when page and size are zeros")
-    assertThrows<IllegalArgumentException> { connectorApiService.findAllConnectors(0, 0) }
+    @Test
+    fun `test find All Connector with wrong pagination params`() {
+      var newConnector = mockConnector("o-connector-test-1")
+      connectorApiService.registerConnector(newConnector)
 
-    logger.info("Should throw IllegalArgumentException when page is negative")
-    assertThrows<IllegalArgumentException> { connectorApiService.findAllConnectors(-1, 10) }
+      logger.info("Should throw IllegalArgumentException when page and size are zeros")
+      assertThrows<IllegalArgumentException> { connectorApiService.findAllConnectors(0, 0) }
 
-    logger.info("Should throw IllegalArgumentException when size is negative")
-    assertThrows<IllegalArgumentException> { connectorApiService.findAllConnectors(0, -1) }
-  }
+      logger.info("Should throw IllegalArgumentException when page is negative")
+      assertThrows<IllegalArgumentException> { connectorApiService.findAllConnectors(-1, 10) }
 
-  @Test
-  fun registerConnector() {
-    val connector1 = mockConnector("connector1")
-    val connector2 = mockConnector("connector2")
+      logger.info("Should throw IllegalArgumentException when size is negative")
+      assertThrows<IllegalArgumentException> { connectorApiService.findAllConnectors(0, -1) }
+    }
 
-    logger.info("Create new connector...")
-    val connectorRegistered1 = connectorApiService.registerConnector(connector1)
-    connectorApiService.registerConnector(connector2)
+    @Test
+    fun registerConnector() {
+      val connector1 = mockConnector("connector1")
+      val connector2 = mockConnector("connector2")
 
-    logger.info("Fetch new connector created ...")
-    val connectorRetrieved = connectorApiService.findConnectorById(connectorRegistered1.id!!)
-    assertEquals(connectorRegistered1, connectorRetrieved)
+      logger.info("Create new connector...")
+      val connectorRegistered1 = connectorApiService.registerConnector(connector1)
+      connectorApiService.registerConnector(connector2)
 
-    logger.info("Deleting connector ...")
-    connectorApiService.unregisterConnector(connectorRegistered1.id!!)
-    assertThrows<CsmResourceNotFoundException> {
-      connectorApiService.findConnectorById(connectorRegistered1.id!!)
+      logger.info("Fetch new connector created ...")
+      val connectorRetrieved = connectorApiService.findConnectorById(connectorRegistered1.id!!)
+      assertEquals(connectorRegistered1, connectorRetrieved)
+
+      logger.info("Deleting connector ...")
+      connectorApiService.unregisterConnector(connectorRegistered1.id!!)
+      assertThrows<CsmResourceNotFoundException> {
+        connectorApiService.findConnectorById(connectorRegistered1.id!!)
+      }
     }
   }
 }
