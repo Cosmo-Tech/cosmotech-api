@@ -7,6 +7,7 @@ import com.azure.storage.blob.BlobServiceClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_EDITOR
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_VIEWER
@@ -24,6 +25,7 @@ import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceRole
+import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
@@ -45,9 +47,10 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
+import org.testcontainers.shaded.org.bouncycastle.asn1.x500.style.RFC4519Style.name
 
 const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
-const val CONNECTED_READER_USER = "test.user@cosmotech.com"
+const val CONNECTED_DEFAULT_USER = "test.user@cosmotech.com"
 const val FAKE_MAIL = "fake@mail.fr"
 
 @ActiveProfiles(profiles = ["workspace-test"])
@@ -238,7 +241,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `test RBAC WorkspaceSecurity as User Unauthorized`() {
 
-    every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_READER_USER
+    every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_DEFAULT_USER
 
     logger.info("should throw CsmAccessForbiddenException when getting default security")
     assertThrows<CsmAccessForbiddenException> {
@@ -279,11 +282,11 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
             WorkspaceRole(ROLE_EDITOR))
     assertEquals(ROLE_EDITOR, workspaceAccessControlRegistered.role)
 
-    logger.info("should get the list of users and assert there are 2")
+    logger.info("should get the list of users and assert there are 3")
     var userList =
         workspaceApiService.getWorkspaceSecurityUsers(
             organizationRegistered.id!!, workspaceRegistered.id!!)
-    assertTrue(userList.size == 2)
+    assertEquals(3, userList.size)
 
     logger.info("should remove the access control")
     workspaceApiService.removeWorkspaceAccessControl(
@@ -298,7 +301,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `test RBAC AccessControls on Workspace as User Unauthorized`() {
 
-    every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_READER_USER
+    every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_DEFAULT_USER
 
     logger.info("should throw CsmAccessForbiddenException when adding a new access control")
     val workspaceAccessControl = WorkspaceAccessControl(FAKE_MAIL, ROLE_VIEWER)
@@ -335,7 +338,11 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
-  fun mockOrganization(id: String): Organization {
+  fun mockOrganization(
+      id: String,
+      roleName: String = CONNECTED_ADMIN_USER,
+      role: String = ROLE_ADMIN
+  ): Organization {
     return Organization(
         id = id,
         name = "Organization Name",
@@ -345,8 +352,8 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
                 default = ROLE_NONE,
                 accessControlList =
                     mutableListOf(
-                        OrganizationAccessControl(id = CONNECTED_READER_USER, role = "reader"),
-                        OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"))))
+                        OrganizationAccessControl(id = roleName, role = role),
+                        OrganizationAccessControl("userLambda", "viewer"))))
   }
 
   fun mockSolution(organizationId: String): Solution {
@@ -358,7 +365,13 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
         ownerId = "ownerId")
   }
 
-  fun mockWorkspace(organizationId: String, solutionId: String, name: String): Workspace {
+  fun mockWorkspace(
+      organizationId: String,
+      solutionId: String,
+      name: String,
+      roleName: String = CONNECTED_ADMIN_USER,
+      role: String = ROLE_ADMIN
+  ): Workspace {
     return Workspace(
         key = UUID.randomUUID().toString(),
         name = name,
@@ -368,6 +381,12 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
             ),
         organizationId = organizationId,
         ownerId = "ownerId",
-    )
+        security =
+            WorkspaceSecurity(
+                default = ROLE_NONE,
+                accessControlList =
+                    mutableListOf(
+                        WorkspaceAccessControl(id = roleName, role = role),
+                        WorkspaceAccessControl("2$name", "viewer"))))
   }
 }
