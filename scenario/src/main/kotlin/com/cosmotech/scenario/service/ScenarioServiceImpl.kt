@@ -271,7 +271,7 @@ internal class ScenarioServiceImpl(
       scenarioId: String
   ): ScenarioDataDownloadJob {
     val scenario = this.findScenarioById(organizationId, workspaceId, scenarioId)
-    csmRbac.verify(scenario.getRbac(), PERMISSION_READ)
+    csmRbac.verify(scenario.getRbac(), PERMISSION_READ, scenarioPermissions)
     val resourceId =
         this.idGenerator.generate(scope = "scenariodatadownload", prependPrefix = "sdl-")
     val scenarioDataDownloadRequest =

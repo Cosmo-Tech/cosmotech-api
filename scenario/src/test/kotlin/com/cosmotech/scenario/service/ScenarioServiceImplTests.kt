@@ -9,18 +9,33 @@ import com.cosmotech.api.events.CsmEvent
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.WorkflowStatusRequest
+import com.cosmotech.api.exceptions.CsmAccessForbiddenException
+import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.id.CsmIdGenerator
+import com.cosmotech.api.rbac.CsmAdmin
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
+import com.cosmotech.api.rbac.ROLE_ADMIN
+import com.cosmotech.api.rbac.ROLE_EDITOR
+import com.cosmotech.api.rbac.ROLE_NONE
+import com.cosmotech.api.rbac.ROLE_USER
+import com.cosmotech.api.rbac.ROLE_VALIDATOR
+import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
+import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.getCurrentAuthentication
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
+import com.cosmotech.organization.domain.OrganizationAccessControl
+import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.scenario.domain.Scenario
+import com.cosmotech.scenario.domain.ScenarioAccessControl
 import com.cosmotech.scenario.domain.ScenarioJobState
 import com.cosmotech.scenario.domain.ScenarioLastRun
+import com.cosmotech.scenario.domain.ScenarioRole
 import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
+import com.cosmotech.scenario.domain.ScenarioSecurity
 import com.cosmotech.scenario.repository.ScenarioRepository
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
@@ -29,19 +44,22 @@ import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.domain.Workspace
+import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import io.mockk.MockKAnnotations
 import io.mockk.every
+import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
+import io.mockk.impl.annotations.SpyK
 import io.mockk.junit5.MockKExtension
 import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.mockkStatic
-import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
+import java.util.*
 import java.util.stream.Stream
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -53,6 +71,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.extension.ExtensionContext
@@ -60,11 +79,14 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsProvider
 import org.junit.jupiter.params.provider.ArgumentsSource
+import org.springframework.data.domain.PageImpl
 
 const val ORGANIZATION_ID = "O-AbCdEf123"
 const val WORKSPACE_ID = "W-AbCdEf123"
 const val SOLUTION_ID = "SOL-AbCdEf123"
 const val AUTHENTICATED_USERNAME = "authenticated-user"
+const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
+const val CONNECTED_DEFAULT_USER = "test.user@cosmotech.com"
 
 @ExtendWith(MockKExtension::class)
 @Suppress("LongMethod", "LargeClass")
@@ -72,52 +94,45 @@ class ScenarioServiceImplTests {
 
   @MockK private lateinit var organizationService: OrganizationApiService
   @MockK private lateinit var solutionService: SolutionApiService
-  @MockK private lateinit var workspaceService: WorkspaceApiService
-  @MockK private lateinit var idGenerator: CsmIdGenerator
-  @MockK(relaxed = true) private lateinit var azureEventHubsClient: AzureEventHubsClient
-  @MockK(relaxed = true) private lateinit var azureDataExplorerClient: AzureDataExplorerClient
-  @MockK(relaxed = true) private lateinit var workspaceEventHubService: IWorkspaceEventHubService
-
-  @RelaxedMockK private lateinit var csmRbac: CsmRbac
-
-  @MockK(relaxed = true) private lateinit var scenarioRepository: ScenarioRepository
-  @Suppress("unused") @MockK private lateinit var csmPlatformProperties: CsmPlatformProperties
+  @RelaxedMockK private lateinit var workspaceService: WorkspaceApiService
 
   @Suppress("unused")
-  @MockK(relaxUnitFun = true)
-  private lateinit var eventPublisher: CsmEventPublisher
+  @MockK(relaxed = true)
+  private lateinit var azureEventHubsClient: AzureEventHubsClient
+  @Suppress("unused")
+  @MockK(relaxed = true)
+  private lateinit var azureDataExplorerClient: AzureDataExplorerClient
+  @Suppress("unused")
+  @MockK(relaxed = true)
+  private lateinit var workspaceEventHubService: IWorkspaceEventHubService
 
-  private lateinit var scenarioServiceImpl: ScenarioServiceImpl
+  @Suppress("unused")
+  @MockK
+  private var csmPlatformProperties: CsmPlatformProperties = mockk(relaxed = true)
+  @Suppress("unused") @MockK private var csmAdmin: CsmAdmin = CsmAdmin(csmPlatformProperties)
+
+  @Suppress("unused") @SpyK private var csmRbac: CsmRbac = CsmRbac(csmPlatformProperties, csmAdmin)
+
+  @MockK(relaxed = true) private lateinit var scenarioRepository: ScenarioRepository
+
+  @Suppress("unused") @MockK private var eventPublisher: CsmEventPublisher = mockk(relaxed = true)
+  @Suppress("unused") @MockK private var idGenerator: CsmIdGenerator = mockk(relaxed = true)
+
+  @SpyK @InjectMockKs private lateinit var scenarioServiceImpl: ScenarioServiceImpl
 
   @BeforeTest
   fun setUp() {
-    MockKAnnotations.init(this, relaxUnitFun = true)
-
-    this.scenarioServiceImpl =
-        spyk(
-            ScenarioServiceImpl(
-                solutionService,
-                organizationService,
-                workspaceService,
-                azureDataExplorerClient,
-                azureEventHubsClient,
-                csmRbac,
-                workspaceEventHubService,
-                scenarioRepository),
-            recordPrivateCalls = true)
-
-    every { scenarioServiceImpl getProperty "idGenerator" } returns idGenerator
-    every { scenarioServiceImpl getProperty "eventPublisher" } returns eventPublisher
-    every { scenarioServiceImpl getProperty "eventPublisher" } returns eventPublisher
+    MockKAnnotations.init(this)
 
     val csmPlatformPropertiesAzure = mockk<CsmPlatformProperties.CsmPlatformAzure>()
     every { csmPlatformProperties.azure } returns csmPlatformPropertiesAzure
 
-    every { scenarioServiceImpl getProperty "csmPlatformProperties" } returns csmPlatformProperties
-
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
+    every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_DEFAULT_USER
     every { getCurrentAuthenticatedUserName() } returns AUTHENTICATED_USERNAME
-    every { getCurrentAuthenticatedMail(csmPlatformProperties) } returns "dummy@cosmotech.com"
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf()
+
+    every { csmPlatformProperties.rbac.enabled } returns true
   }
 
   @AfterTest
@@ -195,7 +210,7 @@ class ScenarioServiceImplTests {
         CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
             .TENANT_CLIENT_CREDENTIALS
     every { workspace.sendScenarioMetadataToEventHub } returns false
-    val newScenario = getMockScenario()
+    val newScenario = mockScenario()
     every { scenarioRepository.save(any()) } returns newScenario
 
     val scenarioCreated =
@@ -291,7 +306,7 @@ class ScenarioServiceImplTests {
         CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
             .TENANT_CLIENT_CREDENTIALS
     every { workspace.sendScenarioMetadataToEventHub } returns false
-    val newScenario = getMockScenario()
+    val newScenario = mockScenario()
     every { scenarioRepository.save(any()) } returns newScenario
 
     val scenarioCreated =
@@ -388,7 +403,7 @@ class ScenarioServiceImplTests {
         CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
             .TENANT_CLIENT_CREDENTIALS
     every { workspace.sendScenarioMetadataToEventHub } returns false
-    val newScenario = getMockScenario()
+    val newScenario = mockScenario()
     every { scenarioRepository.save(any()) } returns newScenario
 
     val scenarioCreated =
@@ -447,6 +462,7 @@ class ScenarioServiceImplTests {
             key = "w-myWorkspaceKey",
             name = "wonderful_workspace",
             solution = WorkspaceSolution(solutionId = "w-sol-id"))
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
     every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     every { scenarioServiceImpl.findScenarioByIdNoState(scenarioId) } returns scenario
@@ -535,6 +551,8 @@ class ScenarioServiceImplTests {
     val m2 = Scenario(id = "M2", parentId = null, ownerId = AUTHENTICATED_USERNAME)
     val c21 = Scenario(id = "C21", parentId = m2.id, ownerId = AUTHENTICATED_USERNAME)
 
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
+    every { scenarioRepository.save(any()) } returns mockk()
     every {
       scenarioServiceImpl.findScenarioChildrenById(ORGANIZATION_ID, WORKSPACE_ID, m1.id!!)
     } returns listOf(p11, p12)
@@ -591,6 +609,7 @@ class ScenarioServiceImplTests {
     val m2 = Scenario(id = "M2", parentId = null, ownerId = AUTHENTICATED_USERNAME)
     val c21 = Scenario(id = "C21", parentId = m2.id, ownerId = AUTHENTICATED_USERNAME)
 
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
     every {
       scenarioServiceImpl.findScenarioChildrenById(ORGANIZATION_ID, WORKSPACE_ID, m1.id!!)
     } returns listOf(p11, p12)
@@ -666,6 +685,7 @@ class ScenarioServiceImplTests {
   ) =
       phases.toList().map { phase ->
         DynamicTest.dynamicTest("Workflow Phase: $phase") {
+          every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
           val scenarioId = "S-myScenarioId"
           val scenario =
               Scenario(
@@ -719,6 +739,7 @@ class ScenarioServiceImplTests {
   @Test
   fun `PROD-8051 - findAllScenarios add info about parent and master lastRuns`() {
     /* Scenario tree: M1 (run) -- (P11 (never run) -- C111 (run) */
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
     val m1 =
         Scenario(
             id = "M1",
@@ -743,13 +764,7 @@ class ScenarioServiceImplTests {
                     workflowId = "c111-workflowId",
                     csmSimulationRun = "c111-csmSimulationRun"))
     val organization = Organization(id = ORGANIZATION_ID, security = null)
-    val workspace =
-        Workspace(
-            id = WORKSPACE_ID,
-            security = null,
-            key = "w-myWorkspaceKey",
-            name = "wonderful_workspace",
-            solution = WorkspaceSolution(solutionId = "w-sol-id"))
+    val workspace = mockWorkspace(ORGANIZATION_ID, SOLUTION_ID, "WorkspaceName")
     every { csmPlatformProperties.twincache.scenario.defaultPageSize } returns 100
     every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
@@ -795,6 +810,7 @@ class ScenarioServiceImplTests {
             key = "w-myWorkspaceKey",
             name = "wonderful_workspace",
             solution = WorkspaceSolution(solutionId = "w-sol-id"))
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
     every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     every { scenarioServiceImpl.findScenarioByIdNoState(parentId) } throws
@@ -857,6 +873,7 @@ class ScenarioServiceImplTests {
             key = "w-myWorkspaceKey",
             name = "wonderful_workspace",
             solution = WorkspaceSolution(solutionId = "w-sol-id"))
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
     every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     every { scenarioServiceImpl.findScenarioByIdNoState(scenarioId) } returns scenario
@@ -868,11 +885,460 @@ class ScenarioServiceImplTests {
     assertEquals(rootLastRun, scenarioReturned.rootLastRun)
   }
 
-  private fun getMockScenario(): Scenario {
-    val newScenario = mockk<Scenario>(relaxed = true)
-    newScenario.id = "S-myScenarioId"
-    newScenario.ownerId = AUTHENTICATED_USERNAME
-    return newScenario
+  @Test
+  fun `should test import Scenario method and assert it registered`() {
+    val scenario = mockScenario()
+    every { scenarioRepository.save(any()) } returns scenario
+    val importedScenario =
+        scenarioServiceImpl.importScenario(ORGANIZATION_ID, WORKSPACE_ID, scenario)
+    assertEquals(scenario, importedScenario)
+  }
+
+  @Test
+  fun `should test import Scenario method and assert it throws exception when id scenario is missing`() {
+    val scenario = mockScenario()
+    scenario.id = null
+    assertThrows<CsmResourceNotFoundException> {
+      scenarioServiceImpl.importScenario(ORGANIZATION_ID, WORKSPACE_ID, scenario)
+    }
+  }
+
+  @TestFactory
+  fun `test RBAC create Scenario`() =
+      mapOf(
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to false,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("Test RBAC create Scenario: $role", role, shouldThrow) {
+              every { workspaceService.findWorkspaceById(any(), any()) } returns it.workspace
+              every { solutionService.findSolutionById(any(), any()) } returns it.solution
+              every { scenarioRepository.save(any()) } returns it.scenario
+              scenarioServiceImpl.createScenario(
+                  it.organization.id!!, it.workspace.id!!, it.scenario)
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC read scenario`() =
+      mapOf(
+          ROLE_VIEWER to false,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to false,
+          ROLE_USER to true,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("Test RBAC read scenario: $role", role, shouldThrow) {
+              every { scenarioRepository.findById(any()) } returns Optional.of(it.scenario)
+              scenarioServiceImpl.findScenarioById(
+                  it.organization.id!!, it.workspace.id!!, it.scenario.id!!)
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC find all scenarios`() =
+      mapOf(
+          ROLE_VIEWER to false,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to false,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("Test RBAC find all scenarios: $role", role, shouldThrow) {
+              every { workspaceService.findWorkspaceById(any(), any()) } returns it.workspace
+              every { csmPlatformProperties.twincache.scenario.defaultPageSize } returns 10
+              scenarioServiceImpl.findAllScenarios(
+                  it.organization.id!!, it.workspace.id!!, null, 100)
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC get scenario validation status`() =
+      mapOf(
+          ROLE_VIEWER to false,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to false,
+          ROLE_USER to true,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("Test RBAC get scenario validation status: $role", role, shouldThrow) {
+              every { scenarioRepository.findById(any()) } returns Optional.of(it.scenario)
+              scenarioServiceImpl.getScenarioValidationStatusById(
+                  it.organization.id!!, it.workspace.id!!, it.scenario.id!!)
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC get scenario data download job info`() =
+      mapOf(
+          ROLE_VIEWER to false,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to false,
+          ROLE_USER to true,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("Test RBAC get scenario data job info: $role", role, shouldThrow) {
+              every { scenarioRepository.findById(any()) } returns Optional.of(it.scenario)
+              @Suppress("SwallowedException")
+              try {
+                scenarioServiceImpl.getScenarioDataDownloadJobInfo(
+                    it.organization.id!!, it.workspace.id!!, it.scenario.id!!, "downloadId")
+              } catch (e: CsmResourceNotFoundException) {
+                print("Ignoring exception")
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC get scenario tree`() =
+      mapOf(
+          ROLE_VIEWER to false,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to false,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("Test RBAC get scenario tree: $role", role, shouldThrow) {
+              every { workspaceService.findWorkspaceById(any(), any()) } returns it.workspace
+              every { csmPlatformProperties.twincache.scenario.defaultPageSize } returns 10
+              scenarioServiceImpl.getScenariosTree(it.organization.id!!, it.workspace.id!!)
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC delete scenario`() =
+      mapOf(
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to true,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to true,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("Test RBAC delete scenario : $role", role, shouldThrow) {
+              every { scenarioRepository.findById(any()) } returns Optional.of(it.scenario)
+              every { scenarioRepository.delete(any()) } returns Unit
+              every { scenarioServiceImpl.findScenarioChildrenById(any(), any(), any()) } returns
+                  emptyList()
+              scenarioServiceImpl.deleteScenario(
+                  it.organization.id!!, it.workspace.id!!, it.scenario.id!!, false)
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC delete all scenarios`() =
+      mapOf(
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to true,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("Test RBAC delete all scenarios : $role", role, shouldThrow) {
+              every { workspaceService.findWorkspaceById(any(), any()) } returns it.workspace
+              every { csmPlatformProperties.twincache.scenario.defaultPageSize } returns 100
+              every { scenarioRepository.delete(any()) } returns Unit
+              every { scenarioRepository.findByWorkspaceIdAndSecurity(any(), any(), any()) } returns
+                  PageImpl(emptyList())
+              scenarioServiceImpl.deleteAllScenarios(it.organization.id!!, it.workspace.id!!)
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC remove Scenario Parameter Values`() =
+      mapOf(
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to false,
+          ROLE_USER to true,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("Test RBAC remove Scenario Parameter Values: $role", role, shouldThrow) {
+              every { scenarioRepository.findById(any()) } returns Optional.of(it.scenario)
+              every { scenarioRepository.save(any()) } returns it.scenario
+              scenarioServiceImpl.removeAllScenarioParameterValues(
+                  it.organization.id!!, it.workspace.id!!, it.scenario.id!!)
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC get scenario access contol`() =
+      mapOf(
+          ROLE_VIEWER to false,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to false,
+          ROLE_USER to true,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("Test RBAC get scenario access contol: $role", role, shouldThrow) {
+              every { scenarioRepository.findById(any()) } returns Optional.of(it.scenario)
+              scenarioServiceImpl.getScenarioAccessControl(
+                  it.organization.id!!, it.workspace.id!!, it.scenario.id!!, CONNECTED_DEFAULT_USER)
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC remove Scenario Access Control`() =
+      mapOf(
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to true,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to true,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("Test RBAC remove Scenario Access Control: $role", role, shouldThrow) {
+              every { scenarioRepository.findById(any()) } returns Optional.of(it.scenario)
+              every { scenarioRepository.save(any()) } returns it.scenario
+              scenarioServiceImpl.removeScenarioAccessControl(
+                  it.organization.id!!, it.workspace.id!!, it.scenario.id!!, CONNECTED_DEFAULT_USER)
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC update Scenario Access Control`() =
+      mapOf(
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to true,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to true,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("Test RBAC update Scenario Access Control: $role", role, shouldThrow) {
+              every { scenarioRepository.findById(any()) } returns Optional.of(it.scenario)
+              every { scenarioRepository.save(any()) } returns it.scenario
+              every { organizationService.findOrganizationById(any()) } returns it.organization
+              every { workspaceService.findWorkspaceById(any(), any()) } returns it.workspace
+              scenarioServiceImpl.updateScenarioAccessControl(
+                  it.organization.id!!,
+                  it.workspace.id!!,
+                  it.scenario.id!!,
+                  CONNECTED_DEFAULT_USER,
+                  ScenarioRole(role))
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC get scenario security`() =
+      mapOf(
+          ROLE_VIEWER to false,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to false,
+          ROLE_USER to true,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("Test RBAC get scenario security: $role", role, shouldThrow) {
+              every { scenarioRepository.findById(any()) } returns Optional.of(it.scenario)
+              scenarioServiceImpl.getScenarioSecurity(
+                  it.organization.id!!, it.workspace.id!!, it.scenario.id!!)
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC scenario default security`() =
+      mapOf(
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to true,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to true,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("Test RBAC scenario default security: $role", role, shouldThrow) {
+              every { scenarioRepository.findById(any()) } returns Optional.of(it.scenario)
+              every { scenarioRepository.save(any()) } returns it.scenario
+              scenarioServiceImpl.setScenarioDefaultSecurity(
+                  it.organization.id!!, it.workspace.id!!, it.scenario.id!!, ScenarioRole(role))
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC get scenario security users`() =
+      mapOf(
+          ROLE_VIEWER to false,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to false,
+          ROLE_USER to true,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("Test RBAC get scenario security users: $role", role, shouldThrow) {
+              every { scenarioRepository.findById(any()) } returns Optional.of(it.scenario)
+              scenarioServiceImpl.getScenarioSecurityUsers(
+                  it.organization.id!!, it.workspace.id!!, it.scenario.id!!)
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC update scenario`() =
+      mapOf(
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to false,
+          ROLE_USER to true,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("Test RBAC update scenario: $role", role, shouldThrow) {
+              every { scenarioRepository.findById(any()) } returns Optional.of(it.scenario)
+              every { scenarioRepository.save(any()) } returns it.scenario
+              every { organizationService.findOrganizationById(any()) } returns it.organization
+              every { workspaceService.findWorkspaceById(any(), any()) } returns it.workspace
+              scenarioServiceImpl.updateScenario(
+                  it.organization.id!!, it.workspace.id!!, it.scenario.id!!, it.scenario)
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC update Scenario Parameter Values`() =
+      mapOf(
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to false,
+          ROLE_USER to true,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("Test RBAC update Scenario Parameter Values: $role", role, shouldThrow) {
+              every { scenarioRepository.findById(any()) } returns Optional.of(it.scenario)
+              every { scenarioRepository.save(any()) } returns it.scenario
+              scenarioServiceImpl.addOrReplaceScenarioParameterValues(
+                  it.organization.id!!,
+                  it.workspace.id!!,
+                  it.scenario.id!!,
+                  listOf(ScenarioRunTemplateParameterValue("key", "value")))
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC download scenario data`() =
+      mapOf(
+          ROLE_VIEWER to false,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to false,
+          ROLE_USER to true,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("Test RBAC download scenario data: $role", role, shouldThrow) {
+              every { scenarioRepository.findById(any()) } returns Optional.of(it.scenario)
+              every { scenarioRepository.save(any()) } returns it.scenario
+              scenarioServiceImpl.downloadScenarioData(
+                  it.organization.id!!, it.workspace.id!!, it.scenario.id!!)
+            }
+          }
+
+  private fun rbacTest(
+      testName: String,
+      role: String,
+      shouldThrow: Boolean,
+      testLambda: (ctx: ScenarioTestContext) -> Unit
+  ): DynamicTest? {
+    val organization = mockOrganization("o-org-id", CONNECTED_DEFAULT_USER, role)
+    val solution = mockSolution(organization.id!!)
+    val workspace =
+        mockWorkspace(organization.id!!, solution.id!!, "Workspace", CONNECTED_DEFAULT_USER, role)
+    val scenario = mockScenario(CONNECTED_DEFAULT_USER, role)
+    return DynamicTest.dynamicTest(testName) {
+      if (shouldThrow) {
+        assertThrows<CsmAccessForbiddenException> {
+          testLambda(ScenarioTestContext(organization, solution, workspace, scenario))
+        }
+      } else {
+        assertDoesNotThrow {
+          testLambda(ScenarioTestContext(organization, solution, workspace, scenario))
+        }
+      }
+    }
+  }
+
+  data class ScenarioTestContext(
+      val organization: Organization,
+      val solution: Solution,
+      val workspace: Workspace,
+      val scenario: Scenario
+  )
+
+  private fun mockScenario(
+      roleName: String = CONNECTED_ADMIN_USER,
+      role: String = ROLE_ADMIN
+  ): Scenario {
+    return Scenario(
+        id = UUID.randomUUID().toString(),
+        ownerId = roleName,
+        security =
+            ScenarioSecurity(
+                default = ROLE_NONE,
+                accessControlList =
+                    mutableListOf(
+                        ScenarioAccessControl(id = roleName, role = role),
+                        ScenarioAccessControl("2user", "admin"))))
+  }
+
+  private fun mockOrganization(
+      id: String,
+      roleName: String = CONNECTED_ADMIN_USER,
+      role: String = ROLE_ADMIN
+  ): Organization {
+    return Organization(
+        id = id,
+        name = "Organization Name",
+        ownerId = "my.account-tester@cosmotech.com",
+        security =
+            OrganizationSecurity(
+                default = ROLE_NONE,
+                accessControlList =
+                    mutableListOf(
+                        OrganizationAccessControl(id = roleName, role = role),
+                        OrganizationAccessControl("userLambda", "viewer"))))
+  }
+
+  private fun mockSolution(organizationId: String): Solution {
+    return Solution(
+        id = "solutionId",
+        key = UUID.randomUUID().toString(),
+        name = "My solution",
+        organizationId = organizationId,
+        ownerId = "ownerId")
+  }
+
+  private fun mockWorkspace(
+      organizationId: String,
+      solutionId: String,
+      workspaceName: String,
+      roleName: String = CONNECTED_ADMIN_USER,
+      role: String = ROLE_ADMIN
+  ): Workspace {
+    return Workspace(
+        id = UUID.randomUUID().toString(),
+        key = UUID.randomUUID().toString(),
+        name = workspaceName,
+        solution =
+            WorkspaceSolution(
+                solutionId = solutionId,
+            ),
+        organizationId = organizationId,
+        ownerId = "ownerId",
+        security =
+            WorkspaceSecurity(
+                default = ROLE_NONE,
+                accessControlList =
+                    mutableListOf(
+                        WorkspaceAccessControl(id = roleName, role = role),
+                        WorkspaceAccessControl("2${workspaceName}", "viewer"))))
   }
 }
 

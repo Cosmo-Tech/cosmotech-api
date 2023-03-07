@@ -15,6 +15,7 @@ import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenariorun.ContainerFactory
 import com.cosmotech.scenariorun.domain.ScenarioRun
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
+import com.cosmotech.scenariorun.domain.ScenarioRunSearch
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
 import com.cosmotech.scenariorun.repository.ScenarioRunRepository
 import com.cosmotech.scenariorun.workflow.WorkflowService
@@ -231,49 +232,49 @@ class ScenarioRunServiceImplTests {
     }
   }
 
-  //  @Test
-  //  fun `PROD-8473 - searchScenarioRuns does not leak sensitive container data`() {
-  //    val myScenarioRun1 =
-  //        ScenarioRun(
-  //            id = "sr-myscenariorun1",
-  //            workspaceKey = "my-workspaceKey",
-  //            containers =
-  //                listOf(
-  //                    ScenarioRunContainer(
-  //                        name = "my-container11",
-  //                        envVars = mapOf("MY_SECRET_ENV_VAR" to "value"),
-  //                        image = "my-image:latest")))
-  //    val myScenarioRun2 =
-  //        ScenarioRun(
-  //            id = "sr-myscenariorun2",
-  //            workspaceKey = "my-workspaceKey",
-  //            containers =
-  //                listOf(
-  //                    ScenarioRunContainer(
-  //                        name = "my-container21",
-  //                        envVars = mapOf("MY_SECRET_ENV_VAR" to "value", "DEBUG" to "true"),
-  //                        image = "debian:11"),
-  //                    ScenarioRunContainer(
-  //                        name = "my-container22",
-  //                        envVars = mapOf("KEY" to "value"),
-  //                        image = "rhel:7")))
-  //
-  //    every { queryResponse.iterator() } returns
-  //        listOf(myScenarioRun1, myScenarioRun2)
-  //            .map { objectMapper.valueToTree<JsonNode>(it) }
-  //            .toMutableList()
-  //
-  //    val scenarioRuns =
-  //        this.scenarioRunServiceImpl.searchScenarioRuns(ORGANIZATION_ID, ScenarioRunSearch())
-  //
-  //    assertEquals(2, scenarioRuns.size)
-  //    assertNotNull(scenarioRuns[0].id)
-  //    for (scenarioRun in scenarioRuns) {
-  //      assertNull(
-  //          scenarioRun.containers, "List of containers must be NULL for scenarioRun
-  // $scenarioRun")
-  //    }
-  //  }
+  @Test
+  fun `PROD-8473 - searchScenarioRuns does not leak sensitive container data`() {
+    val myScenarioRun1 =
+        ScenarioRun(
+            id = "sr-myscenariorun1",
+            workspaceKey = "my-workspaceKey",
+            containers =
+                listOf(
+                    ScenarioRunContainer(
+                        name = "my-container11",
+                        envVars = mapOf("MY_SECRET_ENV_VAR" to "value"),
+                        image = "my-image:latest")))
+    val myScenarioRun2 =
+        ScenarioRun(
+            id = "sr-myscenariorun2",
+            workspaceKey = "my-workspaceKey",
+            containers =
+                listOf(
+                    ScenarioRunContainer(
+                        name = "my-container21",
+                        envVars = mapOf("MY_SECRET_ENV_VAR" to "value", "DEBUG" to "true"),
+                        image = "debian:11"),
+                    ScenarioRunContainer(
+                        name = "my-container22",
+                        envVars = mapOf("KEY" to "value"),
+                        image = "rhel:7")))
+
+    every { csmPlatformProperties.twincache.scenariorun.defaultPageSize } returns 5
+    every { scenarioRunRepository.findByPredicate(any(), any()).toList() } returns
+        listOf(myScenarioRun1, myScenarioRun2)
+
+    var scenarioRunSearch = ScenarioRunSearch(ownerId = AUTHENTICATED_USERNAME)
+    val scenarioRuns =
+        this.scenarioRunServiceImpl.searchScenarioRuns(
+            ORGANIZATION_ID, scenarioRunSearch, null, 100)
+
+    assertEquals(2, scenarioRuns.size)
+    assertNotNull(scenarioRuns[0].id)
+    for (scenarioRun in scenarioRuns) {
+      assertNull(
+          scenarioRun.containers, "List of containers must be NULL for scenarioRun $scenarioRun")
+    }
+  }
 
   @Test
   fun `PROD-8473 - startScenarioRunContainers does not leak sensitive container data`() {
