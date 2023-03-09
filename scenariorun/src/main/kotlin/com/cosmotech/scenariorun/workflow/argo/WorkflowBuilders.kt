@@ -49,25 +49,8 @@ internal fun buildTemplate(
     scenarioRunContainer: ScenarioRunContainer,
     csmPlatformProperties: CsmPlatformProperties
 ): IoArgoprojWorkflowV1alpha1Template {
-  var envVars: MutableList<V1EnvVar>? = null
-  if (scenarioRunContainer.envVars != null) {
-    envVars = mutableListOf()
-    scenarioRunContainer.envVars.forEach { (key, value) ->
-      val envVar = V1EnvVar().name(key).value(value)
-      envVars.add(envVar)
-    }
-  }
-  val volumeMounts =
-      listOf(
-          V1VolumeMount()
-              .name(VOLUME_CLAIM)
-              .mountPath(VOLUME_DATASETS_PATH)
-              .subPath(VOLUME_CLAIM_DATASETS_SUBPATH),
-          V1VolumeMount()
-              .name(VOLUME_CLAIM)
-              .mountPath(VOLUME_PARAMETERS_PATH)
-              .subPath(VOLUME_CLAIM_PARAMETERS_SUBPATH),
-          V1VolumeMount().name("out").mountPath("/var/csmoutput"))
+  var envVars = buildEnvVar(scenarioRunContainer)
+  val volumeMounts = buildVolumeMount()
 
   val sizingInfo = scenarioRunContainer.runSizing ?: BASIC_SIZING.toContainerResourceSizing()
 
