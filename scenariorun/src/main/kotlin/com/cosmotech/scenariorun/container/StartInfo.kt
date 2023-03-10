@@ -35,7 +35,7 @@ fun Sizing.toContainerResourceSizing(): ContainerResourceSizing {
 internal val BASIC_SIZING =
     Sizing(
         requests = SizingInfo(cpu = "1", memory = "64Mi"),
-        limits = SizingInfo(cpu = "4", memory = "2048Mi"))
+        limits = SizingInfo(cpu = "4", memory = "6144Mi"))
 
 internal val HIGH_MEMORY_SIZING =
     Sizing(
