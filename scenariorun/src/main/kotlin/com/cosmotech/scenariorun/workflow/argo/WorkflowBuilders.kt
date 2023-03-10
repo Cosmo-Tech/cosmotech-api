@@ -123,7 +123,9 @@ private fun buildDependencies(
   var dependencies: List<String> = mutableListOf()
   if (container.dependencies != null) {
     if (CSM_DAG_ROOT !in container.dependencies) {
-      dependencies = container.dependencies.map { it.lowercase() }
+      dependencies = container.dependencies.map {
+          if(it == "fetchDatasetContainer-1"){"main"}
+          else{it.lowercase() }}
     }
   } else {
     if (previousContainer != null) dependencies = listOf(previousContainer.name)
@@ -215,13 +217,16 @@ internal fun buildContainerSetTemplate(
           .nodeSelector(startContainers.containers[0].getNodeLabelSize())
           .addVolumesItem(V1Volume().emptyDir(V1EmptyDirVolumeSource()).name("out"))
 
-  val artifacts =
-      startContainers.containers[0].artifacts?.map {
-        IoArgoprojWorkflowV1alpha1Artifact()
-            .name(it.name)
-            .path("/var/csmoutput/${it.path}")
-            .archive(IoArgoprojWorkflowV1alpha1ArchiveStrategy().none(Object()))
-      }
+  var artifacts:  MutableList<IoArgoprojWorkflowV1alpha1Artifact> = mutableListOf()
+//      startContainers.containers[0].artifacts?.map {
+//        IoArgoprojWorkflowV1alpha1Artifact()
+//            .name(it.name)
+//            .path("/var/csmoutput/${it.path}")
+//            .archive(IoArgoprojWorkflowV1alpha1ArchiveStrategy().none(Object()))
+//      }
+    artifacts.add(IoArgoprojWorkflowV1alpha1Artifact().
+        name("csmArtifact")
+        .path("/var/csmoutput/"))
   if (!artifacts.isNullOrEmpty()) {
     template.outputs(IoArgoprojWorkflowV1alpha1Outputs().artifacts(artifacts))
   }
