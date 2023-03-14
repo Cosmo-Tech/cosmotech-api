@@ -19,6 +19,7 @@ import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
+import com.cosmotech.organization.domain.OrganizationServices
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
@@ -58,6 +59,7 @@ const val FAKE_MAIL = "fake@mail.fr"
 @ExtendWith(SpringExtension::class)
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Suppress("FunctionName")
 class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
   private val logger = LoggerFactory.getLogger(WorkspaceServiceIntegrationTest::class.java)
@@ -388,5 +390,19 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
                     mutableListOf(
                         WorkspaceAccessControl(id = roleName, role = role),
                         WorkspaceAccessControl("2$name", "viewer"))))
+  }
+  fun makeOrganizationWithRole(id: String, name: String, role: String): Organization {
+    return Organization(
+        id = id,
+        name = name,
+        ownerId = name,
+        services = OrganizationServices(),
+        security =
+            OrganizationSecurity(
+                default = "none",
+                accessControlList =
+                    mutableListOf(
+                        OrganizationAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                        OrganizationAccessControl(name, role))))
   }
 }

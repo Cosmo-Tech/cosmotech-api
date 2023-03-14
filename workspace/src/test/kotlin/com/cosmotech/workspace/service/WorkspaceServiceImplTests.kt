@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.workspace.service
 
+import com.azure.spring.autoconfigure.storage.resource.AzureStorageResourcePatternResolver
 import com.azure.storage.blob.BlobContainerClient
 import com.azure.storage.blob.BlobServiceClient
 import com.azure.storage.blob.batch.BlobBatchClient
@@ -33,6 +34,7 @@ import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
+import com.cosmotech.workspace.domain.WorkspaceRole
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.cosmotech.workspace.repository.WorkspaceRepository
@@ -42,6 +44,7 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.impl.annotations.SpyK
 import io.mockk.junit5.MockKExtension
+import java.io.InputStream
 import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -63,10 +66,13 @@ const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
 const val CONNECTED_DEFAULT_USER = "test.user@cosmotech.com"
 
 @ExtendWith(MockKExtension::class)
+@Suppress("LargeClass")
 class WorkspaceServiceImplTests {
 
   @MockK private lateinit var resourceLoader: ResourceLoader
   @MockK private lateinit var solutionService: SolutionApiService
+  @MockK private lateinit var resource: Resource
+  @MockK private lateinit var inputStream: InputStream
   @RelaxedMockK private lateinit var organizationService: OrganizationApiService
   @MockK private lateinit var azureStorageBlobServiceClient: BlobServiceClient
   @Suppress("unused") @MockK private lateinit var secretManager: SecretManager
@@ -366,7 +372,7 @@ class WorkspaceServiceImplTests {
   }
 
   @TestFactory
-  fun `test RBAC read worskpace`() =
+  fun `test RBAC read workspace`() =
       mapOf(
           ROLE_VIEWER to false,
           ROLE_EDITOR to false,
@@ -380,6 +386,343 @@ class WorkspaceServiceImplTests {
               workspaceServiceImpl.findWorkspaceById(it.organization.id!!, it.workspace.id!!)
             }
           }
+
+  @TestFactory
+  fun `test RBAC create workspace`() =
+      mapOf(
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to false,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("Test RBAC create workspace: $role", role, shouldThrow) {
+              every { organizationService.findOrganizationById(any()) } returns it.organization
+              every { solutionService.findSolutionById(any(), any()) } returns it.solution
+              every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
+              every { workspaceRepository.save(any()) } returns it.workspace
+              workspaceServiceImpl.createWorkspace(it.organization.id!!, it.workspace)
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC delete all workspace files`() =
+      mapOf(
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to true,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("Test RBAC delete all workspace files: $role", role, shouldThrow) {
+              every { organizationService.findOrganizationById(any()) } returns it.organization
+              every { solutionService.findSolutionById(any(), any()) } returns it.solution
+              every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
+              workspaceServiceImpl.deleteAllWorkspaceFiles(it.organization.id!!, it.workspace.id!!)
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC update workspace`() =
+      mapOf(
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to true,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("test RBAC update workspace: $role", role, shouldThrow) {
+              every { organizationService.findOrganizationById(any()) } returns it.organization
+              every { solutionService.findSolutionById(any(), any()) } returns it.solution
+              every { workspaceServiceImpl.findWorkspaceByIdNoSecurity(any()) } returns it.workspace
+              every { workspaceRepository.save(any()) } returns it.workspace
+              workspaceServiceImpl.updateWorkspace(
+                  it.organization.id!!, it.workspace.id!!, it.workspace)
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC delete workspace`() =
+      mapOf(
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to true,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to true,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("Test RBAC delete workspace: $role", role, shouldThrow) {
+              every { organizationService.findOrganizationById(any()) } returns it.organization
+              every { solutionService.findSolutionById(any(), any()) } returns it.solution
+              every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
+              every { secretManager.deleteSecret(any(), any()) } returns Unit
+              workspaceServiceImpl.deleteWorkspace(it.organization.id!!, it.workspace.id!!)
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC delete workspace file`() =
+      mapOf(
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to true,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("Test RBAC delete workspace file: $role", role, shouldThrow) {
+              every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
+              every {
+                azureStorageBlobServiceClient
+                    .getBlobContainerClient(any())
+                    .getBlobClient(any())
+                    .delete()
+              } returns mockk()
+              workspaceServiceImpl.deleteWorkspaceFile(it.organization.id!!, it.workspace.id!!, "")
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC download workspace file`() =
+      mapOf(
+          ROLE_VIEWER to false,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to false,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("Test RBAC download workspace file: $role", role, shouldThrow) {
+              every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
+              every { resourceLoader.getResource(any()) } returns mockk()
+              workspaceServiceImpl.downloadWorkspaceFile(
+                  it.organization.id!!, it.workspace.id!!, "")
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC upload workspace file`() =
+      mapOf(
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to true,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("Test RBAC upload workspace file: $role", role, shouldThrow) {
+              every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
+              every { resource.filename } returns "name"
+              every {
+                azureStorageBlobServiceClient
+                    .getBlobContainerClient(any())
+                    .getBlobClient(any())
+                    .upload(any() as InputStream, any(), any())
+              } returns mockk()
+              every { resource.inputStream } returns inputStream
+              every { resource.contentLength() } returns 0
+              workspaceServiceImpl.uploadWorkspaceFile(
+                  it.organization.id!!, it.workspace.id!!, resource, true, "")
+            }
+          }
+
+  //    @TestFactory
+  //    fun `test RBAC findAll workspace files`() =
+  //        mapOf(
+  //            ROLE_VIEWER to false,
+  //            ROLE_EDITOR to false,
+  //            ROLE_ADMIN to false,
+  //            ROLE_VALIDATOR to true,
+  //            ROLE_USER to false,
+  //            ROLE_NONE to true)
+  //            .map { (role, shouldThrow) ->
+  //                rbacTest("Test RBAC findAll workspace files: $role", role, shouldThrow) {
+  //                    every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns
+  // it.workspace
+  //                    every { azureStorageResourcePatternResolver.getResources(any()).map { any()
+  // as BlobStorageResource } } returns listOf(blobStorageResource)
+  //                    every { azureStorageBlobServiceClient.listBlobContainers() } returns
+  // pagedIterable
+  //                    workspaceServiceImpl.findAllWorkspaceFiles(it.organization.id!!,
+  // it.workspace.id!!)
+  //                }
+  //            }
+  @TestFactory
+  fun `test RBAC findAllWorkspaceFiles`() =
+      mapOf(
+          ROLE_VIEWER to false,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to false,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("Test RBAC findAllWorkspaceFiles: $role", role, shouldThrow) {
+              every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
+              every { azureStorageBlobServiceClient.getBlobContainerClient(any()) } returns mockk()
+              mockkConstructor(AzureStorageResourcePatternResolver::class)
+              every {
+                anyConstructed<AzureStorageResourcePatternResolver>().getResources(any())
+              } returns arrayOf()
+              workspaceServiceImpl.findAllWorkspaceFiles(it.organization.id!!, it.workspace.id!!)
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC get workspace security`() =
+      mapOf(
+          ROLE_VIEWER to false,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to false,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("Test RBAC get workspace security: $role", role, shouldThrow) {
+              every { organizationService.findOrganizationById(any()) } returns it.organization
+              every { solutionService.findSolutionById(any(), any()) } returns it.solution
+              every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
+              workspaceServiceImpl.getWorkspaceSecurity(it.organization.id!!, it.workspace.id!!)
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC set workspace default security`() =
+      mapOf(
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to true,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to true,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("Test RBAC set workspace default security: $role", role, shouldThrow) {
+              every { organizationService.findOrganizationById(any()) } returns it.organization
+              every { solutionService.findSolutionById(any(), any()) } returns it.solution
+              every { workspaceRepository.findById(any()) } returns Optional.of(it.workspace)
+              every { workspaceRepository.save(any()) } returns it.workspace
+              workspaceServiceImpl.setWorkspaceDefaultSecurity(
+                  it.organization.id!!, it.workspace.id!!, WorkspaceRole(ROLE_NONE))
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC get workspace access control`() =
+      mapOf(
+          ROLE_VIEWER to false,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to false,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("test RBAC get workspace access control: $role", role, shouldThrow) {
+              every { organizationService.findOrganizationById(any()) } returns it.organization
+              every { solutionService.findSolutionById(any(), any()) } returns it.solution
+              every { workspaceRepository.findById(any()) } returns Optional.of(it.workspace)
+              workspaceServiceImpl.getWorkspaceAccessControl(
+                  it.organization.id!!, it.workspace.id!!, CONNECTED_DEFAULT_USER)
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC add workspace access control`() =
+      mapOf(
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to true,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to true,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("test RBAC add workspace access control: $role", role, shouldThrow) {
+              every { organizationService.findOrganizationById(any()) } returns it.organization
+              every { workspaceServiceImpl.findWorkspaceByIdNoSecurity(any()) } returns it.workspace
+              every { workspaceRepository.save(any()) } returns it.workspace
+              workspaceServiceImpl.addWorkspaceAccessControl(
+                  it.organization.id!!,
+                  it.workspace.id!!,
+                  WorkspaceAccessControl("3$CONNECTED_DEFAULT_USER", ROLE_USER))
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC update workspace access control`() =
+      mapOf(
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to true,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to true,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("test RBAC update workspace access control: $role", role, shouldThrow) {
+              every { organizationService.findOrganizationById(any()) } returns it.organization
+              every { workspaceServiceImpl.findWorkspaceByIdNoSecurity(any()) } returns it.workspace
+              every { workspaceRepository.save(any()) } returns it.workspace
+              workspaceServiceImpl.updateWorkspaceAccessControl(
+                  it.organization.id!!,
+                  it.workspace.id!!,
+                  "2$CONNECTED_DEFAULT_USER",
+                  WorkspaceRole(ROLE_USER))
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC remove workspace access control`() =
+      mapOf(
+          ROLE_VIEWER to true,
+          ROLE_EDITOR to true,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to true,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("test RBAC remove workspace access control: $role", role, shouldThrow) {
+              every { organizationService.findOrganizationById(any()) } returns it.organization
+              every { workspaceServiceImpl.findWorkspaceByIdNoSecurity(any()) } returns it.workspace
+              every { workspaceRepository.save(any()) } returns it.workspace
+              workspaceServiceImpl.removeWorkspaceAccessControl(
+                  it.organization.id!!, it.workspace.id!!, "2$CONNECTED_DEFAULT_USER")
+            }
+          }
+  @TestFactory
+  fun `test RBAC get workspace security users`() =
+      mapOf(
+          ROLE_VIEWER to false,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to true,
+          ROLE_USER to false,
+          ROLE_NONE to true)
+          .map { (role, shouldThrow) ->
+            rbacTest("test RBAC get workspace security users: $role", role, shouldThrow) {
+              every { organizationService.findOrganizationById(any()) } returns it.organization
+              every { workspaceServiceImpl.findWorkspaceByIdNoSecurity(any()) } returns it.workspace
+              every { workspaceRepository.save(any()) } returns it.workspace
+              workspaceServiceImpl.getWorkspaceSecurityUsers(
+                  it.organization.id!!, it.workspace.id!!)
+            }
+          }
+
+  /*@TestFactory
+  fun `test RBAC find all workspaces`() =
+      mapOf(
+          ROLE_VIEWER to false,
+          ROLE_EDITOR to false,
+          ROLE_ADMIN to false,
+          ROLE_VALIDATOR to false,
+          ROLE_USER to false,
+          ROLE_NONE to false)
+          .map { (role, shouldThrow) ->
+              rbacTest("Test RBAC find all workspaces: $role", role, shouldThrow) {
+                  every { organizationRepository.findById(any()) } returns Optional.of(it.organization)
+                  workspaceServiceImpl.findAllWorkspaces(it.organization.id!!, null, 100)
+              }
+          }*/
 
   private fun rbacTest(
       testName: String,
@@ -458,6 +801,6 @@ class WorkspaceServiceImplTests {
                 accessControlList =
                     mutableListOf(
                         WorkspaceAccessControl(id = roleName, role = role),
-                        WorkspaceAccessControl("2$name", "viewer"))))
+                        WorkspaceAccessControl("2$roleName", "viewer"))))
   }
 }
