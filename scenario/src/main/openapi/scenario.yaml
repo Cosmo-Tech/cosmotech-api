@@ -6,7 +6,7 @@ info:
   version: 0.0.8-SNAPSHOT
 
 servers:
-- url: 'https://api.azure.cosmo-platform.com'
+- url: 'https://dev.api.cosmotech.com'
 - url: 'http://localhost:4010'
 
 security:

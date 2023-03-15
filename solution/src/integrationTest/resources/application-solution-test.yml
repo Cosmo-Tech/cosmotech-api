@@ -11,12 +11,6 @@ management:
   endpoints:
     enabled-by-default: false
 
-azure:
-  storage:
-    account-name: "faketestaccountname"
-    account-key: "this_is_a_key_base64_encoded"
-    blob-endpoint: "https://faketestaccountname.blob.core.windows.net"
-
 csm:
   platform:
     metrics:
@@ -33,17 +27,12 @@ csm:
       type: in_process
     images:
       scenario-fetch-parameters: cosmo-tech/fetch-scenario-parameters
-      send-datawarehouse: cosmo-tech/azure-data-explorer-connector
-      scenario-data-upload: cosmo-tech/azure-storage-publish:latest
-    containers:
-      - name: "ADTTwingraphImport"
-        imageRegistry: "ghcr.io"
-        imageName: "cosmo-tech/adt-twincache-connector"
-        imageVersion: "0.0.5"
-      - name: "StorageTwingraphImport"
-        imageRegistry: "ghcr.io"
-        imageName: "cosmo-tech/azstorage-twincache-connector"
-        imageVersion: "latest"
+      send-datawarehouse: not-implemented
+      scenario-data-upload: not-implemented
+    containers: []
+    registries:
+      core: coreregistry.svc.cluster.local:5000
+      solutions: solutionsregistry.svc.cluster.local:5000
     upload:
       authorized-mime-types:
         workspaces:
@@ -67,7 +56,7 @@ csm:
       # Note that the way @Value works in Spring does not make it possible to inject this sole YAML list.
       # Use CsmPlatformProperties instead !
       allowed-tenants: ["test"]
-    vendor: azure
+    vendor: cosmotech
     argo:
       base-uri: "https://argo-server.argo.svc.cluster.local:2746"
       workflows:
@@ -89,5 +78,20 @@ csm:
         default-page-size: 5
     rbac:
       enabled: true
+    identityProvider:
+      code: cosmotech
+      # Use to overwrite openAPI configuration
+      authorizationUrl: "http://iam.svc.cluster.local/oauth2/default/v1/authorize"
+      tokenUrl: "http://iam.svc.cluster.local/oauth2/default/v1/token"
+      defaultScopes:
+        openid: "OpenId Scope"
+      containerScopes:
+        csm.scenario.read: "Read access to scenarios"
+      # Here you can set custom user and admin groups
+      # - adminGroup will have same rights that Organization.Admin
+      # - userGroup will have same rights that Organization.User
+      # - viewerGroup will have same rights that Organization.Viewer
+      userGroup: "SAMS-ADMINACCESS-DEV"
+      viewerGroup: "SAMS-USERACCESS-DEV"
 
 

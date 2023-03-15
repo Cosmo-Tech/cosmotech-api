@@ -2,13 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.workspace.service
 
-import com.azure.spring.autoconfigure.storage.resource.AzureStorageResourcePatternResolver
-import com.azure.spring.autoconfigure.storage.resource.BlobStorageResource
-import com.azure.storage.blob.BlobServiceClient
-import com.azure.storage.blob.batch.BlobBatchClient
-import com.azure.storage.blob.models.DeleteSnapshotsOptionType
 import com.cosmotech.api.CsmPhoenixService
-import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.events.DeleteHistoricalDataOrganization
 import com.cosmotech.api.events.DeleteHistoricalDataWorkspace
 import com.cosmotech.api.events.OrganizationUnregistered
@@ -26,7 +20,6 @@ import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.getPermissions
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
-import com.cosmotech.api.security.coroutine.SecurityCoroutineContext
 import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
@@ -41,7 +34,6 @@ import com.cosmotech.organization.repository.OrganizationRepository
 import com.cosmotech.organization.service.getRbac
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.workspace.api.WorkspaceApiService
-import com.cosmotech.workspace.azure.WORKSPACE_EVENTHUB_ACCESSKEY_SECRET
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceFile
@@ -50,13 +42,10 @@ import com.cosmotech.workspace.domain.WorkspaceSecret
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.repository.WorkspaceRepository
 import com.cosmotech.workspace.utils.getWorkspaceSecretName
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.context.annotation.Scope
 import org.springframework.context.event.EventListener
 import org.springframework.core.io.Resource
-import org.springframework.core.io.ResourceLoader
 import org.springframework.data.domain.Pageable
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
@@ -65,11 +54,8 @@ import org.springframework.stereotype.Service
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Suppress("TooManyFunctions")
 internal class WorkspaceServiceImpl(
-    private val resourceLoader: ResourceLoader,
     private val organizationService: OrganizationApiService,
     private val solutionService: SolutionApiService,
-    private val azureStorageBlobServiceClient: BlobServiceClient,
-    private val azureStorageBlobBatchClient: BlobBatchClient,
     private val csmRbac: CsmRbac,
     private val resourceScanner: ResourceScanner,
     private val secretManager: SecretManager,
@@ -155,24 +141,7 @@ internal class WorkspaceServiceImpl(
     csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE)
     logger.debug("Deleting all files for workspace #{} ({})", workspace.id, workspace.name)
 
-    GlobalScope.launch(SecurityCoroutineContext()) {
-      // TODO Consider using a smaller coroutine scope
-      val workspaceFiles =
-          getWorkspaceFileResources(organizationId, workspaceId).map { it.url }.map {
-            it.toExternalForm()
-          }
-      if (workspaceFiles.isEmpty()) {
-        logger.debug("No file to delete for workspace $workspaceId")
-      } else {
-        azureStorageBlobBatchClient.deleteBlobs(workspaceFiles, DeleteSnapshotsOptionType.INCLUDE)
-            .forEach { response ->
-              logger.debug(
-                  "Deleting blob with URL {} completed with status code {}",
-                  response.request.url,
-                  response.statusCode)
-            }
-      }
-    }
+    throw NotImplementedError("Not implemented yet")
   }
 
   override fun updateWorkspace(
@@ -233,10 +202,7 @@ internal class WorkspaceServiceImpl(
         workspace.id,
         workspace.name,
         fileName)
-    azureStorageBlobServiceClient
-        .getBlobContainerClient(organizationId.sanitizeForAzureStorage())
-        .getBlobClient("${workspaceId.sanitizeForAzureStorage()}/${fileName}")
-        .delete()
+    throw NotImplementedError("Not implemented yet")
   }
 
   override fun downloadWorkspaceFile(
@@ -254,8 +220,7 @@ internal class WorkspaceServiceImpl(
         workspace.id,
         workspace.name,
         fileName)
-    return resourceLoader.getResource(
-        "azure-blob://$organizationId/$workspaceId/".sanitizeForAzureStorage() + fileName)
+    throw NotImplementedError("Not implemented yet")
   }
 
   override fun uploadWorkspaceFile(
@@ -283,7 +248,7 @@ internal class WorkspaceServiceImpl(
     if (destination.isNullOrBlank()) {
       fileRelativeDestinationBuilder.append(file.filename)
     } else {
-      // Using multiple consecutive '/' in the path results in Azure Storage creating
+      // Using multiple consecutive '/' in the path results in Cloud Storage creating
       // weird <empty> names in-between two subsequent '/'
       val destinationSanitized = destination.removePrefix("/").replace(Regex("(/)\\1+"), "/")
       fileRelativeDestinationBuilder.append(destinationSanitized)
@@ -292,11 +257,7 @@ internal class WorkspaceServiceImpl(
       }
     }
 
-    azureStorageBlobServiceClient
-        .getBlobContainerClient(organizationId.sanitizeForAzureStorage())
-        .getBlobClient("${workspaceId.sanitizeForAzureStorage()}/$fileRelativeDestinationBuilder")
-        .upload(file.inputStream, file.contentLength(), overwrite)
-    return WorkspaceFile(fileName = fileRelativeDestinationBuilder.toString())
+    throw NotImplementedError("Not implemented yet")
   }
 
   override fun findAllWorkspaceFiles(
@@ -306,9 +267,7 @@ internal class WorkspaceServiceImpl(
     val workspace = findWorkspaceById(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_READ)
     logger.debug("List all files for workspace #{} ({})", workspace.id, workspace.name)
-    return getWorkspaceFileResources(organizationId, workspaceId)
-        .mapNotNull { it.filename?.removePrefix("${workspaceId.sanitizeForAzureStorage()}/") }
-        .map { WorkspaceFile(fileName = it) }
+    throw NotImplementedError("Not implemented yet")
   }
 
   override fun createSecret(
@@ -320,7 +279,7 @@ internal class WorkspaceServiceImpl(
     secretManager.createOrReplaceSecret(
         csmPlatformProperties.namespace,
         getWorkspaceSecretName(organizationId, workspaceKey),
-        mapOf(WORKSPACE_EVENTHUB_ACCESSKEY_SECRET to (workspaceSecret.dedicatedEventHubKey ?: "")))
+        mapOf("secret" to (workspaceSecret.workspaceSecret ?: "")))
   }
 
   @EventListener(DeleteHistoricalDataOrganization::class)
@@ -345,24 +304,10 @@ internal class WorkspaceServiceImpl(
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
     val organizationId = organizationUnregistered.organizationId
-    try {
-      azureStorageBlobServiceClient.deleteBlobContainer(organizationId)
-    } finally {
-      val pageable: Pageable =
-          Pageable.ofSize(csmPlatformProperties.twincache.workspace.defaultPageSize)
-      val workspaces = workspaceRepository.findByOrganizationId(organizationId, pageable).toList()
-      workspaceRepository.deleteAll(workspaces)
-    }
-  }
-
-  private fun getWorkspaceFileResources(
-      organizationId: String,
-      workspaceId: String
-  ): List<BlobStorageResource> {
-    findWorkspaceById(organizationId, workspaceId)
-    return AzureStorageResourcePatternResolver(azureStorageBlobServiceClient)
-        .getResources("azure-blob://$organizationId/$workspaceId/**/*".sanitizeForAzureStorage())
-        .map { it as BlobStorageResource }
+    val pageable: Pageable =
+        Pageable.ofSize(csmPlatformProperties.twincache.workspace.defaultPageSize)
+    val workspaces = workspaceRepository.findByOrganizationId(organizationId, pageable).toList()
+    workspaceRepository.deleteAll(workspaces)
   }
 
   override fun getWorkspacePermissions(

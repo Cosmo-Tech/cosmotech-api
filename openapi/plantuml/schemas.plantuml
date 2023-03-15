@@ -17,8 +17,6 @@ entity Connector {
     tags: List<String>
     ownerId: String
     url: String
-    azureManagedIdentity: Boolean
-    azureAuthenticationWithCustomerAppRegistration: Boolean
     * ioTypes: List<String>
     parameterGroups: List<ConnectorParameterGroup>
 }
@@ -57,7 +55,6 @@ entity Dataset {
     tags: List<String>
     connector: DatasetConnector
     fragmentsIds: List<String>
-    validatorId: String
     compatibility: List<DatasetCompatibility>
 }
 
@@ -440,28 +437,6 @@ entity TwinGraphQuery {
     * query: String
 }
 
-entity Validator {
-    * id: String
-    * name: String
-    description: String
-    * repository: String
-    * version: String
-    ownerId: String
-    url: String
-    tags: List<String>
-}
-
-entity ValidatorRun {
-    id: String
-    validatorId: String
-    validatorName: String
-    * datasetId: String
-    datasetName: String
-    state: String
-    containerId: String
-    logs: String
-}
-
 entity Workspace {
     id: String
     organizationId: String
@@ -474,11 +449,6 @@ entity Workspace {
     * solution: WorkspaceSolution
     webApp: WorkspaceWebApp
     sendInputToDataWarehouse: Boolean
-    useDedicatedEventHubNamespace: Boolean
-    dedicatedEventHubSasKeyName: String
-    dedicatedEventHubAuthenticationStrategy: String
-    sendScenarioRunToEventHub: Boolean
-    sendScenarioMetadataToEventHub: Boolean
     security: WorkspaceSecurity
 }
 
@@ -496,7 +466,7 @@ entity WorkspaceRole {
 }
 
 entity WorkspaceSecret {
-    dedicatedEventHubKey: String
+    workspaceSecret: String
 }
 
 entity WorkspaceSecurity {

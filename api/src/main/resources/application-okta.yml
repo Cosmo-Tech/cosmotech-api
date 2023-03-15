@@ -1,8 +1,0 @@
-# Spring boot okta starter will read these lines and will inject okta's autoconfigured beans
-
-okta:
-  oauth2:
-    issuer: ${csm.platform.okta.issuer}
-    clientId: ${csm.platform.okta.clientId}
-    clientSecret: ${csm.platform.okta.clientSecret}
-    audience: ${csm.platform.okta.audience}

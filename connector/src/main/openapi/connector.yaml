@@ -6,8 +6,8 @@ info:
   version: 0.0.8-SNAPSHOT
 
 servers:
-- url: 'https://api.azure.cosmo-platform.com'
-- url: 'http://localhost:4010'
+- url: 'https://dev.api.cosmotech.com'
+- url: 'http://localhost:8080'
 
 security:
 - oAuth2AuthCode: [ ]
@@ -196,12 +196,6 @@ components:
         url:
           type: string
           description: an optional URL link to connector page
-        azureManagedIdentity:
-          type: boolean
-          description: whether or not the connector uses Azure Managed Identity
-        azureAuthenticationWithCustomerAppRegistration:
-          type: boolean
-          description: whether to authenticate against Azure using the app registration credentials provided by the customer
         ioTypes:
           type: array
           items:

@@ -2,8 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenario.service
 
-import com.cosmotech.api.azure.adx.AzureDataExplorerClient
-import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEvent
 import com.cosmotech.api.events.CsmEventPublisher
@@ -42,7 +40,6 @@ import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
-import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceSecurity
@@ -97,16 +94,6 @@ class ScenarioServiceImplTests {
   @RelaxedMockK private lateinit var workspaceService: WorkspaceApiService
 
   @Suppress("unused")
-  @MockK(relaxed = true)
-  private lateinit var azureEventHubsClient: AzureEventHubsClient
-  @Suppress("unused")
-  @MockK(relaxed = true)
-  private lateinit var azureDataExplorerClient: AzureDataExplorerClient
-  @Suppress("unused")
-  @MockK(relaxed = true)
-  private lateinit var workspaceEventHubService: IWorkspaceEventHubService
-
-  @Suppress("unused")
   @MockK
   private var csmPlatformProperties: CsmPlatformProperties = mockk(relaxed = true)
   @Suppress("unused") @MockK private var csmAdmin: CsmAdmin = CsmAdmin(csmPlatformProperties)
@@ -123,9 +110,6 @@ class ScenarioServiceImplTests {
   @BeforeTest
   fun setUp() {
     MockKAnnotations.init(this)
-
-    val csmPlatformPropertiesAzure = mockk<CsmPlatformProperties.CsmPlatformAzure>()
-    every { csmPlatformProperties.azure } returns csmPlatformPropertiesAzure
 
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
     every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_DEFAULT_USER
@@ -199,17 +183,8 @@ class ScenarioServiceImplTests {
 
     // The implementation in ScenarioServiceImpl only needs to know if the response item is null or
     // not
-    val eventBus = mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus>()
-    every { csmPlatformProperties.azure?.eventBus!! } returns eventBus
     every { workspace.key } returns "my-workspace-key"
     every { workspace.id } returns "my-workspace-id"
-    val authentication =
-        mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication>()
-    every { eventBus.authentication } returns authentication
-    every { eventBus.authentication.strategy } returns
-        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
-            .TENANT_CLIENT_CREDENTIALS
-    every { workspace.sendScenarioMetadataToEventHub } returns false
     val newScenario = mockScenario()
     every { scenarioRepository.save(any()) } returns newScenario
 
@@ -295,17 +270,8 @@ class ScenarioServiceImplTests {
 
     // The implementation in ScenarioServiceImpl only needs to know if the response item is null or
     // not
-    val eventBus = mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus>()
-    every { csmPlatformProperties.azure?.eventBus!! } returns eventBus
     every { workspace.key } returns "my-workspace-key"
     every { workspace.id } returns "my-workspace-id"
-    val authentication =
-        mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication>()
-    every { eventBus.authentication } returns authentication
-    every { eventBus.authentication.strategy } returns
-        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
-            .TENANT_CLIENT_CREDENTIALS
-    every { workspace.sendScenarioMetadataToEventHub } returns false
     val newScenario = mockScenario()
     every { scenarioRepository.save(any()) } returns newScenario
 
@@ -392,17 +358,8 @@ class ScenarioServiceImplTests {
 
     every { idGenerator.generate("scenario") } returns "S-myScenarioId"
 
-    val eventBus = mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus>()
-    every { csmPlatformProperties.azure?.eventBus!! } returns eventBus
     every { workspace.key } returns "my-workspace-key"
     every { workspace.id } returns "my-workspace-id"
-    val authentication =
-        mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication>()
-    every { eventBus.authentication } returns authentication
-    every { eventBus.authentication.strategy } returns
-        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
-            .TENANT_CLIENT_CREDENTIALS
-    every { workspace.sendScenarioMetadataToEventHub } returns false
     val newScenario = mockScenario()
     every { scenarioRepository.save(any()) } returns newScenario
 
@@ -501,8 +458,6 @@ class ScenarioServiceImplTests {
       every { scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, it.id!!) } returns
           it
     }
-    val eventBus = mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus>()
-    every { csmPlatformProperties.azure?.eventBus!! } returns eventBus
     val workspace = mockk<Workspace>()
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     every { workspace.key } returns "my-workspace-key"
@@ -514,13 +469,6 @@ class ScenarioServiceImplTests {
     every { workspace.security?.accessControlList } returns mutableListOf()
     every { csmRbac.isAdmin(any(), any()) } returns true
 
-    val authentication =
-        mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication>()
-    every { eventBus.authentication } returns authentication
-    every { eventBus.authentication.strategy } returns
-        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
-            .TENANT_CLIENT_CREDENTIALS
-    every { workspace.sendScenarioMetadataToEventHub } returns false
     every { csmPlatformProperties.twincache.scenario.defaultPageSize } returns 5
 
     this.scenarioServiceImpl.deleteScenario(ORGANIZATION_ID, WORKSPACE_ID, c111.id!!, false)
@@ -569,19 +517,10 @@ class ScenarioServiceImplTests {
       every { scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, it.id!!) } returns
           it
     }
-    val eventBus = mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus>()
-    every { csmPlatformProperties.azure?.eventBus!! } returns eventBus
     val workspace = mockk<Workspace>()
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     every { workspace.key } returns "my-workspace-key"
     every { workspace.id } returns "my-workspace-id"
-    val authentication =
-        mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication>()
-    every { eventBus.authentication } returns authentication
-    every { eventBus.authentication.strategy } returns
-        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
-            .TENANT_CLIENT_CREDENTIALS
-    every { workspace.sendScenarioMetadataToEventHub } returns false
 
     this.scenarioServiceImpl.deleteScenario(ORGANIZATION_ID, WORKSPACE_ID, m1.id!!, true)
 
@@ -626,19 +565,10 @@ class ScenarioServiceImplTests {
       every { scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, it.id!!) } returns
           it
     }
-    val eventBus = mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus>()
-    every { csmPlatformProperties.azure?.eventBus!! } returns eventBus
     val workspace = mockk<Workspace>()
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     every { workspace.key } returns "my-workspace-key"
     every { workspace.id } returns "my-workspace-id"
-    val authentication =
-        mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication>()
-    every { eventBus.authentication } returns authentication
-    every { eventBus.authentication.strategy } returns
-        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
-            .TENANT_CLIENT_CREDENTIALS
-    every { workspace.sendScenarioMetadataToEventHub } returns false
     every { scenarioRepository.save(any()) } returns mockk()
 
     this.scenarioServiceImpl.deleteScenario(ORGANIZATION_ID, WORKSPACE_ID, p11.id!!, false)

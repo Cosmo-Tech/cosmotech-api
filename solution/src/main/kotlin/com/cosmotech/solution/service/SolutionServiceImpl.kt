@@ -2,9 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.solution.service
 
-import com.azure.storage.blob.BlobServiceClient
 import com.cosmotech.api.CsmPhoenixService
-import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
@@ -14,19 +12,18 @@ import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.api.utils.sanitizeForCloudStorage
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateHandlerId
 import com.cosmotech.solution.domain.RunTemplateParameter
 import com.cosmotech.solution.domain.RunTemplateParameterGroup
-import com.cosmotech.solution.domain.RunTemplateStepSource
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.repository.SolutionRepository
 import org.apache.commons.compress.archivers.ArchiveException
 import org.apache.commons.compress.archivers.ArchiveStreamFactory
 import org.springframework.context.event.EventListener
 import org.springframework.core.io.Resource
-import org.springframework.core.io.ResourceLoader
 import org.springframework.data.domain.Pageable
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
@@ -34,8 +31,6 @@ import org.springframework.stereotype.Service
 @Service
 @Suppress("TooManyFunctions")
 internal class SolutionServiceImpl(
-    private val resourceLoader: ResourceLoader,
-    private val azureStorageBlobServiceClient: BlobServiceClient,
     private val resourceScanner: ResourceScanner,
     private val solutionRepository: SolutionRepository,
 ) : CsmPhoenixService(), SolutionApiService {
@@ -263,31 +258,7 @@ internal class SolutionServiceImpl(
 
     resourceScanner.scanMimeTypes(body, csmPlatformProperties.upload.authorizedMimeTypes.handlers)
 
-    azureStorageBlobServiceClient
-        .getBlobContainerClient(organizationId.sanitizeForAzureStorage())
-        .getBlobClient(
-            "${solutionId.sanitizeForAzureStorage()}/$runTemplateId/${handlerId.value}.zip")
-        .upload(body.inputStream, body.contentLength(), overwrite)
-
-    val runTemplate =
-        solution.runTemplates?.findLast { it.id == runTemplateId }
-            ?: throw CsmResourceNotFoundException("Run Template '$runTemplateId' *not* found")
-    when (handlerId) {
-      RunTemplateHandlerId.parameters_handler ->
-          runTemplate.parametersHandlerSource = RunTemplateStepSource.cloud
-      RunTemplateHandlerId.validator ->
-          runTemplate.datasetValidatorSource = RunTemplateStepSource.cloud
-      RunTemplateHandlerId.prerun -> runTemplate.preRunSource = RunTemplateStepSource.cloud
-      RunTemplateHandlerId.engine -> runTemplate.runSource = RunTemplateStepSource.cloud
-      RunTemplateHandlerId.postrun -> runTemplate.postRunSource = RunTemplateStepSource.cloud
-      RunTemplateHandlerId.scenariodata_transform ->
-          runTemplate.scenariodataTransformSource = RunTemplateStepSource.cloud
-    }.run {
-      // This trick forces Kotlin to raise an error at compile time if the "when" statement is not
-      // exhaustive
-    }
-
-    solutionRepository.save(solution)
+    throw NotImplementedError("Not implemented yet")
   }
 
   override fun downloadRunTemplateHandler(
@@ -298,8 +269,8 @@ internal class SolutionServiceImpl(
   ): Resource {
     val solution = this.validateRunTemplate(organizationId, solutionId, runTemplateId)
     val blobPath =
-        "${organizationId.sanitizeForAzureStorage()}/" +
-            "${solutionId.sanitizeForAzureStorage()}/" +
+        "${organizationId.sanitizeForCloudStorage()}/" +
+            "${solutionId.sanitizeForCloudStorage()}/" +
             "${runTemplateId}/${handlerId.value}.zip"
     logger.debug(
         "Downloading run template handler resource for #{} ({}-{}) - {} - {}: {}",
@@ -309,7 +280,7 @@ internal class SolutionServiceImpl(
         runTemplateId,
         handlerId,
         blobPath)
-    return resourceLoader.getResource("azure-blob://${blobPath}")
+    throw NotImplementedError("Not implemented yet")
   }
 
   private fun validateRunTemplate(

@@ -3,7 +3,6 @@
 package com.cosmotech.worskpace.service // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
 
-import com.azure.storage.blob.BlobServiceClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
@@ -29,7 +28,6 @@ import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
-import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
 import java.util.*
@@ -46,7 +44,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
-import org.springframework.test.util.ReflectionTestUtils
 import org.testcontainers.shaded.org.bouncycastle.asn1.x500.style.RFC4519Style.name
 
 const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
@@ -61,8 +58,6 @@ const val FAKE_MAIL = "fake@mail.fr"
 class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
   private val logger = LoggerFactory.getLogger(WorkspaceServiceIntegrationTest::class.java)
-
-  @MockK(relaxed = true) private lateinit var azureStorageBlobServiceClient: BlobServiceClient
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var organizationApiService: OrganizationApiService
@@ -84,9 +79,6 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName() } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")
-
-    ReflectionTestUtils.setField(
-        workspaceApiService, "azureStorageBlobServiceClient", azureStorageBlobServiceClient)
 
     rediSearchIndexer.createIndexFor(Organization::class.java)
     rediSearchIndexer.createIndexFor(Workspace::class.java)

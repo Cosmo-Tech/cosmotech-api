@@ -6,8 +6,8 @@ info:
   version: 0.0.8-SNAPSHOT
 
 servers:
-- url: 'https://api.azure.cosmo-platform.com'
-- url: 'http://localhost:4010'
+- url: 'https://dev.api.cosmotech.com'
+- url: 'http://localhost:8080'
 
 security:
 - oAuth2AuthCode: [ ]
@@ -779,28 +779,6 @@ components:
         sendInputToDataWarehouse:
           type: boolean
           description: default setting for all Scenarios and Run Templates to set whether or not the Dataset values and the input parameters values are send to the DataWarehouse prior to the ScenarioRun
-        useDedicatedEventHubNamespace:
-          type: boolean
-          default: false
-          description: Set this property to true to use a dedicated Azure Event Hub Namespace for this Workspace.
-            The Event Hub Namespace must be named \'<organization_id\>-<workspace_id\>\' (in lower case).
-            This Namespace must also contain two Event Hubs named \'probesmeasures\' and \'scenariorun\'.
-        dedicatedEventHubSasKeyName:
-          type: string
-          description: the Dedicated Event Hub SAS key name, default to RootManageSharedAccessKey. Use the /secret endpoint to set the key value
-        dedicatedEventHubAuthenticationStrategy:
-          type: string
-          description: the Event Hub authentication strategy, SHARED_ACCESS_POLICY or TENANT_CLIENT_CREDENTIALS. Default to the one defined for the tenant.
-        sendScenarioRunToEventHub:
-          type: boolean
-          default : true
-          description: default setting for all Scenarios and Run Templates to set whether or not the ScenarioRun is send to the Event Hub
-        sendScenarioMetadataToEventHub:
-          type: boolean
-          default: false
-          description: Set this property to false to not send scenario metada to Azure Event Hub Namespace for this Workspace.
-            The Event Hub Namespace must be named \'<organization_id\>-<workspace_id\>\' (in lower case).
-            This Namespace must also contain two Event Hubs named \'scenariometadata\' and \'scenariorunmetadata\'.
         security:
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           allOf:
@@ -895,9 +873,9 @@ components:
       type: object
       description: the secret definition
       properties:
-        dedicatedEventHubKey:
+        workspaceSecret:
           type: string
-          description: the dedicated event hub shared access key
+          description: A workspace secret
   examples:
     BreweryWorkspaceCreateIn:
       summary: Brewery Workspace Create input parameters example
@@ -1055,4 +1033,4 @@ components:
       summary: a shared access policy
       description: a shared policy example
       value:
-        dedicatedEventHubKey: xxx
+        workspaceSecret: xxx

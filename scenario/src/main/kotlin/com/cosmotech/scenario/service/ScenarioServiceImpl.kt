@@ -3,10 +3,6 @@
 package com.cosmotech.scenario.service
 
 import com.cosmotech.api.CsmPhoenixService
-import com.cosmotech.api.azure.adx.AzureDataExplorerClient
-import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
-import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
-import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
 import com.cosmotech.api.events.DeleteHistoricalDataScenario
 import com.cosmotech.api.events.DeleteHistoricalDataWorkspace
 import com.cosmotech.api.events.OrganizationUnregistered
@@ -30,7 +26,6 @@ import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.getScenarioRolesDefinition
-import com.cosmotech.api.scenario.ScenarioMetaData
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.constructPageRequest
@@ -57,12 +52,9 @@ import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
-import com.cosmotech.workspace.azure.EventHubRole
-import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.service.getRbac
 import java.time.Instant
-import java.time.ZonedDateTime
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -79,10 +71,7 @@ internal class ScenarioServiceImpl(
     private val solutionService: SolutionApiService,
     private val organizationService: OrganizationApiService,
     private val workspaceService: WorkspaceApiService,
-    private val azureDataExplorerClient: AzureDataExplorerClient,
-    private val azureEventHubsClient: AzureEventHubsClient,
     private val csmRbac: CsmRbac,
-    private val workspaceEventHubService: IWorkspaceEventHubService,
     private val scenarioRepository: ScenarioRepository
 ) : CsmPhoenixService(), ScenarioApiService {
 
@@ -179,7 +168,6 @@ internal class ScenarioServiceImpl(
 
     scenarioRepository.save(scenarioToSave)
 
-    sendScenarioMetaData(organizationId, workspace, scenarioToSave)
     return scenarioToSave
   }
 
@@ -244,25 +232,9 @@ internal class ScenarioServiceImpl(
     scenarioRepository.delete(scenario)
 
     this.handleScenarioDeletion(organizationId, workspaceId, scenario, waitRelationshipPropagation)
-    val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
-    deleteScenarioMetadata(organizationId, workspace.key, scenarioId)
+    workspaceService.findWorkspaceById(organizationId, workspaceId)
 
     eventPublisher.publishEvent(ScenarioDeleted(this, organizationId, workspaceId, scenarioId))
-  }
-
-  private fun deleteScenarioMetadata(
-      organizationId: String,
-      workspaceKey: String,
-      scenarioId: String
-  ) {
-    logger.debug(
-        "Deleting scenario metadata. Organization: {}, Workspace: {}, scenarioId: {}",
-        organizationId,
-        workspaceKey,
-        scenarioId)
-
-    azureDataExplorerClient.deleteDataFromADXbyExtentShard(organizationId, workspaceKey, scenarioId)
-    logger.debug("Scenario metadata deleted from ADX for scenario {}", scenarioId)
   }
 
   override fun downloadScenarioData(
@@ -673,8 +645,6 @@ internal class ScenarioServiceImpl(
       if (datasetListUpdated) {
         publishDatasetListChangedEvent(organizationId, workspaceId, scenarioId, scenario)
       }
-
-      sendScenarioMetaData(organizationId, workspace, existingScenario)
     }
 
     return existingScenario
@@ -727,49 +697,6 @@ internal class ScenarioServiceImpl(
   internal fun upsertScenarioData(scenario: Scenario) {
     scenario.lastUpdate = Instant.now().toEpochMilli()
     scenarioRepository.save(scenario)
-  }
-
-  private fun sendScenarioMetaData(
-      organizationId: String,
-      workspace: Workspace,
-      scenario: Scenario
-  ) {
-    val eventHubInfo =
-        this.workspaceEventHubService.getWorkspaceEventHubInfo(
-            organizationId, workspace, EventHubRole.SCENARIO_METADATA)
-    if (!eventHubInfo.eventHubAvailable) {
-      logger.warn(
-          "Workspace must be configured with sendScenarioMetadataToEventHub to true in order to send metadata")
-      return
-    }
-
-    val scenarioMetaData =
-        ScenarioMetaData(
-            organizationId,
-            workspace.id!!,
-            scenario.id!!,
-            scenario.name ?: "",
-            scenario.description ?: "",
-            scenario.parentId ?: "",
-            scenario.solutionName ?: "",
-            scenario.runTemplateName ?: "",
-            scenario.validationStatus.toString(),
-            ZonedDateTime.now().toLocalDateTime().toString())
-
-    when (eventHubInfo.eventHubCredentialType) {
-      SHARED_ACCESS_POLICY -> {
-        azureEventHubsClient.sendMetaData(
-            eventHubInfo.eventHubNamespace,
-            eventHubInfo.eventHubName,
-            eventHubInfo.eventHubSasKeyName,
-            eventHubInfo.eventHubSasKey,
-            scenarioMetaData)
-      }
-      TENANT_CLIENT_CREDENTIALS -> {
-        azureEventHubsClient.sendMetaData(
-            eventHubInfo.eventHubNamespace, eventHubInfo.eventHubName, scenarioMetaData)
-      }
-    }
   }
 
   @EventListener(DeleteHistoricalDataWorkspace::class)

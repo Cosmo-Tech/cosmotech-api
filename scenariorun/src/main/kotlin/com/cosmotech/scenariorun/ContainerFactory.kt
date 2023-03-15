@@ -2,9 +2,8 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenariorun
 
-import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.config.CsmPlatformProperties
-import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
+import com.cosmotech.api.utils.sanitizeForCloudStorage
 import com.cosmotech.api.utils.sanitizeForKubernetes
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
@@ -36,15 +35,12 @@ import com.cosmotech.solution.domain.RunTemplateStepSource
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.utils.getCloudPath
 import com.cosmotech.workspace.api.WorkspaceApiService
-import com.cosmotech.workspace.azure.EventHubRole
-import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.domain.Workspace
 import java.util.UUID
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 private const val PARAMETERS_WORKSPACE_FILE = "%WORKSPACE_FILE%"
-private const val PARAMETERS_STORAGE_CONNECTION_STRING = "%STORAGE_CONNECTION_STRING%"
 internal const val CONTAINER_FETCH_DATASET = "fetchDatasetContainer"
 private const val CONTAINER_FETCH_PARAMETERS = "fetchScenarioParametersContainer"
 internal const val CONTAINER_FETCH_DATASET_PARAMETERS = "fetchScenarioDatasetParametersContainer"
@@ -60,21 +56,13 @@ private const val CONTAINER_RUN_MODE = "engine"
 private const val CONTAINER_POSTRUN = "postRunContainer"
 private const val CONTAINER_POSTRUN_MODE = "postrun"
 internal const val IDENTITY_PROVIDER = "IDENTITY_PROVIDER"
-internal const val AZURE_TENANT_ID_VAR = "AZURE_TENANT_ID"
-internal const val AZURE_CLIENT_ID_VAR = "AZURE_CLIENT_ID"
-internal const val AZURE_CLIENT_SECRET_VAR = "AZURE_CLIENT_SECRET"
-internal const val OKTA_CLIENT_ID = "OKTA_CLIENT_ID"
-internal const val OKTA_CLIENT_SECRET = "OKTA_CLIENT_SECRET"
-internal const val OKTA_CLIENT_ISSUER = "OKTA_CLIENT_ISSUER"
 internal const val TWIN_CACHE_HOST = "TWIN_CACHE_HOST"
 internal const val TWIN_CACHE_PASSWORD = "TWIN_CACHE_PASSWORD"
 internal const val TWIN_CACHE_USERNAME = "TWIN_CACHE_USERNAME"
 internal const val TWIN_CACHE_PORT = "TWIN_CACHE_PORT"
-private const val CSM_AZURE_MANAGED_IDENTITY_VAR = "CSM_AZURE_MANAGED_IDENTITY"
 private const val CSM_SIMULATION_ID = "CSM_SIMULATION_ID"
 private const val API_BASE_URL_VAR = "CSM_API_URL"
 private const val API_BASE_SCOPE_VAR = "CSM_API_SCOPE"
-private const val API_SCOPE_SUFFIX = "/.default"
 private const val DATASET_PATH_VAR = "CSM_DATASET_ABSOLUTE_PATH"
 private const val DATASET_PATH = "/mnt/scenariorun-data"
 private const val PARAMETERS_PATH_VAR = "CSM_PARAMETERS_ABSOLUTE_PATH"
@@ -87,15 +75,9 @@ private const val PARAMETERS_FETCH_CONTAINER_CSV_VAR = "WRITE_CSV"
 private const val PARAMETERS_FETCH_CONTAINER_JSON_VAR = "WRITE_JSON"
 private const val SEND_DATAWAREHOUSE_PARAMETERS_VAR = "CSM_SEND_DATAWAREHOUSE_PARAMETERS"
 private const val SEND_DATAWAREHOUSE_DATASETS_VAR = "CSM_SEND_DATAWAREHOUSE_DATASETS"
-private const val AZURE_DATA_EXPLORER_RESOURCE_URI_VAR = "AZURE_DATA_EXPLORER_RESOURCE_URI"
-private const val AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI_VAR =
-    "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI"
-private const val AZURE_DATA_EXPLORER_DATABASE_NAME = "AZURE_DATA_EXPLORER_DATABASE_NAME"
 private const val RUN_TEMPLATE_ID_VAR = "CSM_RUN_TEMPLATE_ID"
 private const val CONTAINER_MODE_VAR = "CSM_CONTAINER_MODE"
 private const val ENTRYPOINT_NAME = "entrypoint.py"
-private const val EVENT_HUB_MEASURES_VAR = "CSM_PROBES_MEASURES_TOPIC"
-internal const val EVENT_HUB_CONTROL_PLANE_VAR = "CSM_CONTROL_PLANE_TOPIC"
 private const val CSM_SIMULATION_VAR = "CSM_SIMULATION"
 private const val NODE_PARAM_NONE = "%NONE%"
 const val NODE_LABEL_DEFAULT = "basic"
@@ -105,24 +87,15 @@ const val NODE_LABEL_SUFFIX = "pool"
 private const val GENERATE_NAME_PREFIX = "workflow-"
 private const val GENERATE_NAME_SUFFIX = "-"
 private const val STEP_SOURCE_LOCAL = "local"
-private const val STEP_SOURCE_CLOUD = "azureStorage"
+private const val STEP_SOURCE_CLOUD = "cosmotechStorage"
 private const val STEP_SOURCE_GIT = "git"
 private const val STEP_SOURCE_PLATFORM = "platform"
-private const val AZURE_STORAGE_CONNECTION_STRING = "AZURE_STORAGE_CONNECTION_STRING"
-private const val MULTIPLE_STEPS_NAME = "multipleStepsContainer-"
-internal const val AZURE_EVENT_HUB_SHARED_ACCESS_POLICY_ENV_VAR =
-    "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY"
-internal const val AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR = "AZURE_EVENT_HUB_SHARED_ACCESS_KEY"
-internal const val CSM_AMQPCONSUMER_USER_ENV_VAR = "CSM_AMQPCONSUMER_USER"
-internal const val CSM_AMQPCONSUMER_PASSWORD_ENV_VAR = "CSM_AMQPCONSUMER_PASSWORD"
-private const val CSM_CONTROL_PLANE_USER_ENV_VAR = "CSM_CONTROL_PLANE_USER"
-private const val CSM_CONTROL_PLANE_PASSWORD_ENV_VAR = "CSM_CONTROL_PLANE_PASSWORD"
-internal const val AZURE_AAD_POD_ID_BINDING_LABEL = "aadpodidbinding"
 private const val SCENARIO_DATA_ABSOLUTE_PATH_ENV_VAR = "CSM_DATA_ABSOLUTE_PATH"
 private const val SCENARIO_DATA_UPLOAD_LOG_LEVEL_ENV_VAR = "CSM_LOG_LEVEL"
 internal const val CSM_JOB_ID_LABEL_KEY = "com.cosmotech/job_id"
 internal const val SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME = "downloadUrl"
 internal const val WORKFLOW_TYPE_LABEL = "cosmotech.com/workflowtype"
+private const val MULTIPLE_STEPS_NAME = "multipleStepsContainer-"
 
 const val CSM_DAG_ROOT = "DAG_ROOT"
 
@@ -143,9 +116,7 @@ class ContainerFactory(
     private val organizationService: OrganizationApiService,
     private val connectorService: ConnectorApiService,
     private val datasetService: DatasetApiService,
-    private val workspaceEventHubService: IWorkspaceEventHubService,
 ) {
-
   private val logger = LoggerFactory.getLogger(ContainerFactory::class.java)
 
   private val steps: Map<String, SolutionContainerStepSpec>
@@ -394,7 +365,7 @@ class ContainerFactory(
             ))
   }
 
-  @Suppress("LongMethod", "LongParameterList") // Exception for this method - too tedious to update
+  @Suppress("LongMethod", "LongParameterList", "UnusedPrivateMember")
   internal fun buildContainersPipeline(
       scenario: Scenario,
       datasets: List<Dataset>?,
@@ -432,18 +403,7 @@ class ContainerFactory(
             BASIC_SIZING))
 
     if (scenarioDataDownload) {
-      containers.addAll(
-          buildScenarioDataDownloadContainersPipeline(
-              currentDependencies,
-              organization,
-              workspace,
-              scenario,
-              solution,
-              template,
-              csmSimulationId,
-              scenarioDataDownloadJobId!!,
-              NODE_LABEL_DEFAULT,
-              BASIC_SIZING))
+      throw NotImplementedError("Scenario data download not implemented")
     } else {
       containers.addAll(
           buildFetchScenarioParametersContainersPipeline(
@@ -578,6 +538,7 @@ class ContainerFactory(
               nodeSizingLabel,
               customSizing))
 
+  @Suppress("UnusedPrivateMember")
   private fun buildScenarioDataDownloadContainersPipeline(
       dependencies: MutableList<String>?,
       organization: Organization,
@@ -747,6 +708,7 @@ class ContainerFactory(
               nodeSizingLabel,
               customSizing))
 
+  @Suppress("UnusedPrivateMember")
   private fun buildScenarioDataUploadContainersPipeline(
       dependencies: List<String>?,
       organizationId: String,
@@ -768,10 +730,6 @@ class ContainerFactory(
             workspaceKey)
     envVars[SCENARIO_DATA_ABSOLUTE_PATH_ENV_VAR] = DATASET_PATH
     envVars[SCENARIO_DATA_UPLOAD_LOG_LEVEL_ENV_VAR] = if (logger.isDebugEnabled) "debug" else "info"
-    envVars[AZURE_STORAGE_CONNECTION_STRING] =
-        csmPlatformProperties.azure?.storage?.connectionString!!
-    envVars["AZURE_STORAGE_CONTAINER_BLOB_PREFIX"] =
-        "scenariodata/$scenarioDataDownloadJobId".sanitizeForAzureStorage()
     check(csmPlatformProperties.images.scenarioDataUpload.isNotBlank())
     val imageRepoAndTag = csmPlatformProperties.images.scenarioDataUpload.split(":", limit = 2)
     val repository = imageRepoAndTag[0]
@@ -783,9 +741,7 @@ class ContainerFactory(
         }
     return ScenarioRunContainer(
         name = "scenarioDataUploadContainer",
-        image =
-            getImageName(
-                csmPlatformProperties.azure?.containerRegistries?.core ?: "", repository, tag),
+        image = getImageName(csmPlatformProperties.registries.core ?: "", repository, tag),
         dependencies = dependencies,
         envVars = envVars,
         artifacts =
@@ -917,20 +873,14 @@ class ContainerFactory(
       nameBase = CONTAINER_FETCH_DATASET_PARAMETERS
       fetchPathBase = PARAMETERS_PATH
     }
-    val labels =
-        if (connector.azureManagedIdentity == true)
-            mapOf(
-                AZURE_AAD_POD_ID_BINDING_LABEL to
-                    (csmPlatformProperties.azure?.credentials?.core?.aadPodIdBinding!!))
-        else null
     return ScenarioRunContainer(
         name = "${nameBase}-$datasetCount",
         image =
             getImageName(
-                csmPlatformProperties.azure?.containerRegistries?.core ?: "",
+                csmPlatformProperties.registries.core ?: "",
                 connector.repository,
                 connector.version),
-        labels = labels,
+        labels = null,
         dependencies = listOf(CSM_DAG_ROOT),
         envVars =
             getDatasetEnvVars(
@@ -944,9 +894,7 @@ class ContainerFactory(
                 scenarioId,
                 workspaceKey,
                 csmSimulationId),
-        runArgs =
-            getDatasetRunArgs(
-                csmPlatformProperties, dataset, connector, organizationId, workspaceId),
+        runArgs = getDatasetRunArgs(dataset, connector, organizationId, workspaceId),
         nodeLabel = nodeSizingLabel,
         runSizing = customSizing.toContainerResourceSizing())
   }
@@ -1037,7 +985,7 @@ class ContainerFactory(
         name = CONTAINER_FETCH_PARAMETERS,
         image =
             getImageName(
-                csmPlatformProperties.azure?.containerRegistries?.core ?: "",
+                csmPlatformProperties.registries.core ?: "",
                 csmPlatformProperties.images.scenarioFetchParameters),
         dependencies = listOf(CSM_DAG_ROOT),
         envVars = envVars,
@@ -1045,6 +993,7 @@ class ContainerFactory(
         runSizing = customSizing.toContainerResourceSizing())
   }
 
+  @Throws(NotImplementedError::class)
   internal fun buildSendDataWarehouseContainer(
       organizationId: String,
       workspace: Workspace,
@@ -1055,6 +1004,7 @@ class ContainerFactory(
       nodeSizingLabel: String,
       customSizing: Sizing
   ): ScenarioRunContainer {
+    throw NotImplementedError("Not implemented yet")
     val envVars =
         getCommonEnvVars(
             csmPlatformProperties,
@@ -1075,7 +1025,7 @@ class ContainerFactory(
         name = CONTAINER_SEND_DATAWAREHOUSE,
         image =
             getImageName(
-                csmPlatformProperties.azure?.containerRegistries?.core ?: "",
+                csmPlatformProperties.registries.core ?: "",
                 csmPlatformProperties.images.sendDataWarehouse),
         dependencies = dependencies,
         envVars = envVars,
@@ -1235,7 +1185,7 @@ class ContainerFactory(
     if (step == null) throw IllegalStateException("Solution Container Step Spec is not defined")
     val imageName =
         getImageName(
-            csmPlatformProperties.azure?.containerRegistries?.solutions ?: "",
+            csmPlatformProperties.registries?.solutions ?: "",
             solution.repository,
             solution.version)
     val envVars =
@@ -1249,8 +1199,6 @@ class ContainerFactory(
     envVars[RUN_TEMPLATE_ID_VAR] = runTemplateId
     envVars[CONTAINER_MODE_VAR] = step.mode
 
-    envVars.putAll(getEventHubEnvVars(organization, workspace))
-
     val template = getRunTemplate(solution, runTemplateId)
     val csmSimulation = template.csmSimulation
     if (csmSimulation != null) {
@@ -1259,8 +1207,6 @@ class ContainerFactory(
     val source = step.source?.invoke(template)
     if (source != null) {
       envVars[step.providerVar] = source
-      envVars[AZURE_STORAGE_CONNECTION_STRING] =
-          csmPlatformProperties.azure?.storage?.connectionString ?: ""
       if (organization.id == null) throw IllegalStateException("Organization id cannot be null")
       if (workspace.id == null) throw IllegalStateException("Workspace id cannot be null")
       if (source == STEP_SOURCE_CLOUD || source == STEP_SOURCE_PLATFORM) {
@@ -1283,53 +1229,6 @@ class ContainerFactory(
         runSizing = customSizing.toContainerResourceSizing())
   }
 
-  private fun getEventHubEnvVars(
-      organization: Organization,
-      workspace: Workspace
-  ): Map<String, String> {
-    logger.debug(
-        "Get Event Hub env vars for workspace {} with dedicated namespace: {}",
-        workspace.id,
-        workspace.useDedicatedEventHubNamespace ?: "null")
-    val envVars: MutableMap<String, String> = mutableMapOf()
-    val eventHubProbesMeasures =
-        workspaceEventHubService.getWorkspaceEventHubInfo(
-            organization.id ?: "", workspace, EventHubRole.PROBES_MEASURES)
-    envVars[EVENT_HUB_MEASURES_VAR] = eventHubProbesMeasures.eventHubUri
-    if (eventHubProbesMeasures.eventHubCredentialType == SHARED_ACCESS_POLICY) {
-      logger.debug("Adding event Hub Shared Access key information in env vars")
-      envVars.putAll(
-          mapOf(
-              AZURE_EVENT_HUB_SHARED_ACCESS_POLICY_ENV_VAR to
-                  eventHubProbesMeasures.eventHubSasKeyName,
-              AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR to eventHubProbesMeasures.eventHubSasKey,
-              CSM_AMQPCONSUMER_USER_ENV_VAR to eventHubProbesMeasures.eventHubSasKeyName,
-              CSM_AMQPCONSUMER_PASSWORD_ENV_VAR to eventHubProbesMeasures.eventHubSasKey,
-          ))
-    } else {
-      logger.debug("Event hub in tenant credential mode")
-    }
-
-    val eventHubControlPlane =
-        workspaceEventHubService.getWorkspaceEventHubInfo(
-            organization.id ?: "", workspace, EventHubRole.CONTROL_PLANE)
-    if (eventHubControlPlane.eventHubAvailable) {
-      logger.debug("Adding control plane event hub information in env vars")
-      envVars[EVENT_HUB_CONTROL_PLANE_VAR] = eventHubControlPlane.eventHubUri
-      if (eventHubProbesMeasures.eventHubCredentialType == SHARED_ACCESS_POLICY) {
-        envVars.putAll(
-            mapOf(
-                CSM_CONTROL_PLANE_USER_ENV_VAR to eventHubProbesMeasures.eventHubSasKeyName,
-                CSM_CONTROL_PLANE_PASSWORD_ENV_VAR to eventHubProbesMeasures.eventHubSasKey,
-            ))
-      }
-    } else {
-      logger.warn("Control plane event hub is not available")
-    }
-
-    return envVars.toMap()
-  }
-
   private fun getImageName(registry: String, repository: String?, version: String? = null): String {
     val repoVersion =
         repository.let { if (version == null) it else "${it}:${version}" }
@@ -1342,59 +1241,13 @@ class ContainerFactory(
  * Get scopes used by containers
  * @return all scopes defined join by ","
  */
-internal fun getContainerScopes(csmPlatformProperties: CsmPlatformProperties): String {
-
-  if (csmPlatformProperties.identityProvider != null) {
-    val containerScopes =
-        csmPlatformProperties.identityProvider?.containerScopes?.keys?.joinToString(separator = ",")
-            ?: ""
-    if (containerScopes.isBlank() && csmPlatformProperties.identityProvider!!.code == "azure") {
-      return "${csmPlatformProperties.azure?.appIdUri}${API_SCOPE_SUFFIX}"
-    }
-    return containerScopes
-  }
-  return "${csmPlatformProperties.azure?.appIdUri}${API_SCOPE_SUFFIX}"
-}
+internal fun getContainerScopes(csmPlatformProperties: CsmPlatformProperties): String =
+    csmPlatformProperties.identityProvider?.containerScopes?.keys?.joinToString(separator = ",")
+        ?: ""
 
 internal fun getMinimalCommonEnvVars(
     csmPlatformProperties: CsmPlatformProperties,
-    azureManagedIdentity: Boolean? = null,
-    azureAuthenticationWithCustomerAppRegistration: Boolean? = null,
 ): MutableMap<String, String> {
-  if (azureManagedIdentity == true && azureAuthenticationWithCustomerAppRegistration == true) {
-    throw IllegalArgumentException(
-        "Don't know which authentication mechanism to use to connect " +
-            "against Azure services. Both azureManagedIdentity and " +
-            "azureAuthenticationWithCustomerAppRegistration cannot be set to true")
-  }
-  val identityEnvVars =
-      if (azureManagedIdentity == true) {
-        mapOf(CSM_AZURE_MANAGED_IDENTITY_VAR to "true")
-      } else if (azureAuthenticationWithCustomerAppRegistration == true) {
-        mapOf(
-            AZURE_TENANT_ID_VAR to (csmPlatformProperties.azure?.credentials?.customer?.tenantId!!),
-            AZURE_CLIENT_ID_VAR to (csmPlatformProperties.azure?.credentials?.customer?.clientId!!),
-            AZURE_CLIENT_SECRET_VAR to
-                (csmPlatformProperties.azure?.credentials?.customer?.clientSecret!!),
-        )
-      } else {
-        mapOf(
-            AZURE_TENANT_ID_VAR to (csmPlatformProperties.azure?.credentials?.core?.tenantId!!),
-            AZURE_CLIENT_ID_VAR to (csmPlatformProperties.azure?.credentials?.core?.clientId!!),
-            AZURE_CLIENT_SECRET_VAR to
-                (csmPlatformProperties.azure?.credentials?.core?.clientSecret!!),
-        )
-      }
-  val oktaEnvVars: MutableMap<String, String> = mutableMapOf()
-  if (csmPlatformProperties.identityProvider?.code == "okta") {
-    oktaEnvVars.putAll(
-        mapOf(
-            OKTA_CLIENT_ID to (csmPlatformProperties.okta?.clientId!!),
-            OKTA_CLIENT_SECRET to (csmPlatformProperties.okta?.clientSecret!!),
-            OKTA_CLIENT_ISSUER to (csmPlatformProperties.okta?.issuer!!),
-        ))
-  }
-
   val twinCacheEnvVars: MutableMap<String, String> = mutableMapOf()
   if (csmPlatformProperties.twincache != null) {
     val twinCacheInfo = csmPlatformProperties.twincache!!
@@ -1409,15 +1262,16 @@ internal fun getMinimalCommonEnvVars(
   val containerScopes = getContainerScopes(csmPlatformProperties)
   val commonEnvVars =
       mapOf(
-          IDENTITY_PROVIDER to (csmPlatformProperties.identityProvider?.code ?: "azure"),
+          IDENTITY_PROVIDER to (csmPlatformProperties.identityProvider?.code ?: "cosmotech"),
           API_BASE_URL_VAR to csmPlatformProperties.api.baseUrl,
           API_BASE_SCOPE_VAR to containerScopes,
           DATASET_PATH_VAR to DATASET_PATH,
           PARAMETERS_PATH_VAR to PARAMETERS_PATH,
       )
-  return (identityEnvVars + commonEnvVars + oktaEnvVars + twinCacheEnvVars).toMutableMap()
+  return (commonEnvVars + twinCacheEnvVars).toMutableMap()
 }
 
+@Suppress("UnusedPrivateMember")
 internal fun getCommonEnvVars(
     csmPlatformProperties: CsmPlatformProperties,
     csmSimulationId: String,
@@ -1425,24 +1279,13 @@ internal fun getCommonEnvVars(
     workspaceId: String,
     scenarioId: String,
     workspaceKey: String,
-    azureManagedIdentity: Boolean? = null,
-    azureAuthenticationWithCustomerAppRegistration: Boolean? = null,
 ): MutableMap<String, String> {
 
-  val minimalEnvVars =
-      getMinimalCommonEnvVars(
-          csmPlatformProperties,
-          azureManagedIdentity,
-          azureAuthenticationWithCustomerAppRegistration)
+  val minimalEnvVars = getMinimalCommonEnvVars(csmPlatformProperties)
 
   val commonEnvVars =
       mapOf(
           CSM_SIMULATION_ID to csmSimulationId,
-          AZURE_DATA_EXPLORER_RESOURCE_URI_VAR to
-              (csmPlatformProperties.azure?.dataWarehouseCluster?.baseUri ?: ""),
-          AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI_VAR to
-              (csmPlatformProperties.azure?.dataWarehouseCluster?.options?.ingestionUri ?: ""),
-          AZURE_DATA_EXPLORER_DATABASE_NAME to "${organizationId}-${workspaceKey}".lowercase(),
           PARAMETERS_ORGANIZATION_VAR to organizationId,
           PARAMETERS_WORKSPACE_VAR to workspaceId,
           PARAMETERS_SCENARIO_VAR to scenarioId,
@@ -1497,23 +1340,17 @@ private fun mergeSolutionContainer(
 }
 
 internal fun resolvePlatformVars(
-    csmPlatformProperties: CsmPlatformProperties,
     path: String,
     organizationId: String,
     workspaceId: String
 ): String {
   var newValue =
       path.replace(
-          PARAMETERS_WORKSPACE_FILE, "${organizationId}/${workspaceId}".sanitizeForAzureStorage())
-  newValue =
-      newValue.replace(
-          PARAMETERS_STORAGE_CONNECTION_STRING,
-          csmPlatformProperties.azure?.storage?.connectionString ?: "")
+          PARAMETERS_WORKSPACE_FILE, "${organizationId}/${workspaceId}".sanitizeForCloudStorage())
   return newValue
 }
 
 private fun getDatasetRunArgs(
-    csmPlatformProperties: CsmPlatformProperties,
     dataset: Dataset,
     connector: Connector,
     organizationId: String,
@@ -1521,7 +1358,6 @@ private fun getDatasetRunArgs(
 ): List<String>? {
   return connector.parameterGroups?.flatMap { it.parameters }?.filter { it.envVar == null }?.map {
     resolvePlatformVars(
-        csmPlatformProperties,
         dataset.connector?.parametersValues?.getOrDefault(it.id, it.default ?: "") ?: "",
         organizationId,
         workspaceId)

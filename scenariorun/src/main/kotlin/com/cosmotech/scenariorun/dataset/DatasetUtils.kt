@@ -139,9 +139,7 @@ internal fun getDatasetEnvVars(
           workspaceId,
           scenarioId,
           workspaceKey,
-          azureManagedIdentity = connector.azureManagedIdentity,
-          azureAuthenticationWithCustomerAppRegistration =
-              connector.azureAuthenticationWithCustomerAppRegistration)
+      )
   val fetchPath = if (fetchId == null) fetchPathBase else "${fetchPathBase}/${fetchId}"
   envVars[FETCH_PATH_VAR] = fetchPath
   val datasetEnvVars =
@@ -153,7 +151,6 @@ internal fun getDatasetEnvVars(
               { it.envVar ?: "" },
               {
                 resolvePlatformVars(
-                    csmPlatformProperties,
                     dataset.connector?.parametersValues?.getOrDefault(it.id, it.default ?: "")
                         ?: "",
                     organizationId,

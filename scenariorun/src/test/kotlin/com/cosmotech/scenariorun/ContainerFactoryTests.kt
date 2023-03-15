@@ -3,16 +3,7 @@
 package com.cosmotech.scenariorun
 
 import com.cosmotech.api.config.CsmPlatformProperties
-import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCredentials
-import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCredentials.CsmPlatformAzureCredentialsCore
-import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus
-import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication
-import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.SharedAccessPolicyCredentials
-import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.SharedAccessPolicyDetails
-import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
-import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
 import com.cosmotech.api.exceptions.CsmClientException
-import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.connector.domain.Connector.IoTypes
@@ -36,12 +27,6 @@ import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.RunTemplateStepSource
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
-import com.cosmotech.workspace.azure.IWorkspaceEventHubService
-import com.cosmotech.workspace.azure.WORKSPACE_EVENTHUB_ACCESSKEY_SECRET
-import com.cosmotech.workspace.azure.WorkspaceEventHubService
-import com.cosmotech.workspace.azure.strategy.IWorkspaceEventHubStrategy
-import com.cosmotech.workspace.azure.strategy.WorkspaceEventHubStrategyDedicated
-import com.cosmotech.workspace.azure.strategy.WorkspaceEventHubStrategyShared
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import io.mockk.MockKAnnotations
@@ -50,7 +35,6 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import kotlin.test.BeforeTest
-import kotlin.test.assertFalse
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -67,7 +51,6 @@ private const val DEFAULT_WORKFLOW_TYPE = "testruntype"
 @ExtendWith(MockKExtension::class)
 class ContainerFactoryTests {
 
-  @MockK(relaxed = true) private lateinit var azure: CsmPlatformProperties.CsmPlatformAzure
   @MockK(relaxed = true) private lateinit var csmPlatformProperties: CsmPlatformProperties
 
   @MockK private lateinit var scenarioService: ScenarioApiService
@@ -76,8 +59,6 @@ class ContainerFactoryTests {
   @MockK private lateinit var organizationService: OrganizationApiService
   @MockK private lateinit var connectorService: ConnectorApiService
   @MockK private lateinit var datasetService: DatasetApiService
-  @MockK private lateinit var secretManager: SecretManager
-  private lateinit var workspaceEventHubService: IWorkspaceEventHubService
 
   private lateinit var factory: ContainerFactory
 
@@ -86,43 +67,6 @@ class ContainerFactoryTests {
   fun setUp() {
     MockKAnnotations.init(this)
 
-    every { azure.appIdUri } returns "http://dev.api.cosmotech.com"
-    every { azure.credentials } returns
-        CsmPlatformAzureCredentials(
-            core =
-                CsmPlatformAzureCredentialsCore(
-                    tenantId = "12345678",
-                    clientId = "98765432",
-                    clientSecret = "azertyuiop",
-                    aadPodIdBinding = "phoenixdev-pod-identity",
-                ),
-            customer =
-                CsmPlatformAzureCredentials.CsmPlatformAzureCredentialsCustomer(
-                    tenantId = "customer-app-registration-tenantId",
-                    clientId = "customer-app-registration-clientId",
-                    clientSecret = "customer-app-registration-clientSecret"))
-    every { azure.eventBus } returns
-        CsmPlatformAzureEventBus(
-            baseUri = "amqps://csm-phoenix.servicebus.windows.net",
-        )
-    every { azure.dataWarehouseCluster } returns
-        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureDataWarehouseCluster(
-            options =
-                CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureDataWarehouseCluster.Options(
-                    ingestionUri = "https://ingest-phoenix.westeurope.kusto.windows.net",
-                ),
-            baseUri = "https://phoenix.westeurope.kusto.windows.net",
-        )
-    every { azure.storage } returns
-        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureStorage(
-            connectionString = "csmphoenix_storage_connection_string",
-            baseUri = "Not Used",
-            resourceUri = "Not Used",
-        )
-    every { azure.containerRegistries } returns
-        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureContainerRegistries(
-            core = "ghcr.io", solutions = "twinengines.azurecr.io")
-    every { csmPlatformProperties.azure } returns azure
     every { csmPlatformProperties.namespace } returns "csm-phoenix"
     every { csmPlatformProperties.api } returns
         CsmPlatformProperties.Api(
@@ -132,12 +76,19 @@ class ContainerFactoryTests {
         )
     every { csmPlatformProperties.images } returns
         CsmPlatformProperties.CsmImages(
-            scenarioFetchParameters = "cosmotech/scenariofetchparameters:1.0.0",
-            sendDataWarehouse = "cosmotech/senddatawarehouse:1.0.0",
+            scenarioFetchParameters = "scenariofetchparameters:1.0.0",
+            sendDataWarehouse = "senddatawarehouse:1.0.0",
+            scenarioDataUpload = "scenariodataupload:1.0.0",
+        )
+    every { csmPlatformProperties.registries } returns
+        CsmPlatformProperties.CsmRegistries(
+            core = "coreregistry.svc.cluster.local:5000",
+            solutions = "solutionsregistry.svc.cluster.local:5000",
         )
     every { csmPlatformProperties.identityProvider } returns
         CsmPlatformProperties.CsmIdentityProvider(
-            code = "azure",
+            code = "cosmotech",
+            containerScopes = mapOf("http://dev.api.cosmotech.com/.default" to "default"),
             defaultScopes = mapOf("This is a fake scope id" to "This is a fake scope name"),
             authorizationUrl = "http://this_is_a_fake_url.com",
             tokenUrl = "http://this_is_a_fake_token_url.com",
@@ -149,14 +100,6 @@ class ContainerFactoryTests {
             password = "this_is_a_password",
         )
 
-    val dedicatedStrategy: IWorkspaceEventHubStrategy =
-        WorkspaceEventHubStrategyDedicated(csmPlatformProperties, secretManager)
-    val sharedStrategy: IWorkspaceEventHubStrategy =
-        WorkspaceEventHubStrategyShared(csmPlatformProperties)
-    workspaceEventHubService =
-        WorkspaceEventHubService(
-            mapOf("Dedicated" to dedicatedStrategy, "Shared" to sharedStrategy))
-
     factory =
         ContainerFactory(
             csmPlatformProperties,
@@ -166,7 +109,6 @@ class ContainerFactoryTests {
             organizationService,
             connectorService,
             datasetService,
-            workspaceEventHubService,
         )
   }
 
@@ -224,7 +166,7 @@ class ContainerFactoryTests {
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
-    assertEquals("ghcr.io/cosmotech/test_connector:1.0.0", container.image)
+    assertEquals("coreregistry.svc.cluster.local:5000/test_connector:1.0.0", container.image)
   }
 
   @Test
@@ -264,19 +206,12 @@ class ContainerFactoryTests {
             customSizing = BASIC_SIZING)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "IDENTITY_PROVIDER" to "cosmotech",
             "CSM_SIMULATION_ID" to "simulationrunid",
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
@@ -309,19 +244,12 @@ class ContainerFactoryTests {
             customSizing = BASIC_SIZING)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "IDENTITY_PROVIDER" to "cosmotech",
             "CSM_SIMULATION_ID" to "simulationrunid",
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
@@ -352,24 +280,16 @@ class ContainerFactoryTests {
             customSizing = BASIC_SIZING)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "IDENTITY_PROVIDER" to "cosmotech",
             "CSM_SIMULATION_ID" to "simulationrunid",
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "AZURE_STORAGE_CONNECTION_STRING" to "csmphoenix_storage_connection_string",
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
@@ -395,19 +315,12 @@ class ContainerFactoryTests {
             customSizing = BASIC_SIZING)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "IDENTITY_PROVIDER" to "cosmotech",
             "CSM_SIMULATION_ID" to "simulationrunid",
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
@@ -437,17 +350,12 @@ class ContainerFactoryTests {
             customSizing = BASIC_SIZING)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "CSM_AZURE_MANAGED_IDENTITY" to "true",
+            "IDENTITY_PROVIDER" to "cosmotech",
             "CSM_SIMULATION_ID" to "simulationrunid",
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
@@ -457,26 +365,6 @@ class ContainerFactoryTests {
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
             "TWIN_CACHE_USERNAME" to "default")
     assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
-  }
-
-  @Test
-  fun `Dataset managed identity labels valid`() {
-    val container =
-        factory.buildFromDataset(
-            getDatasetNoVars(),
-            getConnectorNoVarsManagedIdentity(),
-            1,
-            false,
-            null,
-            "Organizationid",
-            "Workspaceid",
-            "Scenarioid",
-            "Test",
-            CSM_SIMULATION_ID,
-            nodeSizingLabel = NODE_LABEL_DEFAULT,
-            customSizing = BASIC_SIZING)
-    val expected = mapOf("aadpodidbinding" to "phoenixdev-pod-identity")
-    assertEquals(expected, container.labels)
   }
 
   @Test
@@ -558,7 +446,8 @@ class ContainerFactoryTests {
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
-    assertEquals("ghcr.io/cosmotech/scenariofetchparameters:1.0.0", container.image)
+    assertEquals(
+        "coreregistry.svc.cluster.local:5000/scenariofetchparameters:1.0.0", container.image)
   }
 
   @Test
@@ -574,19 +463,12 @@ class ContainerFactoryTests {
             customSizing = BASIC_SIZING)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "IDENTITY_PROVIDER" to "cosmotech",
             "CSM_SIMULATION_ID" to "simulationrunid",
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "1-test",
             "CSM_ORGANIZATION_ID" to "1",
             "CSM_WORKSPACE_ID" to "2",
             "CSM_SCENARIO_ID" to "3",
@@ -603,7 +485,7 @@ class ContainerFactoryTests {
 
     every { csmPlatformProperties.identityProvider } returns
         CsmPlatformProperties.CsmIdentityProvider(
-            code = "azure",
+            code = "cosmotech",
             defaultScopes = mapOf("This is a fake scope id" to "This is a fake scope name"),
             authorizationUrl = "http://this_is_a_fake_url.com",
             containerScopes =
@@ -622,19 +504,12 @@ class ContainerFactoryTests {
             customSizing = BASIC_SIZING)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "IDENTITY_PROVIDER" to "cosmotech",
             "CSM_SIMULATION_ID" to "simulationrunid",
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_API_SCOPE" to "scope1,scope2",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "1-test",
             "CSM_ORGANIZATION_ID" to "1",
             "CSM_WORKSPACE_ID" to "2",
             "CSM_SCENARIO_ID" to "3",
@@ -660,19 +535,12 @@ class ContainerFactoryTests {
             customSizing = BASIC_SIZING)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "IDENTITY_PROVIDER" to "cosmotech",
             "CSM_SIMULATION_ID" to "simulationrunid",
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "1-test",
             "CSM_ORGANIZATION_ID" to "1",
             "CSM_WORKSPACE_ID" to "2",
             "CSM_SCENARIO_ID" to "3",
@@ -716,16 +584,18 @@ class ContainerFactoryTests {
 
   @Test
   fun `Send DataWarehouse Container image valid`() {
-    val container =
-        factory.buildSendDataWarehouseContainer(
-            "Organizationid",
-            getWorkspace(),
-            "Scenarioid",
-            getRunTemplate(),
-            CSM_SIMULATION_ID,
-            nodeSizingLabel = NODE_LABEL_DEFAULT,
-            customSizing = BASIC_SIZING)
-    assertEquals("ghcr.io/cosmotech/senddatawarehouse:1.0.0", container.image)
+    assertThrows(NotImplementedError::class.java) {
+      val container =
+          factory.buildSendDataWarehouseContainer(
+              "Organizationid",
+              getWorkspace(),
+              "Scenarioid",
+              getRunTemplate(),
+              CSM_SIMULATION_ID,
+              nodeSizingLabel = NODE_LABEL_DEFAULT,
+              customSizing = BASIC_SIZING)
+      assertEquals("coreregistry.svc.cluster.local:5000/senddatawarehouse:1.0.0", container.image)
+    }
   }
 
   @Test
@@ -741,19 +611,12 @@ class ContainerFactoryTests {
             customSizing = BASIC_SIZING)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "IDENTITY_PROVIDER" to "cosmotech",
             "CSM_SIMULATION_ID" to "simulationrunid",
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
@@ -768,40 +631,17 @@ class ContainerFactoryTests {
 
   @Test
   fun `Send DataWarehouse Container no send env vars`() {
-    val container =
-        factory.buildSendDataWarehouseContainer(
-            "Organizationid",
-            getWorkspaceNoSend(),
-            "Scenarioid",
-            getRunTemplate(),
-            CSM_SIMULATION_ID,
-            nodeSizingLabel = NODE_LABEL_DEFAULT,
-            customSizing = BASIC_SIZING)
-    val expected =
-        mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
-            "CSM_ORGANIZATION_ID" to "Organizationid",
-            "CSM_WORKSPACE_ID" to "Workspaceid",
-            "CSM_SCENARIO_ID" to "Scenarioid",
-            "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "false",
-            "CSM_SEND_DATAWAREHOUSE_DATASETS" to "false",
-            "TWIN_CACHE_HOST" to "this_is_a_host",
-            "TWIN_CACHE_PORT" to "6973",
-            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default")
-    assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
+    assertThrows(NotImplementedError::class.java) {
+      val container =
+          factory.buildSendDataWarehouseContainer(
+              "Organizationid",
+              getWorkspaceNoSend(),
+              "Scenarioid",
+              getRunTemplate(),
+              CSM_SIMULATION_ID,
+              nodeSizingLabel = NODE_LABEL_DEFAULT,
+              customSizing = BASIC_SIZING)
+    }
   }
 
   @Test
@@ -817,28 +657,17 @@ class ContainerFactoryTests {
             customSizing = BASIC_SIZING)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "IDENTITY_PROVIDER" to "cosmotech",
             "CSM_SIMULATION_ID" to "simulationrunid",
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "true",
             "CSM_SEND_DATAWAREHOUSE_DATASETS" to "false",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
@@ -859,28 +688,17 @@ class ContainerFactoryTests {
             customSizing = BASIC_SIZING)
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "IDENTITY_PROVIDER" to "cosmotech",
             "CSM_SIMULATION_ID" to "simulationrunid",
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "false",
             "CSM_SEND_DATAWAREHOUSE_DATASETS" to "true",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
@@ -903,7 +721,8 @@ class ContainerFactoryTests {
   @Test
   fun `Parameters Handler Container image valid`() {
     val container = this.buildApplyParametersContainer()
-    assertEquals("twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0", container.image)
+    assertEquals(
+        "solutionsregistry.svc.cluster.local:5000/testsolution_simulator:1.0.0", container.image)
   }
 
   @Test
@@ -1053,19 +872,12 @@ class ContainerFactoryTests {
   ) {
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "IDENTITY_PROVIDER" to "cosmotech",
             "CSM_SIMULATION_ID" to "simulationrunid",
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
@@ -1076,8 +888,7 @@ class ContainerFactoryTests {
             "CSM_CONTROL_PLANE_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
             "CSM_SIMULATION" to "TestSimulation",
-            providerEnvVar to "azureStorage",
-            "AZURE_STORAGE_CONNECTION_STRING" to "csmphoenix_storage_connection_string",
+            providerEnvVar to "cosmotechStorage",
             resourceEnvVar to "organizationid/1/${runTemplate}/${resource}.zip",
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
@@ -1093,19 +904,12 @@ class ContainerFactoryTests {
   ) {
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "IDENTITY_PROVIDER" to "cosmotech",
             "CSM_SIMULATION_ID" to "simulationrunid",
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
@@ -1117,7 +921,6 @@ class ContainerFactoryTests {
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
             "CSM_SIMULATION" to "TestSimulation",
             providerEnvVar to "local",
-            "AZURE_STORAGE_CONNECTION_STRING" to "csmphoenix_storage_connection_string",
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
@@ -1507,16 +1310,15 @@ class ContainerFactoryTests {
             scenarioRunSizing = BASIC_SIZING)
     val expected =
         listOf(
-            "ghcr.io/cosmotech/test_connector:1.0.0",
-            "ghcr.io/cosmotech/test_connector2:1.0.0",
-            "ghcr.io/cosmotech/test_connector3:1.0.0",
-            "ghcr.io/cosmotech/scenariofetchparameters:1.0.0",
-            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
-            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
-            "ghcr.io/cosmotech/senddatawarehouse:1.0.0",
-            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
-            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
-            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
+            "coreregistry.svc.cluster.local:5000/test_connector:1.0.0",
+            "coreregistry.svc.cluster.local:5000/test_2:1.0.0",
+            "coreregistry.svc.cluster.local:5000/test_3:1.0.0",
+            "coreregistry.svc.cluster.local:5000/scenariofetchparameters:1.0.0",
+            "solutionsregistry.svc.cluster.local:5000/testsolution_simulator:1.0.0",
+            "solutionsregistry.svc.cluster.local:5000/testsolution_simulator:1.0.0",
+            "solutionsregistry.svc.cluster.local:5000/testsolution_simulator:1.0.0",
+            "solutionsregistry.svc.cluster.local:5000/testsolution_simulator:1.0.0",
+            "solutionsregistry.svc.cluster.local:5000/testsolution_simulator:1.0.0",
         )
     assertEquals(expected, containers.map { container -> container.image })
   }
@@ -1542,19 +1344,12 @@ class ContainerFactoryTests {
     val container = containers.find { container -> container.name == "fetchDatasetContainer-2" }
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "IDENTITY_PROVIDER" to "cosmotech",
             "CSM_SIMULATION_ID" to "simulationrunid",
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
@@ -1733,17 +1528,16 @@ class ContainerFactoryTests {
             scenarioRunSizing = BASIC_SIZING)
     val expected =
         listOf(
-            "ghcr.io/cosmotech/test_connector:1.0.0",
-            "ghcr.io/cosmotech/scenariofetchparameters:1.0.0",
-            "ghcr.io/cosmotech/test_connector:1.0.0",
-            "ghcr.io/cosmotech/test_connector2:1.0.0",
-            "ghcr.io/cosmotech/test_connector3:1.0.0",
-            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
-            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
-            "ghcr.io/cosmotech/senddatawarehouse:1.0.0",
-            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
-            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
-            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
+            "coreregistry.svc.cluster.local:5000/test_connector:1.0.0",
+            "coreregistry.svc.cluster.local:5000/scenariofetchparameters:1.0.0",
+            "coreregistry.svc.cluster.local:5000/test_connector:1.0.0",
+            "coreregistry.svc.cluster.local:5000/test_2:1.0.0",
+            "coreregistry.svc.cluster.local:5000/test_3:1.0.0",
+            "solutionsregistry.svc.cluster.local:5000/testsolution_simulator:1.0.0",
+            "solutionsregistry.svc.cluster.local:5000/testsolution_simulator:1.0.0",
+            "solutionsregistry.svc.cluster.local:5000/testsolution_simulator:1.0.0",
+            "solutionsregistry.svc.cluster.local:5000/testsolution_simulator:1.0.0",
+            "solutionsregistry.svc.cluster.local:5000/testsolution_simulator:1.0.0",
         )
     assertEquals(expected, containers.map { container -> container.image })
   }
@@ -1814,18 +1608,17 @@ class ContainerFactoryTests {
             scenarioRunSizing = BASIC_SIZING)
     val expected =
         listOf(
-            "ghcr.io/cosmotech/test_connector:1.0.0",
-            "ghcr.io/cosmotech/scenariofetchparameters:1.0.0",
-            "ghcr.io/cosmotech/test_connector:1.0.0",
-            "ghcr.io/cosmotech/test_connector2:1.0.0",
-            "ghcr.io/cosmotech/test_connector2:1.0.0",
-            "ghcr.io/cosmotech/test_connector3:1.0.0",
-            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
-            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
-            "ghcr.io/cosmotech/senddatawarehouse:1.0.0",
-            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
-            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
-            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
+            "coreregistry.svc.cluster.local:5000/test_connector:1.0.0",
+            "coreregistry.svc.cluster.local:5000/scenariofetchparameters:1.0.0",
+            "coreregistry.svc.cluster.local:5000/test_connector:1.0.0",
+            "coreregistry.svc.cluster.local:5000/test_2:1.0.0",
+            "coreregistry.svc.cluster.local:5000/test_2:1.0.0",
+            "coreregistry.svc.cluster.local:5000/test_3:1.0.0",
+            "solutionsregistry.svc.cluster.local:5000/testsolution_simulator:1.0.0",
+            "solutionsregistry.svc.cluster.local:5000/testsolution_simulator:1.0.0",
+            "solutionsregistry.svc.cluster.local:5000/testsolution_simulator:1.0.0",
+            "solutionsregistry.svc.cluster.local:5000/testsolution_simulator:1.0.0",
+            "solutionsregistry.svc.cluster.local:5000/testsolution_simulator:1.0.0",
         )
     assertEquals(expected, containers.map { container -> container.image })
   }
@@ -1920,8 +1713,6 @@ class ContainerFactoryTests {
   @Test
   fun `buildFromDataset - error if activating both managed identity and customer credentials`() {
     val connector = mockk<Connector>(relaxed = true)
-    every { connector.azureManagedIdentity } returns true
-    every { connector.azureAuthenticationWithCustomerAppRegistration } returns true
     every { connector.id } returns "C-id"
     val datasetConnector = mockk<DatasetConnector>()
     every { datasetConnector.id } returns "C-id"
@@ -1950,606 +1741,20 @@ class ContainerFactoryTests {
     val startInfo = getStartInfoFromIds()
     val expected =
         listOf(
-            "ghcr.io/cosmotech/test_connector:1.0.0",
-            "ghcr.io/cosmotech/test_connector2:1.0.0",
-            "ghcr.io/cosmotech/scenariofetchparameters:1.0.0",
-            "ghcr.io/cosmotech/test_connector:1.0.0",
-            "ghcr.io/cosmotech/test_connector2:1.0.0",
-            "ghcr.io/cosmotech/test_connector3:1.0.0",
-            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
-            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
-            "ghcr.io/cosmotech/senddatawarehouse:1.0.0",
-            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
-            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
-            "twinengines.azurecr.io/cosmotech/testsolution_simulator:1.0.0",
+            "coreregistry.svc.cluster.local:5000/test_connector:1.0.0",
+            "coreregistry.svc.cluster.local:5000/test_2:1.0.0",
+            "coreregistry.svc.cluster.local:5000/scenariofetchparameters:1.0.0",
+            "coreregistry.svc.cluster.local:5000/test_connector:1.0.0",
+            "coreregistry.svc.cluster.local:5000/test_2:1.0.0",
+            "coreregistry.svc.cluster.local:5000/test_3:1.0.0",
+            "solutionsregistry.svc.cluster.local:5000/testsolution_simulator:1.0.0",
+            "solutionsregistry.svc.cluster.local:5000/testsolution_simulator:1.0.0",
+            "solutionsregistry.svc.cluster.local:5000/testsolution_simulator:1.0.0",
+            "solutionsregistry.svc.cluster.local:5000/testsolution_simulator:1.0.0",
+            "solutionsregistry.svc.cluster.local:5000/testsolution_simulator:1.0.0",
         )
     assertEquals(
         expected, startInfo.startContainers.containers.map { container -> container.image })
-  }
-
-  @Test
-  fun `buildFromDataset - no labels and core credentials if azureManagedIdentity is null`() {
-    val connector = mockk<Connector>(relaxed = true)
-    every { connector.azureManagedIdentity } returns null
-    every { connector.id } returns "C-id"
-    val datasetConnector = mockk<DatasetConnector>()
-    every { datasetConnector.id } returns "C-id"
-    val dataset = mockk<Dataset>()
-    every { dataset.connector } returns datasetConnector
-
-    val scenarioRunContainer =
-        factory.buildFromDataset(
-            dataset,
-            connector,
-            1,
-            true,
-            "fetchId",
-            "O-id",
-            "W-id",
-            "S-id",
-            "W-key",
-            "csmSimulationId",
-            nodeSizingLabel = NODE_LABEL_DEFAULT,
-            customSizing = BASIC_SIZING)
-
-    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
-    assertNull(scenarioRunContainer.labels)
-    assertEquals(
-        mapOf(
-                "IDENTITY_PROVIDER" to "azure",
-                "AZURE_TENANT_ID" to "12345678",
-                "AZURE_CLIENT_ID" to "98765432",
-                "AZURE_CLIENT_SECRET" to "azertyuiop",
-                "CSM_SIMULATION_ID" to "csmSimulationId",
-                "CSM_API_URL" to "https://api.cosmotech.com",
-                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
-                    "https://phoenix.westeurope.kusto.windows.net",
-                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                    "https://ingest-phoenix.westeurope.kusto.windows.net",
-                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "o-id-w-key",
-                "CSM_ORGANIZATION_ID" to "O-id",
-                "CSM_WORKSPACE_ID" to "W-id",
-                "CSM_SCENARIO_ID" to "S-id",
-                "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
-                "TWIN_CACHE_HOST" to "this_is_a_host",
-                "TWIN_CACHE_PORT" to "6973",
-                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-                "TWIN_CACHE_USERNAME" to "default")
-            .toSortedMap(),
-        scenarioRunContainer.envVars?.toSortedMap())
-  }
-
-  @Test
-  fun `buildFromDataset - no labels and core credentials if azureManagedIdentity is false`() {
-    val connector = mockk<Connector>(relaxed = true)
-    every { connector.azureManagedIdentity } returns false
-    every { connector.id } returns "C-id"
-    val datasetConnector = mockk<DatasetConnector>()
-    every { datasetConnector.id } returns "C-id"
-    val dataset = mockk<Dataset>()
-    every { dataset.connector } returns datasetConnector
-
-    val scenarioRunContainer =
-        factory.buildFromDataset(
-            dataset,
-            connector,
-            1,
-            true,
-            "fetchId",
-            "O-id",
-            "W-id",
-            "S-id",
-            "W-key",
-            "csmSimulationId",
-            nodeSizingLabel = NODE_LABEL_DEFAULT,
-            customSizing = BASIC_SIZING)
-
-    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
-    assertNull(scenarioRunContainer.labels)
-    assertEquals(
-        mapOf(
-                "IDENTITY_PROVIDER" to "azure",
-                "AZURE_TENANT_ID" to "12345678",
-                "AZURE_CLIENT_ID" to "98765432",
-                "AZURE_CLIENT_SECRET" to "azertyuiop",
-                "CSM_SIMULATION_ID" to "csmSimulationId",
-                "CSM_API_URL" to "https://api.cosmotech.com",
-                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
-                    "https://phoenix.westeurope.kusto.windows.net",
-                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                    "https://ingest-phoenix.westeurope.kusto.windows.net",
-                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "o-id-w-key",
-                "CSM_ORGANIZATION_ID" to "O-id",
-                "CSM_WORKSPACE_ID" to "W-id",
-                "CSM_SCENARIO_ID" to "S-id",
-                "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
-                "TWIN_CACHE_HOST" to "this_is_a_host",
-                "TWIN_CACHE_PORT" to "6973",
-                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-                "TWIN_CACHE_USERNAME" to "default")
-            .toSortedMap(),
-        scenarioRunContainer.envVars?.toSortedMap())
-  }
-
-  @Test
-  fun `buildFromDataset - labels and managed identity env var if azureManagedIdentity is true`() {
-    val connector = mockk<Connector>(relaxed = true)
-    every { connector.azureManagedIdentity } returns true
-    every { connector.id } returns "C-id"
-    val datasetConnector = mockk<DatasetConnector>()
-    every { datasetConnector.id } returns "C-id"
-    val dataset = mockk<Dataset>()
-    every { dataset.connector } returns datasetConnector
-
-    val scenarioRunContainer =
-        factory.buildFromDataset(
-            dataset,
-            connector,
-            1,
-            true,
-            "fetchId",
-            "O-id",
-            "W-id",
-            "S-id",
-            "W-key",
-            "csmSimulationId",
-            nodeSizingLabel = NODE_LABEL_DEFAULT,
-            customSizing = BASIC_SIZING)
-
-    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
-    assertEquals(
-        mapOf(AZURE_AAD_POD_ID_BINDING_LABEL to "phoenixdev-pod-identity"),
-        scenarioRunContainer.labels)
-    assertEquals(
-        mapOf(
-                "IDENTITY_PROVIDER" to "azure",
-                "CSM_AZURE_MANAGED_IDENTITY" to "true",
-                "CSM_SIMULATION_ID" to "csmSimulationId",
-                "CSM_API_URL" to "https://api.cosmotech.com",
-                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
-                    "https://phoenix.westeurope.kusto.windows.net",
-                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                    "https://ingest-phoenix.westeurope.kusto.windows.net",
-                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "o-id-w-key",
-                "CSM_ORGANIZATION_ID" to "O-id",
-                "CSM_WORKSPACE_ID" to "W-id",
-                "CSM_SCENARIO_ID" to "S-id",
-                "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
-                "TWIN_CACHE_HOST" to "this_is_a_host",
-                "TWIN_CACHE_PORT" to "6973",
-                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-                "TWIN_CACHE_USERNAME" to "default")
-            .toSortedMap(),
-        scenarioRunContainer.envVars?.toSortedMap())
-  }
-
-  @Test
-  fun `buildFromDataset - core creds if azureAuthenticationWithCustomerAppRegistration is null`() {
-    val connector = mockk<Connector>(relaxed = true)
-    every { connector.azureAuthenticationWithCustomerAppRegistration } returns false
-    every { connector.id } returns "C-id"
-    val datasetConnector = mockk<DatasetConnector>()
-    every { datasetConnector.id } returns "C-id"
-    val dataset = mockk<Dataset>()
-    every { dataset.connector } returns datasetConnector
-
-    val scenarioRunContainer =
-        factory.buildFromDataset(
-            dataset,
-            connector,
-            1,
-            true,
-            "fetchId",
-            "O-id",
-            "W-id",
-            "S-id",
-            "W-key",
-            "csmSimulationId",
-            nodeSizingLabel = NODE_LABEL_DEFAULT,
-            customSizing = BASIC_SIZING)
-
-    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
-    assertNull(scenarioRunContainer.labels)
-    assertEquals(
-        mapOf(
-                "IDENTITY_PROVIDER" to "azure",
-                "AZURE_TENANT_ID" to "12345678",
-                "AZURE_CLIENT_ID" to "98765432",
-                "AZURE_CLIENT_SECRET" to "azertyuiop",
-                "CSM_SIMULATION_ID" to "csmSimulationId",
-                "CSM_API_URL" to "https://api.cosmotech.com",
-                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
-                    "https://phoenix.westeurope.kusto.windows.net",
-                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                    "https://ingest-phoenix.westeurope.kusto.windows.net",
-                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "o-id-w-key",
-                "CSM_ORGANIZATION_ID" to "O-id",
-                "CSM_WORKSPACE_ID" to "W-id",
-                "CSM_SCENARIO_ID" to "S-id",
-                "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
-                "TWIN_CACHE_HOST" to "this_is_a_host",
-                "TWIN_CACHE_PORT" to "6973",
-                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-                "TWIN_CACHE_USERNAME" to "default")
-            .toSortedMap(),
-        scenarioRunContainer.envVars?.toSortedMap())
-  }
-
-  @Test
-  fun `buildFromDataset - core creds if azureAuthenticationWithCustomerAppRegistration is false`() {
-    val connector = mockk<Connector>(relaxed = true)
-    every { connector.azureAuthenticationWithCustomerAppRegistration } returns false
-    every { connector.id } returns "C-id"
-    val datasetConnector = mockk<DatasetConnector>()
-    every { datasetConnector.id } returns "C-id"
-    val dataset = mockk<Dataset>()
-    every { dataset.connector } returns datasetConnector
-
-    val scenarioRunContainer =
-        factory.buildFromDataset(
-            dataset,
-            connector,
-            1,
-            true,
-            "fetchId",
-            "O-id",
-            "W-id",
-            "S-id",
-            "W-key",
-            "csmSimulationId",
-            nodeSizingLabel = NODE_LABEL_DEFAULT,
-            customSizing = BASIC_SIZING)
-
-    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
-    assertNull(scenarioRunContainer.labels)
-    assertEquals(
-        mapOf(
-                "IDENTITY_PROVIDER" to "azure",
-                "AZURE_TENANT_ID" to "12345678",
-                "AZURE_CLIENT_ID" to "98765432",
-                "AZURE_CLIENT_SECRET" to "azertyuiop",
-                "CSM_SIMULATION_ID" to "csmSimulationId",
-                "CSM_API_URL" to "https://api.cosmotech.com",
-                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
-                    "https://phoenix.westeurope.kusto.windows.net",
-                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                    "https://ingest-phoenix.westeurope.kusto.windows.net",
-                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "o-id-w-key",
-                "CSM_ORGANIZATION_ID" to "O-id",
-                "CSM_WORKSPACE_ID" to "W-id",
-                "CSM_SCENARIO_ID" to "S-id",
-                "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
-                "TWIN_CACHE_HOST" to "this_is_a_host",
-                "TWIN_CACHE_PORT" to "6973",
-                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-                "TWIN_CACHE_USERNAME" to "default")
-            .toSortedMap(),
-        scenarioRunContainer.envVars?.toSortedMap())
-  }
-
-  @Test
-  fun `buildFromDataset - customer creds as envvar if azureAuthenticationWithCustomerAppRegistration is true`() {
-    val connector = mockk<Connector>(relaxed = true)
-    every { connector.azureAuthenticationWithCustomerAppRegistration } returns true
-    every { connector.id } returns "C-id"
-    val datasetConnector = mockk<DatasetConnector>()
-    every { datasetConnector.id } returns "C-id"
-    val dataset = mockk<Dataset>()
-    every { dataset.connector } returns datasetConnector
-
-    val scenarioRunContainer =
-        factory.buildFromDataset(
-            dataset,
-            connector,
-            1,
-            true,
-            "fetchId",
-            "O-id",
-            "W-id",
-            "S-id",
-            "W-key",
-            "csmSimulationId",
-            nodeSizingLabel = NODE_LABEL_DEFAULT,
-            customSizing = BASIC_SIZING)
-
-    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
-    assertNull(scenarioRunContainer.labels)
-    assertEquals(
-        mapOf(
-                "IDENTITY_PROVIDER" to "azure",
-                "AZURE_TENANT_ID" to "customer-app-registration-tenantId",
-                "AZURE_CLIENT_ID" to "customer-app-registration-clientId",
-                "AZURE_CLIENT_SECRET" to "customer-app-registration-clientSecret",
-                "CSM_SIMULATION_ID" to "csmSimulationId",
-                "CSM_API_URL" to "https://api.cosmotech.com",
-                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
-                    "https://phoenix.westeurope.kusto.windows.net",
-                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                    "https://ingest-phoenix.westeurope.kusto.windows.net",
-                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "o-id-w-key",
-                "CSM_ORGANIZATION_ID" to "O-id",
-                "CSM_WORKSPACE_ID" to "W-id",
-                "CSM_SCENARIO_ID" to "S-id",
-                "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
-                "TWIN_CACHE_HOST" to "this_is_a_host",
-                "TWIN_CACHE_PORT" to "6973",
-                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-                "TWIN_CACHE_USERNAME" to "default")
-            .toSortedMap(),
-        scenarioRunContainer.envVars?.toSortedMap())
-  }
-
-  @Test
-  fun `PROD-8072- Tenant credentials are set as env vars to solution container by default`() {
-    every { azure.eventBus } returns
-        CsmPlatformAzureEventBus(
-            baseUri = "amqps://csm-phoenix.servicebus.windows.net",
-        )
-
-    val container = buildApplyParametersContainer()
-
-    assertNotNull(container.envVars)
-    assertFalse { container.envVars!!.containsKey(AZURE_EVENT_HUB_SHARED_ACCESS_POLICY_ENV_VAR) }
-    assertFalse { container.envVars!!.containsKey(AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR) }
-    assertEquals(
-        mapOf(
-                "IDENTITY_PROVIDER" to "azure",
-                "AZURE_TENANT_ID" to "12345678",
-                "AZURE_CLIENT_ID" to "98765432",
-                "AZURE_CLIENT_SECRET" to "azertyuiop",
-                "CSM_SIMULATION_ID" to "simulationrunid",
-                "CSM_API_URL" to "https://api.cosmotech.com",
-                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
-                    "https://phoenix.westeurope.kusto.windows.net",
-                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                    "https://ingest-phoenix.westeurope.kusto.windows.net",
-                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
-                "CSM_ORGANIZATION_ID" to "Organizationid",
-                "CSM_WORKSPACE_ID" to "Workspaceid",
-                "CSM_SCENARIO_ID" to "Scenarioid",
-                "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
-                "CSM_CONTAINER_MODE" to "handle-parameters",
-                "CSM_PROBES_MEASURES_TOPIC" to
-                    "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
-                "CSM_CONTROL_PLANE_TOPIC" to
-                    "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
-                "CSM_SIMULATION" to "TestSimulation",
-                "TWIN_CACHE_HOST" to "this_is_a_host",
-                "TWIN_CACHE_PORT" to "6973",
-                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-                "TWIN_CACHE_USERNAME" to "default")
-            .toSortedMap(),
-        container.envVars?.toSortedMap())
-  }
-
-  @Test
-  fun `PROD-8072- Tenant credentials are set as env vars to solution container if told so`() {
-    every { azure.eventBus } returns
-        CsmPlatformAzureEventBus(
-            baseUri = "amqps://csm-phoenix.servicebus.windows.net",
-            authentication = Authentication(strategy = TENANT_CLIENT_CREDENTIALS))
-
-    val container = buildPreRunContainer()
-
-    assertNotNull(container.envVars)
-    assertFalse { container.envVars!!.containsKey(AZURE_EVENT_HUB_SHARED_ACCESS_POLICY_ENV_VAR) }
-    assertFalse { container.envVars!!.containsKey(AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR) }
-
-    assertEquals(
-        mapOf(
-                "IDENTITY_PROVIDER" to "azure",
-                "AZURE_TENANT_ID" to "12345678",
-                "AZURE_CLIENT_ID" to "98765432",
-                "AZURE_CLIENT_SECRET" to "azertyuiop",
-                "CSM_SIMULATION_ID" to "simulationrunid",
-                "CSM_API_URL" to "https://api.cosmotech.com",
-                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
-                    "https://phoenix.westeurope.kusto.windows.net",
-                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                    "https://ingest-phoenix.westeurope.kusto.windows.net",
-                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
-                "CSM_ORGANIZATION_ID" to "Organizationid",
-                "CSM_WORKSPACE_ID" to "Workspaceid",
-                "CSM_SCENARIO_ID" to "Scenarioid",
-                "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
-                "CSM_CONTAINER_MODE" to "prerun",
-                "CSM_PROBES_MEASURES_TOPIC" to
-                    "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
-                "CSM_CONTROL_PLANE_TOPIC" to
-                    "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
-                "CSM_SIMULATION" to "TestSimulation",
-                "TWIN_CACHE_HOST" to "this_is_a_host",
-                "TWIN_CACHE_PORT" to "6973",
-                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-                "TWIN_CACHE_USERNAME" to "default")
-            .toSortedMap(),
-        container.envVars?.toSortedMap())
-  }
-  @Test
-  fun `PROD-8072- Tenant credentials are set as env vars to solution container without control plane`() {
-    every { azure.eventBus } returns
-        CsmPlatformAzureEventBus(
-            baseUri = "amqps://csm-phoenix.servicebus.windows.net",
-            authentication = Authentication(strategy = TENANT_CLIENT_CREDENTIALS))
-
-    val container = buildRunContainer(false, false)
-
-    assertNotNull(container.envVars)
-    assertFalse { container.envVars!!.containsKey(AZURE_EVENT_HUB_SHARED_ACCESS_POLICY_ENV_VAR) }
-    assertFalse { container.envVars!!.containsKey(AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR) }
-
-    assertEquals(
-        mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
-            "CSM_ORGANIZATION_ID" to "Organizationid",
-            "CSM_WORKSPACE_ID" to "Workspaceid",
-            "CSM_SCENARIO_ID" to "Scenarioid",
-            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
-            "CSM_CONTAINER_MODE" to "engine",
-            "CSM_PROBES_MEASURES_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
-            "CSM_SIMULATION" to "TestSimulation",
-            "TWIN_CACHE_HOST" to "this_is_a_host",
-            "TWIN_CACHE_PORT" to "6973",
-            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default"),
-        container.envVars)
-  }
-
-  @Test
-  fun `PROD-8072- Shared Access key set as env vars to solution container if told so`() {
-    every { azure.eventBus } returns
-        CsmPlatformAzureEventBus(
-            baseUri = "amqps://csm-phoenix.servicebus.windows.net",
-            authentication =
-                Authentication(
-                    strategy = SHARED_ACCESS_POLICY,
-                    sharedAccessPolicy =
-                        SharedAccessPolicyDetails(
-                            namespace =
-                                SharedAccessPolicyCredentials(
-                                    name = "my-eventhub-access-policy", key = "a1b2c3d4e5=="))))
-
-    val container = buildRunContainer()
-
-    assertNotNull(container.envVars)
-
-    assertEquals(
-        mapOf(
-                "IDENTITY_PROVIDER" to "azure",
-                "AZURE_TENANT_ID" to "12345678",
-                "AZURE_CLIENT_ID" to "98765432",
-                "AZURE_CLIENT_SECRET" to "azertyuiop",
-                "CSM_SIMULATION_ID" to "simulationrunid",
-                "CSM_API_URL" to "https://api.cosmotech.com",
-                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
-                    "https://phoenix.westeurope.kusto.windows.net",
-                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                    "https://ingest-phoenix.westeurope.kusto.windows.net",
-                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
-                "CSM_ORGANIZATION_ID" to "Organizationid",
-                "CSM_WORKSPACE_ID" to "Workspaceid",
-                "CSM_SCENARIO_ID" to "Scenarioid",
-                "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
-                "CSM_CONTAINER_MODE" to "engine",
-                "CSM_PROBES_MEASURES_TOPIC" to
-                    "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
-                "CSM_CONTROL_PLANE_TOPIC" to
-                    "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
-                "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to "my-eventhub-access-policy",
-                "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to "a1b2c3d4e5==",
-                "CSM_AMQPCONSUMER_USER" to "my-eventhub-access-policy",
-                "CSM_AMQPCONSUMER_PASSWORD" to "a1b2c3d4e5==",
-                "CSM_CONTROL_PLANE_USER" to "my-eventhub-access-policy",
-                "CSM_CONTROL_PLANE_PASSWORD" to "a1b2c3d4e5==",
-                "CSM_SIMULATION" to "TestSimulation",
-                "TWIN_CACHE_HOST" to "this_is_a_host",
-                "TWIN_CACHE_PORT" to "6973",
-                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-                "TWIN_CACHE_USERNAME" to "default")
-            .toSortedMap(),
-        container.envVars?.toSortedMap())
-  }
-
-  @Test
-  fun `PROD-8072- Shared Access key set as env vars to solution container without control plane`() {
-    every { azure.eventBus } returns
-        CsmPlatformAzureEventBus(
-            baseUri = "amqps://csm-phoenix.servicebus.windows.net",
-            authentication =
-                Authentication(
-                    strategy = SHARED_ACCESS_POLICY,
-                    sharedAccessPolicy =
-                        SharedAccessPolicyDetails(
-                            namespace =
-                                SharedAccessPolicyCredentials(
-                                    name = "my-eventhub-access-policy", key = "a1b2c3d4e5=="))))
-
-    val container = buildRunContainer(false, false)
-
-    assertNotNull(container.envVars)
-
-    assertEquals(
-        mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
-            "CSM_ORGANIZATION_ID" to "Organizationid",
-            "CSM_WORKSPACE_ID" to "Workspaceid",
-            "CSM_SCENARIO_ID" to "Scenarioid",
-            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
-            "CSM_CONTAINER_MODE" to "engine",
-            "CSM_PROBES_MEASURES_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
-            "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to "my-eventhub-access-policy",
-            "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to "a1b2c3d4e5==",
-            "CSM_AMQPCONSUMER_USER" to "my-eventhub-access-policy",
-            "CSM_AMQPCONSUMER_PASSWORD" to "a1b2c3d4e5==",
-            "CSM_SIMULATION" to "TestSimulation",
-            "TWIN_CACHE_HOST" to "this_is_a_host",
-            "TWIN_CACHE_PORT" to "6973",
-            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default"),
-        container.envVars)
-  }
-
-  @Test
-  fun `PROD-8072- Exception if Shared Access Policy strategy but no credentials configured`() {
-    every { azure.eventBus } returns
-        CsmPlatformAzureEventBus(
-            baseUri = "amqps://csm-phoenix.servicebus.windows.net",
-            authentication = Authentication(strategy = SHARED_ACCESS_POLICY))
-
-    assertThrows(IllegalStateException::class.java) { buildRunContainer() }
   }
 
   private fun getStartInfoFromIds(): StartInfo {
@@ -2599,19 +1804,12 @@ class ContainerFactoryTests {
         }
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "IDENTITY_PROVIDER" to "cosmotech",
             "CSM_SIMULATION_ID" to "simulationrunid",
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
@@ -2624,409 +1822,6 @@ class ContainerFactoryTests {
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
             "TWIN_CACHE_USERNAME" to "default")
     assertEquals(expected.toSortedMap(), container?.envVars?.toSortedMap())
-  }
-
-  @Test
-  fun `PROD-7623- Dedicated EventHub by namespace set to true and send control plane to true`() {
-    val container = buildRunContainer(true, true)
-
-    assertNotNull(container.envVars)
-    assertEquals(
-        mapOf(
-                "IDENTITY_PROVIDER" to "azure",
-                "AZURE_TENANT_ID" to "12345678",
-                "AZURE_CLIENT_ID" to "98765432",
-                "AZURE_CLIENT_SECRET" to "azertyuiop",
-                "CSM_SIMULATION_ID" to "simulationrunid",
-                "CSM_API_URL" to "https://api.cosmotech.com",
-                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
-                    "https://phoenix.westeurope.kusto.windows.net",
-                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                    "https://ingest-phoenix.westeurope.kusto.windows.net",
-                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
-                "CSM_ORGANIZATION_ID" to "Organizationid",
-                "CSM_WORKSPACE_ID" to "Workspaceid",
-                "CSM_SCENARIO_ID" to "Scenarioid",
-                "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
-                "CSM_CONTAINER_MODE" to "engine",
-                "CSM_PROBES_MEASURES_TOPIC" to
-                    "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
-                "CSM_CONTROL_PLANE_TOPIC" to
-                    "amqps://organizationid-test.servicebus.windows.net/scenariorun",
-                "CSM_SIMULATION" to "TestSimulation",
-                "TWIN_CACHE_HOST" to "this_is_a_host",
-                "TWIN_CACHE_PORT" to "6973",
-                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-                "TWIN_CACHE_USERNAME" to "default")
-            .toSortedMap(),
-        container.envVars?.toSortedMap())
-  }
-
-  @Test
-  fun `PROD-7623- Dedicated EventHub by namespace set to true and send control plane to false`() {
-    val container = buildRunContainer(true, false)
-
-    assertNotNull(container.envVars)
-    assertEquals(
-        mapOf(
-                "IDENTITY_PROVIDER" to "azure",
-                "AZURE_TENANT_ID" to "12345678",
-                "AZURE_CLIENT_ID" to "98765432",
-                "AZURE_CLIENT_SECRET" to "azertyuiop",
-                "CSM_SIMULATION_ID" to "simulationrunid",
-                "CSM_API_URL" to "https://api.cosmotech.com",
-                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
-                    "https://phoenix.westeurope.kusto.windows.net",
-                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                    "https://ingest-phoenix.westeurope.kusto.windows.net",
-                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
-                "CSM_ORGANIZATION_ID" to "Organizationid",
-                "CSM_WORKSPACE_ID" to "Workspaceid",
-                "CSM_SCENARIO_ID" to "Scenarioid",
-                "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
-                "CSM_CONTAINER_MODE" to "engine",
-                "CSM_PROBES_MEASURES_TOPIC" to
-                    "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
-                "CSM_SIMULATION" to "TestSimulation",
-                "TWIN_CACHE_HOST" to "this_is_a_host",
-                "TWIN_CACHE_PORT" to "6973",
-                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-                "TWIN_CACHE_USERNAME" to "default")
-            .toSortedMap(),
-        container.envVars?.toSortedMap())
-  }
-
-  @Test
-  fun `PROD-7623- Dedicated EventHub by namespace set to true`() {
-    val container = buildRunContainer(true)
-
-    assertNotNull(container.envVars)
-    assertEquals(
-        mapOf(
-                "IDENTITY_PROVIDER" to "azure",
-                "AZURE_TENANT_ID" to "12345678",
-                "AZURE_CLIENT_ID" to "98765432",
-                "AZURE_CLIENT_SECRET" to "azertyuiop",
-                "CSM_SIMULATION_ID" to "simulationrunid",
-                "CSM_API_URL" to "https://api.cosmotech.com",
-                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
-                    "https://phoenix.westeurope.kusto.windows.net",
-                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                    "https://ingest-phoenix.westeurope.kusto.windows.net",
-                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
-                "CSM_ORGANIZATION_ID" to "Organizationid",
-                "CSM_WORKSPACE_ID" to "Workspaceid",
-                "CSM_SCENARIO_ID" to "Scenarioid",
-                "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
-                "CSM_CONTAINER_MODE" to "engine",
-                "CSM_PROBES_MEASURES_TOPIC" to
-                    "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
-                "CSM_CONTROL_PLANE_TOPIC" to
-                    "amqps://organizationid-test.servicebus.windows.net/scenariorun",
-                "CSM_SIMULATION" to "TestSimulation",
-                "TWIN_CACHE_HOST" to "this_is_a_host",
-                "TWIN_CACHE_PORT" to "6973",
-                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-                "TWIN_CACHE_USERNAME" to "default")
-            .toSortedMap(),
-        container.envVars?.toSortedMap())
-  }
-
-  @Test
-  fun `Dedicated EventHub by namespace set to true with default strategy SAS and secret key`() {
-    every { azure.eventBus } returns
-        CsmPlatformAzureEventBus(
-            baseUri = "amqps://csm-phoenix.servicebus.windows.net",
-            authentication = Authentication(strategy = SHARED_ACCESS_POLICY))
-    val name = "RootManageSharedAccessKey"
-    val key = "key_in_secret_manager"
-    every { secretManager.readSecret("csm-phoenix", "organizationid-test") } returns
-        mapOf(WORKSPACE_EVENTHUB_ACCESSKEY_SECRET to key)
-    val container = buildRunContainer(true)
-
-    assertNotNull(container.envVars)
-    assertEquals(
-        mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
-            "CSM_ORGANIZATION_ID" to "Organizationid",
-            "CSM_WORKSPACE_ID" to "Workspaceid",
-            "CSM_SCENARIO_ID" to "Scenarioid",
-            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
-            "CSM_CONTAINER_MODE" to "engine",
-            "CSM_PROBES_MEASURES_TOPIC" to
-                "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
-            "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to name,
-            "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to key,
-            "CSM_AMQPCONSUMER_USER" to name,
-            "CSM_AMQPCONSUMER_PASSWORD" to key,
-            "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://organizationid-test.servicebus.windows.net/scenariorun",
-            "CSM_CONTROL_PLANE_USER" to name,
-            "CSM_CONTROL_PLANE_PASSWORD" to key,
-            "CSM_SIMULATION" to "TestSimulation",
-            "TWIN_CACHE_HOST" to "this_is_a_host",
-            "TWIN_CACHE_PORT" to "6973",
-            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default"),
-        container.envVars)
-  }
-
-  @Test
-  fun `Dedicated EventHub by namespace set to true with workspace strategy SAS and secret key`() {
-    val name = "RootManageSharedAccessKey"
-    val key = "key_in_secret_manager"
-    every { secretManager.readSecret("csm-phoenix", "organizationid-test") } returns
-        mapOf(WORKSPACE_EVENTHUB_ACCESSKEY_SECRET to key)
-    val container = buildRunContainer(true, true, "SHARED_ACCESS_POLICY")
-
-    assertNotNull(container.envVars)
-    assertEquals(
-        mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
-            "CSM_ORGANIZATION_ID" to "Organizationid",
-            "CSM_WORKSPACE_ID" to "Workspaceid",
-            "CSM_SCENARIO_ID" to "Scenarioid",
-            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
-            "CSM_CONTAINER_MODE" to "engine",
-            "CSM_PROBES_MEASURES_TOPIC" to
-                "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
-            "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to name,
-            "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to key,
-            "CSM_AMQPCONSUMER_USER" to name,
-            "CSM_AMQPCONSUMER_PASSWORD" to key,
-            "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://organizationid-test.servicebus.windows.net/scenariorun",
-            "CSM_CONTROL_PLANE_USER" to name,
-            "CSM_CONTROL_PLANE_PASSWORD" to key,
-            "CSM_SIMULATION" to "TestSimulation",
-            "TWIN_CACHE_HOST" to "this_is_a_host",
-            "TWIN_CACHE_PORT" to "6973",
-            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default"),
-        container.envVars)
-  }
-
-  @Test
-  fun `Dedicated EventHub by namespace set to true with workspace strategy tenant credential and secret key`() {
-    every { azure.eventBus } returns
-        CsmPlatformAzureEventBus(
-            baseUri = "amqps://csm-phoenix.servicebus.windows.net",
-            authentication = Authentication(strategy = SHARED_ACCESS_POLICY))
-    val container = buildRunContainer(true, true, "TENANT_CLIENT_CREDENTIALS")
-
-    assertNotNull(container.envVars)
-    assertEquals(
-        mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
-            "CSM_ORGANIZATION_ID" to "Organizationid",
-            "CSM_WORKSPACE_ID" to "Workspaceid",
-            "CSM_SCENARIO_ID" to "Scenarioid",
-            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
-            "CSM_CONTAINER_MODE" to "engine",
-            "CSM_PROBES_MEASURES_TOPIC" to
-                "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
-            "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://organizationid-test.servicebus.windows.net/scenariorun",
-            "CSM_SIMULATION" to "TestSimulation",
-            "TWIN_CACHE_HOST" to "this_is_a_host",
-            "TWIN_CACHE_PORT" to "6973",
-            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default"),
-        container.envVars)
-  }
-
-  @Test
-  fun `Dedicated EventHub by namespace set to true with workspace strategy SAS, custom name and secret key`() {
-    val name = "CustomKeyName"
-    val key = "key_in_secret_manager"
-    every { secretManager.readSecret("csm-phoenix", "organizationid-test") } returns
-        mapOf(WORKSPACE_EVENTHUB_ACCESSKEY_SECRET to key)
-    val container = buildRunContainer(true, true, "SHARED_ACCESS_POLICY", name)
-
-    assertNotNull(container.envVars)
-    assertEquals(
-        mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
-            "CSM_ORGANIZATION_ID" to "Organizationid",
-            "CSM_WORKSPACE_ID" to "Workspaceid",
-            "CSM_SCENARIO_ID" to "Scenarioid",
-            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
-            "CSM_CONTAINER_MODE" to "engine",
-            "CSM_PROBES_MEASURES_TOPIC" to
-                "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
-            "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to name,
-            "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to key,
-            "CSM_AMQPCONSUMER_USER" to name,
-            "CSM_AMQPCONSUMER_PASSWORD" to key,
-            "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://organizationid-test.servicebus.windows.net/scenariorun",
-            "CSM_CONTROL_PLANE_USER" to name,
-            "CSM_CONTROL_PLANE_PASSWORD" to key,
-            "CSM_SIMULATION" to "TestSimulation",
-            "TWIN_CACHE_HOST" to "this_is_a_host",
-            "TWIN_CACHE_PORT" to "6973",
-            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default"),
-        container.envVars)
-  }
-
-  @Test
-  fun `Exception if dedicated Event Hub Shared Access Policy strategy but no secret configured`() {
-    every { secretManager.readSecret("csm-phoenix", "organizationid-test") } returns mapOf()
-    every { azure.eventBus } returns
-        CsmPlatformAzureEventBus(
-            baseUri = "amqps://csm-phoenix.servicebus.windows.net",
-            authentication = Authentication(strategy = SHARED_ACCESS_POLICY))
-
-    assertThrows(IllegalStateException::class.java) { buildRunContainer(true) }
-  }
-
-  @Test
-  fun `Dedicated EventHub by namespace set to true with default strategy SAS and secret key no control plane`() {
-    every { azure.eventBus } returns
-        CsmPlatformAzureEventBus(
-            baseUri = "amqps://csm-phoenix.servicebus.windows.net",
-            authentication = Authentication(strategy = SHARED_ACCESS_POLICY))
-    val name = "RootManageSharedAccessKey"
-    val key = "key_in_secret_manager"
-    every { secretManager.readSecret("csm-phoenix", "organizationid-test") } returns
-        mapOf(WORKSPACE_EVENTHUB_ACCESSKEY_SECRET to key)
-    val container = buildRunContainer(true, false)
-
-    assertNotNull(container.envVars)
-    assertEquals(
-        mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
-            "CSM_ORGANIZATION_ID" to "Organizationid",
-            "CSM_WORKSPACE_ID" to "Workspaceid",
-            "CSM_SCENARIO_ID" to "Scenarioid",
-            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
-            "CSM_CONTAINER_MODE" to "engine",
-            "CSM_PROBES_MEASURES_TOPIC" to
-                "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
-            "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to name,
-            "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to key,
-            "CSM_AMQPCONSUMER_USER" to name,
-            "CSM_AMQPCONSUMER_PASSWORD" to key,
-            "CSM_SIMULATION" to "TestSimulation",
-            "TWIN_CACHE_HOST" to "this_is_a_host",
-            "TWIN_CACHE_PORT" to "6973",
-            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default"),
-        container.envVars)
-  }
-
-  @Test
-  fun `PROD-7623- Dedicated EventHub by namespace set to false`() {
-    every { azure.eventBus } returns
-        CsmPlatformAzureEventBus(
-            baseUri = "amqps://csm-phoenix.servicebus.windows.net",
-        )
-
-    val container = buildRunContainer(false)
-
-    assertNotNull(container.envVars)
-    assertEquals(
-        mapOf(
-                "IDENTITY_PROVIDER" to "azure",
-                "AZURE_TENANT_ID" to "12345678",
-                "AZURE_CLIENT_ID" to "98765432",
-                "AZURE_CLIENT_SECRET" to "azertyuiop",
-                "CSM_SIMULATION_ID" to "simulationrunid",
-                "CSM_API_URL" to "https://api.cosmotech.com",
-                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
-                    "https://phoenix.westeurope.kusto.windows.net",
-                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                    "https://ingest-phoenix.westeurope.kusto.windows.net",
-                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
-                "CSM_ORGANIZATION_ID" to "Organizationid",
-                "CSM_WORKSPACE_ID" to "Workspaceid",
-                "CSM_SCENARIO_ID" to "Scenarioid",
-                "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
-                "CSM_CONTAINER_MODE" to "engine",
-                "CSM_PROBES_MEASURES_TOPIC" to
-                    "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
-                "CSM_CONTROL_PLANE_TOPIC" to
-                    "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
-                "CSM_SIMULATION" to "TestSimulation",
-                "TWIN_CACHE_HOST" to "this_is_a_host",
-                "TWIN_CACHE_PORT" to "6973",
-                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-                "TWIN_CACHE_USERNAME" to "default")
-            .toSortedMap(),
-        container.envVars?.toSortedMap())
   }
 
   private fun buildApplyParametersContainer(): ScenarioRunContainer {
@@ -3066,14 +1861,13 @@ class ContainerFactoryTests {
   }
 
   private fun buildRunContainer(
-      dedicatedEventHubNamespace: Boolean? = null,
       sendToScenarioRun: Boolean? = null,
       sasAuthentication: String? = null,
       sasName: String? = null
   ): ScenarioRunContainer {
     return factory.buildRunContainer(
         getOrganization(),
-        getWorkspace(dedicatedEventHubNamespace, sendToScenarioRun, sasAuthentication, sasName),
+        getWorkspace(sendToScenarioRun, sasAuthentication, sasName),
         getScenario(),
         getSolution(),
         "testruntemplate",
@@ -3097,19 +1891,12 @@ class ContainerFactoryTests {
   private fun validateEnvVarsSolutionContainer(container: ScenarioRunContainer?, mode: String) {
     val expected =
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "IDENTITY_PROVIDER" to "cosmotech",
             "CSM_SIMULATION_ID" to "simulationrunid",
             "CSM_API_URL" to "https://api.cosmotech.com",
             "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
@@ -3218,17 +2005,17 @@ class ContainerFactoryTests {
   }
 
   private fun getConnector2(): Connector {
-    return getConnector("AzErTyUiOp2", "TestConnector2", "cosmotech/test_connector2")
+    return getConnector("AzErTyUiOp2", "TestConnector2", "test_2")
   }
 
   private fun getConnector3(): Connector {
-    return getConnector("AzErTyUiOp3", "TestConnector3", "cosmotech/test_connector3")
+    return getConnector("AzErTyUiOp3", "TestConnector3", "test_3")
   }
 
   private fun getConnector(
       id: String,
       key: String = "TestConnector",
-      repository: String = "cosmotech/test_connector"
+      repository: String = "test_connector"
   ): Connector {
     val envparam1 =
         ConnectorParameter(id = "EnvParam1", label = "Env param 1", envVar = "ENV_PARAM_1")
@@ -3256,7 +2043,7 @@ class ContainerFactoryTests {
   private fun getConnectorWorkspaceFile(
       id: String = "AzErTyUiOp",
       key: String = "TestConnector",
-      repository: String = "cosmotech/test_connector"
+      repository: String = "test_connector"
   ): Connector {
     val envparam1 =
         ConnectorParameter(id = "EnvParam1", label = "Env param 1", envVar = "ENV_PARAM_1")
@@ -3278,11 +2065,11 @@ class ContainerFactoryTests {
   private fun getConnectorWorkspaceStorage(
       id: String = "AzErTyUiOp",
       key: String = "TestConnector",
-      repository: String = "cosmotech/test_connector"
+      repository: String = "test_connector"
   ): Connector {
     val envparam1 =
         ConnectorParameter(
-            id = "EnvParam1", label = "Env param 1", envVar = "AZURE_STORAGE_CONNECTION_STRING")
+            id = "EnvParam1", label = "Env param 1", envVar = "STORAGE_CONNECTION_STRING")
     val parametersList = listOf(envparam1)
     val parameterGroup =
         ConnectorParameterGroup(
@@ -3302,7 +2089,7 @@ class ContainerFactoryTests {
         id = "QsDfGhJk",
         key = "TestConnector",
         name = "Test Connector",
-        repository = "cosmotech/test_connector",
+        repository = "test_connector",
         version = "1.0.0",
         ioTypes = listOf(IoTypes.read))
   }
@@ -3312,10 +2099,10 @@ class ContainerFactoryTests {
         id = "QsDfGhJk",
         key = "TestConnector",
         name = "Test Connector",
-        repository = "cosmotech/test_connector",
+        repository = "test_connector",
         version = "1.0.0",
         ioTypes = listOf(IoTypes.read),
-        azureManagedIdentity = true)
+    )
   }
 
   private fun getDatasetConnectorNoVars(): DatasetConnector {
@@ -3327,8 +2114,8 @@ class ContainerFactoryTests {
     return Dataset(id = "1", name = "Test Dataset No Vars", connector = connector)
   }
 
+  @Suppress("UnusedPrivateMember")
   private fun getWorkspace(
-      dedicatedEventHubNamespace: Boolean? = null,
       sendToScenarioRun: Boolean? = true,
       sasAuthentication: String? = null,
       sasName: String? = null
@@ -3339,14 +2126,11 @@ class ContainerFactoryTests {
         name = "Test Workspace",
         description = "Test Workspace Description",
         version = "1.0.0",
+        sendInputToDataWarehouse = false,
         solution =
             WorkspaceSolution(
                 solutionId = "1",
             ),
-        useDedicatedEventHubNamespace = dedicatedEventHubNamespace,
-        sendScenarioRunToEventHub = sendToScenarioRun,
-        dedicatedEventHubAuthenticationStrategy = sasAuthentication,
-        dedicatedEventHubSasKeyName = sasName,
     )
   }
 
@@ -3381,7 +2165,7 @@ class ContainerFactoryTests {
         id = "1",
         key = "TestSolution",
         name = "Test Solution",
-        repository = "cosmotech/testsolution_simulator",
+        repository = "testsolution_simulator",
         version = "1.0.0",
         runTemplates = mutableListOf(getRunTemplateStack()),
     )
@@ -3392,7 +2176,7 @@ class ContainerFactoryTests {
         id = "1",
         key = "TestSolution",
         name = "Test Solution",
-        repository = "cosmotech/testsolution_simulator",
+        repository = "testsolution_simulator",
         version = "1.0.0",
         runTemplates = mutableListOf(getRunTemplateStackNoDWH()),
     )
@@ -3403,7 +2187,7 @@ class ContainerFactoryTests {
         id = "1",
         key = "TestSolution",
         name = "Test Solution",
-        repository = "cosmotech/testsolution_simulator",
+        repository = "testsolution_simulator",
         version = "1.0.0",
         runTemplates = mutableListOf(getRunTemplateDatasetIds()),
         parameters =
@@ -3451,7 +2235,7 @@ class ContainerFactoryTests {
         id = "1",
         key = "TestSolution",
         name = "Test Solution",
-        repository = "cosmotech/testsolution_simulator",
+        repository = "testsolution_simulator",
         version = "1.0.0",
         runTemplates = mutableListOf(getRunTemplateNoPool()),
     )
@@ -3462,7 +2246,7 @@ class ContainerFactoryTests {
         id = "1",
         key = "TestSolution",
         name = "Test Solution",
-        repository = "cosmotech/testsolution_simulator",
+        repository = "testsolution_simulator",
         version = "1.0.0",
         runTemplates = mutableListOf(getRunTemplateNonePool()),
     )
@@ -3473,7 +2257,7 @@ class ContainerFactoryTests {
         id = "1",
         key = "TestSolution",
         name = "Test Solution",
-        repository = "cosmotech/testsolution_simulator",
+        repository = "testsolution_simulator",
         version = "1.0.0",
         runTemplates = mutableListOf(getRunTemplateOnlyRun()),
     )
@@ -3484,7 +2268,7 @@ class ContainerFactoryTests {
         id = "1",
         key = "TestSolution",
         name = "Test Solution",
-        repository = "cosmotech/testsolution_simulator",
+        repository = "testsolution_simulator",
         version = "1.0.0",
         runTemplates = mutableListOf(getRunTemplateCloudSources()),
     )
@@ -3495,7 +2279,7 @@ class ContainerFactoryTests {
         id = "1",
         key = "TestSolution",
         name = "Test Solution",
-        repository = "cosmotech/testsolution_simulator",
+        repository = "testsolution_simulator",
         version = "1.0.0",
         runTemplates = mutableListOf(getRunTemplateLocalSources()),
     )

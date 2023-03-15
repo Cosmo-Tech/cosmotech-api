@@ -3,9 +3,6 @@
 package com.cosmotech.scenariorun.service
 
 import com.cosmotech.api.CsmPhoenixService
-import com.cosmotech.api.azure.adx.AzureDataExplorerClient
-import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
-import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.DeleteHistoricalDataOrganization
 import com.cosmotech.api.events.DeleteHistoricalDataScenario
 import com.cosmotech.api.events.DeleteHistoricalDataWorkspace
@@ -21,7 +18,6 @@ import com.cosmotech.api.events.TwingraphImportJobInfoRequest
 import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
-import com.cosmotech.api.scenario.ScenarioRunMetaData
 import com.cosmotech.api.scenariorun.DataIngestionState
 import com.cosmotech.api.security.coroutine.SecurityCoroutineContext
 import com.cosmotech.api.utils.constructPageRequest
@@ -47,12 +43,9 @@ import com.cosmotech.scenariorun.utils.isTerminal
 import com.cosmotech.scenariorun.utils.toRedisPredicate
 import com.cosmotech.scenariorun.utils.withoutSensitiveData
 import com.cosmotech.scenariorun.workflow.WorkflowService
-import com.cosmotech.solution.domain.DeleteHistoricalData
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
-import com.cosmotech.workspace.azure.EventHubRole
-import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.domain.Workspace
 import java.time.ZonedDateTime
 import java.util.*
@@ -60,7 +53,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
@@ -69,7 +61,7 @@ import org.springframework.stereotype.Service
 
 private const val MIN_SDK_VERSION_MAJOR = 8
 private const val MIN_SDK_VERSION_MINOR = 5
-private const val DELETE_SCENARIO_RUN_DEFAULT_TIMEOUT: Long = 28800
+@Suppress("UnusedPrivateMember") private const val DELETE_SCENARIO_RUN_DEFAULT_TIMEOUT: Long = 28800
 
 internal const val WORKFLOW_TYPE_DATA_DOWNLOAD = "data-download"
 internal const val WORKFLOW_TYPE_SCENARIO_RUN = "scenario-run"
@@ -82,9 +74,6 @@ class ScenarioRunServiceImpl(
     private val workflowService: WorkflowService,
     private val workspaceService: WorkspaceApiService,
     private val scenarioApiService: ScenarioApiService,
-    private val azureDataExplorerClient: AzureDataExplorerClient,
-    private val azureEventHubsClient: AzureEventHubsClient,
-    private val workspaceEventHubService: IWorkspaceEventHubService,
     private val scenarioRunRepository: ScenarioRunRepository
 ) : CsmPhoenixService(), ScenariorunApiService {
 
@@ -108,13 +97,6 @@ class ScenarioRunServiceImpl(
           scenarioRun.workspaceKey ?: "null",
           scenarioRun.id ?: "null",
           scenarioRun.csmSimulationRun ?: "null")
-
-      azureDataExplorerClient.deleteDataFromADXbyExtentShard(
-          scenarioRun.organizationId!!, scenarioRun.workspaceKey!!, scenarioRun.csmSimulationRun!!)
-      logger.debug(
-          "Scenario run {} deleted from ADX with csmSimulationRun {}",
-          scenarioRun.id!!,
-          scenarioRun.csmSimulationRun)
 
       // It seems that deleteEntity does not throw any exception
       logger.debug("Deleting Scenario Run {} from Cosmos DB", scenarioRun.id)
@@ -460,50 +442,8 @@ class ScenarioRunServiceImpl(
                 scenarioRun.workflowId!!, scenarioRun.workflowName!!)))
 
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
-    sendScenarioRunMetaData(organizationId, workspace, scenarioId, scenarioRun.csmSimulationRun)
 
-    val purgeHistoricalDataConfiguration =
-        startInfo.runTemplate.deleteHistoricalData ?: DeleteHistoricalData()
-    if (purgeHistoricalDataConfiguration.enable) {
-      logger.debug("Start coroutine to poll simulation status")
-      GlobalScope.launch(SecurityCoroutineContext()) {
-        withTimeout(
-            purgeHistoricalDataConfiguration.timeOut?.toLong()
-                ?: DELETE_SCENARIO_RUN_DEFAULT_TIMEOUT) {
-          deletePreviousSimulationDataIfCurrentSimulationIsSuccessful(
-              scenarioRun, purgeHistoricalDataConfiguration)
-        }
-      }
-      logger.debug("Coroutine to poll simulation status launched")
-    }
     return scenarioRun.withoutSensitiveData()!!
-  }
-  private fun deletePreviousSimulationDataIfCurrentSimulationIsSuccessful(
-      currentRun: ScenarioRun,
-      purgeHistoricalDataConfiguration: DeleteHistoricalData
-  ) {
-    val scenarioRunId = currentRun.id!!
-    val workspaceId = currentRun.workspaceId!!
-    val organizationId = currentRun.organizationId!!
-    val scenarioId = currentRun.scenarioId!!
-    val csmSimulationRun = currentRun.csmSimulationRun
-    var scenarioRunStatus = getScenarioRunStatus(organizationId, scenarioRunId).state!!.value
-    while (scenarioRunStatus != ScenarioRunState.Successful.value &&
-        scenarioRunStatus != ScenarioRunState.Failed.value &&
-        scenarioRunStatus != ScenarioRunState.DataIngestionFailure.value) {
-      logger.info("ScenarioRun {} is still running, waiting for purging data", csmSimulationRun)
-      logger.info("Scenario Status => {}", scenarioRunStatus)
-      Thread.sleep(purgeHistoricalDataConfiguration.pollFrequency!!.toLong())
-      scenarioRunStatus = getScenarioRunStatus(organizationId, scenarioRunId).state!!.value
-    }
-    if (scenarioRunStatus == ScenarioRunState.Successful.value) {
-      logger.info("ScenarioRun {} is Successfull => purging data", csmSimulationRun)
-      deleteScenarioRunsByScenarioWithoutAccessEnforcement(
-          organizationId, workspaceId, scenarioId, false)
-    } else {
-      logger.info(
-          "ScenarioRun {} is in error {} => no purging data", csmSimulationRun, scenarioRunStatus)
-    }
   }
 
   override fun searchScenarioRuns(
@@ -658,6 +598,50 @@ class ScenarioRunServiceImpl(
                 checkDataIngestionState = false)
             .value
   }
+  @Suppress("UnusedPrivateMember")
+  private fun mapWorkflowPhaseToScenarioRunState(
+      organizationId: String,
+      workspaceKey: String,
+      scenarioRunId: String?,
+      phase: String?,
+      csmSimulationRun: String?,
+      checkDataIngestionState: Boolean? = null,
+  ): ScenarioRunState {
+    logger.debug("Mapping phase $phase for job $scenarioRunId")
+    return when (phase) {
+      "Pending", "Running" -> ScenarioRunState.Running
+      "Succeeded" -> {
+        logger.trace(
+            "checkDataIngestionState=$checkDataIngestionState," +
+                "csmSimulationRun=$csmSimulationRun")
+        if (checkDataIngestionState == true && csmSimulationRun != null) {
+          logger.debug(
+              "ScenarioRun $scenarioRunId (csmSimulationRun=$csmSimulationRun) reported as " +
+                  "Successful by the Workflow Service => checking data ingestion status..")
+          val postProcessingState = DataIngestionState.Successful
+          logger.debug(
+              "Data Ingestion status for ScenarioRun $scenarioRunId " +
+                  "(csmSimulationRun=$csmSimulationRun): $postProcessingState")
+          when (postProcessingState) {
+            null, DataIngestionState.Unknown -> ScenarioRunState.Unknown
+            DataIngestionState.InProgress -> ScenarioRunState.DataIngestionInProgress
+            DataIngestionState.Successful -> ScenarioRunState.Successful
+            DataIngestionState.Failure -> ScenarioRunState.Failed
+          }
+        } else {
+          ScenarioRunState.Successful
+        }
+      }
+      "Skipped", "Failed", "Error", "Omitted" -> ScenarioRunState.Failed
+      else -> {
+        logger.warn(
+            "Unhandled state response for job {}: {} => returning Unknown as state",
+            scenarioRunId,
+            phase)
+        ScenarioRunState.Unknown
+      }
+    }
+  }
 
   @EventListener(ScenarioRunEndToEndStateRequest::class)
   fun onScenarioRunEndToEndStateRequest(request: ScenarioRunEndToEndStateRequest) {
@@ -702,7 +686,8 @@ class ScenarioRunServiceImpl(
     }
   }
 
-  private fun mapWorkflowPhaseToScenarioRunState(
+  @Suppress("UnusedPrivateMember")
+  private fun mapWorkflowPhPaseToScenarioRunState(
       organizationId: String,
       workspaceKey: String,
       scenarioRunId: String?,
@@ -721,13 +706,7 @@ class ScenarioRunServiceImpl(
           logger.debug(
               "ScenarioRun $scenarioRunId (csmSimulationRun=$csmSimulationRun) reported as " +
                   "Successful by the Workflow Service => checking data ingestion status..")
-          val postProcessingState =
-              this.azureDataExplorerClient.getStateFor(
-                  organizationId = organizationId,
-                  workspaceKey = workspaceKey,
-                  scenarioRunId = scenarioRunId!!,
-                  csmSimulationRun = csmSimulationRun,
-              )
+          val postProcessingState = DataIngestionState.Successful
           logger.debug(
               "Data Ingestion status for ScenarioRun $scenarioRunId " +
                   "(csmSimulationRun=$csmSimulationRun): $postProcessingState")
@@ -773,43 +752,6 @@ class ScenarioRunServiceImpl(
 
   override fun stopScenarioRun(organizationId: String, scenariorunId: String): ScenarioRunStatus {
     return workflowService.stopWorkflow(findScenarioRunById(organizationId, scenariorunId))
-  }
-
-  private fun sendScenarioRunMetaData(
-      organizationId: String,
-      workspace: Workspace,
-      scenarioId: String,
-      simulationRun: String
-  ) {
-    val eventHubInfo =
-        this.workspaceEventHubService.getWorkspaceEventHubInfo(
-            organizationId, workspace, EventHubRole.SCENARIO_RUN_METADATA)
-    if (!eventHubInfo.eventHubAvailable) {
-      logger.warn(
-          "Workspace must be configured with sendScenarioMetadataToEventHub to true in order to send metadata")
-      return
-    }
-
-    val scenarioMetaData =
-        ScenarioRunMetaData(
-            simulationRun, scenarioId, ZonedDateTime.now().toLocalDateTime().toString())
-
-    when (eventHubInfo.eventHubCredentialType) {
-      CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
-          .SHARED_ACCESS_POLICY -> {
-        azureEventHubsClient.sendMetaData(
-            eventHubInfo.eventHubNamespace,
-            eventHubInfo.eventHubName,
-            eventHubInfo.eventHubSasKeyName,
-            eventHubInfo.eventHubSasKey,
-            scenarioMetaData)
-      }
-      CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
-          .TENANT_CLIENT_CREDENTIALS -> {
-        azureEventHubsClient.sendMetaData(
-            eventHubInfo.eventHubNamespace, eventHubInfo.eventHubName, scenarioMetaData)
-      }
-    }
   }
 
   override fun importScenarioRun(

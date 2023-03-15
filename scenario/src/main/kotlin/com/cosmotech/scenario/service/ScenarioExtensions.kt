@@ -24,7 +24,7 @@ internal fun List<Scenario>.addLastRunsInfo(
     scenarioServiceImpl: ScenarioServiceImpl
 ): List<Scenario> {
   val logger =
-      LoggerFactory.getLogger("com.cosmotech.scenario.azure.ScenarioExtensions#addLastRunsInfo")
+      LoggerFactory.getLogger("com.cosmotech.scenario.service.ScenarioExtensions#addLastRunsInfo")
   return this.groupBy { it.parentId }
       .flatMap { (parentId, scenarios) ->
         if (!parentId.isNullOrBlank()) {

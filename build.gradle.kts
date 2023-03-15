@@ -41,8 +41,6 @@ version = scmVersion.version
 
 val kotlinJvmTarget = 17
 val cosmotechApiCommonVersion = "0.1.38-SNAPSHOT"
-val cosmotechApiAzureVersion = "0.1.8-SNAPSHOT"
-val azureSpringBootBomVersion = "3.14.0"
 val jedisVersion = "3.9.0"
 val jredistimeseriesVersion = "1.6.0"
 
@@ -239,15 +237,6 @@ subprojects {
               "See http://www.slf4j.org/faq.html#changesInVersion200")
     }
 
-    api("com.github.Cosmo-Tech:cosmotech-api-azure:$cosmotechApiAzureVersion") {
-      exclude(group = "org.slf4j", module = "slf4j-api")
-      because(
-          "this depends on org.slf4j:slf4j-api 1.8.0-beta4 (pre 2.x)," +
-              "which is not backward-compatible with 1.7.x." +
-              "See http://www.slf4j.org/faq.html#changesInVersion200")
-    }
-    implementation(platform("com.azure.spring:azure-spring-boot-bom:$azureSpringBootBomVersion"))
-    api("com.azure.spring:azure-spring-boot-starter-storage")
     constraints {
       implementation("redis.clients:jedis:3.9.0") {
         because(
@@ -405,7 +394,7 @@ subprojects {
   tasks.getByName<BootRun>("bootRun") {
     workingDir = rootDir
 
-    environment("CSM_PLATFORM_VENDOR", project.findProperty("platform")?.toString() ?: "azure")
+    environment("CSM_PLATFORM_VENDOR", project.findProperty("platform")?.toString() ?: "portable")
     project.findProperty("identityProvider")?.toString()?.let {
       environment("IDENTITY_PROVIDER", it)
     }
