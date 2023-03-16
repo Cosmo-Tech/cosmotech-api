@@ -14,7 +14,6 @@ usage() {
   echo "  -a: redis password (default: get from secret)"
   echo "  -p: redis port (default: 6379)"
   echo "  -f: dump file (default: /tmp/dump.rdb)"
-  echo "  -h: print this help"
   echo "example backuping Redis dump: $0 -s -f /tmp/dump.rdb"
   echo "example restoring Redis dump: $0 -r -f /tmp/dump.rdb"
   echo "example getting Redis password from secret: $0 -x"
@@ -58,7 +57,11 @@ save_database() {
   [ -e "${DB_DUMP}" ] && echo "Redis dump saved to ${DB_DUMP}"
 }
 
+
 restore_database() {
+
+  [ ! -f "${DB_DUMP}" ] && echo "ERROR: Redis dump file not found: ${DB_DUMP}" && exit 1
+
   echo "Restore Redis database from ${DB_DUMP}"w
   FOUND_POD=$(kubectl get pods -n ${NAMESPACE} | grep ${REDIS_POD} | awk '{print $1}')
   check_not_empty "$FOUND_POD" "Redis pod ${REDIS_POD} not found on namespace ${NAMESPACE}"
@@ -68,22 +71,90 @@ restore_database() {
     get_redis_password
   fi
 
-  RESULT=$(cp ${DB_DUMP} ~/data/dump.rdb)
+  # Check if we are in local current context
+  CURRENT_CONTEXT=$(kubectl config current-context)
+  echo "Current context: ${CURRENT_CONTEXT}"
+  if [[ $CURRENT_CONTEXT == kind* ]]; then
+    echo "We are in local context: $CURRENT_CONTEXT"
+    echo "Redis dump will be restored by simply copying the dump file to the local Redis data folder"
+    RESULT=$(sudo cp ${DB_DUMP} ~/data/dump.rdb)
+    check_error "$RESULT" "error" "Error while copying Redis dump: ${RESULT}"
+    restart_redis
+    exit 0
+  fi
+
+  read -p "We are in remote context: $CURRENT_CONTEXT. Are you sure to restore the database Redis from ${DB_DUMP}? (yes / no) : " response
+  if [[ $response != "yes" ]]; then
+    echo "Exit from script"
+    exit 0
+  fi
+
+
+  PVC=$(kubectl -n $NAMESPACE describe pod $FOUND_POD | grep ClaimName | awk '{print $2}')
+  check_not_empty "$PVC" "Error while getting Redis PVC name: ${PVC}"
+  echo "Redis PVC name: ${PVC}"
+
+# Create a pod with the same nodeSelector and tolerations as the Redis pod
+cat <<EOF > cosmotech-dump.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cosmotech-dump
+spec:
+  containers:
+  - name: cosmotech-dump
+    image: alpine
+    command:
+    - "tail"
+    - "-f"
+    - "/dev/null"
+    volumeMounts:
+    - name: data
+      mountPath: /data
+  tolerations:
+  - key: "vendor"
+    operator: "Equal"
+    value: "cosmotech"
+    effect: "NoSchedule"
+  nodeSelector:
+    "cosmotech.com/tier": "db"
+  volumes:
+  - name: data
+    persistentVolumeClaim:
+      claimName: ${PVC}
+
+EOF
+
+  kubectl apply -n ${NAMESPACE} -f cosmotech-dump.yaml
+  RESULT=$(kubectl -n ${NAMESPACE} wait --for=condition=Ready pod/cosmotech-dump --timeout=10s)
+  check_error "$RESULT" "error" "Error while waiting for pod cosmotech-dump to be ready: ${RESULT}"
+
+  echo "Copying Redis dump to pod cosmotech-dump /data folder"
+  RESULT=$(kubectl cp ${DB_DUMP} ${NAMESPACE}/cosmotech-dump:data/dump.rdb)
   check_error "$RESULT" "error" "Error while copying Redis dump: ${RESULT}"
 
-  local redis_connect="redis-cli --no-auth-warning -h ${REDIS_HOST} -p ${REDIS_PORT} -a ${REDIS_PASSWORD}"
-  echo "Connecting to Redis: ${redis_connect}"
-  RESULT=$(kubectl exec -it ${FOUND_POD} -n ${NAMESPACE} -- ${redis_connect} shutdown nosave)
-  check_error "$RESULT" "NOAUTH" "Authentication to Redis failed, wrong password: ${REDIS_PASSWORD}"
-  check_error "$RESULT" "Connection refused" "ERROR: ${RESULT}"
-  check_error "$RESULT" "ERR" "ERROR: ${RESULT}"
-  echo "Redis dump restored from ${DB_DUMP}"
+  echo "Restarting Redis pod ${FOUND_POD}"
+  restart_redis
+
+  kubectl delete -n ${NAMESPACE} -f cosmotech-dump.yaml
+  [ -f "cosmotech-dump.yaml" ] && rm -f "cosmotech-dump.yaml"
 }
 
 get_redis_password() {
   REDIS_PASSWORD=${REDIS_ADMIN_PASSWORD:-$(kubectl get secret --namespace ${NAMESPACE} cosmotechredis -o jsonpath="{.data.redis-password}" | base64 -d || "")}
   check_not_empty "$REDIS_PASSWORD" "Redis password not found in secret"
   echo "Redis password: ${REDIS_PASSWORD}"
+}
+
+restart_redis() {
+  local redis_connect="redis-cli --no-auth-warning -h ${REDIS_HOST} -p ${REDIS_PORT} -a ${REDIS_PASSWORD}"
+  echo "Connecting to Redis: ${redis_connect}"
+  RESULT=$(kubectl exec -it ${FOUND_POD} -n ${NAMESPACE} -- ${redis_connect} shutdown nosave)
+  check_error "$RESULT" "NOAUTH" "Authentication to Redis failed, wrong password: ${REDIS_PASSWORD}"
+  check_error "$RESULT" "Connection refused" "ERROR: ${RESULT}"
+  check_error "$RESULT" "ERR" "ERROR: ${RESULT}"
+  echo "Redis pod ${FOUND_POD} shutdown"
+  echo "Wait for Redis pod ${FOUND_POD} to be ready. It could take a few minutes..."
 }
 
 unset ACTION DB_DUMP NAMESPACE REDIS_HOST REDIS_POD REDIS_PORT REDIS_PASSWORD
@@ -102,7 +173,6 @@ do
     s) ACTION=SAVE ;;
     r) ACTION=RESTORE ;;
     x) ACTION=PASSWORD ;;
-    h) ACTION=HELP ;;
     n) NAMESPACE=$OPTARG ;;
     d) REDIS_POD=$OPTARG ;;
     h) REDIS_HOST=$OPTARG ;;
