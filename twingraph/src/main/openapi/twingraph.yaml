@@ -213,6 +213,254 @@ paths:
                 schema:
                   type: string
                   format: binary
+  /organizations/{organization_id}/twingraph/{graph_id}/node/create:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: graph_id
+        in: path
+        description: the Graph Identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: createNodes
+      tags:
+        - twingraph
+      description: create new nodes in a graph instance
+      requestBody:
+        description: the nodes to create
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PropertiesDict'
+      responses:
+        '200':
+          description: Successful response
+  /organizations/{organization_id}/twingraph/{graph_id}/relationship/create:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: graph_id
+        in: path
+        description: the Graph Identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: createRelationships
+      tags:
+        - twingraph
+      description: create new relationships in a graph instance
+      requestBody:
+        description: the relationships to create
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PropertiesDict'
+      responses:
+        '200':
+          description: Successful response
+  /organizations/{organization_id}/twingraph/{graph_id}/node/read:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: graph_id
+        in: path
+        description: the Graph Identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getNodes
+      tags:
+        - twingraph
+      description: get nodes in a graph instance
+      requestBody:
+        description: the nodes to get
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+  /organizations/{organization_id}/twingraph/{graph_id}/relationship/read:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: graph_id
+        in: path
+        description: the Graph Identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getRelationships
+      tags:
+        - twingraph
+      description: get relationships in a graph instance
+      requestBody:
+        description: the relationships to get
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+  /organizations/{organization_id}/twingraph/{graph_id}/node/update:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: graph_id
+        in: path
+        description: the Graph Identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: updateNodes
+      tags:
+        - twingraph
+      description: update nodes in a graph instance
+      requestBody:
+        description: the nodes to update
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PropertiesDict'
+      responses:
+        '200':
+          description: Successful response
+  /organizations/{organization_id}/twingraph/{graph_id}/relationship/update:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: graph_id
+        in: path
+        description: the Graph Identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: updateRelationships
+      tags:
+        - twingraph
+      description: update relationships in a graph instance
+      requestBody:
+        description: the relationships to update
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PropertiesDict'
+      responses:
+        '200':
+          description: Successful response
+  /organizations/{organization_id}/twingraph/{graph_id}/node/delete:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: graph_id
+        in: path
+        description: the Graph Identifier
+        required: true
+        schema:
+          type: string
+    delete:
+      operationId: deleteNodes
+      tags:
+        - twingraph
+      description: delete nodes in a graph instance
+      requestBody:
+        description: the nodes to delete
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PropertiesDict'
+      responses:
+        '200':
+          description: Successful response
+  /organizations/{organization_id}/twingraph/{graph_id}/relationship/delete:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: graph_id
+        in: path
+        description: the Graph Identifier
+        required: true
+        schema:
+          type: string
+    delete:
+      operationId: deleteRelationships
+      tags:
+        - twingraph
+      description: delete relationships in a graph instance
+      requestBody:
+        description: the relationships to delete
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PropertiesDict'
+      responses:
+        '200':
+          description: Successful response
   /organizations/{organization_id}/twingraph/{graph_id}/metadata:
     parameters:
       - name: organization_id
@@ -335,6 +583,26 @@ components:
       required:
         - source
         - graphId
+    PropertiesDict:
+      type: array
+      items:
+        type: object
+        description: oui
+        additionalProperties:
+          type: string
+          properties:
+            source:
+              type: string
+              description:
+            target:
+              type: string
+              description:
+            name:
+              type: string
+              description:
+            params:
+              type: string
+              description:
     SourceInfo:
       type: object
       description: Source job import information

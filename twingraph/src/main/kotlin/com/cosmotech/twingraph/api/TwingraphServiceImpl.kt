@@ -22,6 +22,7 @@ import com.cosmotech.twingraph.domain.TwinGraphImportInfo
 import com.cosmotech.twingraph.domain.TwinGraphQuery
 import com.cosmotech.twingraph.extension.toJsonString
 import com.cosmotech.twingraph.utils.TwingraphUtils
+import com.redislabs.redisgraph.ResultSet
 import com.redislabs.redisgraph.impl.api.RedisGraph
 import java.nio.charset.StandardCharsets.UTF_8
 import kotlinx.coroutines.GlobalScope
@@ -40,6 +41,7 @@ const val GRAPH_NAME = "graphName"
 const val GRAPH_ROTATION = "graphRotation"
 
 @Service
+@Suppress("TooManyFunctions")
 class TwingraphServiceImpl(
     private val organizationService: OrganizationApiService,
     private val csmJedisPool: JedisPool,
@@ -83,18 +85,8 @@ class TwingraphServiceImpl(
     val organization = organizationService.findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_READ)
 
-    csmJedisPool.resource.use { jedis ->
-      val matchingKeys = mutableSetOf<String>()
-      var nextCursor = ScanParams.SCAN_POINTER_START
-      do {
-        val scanResult = jedis.scan(nextCursor, ScanParams().match("$graphId*"))
-        nextCursor = scanResult.cursor
-        matchingKeys.addAll(scanResult.result)
-      } while (!nextCursor.equals(ScanParams.SCAN_POINTER_START))
-
-      val count = jedis.del(*matchingKeys.toTypedArray())
-      logger.debug("$count keys are removed from Twingraph with prefix $graphId")
-    }
+    val twinGraph = TwinGraph(graphId)
+    twinGraph.delete()
   }
 
   override fun findAllTwingraphs(organizationId: String): List<String> {
@@ -239,5 +231,77 @@ class TwingraphServiceImpl(
         ContentDisposition.builder("attachment").filename("TwinGraph-$graphQueryHash.zip").build()
     httpServletResponse!!.setHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
     return ByteArrayResource(csmJedisPool.resource.use { jedis -> jedis.get(bulkQueryId) })
+  }
+
+  override fun createNodes(
+      organizationId: String,
+      graphId: String,
+      requestBody: List<Map<String, String>>
+  ) {
+    val twinGraph = TwinGraph(graphId)
+    twinGraph.createNodes(requestBody)
+  }
+
+  override fun createRelationships(
+      organizationId: String,
+      graphId: String,
+      requestBody: List<Map<String, String>>
+  ) {
+    val twinGraph = TwinGraph(graphId)
+    twinGraph.createRelationships(requestBody)
+  }
+
+  override fun getNodes(
+      organizationId: String,
+      graphId: String,
+      requestBody: List<String>
+  ): List<ResultSet> {
+    val twinGraph = TwinGraph(graphId)
+    return twinGraph.getNodes(requestBody)
+  }
+
+  override fun getRelationships(
+      organizationId: String,
+      graphId: String,
+      requestBody: List<String>
+  ): List<ResultSet> {
+    val twinGraph = TwinGraph(graphId)
+    return twinGraph.getRelationships(requestBody)
+  }
+
+  override fun updateNodes(
+      organizationId: String,
+      graphId: String,
+      requestBody: List<Map<String, String>>
+  ) {
+    val twinGraph = TwinGraph(graphId)
+    twinGraph.updateNodes(requestBody)
+  }
+
+  override fun updateRelationships(
+      organizationId: String,
+      graphId: String,
+      requestBody: List<Map<String, String>>
+  ) {
+    val twinGraph = TwinGraph(graphId)
+    twinGraph.updateRelationships(requestBody)
+  }
+
+  override fun deleteNodes(
+      organizationId: String,
+      graphId: String,
+      requestBody: List<Map<String, String>>
+  ) {
+    val twinGraph = TwinGraph(graphId)
+    twinGraph.deleteNodes(requestBody)
+  }
+
+  override fun deleteRelationships(
+      organizationId: String,
+      graphId: String,
+      requestBody: List<Map<String, String>>
+  ) {
+    val twinGraph = TwinGraph(graphId)
+    twinGraph.deleteRelationships(requestBody)
   }
 }
