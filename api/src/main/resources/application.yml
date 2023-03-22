@@ -1,6 +1,8 @@
 logging:
   level:
     com.cosmotech: INFO
+    http3:
+      OkHttpClient: WARN
 
 spring:
   servlet:
