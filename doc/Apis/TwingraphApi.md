@@ -5,14 +5,22 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**bulkQuery**](TwingraphApi.md#bulkQuery) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/bulk_query | 
+[**createNodes**](TwingraphApi.md#createNodes) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/node/create | 
+[**createRelationships**](TwingraphApi.md#createRelationships) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/relationship/create | 
 [**delete**](TwingraphApi.md#delete) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id} | 
+[**deleteNodes**](TwingraphApi.md#deleteNodes) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id}/node/delete | 
+[**deleteRelationships**](TwingraphApi.md#deleteRelationships) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id}/relationship/delete | 
 [**downloadGraph**](TwingraphApi.md#downloadGraph) | **GET** /organizations/{organization_id}/twingraph/bulk_query/download/{hash} | 
 [**findAllTwingraphs**](TwingraphApi.md#findAllTwingraphs) | **GET** /organizations/{organization_id}/twingraphs | 
 [**getGraphMetaData**](TwingraphApi.md#getGraphMetaData) | **GET** /organizations/{organization_id}/twingraph/{graph_id}/metadata | 
+[**getNodes**](TwingraphApi.md#getNodes) | **GET** /organizations/{organization_id}/twingraph/{graph_id}/node/read | 
+[**getRelationships**](TwingraphApi.md#getRelationships) | **GET** /organizations/{organization_id}/twingraph/{graph_id}/relationship/read | 
 [**importGraph**](TwingraphApi.md#importGraph) | **POST** /organizations/{organization_id}/twingraph/import | 
 [**jobStatus**](TwingraphApi.md#jobStatus) | **GET** /organizations/{organization_id}/job/{job_id}/status | 
 [**query**](TwingraphApi.md#query) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/query | 
 [**updateGraphMetaData**](TwingraphApi.md#updateGraphMetaData) | **PATCH** /organizations/{organization_id}/twingraph/{graph_id}/metadata | 
+[**updateNodes**](TwingraphApi.md#updateNodes) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/node/update | 
+[**updateRelationships**](TwingraphApi.md#updateRelationships) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/relationship/update | 
 
 
 <a name="bulkQuery"></a>
@@ -44,6 +52,64 @@ Name | Type | Description  | Notes
 - **Content-Type**: application/json
 - **Accept**: application/json
 
+<a name="createNodes"></a>
+# **createNodes**
+> createNodes(organization\_id, graph\_id, request\_body)
+
+
+
+    create new nodes in a graph instance
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **graph\_id** | **String**| the Graph Identifier | [default to null]
+ **request\_body** | [**List**](../Models/map.md)| the nodes to create |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: Not defined
+
+<a name="createRelationships"></a>
+# **createRelationships**
+> createRelationships(organization\_id, graph\_id, request\_body)
+
+
+
+    create new relationships in a graph instance
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **graph\_id** | **String**| the Graph Identifier | [default to null]
+ **request\_body** | [**List**](../Models/map.md)| the relationships to create |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: Not defined
+
 <a name="delete"></a>
 # **delete**
 > delete(organization\_id, graph\_id)
@@ -70,6 +136,64 @@ null (empty response body)
 ### HTTP request headers
 
 - **Content-Type**: Not defined
+- **Accept**: Not defined
+
+<a name="deleteNodes"></a>
+# **deleteNodes**
+> deleteNodes(organization\_id, graph\_id, request\_body)
+
+
+
+    delete nodes in a graph instance
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **graph\_id** | **String**| the Graph Identifier | [default to null]
+ **request\_body** | [**List**](../Models/map.md)| the nodes to delete |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: Not defined
+
+<a name="deleteRelationships"></a>
+# **deleteRelationships**
+> deleteRelationships(organization\_id, graph\_id, request\_body)
+
+
+
+    delete relationships in a graph instance
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **graph\_id** | **String**| the Graph Identifier | [default to null]
+ **request\_body** | [**List**](../Models/map.md)| the relationships to delete |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
 - **Accept**: Not defined
 
 <a name="downloadGraph"></a>
@@ -153,6 +277,64 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
 - **Content-Type**: Not defined
+- **Accept**: application/json
+
+<a name="getNodes"></a>
+# **getNodes**
+> List getNodes(organization\_id, graph\_id, request\_body)
+
+
+
+    get nodes in a graph instance
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **graph\_id** | **String**| the Graph Identifier | [default to null]
+ **request\_body** | [**List**](../Models/string.md)| the nodes to get |
+
+### Return type
+
+**List**
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+<a name="getRelationships"></a>
+# **getRelationships**
+> List getRelationships(organization\_id, graph\_id, request\_body)
+
+
+
+    get relationships in a graph instance
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **graph\_id** | **String**| the Graph Identifier | [default to null]
+ **request\_body** | [**List**](../Models/string.md)| the relationships to get |
+
+### Return type
+
+**List**
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
 - **Accept**: application/json
 
 <a name="importGraph"></a>
@@ -268,4 +450,62 @@ Name | Type | Description  | Notes
 
 - **Content-Type**: application/json
 - **Accept**: application/json
+
+<a name="updateNodes"></a>
+# **updateNodes**
+> updateNodes(organization\_id, graph\_id, request\_body)
+
+
+
+    update nodes in a graph instance
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **graph\_id** | **String**| the Graph Identifier | [default to null]
+ **request\_body** | [**List**](../Models/map.md)| the nodes to update |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: Not defined
+
+<a name="updateRelationships"></a>
+# **updateRelationships**
+> updateRelationships(organization\_id, graph\_id, request\_body)
+
+
+
+    update relationships in a graph instance
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **graph\_id** | **String**| the Graph Identifier | [default to null]
+ **request\_body** | [**List**](../Models/map.md)| the relationships to update |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: Not defined
 
