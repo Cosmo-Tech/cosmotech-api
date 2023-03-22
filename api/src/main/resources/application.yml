@@ -80,8 +80,8 @@ csm:
     twincache:
       host: "localhost"
       port: "6379"
-      username: "default_user"
-      password: "default_password"
+      username: "username"
+      password: "password"
       dataset:
         # TODO: Should be way less than a thousand. See open ticket
         maxResult: 1000
@@ -105,6 +105,8 @@ csm:
           storage: 1Gi
     images:
       scenario-fetch-parameters: cosmo-tech/fetch-scenario-parameters
+      send-datawarehouse: not-implemented
+      scenario-data-upload: not-implemented
     registries:
       core: coreregistry.svc.cluster.local:5000
       solutions: solutionsregistry.svc.cluster.local:5000
@@ -132,6 +134,21 @@ csm:
           - text/plain
           - text/x-yaml
     vendor: cosmotech
+    identityProvider:
+      code: cosmotech
+      # Use to overwrite openAPI configuration
+      authorizationUrl: "http://iam.svc.cluster.local/oauth2/default/v1/authorize"
+      tokenUrl: "http://iam.svc.cluster.local/oauth2/default/v1/token"
+      defaultScopes:
+        openid: "OpenId Scope"
+      containerScopes:
+        csm.scenario.read: "Read access to scenarios"
+      # Here you can set custom user and admin groups
+      # - adminGroup will have same rights that Organization.Admin
+      # - userGroup will have same rights that Organization.User
+      # - viewerGroup will have same rights that Organization.Viewer
+      userGroup: "SAMS-ADMINACCESS-DEV"
+      viewerGroup: "SAMS-USERACCESS-DEV"
 
 springdoc:
   # See https://springdoc.org/#properties

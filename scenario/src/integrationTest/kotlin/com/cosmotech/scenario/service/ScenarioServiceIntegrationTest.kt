@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenario.service
 
-import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
@@ -31,14 +30,10 @@ import com.cosmotech.scenario.domain.ScenarioValidationStatus
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
-import com.cosmotech.workspace.azure.IWorkspaceEventHubService
-import com.cosmotech.workspace.azure.WorkspaceEventHubInfo
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
-import com.ninjasquad.springmockk.MockkBean
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
-import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
 import java.util.*
@@ -56,7 +51,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
-import org.springframework.test.util.ReflectionTestUtils
 
 const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
 const val CONNECTED_READER_USER = "test.user@cosmotech.com"
@@ -70,10 +64,6 @@ const val FAKE_MAIL = "fake@mail.fr"
 class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
 
   private val logger = LoggerFactory.getLogger(ScenarioServiceIntegrationTest::class.java)
-
-  @MockkBean lateinit var csmADX: AzureDataExplorerClient
-  @MockK(relaxed = true) private lateinit var workspaceEventHubService: IWorkspaceEventHubService
-  @MockK(relaxed = true) private lateinit var azureDataExplorerClient: AzureDataExplorerClient
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var connectorApiService: ConnectorApiService
@@ -104,13 +94,6 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName() } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")
-
-    ReflectionTestUtils.setField(
-        scenarioApiService, "workspaceEventHubService", workspaceEventHubService)
-    ReflectionTestUtils.setField(
-        scenarioApiService, "azureDataExplorerClient", azureDataExplorerClient)
-    every { workspaceEventHubService.getWorkspaceEventHubInfo(any(), any(), any()) } returns
-        mockWorkspaceEventHubInfo(false)
 
     rediSearchIndexer.createIndexFor(Scenario::class.java)
 
@@ -438,19 +421,6 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
       scenarioApiService.removeScenarioAccessControl(
           organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, FAKE_MAIL)
     }
-  }
-
-  private fun mockWorkspaceEventHubInfo(eventHubAvailable: Boolean): WorkspaceEventHubInfo {
-    return WorkspaceEventHubInfo(
-        eventHubNamespace = "eventHubNamespace",
-        eventHubAvailable = eventHubAvailable,
-        eventHubName = "eventHubName",
-        eventHubUri = "eventHubUri",
-        eventHubSasKeyName = "eventHubSasKeyName",
-        eventHubSasKey = "eventHubSasKey",
-        eventHubCredentialType =
-            CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
-                .SHARED_ACCESS_POLICY)
   }
 
   private fun mockConnector(name: String): Connector {

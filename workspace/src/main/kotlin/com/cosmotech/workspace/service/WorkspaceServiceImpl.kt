@@ -185,7 +185,7 @@ internal class WorkspaceServiceImpl(
     val workspace = findWorkspaceById(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_DELETE)
     try {
-      deleteAllWorkspaceFiles(organizationId, workspaceId)
+      // deleteAllWorkspaceFiles(organizationId, workspaceId)
       secretManager.deleteSecret(
           csmPlatformProperties.namespace, getWorkspaceSecretName(organizationId, workspace.key))
     } finally {

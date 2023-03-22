@@ -33,7 +33,6 @@ import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.mockk
 import kotlin.test.BeforeTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -290,6 +289,7 @@ class ContainerFactoryTests {
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "STORAGE_CONNECTION_STRING" to "%STORAGE_CONNECTION_STRING%",
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
@@ -556,30 +556,34 @@ class ContainerFactoryTests {
 
   @Test
   fun `Send DataWarehouse Container is not null`() {
-    val container =
-        factory.buildSendDataWarehouseContainer(
-            "Organizationid",
-            getWorkspace(),
-            "Scenarioid",
-            getRunTemplate(),
-            CSM_SIMULATION_ID,
-            nodeSizingLabel = NODE_LABEL_DEFAULT,
-            customSizing = BASIC_SIZING)
-    assertNotNull(container)
+    assertThrows(NotImplementedError::class.java) {
+      val container =
+          factory.buildSendDataWarehouseContainer(
+              "Organizationid",
+              getWorkspace(),
+              "Scenarioid",
+              getRunTemplate(),
+              CSM_SIMULATION_ID,
+              nodeSizingLabel = NODE_LABEL_DEFAULT,
+              customSizing = BASIC_SIZING)
+      assertNotNull(container)
+    }
   }
 
   @Test
   fun `Send DataWarehouseContainer name valid`() {
-    val container =
-        factory.buildSendDataWarehouseContainer(
-            "Organizationid",
-            getWorkspace(),
-            "Scenarioid",
-            getRunTemplate(),
-            CSM_SIMULATION_ID,
-            nodeSizingLabel = NODE_LABEL_DEFAULT,
-            customSizing = BASIC_SIZING)
-    assertEquals("sendDataWarehouseContainer", container.name)
+    assertThrows(NotImplementedError::class.java) {
+      val container =
+          factory.buildSendDataWarehouseContainer(
+              "Organizationid",
+              getWorkspace(),
+              "Scenarioid",
+              getRunTemplate(),
+              CSM_SIMULATION_ID,
+              nodeSizingLabel = NODE_LABEL_DEFAULT,
+              customSizing = BASIC_SIZING)
+      assertEquals("sendDataWarehouseContainer", container.name)
+    }
   }
 
   @Test
@@ -600,33 +604,35 @@ class ContainerFactoryTests {
 
   @Test
   fun `Send DataWarehouse Container env vars valid`() {
-    val container =
-        factory.buildSendDataWarehouseContainer(
-            "Organizationid",
-            getWorkspace(),
-            "Scenarioid",
-            getRunTemplate(),
-            CSM_SIMULATION_ID,
-            nodeSizingLabel = NODE_LABEL_DEFAULT,
-            customSizing = BASIC_SIZING)
-    val expected =
-        mapOf(
-            "IDENTITY_PROVIDER" to "cosmotech",
-            "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "CSM_ORGANIZATION_ID" to "Organizationid",
-            "CSM_WORKSPACE_ID" to "Workspaceid",
-            "CSM_SCENARIO_ID" to "Scenarioid",
-            "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "true",
-            "CSM_SEND_DATAWAREHOUSE_DATASETS" to "true",
-            "TWIN_CACHE_HOST" to "this_is_a_host",
-            "TWIN_CACHE_PORT" to "6973",
-            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default")
-    assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
+    assertThrows(NotImplementedError::class.java) {
+      val container =
+          factory.buildSendDataWarehouseContainer(
+              "Organizationid",
+              getWorkspace(),
+              "Scenarioid",
+              getRunTemplate(),
+              CSM_SIMULATION_ID,
+              nodeSizingLabel = NODE_LABEL_DEFAULT,
+              customSizing = BASIC_SIZING)
+      val expected =
+          mapOf(
+              "IDENTITY_PROVIDER" to "cosmotech",
+              "CSM_SIMULATION_ID" to "simulationrunid",
+              "CSM_API_URL" to "https://api.cosmotech.com",
+              "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+              "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+              "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+              "CSM_ORGANIZATION_ID" to "Organizationid",
+              "CSM_WORKSPACE_ID" to "Workspaceid",
+              "CSM_SCENARIO_ID" to "Scenarioid",
+              "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "true",
+              "CSM_SEND_DATAWAREHOUSE_DATASETS" to "true",
+              "TWIN_CACHE_HOST" to "this_is_a_host",
+              "TWIN_CACHE_PORT" to "6973",
+              "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+              "TWIN_CACHE_USERNAME" to "default")
+      assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
+    }
   }
 
   @Test
@@ -646,64 +652,68 @@ class ContainerFactoryTests {
 
   @Test
   fun `Send DataWarehouse Container env vars send override dataset template`() {
-    val container =
-        factory.buildSendDataWarehouseContainer(
-            "Organizationid",
-            getWorkspace(),
-            "Scenarioid",
-            getRunTemplateNoDatasetsSend(),
-            CSM_SIMULATION_ID,
-            nodeSizingLabel = NODE_LABEL_DEFAULT,
-            customSizing = BASIC_SIZING)
-    val expected =
-        mapOf(
-            "IDENTITY_PROVIDER" to "cosmotech",
-            "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "CSM_ORGANIZATION_ID" to "Organizationid",
-            "CSM_WORKSPACE_ID" to "Workspaceid",
-            "CSM_SCENARIO_ID" to "Scenarioid",
-            "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "true",
-            "CSM_SEND_DATAWAREHOUSE_DATASETS" to "false",
-            "TWIN_CACHE_HOST" to "this_is_a_host",
-            "TWIN_CACHE_PORT" to "6973",
-            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default")
-    assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
+    assertThrows(NotImplementedError::class.java) {
+      val container =
+          factory.buildSendDataWarehouseContainer(
+              "Organizationid",
+              getWorkspace(),
+              "Scenarioid",
+              getRunTemplateNoDatasetsSend(),
+              CSM_SIMULATION_ID,
+              nodeSizingLabel = NODE_LABEL_DEFAULT,
+              customSizing = BASIC_SIZING)
+      val expected =
+          mapOf(
+              "IDENTITY_PROVIDER" to "cosmotech",
+              "CSM_SIMULATION_ID" to "simulationrunid",
+              "CSM_API_URL" to "https://api.cosmotech.com",
+              "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+              "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+              "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+              "CSM_ORGANIZATION_ID" to "Organizationid",
+              "CSM_WORKSPACE_ID" to "Workspaceid",
+              "CSM_SCENARIO_ID" to "Scenarioid",
+              "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "true",
+              "CSM_SEND_DATAWAREHOUSE_DATASETS" to "false",
+              "TWIN_CACHE_HOST" to "this_is_a_host",
+              "TWIN_CACHE_PORT" to "6973",
+              "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+              "TWIN_CACHE_USERNAME" to "default")
+      assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
+    }
   }
 
   @Test
   fun `Send DataWarehouse Container env vars send override parameters template`() {
-    val container =
-        factory.buildSendDataWarehouseContainer(
-            "Organizationid",
-            getWorkspace(),
-            "Scenarioid",
-            getRunTemplateNoParametersSend(),
-            CSM_SIMULATION_ID,
-            nodeSizingLabel = NODE_LABEL_DEFAULT,
-            customSizing = BASIC_SIZING)
-    val expected =
-        mapOf(
-            "IDENTITY_PROVIDER" to "cosmotech",
-            "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "CSM_ORGANIZATION_ID" to "Organizationid",
-            "CSM_WORKSPACE_ID" to "Workspaceid",
-            "CSM_SCENARIO_ID" to "Scenarioid",
-            "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "false",
-            "CSM_SEND_DATAWAREHOUSE_DATASETS" to "true",
-            "TWIN_CACHE_HOST" to "this_is_a_host",
-            "TWIN_CACHE_PORT" to "6973",
-            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default")
-    assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
+    assertThrows(NotImplementedError::class.java) {
+      val container =
+          factory.buildSendDataWarehouseContainer(
+              "Organizationid",
+              getWorkspace(),
+              "Scenarioid",
+              getRunTemplateNoParametersSend(),
+              CSM_SIMULATION_ID,
+              nodeSizingLabel = NODE_LABEL_DEFAULT,
+              customSizing = BASIC_SIZING)
+      val expected =
+          mapOf(
+              "IDENTITY_PROVIDER" to "cosmotech",
+              "CSM_SIMULATION_ID" to "simulationrunid",
+              "CSM_API_URL" to "https://api.cosmotech.com",
+              "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+              "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+              "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+              "CSM_ORGANIZATION_ID" to "Organizationid",
+              "CSM_WORKSPACE_ID" to "Workspaceid",
+              "CSM_SCENARIO_ID" to "Scenarioid",
+              "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "false",
+              "CSM_SEND_DATAWAREHOUSE_DATASETS" to "true",
+              "TWIN_CACHE_HOST" to "this_is_a_host",
+              "TWIN_CACHE_PORT" to "6973",
+              "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+              "TWIN_CACHE_USERNAME" to "default")
+      assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
+    }
   }
 
   @Test
@@ -883,10 +893,6 @@ class ContainerFactoryTests {
             "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to mode,
-            "CSM_PROBES_MEASURES_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
-            "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
             "CSM_SIMULATION" to "TestSimulation",
             providerEnvVar to "cosmotechStorage",
             resourceEnvVar to "organizationid/1/${runTemplate}/${resource}.zip",
@@ -915,10 +921,6 @@ class ContainerFactoryTests {
             "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to mode,
-            "CSM_PROBES_MEASURES_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
-            "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
             "CSM_SIMULATION" to "TestSimulation",
             providerEnvVar to "local",
             "TWIN_CACHE_HOST" to "this_is_a_host",
@@ -1018,7 +1020,7 @@ class ContainerFactoryTests {
             CSM_SIMULATION_ID,
             scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = BASIC_SIZING)
-    assertEquals(containers.size, 8)
+    assertEquals(7, containers.size)
   }
 
   @Test
@@ -1094,8 +1096,6 @@ class ContainerFactoryTests {
             "fetchDatasetContainer-1",
             "fetchScenarioParametersContainer",
             "multipleStepsContainer-1",
-            "sendDataWarehouseContainer",
-            "multipleStepsContainer-2",
         )
     assertEquals(expected, containers.map { container -> container.name })
   }
@@ -1119,29 +1119,8 @@ class ContainerFactoryTests {
             scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = BASIC_SIZING)
     val container = containers.find { container -> container.name == "multipleStepsContainer-1" }
-    this.validateEnvVarsSolutionContainer(container, "handle-parameters,validate")
-  }
-
-  @Test
-  fun `Build all containers for a Stacked Scenario containers env var 2 list`() {
-    val scenario = getScenario()
-    val datasets = listOf(getDataset())
-    val connectors = listOf(getConnector())
-    val workspace = getWorkspace()
-    val solution = getSolutionStack()
-    val containers =
-        factory.buildContainersPipeline(
-            scenario,
-            datasets,
-            connectors,
-            workspace,
-            getOrganization(),
-            solution,
-            CSM_SIMULATION_ID,
-            scenarioRunLabel = NODE_LABEL_DEFAULT,
-            scenarioRunSizing = BASIC_SIZING)
-    val container = containers.find { container -> container.name == "multipleStepsContainer-2" }
-    this.validateEnvVarsSolutionContainer(container, "prerun,engine,postrun")
+    this.validateEnvVarsSolutionContainer(
+        container, "handle-parameters,validate,prerun,engine,postrun")
   }
 
   @Test
@@ -1168,7 +1147,6 @@ class ContainerFactoryTests {
             "fetchScenarioParametersContainer",
             "applyParametersContainer",
             "validateDataContainer",
-            "sendDataWarehouseContainer",
             "preRunContainer",
             "runContainer",
             "postRunContainer",
@@ -1215,7 +1193,7 @@ class ContainerFactoryTests {
             CSM_SIMULATION_ID,
             scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = BASIC_SIZING)
-    assertEquals(containers.size, 10)
+    assertEquals(containers.size, 9)
   }
 
   @Test
@@ -1244,7 +1222,6 @@ class ContainerFactoryTests {
             "fetchScenarioParametersContainer",
             "applyParametersContainer",
             "validateDataContainer",
-            "sendDataWarehouseContainer",
             "preRunContainer",
             "runContainer",
             "postRunContainer",
@@ -1282,7 +1259,6 @@ class ContainerFactoryTests {
                 "fetchDatasetContainer-3",
                 "fetchScenarioParametersContainer"),
             listOf("applyParametersContainer"),
-            listOf("validateDataContainer"),
             listOf("validateDataContainer"),
             listOf("preRunContainer"),
             listOf("runContainer"),
@@ -1500,7 +1476,6 @@ class ContainerFactoryTests {
             "fetchScenarioDatasetParametersContainer-3",
             "applyParametersContainer",
             "validateDataContainer",
-            "sendDataWarehouseContainer",
             "preRunContainer",
             "runContainer",
             "postRunContainer",
@@ -1580,7 +1555,6 @@ class ContainerFactoryTests {
             "fetchScenarioDatasetParametersContainer-4",
             "applyParametersContainer",
             "validateDataContainer",
-            "sendDataWarehouseContainer",
             "preRunContainer",
             "runContainer",
             "postRunContainer",
@@ -1702,38 +1676,11 @@ class ContainerFactoryTests {
             "fetchScenarioDatasetParametersContainer-3",
             "applyParametersContainer",
             "validateDataContainer",
-            "sendDataWarehouseContainer",
             "preRunContainer",
             "runContainer",
             "postRunContainer",
         )
     assertEquals(expected, startInfo.startContainers.containers.map { container -> container.name })
-  }
-
-  @Test
-  fun `buildFromDataset - error if activating both managed identity and customer credentials`() {
-    val connector = mockk<Connector>(relaxed = true)
-    every { connector.id } returns "C-id"
-    val datasetConnector = mockk<DatasetConnector>()
-    every { datasetConnector.id } returns "C-id"
-    val dataset = mockk<Dataset>()
-    every { dataset.connector } returns datasetConnector
-
-    assertThrows(IllegalArgumentException::class.java) {
-      factory.buildFromDataset(
-          dataset,
-          connector,
-          1,
-          true,
-          "fetchId",
-          "O-id",
-          "W-id",
-          "S-id",
-          "W-key",
-          "csmSimulationId",
-          nodeSizingLabel = NODE_LABEL_DEFAULT,
-          customSizing = BASIC_SIZING)
-    }
   }
 
   @Test
@@ -1902,10 +1849,6 @@ class ContainerFactoryTests {
             "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to mode,
-            "CSM_PROBES_MEASURES_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
-            "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
             "CSM_SIMULATION" to "TestSimulation",
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
@@ -2154,7 +2097,7 @@ class ContainerFactoryTests {
         id = "1",
         key = "TestSolution",
         name = "Test Solution",
-        repository = "cosmotech/testsolution_simulator",
+        repository = "testsolution_simulator",
         version = "1.0.0",
         runTemplates = mutableListOf(getRunTemplate()),
     )

@@ -394,7 +394,7 @@ subprojects {
   tasks.getByName<BootRun>("bootRun") {
     workingDir = rootDir
 
-    environment("CSM_PLATFORM_VENDOR", project.findProperty("platform")?.toString() ?: "portable")
+    environment("CSM_PLATFORM_VENDOR", project.findProperty("platform")?.toString() ?: "cosmotech")
     project.findProperty("identityProvider")?.toString()?.let {
       environment("IDENTITY_PROVIDER", it)
     }

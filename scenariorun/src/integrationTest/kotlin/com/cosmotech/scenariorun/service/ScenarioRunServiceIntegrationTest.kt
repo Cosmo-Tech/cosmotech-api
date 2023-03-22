@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenariorun.service
 
-import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.tests.CsmRedisTestBase
@@ -29,11 +28,8 @@ import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
-import com.cosmotech.workspace.azure.IWorkspaceEventHubService
-import com.cosmotech.workspace.azure.WorkspaceEventHubInfo
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
-import com.ninjasquad.springmockk.MockkBean
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -67,9 +63,6 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
 
   private val logger = LoggerFactory.getLogger(ScenarioRunServiceIntegrationTest::class.java)
 
-  @MockkBean lateinit var csmADX: AzureDataExplorerClient
-  @MockK private lateinit var workspaceEventHubService: IWorkspaceEventHubService
-  @MockK(relaxed = true) private lateinit var azureDataExplorerClient: AzureDataExplorerClient
   @MockK(relaxed = true) private lateinit var containerFactory: ContainerFactory
   @MockK(relaxed = true) private lateinit var workflowService: WorkflowService
 
@@ -104,18 +97,6 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName() } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")
-
-    every { workspaceEventHubService.getWorkspaceEventHubInfo(any(), any(), any()) } returns
-        mockWorkspaceEventHubInfo(false)
-
-    ReflectionTestUtils.setField(
-        scenarioApiService, "workspaceEventHubService", workspaceEventHubService)
-    ReflectionTestUtils.setField(
-        scenariorunApiService, "workspaceEventHubService", workspaceEventHubService)
-    ReflectionTestUtils.setField(
-        scenarioApiService, "azureDataExplorerClient", azureDataExplorerClient)
-    ReflectionTestUtils.setField(
-        scenariorunApiService, "azureDataExplorerClient", azureDataExplorerClient)
     ReflectionTestUtils.setField(scenariorunApiService, "containerFactory", containerFactory)
     ReflectionTestUtils.setField(scenariorunApiService, "workflowService", workflowService)
 
@@ -255,19 +236,6 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
       scenariorunApiService.getScenarioRuns(
           organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, 0, -1)
     }
-  }
-
-  private fun mockWorkspaceEventHubInfo(eventHubAvailable: Boolean): WorkspaceEventHubInfo {
-    return WorkspaceEventHubInfo(
-        eventHubNamespace = "eventHubNamespace",
-        eventHubAvailable = eventHubAvailable,
-        eventHubName = "eventHubName",
-        eventHubUri = "eventHubUri",
-        eventHubSasKeyName = "eventHubSasKeyName",
-        eventHubSasKey = "eventHubSasKey",
-        eventHubCredentialType =
-            CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
-                .SHARED_ACCESS_POLICY)
   }
 
   private fun mockConnector(name: String): Connector {

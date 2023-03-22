@@ -78,8 +78,6 @@ csm:
       password: "my-wonderful-password"
       organization:
         default-page-size: 5
-    rbac:
-      enabled: true
     identityProvider:
       code: cosmotech
       # Use to overwrite openAPI configuration
