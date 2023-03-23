@@ -123,9 +123,10 @@ private fun buildDependencies(
   var dependencies: List<String> = mutableListOf()
   if (container.dependencies != null) {
     if (CSM_DAG_ROOT !in container.dependencies) {
-      dependencies = container.dependencies.map {
-          if(it == "fetchDatasetContainer-1"){"main"}
-          else{it.lowercase() }}
+      //dependencies = container.dependencies.map { it.lowercase() }
+        dependencies = container.dependencies.map {
+            if(it == "multipleStepsContainer-1"){"main"}
+            else{it.lowercase() }}
     }
   } else {
     if (previousContainer != null) dependencies = listOf(previousContainer.name)
@@ -141,9 +142,14 @@ private fun buildContainerNode(
     dependencies: List<String>,
     sizingInfo: ContainerResourceSizing
 ): IoArgoprojWorkflowV1alpha1ContainerNode {
+    var name = container.name.lowercase()
+    if( name == "multiplestepscontainer-1"){
+        name = "main"
+    }
+
   val containerNode =
       IoArgoprojWorkflowV1alpha1ContainerNode()
-          .name(container.name.lowercase())
+          .name(name)
           .image(container.image)
           .imagePullPolicy(imagePullPolicy)
           .command(command)
@@ -160,7 +166,7 @@ private fun buildContainerNode(
   return containerNode
 }
 
-@Suppress("LongMethod", "MaxLineLength")
+@Suppress("LongMethod", "MaxLineLength", "UnusedPrivateMember")
 internal fun buildContainerSetTemplate(
     startContainers: ScenarioRunStartContainers,
     csmPlatformProperties: CsmPlatformProperties
@@ -174,14 +180,14 @@ internal fun buildContainerSetTemplate(
                   "/app/resources:/app/classes:/app/libs/*",
                   "com.cosmotech.ApplicationKt"),
           "fetchScenarioParametersContainer" to listOf("/bin/sh", "-c", "node", "."),
-          "applyParametersContainer" to listOf("/bin/sh", "-c", "node", "."),
-          "sendDataWarehouseContainer" to
+          "fetchScenarioDatasetParametersContainer-1" to
               listOf(
                   "java",
+                  "-XX:-UsePerfData",
                   "-cp",
                   "/app/resources:/app/classes:/app/libs/*",
-                  "com.cosmotech.connector.adx.ApplicationKt"),
-          "runContainer" to listOf("/bin/sh", "-c", "node", "."))
+                  "com.cosmotech.Application"),
+          "multipleStepsContainer-1" to listOf("/bin/sh", "-c", "node", "."))
 
   var containerSet = IoArgoprojWorkflowV1alpha1ContainerSetTemplate()
 
@@ -217,16 +223,14 @@ internal fun buildContainerSetTemplate(
           .nodeSelector(startContainers.containers[0].getNodeLabelSize())
           .addVolumesItem(V1Volume().emptyDir(V1EmptyDirVolumeSource()).name("out"))
 
-  var artifacts:  MutableList<IoArgoprojWorkflowV1alpha1Artifact> = mutableListOf()
-//      startContainers.containers[0].artifacts?.map {
-//        IoArgoprojWorkflowV1alpha1Artifact()
-//            .name(it.name)
-//            .path("/var/csmoutput/${it.path}")
-//            .archive(IoArgoprojWorkflowV1alpha1ArchiveStrategy().none(Object()))
-//      }
-    artifacts.add(IoArgoprojWorkflowV1alpha1Artifact().
-        name("csmArtifact")
-        .path("/var/csmoutput/"))
+  var artifacts: MutableList<IoArgoprojWorkflowV1alpha1Artifact> = mutableListOf()
+  //      startContainers.containers[0].artifacts?.map {
+  //        IoArgoprojWorkflowV1alpha1Artifact()
+  //            .name(it.name)
+  //            .path("/var/csmoutput/${it.path}")
+  //            .archive(IoArgoprojWorkflowV1alpha1ArchiveStrategy().none(Object()))
+  //      }
+  artifacts.add(IoArgoprojWorkflowV1alpha1Artifact().name("csmArtifact").path("/var/csmoutput/"))
   if (!artifacts.isNullOrEmpty()) {
     template.outputs(IoArgoprojWorkflowV1alpha1Outputs().artifacts(artifacts))
   }
@@ -242,17 +246,17 @@ internal fun buildWorkflowSpec(
 ): IoArgoprojWorkflowV1alpha1WorkflowSpec {
   val nodeSelector = mutableMapOf("kubernetes.io/os" to "linux", "cosmotech.com/tier" to "compute")
   var templates: MutableList<IoArgoprojWorkflowV1alpha1Template> = mutableListOf()
-  if (csmPlatformProperties.argo.useContainerSetTemplate) {
-    templates = buildContainerSetTemplate(startContainers, csmPlatformProperties)
-  } else {
-    templates =
-        startContainers
-            .containers
-            .map { container -> buildTemplate(container, csmPlatformProperties) }
-            .toMutableList()
-    val entrypointTemplate = buildEntrypointTemplate(startContainers)
-    templates.add(entrypointTemplate)
-  }
+  //  if (csmPlatformProperties.argo.useContainerSetTemplate) {
+  templates = buildContainerSetTemplate(startContainers, csmPlatformProperties)
+  //  } else {
+  //    templates =
+  //        startContainers
+  //            .containers
+  //            .map { container -> buildTemplate(container, csmPlatformProperties) }
+  //            .toMutableList()
+  //    val entrypointTemplate = buildEntrypointTemplate(startContainers)
+  //    templates.add(entrypointTemplate)
+  //  }
 
   var workflowSpec =
       IoArgoprojWorkflowV1alpha1WorkflowSpec()
