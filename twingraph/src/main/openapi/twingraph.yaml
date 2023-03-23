@@ -150,6 +150,75 @@ paths:
             application/json:
               schema:
                 type: string
+  /organizations/{organization_id}/twingraph/{graph_id}/bulk_query:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: graph_id
+        in: path
+        description: the Graph Identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: bulkQuery
+      tags:
+        - twingraph
+      description: Run a query on a graph instance and return the result as a zip file in async mode
+      requestBody:
+        description: the query to run
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TwinGraphQuery'
+            examples:
+              GetAllNodes:
+                $ref: '#/components/examples/GetAllNodes'
+          application/yaml:
+            schema:
+              $ref: '#/components/schemas/TwinGraphQuery'
+            examples:
+              GetAllNodes:
+                $ref: '#/components/examples/GetAllNodes'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TwinGraphHash'
+  /organizations/{organization_id}/twingraph/bulk_query/download/{hash}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: hash
+        in: path
+        description: the Graph download identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: downloadGraph
+      tags:
+        - twingraph
+      description: Download a graph compressed in a zip file
+      responses:
+          '200':
+            description: Successful response
+            content:
+              application/octet-stream:
+                schema:
+                  type: string
+                  format: binary
   /organizations/{organization_id}/twingraph/{graph_id}/metadata:
     parameters:
       - name: organization_id
@@ -223,6 +292,13 @@ components:
           description: the query in cypher language
       required:
         - query
+    TwinGraphHash:
+      type: object
+      description: a twin graph hash
+      properties:
+        hash:
+          type: string
+          description: the hash of the graph
     TwinGraphImport:
       type: object
       description: a twin graph import info
