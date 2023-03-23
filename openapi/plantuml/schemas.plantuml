@@ -424,6 +424,10 @@ entity SourceInfo {
     * type: String
 }
 
+entity TwinGraphHash {
+    hash: String
+}
+
 entity TwinGraphImport {
     * source: SourceInfo
     * graphId: String

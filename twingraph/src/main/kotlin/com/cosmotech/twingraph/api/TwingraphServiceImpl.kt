@@ -9,15 +9,28 @@ import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_READ
+import com.cosmotech.api.security.coroutine.SecurityCoroutineContext
+import com.cosmotech.api.utils.shaHash
+import com.cosmotech.api.utils.zipBytesWithFileNames
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.service.getRbac
+import com.cosmotech.twingraph.domain.TwinGraphHash
 import com.cosmotech.twingraph.domain.TwinGraphImport
 import com.cosmotech.twingraph.domain.TwinGraphImportInfo
 import com.cosmotech.twingraph.domain.TwinGraphQuery
 import com.cosmotech.twingraph.extension.toJsonString
 import com.cosmotech.twingraph.utils.TwingraphUtils
 import com.redislabs.redisgraph.impl.api.RedisGraph
+import java.nio.charset.StandardCharsets.UTF_8
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import org.springframework.core.io.ByteArrayResource
+import org.springframework.core.io.Resource
+import org.springframework.http.ContentDisposition
+import org.springframework.http.HttpHeaders
 import org.springframework.stereotype.Service
+import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.context.request.ServletRequestAttributes
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.ScanParams
 
@@ -106,11 +119,11 @@ class TwingraphServiceImpl(
     }
   }
 
-  override fun query(
+  private fun checkTwinGraphPrerequisites(
       organizationId: String,
       graphId: String,
       twinGraphQuery: TwinGraphQuery
-  ): String {
+  ): Unit {
     val organization = organizationService.findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_READ)
 
@@ -126,20 +139,86 @@ class TwingraphServiceImpl(
         }
       }
     }
-
-    val redisGraphId = "${graphId}:${twinGraphQuery.version}"
-
+    val redisGraphId = redisGraphKey(graphId, twinGraphQuery)
     csmJedisPool.resource.use { jedis ->
       val redisGraphMatchingKeys = jedis.keys(redisGraphId)
       if (redisGraphMatchingKeys.size == 0) {
         throw CsmResourceNotFoundException("No graph found with id: $redisGraphId")
       }
     }
+  }
+
+  override fun query(
+      organizationId: String,
+      graphId: String,
+      twinGraphQuery: TwinGraphQuery
+  ): String {
+    checkTwinGraphPrerequisites(organizationId, graphId, twinGraphQuery)
     val redisGraph = RedisGraph(csmJedisPool)
     val resultSet =
         redisGraph.query(
-            redisGraphId, twinGraphQuery.query, csmPlatformProperties.twincache.queryTimeout)
-
+            redisGraphKey(graphId, twinGraphQuery),
+            twinGraphQuery.query,
+            csmPlatformProperties.twincache.queryTimeout)
     return resultSet.toJsonString()
+  }
+
+  override fun bulkQuery(
+      organizationId: String,
+      graphId: String,
+      twinGraphQuery: TwinGraphQuery
+  ): TwinGraphHash {
+    checkTwinGraphPrerequisites(organizationId, graphId, twinGraphQuery)
+    val redisGraphKey = redisGraphKey(graphId, twinGraphQuery)
+    var bulkQueryKey = bulkQueryKey(graphId, twinGraphQuery)
+    GlobalScope.launch(SecurityCoroutineContext()) {
+      csmJedisPool.resource.use { jedis ->
+        val keyExists = jedis.exists(bulkQueryKey.first)
+        if (keyExists) {
+          return@launch
+        }
+        val redisGraph = RedisGraph(csmJedisPool)
+        val resultSet = redisGraph.query(redisGraphKey, twinGraphQuery.query)
+        val zip =
+            zipBytesWithFileNames(
+                listOf(Pair("bulkQuery.json", resultSet.toJsonString().toByteArray(UTF_8))))
+        jedis.setex(bulkQueryKey.first, csmPlatformProperties.twincache.queryBulkExpiration, zip)
+      }
+    }
+    return TwinGraphHash(bulkQueryKey.second)
+  }
+
+  override fun downloadGraph(organizationId: String, graphQueryHash: String): Resource {
+    val organization = organizationService.findOrganizationById(organizationId)
+    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
+
+    var bulkQueryId = bulkQueryKey(graphQueryHash)
+    csmJedisPool.resource.use { jedis ->
+      if (!jedis.exists(bulkQueryId)) {
+        throw CsmResourceNotFoundException("No graph found with hash: $graphQueryHash  Try later")
+      } else if (jedis.ttl(bulkQueryId) < 0) {
+        throw CsmResourceNotFoundException(
+            "Graph with hash: $graphQueryHash is expired. Try to repeat bulk query")
+      }
+    }
+    val httpServletResponse =
+        ((RequestContextHolder.getRequestAttributes() as ServletRequestAttributes).response)
+    val contentDisposition = ContentDisposition.builder("attachment").filename("Graph.zip").build()
+    httpServletResponse!!.setHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
+    return ByteArrayResource(csmJedisPool.resource.use { jedis -> jedis.get(bulkQueryId) })
+  }
+
+  fun redisGraphKey(graphId: String, twinGraphQuery: TwinGraphQuery): String {
+    return "${graphId}:${twinGraphQuery.version}"
+  }
+
+  fun bulkQueryKey(graphId: String, twinGraphQuery: TwinGraphQuery): Pair<ByteArray, String> {
+    val redisGraphKey = redisGraphKey(graphId, twinGraphQuery)
+    var bulkQueryHash = "${redisGraphKey}:${twinGraphQuery.query}".shaHash()
+    return Pair("bulkQuery:$bulkQueryHash".toByteArray(UTF_8), bulkQueryHash)
+  }
+
+  fun bulkQueryKey(bulkQueryHash: String): ByteArray {
+    return "bulkQuery:$bulkQueryHash".toByteArray(UTF_8)
   }
 }
