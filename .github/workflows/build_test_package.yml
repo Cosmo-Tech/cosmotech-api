@@ -122,6 +122,7 @@ jobs:
 
       - name: Set up api version to deploy
         run: |
+          echo "Event: ${{ github.event_name }}, Actor: ${{ github.actor }}, Ref: ${{ github.ref }}, Ref Name: ${{ github.ref_name }}, Head: ${{ github.head_ref }}, Base: ${{ github.base_ref }}"
           export firstPart=$(echo ${{  github.ref_name }} | cut -d '.' -f1)
           if [[ $firstPart == \"v*\" ]]; then
               echo "IMAGE_TAG_FROM_REF_NAME=${{  github.ref_name }}" >> $GITHUB_ENV;
