@@ -123,7 +123,7 @@ jobs:
       - name: Set up api version to deploy
         run: |
           echo "Event: ${{ github.event_name }}, Actor: ${{ github.actor }}, Ref: ${{ github.ref }}, Ref Name: ${{ github.ref_name }}, Head: ${{ github.head_ref }}, Base: ${{ github.base_ref }}"
-          if [[ "${{ github.even_name }}" == "pull_request" ]]; then
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             echo Building from PR
             arrIN=(${GITHUB_REF_NAME//\// })
             versionTag="pr${arrIN[0]}"
