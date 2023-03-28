@@ -3,6 +3,7 @@
 package com.cosmotech.twingraph.api
 
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmAdmin
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
@@ -30,7 +31,10 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
+import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.context.request.ServletRequestAttributes
 import redis.clients.jedis.JedisPool
 
 const val AUTHENTICATED_USERNAME = "authenticated-user"
@@ -72,6 +76,63 @@ class TwingraphServiceImplTests {
   }
 
   @Test
+  fun `test delete graph as Admin - should call delete`() {
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
+    every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
+
+    every { csmJedisPool.resource.scan(any<String>(), any()) } returns
+        mockk {
+          every { result } returns listOf("graphId")
+          every { cursor } answers { "0" }
+        }
+
+    every { csmJedisPool.resource.del(*anyVararg<String>()) } returns 1L
+    twingraphServiceImpl.delete("orgId", "graphId")
+
+    verify { csmJedisPool.resource.scan(any<String>(), any()) }
+    verify { csmJedisPool.resource.del(*anyVararg<String>()) }
+  }
+
+  @Test
+  fun `test findAllTwingraphs as Admin - should return all graphs`() {
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
+    every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
+
+    every { csmJedisPool.resource.scan(any<String>(), any(), any()) } returns
+        mockk {
+          every { result } returns listOf("graphId", "graphId2")
+          every { cursor } answers { "0" }
+        }
+
+    val twingraphs = twingraphServiceImpl.findAllTwingraphs("orgId")
+    assertEquals(twingraphs.size, 2)
+  }
+
+  @Test
+  fun `test getGraphMetadata as Admin - should return metadata`() {
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
+    every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
+
+    every { csmJedisPool.resource.exists(any<String>()) } returns true
+    every { csmJedisPool.resource.hgetAll(any<String>()) } returns
+        mapOf("lastVersion" to "lastVersion", "graphRotation" to "2")
+    val metadataMap = twingraphServiceImpl.getGraphMetaData("orgId", "graphId")
+    assertEquals(metadataMap["lastVersion"], "lastVersion")
+    assertEquals(metadataMap["graphRotation"], "2")
+  }
+
+  @Test
+  fun `test getGraphMetadata as Admin - should throw exception if graph does not exist`() {
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
+    every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
+
+    every { csmJedisPool.resource.exists(any<String>()) } returns false
+    assertThrows<CsmResourceNotFoundException> {
+      twingraphServiceImpl.getGraphMetaData("orgId", "graphId")
+    }
+  }
+
+  @Test
   fun `test bulkQueryGraphs as Admin - should call query and set data to Redis`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
     every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
@@ -88,7 +149,7 @@ class TwingraphServiceImplTests {
 
     assertEquals(jsonHash.hash, "graphId:1:MATCH(n) RETURN n".shaHash())
     verify { anyConstructed<RedisGraph>().query(any(), any()) }
-    verify { csmJedisPool.resource.setex(any(), any<Long>(), any<ByteArray>()) }
+    verify { csmJedisPool.resource.setex(any<ByteArray>(), any<Long>(), any()) }
   }
 
   @Test
@@ -102,6 +163,51 @@ class TwingraphServiceImplTests {
     val twinGraphQuery = TwinGraphQuery("MATCH(n) RETURN n", "1")
     val jsonHash = twingraphServiceImpl.bulkQuery("orgId", "graphId", twinGraphQuery)
     assertEquals(jsonHash.hash, "graphId:1:MATCH(n) RETURN n".shaHash())
+  }
+
+  @Test
+  fun `test downloadGraph as Admin - should get graph data`() {
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
+    every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
+
+    every { csmJedisPool.resource.exists(any<ByteArray>()) } returns true
+    every { csmJedisPool.resource.ttl(any<ByteArray>()) } returns 1000L
+    mockkStatic("org.springframework.web.context.request.RequestContextHolder")
+    every {
+      (RequestContextHolder.getRequestAttributes() as ServletRequestAttributes).response
+    } returns mockk(relaxed = true)
+    every { csmJedisPool.resource.get(any<ByteArray>()) } returns "[]".toByteArray()
+
+    twingraphServiceImpl.downloadGraph("orgId", "hash")
+
+    verify { csmJedisPool.resource.exists(any<ByteArray>()) }
+    verify { csmJedisPool.resource.ttl(any<ByteArray>()) }
+    verify { csmJedisPool.resource.get(any<ByteArray>()) }
+  }
+
+  @Test
+  fun `test downloadGraph as Admin - should throw exception if data not found`() {
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
+    every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
+
+    every { csmJedisPool.resource.exists(any<ByteArray>()) } returns false
+
+    assertThrows<CsmResourceNotFoundException> {
+      twingraphServiceImpl.downloadGraph("orgId", "hash")
+    }
+  }
+
+  @Test
+  fun `test downloadGraph as Admin - should throw exception if data expired`() {
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
+    every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
+
+    every { csmJedisPool.resource.exists(any<ByteArray>()) } returns true
+    every { csmJedisPool.resource.ttl(any<ByteArray>()) } returns -1L
+
+    assertThrows<CsmResourceNotFoundException> {
+      twingraphServiceImpl.downloadGraph("orgId", "hash")
+    }
   }
 
   private fun mockEmptyResultSet(): ResultSet {
