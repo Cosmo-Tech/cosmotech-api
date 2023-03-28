@@ -19,6 +19,13 @@ management:
 
 csm:
   platform:
+    azure:
+      appIdUri: "https://changeme.api.cosmotech.com"
+    identityProvider:
+      code: azure
+      # Use to overwrite openAPI configuration
+      authorizationUrl: "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
+      tokenUrl: "https://login.microsoftonline.com/common/oauth2/v2.0/token"
     cosmosdb:
       enable: true
     authorization:
@@ -32,8 +39,8 @@ azure:
     # tenantId is 'common' to use the login process of multi-tenant access
     # See https://github.com/Azure/azure-sdk-for-java/blob/master/sdk/spring/azure-spring-boot-starter-active-directory/ACCESS_TO_MULTI_TENANT_APP.md
     tenant-id: common
-    client-id: ${csm.platform.azure.credentials.clientId}
-    client-secret: ${csm.platform.azure.credentials.clientSecret}
+    client-id: ${csm.platform.azure.credentials.core.clientId}
+    client-secret: ${csm.platform.azure.credentials.core.clientSecret}
     session-stateless: true
     app-id-uri: ${csm.platform.azure.appIdUri}
   cosmos:

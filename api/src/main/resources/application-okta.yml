@@ -1,5 +1,28 @@
 # Spring boot okta starter will read these lines and will inject okta's autoconfigured beans
 
+csm:
+  platform:
+    identityProvider:
+      code: okta
+      # Use to overwrite openAPI configuration
+      authorizationUrl: "https://changeme.okta.com/oauth2/default/v1/authorize"
+      tokenUrl: "https://changeme.okta.com/oauth2/default/v1/token"
+      defaultScopes:
+        openid: "OpenId Scope"
+      containerScopes:
+        csm.scenario.read: "Read access to scenarios"
+      # Here you can set custom user and admin groups
+      # - adminGroup will have same rights that Organization.Admin
+      # - userGroup will have same rights that Organization.User
+      # - viewerGroup will have same rights that Organization.Viewer
+      userGroup: "ADMINACCESS-DEV"
+      viewerGroup: "USERACCESS-DEV"
+    # Use to define Okta Configuration
+    okta:
+      issuer: "https://changeme.okta.com/oauth2/default"
+      clientId: "changeme"
+      clientSecret: "changeme"
+      audience: "api://default"
 okta:
   oauth2:
     issuer: ${csm.platform.okta.issuer}
