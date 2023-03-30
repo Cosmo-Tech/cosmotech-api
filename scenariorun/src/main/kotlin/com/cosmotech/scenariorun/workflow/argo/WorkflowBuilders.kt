@@ -179,7 +179,7 @@ internal fun buildContainerSetTemplate(
                   "-cp",
                   "/app/resources:/app/classes:/app/libs/*",
                   "com.cosmotech.ApplicationKt"),
-          "fetchScenarioParametersContainer" to listOf("/bin/sh", "-c", "node", "."),
+          "fetchScenarioParametersContainer" to listOf("node", "."),
           "fetchScenarioDatasetParametersContainer-1" to
               listOf(
                   "java",
