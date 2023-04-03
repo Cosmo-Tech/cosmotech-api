@@ -142,7 +142,8 @@ class TwingraphServiceImplTests {
 
     mockkConstructor(RedisGraph::class)
     every { anyConstructed<RedisGraph>().query(any(), any()) } returns mockEmptyResultSet()
-    every { csmJedisPool.resource.setex(any(), any<Long>(), any<ByteArray>()) } returns "OK"
+    every { csmJedisPool.resource.setex(any<ByteArray>(), any<Long>(), any<ByteArray>()) } returns
+        "OK"
 
     val twinGraphQuery = TwinGraphQuery("MATCH(n) RETURN n", "1")
     val jsonHash = twingraphServiceImpl.bulkQuery("orgId", "graphId", twinGraphQuery)
