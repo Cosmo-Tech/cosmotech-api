@@ -181,8 +181,8 @@ class TwingraphServiceImpl(
         val resultSet = redisGraph.query(redisGraphKey, twinGraphQuery.query)
         val zip =
             zipBytesWithFileNames(
-                listOf(Pair("bulkQuery.json", resultSet.toJsonString().toByteArray(UTF_8))))
-        jedis.setex(bulkQueryKey.first, csmPlatformProperties.twincache.queryBulkExpiration, zip)
+                mapOf("bulkQuery.json" to resultSet.toJsonString().toByteArray(UTF_8)))
+        jedis.setex(bulkQueryKey.first, csmPlatformProperties.twincache.queryBulkTTL, zip)
       }
     }
     return TwinGraphHash(bulkQueryKey.second)
