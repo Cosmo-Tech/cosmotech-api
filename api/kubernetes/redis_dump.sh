@@ -82,7 +82,7 @@ restore_database() {
   if [[ $CURRENT_CONTEXT == kind* ]]; then
     echo "We are in local context: $CURRENT_CONTEXT"
     echo "Redis dump will be restored by simply copying the dump file to the local Redis data folder"
-    RESULT=$(sudo cp ${DB_DUMP} ~/data/dump.rdb)
+    RESULT=$(cp ${DB_DUMP} ~/data/dump.rdb)
     check_error "$RESULT" "error" "Error while copying Redis dump: ${RESULT}"
     restart_redis
     exit 0
