@@ -41,7 +41,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
-import org.testcontainers.shaded.org.bouncycastle.asn1.x500.style.RFC4519Style.name
 
 @ActiveProfiles(profiles = ["organization-test"])
 @ExtendWith(MockKExtension::class)

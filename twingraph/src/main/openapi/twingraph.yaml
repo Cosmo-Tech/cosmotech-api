@@ -239,9 +239,18 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/PropertiesDict'
+            examples:
+              QueryNode:
+                $ref: '#/components/examples/QueryNodes'
       responses:
         '200':
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
   /organizations/{organization_id}/twingraph/{graph_id}/relationship/create:
     parameters:
       - name: organization_id
@@ -268,9 +277,18 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/PropertiesDict'
+            examples:
+              QueryNode:
+                $ref: '#/components/examples/QueryRelationships'
       responses:
         '200':
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
   /organizations/{organization_id}/twingraph/{graph_id}/node/read:
     parameters:
       - name: organization_id
@@ -299,6 +317,9 @@ paths:
               type: array
               items:
                 type: string
+            examples:
+              QueryNode:
+                $ref: '#/components/examples/QueryNodes'
       responses:
         '200':
           description: Successful response
@@ -336,6 +357,9 @@ paths:
               type: array
               items:
                 type: string
+            examples:
+              QueryNode:
+                $ref: '#/components/examples/QueryRelationships'
       responses:
         '200':
           description: Successful response
@@ -371,9 +395,18 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/PropertiesDict'
+            examples:
+              QueryNode:
+                $ref: '#/components/examples/QueryNodes'
       responses:
         '200':
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
   /organizations/{organization_id}/twingraph/{graph_id}/relationship/update:
     parameters:
       - name: organization_id
@@ -400,9 +433,18 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/PropertiesDict'
+            examples:
+              QueryNode:
+                $ref: '#/components/examples/QueryRelationships'
       responses:
         '200':
           description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
   /organizations/{organization_id}/twingraph/{graph_id}/node/delete:
     parameters:
       - name: organization_id
@@ -429,6 +471,9 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/PropertiesDict'
+            examples:
+              QueryNode:
+                $ref: '#/components/examples/QueryNodes'
       responses:
         '200':
           description: Successful response
@@ -458,6 +503,9 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/PropertiesDict'
+            examples:
+              QueryNode:
+                $ref: '#/components/examples/QueryRelationships'
       responses:
         '200':
           description: Successful response
@@ -587,22 +635,21 @@ components:
       type: array
       items:
         type: object
-        description: oui
         additionalProperties:
           type: string
           properties:
             source:
               type: string
-              description:
+              description: the source node of the relationship
             target:
               type: string
-              description:
+              description: the target node of the relationship
             name:
               type: string
-              description:
+              description: the name of the graph data object
             params:
               type: string
-              description:
+              description: the parameters of the graph data object
     SourceInfo:
       type: object
       description: Source job import information
@@ -659,3 +706,29 @@ components:
       description: Get all nodes query (be careful if you want to query large graph)
       value:
         query: "MATCH(n) RETURN n"
+    QueryNodes:
+      summary: Run action on a graph nodes
+      description: Run action on a graph nodes
+      value:
+        arguments:
+          firstNode:
+            name: "my-first-node-name"
+            params: "my-first-node-params"
+          secondNode:
+            name: "my-second-node-name"
+            params: "my-second-node-params"
+    QueryRelationships:
+      summary: Run action on a graph relationship
+      description: Run action on a graph relationship
+      value:
+        arguments:
+          firstRelationship:
+            source: "my-source-node-name"
+            target: "my-target-node-name"
+            name: "my-first-relationship-name"
+            params: "my-first-relationship-params"
+          secondRelationship:
+            source: "my-source-node-name"
+            target: "my-target-node-name"
+            name: "my-second-relationship-name"
+            params: "my-second-relationship-params"
