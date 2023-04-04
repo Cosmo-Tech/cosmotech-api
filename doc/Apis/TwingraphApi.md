@@ -40,7 +40,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
-- **Content-Type**: application/json, application/yaml
+- **Content-Type**: application/json
 - **Accept**: application/json
 
 <a name="delete"></a>
