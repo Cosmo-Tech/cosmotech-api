@@ -5,15 +5,13 @@ package com.cosmotech.twingraph.api
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.redislabs.redisgraph.ResultSet
 import com.redislabs.redisgraph.impl.api.RedisGraph
-import org.springframework.beans.factory.annotation.Autowired
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.ScanParams
 
-class TwinGraph(var graphId: String) : RedisGraph() {
+class TwinGraph(var graphId: String, var csmJedisPool: JedisPool) : RedisGraph() {
 
-  @Autowired private lateinit var csmJedisPool: JedisPool
   private var name: String
-  private var version: String
+  private var version: String = ""
 
   init {
     val list = graphId.split(":")
@@ -28,44 +26,55 @@ class TwinGraph(var graphId: String) : RedisGraph() {
     }
   }
 
-  fun createNodes(twinsList: List<Map<String, String>>) {
+  fun createNodes(twinsList: List<Map<String, String>>): List<ResultSet> {
+    val resultList = mutableListOf<ResultSet>()
     for (args in twinsList) {
-      graphQuery("CREATE (:${args["name"]} ${args["params"]})")
+      resultList.add(graphQuery("CREATE (:${args["name"]} {${args["params"]}})"))
     }
+    return resultList
   }
 
-  fun createRelationships(relationshipList: List<Map<String, String>>) {
-    for (args in relationshipList) graphQuery(
-        "MATCH (a),(b) WHERE a.id=${args["source"]} AND b.id=${args["target"]}" +
-            "CREATE (a)-[:${args["name"]} ${args["params"]}-(b)")
+  fun createRelationships(relationshipList: List<Map<String, String>>): List<ResultSet> {
+    val resultList = mutableListOf<ResultSet>()
+    for (args in relationshipList) {
+      resultList.add(
+          graphQuery(
+              "MATCH (a),(b) WHERE a.id=${args["source"]} AND b.id=${args["target"]}" +
+                  "CREATE (a)-[:${args["name"]} {${args["params"]}}-(b)"))
+    }
+    return resultList
   }
 
   fun getNodes(listId: List<String>): List<ResultSet> {
-    val result = mutableListOf<ResultSet>()
+    val resultList = mutableListOf<ResultSet>()
     for (arg in listId) {
-      val result = graphQuery("MATCH (t {id:$arg}) RETURN t")
+      resultList.add(graphQuery("MATCH (t {id:$arg}) RETURN t"))
     }
-    return result
+    return resultList
   }
 
   fun getRelationships(listId: List<String>): List<ResultSet> {
-    val result = mutableListOf<ResultSet>()
+    val resultList = mutableListOf<ResultSet>()
     for (arg in listId) {
-      result.add(graphQuery("MATCH ()-[r {id:$arg}]-() RETURN r"))
+      resultList.add(graphQuery("MATCH ()-[r {id:$arg}]-() RETURN r"))
     }
-    return result
+    return resultList
   }
 
-  fun updateNodes(twinsList: List<Map<String, String>>) {
+  fun updateNodes(twinsList: List<Map<String, String>>): List<ResultSet> {
+    val resultList = mutableListOf<ResultSet>()
     for (args in twinsList) {
       graphQuery("MATCH (a) WHERE a.id=${args["name"]} SET ${args["params"]}")
     }
+    return resultList
   }
 
-  fun updateRelationships(relationshipList: List<Map<String, String>>) {
+  fun updateRelationships(relationshipList: List<Map<String, String>>): List<ResultSet> {
+    val resultList = mutableListOf<ResultSet>()
     for (args in relationshipList) {
-      graphQuery("MATCH ()-[a]-() WHERE a.id=${args["name"]} SET ${args["params"]}")
+      resultList.add(graphQuery("MATCH ()-[a]-() WHERE a.id=${args["name"]} SET ${args["params"]}"))
     }
+    return resultList
   }
 
   fun deleteNodes(twinsList: List<Map<String, String>>) {

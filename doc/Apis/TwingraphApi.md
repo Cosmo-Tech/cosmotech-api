@@ -54,7 +54,7 @@ Name | Type | Description  | Notes
 
 <a name="createNodes"></a>
 # **createNodes**
-> createNodes(organization\_id, graph\_id, request\_body)
+> List createNodes(organization\_id, graph\_id, request\_body)
 
 
 
@@ -70,7 +70,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-null (empty response body)
+**List**
 
 ### Authorization
 
@@ -79,11 +79,11 @@ null (empty response body)
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: Not defined
+- **Accept**: application/json
 
 <a name="createRelationships"></a>
 # **createRelationships**
-> createRelationships(organization\_id, graph\_id, request\_body)
+> List createRelationships(organization\_id, graph\_id, request\_body)
 
 
 
@@ -99,7 +99,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-null (empty response body)
+**List**
 
 ### Authorization
 
@@ -108,7 +108,7 @@ null (empty response body)
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: Not defined
+- **Accept**: application/json
 
 <a name="delete"></a>
 # **delete**
@@ -453,7 +453,7 @@ Name | Type | Description  | Notes
 
 <a name="updateNodes"></a>
 # **updateNodes**
-> updateNodes(organization\_id, graph\_id, request\_body)
+> List updateNodes(organization\_id, graph\_id, request\_body)
 
 
 
@@ -469,7 +469,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-null (empty response body)
+**List**
 
 ### Authorization
 
@@ -478,11 +478,11 @@ null (empty response body)
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: Not defined
+- **Accept**: application/json
 
 <a name="updateRelationships"></a>
 # **updateRelationships**
-> updateRelationships(organization\_id, graph\_id, request\_body)
+> List updateRelationships(organization\_id, graph\_id, request\_body)
 
 
 
@@ -498,7 +498,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-null (empty response body)
+**List**
 
 ### Authorization
 
@@ -507,5 +507,5 @@ null (empty response body)
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: Not defined
+- **Accept**: application/json
 

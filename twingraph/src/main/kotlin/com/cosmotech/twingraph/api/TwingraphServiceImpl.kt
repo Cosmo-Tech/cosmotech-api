@@ -52,8 +52,6 @@ class TwingraphServiceImpl(
       organizationId: String,
       twinGraphImport: TwinGraphImport
   ): TwinGraphImportInfo {
-    val organization = organizationService.findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
     val requestJobId = this.idGenerator.generate(scope = "graphdataimport", prependPrefix = "gdi-")
     val graphImportEvent =
         TwingraphImportEvent(
@@ -72,8 +70,6 @@ class TwingraphServiceImpl(
   }
 
   override fun jobStatus(organizationId: String, jobId: String): String {
-    val organization = organizationService.findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
     val twingraphImportJobInfoRequest = TwingraphImportJobInfoRequest(this, jobId, organizationId)
     this.eventPublisher.publishEvent(twingraphImportJobInfoRequest)
     logger.debug("TwingraphImportEventResponse={}", twingraphImportJobInfoRequest.response)
@@ -82,16 +78,11 @@ class TwingraphServiceImpl(
 
   @Suppress("SpreadOperator")
   override fun delete(organizationId: String, graphId: String) {
-    val organization = organizationService.findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
-
-    val twinGraph = TwinGraph(graphId)
+    val twinGraph = TwinGraph(graphId, csmJedisPool)
     twinGraph.delete()
   }
 
   override fun findAllTwingraphs(organizationId: String): List<String> {
-    val organization = organizationService.findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
     val matchingKeys = mutableSetOf<String>()
     csmJedisPool.resource.use { jedis ->
       var nextCursor = ScanParams.SCAN_POINTER_START
@@ -105,8 +96,6 @@ class TwingraphServiceImpl(
   }
 
   override fun getGraphMetaData(organizationId: String, graphId: String): Map<String, String> {
-    val organization = organizationService.findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
     csmJedisPool.resource.use { jedis ->
       if (jedis.exists(graphId.toRedisMetaDataKey())) {
         return jedis.hgetAll(graphId.toRedisMetaDataKey())
@@ -120,9 +109,8 @@ class TwingraphServiceImpl(
       graphId: String,
       twinGraphQuery: TwinGraphQuery
   ): Unit {
-    val organization = organizationService.findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
-
+      val organization = organizationService.findOrganizationById(organizationId)
+      csmRbac.verify(organization.getRbac(), PERMISSION_READ)
     if (!TwingraphUtils.isReadOnlyQuery(twinGraphQuery.query)) {
       throw CsmClientException("Read Only queries authorized only")
     }
@@ -237,18 +225,18 @@ class TwingraphServiceImpl(
       organizationId: String,
       graphId: String,
       requestBody: List<Map<String, String>>
-  ) {
-    val twinGraph = TwinGraph(graphId)
-    twinGraph.createNodes(requestBody)
+  ): List<ResultSet> {
+    val twinGraph = TwinGraph(graphId, csmJedisPool)
+    return twinGraph.createNodes(requestBody)
   }
 
   override fun createRelationships(
       organizationId: String,
       graphId: String,
       requestBody: List<Map<String, String>>
-  ) {
-    val twinGraph = TwinGraph(graphId)
-    twinGraph.createRelationships(requestBody)
+  ): List<ResultSet> {
+    val twinGraph = TwinGraph(graphId, csmJedisPool)
+    return twinGraph.createRelationships(requestBody)
   }
 
   override fun getNodes(
@@ -256,7 +244,7 @@ class TwingraphServiceImpl(
       graphId: String,
       requestBody: List<String>
   ): List<ResultSet> {
-    val twinGraph = TwinGraph(graphId)
+    val twinGraph = TwinGraph(graphId, csmJedisPool)
     return twinGraph.getNodes(requestBody)
   }
 
@@ -265,7 +253,7 @@ class TwingraphServiceImpl(
       graphId: String,
       requestBody: List<String>
   ): List<ResultSet> {
-    val twinGraph = TwinGraph(graphId)
+    val twinGraph = TwinGraph(graphId, csmJedisPool)
     return twinGraph.getRelationships(requestBody)
   }
 
@@ -273,18 +261,18 @@ class TwingraphServiceImpl(
       organizationId: String,
       graphId: String,
       requestBody: List<Map<String, String>>
-  ) {
-    val twinGraph = TwinGraph(graphId)
-    twinGraph.updateNodes(requestBody)
+  ): List<ResultSet> {
+    val twinGraph = TwinGraph(graphId, csmJedisPool)
+    return twinGraph.updateNodes(requestBody)
   }
 
   override fun updateRelationships(
       organizationId: String,
       graphId: String,
       requestBody: List<Map<String, String>>
-  ) {
-    val twinGraph = TwinGraph(graphId)
-    twinGraph.updateRelationships(requestBody)
+  ): List<ResultSet> {
+    val twinGraph = TwinGraph(graphId, csmJedisPool)
+    return twinGraph.updateRelationships(requestBody)
   }
 
   override fun deleteNodes(
@@ -292,7 +280,7 @@ class TwingraphServiceImpl(
       graphId: String,
       requestBody: List<Map<String, String>>
   ) {
-    val twinGraph = TwinGraph(graphId)
+    val twinGraph = TwinGraph(graphId, csmJedisPool)
     twinGraph.deleteNodes(requestBody)
   }
 
@@ -301,7 +289,7 @@ class TwingraphServiceImpl(
       graphId: String,
       requestBody: List<Map<String, String>>
   ) {
-    val twinGraph = TwinGraph(graphId)
+    val twinGraph = TwinGraph(graphId, csmJedisPool)
     twinGraph.deleteRelationships(requestBody)
   }
 }
