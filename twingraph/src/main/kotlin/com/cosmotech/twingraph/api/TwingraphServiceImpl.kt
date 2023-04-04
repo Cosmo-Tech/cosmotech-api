@@ -10,7 +10,8 @@ import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.api.security.coroutine.SecurityCoroutineContext
-import com.cosmotech.api.utils.shaHash
+import com.cosmotech.api.utils.bulkQueryKey
+import com.cosmotech.api.utils.redisGraphKey
 import com.cosmotech.api.utils.zipBytesWithFileNames
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.service.getRbac
@@ -139,7 +140,7 @@ class TwingraphServiceImpl(
         }
       }
     }
-    val redisGraphId = redisGraphKey(graphId, twinGraphQuery)
+    val redisGraphId = redisGraphKey(graphId, twinGraphQuery.version!!)
     csmJedisPool.resource.use { jedis ->
       val redisGraphMatchingKeys = jedis.keys(redisGraphId)
       if (redisGraphMatchingKeys.size == 0) {
@@ -157,7 +158,7 @@ class TwingraphServiceImpl(
     val redisGraph = RedisGraph(csmJedisPool)
     val resultSet =
         redisGraph.query(
-            redisGraphKey(graphId, twinGraphQuery),
+            redisGraphKey(graphId, twinGraphQuery.version!!),
             twinGraphQuery.query,
             csmPlatformProperties.twincache.queryTimeout)
     return resultSet.toJsonString()
@@ -169,23 +170,25 @@ class TwingraphServiceImpl(
       twinGraphQuery: TwinGraphQuery
   ): TwinGraphHash {
     checkTwinGraphPrerequisites(organizationId, graphId, twinGraphQuery)
-    val redisGraphKey = redisGraphKey(graphId, twinGraphQuery)
-    var bulkQueryKey = bulkQueryKey(graphId, twinGraphQuery)
-    GlobalScope.launch(SecurityCoroutineContext()) {
-      csmJedisPool.resource.use { jedis ->
-        val keyExists = jedis.exists(bulkQueryKey.first)
-        if (keyExists) {
-          return@launch
-        }
-        val redisGraph = RedisGraph(csmJedisPool)
-        val resultSet = redisGraph.query(redisGraphKey, twinGraphQuery.query)
+    val redisGraphKey = redisGraphKey(graphId, twinGraphQuery.version!!)
+    var bulkQueryKey = bulkQueryKey(graphId, twinGraphQuery.query, twinGraphQuery.version!!)
+    val twinGraphHash = TwinGraphHash(bulkQueryKey.second)
+    csmJedisPool.resource.use { jedis ->
+      val keyExists = jedis.exists(bulkQueryKey.first)
+      if (keyExists) {
+        return twinGraphHash
+      }
+      val redisGraph = RedisGraph(csmJedisPool)
+      val resultSet = redisGraph.query(redisGraphKey, twinGraphQuery.query)
+
+      GlobalScope.launch(SecurityCoroutineContext()) {
         val zip =
             zipBytesWithFileNames(
                 mapOf("bulkQuery.json" to resultSet.toJsonString().toByteArray(UTF_8)))
         jedis.setex(bulkQueryKey.first, csmPlatformProperties.twincache.queryBulkTTL, zip)
       }
     }
-    return TwinGraphHash(bulkQueryKey.second)
+    return twinGraphHash
   }
 
   override fun downloadGraph(organizationId: String, graphQueryHash: String): Resource {
@@ -203,22 +206,9 @@ class TwingraphServiceImpl(
     }
     val httpServletResponse =
         ((RequestContextHolder.getRequestAttributes() as ServletRequestAttributes).response)
-    val contentDisposition = ContentDisposition.builder("attachment").filename("Graph.zip").build()
+    val contentDisposition =
+        ContentDisposition.builder("attachment").filename("TwinGraph-$graphQueryHash.zip").build()
     httpServletResponse!!.setHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
     return ByteArrayResource(csmJedisPool.resource.use { jedis -> jedis.get(bulkQueryId) })
-  }
-
-  fun redisGraphKey(graphId: String, twinGraphQuery: TwinGraphQuery): String {
-    return "${graphId}:${twinGraphQuery.version}"
-  }
-
-  fun bulkQueryKey(graphId: String, twinGraphQuery: TwinGraphQuery): Pair<ByteArray, String> {
-    val redisGraphKey = redisGraphKey(graphId, twinGraphQuery)
-    var bulkQueryHash = "${redisGraphKey}:${twinGraphQuery.query}".shaHash()
-    return Pair("bulkQuery:$bulkQueryHash".toByteArray(UTF_8), bulkQueryHash)
-  }
-
-  fun bulkQueryKey(bulkQueryHash: String): ByteArray {
-    return "bulkQuery:$bulkQueryHash".toByteArray(UTF_8)
   }
 }
