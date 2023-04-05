@@ -16,7 +16,6 @@ import com.cosmotech.twingraph.domain.TwinGraphQuery
 import com.cosmotech.twingraph.extension.toJsonString
 import com.redislabs.redisgraph.ResultSet
 import com.redislabs.redisgraph.impl.api.RedisGraph
-import io.mockk.Called
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
@@ -138,6 +137,7 @@ class TwingraphServiceImplTests {
   fun `test bulkQueryGraphs as Admin - should call query and set data to Redis`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
     every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
+    every { csmPlatformProperties.twincache.queryBulkTTL } returns 1000L
 
     every { csmJedisPool.resource.keys(any<String>()) } returns setOf("graphId")
     every { csmJedisPool.resource.exists(any<ByteArray>()) } returns false
@@ -151,8 +151,13 @@ class TwingraphServiceImplTests {
     val jsonHash = twingraphServiceImpl.bulkQuery("orgId", "graphId", twinGraphQuery)
 
     assertEquals(jsonHash.hash, "graphId:1:MATCH(n) RETURN n".shaHash())
-    verify { anyConstructed<RedisGraph>().query(any(), any()) }
-    verify { csmJedisPool.resource.setex(any<ByteArray>(), any<Long>(), any()) }
+    verifyAll {
+      csmJedisPool.resource.keys(any<String>())
+      csmJedisPool.resource.exists(any<ByteArray>())
+      anyConstructed<RedisGraph>().query(any(), any())
+      csmJedisPool.resource.setex(any<ByteArray>(), any<Long>(), any<ByteArray>())
+      csmJedisPool.resource.close()
+    }
   }
 
   @Test
@@ -223,7 +228,12 @@ class TwingraphServiceImplTests {
     every { csmJedisPool.resource.hgetAll(any<String>()) } returns
         mapOf("graphName" to "graphName", "graphRotation" to "2")
 
-    var metadata = mapOf("lastVersion" to "last","graphName" to "graphName", "graphRotation" to "2", "url" to "dummy")
+    var metadata =
+        mapOf(
+            "lastVersion" to "last",
+            "graphName" to "graphName",
+            "graphRotation" to "2",
+            "url" to "dummy")
     twingraphServiceImpl.updateGraphMetaData("orgId", "graphId", metadata)
     verifyAll {
       csmJedisPool.resource.exists(any<String>())
