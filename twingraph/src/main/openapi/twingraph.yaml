@@ -638,6 +638,9 @@ components:
         additionalProperties:
           type: string
           properties:
+            type:
+              type: string
+              description: the type of the relationship
             source:
               type: string
               description: the source node of the relationship
@@ -712,9 +715,11 @@ components:
       value:
         arguments:
           firstNode:
+            type: "my-node-type"
             name: "my-first-node-name"
             params: "my-first-node-params"
           secondNode:
+            type: "my-node-type"
             name: "my-second-node-name"
             params: "my-second-node-params"
     QueryRelationships:
@@ -723,11 +728,13 @@ components:
       value:
         arguments:
           firstRelationship:
+            type: "my-relationship-type"
             source: "my-source-node-name"
             target: "my-target-node-name"
             name: "my-first-relationship-name"
             params: "my-first-relationship-params"
           secondRelationship:
+            type: "my-relationship-type"
             source: "my-source-node-name"
             target: "my-target-node-name"
             name: "my-second-relationship-name"

@@ -8,7 +8,7 @@ import com.redislabs.redisgraph.impl.api.RedisGraph
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.ScanParams
 
-class TwinGraph(var graphId: String, var csmJedisPool: JedisPool) : RedisGraph() {
+class TwinGraph(var graphId: String, var csmJedisPool: JedisPool) : RedisGraph(csmJedisPool) {
 
   private var name: String
   private var version: String = ""
@@ -27,28 +27,29 @@ class TwinGraph(var graphId: String, var csmJedisPool: JedisPool) : RedisGraph()
   }
 
   fun createNodes(twinsList: List<Map<String, String>>): List<ResultSet> {
-    val resultList = mutableListOf<ResultSet>()
+    val nameList = mutableListOf<String>()
     for (args in twinsList) {
-      resultList.add(graphQuery("CREATE (:${args["name"]} {${args["params"]}})"))
+      graphQuery("CREATE (:${args["type"]} {id:'${args["name"]}',${args["params"]}})")
+      nameList.add(args["name"]!!)
     }
-    return resultList
+    return getNodes(nameList)
   }
 
   fun createRelationships(relationshipList: List<Map<String, String>>): List<ResultSet> {
-    val resultList = mutableListOf<ResultSet>()
+    val nameList = mutableListOf<String>()
     for (args in relationshipList) {
-      resultList.add(
-          graphQuery(
-              "MATCH (a),(b) WHERE a.id=${args["source"]} AND b.id=${args["target"]}" +
-                  "CREATE (a)-[:${args["name"]} {${args["params"]}}-(b)"))
+      graphQuery(
+          "MATCH (a),(b) WHERE a.id='${args["source"]}' AND b.id='${args["target"]}'" +
+              "CREATE (a)-[:${args["type"]} {id:'${args["name"]}', ${args["params"]}}]->(b)")
+      nameList.add(args["name"]!!)
     }
-    return resultList
+    return getRelationships(nameList)
   }
 
   fun getNodes(listId: List<String>): List<ResultSet> {
     val resultList = mutableListOf<ResultSet>()
     for (arg in listId) {
-      resultList.add(graphQuery("MATCH (t {id:$arg}) RETURN t"))
+      resultList.add(graphQuery("MATCH (t {id:'$arg'}) RETURN t"))
     }
     return resultList
   }
@@ -56,36 +57,40 @@ class TwinGraph(var graphId: String, var csmJedisPool: JedisPool) : RedisGraph()
   fun getRelationships(listId: List<String>): List<ResultSet> {
     val resultList = mutableListOf<ResultSet>()
     for (arg in listId) {
-      resultList.add(graphQuery("MATCH ()-[r {id:$arg}]-() RETURN r"))
+      resultList.add(graphQuery("MATCH ()-[r {id:'$arg'}]-() RETURN r"))
     }
     return resultList
   }
 
   fun updateNodes(twinsList: List<Map<String, String>>): List<ResultSet> {
-    val resultList = mutableListOf<ResultSet>()
+    val nameList = mutableListOf<String>()
     for (args in twinsList) {
-      graphQuery("MATCH (a) WHERE a.id=${args["name"]} SET ${args["params"]}")
+      graphQuery(
+          "MATCH (a {id:'${args["name"]}'}) SET a = {id:'${args["name"]}',${args["params"]}}")
+      nameList.add(args["name"]!!)
     }
-    return resultList
+    return getNodes(nameList)
   }
 
   fun updateRelationships(relationshipList: List<Map<String, String>>): List<ResultSet> {
-    val resultList = mutableListOf<ResultSet>()
+    val nameList = mutableListOf<String>()
     for (args in relationshipList) {
-      resultList.add(graphQuery("MATCH ()-[a]-() WHERE a.id=${args["name"]} SET ${args["params"]}"))
+      graphQuery(
+          "MATCH ()-[a {id:'${args["name"]}'}]-() SET a = {id:'${args["name"]}', ${args["params"]}}")
+      nameList.add(args["name"]!!)
     }
-    return resultList
+    return getRelationships(nameList)
   }
 
   fun deleteNodes(twinsList: List<Map<String, String>>) {
     for (args in twinsList) {
-      graphQuery("MATCH (a) WHERE a.id=${args["name"]} DELETE a")
+      graphQuery("MATCH (a) WHERE a.id='${args["name"]}' DELETE a")
     }
   }
 
   fun deleteRelationships(relationshipList: List<Map<String, String>>) {
     for (args in relationshipList) {
-      graphQuery("MATCH ()-[a]-() WHERE a.id=${args["name"]} DELETE a")
+      graphQuery("MATCH ()-[a]-() WHERE a.id='${args["name"]}' DELETE a")
     }
   }
 
