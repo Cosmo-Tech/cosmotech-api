@@ -164,6 +164,24 @@ class TwingraphServiceImpl(
     return resultSet.toJsonString()
   }
 
+  override fun updateGraphMetaData(organizationId: String, graphId: String, requestBody: Map<String, String>): Any {
+    val organization = organizationService.findOrganizationById(organizationId)
+    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
+    val metaDataKey = "${graphId}MetaData"
+
+    csmJedisPool.resource.use { jedis ->
+      if (jedis.exists(metaDataKey)) {
+        requestBody
+          .filterKeys { it == "graphName" || it == "graphRotation" }
+          .forEach { (key, value) -> jedis.hset(metaDataKey, key, value)
+        }
+        return jedis.hgetAll(metaDataKey)
+      }
+      throw CsmResourceNotFoundException("No metadata found for graphId $graphId")
+    }
+  }
+
+
   override fun bulkQuery(
       organizationId: String,
       graphId: String,

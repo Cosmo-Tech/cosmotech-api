@@ -16,6 +16,7 @@ import com.cosmotech.twingraph.domain.TwinGraphQuery
 import com.cosmotech.twingraph.extension.toJsonString
 import com.redislabs.redisgraph.ResultSet
 import com.redislabs.redisgraph.impl.api.RedisGraph
+import io.mockk.Called
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
@@ -27,6 +28,7 @@ import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
 import io.mockk.verify
+import io.mockk.verifyAll
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -208,6 +210,46 @@ class TwingraphServiceImplTests {
 
     assertThrows<CsmResourceNotFoundException> {
       twingraphServiceImpl.downloadGraph("orgId", "hash")
+    }
+  }
+
+  @Test
+  fun `test updateGraphMetaData as Admin should modify graphName & graphVersion`() {
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
+    every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
+
+    every { csmJedisPool.resource.exists(any<String>()) } returns true
+    every { csmJedisPool.resource.hset(any<String>(), any<String>(), any<String>()) } returns 1L
+    every { csmJedisPool.resource.hgetAll(any<String>()) } returns
+        mapOf("graphName" to "graphName", "graphRotation" to "2")
+
+    var metadata = mapOf("lastVersion" to "last","graphName" to "graphName", "graphRotation" to "2", "url" to "dummy")
+    twingraphServiceImpl.updateGraphMetaData("orgId", "graphId", metadata)
+    verifyAll {
+      csmJedisPool.resource.exists(any<String>())
+      csmJedisPool.resource.hset(any(), "graphName", "graphName")
+      csmJedisPool.resource.hset(any(), "graphRotation", "2")
+      csmJedisPool.resource.hgetAll(any<String>())
+      csmJedisPool.resource.close()
+    }
+  }
+
+  @Test
+  fun `test updateGraphMetaData as Admin should not modify graphName & graphVersion if not present`() {
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
+    every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
+
+    every { csmJedisPool.resource.exists(any<String>()) } returns true
+    every { csmJedisPool.resource.hset(any<String>(), any<String>(), any<String>()) } returns 1L
+    every { csmJedisPool.resource.hgetAll(any<String>()) } returns
+        mapOf("graphName" to "graphName", "graphRotation" to "2")
+
+    var metadata = mapOf("lastVersion" to "last", "url" to "dummy")
+    twingraphServiceImpl.updateGraphMetaData("orgId", "graphId", metadata)
+    verifyAll {
+      csmJedisPool.resource.exists(any<String>())
+      csmJedisPool.resource.hgetAll(any<String>())
+      csmJedisPool.resource.close()
     }
   }
 

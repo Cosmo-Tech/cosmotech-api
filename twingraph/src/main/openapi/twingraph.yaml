@@ -239,6 +239,30 @@ paths:
             application/json:
               schema:
                 type: object
+    patch:
+      operationId: updateGraphMetaData
+      tags:
+        - twingraph
+      description: Update the metaData of the specified graph
+      requestBody:
+        description: the metaData to update
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: string
+            example:
+              graphName: "My Awesome Graph"
+              graphRotation: "2"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
   /organizations/{organization_id}/twingraph/{graph_id}:
     parameters:
       - name: organization_id
