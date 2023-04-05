@@ -171,6 +171,14 @@ class TwingraphServiceImpl(
   ): Any {
     val organization = organizationService.findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_READ)
+
+    if (requestBody.containsKey("graphRotation")) {
+      val graphRotation = requestBody["graphRotation"]?.toInt()
+      if (graphRotation == null || graphRotation < 1) {
+        throw CsmClientException("GraphRotation should be a positive integer")
+      }
+    }
+
     val metaDataKey = "${graphId}MetaData"
 
     csmJedisPool.resource.use { jedis ->
