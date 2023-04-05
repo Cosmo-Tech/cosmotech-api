@@ -61,6 +61,7 @@ class TwingraphServiceImplTests {
   fun setUp() {
     MockKAnnotations.init(this)
 
+    every { csmJedisPool.resource } returns mockk(relaxed = true)
     every { csmJedisPool.resource.close() } returns Unit
 
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")

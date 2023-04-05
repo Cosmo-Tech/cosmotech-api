@@ -12,6 +12,7 @@ import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.api.security.coroutine.SecurityCoroutineContext
 import com.cosmotech.api.utils.bulkQueryKey
 import com.cosmotech.api.utils.redisGraphKey
+import com.cosmotech.api.utils.toRedisMetaDataKey
 import com.cosmotech.api.utils.zipBytesWithFileNames
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.service.getRbac
@@ -34,6 +35,9 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.ScanParams
+
+const val GRAPH_NAME = "graphName"
+const val GRAPH_ROTATION = "graphRotation"
 
 @Service
 class TwingraphServiceImpl(
@@ -111,10 +115,9 @@ class TwingraphServiceImpl(
   override fun getGraphMetaData(organizationId: String, graphId: String): Map<String, String> {
     val organization = organizationService.findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_READ)
-    val metaDataKey = "${graphId}MetaData"
     csmJedisPool.resource.use { jedis ->
-      if (jedis.exists(metaDataKey)) {
-        return jedis.hgetAll(metaDataKey)
+      if (jedis.exists(graphId.toRedisMetaDataKey())) {
+        return jedis.hgetAll(graphId.toRedisMetaDataKey())
       }
       throw CsmResourceNotFoundException("No metadata found for graphId $graphId")
     }
@@ -134,9 +137,10 @@ class TwingraphServiceImpl(
 
     if (twinGraphQuery.version.isNullOrEmpty()) {
       csmJedisPool.resource.use { jedis ->
-        twinGraphQuery.version = jedis.hget("${graphId}MetaData", "lastVersion")
+        twinGraphQuery.version = jedis.hget("${graphId.toRedisMetaDataKey()}", "lastVersion")
         if (twinGraphQuery.version.isNullOrEmpty()) {
-          throw CsmResourceNotFoundException("Cannot find lastVersion in ${graphId}MetaData")
+          throw CsmResourceNotFoundException(
+              "Cannot find lastVersion in ${graphId.toRedisMetaDataKey()}")
         }
       }
     }
@@ -172,22 +176,18 @@ class TwingraphServiceImpl(
     val organization = organizationService.findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_READ)
 
-    if (requestBody.containsKey("graphRotation")) {
-      val graphRotation = requestBody["graphRotation"]?.toInt()
-      if (graphRotation == null || graphRotation < 1) {
-        throw CsmClientException("GraphRotation should be a positive integer")
-      }
+    val graphRotation = requestBody[GRAPH_ROTATION]?.toInt()
+    if (graphRotation != null && graphRotation < 1) {
+      throw CsmClientException("GraphRotation should be a positive integer")
     }
 
-    val metaDataKey = "${graphId}MetaData"
-
     csmJedisPool.resource.use { jedis ->
-      if (jedis.exists(metaDataKey)) {
-        requestBody.filterKeys { it == "graphName" || it == "graphRotation" }.forEach { (key, value)
+      if (jedis.exists(graphId.toRedisMetaDataKey())) {
+        requestBody.filterKeys { it == GRAPH_NAME || it == GRAPH_ROTATION }.forEach { (key, value)
           ->
-          jedis.hset(metaDataKey, key, value)
+          jedis.hset(graphId.toRedisMetaDataKey(), key, value)
         }
-        return jedis.hgetAll(metaDataKey)
+        return jedis.hgetAll(graphId.toRedisMetaDataKey())
       }
       throw CsmResourceNotFoundException("No metadata found for graphId $graphId")
     }
