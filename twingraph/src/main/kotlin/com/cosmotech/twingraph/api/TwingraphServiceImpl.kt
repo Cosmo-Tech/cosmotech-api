@@ -78,8 +78,10 @@ class TwingraphServiceImpl(
 
   @Suppress("SpreadOperator")
   override fun delete(organizationId: String, graphId: String) {
-    val twinGraph = TwinGraph(graphId, csmJedisPool)
-    twinGraph.delete()
+    val redisGraph = RedisGraph(csmJedisPool)
+    for (item in getVersions(graphId)) {
+      redisGraph.deleteGraph(item)
+    }
   }
 
   override fun findAllTwingraphs(organizationId: String): List<String> {
@@ -109,8 +111,8 @@ class TwingraphServiceImpl(
       graphId: String,
       twinGraphQuery: TwinGraphQuery
   ): Unit {
-      val organization = organizationService.findOrganizationById(organizationId)
-      csmRbac.verify(organization.getRbac(), PERMISSION_READ)
+    val organization = organizationService.findOrganizationById(organizationId)
+    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
     if (!TwingraphUtils.isReadOnlyQuery(twinGraphQuery.query)) {
       throw CsmClientException("Read Only queries authorized only")
     }
@@ -221,13 +223,35 @@ class TwingraphServiceImpl(
     return ByteArrayResource(csmJedisPool.resource.use { jedis -> jedis.get(bulkQueryId) })
   }
 
+  private fun getVersions(graphId: String): List<String> {
+    val matchingKeys = mutableSetOf<String>()
+    csmJedisPool.resource.use { jedis ->
+      var nextCursor = ScanParams.SCAN_POINTER_START
+      do {
+        val scanResult = jedis.scan(nextCursor, ScanParams().match("${graphId}:*"), "graphdata")
+        nextCursor = scanResult.cursor
+        matchingKeys.addAll(scanResult.result)
+      } while (!nextCursor.equals(ScanParams.SCAN_POINTER_START))
+    }
+    return matchingKeys.toList()
+  }
+
+  fun graphQuery(graphId: String, queryText: String): ResultSet {
+    val redisGraph = RedisGraph(csmJedisPool)
+    return redisGraph.query(graphId, queryText)
+  }
+
   override fun createNodes(
       organizationId: String,
       graphId: String,
       requestBody: List<Map<String, String>>
   ): List<ResultSet> {
-    val twinGraph = TwinGraph(graphId, csmJedisPool)
-    return twinGraph.createNodes(requestBody)
+    val nameList = mutableListOf<String>()
+    for (args in requestBody) {
+      graphQuery(graphId, "CREATE (:${args["type"]} {id:'${args["name"]}',${args["params"]}})")
+      nameList.add(args["name"]!!)
+    }
+    return getNodes(organizationId, graphId, nameList)
   }
 
   override fun createRelationships(
@@ -235,8 +259,15 @@ class TwingraphServiceImpl(
       graphId: String,
       requestBody: List<Map<String, String>>
   ): List<ResultSet> {
-    val twinGraph = TwinGraph(graphId, csmJedisPool)
-    return twinGraph.createRelationships(requestBody)
+    val nameList = mutableListOf<String>()
+    for (args in requestBody) {
+      graphQuery(
+          graphId,
+          "MATCH (a),(b) WHERE a.id='${args["source"]}' AND b.id='${args["target"]}'" +
+              "CREATE (a)-[:${args["type"]} {id:'${args["name"]}', ${args["params"]}}]->(b)")
+      nameList.add(args["name"]!!)
+    }
+    return getRelationships(organizationId, graphId, nameList)
   }
 
   override fun getNodes(
@@ -244,8 +275,11 @@ class TwingraphServiceImpl(
       graphId: String,
       requestBody: List<String>
   ): List<ResultSet> {
-    val twinGraph = TwinGraph(graphId, csmJedisPool)
-    return twinGraph.getNodes(requestBody)
+    val resultList = mutableListOf<ResultSet>()
+    for (arg in requestBody) {
+      resultList.add(graphQuery(graphId, "MATCH (t {id:'$arg'}) RETURN t"))
+    }
+    return resultList
   }
 
   override fun getRelationships(
@@ -253,8 +287,11 @@ class TwingraphServiceImpl(
       graphId: String,
       requestBody: List<String>
   ): List<ResultSet> {
-    val twinGraph = TwinGraph(graphId, csmJedisPool)
-    return twinGraph.getRelationships(requestBody)
+    val resultList = mutableListOf<ResultSet>()
+    for (arg in requestBody) {
+      resultList.add(graphQuery(graphId, "MATCH ()-[r {id:'$arg'}]-() RETURN r"))
+    }
+    return resultList
   }
 
   override fun updateNodes(
@@ -262,8 +299,14 @@ class TwingraphServiceImpl(
       graphId: String,
       requestBody: List<Map<String, String>>
   ): List<ResultSet> {
-    val twinGraph = TwinGraph(graphId, csmJedisPool)
-    return twinGraph.updateNodes(requestBody)
+    val nameList = mutableListOf<String>()
+    for (args in requestBody) {
+      graphQuery(
+          graphId,
+          "MATCH (a {id:'${args["name"]}'}) SET a = {id:'${args["name"]}',${args["params"]}}")
+      nameList.add(args["name"]!!)
+    }
+    return getNodes(organizationId, graphId, nameList)
   }
 
   override fun updateRelationships(
@@ -271,8 +314,14 @@ class TwingraphServiceImpl(
       graphId: String,
       requestBody: List<Map<String, String>>
   ): List<ResultSet> {
-    val twinGraph = TwinGraph(graphId, csmJedisPool)
-    return twinGraph.updateRelationships(requestBody)
+    val nameList = mutableListOf<String>()
+    for (args in requestBody) {
+      graphQuery(
+          graphId,
+          "MATCH ()-[a {id:'${args["name"]}'}]-() SET a = {id:'${args["name"]}', ${args["params"]}}")
+      nameList.add(args["name"]!!)
+    }
+    return getRelationships(organizationId, graphId, nameList)
   }
 
   override fun deleteNodes(
@@ -280,8 +329,9 @@ class TwingraphServiceImpl(
       graphId: String,
       requestBody: List<Map<String, String>>
   ) {
-    val twinGraph = TwinGraph(graphId, csmJedisPool)
-    twinGraph.deleteNodes(requestBody)
+    for (args in requestBody) {
+      graphQuery(graphId, "MATCH (a) WHERE a.id='${args["name"]}' DELETE a")
+    }
   }
 
   override fun deleteRelationships(
@@ -289,7 +339,8 @@ class TwingraphServiceImpl(
       graphId: String,
       requestBody: List<Map<String, String>>
   ) {
-    val twinGraph = TwinGraph(graphId, csmJedisPool)
-    twinGraph.deleteRelationships(requestBody)
+    for (args in requestBody) {
+      graphQuery(graphId, "MATCH ()-[a]-() WHERE a.id='${args["name"]}' DELETE a")
+    }
   }
 }
