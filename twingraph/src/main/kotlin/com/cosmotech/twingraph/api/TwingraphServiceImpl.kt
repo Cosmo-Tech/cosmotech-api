@@ -45,6 +45,7 @@ const val GRAPH_ROTATION = "graphRotation"
 class TwingraphServiceImpl(
     private val organizationService: OrganizationApiService,
     private val csmJedisPool: JedisPool,
+    private val csmRedisGraph: RedisGraph,
     private val csmRbac: CsmRbac
 ) : CsmPhoenixService(), TwingraphApiService {
 
@@ -236,111 +237,79 @@ class TwingraphServiceImpl(
     return matchingKeys.toList()
   }
 
-  fun graphQuery(graphId: String, queryText: String): ResultSet {
-    val redisGraph = RedisGraph(csmJedisPool)
-    return redisGraph.query(graphId, queryText)
-  }
-
   override fun createNodes(
       organizationId: String,
       graphId: String,
       requestBody: List<Map<String, String>>
-  ): List<ResultSet> {
-    val nameList = mutableListOf<String>()
-    for (args in requestBody) {
-      graphQuery(graphId, "CREATE (:${args["type"]} {id:'${args["name"]}',${args["params"]}})")
-      nameList.add(args["name"]!!)
-    }
-    return getNodes(organizationId, graphId, nameList)
-  }
+  ): List<ResultSet> =
+      requestBody.map {
+        csmRedisGraph.query(
+            graphId, "CREATE (a:${it["type"]} {id:'${it["name"]}',${it["params"]}}) RETURN a")
+      }
 
   override fun createRelationships(
       organizationId: String,
       graphId: String,
       requestBody: List<Map<String, String>>
-  ): List<ResultSet> {
-    val nameList = mutableListOf<String>()
-    for (args in requestBody) {
-      graphQuery(
-          graphId,
-          "MATCH (a),(b) WHERE a.id='${args["source"]}' AND b.id='${args["target"]}'" +
-              "CREATE (a)-[:${args["type"]} {id:'${args["name"]}', ${args["params"]}}]->(b)")
-      nameList.add(args["name"]!!)
-    }
-    return getRelationships(organizationId, graphId, nameList)
-  }
+  ): List<ResultSet> =
+      requestBody.map {
+        csmRedisGraph.query(
+            graphId,
+            "MATCH (a),(b) WHERE a.id='${it["source"]}' AND b.id='${it["target"]}'" +
+                "CREATE (a)-[r:${it["type"]} {id:'${it["name"]}', ${it["params"]}}]->(b) RETURN r")
+      }
 
   override fun getNodes(
       organizationId: String,
       graphId: String,
       requestBody: List<String>
-  ): List<ResultSet> {
-    val resultList = mutableListOf<ResultSet>()
-    for (arg in requestBody) {
-      resultList.add(graphQuery(graphId, "MATCH (t {id:'$arg'}) RETURN t"))
-    }
-    return resultList
-  }
+  ): List<ResultSet> =
+      requestBody.map { csmRedisGraph.query(graphId, "MATCH (a {id:'$it'}) RETURN a") }
 
   override fun getRelationships(
       organizationId: String,
       graphId: String,
       requestBody: List<String>
-  ): List<ResultSet> {
-    val resultList = mutableListOf<ResultSet>()
-    for (arg in requestBody) {
-      resultList.add(graphQuery(graphId, "MATCH ()-[r {id:'$arg'}]-() RETURN r"))
-    }
-    return resultList
-  }
+  ): List<ResultSet> =
+      requestBody.map { csmRedisGraph.query(graphId, "MATCH ()-[r {id:'$it'}]-() RETURN r") }
 
   override fun updateNodes(
       organizationId: String,
       graphId: String,
       requestBody: List<Map<String, String>>
-  ): List<ResultSet> {
-    val nameList = mutableListOf<String>()
-    for (args in requestBody) {
-      graphQuery(
-          graphId,
-          "MATCH (a {id:'${args["name"]}'}) SET a = {id:'${args["name"]}',${args["params"]}}")
-      nameList.add(args["name"]!!)
-    }
-    return getNodes(organizationId, graphId, nameList)
-  }
+  ): List<ResultSet> =
+      requestBody.map {
+        csmRedisGraph.query(
+            graphId,
+            "MATCH (a {id:'${it["name"]}'}) SET a = {id:'${it["name"]}',${it["params"]}} RETURN a")
+      }
 
   override fun updateRelationships(
       organizationId: String,
       graphId: String,
       requestBody: List<Map<String, String>>
-  ): List<ResultSet> {
-    val nameList = mutableListOf<String>()
-    for (args in requestBody) {
-      graphQuery(
-          graphId,
-          "MATCH ()-[a {id:'${args["name"]}'}]-() SET a = {id:'${args["name"]}', ${args["params"]}}")
-      nameList.add(args["name"]!!)
-    }
-    return getRelationships(organizationId, graphId, nameList)
-  }
+  ): List<ResultSet> =
+      requestBody.map {
+        csmRedisGraph.query(
+            graphId,
+            "MATCH ()-[r {id:'${it["name"]}'}]-() SET r = {id:'${it["name"]}', ${it["params"]}} RETURN r")
+      }
 
   override fun deleteNodes(
       organizationId: String,
       graphId: String,
       requestBody: List<Map<String, String>>
-  ) {
-    for (args in requestBody) {
-      graphQuery(graphId, "MATCH (a) WHERE a.id='${args["name"]}' DELETE a")
-    }
-  }
+  ) =
+      requestBody.forEach {
+        csmRedisGraph.query(graphId, "MATCH (a) WHERE a.id='${it["name"]}' DELETE a")
+      }
 
   override fun deleteRelationships(
       organizationId: String,
       graphId: String,
       requestBody: List<Map<String, String>>
-  ) {
-    for (args in requestBody) {
-      graphQuery(graphId, "MATCH ()-[a]-() WHERE a.id='${args["name"]}' DELETE a")
-    }
-  }
+  ) =
+      requestBody.forEach {
+        csmRedisGraph.query(graphId, "MATCH ()-[r]-() WHERE r.id='${it["name"]}' DELETE r")
+      }
 }
