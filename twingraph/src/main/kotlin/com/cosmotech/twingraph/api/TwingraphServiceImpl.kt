@@ -235,72 +235,82 @@ class TwingraphServiceImpl(
     return matchingKeys.toList()
   }
 
-  override fun createNodes(
+  override fun createEntities(
       organizationId: String,
       graphId: String,
-      requestBody: List<GraphProperties>
-  ): List<ResultSet> =
-      requestBody.map {
-        csmRedisGraph.query(
-            graphId, "CREATE (a:${it.type} {id:'${it.name}',${it.params}}) RETURN a")
-      }
+      type: String,
+      graphProperties: List<GraphProperties>
+  ): List<ResultSet> {
+    return when (type) {
+      "node" ->
+          graphProperties.map {
+            csmRedisGraph.query(
+                graphId, "CREATE (a:${it.type} {id:'${it.name}',${it.params}}) RETURN a")
+          }
+      "relationship" ->
+          graphProperties.map {
+            csmRedisGraph.query(
+                graphId,
+                "MATCH (a),(b) WHERE a.id='${it.source}' AND b.id='${it.target}'" +
+                    "CREATE (a)-[r:${it.type} {id:'${it.name}', ${it.params}}]->(b) RETURN r")
+          }
+      else -> throw CsmResourceNotFoundException("Bad Type : $type")
+    }
+  }
 
-  override fun createRelationships(
+  override fun getEntities(
       organizationId: String,
       graphId: String,
-      requestBody: List<GraphProperties>
-  ): List<ResultSet> =
-      requestBody.map {
-        csmRedisGraph.query(
-            graphId,
-            "MATCH (a),(b) WHERE a.id='${it.source}' AND b.id='${it.target}'" +
-                "CREATE (a)-[r:${it.type} {id:'${it.name}', ${it.params}}]->(b) RETURN r")
-      }
-
-  override fun getNodes(
-      organizationId: String,
-      graphId: String,
+      type: String,
       requestBody: List<String>
-  ): List<ResultSet> =
-      requestBody.map { csmRedisGraph.query(graphId, "MATCH (a {id:'$it'}) RETURN a") }
+  ): List<ResultSet> {
+    return when (type) {
+      "node" -> requestBody.map { csmRedisGraph.query(graphId, "MATCH (a {id:'$it'}) RETURN a") }
+      "relationship" ->
+          requestBody.map { csmRedisGraph.query(graphId, "MATCH ()-[r {id:'$it'}]-() RETURN r") }
+      else -> throw CsmResourceNotFoundException("Bad Type : $type")
+    }
+  }
 
-  override fun getRelationships(
+  override fun updateEntities(
       organizationId: String,
       graphId: String,
+      type: String,
+      graphProperties: List<GraphProperties>
+  ): List<ResultSet> {
+    return when (type) {
+      "node" ->
+          graphProperties.map {
+            csmRedisGraph.query(
+                graphId,
+                "MATCH (a {id:'${it.name}'}) SET a = {id:'${it.name}',${it.params}} RETURN a")
+          }
+      "relationship" ->
+          graphProperties.map {
+            csmRedisGraph.query(
+                graphId,
+                "MATCH ()-[r {id:'${it.name}'}]-() SET r = {id:'${it.name}', ${it.params}} RETURN r")
+          }
+      else -> throw CsmResourceNotFoundException("Bad Type : $type")
+    }
+  }
+
+  override fun deleteEntities(
+      organizationId: String,
+      graphId: String,
+      type: String,
       requestBody: List<String>
-  ): List<ResultSet> =
-      requestBody.map { csmRedisGraph.query(graphId, "MATCH ()-[r {id:'$it'}]-() RETURN r") }
-
-  override fun updateNodes(
-      organizationId: String,
-      graphId: String,
-      requestBody: List<GraphProperties>
-  ): List<ResultSet> =
-      requestBody.map {
-        csmRedisGraph.query(
-            graphId, "MATCH (a {id:'${it.name}'}) SET a = {id:'${it.name}',${it.params}} RETURN a")
-      }
-
-  override fun updateRelationships(
-      organizationId: String,
-      graphId: String,
-      requestBody: List<GraphProperties>
-  ): List<ResultSet> =
-      requestBody.map {
-        csmRedisGraph.query(
-            graphId,
-            "MATCH ()-[r {id:'${it.name}'}]-() SET r = {id:'${it.name}', ${it.params}} RETURN r")
-      }
-
-  override fun deleteNodes(organizationId: String, graphId: String, requestBody: List<String>) =
-      requestBody.forEach { csmRedisGraph.query(graphId, "MATCH (a) WHERE a.id='$it' DELETE a") }
-
-  override fun deleteRelationships(
-      organizationId: String,
-      graphId: String,
-      requestBody: List<String>
-  ) =
-      requestBody.forEach {
-        csmRedisGraph.query(graphId, "MATCH ()-[r]-() WHERE r.id='$it' DELETE r")
-      }
+  ) {
+    return when (type) {
+      "node" ->
+          requestBody.forEach {
+            csmRedisGraph.query(graphId, "MATCH (a) WHERE a.id='$it' DELETE a")
+          }
+      "relationship" ->
+          requestBody.forEach {
+            csmRedisGraph.query(graphId, "MATCH ()-[r]-() WHERE r.id='$it' DELETE r")
+          }
+      else -> throw CsmResourceNotFoundException("Bad Type : $type")
+    }
+  }
 }

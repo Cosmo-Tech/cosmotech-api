@@ -5,22 +5,18 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**bulkQuery**](TwingraphApi.md#bulkQuery) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/bulk_query | 
-[**createNodes**](TwingraphApi.md#createNodes) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/node/create | 
-[**createRelationships**](TwingraphApi.md#createRelationships) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/relationship/create | 
+[**createEntities**](TwingraphApi.md#createEntities) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/{type}/create | 
 [**delete**](TwingraphApi.md#delete) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id} | 
-[**deleteNodes**](TwingraphApi.md#deleteNodes) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id}/node/delete | 
-[**deleteRelationships**](TwingraphApi.md#deleteRelationships) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id}/relationship/delete | 
+[**deleteEntities**](TwingraphApi.md#deleteEntities) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id}/{type}/delete | 
 [**downloadGraph**](TwingraphApi.md#downloadGraph) | **GET** /organizations/{organization_id}/twingraph/bulk_query/download/{hash} | 
 [**findAllTwingraphs**](TwingraphApi.md#findAllTwingraphs) | **GET** /organizations/{organization_id}/twingraphs | 
+[**getEntities**](TwingraphApi.md#getEntities) | **GET** /organizations/{organization_id}/twingraph/{graph_id}/{type}/read | 
 [**getGraphMetaData**](TwingraphApi.md#getGraphMetaData) | **GET** /organizations/{organization_id}/twingraph/{graph_id}/metadata | 
-[**getNodes**](TwingraphApi.md#getNodes) | **GET** /organizations/{organization_id}/twingraph/{graph_id}/node/read | 
-[**getRelationships**](TwingraphApi.md#getRelationships) | **GET** /organizations/{organization_id}/twingraph/{graph_id}/relationship/read | 
 [**importGraph**](TwingraphApi.md#importGraph) | **POST** /organizations/{organization_id}/twingraph/import | 
 [**jobStatus**](TwingraphApi.md#jobStatus) | **GET** /organizations/{organization_id}/job/{job_id}/status | 
 [**query**](TwingraphApi.md#query) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/query | 
+[**updateEntities**](TwingraphApi.md#updateEntities) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/{type}/update | 
 [**updateGraphMetaData**](TwingraphApi.md#updateGraphMetaData) | **PATCH** /organizations/{organization_id}/twingraph/{graph_id}/metadata | 
-[**updateNodes**](TwingraphApi.md#updateNodes) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/node/update | 
-[**updateRelationships**](TwingraphApi.md#updateRelationships) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/relationship/update | 
 
 
 <a name="bulkQuery"></a>
@@ -52,42 +48,13 @@ Name | Type | Description  | Notes
 - **Content-Type**: application/json
 - **Accept**: application/json
 
-<a name="createNodes"></a>
-# **createNodes**
-> List createNodes(organization\_id, graph\_id, GraphProperties)
+<a name="createEntities"></a>
+# **createEntities**
+> List createEntities(organization\_id, graph\_id, type, GraphProperties)
 
 
 
-    create new nodes in a graph instance
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **graph\_id** | **String**| the Graph Identifier | [default to null]
- **GraphProperties** | [**List**](../Models/GraphProperties.md)| the nodes to create |
-
-### Return type
-
-**List**
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: application/json
-- **Accept**: application/json
-
-<a name="createRelationships"></a>
-# **createRelationships**
-> List createRelationships(organization\_id, graph\_id, GraphProperties)
-
-
-
-    create new relationships in a graph instance
+    create new entities in a graph instance
 
 ### Parameters
 
@@ -95,7 +62,8 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **graph\_id** | **String**| the Graph Identifier | [default to null]
- **GraphProperties** | [**List**](../Models/GraphProperties.md)| the relationships to create |
+ **type** | **String**| the entity type | [default to null] [enum: node, relationship]
+ **GraphProperties** | [**List**](../Models/GraphProperties.md)| the entities to create |
 
 ### Return type
 
@@ -138,42 +106,13 @@ null (empty response body)
 - **Content-Type**: Not defined
 - **Accept**: Not defined
 
-<a name="deleteNodes"></a>
-# **deleteNodes**
-> deleteNodes(organization\_id, graph\_id, request\_body)
+<a name="deleteEntities"></a>
+# **deleteEntities**
+> deleteEntities(organization\_id, graph\_id, type, request\_body)
 
 
 
-    delete nodes in a graph instance
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **graph\_id** | **String**| the Graph Identifier | [default to null]
- **request\_body** | [**List**](../Models/string.md)| the nodes to delete |
-
-### Return type
-
-null (empty response body)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: application/json
-- **Accept**: Not defined
-
-<a name="deleteRelationships"></a>
-# **deleteRelationships**
-> deleteRelationships(organization\_id, graph\_id, request\_body)
-
-
-
-    delete relationships in a graph instance
+    delete entities in a graph instance
 
 ### Parameters
 
@@ -181,7 +120,8 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **graph\_id** | **String**| the Graph Identifier | [default to null]
- **request\_body** | [**List**](../Models/string.md)| the relationships to delete |
+ **type** | **String**| the entity type | [default to null] [enum: node, relationship]
+ **request\_body** | [**List**](../Models/string.md)| the entities to delete |
 
 ### Return type
 
@@ -251,6 +191,36 @@ Name | Type | Description  | Notes
 - **Content-Type**: Not defined
 - **Accept**: application/json
 
+<a name="getEntities"></a>
+# **getEntities**
+> List getEntities(organization\_id, graph\_id, type, request\_body)
+
+
+
+    get entities in a graph instance
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **graph\_id** | **String**| the Graph Identifier | [default to null]
+ **type** | **String**| the entity type | [default to null] [enum: node, relationship]
+ **request\_body** | [**List**](../Models/string.md)| the entities to get |
+
+### Return type
+
+**List**
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
 <a name="getGraphMetaData"></a>
 # **getGraphMetaData**
 > Object getGraphMetaData(organization\_id, graph\_id)
@@ -277,64 +247,6 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
-
-<a name="getNodes"></a>
-# **getNodes**
-> List getNodes(organization\_id, graph\_id, request\_body)
-
-
-
-    get nodes in a graph instance
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **graph\_id** | **String**| the Graph Identifier | [default to null]
- **request\_body** | [**List**](../Models/string.md)| the nodes to get |
-
-### Return type
-
-**List**
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: application/json
-- **Accept**: application/json
-
-<a name="getRelationships"></a>
-# **getRelationships**
-> List getRelationships(organization\_id, graph\_id, request\_body)
-
-
-
-    get relationships in a graph instance
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **graph\_id** | **String**| the Graph Identifier | [default to null]
- **request\_body** | [**List**](../Models/string.md)| the relationships to get |
-
-### Return type
-
-**List**
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: application/json
 - **Accept**: application/json
 
 <a name="importGraph"></a>
@@ -422,6 +334,36 @@ Name | Type | Description  | Notes
 - **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
+<a name="updateEntities"></a>
+# **updateEntities**
+> List updateEntities(organization\_id, graph\_id, type, GraphProperties)
+
+
+
+    update entities in a graph instance
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **graph\_id** | **String**| the Graph Identifier | [default to null]
+ **type** | **String**| the entity type | [default to null] [enum: node, relationship]
+ **GraphProperties** | [**List**](../Models/GraphProperties.md)| the entities to update |
+
+### Return type
+
+**List**
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
 <a name="updateGraphMetaData"></a>
 # **updateGraphMetaData**
 > Object updateGraphMetaData(organization\_id, graph\_id, request\_body)
@@ -441,64 +383,6 @@ Name | Type | Description  | Notes
 ### Return type
 
 **Object**
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: application/json
-- **Accept**: application/json
-
-<a name="updateNodes"></a>
-# **updateNodes**
-> List updateNodes(organization\_id, graph\_id, GraphProperties)
-
-
-
-    update nodes in a graph instance
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **graph\_id** | **String**| the Graph Identifier | [default to null]
- **GraphProperties** | [**List**](../Models/GraphProperties.md)| the nodes to update |
-
-### Return type
-
-**List**
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: application/json
-- **Accept**: application/json
-
-<a name="updateRelationships"></a>
-# **updateRelationships**
-> List updateRelationships(organization\_id, graph\_id, GraphProperties)
-
-
-
-    update relationships in a graph instance
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **graph\_id** | **String**| the Graph Identifier | [default to null]
- **GraphProperties** | [**List**](../Models/GraphProperties.md)| the relationships to update |
-
-### Return type
-
-**List**
 
 ### Authorization
 

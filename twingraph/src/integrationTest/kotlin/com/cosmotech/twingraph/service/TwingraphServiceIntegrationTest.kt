@@ -57,9 +57,10 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("Create Nodes")
     val nodeStart =
         (twingraphApiService
-                .createNodes(
+                .createEntities(
                     "orga",
                     graphId,
+                    "node",
                     listOf(
                         GraphProperties().apply {
                           type = "node"
@@ -79,7 +80,8 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("Read Nodes")
     var nodeResult =
-        (twingraphApiService.getNodes("orga", graphId, listOf("node_a")).first() as ResultSet)
+        (twingraphApiService.getEntities("orga", graphId, "node", listOf("node_a")).first() as
+                ResultSet)
             .next()
             .values()
     assertEquals(nodeStart, nodeResult)
@@ -87,9 +89,10 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("Create Relationships")
     val relationshipStart =
         (twingraphApiService
-                .createRelationships(
+                .createEntities(
                     "orga",
                     graphId,
+                    "relationship",
                     listOf(
                         GraphProperties(
                             "relationship", "node_a", "node_b", "relationship_a", "duration:0")))
@@ -100,7 +103,9 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("Read Relationships")
     var relationshipResult =
-        (twingraphApiService.getRelationships("orga", graphId, listOf("relationship_a")).first() as
+        (twingraphApiService
+                .getEntities("orga", graphId, "relationship", listOf("relationship_a"))
+                .first() as
                 ResultSet)
             .next()
             .values()
@@ -109,9 +114,10 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("Update Nodes")
     nodeResult =
         (twingraphApiService
-                .updateNodes(
+                .updateEntities(
                     "orga",
                     graphId,
+                    "node",
                     listOf(
                         GraphProperties().apply {
                           name = "node_a"
@@ -126,9 +132,10 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("Update Relationships")
     relationshipResult =
         (twingraphApiService
-                .updateRelationships(
+                .updateEntities(
                     "orga",
                     graphId,
+                    "relationship",
                     listOf(
                         GraphProperties().apply {
                           source = "node_a"
@@ -143,13 +150,15 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
     assertNotEquals(relationshipStart, relationshipResult)
 
     logger.info("Delete Relationships")
-    twingraphApiService.deleteRelationships("orga", "graph:0", listOf("relationship_a"))
+    twingraphApiService.deleteEntities("orga", "graph:0", "node", listOf("relationship_a"))
     assertDoesNotThrow {
-      twingraphApiService.getRelationships("orga", graphId, listOf("relationship_a"))
+      twingraphApiService.getEntities("orga", graphId, "node", listOf("relationship_a"))
     }
 
     logger.info("Delete Nodes")
-    twingraphApiService.deleteNodes("orga", graphId, listOf("node_a"))
-    assertDoesNotThrow { twingraphApiService.getNodes("orga", graphId, listOf("node_a")) }
+    twingraphApiService.deleteEntities("orga", graphId, "relationship", listOf("node_a"))
+    assertDoesNotThrow {
+      twingraphApiService.getEntities("orga", graphId, "relationship", listOf("node_a"))
+    }
   }
 }
