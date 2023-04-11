@@ -19,6 +19,7 @@ Models/DatasetConnector.md
 Models/DatasetCopyParameters.md
 Models/DatasetSearch.md
 Models/DeleteHistoricalData.md
+Models/GraphProperties.md
 Models/Organization.md
 Models/OrganizationAccessControl.md
 Models/OrganizationRole.md

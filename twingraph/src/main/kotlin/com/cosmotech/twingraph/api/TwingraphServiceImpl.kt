@@ -16,6 +16,7 @@ import com.cosmotech.api.utils.toRedisMetaDataKey
 import com.cosmotech.api.utils.zipBytesWithFileNames
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.service.getRbac
+import com.cosmotech.twingraph.domain.GraphProperties
 import com.cosmotech.twingraph.domain.TwinGraphHash
 import com.cosmotech.twingraph.domain.TwinGraphImport
 import com.cosmotech.twingraph.domain.TwinGraphImportInfo
@@ -79,9 +80,8 @@ class TwingraphServiceImpl(
 
   @Suppress("SpreadOperator")
   override fun delete(organizationId: String, graphId: String) {
-    val redisGraph = RedisGraph(csmJedisPool)
     for (item in getVersions(graphId)) {
-      redisGraph.deleteGraph(item)
+      csmRedisGraph.deleteGraph(item)
     }
   }
 
@@ -142,9 +142,8 @@ class TwingraphServiceImpl(
       twinGraphQuery: TwinGraphQuery
   ): String {
     checkTwinGraphPrerequisites(organizationId, graphId, twinGraphQuery)
-    val redisGraph = RedisGraph(csmJedisPool)
     val resultSet =
-        redisGraph.query(
+        csmRedisGraph.query(
             redisGraphKey(graphId, twinGraphQuery.version!!),
             twinGraphQuery.query,
             csmPlatformProperties.twincache.queryTimeout)
@@ -190,8 +189,7 @@ class TwingraphServiceImpl(
       if (keyExists) {
         return twinGraphHash
       }
-      val redisGraph = RedisGraph(csmJedisPool)
-      val resultSet = redisGraph.query(redisGraphKey, twinGraphQuery.query)
+      val resultSet = csmRedisGraph.query(redisGraphKey, twinGraphQuery.query)
 
       GlobalScope.launch(SecurityCoroutineContext()) {
         val zip =
@@ -240,23 +238,23 @@ class TwingraphServiceImpl(
   override fun createNodes(
       organizationId: String,
       graphId: String,
-      requestBody: List<Map<String, String>>
+      requestBody: List<GraphProperties>
   ): List<ResultSet> =
       requestBody.map {
         csmRedisGraph.query(
-            graphId, "CREATE (a:${it["type"]} {id:'${it["name"]}',${it["params"]}}) RETURN a")
+            graphId, "CREATE (a:${it.type} {id:'${it.name}',${it.params}}) RETURN a")
       }
 
   override fun createRelationships(
       organizationId: String,
       graphId: String,
-      requestBody: List<Map<String, String>>
+      requestBody: List<GraphProperties>
   ): List<ResultSet> =
       requestBody.map {
         csmRedisGraph.query(
             graphId,
-            "MATCH (a),(b) WHERE a.id='${it["source"]}' AND b.id='${it["target"]}'" +
-                "CREATE (a)-[r:${it["type"]} {id:'${it["name"]}', ${it["params"]}}]->(b) RETURN r")
+            "MATCH (a),(b) WHERE a.id='${it.source}' AND b.id='${it.target}'" +
+                "CREATE (a)-[r:${it.type} {id:'${it.name}', ${it.params}}]->(b) RETURN r")
       }
 
   override fun getNodes(
@@ -276,40 +274,33 @@ class TwingraphServiceImpl(
   override fun updateNodes(
       organizationId: String,
       graphId: String,
-      requestBody: List<Map<String, String>>
+      requestBody: List<GraphProperties>
   ): List<ResultSet> =
       requestBody.map {
         csmRedisGraph.query(
-            graphId,
-            "MATCH (a {id:'${it["name"]}'}) SET a = {id:'${it["name"]}',${it["params"]}} RETURN a")
+            graphId, "MATCH (a {id:'${it.name}'}) SET a = {id:'${it.name}',${it.params}} RETURN a")
       }
 
   override fun updateRelationships(
       organizationId: String,
       graphId: String,
-      requestBody: List<Map<String, String>>
+      requestBody: List<GraphProperties>
   ): List<ResultSet> =
       requestBody.map {
         csmRedisGraph.query(
             graphId,
-            "MATCH ()-[r {id:'${it["name"]}'}]-() SET r = {id:'${it["name"]}', ${it["params"]}} RETURN r")
+            "MATCH ()-[r {id:'${it.name}'}]-() SET r = {id:'${it.name}', ${it.params}} RETURN r")
       }
 
-  override fun deleteNodes(
-      organizationId: String,
-      graphId: String,
-      requestBody: List<Map<String, String>>
-  ) =
-      requestBody.forEach {
-        csmRedisGraph.query(graphId, "MATCH (a) WHERE a.id='${it["name"]}' DELETE a")
-      }
+  override fun deleteNodes(organizationId: String, graphId: String, requestBody: List<String>) =
+      requestBody.forEach { csmRedisGraph.query(graphId, "MATCH (a) WHERE a.id='$it' DELETE a") }
 
   override fun deleteRelationships(
       organizationId: String,
       graphId: String,
-      requestBody: List<Map<String, String>>
+      requestBody: List<String>
   ) =
       requestBody.forEach {
-        csmRedisGraph.query(graphId, "MATCH ()-[r]-() WHERE r.id='${it["name"]}' DELETE r")
+        csmRedisGraph.query(graphId, "MATCH ()-[r]-() WHERE r.id='$it' DELETE r")
       }
 }

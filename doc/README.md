@@ -157,6 +157,7 @@ Class | Method | HTTP request | Description
  - [DatasetCopyParameters](./Models/DatasetCopyParameters.md)
  - [DatasetSearch](./Models/DatasetSearch.md)
  - [DeleteHistoricalData](./Models/DeleteHistoricalData.md)
+ - [GraphProperties](./Models/GraphProperties.md)
  - [Organization](./Models/Organization.md)
  - [OrganizationAccessControl](./Models/OrganizationAccessControl.md)
  - [OrganizationRole](./Models/OrganizationRole.md)

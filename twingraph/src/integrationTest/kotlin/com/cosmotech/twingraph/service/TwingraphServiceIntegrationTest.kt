@@ -4,6 +4,7 @@ package com.cosmotech.twingraph.service
 
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.twingraph.api.TwingraphApiService
+import com.cosmotech.twingraph.domain.GraphProperties
 import com.redis.testcontainers.RedisStackContainer
 import com.redis.testcontainers.junit.RedisTestContext
 import com.redis.testcontainers.junit.RedisTestContextsSource
@@ -59,7 +60,17 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
                 .createNodes(
                     "orga",
                     graphId,
-                    listOf(mapOf("type" to "node", "name" to "node_a", "params" to "size:0")))
+                    listOf(
+                        GraphProperties().apply {
+                          type = "node"
+                          name = "node_a"
+                          params = "size:0"
+                        },
+                        GraphProperties().apply {
+                          type = "node"
+                          name = "node_b"
+                          params = "size:1"
+                        }))
                 .first() as
                 ResultSet)
             .next()
@@ -74,20 +85,14 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(nodeStart, nodeResult)
 
     logger.info("Create Relationships")
-    twingraphApiService.createNodes(
-        "orga", graphId, listOf(mapOf("type" to "node", "name" to "node_b", "params" to "size:1")))
     val relationshipStart =
         (twingraphApiService
                 .createRelationships(
                     "orga",
                     graphId,
                     listOf(
-                        mapOf(
-                            "type" to "relationship",
-                            "source" to "node_a",
-                            "target" to "node_b",
-                            "name" to "relationship_a",
-                            "params" to "duration:0")))
+                        GraphProperties(
+                            "relationship", "node_a", "node_b", "relationship_a", "duration:0")))
                 .first() as
                 ResultSet)
             .next()
@@ -105,7 +110,13 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
     nodeResult =
         (twingraphApiService
                 .updateNodes(
-                    "orga", graphId, listOf(mapOf("name" to "node_a", "params" to "size:2")))
+                    "orga",
+                    graphId,
+                    listOf(
+                        GraphProperties().apply {
+                          name = "node_a"
+                          params = "size:2"
+                        }))
                 .first() as
                 ResultSet)
             .next()
@@ -119,11 +130,12 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
                     "orga",
                     graphId,
                     listOf(
-                        mapOf(
-                            "source" to "node_a",
-                            "target" to "node_b",
-                            "name" to "relationship_a",
-                            "params" to "duration:2")))
+                        GraphProperties().apply {
+                          source = "node_a"
+                          target = "node_b"
+                          name = "relationship_a"
+                          params = "duration:2"
+                        }))
                 .first() as
                 ResultSet)
             .next()
@@ -131,14 +143,13 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
     assertNotEquals(relationshipStart, relationshipResult)
 
     logger.info("Delete Relationships")
-    twingraphApiService.deleteRelationships(
-        "orga", "graph:0", listOf(mapOf("name" to "relationship_a")))
+    twingraphApiService.deleteRelationships("orga", "graph:0", listOf("relationship_a"))
     assertDoesNotThrow {
       twingraphApiService.getRelationships("orga", graphId, listOf("relationship_a"))
     }
 
     logger.info("Delete Nodes")
-    twingraphApiService.deleteNodes("orga", graphId, listOf(mapOf("name" to "node_a")))
+    twingraphApiService.deleteNodes("orga", graphId, listOf("node_a"))
     assertDoesNotThrow { twingraphApiService.getNodes("orga", graphId, listOf("node_a")) }
   }
 }
