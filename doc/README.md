@@ -95,22 +95,18 @@ Class | Method | HTTP request | Description
 *SolutionApi* | [**updateSolutionRunTemplate**](Apis/SolutionApi.md#updatesolutionruntemplate) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id} | Update the specified Solution Run Template
 *SolutionApi* | [**uploadRunTemplateHandler**](Apis/SolutionApi.md#uploadruntemplatehandler) | **POST** /organizations/{organization_id}/solutions/{solution_id}/runtemplates/{run_template_id}/handlers/{handler_id}/upload | Upload a Run Template step handler zip file
 *TwingraphApi* | [**bulkQuery**](Apis/TwingraphApi.md#bulkquery) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/bulk_query | Run a query on a graph instance and return the result as a zip file in async mode
-*TwingraphApi* | [**createNodes**](Apis/TwingraphApi.md#createnodes) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/node/create | create new nodes in a graph instance
-*TwingraphApi* | [**createRelationships**](Apis/TwingraphApi.md#createrelationships) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/relationship/create | create new relationships in a graph instance
+*TwingraphApi* | [**createEntities**](Apis/TwingraphApi.md#createentities) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/{type}/create | create new entities in a graph instance
 *TwingraphApi* | [**delete**](Apis/TwingraphApi.md#delete) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id} | Launch a mass delete job
-*TwingraphApi* | [**deleteNodes**](Apis/TwingraphApi.md#deletenodes) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id}/node/delete | delete nodes in a graph instance
-*TwingraphApi* | [**deleteRelationships**](Apis/TwingraphApi.md#deleterelationships) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id}/relationship/delete | delete relationships in a graph instance
+*TwingraphApi* | [**deleteEntities**](Apis/TwingraphApi.md#deleteentities) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id}/{type}/delete | delete entities in a graph instance
 *TwingraphApi* | [**downloadGraph**](Apis/TwingraphApi.md#downloadgraph) | **GET** /organizations/{organization_id}/twingraph/bulk_query/download/{hash} | Download a graph compressed in a zip file
 *TwingraphApi* | [**findAllTwingraphs**](Apis/TwingraphApi.md#findalltwingraphs) | **GET** /organizations/{organization_id}/twingraphs | Return the list of all graphs stored in the organization
+*TwingraphApi* | [**getEntities**](Apis/TwingraphApi.md#getentities) | **GET** /organizations/{organization_id}/twingraph/{graph_id}/{type}/read | get entities in a graph instance
 *TwingraphApi* | [**getGraphMetaData**](Apis/TwingraphApi.md#getgraphmetadata) | **GET** /organizations/{organization_id}/twingraph/{graph_id}/metadata | Return the metaData of the specified graph
-*TwingraphApi* | [**getNodes**](Apis/TwingraphApi.md#getnodes) | **GET** /organizations/{organization_id}/twingraph/{graph_id}/node/read | get nodes in a graph instance
-*TwingraphApi* | [**getRelationships**](Apis/TwingraphApi.md#getrelationships) | **GET** /organizations/{organization_id}/twingraph/{graph_id}/relationship/read | get relationships in a graph instance
 *TwingraphApi* | [**importGraph**](Apis/TwingraphApi.md#importgraph) | **POST** /organizations/{organization_id}/twingraph/import | Import a new version of a twin graph
 *TwingraphApi* | [**jobStatus**](Apis/TwingraphApi.md#jobstatus) | **GET** /organizations/{organization_id}/job/{job_id}/status | Get the status of a job
 *TwingraphApi* | [**query**](Apis/TwingraphApi.md#query) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/query | Run a query on a graph instance
+*TwingraphApi* | [**updateEntities**](Apis/TwingraphApi.md#updateentities) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/{type}/update | update entities in a graph instance
 *TwingraphApi* | [**updateGraphMetaData**](Apis/TwingraphApi.md#updategraphmetadata) | **PATCH** /organizations/{organization_id}/twingraph/{graph_id}/metadata | Update the metaData of the specified graph
-*TwingraphApi* | [**updateNodes**](Apis/TwingraphApi.md#updatenodes) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/node/update | update nodes in a graph instance
-*TwingraphApi* | [**updateRelationships**](Apis/TwingraphApi.md#updaterelationships) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/relationship/update | update relationships in a graph instance
 *ValidatorApi* | [**createValidator**](Apis/ValidatorApi.md#createvalidator) | **POST** /organizations/{organization_id}/datasets/validators | Register a new validator
 *ValidatorApi* | [**createValidatorRun**](Apis/ValidatorApi.md#createvalidatorrun) | **POST** /organizations/{organization_id}/datasets/validators/{validator_id}/history | Register a new validator run
 *ValidatorApi* | [**deleteValidator**](Apis/ValidatorApi.md#deletevalidator) | **DELETE** /organizations/{organization_id}/datasets/validators/{validator_id} | Delete a validator

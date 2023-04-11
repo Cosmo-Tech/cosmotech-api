@@ -213,7 +213,7 @@ paths:
                 schema:
                   type: string
                   format: binary
-  /organizations/{organization_id}/twingraph/{graph_id}/node/create:
+  /organizations/{organization_id}/twingraph/{graph_id}/{type}/create:
     parameters:
       - name: organization_id
         in: path
@@ -227,13 +227,22 @@ paths:
         required: true
         schema:
           type: string
+      - name: type
+        in: path
+        description: the entity type
+        required: true
+        schema:
+          type: string
+          enum:
+            - node
+            - relationship
     post:
-      operationId: createNodes
+      operationId: createEntities
       tags:
         - twingraph
-      description: create new nodes in a graph instance
+      description: create new entities in a graph instance
       requestBody:
-        description: the nodes to create
+        description: the entities to create
         required: true
         content:
           application/json:
@@ -243,7 +252,7 @@ paths:
                 $ref: '#/components/schemas/GraphProperties'
             examples:
               QueryNode:
-                $ref: '#/components/examples/QueryNodes'
+                $ref: '#/components/examples/QueryEntities'
       responses:
         '200':
           description: Successful response
@@ -253,7 +262,7 @@ paths:
                 type: array
                 items:
                   type: object
-  /organizations/{organization_id}/twingraph/{graph_id}/relationship/create:
+  /organizations/{organization_id}/twingraph/{graph_id}/{type}/read:
     parameters:
       - name: organization_id
         in: path
@@ -267,53 +276,22 @@ paths:
         required: true
         schema:
           type: string
-    post:
-      operationId: createRelationships
-      tags:
-        - twingraph
-      description: create new relationships in a graph instance
-      requestBody:
-        description: the relationships to create
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/GraphProperties'
-            examples:
-              QueryNode:
-                $ref: '#/components/examples/QueryRelationships'
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-  /organizations/{organization_id}/twingraph/{graph_id}/node/read:
-    parameters:
-      - name: organization_id
+      - name: type
         in: path
-        description: the Organization identifier
+        description: the entity type
         required: true
         schema:
           type: string
-      - name: graph_id
-        in: path
-        description: the Graph Identifier
-        required: true
-        schema:
-          type: string
+          enum:
+            - node
+            - relationship
     get:
-      operationId: getNodes
+      operationId: getEntities
       tags:
         - twingraph
-      description: get nodes in a graph instance
+      description: get entities in a graph instance
       requestBody:
-        description: the nodes to get
+        description: the entities to get
         required: true
         content:
           application/json:
@@ -330,7 +308,7 @@ paths:
                 type: array
                 items:
                   type: object
-  /organizations/{organization_id}/twingraph/{graph_id}/relationship/read:
+  /organizations/{organization_id}/twingraph/{graph_id}/{type}/update:
     parameters:
       - name: organization_id
         in: path
@@ -344,50 +322,22 @@ paths:
         required: true
         schema:
           type: string
-    get:
-      operationId: getRelationships
-      tags:
-        - twingraph
-      description: get relationships in a graph instance
-      requestBody:
-        description: the relationships to get
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                type: string
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-  /organizations/{organization_id}/twingraph/{graph_id}/node/update:
-    parameters:
-      - name: organization_id
+      - name: type
         in: path
-        description: the Organization identifier
+        description: the entity type
         required: true
         schema:
           type: string
-      - name: graph_id
-        in: path
-        description: the Graph Identifier
-        required: true
-        schema:
-          type: string
+          enum:
+            - node
+            - relationship
     post:
-      operationId: updateNodes
+      operationId: updateEntities
       tags:
         - twingraph
-      description: update nodes in a graph instance
+      description: update entities in a graph instance
       requestBody:
-        description: the nodes to update
+        description: the entities to update
         required: true
         content:
           application/json:
@@ -397,7 +347,7 @@ paths:
                 $ref: '#/components/schemas/GraphProperties'
             examples:
               QueryNode:
-                $ref: '#/components/examples/QueryNodes'
+                $ref: '#/components/examples/QueryEntities'
       responses:
         '200':
           description: Successful response
@@ -407,7 +357,7 @@ paths:
                 type: array
                 items:
                   type: object
-  /organizations/{organization_id}/twingraph/{graph_id}/relationship/update:
+  /organizations/{organization_id}/twingraph/{graph_id}/{type}/delete:
     parameters:
       - name: organization_id
         in: path
@@ -421,84 +371,22 @@ paths:
         required: true
         schema:
           type: string
-    post:
-      operationId: updateRelationships
-      tags:
-        - twingraph
-      description: update relationships in a graph instance
-      requestBody:
-        description: the relationships to update
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/GraphProperties'
-            examples:
-              QueryNode:
-                $ref: '#/components/examples/QueryRelationships'
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-  /organizations/{organization_id}/twingraph/{graph_id}/node/delete:
-    parameters:
-      - name: organization_id
+      - name: type
         in: path
-        description: the Organization identifier
+        description: the entity type
         required: true
         schema:
           type: string
-      - name: graph_id
-        in: path
-        description: the Graph Identifier
-        required: true
-        schema:
-          type: string
+          enum:
+          - node
+          - relationship
     delete:
-      operationId: deleteNodes
+      operationId: deleteEntities
       tags:
         - twingraph
-      description: delete nodes in a graph instance
+      description: delete entities in a graph instance
       requestBody:
-        description: the nodes to delete
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                type: string
-      responses:
-        '200':
-          description: Successful response
-  /organizations/{organization_id}/twingraph/{graph_id}/relationship/delete:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: graph_id
-        in: path
-        description: the Graph Identifier
-        required: true
-        schema:
-          type: string
-    delete:
-      operationId: deleteRelationships
-      tags:
-        - twingraph
-      description: delete relationships in a graph instance
-      requestBody:
-        description: the relationships to delete
+        description: the entities to delete
         required: true
         content:
           application/json:
