@@ -8,6 +8,7 @@ import com.redis.testcontainers.RedisStackContainer
 import com.redis.testcontainers.junit.RedisTestContext
 import com.redis.testcontainers.junit.RedisTestContextsSource
 import com.redislabs.redisgraph.ResultSet
+import com.redislabs.redisgraph.impl.api.RedisGraph
 import io.mockk.junit5.MockKExtension
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -46,7 +47,9 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
     val containerIp =
         (context.server as RedisStackContainer).containerInfo.networkSettings.ipAddress
     println(containerIp)
-    ReflectionTestUtils.setField(twingraphApiService, "csmJedisPool", JedisPool(containerIp, 6379))
+    val jedisPool = JedisPool(containerIp, 6379)
+    ReflectionTestUtils.setField(twingraphApiService, "csmJedisPool", jedisPool)
+    ReflectionTestUtils.setField(twingraphApiService, "csmRedisGraph", RedisGraph(jedisPool))
 
     context.sync().hset(graphId + "MetaData", mapOf("lastVersion" to "1"))
 
