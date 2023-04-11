@@ -90,6 +90,14 @@ entity DeleteHistoricalData {
     timeOut: Integer
 }
 
+entity GraphProperties {
+    type: String
+    source: String
+    target: String
+    name: String
+    params: String
+}
+
 entity Organization {
     id: String
     name: String

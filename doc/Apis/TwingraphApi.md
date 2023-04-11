@@ -54,7 +54,7 @@ Name | Type | Description  | Notes
 
 <a name="createNodes"></a>
 # **createNodes**
-> List createNodes(organization\_id, graph\_id, request\_body)
+> List createNodes(organization\_id, graph\_id, GraphProperties)
 
 
 
@@ -66,7 +66,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **graph\_id** | **String**| the Graph Identifier | [default to null]
- **request\_body** | [**List**](../Models/map.md)| the nodes to create |
+ **GraphProperties** | [**List**](../Models/GraphProperties.md)| the nodes to create |
 
 ### Return type
 
@@ -83,7 +83,7 @@ Name | Type | Description  | Notes
 
 <a name="createRelationships"></a>
 # **createRelationships**
-> List createRelationships(organization\_id, graph\_id, request\_body)
+> List createRelationships(organization\_id, graph\_id, GraphProperties)
 
 
 
@@ -95,7 +95,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **graph\_id** | **String**| the Graph Identifier | [default to null]
- **request\_body** | [**List**](../Models/map.md)| the relationships to create |
+ **GraphProperties** | [**List**](../Models/GraphProperties.md)| the relationships to create |
 
 ### Return type
 
@@ -152,7 +152,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **graph\_id** | **String**| the Graph Identifier | [default to null]
- **request\_body** | [**List**](../Models/map.md)| the nodes to delete |
+ **request\_body** | [**List**](../Models/string.md)| the nodes to delete |
 
 ### Return type
 
@@ -181,7 +181,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **graph\_id** | **String**| the Graph Identifier | [default to null]
- **request\_body** | [**List**](../Models/map.md)| the relationships to delete |
+ **request\_body** | [**List**](../Models/string.md)| the relationships to delete |
 
 ### Return type
 
@@ -453,7 +453,7 @@ Name | Type | Description  | Notes
 
 <a name="updateNodes"></a>
 # **updateNodes**
-> List updateNodes(organization\_id, graph\_id, request\_body)
+> List updateNodes(organization\_id, graph\_id, GraphProperties)
 
 
 
@@ -465,7 +465,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **graph\_id** | **String**| the Graph Identifier | [default to null]
- **request\_body** | [**List**](../Models/map.md)| the nodes to update |
+ **GraphProperties** | [**List**](../Models/GraphProperties.md)| the nodes to update |
 
 ### Return type
 
@@ -482,7 +482,7 @@ Name | Type | Description  | Notes
 
 <a name="updateRelationships"></a>
 # **updateRelationships**
-> List updateRelationships(organization\_id, graph\_id, request\_body)
+> List updateRelationships(organization\_id, graph\_id, GraphProperties)
 
 
 
@@ -494,7 +494,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **graph\_id** | **String**| the Graph Identifier | [default to null]
- **request\_body** | [**List**](../Models/map.md)| the relationships to update |
+ **GraphProperties** | [**List**](../Models/GraphProperties.md)| the relationships to update |
 
 ### Return type
 
