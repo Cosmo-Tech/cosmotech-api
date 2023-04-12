@@ -40,6 +40,8 @@ import redis.clients.jedis.ScanParams
 
 const val GRAPH_NAME = "graphName"
 const val GRAPH_ROTATION = "graphRotation"
+const val TYPE_NODE = "node"
+const val TYPE_RELATIONSHIP = "relationship"
 
 @Service
 @Suppress("TooManyFunctions")
@@ -80,9 +82,7 @@ class TwingraphServiceImpl(
 
   @Suppress("SpreadOperator")
   override fun delete(organizationId: String, graphId: String) {
-    for (item in getVersions(graphId)) {
-      csmRedisGraph.deleteGraph(item)
-    }
+    getVersions(graphId).forEach { csmRedisGraph.deleteGraph(it) }
   }
 
   override fun findAllTwingraphs(organizationId: String): List<String> {
@@ -242,12 +242,12 @@ class TwingraphServiceImpl(
       graphProperties: List<GraphProperties>
   ): List<ResultSet> {
     return when (type) {
-      "node" ->
+      TYPE_NODE ->
           graphProperties.map {
             csmRedisGraph.query(
                 graphId, "CREATE (a:${it.type} {id:'${it.name}',${it.params}}) RETURN a")
           }
-      "relationship" ->
+      TYPE_RELATIONSHIP ->
           graphProperties.map {
             csmRedisGraph.query(
                 graphId,
@@ -265,8 +265,8 @@ class TwingraphServiceImpl(
       requestBody: List<String>
   ): List<ResultSet> {
     return when (type) {
-      "node" -> requestBody.map { csmRedisGraph.query(graphId, "MATCH (a {id:'$it'}) RETURN a") }
-      "relationship" ->
+      TYPE_NODE -> requestBody.map { csmRedisGraph.query(graphId, "MATCH (a {id:'$it'}) RETURN a") }
+      TYPE_RELATIONSHIP ->
           requestBody.map { csmRedisGraph.query(graphId, "MATCH ()-[r {id:'$it'}]-() RETURN r") }
       else -> throw CsmResourceNotFoundException("Bad Type : $type")
     }
@@ -279,13 +279,13 @@ class TwingraphServiceImpl(
       graphProperties: List<GraphProperties>
   ): List<ResultSet> {
     return when (type) {
-      "node" ->
+      TYPE_NODE ->
           graphProperties.map {
             csmRedisGraph.query(
                 graphId,
                 "MATCH (a {id:'${it.name}'}) SET a = {id:'${it.name}',${it.params}} RETURN a")
           }
-      "relationship" ->
+      TYPE_RELATIONSHIP ->
           graphProperties.map {
             csmRedisGraph.query(
                 graphId,
@@ -302,11 +302,11 @@ class TwingraphServiceImpl(
       requestBody: List<String>
   ) {
     return when (type) {
-      "node" ->
+      TYPE_NODE ->
           requestBody.forEach {
             csmRedisGraph.query(graphId, "MATCH (a) WHERE a.id='$it' DELETE a")
           }
-      "relationship" ->
+      TYPE_RELATIONSHIP ->
           requestBody.forEach {
             csmRedisGraph.query(graphId, "MATCH ()-[r]-() WHERE r.id='$it' DELETE r")
           }
