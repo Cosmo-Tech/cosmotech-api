@@ -8,6 +8,7 @@ import com.cosmotech.api.events.TwingraphImportJobInfoRequest
 import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
+import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.api.security.coroutine.SecurityCoroutineContext
 import com.cosmotech.api.utils.bulkQueryKey
@@ -81,15 +82,24 @@ class TwingraphServiceImpl(
 
   @Suppress("SpreadOperator")
   override fun delete(organizationId: String, graphId: String) {
-    getVersions(graphId).forEach { csmRedisGraph.deleteGraph(it) }
+    val organization = organizationService.findOrganizationById(organizationId)
+    csmRbac.verify(organization.getRbac(), PERMISSION_DELETE)
+    val versions = getRedisKeyList("$graphId:*", "graphdata")
+    versions.forEach { csmRedisGraph.deleteGraph(it) }
   }
 
   override fun findAllTwingraphs(organizationId: String): List<String> {
+    val organization = organizationService.findOrganizationById(organizationId)
+    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
+    return getRedisKeyList("*", "graphdata")
+  }
+
+  private fun getRedisKeyList(keyPattern: String, keyType: String): List<String> {
     val matchingKeys = mutableSetOf<String>()
     csmJedisPool.resource.use { jedis ->
       var nextCursor = ScanParams.SCAN_POINTER_START
       do {
-        val scanResult = jedis.scan(nextCursor, ScanParams().match("*"), "graphdata")
+        val scanResult = jedis.scan(nextCursor, ScanParams().match(keyPattern), keyType)
         nextCursor = scanResult.cursor
         matchingKeys.addAll(scanResult.result)
       } while (!nextCursor.equals(ScanParams.SCAN_POINTER_START))
@@ -219,19 +229,6 @@ class TwingraphServiceImpl(
         ContentDisposition.builder("attachment").filename("TwinGraph-$graphQueryHash.zip").build()
     httpServletResponse!!.setHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
     return ByteArrayResource(csmJedisPool.resource.use { jedis -> jedis.get(bulkQueryId) })
-  }
-
-  private fun getVersions(graphId: String): List<String> {
-    val matchingKeys = mutableSetOf<String>()
-    csmJedisPool.resource.use { jedis ->
-      var nextCursor = ScanParams.SCAN_POINTER_START
-      do {
-        val scanResult = jedis.scan(nextCursor, ScanParams().match("${graphId}:*"), "graphdata")
-        nextCursor = scanResult.cursor
-        matchingKeys.addAll(scanResult.result)
-      } while (!nextCursor.equals(ScanParams.SCAN_POINTER_START))
-    }
-    return matchingKeys.toList()
   }
 
   override fun createEntities(

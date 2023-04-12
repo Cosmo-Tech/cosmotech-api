@@ -23,7 +23,6 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.SpyK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
-import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
 import io.mockk.verify
@@ -53,6 +52,7 @@ class TwingraphServiceImplTests {
   @Suppress("unused") @SpyK private var csmRbac: CsmRbac = CsmRbac(csmPlatformProperties, csmAdmin)
 
   @MockK private lateinit var csmJedisPool: JedisPool
+  @MockK private lateinit var csmRedisGraph: RedisGraph
   @MockK private lateinit var organizationService: OrganizationApiService
 
   @SpyK @InjectMockKs private lateinit var twingraphServiceImpl: TwingraphServiceImpl
@@ -82,17 +82,17 @@ class TwingraphServiceImplTests {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
     every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
 
-    every { csmJedisPool.resource.scan(any<String>(), any()) } returns
+    every { csmJedisPool.resource.scan(any<String>(), any(), any()) } returns
         mockk {
           every { result } returns listOf("graphId")
           every { cursor } answers { "0" }
         }
 
-    every { csmJedisPool.resource.del(*anyVararg<String>()) } returns 1L
+    every { csmRedisGraph.deleteGraph(any()) } returns 1L.toString()
     twingraphServiceImpl.delete("orgId", "graphId")
 
-    verify { csmJedisPool.resource.scan(any<String>(), any()) }
-    verify { csmJedisPool.resource.del(*anyVararg<String>()) }
+    verify { csmJedisPool.resource.scan(any<String>(), any(), any()) }
+    verify { csmRedisGraph.deleteGraph(any()) }
   }
 
   @Test
@@ -143,8 +143,7 @@ class TwingraphServiceImplTests {
     every { csmJedisPool.resource.keys(any<String>()) } returns setOf("graphId")
     every { csmJedisPool.resource.exists(any<ByteArray>()) } returns false
 
-    mockkConstructor(RedisGraph::class)
-    every { anyConstructed<RedisGraph>().query(any(), any()) } returns mockEmptyResultSet()
+    every { csmRedisGraph.query(any(), any()) } returns mockEmptyResultSet()
     every { csmJedisPool.resource.setex(any<ByteArray>(), any<Long>(), any<ByteArray>()) } returns
         "OK"
 
@@ -155,7 +154,7 @@ class TwingraphServiceImplTests {
     verifyAll {
       csmJedisPool.resource.keys(any<String>())
       csmJedisPool.resource.exists(any<ByteArray>())
-      anyConstructed<RedisGraph>().query(any(), any())
+      csmRedisGraph.query(any(), any())
       csmJedisPool.resource.setex(any<ByteArray>(), any<Long>(), any<ByteArray>())
       csmJedisPool.resource.close()
     }
