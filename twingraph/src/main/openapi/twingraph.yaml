@@ -213,7 +213,7 @@ paths:
                 schema:
                   type: string
                   format: binary
-  /organizations/{organization_id}/twingraph/{graph_id}/{type}/create:
+  /organizations/{organization_id}/twingraph/{graph_id}/{modelType}/create:
     parameters:
       - name: organization_id
         in: path
@@ -227,9 +227,9 @@ paths:
         required: true
         schema:
           type: string
-      - name: type
+      - name: modelType
         in: path
-        description: the entity type
+        description: the entity model type
         required: true
         schema:
           type: string
@@ -251,8 +251,8 @@ paths:
               items:
                 $ref: '#/components/schemas/GraphProperties'
             examples:
-              QueryNode:
-                $ref: '#/components/examples/QueryEntities'
+              QueryEntities:
+                $ref: '#/components/schemas/QueryEntities'
       responses:
         '200':
           description: Successful response
@@ -262,7 +262,7 @@ paths:
                 type: array
                 items:
                   type: object
-  /organizations/{organization_id}/twingraph/{graph_id}/{type}/read:
+  /organizations/{organization_id}/twingraph/{graph_id}/{modelType}/read:
     parameters:
       - name: organization_id
         in: path
@@ -276,9 +276,9 @@ paths:
         required: true
         schema:
           type: string
-      - name: type
+      - name: modelType
         in: path
-        description: the entity type
+        description: the entity model type
         required: true
         schema:
           type: string
@@ -308,7 +308,7 @@ paths:
                 type: array
                 items:
                   type: object
-  /organizations/{organization_id}/twingraph/{graph_id}/{type}/update:
+  /organizations/{organization_id}/twingraph/{graph_id}/{modelType}/update:
     parameters:
       - name: organization_id
         in: path
@@ -322,9 +322,9 @@ paths:
         required: true
         schema:
           type: string
-      - name: type
+      - name: modelType
         in: path
-        description: the entity type
+        description: the entity model type
         required: true
         schema:
           type: string
@@ -346,8 +346,8 @@ paths:
               items:
                 $ref: '#/components/schemas/GraphProperties'
             examples:
-              QueryNode:
-                $ref: '#/components/examples/QueryEntities'
+              QueryEntities:
+                $ref: '#/components/schemas/QueryEntities'
       responses:
         '200':
           description: Successful response
@@ -357,7 +357,7 @@ paths:
                 type: array
                 items:
                   type: object
-  /organizations/{organization_id}/twingraph/{graph_id}/{type}/delete:
+  /organizations/{organization_id}/twingraph/{graph_id}/{modelType}/delete:
     parameters:
       - name: organization_id
         in: path
@@ -371,9 +371,9 @@ paths:
         required: true
         schema:
           type: string
-      - name: type
+      - name: modelType
         in: path
-        description: the entity type
+        description: the entity model type
         required: true
         schema:
           type: string
@@ -593,33 +593,19 @@ components:
       description: Get all nodes query (be careful if you want to query large graph)
       value:
         query: "MATCH(n) RETURN n"
-    QueryNodes:
-      summary: Run action on a graph nodes
-      description: Run action on a graph nodes
-      value:
-        arguments:
-          firstNode:
-            type: "my-node-type"
-            name: "my-first-node-name"
-            params: "my-first-node-params"
-          secondNode:
-            type: "my-node-type"
-            name: "my-second-node-name"
-            params: "my-second-node-params"
-    QueryRelationships:
+    QueryEntities:
       summary: Run action on a graph relationship
       description: Run action on a graph relationship
       value:
-        arguments:
-          firstRelationship:
-            type: "my-relationship-type"
-            source: "my-source-node-name"
-            target: "my-target-node-name"
-            name: "my-first-relationship-name"
-            params: "my-first-relationship-params"
-          secondRelationship:
-            type: "my-relationship-type"
-            source: "my-source-node-name"
-            target: "my-target-node-name"
-            name: "my-second-relationship-name"
-            params: "my-second-relationship-params"
+        firstEntity:
+          type: "entity-type"
+          source: "source-node-name"
+          target: "target-node-name"
+          name: "entity-name"
+          params: "param1: 'value1', param2: 'value2'"
+        secondEntity:
+          type: "entity-type"
+          source: "source-node-name"
+          target: "target-node-name"
+          name: "entity-name"
+          params: "param1: 'value1', param2: 'value2'"
