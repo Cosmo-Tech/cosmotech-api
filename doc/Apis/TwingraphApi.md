@@ -5,17 +5,17 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**bulkQuery**](TwingraphApi.md#bulkQuery) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/bulk_query | 
-[**createEntities**](TwingraphApi.md#createEntities) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/{type}/create | 
+[**createEntities**](TwingraphApi.md#createEntities) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/{modelType}/create | 
 [**delete**](TwingraphApi.md#delete) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id} | 
-[**deleteEntities**](TwingraphApi.md#deleteEntities) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id}/{type}/delete | 
+[**deleteEntities**](TwingraphApi.md#deleteEntities) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id}/{modelType}/delete | 
 [**downloadGraph**](TwingraphApi.md#downloadGraph) | **GET** /organizations/{organization_id}/twingraph/bulk_query/download/{hash} | 
 [**findAllTwingraphs**](TwingraphApi.md#findAllTwingraphs) | **GET** /organizations/{organization_id}/twingraphs | 
-[**getEntities**](TwingraphApi.md#getEntities) | **GET** /organizations/{organization_id}/twingraph/{graph_id}/{type}/read | 
+[**getEntities**](TwingraphApi.md#getEntities) | **GET** /organizations/{organization_id}/twingraph/{graph_id}/{modelType}/read | 
 [**getGraphMetaData**](TwingraphApi.md#getGraphMetaData) | **GET** /organizations/{organization_id}/twingraph/{graph_id}/metadata | 
 [**importGraph**](TwingraphApi.md#importGraph) | **POST** /organizations/{organization_id}/twingraph/import | 
 [**jobStatus**](TwingraphApi.md#jobStatus) | **GET** /organizations/{organization_id}/job/{job_id}/status | 
 [**query**](TwingraphApi.md#query) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/query | 
-[**updateEntities**](TwingraphApi.md#updateEntities) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/{type}/update | 
+[**updateEntities**](TwingraphApi.md#updateEntities) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/{modelType}/update | 
 [**updateGraphMetaData**](TwingraphApi.md#updateGraphMetaData) | **PATCH** /organizations/{organization_id}/twingraph/{graph_id}/metadata | 
 
 
@@ -50,7 +50,7 @@ Name | Type | Description  | Notes
 
 <a name="createEntities"></a>
 # **createEntities**
-> List createEntities(organization\_id, graph\_id, type, GraphProperties)
+> List createEntities(organization\_id, graph\_id, modelType, GraphProperties)
 
 
 
@@ -62,7 +62,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **graph\_id** | **String**| the Graph Identifier | [default to null]
- **type** | **String**| the entity type | [default to null] [enum: node, relationship]
+ **modelType** | **String**| the entity model type | [default to null] [enum: node, relationship]
  **GraphProperties** | [**List**](../Models/GraphProperties.md)| the entities to create |
 
 ### Return type
@@ -108,7 +108,7 @@ null (empty response body)
 
 <a name="deleteEntities"></a>
 # **deleteEntities**
-> deleteEntities(organization\_id, graph\_id, type, request\_body)
+> deleteEntities(organization\_id, graph\_id, modelType, request\_body)
 
 
 
@@ -120,7 +120,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **graph\_id** | **String**| the Graph Identifier | [default to null]
- **type** | **String**| the entity type | [default to null] [enum: node, relationship]
+ **modelType** | **String**| the entity model type | [default to null] [enum: node, relationship]
  **request\_body** | [**List**](../Models/string.md)| the entities to delete |
 
 ### Return type
@@ -193,7 +193,7 @@ Name | Type | Description  | Notes
 
 <a name="getEntities"></a>
 # **getEntities**
-> List getEntities(organization\_id, graph\_id, type, request\_body)
+> List getEntities(organization\_id, graph\_id, modelType, request\_body)
 
 
 
@@ -205,7 +205,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **graph\_id** | **String**| the Graph Identifier | [default to null]
- **type** | **String**| the entity type | [default to null] [enum: node, relationship]
+ **modelType** | **String**| the entity model type | [default to null] [enum: node, relationship]
  **request\_body** | [**List**](../Models/string.md)| the entities to get |
 
 ### Return type
@@ -336,7 +336,7 @@ Name | Type | Description  | Notes
 
 <a name="updateEntities"></a>
 # **updateEntities**
-> List updateEntities(organization\_id, graph\_id, type, GraphProperties)
+> List updateEntities(organization\_id, graph\_id, modelType, GraphProperties)
 
 
 
@@ -348,7 +348,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **graph\_id** | **String**| the Graph Identifier | [default to null]
- **type** | **String**| the entity type | [default to null] [enum: node, relationship]
+ **modelType** | **String**| the entity model type | [default to null] [enum: node, relationship]
  **GraphProperties** | [**List**](../Models/GraphProperties.md)| the entities to update |
 
 ### Return type

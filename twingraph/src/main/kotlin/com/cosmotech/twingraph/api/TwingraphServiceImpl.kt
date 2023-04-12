@@ -23,7 +23,6 @@ import com.cosmotech.twingraph.domain.TwinGraphImportInfo
 import com.cosmotech.twingraph.domain.TwinGraphQuery
 import com.cosmotech.twingraph.extension.toJsonString
 import com.cosmotech.twingraph.utils.TwingraphUtils
-import com.redislabs.redisgraph.ResultSet
 import com.redislabs.redisgraph.impl.api.RedisGraph
 import java.nio.charset.StandardCharsets.UTF_8
 import kotlinx.coroutines.GlobalScope
@@ -240,19 +239,22 @@ class TwingraphServiceImpl(
       graphId: String,
       type: String,
       graphProperties: List<GraphProperties>
-  ): List<ResultSet> {
+  ): List<String> {
     return when (type) {
       TYPE_NODE ->
           graphProperties.map {
-            csmRedisGraph.query(
-                graphId, "CREATE (a:${it.type} {id:'${it.name}',${it.params}}) RETURN a")
+            csmRedisGraph
+                .query(graphId, "CREATE (a:${it.type} {id:'${it.name}',${it.params}}) RETURN a")
+                .toJsonString()
           }
       TYPE_RELATIONSHIP ->
           graphProperties.map {
-            csmRedisGraph.query(
-                graphId,
-                "MATCH (a),(b) WHERE a.id='${it.source}' AND b.id='${it.target}'" +
-                    "CREATE (a)-[r:${it.type} {id:'${it.name}', ${it.params}}]->(b) RETURN r")
+            csmRedisGraph
+                .query(
+                    graphId,
+                    "MATCH (a),(b) WHERE a.id='${it.source}' AND b.id='${it.target}'" +
+                        "CREATE (a)-[r:${it.type} {id:'${it.name}', '${it.params}'}]->(b) RETURN r")
+                .toJsonString()
           }
       else -> throw CsmResourceNotFoundException("Bad Type : $type")
     }
@@ -263,11 +265,16 @@ class TwingraphServiceImpl(
       graphId: String,
       type: String,
       requestBody: List<String>
-  ): List<ResultSet> {
+  ): List<String> {
     return when (type) {
-      TYPE_NODE -> requestBody.map { csmRedisGraph.query(graphId, "MATCH (a {id:'$it'}) RETURN a") }
+      TYPE_NODE ->
+          requestBody.map {
+            csmRedisGraph.query(graphId, "MATCH (a {id:'$it'}) RETURN a").toJsonString()
+          }
       TYPE_RELATIONSHIP ->
-          requestBody.map { csmRedisGraph.query(graphId, "MATCH ()-[r {id:'$it'}]-() RETURN r") }
+          requestBody.map {
+            csmRedisGraph.query(graphId, "MATCH ()-[r {id:'$it'}]-() RETURN r").toJsonString()
+          }
       else -> throw CsmResourceNotFoundException("Bad Type : $type")
     }
   }
@@ -277,19 +284,23 @@ class TwingraphServiceImpl(
       graphId: String,
       type: String,
       graphProperties: List<GraphProperties>
-  ): List<ResultSet> {
+  ): List<String> {
     return when (type) {
       TYPE_NODE ->
           graphProperties.map {
-            csmRedisGraph.query(
-                graphId,
-                "MATCH (a {id:'${it.name}'}) SET a = {id:'${it.name}',${it.params}} RETURN a")
+            csmRedisGraph
+                .query(
+                    graphId,
+                    "MATCH (a {id:'${it.name}'}) SET a = {id:'${it.name}',${it.params}} RETURN a")
+                .toJsonString()
           }
       TYPE_RELATIONSHIP ->
           graphProperties.map {
-            csmRedisGraph.query(
-                graphId,
-                "MATCH ()-[r {id:'${it.name}'}]-() SET r = {id:'${it.name}', ${it.params}} RETURN r")
+            csmRedisGraph
+                .query(
+                    graphId,
+                    "MATCH ()-[r {id:'${it.name}'}]-() SET r = {id:'${it.name}', ${it.params}} RETURN r")
+                .toJsonString()
           }
       else -> throw CsmResourceNotFoundException("Bad Type : $type")
     }
