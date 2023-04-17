@@ -250,7 +250,8 @@ class TwingraphServiceImpl(
   }
 
 
-  fun processBulkQuery(inputStream: InputStream, modelType: String, query: String, actionLambda : (String, String) -> Unit) {
+  fun processBulkQuery(inputStream: InputStream, modelType: String, query: String,
+                       actionLambda : (String, String) -> Unit) {
     var cypherQuery = query
     var predicate = cypherQuery.cypherAction()
     cypherQuery = cypherQuery.replace("$predicate ", "")

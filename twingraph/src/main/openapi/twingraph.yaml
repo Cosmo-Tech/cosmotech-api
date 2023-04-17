@@ -213,7 +213,7 @@ paths:
                 schema:
                   type: string
                   format: binary
-  /organizations/{organization_id}/twingraph/{graph_id}/{modelType}/create:
+  /organizations/{organization_id}/twingraph/{graph_id}/{modelType}:
     parameters:
       - name: organization_id
         in: path
@@ -250,6 +250,9 @@ paths:
               type: array
               items:
                 $ref: '#/components/schemas/GraphProperties'
+            examples:
+              QueryEntities:
+                $ref: '#/components/examples/QueryEntities'
       responses:
         '200':
           description: Successful response
@@ -259,29 +262,6 @@ paths:
                 type: array
                 items:
                   type: object
-  /organizations/{organization_id}/twingraph/{graph_id}/{modelType}/read:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: graph_id
-        in: path
-        description: the Graph Identifier
-        required: true
-        schema:
-          type: string
-      - name: modelType
-        in: path
-        description: the entity model type
-        required: true
-        schema:
-          type: string
-          enum:
-            - node
-            - relationship
     get:
       operationId: getEntities
       tags:
@@ -305,30 +285,7 @@ paths:
                 type: array
                 items:
                   type: object
-  /organizations/{organization_id}/twingraph/{graph_id}/{modelType}/update:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: graph_id
-        in: path
-        description: the Graph Identifier
-        required: true
-        schema:
-          type: string
-      - name: modelType
-        in: path
-        description: the entity model type
-        required: true
-        schema:
-          type: string
-          enum:
-            - node
-            - relationship
-    post:
+    patch:
       operationId: updateEntities
       tags:
         - twingraph
@@ -342,6 +299,9 @@ paths:
               type: array
               items:
                 $ref: '#/components/schemas/GraphProperties'
+            examples:
+              QueryEntities:
+                $ref: '#/components/examples/QueryEntities'
       responses:
         '200':
           description: Successful response
@@ -351,29 +311,6 @@ paths:
                 type: array
                 items:
                   type: object
-  /organizations/{organization_id}/twingraph/{graph_id}/{modelType}/delete:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: graph_id
-        in: path
-        description: the Graph Identifier
-        required: true
-        schema:
-          type: string
-      - name: modelType
-        in: path
-        description: the entity model type
-        required: true
-        schema:
-          type: string
-          enum:
-          - node
-          - relationship
     delete:
       operationId: deleteEntities
       tags:
