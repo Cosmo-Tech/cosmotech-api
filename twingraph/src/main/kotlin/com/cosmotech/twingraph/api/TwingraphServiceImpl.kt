@@ -10,7 +10,9 @@ import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.PERMISSION_READ
+import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.security.coroutine.SecurityCoroutineContext
+import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.bulkQueryKey
 import com.cosmotech.api.utils.redisGraphKey
 import com.cosmotech.api.utils.toRedisMetaDataKey
@@ -37,6 +39,9 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.ScanParams
+import java.io.InputStream
+import java.util.UUID
+import javax.swing.text.html.HTML.Tag.U
 
 const val GRAPH_NAME = "graphName"
 const val GRAPH_ROTATION = "graphRotation"
@@ -49,7 +54,8 @@ class TwingraphServiceImpl(
     private val organizationService: OrganizationApiService,
     private val csmJedisPool: JedisPool,
     private val csmRedisGraph: RedisGraph,
-    private val csmRbac: CsmRbac
+    private val csmRbac: CsmRbac,
+    private val resourceScanner: ResourceScanner,
 ) : CsmPhoenixService(), TwingraphApiService {
 
   override fun importGraph(
@@ -99,7 +105,7 @@ class TwingraphServiceImpl(
     csmJedisPool.resource.use { jedis ->
       var nextCursor = ScanParams.SCAN_POINTER_START
       do {
-        val scanResult = jedis.scan(nextCursor, ScanParams().match(keyPattern), keyType)
+        val scanResult = jedis.scan(nextCursor, ScanParams().match("*"), "graphdata")
         nextCursor = scanResult.cursor
         matchingKeys.addAll(scanResult.result)
       } while (!nextCursor.equals(ScanParams.SCAN_POINTER_START))
@@ -209,6 +215,57 @@ class TwingraphServiceImpl(
     }
     return twinGraphHash
   }
+
+
+  override fun bulkUploadUpdate(
+    organizationId: String,
+    graphId: String,
+    modelType: String,
+    cypherQuery: String,
+    file: Resource
+  ) {
+    val organization = organizationService.findOrganizationById(organizationId)
+    csmRbac.verify(organization.getRbac(), PERMISSION_WRITE)
+    resourceScanner.scanMimeTypes(file, listOf("text/csv"))
+
+    var count = 0;
+    val pagination = 1000
+    var stringBuilder = StringBuilder()
+
+    processBulkQuery(file.inputStream, modelType, cypherQuery) { query, predicate ->
+      stringBuilder.append(query).append(",")
+      count++
+      if (count == pagination) {
+        count = 0
+        stringBuilder.deleteCharAt(stringBuilder.length - 1)
+        csmRedisGraph.query(graphId, "$predicate $stringBuilder")
+        stringBuilder = StringBuilder()
+      }
+    }
+    if (count > 0) {
+      stringBuilder.deleteCharAt(stringBuilder.length - 1)
+      csmRedisGraph.query(graphId, "${cypherQuery.cypherAction()} $stringBuilder")
+    }
+
+  }
+
+
+  fun processBulkQuery(inputStream: InputStream, modelType: String, query: String, actionLambda : (String, String) -> Unit) {
+    var cypherQuery = query
+    var predicate = cypherQuery.cypherAction()
+    cypherQuery = cypherQuery.replace("$predicate ", "")
+
+    inputStream.bufferedReader(UTF_8).use { body ->
+      val firstLine = body.readLine()
+      val headers = firstLine.split(",").map { it.trim() }
+      body.lineSequence().forEach { line ->
+        val values = line.split(",").map { it.trim() }
+        val map = headers.zip(values).toMap()
+        actionLambda(cypherQuery.format(map), predicate)
+      }
+    }
+  }
+
 
   override fun downloadGraph(organizationId: String, graphQueryHash: String): Resource {
     val organization = organizationService.findOrganizationById(organizationId)
@@ -321,4 +378,22 @@ class TwingraphServiceImpl(
       else -> throw CsmResourceNotFoundException("Bad Type : $type")
     }
   }
+}
+
+
+
+fun String.cypherAction() : String {
+  if (this.startsWith("CREATE", true)) {
+    return "CREATE"
+  } else {
+    throw CsmClientException("Cypher query should start with CREATE")
+  }
+}
+
+fun String.format(map: Map<String, String>): String {
+  var newValue = this
+  map.forEach { (key, value) ->
+    newValue = newValue.replace("$$key", value)
+  }
+  return newValue
 }

@@ -250,9 +250,6 @@ paths:
               type: array
               items:
                 $ref: '#/components/schemas/GraphProperties'
-            examples:
-              QueryEntities:
-                $ref: '#/components/schemas/QueryEntities'
       responses:
         '200':
           description: Successful response
@@ -345,9 +342,6 @@ paths:
               type: array
               items:
                 $ref: '#/components/schemas/GraphProperties'
-            examples:
-              QueryEntities:
-                $ref: '#/components/schemas/QueryEntities'
       responses:
         '200':
           description: Successful response
@@ -469,6 +463,59 @@ paths:
       responses:
         '204':
           description: Successful response
+  /organizations/{organization_id}/twingraph/{graph_id}/bulk_update/{modelType}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: graph_id
+        in: path
+        description: the Graph Identifier
+        required: true
+        schema:
+          type: string
+      - name: modelType
+        in: path
+        description: the model type - 'node' or 'relationship'
+        required: true
+        schema:
+          type: string
+          enum:
+            - node
+            - relationship
+    post:
+      operationId: bulkUploadUpdate
+      tags:
+        - twingraph
+      description: "Async bulk update by loading a CSV file on a graph instance "
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - query
+                - file
+              properties:
+                query:
+                  type: string
+                  description: the query in cypher language
+                file:
+                  type: string
+                  format: binary
+#          application/octet-stream:
+#            schema:
+#              type: string
+#              format: binary
+      responses:
+        "201":
+          description: zip file uploaded
+        "400":
+          description: Bad request
 
 components:
   securitySchemes:

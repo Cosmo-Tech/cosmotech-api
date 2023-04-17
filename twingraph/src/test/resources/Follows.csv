@@ -1,0 +1,3 @@
+:START_ID(User), :END_ID(User), reaction_count:INT
+0, 1, 25
+1, 0, 10
