@@ -392,6 +392,20 @@ paths:
         required: true
         schema:
           type: string
+#      - name: graph_model
+#        in: query
+#        description: the Graph Model
+#        required: false
+#        schema:
+#          type: object
+    post:
+      operationId: createGraph
+      tags:
+        - twingraph
+      description: Create a new graph
+      responses:
+        '204':
+          description: Successful response
     delete:
       operationId: delete
       tags:

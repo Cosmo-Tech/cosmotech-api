@@ -30,6 +30,7 @@ import com.cosmotech.twingraph.utils.TwingraphUtils
 import com.redislabs.redisgraph.impl.api.RedisGraph
 import java.io.InputStream
 import java.nio.charset.StandardCharsets.UTF_8
+import java.time.LocalDateTime
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.apache.commons.csv.CSVFormat
@@ -60,6 +61,24 @@ class TwingraphServiceImpl(
     private val csmRbac: CsmRbac,
     private val resourceScanner: ResourceScanner,
 ) : CsmPhoenixService(), TwingraphApiService {
+
+  override fun createGraph(organizationId: String, graphId: String) {
+    csmJedisPool.resource.use { jedis ->
+      jedis.hset(
+          graphId.toRedisMetaDataKey(),
+          mutableMapOf(
+              "lastVersion" to "1",
+              "graphName" to graphId,
+              "graphRotation" to "3",
+              "lastModifiedDate" to getCurrentDate()))
+    }
+    createEntities(
+        organizationId,
+        graphId,
+        "node",
+        listOf(GraphProperties(type = "node", name = "node", params = "size:0")))
+    deleteEntities(organizationId, graphId, "node", listOf("node"))
+  }
 
   override fun importGraph(
       organizationId: String,
@@ -294,6 +313,7 @@ class TwingraphServiceImpl(
       modelType: String,
       graphProperties: List<GraphProperties>
   ): List<String> {
+    updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to getCurrentDate()))
     return when (modelType) {
       TYPE_NODE ->
           graphProperties.map {
@@ -320,6 +340,7 @@ class TwingraphServiceImpl(
       modelType: String,
       requestBody: List<String>
   ): List<String> {
+    updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to getCurrentDate()))
     return when (modelType) {
       TYPE_NODE ->
           requestBody.map {
@@ -339,6 +360,7 @@ class TwingraphServiceImpl(
       modelType: String,
       graphProperties: List<GraphProperties>
   ): List<String> {
+    updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to getCurrentDate()))
     return when (modelType) {
       TYPE_NODE ->
           graphProperties.map {
@@ -366,6 +388,7 @@ class TwingraphServiceImpl(
       modelType: String,
       requestBody: List<String>
   ) {
+    updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to getCurrentDate()))
     return when (modelType) {
       TYPE_NODE ->
           requestBody.forEach {
@@ -377,5 +400,11 @@ class TwingraphServiceImpl(
           }
       else -> throw CsmResourceNotFoundException("Bad Type : $modelType")
     }
+  }
+
+  fun getCurrentDate(): String {
+    val currentTime = LocalDateTime.now()
+    return "${currentTime.year}/${currentTime.monthValue}/${currentTime.dayOfMonth}" +
+        " - ${currentTime.hour}:${currentTime.minute}:${currentTime.second}"
   }
 }
