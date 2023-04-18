@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.twingraph.api
 
+import QueryBuffer
 import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.events.TwingraphImportEvent
 import com.cosmotech.api.events.TwingraphImportJobInfoRequest
@@ -28,11 +29,9 @@ import com.cosmotech.twingraph.domain.TwinGraphQuery
 import com.cosmotech.twingraph.extension.toJsonString
 import com.cosmotech.twingraph.utils.TwingraphUtils
 import com.redislabs.redisgraph.impl.api.RedisGraph
-import java.io.InputStream
-import java.nio.charset.StandardCharsets.UTF_8
-import java.time.LocalDateTime
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.apache.commons.compress.archivers.ArchiveStreamFactory
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVRecord
 import org.springframework.core.io.ByteArrayResource
@@ -45,6 +44,16 @@ import org.springframework.web.context.request.ServletRequestAttributes
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.ScanParams
 import redis.clients.jedis.exceptions.JedisDataException
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileInputStream
+import java.io.IOException
+import java.io.InputStream
+import java.nio.charset.StandardCharsets.UTF_8
+import java.time.LocalDateTime
+import java.util.zip.ZipInputStream
+
 
 const val CSV_SEPARATOR = ","
 const val GRAPH_NAME = "graphName"
@@ -59,26 +68,94 @@ class TwingraphServiceImpl(
     private val csmJedisPool: JedisPool,
     private val csmRedisGraph: RedisGraph,
     private val csmRbac: CsmRbac,
-    private val resourceScanner: ResourceScanner,
+    private val resourceScanner: ResourceScanner
 ) : CsmPhoenixService(), TwingraphApiService {
 
-  override fun createGraph(organizationId: String, graphId: String) {
-    csmJedisPool.resource.use { jedis ->
-      jedis.hset(
-          graphId.toRedisMetaDataKey(),
-          mutableMapOf(
-              "lastVersion" to "1",
-              "graphName" to graphId,
-              "graphRotation" to "3",
-              "lastModifiedDate" to getCurrentDate()))
+  override fun createGraph(organizationId: String, graphId: String, body: Resource?) {
+      csmJedisPool.resource.use { jedis ->
+          jedis.hset(
+              graphId.toRedisMetaDataKey(),
+              mutableMapOf(
+                  "lastVersion" to "1",
+                  "graphName" to graphId,
+                  "graphRotation" to "3",
+                  "lastModifiedDate" to getCurrentDate()))
+      }
+    if (body != null) {
+      val archiverType = ArchiveStreamFactory.detect(body.inputStream.buffered())
+      if (ArchiveStreamFactory.ZIP != archiverType) {
+        throw IllegalArgumentException(
+            "Invalid archive type: '$archiverType'. A Zip Archive is expected.")
+      }
+
+        val queryBuffer = QueryBuffer(csmJedisPool.resource, graphId)
+
+        unzipNodes(body as File).forEach {node ->
+                processCSVFile(node.content) {
+                    queryBuffer.addNodes(node.filename, it)
+                }
+            }
+        unzipEdge(body as File).forEach {edge ->
+            processCSVFile(edge.content) {
+                queryBuffer.addNodes(edge.filename, it)
+            }
+        }
+
+        queryBuffer.send()
+    } else {
+      getEntities(organizationId, graphId, "node", listOf("node_a"))
     }
-    createEntities(
-        organizationId,
-        graphId,
-        "node",
-        listOf(GraphProperties(type = "node", name = "node", params = "size:0")))
-    deleteEntities(organizationId, graphId, "node", listOf("node"))
   }
+
+    @Throws(IOException::class)
+    private fun ZipInputStream.toInputStream() : InputStream {
+        val BUFFER = 2048
+        var count = 0
+        val data = ByteArray(BUFFER)
+        val out = ByteArrayOutputStream()
+        while (this.read(data, 0, BUFFER).also { count = it } != -1) {
+            out.write(data)
+        }
+        return ByteArrayInputStream(out.toByteArray())
+    }
+
+    private fun processCSVFile(inputStream: InputStream, actionLambda: (Map<String, Any>) -> Unit){
+        inputStream.bufferedReader(UTF_8).use { body ->
+            val firstLine = body.readLine()
+            val headers = firstLine.split(",").map { it.trim() }
+            body.lineSequence().forEach { line ->
+                val values = line.split(",").map { it.trim() }
+                val map = headers.zip(values).toMap()
+                actionLambda(map)
+            }
+        }
+    }
+
+  data class UnzippedFileEdge(val filename: String, val content: InputStream)
+  data class UnzippedFileNode(val filename: String, val content: InputStream)
+  fun unzipEdge(file: File): List<UnzippedFileEdge> =
+      ZipInputStream(FileInputStream(file)).use { zipInputStream ->
+        generateSequence { zipInputStream.nextEntry }
+            .filterNot { it.isDirectory }
+            .filter { it.name.startsWith("Edges", true) }
+            .filter { it.name.endsWith(".csv") }
+            .map {
+                UnzippedFileEdge(filename = it.name, content = zipInputStream.toInputStream())
+            }
+            .toList()
+      }
+
+    fun unzipNodes(file: File): List<UnzippedFileNode> =
+        ZipInputStream(FileInputStream(file)).use { zipInputStream ->
+            generateSequence { zipInputStream.nextEntry }
+                .filterNot { it.isDirectory }
+                .filter { it.name.startsWith("Nodes", true) }
+                .filter { it.name.endsWith(".csv") }
+                .map {
+                    UnzippedFileNode(filename = it.name, content = zipInputStream.toInputStream())
+                }
+                .toList()
+        }
 
   override fun importGraph(
       organizationId: String,

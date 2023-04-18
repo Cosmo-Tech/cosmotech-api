@@ -403,6 +403,16 @@ paths:
       tags:
         - twingraph
       description: Create a new graph
+      requestBody:
+        required: false
+        content:
+          application/octet-stream:
+            # Using 'application/octet-stream' so Swagger UI can display a file upload button.
+            # See https://github.com/swagger-api/swagger-ui/issues/5636
+            # In any case, the request body mime type is enforced in the Service implementation.
+            schema:
+              type: string
+              format: binary
       responses:
         '204':
           description: Successful response
