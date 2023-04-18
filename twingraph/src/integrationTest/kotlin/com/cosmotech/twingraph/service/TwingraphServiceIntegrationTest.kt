@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.twingraph.service
 
+import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
@@ -17,17 +18,16 @@ import com.cosmotech.twingraph.domain.GraphProperties
 import com.cosmotech.twingraph.domain.TwinGraphBatchResult
 import com.cosmotech.twingraph.domain.TwinGraphQuery
 import com.redis.testcontainers.RedisStackContainer
+import com.redis.testcontainers.junit.RedisTestContext
+import com.redis.testcontainers.junit.RedisTestContextsSource
 import com.redislabs.redisgraph.impl.api.RedisGraph
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
-import java.io.File
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.params.ParameterizedTest
 import org.junit.runner.RunWith
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -39,6 +39,12 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
 import redis.clients.jedis.JedisPool
+import java.io.File
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
+
+const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
 
 @ActiveProfiles(profiles = ["twingraph-test"])
 @ExtendWith(MockKExtension::class)
@@ -51,12 +57,14 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
 
   @Autowired lateinit var twingraphApiService: TwingraphApiService
   @Autowired lateinit var organizationApiService: OrganizationApiService
+  @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   lateinit var jedisPool: JedisPool
   lateinit var redisGraph: RedisGraph
   var organization = Organization()
 
   val graphId = "graph"
+
   @BeforeEach
   fun init() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
@@ -76,6 +84,11 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
                             mutableListOf(
                                 OrganizationAccessControl(
                                     id = CONNECTED_ADMIN_USER, role = "admin")))))
+  }
+
+  @RedisTestContextsSource
+  @ParameterizedTest
+  fun TwingraphTest(context: RedisTestContext) {
 
     val context = getContext(redisStackServer)
     val containerIp =
