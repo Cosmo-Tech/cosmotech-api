@@ -67,8 +67,7 @@ class TwingraphServiceImpl(
     private val organizationService: OrganizationApiService,
     private val csmJedisPool: JedisPool,
     private val csmRedisGraph: RedisGraph,
-    private val csmRbac: CsmRbac,
-    private val resourceScanner: ResourceScanner
+    private val csmRbac: CsmRbac
 ) : CsmPhoenixService(), TwingraphApiService {
 
   override fun createGraph(organizationId: String, graphId: String, body: Resource?) {
