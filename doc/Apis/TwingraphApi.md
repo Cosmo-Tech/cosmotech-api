@@ -112,7 +112,7 @@ Name | Type | Description  | Notes
 
 <a name="createGraph"></a>
 # **createGraph**
-> createGraph(organization\_id, graph\_id)
+> createGraph(organization\_id, graph\_id, body)
 
 
 
@@ -124,6 +124,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **graph\_id** | **String**| the Graph Identifier | [default to null]
+ **body** | **File**|  | [optional]
 
 ### Return type
 
@@ -135,7 +136,7 @@ null (empty response body)
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
+- **Content-Type**: application/octet-stream
 - **Accept**: Not defined
 
 <a name="delete"></a>
