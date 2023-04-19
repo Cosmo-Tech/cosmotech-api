@@ -287,7 +287,7 @@ class TwingraphServiceImpl(
                 .query(
                     graphId,
                     "MATCH (a),(b) WHERE a.id='${it.source}' AND b.id='${it.target}'" +
-                        "CREATE (a)-[r:${it.type} {id:'${it.name}', '${it.params}'}]->(b) RETURN r")
+                        "CREATE (a)-[r:${it.type} {id:'${it.name}', ${it.params}}]->(b) RETURN r")
                 .toJsonString()
           }
       else -> throw CsmResourceNotFoundException("Bad Type : $modelType")
@@ -307,7 +307,7 @@ class TwingraphServiceImpl(
           }
       TYPE_RELATIONSHIP ->
           requestBody.map {
-            csmRedisGraph.query(graphId, "MATCH ()-[r {id:'$it'}]-() RETURN r").toJsonString()
+            csmRedisGraph.query(graphId, "MATCH ()-[r {id:'$it'}]->() RETURN r").toJsonString()
           }
       else -> throw CsmResourceNotFoundException("Bad Type : $modelType")
     }
