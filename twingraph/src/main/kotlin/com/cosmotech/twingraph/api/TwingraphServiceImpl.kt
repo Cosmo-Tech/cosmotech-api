@@ -24,6 +24,7 @@ import com.cosmotech.twingraph.domain.TwinGraphHash
 import com.cosmotech.twingraph.domain.TwinGraphImport
 import com.cosmotech.twingraph.domain.TwinGraphImportInfo
 import com.cosmotech.twingraph.domain.TwinGraphQuery
+import com.cosmotech.twingraph.domain.TwinGraphUploadParams
 import com.cosmotech.twingraph.extension.toJsonString
 import com.cosmotech.twingraph.utils.TwingraphUtils
 import com.redislabs.redisgraph.impl.api.RedisGraph
@@ -40,8 +41,6 @@ import org.springframework.web.context.request.ServletRequestAttributes
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.ScanParams
 import java.io.InputStream
-import java.util.UUID
-import javax.swing.text.html.HTML.Tag.U
 
 const val GRAPH_NAME = "graphName"
 const val GRAPH_ROTATION = "graphRotation"
@@ -105,7 +104,7 @@ class TwingraphServiceImpl(
     csmJedisPool.resource.use { jedis ->
       var nextCursor = ScanParams.SCAN_POINTER_START
       do {
-        val scanResult = jedis.scan(nextCursor, ScanParams().match("*"), "graphdata")
+        val scanResult = jedis.scan(nextCursor, ScanParams().match(keyPattern), keyType)
         nextCursor = scanResult.cursor
         matchingKeys.addAll(scanResult.result)
       } while (!nextCursor.equals(ScanParams.SCAN_POINTER_START))
@@ -217,85 +216,65 @@ class TwingraphServiceImpl(
   }
 
 
-  override fun bulkUploadUpdate(
-    organizationId: String,
-    graphId: String,
-    modelType: String,
-    cypherQuery: String,
-    file: Resource
-  ) {
+  override fun batchUploadUpdate(organizationId: String, graphId: String,
+                                 params: TwinGraphUploadParams, file: Resource) {
     val organization = organizationService.findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_WRITE)
     resourceScanner.scanMimeTypes(file, listOf("text/csv"))
 
-    var count = 0;
-    val pagination = 1000
-    var stringBuilder = StringBuilder()
-
-    processBulkQuery(file.inputStream, modelType, cypherQuery) { query, predicate ->
-      stringBuilder.append(query).append(",")
-      count++
-      if (count == pagination) {
-        count = 0
-        stringBuilder.deleteCharAt(stringBuilder.length - 1)
-        csmRedisGraph.query(graphId, "$predicate $stringBuilder")
-        stringBuilder = StringBuilder()
-      }
+    processCSV(file.inputStream, params) {
+      csmRedisGraph.query(graphId,  it)
     }
-    if (count > 0) {
-      stringBuilder.deleteCharAt(stringBuilder.length - 1)
-      csmRedisGraph.query(graphId, "${cypherQuery.cypherAction()} $stringBuilder")
-    }
-
   }
 
 
-  fun processBulkQuery(inputStream: InputStream, modelType: String, query: String,
-                       actionLambda : (String, String) -> Unit) {
-    var cypherQuery = query
-    var predicate = cypherQuery.cypherAction()
-    cypherQuery = cypherQuery.replace("$predicate ", "")
-
+  fun processCSV(inputStream: InputStream, params: TwinGraphUploadParams,
+                 actionLambda : (String) -> Unit) {
+    var cypherQuery = params.query
     inputStream.bufferedReader(UTF_8).use { body ->
       val firstLine = body.readLine()
-      val headers = firstLine.split(",").map { it.trim() }
-      body.lineSequence().forEach { line ->
-        val values = line.split(",").map { it.trim() }
+      val headers = firstLine.split(params.separator).map { it.trim() }
+      body.lineSequence().forEachIndexed{ index, line ->
+        val values = line.split(params.separator).map { it.trim() }
         val map = headers.zip(values).toMap()
-        actionLambda(cypherQuery.format(map), predicate)
+        if(map.size != headers.size) {
+          logger.warn("Broken line #{} = {}", index+1, line)
+          return@forEachIndexed
+        }
+        actionLambda(cypherQuery.format(map))
       }
     }
   }
 
 
-  override fun downloadGraph(organizationId: String, graphQueryHash: String): Resource {
+  override fun downloadGraph(organizationId: String, hash: String): Resource {
     val organization = organizationService.findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_READ)
 
-    var bulkQueryId = bulkQueryKey(graphQueryHash)
+    var bulkQueryId = bulkQueryKey(hash)
     csmJedisPool.resource.use { jedis ->
       if (!jedis.exists(bulkQueryId)) {
-        throw CsmResourceNotFoundException("No graph found with hash: $graphQueryHash  Try later")
+        throw CsmResourceNotFoundException("No graph found with hash: $hash  Try later")
       } else if (jedis.ttl(bulkQueryId) < 0) {
         throw CsmResourceNotFoundException(
-            "Graph with hash: $graphQueryHash is expired. Try to repeat bulk query")
+            "Graph with hash: $hash is expired. Try to repeat bulk query")
       }
     }
     val httpServletResponse =
         ((RequestContextHolder.getRequestAttributes() as ServletRequestAttributes).response)
     val contentDisposition =
-        ContentDisposition.builder("attachment").filename("TwinGraph-$graphQueryHash.zip").build()
+        ContentDisposition.builder("attachment").filename("TwinGraph-$hash.zip").build()
     httpServletResponse!!.setHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
     return ByteArrayResource(csmJedisPool.resource.use { jedis -> jedis.get(bulkQueryId) })
   }
 
   override fun createEntities(
-      organizationId: String,
-      graphId: String,
-      type: String,
-      graphProperties: List<GraphProperties>
+    organizationId: String,
+    graphId: String,
+    modelType: String,
+    graphProperties: List<GraphProperties>
   ): List<String> {
-    return when (type) {
+    return when (modelType) {
       TYPE_NODE ->
           graphProperties.map {
             csmRedisGraph
@@ -311,17 +290,17 @@ class TwingraphServiceImpl(
                         "CREATE (a)-[r:${it.type} {id:'${it.name}', '${it.params}'}]->(b) RETURN r")
                 .toJsonString()
           }
-      else -> throw CsmResourceNotFoundException("Bad Type : $type")
+      else -> throw CsmResourceNotFoundException("Bad Type : $modelType")
     }
   }
 
   override fun getEntities(
-      organizationId: String,
-      graphId: String,
-      type: String,
-      requestBody: List<String>
+    organizationId: String,
+    graphId: String,
+    modelType: String,
+    requestBody: List<String>
   ): List<String> {
-    return when (type) {
+    return when (modelType) {
       TYPE_NODE ->
           requestBody.map {
             csmRedisGraph.query(graphId, "MATCH (a {id:'$it'}) RETURN a").toJsonString()
@@ -330,17 +309,17 @@ class TwingraphServiceImpl(
           requestBody.map {
             csmRedisGraph.query(graphId, "MATCH ()-[r {id:'$it'}]-() RETURN r").toJsonString()
           }
-      else -> throw CsmResourceNotFoundException("Bad Type : $type")
+      else -> throw CsmResourceNotFoundException("Bad Type : $modelType")
     }
   }
 
   override fun updateEntities(
-      organizationId: String,
-      graphId: String,
-      type: String,
-      graphProperties: List<GraphProperties>
+    organizationId: String,
+    graphId: String,
+    modelType: String,
+    graphProperties: List<GraphProperties>
   ): List<String> {
-    return when (type) {
+    return when (modelType) {
       TYPE_NODE ->
           graphProperties.map {
             csmRedisGraph
@@ -357,17 +336,17 @@ class TwingraphServiceImpl(
                     "MATCH ()-[r {id:'${it.name}'}]-() SET r = {id:'${it.name}', ${it.params}} RETURN r")
                 .toJsonString()
           }
-      else -> throw CsmResourceNotFoundException("Bad Type : $type")
+      else -> throw CsmResourceNotFoundException("Bad Type : $modelType")
     }
   }
 
   override fun deleteEntities(
-      organizationId: String,
-      graphId: String,
-      type: String,
-      requestBody: List<String>
+    organizationId: String,
+    graphId: String,
+    modelType: String,
+    requestBody: List<String>
   ) {
-    return when (type) {
+    return when (modelType) {
       TYPE_NODE ->
           requestBody.forEach {
             csmRedisGraph.query(graphId, "MATCH (a) WHERE a.id='$it' DELETE a")
@@ -376,20 +355,11 @@ class TwingraphServiceImpl(
           requestBody.forEach {
             csmRedisGraph.query(graphId, "MATCH ()-[r]-() WHERE r.id='$it' DELETE r")
           }
-      else -> throw CsmResourceNotFoundException("Bad Type : $type")
+      else -> throw CsmResourceNotFoundException("Bad Type : $modelType")
     }
   }
 }
 
-
-
-fun String.cypherAction() : String {
-  if (this.startsWith("CREATE", true)) {
-    return "CREATE"
-  } else {
-    throw CsmClientException("Cypher query should start with CREATE")
-  }
-}
 
 fun String.format(map: Map<String, String>): String {
   var newValue = this

@@ -400,7 +400,7 @@ paths:
       responses:
         '204':
           description: Successful response
-  /organizations/{organization_id}/twingraph/{graph_id}/bulk_update/{modelType}:
+  /organizations/{organization_id}/twingraph/{graph_id}/batch:
     parameters:
       - name: organization_id
         in: path
@@ -414,20 +414,11 @@ paths:
         required: true
         schema:
           type: string
-      - name: modelType
-        in: path
-        description: the model type - 'node' or 'relationship'
-        required: true
-        schema:
-          type: string
-          enum:
-            - node
-            - relationship
     post:
-      operationId: bulkUploadUpdate
+      operationId: batchUploadUpdate
       tags:
         - twingraph
-      description: "Async bulk update by loading a CSV file on a graph instance "
+      description: "Async batch update by loading a CSV file on a graph instance "
       requestBody:
         required: true
         content:
@@ -435,22 +426,17 @@ paths:
             schema:
               type: object
               required:
-                - query
+                - params
                 - file
               properties:
-                query:
-                  type: string
-                  description: the query in cypher language
+                params:
+                  $ref: "#/components/schemas/TwinGraphUploadParams"
                 file:
                   type: string
                   format: binary
-#          application/octet-stream:
-#            schema:
-#              type: string
-#              format: binary
       responses:
         "201":
-          description: zip file uploaded
+          description: csv file uploaded
         "400":
           description: Bad request
 
@@ -464,8 +450,19 @@ components:
           authorizationUrl: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
           scopes:
             http://dev.api.cosmotech.com/platform: Platform scope
-
   schemas:
+    TwinGraphUploadParams:
+      type: object
+      description: test
+      properties:
+        query:
+          type: string
+        separator:
+          type: string
+          default: ","
+      required:
+        - query
+        - separator
     TwinGraphQuery:
       type: object
       description: a twin graph query in cypher language

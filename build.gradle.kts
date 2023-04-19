@@ -353,6 +353,7 @@ subprojects {
       modelPackage.set("com.cosmotech.${projectDirName}.domain")
       globalProperties.set(
           mapOf(
+              "skipFormModel" to "false",
               "apiDocs" to "true",
               // Excluded because the OpenAPI Generator generates test classes that expect the
               // Service Implementation to be present in the 'apiPackage' package,
