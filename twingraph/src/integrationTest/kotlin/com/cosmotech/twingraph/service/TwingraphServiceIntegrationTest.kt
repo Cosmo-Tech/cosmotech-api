@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.twingraph.service
 
-import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
@@ -29,6 +28,7 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.any
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -57,7 +57,6 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
 
   @Autowired lateinit var twingraphApiService: TwingraphApiService
   @Autowired lateinit var organizationApiService: OrganizationApiService
-  @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   lateinit var jedisPool: JedisPool
   lateinit var redisGraph: RedisGraph
@@ -88,12 +87,12 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
 
   @RedisTestContextsSource
   @ParameterizedTest
-  fun TwingraphTest(context: RedisTestContext) {
+  fun `twingraph CRUD test`(context: RedisTestContext) {
 
     val context = getContext(redisStackServer)
     val containerIp =
         (context.server as RedisStackContainer).containerInfo.networkSettings.ipAddress
-    jedisPool = JedisPool(containerIp, 6379)
+    val jedisPool = JedisPool(containerIp, 6379)
     redisGraph = RedisGraph(jedisPool)
     ReflectionTestUtils.setField(twingraphApiService, "csmJedisPool", jedisPool)
     ReflectionTestUtils.setField(twingraphApiService, "csmRedisGraph", redisGraph)
