@@ -150,7 +150,7 @@ paths:
             application/json:
               schema:
                 type: string
-  /organizations/{organization_id}/twingraph/{graph_id}/bulk_query:
+  /organizations/{organization_id}/twingraph/{graph_id}/batch_query:
     parameters:
       - name: organization_id
         in: path
@@ -165,7 +165,7 @@ paths:
         schema:
           type: string
     post:
-      operationId: bulkQuery
+      operationId: batchQuery
       tags:
         - twingraph
       description: Run a query on a graph instance and return the result as a zip file in async mode
@@ -414,6 +414,35 @@ paths:
         required: true
         schema:
           type: string
+      - name: twinGraphQuery
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/TwinGraphQuery'
+        examples:
+          Create Nodes:
+            description: |
+              Nodes creation and column mapping with CSV Header: $id, $name, $rank
+            value:
+              query: "CREATE (:Person {id: toInteger($id), name: $name, rank: toInteger($rank)})"
+          Update Nodes:
+            description: |
+              Nodes updating and column mapping with CSV Header: $id, $rank
+            value:
+              query: "MATCH (p:Person {id: toInteger($id)}) SET p.rank = $rank"
+          Create Relationships:
+            description: |
+              Relationship creation and column mapping with CSV Header: $id, $rank
+            value:
+              query: |
+                MERGE (p1:Person {id: toInteger($UserId1)})
+                MERGE (p2:Person {id: toInteger($UserId2)})
+                CREATE (p1)-[:FOLLOWS {reaction_count: $reaction_count}]->(p2)
+          Delete Nodes:
+            description: |
+              Nodes deleting and column mapping with CSV Header: $id
+            value:
+              query: "MATCH (p:Person {id: toInteger($id)}) DELETE p"
     post:
       operationId: batchUploadUpdate
       tags:
@@ -422,21 +451,33 @@ paths:
       requestBody:
         required: true
         content:
-          multipart/form-data:
+          text/csv:
             schema:
-              type: object
-              required:
-                - params
-                - file
-              properties:
-                params:
-                  $ref: "#/components/schemas/TwinGraphUploadParams"
-                file:
-                  type: string
-                  format: binary
+              type: string
+              format: binary
+            examples:
+              Create / Update / Delete Nodes:
+                value: |
+                  id,name,rank
+                  1,"John Doe",37
+                  2,"Joe Bloggs",14
+              Create / Update Relationships:
+                value: |
+                  UserId1,UserId2,reaction_count
+                  1,2,25
+                  2,1,37
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+
       responses:
-        "201":
-          description: csv file uploaded
+        "200":
+          description: csv file processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TwinGraphBatchResult'
         "400":
           description: Bad request
 
@@ -451,18 +492,6 @@ components:
           scopes:
             http://dev.api.cosmotech.com/platform: Platform scope
   schemas:
-    TwinGraphUploadParams:
-      type: object
-      description: test
-      properties:
-        query:
-          type: string
-        separator:
-          type: string
-          default: ","
-      required:
-        - query
-        - separator
     TwinGraphQuery:
       type: object
       description: a twin graph query in cypher language
@@ -475,6 +504,22 @@ components:
           description: the query in cypher language
       required:
         - query
+    TwinGraphBatchResult:
+      type: object
+      description: Processing result
+      properties:
+        totalLines:
+          type: integer
+        processedLines:
+          type: integer
+        errors:
+          type: array
+          items:
+            type: string
+      required:
+        - totalLines
+        - processedLines
+        - errors
     TwinGraphHash:
       type: object
       description: a twin graph hash

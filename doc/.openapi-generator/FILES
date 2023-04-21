@@ -59,6 +59,7 @@ Models/ScenarioSecurity.md
 Models/ScenarioValidationStatus.md
 Models/Solution.md
 Models/SourceInfo.md
+Models/TwinGraphBatchResult.md
 Models/TwinGraphHash.md
 Models/TwinGraphImport.md
 Models/TwinGraphImportInfo.md

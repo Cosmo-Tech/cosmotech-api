@@ -432,6 +432,12 @@ entity SourceInfo {
     * type: String
 }
 
+entity TwinGraphBatchResult {
+    * totalLines: Integer
+    * processedLines: Integer
+    * errors: List<String>
+}
+
 entity TwinGraphHash {
     hash: String
 }

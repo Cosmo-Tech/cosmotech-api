@@ -14,24 +14,26 @@ import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.twingraph.api.CONNECTED_ADMIN_USER
 import com.cosmotech.twingraph.api.TwingraphApiService
 import com.cosmotech.twingraph.domain.GraphProperties
+import com.cosmotech.twingraph.domain.TwinGraphBatchResult
+import com.cosmotech.twingraph.domain.TwinGraphQuery
 import com.redis.testcontainers.RedisStackContainer
-import com.redis.testcontainers.junit.RedisTestContext
-import com.redis.testcontainers.junit.RedisTestContextsSource
 import com.redislabs.redisgraph.impl.api.RedisGraph
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotEquals
+import java.io.File
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
-import org.junit.jupiter.params.ParameterizedTest
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers.any
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.core.io.ByteArrayResource
+import org.springframework.core.io.Resource
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
@@ -50,6 +52,8 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var twingraphApiService: TwingraphApiService
   @Autowired lateinit var organizationApiService: OrganizationApiService
 
+  lateinit var jedisPool: JedisPool
+  lateinit var redisGraph: RedisGraph
   var organization = Organization()
 
   val graphId = "graph"
@@ -72,18 +76,20 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
                             mutableListOf(
                                 OrganizationAccessControl(
                                     id = CONNECTED_ADMIN_USER, role = "admin")))))
-  }
-  @RedisTestContextsSource
-  @ParameterizedTest
-  fun `twingraph CRUD test`(context: RedisTestContext) {
 
+    val context = getContext(redisStackServer)
     val containerIp =
         (context.server as RedisStackContainer).containerInfo.networkSettings.ipAddress
-    val jedisPool = JedisPool(containerIp, 6379)
+    jedisPool = JedisPool(containerIp, 6379)
+    redisGraph = RedisGraph(jedisPool)
     ReflectionTestUtils.setField(twingraphApiService, "csmJedisPool", jedisPool)
-    ReflectionTestUtils.setField(twingraphApiService, "csmRedisGraph", RedisGraph(jedisPool))
+    ReflectionTestUtils.setField(twingraphApiService, "csmRedisGraph", redisGraph)
 
     context.sync().hset("${graphId}MetaData", mapOf("lastVersion" to "1"))
+  }
+
+  @Test
+  fun `twingraph CRUD test`() {
 
     logger.info("Create Nodes")
     val nodeStart =
@@ -170,5 +176,64 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
     assertDoesNotThrow {
       twingraphApiService.getEntities(organization.id!!, graphId, "relationship", listOf("node_a"))
     }
+  }
+
+  @Test
+  fun `twingraph create update delete nodes relationship test`() {
+
+    var twinGraphQuery = TwinGraphQuery(query = "", version = "1")
+    val fileNodeName = this::class.java.getResource("/Users.csv")?.file
+    val fileNode: Resource = ByteArrayResource(File(fileNodeName).readBytes())
+
+    val fileRelationshipName = this::class.java.getResource("/Follows.csv")?.file
+    val fileRelationship: Resource = ByteArrayResource(File(fileRelationshipName).readBytes())
+
+    val fileErrorName = this::class.java.getResource("/UsersErrors.csv")?.file
+    val fileError: Resource = ByteArrayResource(File(fileErrorName).readBytes())
+
+    redisGraph.query("$graphId:1", "CREATE (n)")
+
+    listOf(
+        listOf(
+            "CREATE (:Person {id: toInteger(\$id), name:\$name, rank: toInteger(\$rank)})",
+            TwinGraphBatchResult(
+                6,
+                1,
+                mutableListOf(
+                    "#2: Empty line",
+                    "#3: redis.clients.jedis.exceptions.JedisDataException: errMsg:",
+                    "#4: redis.clients.jedis.exceptions.JedisDataException: errMsg:",
+                    "#5: Empty line",
+                    "#6: Empty line",
+                )),
+            fileError),
+        listOf(
+            "CREATE (:Person {id: toInteger(\$id), name:\$name, rank: toInteger(\$rank)})",
+            TwinGraphBatchResult(9, 9, mutableListOf()),
+            fileNode),
+        listOf(
+            "MATCH (p:Person {id: toInteger(\$id)}) SET p.rank = \$rank",
+            TwinGraphBatchResult(9, 9, mutableListOf()),
+            fileNode),
+        listOf(
+            "MERGE (p1:Person {id: toInteger(\$UserId1)}) " +
+                "MERGE (p2:Person {id: toInteger(\$UserId2)}) " +
+                "CREATE (p1)-[:FOLLOWS {reaction_count: \$reaction_count}]->(p2)",
+            TwinGraphBatchResult(2, 2, mutableListOf()),
+            fileRelationship),
+        listOf(
+            "MATCH (p:Person {id: toInteger(\$id)}) DELETE p",
+            TwinGraphBatchResult(9, 9, mutableListOf()),
+            fileNode))
+        .forEach { (query, result, file) ->
+          twinGraphQuery.query = query as String
+          val queryResult =
+              twingraphApiService.batchUploadUpdate(
+                  organization.id!!, graphId, twinGraphQuery, file as Resource)
+          val expected = result as TwinGraphBatchResult
+          assertEquals(expected.totalLines, queryResult.totalLines)
+          assertEquals(expected.processedLines, queryResult.processedLines)
+          assertEquals(expected.errors.size, queryResult.errors.size)
+        }
   }
 }

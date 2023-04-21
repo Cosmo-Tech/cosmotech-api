@@ -10,24 +10,25 @@ import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.PERMISSION_READ
-import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.security.coroutine.SecurityCoroutineContext
 import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.bulkQueryKey
+import com.cosmotech.api.utils.formatQuery
 import com.cosmotech.api.utils.redisGraphKey
 import com.cosmotech.api.utils.toRedisMetaDataKey
 import com.cosmotech.api.utils.zipBytesWithFileNames
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.service.getRbac
 import com.cosmotech.twingraph.domain.GraphProperties
+import com.cosmotech.twingraph.domain.TwinGraphBatchResult
 import com.cosmotech.twingraph.domain.TwinGraphHash
 import com.cosmotech.twingraph.domain.TwinGraphImport
 import com.cosmotech.twingraph.domain.TwinGraphImportInfo
 import com.cosmotech.twingraph.domain.TwinGraphQuery
-import com.cosmotech.twingraph.domain.TwinGraphUploadParams
 import com.cosmotech.twingraph.extension.toJsonString
 import com.cosmotech.twingraph.utils.TwingraphUtils
 import com.redislabs.redisgraph.impl.api.RedisGraph
+import java.io.InputStream
 import java.nio.charset.StandardCharsets.UTF_8
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -40,8 +41,9 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.ScanParams
-import java.io.InputStream
+import redis.clients.jedis.exceptions.JedisDataException
 
+const val CSV_SEPARATOR = ","
 const val GRAPH_NAME = "graphName"
 const val GRAPH_ROTATION = "graphRotation"
 const val TYPE_NODE = "node"
@@ -124,11 +126,12 @@ class TwingraphServiceImpl(
   private fun checkTwinGraphPrerequisites(
       organizationId: String,
       graphId: String,
-      twinGraphQuery: TwinGraphQuery
-  ): Unit {
+      twinGraphQuery: TwinGraphQuery,
+      isReadOnlyQuery: Boolean
+  ) {
     val organization = organizationService.findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_READ)
-    if (!TwingraphUtils.isReadOnlyQuery(twinGraphQuery.query)) {
+    if (isReadOnlyQuery && !TwingraphUtils.isReadOnlyQuery(twinGraphQuery.query)) {
       throw CsmClientException("Read Only queries authorized only")
     }
 
@@ -155,7 +158,7 @@ class TwingraphServiceImpl(
       graphId: String,
       twinGraphQuery: TwinGraphQuery
   ): String {
-    checkTwinGraphPrerequisites(organizationId, graphId, twinGraphQuery)
+    checkTwinGraphPrerequisites(organizationId, graphId, twinGraphQuery, true)
     val resultSet =
         csmRedisGraph.query(
             redisGraphKey(graphId, twinGraphQuery.version!!),
@@ -189,12 +192,12 @@ class TwingraphServiceImpl(
     }
   }
 
-  override fun bulkQuery(
+  override fun batchQuery(
       organizationId: String,
       graphId: String,
       twinGraphQuery: TwinGraphQuery
   ): TwinGraphHash {
-    checkTwinGraphPrerequisites(organizationId, graphId, twinGraphQuery)
+    checkTwinGraphPrerequisites(organizationId, graphId, twinGraphQuery, true)
     val redisGraphKey = redisGraphKey(graphId, twinGraphQuery.version!!)
     var bulkQueryKey = bulkQueryKey(graphId, twinGraphQuery.query, twinGraphQuery.version!!)
     val twinGraphHash = TwinGraphHash(bulkQueryKey.second)
@@ -215,37 +218,50 @@ class TwingraphServiceImpl(
     return twinGraphHash
   }
 
+  override fun batchUploadUpdate(
+      organizationId: String,
+      graphId: String,
+      twinGraphQuery: TwinGraphQuery,
+      file: Resource
+  ): TwinGraphBatchResult {
+    checkTwinGraphPrerequisites(organizationId, graphId, twinGraphQuery, false)
+    resourceScanner.scanMimeTypes(file, listOf("text/csv", "text/plain"))
 
-  override fun batchUploadUpdate(organizationId: String, graphId: String,
-                                 params: TwinGraphUploadParams, file: Resource) {
-    val organization = organizationService.findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_WRITE)
-    resourceScanner.scanMimeTypes(file, listOf("text/csv"))
-
-    processCSV(file.inputStream, params) {
-      csmRedisGraph.query(graphId,  it)
+    val result = TwinGraphBatchResult(0, 0, mutableListOf())
+    processCSV(file.inputStream, twinGraphQuery, result) {
+      try {
+        csmRedisGraph.query(redisGraphKey(graphId, twinGraphQuery.version!!), it)
+        result.processedLines++
+      } catch (e: JedisDataException) {
+        result.errors.add("#${result.totalLines}: ${e.message}")
+      }
     }
+    return result
   }
 
-
-  fun processCSV(inputStream: InputStream, params: TwinGraphUploadParams,
-                 actionLambda : (String) -> Unit) {
-    var cypherQuery = params.query
+  fun processCSV(
+      inputStream: InputStream,
+      twinGraphQuery: TwinGraphQuery,
+      result: TwinGraphBatchResult,
+      actionLambda: (String) -> Unit
+  ) {
+    var cypherQuery = twinGraphQuery.query
     inputStream.bufferedReader(UTF_8).use { body ->
       val firstLine = body.readLine()
-      val headers = firstLine.split(params.separator).map { it.trim() }
-      body.lineSequence().forEachIndexed{ index, line ->
-        val values = line.split(params.separator).map { it.trim() }
+      val headers = firstLine.split(CSV_SEPARATOR).map { it.trim() }
+      body.lineSequence().forEachIndexed { index, line ->
+        result.totalLines++
+        val values = line.split(CSV_SEPARATOR).map { it.trim() }
         val map = headers.zip(values).toMap()
-        if(map.size != headers.size) {
-          logger.warn("Broken line #{} = {}", index+1, line)
+        if (map.size != headers.size) {
+          val contentLine = if (line.isBlank()) "Empty line" else line
+          result.errors.add("#%d: %s".format(index + 1, contentLine))
           return@forEachIndexed
         }
-        actionLambda(cypherQuery.format(map))
+        actionLambda(cypherQuery.formatQuery(map))
       }
     }
   }
-
 
   override fun downloadGraph(organizationId: String, hash: String): Resource {
     val organization = organizationService.findOrganizationById(organizationId)
@@ -269,10 +285,10 @@ class TwingraphServiceImpl(
   }
 
   override fun createEntities(
-    organizationId: String,
-    graphId: String,
-    modelType: String,
-    graphProperties: List<GraphProperties>
+      organizationId: String,
+      graphId: String,
+      modelType: String,
+      graphProperties: List<GraphProperties>
   ): List<String> {
     return when (modelType) {
       TYPE_NODE ->
@@ -295,10 +311,10 @@ class TwingraphServiceImpl(
   }
 
   override fun getEntities(
-    organizationId: String,
-    graphId: String,
-    modelType: String,
-    requestBody: List<String>
+      organizationId: String,
+      graphId: String,
+      modelType: String,
+      requestBody: List<String>
   ): List<String> {
     return when (modelType) {
       TYPE_NODE ->
@@ -314,10 +330,10 @@ class TwingraphServiceImpl(
   }
 
   override fun updateEntities(
-    organizationId: String,
-    graphId: String,
-    modelType: String,
-    graphProperties: List<GraphProperties>
+      organizationId: String,
+      graphId: String,
+      modelType: String,
+      graphProperties: List<GraphProperties>
   ): List<String> {
     return when (modelType) {
       TYPE_NODE ->
@@ -341,10 +357,10 @@ class TwingraphServiceImpl(
   }
 
   override fun deleteEntities(
-    organizationId: String,
-    graphId: String,
-    modelType: String,
-    requestBody: List<String>
+      organizationId: String,
+      graphId: String,
+      modelType: String,
+      requestBody: List<String>
   ) {
     return when (modelType) {
       TYPE_NODE ->
@@ -358,13 +374,4 @@ class TwingraphServiceImpl(
       else -> throw CsmResourceNotFoundException("Bad Type : $modelType")
     }
   }
-}
-
-
-fun String.format(map: Map<String, String>): String {
-  var newValue = this
-  map.forEach { (key, value) ->
-    newValue = newValue.replace("$$key", value)
-  }
-  return newValue
 }

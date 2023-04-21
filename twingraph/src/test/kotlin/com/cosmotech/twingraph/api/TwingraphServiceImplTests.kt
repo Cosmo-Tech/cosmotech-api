@@ -13,8 +13,8 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.getCurrentAuthentication
 import com.cosmotech.api.utils.shaHash
 import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.twingraph.domain.TwinGraphBatchResult
 import com.cosmotech.twingraph.domain.TwinGraphQuery
-import com.cosmotech.twingraph.domain.TwinGraphUploadParams
 import com.cosmotech.twingraph.extension.toJsonString
 import com.redislabs.redisgraph.ResultSet
 import com.redislabs.redisgraph.impl.api.RedisGraph
@@ -29,6 +29,7 @@ import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
 import io.mockk.verify
 import io.mockk.verifyAll
+import java.io.File
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -38,8 +39,6 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import redis.clients.jedis.JedisPool
-import java.io.File
-import kotlin.random.Random
 
 const val AUTHENTICATED_USERNAME = "authenticated-user"
 const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
@@ -57,8 +56,7 @@ class TwingraphServiceImplTests {
 
   @MockK private lateinit var csmJedisPool: JedisPool
   @MockK private lateinit var csmRedisGraph: RedisGraph
-  @Suppress("unused")
-  @MockK private lateinit var resourceScanner: ResourceScanner
+  @Suppress("unused") @MockK private lateinit var resourceScanner: ResourceScanner
   @MockK private lateinit var organizationService: OrganizationApiService
 
   @SpyK @InjectMockKs private lateinit var twingraphServiceImpl: TwingraphServiceImpl
@@ -154,7 +152,7 @@ class TwingraphServiceImplTests {
         "OK"
 
     val twinGraphQuery = TwinGraphQuery("MATCH(n) RETURN n", "1")
-    val jsonHash = twingraphServiceImpl.bulkQuery("orgId", "graphId", twinGraphQuery)
+    val jsonHash = twingraphServiceImpl.batchQuery("orgId", "graphId", twinGraphQuery)
 
     assertEquals(jsonHash.hash, "graphId:1:MATCH(n) RETURN n".shaHash())
     verifyAll {
@@ -175,7 +173,7 @@ class TwingraphServiceImplTests {
     every { csmJedisPool.resource.exists(any<ByteArray>()) } returns true
 
     val twinGraphQuery = TwinGraphQuery("MATCH(n) RETURN n", "1")
-    val jsonHash = twingraphServiceImpl.bulkQuery("orgId", "graphId", twinGraphQuery)
+    val jsonHash = twingraphServiceImpl.batchQuery("orgId", "graphId", twinGraphQuery)
     assertEquals(jsonHash.hash, "graphId:1:MATCH(n) RETURN n".shaHash())
   }
 
@@ -269,18 +267,18 @@ class TwingraphServiceImplTests {
     }
   }
 
-   @Test
+  @Test
   fun `test processCSV - should create cypher requests by line`() {
     val fileName = this::class.java.getResource("/Users.csv")?.file
     val file = File(fileName)
-    val params = TwinGraphUploadParams(
-     "CREATE (:Person {id: toInteger(\$id), name: \$name, rank: toInteger(\$rank)})"
-    )
-    var counter = 1
-    twingraphServiceImpl.processCSV(file.inputStream(), params) {
-      assertEquals(counter, it.subSequence(31,32).toString().toInt())
-      counter++
-    }
+    val query =
+        TwinGraphQuery(
+            "CREATE (:Person {id: toInteger(\$id), name: \$name, rank: toInteger(\$rank)})")
+    val result = TwinGraphBatchResult(0, 0, mutableListOf())
+    twingraphServiceImpl.processCSV(file.inputStream(), query, result) { result.processedLines++ }
+    assertEquals(9, result.totalLines)
+    assertEquals(9, result.processedLines)
+    assertEquals(0, result.errors.size)
   }
 
   private fun mockEmptyResultSet(): ResultSet {
