@@ -2,12 +2,12 @@
 // Licensed under the MIT license.
 package com.cosmotech.twingraph.api
 
-import QueryBuffer
 import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.events.TwingraphImportEvent
 import com.cosmotech.api.events.TwingraphImportJobInfoRequest
 import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.exceptions.CsmServerException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.PERMISSION_READ
@@ -20,6 +20,7 @@ import com.cosmotech.api.utils.toRedisMetaDataKey
 import com.cosmotech.api.utils.zipBytesWithFileNames
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.service.getRbac
+import com.cosmotech.twingraph.bulk.QueryBuffer
 import com.cosmotech.twingraph.domain.GraphProperties
 import com.cosmotech.twingraph.domain.TwinGraphBatchResult
 import com.cosmotech.twingraph.domain.TwinGraphHash
@@ -29,6 +30,15 @@ import com.cosmotech.twingraph.domain.TwinGraphQuery
 import com.cosmotech.twingraph.extension.toJsonString
 import com.cosmotech.twingraph.utils.TwingraphUtils
 import com.redislabs.redisgraph.impl.api.RedisGraph
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileInputStream
+import java.io.IOException
+import java.io.InputStream
+import java.nio.charset.StandardCharsets.UTF_8
+import java.time.LocalDateTime
+import java.util.zip.ZipInputStream
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.apache.commons.compress.archivers.ArchiveStreamFactory
@@ -44,22 +54,13 @@ import org.springframework.web.context.request.ServletRequestAttributes
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.ScanParams
 import redis.clients.jedis.exceptions.JedisDataException
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileInputStream
-import java.io.IOException
-import java.io.InputStream
-import java.nio.charset.StandardCharsets.UTF_8
-import java.time.LocalDateTime
-import java.util.zip.ZipInputStream
-
 
 const val CSV_SEPARATOR = ","
 const val GRAPH_NAME = "graphName"
 const val GRAPH_ROTATION = "graphRotation"
 const val TYPE_NODE = "node"
 const val TYPE_RELATIONSHIP = "relationship"
+const val BUFFER_SIZE = 2048
 
 @Service
 @Suppress("TooManyFunctions")
@@ -67,19 +68,23 @@ class TwingraphServiceImpl(
     private val organizationService: OrganizationApiService,
     private val csmJedisPool: JedisPool,
     private val csmRedisGraph: RedisGraph,
-    private val csmRbac: CsmRbac
+    private val csmRbac: CsmRbac,
+    private val resourceScanner: ResourceScanner
 ) : CsmPhoenixService(), TwingraphApiService {
 
   override fun createGraph(organizationId: String, graphId: String, body: Resource?) {
-      csmJedisPool.resource.use { jedis ->
-          jedis.hset(
-              graphId.toRedisMetaDataKey(),
-              mutableMapOf(
-                  "lastVersion" to "1",
-                  "graphName" to graphId,
-                  "graphRotation" to "3",
-                  "lastModifiedDate" to getCurrentDate()))
-      }
+    if (findAllTwingraphs(organizationId).contains(graphId))
+        throw CsmServerException("There is already a graph with the id : $graphId")
+
+    csmJedisPool.resource.use { jedis ->
+      jedis.hset(
+          graphId.toRedisMetaDataKey(),
+          mutableMapOf(
+              "lastVersion" to "1",
+              "graphName" to graphId,
+              "graphRotation" to "3",
+              "lastModifiedDate" to getCurrentDate()))
+    }
     if (body != null) {
       val archiverType = ArchiveStreamFactory.detect(body.inputStream.buffered())
       if (ArchiveStreamFactory.ZIP != archiverType) {
@@ -87,48 +92,47 @@ class TwingraphServiceImpl(
             "Invalid archive type: '$archiverType'. A Zip Archive is expected.")
       }
 
-        val queryBuffer = QueryBuffer(csmJedisPool.resource, graphId)
+      val queryBuffer = QueryBuffer(csmJedisPool.resource, graphId)
 
-        unzipNodes(body as File).forEach {node ->
-                processCSVFile(node.content) {
-                    queryBuffer.addNodes(node.filename, it)
-                }
-            }
-        unzipEdge(body as File).forEach {edge ->
-            processCSVFile(edge.content) {
-                queryBuffer.addNodes(edge.filename, it)
-            }
-        }
+      unzipNodes(body as File).forEach { node ->
+        processCSVFile(node.content) { queryBuffer.addNodes(node.filename, it) }
+      }
+      unzipEdge(body as File).forEach { edge ->
+        processCSVFile(edge.content) { queryBuffer.addNodes(edge.filename, it) }
+      }
 
-        queryBuffer.send()
+      queryBuffer.send()
     } else {
       getEntities(organizationId, graphId, "node", listOf("node_a"))
     }
   }
 
-    @Throws(IOException::class)
-    private fun ZipInputStream.toInputStream() : InputStream {
-        val BUFFER = 2048
-        var count = 0
-        val data = ByteArray(BUFFER)
-        val out = ByteArrayOutputStream()
-        while (this.read(data, 0, BUFFER).also { count = it } != -1) {
-            out.write(data)
-        }
-        return ByteArrayInputStream(out.toByteArray())
+  @Throws(IOException::class)
+  private fun ZipInputStream.toInputStream(): InputStream {
+    val data = ByteArray(BUFFER_SIZE)
+    val out = ByteArrayOutputStream()
+    while (this.read(data, 0, BUFFER_SIZE) != -1) {
+      out.write(data)
     }
+    return ByteArrayInputStream(out.toByteArray())
+  }
 
-    private fun processCSVFile(inputStream: InputStream, actionLambda: (Map<String, Any>) -> Unit){
-        inputStream.bufferedReader(UTF_8).use { body ->
-            val firstLine = body.readLine()
-            val headers = firstLine.split(",").map { it.trim() }
-            body.lineSequence().forEach { line ->
-                val values = line.split(",").map { it.trim() }
-                val map = headers.zip(values).toMap()
-                actionLambda(map)
-            }
-        }
+  private fun processCSVFile(inputStream: InputStream, actionLambda: (Map<String, Any>) -> Unit) {
+    inputStream.bufferedReader(UTF_8).use { body ->
+      val firstLine = body.readLine()
+      val headers = firstLine.split(",").map { it.trim() }
+      body.lineSequence().forEach { line ->
+        val values = line.split(",").map { it.trim() }
+        val map = headers.zip(values).toMap()
+        actionLambda(map)
+      }
     }
+  }
+
+  fun cutName(filename: String): String {
+    val prefixLess = filename.split("/")[1]
+    return prefixLess.split(".")[0]
+  }
 
   data class UnzippedFileEdge(val filename: String, val content: InputStream)
   data class UnzippedFileNode(val filename: String, val content: InputStream)
@@ -139,22 +143,24 @@ class TwingraphServiceImpl(
             .filter { it.name.startsWith("Edges", true) }
             .filter { it.name.endsWith(".csv") }
             .map {
-                UnzippedFileEdge(filename = it.name, content = zipInputStream.toInputStream())
+              UnzippedFileEdge(
+                  filename = cutName(it.name), content = zipInputStream.toInputStream())
             }
             .toList()
       }
 
-    fun unzipNodes(file: File): List<UnzippedFileNode> =
-        ZipInputStream(FileInputStream(file)).use { zipInputStream ->
-            generateSequence { zipInputStream.nextEntry }
-                .filterNot { it.isDirectory }
-                .filter { it.name.startsWith("Nodes", true) }
-                .filter { it.name.endsWith(".csv") }
-                .map {
-                    UnzippedFileNode(filename = it.name, content = zipInputStream.toInputStream())
-                }
-                .toList()
-        }
+  fun unzipNodes(file: File): List<UnzippedFileNode> =
+      ZipInputStream(FileInputStream(file)).use { zipInputStream ->
+        generateSequence { zipInputStream.nextEntry }
+            .filterNot { it.isDirectory }
+            .filter { it.name.startsWith("Nodes", true) }
+            .filter { it.name.endsWith(".csv") }
+            .map {
+              UnzippedFileNode(
+                  filename = cutName(it.name), content = zipInputStream.toInputStream())
+            }
+            .toList()
+      }
 
   override fun importGraph(
       organizationId: String,

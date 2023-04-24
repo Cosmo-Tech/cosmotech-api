@@ -11,7 +11,6 @@ import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
-import com.cosmotech.twingraph.api.CONNECTED_ADMIN_USER
 import com.cosmotech.twingraph.api.TwingraphApiService
 import com.cosmotech.twingraph.domain.GraphProperties
 import com.cosmotech.twingraph.domain.TwinGraphBatchResult
@@ -23,8 +22,13 @@ import com.redislabs.redisgraph.impl.api.RedisGraph
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
+import java.io.File
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.runner.RunWith
@@ -38,10 +42,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
 import redis.clients.jedis.JedisPool
-import java.io.File
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
 
 const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
 
@@ -59,7 +59,7 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
 
   lateinit var jedisPool: JedisPool
   lateinit var redisGraph: RedisGraph
-  var organization = Organization()
+  lateinit var organization: Organization
 
   val graphId = "graph"
 
@@ -86,6 +86,25 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
 
   @RedisTestContextsSource
   @ParameterizedTest
+  fun `graph creation`(context: RedisTestContext) {
+    val containerIp =
+        (context.server as RedisStackContainer).containerInfo.networkSettings.ipAddress
+    val jedisPool = JedisPool(containerIp, 6379)
+    ReflectionTestUtils.setField(twingraphApiService, "csmJedisPool", jedisPool)
+    ReflectionTestUtils.setField(twingraphApiService, "csmRedisGraph", RedisGraph(jedisPool))
+
+    context.sync().hset("${graphId}MetaData", mapOf("lastVersion" to "1"))
+
+    logger.info("Create an empty graph")
+    twingraphApiService.createGraph(organization.id!!, graphId, null)
+    assertEquals(1, twingraphApiService.findAllTwingraphs(organization.id!!).size)
+
+    logger.info("Create a graph with an already existing Id")
+    assertThrows<Exception> { twingraphApiService.createGraph(organization.id!!, graphId, null) }
+  }
+
+  @RedisTestContextsSource
+  @ParameterizedTest
   fun `twingraph CRUD test`(context: RedisTestContext) {
 
     val context = getContext(redisStackServer)
@@ -101,6 +120,8 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `twingraph CRUD test`() {
+
+    twingraphApiService.createGraph(organization.id!!, graphId, null)
 
     logger.info("Create Nodes")
     val nodeStart =
