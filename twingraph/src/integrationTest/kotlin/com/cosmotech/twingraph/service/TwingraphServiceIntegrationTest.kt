@@ -188,27 +188,11 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
     val fileRelationshipName = this::class.java.getResource("/Follows.csv")?.file
     val fileRelationship: Resource = ByteArrayResource(File(fileRelationshipName).readBytes())
 
-    val fileErrorName = this::class.java.getResource("/UsersErrors.csv")?.file
-    val fileError: Resource = ByteArrayResource(File(fileErrorName).readBytes())
-
     redisGraph.query("$graphId:1", "CREATE (n)")
 
     listOf(
         listOf(
-            "CREATE (:Person {id: toInteger(\$id), name:\$name, rank: toInteger(\$rank)})",
-            TwinGraphBatchResult(
-                6,
-                1,
-                mutableListOf(
-                    "#2: Empty line",
-                    "#3: redis.clients.jedis.exceptions.JedisDataException: errMsg:",
-                    "#4: redis.clients.jedis.exceptions.JedisDataException: errMsg:",
-                    "#5: Empty line",
-                    "#6: Empty line",
-                )),
-            fileError),
-        listOf(
-            "CREATE (:Person {id: toInteger(\$id), name:\$name, rank: toInteger(\$rank)})",
+            "CREATE (:Person {id: toInteger(\$id), name:\$name, rank: toInteger(\$rank), object: \$object})",
             TwinGraphBatchResult(9, 9, mutableListOf()),
             fileNode),
         listOf(

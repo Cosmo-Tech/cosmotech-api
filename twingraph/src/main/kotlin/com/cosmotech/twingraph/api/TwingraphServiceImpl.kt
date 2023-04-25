@@ -32,6 +32,8 @@ import java.io.InputStream
 import java.nio.charset.StandardCharsets.UTF_8
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.apache.commons.csv.CSVFormat
+import org.apache.commons.csv.CSVRecord
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
 import org.springframework.http.ContentDisposition
@@ -246,18 +248,14 @@ class TwingraphServiceImpl(
       actionLambda: (String) -> Unit
   ) {
     var cypherQuery = twinGraphQuery.query
-    inputStream.bufferedReader(UTF_8).use { body ->
-      val firstLine = body.readLine()
-      val headers = firstLine.split(CSV_SEPARATOR).map { it.trim() }
-      body.lineSequence().forEachIndexed { index, line ->
+    inputStream.bufferedReader(UTF_8).use { reader ->
+      val csvFormat: CSVFormat =
+          CSVFormat.DEFAULT.builder().setHeader().setSkipHeaderRecord(false).setTrim(true).build()
+
+      val records: Iterable<CSVRecord> = csvFormat.parse(reader)
+      records.forEach { record ->
         result.totalLines++
-        val values = line.split(CSV_SEPARATOR).map { it.trim() }
-        val map = headers.zip(values).toMap()
-        if (map.size != headers.size) {
-          val contentLine = if (line.isBlank()) "Empty line" else line
-          result.errors.add("#%d: %s".format(index + 1, contentLine))
-          return@forEachIndexed
-        }
+        val map = record.parser.headerNames.zip(record.values()).toMap()
         actionLambda(cypherQuery.formatQuery(map))
       }
     }

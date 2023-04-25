@@ -273,7 +273,7 @@ class TwingraphServiceImplTests {
     val file = File(fileName)
     val query =
         TwinGraphQuery(
-            "CREATE (:Person {id: toInteger(\$id), name: \$name, rank: toInteger(\$rank)})")
+            "CREATE (:Person {id: toInteger(\$id), name: \$name, rank: toInteger(\$rank), object: \$object})")
     val result = TwinGraphBatchResult(0, 0, mutableListOf())
     twingraphServiceImpl.processCSV(file.inputStream(), query, result) { result.processedLines++ }
     assertEquals(9, result.totalLines)

@@ -52,6 +52,7 @@ allprojects {
   apply(plugin = "io.gitlab.arturbosch.detekt")
 
   repositories {
+    mavenLocal()
     maven {
       name = "GitHubPackages"
       url = uri("https://maven.pkg.github.com/Cosmo-Tech/cosmotech-api-common")
@@ -214,6 +215,7 @@ subprojects {
 
     implementation("redis.clients:jedis:${jedisVersion}")
     implementation("com.redislabs:jredistimeseries:${jredistimeseriesVersion}")
+    implementation("org.apache.commons:commons-csv:1.10.0")
 
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:5.9.2"))
@@ -353,7 +355,6 @@ subprojects {
       modelPackage.set("com.cosmotech.${projectDirName}.domain")
       globalProperties.set(
           mapOf(
-              "skipFormModel" to "false",
               "apiDocs" to "true",
               // Excluded because the OpenAPI Generator generates test classes that expect the
               // Service Implementation to be present in the 'apiPackage' package,
