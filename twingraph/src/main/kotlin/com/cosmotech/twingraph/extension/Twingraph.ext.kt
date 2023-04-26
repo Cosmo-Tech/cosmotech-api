@@ -78,11 +78,11 @@ fun Any.convertToJsonValue(): Any {
 }
 
 fun ResultSet.toJsonString(): String {
-  val result = mutableListOf<MutableMap<String, Any>>()
+  val result = mutableListOf<MutableMap<String, Any?>>()
   this.forEach { record: Record? ->
     val header = record?.keys() ?: listOf()
     val values = record?.values() ?: listOf()
-    val entries = mutableMapOf<String, Any>()
+    val entries = mutableMapOf<String, Any?>()
     values.forEachIndexed { valueIndex, element ->
       val columnName = header[valueIndex]
       when (element) {
@@ -93,7 +93,8 @@ fun ResultSet.toJsonString(): String {
           entries[columnName] = JSONObject(element.toCsmGraphEntity(CsmGraphEntityType.RELATION))
         }
         else -> {
-          entries[columnName] = element.convertToJsonValue()
+          element?.let { entries[columnName] = element.convertToJsonValue() }
+              ?: run { entries[columnName] = null }
         }
       }
     }
