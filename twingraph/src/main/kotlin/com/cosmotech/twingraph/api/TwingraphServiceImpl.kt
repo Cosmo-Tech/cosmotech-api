@@ -250,7 +250,7 @@ class TwingraphServiceImpl(
     var cypherQuery = twinGraphQuery.query
     inputStream.bufferedReader(UTF_8).use { reader ->
       val csvFormat: CSVFormat =
-          CSVFormat.DEFAULT.builder().setHeader().setSkipHeaderRecord(false).setTrim(true).build()
+          CSVFormat.DEFAULT.builder().setHeader().setSkipHeaderRecord(false).setRecordSeparator(",").setTrim(true).build()
 
       val records: Iterable<CSVRecord> = csvFormat.parse(reader)
       records.forEach { record ->
