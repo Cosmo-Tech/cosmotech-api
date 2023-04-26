@@ -150,7 +150,7 @@ paths:
             application/json:
               schema:
                 type: string
-  /organizations/{organization_id}/twingraph/{graph_id}/batch_query:
+  /organizations/{organization_id}/twingraph/{graph_id}/batch-query:
     parameters:
       - name: organization_id
         in: path
@@ -186,7 +186,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TwinGraphHash'
-  /organizations/{organization_id}/twingraph/bulk_query/download/{hash}:
+  /organizations/{organization_id}/twingraph/bulk-query/download/{hash}:
     parameters:
       - name: organization_id
         in: path
@@ -423,16 +423,19 @@ paths:
           Create Nodes:
             description: |
               Nodes creation and column mapping with CSV Header: $id, $name, $rank
+              CSV Separator: ,
             value:
               query: "CREATE (:Person {id: toInteger($id), name: $name, rank: toInteger($rank)})"
           Update Nodes:
             description: |
               Nodes updating and column mapping with CSV Header: $id, $rank
+              CSV Separator: ,
             value:
               query: "MATCH (p:Person {id: toInteger($id)}) SET p.rank = $rank"
           Create Relationships:
             description: |
               Relationship creation and column mapping with CSV Header: $id, $rank
+              CSV Separator: ,
             value:
               query: |
                 MERGE (p1:Person {id: toInteger($UserId1)})
@@ -441,6 +444,7 @@ paths:
           Delete Nodes:
             description: |
               Nodes deleting and column mapping with CSV Header: $id
+              CSV Separator: ,
             value:
               query: "MATCH (p:Person {id: toInteger($id)}) DELETE p"
     post:
@@ -470,7 +474,6 @@ paths:
             schema:
               type: string
               format: binary
-
       responses:
         "200":
           description: csv file processed

@@ -181,7 +181,6 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `twingraph create update delete nodes relationship test`() {
 
-    var twinGraphQuery = TwinGraphQuery(query = "", version = "1")
     val fileNodeName = this::class.java.getResource("/Users.csv")?.file
     val fileNode: Resource = ByteArrayResource(File(fileNodeName).readBytes())
 
@@ -210,7 +209,7 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
             TwinGraphBatchResult(9, 9, mutableListOf()),
             fileNode))
         .forEach { (query, result, file) ->
-          twinGraphQuery.query = query as String
+          val twinGraphQuery = TwinGraphQuery(query = query as String, version = "1")
           val queryResult =
               twingraphApiService.batchUploadUpdate(
                   organization.id!!, graphId, twinGraphQuery, file as Resource)

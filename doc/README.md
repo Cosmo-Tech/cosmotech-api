@@ -94,12 +94,12 @@ Class | Method | HTTP request | Description
 *SolutionApi* | [**updateSolution**](Apis/SolutionApi.md#updatesolution) | **PATCH** /organizations/{organization_id}/solutions/{solution_id} | Update a solution
 *SolutionApi* | [**updateSolutionRunTemplate**](Apis/SolutionApi.md#updatesolutionruntemplate) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id} | Update the specified Solution Run Template
 *SolutionApi* | [**uploadRunTemplateHandler**](Apis/SolutionApi.md#uploadruntemplatehandler) | **POST** /organizations/{organization_id}/solutions/{solution_id}/runtemplates/{run_template_id}/handlers/{handler_id}/upload | Upload a Run Template step handler zip file
-*TwingraphApi* | [**batchQuery**](Apis/TwingraphApi.md#batchquery) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/batch_query | Run a query on a graph instance and return the result as a zip file in async mode
+*TwingraphApi* | [**batchQuery**](Apis/TwingraphApi.md#batchquery) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/batch-query | Run a query on a graph instance and return the result as a zip file in async mode
 *TwingraphApi* | [**batchUploadUpdate**](Apis/TwingraphApi.md#batchuploadupdate) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/batch | Async batch update by loading a CSV file on a graph instance 
 *TwingraphApi* | [**createEntities**](Apis/TwingraphApi.md#createentities) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/{modelType} | create new entities in a graph instance
 *TwingraphApi* | [**delete**](Apis/TwingraphApi.md#delete) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id} | Launch a mass delete job
 *TwingraphApi* | [**deleteEntities**](Apis/TwingraphApi.md#deleteentities) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id}/{modelType} | delete entities in a graph instance
-*TwingraphApi* | [**downloadGraph**](Apis/TwingraphApi.md#downloadgraph) | **GET** /organizations/{organization_id}/twingraph/bulk_query/download/{hash} | Download a graph compressed in a zip file
+*TwingraphApi* | [**downloadGraph**](Apis/TwingraphApi.md#downloadgraph) | **GET** /organizations/{organization_id}/twingraph/bulk-query/download/{hash} | Download a graph compressed in a zip file
 *TwingraphApi* | [**findAllTwingraphs**](Apis/TwingraphApi.md#findalltwingraphs) | **GET** /organizations/{organization_id}/twingraphs | Return the list of all graphs stored in the organization
 *TwingraphApi* | [**getEntities**](Apis/TwingraphApi.md#getentities) | **GET** /organizations/{organization_id}/twingraph/{graph_id}/{modelType} | get entities in a graph instance
 *TwingraphApi* | [**getGraphMetaData**](Apis/TwingraphApi.md#getgraphmetadata) | **GET** /organizations/{organization_id}/twingraph/{graph_id}/metadata | Return the metaData of the specified graph
