@@ -61,6 +61,19 @@ paths:
           description: Bad request
     get:
       operationId: findAllSolutions
+      parameters:
+        - name: page
+          in: query
+          description: page number to query
+          required: false
+          schema:
+            type: integer
+        - name: size
+          in: query
+          description: amount of result by page
+          required: false
+          schema:
+            type: integer
       tags:
         - solution
       summary: List all Solutions
@@ -465,7 +478,48 @@ paths:
           description: zip file uploaded
         "400":
           description: Bad request
-
+  /organizations/{organization_id}/solutions/import:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: importSolution
+      tags:
+        - solution
+      summary: Import a solution
+      requestBody:
+        description: the Solution to import
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Solution'
+            examples:
+              Brewery:
+                $ref: '#/components/examples/Brewery'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            examples:
+              ADTConnector:
+                $ref: '#/components/examples/Brewery'
+      responses:
+        "201":
+          description: the solution details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Solution'
+              examples:
+                Brewery:
+                  $ref: '#/components/examples/Brewery'
+        "400":
+          description: Bad request
 components:
   securitySchemes:
     oAuth2AuthCode:
@@ -479,17 +533,25 @@ components:
   schemas:
     Solution:
       type: object
+      x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
       description: a version of a Solution
       properties:
         id:
           type: string
+          x-field-extra-annotation: "@org.springframework.data.annotation.Id"
           readOnly: true
           description: the Solution version unique identifier
+        organizationId:
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
+          type: string
+          readOnly: true
+          description: the Organization unique identifier
         key:
           type: string
           description: the Solution key which group Solution versions
         name:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           description: the Solution name
         description:
           type: string

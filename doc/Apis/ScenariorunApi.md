@@ -14,6 +14,7 @@ Method | HTTP request | Description
 [**getScenarioRunStatus**](ScenariorunApi.md#getScenarioRunStatus) | **GET** /organizations/{organization_id}/scenarioruns/{scenariorun_id}/status | get the status for the ScenarioRun
 [**getScenarioRuns**](ScenariorunApi.md#getScenarioRuns) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/scenarioruns | get the list of ScenarioRuns for the Scenario
 [**getWorkspaceScenarioRuns**](ScenariorunApi.md#getWorkspaceScenarioRuns) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarioruns | get the list of ScenarioRuns for the Workspace
+[**importScenarioRun**](ScenariorunApi.md#importScenarioRun) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/run/import | import a ScenarioRun for the Scenario
 [**runScenario**](ScenariorunApi.md#runScenario) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/run | run a ScenarioRun for the Scenario
 [**searchScenarioRuns**](ScenariorunApi.md#searchScenarioRuns) | **POST** /organizations/{organization_id}/scenarioruns/search | Search ScenarioRuns
 [**startScenarioRunContainers**](ScenariorunApi.md#startScenarioRunContainers) | **POST** /organizations/{organization_id}/scenarioruns/startcontainers | Start a new scenariorun with raw containers definition
@@ -233,7 +234,7 @@ Name | Type | Description  | Notes
 
 <a name="getScenarioRuns"></a>
 # **getScenarioRuns**
-> List getScenarioRuns(organization\_id, workspace\_id, scenario\_id)
+> List getScenarioRuns(organization\_id, workspace\_id, scenario\_id, page, size)
 
 get the list of ScenarioRuns for the Scenario
 
@@ -244,6 +245,8 @@ Name | Type | Description  | Notes
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **workspace\_id** | **String**| the Workspace identifier | [default to null]
  **scenario\_id** | **String**| the Scenario identifier | [default to null]
+ **page** | **Integer**| page number to query | [optional] [default to null]
+ **size** | **Integer**| amount of result by page | [optional] [default to null]
 
 ### Return type
 
@@ -260,7 +263,7 @@ Name | Type | Description  | Notes
 
 <a name="getWorkspaceScenarioRuns"></a>
 # **getWorkspaceScenarioRuns**
-> List getWorkspaceScenarioRuns(organization\_id, workspace\_id)
+> List getWorkspaceScenarioRuns(organization\_id, workspace\_id, page, size)
 
 get the list of ScenarioRuns for the Workspace
 
@@ -270,6 +273,8 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **workspace\_id** | **String**| the Workspace identifier | [default to null]
+ **page** | **Integer**| page number to query | [optional] [default to null]
+ **size** | **Integer**| amount of result by page | [optional] [default to null]
 
 ### Return type
 
@@ -282,6 +287,34 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
 - **Content-Type**: Not defined
+- **Accept**: application/json
+
+<a name="importScenarioRun"></a>
+# **importScenarioRun**
+> ScenarioRun importScenarioRun(organization\_id, workspace\_id, scenario\_id, ScenarioRun)
+
+import a ScenarioRun for the Scenario
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **workspace\_id** | **String**| the Workspace identifier | [default to null]
+ **scenario\_id** | **String**| the Scenario identifier | [default to null]
+ **ScenarioRun** | [**ScenarioRun**](../Models/ScenarioRun.md)| the ScenarioRun to import |
+
+### Return type
+
+[**ScenarioRun**](../Models/ScenarioRun.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
 - **Accept**: application/json
 
 <a name="runScenario"></a>
@@ -313,7 +346,7 @@ Name | Type | Description  | Notes
 
 <a name="searchScenarioRuns"></a>
 # **searchScenarioRuns**
-> List searchScenarioRuns(organization\_id, ScenarioRunSearch)
+> List searchScenarioRuns(organization\_id, ScenarioRunSearch, page, size)
 
 Search ScenarioRuns
 
@@ -323,6 +356,8 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **ScenarioRunSearch** | [**ScenarioRunSearch**](../Models/ScenarioRunSearch.md)| the ScenarioRun search parameters |
+ **page** | **Integer**| page number to query | [optional] [default to null]
+ **size** | **Integer**| amount of result by page | [optional] [default to null]
 
 ### Return type
 

@@ -71,6 +71,19 @@ paths:
           description: Bad request
     get:
       operationId: findAllScenarios
+      parameters:
+        - name: page
+          in: query
+          description: page number to query
+          required: false
+          schema:
+            type: integer
+        - name: size
+          in: query
+          description: amount of result by page
+          required: false
+          schema:
+            type: integer
       tags:
         - scenario
       summary: List all Scenarios
@@ -121,6 +134,19 @@ paths:
       tags:
         - scenario
       summary: List all Scenarios by validation status
+      parameters:
+        - name: page
+          in: query
+          description: page number to query
+          required: false
+          schema:
+            type: integer
+        - name: size
+          in: query
+          description: amount of result by page
+          required: false
+          schema:
+            type: integer
       responses:
         "200":
           description: the list of Scenarios by a given validation status
@@ -790,6 +816,50 @@ paths:
                   - bob@mycompany.com
         "404":
           description: the Scenario specified is unknown or you don't have access to it
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/import:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: importScenario
+      tags:
+        - scenario
+      summary: Import Scenario
+      requestBody:
+        description: the Scenario to import
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Scenario'
+            examples:
+              MasterScenario:
+                $ref: '#/components/examples/BreweryScenarioIn'
+              ChildScenario:
+                $ref: '#/components/examples/BreweryChildScenarioIn'
+      responses:
+        "201":
+          description: the scenario details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scenario'
+              examples:
+                Scenario:
+                  $ref: '#/components/examples/BreweryScenario'
+        "400":
+          description: Bad request
+
 
 components:
   securitySchemes:
@@ -804,14 +874,17 @@ components:
   schemas:
     Scenario:
       type: object
+      x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
       description: a Scenario with base information
       properties:
         id:
           type: string
+          x-field-extra-annotation: "@org.springframework.data.annotation.Id"
           readOnly: true
           description: the Scenario unique identifier
         name:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           description: the Scenario name
         description:
           type: string
@@ -823,13 +896,16 @@ components:
             type: string
         parentId:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the Scenario parent id
         ownerId:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           readOnly: true
           description: the user id which own this Scenario
         rootId:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           readOnly: true
           description: the scenario root id
         solutionId:
@@ -839,22 +915,25 @@ components:
         runTemplateId:
           type: string
           description: the Solution Run Template Id associated with this Scenario
+        organizationId:
+            type: string
+            readOnly: true
+            description: the associated Organization Id
         workspaceId:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           readOnly: true
           description: the associated Workspace Id
         state:
           $ref: '#/components/schemas/ScenarioJobState'
         creationDate:
-          type: string
-          # for example, 2017-07-21T17:32:28Z
-          format: date-time
+          type: integer
+          format: int64
           readOnly: true
           description: the Scenario creation date
         lastUpdate:
-          type: string
-          # for example, 2017-07-21T17:32:28Z
-          format: date-time
+          type: integer
+          format: int64
           readOnly: true
           description: the last time a Scenario was updated
         ownerName:
@@ -898,8 +977,11 @@ components:
             - type: object
               description: the last Scenario Run for the root (master) of Scenario
         validationStatus:
-          $ref: '#/components/schemas/ScenarioValidationStatus'
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
+          allOf:
+            - $ref: '#/components/schemas/ScenarioValidationStatus'
         security:
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           allOf:
             - $ref: '#/components/schemas/ScenarioSecurity'
 #      required:
@@ -911,9 +993,11 @@ components:
       properties:
         default:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the role by default
         accessControlList:
           type: array
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the list which can access this Scenario with detailed access control information
           items:
             $ref: '#/components/schemas/ScenarioAccessControl'
@@ -926,9 +1010,11 @@ components:
       properties:
         id:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the identity id
         role:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: a role
       required:
         - id

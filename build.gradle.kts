@@ -30,6 +30,7 @@ plugins {
   id("org.openapi.generator") version "5.4.0" apply false
   id("com.google.cloud.tools.jib") version "3.3.1" apply false
   id("io.gitlab.arturbosch.detekt") version "1.21.0"
+  id("org.jetbrains.kotlinx.kover") version "0.6.1"
 }
 
 scmVersion { tag { prefix.set("") } }
@@ -39,9 +40,8 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 val kotlinJvmTarget = 17
-val cosmotechApiCommonVersion = "0.1.37-SNAPSHOT"
+val cosmotechApiCommonVersion = "0.1.38-SNAPSHOT"
 val cosmotechApiAzureVersion = "0.1.9-SNAPSHOT"
-val cosmotechApiCosmosDBVersion = "0.1.0-SNAPSHOT"
 val azureSpringBootBomVersion = "3.14.0"
 val jedisVersion = "3.9.0"
 val jredistimeseriesVersion = "1.6.0"
@@ -214,6 +214,7 @@ subprojects {
 
     implementation("redis.clients:jedis:${jedisVersion}")
     implementation("com.redislabs:jredistimeseries:${jredistimeseriesVersion}")
+    implementation("org.apache.commons:commons-csv:1.10.0")
     implementation("com.redis.om:redis-om-spring:0.6.3")
 
     testImplementation(kotlin("test"))
@@ -246,17 +247,18 @@ subprojects {
               "which is not backward-compatible with 1.7.x." +
               "See http://www.slf4j.org/faq.html#changesInVersion200")
     }
-
-    api("com.github.Cosmo-Tech:cosmotech-api-azure-cosmos-db:$cosmotechApiCosmosDBVersion") {
-      exclude(group = "org.slf4j", module = "slf4j-api")
-      because(
-          "this depends on org.slf4j:slf4j-api 1.8.0-beta4 (pre 2.x)," +
-              "which is not backward-compatible with 1.7.x." +
-              "See http://www.slf4j.org/faq.html#changesInVersion200")
+    implementation(platform("com.azure.spring:azure-spring-boot-bom:$azureSpringBootBomVersion"))
+    api("com.azure.spring:azure-spring-boot-starter-storage")
+    constraints {
+      implementation("redis.clients:jedis:3.9.0") {
+        because(
+            "3.9.0 version does not contain the UnifiedClient class that we used previously" +
+                "and we cannot use 4.X versions as they are not compatible with Spring Boot 2.X")
+      }
     }
 
-    implementation(platform("com.azure.spring:azure-spring-boot-bom:$azureSpringBootBomVersion"))
-    api("com.azure.spring:azure-spring-boot-starter-cosmos")
+    implementation("com.redis.om:redis-om-spring:0.6.3")
+    implementation("org.springframework.data:spring-data-redis:2.7.3")
   }
 
   tasks.withType<KotlinCompile> {
@@ -276,7 +278,7 @@ subprojects {
       task<Test>("integrationTest") {
         description = "Runs integration tests"
         group = "verification"
-
+        useJUnitPlatform()
         shouldRunAfter("test")
         classpath = sourceSets["integrationTest"].runtimeClasspath
         testClassesDirs = sourceSets["integrationTest"].output.classesDirs
@@ -347,11 +349,6 @@ subprojects {
     tasks.withType<GenerateTask> {
       inputSpec.set("${projectDir}/src/main/openapi/${projectDirName}.yaml")
       outputDir.set(openApiServerSourcesGenerationDir)
-      importMappings.set(
-          mapOf(
-              "RbacSecurity" to "com.cosmotech.api.rbac.model.RbacSecurity",
-              "RbacAccessControl" to "com.cosmotech.api.rbac.model.RbacAccessControl",
-          ))
       templateDir.set("${rootDir}/openapi/templates")
       generatorName.set("kotlin-spring")
       apiPackage.set("com.cosmotech.${projectDirName}.api")
@@ -479,3 +476,14 @@ tasks.register<Copy>("copySubProjectsDetektReports") {
 }
 
 tasks.getByName("detekt") { finalizedBy("copySubProjectsDetektReports") }
+
+koverMerged {
+  enable()
+  filters {
+    classes {
+      excludes +=
+          listOf("com.cosmotech.Application*", "com.cosmotech.*.api.*", "com.cosmotech.*.domain.*")
+    }
+    projects { excludes += listOf("cosmotech-api") }
+  }
+}

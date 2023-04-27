@@ -11,7 +11,7 @@ help() {
   echo "This script takes at least 4 parameters."
   echo
   echo "The following optional environment variables can be set to alter this script behavior:"
-  echo "- API_IMAGE_TAG | string | V1, V2, latest"
+  echo "- API_IMAGE_TAG | string | V1, V2, V3, latest"
   echo "- NAMESPACE | string | name of the targeted namespace. Generated when not set"
   echo "- ARGO_MINIO_ACCESS_KEY | string | AccessKey for MinIO. Generated when not set"
   echo "- ARGO_MINIO_SECRET_KEY | string | SecretKey for MinIO. Generated when not set"
@@ -93,7 +93,7 @@ kubectl create namespace "${MONITORING_NAMESPACE}" --dry-run=client -o yaml | ku
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
 
-curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/main/deployment_scripts/v2.3/kube-prometheus-stack-template.yaml" \
+curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/main/deployment_scripts/v3/kube-prometheus-stack-template.yaml" \
      -o "${WORKING_DIR}"/kube-prometheus-stack-template.yaml
 
 MONITORING_NAMESPACE_VAR=${MONITORING_NAMESPACE} \
@@ -191,6 +191,43 @@ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
 # Redis Cluster
 helm repo add bitnami https://charts.bitnami.com/bitnami
 
+export REDIS_PV_NAME="redis-persistence-volume"
+export REDIS_PVC_NAME="redis-persistence-volume-claim"
+
+cat <<EOF > redis-pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: ${REDIS_PV_NAME}
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /data/
+  persistentVolumeReclaimPolicy: Retain
+EOF
+
+kubectl apply -n ${NAMESPACE} -f redis-pv.yaml
+
+cat <<EOF > redis-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ${REDIS_PVC_NAME}
+spec:
+  volumeName: ${REDIS_PV_NAME}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+EOF
+
+kubectl apply -n ${NAMESPACE} -f redis-pvc.yaml
+
 cat <<EOF > values-redis.yaml
 auth:
   password: ${REDIS_PASSWORD}
@@ -199,6 +236,8 @@ image:
   repository: cosmo-tech/cosmotech-redis
   tag: ${VERSION_REDIS_COSMOTECH}
 master:
+  persistence:
+    existingClaim: ${REDIS_PVC_NAME}
   podLabels:
     "networking/traffic-allowed": "yes"
   tolerations:

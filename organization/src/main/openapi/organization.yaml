@@ -54,6 +54,19 @@ paths:
           description: Bad request
     get:
       operationId: findAllOrganizations
+      parameters:
+        - name: page
+          in: query
+          description: page number to query
+          required: false
+          schema:
+            type: integer
+        - name: size
+          in: query
+          description: amount of result by page
+          required: false
+          schema:
+            type: integer
       tags:
         - organization
       summary: List all Organizations
@@ -552,6 +565,42 @@ paths:
         "404":
           description: the Organization specified is unknown or you don't have access to it
 
+  /organizations/import:
+    post:
+      operationId: importOrganization
+      tags:
+        - organization
+      summary: Import an organization
+      requestBody:
+        description: the Organization to import
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Organization'
+            examples:
+              NewOrganizationIn:
+                $ref: '#/components/examples/NewOrganizationIn'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            examples:
+              NewOrganizationIn:
+                $ref: '#/components/examples/NewOrganizationIn'
+      responses:
+        "201":
+          description: the Organization details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+              examples:
+                CosmoOrganization:
+                  $ref: '#/components/examples/CosmoOrganization'
+        "400":
+          description: Bad request
+
 components:
   securitySchemes:
     oAuth2AuthCode:
@@ -565,14 +614,17 @@ components:
   schemas:
     Organization:
       type: object
+      x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
       description: an Organization
       properties:
         id:
+          x-field-extra-annotation: "@org.springframework.data.annotation.Id"
           type: string
           readOnly: true
           description: the Organization unique identifier
         name:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           description: the Organization name
         ownerId:
           type: string
@@ -582,6 +634,7 @@ components:
           descriptions: the list of Cloud services specific to the Organization
           $ref: '#/components/schemas/OrganizationServices'
         security:
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           allOf:
             - $ref: '#/components/schemas/OrganizationSecurity'
 #      required:
@@ -592,9 +645,11 @@ components:
       properties:
         default:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the role by default
         accessControlList:
           type: array
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the list which can access this Organization with detailed access control information
           items:
             $ref: '#/components/schemas/OrganizationAccessControl'
@@ -607,9 +662,11 @@ components:
       properties:
         id:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the identity id
         role:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: a role
       required:
         - id

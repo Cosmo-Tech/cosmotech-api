@@ -65,6 +65,19 @@ paths:
           description: Bad request
     get:
       operationId: findAllWorkspaces
+      parameters:
+        - name: page
+          in: query
+          description: page number to query
+          required: false
+          schema:
+            type: integer
+        - name: size
+          in: query
+          description: amount of result by page
+          required: false
+          schema:
+            type: integer
       tags:
         - workspace
       summary: List all Workspaces
@@ -663,6 +676,54 @@ paths:
           description: Request succeeded
         "404":
           description: the Workspace or the User specified is unknown or you don't have access to them
+
+  /organizations/{organization_id}/workspaces/import:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: importWorkspace
+      tags:
+        - workspace
+      summary: Import a workspace
+      requestBody:
+        description: the Workspace to import
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Workspace'
+            examples:
+              Workspace:
+                $ref: '#/components/examples/BreweryWorkspaceCreateIn'
+              WorkspaceWithSecurity:
+                $ref: '#/components/examples/BreweryWorkspaceCreateSecurity'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            examples:
+              Workspace:
+                $ref: '#/components/examples/BreweryWorkspaceCreateIn'
+              WorkspaceWithSecurity:
+                $ref: '#/components/examples/BreweryWorkspaceCreateSecurity'
+      responses:
+        "201":
+          description: the workspace details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+              examples:
+                Workspace:
+                  $ref: '#/components/examples/BreweryWorkspace'
+        "400":
+          description: Bad request
+
 components:
   securitySchemes:
     oAuth2AuthCode:
@@ -676,17 +737,25 @@ components:
   schemas:
     Workspace:
       type: object
+      x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
       description: a Workspace
       properties:
         id:
           type: string
+          x-field-extra-annotation: "@org.springframework.data.annotation.Id"
           readOnly: true
           description: the Workspace version unique identifier
+        organizationId:
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
+          type: string
+          readOnly: true
+          description: the Organization unique identifier
         key:
           type: string
           description: technical key for resource name convention and version grouping. Must be unique
         name:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           description: the Workspace name
         description:
           type: string
@@ -733,6 +802,7 @@ components:
             The Event Hub Namespace must be named \'<organization_id\>-<workspace_id\>\' (in lower case).
             This Namespace must also contain two Event Hubs named \'scenariometadata\' and \'scenariorunmetadata\'.
         security:
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           allOf:
            - $ref: '#/components/schemas/WorkspaceSecurity'
       required:
@@ -745,9 +815,11 @@ components:
       properties:
         default:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the role by default
         accessControlList:
           type: array
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the list which can access this Workspace with detailed access control information
           items:
             $ref: '#/components/schemas/WorkspaceAccessControl'
@@ -760,6 +832,7 @@ components:
       properties:
         id:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the identity id
         role:
           type: string

@@ -135,7 +135,7 @@ private val LABEL_SIZING =
 
 @Component
 @Suppress("LargeClass", "TooManyFunctions")
-internal class ContainerFactory(
+class ContainerFactory(
     private val csmPlatformProperties: CsmPlatformProperties,
     private val scenarioService: ScenarioApiService,
     private val workspaceService: WorkspaceApiService,

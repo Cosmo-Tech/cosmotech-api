@@ -60,6 +60,19 @@ paths:
         "400":
           description: Bad request
     get:
+      parameters:
+        - name: page
+          in: query
+          description: page number to query
+          required: false
+          schema:
+            type: integer
+        - name: size
+          in: query
+          description: amount of result by page
+          required: false
+          schema:
+            type: integer
       operationId: findAllDatasets
       tags:
         - dataset
@@ -85,6 +98,19 @@ paths:
         schema:
           type: string
     post:
+      parameters:
+      - name: page
+        in: query
+        description: page number to query
+        required: false
+        schema:
+          type: integer
+      - name: size
+        in: query
+        description: amount of result by page
+        required: false
+        schema:
+          type: integer
       operationId: searchDatasets
       tags:
         - dataset
@@ -571,6 +597,42 @@ paths:
           description: Request succeeded
         "404":
           description: the ValidatorRun specified is unknown or you don't have access to it
+
+  /organizations/{organization_id}/datasets/import:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: importDataset
+      tags:
+        - dataset
+      summary: Import a new Dataset
+      requestBody:
+        description: the Dataset to import
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Dataset'
+            examples:
+              BreweryADT:
+                $ref: '#/components/examples/BreweryADT'
+      responses:
+        "201":
+          description: the dataset details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dataset'
+              examples:
+                BreweryADT:
+                  $ref: '#/components/examples/BreweryADT'
+        "400":
+          description: Bad request
 components:
   securitySchemes:
     oAuth2AuthCode:
@@ -595,13 +657,16 @@ components:
         - datasetTags
     Dataset:
       type: object
+      x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
       description: a Dataset
       properties:
         id:
+          x-field-extra-annotation: "@org.springframework.data.annotation.Id"
           type: string
           readOnly: true
           description: the Dataset unique identifier
         name:
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           type: string
           description: the Dataset name
         description:
@@ -611,14 +676,22 @@ components:
           type: string
           readOnly: true
           description: the User id which own this Dataset
+        organizationId:
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
+          type: string
+          readOnly: true
+          description: the Organization Id related to this Dataset
         tags:
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           type: array
           description: the list of tags
           items:
             type: string
         connector:
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the Connector setup bound to a Dataset
-          $ref: '#/components/schemas/DatasetConnector'
+          allOf:
+            - $ref: '#/components/schemas/DatasetConnector'
         fragmentsIds:
           type: array
           description: the list of other Datasets ids to compose as fragments
@@ -641,9 +714,11 @@ components:
       properties:
         id:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the Connector id
         name:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the Connector name
         version:
           type: string

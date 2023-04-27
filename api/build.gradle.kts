@@ -6,7 +6,10 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
-plugins { id("com.rameshkp.openapi-merger-gradle-plugin") version "1.0.4" }
+plugins {
+  id("com.rameshkp.openapi-merger-gradle-plugin") version "1.0.4"
+  id("org.jetbrains.kotlinx.kover")
+}
 
 dependencies {
   implementation(projects.cosmotechConnectorApi)
@@ -15,7 +18,6 @@ dependencies {
   implementation(projects.cosmotechScenarioApi)
   implementation(projects.cosmotechScenariorunApi)
   implementation(projects.cosmotechSolutionApi)
-  implementation(projects.cosmotechUserApi)
   implementation(projects.cosmotechWorkspaceApi)
   implementation(projects.cosmotechTwingraphApi)
   implementation(projects.cosmotechMetricsService)

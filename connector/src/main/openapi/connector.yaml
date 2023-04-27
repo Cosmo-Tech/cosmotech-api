@@ -56,6 +56,19 @@ paths:
       operationId: findAllConnectors
       tags:
         - connector
+      parameters:
+        - name: page
+          in: query
+          description: page number to query
+          required: false
+          schema:
+            type: integer
+        - name: size
+          in: query
+          description: amount of result by page
+          required: false
+          schema:
+            type: integer
       summary: List all Connectors
       responses:
         "200":
@@ -105,6 +118,35 @@ paths:
           description: Request successful
         "404":
           description: the Connector specified is unknown or you don't have access to it
+
+  /connectors/import:
+    post:
+      operationId: importConnector
+      tags:
+        - connector
+      summary: Import existing connector
+      requestBody:
+        description: the Connector to import
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Connector'
+            examples:
+              ADTConnector:
+                $ref: '#/components/examples/ADTConnector'
+      responses:
+        "201":
+          description: the connector details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Connector'
+              examples:
+                ADTConnector:
+                  $ref: '#/components/examples/ADTConnector'
+        "400":
+          description: Bad request
 components:
   securitySchemes:
     oAuth2AuthCode:
@@ -118,10 +160,12 @@ components:
   schemas:
     Connector:
       type: object
+      x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
       description: a version of a Connector
       properties:
         id:
           type: string
+          x-field-extra-annotation: "@org.springframework.data.annotation.Id"
           readOnly: true
           description: the Connector version unique identifier
         key:
@@ -129,6 +173,7 @@ components:
           description: the Connector key which group Connector versions
         name:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           description: the Connector name
         description:
           type: string

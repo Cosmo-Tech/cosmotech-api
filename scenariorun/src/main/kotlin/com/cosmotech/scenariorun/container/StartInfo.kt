@@ -13,7 +13,7 @@ import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.domain.Workspace
 import io.kubernetes.client.custom.Quantity
 
-internal data class StartInfo(
+data class StartInfo(
     val startContainers: ScenarioRunStartContainers,
     val scenario: Scenario,
     val workspace: Workspace,

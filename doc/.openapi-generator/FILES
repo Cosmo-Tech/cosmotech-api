@@ -5,7 +5,6 @@ Apis/ScenarioApi.md
 Apis/ScenariorunApi.md
 Apis/SolutionApi.md
 Apis/TwingraphApi.md
-Apis/UserApi.md
 Apis/ValidatorApi.md
 Apis/WorkspaceApi.md
 Models/ComponentRolePermissions.md
@@ -20,6 +19,7 @@ Models/DatasetConnector.md
 Models/DatasetCopyParameters.md
 Models/DatasetSearch.md
 Models/DeleteHistoricalData.md
+Models/GraphProperties.md
 Models/Organization.md
 Models/OrganizationAccessControl.md
 Models/OrganizationRole.md
@@ -59,12 +59,11 @@ Models/ScenarioSecurity.md
 Models/ScenarioValidationStatus.md
 Models/Solution.md
 Models/SourceInfo.md
+Models/TwinGraphBatchResult.md
+Models/TwinGraphHash.md
 Models/TwinGraphImport.md
 Models/TwinGraphImportInfo.md
 Models/TwinGraphQuery.md
-Models/User.md
-Models/UserOrganization.md
-Models/UserWorkspace.md
 Models/Validator.md
 Models/ValidatorRun.md
 Models/Workspace.md

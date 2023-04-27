@@ -10,6 +10,7 @@ Method | HTTP request | Description
 [**deleteDataset**](DatasetApi.md#deleteDataset) | **DELETE** /organizations/{organization_id}/datasets/{dataset_id} | Delete a dataset
 [**findAllDatasets**](DatasetApi.md#findAllDatasets) | **GET** /organizations/{organization_id}/datasets | List all Datasets
 [**findDatasetById**](DatasetApi.md#findDatasetById) | **GET** /organizations/{organization_id}/datasets/{dataset_id} | Get the details of a Dataset
+[**importDataset**](DatasetApi.md#importDataset) | **POST** /organizations/{organization_id}/datasets/import | Import a new Dataset
 [**removeAllDatasetCompatibilityElements**](DatasetApi.md#removeAllDatasetCompatibilityElements) | **DELETE** /organizations/{organization_id}/datasets/{dataset_id}/compatibility | Remove all Dataset Compatibility elements from the Dataset specified
 [**searchDatasets**](DatasetApi.md#searchDatasets) | **POST** /organizations/{organization_id}/datasets/search | Search Datasets
 [**updateDataset**](DatasetApi.md#updateDataset) | **PATCH** /organizations/{organization_id}/datasets/{dataset_id} | Update a dataset
@@ -122,7 +123,7 @@ null (empty response body)
 
 <a name="findAllDatasets"></a>
 # **findAllDatasets**
-> List findAllDatasets(organization\_id)
+> List findAllDatasets(organization\_id, page, size)
 
 List all Datasets
 
@@ -131,6 +132,8 @@ List all Datasets
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
+ **page** | **Integer**| page number to query | [optional] [default to null]
+ **size** | **Integer**| amount of result by page | [optional] [default to null]
 
 ### Return type
 
@@ -171,6 +174,32 @@ Name | Type | Description  | Notes
 - **Content-Type**: Not defined
 - **Accept**: application/json
 
+<a name="importDataset"></a>
+# **importDataset**
+> Dataset importDataset(organization\_id, Dataset)
+
+Import a new Dataset
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **Dataset** | [**Dataset**](../Models/Dataset.md)| the Dataset to import |
+
+### Return type
+
+[**Dataset**](../Models/Dataset.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
 <a name="removeAllDatasetCompatibilityElements"></a>
 # **removeAllDatasetCompatibilityElements**
 > removeAllDatasetCompatibilityElements(organization\_id, dataset\_id)
@@ -199,7 +228,7 @@ null (empty response body)
 
 <a name="searchDatasets"></a>
 # **searchDatasets**
-> List searchDatasets(organization\_id, DatasetSearch)
+> List searchDatasets(organization\_id, DatasetSearch, page, size)
 
 Search Datasets
 
@@ -209,6 +238,8 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **DatasetSearch** | [**DatasetSearch**](../Models/DatasetSearch.md)| the Dataset search parameters |
+ **page** | **Integer**| page number to query | [optional] [default to null]
+ **size** | **Integer**| amount of result by page | [optional] [default to null]
 
 ### Return type
 

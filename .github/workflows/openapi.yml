@@ -37,8 +37,8 @@ jobs:
           - scenario
           - scenariorun
           - solution
-          - user
           - workspace
+          - twingraph
 
     steps:
       - uses: actions/checkout@v3

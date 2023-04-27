@@ -124,6 +124,18 @@ paths:
         required: true
         schema:
           type: string
+      - name: page
+        in: query
+        description: page number to query
+        required: false
+        schema:
+          type: integer
+      - name: size
+        in: query
+        description: amount of result by page
+        required: false
+        schema:
+          type: integer
     post:
       operationId: searchScenarioRuns
       tags:
@@ -347,6 +359,18 @@ paths:
         required: true
         schema:
           type: string
+      - name: page
+        in: query
+        description: page number to query
+        required: false
+        schema:
+          type: integer
+      - name: size
+        in: query
+        description: amount of result by page
+        required: false
+        schema:
+          type: integer
     get:
       operationId: getWorkspaceScenarioRuns
       tags:
@@ -384,6 +408,18 @@ paths:
         required: true
         schema:
           type: string
+      - name: page
+        in: query
+        description: page number to query
+        required: false
+        schema:
+          type: integer
+      - name: size
+        in: query
+        description: amount of result by page
+        required: false
+        schema:
+          type: integer
     get:
       operationId: getScenarioRuns
       tags:
@@ -465,6 +501,49 @@ paths:
               examples:
                 ScenarioRun:
                   $ref: '#/components/examples/BreweryScenarioRunStatus'
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/run/import:
+                    parameters:
+                      - name: organization_id
+                        in: path
+                        description: the Organization identifier
+                        required: true
+                        schema:
+                          type: string
+                      - name: workspace_id
+                        in: path
+                        description: the Workspace identifier
+                        required: true
+                        schema:
+                          type: string
+                      - name: scenario_id
+                        in: path
+                        description: the Scenario identifier
+                        required: true
+                        schema:
+                          type: string
+                    post:
+                      operationId: importScenarioRun
+                      tags:
+                        - scenariorun
+                      summary: import a ScenarioRun for the Scenario
+                      requestBody:
+                        description: the ScenarioRun to import
+                        required: true
+                        content:
+                          application/json:
+                            schema:
+                              $ref: '#/components/schemas/ScenarioRun'
+                      responses:
+                        "200":
+                          description: the scenariorun details
+                          content:
+                            application/json:
+                              schema:
+                                $ref: '#/components/schemas/ScenarioRun'
+                              examples:
+                                ScenarioRun:
+                                  $ref: '#/components/examples/BreweryScenarioRun'
+
 components:
   securitySchemes:
     oAuth2AuthCode:
@@ -620,19 +699,24 @@ components:
           description: the node end time
     ScenarioRun:
       type: object
+      x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
       description: a ScenarioRun with only base properties
       properties:
         id:
           type: string
+          x-field-extra-annotation: "@org.springframework.data.annotation.Id"
           readOnly: true
           description: the ScenarioRun
         state:
-          $ref: '#/components/schemas/ScenarioRunState'
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
+          allOf:
+            - $ref: '#/components/schemas/ScenarioRunState'
         organizationId:
           type: string
           description: the Organization id
         workflowId:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the Cosmo Tech compute cluster Argo Workflow Id to search
         csmSimulationRun:
           type: string
@@ -643,13 +727,16 @@ components:
           description: the base name for workflow name generation
         workflowName:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the Cosmo Tech compute cluster Argo Workflow Name
         ownerId:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           readOnly: true
           description: the user id which own this scenariorun
         workspaceId:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           readOnly: true
           description: the Workspace Id
         workspaceKey:
@@ -658,14 +745,17 @@ components:
           description: technical key for resource name convention and version grouping. Must be unique
         scenarioId:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           readOnly: true
           description: the Scenario Id
         solutionId:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           readOnly: true
           description: the Solution Id
         runTemplateId:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           readOnly: true
           description: the Solution Run Template id
         computeSize:

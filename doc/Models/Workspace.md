@@ -4,6 +4,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **String** | the Workspace version unique identifier | [optional] [default to null]
+**organizationId** | **String** | the Organization unique identifier | [optional] [default to null]
 **key** | **String** | technical key for resource name convention and version grouping. Must be unique | [default to null]
 **name** | **String** | the Workspace name | [default to null]
 **description** | **String** | the Workspace description | [optional] [default to null]
