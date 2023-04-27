@@ -270,12 +270,14 @@ class TwingraphServiceImplTests {
   @Test
   fun `test processCSV - should create cypher requests by line`() {
     val fileName = this::class.java.getResource("/Users.csv")?.file
-    val file = File(fileName)
+    val file = File(fileName!!)
     val query =
         TwinGraphQuery(
             "CREATE (:Person {id: toInteger(\$id), name: \$name, rank: toInteger(\$rank), object: \$object})")
     val result = TwinGraphBatchResult(0, 0, mutableListOf())
-    twingraphServiceImpl.processCSV(file.inputStream(), query, result) { result.processedLines++ }
+    twingraphServiceImpl.processCSVBatch(file.inputStream(), query, result) {
+      result.processedLines++
+    }
     assertEquals(9, result.totalLines)
     assertEquals(9, result.processedLines)
     assertEquals(0, result.errors.size)

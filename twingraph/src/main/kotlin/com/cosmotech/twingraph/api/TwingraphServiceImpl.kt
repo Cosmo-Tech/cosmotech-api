@@ -32,8 +32,6 @@ import com.cosmotech.twingraph.utils.TwingraphUtils
 import com.redislabs.redisgraph.impl.api.RedisGraph
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileInputStream
 import java.io.IOException
 import java.io.InputStream
 import java.nio.charset.StandardCharsets.UTF_8
@@ -94,11 +92,12 @@ class TwingraphServiceImpl(
 
       val queryBuffer = QueryBuffer(csmJedisPool.resource, graphId)
 
-      unzipNodes(body as File).forEach { node ->
-        processCSVFile(node.content) { queryBuffer.addNodes(node.filename, it) }
+      unzipNodes(body.inputStream).forEach { node ->
+        processCSVBulk(node.content) { queryBuffer.addNode(node.filename, it) }
       }
-      unzipEdge(body as File).forEach { edge ->
-        processCSVFile(edge.content) { queryBuffer.addNodes(edge.filename, it) }
+
+      unzipEdge(body.inputStream).forEach { edge ->
+        processCSVBulk(edge.content) { queryBuffer.addEdge(edge.filename, it) }
       }
 
       queryBuffer.send()
@@ -117,18 +116,6 @@ class TwingraphServiceImpl(
     return ByteArrayInputStream(out.toByteArray())
   }
 
-  private fun processCSVFile(inputStream: InputStream, actionLambda: (Map<String, Any>) -> Unit) {
-    inputStream.bufferedReader(UTF_8).use { body ->
-      val firstLine = body.readLine()
-      val headers = firstLine.split(",").map { it.trim() }
-      body.lineSequence().forEach { line ->
-        val values = line.split(",").map { it.trim() }
-        val map = headers.zip(values).toMap()
-        actionLambda(map)
-      }
-    }
-  }
-
   fun cutName(filename: String): String {
     val prefixLess = filename.split("/")[1]
     return prefixLess.split(".")[0]
@@ -136,8 +123,8 @@ class TwingraphServiceImpl(
 
   data class UnzippedFileEdge(val filename: String, val content: InputStream)
   data class UnzippedFileNode(val filename: String, val content: InputStream)
-  fun unzipEdge(file: File): List<UnzippedFileEdge> =
-      ZipInputStream(FileInputStream(file)).use { zipInputStream ->
+  fun unzipEdge(file: InputStream): List<UnzippedFileEdge> =
+      ZipInputStream(file).use { zipInputStream ->
         generateSequence { zipInputStream.nextEntry }
             .filterNot { it.isDirectory }
             .filter { it.name.startsWith("Edges", true) }
@@ -149,8 +136,8 @@ class TwingraphServiceImpl(
             .toList()
       }
 
-  fun unzipNodes(file: File): List<UnzippedFileNode> =
-      ZipInputStream(FileInputStream(file)).use { zipInputStream ->
+  fun unzipNodes(inputStream: InputStream): List<UnzippedFileNode> =
+      ZipInputStream(inputStream).use { zipInputStream ->
         generateSequence { zipInputStream.nextEntry }
             .filterNot { it.isDirectory }
             .filter { it.name.startsWith("Nodes", true) }
@@ -331,7 +318,7 @@ class TwingraphServiceImpl(
     resourceScanner.scanMimeTypes(file, listOf("text/csv", "text/plain"))
 
     val result = TwinGraphBatchResult(0, 0, mutableListOf())
-    processCSV(file.inputStream, twinGraphQuery, result) {
+    processCSVBatch(file.inputStream, twinGraphQuery, result) {
       try {
         csmRedisGraph.query(redisGraphKey(graphId, twinGraphQuery.version!!), it)
         result.processedLines++
@@ -342,31 +329,35 @@ class TwingraphServiceImpl(
     return result
   }
 
-  fun processCSV(
+  private fun readCSV(
+      inputStream: InputStream,
+      result: TwinGraphBatchResult? = null,
+      actionLambda: (Map<String, String>) -> Unit
+  ): Map<String, String> {
+    var map = mapOf<String, String>()
+    inputStream.bufferedReader(UTF_8).use { reader ->
+      val csvFormat: CSVFormat =
+          CSVFormat.DEFAULT.builder().setHeader().setSkipHeaderRecord(false).setTrim(true).build()
+
+      val records: Iterable<CSVRecord> = csvFormat.parse(reader)
+      records.forEach { record ->
+        map = record.parser.headerNames.zip(record.values()).toMap()
+        actionLambda(map)
+        result?.let { result.totalLines++ }
+      }
+    }
+    return map
+  }
+
+  private fun processCSVBulk(inputStream: InputStream, actionLambda: (Map<String, Any>) -> Unit) =
+      readCSV(inputStream) { actionLambda(it) }
+
+  fun processCSVBatch(
       inputStream: InputStream,
       twinGraphQuery: TwinGraphQuery,
       result: TwinGraphBatchResult,
       actionLambda: (String) -> Unit
-  ) {
-    var cypherQuery = twinGraphQuery.query
-    inputStream.bufferedReader(UTF_8).use { reader ->
-      val csvFormat: CSVFormat =
-          CSVFormat.DEFAULT
-              .builder()
-              .setHeader()
-              .setSkipHeaderRecord(false)
-              .setRecordSeparator(",")
-              .setTrim(true)
-              .build()
-
-      val records: Iterable<CSVRecord> = csvFormat.parse(reader)
-      records.forEach { record ->
-        result.totalLines++
-        val map = record.parser.headerNames.zip(record.values()).toMap()
-        actionLambda(cypherQuery.formatQuery(map))
-      }
-    }
-  }
+  ) = readCSV(inputStream, result) { actionLambda(twinGraphQuery.query.formatQuery(it)) }
 
   override fun downloadGraph(organizationId: String, hash: String): Resource {
     val organization = organizationService.findOrganizationById(organizationId)
