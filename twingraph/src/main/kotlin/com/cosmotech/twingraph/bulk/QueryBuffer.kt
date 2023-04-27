@@ -22,18 +22,18 @@ class QueryBuffer(
       BulkQuery.Builder().graphName(graphName).first()
   private var currentType: String? = null
 
-  fun addNodes(type: String, rows: Map<String, Any>) {
+  fun addNode(type: String, row: Map<String, Any>) {
     var addedSize = 0
     var typeNodes: TypeNodes? = null
 
     // create a new TypeNodes (for binary header)
     if (currentType != type) {
       currentType = type
-      typeNodes = TypeNodes(type, rows.keys.toList())
+      typeNodes = TypeNodes(type, row.keys.toList())
       addedSize += typeNodes.size
     }
     // create the node
-    val node = Node(rows)
+    val node = Node(row)
     addedSize += node.size()
     nodesCreationId += node.id to nodesCreationId.size.toLong()
 
@@ -41,7 +41,7 @@ class QueryBuffer(
     if (currentBulkQueryBuilder.size() + addedSize > maxQuerySize) {
       tasks.add(currentBulkQueryBuilder.build())
       currentBulkQueryBuilder = BulkQuery.Builder().graphName(graphName)
-      typeNodes = TypeNodes(type, rows.keys.toList())
+      typeNodes = TypeNodes(type, row.keys.toList())
     }
 
     // add to bulk query builder
@@ -49,17 +49,17 @@ class QueryBuffer(
     currentBulkQueryBuilder.addNodeToTypeNode(type, node)
   }
 
-  fun addEdges(type: String, rows: Map<String, Any>) {
+  fun addEdge(type: String, row: Map<String, Any>) {
     var addedSize: Int = 0
     var typeEdges: TypeEdges? = null
 
     // extact source and target from row
-    val sourceKey = rows.keys.elementAt(0)
-    val targetKey = rows.keys.elementAt(1)
-    val sourceName = rows[sourceKey]
-    val targetName = rows[targetKey]
+    val sourceKey = row.keys.elementAt(0)
+    val targetKey = row.keys.elementAt(1)
+    val sourceName = row[sourceKey]
+    val targetName = row[targetKey]
 
-    val newRows = rows.minus(sourceKey).minus(targetKey)
+    val newRows = row.minus(sourceKey).minus(targetKey)
 
     // create a new edge type (for binary header)
     if (type != currentType) {
@@ -69,7 +69,7 @@ class QueryBuffer(
     }
 
     // create edge
-    if (sourceName !in nodesCreationId.entries)
+    if (sourceName !in nodesCreationId.keys)
         throw CsmResourceNotFoundException("Node $sourceName doesn't exist")
     if (targetName !in nodesCreationId.keys)
         throw CsmResourceNotFoundException("Node $targetName doesn't exist")

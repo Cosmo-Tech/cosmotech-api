@@ -16,8 +16,6 @@ import com.cosmotech.twingraph.domain.GraphProperties
 import com.cosmotech.twingraph.domain.TwinGraphBatchResult
 import com.cosmotech.twingraph.domain.TwinGraphQuery
 import com.redis.testcontainers.RedisStackContainer
-import com.redis.testcontainers.junit.RedisTestContext
-import com.redis.testcontainers.junit.RedisTestContextsSource
 import com.redislabs.redisgraph.impl.api.RedisGraph
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
@@ -30,7 +28,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
-import org.junit.jupiter.params.ParameterizedTest
 import org.junit.runner.RunWith
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -82,40 +79,35 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
                             mutableListOf(
                                 OrganizationAccessControl(
                                     id = CONNECTED_ADMIN_USER, role = "admin")))))
-  }
-
-  @RedisTestContextsSource
-  @ParameterizedTest
-  fun `graph creation`(context: RedisTestContext) {
-    val containerIp =
-        (context.server as RedisStackContainer).containerInfo.networkSettings.ipAddress
-    val jedisPool = JedisPool(containerIp, 6379)
-    ReflectionTestUtils.setField(twingraphApiService, "csmJedisPool", jedisPool)
-    ReflectionTestUtils.setField(twingraphApiService, "csmRedisGraph", RedisGraph(jedisPool))
-
-    context.sync().hset("${graphId}MetaData", mapOf("lastVersion" to "1"))
-
-    logger.info("Create an empty graph")
-    twingraphApiService.createGraph(organization.id!!, graphId, null)
-    assertEquals(1, twingraphApiService.findAllTwingraphs(organization.id!!).size)
-
-    logger.info("Create a graph with an already existing Id")
-    assertThrows<Exception> { twingraphApiService.createGraph(organization.id!!, graphId, null) }
-  }
-
-  @RedisTestContextsSource
-  @ParameterizedTest
-  fun `twingraph CRUD test`(context: RedisTestContext) {
 
     val context = getContext(redisStackServer)
     val containerIp =
         (context.server as RedisStackContainer).containerInfo.networkSettings.ipAddress
-    val jedisPool = JedisPool(containerIp, 6379)
+    jedisPool = JedisPool(containerIp, 6379)
     redisGraph = RedisGraph(jedisPool)
     ReflectionTestUtils.setField(twingraphApiService, "csmJedisPool", jedisPool)
     ReflectionTestUtils.setField(twingraphApiService, "csmRedisGraph", redisGraph)
 
     context.sync().hset("${graphId}MetaData", mapOf("lastVersion" to "1"))
+  }
+
+  @Test
+  fun `graph creation`() {
+    logger.info("Create an empty graph")
+    twingraphApiService.createGraph(organization.id!!, graphId, null)
+    assertEquals(1, twingraphApiService.findAllTwingraphs(organization.id!!).size)
+
+    logger.info("Create a Graph with a ZIP Entry")
+    //    val body = File(object {}.javaClass.getResource("integrationTest.zip").file)
+    //    logger.warn(body.name)
+    val body = javaClass.classLoader.getResource("integrationTest.zip")!!.toURI()
+    val file = this::class.java.getResource("/integrationTest.zip")?.file
+    var resource = ByteArrayResource(File(file!!).readBytes())
+    //      logger.info(body!!.file)
+    twingraphApiService.createGraph(organization.id!!, "2$graphId", resource)
+
+    logger.info("Create a graph with an already existing Id")
+    assertThrows<Exception> { twingraphApiService.createGraph(organization.id!!, graphId, null) }
   }
 
   @Test
@@ -214,10 +206,10 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
   fun `twingraph create update delete nodes relationship test`() {
 
     val fileNodeName = this::class.java.getResource("/Users.csv")?.file
-    val fileNode: Resource = ByteArrayResource(File(fileNodeName).readBytes())
+    val fileNode: Resource = ByteArrayResource(File(fileNodeName!!).readBytes())
 
     val fileRelationshipName = this::class.java.getResource("/Follows.csv")?.file
-    val fileRelationship: Resource = ByteArrayResource(File(fileRelationshipName).readBytes())
+    val fileRelationship: Resource = ByteArrayResource(File(fileRelationshipName!!).readBytes())
 
     redisGraph.query("$graphId:1", "CREATE (n)")
 
