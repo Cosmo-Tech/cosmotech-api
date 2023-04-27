@@ -19,6 +19,7 @@ azure:
 
 csm:
   platform:
+    runOutsideKubernetes: true
     metrics:
       enabled: false
     api:
