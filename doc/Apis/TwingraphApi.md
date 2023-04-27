@@ -169,7 +169,7 @@ null (empty response body)
 
 <a name="deleteEntities"></a>
 # **deleteEntities**
-> deleteEntities(organization\_id, graph\_id, modelType, request\_body)
+> deleteEntities(organization\_id, graph\_id, modelType, ids)
 
 
 
@@ -182,7 +182,7 @@ Name | Type | Description  | Notes
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **graph\_id** | **String**| the Graph Identifier | [default to null]
  **modelType** | **String**| the entity model type | [default to null] [enum: node, relationship]
- **request\_body** | [**List**](../Models/string.md)| the entities to delete |
+ **ids** | [**List**](../Models/String.md)| the entities to delete | [default to null]
 
 ### Return type
 
@@ -194,7 +194,7 @@ null (empty response body)
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: Not defined
 - **Accept**: Not defined
 
 <a name="downloadGraph"></a>
@@ -254,7 +254,7 @@ Name | Type | Description  | Notes
 
 <a name="getEntities"></a>
 # **getEntities**
-> List getEntities(organization\_id, graph\_id, modelType, request\_body)
+> List getEntities(organization\_id, graph\_id, modelType, ids)
 
 
 
@@ -267,7 +267,7 @@ Name | Type | Description  | Notes
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **graph\_id** | **String**| the Graph Identifier | [default to null]
  **modelType** | **String**| the entity model type | [default to null] [enum: node, relationship]
- **request\_body** | [**List**](../Models/string.md)| the entities to get |
+ **ids** | [**List**](../Models/String.md)| the entities to get | [default to null]
 
 ### Return type
 
@@ -279,7 +279,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: Not defined
 - **Accept**: application/json
 
 <a name="getGraphMetaData"></a>

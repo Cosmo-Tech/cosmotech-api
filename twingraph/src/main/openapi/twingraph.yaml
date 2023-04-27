@@ -267,15 +267,15 @@ paths:
       tags:
         - twingraph
       description: get entities in a graph instance
-      requestBody:
-        description: the entities to get
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                type: string
+      parameters:
+        - name: ids
+          in: query
+          description: the entities to get
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
       responses:
         '200':
           description: Successful response
@@ -316,15 +316,15 @@ paths:
       tags:
         - twingraph
       description: delete entities in a graph instance
-      requestBody:
-        description: the entities to delete
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                type: string
+      parameters:
+        - name: ids
+          in: query
+          description: the entities to delete
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
       responses:
         '200':
           description: Successful response
