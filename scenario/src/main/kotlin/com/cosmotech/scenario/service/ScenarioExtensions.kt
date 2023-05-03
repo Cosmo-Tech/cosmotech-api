@@ -32,7 +32,7 @@ internal fun List<Scenario>.addLastRunsInfo(
           val parentLastRun =
               try {
                 scenarioServiceImpl.findScenarioByIdNoState(parentId).lastRun
-              } catch (iae: IllegalArgumentException) {
+              } catch (iae: CsmResourceNotFoundException) {
                 // There might be cases where the parent no longer exists
                 val messageFormat =
                     "Parent scenario #{} not found " +
