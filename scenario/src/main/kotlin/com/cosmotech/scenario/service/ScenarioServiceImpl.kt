@@ -305,15 +305,16 @@ internal class ScenarioServiceImpl(
       organizationId: String,
       workspaceId: String,
       scenario: Scenario,
-      waitRelationshipPropagation: Boolean
+      waitRelationshipPropagation: Boolean = true
   ) {
-
+    val rootId = scenario.rootId
     val children = this.findScenarioChildrenById(organizationId, workspaceId, scenario.id!!)
     val childrenUpdatesCoroutines =
         children.map { child ->
           GlobalScope.launch {
             // TODO Consider using a smaller coroutine scope
             child.parentId = scenario.parentId
+            child.rootId = rootId
             if (child.parentId == null) {
               child.rootId = null
             }
@@ -323,6 +324,33 @@ internal class ScenarioServiceImpl(
     if (waitRelationshipPropagation) {
       runBlocking { childrenUpdatesCoroutines.joinAll() }
     }
+    children.forEach { updateRootId(organizationId, workspaceId, it, waitRelationshipPropagation) }
+  }
+
+  private fun updateRootId(
+      organizationId: String,
+      workspaceId: String,
+      scenario: Scenario,
+      waitRelationshipPropagation: Boolean
+  ) {
+    var rootId = scenario.rootId
+    if (rootId == null) {
+      rootId = scenario.id
+    }
+    val children = this.findScenarioChildrenById(organizationId, workspaceId, scenario.id!!)
+    val childrenUpdatesCoroutines =
+        children.map { child ->
+          GlobalScope.launch {
+            // TODO Consider using a smaller coroutine scope
+            child.rootId = rootId
+            this@ScenarioServiceImpl.upsertScenarioData(child)
+          }
+        }
+    if (waitRelationshipPropagation) {
+      runBlocking { childrenUpdatesCoroutines.joinAll() }
+    }
+
+    children.forEach { updateRootId(organizationId, workspaceId, it, waitRelationshipPropagation) }
   }
 
   override fun findAllScenarios(
