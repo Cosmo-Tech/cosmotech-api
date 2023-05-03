@@ -304,16 +304,16 @@ internal class ScenarioServiceImpl(
   private fun handleScenarioDeletion(
       organizationId: String,
       workspaceId: String,
-      scenario: Scenario,
+      deletedScenario: Scenario,
       waitRelationshipPropagation: Boolean = true
   ) {
-    val rootId = scenario.rootId
-    val children = this.findScenarioChildrenById(organizationId, workspaceId, scenario.id!!)
+    val rootId = deletedScenario.rootId
+    val children = this.findScenarioChildrenById(organizationId, workspaceId, deletedScenario.id!!)
     val childrenUpdatesCoroutines =
         children.map { child ->
           GlobalScope.launch {
             // TODO Consider using a smaller coroutine scope
-            child.parentId = scenario.parentId
+            child.parentId = deletedScenario.parentId
             child.rootId = rootId
             if (child.parentId == null) {
               child.rootId = null
@@ -324,6 +324,7 @@ internal class ScenarioServiceImpl(
     if (waitRelationshipPropagation) {
       runBlocking { childrenUpdatesCoroutines.joinAll() }
     }
+      if(rootId == null)
     children.forEach { updateRootId(organizationId, workspaceId, it, waitRelationshipPropagation) }
   }
 
