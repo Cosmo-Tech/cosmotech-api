@@ -30,6 +30,7 @@ plugins {
   id("org.openapi.generator") version "5.4.0" apply false
   id("com.google.cloud.tools.jib") version "3.3.1" apply false
   id("io.gitlab.arturbosch.detekt") version "1.21.0"
+  id("project-report")
 }
 
 scmVersion { tag { prefix.set("") } }
@@ -40,7 +41,7 @@ version = scmVersion.version
 
 val kotlinJvmTarget = 17
 val cosmotechApiCommonVersion = "0.1.38-SNAPSHOT"
-val cosmotechApiAzureVersion = "0.1.9-SNAPSHOT"
+val cosmotechApiAzureVersion = "0.1.10-SNAPSHOT"
 val cosmotechApiCosmosDBVersion = "0.1.0-SNAPSHOT"
 val azureSpringBootBomVersion = "3.14.0"
 val jedisVersion = "3.9.0"
@@ -52,8 +53,10 @@ allprojects {
   apply(plugin = "com.diffplug.spotless")
   apply(plugin = "org.jetbrains.kotlin.jvm")
   apply(plugin = "io.gitlab.arturbosch.detekt")
+  apply(plugin = "project-report")
 
   repositories {
+    mavenLocal()
     maven {
       name = "GitHubPackages"
       url = uri("https://maven.pkg.github.com/Cosmo-Tech/cosmotech-api-common")
@@ -73,6 +76,8 @@ allprojects {
     }
     mavenCentral()
   }
+
+  tasks.withType<HtmlDependencyReportTask>().configureEach { projects = project.allprojects }
 
   configure<SpotlessExtension> {
     isEnforceCheck = false
@@ -203,7 +208,7 @@ subprojects {
     val springDocVersion = "1.6.14"
     implementation("org.springdoc:springdoc-openapi-ui:${springDocVersion}")
     implementation("org.springdoc:springdoc-openapi-kotlin:${springDocVersion}")
-    val swaggerParserVersion = "2.1.8"
+    val swaggerParserVersion = "2.1.13"
     implementation("io.swagger.parser.v3:swagger-parser-v3:${swaggerParserVersion}")
 
     implementation("org.zalando:problem-spring-web-starter:0.27.0")
@@ -268,7 +273,7 @@ subprojects {
     }
 
     kotlinOptions {
-      languageVersion = "1.7"
+      languageVersion = "1.8"
       freeCompilerArgs = listOf("-Xjsr305=strict")
       jvmTarget = kotlinJvmTarget.toString()
       java { toolchain { languageVersion.set(JavaLanguageVersion.of(kotlinJvmTarget)) } }
