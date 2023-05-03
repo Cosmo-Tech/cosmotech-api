@@ -43,7 +43,6 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
 import java.util.*
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -120,7 +119,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     organization = mockOrganization("Organization")
     organizationSaved = organizationApiService.registerOrganization(organization)
 
-    dataset = mockDataset(organizationSaved.id!!, "Dataset", connectorSaved)
+    dataset = makeDataset(organizationSaved.id!!, "Dataset", connectorSaved)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
 
     solution = mockSolution(organizationSaved.id!!)
@@ -130,7 +129,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
 
     scenario =
-        mockScenario(
+        makeScenario(
             organizationSaved.id!!,
             workspaceSaved.id!!,
             solutionSaved.id!!,
@@ -147,7 +146,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("should create a second Scenario")
     val scenario2 =
-        mockScenario(
+        makeScenario(
             organizationSaved.id!!,
             workspaceSaved.id!!,
             solutionSaved.id!!,
@@ -209,7 +208,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     val expectedSize = 15
     IntRange(1, numberOfScenarios - 1).forEach {
       val scenario =
-          mockScenario(
+          makeScenario(
               organizationSaved.id!!,
               workspaceSaved.id!!,
               solutionSaved.id!!,
@@ -265,29 +264,59 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     logger.info(
         "should create a child Scenario with dataset different from parent and " +
             "assert the dataset list is the same as parent")
-    val dataset2 = mockDataset(organizationSaved.id!!, "Dataset2", connectorSaved)
-    val datasetSaved2 = datasetApiService.createDataset(organizationSaved.id!!, dataset2)
-    val childrenScenario =
-        mockScenario(
-            organizationSaved.id!!,
-            workspaceSaved.id!!,
-            solutionSaved.id!!,
-            "ChildrenScenario",
-            mutableListOf(datasetSaved2.id!!),
-            parentId = scenarioSaved.id!!)
-    val child =
-        scenarioApiService.createScenario(
-            organizationSaved.id!!, workspaceSaved.id!!, childrenScenario)
-    assertEquals(child.datasetList, scenarioSaved.datasetList)
+    val dataset = makeDataset(organizationSaved.id!!, "Dataset", connectorSaved)
+    val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
 
-    logger.info("should delete the parent Scenario and assert there is only child Scenario left")
-    scenarioApiService.deleteScenario(
-        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, true)
-    val scenarioListAfterDelete =
+    logger.info("should create a tree of Scenarios")
+    val idMap = mutableMapOf<Int, String>()
+    IntRange(1, 5).forEach {
+      var scenario =
+          makeScenario(
+              organizationSaved.id!!,
+              workspaceSaved.id!!,
+              solutionSaved.id!!,
+              "Scenario$it",
+              mutableListOf(datasetSaved.id!!),
+              if (it == 1) null else idMap[it - 1],
+          )
+      scenario =
+          scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, scenario)
+      idMap[it] = scenario.id!!
+    }
+    var scenarios =
         scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!, null, null)
-    assertTrue(scenarioListAfterDelete.size == 1)
-    assertNull(scenarioListAfterDelete[0].parentId)
-    assertNull(scenarioListAfterDelete[0].rootId)
+    assertEquals(6, scenarios.size)
+
+    logger.info("should delete last child (element 5) and assert there are 5 Scenarios left")
+    scenarioApiService.deleteScenario(
+        organizationSaved.id!!, workspaceSaved.id!!, idMap[5]!!, false)
+    scenarios =
+        scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!, null, null)
+    assertEquals(5, scenarios.size)
+
+    logger.info("should insure that the parent of element 4 is element 3")
+    scenario =
+        scenarioApiService.findScenarioById(organizationSaved.id!!, workspaceSaved.id!!, idMap[4]!!)
+    assertEquals(idMap[3], scenario.parentId)
+
+    logger.info("should delete element 3 (in the middle) and assert there are 4 Scenarios left")
+    scenarioApiService.deleteScenario(
+        organizationSaved.id!!, workspaceSaved.id!!, idMap[3]!!, false)
+    scenarios =
+        scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!, null, null)
+    assertEquals(4, scenarios.size)
+
+    logger.info("should insure that the parent of element 4 is element 2")
+    scenario =
+        scenarioApiService.findScenarioById(organizationSaved.id!!, workspaceSaved.id!!, idMap[4]!!)
+    assertEquals(idMap[2], scenario.parentId)
+
+    logger.info("should delete root element (element 1) and assert there are 3 Scenarios left")
+    scenarioApiService.deleteScenario(
+        organizationSaved.id!!, workspaceSaved.id!!, idMap[1]!!, false)
+    scenarios =
+        scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!, null, null)
+    assertEquals(3, scenarios.size)
   }
 
   @Test
@@ -462,7 +491,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
         ioTypes = listOf(Connector.IoTypes.read))
   }
 
-  fun mockDataset(organizationId: String, name: String, connector: Connector): Dataset {
+  fun makeDataset(organizationId: String, name: String, connector: Connector): Dataset {
     return Dataset(
         name = name,
         organizationId = organizationId,
@@ -512,7 +541,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     )
   }
 
-  fun mockScenario(
+  fun makeScenario(
       organizationId: String,
       workspaceId: String,
       solutionId: String,
