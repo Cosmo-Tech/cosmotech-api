@@ -814,7 +814,7 @@ class ScenarioServiceImplTests {
     every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     every { scenarioServiceImpl.findScenarioByIdNoState(parentId) } throws
-        IllegalArgumentException()
+        CsmResourceNotFoundException("Scenario not found")
     every { scenarioServiceImpl.findScenarioByIdNoState(rootId) } throws
         CsmResourceNotFoundException("Scenario not found")
 
