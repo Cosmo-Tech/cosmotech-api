@@ -500,7 +500,7 @@ internal class ScenarioServiceImpl(
     return findScenarioChildrenById
   }
 
-  private fun isRbacEnabled(organizationId: String, workspaceId: String): Boolean {
+  fun isRbacEnabled(organizationId: String, workspaceId: String): Boolean {
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     val isAdmin = csmRbac.isAdmin(workspace.getRbac(), getCommonRolesDefinition())
     return (!isAdmin && this.csmPlatformProperties.rbac.enabled)
