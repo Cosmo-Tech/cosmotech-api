@@ -307,13 +307,13 @@ internal class ScenarioServiceImpl(
       scenario: Scenario,
       waitRelationshipPropagation: Boolean
   ) {
-    val parentId = scenario.parentId
+
     val children = this.findScenarioChildrenById(organizationId, workspaceId, scenario.id!!)
     val childrenUpdatesCoroutines =
         children.map { child ->
           GlobalScope.launch {
             // TODO Consider using a smaller coroutine scope
-            child.parentId = parentId
+            child.parentId = scenario.parentId
             if (child.parentId == null) {
               child.rootId = null
             }

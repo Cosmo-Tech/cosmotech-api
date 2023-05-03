@@ -815,7 +815,8 @@ class ScenarioServiceImplTests {
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     every { scenarioServiceImpl.findScenarioByIdNoState(parentId) } throws
         IllegalArgumentException()
-    every { scenarioServiceImpl.findScenarioByIdNoState(rootId) } throws IllegalArgumentException()
+    every { scenarioServiceImpl.findScenarioByIdNoState(rootId) } throws
+        CsmResourceNotFoundException("Scenario not found")
 
     val scenarioId = "s-c1"
     Scenario(id = scenarioId, parentId = parentId, rootId = rootId)

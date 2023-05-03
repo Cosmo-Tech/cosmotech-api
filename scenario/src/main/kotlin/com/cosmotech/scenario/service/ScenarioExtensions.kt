@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenario.service
 
+import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
@@ -53,7 +54,7 @@ internal fun List<Scenario>.addLastRunsInfo(
           val rootLastRun =
               try {
                 scenarioServiceImpl.findScenarioByIdNoState(rootId).lastRun
-              } catch (iae: IllegalArgumentException) {
+              } catch (iae: CsmResourceNotFoundException) {
                 // There might be cases where the root scenario no longer exists
                 val messageFormat =
                     "Root scenario #{} not found" +
