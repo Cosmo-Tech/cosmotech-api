@@ -300,7 +300,7 @@ internal class SolutionServiceImpl(
     val blobPath =
         "${organizationId.sanitizeForAzureStorage()}/" +
             "${solutionId.sanitizeForAzureStorage()}/" +
-            "${runTemplateId}/${handlerId.value}.zip"
+            "$runTemplateId/${handlerId.value}.zip"
     logger.debug(
         "Downloading run template handler resource for #{} ({}-{}) - {} - {}: {}",
         solution.id,
@@ -309,7 +309,7 @@ internal class SolutionServiceImpl(
         runTemplateId,
         handlerId,
         blobPath)
-    return resourceLoader.getResource("azure-blob://${blobPath}")
+    return resourceLoader.getResource("azure-blob://$blobPath")
   }
 
   private fun validateRunTemplate(

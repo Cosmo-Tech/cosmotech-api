@@ -399,7 +399,7 @@ class ScenarioRunServiceImpl(
     val jobId = scenarioDataDownloadJobInfoRequest.jobId
     val workflowStatusAndArtifactList =
         this.workflowService.findWorkflowStatusAndArtifact(
-            "$CSM_JOB_ID_LABEL_KEY=${jobId}", SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME)
+            "$CSM_JOB_ID_LABEL_KEY=$jobId", SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME)
     if (workflowStatusAndArtifactList.isNotEmpty()) {
       scenarioDataDownloadJobInfoRequest.response =
           workflowStatusAndArtifactList[0].status to
@@ -413,7 +413,7 @@ class ScenarioRunServiceImpl(
   ) {
     val jobId = twingraphImportJobInfoRequest.jobId
     val workflowStatusList =
-        this.workflowService.findWorkflowStatusByLabel("$CSM_JOB_ID_LABEL_KEY=${jobId}")
+        this.workflowService.findWorkflowStatusByLabel("$CSM_JOB_ID_LABEL_KEY=$jobId")
     if (workflowStatusList.isNotEmpty()) {
       twingraphImportJobInfoRequest.response = workflowStatusList[0].status
     }

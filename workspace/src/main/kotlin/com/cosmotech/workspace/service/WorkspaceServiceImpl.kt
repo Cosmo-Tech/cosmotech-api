@@ -234,7 +234,7 @@ internal class WorkspaceServiceImpl(
         fileName)
     azureStorageBlobServiceClient
         .getBlobContainerClient(organizationId.sanitizeForAzureStorage())
-        .getBlobClient("${workspaceId.sanitizeForAzureStorage()}/${fileName}")
+        .getBlobClient("${workspaceId.sanitizeForAzureStorage()}/$fileName")
         .delete()
   }
 

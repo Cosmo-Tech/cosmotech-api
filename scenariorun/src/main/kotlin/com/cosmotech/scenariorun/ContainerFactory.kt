@@ -294,7 +294,7 @@ class ContainerFactory(
             nodeLabel)
 
     val generateName =
-        "${GENERATE_NAME_PREFIX}${jobId}${GENERATE_NAME_SUFFIX}".sanitizeForKubernetes()
+        "${GENERATE_NAME_PREFIX}${jobId}$GENERATE_NAME_SUFFIX".sanitizeForKubernetes()
 
     return ScenarioRunStartContainers(
         generateName = generateName,
@@ -381,7 +381,7 @@ class ContainerFactory(
             scenarioRunLabel = nodeLabel ?: NODE_LABEL_DEFAULT,
             scenarioSizing ?: (runTemplateSizing ?: defaultSizing))
     val generateName =
-        "${GENERATE_NAME_PREFIX}${scenario.id}${GENERATE_NAME_SUFFIX}".sanitizeForKubernetes()
+        "${GENERATE_NAME_PREFIX}${scenario.id}$GENERATE_NAME_SUFFIX".sanitizeForKubernetes()
     return ScenarioRunStartContainers(
         generateName = generateName,
         nodeLabel = nodeLabel?.plus(NODE_LABEL_SUFFIX),
@@ -924,7 +924,7 @@ class ContainerFactory(
                     (csmPlatformProperties.azure?.credentials?.core?.aadPodIdBinding!!))
         else null
     return ScenarioRunContainer(
-        name = "${nameBase}-$datasetCount",
+        name = "$nameBase-$datasetCount",
         image =
             getImageName(
                 csmPlatformProperties.azure?.containerRegistries?.core ?: "",
@@ -978,15 +978,13 @@ class ContainerFactory(
           datasetIdList.forEachIndexed { index, datasetId ->
             val dataset =
                 datasets?.find { dataset -> dataset.id == datasetId }
-                    ?: throw IllegalStateException(
-                        "Dataset ${datasetId} cannot be found in Datasets")
+                    ?: throw IllegalStateException("Dataset $datasetId cannot be found in Datasets")
             val connector =
                 connectors?.find { connector -> connector.id == dataset.connector?.id }
                     ?: throw IllegalStateException(
                         "Connector id ${dataset.connector?.id} not found in connectors list")
 
-            val fetchId =
-                if (datasetIdList.size == 1) parameter.id else "${parameter.id}-${index.toString()}"
+            val fetchId = if (datasetIdList.size == 1) parameter.id else "${parameter.id}-$index"
             containers.add(
                 buildFromDataset(
                     dataset,
@@ -1217,7 +1215,7 @@ class ContainerFactory(
         ?: throw IllegalStateException(
             "runTemplateId $runTemplateId not found in Solution ${solution.id}")
   }
-  @Suppress("LongParameterList")
+  @Suppress("LongParameterList", "CyclomaticComplexMethod")
   private fun buildSolutionContainer(
       organization: Organization,
       workspace: Workspace,
@@ -1332,9 +1330,9 @@ class ContainerFactory(
 
   private fun getImageName(registry: String, repository: String?, version: String? = null): String {
     val repoVersion =
-        repository.let { if (version == null) it else "${it}:${version}" }
+        repository.let { if (version == null) it else "$it:$version" }
             ?: throw IllegalStateException("Solution repository is not defined")
-    return if (registry.isNotEmpty()) "${registry}/${repoVersion}" else repoVersion
+    return if (registry.isNotEmpty()) "$registry/$repoVersion" else repoVersion
   }
 }
 
@@ -1349,11 +1347,11 @@ internal fun getContainerScopes(csmPlatformProperties: CsmPlatformProperties): S
         csmPlatformProperties.identityProvider?.containerScopes?.keys?.joinToString(separator = ",")
             ?: ""
     if (containerScopes.isBlank() && csmPlatformProperties.identityProvider!!.code == "azure") {
-      return "${csmPlatformProperties.azure?.appIdUri}${API_SCOPE_SUFFIX}"
+      return "${csmPlatformProperties.azure?.appIdUri}$API_SCOPE_SUFFIX"
     }
     return containerScopes
   }
-  return "${csmPlatformProperties.azure?.appIdUri}${API_SCOPE_SUFFIX}"
+  return "${csmPlatformProperties.azure?.appIdUri}$API_SCOPE_SUFFIX"
 }
 
 internal fun getMinimalCommonEnvVars(
@@ -1442,7 +1440,7 @@ internal fun getCommonEnvVars(
               (csmPlatformProperties.azure?.dataWarehouseCluster?.baseUri ?: ""),
           AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI_VAR to
               (csmPlatformProperties.azure?.dataWarehouseCluster?.options?.ingestionUri ?: ""),
-          AZURE_DATA_EXPLORER_DATABASE_NAME to "${organizationId}-${workspaceKey}".lowercase(),
+          AZURE_DATA_EXPLORER_DATABASE_NAME to "$organizationId-$workspaceKey".lowercase(),
           PARAMETERS_ORGANIZATION_VAR to organizationId,
           PARAMETERS_WORKSPACE_VAR to workspaceId,
           PARAMETERS_SCENARIO_VAR to scenarioId,
@@ -1485,7 +1483,7 @@ private fun mergeSolutionContainer(
 ): ScenarioRunContainer {
   val stackedMode = stackedContainer.envVars?.getOrDefault(CONTAINER_MODE_VAR, "") ?: ""
   val containerMode = container.envVars?.getOrDefault(CONTAINER_MODE_VAR, "") ?: ""
-  val modes = "${stackedMode},${containerMode}"
+  val modes = "$stackedMode,$containerMode"
   val envVars = stackedContainer.envVars?.toMutableMap()
 
   envVars?.put(CONTAINER_MODE_VAR, modes)
@@ -1523,7 +1521,7 @@ internal fun resolvePlatformVars(
 ): String {
   var newValue =
       path.replace(
-          PARAMETERS_WORKSPACE_FILE, "${organizationId}/${workspaceId}".sanitizeForAzureStorage())
+          PARAMETERS_WORKSPACE_FILE, "$organizationId/$workspaceId".sanitizeForAzureStorage())
   newValue =
       newValue.replace(
           PARAMETERS_STORAGE_CONNECTION_STRING,

@@ -1078,7 +1078,7 @@ class ContainerFactoryTests {
             "CSM_SIMULATION" to "TestSimulation",
             providerEnvVar to "azureStorage",
             "AZURE_STORAGE_CONNECTION_STRING" to "csmphoenix_storage_connection_string",
-            resourceEnvVar to "organizationid/1/${runTemplate}/${resource}.zip",
+            resourceEnvVar to "organizationid/1/$runTemplate/$resource.zip",
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
@@ -1992,7 +1992,7 @@ class ContainerFactoryTests {
             nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
 
-    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
+    assertEquals("$CONTAINER_FETCH_DATASET_PARAMETERS-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
@@ -2047,7 +2047,7 @@ class ContainerFactoryTests {
             nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
 
-    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
+    assertEquals("$CONTAINER_FETCH_DATASET_PARAMETERS-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
@@ -2102,7 +2102,7 @@ class ContainerFactoryTests {
             nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
 
-    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
+    assertEquals("$CONTAINER_FETCH_DATASET_PARAMETERS-1", scenarioRunContainer.name)
     assertEquals(
         mapOf(AZURE_AAD_POD_ID_BINDING_LABEL to "phoenixdev-pod-identity"),
         scenarioRunContainer.labels)
@@ -2157,7 +2157,7 @@ class ContainerFactoryTests {
             nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
 
-    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
+    assertEquals("$CONTAINER_FETCH_DATASET_PARAMETERS-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
@@ -2212,7 +2212,7 @@ class ContainerFactoryTests {
             nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
 
-    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
+    assertEquals("$CONTAINER_FETCH_DATASET_PARAMETERS-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
@@ -2267,7 +2267,7 @@ class ContainerFactoryTests {
             nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
 
-    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
+    assertEquals("$CONTAINER_FETCH_DATASET_PARAMETERS-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
@@ -2595,7 +2595,7 @@ class ContainerFactoryTests {
             scenarioRunSizing = BASIC_SIZING)
     val container =
         containers.find { container ->
-          container.name == "fetchScenarioDatasetParametersContainer-${nameId}"
+          container.name == "fetchScenarioDatasetParametersContainer-$nameId"
         }
     val expected =
         mapOf(
@@ -2615,7 +2615,7 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
-            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/${param}",
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/$param",
             "ENV_PARAM_1" to "env_param1_value",
             "ENV_PARAM_2" to "env_param2_value",
             "ENV_PARAM_3" to "env_param3_value",

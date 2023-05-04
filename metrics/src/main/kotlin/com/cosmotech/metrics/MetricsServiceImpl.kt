@@ -60,7 +60,7 @@ class MetricsServiceImpl(
       val key = getMetricKey(metric)
       logger.debug("Testing Redis TS exist: $key")
       val exist = jedis.exists(key)
-      logger.debug("Redis TS exist: ${key}:${exist}")
+      logger.debug("Redis TS exist: $key:$exist")
 
       val metricRetention = getMetricRetention(metric)
 

@@ -1384,7 +1384,7 @@ class ScenarioServiceImplTests {
                 accessControlList =
                     mutableListOf(
                         WorkspaceAccessControl(id = roleName, role = role),
-                        WorkspaceAccessControl("2${workspaceName}", "viewer"))))
+                        WorkspaceAccessControl("2$workspaceName", "viewer"))))
   }
 }
 

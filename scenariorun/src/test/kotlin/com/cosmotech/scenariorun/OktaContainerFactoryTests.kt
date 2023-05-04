@@ -31,7 +31,11 @@ import com.cosmotech.scenariorun.container.HIGH_CPU_SIZING
 import com.cosmotech.scenariorun.container.StartInfo
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.solution.api.SolutionApiService
-import com.cosmotech.solution.domain.*
+import com.cosmotech.solution.domain.RunTemplate
+import com.cosmotech.solution.domain.RunTemplateParameter
+import com.cosmotech.solution.domain.RunTemplateParameterGroup
+import com.cosmotech.solution.domain.RunTemplateStepSource
+import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.azure.WorkspaceEventHubService
@@ -47,7 +51,11 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import kotlin.test.BeforeTest
 import kotlin.test.assertFalse
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
@@ -1065,7 +1073,7 @@ class OktaContainerFactoryTests {
             "CSM_SIMULATION" to "TestSimulation",
             providerEnvVar to "azureStorage",
             "AZURE_STORAGE_CONNECTION_STRING" to "csmphoenix_storage_connection_string",
-            resourceEnvVar to "organizationid/1/${runTemplate}/${resource}.zip",
+            resourceEnvVar to "organizationid/1/$runTemplate/$resource.zip",
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
@@ -1973,7 +1981,7 @@ class OktaContainerFactoryTests {
             nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
 
-    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
+    assertEquals("$CONTAINER_FETCH_DATASET_PARAMETERS-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
@@ -2031,7 +2039,7 @@ class OktaContainerFactoryTests {
             nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
 
-    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
+    assertEquals("$CONTAINER_FETCH_DATASET_PARAMETERS-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
@@ -2089,7 +2097,7 @@ class OktaContainerFactoryTests {
             nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
 
-    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
+    assertEquals("$CONTAINER_FETCH_DATASET_PARAMETERS-1", scenarioRunContainer.name)
     assertEquals(
         mapOf(AZURE_AAD_POD_ID_BINDING_LABEL to "phoenixdev-pod-identity"),
         scenarioRunContainer.labels)
@@ -2147,7 +2155,7 @@ class OktaContainerFactoryTests {
             nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
 
-    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
+    assertEquals("$CONTAINER_FETCH_DATASET_PARAMETERS-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
@@ -2205,7 +2213,7 @@ class OktaContainerFactoryTests {
             nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
 
-    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
+    assertEquals("$CONTAINER_FETCH_DATASET_PARAMETERS-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
@@ -2263,7 +2271,7 @@ class OktaContainerFactoryTests {
             nodeSizingLabel = NODE_LABEL_DEFAULT,
             customSizing = BASIC_SIZING)
 
-    assertEquals("${CONTAINER_FETCH_DATASET_PARAMETERS}-1", scenarioRunContainer.name)
+    assertEquals("$CONTAINER_FETCH_DATASET_PARAMETERS-1", scenarioRunContainer.name)
     assertNull(scenarioRunContainer.labels)
     assertEquals(
         mapOf(
@@ -2395,6 +2403,7 @@ class OktaContainerFactoryTests {
         container.envVars?.toSortedMap())
   }
 
+  @Suppress("LongMethod")
   @Test
   fun `PROD-8072- Shared Access key set as env vars to solution container if told so`() {
     every { azure.eventBus } returns
@@ -2509,7 +2518,7 @@ class OktaContainerFactoryTests {
             scenarioRunSizing = HIGH_CPU_SIZING)
     val container =
         containers.find { container ->
-          container.name == "fetchScenarioDatasetParametersContainer-${nameId}"
+          container.name == "fetchScenarioDatasetParametersContainer-$nameId"
         }
     val expected =
         mapOf(
@@ -2532,7 +2541,7 @@ class OktaContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
-            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/${param}",
+            "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/$param",
             "ENV_PARAM_1" to "env_param1_value",
             "ENV_PARAM_2" to "env_param2_value",
             "ENV_PARAM_3" to "env_param3_value",
