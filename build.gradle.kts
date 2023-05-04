@@ -26,11 +26,12 @@ plugins {
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.14.2"
   id("com.diffplug.spotless") version "6.11.0"
-  id("org.springframework.boot") version "2.7.2" apply false
+  id("org.springframework.boot") version "2.7.11" apply false
   id("org.openapi.generator") version "5.4.0" apply false
   id("com.google.cloud.tools.jib") version "3.3.1" apply false
   id("io.gitlab.arturbosch.detekt") version "1.21.0"
   id("org.jetbrains.kotlinx.kover") version "0.6.1"
+  id("project-report")
 }
 
 scmVersion { tag { prefix.set("") } }
@@ -44,12 +45,15 @@ val cosmotechApiCommonVersion = "0.1.39-SNAPSHOT"
 val cosmotechApiAzureVersion = "0.1.10-SNAPSHOT"
 val azureSpringBootBomVersion = "3.14.0"
 val jedisVersion = "3.9.0"
+val springOauthVersion = "5.8.3"
 val jredistimeseriesVersion = "1.6.0"
+val redisOmSpringVersion = "0.6.4"
 
 allprojects {
   apply(plugin = "com.diffplug.spotless")
   apply(plugin = "org.jetbrains.kotlin.jvm")
   apply(plugin = "io.gitlab.arturbosch.detekt")
+  apply(plugin = "project-report")
 
   repositories {
     maven {
@@ -71,6 +75,8 @@ allprojects {
     }
     mavenCentral()
   }
+
+  tasks.withType<HtmlDependencyReportTask>().configureEach { projects = project.allprojects }
 
   configure<SpotlessExtension> {
     isEnforceCheck = false
@@ -201,21 +207,22 @@ subprojects {
     val springDocVersion = "1.6.14"
     implementation("org.springdoc:springdoc-openapi-ui:${springDocVersion}")
     implementation("org.springdoc:springdoc-openapi-kotlin:${springDocVersion}")
-    val swaggerParserVersion = "2.1.8"
+    val swaggerParserVersion = "2.1.13"
     implementation("io.swagger.parser.v3:swagger-parser-v3:${swaggerParserVersion}")
 
     implementation("org.zalando:problem-spring-web-starter:0.27.0")
 
     implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.security:spring-security-oauth2-jose:5.7.5")
-    implementation("org.springframework.security:spring-security-oauth2-resource-server:5.7.5")
+    implementation("org.springframework.security:spring-security-oauth2-jose:${springOauthVersion}")
+    implementation(
+        "org.springframework.security:spring-security-oauth2-resource-server:${springOauthVersion}")
     val oktaSpringBootVersion = "2.1.6"
     implementation("com.okta.spring:okta-spring-boot-starter:${oktaSpringBootVersion}")
 
     implementation("redis.clients:jedis:${jedisVersion}")
     implementation("com.redislabs:jredistimeseries:${jredistimeseriesVersion}")
     implementation("org.apache.commons:commons-csv:1.10.0")
-    implementation("com.redis.om:redis-om-spring:0.6.3")
+    implementation("com.redis.om:redis-om-spring:${redisOmSpringVersion}")
 
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:5.9.2"))
@@ -257,8 +264,7 @@ subprojects {
       }
     }
 
-    implementation("com.redis.om:redis-om-spring:0.6.3")
-    implementation("org.springframework.data:spring-data-redis:2.7.3")
+    implementation("org.springframework.data:spring-data-redis")
   }
 
   tasks.withType<KotlinCompile> {
@@ -267,7 +273,7 @@ subprojects {
     }
 
     kotlinOptions {
-      languageVersion = "1.7"
+      languageVersion = "1.8"
       freeCompilerArgs = listOf("-Xjsr305=strict")
       jvmTarget = kotlinJvmTarget.toString()
       java { toolchain { languageVersion.set(JavaLanguageVersion.of(kotlinJvmTarget)) } }
