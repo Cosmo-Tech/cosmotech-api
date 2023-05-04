@@ -325,8 +325,10 @@ internal class ScenarioServiceImpl(
     if (waitRelationshipPropagation) {
       runBlocking { childrenUpdatesCoroutines.joinAll() }
     }
-      if(rootId == null)
-    children.forEach { updateRootId(organizationId, workspaceId, it, waitRelationshipPropagation) }
+    if (rootId == null)
+        children.forEach {
+          updateRootId(organizationId, workspaceId, it, waitRelationshipPropagation)
+        }
   }
 
   private fun updateRootId(
