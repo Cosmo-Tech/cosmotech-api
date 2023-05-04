@@ -488,12 +488,12 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   fun `test propagation of scenario deletion in children`() {
     every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_ADMIN_USER
 
-    var childScenario =
+    var firstChildScenario =
         scenarioApiService.createScenario(
             organizationSaved.id!!,
             workspaceSaved.id!!,
             Scenario(
-                name = "name",
+                name = "firstChildScenario",
                 organizationId = organizationSaved.id,
                 workspaceId = workspaceSaved.id,
                 solutionId = solutionSaved.id,
@@ -502,18 +502,42 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                 parentId = scenarioSaved.id,
                 rootId = scenarioSaved.id))
 
+    var secondChildScenario =
+        scenarioApiService.createScenario(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            Scenario(
+                name = "secondChildScenario",
+                organizationId = organizationSaved.id,
+                workspaceId = workspaceSaved.id,
+                solutionId = solutionSaved.id,
+                ownerId = "ownerId",
+                datasetList = mutableListOf(datasetSaved.id!!),
+                parentId = firstChildScenario.id,
+                rootId = scenarioSaved.id))
+
     scenarioApiService.deleteScenario(
         organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, true)
 
-    childScenario =
+    firstChildScenario =
         scenarioApiService.findScenarioById(
-            organizationSaved.id!!, workspaceSaved.id!!, childScenario.id!!)
+            organizationSaved.id!!, workspaceSaved.id!!, firstChildScenario.id!!)
+
+    secondChildScenario =
+        scenarioApiService.findScenarioById(
+            organizationSaved.id!!, workspaceSaved.id!!, secondChildScenario.id!!)
 
     logger.info("parentId should be null")
-    assertEquals(null, childScenario.parentId)
+    assertEquals(null, firstChildScenario.parentId)
 
     logger.info("rootId should be null")
-    assertEquals(null, childScenario.rootId)
+    assertEquals(null, firstChildScenario.rootId)
+
+    logger.info("parentId should be the firstChildScenario Id")
+    assertEquals(firstChildScenario.id, secondChildScenario.parentId)
+
+    logger.info("rootId should be the firstChildScenario Id")
+    assertEquals(firstChildScenario.id, secondChildScenario.rootId)
   }
 
   private fun makeWorkspaceEventHubInfo(eventHubAvailable: Boolean): WorkspaceEventHubInfo {
