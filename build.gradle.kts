@@ -32,6 +32,7 @@ plugins {
   id("io.gitlab.arturbosch.detekt") version "1.21.0"
   id("org.jetbrains.kotlinx.kover") version "0.6.1"
   id("project-report")
+  id("org.owasp.dependencycheck") version "8.2.1"
 }
 
 scmVersion { tag { prefix.set("") } }
@@ -54,8 +55,10 @@ allprojects {
   apply(plugin = "org.jetbrains.kotlin.jvm")
   apply(plugin = "io.gitlab.arturbosch.detekt")
   apply(plugin = "project-report")
+  apply(plugin = "org.owasp.dependencycheck")
 
   repositories {
+    mavenLocal()
     maven {
       name = "GitHubPackages"
       url = uri("https://maven.pkg.github.com/Cosmo-Tech/cosmotech-api-common")

@@ -226,7 +226,7 @@ internal class ArgoWorkflowService(
         Exception when calling WorkflowServiceApi#workflowServiceCreateWorkflow.
         Status code: ${e.code}
         Reason: ${e.responseBody}
-      """.trimIndent())
+        """.trimIndent())
       logger.debug("Response headers: {}", e.responseHeaders)
       throw IllegalStateException(e)
     }

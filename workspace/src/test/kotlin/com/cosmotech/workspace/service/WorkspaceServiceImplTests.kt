@@ -38,12 +38,18 @@ import com.cosmotech.workspace.domain.WorkspaceRole
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.cosmotech.workspace.repository.WorkspaceRepository
-import io.mockk.*
+import io.mockk.MockKAnnotations
+import io.mockk.confirmVerified
+import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.impl.annotations.SpyK
 import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
+import io.mockk.mockkConstructor
+import io.mockk.mockkStatic
+import io.mockk.verify
 import java.io.InputStream
 import java.util.Optional
 import java.util.UUID
@@ -58,8 +64,6 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
-import org.testcontainers.shaded.org.bouncycastle.asn1.x500.style.RFC4519Style.name
-import org.testcontainers.shaded.org.bouncycastle.asn1.x509.X509ObjectIdentifiers.organization
 
 const val ORGANIZATION_ID = "O-AbCdEf123"
 const val WORKSPACE_ID = "W-BcDeFg123"

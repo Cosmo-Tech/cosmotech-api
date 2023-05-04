@@ -89,7 +89,7 @@ internal fun getDatasetIdListFromValue(paramValue: String): List<String> {
   if (paramValue.startsWith("[")) {
     if (!(paramValue.last().equals(']'))) {
       throw CsmClientException(
-          "Malformed dataset id list, must start with [ and end with ]: ${paramValue}")
+          "Malformed dataset id list, must start with [ and end with ]: $paramValue")
     }
     val datasetIds = paramValue.substring(1, paramValue.length - 1)
     return datasetIds.split(",")
@@ -142,7 +142,7 @@ internal fun getDatasetEnvVars(
           azureManagedIdentity = connector.azureManagedIdentity,
           azureAuthenticationWithCustomerAppRegistration =
               connector.azureAuthenticationWithCustomerAppRegistration)
-  val fetchPath = if (fetchId == null) fetchPathBase else "${fetchPathBase}/${fetchId}"
+  val fetchPath = if (fetchId == null) fetchPathBase else "$fetchPathBase/$fetchId"
   envVars[FETCH_PATH_VAR] = fetchPath
   val datasetEnvVars =
       connector

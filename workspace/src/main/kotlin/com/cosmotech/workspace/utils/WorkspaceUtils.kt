@@ -6,4 +6,4 @@ fun getWorkspaceSecretName(organizationId: String, workspaceKey: String) =
     getWorkspaceUniqueName(organizationId, workspaceKey)
 
 fun getWorkspaceUniqueName(organizationId: String, workspaceKey: String) =
-    "${organizationId}-${workspaceKey}".lowercase()
+    "$organizationId-$workspaceKey".lowercase()

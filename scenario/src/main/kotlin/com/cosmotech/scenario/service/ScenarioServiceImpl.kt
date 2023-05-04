@@ -223,7 +223,7 @@ internal class ScenarioServiceImpl(
             }
           } else {
             logger.debug(
-                "Skipping parameter ${parameterId}, defined neither in the parent nor in this Scenario")
+                "Skipping parameter $parameterId, defined neither in the parent nor in this Scenario")
           }
         } else {
           logger.debug(
@@ -639,7 +639,7 @@ internal class ScenarioServiceImpl(
       upsertScenarioData(scenario)
     }
   }
-  @Suppress("LongMethod")
+  @Suppress("LongMethod", "CyclomaticComplexMethod")
   override fun updateScenario(
       organizationId: String,
       workspaceId: String,
@@ -754,7 +754,7 @@ internal class ScenarioServiceImpl(
     val runTemplate =
         solution?.runTemplates?.find { it.id == newRunTemplateId }
             ?: throw IllegalArgumentException(
-                "No run template '${newRunTemplateId}' in solution ${solution?.id}")
+                "No run template '$newRunTemplateId' in solution ${solution?.id}")
     existingScenario.runTemplateId = scenario.runTemplateId
     existingScenario.runTemplateName = runTemplate.name
   }
@@ -835,7 +835,7 @@ internal class ScenarioServiceImpl(
 
   @EventListener(ScenarioRunStartedForScenario::class)
   fun onScenarioRunStartedForScenario(scenarioRunStarted: ScenarioRunStartedForScenario) {
-    logger.debug("onScenarioRunStartedForScenario ${scenarioRunStarted}")
+    logger.debug("onScenarioRunStartedForScenario $scenarioRunStarted")
     this.updateScenario(
         scenarioRunStarted.organizationId,
         scenarioRunStarted.workspaceId,
