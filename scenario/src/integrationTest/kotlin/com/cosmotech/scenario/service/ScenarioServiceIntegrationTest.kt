@@ -484,6 +484,38 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
+  @Test
+  fun `test propagation of scenario deletion in children`() {
+    every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_ADMIN_USER
+
+    var childScenario =
+        scenarioApiService.createScenario(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            Scenario(
+                name = "name",
+                organizationId = organizationSaved.id,
+                workspaceId = workspaceSaved.id,
+                solutionId = solutionSaved.id,
+                ownerId = "ownerId",
+                datasetList = mutableListOf(datasetSaved.id!!),
+                parentId = scenarioSaved.id,
+                rootId = scenarioSaved.id))
+
+    scenarioApiService.deleteScenario(
+        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, true)
+
+    childScenario =
+        scenarioApiService.findScenarioById(
+            organizationSaved.id!!, workspaceSaved.id!!, childScenario.id!!)
+
+    logger.info("parentId should be null")
+    assertEquals(null, childScenario.parentId)
+
+    logger.info("rootId should be null")
+    assertEquals(null, childScenario.rootId)
+  }
+
   private fun makeWorkspaceEventHubInfo(eventHubAvailable: Boolean): WorkspaceEventHubInfo {
     return WorkspaceEventHubInfo(
         eventHubNamespace = "eventHubNamespace",
