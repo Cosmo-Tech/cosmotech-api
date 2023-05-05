@@ -109,23 +109,25 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     ReflectionTestUtils.setField(
         scenarioApiService, "azureDataExplorerClient", azureDataExplorerClient)
     every { workspaceEventHubService.getWorkspaceEventHubInfo(any(), any(), any()) } returns
-        mockWorkspaceEventHubInfo(false)
+        makeWorkspaceEventHubInfo(false)
 
+    rediSearchIndexer.createIndexFor(Organization::class.java)
+    rediSearchIndexer.createIndexFor(Workspace::class.java)
     rediSearchIndexer.createIndexFor(Scenario::class.java)
 
-    connector = mockConnector("Connector")
+    connector = makeConnector("Connector")
     connectorSaved = connectorApiService.registerConnector(connector)
 
-    organization = mockOrganization("Organization")
+    organization = makeOrganization("Organization")
     organizationSaved = organizationApiService.registerOrganization(organization)
 
     dataset = makeDataset(organizationSaved.id!!, "Dataset", connectorSaved)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
 
-    solution = mockSolution(organizationSaved.id!!)
+    solution = makeSolution(organizationSaved.id!!)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
-    workspace = mockWorkspace(organizationSaved.id!!, solutionSaved.id!!, "Workspace")
+    workspace = makeWorkspace(organizationSaved.id!!, solutionSaved.id!!, "Workspace")
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
 
     scenario =
@@ -469,7 +471,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
-  private fun mockWorkspaceEventHubInfo(eventHubAvailable: Boolean): WorkspaceEventHubInfo {
+  private fun makeWorkspaceEventHubInfo(eventHubAvailable: Boolean): WorkspaceEventHubInfo {
     return WorkspaceEventHubInfo(
         eventHubNamespace = "eventHubNamespace",
         eventHubAvailable = eventHubAvailable,
@@ -482,7 +484,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                 .SHARED_ACCESS_POLICY)
   }
 
-  private fun mockConnector(name: String): Connector {
+  private fun makeConnector(name: String): Connector {
     return Connector(
         key = UUID.randomUUID().toString(),
         name = name,
@@ -505,7 +507,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     )
   }
 
-  fun mockSolution(organizationId: String): Solution {
+  fun makeSolution(organizationId: String): Solution {
     return Solution(
         id = "solutionId",
         key = UUID.randomUUID().toString(),
@@ -514,7 +516,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
         ownerId = "ownerId")
   }
 
-  fun mockOrganization(id: String): Organization {
+  fun makeOrganization(id: String): Organization {
     return Organization(
         id = id,
         name = "Organization Name",
@@ -528,7 +530,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                         OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"))))
   }
 
-  fun mockWorkspace(organizationId: String, solutionId: String, name: String): Workspace {
+  fun makeWorkspace(organizationId: String, solutionId: String, name: String): Workspace {
     return Workspace(
         key = UUID.randomUUID().toString(),
         name = name,

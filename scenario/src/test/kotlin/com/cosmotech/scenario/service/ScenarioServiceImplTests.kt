@@ -193,7 +193,9 @@ class ScenarioServiceImplTests {
                 parameterId = "parameter_group_11_parameter1",
                 value = "parameter_group_11_parameter1_value"))
 
-    every { scenarioServiceImpl.findScenarioByIdNoState(parentScenarioId) } returns parentScenario
+    every {
+      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, parentScenarioId)
+    } returns parentScenario
 
     every { idGenerator.generate("scenario") } returns "S-myScenarioId"
 
@@ -388,7 +390,9 @@ class ScenarioServiceImplTests {
                 parameterId = "parameter_group_11_parameter1",
                 value = "parameter_group_11_parameter1_value_from_parent"))
 
-    every { scenarioServiceImpl.findScenarioByIdNoState(parentScenarioId) } returns parentScenario
+    every {
+      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, parentScenarioId)
+    } returns parentScenario
 
     every { idGenerator.generate("scenario") } returns "S-myScenarioId"
 
@@ -443,7 +447,9 @@ class ScenarioServiceImplTests {
             lastRun =
                 ScenarioLastRun(
                     scenarioRunId = "SR-myScenarioRunId", workflowId = null, workflowName = null))
-    every { scenarioServiceImpl.findScenarioByIdNoState(scenarioId) } returns scenario
+    every {
+      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
+    } returns scenario
 
     assertThrows<IllegalStateException> {
       scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
@@ -465,7 +471,9 @@ class ScenarioServiceImplTests {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
     every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
-    every { scenarioServiceImpl.findScenarioByIdNoState(scenarioId) } returns scenario
+    every {
+      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
+    } returns scenario
 
     scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
 
@@ -704,7 +712,9 @@ class ScenarioServiceImplTests {
                   key = "w-myWorkspaceKey",
                   name = "wonderful_workspace",
                   solution = WorkspaceSolution(solutionId = "w-sol-id"))
-          every { scenarioServiceImpl.findScenarioByIdNoState(scenarioId) } returns scenario
+          every {
+            scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
+          } returns scenario
           every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
           every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns
               workspace
@@ -768,9 +778,15 @@ class ScenarioServiceImplTests {
     every { csmPlatformProperties.twincache.scenario.defaultPageSize } returns 100
     every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
-    every { scenarioServiceImpl.findScenarioByIdNoState(m1.id!!) } returns m1
-    every { scenarioServiceImpl.findScenarioByIdNoState(p11.id!!) } returns p11
-    every { scenarioServiceImpl.findScenarioByIdNoState(c111.id!!) } returns c111
+    every {
+      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, m1.id!!)
+    } returns m1
+    every {
+      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, p11.id!!)
+    } returns p11
+    every {
+      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, c111.id!!)
+    } returns c111
     every {
       scenarioServiceImpl.findPaginatedScenariosStateOption(
           ORGANIZATION_ID, WORKSPACE_ID, 0, 100, true)
@@ -813,15 +829,19 @@ class ScenarioServiceImplTests {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
     every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
-    every { scenarioServiceImpl.findScenarioByIdNoState(parentId) } throws
-        CsmResourceNotFoundException("Scenario not found")
-    every { scenarioServiceImpl.findScenarioByIdNoState(rootId) } throws
-        CsmResourceNotFoundException("Scenario not found")
+    every {
+      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, parentId)
+    } throws CsmResourceNotFoundException("Scenario not found")
+    every {
+      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, rootId)
+    } throws CsmResourceNotFoundException("Scenario not found")
 
     val scenarioId = "s-c1"
     Scenario(id = scenarioId, parentId = parentId, rootId = rootId)
     val scenario = Scenario(id = scenarioId, parentId = parentId, rootId = rootId)
-    every { scenarioServiceImpl.findScenarioByIdNoState(scenarioId) } returns scenario
+    every {
+      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
+    } returns scenario
 
     val scenarioReturned =
         scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
@@ -845,7 +865,9 @@ class ScenarioServiceImplTests {
               workflowId = "parent-workflowId",
               csmSimulationRun = "parent-csmSimulationRun")
       val parent = Scenario(id = parentScenarioId, lastRun = parentLastRun)
-      every { scenarioServiceImpl.findScenarioByIdNoState(parentScenarioId) } returns parent
+      every {
+        scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, parentScenarioId)
+      } returns parent
     } else {
       parentLastRun = null
     }
@@ -859,7 +881,9 @@ class ScenarioServiceImplTests {
               workflowId = "root-workflowId",
               csmSimulationRun = "root-csmSimulationRun")
       val root = Scenario(id = rootScenarioId, lastRun = rootLastRun)
-      every { scenarioServiceImpl.findScenarioByIdNoState(rootScenarioId) } returns root
+      every {
+        scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, rootScenarioId)
+      } returns root
     } else {
       rootLastRun = null
     }
@@ -877,7 +901,9 @@ class ScenarioServiceImplTests {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
     every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
-    every { scenarioServiceImpl.findScenarioByIdNoState(scenarioId) } returns scenario
+    every {
+      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
+    } returns scenario
 
     val scenarioReturned =
         scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
@@ -934,7 +960,8 @@ class ScenarioServiceImplTests {
           ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC read scenario: $role", role, shouldThrow) {
-              every { scenarioRepository.findById(any()) } returns Optional.of(it.scenario)
+              every { scenarioRepository.findBy(any(), any(), any()) } returns
+                  Optional.of(it.scenario)
               scenarioServiceImpl.findScenarioById(
                   it.organization.id!!, it.workspace.id!!, it.scenario.id!!)
             }
@@ -969,7 +996,8 @@ class ScenarioServiceImplTests {
           ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC get scenario validation status: $role", role, shouldThrow) {
-              every { scenarioRepository.findById(any()) } returns Optional.of(it.scenario)
+              every { scenarioRepository.findBy(any(), any(), any()) } returns
+                  Optional.of(it.scenario)
               scenarioServiceImpl.getScenarioValidationStatusById(
                   it.organization.id!!, it.workspace.id!!, it.scenario.id!!)
             }
@@ -986,7 +1014,8 @@ class ScenarioServiceImplTests {
           ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC get scenario data job info: $role", role, shouldThrow) {
-              every { scenarioRepository.findById(any()) } returns Optional.of(it.scenario)
+              every { scenarioRepository.findBy(any(), any(), any()) } returns
+                  Optional.of(it.scenario)
               @Suppress("SwallowedException")
               try {
                 scenarioServiceImpl.getScenarioDataDownloadJobInfo(
@@ -1025,7 +1054,8 @@ class ScenarioServiceImplTests {
           ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC delete scenario : $role", role, shouldThrow) {
-              every { scenarioRepository.findById(any()) } returns Optional.of(it.scenario)
+              every { scenarioRepository.findBy(any(), any(), any()) } returns
+                  Optional.of(it.scenario)
               every { scenarioRepository.delete(any()) } returns Unit
               every { scenarioServiceImpl.findScenarioChildrenById(any(), any(), any()) } returns
                   emptyList()
@@ -1065,7 +1095,8 @@ class ScenarioServiceImplTests {
           ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC remove Scenario Parameter Values: $role", role, shouldThrow) {
-              every { scenarioRepository.findById(any()) } returns Optional.of(it.scenario)
+              every { scenarioRepository.findBy(any(), any(), any()) } returns
+                  Optional.of(it.scenario)
               every { scenarioRepository.save(any()) } returns it.scenario
               scenarioServiceImpl.removeAllScenarioParameterValues(
                   it.organization.id!!, it.workspace.id!!, it.scenario.id!!)
@@ -1083,7 +1114,8 @@ class ScenarioServiceImplTests {
           ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC get scenario access contol: $role", role, shouldThrow) {
-              every { scenarioRepository.findById(any()) } returns Optional.of(it.scenario)
+              every { scenarioRepository.findBy(any(), any(), any()) } returns
+                  Optional.of(it.scenario)
               scenarioServiceImpl.getScenarioAccessControl(
                   it.organization.id!!, it.workspace.id!!, it.scenario.id!!, CONNECTED_DEFAULT_USER)
             }
@@ -1100,7 +1132,8 @@ class ScenarioServiceImplTests {
           ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC remove Scenario Access Control: $role", role, shouldThrow) {
-              every { scenarioRepository.findById(any()) } returns Optional.of(it.scenario)
+              every { scenarioRepository.findBy(any(), any(), any()) } returns
+                  Optional.of(it.scenario)
               every { scenarioRepository.save(any()) } returns it.scenario
               scenarioServiceImpl.removeScenarioAccessControl(
                   it.organization.id!!, it.workspace.id!!, it.scenario.id!!, CONNECTED_DEFAULT_USER)
@@ -1118,7 +1151,8 @@ class ScenarioServiceImplTests {
           ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC update Scenario Access Control: $role", role, shouldThrow) {
-              every { scenarioRepository.findById(any()) } returns Optional.of(it.scenario)
+              every { scenarioRepository.findBy(any(), any(), any()) } returns
+                  Optional.of(it.scenario)
               every { scenarioRepository.save(any()) } returns it.scenario
               every { organizationService.findOrganizationById(any()) } returns it.organization
               every { workspaceService.findWorkspaceById(any(), any()) } returns it.workspace
@@ -1142,7 +1176,8 @@ class ScenarioServiceImplTests {
           ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC get scenario security: $role", role, shouldThrow) {
-              every { scenarioRepository.findById(any()) } returns Optional.of(it.scenario)
+              every { scenarioRepository.findBy(any(), any(), any()) } returns
+                  Optional.of(it.scenario)
               scenarioServiceImpl.getScenarioSecurity(
                   it.organization.id!!, it.workspace.id!!, it.scenario.id!!)
             }
@@ -1159,7 +1194,8 @@ class ScenarioServiceImplTests {
           ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC scenario default security: $role", role, shouldThrow) {
-              every { scenarioRepository.findById(any()) } returns Optional.of(it.scenario)
+              every { scenarioRepository.findBy(any(), any(), any()) } returns
+                  Optional.of(it.scenario)
               every { scenarioRepository.save(any()) } returns it.scenario
               scenarioServiceImpl.setScenarioDefaultSecurity(
                   it.organization.id!!, it.workspace.id!!, it.scenario.id!!, ScenarioRole(role))
@@ -1177,7 +1213,8 @@ class ScenarioServiceImplTests {
           ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC get scenario security users: $role", role, shouldThrow) {
-              every { scenarioRepository.findById(any()) } returns Optional.of(it.scenario)
+              every { scenarioRepository.findBy(any(), any(), any()) } returns
+                  Optional.of(it.scenario)
               scenarioServiceImpl.getScenarioSecurityUsers(
                   it.organization.id!!, it.workspace.id!!, it.scenario.id!!)
             }
@@ -1194,7 +1231,8 @@ class ScenarioServiceImplTests {
           ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC update scenario: $role", role, shouldThrow) {
-              every { scenarioRepository.findById(any()) } returns Optional.of(it.scenario)
+              every { scenarioRepository.findBy(any(), any(), any()) } returns
+                  Optional.of(it.scenario)
               every { scenarioRepository.save(any()) } returns it.scenario
               every { organizationService.findOrganizationById(any()) } returns it.organization
               every { workspaceService.findWorkspaceById(any(), any()) } returns it.workspace
@@ -1214,7 +1252,8 @@ class ScenarioServiceImplTests {
           ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC update Scenario Parameter Values: $role", role, shouldThrow) {
-              every { scenarioRepository.findById(any()) } returns Optional.of(it.scenario)
+              every { scenarioRepository.findBy(any(), any(), any()) } returns
+                  Optional.of(it.scenario)
               every { scenarioRepository.save(any()) } returns it.scenario
               scenarioServiceImpl.addOrReplaceScenarioParameterValues(
                   it.organization.id!!,
@@ -1235,7 +1274,8 @@ class ScenarioServiceImplTests {
           ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC download scenario data: $role", role, shouldThrow) {
-              every { scenarioRepository.findById(any()) } returns Optional.of(it.scenario)
+              every { scenarioRepository.findBy(any(), any(), any()) } returns
+                  Optional.of(it.scenario)
               every { scenarioRepository.save(any()) } returns it.scenario
               scenarioServiceImpl.downloadScenarioData(
                   it.organization.id!!, it.workspace.id!!, it.scenario.id!!)

@@ -917,6 +917,7 @@ components:
           description: the Solution Run Template Id associated with this Scenario
         organizationId:
             type: string
+            x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
             readOnly: true
             description: the associated Organization Id
         workspaceId:

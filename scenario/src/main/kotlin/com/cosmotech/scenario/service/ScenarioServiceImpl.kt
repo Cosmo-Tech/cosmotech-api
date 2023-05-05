@@ -37,6 +37,7 @@ import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.api.utils.sanitizeForRedis
 import com.cosmotech.api.utils.toSecurityConstraintQuery
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.service.getRbac
@@ -142,7 +143,7 @@ internal class ScenarioServiceImpl(
 
     if (parentId != null) {
       logger.debug("Applying / Overwriting Dataset list from parent $parentId")
-      val parent = this.findScenarioByIdNoState(parentId)
+      val parent = this.findScenarioByIdNoState(organizationId, workspaceId, parentId)
       datasetList = parent.datasetList
       rootId = parent.rootId
       if (rootId == null) {
@@ -338,12 +339,12 @@ internal class ScenarioServiceImpl(
     if (pageable != null) {
       return this.findPaginatedScenariosStateOption(
               organizationId, workspaceId, pageable.pageNumber, pageable.pageSize, true)
-          .addLastRunsInfo(this)
+          .addLastRunsInfo(this, organizationId, workspaceId)
     }
     return findAllPaginated(defaultPageSize) {
       this.findPaginatedScenariosStateOption(
               organizationId, workspaceId, it.pageNumber, it.pageSize, true)
-          .addLastRunsInfo(this)
+          .addLastRunsInfo(this, organizationId, workspaceId)
           .toMutableList()
     }
   }
@@ -481,7 +482,9 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       scenarioId: String
   ): Scenario {
-    val scenario = this.findScenarioByIdNoState(scenarioId).addLastRunsInfo(this)
+    val scenario =
+        this.findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
+            .addLastRunsInfo(this, organizationId, workspaceId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_READ, scenarioPermissions)
     this.addStateToScenario(organizationId, scenario)
     return scenario
@@ -516,12 +519,20 @@ internal class ScenarioServiceImpl(
         state = mapWorkflowPhaseToState(organizationId, workspaceId, downloadId, response.first),
         url = response.second)
   }
-  internal fun findScenarioByIdNoState(scenarioId: String): Scenario =
-      scenarioRepository.findById(scenarioId).orElseThrow {
-        CsmResourceNotFoundException(
-            "Resource of type '${Scenario::class.java.simpleName}'" +
-                " and identifier '$scenarioId' not found")
-      }
+  internal fun findScenarioByIdNoState(
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String
+  ): Scenario =
+      scenarioRepository.findBy(
+              organizationId.sanitizeForRedis(),
+              workspaceId.sanitizeForRedis(),
+              scenarioId.sanitizeForRedis())
+          .orElseThrow {
+            CsmResourceNotFoundException(
+                "Resource of type '${Scenario::class.java.simpleName}'" +
+                    " and workspaceId=$workspaceId, scenarioId=$scenarioId not found")
+          }
 
   private fun addStateToScenario(organizationId: String, scenario: Scenario?) {
     if (scenario?.lastRun != null) {
@@ -583,7 +594,7 @@ internal class ScenarioServiceImpl(
       val scenarioList =
           this.findPaginatedScenariosStateOption(
                   organizationId, workspaceId, pageable.pageNumber, pageable.pageSize, true)
-              .addLastRunsInfo(this)
+              .addLastRunsInfo(this, organizationId, workspaceId)
       scenarioTree.addAll(scenarioList)
       pageable = pageable.next()
     } while (scenarioList.isNotEmpty())
@@ -862,7 +873,7 @@ internal class ScenarioServiceImpl(
       scenarioId: String,
       scenarioRole: ScenarioRole
   ): ScenarioSecurity {
-    val scenario = findScenarioByIdNoState(scenarioId)
+    val scenario = findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
     val rbacSecurity =
         csmRbac.setDefault(scenario.getRbac(), scenarioRole.role, scenarioPermissions)
@@ -889,7 +900,7 @@ internal class ScenarioServiceImpl(
       scenarioId: String,
       scenarioAccessControl: ScenarioAccessControl
   ): ScenarioAccessControl {
-    val scenario = findScenarioByIdNoState(scenarioId)
+    val scenario = findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     val rbacSecurity =
@@ -912,7 +923,7 @@ internal class ScenarioServiceImpl(
       identityId: String,
       scenarioRole: ScenarioRole
   ): ScenarioAccessControl {
-    val scenario = findScenarioByIdNoState(scenarioId)
+    val scenario = findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
     csmRbac.checkUserExists(
         scenario.getRbac(), identityId, "User '$identityId' not found in scenario $workspaceId")

@@ -12,8 +12,13 @@ import com.cosmotech.scenario.domain.ScenarioSecurity
 import org.slf4j.LoggerFactory
 
 // PROD-8051 : add parent and master last runs data
-internal fun Scenario.addLastRunsInfo(scenarioServiceImpl: ScenarioServiceImpl): Scenario {
-  val scenarioWithLastRunsInfo = listOf(this).addLastRunsInfo(scenarioServiceImpl).first()
+internal fun Scenario.addLastRunsInfo(
+    scenarioServiceImpl: ScenarioServiceImpl,
+    organizationId: String,
+    workspaceId: String
+): Scenario {
+  val scenarioWithLastRunsInfo =
+      listOf(this).addLastRunsInfo(scenarioServiceImpl, organizationId, workspaceId).first()
   this.parentLastRun = scenarioWithLastRunsInfo.parentLastRun
   this.rootLastRun = scenarioWithLastRunsInfo.rootLastRun
   return this
@@ -22,7 +27,9 @@ internal fun Scenario.addLastRunsInfo(scenarioServiceImpl: ScenarioServiceImpl):
 // Grouping for performance reasons. This allows to issue one call per parentId
 // and one call per rootId
 internal fun List<Scenario>.addLastRunsInfo(
-    scenarioServiceImpl: ScenarioServiceImpl
+    scenarioServiceImpl: ScenarioServiceImpl,
+    organizationId: String,
+    workspaceId: String
 ): List<Scenario> {
   val logger =
       LoggerFactory.getLogger("com.cosmotech.scenario.azure.ScenarioExtensions#addLastRunsInfo")
@@ -31,7 +38,8 @@ internal fun List<Scenario>.addLastRunsInfo(
         if (!parentId.isNullOrBlank()) {
           val parentLastRun =
               try {
-                scenarioServiceImpl.findScenarioByIdNoState(parentId).lastRun
+                scenarioServiceImpl.findScenarioByIdNoState(organizationId, workspaceId, parentId)
+                    .lastRun
               } catch (iae: CsmResourceNotFoundException) {
                 // There might be cases where the parent no longer exists
                 val messageFormat =
@@ -53,7 +61,8 @@ internal fun List<Scenario>.addLastRunsInfo(
         if (!rootId.isNullOrBlank()) {
           val rootLastRun =
               try {
-                scenarioServiceImpl.findScenarioByIdNoState(rootId).lastRun
+                scenarioServiceImpl.findScenarioByIdNoState(organizationId, workspaceId, rootId)
+                    .lastRun
               } catch (iae: CsmResourceNotFoundException) {
                 // There might be cases where the root scenario no longer exists
                 val messageFormat =
