@@ -337,10 +337,7 @@ internal class ScenarioServiceImpl(
       scenario: Scenario,
       waitRelationshipPropagation: Boolean
   ) {
-    var rootId = scenario.rootId
-    if (rootId == null) {
-      rootId = scenario.id
-    }
+    val rootId = if (scenario.rootId == null) scenario.id else scenario.rootId
     val children = this.findScenarioChildrenById(organizationId, workspaceId, scenario.id!!)
     val childrenUpdatesCoroutines =
         children.map { child ->
@@ -353,7 +350,6 @@ internal class ScenarioServiceImpl(
     if (waitRelationshipPropagation) {
       runBlocking { childrenUpdatesCoroutines.joinAll() }
     }
-
     children.forEach { updateRootId(organizationId, workspaceId, it, waitRelationshipPropagation) }
   }
 
