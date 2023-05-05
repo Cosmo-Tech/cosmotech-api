@@ -88,7 +88,8 @@ allprojects {
         """
         // Copyright (c) Cosmo Tech.
         // Licensed under the MIT license.
-      """.trimIndent()
+      """
+            .trimIndent()
 
     java {
       googleJavaFormat()
@@ -96,12 +97,12 @@ allprojects {
       licenseHeader(licenseHeaderComment)
     }
     kotlin {
-      ktfmt("0.30")
+      ktfmt("0.41")
       target("**/*.kt")
       licenseHeader(licenseHeaderComment)
     }
     kotlinGradle {
-      ktfmt("0.30")
+      ktfmt("0.41")
       target("**/*.kts")
       //      licenseHeader(licenseHeaderComment, "import")
     }
@@ -144,6 +145,7 @@ subprojects {
   tasks.withType<Detekt>().configureEach {
     buildUponDefaultConfig = true // preconfigure defaults
     allRules = false // activate all available (even unstable) rules.
+    autoCorrect = true
     config.from(file("$rootDir/.detekt/detekt.yaml"))
     jvmTarget = kotlinJvmTarget.toString()
     ignoreFailures = project.findProperty("detekt.ignoreFailures")?.toString()?.toBoolean() ?: false
@@ -468,12 +470,12 @@ val copySubProjectsDetektReportsTasks =
                     "${subProject.projectDir.relativeTo(rootDir)}"
                         .capitalizeAsciiOnly()
                         .replace("/", "_")) {
-              shouldRunAfter(subProject.tasks.getByName("detekt"))
-              from(
-                  file(
-                      "${subProject.projectDir}/build/reports/detekt/${subProject.name}-detekt.$format"))
-              into("${rootProject.buildDir}/reports/detekt/$format")
-            }
+                  shouldRunAfter(subProject.tasks.getByName("detekt"))
+                  from(
+                      file(
+                          "${subProject.projectDir}/build/reports/detekt/${subProject.name}-detekt.$format"))
+                  into("${rootProject.buildDir}/reports/detekt/$format")
+                }
         subProject.tasks.getByName("detekt") { finalizedBy(copyTask) }
         copyTask
       }

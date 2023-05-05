@@ -140,12 +140,12 @@ class OrganizationServiceImplTests {
   @TestFactory
   fun `test RBAC read organization`() =
       mapOf(
-          ROLE_VIEWER to false,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to false,
-          ROLE_NONE to true)
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to false,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC read: $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
@@ -156,12 +156,12 @@ class OrganizationServiceImplTests {
   @TestFactory
   fun `test RBAC unregister organization`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to true,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to true,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC unregister : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
@@ -173,12 +173,12 @@ class OrganizationServiceImplTests {
   @TestFactory
   fun `test RBAC update organization`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC update : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
@@ -191,12 +191,12 @@ class OrganizationServiceImplTests {
   @TestFactory
   fun `test RBAC updateTenantCredentials organization`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC updateTenantCredentials : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
@@ -209,12 +209,12 @@ class OrganizationServiceImplTests {
   @TestFactory
   fun `test RBAC updateStorageConfiguration organization`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC updateStorageConfiguration : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
@@ -226,12 +226,12 @@ class OrganizationServiceImplTests {
   @TestFactory
   fun `test RBAC updateSolutionsContainerRegistry organization`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC updateSolutionsContainerRegistry : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
@@ -244,12 +244,12 @@ class OrganizationServiceImplTests {
   @TestFactory
   fun `test RBAC updateStorage organization`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC updateStorage : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
@@ -261,12 +261,12 @@ class OrganizationServiceImplTests {
   @TestFactory
   fun `test RBAC getOrganizationSecurity organization`() =
       mapOf(
-          ROLE_VIEWER to false,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to false,
-          ROLE_NONE to true)
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to false,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC getOrganizationSecurity : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
@@ -277,12 +277,12 @@ class OrganizationServiceImplTests {
   @TestFactory
   fun `test RBAC setOrganizationDefaultSecurity organization`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to true,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to true,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC setOrganizationDefaultSecurity : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
@@ -294,12 +294,12 @@ class OrganizationServiceImplTests {
   @TestFactory
   fun `test RBAC getOrganizationAccessControl organization`() =
       mapOf(
-          ROLE_VIEWER to false,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to false,
-          ROLE_NONE to true)
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to false,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC getOrganizationAccessControl : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
@@ -310,12 +310,12 @@ class OrganizationServiceImplTests {
   @TestFactory
   fun `test RBAC addOrganizationAccessControl organization`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to true,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to true,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC addOrganizationAccessControl : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
@@ -328,12 +328,12 @@ class OrganizationServiceImplTests {
   @TestFactory
   fun `test RBAC updateOrganizationAccessControl organization`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to true,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to true,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC updateOrganizationAccessControl : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
@@ -346,12 +346,12 @@ class OrganizationServiceImplTests {
   @TestFactory
   fun `test RBAC removeOrganizationAccessControl organization`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to true,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to true,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC removeOrganizationAccessControl  : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it
@@ -363,12 +363,12 @@ class OrganizationServiceImplTests {
   @TestFactory
   fun `test getOrganizationSecurityUsers`() =
       mapOf(
-          ROLE_VIEWER to false,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to false,
-          ROLE_NONE to true)
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to false,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC get users with role : $role", role, shouldThrow) {
               every { organizationRepository.findByIdOrNull(any()) } returns it

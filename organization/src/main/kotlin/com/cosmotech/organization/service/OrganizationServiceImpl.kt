@@ -328,8 +328,7 @@ fun Organization.setRbac(rbacSecurity: RbacSecurity) {
   this.security =
       OrganizationSecurity(
           rbacSecurity.default,
-          rbacSecurity
-              .accessControlList
+          rbacSecurity.accessControlList
               .map { OrganizationAccessControl(it.id, it.role) }
               .toMutableList())
 }

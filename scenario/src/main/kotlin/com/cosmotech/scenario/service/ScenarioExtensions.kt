@@ -93,8 +93,7 @@ fun Scenario.setRbac(rbacSecurity: RbacSecurity) {
   this.security =
       ScenarioSecurity(
           rbacSecurity.default,
-          rbacSecurity
-              .accessControlList
+          rbacSecurity.accessControlList
               .map { ScenarioAccessControl(it.id, it.role) }
               .toMutableList())
 }

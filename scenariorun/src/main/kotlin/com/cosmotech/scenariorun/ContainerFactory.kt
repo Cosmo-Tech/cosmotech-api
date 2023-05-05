@@ -1536,13 +1536,16 @@ private fun getDatasetRunArgs(
     organizationId: String,
     workspaceId: String
 ): List<String>? {
-  return connector.parameterGroups?.flatMap { it.parameters }?.filter { it.envVar == null }?.map {
-    resolvePlatformVars(
-        csmPlatformProperties,
-        dataset.connector?.parametersValues?.getOrDefault(it.id, it.default ?: "") ?: "",
-        organizationId,
-        workspaceId)
-  }
+  return connector.parameterGroups
+      ?.flatMap { it.parameters }
+      ?.filter { it.envVar == null }
+      ?.map {
+        resolvePlatformVars(
+            csmPlatformProperties,
+            dataset.connector?.parametersValues?.getOrDefault(it.id, it.default ?: "") ?: "",
+            organizationId,
+            workspaceId)
+      }
 }
 
 private fun getSource(source: RunTemplateStepSource?) =

@@ -113,8 +113,7 @@ internal fun buildWorkflowSpec(
 ): IoArgoprojWorkflowV1alpha1WorkflowSpec {
   val nodeSelector = mutableMapOf("kubernetes.io/os" to "linux", "cosmotech.com/tier" to "compute")
   val templates =
-      startContainers
-          .containers
+      startContainers.containers
           .map { container -> buildTemplate(container, csmPlatformProperties) }
           .toMutableList()
   val entrypointTemplate = buildEntrypointTemplate(startContainers)
@@ -123,9 +122,7 @@ internal fun buildWorkflowSpec(
   var workflowSpec =
       IoArgoprojWorkflowV1alpha1WorkflowSpec()
           .imagePullSecrets(
-              csmPlatformProperties
-                  .argo
-                  .imagePullSecrets
+              csmPlatformProperties.argo.imagePullSecrets
                   ?.filterNot(String::isBlank)
                   ?.map(V1LocalObjectReference()::name)
                   ?.ifEmpty { null })

@@ -139,15 +139,14 @@ internal class DatasetServiceImpl(
 
     val existingDataset = findDatasetById(organizationId, datasetId)
     val datasetCompatibilityMap =
-        existingDataset
-            .compatibility
+        existingDataset.compatibility
             ?.associateBy { "${it.solutionKey}-${it.minimumVersion}-${it.maximumVersion}" }
             ?.toMutableMap()
             ?: mutableMapOf()
     datasetCompatibilityMap.putAll(
-        datasetCompatibility.filter { it.solutionKey.isNotBlank() }.associateBy {
-          "${it.solutionKey}-${it.minimumVersion}-${it.maximumVersion}"
-        })
+        datasetCompatibility
+            .filter { it.solutionKey.isNotBlank() }
+            .associateBy { "${it.solutionKey}-${it.minimumVersion}-${it.maximumVersion}" })
     existingDataset.compatibility = datasetCompatibilityMap.values.toMutableList()
     datasetRepository.save(existingDataset)
 

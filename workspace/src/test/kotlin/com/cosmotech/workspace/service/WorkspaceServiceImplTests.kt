@@ -381,12 +381,12 @@ class WorkspaceServiceImplTests {
   @TestFactory
   fun `test RBAC read workspace`() =
       mapOf(
-          ROLE_VIEWER to false,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to false,
-          ROLE_NONE to true)
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to false,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC read workspace: $role", role, shouldThrow) {
               every { workspaceRepository.findBy(any(), any()) } returns Optional.of(it.workspace)
@@ -397,12 +397,12 @@ class WorkspaceServiceImplTests {
   @TestFactory
   fun `test RBAC create workspace`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to false,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to false,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC create workspace: $role", role, shouldThrow) {
               every { organizationService.findOrganizationById(any()) } returns it.organization
@@ -416,12 +416,12 @@ class WorkspaceServiceImplTests {
   @TestFactory
   fun `test RBAC delete all workspace files`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC delete all workspace files: $role", role, shouldThrow) {
               every { organizationService.findOrganizationById(any()) } returns it.organization
@@ -434,12 +434,12 @@ class WorkspaceServiceImplTests {
   @TestFactory
   fun `test RBAC update workspace`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("test RBAC update workspace: $role", role, shouldThrow) {
               every { organizationService.findOrganizationById(any()) } returns it.organization
@@ -455,12 +455,12 @@ class WorkspaceServiceImplTests {
   @TestFactory
   fun `test RBAC delete workspace`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to true,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to true,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC delete workspace: $role", role, shouldThrow) {
               every { organizationService.findOrganizationById(any()) } returns it.organization
@@ -474,12 +474,12 @@ class WorkspaceServiceImplTests {
   @TestFactory
   fun `test RBAC delete workspace file`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC delete workspace file: $role", role, shouldThrow) {
               every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
@@ -496,12 +496,12 @@ class WorkspaceServiceImplTests {
   @TestFactory
   fun `test RBAC download workspace file`() =
       mapOf(
-          ROLE_VIEWER to false,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to false,
-          ROLE_NONE to true)
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to false,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC download workspace file: $role", role, shouldThrow) {
               every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
@@ -514,12 +514,12 @@ class WorkspaceServiceImplTests {
   @TestFactory
   fun `test RBAC upload workspace file`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC upload workspace file: $role", role, shouldThrow) {
               every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
@@ -561,12 +561,12 @@ class WorkspaceServiceImplTests {
   @TestFactory
   fun `test RBAC findAllWorkspaceFiles`() =
       mapOf(
-          ROLE_VIEWER to false,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to false,
-          ROLE_NONE to true)
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to false,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC findAllWorkspaceFiles: $role", role, shouldThrow) {
               every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
@@ -582,12 +582,12 @@ class WorkspaceServiceImplTests {
   @TestFactory
   fun `test RBAC get workspace security`() =
       mapOf(
-          ROLE_VIEWER to false,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to false,
-          ROLE_NONE to true)
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to false,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC get workspace security: $role", role, shouldThrow) {
               every { organizationService.findOrganizationById(any()) } returns it.organization
@@ -600,12 +600,12 @@ class WorkspaceServiceImplTests {
   @TestFactory
   fun `test RBAC set workspace default security`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to true,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to true,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC set workspace default security: $role", role, shouldThrow) {
               every { organizationService.findOrganizationById(any()) } returns it.organization
@@ -620,12 +620,12 @@ class WorkspaceServiceImplTests {
   @TestFactory
   fun `test RBAC get workspace access control`() =
       mapOf(
-          ROLE_VIEWER to false,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to false,
-          ROLE_NONE to true)
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to false,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("test RBAC get workspace access control: $role", role, shouldThrow) {
               every { organizationService.findOrganizationById(any()) } returns it.organization
@@ -639,12 +639,12 @@ class WorkspaceServiceImplTests {
   @TestFactory
   fun `test RBAC add workspace access control`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to true,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to true,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("test RBAC add workspace access control: $role", role, shouldThrow) {
               every { organizationService.findOrganizationById(any()) } returns it.organization
@@ -661,12 +661,12 @@ class WorkspaceServiceImplTests {
   @TestFactory
   fun `test RBAC update workspace access control`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to true,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to true,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("test RBAC update workspace access control: $role", role, shouldThrow) {
               every { organizationService.findOrganizationById(any()) } returns it.organization
@@ -684,12 +684,12 @@ class WorkspaceServiceImplTests {
   @TestFactory
   fun `test RBAC remove workspace access control`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to true,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to true,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("test RBAC remove workspace access control: $role", role, shouldThrow) {
               every { organizationService.findOrganizationById(any()) } returns it.organization
@@ -703,12 +703,12 @@ class WorkspaceServiceImplTests {
   @TestFactory
   fun `test RBAC get workspace security users`() =
       mapOf(
-          ROLE_VIEWER to false,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to false,
-          ROLE_NONE to true)
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to false,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("test RBAC get workspace security users: $role", role, shouldThrow) {
               every { organizationService.findOrganizationById(any()) } returns it.organization

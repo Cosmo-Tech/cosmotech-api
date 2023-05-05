@@ -733,9 +733,13 @@ class ScenarioServiceImplTests {
                     is ScenarioRunEndToEndStateRequest ->
                         event.response =
                             when (phase) {
-                              "Pending", "Running" -> "Running"
+                              "Pending",
+                              "Running" -> "Running"
                               "Succeeded" -> "Successful"
-                              "Skipped", "Failed", "Error", "Omitted" -> "Failed"
+                              "Skipped",
+                              "Failed",
+                              "Error",
+                              "Omitted" -> "Failed"
                               else -> "Unknown"
                             }
                     else ->
@@ -939,12 +943,12 @@ class ScenarioServiceImplTests {
   @TestFactory
   fun `test RBAC create Scenario`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to false,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to false,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC create Scenario: $role", role, shouldThrow) {
               every { workspaceService.findWorkspaceById(any(), any()) } returns it.workspace
@@ -958,12 +962,12 @@ class ScenarioServiceImplTests {
   @TestFactory
   fun `test RBAC read scenario`() =
       mapOf(
-          ROLE_VIEWER to false,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to false,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to false,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC read scenario: $role", role, shouldThrow) {
               every { scenarioRepository.findBy(any(), any(), any()) } returns
@@ -976,12 +980,12 @@ class ScenarioServiceImplTests {
   @TestFactory
   fun `test RBAC find all scenarios`() =
       mapOf(
-          ROLE_VIEWER to false,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to false,
-          ROLE_NONE to true)
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to false,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC find all scenarios: $role", role, shouldThrow) {
               every { workspaceService.findWorkspaceById(any(), any()) } returns it.workspace
@@ -994,12 +998,12 @@ class ScenarioServiceImplTests {
   @TestFactory
   fun `test RBAC get scenario validation status`() =
       mapOf(
-          ROLE_VIEWER to false,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to false,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to false,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC get scenario validation status: $role", role, shouldThrow) {
               every { scenarioRepository.findBy(any(), any(), any()) } returns
@@ -1012,12 +1016,12 @@ class ScenarioServiceImplTests {
   @TestFactory
   fun `test RBAC get scenario data download job info`() =
       mapOf(
-          ROLE_VIEWER to false,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to false,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to false,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC get scenario data job info: $role", role, shouldThrow) {
               every { scenarioRepository.findBy(any(), any(), any()) } returns
@@ -1035,12 +1039,12 @@ class ScenarioServiceImplTests {
   @TestFactory
   fun `test RBAC get scenario tree`() =
       mapOf(
-          ROLE_VIEWER to false,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to false,
-          ROLE_NONE to true)
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to false,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC get scenario tree: $role", role, shouldThrow) {
               every { workspaceService.findWorkspaceById(any(), any()) } returns it.workspace
@@ -1052,12 +1056,12 @@ class ScenarioServiceImplTests {
   @TestFactory
   fun `test RBAC delete scenario`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to true,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to true,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC delete scenario : $role", role, shouldThrow) {
               every { scenarioRepository.findBy(any(), any(), any()) } returns
@@ -1073,12 +1077,12 @@ class ScenarioServiceImplTests {
   @TestFactory
   fun `test RBAC delete all scenarios`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC delete all scenarios : $role", role, shouldThrow) {
               every { workspaceService.findWorkspaceById(any(), any()) } returns it.workspace
@@ -1093,12 +1097,12 @@ class ScenarioServiceImplTests {
   @TestFactory
   fun `test RBAC remove Scenario Parameter Values`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to false,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to false,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC remove Scenario Parameter Values: $role", role, shouldThrow) {
               every { scenarioRepository.findBy(any(), any(), any()) } returns
@@ -1112,12 +1116,12 @@ class ScenarioServiceImplTests {
   @TestFactory
   fun `test RBAC get scenario access contol`() =
       mapOf(
-          ROLE_VIEWER to false,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to false,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to false,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC get scenario access contol: $role", role, shouldThrow) {
               every { scenarioRepository.findBy(any(), any(), any()) } returns
@@ -1130,12 +1134,12 @@ class ScenarioServiceImplTests {
   @TestFactory
   fun `test RBAC remove Scenario Access Control`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to true,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to true,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC remove Scenario Access Control: $role", role, shouldThrow) {
               every { scenarioRepository.findBy(any(), any(), any()) } returns
@@ -1149,12 +1153,12 @@ class ScenarioServiceImplTests {
   @TestFactory
   fun `test RBAC update Scenario Access Control`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to true,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to true,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC update Scenario Access Control: $role", role, shouldThrow) {
               every { scenarioRepository.findBy(any(), any(), any()) } returns
@@ -1174,12 +1178,12 @@ class ScenarioServiceImplTests {
   @TestFactory
   fun `test RBAC get scenario security`() =
       mapOf(
-          ROLE_VIEWER to false,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to false,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to false,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC get scenario security: $role", role, shouldThrow) {
               every { scenarioRepository.findBy(any(), any(), any()) } returns
@@ -1192,12 +1196,12 @@ class ScenarioServiceImplTests {
   @TestFactory
   fun `test RBAC scenario default security`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to true,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to true,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to true,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC scenario default security: $role", role, shouldThrow) {
               every { scenarioRepository.findBy(any(), any(), any()) } returns
@@ -1211,12 +1215,12 @@ class ScenarioServiceImplTests {
   @TestFactory
   fun `test RBAC get scenario security users`() =
       mapOf(
-          ROLE_VIEWER to false,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to false,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to false,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC get scenario security users: $role", role, shouldThrow) {
               every { scenarioRepository.findBy(any(), any(), any()) } returns
@@ -1229,12 +1233,12 @@ class ScenarioServiceImplTests {
   @TestFactory
   fun `test RBAC update scenario`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to false,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to false,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC update scenario: $role", role, shouldThrow) {
               every { scenarioRepository.findBy(any(), any(), any()) } returns
@@ -1250,12 +1254,12 @@ class ScenarioServiceImplTests {
   @TestFactory
   fun `test RBAC update Scenario Parameter Values`() =
       mapOf(
-          ROLE_VIEWER to true,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to false,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to false,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC update Scenario Parameter Values: $role", role, shouldThrow) {
               every { scenarioRepository.findBy(any(), any(), any()) } returns
@@ -1272,12 +1276,12 @@ class ScenarioServiceImplTests {
   @TestFactory
   fun `test RBAC download scenario data`() =
       mapOf(
-          ROLE_VIEWER to false,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to false,
-          ROLE_USER to true,
-          ROLE_NONE to true)
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_ADMIN to false,
+              ROLE_VALIDATOR to false,
+              ROLE_USER to true,
+              ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC download scenario data: $role", role, shouldThrow) {
               every { scenarioRepository.findBy(any(), any(), any()) } returns

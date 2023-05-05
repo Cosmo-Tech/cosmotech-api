@@ -63,14 +63,14 @@ class WorkspaceEventHubStrategyDedicated(
             }
           }
       EventHubRole.SCENARIO_METADATA ->
-          workspace.sendScenarioMetadataToEventHub.takeIf { it == true }?.let {
-            EVENTHUB_SCENARIO_METADATA
-          }
+          workspace.sendScenarioMetadataToEventHub
+              .takeIf { it == true }
+              ?.let { EVENTHUB_SCENARIO_METADATA }
               ?: NOT_AVAILABLE
       EventHubRole.SCENARIO_RUN_METADATA ->
-          workspace.sendScenarioMetadataToEventHub.takeIf { it == true }?.let {
-            EVENTHUB_SCENARIO_RUN_METADATA
-          }
+          workspace.sendScenarioMetadataToEventHub
+              .takeIf { it == true }
+              ?.let { EVENTHUB_SCENARIO_RUN_METADATA }
               ?: NOT_AVAILABLE
     }
   }

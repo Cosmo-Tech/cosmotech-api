@@ -306,7 +306,8 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
         organizationRegistered.id!!, "my.account-tester3@cosmotech.com")
     assertEquals(
         1,
-        organizationApiService.getOrganizationSecurity(organizationRegistered.id!!)
+        organizationApiService
+            .getOrganizationSecurity(organizationRegistered.id!!)
             .accessControlList
             .size)
   }
@@ -314,13 +315,13 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   @TestFactory
   fun `test RBAC find all organizations`() =
       mapOf(
-          ROLE_VIEWER to false,
-          ROLE_EDITOR to false,
-          ROLE_VALIDATOR to false,
-          ROLE_USER to false,
-          ROLE_NONE to true,
-          ROLE_ADMIN to false,
-      )
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_VALIDATOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
           .map { (role, shouldThrow) ->
             dynamicTest("Test RBAC find all : $role") {
               every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)

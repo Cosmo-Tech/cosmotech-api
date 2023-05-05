@@ -272,10 +272,9 @@ class TwingraphServiceImpl(
 
     csmJedisPool.resource.use { jedis ->
       if (jedis.exists(graphId.toRedisMetaDataKey())) {
-        requestBody.filterKeys { it == GRAPH_NAME || it == GRAPH_ROTATION }.forEach { (key, value)
-          ->
-          jedis.hset(graphId.toRedisMetaDataKey(), key, value)
-        }
+        requestBody
+            .filterKeys { it == GRAPH_NAME || it == GRAPH_ROTATION }
+            .forEach { (key, value) -> jedis.hset(graphId.toRedisMetaDataKey(), key, value) }
         return jedis.hgetAll(graphId.toRedisMetaDataKey())
       }
       throw CsmResourceNotFoundException("No metadata found for graphId $graphId")

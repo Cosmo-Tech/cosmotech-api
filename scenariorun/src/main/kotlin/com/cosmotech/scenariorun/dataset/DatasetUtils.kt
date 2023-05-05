@@ -35,13 +35,12 @@ internal fun findDatasetsAndConnectors(
   val parameterGroupIds = runTemplate.parameterGroups
   if (parameterGroupIds != null) {
     val parametersIds =
-        (solution.parameterGroups?.filter { it.id in parameterGroupIds }?.map {
-              it.parameters ?: listOf()
-            })
+        (solution.parameterGroups
+                ?.filter { it.id in parameterGroupIds }
+                ?.map { it.parameters ?: listOf() })
             ?.flatten()
     if (parametersIds != null) {
-      solution
-          .parameters
+      solution.parameters
           ?.filter { it.id in parametersIds }
           ?.filter { it.varType == PARAMETERS_DATASET_ID }
           ?.forEach { parameter ->
@@ -145,8 +144,7 @@ internal fun getDatasetEnvVars(
   val fetchPath = if (fetchId == null) fetchPathBase else "$fetchPathBase/$fetchId"
   envVars[FETCH_PATH_VAR] = fetchPath
   val datasetEnvVars =
-      connector
-          .parameterGroups
+      connector.parameterGroups
           ?.flatMap { it.parameters }
           ?.filter { it.envVar != null }
           ?.associateBy(

@@ -95,7 +95,8 @@ internal class ArgoWorkflowService(
       json =
           json.apply {
             gson =
-                gson.newBuilder()
+                gson
+                    .newBuilder()
                     .registerTypeAdapter(java.time.Instant::class.java, InstantTypeAdapter())
                     .create()
           }
@@ -226,7 +227,8 @@ internal class ArgoWorkflowService(
         Exception when calling WorkflowServiceApi#workflowServiceCreateWorkflow.
         Status code: ${e.code}
         Reason: ${e.responseBody}
-        """.trimIndent())
+        """
+              .trimIndent())
       logger.debug("Response headers: {}", e.responseHeaders)
       throw IllegalStateException(e)
     }
@@ -247,16 +249,19 @@ internal class ArgoWorkflowService(
       // need to make an additional call to Argo via getActiveWorkflow()
       getActiveWorkflow(workflowId, workflow.metadata.name!!).status?.nodes?.forEach {
           (nodeKey, nodeValue) ->
-        nodeValue.outputs?.artifacts?.filter { it.name == artifactNameFilter }?.forEach {
-          it.s3.let {
-            artifactContent.append(
-                artifactsByUidService
-                    .getArtifactByUid(workflowId, nodeKey, artifactNameFilter)
-                    .execute()
-                    .body()
-                    ?: "")
-          }
-        }
+        nodeValue.outputs
+            ?.artifacts
+            ?.filter { it.name == artifactNameFilter }
+            ?.forEach {
+              it.s3.let {
+                artifactContent.append(
+                    artifactsByUidService
+                        .getArtifactByUid(workflowId, nodeKey, artifactNameFilter)
+                        .execute()
+                        .body()
+                        ?: "")
+              }
+            }
       }
       WorkflowStatusAndArtifact(
           workflowId = workflowId, status = status, artifactContent = artifactContent.toString())
