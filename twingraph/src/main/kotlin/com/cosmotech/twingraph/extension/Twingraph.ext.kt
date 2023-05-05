@@ -40,9 +40,9 @@ fun GraphEntity.toCsmGraphEntity(type: CsmGraphEntityType): CsmGraphEntity {
   }
 
   val properties =
-      this.entityPropertyNames.filter { it != ID_PROPERTY_NAME }.associateWith {
-        getJsonCompliantPropertyByName(it)
-      }
+      this.entityPropertyNames
+          .filter { it != ID_PROPERTY_NAME }
+          .associateWith { getJsonCompliantPropertyByName(it) }
 
   val label =
       if (type == CsmGraphEntityType.RELATION) (this as Edge).relationshipType

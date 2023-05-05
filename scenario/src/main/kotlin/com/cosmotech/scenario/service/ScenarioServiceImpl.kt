@@ -197,7 +197,8 @@ internal class ScenarioServiceImpl(
 
     logger.debug("Getting runTemplate parameters ids")
     val runTemplateParametersIds =
-        solution?.parameterGroups
+        solution
+            ?.parameterGroups
             ?.filter { parameterGroup ->
               runTemplate?.parameterGroups?.contains(parameterGroup.id) == true
             }
@@ -573,7 +574,8 @@ internal class ScenarioServiceImpl(
             "Running" -> ScenarioJobState.Running
             "DataIngestionInProgress" -> ScenarioJobState.DataIngestionInProgress
             "Successful" -> ScenarioJobState.Successful
-            "Failed", "DataIngestionFailure" -> ScenarioJobState.Failed
+            "Failed",
+            "DataIngestionFailure" -> ScenarioJobState.Failed
             else -> ScenarioJobState.Unknown
           }
     }

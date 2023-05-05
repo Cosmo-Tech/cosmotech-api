@@ -196,28 +196,36 @@ class ScenarioRunServiceImpl(
     } while (scenarioRuns.isNotEmpty())
 
     val lastRunId =
-        scenarioApiService.findScenarioById(organizationId, workspaceId, scenarioId).lastRun!!
+        scenarioApiService
+            .findScenarioById(organizationId, workspaceId, scenarioId)
+            .lastRun!!
             .scenarioRunId
 
-    scenarioRunList.filter { it.state == ScenarioRunState.Failed }.forEach {
-      if (it.id != lastRunId) {
-        deleteScenarioRunWithoutAccessEnforcement(it)
-      }
-    }
+    scenarioRunList
+        .filter { it.state == ScenarioRunState.Failed }
+        .forEach {
+          if (it.id != lastRunId) {
+            deleteScenarioRunWithoutAccessEnforcement(it)
+          }
+        }
 
     if (deleteUnknown == true) {
-      scenarioRunList.filter { it.state == ScenarioRunState.Unknown }.forEach {
-        if (it.id != lastRunId) {
-          deleteScenarioRunWithoutAccessEnforcement(it)
-        }
-      }
+      scenarioRunList
+          .filter { it.state == ScenarioRunState.Unknown }
+          .forEach {
+            if (it.id != lastRunId) {
+              deleteScenarioRunWithoutAccessEnforcement(it)
+            }
+          }
     }
 
-    scenarioRunList.filter { it.state == ScenarioRunState.Successful }.forEach {
-      if (it.id != lastRunId) {
-        deleteScenarioRunWithoutAccessEnforcement(it)
-      }
-    }
+    scenarioRunList
+        .filter { it.state == ScenarioRunState.Successful }
+        .forEach {
+          if (it.id != lastRunId) {
+            deleteScenarioRunWithoutAccessEnforcement(it)
+          }
+        }
   }
 
   override fun findScenarioRunById(organizationId: String, scenariorunId: String) =
@@ -285,8 +293,8 @@ class ScenarioRunServiceImpl(
       }
     }
     return findAllPaginated(defaultPageSize) {
-      scenarioRunRepository.findByScenarioId(scenarioId, it).toList()
-    }
+          scenarioRunRepository.findByScenarioId(scenarioId, it).toList()
+        }
         .map { it.withStateInformation(organizationId).withoutSensitiveData()!! }
   }
 
@@ -304,8 +312,8 @@ class ScenarioRunServiceImpl(
       }
     }
     return findAllPaginated(defaultPageSize) {
-      scenarioRunRepository.findByWorkspaceId(workspaceId, it).toList()
-    }
+          scenarioRunRepository.findByWorkspaceId(workspaceId, it).toList()
+        }
         .map { it.withStateInformation(organizationId).withoutSensitiveData()!! }
   }
 
@@ -470,9 +478,9 @@ class ScenarioRunServiceImpl(
         withTimeout(
             purgeHistoricalDataConfiguration.timeOut?.toLong()
                 ?: DELETE_SCENARIO_RUN_DEFAULT_TIMEOUT) {
-          deletePreviousSimulationDataIfCurrentSimulationIsSuccessful(
-              scenarioRun, purgeHistoricalDataConfiguration)
-        }
+              deletePreviousSimulationDataIfCurrentSimulationIsSuccessful(
+                  scenarioRun, purgeHistoricalDataConfiguration)
+            }
       }
       logger.debug("Coroutine to poll simulation status launched")
     }
@@ -521,8 +529,8 @@ class ScenarioRunServiceImpl(
           .map { it.withStateInformation(organizationId).withoutSensitiveData()!! }
     }
     return findAllPaginated(defaultPageSize) {
-      scenarioRunRepository.findByPredicate(scenarioRunSearch.toRedisPredicate(), it).toList()
-    }
+          scenarioRunRepository.findByPredicate(scenarioRunSearch.toRedisPredicate(), it).toList()
+        }
         .map { it.withStateInformation(organizationId).withoutSensitiveData()!! }
   }
 
@@ -712,7 +720,8 @@ class ScenarioRunServiceImpl(
   ): ScenarioRunState {
     logger.debug("Mapping phase $phase for job $scenarioRunId")
     return when (phase) {
-      "Pending", "Running" -> ScenarioRunState.Running
+      "Pending",
+      "Running" -> ScenarioRunState.Running
       "Succeeded" -> {
         logger.trace(
             "checkDataIngestionState=$checkDataIngestionState," +
@@ -732,7 +741,8 @@ class ScenarioRunServiceImpl(
               "Data Ingestion status for ScenarioRun $scenarioRunId " +
                   "(csmSimulationRun=$csmSimulationRun): $postProcessingState")
           when (postProcessingState) {
-            null, DataIngestionState.Unknown -> ScenarioRunState.Unknown
+            null,
+            DataIngestionState.Unknown -> ScenarioRunState.Unknown
             DataIngestionState.InProgress -> ScenarioRunState.DataIngestionInProgress
             DataIngestionState.Successful -> ScenarioRunState.Successful
             DataIngestionState.Failure -> ScenarioRunState.Failed
@@ -748,7 +758,10 @@ class ScenarioRunServiceImpl(
           ScenarioRunState.Successful
         }
       }
-      "Skipped", "Failed", "Error", "Omitted" -> ScenarioRunState.Failed
+      "Skipped",
+      "Failed",
+      "Error",
+      "Omitted" -> ScenarioRunState.Failed
       else -> {
         logger.warn(
             "Unhandled state response for job {}: {} => returning Unknown as state",

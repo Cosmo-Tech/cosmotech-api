@@ -30,8 +30,7 @@ class WorkspaceEventHubStrategyShared(
   override fun getWorkspaceEventHubSasKeyName(
       workspace: Workspace,
   ): String {
-    return csmPlatformProperties
-        .azure
+    return csmPlatformProperties.azure
         ?.eventBus
         ?.authentication
         ?.sharedAccessPolicy
@@ -58,14 +57,14 @@ class WorkspaceEventHubStrategyShared(
             }
           }
       EventHubRole.SCENARIO_METADATA ->
-          workspace.sendScenarioMetadataToEventHub.takeIf { it == true }?.let {
-            "$baseName$SCENARIO_METADATA_SUFFIX"
-          }
+          workspace.sendScenarioMetadataToEventHub
+              .takeIf { it == true }
+              ?.let { "$baseName$SCENARIO_METADATA_SUFFIX" }
               ?: NOT_AVAILABLE
       EventHubRole.SCENARIO_RUN_METADATA ->
-          workspace.sendScenarioMetadataToEventHub.takeIf { it == true }?.let {
-            "$baseName$SCENARIO_RUN_METADATA_SUFFIX"
-          }
+          workspace.sendScenarioMetadataToEventHub
+              .takeIf { it == true }
+              ?.let { "$baseName$SCENARIO_RUN_METADATA_SUFFIX" }
               ?: NOT_AVAILABLE
     }
   }

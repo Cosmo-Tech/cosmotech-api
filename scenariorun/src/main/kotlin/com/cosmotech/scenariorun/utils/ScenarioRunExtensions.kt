@@ -23,8 +23,9 @@ internal fun ScenarioRun?.withoutSensitiveData(): ScenarioRun? = this?.copy(cont
 
 internal fun ScenarioRunState.isTerminal() =
     when (this) {
-      ScenarioRunState.DataIngestionFailure, ScenarioRunState.Failed, ScenarioRunState.Successful ->
-          true
+      ScenarioRunState.DataIngestionFailure,
+      ScenarioRunState.Failed,
+      ScenarioRunState.Successful -> true
       ScenarioRunState.Unknown,
       ScenarioRunState.DataIngestionInProgress,
       ScenarioRunState.Running -> false

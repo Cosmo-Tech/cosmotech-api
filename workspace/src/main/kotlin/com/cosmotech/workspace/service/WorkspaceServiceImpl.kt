@@ -157,13 +157,14 @@ internal class WorkspaceServiceImpl(
     GlobalScope.launch(SecurityCoroutineContext()) {
       // TODO Consider using a smaller coroutine scope
       val workspaceFiles =
-          getWorkspaceFileResources(organizationId, workspaceId).map { it.url }.map {
-            it.toExternalForm()
-          }
+          getWorkspaceFileResources(organizationId, workspaceId)
+              .map { it.url }
+              .map { it.toExternalForm() }
       if (workspaceFiles.isEmpty()) {
         logger.debug("No file to delete for workspace $workspaceId")
       } else {
-        azureStorageBlobBatchClient.deleteBlobs(workspaceFiles, DeleteSnapshotsOptionType.INCLUDE)
+        azureStorageBlobBatchClient
+            .deleteBlobs(workspaceFiles, DeleteSnapshotsOptionType.INCLUDE)
             .forEach { response ->
               logger.debug(
                   "Deleting blob with URL {} completed with status code {}",
@@ -490,8 +491,7 @@ fun Workspace.setRbac(rbacSecurity: RbacSecurity) {
   this.security =
       WorkspaceSecurity(
           rbacSecurity.default,
-          rbacSecurity
-              .accessControlList
+          rbacSecurity.accessControlList
               .map { WorkspaceAccessControl(it.id, it.role) }
               .toMutableList())
 }

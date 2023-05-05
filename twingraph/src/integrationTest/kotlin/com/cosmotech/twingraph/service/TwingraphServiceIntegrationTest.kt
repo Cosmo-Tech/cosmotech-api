@@ -214,24 +214,24 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
     redisGraph.query("$graphId:1", "CREATE (n)")
 
     listOf(
-        listOf(
-            "CREATE (:Person {id: toInteger(\$id), name:\$name, rank: toInteger(\$rank), object: \$object})",
-            TwinGraphBatchResult(9, 9, mutableListOf()),
-            fileNode),
-        listOf(
-            "MATCH (p:Person {id: toInteger(\$id)}) SET p.rank = \$rank",
-            TwinGraphBatchResult(9, 9, mutableListOf()),
-            fileNode),
-        listOf(
-            "MERGE (p1:Person {id: toInteger(\$UserId1)}) " +
-                "MERGE (p2:Person {id: toInteger(\$UserId2)}) " +
-                "CREATE (p1)-[:FOLLOWS {reaction_count: \$reaction_count}]->(p2)",
-            TwinGraphBatchResult(2, 2, mutableListOf()),
-            fileRelationship),
-        listOf(
-            "MATCH (p:Person {id: toInteger(\$id)}) DELETE p",
-            TwinGraphBatchResult(9, 9, mutableListOf()),
-            fileNode))
+            listOf(
+                "CREATE (:Person {id: toInteger(\$id), name:\$name, rank: toInteger(\$rank), object: \$object})",
+                TwinGraphBatchResult(9, 9, mutableListOf()),
+                fileNode),
+            listOf(
+                "MATCH (p:Person {id: toInteger(\$id)}) SET p.rank = \$rank",
+                TwinGraphBatchResult(9, 9, mutableListOf()),
+                fileNode),
+            listOf(
+                "MERGE (p1:Person {id: toInteger(\$UserId1)}) " +
+                    "MERGE (p2:Person {id: toInteger(\$UserId2)}) " +
+                    "CREATE (p1)-[:FOLLOWS {reaction_count: \$reaction_count}]->(p2)",
+                TwinGraphBatchResult(2, 2, mutableListOf()),
+                fileRelationship),
+            listOf(
+                "MATCH (p:Person {id: toInteger(\$id)}) DELETE p",
+                TwinGraphBatchResult(9, 9, mutableListOf()),
+                fileNode))
         .forEach { (query, result, file) ->
           val twinGraphQuery = TwinGraphQuery(query = query as String, version = "1")
           val queryResult =

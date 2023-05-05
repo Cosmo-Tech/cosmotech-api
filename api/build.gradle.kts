@@ -44,8 +44,7 @@ tasks.register<Copy>("copySubProjectsOpenAPIFiles") {
   // <subproject>/src/main/openapi/<subproject>.yaml
   // For example: organization/src/main/openapi/organization.yaml
   val sourcePaths =
-      configurations
-          .implementation
+      configurations.implementation
           .get()
           .allDependencies
           .withType<ProjectDependency>()
