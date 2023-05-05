@@ -135,7 +135,7 @@ class WorkspaceServiceImplTests {
     every { workspace.id } returns WORKSPACE_ID
     every { workspace.name } returns "test workspace"
     every { workspace.security } returns WorkspaceSecurity(ROLE_ADMIN, mutableListOf())
-    every { workspaceRepository.findById(any()).orElseThrow { any() } } returns workspace
+    every { workspaceRepository.findBy(any(), any()).orElseThrow { any() } } returns workspace
     every { workspaceServiceImpl.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns
         workspace
 
@@ -354,7 +354,9 @@ class WorkspaceServiceImplTests {
             name = "my workspace name",
             solution = WorkspaceSolution(solutionId = "SOL-my-solution-id"))
     workspace.security = WorkspaceSecurity(ROLE_ADMIN, mutableListOf())
-    every { workspaceServiceImpl.findWorkspaceByIdNoSecurity(WORKSPACE_ID) } returns workspace
+    every {
+      workspaceServiceImpl.findWorkspaceByIdNoSecurity(ORGANIZATION_ID, WORKSPACE_ID)
+    } returns workspace
     every { solutionService.findSolutionById(ORGANIZATION_ID, any()) } throws
         CsmResourceNotFoundException("Solution not found")
     assertThrows<CsmResourceNotFoundException> {
@@ -382,7 +384,7 @@ class WorkspaceServiceImplTests {
           ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC read workspace: $role", role, shouldThrow) {
-              every { workspaceRepository.findById(any()) } returns Optional.of(it.workspace)
+              every { workspaceRepository.findBy(any(), any()) } returns Optional.of(it.workspace)
               workspaceServiceImpl.findWorkspaceById(it.organization.id!!, it.workspace.id!!)
             }
           }
@@ -437,7 +439,8 @@ class WorkspaceServiceImplTests {
             rbacTest("test RBAC update workspace: $role", role, shouldThrow) {
               every { organizationService.findOrganizationById(any()) } returns it.organization
               every { solutionService.findSolutionById(any(), any()) } returns it.solution
-              every { workspaceServiceImpl.findWorkspaceByIdNoSecurity(any()) } returns it.workspace
+              every { workspaceServiceImpl.findWorkspaceByIdNoSecurity(any(), any()) } returns
+                  it.workspace
               every { workspaceRepository.save(any()) } returns it.workspace
               workspaceServiceImpl.updateWorkspace(
                   it.organization.id!!, it.workspace.id!!, it.workspace)
@@ -602,7 +605,7 @@ class WorkspaceServiceImplTests {
             rbacTest("Test RBAC set workspace default security: $role", role, shouldThrow) {
               every { organizationService.findOrganizationById(any()) } returns it.organization
               every { solutionService.findSolutionById(any(), any()) } returns it.solution
-              every { workspaceRepository.findById(any()) } returns Optional.of(it.workspace)
+              every { workspaceRepository.findBy(any(), any()) } returns Optional.of(it.workspace)
               every { workspaceRepository.save(any()) } returns it.workspace
               workspaceServiceImpl.setWorkspaceDefaultSecurity(
                   it.organization.id!!, it.workspace.id!!, WorkspaceRole(ROLE_NONE))
@@ -622,7 +625,7 @@ class WorkspaceServiceImplTests {
             rbacTest("test RBAC get workspace access control: $role", role, shouldThrow) {
               every { organizationService.findOrganizationById(any()) } returns it.organization
               every { solutionService.findSolutionById(any(), any()) } returns it.solution
-              every { workspaceRepository.findById(any()) } returns Optional.of(it.workspace)
+              every { workspaceRepository.findBy(any(), any()) } returns Optional.of(it.workspace)
               workspaceServiceImpl.getWorkspaceAccessControl(
                   it.organization.id!!, it.workspace.id!!, CONNECTED_DEFAULT_USER)
             }
@@ -640,7 +643,8 @@ class WorkspaceServiceImplTests {
           .map { (role, shouldThrow) ->
             rbacTest("test RBAC add workspace access control: $role", role, shouldThrow) {
               every { organizationService.findOrganizationById(any()) } returns it.organization
-              every { workspaceServiceImpl.findWorkspaceByIdNoSecurity(any()) } returns it.workspace
+              every { workspaceServiceImpl.findWorkspaceByIdNoSecurity(any(), any()) } returns
+                  it.workspace
               every { workspaceRepository.save(any()) } returns it.workspace
               workspaceServiceImpl.addWorkspaceAccessControl(
                   it.organization.id!!,
@@ -661,7 +665,8 @@ class WorkspaceServiceImplTests {
           .map { (role, shouldThrow) ->
             rbacTest("test RBAC update workspace access control: $role", role, shouldThrow) {
               every { organizationService.findOrganizationById(any()) } returns it.organization
-              every { workspaceServiceImpl.findWorkspaceByIdNoSecurity(any()) } returns it.workspace
+              every { workspaceServiceImpl.findWorkspaceByIdNoSecurity(any(), any()) } returns
+                  it.workspace
               every { workspaceRepository.save(any()) } returns it.workspace
               workspaceServiceImpl.updateWorkspaceAccessControl(
                   it.organization.id!!,
@@ -683,7 +688,8 @@ class WorkspaceServiceImplTests {
           .map { (role, shouldThrow) ->
             rbacTest("test RBAC remove workspace access control: $role", role, shouldThrow) {
               every { organizationService.findOrganizationById(any()) } returns it.organization
-              every { workspaceServiceImpl.findWorkspaceByIdNoSecurity(any()) } returns it.workspace
+              every { workspaceServiceImpl.findWorkspaceByIdNoSecurity(any(), any()) } returns
+                  it.workspace
               every { workspaceRepository.save(any()) } returns it.workspace
               workspaceServiceImpl.removeWorkspaceAccessControl(
                   it.organization.id!!, it.workspace.id!!, "2$CONNECTED_DEFAULT_USER")
@@ -701,7 +707,8 @@ class WorkspaceServiceImplTests {
           .map { (role, shouldThrow) ->
             rbacTest("test RBAC get workspace security users: $role", role, shouldThrow) {
               every { organizationService.findOrganizationById(any()) } returns it.organization
-              every { workspaceServiceImpl.findWorkspaceByIdNoSecurity(any()) } returns it.workspace
+              every { workspaceServiceImpl.findWorkspaceByIdNoSecurity(any(), any()) } returns
+                  it.workspace
               every { workspaceRepository.save(any()) } returns it.workspace
               workspaceServiceImpl.getWorkspaceSecurityUsers(
                   it.organization.id!!, it.workspace.id!!)

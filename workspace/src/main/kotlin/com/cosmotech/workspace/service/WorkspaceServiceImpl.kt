@@ -119,13 +119,12 @@ internal class WorkspaceServiceImpl(
     return result
   }
 
-  internal fun findWorkspaceByIdNoSecurity(workspaceId: String): Workspace =
-      workspaceRepository.findById(workspaceId).orElseThrow {
-        CsmResourceNotFoundException("Workspace $workspaceId")
-      }
+  internal fun findWorkspaceByIdNoSecurity(organizationId: String, workspaceId: String): Workspace =
+      workspaceRepository.findBy(organizationId.sanitizeForRedis(), workspaceId.sanitizeForRedis())
+          .orElseThrow { CsmResourceNotFoundException("Workspace $workspaceId") }
 
   override fun findWorkspaceById(organizationId: String, workspaceId: String): Workspace {
-    val workspace: Workspace = this.findWorkspaceByIdNoSecurity(workspaceId)
+    val workspace: Workspace = this.findWorkspaceByIdNoSecurity(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_READ)
     return workspace
   }
@@ -180,7 +179,7 @@ internal class WorkspaceServiceImpl(
       workspaceId: String,
       workspace: Workspace
   ): Workspace {
-    val existingWorkspace = findWorkspaceByIdNoSecurity(workspaceId)
+    val existingWorkspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
     csmRbac.verify(existingWorkspace.getRbac(), PERMISSION_WRITE)
     // Security cannot be changed by updateWorkspace
     var hasChanged =
@@ -388,7 +387,7 @@ internal class WorkspaceServiceImpl(
       workspaceId: String,
       workspaceRole: WorkspaceRole
   ): WorkspaceSecurity {
-    val workspace = findWorkspaceByIdNoSecurity(workspaceId)
+    val workspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE_SECURITY)
     val rbacSecurity = csmRbac.setDefault(workspace.getRbac(), workspaceRole.role)
     workspace.setRbac(rbacSecurity)
@@ -412,7 +411,7 @@ internal class WorkspaceServiceImpl(
       workspaceId: String,
       workspaceAccessControl: WorkspaceAccessControl
   ): WorkspaceAccessControl {
-    val workspace = findWorkspaceByIdNoSecurity(workspaceId)
+    val workspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE_SECURITY)
     var organization = organizationService.findOrganizationById(organizationId)
     val rbacSecurity =
@@ -433,7 +432,7 @@ internal class WorkspaceServiceImpl(
       identityId: String,
       workspaceRole: WorkspaceRole
   ): WorkspaceAccessControl {
-    val workspace = findWorkspaceByIdNoSecurity(workspaceId)
+    val workspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE_SECURITY)
     csmRbac.checkUserExists(
         workspace.getRbac(), identityId, "User '$identityId' not found in workspace $workspaceId")
