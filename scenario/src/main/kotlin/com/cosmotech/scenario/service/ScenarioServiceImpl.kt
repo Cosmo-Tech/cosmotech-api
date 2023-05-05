@@ -322,9 +322,7 @@ internal class ScenarioServiceImpl(
             this@ScenarioServiceImpl.upsertScenarioData(child)
           }
         }
-    if (waitRelationshipPropagation) {
-      runBlocking { childrenUpdatesCoroutines.joinAll() }
-    }
+    runBlocking { childrenUpdatesCoroutines.joinAll() }
     if (rootId == null)
         children.forEach {
           updateRootId(organizationId, workspaceId, it, waitRelationshipPropagation)
@@ -347,9 +345,7 @@ internal class ScenarioServiceImpl(
             this@ScenarioServiceImpl.upsertScenarioData(child)
           }
         }
-    if (waitRelationshipPropagation) {
-      runBlocking { childrenUpdatesCoroutines.joinAll() }
-    }
+    runBlocking { childrenUpdatesCoroutines.joinAll() }
     children.forEach { updateRootId(organizationId, workspaceId, it, waitRelationshipPropagation) }
   }
 
