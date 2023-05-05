@@ -320,16 +320,18 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
         scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!, null, null)
     assertEquals(3, scenarios.size)
 
-      val rootScenario = scenarioApiService.findScenarioById(organizationSaved.id!!, workspaceSaved.id!!, idMap[2]!!)
-      logger.info("rootId for the new root scenario should be null")
-      assertEquals(null, rootScenario.rootId)
+    val rootScenario =
+        scenarioApiService.findScenarioById(organizationSaved.id!!, workspaceSaved.id!!, idMap[2]!!)
+    logger.info("rootId for the new root scenario should be null")
+    assertEquals(null, rootScenario.rootId)
 
-      logger.info("rootId for the new root scenario should be null")
-      assertEquals(null, rootScenario.parentId)
+    logger.info("rootId for the new root scenario should be null")
+    assertEquals(null, rootScenario.parentId)
 
-      val childScenario = scenarioApiService.findScenarioById(organizationSaved.id!!, workspaceSaved.id!!, idMap[4]!!)
-      logger.info("rootId for element 4 should be element 2 id")
-      assertEquals(rootScenario.id, childScenario.rootId)
+    val childScenario =
+        scenarioApiService.findScenarioById(organizationSaved.id!!, workspaceSaved.id!!, idMap[4]!!)
+    logger.info("rootId for element 4 should be element 2 id")
+    assertEquals(rootScenario.id, childScenario.rootId)
   }
 
   @Test
