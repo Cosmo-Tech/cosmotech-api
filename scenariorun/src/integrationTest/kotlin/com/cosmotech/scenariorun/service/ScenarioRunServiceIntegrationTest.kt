@@ -119,6 +119,7 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
     ReflectionTestUtils.setField(scenariorunApiService, "containerFactory", containerFactory)
     ReflectionTestUtils.setField(scenariorunApiService, "workflowService", workflowService)
 
+    rediSearchIndexer.createIndexFor(Solution::class.java)
     rediSearchIndexer.createIndexFor(Workspace::class.java)
     rediSearchIndexer.createIndexFor(Scenario::class.java)
     rediSearchIndexer.createIndexFor(ScenarioRun::class.java)

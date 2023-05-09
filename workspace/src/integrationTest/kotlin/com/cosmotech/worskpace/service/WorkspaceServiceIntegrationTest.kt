@@ -95,6 +95,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     ReflectionTestUtils.setField(workspaceApiService, "secretManager", secretManagerMock)
 
     rediSearchIndexer.createIndexFor(Organization::class.java)
+    rediSearchIndexer.createIndexFor(Solution::class.java)
     rediSearchIndexer.createIndexFor(Workspace::class.java)
 
     organization = mockOrganization("Organization test")

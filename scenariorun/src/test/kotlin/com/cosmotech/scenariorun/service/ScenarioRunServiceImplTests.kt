@@ -34,6 +34,7 @@ import io.mockk.mockkStatic
 import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
+import java.util.*
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -41,7 +42,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.core.Authentication
 
 private const val ORGANIZATION_ID = "O-AbCdEf123"
@@ -134,7 +134,7 @@ class ScenarioRunServiceImplTests {
                         envVars = mapOf("MY_SECRET_ENV_VAR" to "value"),
                         image = "my-image:latest")))
 
-    every { scenarioRunRepository.findByIdOrNull(any()) } returns myScenarioRun
+    every { scenarioRunRepository.findBy(any(), any()) } returns Optional.of(myScenarioRun)
 
     val scenarioRunById =
         this.scenarioRunServiceImpl.findScenarioRunById(ORGANIZATION_ID, myScenarioRun.id!!)

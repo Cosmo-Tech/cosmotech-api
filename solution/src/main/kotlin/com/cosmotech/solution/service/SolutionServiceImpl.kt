@@ -14,6 +14,7 @@ import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.api.utils.sanitizeForRedis
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateHandlerId
@@ -52,10 +53,11 @@ internal class SolutionServiceImpl(
   }
 
   override fun findSolutionById(organizationId: String, solutionId: String): Solution =
-      solutionRepository.findById(solutionId).orElseThrow {
-        CsmResourceNotFoundException(
-            "Solution $solutionId not found in organization $organizationId")
-      }
+      solutionRepository.findBy(organizationId.sanitizeForRedis(), solutionId.sanitizeForRedis())
+          .orElseThrow {
+            CsmResourceNotFoundException(
+                "Solution $solutionId not found in organization $organizationId")
+          }
 
   override fun removeAllRunTemplates(organizationId: String, solutionId: String) {
     val solution = findSolutionById(organizationId, solutionId)
