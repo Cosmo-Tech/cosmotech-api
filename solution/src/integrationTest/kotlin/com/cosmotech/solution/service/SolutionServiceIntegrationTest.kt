@@ -74,6 +74,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     ReflectionTestUtils.setField(
         solutionApiService, "azureStorageBlobServiceClient", azureStorageBlobServiceClient)
 
+    rediSearchIndexer.createIndexFor(Organization::class.java)
     rediSearchIndexer.createIndexFor(Solution::class.java)
 
     organization = mockOrganization("Organization test")

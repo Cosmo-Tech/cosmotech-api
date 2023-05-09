@@ -28,6 +28,7 @@ import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.api.utils.sanitizeForRedis
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioJobState
@@ -63,7 +64,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.PageRequest
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
@@ -229,7 +229,8 @@ class ScenarioRunServiceImpl(
       withStateInformation: Boolean = true
   ) =
       scenarioRunRepository
-          .findByIdOrNull(scenariorunId)
+          .findBy(organizationId.sanitizeForRedis(), scenariorunId.sanitizeForRedis())
+          .orElseGet { null }
           .let { if (withStateInformation) it.withStateInformation(organizationId) else it }
           ?.withoutSensitiveData()
 

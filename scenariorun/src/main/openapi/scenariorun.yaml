@@ -713,6 +713,7 @@ components:
             - $ref: '#/components/schemas/ScenarioRunState'
         organizationId:
           type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           description: the Organization id
         workflowId:
           type: string
