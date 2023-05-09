@@ -320,6 +320,19 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     scenarios =
         scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!, null, null)
     assertEquals(3, scenarios.size)
+
+    val rootScenario =
+        scenarioApiService.findScenarioById(organizationSaved.id!!, workspaceSaved.id!!, idMap[2]!!)
+    logger.info("rootId for the new root scenario should be null")
+    assertEquals(null, rootScenario.rootId)
+
+    logger.info("rootId for the new root scenario should be null")
+    assertEquals(null, rootScenario.parentId)
+
+    val childScenario =
+        scenarioApiService.findScenarioById(organizationSaved.id!!, workspaceSaved.id!!, idMap[4]!!)
+    logger.info("rootId for element 4 should be element 2 id")
+    assertEquals(rootScenario.id, childScenario.rootId)
   }
 
   @Test
@@ -470,6 +483,62 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
       scenarioApiService.removeScenarioAccessControl(
           organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, FAKE_MAIL)
     }
+  }
+
+  @Test
+  fun `test propagation of scenario deletion in children`() {
+    every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_ADMIN_USER
+
+    var firstChildScenario =
+        scenarioApiService.createScenario(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            Scenario(
+                name = "firstChildScenario",
+                organizationId = organizationSaved.id,
+                workspaceId = workspaceSaved.id,
+                solutionId = solutionSaved.id,
+                ownerId = "ownerId",
+                datasetList = mutableListOf(datasetSaved.id!!),
+                parentId = scenarioSaved.id,
+                rootId = scenarioSaved.id))
+
+    var secondChildScenario =
+        scenarioApiService.createScenario(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            Scenario(
+                name = "secondChildScenario",
+                organizationId = organizationSaved.id,
+                workspaceId = workspaceSaved.id,
+                solutionId = solutionSaved.id,
+                ownerId = "ownerId",
+                datasetList = mutableListOf(datasetSaved.id!!),
+                parentId = firstChildScenario.id,
+                rootId = scenarioSaved.id))
+
+    scenarioApiService.deleteScenario(
+        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, true)
+
+    firstChildScenario =
+        scenarioApiService.findScenarioById(
+            organizationSaved.id!!, workspaceSaved.id!!, firstChildScenario.id!!)
+
+    secondChildScenario =
+        scenarioApiService.findScenarioById(
+            organizationSaved.id!!, workspaceSaved.id!!, secondChildScenario.id!!)
+
+    logger.info("parentId should be null")
+    assertEquals(null, firstChildScenario.parentId)
+
+    logger.info("rootId should be null")
+    assertEquals(null, firstChildScenario.rootId)
+
+    logger.info("parentId should be the firstChildScenario Id")
+    assertEquals(firstChildScenario.id, secondChildScenario.parentId)
+
+    logger.info("rootId should be the firstChildScenario Id")
+    assertEquals(firstChildScenario.id, secondChildScenario.rootId)
   }
 
   private fun makeWorkspaceEventHubInfo(eventHubAvailable: Boolean): WorkspaceEventHubInfo {

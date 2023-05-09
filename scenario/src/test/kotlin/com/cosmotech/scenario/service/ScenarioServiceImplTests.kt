@@ -590,6 +590,8 @@ class ScenarioServiceImplTests {
         CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
             .TENANT_CLIENT_CREDENTIALS
     every { workspace.sendScenarioMetadataToEventHub } returns false
+    every { csmPlatformProperties.twincache.scenario.defaultPageSize } returns 100
+    every { scenarioServiceImpl.isRbacEnabled(ORGANIZATION_ID, WORKSPACE_ID) } returns false
 
     this.scenarioServiceImpl.deleteScenario(ORGANIZATION_ID, WORKSPACE_ID, m1.id!!, true)
 
@@ -648,6 +650,9 @@ class ScenarioServiceImplTests {
             .TENANT_CLIENT_CREDENTIALS
     every { workspace.sendScenarioMetadataToEventHub } returns false
     every { scenarioRepository.save(any()) } returns mockk()
+
+    every { csmPlatformProperties.twincache.scenario.defaultPageSize } returns 100
+    every { scenarioServiceImpl.isRbacEnabled(ORGANIZATION_ID, WORKSPACE_ID) } returns false
 
     this.scenarioServiceImpl.deleteScenario(ORGANIZATION_ID, WORKSPACE_ID, p11.id!!, false)
 

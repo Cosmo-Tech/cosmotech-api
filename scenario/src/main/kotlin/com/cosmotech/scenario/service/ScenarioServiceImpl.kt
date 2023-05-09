@@ -305,25 +305,48 @@ internal class ScenarioServiceImpl(
   private fun handleScenarioDeletion(
       organizationId: String,
       workspaceId: String,
-      scenario: Scenario,
-      waitRelationshipPropagation: Boolean
+      deletedScenario: Scenario,
+      waitRelationshipPropagation: Boolean = true
   ) {
-
-    val children = this.findScenarioChildrenById(organizationId, workspaceId, scenario.id!!)
+    val rootId = deletedScenario.rootId
+    val children = this.findScenarioChildrenById(organizationId, workspaceId, deletedScenario.id!!)
     val childrenUpdatesCoroutines =
         children.map { child ->
           GlobalScope.launch {
             // TODO Consider using a smaller coroutine scope
-            child.parentId = scenario.parentId
+            child.parentId = deletedScenario.parentId
+            child.rootId = rootId
             if (child.parentId == null) {
               child.rootId = null
             }
             this@ScenarioServiceImpl.upsertScenarioData(child)
           }
         }
-    if (waitRelationshipPropagation) {
-      runBlocking { childrenUpdatesCoroutines.joinAll() }
-    }
+    runBlocking { childrenUpdatesCoroutines.joinAll() }
+    if (rootId == null)
+        children.forEach {
+          updateRootId(organizationId, workspaceId, it, waitRelationshipPropagation)
+        }
+  }
+
+  private fun updateRootId(
+      organizationId: String,
+      workspaceId: String,
+      scenario: Scenario,
+      waitRelationshipPropagation: Boolean
+  ) {
+    val rootId = if (scenario.rootId == null) scenario.id else scenario.rootId
+    val children = this.findScenarioChildrenById(organizationId, workspaceId, scenario.id!!)
+    val childrenUpdatesCoroutines =
+        children.map { child ->
+          GlobalScope.launch {
+            // TODO Consider using a smaller coroutine scope
+            child.rootId = rootId
+            this@ScenarioServiceImpl.upsertScenarioData(child)
+          }
+        }
+    runBlocking { childrenUpdatesCoroutines.joinAll() }
+    children.forEach { updateRootId(organizationId, workspaceId, it, waitRelationshipPropagation) }
   }
 
   override fun findAllScenarios(
@@ -471,7 +494,7 @@ internal class ScenarioServiceImpl(
     return findScenarioChildrenById
   }
 
-  private fun isRbacEnabled(organizationId: String, workspaceId: String): Boolean {
+  fun isRbacEnabled(organizationId: String, workspaceId: String): Boolean {
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     val isAdmin = csmRbac.isAdmin(workspace.getRbac(), getCommonRolesDefinition())
     return (!isAdmin && this.csmPlatformProperties.rbac.enabled)
