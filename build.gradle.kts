@@ -227,7 +227,9 @@ subprojects {
     implementation("redis.clients:jedis:${jedisVersion}")
     implementation("com.redislabs:jredistimeseries:${jredistimeseriesVersion}")
     implementation("org.apache.commons:commons-csv:1.10.0")
-    implementation("com.redis.om:redis-om-spring:${redisOmSpringVersion}")
+    implementation("com.redis.om:redis-om-spring:${redisOmSpringVersion}") {
+      constraints { implementation("org.json:json:20230227") }
+    }
 
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:5.9.2"))
