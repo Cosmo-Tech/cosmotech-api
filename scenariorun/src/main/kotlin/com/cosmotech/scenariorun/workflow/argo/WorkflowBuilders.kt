@@ -16,6 +16,8 @@ import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1ArchiveStrategy
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1Artifact
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1ContainerNode
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1ContainerSetTemplate
+import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1DAGTask
+import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1DAGTemplate
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1Metadata
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1Outputs
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1Template
@@ -112,7 +114,7 @@ internal fun buildTemplate(
 
   val template =
       IoArgoprojWorkflowV1alpha1Template()
-          .name(scenarioRunContainer.name)
+          .name(scenarioRunContainer.name.lowercase())
           .metadata(IoArgoprojWorkflowV1alpha1Metadata().labels(scenarioRunContainer.labels))
           .container(container)
           .nodeSelector(scenarioRunContainer.getNodeLabelSize())
@@ -138,7 +140,14 @@ internal fun buildWorkflowSpec(
     executionTimeout: Int?
 ): IoArgoprojWorkflowV1alpha1WorkflowSpec {
   val nodeSelector = mutableMapOf("kubernetes.io/os" to "linux", "cosmotech.com/tier" to "compute")
-  val templates = buildContainerSetTemplate(startContainers, csmPlatformProperties)
+  // val templates = buildContainerSetTemplate(startContainers, csmPlatformProperties)
+  val templates =
+      startContainers
+          .containers
+          .map { container -> buildTemplate(container, csmPlatformProperties) }
+          .toMutableList()
+  val entrypointTemplate = buildEntrypointTemplate(startContainers)
+  templates.add(entrypointTemplate)
 
   var workflowSpec =
       IoArgoprojWorkflowV1alpha1WorkflowSpec()
@@ -241,6 +250,7 @@ private fun buildContainerNode(
   return containerNode
 }
 
+@Suppress("UnusedPrivateMember")
 private fun buildContainerSetTemplate(
     startContainers: ScenarioRunStartContainers,
     csmPlatformProperties: CsmPlatformProperties
@@ -289,6 +299,37 @@ private fun buildContainerSetTemplate(
   var templates: MutableList<IoArgoprojWorkflowV1alpha1Template> = mutableListOf()
   templates.add(template)
   return templates
+}
+
+private fun buildEntrypointTemplate(
+    startContainers: ScenarioRunStartContainers
+): IoArgoprojWorkflowV1alpha1Template {
+  val dagTemplate = IoArgoprojWorkflowV1alpha1Template().name(CSM_DAG_ENTRYPOINT)
+  val dagTasks: MutableList<IoArgoprojWorkflowV1alpha1DAGTask> = mutableListOf()
+  var previousContainer: ScenarioRunContainer? = null
+  for (container in startContainers.containers) {
+    var dependencies: List<String>? = null
+    if (container.dependencies != null) {
+      if (CSM_DAG_ROOT !in container.dependencies) {
+        dependencies = container.dependencies.map { it.lowercase() }
+      }
+    } else {
+      if (previousContainer != null) dependencies = listOf(previousContainer.name.lowercase())
+    }
+
+    val containerName = container.name.lowercase()
+    val task =
+        IoArgoprojWorkflowV1alpha1DAGTask()
+            .name(containerName)
+            .template(containerName)
+            .dependencies(dependencies)
+    dagTasks.add(task)
+    previousContainer = container
+  }
+
+  dagTemplate.dag(IoArgoprojWorkflowV1alpha1DAGTemplate().tasks(dagTasks))
+
+  return dagTemplate
 }
 
 private fun buildVolumeClaims(
