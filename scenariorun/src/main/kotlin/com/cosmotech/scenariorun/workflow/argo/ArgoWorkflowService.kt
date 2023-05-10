@@ -12,6 +12,7 @@ import com.cosmotech.scenariorun.domain.ScenarioRunStatus
 import com.cosmotech.scenariorun.domain.ScenarioRunStatusNode
 import com.cosmotech.scenariorun.workflow.WorkflowService
 import com.cosmotech.scenariorun.workflow.WorkflowStatusAndArtifact
+import com.cosmotech.scenariorun.workflow.loki.LokiService
 import io.argoproj.workflow.ApiClient
 import io.argoproj.workflow.ApiException
 import io.argoproj.workflow.Configuration
@@ -44,6 +45,7 @@ import retrofit2.converter.scalars.ScalarsConverterFactory
 internal class ArgoWorkflowService(
     @Value("\${api.version:?}") private val apiVersion: String,
     private val csmPlatformProperties: CsmPlatformProperties,
+    private val lokiService: LokiService
 ) : WorkflowService {
 
   private val logger = LoggerFactory.getLogger(ArgoWorkflowService::class.java)
@@ -342,25 +344,27 @@ internal class ArgoWorkflowService(
     return buildScenarioRunStatusFromWorkflowStatus(scenarioRun, workflowStatus)
   }
 
+  @Suppress("UnusedPrivateMember")
   override fun getScenarioRunLogs(scenarioRun: ScenarioRun): ScenarioRunLogs {
     val workflowId = scenarioRun.workflowId
     val workflowName = scenarioRun.workflowName
     var containersLogs: Map<String, ScenarioRunContainerLogs> = mapOf()
     if (workflowId != null && workflowName != null) {
       val workflow = getActiveWorkflow(workflowId, workflowName)
-      val nodeLogs = getWorkflowLogs(workflow)
-      containersLogs =
-          nodeLogs
-              .map { (nodeId, logs) ->
-                (workflow.status?.nodes?.get(nodeId)?.displayName
-                    ?: "") to
-                    ScenarioRunContainerLogs(
-                        nodeId = nodeId,
-                        containerName = workflow.status?.nodes?.get(nodeId)?.displayName,
-                        children = workflow.status?.nodes?.get(nodeId)?.children,
-                        logs = logs)
-              }
-              .toMap()
+      lokiService.getScenarioRunLogs(scenarioRun, workflow)
+      //      val nodeLogs = getWorkflowLogs(workflow)
+      //      containersLogs =
+      //          nodeLogs
+      //              .map { (nodeId, logs) ->
+      //                (workflow.status?.nodes?.get(nodeId)?.displayName
+      //                    ?: "") to
+      //                    ScenarioRunContainerLogs(
+      //                        nodeId = nodeId,
+      //                        containerName = workflow.status?.nodes?.get(nodeId)?.displayName,
+      //                        children = workflow.status?.nodes?.get(nodeId)?.children,
+      //                        logs = logs)
+      //              }
+      //              .toMap()
     }
     return ScenarioRunLogs(scenariorunId = scenarioRun.id, containers = containersLogs)
   }
