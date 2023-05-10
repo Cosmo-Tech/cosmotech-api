@@ -6,15 +6,15 @@ info:
   version: 0.0.1-SNAPSHOT
 
 servers:
-- url: 'https://api.azure.cosmo-platform.com'
-- url: 'http://localhost:4010'
+  - url: 'https://api.azure.cosmo-platform.com'
+  - url: 'http://localhost:4010'
 
 security:
-- oAuth2AuthCode: [ ]
+  - oAuth2AuthCode: [ ]
 
 tags:
-- name: twingraph
-  description: Twin Graph Management
+  - name: twingraph
+    description: Twin Graph Management
 
 paths:
   /organizations/{organization_id}/twingraph/import:
@@ -29,6 +29,7 @@ paths:
       operationId: importGraph
       tags:
         - twingraph
+      summary: Import a new version of a twin graph
       description: Import a new version of a twin graph
       requestBody:
         description: the graph to import
@@ -57,6 +58,71 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TwinGraphImportInfo'
+  /organizations/{organization_id}/twingraph/{graph_id}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: graph_id
+        in: path
+        description: the Graph Identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: createGraph
+      tags:
+        - twingraph
+      summary: Create a new graph
+      description: Create a new graph
+      requestBody:
+        required: false
+        content:
+          application/octet-stream:
+            # Using 'application/octet-stream' so Swagger UI can display a file upload button.
+            # See https://github.com/swagger-api/swagger-ui/issues/5636
+            # In any case, the request body mime type is enforced in the Service implementation.
+            schema:
+              type: string
+              format: binary
+      responses:
+        '204':
+          description: Successful response
+    delete:
+      operationId: delete
+      tags:
+        - twingraph
+      summary: Launch a mass delete job
+      description: Launch a mass delete job
+      responses:
+        '204':
+          description: Successful response
+  /organizations/{organization_id}/twingraphs:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: findAllTwingraphs
+      tags:
+        - twingraph
+      summary: Return the list of all graphs stored in the organization
+      description: Return the list of all graphs stored in the organization
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
   /organizations/{organization_id}/job/{job_id}/status:
     parameters:
       - name: organization_id
@@ -75,6 +141,7 @@ paths:
       operationId: jobStatus
       tags:
         - twingraph
+      summary: Get the status of a job
       description: Get the status of a job
       responses:
         '200':
@@ -86,28 +153,6 @@ paths:
             application/json:
               schema:
                 type: string
-  /organizations/{organization_id}/twingraphs:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-    get:
-      operationId: findAllTwingraphs
-      tags:
-        - twingraph
-      description: Return the list of all graphs stored in the organization
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: string
   /organizations/{organization_id}/twingraph/{graph_id}/query:
     parameters:
       - name: organization_id
@@ -126,6 +171,7 @@ paths:
       operationId: query
       tags:
         - twingraph
+      summary: Run a query on a graph instance
       description: Run a query on a graph instance
       requestBody:
         description: the query to run
@@ -168,6 +214,7 @@ paths:
       operationId: batchQuery
       tags:
         - twingraph
+      summary: Run a query on a graph instance and return the result as a zip file in async mode
       description: Run a query on a graph instance and return the result as a zip file in async mode
       requestBody:
         description: the query to run
@@ -204,15 +251,16 @@ paths:
       operationId: downloadGraph
       tags:
         - twingraph
+      summary: Download a graph compressed in a zip file
       description: Download a graph compressed in a zip file
       responses:
-          '200':
-            description: Successful response
-            content:
-              application/octet-stream:
-                schema:
-                  type: string
-                  format: binary
+        '200':
+          description: Successful response
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
   /organizations/{organization_id}/twingraph/{graph_id}/{modelType}:
     parameters:
       - name: organization_id
@@ -240,6 +288,7 @@ paths:
       operationId: createEntities
       tags:
         - twingraph
+      summary: create new entities in a graph instance
       description: create new entities in a graph instance
       requestBody:
         description: the entities to create
@@ -262,10 +311,14 @@ paths:
                 type: array
                 items:
                   type: object
+                  example:
+                    -"[{\"a\":{\"id\":\"entity-name\",\"label\":\"entityType\",\"type\":\"NODE\",\"properties\":{\"param1\":\"value1\",\"param2\":\"value2\"}}}]"
+                    -"[{\"a\":{\"id\":\"entity-name\",\"label\":\"entityType\",\"type\":\"NODE\",\"properties\":{\"param1\":\"value1\",\"param2\":\"value2\"}}}]"
     get:
       operationId: getEntities
       tags:
         - twingraph
+      summary: get entities in a graph instance
       description: get entities in a graph instance
       parameters:
         - name: ids
@@ -289,6 +342,7 @@ paths:
       operationId: updateEntities
       tags:
         - twingraph
+      summary: update entities in a graph instance
       description: update entities in a graph instance
       requestBody:
         description: the entities to update
@@ -315,6 +369,7 @@ paths:
       operationId: deleteEntities
       tags:
         - twingraph
+      summary: delete entities in a graph instance
       description: delete entities in a graph instance
       parameters:
         - name: ids
@@ -346,6 +401,7 @@ paths:
       operationId: getGraphMetaData
       tags:
         - twingraph
+      summary: Return the metaData of the specified graph
       description: Return the metaData of the specified graph
       responses:
         '200':
@@ -354,10 +410,16 @@ paths:
             application/json:
               schema:
                 type: object
+              example:
+                lastVersion: "1"
+                graphRotation: "3"
+                lastModifiedDate: "2023/08/25 - 11:59:59"
+                graphName: "graph"
     patch:
       operationId: updateGraphMetaData
       tags:
         - twingraph
+      summary: Update the metaData of the specified graph
       description: Update the metaData of the specified graph
       requestBody:
         description: the metaData to update
@@ -378,52 +440,11 @@ paths:
             application/json:
               schema:
                 type: object
-  /organizations/{organization_id}/twingraph/{graph_id}:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: graph_id
-        in: path
-        description: the Graph Identifier
-        required: true
-        schema:
-          type: string
-#      - name: graph_model
-#        in: query
-#        description: the Graph Model
-#        required: false
-#        schema:
-#          type: object
-    post:
-      operationId: createGraph
-      tags:
-        - twingraph
-      description: Create a new graph
-      requestBody:
-        required: false
-        content:
-          application/octet-stream:
-            # Using 'application/octet-stream' so Swagger UI can display a file upload button.
-            # See https://github.com/swagger-api/swagger-ui/issues/5636
-            # In any case, the request body mime type is enforced in the Service implementation.
-            schema:
-              type: string
-              format: binary
-      responses:
-        '204':
-          description: Successful response
-    delete:
-      operationId: delete
-      tags:
-        - twingraph
-      description: Launch a mass delete job
-      responses:
-        '204':
-          description: Successful response
+              example:
+                lastVersion: "1"
+                graphRotation: "3"
+                lastModifiedDate: "2023/08/25 - 11:59:59"
+                graphName: "graph"
   /organizations/{organization_id}/twingraph/{graph_id}/batch:
     parameters:
       - name: organization_id
@@ -475,6 +496,7 @@ paths:
       operationId: batchUploadUpdate
       tags:
         - twingraph
+      summary: "Async batch update by loading a CSV file on a graph instance "
       description: "Async batch update by loading a CSV file on a graph instance "
       requestBody:
         required: true
@@ -650,14 +672,12 @@ components:
       summary: Run action on a graph relationship
       description: Run action on a graph relationship
       value:
-        firstEntity:
-          type: "entity-type"
+        - type: "entityType"
           source: "source-node-name"
           target: "target-node-name"
           name: "entity-name"
           params: "param1: 'value1', param2: 'value2'"
-        secondEntity:
-          type: "entity-type"
+        - type: "entityType"
           source: "source-node-name"
           target: "target-node-name"
           name: "entity-name"
