@@ -548,7 +548,8 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       scenarioId: String
   ): Scenario =
-      scenarioRepository.findBy(
+      scenarioRepository
+          .findBy(
               organizationId.sanitizeForRedis(),
               workspaceId.sanitizeForRedis(),
               scenarioId.sanitizeForRedis())
