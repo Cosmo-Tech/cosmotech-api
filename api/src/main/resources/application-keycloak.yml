@@ -1,0 +1,34 @@
+logging:
+  level:
+    org.keycloak: WARN
+
+management:
+  endpoint:
+    health:
+      show-details: always
+      group:
+        readiness:
+          include: "readinessState"
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  security:
+    oauth2:
+      resource-server:
+        jwt:
+          issuer-uri: "https://localhost/auth/realms/cosmotech"
+          jwk-set-uri: "https://localhost/auth/realms/cosmotech/protocol/openid-connect/certs"
+          audiences:
+            - "account"
+
+csm:
+  platform:
+    authorization:
+      mailJwtClaim: "email"
+      rolesJwtClaim: "customRoles"
+      principalJwtClaim: "sub"
+      tenantIdJwtClaim: "iss"
+      allowed-tenants: ["cosmotech"]
+
+
