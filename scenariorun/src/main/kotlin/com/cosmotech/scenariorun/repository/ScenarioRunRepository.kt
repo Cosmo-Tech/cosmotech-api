@@ -5,7 +5,7 @@ package com.cosmotech.scenariorun.repository
 import com.cosmotech.scenariorun.domain.ScenarioRun
 import com.redis.om.spring.annotations.Query
 import com.redis.om.spring.repository.RedisDocumentRepository
-import java.util.*
+import java.util.Optional
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.query.Param
