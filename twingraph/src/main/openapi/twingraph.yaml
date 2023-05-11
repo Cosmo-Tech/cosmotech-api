@@ -288,7 +288,7 @@ paths:
       operationId: createEntities
       tags:
         - twingraph
-      summary: create new entities in a graph instance
+      summary: Create new entities in a graph instance
       description: create new entities in a graph instance
       requestBody:
         description: the entities to create
@@ -318,7 +318,7 @@ paths:
       operationId: getEntities
       tags:
         - twingraph
-      summary: get entities in a graph instance
+      summary: Get entities in a graph instance
       description: get entities in a graph instance
       parameters:
         - name: ids
@@ -342,7 +342,7 @@ paths:
       operationId: updateEntities
       tags:
         - twingraph
-      summary: update entities in a graph instance
+      summary: Update entities in a graph instance
       description: update entities in a graph instance
       requestBody:
         description: the entities to update
@@ -369,7 +369,7 @@ paths:
       operationId: deleteEntities
       tags:
         - twingraph
-      summary: delete entities in a graph instance
+      summary: Delete entities in a graph instance
       description: delete entities in a graph instance
       parameters:
         - name: ids
