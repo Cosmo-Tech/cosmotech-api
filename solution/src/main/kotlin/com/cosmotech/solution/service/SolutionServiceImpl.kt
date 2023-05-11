@@ -53,7 +53,8 @@ internal class SolutionServiceImpl(
   }
 
   override fun findSolutionById(organizationId: String, solutionId: String): Solution =
-      solutionRepository.findBy(organizationId.sanitizeForRedis(), solutionId.sanitizeForRedis())
+      solutionRepository
+          .findBy(organizationId.sanitizeForRedis(), solutionId.sanitizeForRedis())
           .orElseThrow {
             CsmResourceNotFoundException(
                 "Solution $solutionId not found in organization $organizationId")
