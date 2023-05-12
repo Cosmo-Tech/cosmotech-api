@@ -86,10 +86,12 @@ api:
   version: latest
   # Configure probes failure thresholds to higher values if you are in debug mode to avoid pod restart
   probes:
+    startup:
+      failureThreshold: 180
     liveness:
-      failureThreshold: 2
+      failureThreshold: 5
     readiness:
-      failureThreshold: 1
+      failureThreshold: 5
   serviceMonitor:
     enabled: true
     namespace: "phoenix-monitoring"

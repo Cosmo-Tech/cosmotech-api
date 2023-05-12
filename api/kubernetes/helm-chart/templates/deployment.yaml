@@ -90,7 +90,7 @@ spec:
           startupProbe:
             initialDelaySeconds: 5
             periodSeconds: 5
-            failureThreshold: 60
+            failureThreshold: {{ .Values.api.probes.startup.failureThreshold }}
             tcpSocket:
               port: http
           livenessProbe:
