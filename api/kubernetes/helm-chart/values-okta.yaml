@@ -77,9 +77,6 @@ config:
           tenantId: "changeme"
           clientId: "changeme"
           clientSecret: "changeme"
-        cosmos:
-          key: "changeme"
-          uri: "https://changeme.documents.azure.com:443/"
         dataWarehouseCluster:
           baseUri: "https://changeme.kusto.windows.net"
           options:

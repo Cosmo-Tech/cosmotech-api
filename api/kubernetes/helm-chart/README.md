@@ -30,8 +30,6 @@ Cosmo Tech Platform API
 | config.csm.platform.argo.workflows.storage-class | string | `nil` | Name of the storage class for Workflows volumes. Useful if you want to use a different storage class, installed and managed externally. In this case, you should set argo.storage.class.install to false. |
 | config.csm.platform.authorization.allowed-tenants | list | `[]` |  |
 | config.csm.platform.azure.containerRegistries.solutions | string | `""` |  |
-| config.csm.platform.azure.cosmos.key | string | `"changeme"` | Cosmos DB Database Key. Can be retrieved from the Azure portal |
-| config.csm.platform.azure.cosmos.uri | string | `"changeme"` | Cosmos DB Database URI. Can be retrieved from the Azure portal |
 | config.csm.platform.azure.credentials.clientId | string | `"changeme"` | Core App Registration Client ID. Deprecated. Use `config.csm.platform.azure.credentials.core.clientId` instead |
 | config.csm.platform.azure.credentials.clientSecret | string | `"changeme"` | Core App Registration Client Secret. Deprecated. Use `config.csm.platform.azure.credentials.core.clientSecret` instead |
 | config.csm.platform.azure.credentials.customer.clientId | string | `"changeme"` | Customer-provided App Registration Client ID. Workaround for connecting to Azure Digital Twins in the context of a Managed App |
