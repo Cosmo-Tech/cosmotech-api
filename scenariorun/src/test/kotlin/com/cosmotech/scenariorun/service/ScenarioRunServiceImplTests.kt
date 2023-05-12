@@ -95,14 +95,6 @@ class ScenarioRunServiceImplTests {
     every { scenarioRunServiceImpl getProperty "eventPublisher" } returns eventPublisher
 
     val csmPlatformPropertiesAzure = mockk<CsmPlatformProperties.CsmPlatformAzure>()
-    val csmPlatformPropertiesAzureCosmos =
-        mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCosmos>()
-    val csmPlatformPropertiesAzureCosmosCoreDatabase =
-        mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCosmos.CoreDatabase>()
-    every { csmPlatformPropertiesAzureCosmosCoreDatabase.name } returns "test-db"
-    every { csmPlatformPropertiesAzureCosmos.coreDatabase } returns
-        csmPlatformPropertiesAzureCosmosCoreDatabase
-    every { csmPlatformPropertiesAzure.cosmos } returns csmPlatformPropertiesAzureCosmos
     every { csmPlatformProperties.azure } returns csmPlatformPropertiesAzure
 
     every { scenarioRunServiceImpl getProperty "csmPlatformProperties" } returns

@@ -197,11 +197,6 @@ config:
             clientId: "changeme"
             # -- Customer-provided App Registration Client Secret. Workaround for connecting to Azure Digital Twins in the context of a Managed App
             clientSecret: "changeme"
-        cosmos:
-          # -- Cosmos DB Database URI. Can be retrieved from the Azure portal
-          uri: "changeme"
-          # -- Cosmos DB Database Key. Can be retrieved from the Azure portal
-          key: "changeme"
         dataWarehouseCluster:
           baseUri: "changeme"
           options:
