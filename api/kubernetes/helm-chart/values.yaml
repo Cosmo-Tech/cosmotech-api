@@ -87,10 +87,13 @@ api:
   # Configure probes failure thresholds to higher values if you are in debug mode to avoid pod restart
   probes:
     startup:
-      failureThreshold: 180
+      initialDelaySeconds: 60
+      failureThreshold: 50
     liveness:
+      timeoutSeconds: 10
       failureThreshold: 5
     readiness:
+      timeoutSeconds: 10
       failureThreshold: 5
   serviceMonitor:
     enabled: true
