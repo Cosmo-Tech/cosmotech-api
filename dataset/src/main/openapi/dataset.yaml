@@ -689,9 +689,26 @@ components:
             type: string
         connector:
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
+          type: object
           description: the Connector setup bound to a Dataset
-          allOf:
-            - $ref: '#/components/schemas/DatasetConnector'
+          properties:
+            id:
+              type: string
+              x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
+              description: the Connector id
+            name:
+              type: string
+              x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
+              description: the Connector name
+            version:
+              type: string
+              description: the Connector version
+            parametersValues:
+              type: object
+              additionalProperties:
+                type: string
+            #      required:
+            #       - id
         fragmentsIds:
           type: array
           description: the list of other Datasets ids to compose as fragments
@@ -708,27 +725,6 @@ components:
 #      required:
 #        - name
 #        - connector
-    DatasetConnector:
-      type: object
-      description: a Connector setup
-      properties:
-        id:
-          type: string
-          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
-          description: the Connector id
-        name:
-          type: string
-          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
-          description: the Connector name
-        version:
-          type: string
-          description: the Connector version
-        parametersValues:
-          type: object
-          additionalProperties:
-              type: string
-#      required:
-#       - id
     DatasetCompatibility:
       type: object
       description: a Dataset compatibility constraint to a Solution version open range

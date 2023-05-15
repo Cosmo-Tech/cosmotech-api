@@ -9,7 +9,7 @@ Name | Type | Description | Notes
 **ownerId** | **String** | the User id which own this Dataset | [optional] [default to null]
 **organizationId** | **String** | the Organization Id related to this Dataset | [optional] [default to null]
 **tags** | **List** | the list of tags | [optional] [default to null]
-**connector** | [**DatasetConnector**](DatasetConnector.md) | the Connector setup bound to a Dataset | [optional] [default to null]
+**connector** | [**Dataset_connector**](Dataset_connector.md) |  | [optional] [default to null]
 **fragmentsIds** | **List** | the list of other Datasets ids to compose as fragments | [optional] [default to null]
 **validatorId** | **String** | the validator id | [optional] [default to null]
 **compatibility** | [**List**](DatasetCompatibility.md) | the list of compatible Solutions versions | [optional] [default to null]
