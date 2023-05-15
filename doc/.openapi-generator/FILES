@@ -15,9 +15,9 @@ Models/ContainerResourceSizeInfo.md
 Models/ContainerResourceSizing.md
 Models/Dataset.md
 Models/DatasetCompatibility.md
-Models/DatasetConnector.md
 Models/DatasetCopyParameters.md
 Models/DatasetSearch.md
+Models/Dataset_connector.md
 Models/DeleteHistoricalData.md
 Models/GraphProperties.md
 Models/Organization.md
