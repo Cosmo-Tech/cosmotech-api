@@ -66,6 +66,8 @@ jobs:
             git push --set-upstream origin api_documentation
             gh pr create -B main -H api_documentation --title 'Merge api_documentation into main' --body 'Created by Github action'
           fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   generate_and_push_doc_for_helm_charts:
     runs-on: ubuntu-latest
@@ -94,3 +96,5 @@ jobs:
             git push --set-upstream origin helm_documentation
             gh pr create -B main -H helm_documentation --title 'Merge helm_documentation into main' --body 'Created by Github action'
           fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
