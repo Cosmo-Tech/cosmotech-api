@@ -59,12 +59,13 @@ jobs:
           git fetch --prune
           git pull --rebase --autostash
           if [[ `git status --porcelain` ]]; then
+            git checkout -b documentation
             git add doc/ openapi/plantuml/
             git commit -m "chore(docs): Update generated documentation" \
-              -m "[skip ci]" \
               -m "Co-authored-by: csmplatform <csmplatform@users.noreply.github.com>"
             git pull --rebase
-            git push origin main
+            git push --set-upstream origin documentation
+            gh pr create -B main -H documentation --title 'Merge updated_documentation into main' --body 'Created by Github action'
           fi
 
   generate_and_push_doc_for_helm_charts:
