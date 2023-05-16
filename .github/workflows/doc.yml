@@ -63,7 +63,6 @@ jobs:
             git add doc/ openapi/plantuml/
             git commit -m "chore(docs): Update generated documentation" \
               -m "Co-authored-by: csmplatform <csmplatform@users.noreply.github.com>"
-            git pull --rebase
             git push --set-upstream origin api_documentation
             gh pr create -B main -H api_documentation --title 'Merge api_documentation into main' --body 'Created by Github action'
           fi
@@ -92,7 +91,6 @@ jobs:
             git add api/kubernetes/*/README.md
             git commit -m "chore(docs): Update generated Helm Charts documentations" \
               -m "Co-authored-by: csmplatform <csmplatform@users.noreply.github.com>"
-            git pull --rebase            
             git push --set-upstream origin helm_documentation
             gh pr create -B main -H helm_documentation --title 'Merge helm_documentation into main' --body 'Created by Github action'
           fi
