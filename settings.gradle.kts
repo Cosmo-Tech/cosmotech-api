@@ -24,7 +24,7 @@ include(
     "workspace",
     "twingraph",
     "metrics",
-    "scenariorunresults")
+    "scenariorunresult")
 
 project(":api").name = "cosmotech-api"
 
@@ -46,4 +46,4 @@ project(":twingraph").name = "cosmotech-twingraph-api"
 
 project(":metrics").name = "cosmotech-metrics-service"
 
-project(":scenariorunresults").name = "cosmotech-scenariorunresult-api"
+project(":scenariorunresult").name = "cosmotech-scenariorunresult-api"
