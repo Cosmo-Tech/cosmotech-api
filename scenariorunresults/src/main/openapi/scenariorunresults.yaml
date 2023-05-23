@@ -1,0 +1,85 @@
+openapi: 3.0.3
+
+info:
+  title: Cosmo Tech ScenarioRunResults Manager API
+  description: Cosmo Tech ScenarioRunResults Manager API
+  version: 0.0.8-SNAPSHOT
+
+servers:
+  - url: 'https://api.azure.cosmo-platform.com'
+  - url: 'http://localhost:4010'
+
+security:
+  - oAuth2AuthCode: [ ]
+
+tags:
+  - name: scenariorunresults
+    description: ScenarioRunResults Management
+
+paths:
+  /organizations/{organization_id}/workspace/{workspace_id}/scenario/{scenario_id}/scenariorun/{scenariorun_id}/scenariorunresults/{scenariorunresults_id}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: scenario_id
+        in: path
+        description: the Scenario identifier
+        required: true
+        schema:
+          type: string
+      - name: scenariorun_id
+        in: path
+        description: the ScenarioRun identifier
+        required: true
+        schema:
+          type: string
+      - name: scenariorunresults_id
+        in: path
+        description: the ScenarioRunResults identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: createScenarioRunResults
+      tags:
+        - scenariorunresults
+      summary: Create a new ScenarioRunResult in the Organization
+      responses:
+        "204":
+          description: Request succeeded
+        "400":
+          description: Bad request
+        "404":
+          description: the Organization specified is unknown or you don't have access to it
+    get:
+      operationId: getScenarioRunResults
+      tags:
+        - scenariorunresults
+      summary: Get a ScenarioRunResult in the Organization
+      responses:
+        "204":
+          description: Request succeeded
+        "400":
+          description: Bad request
+        "404":
+          description: the Organization specified is unknown or you don't have access to it
+components:
+  securitySchemes:
+    oAuth2AuthCode:
+      type: oauth2
+      description: OAuth2 authentication
+      flows:
+        implicit:
+          authorizationUrl: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
+          scopes:
+            http://dev.api.cosmotech.com/platform: Platform scope
