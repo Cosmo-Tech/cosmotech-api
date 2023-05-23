@@ -1,8 +1,8 @@
 openapi: 3.0.3
 
 info:
-  title: Cosmo Tech ScenarioRunResults Manager API
-  description: Cosmo Tech ScenarioRunResults Manager API
+  title: Cosmo Tech ScenarioRunResult Manager API
+  description: Cosmo Tech ScenarioRunResult Manager API
   version: 0.0.8-SNAPSHOT
 
 servers:
@@ -13,11 +13,11 @@ security:
   - oAuth2AuthCode: [ ]
 
 tags:
-  - name: scenariorunresults
-    description: ScenarioRunResults Management
+  - name: scenariorunresult
+    description: ScenarioRunResult Management
 
 paths:
-  /organizations/{organization_id}/workspace/{workspace_id}/scenario/{scenario_id}/scenariorun/{scenariorun_id}/scenariorunresults/{scenariorunresults_id}:
+  /organizations/{organization_id}/workspace/{workspace_id}/scenario/{scenario_id}/scenariorun/{scenariorun_id}/scenariorunresult/{scenariorunresult_id}:
     parameters:
       - name: organization_id
         in: path
@@ -43,16 +43,16 @@ paths:
         required: true
         schema:
           type: string
-      - name: scenariorunresults_id
+      - name: scenariorunresult_id
         in: path
-        description: the ScenarioRunResults identifier
+        description: the ScenarioRunResult identifier
         required: true
         schema:
           type: string
     post:
-      operationId: createScenarioRunResults
+      operationId: createScenarioRunResult
       tags:
-        - scenariorunresults
+        - scenariorunresult
       summary: Create a new ScenarioRunResult in the Organization
       responses:
         "204":
@@ -64,7 +64,7 @@ paths:
     get:
       operationId: getScenarioRunResults
       tags:
-        - scenariorunresults
+        - scenariorunresult
       summary: Get a ScenarioRunResult in the Organization
       responses:
         "204":
@@ -83,3 +83,19 @@ components:
           authorizationUrl: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
           scopes:
             http://dev.api.cosmotech.com/platform: Platform scope
+
+  schemas:
+    ScenarioRunResult:
+      type: object
+      x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
+      description: a ScenarioRunResult with only base properties
+      properties:
+        id:
+          type: string
+          x-field-extra-annotation: "@org.springframework.data.annotation.Id"
+          readOnly: true
+          description: the ScenarioRunResult
+        organizationId:
+          type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
+          description: the Organization id

@@ -46,4 +46,4 @@ project(":twingraph").name = "cosmotech-twingraph-api"
 
 project(":metrics").name = "cosmotech-metrics-service"
 
-project(":scenariorunresults").name = "cosmotech-scenariorunresults-api"
+project(":scenariorunresults").name = "cosmotech-scenariorunresult-api"
