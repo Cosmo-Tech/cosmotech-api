@@ -207,7 +207,7 @@ internal class WorkspaceServiceImpl(
       }
     }
     return if (hasChanged) {
-      workspaceRepository.save(workspace)
+      workspaceRepository.save(existingWorkspace)
     } else {
       existingWorkspace
     }
