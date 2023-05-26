@@ -17,7 +17,9 @@ jobs:
     # x.y.z-dev => version x dev
     if: |
       (github.event.client_payload.gh_ref == 'refs/heads/main') ||
-      (contains(github.event.client_payload.gh_ref, '-dev'))
+      ((contains(github.event.client_payload.gh_ref, 'refs/tags')) &&
+      ((!contains(github.event.client_payload.gh_ref, '-')) ||
+      (contains(github.event.client_payload.gh_ref, '-dev'))))
     runs-on: ubuntu-latest
     concurrency:
       group: continuous-deployment_dev-environment
@@ -46,23 +48,25 @@ jobs:
           export gitRefName="${{ steps.refvar.outputs.gitRefName }}"
           if [[ "$gitRefName" == "main" ]]; then
             export apiVersion=latest
+            echo "apiVersion=${apiVersion}" >> $GITHUB_OUTPUT
+            export apiScriptVersion=${apiVersion}
+            echo "apiScriptVersion=${apiScriptVersion}" >> $GITHUB_OUTPUT
           else
-            export tagFirstPart=$(echo "${{ steps.refvar.outputs.gitRefName }}" | cut -d '.' -f1)
+            # Cut MAJOR.MINOR from tag
+            export tagFirstPart=$(echo "${{ steps.refvar.outputs.gitRefName }}" | cut -d '.' -f1,2)
             if [[ $tagFirstPart == "v*" ]]; then
-              export apiVersion=${tagFirstPart}
+              export apiScriptVersion=${tagFirstPart}
             else
-              export apiVersion=v${tagFirstPart}
+              export apiScriptVersion=v${tagFirstPart}
             fi
-          fi
-          echo "apiVersion=${apiVersion}" >> $GITHUB_OUTPUT
+            echo "apiScriptVersion=${apiScriptVersion}" >> $GITHUB_OUTPUT
 
-          echo "Hack to get last v2.3 install script if needed"
-          if [[ "${apiVersion}" == "v2" ]]; then
-              export apiScriptVersion=v2.3
-          else
-              export apiScriptVersion=${apiVersion}
+            export apiVersion=${apiScriptVersion}
+            if [[ "$gitRefName" == *"-dev"* ]]; then
+              export apiVersion=${apiScriptVersion}-dev
+            fi
+            echo "apiVersion=${apiVersion}" >> $GITHUB_OUTPUT
           fi
-          echo "apiScriptVersion=${apiScriptVersion}" >> $GITHUB_OUTPUT
 
       - name: Prepare values.yaml
         env:
