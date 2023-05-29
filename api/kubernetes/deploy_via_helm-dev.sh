@@ -68,7 +68,7 @@ export ARGO_BUCKET_NAME=argo-workflows
 export ARGO_SERVICE_ACCOUNT=workflowcsmv2
 
 export NAMESPACE_NGINX="ingress-nginx"
-export MONITORING_NAMESPACE="${NAMESPACE}-monitoring"
+export MONITORING_NAMESPACE="cosmotech-monitoring"
 
 HELM_CHARTS_BASE_PATH=$(realpath "$(dirname "$0")")
 
