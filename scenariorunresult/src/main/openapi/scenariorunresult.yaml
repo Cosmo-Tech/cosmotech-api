@@ -54,14 +54,23 @@ paths:
         content:
           application/json:
             schema:
+              item:
               $ref: '#/components/schemas/ScenarioRunResult'
+            examples:
+              ScenarioRunResult:
+                $ref: '#/components/examples/ScenarioRunResultExample'
       responses:
-        "204":
-          description: Request succeeded
-        "400":
-          description: Bad request
+        "200":
+          description: the Organization details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioRunResult'
+              examples:
+                ScenarioRunResult:
+                  $ref: '#/components/examples/ScenarioRunResultExample'
         "404":
-          description: the Organization specified is unknown or you don't have access to it
+          description: the ScenarioRunResult specified is unknown or you don't have access to it
     get:
       operationId: getScenarioRunResult
       tags:
@@ -74,6 +83,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ScenarioRunResult'
+              examples:
+                ScenarioRunResult:
+                  $ref: '#/components/examples/ScenarioRunResultExample'
         "404":
           description: the ScenarioRunResult specified is unknown or you don't have access to it
 components:
@@ -95,7 +107,20 @@ components:
       properties:
         id:
           type: string
-        name:
-          type: string
-        result:
-          type: string
+        results:
+            type: object
+  examples:
+    ScenarioRunResultExample:
+      summary:
+      description:
+      value:
+        id: Id
+        results:
+          probe1:
+            var1: var
+            value1: value
+          probe2:
+            var1: var
+            value1: value
+
+

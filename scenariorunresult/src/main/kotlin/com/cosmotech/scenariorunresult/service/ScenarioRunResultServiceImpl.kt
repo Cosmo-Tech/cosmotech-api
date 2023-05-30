@@ -17,9 +17,9 @@ class ScenarioRunResultServiceImpl(
       scenariorunId: String,
       probeId: String,
       scenarioRunResult: ScenarioRunResult
-  ) {
+  ): ScenarioRunResult {
     scenarioRunResult.id = "${scenariorunId}_${probeId}"
-    scenarioRunResultRepository.save(scenarioRunResult)
+    return scenarioRunResultRepository.save(scenarioRunResult)
   }
 
   override fun getScenarioRunResult(

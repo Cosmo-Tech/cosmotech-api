@@ -10,7 +10,7 @@ Method | HTTP request | Description
 
 <a name="createScenarioRunResult"></a>
 # **createScenarioRunResult**
-> createScenarioRunResult(organization\_id, workspace\_id, scenariorun\_id, probe\_id, ScenarioRunResult)
+> ScenarioRunResult createScenarioRunResult(organization\_id, workspace\_id, scenariorun\_id, probe\_id, ScenarioRunResult)
 
 Create a new ScenarioRunResult in the Organization
 
@@ -26,7 +26,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-null (empty response body)
+[**ScenarioRunResult**](../Models/ScenarioRunResult.md)
 
 ### Authorization
 
@@ -35,7 +35,7 @@ null (empty response body)
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: Not defined
+- **Accept**: application/json
 
 <a name="getScenarioRunResult"></a>
 # **getScenarioRunResult**

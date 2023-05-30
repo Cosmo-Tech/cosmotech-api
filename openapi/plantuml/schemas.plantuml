@@ -354,8 +354,7 @@ entity ScenarioRunResourceRequested {
 
 entity ScenarioRunResult {
     id: String
-    name: String
-    result: String
+    results: Object
 }
 
 entity ScenarioRunSearch {
