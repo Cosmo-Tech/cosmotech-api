@@ -58,48 +58,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TwinGraphImportInfo'
-  /organizations/{organization_id}/twingraph/{graph_id}:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: graph_id
-        in: path
-        description: the Graph Identifier
-        required: true
-        schema:
-          type: string
-    post:
-      operationId: createGraph
-      tags:
-        - twingraph
-      summary: Create a new graph
-      description: Create a new graph
-      requestBody:
-        required: false
-        content:
-          application/octet-stream:
-            # Using 'application/octet-stream' so Swagger UI can display a file upload button.
-            # See https://github.com/swagger-api/swagger-ui/issues/5636
-            # In any case, the request body mime type is enforced in the Service implementation.
-            schema:
-              type: string
-              format: binary
-      responses:
-        '204':
-          description: Successful response
-    delete:
-      operationId: delete
-      tags:
-        - twingraph
-      summary: Launch a mass delete job
-      description: Launch a mass delete job
-      responses:
-        '204':
-          description: Successful response
   /organizations/{organization_id}/twingraphs:
     parameters:
       - name: organization_id
@@ -411,10 +369,7 @@ paths:
               schema:
                 type: object
               example:
-                lastVersion: "1"
-                graphRotation: "3"
-                lastModifiedDate: "2023/08/25 - 11:59:59"
-                graphName: "graph"
+                $ref: "#/components/examples/MetaDataResponse"
     patch:
       operationId: updateGraphMetaData
       tags:
@@ -441,10 +396,68 @@ paths:
               schema:
                 type: object
               example:
-                lastVersion: "1"
-                graphRotation: "3"
-                lastModifiedDate: "2023/08/25 - 11:59:59"
-                graphName: "graph"
+                $ref: "#/components/examples/MetaDataResponse"
+  /organizations/{organization_id}/twingraph/{graph_id}/createGraph:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: graph_id
+        in: path
+        description: the Graph Identifier
+        required: true
+        schema:
+          type: string
+      - name: graph_rotation
+        in: query
+        description: the Graph Rotation value
+        required: false
+        schema:
+          type: integer
+          default: 2
+    post:
+      operationId: createGraph
+      tags:
+        - twingraph
+      description: Create a new graph
+      requestBody:
+        required: false
+        content:
+          application/octet-stream:
+            # Using 'application/octet-stream' so Swagger UI can display a file upload button.
+            # See https://github.com/swagger-api/swagger-ui/issues/5636
+            # In any case, the request body mime type is enforced in the Service implementation.
+            schema:
+              type: string
+              format: binary
+      responses:
+        '204':
+          description: Successful response
+  /organizations/{organization_id}/twingraph/{graph_id}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: graph_id
+        in: path
+        description: the Graph Identifier
+        required: true
+        schema:
+          type: string
+    delete:
+      operationId: delete
+      tags:
+        - twingraph
+      description: Launch a mass delete job
+      responses:
+        '204':
+          description: Successful response
   /organizations/{organization_id}/twingraph/{graph_id}/batch:
     parameters:
       - name: organization_id
@@ -682,3 +695,10 @@ components:
           target: "target-node-name"
           name: "entity-name"
           params: "param1: 'value1', param2: 'value2'"
+    MetaDataResponse:
+      summary: the response of a MetaData creation or modification
+      value:
+        lastVersion: "1"
+        graphRotation: "3"
+        lastModifiedDate: "2023/08/25 - 11:59:59"
+        graphName: "graph"

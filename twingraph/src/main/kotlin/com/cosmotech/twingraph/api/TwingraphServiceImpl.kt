@@ -36,6 +36,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.nio.charset.StandardCharsets.UTF_8
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.zip.ZipInputStream
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -69,19 +70,23 @@ class TwingraphServiceImpl(
     private val csmRbac: CsmRbac,
     private val resourceScanner: ResourceScanner
 ) : CsmPhoenixService(), TwingraphApiService {
-
-  override fun createGraph(organizationId: String, graphId: String, body: Resource?) {
+  override fun createGraph(
+      organizationId: String,
+      graphId: String,
+      graphRotation: Int,
+      body: Resource?
+  ) {
     if (findAllTwingraphs(organizationId).contains(graphId))
         throw CsmServerException("There is already a graph with the id : $graphId")
 
     csmJedisPool.resource.use { jedis ->
       jedis.hset(
           graphId.toRedisMetaDataKey(),
-          mutableMapOf(
+          mutableMapOf<String, String>(
               "lastVersion" to "1",
               "graphName" to graphId,
-              "graphRotation" to "3",
-              "lastModifiedDate" to getCurrentDate()))
+              "graphRotation" to graphRotation.toString(),
+              "lastModifiedDate" to updateLastModified()))
     }
     if (body != null) {
       val archiverType = ArchiveStreamFactory.detect(body.inputStream.buffered())
@@ -92,16 +97,19 @@ class TwingraphServiceImpl(
 
       val queryBuffer = QueryBuffer(csmJedisPool.resource, graphId)
 
-      unzipNodes(body.inputStream).forEach { node ->
+      unzipEntities(body.inputStream, "Nodes").forEach { node ->
         processCSVBulk(node.content) { queryBuffer.addNode(node.filename, it) }
       }
 
-      unzipEdge(body.inputStream).forEach { edge ->
+      unzipEntities(body.inputStream, "Edges").forEach { edge ->
         processCSVBulk(edge.content) { queryBuffer.addEdge(edge.filename, it) }
       }
 
       queryBuffer.send()
     } else {
+      // If no zip was given then we create an empty graph by querying one of his non-existent
+      // element
+
       getEntities(organizationId, graphId, "node", listOf("node_a"))
     }
   }
@@ -121,29 +129,15 @@ class TwingraphServiceImpl(
     return prefixLess.split(".")[0]
   }
 
-  data class UnzippedFileEdge(val filename: String, val content: InputStream)
-  data class UnzippedFileNode(val filename: String, val content: InputStream)
-  fun unzipEdge(file: InputStream): List<UnzippedFileEdge> =
+  data class UnzippedFileEntities(val filename: String, val content: InputStream)
+  fun unzipEntities(file: InputStream, entityType: String): List<UnzippedFileEntities> =
       ZipInputStream(file).use { zipInputStream ->
         generateSequence { zipInputStream.nextEntry }
             .filterNot { it.isDirectory }
-            .filter { it.name.startsWith("Edges", true) }
+            .filter { it.name.startsWith(entityType, true) }
             .filter { it.name.endsWith(".csv") }
             .map {
-              UnzippedFileEdge(
-                  filename = cutName(it.name), content = zipInputStream.toInputStream())
-            }
-            .toList()
-      }
-
-  fun unzipNodes(inputStream: InputStream): List<UnzippedFileNode> =
-      ZipInputStream(inputStream).use { zipInputStream ->
-        generateSequence { zipInputStream.nextEntry }
-            .filterNot { it.isDirectory }
-            .filter { it.name.startsWith("Nodes", true) }
-            .filter { it.name.endsWith(".csv") }
-            .map {
-              UnzippedFileNode(
+              UnzippedFileEntities(
                   filename = cutName(it.name), content = zipInputStream.toInputStream())
             }
             .toList()
@@ -385,7 +379,7 @@ class TwingraphServiceImpl(
       modelType: String,
       graphProperties: List<GraphProperties>
   ): List<String> {
-    updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to getCurrentDate()))
+    updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to updateLastModified()))
     return when (modelType) {
       TYPE_NODE ->
           graphProperties.map {
@@ -412,7 +406,7 @@ class TwingraphServiceImpl(
       modelType: String,
       requestBody: List<String>
   ): List<String> {
-    updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to getCurrentDate()))
+    updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to updateLastModified()))
     return when (modelType) {
       TYPE_NODE ->
           requestBody.map {
@@ -432,7 +426,7 @@ class TwingraphServiceImpl(
       modelType: String,
       graphProperties: List<GraphProperties>
   ): List<String> {
-    updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to getCurrentDate()))
+    updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to updateLastModified()))
     return when (modelType) {
       TYPE_NODE ->
           graphProperties.map {
@@ -460,7 +454,7 @@ class TwingraphServiceImpl(
       modelType: String,
       requestBody: List<String>
   ) {
-    updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to getCurrentDate()))
+    updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to updateLastModified()))
     return when (modelType) {
       TYPE_NODE ->
           requestBody.forEach {
@@ -474,9 +468,9 @@ class TwingraphServiceImpl(
     }
   }
 
-  fun getCurrentDate(): String {
-    val currentTime = LocalDateTime.now()
-    return "${currentTime.year}/${currentTime.monthValue}/${currentTime.dayOfMonth}" +
-        " - ${currentTime.hour}:${currentTime.minute}:${currentTime.second}"
+  fun updateLastModified(): String {
+    val current = LocalDateTime.now()
+    val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd - HH:mm:ss")
+    return current.format(formatter)
   }
 }
