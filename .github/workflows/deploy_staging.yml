@@ -57,10 +57,10 @@ jobs:
 
           export apiVersion=${apiScriptVersion//./-}
           if [[ "$gitRefName" == *"-preview"* ]]; then
-            export apiVersion=${apiScriptVersion}-preview
+            export apiVersion=${apiScriptVersion//./-}-preview
           fi
           if [[ "$gitRefName" == *"-public"* ]]; then
-            export apiVersion=${apiScriptVersion}-public
+            export apiVersion=${apiScriptVersion//./-}-public
           fi
           echo "apiVersion=${apiVersion}" >> $GITHUB_OUTPUT
 
