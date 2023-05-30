@@ -7,8 +7,8 @@ Method | HTTP request | Description
 [**batchQuery**](TwingraphApi.md#batchQuery) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/batch-query | Run a query on a graph instance and return the result as a zip file in async mode
 [**batchUploadUpdate**](TwingraphApi.md#batchUploadUpdate) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/batch | Async batch update by loading a CSV file on a graph instance 
 [**createEntities**](TwingraphApi.md#createEntities) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/{modelType} | Create new entities in a graph instance
-[**createGraph**](TwingraphApi.md#createGraph) | **POST** /organizations/{organization_id}/twingraph/{graph_id} | Create a new graph
-[**delete**](TwingraphApi.md#delete) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id} | Launch a mass delete job
+[**createGraph**](TwingraphApi.md#createGraph) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/createGraph | 
+[**delete**](TwingraphApi.md#delete) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id} | 
 [**deleteEntities**](TwingraphApi.md#deleteEntities) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id}/{modelType} | Delete entities in a graph instance
 [**downloadGraph**](TwingraphApi.md#downloadGraph) | **GET** /organizations/{organization_id}/twingraph/bulk-query/download/{hash} | Download a graph compressed in a zip file
 [**findAllTwingraphs**](TwingraphApi.md#findAllTwingraphs) | **GET** /organizations/{organization_id}/twingraphs | Return the list of all graphs stored in the organization
@@ -112,9 +112,9 @@ Name | Type | Description  | Notes
 
 <a name="createGraph"></a>
 # **createGraph**
-> createGraph(organization\_id, graph\_id, body)
+> createGraph(organization\_id, graph\_id, graph\_rotation, body)
 
-Create a new graph
+
 
     Create a new graph
 
@@ -124,6 +124,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **graph\_id** | **String**| the Graph Identifier | [default to null]
+ **graph\_rotation** | **Integer**| the Graph Rotation value | [optional] [default to 2]
  **body** | **File**|  | [optional]
 
 ### Return type
@@ -143,7 +144,7 @@ null (empty response body)
 # **delete**
 > delete(organization\_id, graph\_id)
 
-Launch a mass delete job
+
 
     Launch a mass delete job
 
