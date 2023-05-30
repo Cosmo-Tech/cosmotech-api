@@ -61,7 +61,7 @@ jobs:
             fi
             echo "apiScriptVersion=${apiScriptVersion}" >> $GITHUB_OUTPUT
 
-            export apiVersion=${apiScriptVersion}
+            export apiVersion=${apiScriptVersion//./-}
             if [[ "$gitRefName" == *"-dev"* ]]; then
               export apiVersion=${apiScriptVersion}-dev
             fi
