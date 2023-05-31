@@ -84,9 +84,9 @@ class TwingraphServiceImpl(
           graphId.toRedisMetaDataKey(),
           mutableMapOf<String, String>(
               "lastVersion" to "1",
-              "graphName" to graphId,
+              "graphName" to "$graphId:1",
               "graphRotation" to graphRotation.toString(),
-              "lastModifiedDate" to updateLastModified()))
+              "lastModifiedDate" to getDateNow()))
     }
     if (body != null) {
       val archiverType = ArchiveStreamFactory.detect(body.inputStream.buffered())
@@ -95,7 +95,7 @@ class TwingraphServiceImpl(
             "Invalid archive type: '$archiverType'. A Zip Archive is expected.")
       }
 
-      val queryBuffer = QueryBuffer(csmJedisPool.resource, graphId)
+      val queryBuffer = QueryBuffer(csmJedisPool.resource, getLastVersion(organizationId, graphId))
 
       unzipEntities(body.inputStream, "Nodes").forEach { node ->
         processCSVBulk(node.content) { queryBuffer.addNode(node.filename, it) }
@@ -379,19 +379,21 @@ class TwingraphServiceImpl(
       modelType: String,
       graphProperties: List<GraphProperties>
   ): List<String> {
-    updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to updateLastModified()))
+    updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to getDateNow()))
     return when (modelType) {
       TYPE_NODE ->
           graphProperties.map {
             csmRedisGraph
-                .query(graphId, "CREATE (a:${it.type} {id:'${it.name}',${it.params}}) RETURN a")
+                .query(
+                    getLastVersion(organizationId, graphId),
+                    "CREATE (a:${it.type} {id:'${it.name}',${it.params}}) RETURN a")
                 .toJsonString()
           }
       TYPE_RELATIONSHIP ->
           graphProperties.map {
             csmRedisGraph
                 .query(
-                    graphId,
+                    getLastVersion(organizationId, graphId),
                     "MATCH (a),(b) WHERE a.id='${it.source}' AND b.id='${it.target}'" +
                         "CREATE (a)-[r:${it.type} {id:'${it.name}', ${it.params}}]->(b) RETURN r")
                 .toJsonString()
@@ -406,15 +408,20 @@ class TwingraphServiceImpl(
       modelType: String,
       requestBody: List<String>
   ): List<String> {
-    updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to updateLastModified()))
+    updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to getDateNow()))
     return when (modelType) {
       TYPE_NODE ->
           requestBody.map {
-            csmRedisGraph.query(graphId, "MATCH (a {id:'$it'}) RETURN a").toJsonString()
+            csmRedisGraph
+                .query(getLastVersion(organizationId, graphId), "MATCH (a {id:'$it'}) RETURN a")
+                .toJsonString()
           }
       TYPE_RELATIONSHIP ->
           requestBody.map {
-            csmRedisGraph.query(graphId, "MATCH ()-[r {id:'$it'}]->() RETURN r").toJsonString()
+            csmRedisGraph
+                .query(
+                    getLastVersion(organizationId, graphId), "MATCH ()-[r {id:'$it'}]->() RETURN r")
+                .toJsonString()
           }
       else -> throw CsmResourceNotFoundException("Bad Type : $modelType")
     }
@@ -426,13 +433,13 @@ class TwingraphServiceImpl(
       modelType: String,
       graphProperties: List<GraphProperties>
   ): List<String> {
-    updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to updateLastModified()))
+    updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to getDateNow()))
     return when (modelType) {
       TYPE_NODE ->
           graphProperties.map {
             csmRedisGraph
                 .query(
-                    graphId,
+                    getLastVersion(organizationId, graphId),
                     "MATCH (a {id:'${it.name}'}) SET a = {id:'${it.name}',${it.params}} RETURN a")
                 .toJsonString()
           }
@@ -440,7 +447,7 @@ class TwingraphServiceImpl(
           graphProperties.map {
             csmRedisGraph
                 .query(
-                    graphId,
+                    getLastVersion(organizationId, graphId),
                     "MATCH ()-[r {id:'${it.name}'}]-() SET r = {id:'${it.name}', ${it.params}} RETURN r")
                 .toJsonString()
           }
@@ -454,23 +461,31 @@ class TwingraphServiceImpl(
       modelType: String,
       requestBody: List<String>
   ) {
-    updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to updateLastModified()))
+    updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to getDateNow()))
     return when (modelType) {
       TYPE_NODE ->
           requestBody.forEach {
-            csmRedisGraph.query(graphId, "MATCH (a) WHERE a.id='$it' DELETE a")
+            csmRedisGraph.query(
+                getLastVersion(organizationId, graphId), "MATCH (a) WHERE a.id='$it' DELETE a")
           }
       TYPE_RELATIONSHIP ->
           requestBody.forEach {
-            csmRedisGraph.query(graphId, "MATCH ()-[r]-() WHERE r.id='$it' DELETE r")
+            csmRedisGraph.query(
+                getLastVersion(organizationId, graphId),
+                "MATCH ()-[r]-() WHERE r.id='$it' DELETE r")
           }
       else -> throw CsmResourceNotFoundException("Bad Type : $modelType")
     }
   }
 
-  fun updateLastModified(): String {
+  fun getDateNow(): String {
     val current = LocalDateTime.now()
     val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd - HH:mm:ss")
     return current.format(formatter)
+  }
+
+  fun getLastVersion(organizationId: String, graphId: String): String {
+    val graphMetadata = getGraphMetaData(organizationId, graphId)
+    return graphId + ":" + graphMetadata["lastVersion"].toString()
   }
 }
