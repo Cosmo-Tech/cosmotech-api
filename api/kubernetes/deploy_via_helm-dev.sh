@@ -93,7 +93,7 @@ kubectl create namespace "${MONITORING_NAMESPACE}" --dry-run=client -o yaml | ku
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
 
-curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/main/deployment_scripts/v3/kube-prometheus-stack-template.yaml" \
+curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/main/deployment_scripts/v2.4/kube-prometheus-stack-template.yaml" \
      -o "${WORKING_DIR}"/kube-prometheus-stack-template.yaml
 
 MONITORING_NAMESPACE_VAR=${MONITORING_NAMESPACE} \
@@ -108,7 +108,7 @@ REDIS_HOST_VAR=cosmotechredis-master.${NAMESPACE}.svc.cluster.local \
 REDIS_PORT_VAR=${REDIS_PORT} \
 envsubst < "${WORKING_DIR}"/kube-prometheus-stack-template.yaml > "${WORKING_DIR}"/kube-prometheus-stack.yaml
 
-helm upgrade --install prometheus-operator prometheus-community/kube-prometheus-stack \
+helm upgrade --debug --install prometheus-operator prometheus-community/kube-prometheus-stack \
              --namespace "${MONITORING_NAMESPACE}" \
              --version ${PROMETHEUS_STACK_VERSION} \
              --values "${WORKING_DIR}/kube-prometheus-stack.yaml"

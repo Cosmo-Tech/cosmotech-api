@@ -44,7 +44,7 @@ EOF
   --wait \
   --timeout 10m \
   --values "${HELM_DEPLOY_SCRIPT_BASE_PATH}/helm-chart/values-dev.yaml" \
-  --values values-ci.yaml \
+  --values values-ci.yaml
 
 retVal=$?
 echo "retVal=$retVal"
