@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenariorun
 
+import com.cosmotech.api.azure.containerregistry.AzureContainerRegistryClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCredentials
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCredentials.CsmPlatformAzureCredentialsCore
@@ -77,6 +78,7 @@ class ContainerFactoryTests {
   @MockK private lateinit var connectorService: ConnectorApiService
   @MockK private lateinit var datasetService: DatasetApiService
   @MockK private lateinit var secretManager: SecretManager
+  @MockK private lateinit var azureContainerRegistryClient: AzureContainerRegistryClient
   private lateinit var workspaceEventHubService: IWorkspaceEventHubService
 
   private lateinit var factory: ContainerFactory
@@ -167,6 +169,7 @@ class ContainerFactoryTests {
             connectorService,
             datasetService,
             workspaceEventHubService,
+            azureContainerRegistryClient,
         )
   }
 
