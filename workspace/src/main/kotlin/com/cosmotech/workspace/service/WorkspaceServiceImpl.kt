@@ -34,8 +34,6 @@ import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.api.utils.sanitizeForRedis
-import com.cosmotech.api.utils.toSecurityConstraintQuery
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.repository.OrganizationRepository
 import com.cosmotech.organization.service.getRbac
@@ -95,10 +93,7 @@ internal class WorkspaceServiceImpl(
             } else {
               val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
               workspaceRepository
-                  .findByOrganizationIdAndSecurity(
-                      organizationId.sanitizeForRedis(),
-                      currentUser.toSecurityConstraintQuery(),
-                      it)
+                  .findByOrganizationIdAndSecurity(organizationId, currentUser, it)
                   .toList()
             }
           }
@@ -109,10 +104,7 @@ internal class WorkspaceServiceImpl(
         val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
         result =
             workspaceRepository
-                .findByOrganizationIdAndSecurity(
-                    organizationId.sanitizeForRedis(),
-                    currentUser.toSecurityConstraintQuery(),
-                    pageable)
+                .findByOrganizationIdAndSecurity(organizationId, currentUser, pageable)
                 .toList()
       }
     }
@@ -120,9 +112,9 @@ internal class WorkspaceServiceImpl(
   }
 
   internal fun findWorkspaceByIdNoSecurity(organizationId: String, workspaceId: String): Workspace =
-      workspaceRepository
-          .findBy(organizationId.sanitizeForRedis(), workspaceId.sanitizeForRedis())
-          .orElseThrow { CsmResourceNotFoundException("Workspace $workspaceId") }
+      workspaceRepository.findBy(organizationId, workspaceId).orElseThrow {
+        CsmResourceNotFoundException("Workspace $workspaceId")
+      }
 
   override fun findWorkspaceById(organizationId: String, workspaceId: String): Workspace {
     val workspace: Workspace = this.findWorkspaceByIdNoSecurity(organizationId, workspaceId)
