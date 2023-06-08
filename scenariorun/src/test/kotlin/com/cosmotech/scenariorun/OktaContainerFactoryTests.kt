@@ -50,6 +50,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
+import io.mockk.spyk
 import kotlin.test.BeforeTest
 import kotlin.test.assertFalse
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -167,17 +168,18 @@ class OktaContainerFactoryTests {
             mapOf("Dedicated" to dedicatedStrategy, "Shared" to sharedStrategy))
 
     factory =
-        ContainerFactory(
-            csmPlatformProperties,
-            scenarioService,
-            workspaceService,
-            solutionService,
-            organizationService,
-            connectorService,
-            datasetService,
-            workspaceEventHubService,
-            azureContainerRegistryClient,
-        )
+        spyk(
+            ContainerFactory(
+                csmPlatformProperties,
+                scenarioService,
+                workspaceService,
+                solutionService,
+                organizationService,
+                connectorService,
+                datasetService,
+                workspaceEventHubService,
+                azureContainerRegistryClient,
+            ))
   }
 
   @Test
@@ -1605,6 +1607,9 @@ class OktaContainerFactoryTests {
     val connectors = listOf(getConnector())
     val workspace = getWorkspace()
     val solution = getSolution()
+
+    every { factory.checkContainerImages(any()) } returns Unit
+
     val startContainers =
         factory.buildContainersStart(
             scenario,
@@ -1626,6 +1631,9 @@ class OktaContainerFactoryTests {
     val connectors = listOf(getConnector())
     val workspace = getWorkspace()
     val solution = getSolutionNoPool()
+
+    every { factory.checkContainerImages(any()) } returns Unit
+
     val startContainers =
         factory.buildContainersStart(
             scenario,
@@ -1647,6 +1655,9 @@ class OktaContainerFactoryTests {
     val connectors = listOf(getConnector())
     val workspace = getWorkspace()
     val solution = getSolutionNonePool()
+
+    every { factory.checkContainerImages(any()) } returns Unit
+
     val startContainers =
         factory.buildContainersStart(
             scenario,
@@ -1668,6 +1679,9 @@ class OktaContainerFactoryTests {
     val connectors = listOf(getConnector())
     val workspace = getWorkspace()
     val solution = getSolution()
+
+    every { factory.checkContainerImages(any()) } returns Unit
+
     val startContainers =
         factory.buildContainersStart(
             scenario,
@@ -2494,6 +2508,8 @@ class OktaContainerFactoryTests {
     every { connectorService.findConnectorById("AzErTyUiOp") } returns getConnector()
     every { connectorService.findConnectorById("AzErTyUiOp2") } returns getConnector2()
     every { connectorService.findConnectorById("AzErTyUiOp3") } returns getConnector3()
+    every { azureContainerRegistryClient.checkSolutionImage(any(), any()) } returns Unit
+    every { factory.checkContainerImages(any()) } returns Unit
 
     return factory.getStartInfo(
         organizationId,

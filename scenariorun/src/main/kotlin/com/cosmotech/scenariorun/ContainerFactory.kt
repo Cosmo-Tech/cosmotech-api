@@ -6,6 +6,7 @@ import com.cosmotech.api.azure.containerregistry.AzureContainerRegistryClient
 import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
+import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.utils.sanitizeForKubernetes
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
@@ -40,6 +41,8 @@ import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.azure.EventHubRole
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.domain.Workspace
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import java.util.UUID
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -391,6 +394,9 @@ class ContainerFactory(
             scenarioSizing ?: (runTemplateSizing ?: defaultSizing))
     val generateName =
         "${GENERATE_NAME_PREFIX}${scenario.id}$GENERATE_NAME_SUFFIX".sanitizeForKubernetes()
+
+    checkContainerImages(containers)
+
     return ScenarioRunStartContainers(
         generateName = generateName,
         nodeLabel = nodeLabel?.plus(NODE_LABEL_SUFFIX),
@@ -404,6 +410,27 @@ class ContainerFactory(
                 WORKSPACE_ID_LABEL to workspace.id!!,
                 SCENARIO_ID_LABEL to scenario.id!!,
             ))
+  }
+
+  internal fun checkContainerImages(containers: List<ScenarioRunContainer>) {
+    containers.forEach lit@{
+      if (it.image.contains("localhost:5000")) {
+        return@lit
+      }
+      var processBuilder = ProcessBuilder()
+      var cmds: MutableList<String> = mutableListOf()
+      cmds.add("sh")
+      cmds.add("-c")
+      cmds.add("docker manifest inspect %s".format(it.image))
+      processBuilder.command(cmds)
+      var process = processBuilder.start()
+
+      var reader = BufferedReader(InputStreamReader(process.getInputStream()))
+      val output = reader.use(BufferedReader::readText)
+      if (output.isNullOrEmpty()) {
+        throw CsmResourceNotFoundException("The image  ${it.image} doesn't exist")
+      }
+    }
   }
 
   @Suppress("LongMethod", "LongParameterList") // Exception for this method - too tedious to update
