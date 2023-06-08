@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenariorun.repository
 
+import com.cosmotech.api.redis.Sanitize
 import com.cosmotech.scenariorun.domain.ScenarioRun
 import com.redis.om.spring.annotations.Query
 import com.redis.om.spring.repository.RedisDocumentRepository
@@ -16,8 +17,8 @@ interface ScenarioRunRepository : RedisDocumentRepository<ScenarioRun, String> {
 
   @Query("@organizationId:{\$organizationId} @id:{\$scenarioRunId}")
   fun findBy(
-      @Param("organizationId") organizationId: String,
-      @Param("scenarioRunId") scenarioRunId: String
+      @Sanitize @Param("organizationId") organizationId: String,
+      @Sanitize @Param("scenarioRunId") scenarioRunId: String
   ): Optional<ScenarioRun>
 
   fun findByScenarioId(scenarioId: String, pageable: Pageable): Page<ScenarioRun>
