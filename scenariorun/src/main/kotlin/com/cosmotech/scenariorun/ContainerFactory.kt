@@ -413,8 +413,9 @@ class ContainerFactory(
   }
 
   internal fun checkContainerImages(containers: List<ScenarioRunContainer>) {
+    // This method only checks public container registry github
     containers.forEach lit@{
-      if (it.image.contains("localhost:5000")) {
+      if (it.image.contains("localhost:5000") || it.image.contains("azurecr.io")) {
         return@lit
       }
       var processBuilder = ProcessBuilder()
