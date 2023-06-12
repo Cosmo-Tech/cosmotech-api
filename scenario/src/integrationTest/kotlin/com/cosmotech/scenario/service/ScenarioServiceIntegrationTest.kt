@@ -401,6 +401,29 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
+  fun `test RBAC as User Unauthorized`() {
+    every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_READER_USER
+
+    assertThrows<CsmAccessForbiddenException> {
+      scenarioApiService.findAllScenariosByValidationStatus(
+          organizationSaved.id!!,
+          workspaceSaved.id!!,
+          ScenarioValidationStatus.Validated,
+          null,
+          null)
+    }
+
+    assertThrows<CsmAccessForbiddenException> {
+      scenarioApiService.deleteScenario(
+          organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, true)
+    }
+
+    assertThrows<CsmAccessForbiddenException> {
+      scenarioApiService.deleteAllScenarios(organizationSaved.id!!, workspaceSaved.id!!)
+    }
+  }
+
+  @Test
   fun `test RBAC AccessControls on Scenario as User Admin`() {
 
     logger.info("should add an Access Control and assert it has been added")
