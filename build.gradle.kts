@@ -42,7 +42,7 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 val kotlinJvmTarget = 17
-val cosmotechApiCommonVersion = "0.1.39-SNAPSHOT"
+val cosmotechApiCommonVersion = "0.1.42-SNAPSHOT"
 val cosmotechApiAzureVersion = "0.1.10-SNAPSHOT"
 val azureSpringBootBomVersion = "3.14.0"
 val jedisVersion = "3.9.0"
@@ -227,6 +227,7 @@ subprojects {
     implementation("redis.clients:jedis:${jedisVersion}")
     implementation("com.redislabs:jredistimeseries:${jredistimeseriesVersion}")
     implementation("org.apache.commons:commons-csv:1.10.0")
+
     implementation("com.redis.om:redis-om-spring:${redisOmSpringVersion}") {
       constraints { implementation("org.json:json:20230227") }
     }

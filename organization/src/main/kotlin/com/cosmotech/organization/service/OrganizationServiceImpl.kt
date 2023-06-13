@@ -35,6 +35,7 @@ import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.organization.domain.OrganizationService
 import com.cosmotech.organization.domain.OrganizationServices
 import com.cosmotech.organization.repository.OrganizationRepository
+import io.micrometer.core.annotation.Timed
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
@@ -46,6 +47,7 @@ class OrganizationServiceImpl(
     private val organizationRepository: OrganizationRepository
 ) : CsmPhoenixService(), OrganizationApiService {
 
+  @Timed("FIND_ALL_ORG")
   override fun findAllOrganizations(page: Int?, size: Int?): List<Organization> {
     val defaultPageSize = csmPlatformProperties.twincache.organization.defaultPageSize
     var pageable = constructPageRequest(page, size, defaultPageSize)

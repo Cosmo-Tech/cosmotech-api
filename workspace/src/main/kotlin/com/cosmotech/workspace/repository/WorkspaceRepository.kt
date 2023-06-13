@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 package com.cosmotech.workspace.repository
 
+import com.cosmotech.api.redis.Sanitize
+import com.cosmotech.api.redis.SecurityConstraint
 import com.cosmotech.workspace.domain.Workspace
 import com.redis.om.spring.annotations.Query
 import com.redis.om.spring.repository.RedisDocumentRepository
@@ -16,15 +18,15 @@ interface WorkspaceRepository : RedisDocumentRepository<Workspace, String> {
 
   @Query("@organizationId:{\$organizationId} @id:{\$workspaceId}")
   fun findBy(
-      @Param("organizationId") organizationId: String,
-      @Param("workspaceId") workspaceId: String
+      @Sanitize @Param("organizationId") organizationId: String,
+      @Sanitize @Param("workspaceId") workspaceId: String
   ): Optional<Workspace>
   fun findByOrganizationId(organizationId: String, pageable: Pageable): Page<Workspace>
 
   @Query("(@organizationId:{\$organizationId})  \$securityConstraint")
   fun findByOrganizationIdAndSecurity(
-      @Param("organizationId") organizationId: String,
-      @Param("securityConstraint") securityConstraint: String,
+      @Sanitize @Param("organizationId") organizationId: String,
+      @SecurityConstraint @Param("securityConstraint") securityConstraint: String,
       pageable: Pageable
   ): Page<Workspace>
 }

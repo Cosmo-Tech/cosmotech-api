@@ -17,6 +17,7 @@ import com.cosmotech.api.utils.bulkQueryKey
 import com.cosmotech.api.utils.formatQuery
 import com.cosmotech.api.utils.redisGraphKey
 import com.cosmotech.api.utils.toRedisMetaDataKey
+import com.cosmotech.api.utils.unzip
 import com.cosmotech.api.utils.zipBytesWithFileNames
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.service.getRbac
@@ -30,13 +31,10 @@ import com.cosmotech.twingraph.domain.TwinGraphQuery
 import com.cosmotech.twingraph.extension.toJsonString
 import com.cosmotech.twingraph.utils.TwingraphUtils
 import com.redislabs.redisgraph.impl.api.RedisGraph
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.IOException
+import io.micrometer.core.annotation.Timed
 import java.io.InputStream
 import java.nio.charset.StandardCharsets.UTF_8
 import java.time.LocalDateTime
-import java.util.zip.ZipInputStream
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.apache.commons.compress.archivers.ArchiveStreamFactory
@@ -53,12 +51,12 @@ import redis.clients.jedis.JedisPool
 import redis.clients.jedis.ScanParams
 import redis.clients.jedis.exceptions.JedisDataException
 
-const val CSV_SEPARATOR = ","
 const val GRAPH_NAME = "graphName"
 const val GRAPH_ROTATION = "graphRotation"
 const val TYPE_NODE = "node"
 const val TYPE_RELATIONSHIP = "relationship"
-const val BUFFER_SIZE = 2048
+const val NODES_ZIP_FOLDER = "nodes"
+const val EDGES_ZIP_FOLDER = "edges"
 
 @Service
 @Suppress("TooManyFunctions")
@@ -74,11 +72,13 @@ class TwingraphServiceImpl(
     if (findAllTwingraphs(organizationId).contains(graphId))
         throw CsmServerException("There is already a graph with the id : $graphId")
 
+    val version = "1"
+    val redisGraphKey = redisGraphKey(graphId, version)
     csmJedisPool.resource.use { jedis ->
       jedis.hset(
           graphId.toRedisMetaDataKey(),
           mutableMapOf(
-              "lastVersion" to "1",
+              "lastVersion" to version,
               "graphName" to graphId,
               "graphRotation" to "3",
               "lastModifiedDate" to getCurrentDate()))
@@ -90,64 +90,23 @@ class TwingraphServiceImpl(
             "Invalid archive type: '$archiverType'. A Zip Archive is expected.")
       }
 
-      val queryBuffer = QueryBuffer(csmJedisPool.resource, graphId)
-
-      unzipNodes(body.inputStream).forEach { node ->
-        processCSVBulk(node.content) { queryBuffer.addNode(node.filename, it) }
-      }
-
-      unzipEdge(body.inputStream).forEach { edge ->
-        processCSVBulk(edge.content) { queryBuffer.addEdge(edge.filename, it) }
-      }
-
+      val queryBuffer = QueryBuffer(csmJedisPool.resource, redisGraphKey)
+      unzip(body.inputStream, listOf(NODES_ZIP_FOLDER, EDGES_ZIP_FOLDER), "csv")
+          .sortedByDescending { it.prefix } // Nodes first
+          .forEach { node ->
+            readCSV(node.content.inputStream()) {
+              if (node.prefix == NODES_ZIP_FOLDER) {
+                queryBuffer.addNode(node.filename, it)
+              } else {
+                queryBuffer.addEdge(node.filename, it)
+              }
+            }
+          }
       queryBuffer.send()
     } else {
-      getEntities(organizationId, graphId, "node", listOf("node_a"))
+      getEntities(organizationId, redisGraphKey, TYPE_NODE, listOf("node_a"))
     }
   }
-
-  @Throws(IOException::class)
-  private fun ZipInputStream.toInputStream(): InputStream {
-    val data = ByteArray(BUFFER_SIZE)
-    val out = ByteArrayOutputStream()
-    while (this.read(data, 0, BUFFER_SIZE) != -1) {
-      out.write(data)
-    }
-    return ByteArrayInputStream(out.toByteArray())
-  }
-
-  fun cutName(filename: String): String {
-    val prefixLess = filename.split("/")[1]
-    return prefixLess.split(".")[0]
-  }
-
-  data class UnzippedFileEdge(val filename: String, val content: InputStream)
-  data class UnzippedFileNode(val filename: String, val content: InputStream)
-  fun unzipEdge(file: InputStream): List<UnzippedFileEdge> =
-      ZipInputStream(file).use { zipInputStream ->
-        generateSequence { zipInputStream.nextEntry }
-            .filterNot { it.isDirectory }
-            .filter { it.name.startsWith("Edges", true) }
-            .filter { it.name.endsWith(".csv") }
-            .map {
-              UnzippedFileEdge(
-                  filename = cutName(it.name), content = zipInputStream.toInputStream())
-            }
-            .toList()
-      }
-
-  fun unzipNodes(inputStream: InputStream): List<UnzippedFileNode> =
-      ZipInputStream(inputStream).use { zipInputStream ->
-        generateSequence { zipInputStream.nextEntry }
-            .filterNot { it.isDirectory }
-            .filter { it.name.startsWith("Nodes", true) }
-            .filter { it.name.endsWith(".csv") }
-            .map {
-              UnzippedFileNode(
-                  filename = cutName(it.name), content = zipInputStream.toInputStream())
-            }
-            .toList()
-      }
 
   override fun importGraph(
       organizationId: String,
@@ -181,17 +140,17 @@ class TwingraphServiceImpl(
   override fun delete(organizationId: String, graphId: String) {
     val organization = organizationService.findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_DELETE)
-    val versions = getRedisKeyList("$graphId:*", "graphdata")
+    val versions = getRedisKeyList("$graphId:*")
     versions.forEach { csmRedisGraph.deleteGraph(it) }
   }
 
   override fun findAllTwingraphs(organizationId: String): List<String> {
     val organization = organizationService.findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_READ)
-    return getRedisKeyList("*", "graphdata")
+    return getRedisKeyList("*")
   }
 
-  private fun getRedisKeyList(keyPattern: String, keyType: String): List<String> {
+  private fun getRedisKeyList(keyPattern: String, keyType: String = "graphdata"): List<String> {
     val matchingKeys = mutableSetOf<String>()
     csmJedisPool.resource.use { jedis ->
       var nextCursor = ScanParams.SCAN_POINTER_START
@@ -227,7 +186,7 @@ class TwingraphServiceImpl(
 
     if (twinGraphQuery.version.isNullOrEmpty()) {
       csmJedisPool.resource.use { jedis ->
-        twinGraphQuery.version = jedis.hget("${graphId.toRedisMetaDataKey()}", "lastVersion")
+        twinGraphQuery.version = jedis.hget(graphId.toRedisMetaDataKey(), "lastVersion")
         if (twinGraphQuery.version.isNullOrEmpty()) {
           throw CsmResourceNotFoundException(
               "Cannot find lastVersion in ${graphId.toRedisMetaDataKey()}")
@@ -243,6 +202,7 @@ class TwingraphServiceImpl(
     }
   }
 
+  @Timed("twingraph.query")
   override fun query(
       organizationId: String,
       graphId: String,
@@ -288,7 +248,7 @@ class TwingraphServiceImpl(
   ): TwinGraphHash {
     checkTwinGraphPrerequisites(organizationId, graphId, twinGraphQuery, true)
     val redisGraphKey = redisGraphKey(graphId, twinGraphQuery.version!!)
-    var bulkQueryKey = bulkQueryKey(graphId, twinGraphQuery.query, twinGraphQuery.version!!)
+    val bulkQueryKey = bulkQueryKey(graphId, twinGraphQuery.query, twinGraphQuery.version!!)
     val twinGraphHash = TwinGraphHash(bulkQueryKey.second)
     csmJedisPool.resource.use { jedis ->
       val keyExists = jedis.exists(bulkQueryKey.first)
@@ -311,13 +271,13 @@ class TwingraphServiceImpl(
       organizationId: String,
       graphId: String,
       twinGraphQuery: TwinGraphQuery,
-      file: Resource
+      body: Resource
   ): TwinGraphBatchResult {
     checkTwinGraphPrerequisites(organizationId, graphId, twinGraphQuery, false)
-    resourceScanner.scanMimeTypes(file, listOf("text/csv", "text/plain"))
+    resourceScanner.scanMimeTypes(body, listOf("text/csv", "text/plain"))
 
     val result = TwinGraphBatchResult(0, 0, mutableListOf())
-    processCSVBatch(file.inputStream, twinGraphQuery, result) {
+    processCSVBatch(body.inputStream, twinGraphQuery, result) {
       try {
         csmRedisGraph.query(redisGraphKey(graphId, twinGraphQuery.version!!), it)
         result.processedLines++
@@ -334,9 +294,8 @@ class TwingraphServiceImpl(
       actionLambda: (Map<String, String>) -> Unit
   ): Map<String, String> {
     var map = mapOf<String, String>()
-    inputStream.bufferedReader(UTF_8).use { reader ->
-      val csvFormat: CSVFormat =
-          CSVFormat.DEFAULT.builder().setHeader().setSkipHeaderRecord(false).setTrim(true).build()
+    inputStream.bufferedReader().use { reader ->
+      val csvFormat: CSVFormat = CSVFormat.DEFAULT.builder().setHeader().build()
 
       val records: Iterable<CSVRecord> = csvFormat.parse(reader)
       records.forEach { record ->
@@ -347,9 +306,6 @@ class TwingraphServiceImpl(
     }
     return map
   }
-
-  private fun processCSVBulk(inputStream: InputStream, actionLambda: (Map<String, Any>) -> Unit) =
-      readCSV(inputStream) { actionLambda(it) }
 
   fun processCSVBatch(
       inputStream: InputStream,
@@ -362,7 +318,7 @@ class TwingraphServiceImpl(
     val organization = organizationService.findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_READ)
 
-    var bulkQueryId = bulkQueryKey(hash)
+    val bulkQueryId = bulkQueryKey(hash)
     csmJedisPool.resource.use { jedis ->
       if (!jedis.exists(bulkQueryId)) {
         throw CsmResourceNotFoundException("No graph found with hash: $hash  Try later")
@@ -410,16 +366,14 @@ class TwingraphServiceImpl(
       organizationId: String,
       graphId: String,
       modelType: String,
-      requestBody: List<String>
+      ids: List<String>
   ): List<String> {
     updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to getCurrentDate()))
     return when (modelType) {
       TYPE_NODE ->
-          requestBody.map {
-            csmRedisGraph.query(graphId, "MATCH (a {id:'$it'}) RETURN a").toJsonString()
-          }
+          ids.map { csmRedisGraph.query(graphId, "MATCH (a {id:'$it'}) RETURN a").toJsonString() }
       TYPE_RELATIONSHIP ->
-          requestBody.map {
+          ids.map {
             csmRedisGraph.query(graphId, "MATCH ()-[r {id:'$it'}]->() RETURN r").toJsonString()
           }
       else -> throw CsmResourceNotFoundException("Bad Type : $modelType")
@@ -458,18 +412,14 @@ class TwingraphServiceImpl(
       organizationId: String,
       graphId: String,
       modelType: String,
-      requestBody: List<String>
+      ids: List<String>
   ) {
     updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to getCurrentDate()))
     return when (modelType) {
       TYPE_NODE ->
-          requestBody.forEach {
-            csmRedisGraph.query(graphId, "MATCH (a) WHERE a.id='$it' DELETE a")
-          }
+          ids.forEach { csmRedisGraph.query(graphId, "MATCH (a) WHERE a.id='$it' DELETE a") }
       TYPE_RELATIONSHIP ->
-          requestBody.forEach {
-            csmRedisGraph.query(graphId, "MATCH ()-[r]-() WHERE r.id='$it' DELETE r")
-          }
+          ids.forEach { csmRedisGraph.query(graphId, "MATCH ()-[r]-() WHERE r.id='$it' DELETE r") }
       else -> throw CsmResourceNotFoundException("Bad Type : $modelType")
     }
   }

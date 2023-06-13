@@ -120,9 +120,9 @@ internal class WorkspaceServiceImpl(
   }
 
   internal fun findWorkspaceByIdNoSecurity(organizationId: String, workspaceId: String): Workspace =
-      workspaceRepository
-          .findBy(organizationId.sanitizeForRedis(), workspaceId.sanitizeForRedis())
-          .orElseThrow { CsmResourceNotFoundException("Workspace $workspaceId") }
+      workspaceRepository.findBy(organizationId, workspaceId).orElseThrow {
+        CsmResourceNotFoundException("Workspace $workspaceId")
+      }
 
   override fun findWorkspaceById(organizationId: String, workspaceId: String): Workspace {
     val workspace: Workspace = this.findWorkspaceByIdNoSecurity(organizationId, workspaceId)
