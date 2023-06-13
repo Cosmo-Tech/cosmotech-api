@@ -45,7 +45,10 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestFactory
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
@@ -58,7 +61,11 @@ import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
 
 const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
-const val CONNECTED_READER_USER = "test.user@cosmotech.com"
+const val CONNECTED_NONE_USER = "test.none@cosmotech.com"
+const val CONNECTED_EDITOR_USER = "test.editor@cosmotech.com"
+const val CONNECTED_VALIDATOR_USER = "test.validator@cosmotech.com"
+const val CONNECTED_READER_USER = "test.reader@cosmotech.com"
+const val CONNECTED_VIEWER_USER = "test.user@cosmotech.com"
 const val FAKE_MAIL = "fake@mail.fr"
 
 @ActiveProfiles(profiles = ["scenario-test"])
@@ -400,28 +407,88 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
-  @Test
-  fun `test RBAC as User Unauthorized`() {
-    every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_READER_USER
+  @TestFactory
+  fun `test RBAC for findAllScenarioByValidationStatus`() =
+      mapOf(
+              CONNECTED_VIEWER_USER to true,
+              CONNECTED_EDITOR_USER to true,
+              CONNECTED_VALIDATOR_USER to true,
+              CONNECTED_READER_USER to true,
+              CONNECTED_NONE_USER to true,
+              CONNECTED_ADMIN_USER to false)
+          .map { (mail, shouldThrow) ->
+            dynamicTest("Test RBAC findAllScenarioByValidationStatus : $mail") {
+              every { getCurrentAuthenticatedMail(any()) } returns mail
+              if (shouldThrow)
+                  assertThrows<Exception> {
+                    scenarioApiService.findAllScenariosByValidationStatus(
+                        organizationSaved.id!!,
+                        workspaceSaved.id!!,
+                        ScenarioValidationStatus.Validated,
+                        null,
+                        null)
+                  }
+              else
+                  assertDoesNotThrow {
+                    scenarioApiService.findAllScenariosByValidationStatus(
+                        organizationSaved.id!!,
+                        workspaceSaved.id!!,
+                        ScenarioValidationStatus.Validated,
+                        null,
+                        null)
+                  }
+            }
+          }
 
-    assertThrows<CsmAccessForbiddenException> {
-      scenarioApiService.findAllScenariosByValidationStatus(
-          organizationSaved.id!!,
-          workspaceSaved.id!!,
-          ScenarioValidationStatus.Validated,
-          null,
-          null)
-    }
+  @TestFactory
+  fun `test RBAC for deleteScenario`() =
+      mapOf(
+              CONNECTED_VIEWER_USER to true,
+              CONNECTED_EDITOR_USER to true,
+              CONNECTED_VALIDATOR_USER to true,
+              CONNECTED_READER_USER to true,
+              CONNECTED_NONE_USER to true,
+              CONNECTED_ADMIN_USER to false)
+          .map { (mail, shouldThrow) ->
+            dynamicTest("Test RBAC findAllScenarioByValidationStatus : $mail") {
+              every { getCurrentAuthenticatedMail(any()) } returns mail
+              if (shouldThrow)
+                  assertThrows<Exception> {
+                    scenarioApiService.deleteScenario(
+                        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, true)
+                  }
+              else
+                  assertDoesNotThrow {
+                    scenarioApiService.deleteScenario(
+                        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, true)
+                  }
+            }
+          }
 
-    assertThrows<CsmAccessForbiddenException> {
-      scenarioApiService.deleteScenario(
-          organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, true)
-    }
-
-    assertThrows<CsmAccessForbiddenException> {
-      scenarioApiService.deleteAllScenarios(organizationSaved.id!!, workspaceSaved.id!!)
-    }
-  }
+  @TestFactory
+  fun `test RBAC for deleteAllScenarios`() =
+      mapOf(
+              CONNECTED_VIEWER_USER to true,
+              CONNECTED_EDITOR_USER to true,
+              CONNECTED_VALIDATOR_USER to true,
+              CONNECTED_READER_USER to true,
+              CONNECTED_NONE_USER to true,
+              CONNECTED_ADMIN_USER to false)
+          .map { (mail, shouldThrow) ->
+            dynamicTest("Test RBAC findAllScenarioByValidationStatus : $mail") {
+              every { getCurrentAuthenticatedMail(any()) } returns mail
+              if (shouldThrow)
+                  assertThrows<Exception> {
+                    scenarioApiService.deleteAllScenarios(
+                        organizationSaved.id!!, workspaceSaved.id!!)
+                  }
+              else
+                  assertDoesNotThrow {
+                    scenarioApiService.deleteAllScenarios(
+                        organizationSaved.id!!, workspaceSaved.id!!)
+                  }
+            }
+          }
 
   @Test
   fun `test RBAC AccessControls on Scenario as User Admin`() {
@@ -620,7 +687,12 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                 accessControlList =
                     mutableListOf(
                         OrganizationAccessControl(id = CONNECTED_READER_USER, role = "reader"),
-                        OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"))))
+                        OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"),
+                        OrganizationAccessControl(id = CONNECTED_VIEWER_USER, role = "user"),
+                        OrganizationAccessControl(id = CONNECTED_EDITOR_USER, role = "editor"),
+                        OrganizationAccessControl(
+                            id = CONNECTED_VALIDATOR_USER, role = "validator"),
+                        OrganizationAccessControl(id = CONNECTED_NONE_USER, role = "none"))))
   }
 
   fun makeWorkspace(organizationId: String, solutionId: String, name: String): Workspace {
