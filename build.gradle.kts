@@ -58,7 +58,6 @@ allprojects {
   apply(plugin = "org.owasp.dependencycheck")
 
   repositories {
-    mavenLocal()
     maven {
       name = "GitHubPackages"
       url = uri("https://maven.pkg.github.com/Cosmo-Tech/cosmotech-api-common")

@@ -233,7 +233,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TwinGraphHash'
-  /organizations/{organization_id}/twingraph/bulk-query/download/{hash}:
+  /organizations/{organization_id}/twingraph/download/{hash}:
     parameters:
       - name: organization_id
         in: path
@@ -261,7 +261,7 @@ paths:
               schema:
                 type: string
                 format: binary
-  /organizations/{organization_id}/twingraph/{graph_id}/{modelType}:
+  /organizations/{organization_id}/twingraph/{graph_id}/entity/{type}:
     parameters:
       - name: organization_id
         in: path
@@ -275,7 +275,7 @@ paths:
         required: true
         schema:
           type: string
-      - name: modelType
+      - name: type
         in: path
         description: the entity model type
         required: true
@@ -445,7 +445,7 @@ paths:
                 graphRotation: "3"
                 lastModifiedDate: "2023/08/25 - 11:59:59"
                 graphName: "graph"
-  /organizations/{organization_id}/twingraph/{graph_id}/batch:
+  /organizations/{organization_id}/twingraph/{graph_id}/upload:
     parameters:
       - name: organization_id
         in: path

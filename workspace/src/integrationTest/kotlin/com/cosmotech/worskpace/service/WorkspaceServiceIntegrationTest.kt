@@ -295,7 +295,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(ROLE_EDITOR, workspaceAccessControlRegistered.role)
 
     logger.info("should get the list of users and assert there are 3")
-    var userList =
+    val userList =
         workspaceApiService.getWorkspaceSecurityUsers(
             organizationRegistered.id!!, workspaceRegistered.id!!)
     assertEquals(3, userList.size)

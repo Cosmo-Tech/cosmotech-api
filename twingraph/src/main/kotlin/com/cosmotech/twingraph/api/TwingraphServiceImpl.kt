@@ -31,7 +31,6 @@ import com.cosmotech.twingraph.domain.TwinGraphQuery
 import com.cosmotech.twingraph.extension.toJsonString
 import com.cosmotech.twingraph.utils.TwingraphUtils
 import com.redislabs.redisgraph.impl.api.RedisGraph
-import io.micrometer.core.annotation.Timed
 import java.io.InputStream
 import java.nio.charset.StandardCharsets.UTF_8
 import java.time.LocalDateTime
@@ -202,7 +201,6 @@ class TwingraphServiceImpl(
     }
   }
 
-  @Timed("twingraph.query")
   override fun query(
       organizationId: String,
       graphId: String,

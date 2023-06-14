@@ -5,19 +5,19 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**batchQuery**](TwingraphApi.md#batchQuery) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/batch-query | Run a query on a graph instance and return the result as a zip file in async mode
-[**batchUploadUpdate**](TwingraphApi.md#batchUploadUpdate) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/batch | Async batch update by loading a CSV file on a graph instance 
-[**createEntities**](TwingraphApi.md#createEntities) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/{modelType} | Create new entities in a graph instance
+[**batchUploadUpdate**](TwingraphApi.md#batchUploadUpdate) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/upload | Async batch update by loading a CSV file on a graph instance 
+[**createEntities**](TwingraphApi.md#createEntities) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/entity/{type} | Create new entities in a graph instance
 [**createGraph**](TwingraphApi.md#createGraph) | **POST** /organizations/{organization_id}/twingraph/{graph_id} | Create a new graph
 [**delete**](TwingraphApi.md#delete) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id} | Launch a mass delete job
-[**deleteEntities**](TwingraphApi.md#deleteEntities) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id}/{modelType} | Delete entities in a graph instance
-[**downloadGraph**](TwingraphApi.md#downloadGraph) | **GET** /organizations/{organization_id}/twingraph/bulk-query/download/{hash} | Download a graph compressed in a zip file
+[**deleteEntities**](TwingraphApi.md#deleteEntities) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id}/entity/{type} | Delete entities in a graph instance
+[**downloadGraph**](TwingraphApi.md#downloadGraph) | **GET** /organizations/{organization_id}/twingraph/download/{hash} | Download a graph compressed in a zip file
 [**findAllTwingraphs**](TwingraphApi.md#findAllTwingraphs) | **GET** /organizations/{organization_id}/twingraphs | Return the list of all graphs stored in the organization
-[**getEntities**](TwingraphApi.md#getEntities) | **GET** /organizations/{organization_id}/twingraph/{graph_id}/{modelType} | Get entities in a graph instance
+[**getEntities**](TwingraphApi.md#getEntities) | **GET** /organizations/{organization_id}/twingraph/{graph_id}/entity/{type} | Get entities in a graph instance
 [**getGraphMetaData**](TwingraphApi.md#getGraphMetaData) | **GET** /organizations/{organization_id}/twingraph/{graph_id}/metadata | Return the metaData of the specified graph
 [**importGraph**](TwingraphApi.md#importGraph) | **POST** /organizations/{organization_id}/twingraph/import | Import a new version of a twin graph
 [**jobStatus**](TwingraphApi.md#jobStatus) | **GET** /organizations/{organization_id}/job/{job_id}/status | Get the status of a job
 [**query**](TwingraphApi.md#query) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/query | Run a query on a graph instance
-[**updateEntities**](TwingraphApi.md#updateEntities) | **PATCH** /organizations/{organization_id}/twingraph/{graph_id}/{modelType} | Update entities in a graph instance
+[**updateEntities**](TwingraphApi.md#updateEntities) | **PATCH** /organizations/{organization_id}/twingraph/{graph_id}/entity/{type} | Update entities in a graph instance
 [**updateGraphMetaData**](TwingraphApi.md#updateGraphMetaData) | **PATCH** /organizations/{organization_id}/twingraph/{graph_id}/metadata | Update the metaData of the specified graph
 
 
@@ -82,7 +82,7 @@ Name | Type | Description  | Notes
 
 <a name="createEntities"></a>
 # **createEntities**
-> List createEntities(organization\_id, graph\_id, modelType, GraphProperties)
+> List createEntities(organization\_id, graph\_id, type, GraphProperties)
 
 Create new entities in a graph instance
 
@@ -94,7 +94,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **graph\_id** | **String**| the Graph Identifier | [default to null]
- **modelType** | **String**| the entity model type | [default to null] [enum: node, relationship]
+ **type** | **String**| the entity model type | [default to null] [enum: node, relationship]
  **GraphProperties** | [**List**](../Models/GraphProperties.md)| the entities to create |
 
 ### Return type
@@ -169,7 +169,7 @@ null (empty response body)
 
 <a name="deleteEntities"></a>
 # **deleteEntities**
-> deleteEntities(organization\_id, graph\_id, modelType, ids)
+> deleteEntities(organization\_id, graph\_id, type, ids)
 
 Delete entities in a graph instance
 
@@ -181,7 +181,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **graph\_id** | **String**| the Graph Identifier | [default to null]
- **modelType** | **String**| the entity model type | [default to null] [enum: node, relationship]
+ **type** | **String**| the entity model type | [default to null] [enum: node, relationship]
  **ids** | [**List**](../Models/String.md)| the entities to delete | [default to null]
 
 ### Return type
@@ -254,7 +254,7 @@ Name | Type | Description  | Notes
 
 <a name="getEntities"></a>
 # **getEntities**
-> List getEntities(organization\_id, graph\_id, modelType, ids)
+> List getEntities(organization\_id, graph\_id, type, ids)
 
 Get entities in a graph instance
 
@@ -266,7 +266,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **graph\_id** | **String**| the Graph Identifier | [default to null]
- **modelType** | **String**| the entity model type | [default to null] [enum: node, relationship]
+ **type** | **String**| the entity model type | [default to null] [enum: node, relationship]
  **ids** | [**List**](../Models/String.md)| the entities to get | [default to null]
 
 ### Return type
@@ -397,7 +397,7 @@ Name | Type | Description  | Notes
 
 <a name="updateEntities"></a>
 # **updateEntities**
-> List updateEntities(organization\_id, graph\_id, modelType, GraphProperties)
+> List updateEntities(organization\_id, graph\_id, type, GraphProperties)
 
 Update entities in a graph instance
 
@@ -409,7 +409,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **graph\_id** | **String**| the Graph Identifier | [default to null]
- **modelType** | **String**| the entity model type | [default to null] [enum: node, relationship]
+ **type** | **String**| the entity model type | [default to null] [enum: node, relationship]
  **GraphProperties** | [**List**](../Models/GraphProperties.md)| the entities to update |
 
 ### Return type
