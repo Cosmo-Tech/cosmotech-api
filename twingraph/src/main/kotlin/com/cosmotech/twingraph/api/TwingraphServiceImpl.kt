@@ -15,6 +15,7 @@ import com.cosmotech.api.security.coroutine.SecurityCoroutineContext
 import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.bulkQueryKey
 import com.cosmotech.api.utils.formatQuery
+import com.cosmotech.api.utils.getLocalDateNow
 import com.cosmotech.api.utils.redisGraphKey
 import com.cosmotech.api.utils.toRedisMetaDataKey
 import com.cosmotech.api.utils.zipBytesWithFileNames
@@ -35,8 +36,6 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.nio.charset.StandardCharsets.UTF_8
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.zip.ZipInputStream
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -70,12 +69,8 @@ class TwingraphServiceImpl(
     private val csmRbac: CsmRbac,
     private val resourceScanner: ResourceScanner
 ) : CsmPhoenixService(), TwingraphApiService {
-  override fun createGraph(
-      organizationId: String,
-      graphId: String,
-      graphRotation: Int,
-      body: Resource?
-  ) {
+
+  override fun createGraph(organizationId: String, graphId: String, body: Resource?) {
     val graphList = mutableListOf<String>()
     findAllTwingraphs(organizationId).forEach { graphList.add(it.split(":").first()) }
     if (graphList.contains(graphId))
@@ -87,8 +82,8 @@ class TwingraphServiceImpl(
           mutableMapOf<String, String>(
               "lastVersion" to "1",
               "graphName" to "$graphId:1",
-              "graphRotation" to graphRotation.toString(),
-              "lastModifiedDate" to getDateNow()))
+              "graphRotation" to "3",
+              "lastModifiedDate" to getLocalDateNow()))
     }
     if (body != null) {
       val archiverType = ArchiveStreamFactory.detect(body.inputStream.buffered())
@@ -380,28 +375,32 @@ class TwingraphServiceImpl(
       graphId: String,
       modelType: String,
       graphProperties: List<GraphProperties>
-  ): List<String> {
-    updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to getDateNow()))
-    return when (modelType) {
+  ): String {
+    var result = ""
+    updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to getLocalDateNow()))
+    when (modelType) {
       TYPE_NODE ->
-          graphProperties.map {
-            csmRedisGraph
-                .query(
-                    getLastVersion(organizationId, graphId),
-                    "CREATE (a:${it.type} {id:'${it.name}',${it.params}}) RETURN a")
-                .toJsonString()
+          graphProperties.forEach {
+            result +=
+                csmRedisGraph
+                    .query(
+                        getLastVersion(organizationId, graphId),
+                        "CREATE (a:${it.type} {id:'${it.name}',${it.params}}) RETURN a")
+                    .toJsonString()
           }
       TYPE_RELATIONSHIP ->
-          graphProperties.map {
-            csmRedisGraph
-                .query(
-                    getLastVersion(organizationId, graphId),
-                    "MATCH (a),(b) WHERE a.id='${it.source}' AND b.id='${it.target}'" +
-                        "CREATE (a)-[r:${it.type} {id:'${it.name}', ${it.params}}]->(b) RETURN r")
-                .toJsonString()
+          graphProperties.forEach {
+            result +=
+                csmRedisGraph
+                    .query(
+                        getLastVersion(organizationId, graphId),
+                        "MATCH (a),(b) WHERE a.id='${it.source}' AND b.id='${it.target}'" +
+                            "CREATE (a)-[r:${it.type} {id:'${it.name}', ${it.params}}]->(b) RETURN r")
+                    .toJsonString()
           }
       else -> throw CsmResourceNotFoundException("Bad Type : $modelType")
     }
+    return result
   }
 
   override fun getEntities(
@@ -409,24 +408,31 @@ class TwingraphServiceImpl(
       graphId: String,
       modelType: String,
       requestBody: List<String>
-  ): List<String> {
-    updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to getDateNow()))
-    return when (modelType) {
+  ): String {
+    var result = ""
+    updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to getLocalDateNow()))
+    when (modelType) {
       TYPE_NODE ->
-          requestBody.map {
-            csmRedisGraph
-                .query(getLastVersion(organizationId, graphId), "MATCH (a {id:'$it'}) RETURN a")
-                .toJsonString()
+          requestBody.forEach {
+            result +=
+                csmRedisGraph
+                    .query(
+                        getLastVersion(organizationId, graphId),
+                        "MATCH (a) WHERE a.id='$it' RETURN a")
+                    .toJsonString()
           }
       TYPE_RELATIONSHIP ->
-          requestBody.map {
-            csmRedisGraph
-                .query(
-                    getLastVersion(organizationId, graphId), "MATCH ()-[r {id:'$it'}]->() RETURN r")
-                .toJsonString()
+          requestBody.forEach {
+            result +=
+                csmRedisGraph
+                    .query(
+                        getLastVersion(organizationId, graphId),
+                        "MATCH ()-[r]->() WHERE r.id='$it' RETURN r")
+                    .toJsonString()
           }
       else -> throw CsmResourceNotFoundException("Bad Type : $modelType")
     }
+    return result
   }
 
   override fun updateEntities(
@@ -434,27 +440,31 @@ class TwingraphServiceImpl(
       graphId: String,
       modelType: String,
       graphProperties: List<GraphProperties>
-  ): List<String> {
-    updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to getDateNow()))
-    return when (modelType) {
+  ): String {
+    var result = ""
+    updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to getLocalDateNow()))
+    when (modelType) {
       TYPE_NODE ->
-          graphProperties.map {
-            csmRedisGraph
-                .query(
-                    getLastVersion(organizationId, graphId),
-                    "MATCH (a {id:'${it.name}'}) SET a = {id:'${it.name}',${it.params}} RETURN a")
-                .toJsonString()
+          graphProperties.forEach {
+            result +=
+                csmRedisGraph
+                    .query(
+                        getLastVersion(organizationId, graphId),
+                        "MATCH (a {id:'${it.name}'}) SET a = {id:'${it.name}',${it.params}} RETURN a")
+                    .toJsonString()
           }
       TYPE_RELATIONSHIP ->
-          graphProperties.map {
-            csmRedisGraph
-                .query(
-                    getLastVersion(organizationId, graphId),
-                    "MATCH ()-[r {id:'${it.name}'}]-() SET r = {id:'${it.name}', ${it.params}} RETURN r")
-                .toJsonString()
+          graphProperties.forEach {
+            result +=
+                csmRedisGraph
+                    .query(
+                        getLastVersion(organizationId, graphId),
+                        "MATCH ()-[r {id:'${it.name}'}]-() SET r = {id:'${it.name}', ${it.params}} RETURN r")
+                    .toJsonString()
           }
       else -> throw CsmResourceNotFoundException("Bad Type : $modelType")
     }
+    return result
   }
 
   override fun deleteEntities(
@@ -463,7 +473,7 @@ class TwingraphServiceImpl(
       modelType: String,
       requestBody: List<String>
   ) {
-    updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to getDateNow()))
+    updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to getLocalDateNow()))
     return when (modelType) {
       TYPE_NODE ->
           requestBody.forEach {
@@ -478,12 +488,6 @@ class TwingraphServiceImpl(
           }
       else -> throw CsmResourceNotFoundException("Bad Type : $modelType")
     }
-  }
-
-  fun getDateNow(): String {
-    val current = LocalDateTime.now()
-    val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd - HH:mm:ss")
-    return current.format(formatter)
   }
 
   fun getLastVersion(organizationId: String, graphId: String): String {
