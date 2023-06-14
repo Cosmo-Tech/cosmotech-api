@@ -7,8 +7,8 @@ Method | HTTP request | Description
 [**batchQuery**](TwingraphApi.md#batchQuery) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/batch-query | Run a query on a graph instance and return the result as a zip file in async mode
 [**batchUploadUpdate**](TwingraphApi.md#batchUploadUpdate) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/batch | Async batch update by loading a CSV file on a graph instance 
 [**createEntities**](TwingraphApi.md#createEntities) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/{modelType} | Create new entities in a graph instance
-[**createGraph**](TwingraphApi.md#createGraph) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/createGraph | Create a new graph
-[**delete**](TwingraphApi.md#delete) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id} | 
+[**createGraph**](TwingraphApi.md#createGraph) | **POST** /organizations/{organization_id}/twingraph/{graph_id} | Create a new graph
+[**delete**](TwingraphApi.md#delete) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id} | Delete all versions of a graph and his metadatas
 [**deleteEntities**](TwingraphApi.md#deleteEntities) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id}/{modelType} | Delete entities in a graph instance
 [**downloadGraph**](TwingraphApi.md#downloadGraph) | **GET** /organizations/{organization_id}/twingraph/bulk-query/download/{hash} | Download a graph compressed in a zip file
 [**findAllTwingraphs**](TwingraphApi.md#findAllTwingraphs) | **GET** /organizations/{organization_id}/twingraphs | Return the list of all graphs stored in the organization
@@ -82,7 +82,7 @@ Name | Type | Description  | Notes
 
 <a name="createEntities"></a>
 # **createEntities**
-> List createEntities(organization\_id, graph\_id, modelType, GraphProperties)
+> String createEntities(organization\_id, graph\_id, modelType, GraphProperties)
 
 Create new entities in a graph instance
 
@@ -99,7 +99,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-**List**
+**String**
 
 ### Authorization
 
@@ -112,7 +112,7 @@ Name | Type | Description  | Notes
 
 <a name="createGraph"></a>
 # **createGraph**
-> createGraph(organization\_id, graph\_id, graph\_rotation, body)
+> createGraph(organization\_id, graph\_id, body)
 
 Create a new graph
 
@@ -124,7 +124,6 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **graph\_id** | **String**| the Graph Identifier | [default to null]
- **graph\_rotation** | **Integer**| the Graph Rotation value | [optional] [default to 3]
  **body** | **File**|  | [optional]
 
 ### Return type
@@ -144,9 +143,9 @@ null (empty response body)
 # **delete**
 > delete(organization\_id, graph\_id)
 
+Delete all versions of a graph and his metadatas
 
-
-    Launch a mass delete job
+    Delete all versions of a graph and his metadatas
 
 ### Parameters
 
@@ -255,7 +254,7 @@ Name | Type | Description  | Notes
 
 <a name="getEntities"></a>
 # **getEntities**
-> List getEntities(organization\_id, graph\_id, modelType, ids)
+> String getEntities(organization\_id, graph\_id, modelType, ids)
 
 Get entities in a graph instance
 
@@ -272,7 +271,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-**List**
+**String**
 
 ### Authorization
 
@@ -398,7 +397,7 @@ Name | Type | Description  | Notes
 
 <a name="updateEntities"></a>
 # **updateEntities**
-> List updateEntities(organization\_id, graph\_id, modelType, GraphProperties)
+> String updateEntities(organization\_id, graph\_id, modelType, GraphProperties)
 
 Update entities in a graph instance
 
@@ -415,7 +414,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-**List**
+**String**
 
 ### Authorization
 

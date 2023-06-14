@@ -94,22 +94,22 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `graph creation`() {
     logger.info("Create an empty graph")
-    twingraphApiService.createGraph(organization.id!!, graphId, 3, null)
+    twingraphApiService.createGraph(organization.id!!, graphId, null)
     assertEquals(1, twingraphApiService.findAllTwingraphs(organization.id!!).size)
 
     logger.info("Create a Graph with a ZIP Entry")
     val file = this::class.java.getResource("/integrationTest.zip")?.file
     var resource = ByteArrayResource(File(file!!).readBytes())
-    twingraphApiService.createGraph(organization.id!!, "2$graphId", 3, resource)
+    twingraphApiService.createGraph(organization.id!!, "2$graphId", resource)
 
     logger.info("Create a graph with an already existing Id")
-    assertThrows<Exception> { twingraphApiService.createGraph(organization.id!!, graphId, 3, null) }
+    assertThrows<Exception> { twingraphApiService.createGraph(organization.id!!, graphId, null) }
   }
 
   @Test
   fun `twingraph CRUD test`() {
 
-    twingraphApiService.createGraph(organization.id!!, graphId, 3, null)
+    twingraphApiService.createGraph(organization.id!!, graphId, null)
 
     logger.info("Create Nodes")
     val nodeStart =
@@ -128,7 +128,7 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
                   name = "node_b"
                   params = "size:1"
                 }))
-    assertNotEquals(listOf<String>(), nodeStart)
+    assertNotEquals(String(), nodeStart)
 
     logger.info("Read Nodes")
     var nodeResult =
