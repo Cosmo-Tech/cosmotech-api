@@ -76,7 +76,9 @@ class TwingraphServiceImpl(
       graphRotation: Int,
       body: Resource?
   ) {
-    if (findAllTwingraphs(organizationId).contains(graphId))
+    val graphList = mutableListOf<String>()
+    findAllTwingraphs(organizationId).forEach { graphList.add(it.split(":").first()) }
+    if (graphList.contains(graphId))
         throw CsmServerException("There is already a graph with the id : $graphId")
 
     csmJedisPool.resource.use { jedis ->
