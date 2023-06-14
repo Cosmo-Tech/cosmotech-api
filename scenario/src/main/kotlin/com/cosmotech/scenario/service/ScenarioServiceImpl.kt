@@ -37,8 +37,6 @@ import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.api.utils.sanitizeForRedis
-import com.cosmotech.api.utils.toSecurityConstraintQuery
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.service.getRbac
 import com.cosmotech.scenario.api.ScenarioApiService
@@ -389,8 +387,7 @@ internal class ScenarioServiceImpl(
       if (rbacEnabled) {
         val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
         return scenarioRepository
-            .findByValidationStatusAndSecurity(
-                status, currentUser.toSecurityConstraintQuery(), pageRequest!!)
+            .findByValidationStatusAndSecurity(status, currentUser, pageRequest!!)
             .toList()
       } else {
         return scenarioRepository.findByValidationStatus(status, pageRequest!!).toList()
@@ -405,8 +402,7 @@ internal class ScenarioServiceImpl(
         val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
         scenarioList =
             scenarioRepository
-                .findByValidationStatusAndSecurity(
-                    status, currentUser.toSecurityConstraintQuery(), pageRequest!!)
+                .findByValidationStatusAndSecurity(status, currentUser, pageRequest!!)
                 .toList()
       } else {
         scenarioList = scenarioRepository.findByValidationStatus(status, pageRequest!!).toList()
@@ -429,8 +425,7 @@ internal class ScenarioServiceImpl(
     if (isRbacEnabled(organizationId, workspaceId)) {
       val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
       return scenarioRepository
-          .findByWorkspaceIdAndSecurity(
-              workspaceId, currentUser.toSecurityConstraintQuery(), pageable)
+          .findByWorkspaceIdAndSecurity(workspaceId, currentUser, pageable)
           .toList()
     }
 
@@ -455,9 +450,7 @@ internal class ScenarioServiceImpl(
       if (rbacEnabled) {
         val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
         scenarioList =
-            scenarioRepository
-                .findByRootIdAndSecurity(rootId, currentUser.toSecurityConstraintQuery(), pageable)
-                .toList()
+            scenarioRepository.findByRootIdAndSecurity(rootId, currentUser, pageable).toList()
       } else {
         scenarioList = scenarioRepository.findByRootId(rootId, pageable).toList()
       }
@@ -481,10 +474,7 @@ internal class ScenarioServiceImpl(
       if (rbacEnabled) {
         val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
         scenarioList =
-            scenarioRepository
-                .findByParentIdAndSecurity(
-                    parentId, currentUser.toSecurityConstraintQuery(), pageable)
-                .toList()
+            scenarioRepository.findByParentIdAndSecurity(parentId, currentUser, pageable).toList()
       } else {
         scenarioList = scenarioRepository.findByParentId(parentId, pageable).toList()
       }
@@ -548,16 +538,11 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       scenarioId: String
   ): Scenario =
-      scenarioRepository
-          .findBy(
-              organizationId.sanitizeForRedis(),
-              workspaceId.sanitizeForRedis(),
-              scenarioId.sanitizeForRedis())
-          .orElseThrow {
-            CsmResourceNotFoundException(
-                "Resource of type '${Scenario::class.java.simpleName}'" +
-                    " and workspaceId=$workspaceId, scenarioId=$scenarioId not found")
-          }
+      scenarioRepository.findBy(organizationId, workspaceId, scenarioId).orElseThrow {
+        CsmResourceNotFoundException(
+            "Resource of type '${Scenario::class.java.simpleName}'" +
+                " and workspaceId=$workspaceId, scenarioId=$scenarioId not found")
+      }
 
   private fun addStateToScenario(organizationId: String, scenario: Scenario?) {
     if (scenario?.lastRun != null) {

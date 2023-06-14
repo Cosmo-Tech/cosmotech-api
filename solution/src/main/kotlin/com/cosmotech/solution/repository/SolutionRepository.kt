@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.solution.repository
 
+import com.cosmotech.api.redis.Sanitize
 import com.cosmotech.solution.domain.Solution
 import com.redis.om.spring.annotations.Query
 import com.redis.om.spring.repository.RedisDocumentRepository
@@ -16,8 +17,8 @@ interface SolutionRepository : RedisDocumentRepository<Solution, String> {
 
   @Query("@organizationId:{\$organizationId} @id:{\$solutionId}")
   fun findBy(
-      @Param("organizationId") organizationId: String,
-      @Param("solutionId") solutionId: String
+      @Sanitize @Param("organizationId") organizationId: String,
+      @Sanitize @Param("solutionId") solutionId: String
   ): Optional<Solution>
 
   fun findByOrganizationId(organizationId: String, pageable: Pageable): Page<Solution>

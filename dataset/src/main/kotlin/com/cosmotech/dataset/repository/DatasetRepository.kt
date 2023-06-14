@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.dataset.repository
 
+import com.cosmotech.api.redis.Sanitize
 import com.cosmotech.dataset.domain.Dataset
 import com.redis.om.spring.annotations.Query
 import com.redis.om.spring.repository.RedisDocumentRepository
@@ -20,7 +21,7 @@ interface DatasetRepository : RedisDocumentRepository<Dataset, String> {
 
   @Query("@connector_id:{\$connectorId}")
   fun findDatasetByConnectorId(
-      @Param("connectorId") connectorId: String,
+      @Sanitize @Param("connectorId") connectorId: String,
       pageRequest: PageRequest
   ): Page<Dataset>
 }

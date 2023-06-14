@@ -28,7 +28,6 @@ import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.api.utils.sanitizeForRedis
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioJobState
@@ -237,7 +236,7 @@ class ScenarioRunServiceImpl(
       withStateInformation: Boolean = true
   ) =
       scenarioRunRepository
-          .findBy(organizationId.sanitizeForRedis(), scenariorunId.sanitizeForRedis())
+          .findBy(organizationId, scenariorunId)
           .orElseGet { null }
           .let { if (withStateInformation) it.withStateInformation(organizationId) else it }
           ?.withoutSensitiveData()

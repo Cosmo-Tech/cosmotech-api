@@ -25,7 +25,6 @@ import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.api.utils.toSecurityConstraintQuery
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.ComponentRolePermissions
 import com.cosmotech.organization.domain.Organization
@@ -60,9 +59,7 @@ class OrganizationServiceImpl(
           findAllPaginated(defaultPageSize) {
             if (rbacEnabled) {
               val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
-              organizationRepository
-                  .findOrganizationsBySecurity(currentUser.toSecurityConstraintQuery(), it)
-                  .toList()
+              organizationRepository.findOrganizationsBySecurity(currentUser, it).toList()
             } else {
               organizationRepository.findAll(it).toList()
             }
@@ -70,10 +67,7 @@ class OrganizationServiceImpl(
     } else {
       if (rbacEnabled) {
         val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
-        result =
-            organizationRepository
-                .findOrganizationsBySecurity(currentUser.toSecurityConstraintQuery(), pageable)
-                .toList()
+        result = organizationRepository.findOrganizationsBySecurity(currentUser, pageable).toList()
       } else {
         result = organizationRepository.findAll(pageable).toList()
       }
