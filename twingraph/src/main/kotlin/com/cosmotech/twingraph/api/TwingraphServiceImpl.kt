@@ -104,7 +104,7 @@ class TwingraphServiceImpl(
           }
       queryBuffer.send()
     } else {
-      getEntities(organizationId, redisGraphKey, TYPE_NODE, listOf("node_a"))
+      getEntities(organizationId, graphId, TYPE_NODE, listOf("node_a"))
     }
   }
 

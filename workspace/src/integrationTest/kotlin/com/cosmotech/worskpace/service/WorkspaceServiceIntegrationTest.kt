@@ -134,8 +134,9 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
         workspaceApiService.updateWorkspace(
             organizationRegistered.id!!,
             workspaceRegistered.id!!,
-            workspaceRegistered.copy(name = "Workspace 1 updated"))
+            workspaceRegistered.copy(name = "Workspace 1 updated", organizationId = null))
     assertEquals("Workspace 1 updated", updatedWorkspace.name)
+    assertEquals(workspaceRegistered.organizationId, updatedWorkspace.organizationId)
 
     /*
      TODO : Fix the corountine effect

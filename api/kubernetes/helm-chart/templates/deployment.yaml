@@ -88,20 +88,20 @@ spec:
               containerPort: 5005
               protocol: TCP
           startupProbe:
-            initialDelaySeconds: 5
+            initialDelaySeconds: {{ .Values.api.probes.startup.initialDelaySeconds }}
             periodSeconds: 5
-            failureThreshold: 60
+            failureThreshold: {{ .Values.api.probes.startup.failureThreshold }}
             tcpSocket:
               port: http
           livenessProbe:
-            timeoutSeconds: 5
+            timeoutSeconds: {{ .Values.api.probes.liveness.timeoutSeconds }}
             periodSeconds: 5
             failureThreshold: {{ .Values.api.probes.liveness.failureThreshold }}
             httpGet:
               path: /actuator/health/liveness
               port: http-management
           readinessProbe:
-            timeoutSeconds: 5
+            timeoutSeconds: {{ .Values.api.probes.readiness.timeoutSeconds }}
             failureThreshold: {{ .Values.api.probes.readiness.failureThreshold }}
             httpGet:
               path: /actuator/health/readiness

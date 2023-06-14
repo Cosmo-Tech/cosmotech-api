@@ -56,8 +56,8 @@ class QueryBuffer(val jedis: Jedis, val graphName: String) {
     // extact source and target from row
     val sourceKey = row.keys.elementAt(0)
     val targetKey = row.keys.elementAt(1)
-    val sourceName = row[sourceKey].toString()
-    val targetName = row[targetKey].toString()
+    val sourceName = row[sourceKey].toString().trim()
+    val targetName = row[targetKey].toString().trim()
 
     val newRows = row.minus(sourceKey).minus(targetKey)
 

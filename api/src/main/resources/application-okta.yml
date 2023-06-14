@@ -6,3 +6,11 @@ okta:
     clientId: ${csm.platform.okta.clientId}
     clientSecret: ${csm.platform.okta.clientSecret}
     audience: ${csm.platform.okta.audience}
+
+
+csm:
+  platform:
+    authorization:
+      principal-jwt-claim: "jti"
+      mailJwtClaim: "sub"
+      rolesJwtClaim: "groups"

@@ -9,7 +9,6 @@
 logging:
   level:
     com.cosmotech: DEBUG
-    azure.cosmos: WARN
     web: INFO
     org.springframework: WARN
 
@@ -55,10 +54,6 @@ csm:
         tenantId: "e413b834-8be8-4822-a370-be619545cb49"
         clientId: "[fill-this-value]"
         clientSecret: "[fill-this-value]"
-      cosmos:
-        # TODO Fill these values or reach out to the Cosmo Tech Platform Team for support
-        key: "[fill-this-value]"
-        uri: "https://csmphoenixdev.documents.azure.com:443/"
       dataWarehouseCluster:
         baseUri: "https://phoenixdev.westeurope.kusto.windows.net"
         options:

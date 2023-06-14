@@ -95,10 +95,7 @@ internal class WorkspaceServiceImpl(
             } else {
               val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
               workspaceRepository
-                  .findByOrganizationIdAndSecurity(
-                      organizationId.sanitizeForRedis(),
-                      currentUser.toSecurityConstraintQuery(),
-                      it)
+                  .findByOrganizationIdAndSecurity(organizationId, currentUser, it)
                   .toList()
             }
           }
@@ -207,7 +204,7 @@ internal class WorkspaceServiceImpl(
       }
     }
     return if (hasChanged) {
-      workspaceRepository.save(workspace)
+      workspaceRepository.save(existingWorkspace)
     } else {
       existingWorkspace
     }

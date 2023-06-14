@@ -203,20 +203,6 @@ csm:
         resourceUri: ""
         instrumentationKey: ""
         connectionString: "InstrumentationKey=${csm.platform.azure.analytics.instrumentationKey};IngestionEndpoint=https://francecentral-0.in.applicationinsights.azure.com/"
-      cosmos:
-        connectionMode: ""
-        consistencyLevel: ""
-        core-database:
-          name: phoenix-core
-          connectors:
-            container: connectors
-          organizations:
-            container: organizations
-          users:
-            container: users
-        key: ""
-        populateQueryMetrics: true
-        uri: ""
     data-ingestion:
       # Number of seconds to wait after a scenario run workflow end time, before
       # starting to check ADX for data ingestion state.
