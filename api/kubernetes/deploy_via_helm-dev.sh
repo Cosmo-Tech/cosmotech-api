@@ -86,6 +86,11 @@ if [[ -z $REDIS_PASSWORD ]] ; then
   REDIS_PASSWORD=$(date +%s | sha256sum | base64 | head -c 32)
 fi
 
+PROM_PASSWORD=${PROM_ADMIN_PASSWORD:-$(kubectl get secret --namespace ${NAMESPACE}-monitoring prometheus-operator-grafana -o jsonpath="{.data.admin-password}" | base64 -d || "")}
+if [[ -z PROM_PASSWORD ]] ; then
+  PROM_PASSWORD=$(date +%s | sha256sum | base64 | head -c 32)
+fi
+
 # kube-prometheus-stack
 # https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
 # https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack
@@ -102,8 +107,8 @@ PROM_STORAGE_RESOURCE_REQUEST_VAR=${PROM_STORAGE_RESOURCE_REQUEST:-"10Gi"} \
 PROM_CPU_MEM_LIMITS_VAR=${PROM_CPU_MEM_LIMITS:-"2Gi"} \
 PROM_CPU_MEM_REQUESTS_VAR=${PROM_CPU_MEM_REQUESTS:-"2Gi"} \
 PROM_REPLICAS_NUMBER_VAR=${PROM_REPLICAS_NUMBER:-"1"} \
-PROM_ADMIN_PASSWORD_VAR=${PROM_ADMIN_PASSWORD:-$(date +%s | sha256sum | base64 | head -c 32)} \
-REDIS_ADMIN_PASSWORD_VAR=${REDIS_ADMIN_PASSWORD} \
+PROM_ADMIN_PASSWORD_VAR=${PROM_PASSWORD} \
+REDIS_ADMIN_PASSWORD_VAR=${REDIS_PASSWORD} \
 REDIS_HOST_VAR=cosmotechredis-master.${NAMESPACE}.svc.cluster.local \
 REDIS_PORT_VAR=${REDIS_PORT} \
 envsubst < "${WORKING_DIR}"/kube-prometheus-stack-template.yaml > "${WORKING_DIR}"/kube-prometheus-stack.yaml
