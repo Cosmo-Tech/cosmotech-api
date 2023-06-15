@@ -98,12 +98,8 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(1, twingraphApiService.findAllTwingraphs(organization.id!!).size)
 
     logger.info("Create a Graph with a ZIP Entry")
-    //    val body = File(object {}.javaClass.getResource("integrationTest.zip").file)
-    //    logger.warn(body.name)
-    val body = javaClass.classLoader.getResource("integrationTest.zip")!!.toURI()
     val file = this::class.java.getResource("/integrationTest.zip")?.file
     var resource = ByteArrayResource(File(file!!).readBytes())
-    //      logger.info(body!!.file)
     twingraphApiService.createGraph(organization.id!!, "2$graphId", resource)
 
     logger.info("Create a graph with an already existing Id")
@@ -132,7 +128,7 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
                   name = "node_b"
                   params = "size:1"
                 }))
-    assertNotEquals(listOf<String>(), nodeStart)
+    assertNotEquals(String(), nodeStart)
 
     logger.info("Read Nodes")
     var nodeResult =

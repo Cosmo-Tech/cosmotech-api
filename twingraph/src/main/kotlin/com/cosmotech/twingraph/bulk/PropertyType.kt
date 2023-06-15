@@ -23,7 +23,8 @@ fun Any?.toPropertyType(): PropertyType {
     is String -> {
       when (this.lowercase()) {
         "" -> type = PropertyType.BI_NULL
-        "true", "false" -> type = PropertyType.BI_BOOL
+        "true",
+        "false" -> type = PropertyType.BI_BOOL
         else -> {
           if (this.startsWith('[') and this.endsWith(']')) type = PropertyType.BI_ARRAY
         }

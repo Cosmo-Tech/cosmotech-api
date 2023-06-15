@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenario.repository
 
+import com.cosmotech.api.redis.Sanitize
+import com.cosmotech.api.redis.SecurityConstraint
 import com.cosmotech.scenario.domain.Scenario
 import com.redis.om.spring.annotations.Query
 import com.redis.om.spring.repository.RedisDocumentRepository
@@ -16,17 +18,17 @@ interface ScenarioRepository : RedisDocumentRepository<Scenario, String> {
 
   @Query("@organizationId:{\$organizationId} @workspaceId:{\$workspaceId} @id:{\$scenarioId}")
   fun findBy(
-      @Param("organizationId") organizationId: String,
-      @Param("workspaceId") workspaceId: String,
-      @Param("scenarioId") scenarioId: String
+      @Sanitize @Param("organizationId") organizationId: String,
+      @Sanitize @Param("workspaceId") workspaceId: String,
+      @Sanitize @Param("scenarioId") scenarioId: String
   ): Optional<Scenario>
 
   fun findByValidationStatus(validationStatus: String, pageable: Pageable): Page<Scenario>
 
   @Query("(@validationStatus:\$validationStatus) \$securityConstraint")
   fun findByValidationStatusAndSecurity(
-      @Param("validationStatus") validationStatus: String,
-      @Param("securityConstraint") securityConstraint: String,
+      @Sanitize @Param("validationStatus") validationStatus: String,
+      @SecurityConstraint @Param("securityConstraint") securityConstraint: String,
       pageable: Pageable
   ): Page<Scenario>
 
@@ -36,8 +38,8 @@ interface ScenarioRepository : RedisDocumentRepository<Scenario, String> {
 
   @Query("(@parentId:{\$parentId}) \$securityConstraint")
   fun findByParentIdAndSecurity(
-      @Param("parentId") parentId: String,
-      @Param("securityConstraint") securityConstraint: String,
+      @Sanitize @Param("parentId") parentId: String,
+      @SecurityConstraint @Param("securityConstraint") securityConstraint: String,
       pageable: Pageable
   ): Page<Scenario>
 
@@ -45,8 +47,8 @@ interface ScenarioRepository : RedisDocumentRepository<Scenario, String> {
 
   @Query("(@rootId:{\$rootId}) \$securityConstraint")
   fun findByRootIdAndSecurity(
-      @Param("rootId") rootId: String,
-      @Param("securityConstraint") securityConstraint: String,
+      @Sanitize @Param("rootId") rootId: String,
+      @SecurityConstraint @Param("securityConstraint") securityConstraint: String,
       pageable: Pageable
   ): Page<Scenario>
 
@@ -54,8 +56,8 @@ interface ScenarioRepository : RedisDocumentRepository<Scenario, String> {
 
   @Query("(@workspaceId:{\$workspaceId}) \$securityConstraint")
   fun findByWorkspaceIdAndSecurity(
-      @Param("workspaceId") workspaceId: String,
-      @Param("securityConstraint") securityConstraint: String,
+      @Sanitize @Param("workspaceId") workspaceId: String,
+      @SecurityConstraint @Param("securityConstraint") securityConstraint: String,
       pageable: Pageable
   ): Page<Scenario>
 }

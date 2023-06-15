@@ -6,7 +6,6 @@ import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.twingraph.bulk.model.Edge
 import com.cosmotech.twingraph.bulk.model.Node
 import com.cosmotech.twingraph.bulk.model.TypeEntity
-import java.nio.charset.Charset
 import redis.clients.jedis.Jedis
 
 const val BULK_QUERY_MAX_SIZE = 512 * 1024 * 1024 /*512 Mo*/

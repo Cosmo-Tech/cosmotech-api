@@ -7,7 +7,8 @@ import com.cosmotech.twingraph.bulk.getNodeBinaryBlobFormat
 
 class Node(override val properties: Map<String, String>) : AbstractEntity() {
 
-  val id: String = (properties["id"] ?: throw CsmResourceNotFoundException("Node id not found")).toString()
+  val id: String =
+      properties["id"] ?: throw CsmResourceNotFoundException("Node property 'id' not found")
 
   override fun toBinaryFormat(): ByteArray {
     return getNodeBinaryBlobFormat(getPropertiesBinary())

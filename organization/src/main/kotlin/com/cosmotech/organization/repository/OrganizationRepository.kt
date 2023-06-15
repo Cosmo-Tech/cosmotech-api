@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.organization.repository
 
+import com.cosmotech.api.redis.SecurityConstraint
 import com.cosmotech.organization.domain.Organization
 import com.redis.om.spring.annotations.Query
 import com.redis.om.spring.repository.RedisDocumentRepository
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Repository
 interface OrganizationRepository : RedisDocumentRepository<Organization, String> {
   @Query("\$securityConstraint")
   fun findOrganizationsBySecurity(
-      @Param("securityConstraint") securityConstraint: String,
+      @SecurityConstraint @Param("securityConstraint") securityConstraint: String,
       pageable: Pageable
   ): Page<Organization>
 }

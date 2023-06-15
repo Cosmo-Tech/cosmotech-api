@@ -77,12 +77,40 @@ paths:
       tags:
         - twingraph
       summary: Create a new graph
-      description: Create a new graph
+      description: |
+        To create a new graph from flat files,  you need to create a Zip file. This Zip
+        file must countain two folders named Edges and Nodes.
+
+        .zip hierarchy:
+        *main_folder/Nodes
+        *main_folder/Edges
+
+        In each folder you can place one or multiple csv files containing your Nodes or
+        Edges data.
+
+        Your csv files must follow the following header (column name) requirements:
+
+        The Nodes CSVs requires at least one column (the 1st).Column name = 'Id'. It
+        will represent the nodes ID
+        Ids must be populated with string
+
+        The Edges CSVs require three columns named, in order,
+        * source
+        * target
+        * Id
+
+        those colomns represent
+        * The source of the edge
+        * The target of the edge
+        * The Id of the edge
+
+        All following columns content are up to you.
       requestBody:
         required: false
         content:
           application/octet-stream:
             # Using 'application/octet-stream' so Swagger UI can display a file upload button.
+
             # See https://github.com/swagger-api/swagger-ui/issues/5636
             # In any case, the request body mime type is enforced in the Service implementation.
             schema:
@@ -95,8 +123,8 @@ paths:
       operationId: delete
       tags:
         - twingraph
-      summary: Launch a mass delete job
-      description: Launch a mass delete job
+      description: Delete all versions of a graph and his metadatas
+      summary: Delete all versions of a graph and his metadatas
       responses:
         '204':
           description: Successful response
@@ -308,12 +336,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  example:
-                    -"[{\"a\":{\"id\":\"entity-name\",\"label\":\"entityType\",\"type\":\"NODE\",\"properties\":{\"param1\":\"value1\",\"param2\":\"value2\"}}}]"
-                    -"[{\"a\":{\"id\":\"entity-name\",\"label\":\"entityType\",\"type\":\"NODE\",\"properties\":{\"param1\":\"value1\",\"param2\":\"value2\"}}}]"
+                type: string
     get:
       operationId: getEntities
       tags:
@@ -335,9 +358,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
+                type: string
     patch:
       operationId: updateEntities
       tags:
@@ -362,9 +383,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
+                type: string
     delete:
       operationId: deleteEntities
       tags:
@@ -411,10 +430,7 @@ paths:
               schema:
                 type: object
               example:
-                lastVersion: "1"
-                graphRotation: "3"
-                lastModifiedDate: "2023/08/25 - 11:59:59"
-                graphName: "graph"
+                $ref: "#/components/examples/MetaDataResponse"
     patch:
       operationId: updateGraphMetaData
       tags:
@@ -441,11 +457,22 @@ paths:
               schema:
                 type: object
               example:
-                lastVersion: "1"
-                graphRotation: "3"
-                lastModifiedDate: "2023/08/25 - 11:59:59"
-                graphName: "graph"
-  /organizations/{organization_id}/twingraph/{graph_id}/upload:
+                $ref: "#/components/examples/MetaDataResponse"
+  /organizations/{organization_id}/twingraph/{graph_id}/graph:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: graph_id
+        in: path
+        description: the Graph Identifier
+        required: true
+        schema:
+          type: string
+  /organizations/{organization_id}/twingraph/{graph_id}/batch:
     parameters:
       - name: organization_id
         in: path
@@ -682,3 +709,10 @@ components:
           target: "target-node-name"
           name: "entity-name"
           params: "param1: 'value1', param2: 'value2'"
+    MetaDataResponse:
+      summary: the response of a MetaData creation or modification
+      value:
+        lastVersion: "1"
+        graphRotation: "3"
+        lastModifiedDate: "2023/08/25 - 11:59:59"
+        graphName: "graph"

@@ -5,10 +5,10 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**batchQuery**](TwingraphApi.md#batchQuery) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/batch-query | Run a query on a graph instance and return the result as a zip file in async mode
-[**batchUploadUpdate**](TwingraphApi.md#batchUploadUpdate) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/upload | Async batch update by loading a CSV file on a graph instance 
+[**batchUploadUpdate**](TwingraphApi.md#batchUploadUpdate) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/batch | Async batch update by loading a CSV file on a graph instance 
 [**createEntities**](TwingraphApi.md#createEntities) | **POST** /organizations/{organization_id}/twingraph/{graph_id}/entity/{type} | Create new entities in a graph instance
 [**createGraph**](TwingraphApi.md#createGraph) | **POST** /organizations/{organization_id}/twingraph/{graph_id} | Create a new graph
-[**delete**](TwingraphApi.md#delete) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id} | Launch a mass delete job
+[**delete**](TwingraphApi.md#delete) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id} | Delete all versions of a graph and his metadatas
 [**deleteEntities**](TwingraphApi.md#deleteEntities) | **DELETE** /organizations/{organization_id}/twingraph/{graph_id}/entity/{type} | Delete entities in a graph instance
 [**downloadGraph**](TwingraphApi.md#downloadGraph) | **GET** /organizations/{organization_id}/twingraph/download/{hash} | Download a graph compressed in a zip file
 [**findAllTwingraphs**](TwingraphApi.md#findAllTwingraphs) | **GET** /organizations/{organization_id}/twingraphs | Return the list of all graphs stored in the organization
@@ -82,7 +82,7 @@ Name | Type | Description  | Notes
 
 <a name="createEntities"></a>
 # **createEntities**
-> List createEntities(organization\_id, graph\_id, type, GraphProperties)
+> String createEntities(organization\_id, graph\_id, type, GraphProperties)
 
 Create new entities in a graph instance
 
@@ -99,7 +99,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-**List**
+**String**
 
 ### Authorization
 
@@ -116,7 +116,7 @@ Name | Type | Description  | Notes
 
 Create a new graph
 
-    Create a new graph
+    To create a new graph from flat files,  you need to create a Zip file. This Zip file must countain two folders named Edges and Nodes.  .zip hierarchy: *main_folder/Nodes *main_folder/Edges  In each folder you can place one or multiple csv files containing your Nodes or Edges data.  Your csv files must follow the following header (column name) requirements:  The Nodes CSVs requires at least one column (the 1st).Column name &#x3D; &#39;Id&#39;. It will represent the nodes ID Ids must be populated with string  The Edges CSVs require three columns named, in order, * source * target * Id  those colomns represent * The source of the edge * The target of the edge * The Id of the edge  All following columns content are up to you. 
 
 ### Parameters
 
@@ -143,9 +143,9 @@ null (empty response body)
 # **delete**
 > delete(organization\_id, graph\_id)
 
-Launch a mass delete job
+Delete all versions of a graph and his metadatas
 
-    Launch a mass delete job
+    Delete all versions of a graph and his metadatas
 
 ### Parameters
 
@@ -254,7 +254,7 @@ Name | Type | Description  | Notes
 
 <a name="getEntities"></a>
 # **getEntities**
-> List getEntities(organization\_id, graph\_id, type, ids)
+> String getEntities(organization\_id, graph\_id, type, ids)
 
 Get entities in a graph instance
 
@@ -271,7 +271,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-**List**
+**String**
 
 ### Authorization
 
@@ -397,7 +397,7 @@ Name | Type | Description  | Notes
 
 <a name="updateEntities"></a>
 # **updateEntities**
-> List updateEntities(organization\_id, graph\_id, type, GraphProperties)
+> String updateEntities(organization\_id, graph\_id, type, GraphProperties)
 
 Update entities in a graph instance
 
@@ -414,7 +414,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-**List**
+**String**
 
 ### Authorization
 

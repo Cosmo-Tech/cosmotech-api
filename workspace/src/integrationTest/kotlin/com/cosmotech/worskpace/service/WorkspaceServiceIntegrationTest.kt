@@ -270,6 +270,14 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
+  fun `test RBAC as User Unauthorized`() {
+    every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_DEFAULT_USER
+
+    assertEquals(
+        0, workspaceApiService.findAllWorkspaces(organizationRegistered.id!!, null, null).size)
+  }
+
+  @Test
   fun `test RBAC AccessControls on Workspace as User Admin`() {
 
     logger.info("should add a new access control")

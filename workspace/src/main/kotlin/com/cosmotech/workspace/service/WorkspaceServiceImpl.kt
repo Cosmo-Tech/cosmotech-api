@@ -34,8 +34,6 @@ import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAuthenticatedMail
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.api.utils.sanitizeForRedis
-import com.cosmotech.api.utils.toSecurityConstraintQuery
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.repository.OrganizationRepository
 import com.cosmotech.organization.service.getRbac
@@ -106,10 +104,7 @@ internal class WorkspaceServiceImpl(
         val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
         result =
             workspaceRepository
-                .findByOrganizationIdAndSecurity(
-                    organizationId.sanitizeForRedis(),
-                    currentUser.toSecurityConstraintQuery(),
-                    pageable)
+                .findByOrganizationIdAndSecurity(organizationId, currentUser, pageable)
                 .toList()
       }
     }
