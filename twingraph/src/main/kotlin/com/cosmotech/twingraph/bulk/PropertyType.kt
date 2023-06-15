@@ -21,12 +21,10 @@ fun Any?.toPropertyType(): PropertyType {
     is Int -> type = PropertyType.BI_LONG
     is Double -> type = PropertyType.BI_DOUBLE
     is String -> {
-      when (this) {
+      when (this.lowercase()) {
         "" -> type = PropertyType.BI_NULL
         "true", "false" -> type = PropertyType.BI_BOOL
         else -> {
-          if (this.lowercase() == "null") type = PropertyType.BI_NULL
-          if (this.lowercase() == "true" || this.lowercase() == "false") type = PropertyType.BI_BOOL
           if (this.startsWith('[') and this.endsWith(']')) type = PropertyType.BI_ARRAY
         }
       }
