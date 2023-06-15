@@ -14,7 +14,6 @@ class TypeEntity(val type: String, private val header: List<String>) {
   fun addEntity(vararg nodesArg: AbstractEntity) {
     nodesArg.forEach {
       if (it.properties.keys.any { s -> s !in header })
-      // TODO create specific exception
       throw CsmResourceNotFoundException(
               "Header mismatch, one or more properties are not in $header")
       binaryBlobFormat += it.toBinaryFormat()

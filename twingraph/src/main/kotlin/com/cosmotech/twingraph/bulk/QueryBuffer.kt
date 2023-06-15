@@ -90,12 +90,8 @@ class QueryBuffer(val jedis: Jedis, val graphName: String) {
 
   fun send() {
     tasks.add(currentBulkQueryBuilder.build())
-
     tasks.forEach { query ->
-      println(query.toString())
-      val result = jedis.sendCommand({ "GRAPH.BULK".toByteArray() }, *query.generateQueryArgs())
-
-      println((result as ByteArray).toString(Charset.defaultCharset()))
+      jedis.sendCommand({ "GRAPH.BULK".toByteArray() }, *query.generateQueryArgs())
     }
   }
 }

@@ -57,6 +57,9 @@ const val TYPE_RELATIONSHIP = "relationship"
 const val NODES_ZIP_FOLDER = "nodes"
 const val EDGES_ZIP_FOLDER = "edges"
 
+const val INITIAL_VERSION = "1"
+const val DEFAULT_GRAPH_ROTATION = "3"
+
 @Service
 @Suppress("TooManyFunctions")
 class TwingraphServiceImpl(
@@ -71,15 +74,14 @@ class TwingraphServiceImpl(
     if (findAllTwingraphs(organizationId).contains(graphId))
         throw CsmServerException("There is already a graph with the id : $graphId")
 
-    val version = "1"
-    val redisGraphKey = redisGraphKey(graphId, version)
+    val redisGraphKey = redisGraphKey(graphId, INITIAL_VERSION)
     csmJedisPool.resource.use { jedis ->
       jedis.hset(
           graphId.toRedisMetaDataKey(),
           mutableMapOf(
-              "lastVersion" to version,
+              "lastVersion" to INITIAL_VERSION,
               "graphName" to graphId,
-              "graphRotation" to "3",
+              "graphRotation" to DEFAULT_GRAPH_ROTATION,
               "lastModifiedDate" to getCurrentDate()))
     }
     if (body != null) {
@@ -293,7 +295,7 @@ class TwingraphServiceImpl(
   ): Map<String, String> {
     var map = mapOf<String, String>()
     inputStream.bufferedReader().use { reader ->
-      val csvFormat: CSVFormat = CSVFormat.DEFAULT.builder().setHeader().build()
+      val csvFormat: CSVFormat = CSVFormat.DEFAULT.builder().setHeader().setTrim(true).build()
 
       val records: Iterable<CSVRecord> = csvFormat.parse(reader)
       records.forEach { record ->
