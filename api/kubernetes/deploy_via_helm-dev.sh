@@ -504,6 +504,42 @@ EOF
 helm repo add argo https://argoproj.github.io/argo-helm
 helm upgrade --install -n ${NAMESPACE} ${ARGO_RELEASE_NAME} argo/argo-workflows --version ${ARGO_VERSION} --values values-argo.yaml
 
+LOKI_RELEASE_NAME="loki"
+helm repo add grafana https://grafana.github.io/helm-charts
+#Pod errors due to “too many open files”
+#sudo sysctl fs.inotify.max_user_watches=524288
+#sudo sysctl fs.inotify.max_user_instances=512
+#To make the changes persistent, edit the file /etc/sysctl.conf and add these lines
+#fs.inotify.max_user_watches = 524288
+#fs.inotify.max_user_instances = 512
+
+cat <<EOF > loki-values.yaml
+loki:
+  persistence:
+    enabled: true
+    accessModes:
+    - ReadWriteOnce
+    size: 10Gi
+  config:
+    table_manager:
+      retention_deletes_enabled: true
+      retention_period: 720h
+grafana:
+  enabled: true
+  persistence:
+    type: pvc
+    enabled: true
+    # storageClassName: default
+    accessModes:
+      - ReadWriteOnce
+    size: 10Gi
+promtail:
+  tolerations:
+    - effect: NoSchedule
+      operator: Exists
+EOF
+helm upgrade --install ${LOKI_RELEASE_NAME} grafana/loki-stack -f loki-values.yaml
+
 popd
 
 # cosmotech-api
