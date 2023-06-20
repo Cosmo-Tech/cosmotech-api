@@ -86,7 +86,7 @@ internal fun buildTemplate(
 
   val template =
       IoArgoprojWorkflowV1alpha1Template()
-          .name(scenarioRunContainer.name)
+          .name(scenarioRunContainer.name.lowercase())
           .metadata(IoArgoprojWorkflowV1alpha1Metadata().labels(scenarioRunContainer.labels))
           .container(container)
           .nodeSelector(scenarioRunContainer.getNodeLabelSize())
@@ -160,15 +160,17 @@ private fun buildEntrypointTemplate(
     var dependencies: List<String>? = null
     if (container.dependencies != null) {
       if (CSM_DAG_ROOT !in container.dependencies) {
-        dependencies = container.dependencies
+        dependencies = container.dependencies.map { it.lowercase() }
       }
     } else {
       if (previousContainer != null) dependencies = listOf(previousContainer.name)
     }
+
+    val containerName = container.name.lowercase()
     val task =
         IoArgoprojWorkflowV1alpha1DAGTask()
-            .name(container.name)
-            .template(container.name)
+            .name(containerName)
+            .template(containerName)
             .dependencies(dependencies)
     dagTasks.add(task)
     previousContainer = container
