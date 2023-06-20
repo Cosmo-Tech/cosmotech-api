@@ -218,6 +218,11 @@ csm:
       state:
         # the timeout in second before considering no data in probes measures and control plane is an issue
         no-data-time-out-seconds: 60
+    loki:
+      # base Url of Loki where to query logs
+      baseUrl: http://localhost:3100
+      # duration in days to query logs
+      queryDaysAgo: 1
 
 springdoc:
   # See https://springdoc.org/#properties
