@@ -7,7 +7,7 @@ import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmAdmin
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.utils.ResourceScanner
-import com.cosmotech.api.utils.getCurrentAuthenticatedMail
+import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.getCurrentAuthentication
@@ -69,7 +69,7 @@ class TwingraphServiceImplTests {
     every { csmJedisPool.resource.close() } returns Unit
 
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
-    every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_DEFAULT_USER
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
     every { getCurrentAuthenticatedUserName() } returns AUTHENTICATED_USERNAME
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
 

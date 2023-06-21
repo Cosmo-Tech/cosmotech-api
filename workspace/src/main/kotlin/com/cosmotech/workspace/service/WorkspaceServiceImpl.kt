@@ -32,7 +32,7 @@ import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
-import com.cosmotech.api.utils.getCurrentAuthenticatedMail
+import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.repository.OrganizationRepository
@@ -91,7 +91,7 @@ internal class WorkspaceServiceImpl(
             if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
               workspaceRepository.findByOrganizationId(organizationId, it).toList()
             } else {
-              val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+              val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
               workspaceRepository
                   .findByOrganizationIdAndSecurity(organizationId, currentUser, it)
                   .toList()
@@ -101,7 +101,7 @@ internal class WorkspaceServiceImpl(
       if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
         result = workspaceRepository.findByOrganizationId(organizationId, pageable).toList()
       } else {
-        val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+        val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
         result =
             workspaceRepository
                 .findByOrganizationIdAndSecurity(organizationId, currentUser, pageable)
@@ -131,7 +131,7 @@ internal class WorkspaceServiceImpl(
 
     var workspaceSecurity = workspace.security
     if (workspaceSecurity == null) {
-      workspaceSecurity = initSecurity(getCurrentAuthenticatedMail(this.csmPlatformProperties))
+      workspaceSecurity = initSecurity(getCurrentAccountIdentifier(this.csmPlatformProperties))
     }
 
     return workspaceRepository.save(

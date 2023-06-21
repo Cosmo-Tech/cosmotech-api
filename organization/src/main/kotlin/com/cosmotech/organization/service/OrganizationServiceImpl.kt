@@ -23,7 +23,7 @@ import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
-import com.cosmotech.api.utils.getCurrentAuthenticatedMail
+import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.ComponentRolePermissions
@@ -58,7 +58,7 @@ class OrganizationServiceImpl(
       result =
           findAllPaginated(defaultPageSize) {
             if (rbacEnabled) {
-              val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+              val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
               organizationRepository.findOrganizationsBySecurity(currentUser, it).toList()
             } else {
               organizationRepository.findAll(it).toList()
@@ -66,7 +66,7 @@ class OrganizationServiceImpl(
           }
     } else {
       if (rbacEnabled) {
-        val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+        val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
         result = organizationRepository.findOrganizationsBySecurity(currentUser, pageable).toList()
       } else {
         result = organizationRepository.findAll(pageable).toList()
@@ -94,7 +94,7 @@ class OrganizationServiceImpl(
     val newOrganizationId = idGenerator.generate("organization")
     var organizationSecurity = organization.security
     if (organizationSecurity == null) {
-      val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+      val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
       organizationSecurity = initSecurity(currentUser)
     }
 
