@@ -22,7 +22,7 @@ import com.cosmotech.api.rbac.ROLE_VALIDATOR
 import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.SecretManager
-import com.cosmotech.api.utils.getCurrentAuthenticatedMail
+import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.api.OrganizationApiService
@@ -108,7 +108,7 @@ class WorkspaceServiceImplTests {
   @BeforeEach
   fun setUp() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
-    every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_DEFAULT_USER
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
     every { getCurrentAuthenticatedUserName() } returns "my.account-tester"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
 

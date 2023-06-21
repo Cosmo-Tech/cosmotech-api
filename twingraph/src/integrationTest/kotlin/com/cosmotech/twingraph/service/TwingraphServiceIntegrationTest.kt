@@ -4,7 +4,7 @@ package com.cosmotech.twingraph.service
 
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.tests.CsmRedisTestBase
-import com.cosmotech.api.utils.getCurrentAuthenticatedMail
+import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.api.OrganizationApiService
@@ -63,7 +63,7 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
   @BeforeEach
   fun init() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
-    every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_ADMIN_USER
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName() } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("admin")
 

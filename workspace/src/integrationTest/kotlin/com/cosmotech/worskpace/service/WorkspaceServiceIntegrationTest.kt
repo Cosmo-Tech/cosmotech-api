@@ -13,7 +13,7 @@ import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.SecretManager
-import com.cosmotech.api.utils.getCurrentAuthenticatedMail
+import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.api.OrganizationApiService
@@ -85,7 +85,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   @BeforeEach
   fun setUp() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
-    every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_ADMIN_USER
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName() } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")
 
@@ -151,7 +151,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `test CRUD operations on Workspace as User Unauthorized`() {
 
-    every { getCurrentAuthenticatedMail(any()) } returns FAKE_MAIL
+    every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
     logger.info("should not create a new workspace")
     val workspace2 =
@@ -253,7 +253,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `test RBAC WorkspaceSecurity as User Unauthorized`() {
 
-    every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_DEFAULT_USER
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
 
     logger.info("should throw CsmAccessForbiddenException when getting default security")
     assertThrows<CsmAccessForbiddenException> {
@@ -271,7 +271,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `test RBAC as User Unauthorized`() {
-    every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_DEFAULT_USER
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
 
     assertEquals(
         0, workspaceApiService.findAllWorkspaces(organizationRegistered.id!!, null, null).size)
@@ -321,7 +321,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `test RBAC AccessControls on Workspace as User Unauthorized`() {
 
-    every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_DEFAULT_USER
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
 
     logger.info("should throw CsmAccessForbiddenException when adding a new access control")
     val workspaceAccessControl = WorkspaceAccessControl(FAKE_MAIL, ROLE_VIEWER)

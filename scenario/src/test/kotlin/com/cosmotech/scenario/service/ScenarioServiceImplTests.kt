@@ -21,7 +21,7 @@ import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_USER
 import com.cosmotech.api.rbac.ROLE_VALIDATOR
 import com.cosmotech.api.rbac.ROLE_VIEWER
-import com.cosmotech.api.utils.getCurrentAuthenticatedMail
+import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.getCurrentAuthentication
@@ -129,7 +129,7 @@ class ScenarioServiceImplTests {
     every { csmPlatformProperties.azure } returns csmPlatformPropertiesAzure
 
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
-    every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_DEFAULT_USER
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
     every { getCurrentAuthenticatedUserName() } returns AUTHENTICATED_USERNAME
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
 

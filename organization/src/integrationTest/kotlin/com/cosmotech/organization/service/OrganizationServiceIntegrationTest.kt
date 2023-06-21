@@ -10,7 +10,7 @@ import com.cosmotech.api.rbac.ROLE_USER
 import com.cosmotech.api.rbac.ROLE_VALIDATOR
 import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.tests.CsmRedisTestBase
-import com.cosmotech.api.utils.getCurrentAuthenticatedMail
+import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.api.OrganizationApiService
@@ -62,7 +62,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   @BeforeEach
   fun setUp() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
-    every { getCurrentAuthenticatedMail(any()) } returns defaultName
+    every { getCurrentAccountIdentifier(any()) } returns defaultName
     every { getCurrentAuthenticatedUserName() } returns "my.account-tester"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
     rediSearchIndexer.createIndexFor(Organization::class.java)
@@ -325,7 +325,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             dynamicTest("Test RBAC find all : $role") {
               every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
-              every { getCurrentAuthenticatedMail(any()) } returns defaultName
+              every { getCurrentAccountIdentifier(any()) } returns defaultName
               organizationApiService.registerOrganization(
                   makeOrganizationWithRole("id", defaultName, role))
 
