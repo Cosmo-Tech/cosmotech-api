@@ -68,7 +68,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   fun setUp() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns "test.user@cosmotech.com"
-    every { getCurrentAuthenticatedUserName() } returns "test.user"
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
     rediSearchIndexer.createIndexFor(Dataset::class.java)
 

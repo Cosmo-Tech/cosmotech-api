@@ -68,7 +68,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   fun setUp() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-    every { getCurrentAuthenticatedUserName() } returns "test.user"
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")
 
     ReflectionTestUtils.setField(

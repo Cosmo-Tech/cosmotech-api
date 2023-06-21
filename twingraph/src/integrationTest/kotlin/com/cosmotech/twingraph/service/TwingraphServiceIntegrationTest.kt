@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.twingraph.service
 
+import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
@@ -53,6 +54,7 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
 
   @Autowired lateinit var twingraphApiService: TwingraphApiService
   @Autowired lateinit var organizationApiService: OrganizationApiService
+  @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   lateinit var jedisPool: JedisPool
   lateinit var redisGraph: RedisGraph
@@ -64,7 +66,7 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
   fun init() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-    every { getCurrentAuthenticatedUserName() } returns "test.user"
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("admin")
 
     organization =

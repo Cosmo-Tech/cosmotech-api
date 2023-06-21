@@ -7,9 +7,7 @@ import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.id.CsmIdGenerator
-import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.api.utils.getCurrentAuthentication
-import com.cosmotech.api.utils.objectMapper
+import com.cosmotech.api.utils.*
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenariorun.ContainerFactory
@@ -43,6 +41,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.security.core.Authentication
+import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthentication
 
 private const val ORGANIZATION_ID = "O-AbCdEf123"
 private const val WORKSPACE_ID = "W-AbCdEf123"
@@ -103,9 +102,11 @@ class ScenarioRunServiceImplTests {
     val csmPlatformPropertiesTwincache = mockk<CsmPlatformProperties.CsmTwinCacheProperties>()
     every { csmPlatformProperties.twincache } returns csmPlatformPropertiesTwincache
     mockkStatic(::getCurrentAuthentication)
-    val authentication = mockk<Authentication>()
-    every { authentication.name } returns AUTHENTICATED_USERNAME
+    val authentication = mockk<BearerTokenAuthentication>()
+
     every { getCurrentAuthentication() } returns authentication
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns AUTHENTICATED_USERNAME
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf()
   }
 
   @AfterTest
@@ -375,7 +376,7 @@ class ScenarioRunServiceImplTests {
     every { scenarioRun.workspaceId } returns "workspaceId"
     every { scenarioRun.csmSimulationRun } returns simulationRunId
     every { scenarioRun.scenarioId } returns "scenarioId"
-    every { getCurrentAuthenticatedUserName() } returns "ownerId"
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "ownerId"
     scenarioRunServiceImpl.deleteScenarioRun("orgId", "scenariorunId")
     verify(exactly = 1) {
       azureDataExplorerClient.deleteDataFromADXbyExtentShard(

@@ -70,7 +70,7 @@ class OrganizationServiceImplTests {
 
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns USER_ID
-    every { getCurrentAuthenticatedUserName() } returns "my.account-tester"
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "my.account-tester"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
 
     MockKAnnotations.init(this)

@@ -109,7 +109,7 @@ class WorkspaceServiceImplTests {
   fun setUp() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
-    every { getCurrentAuthenticatedUserName() } returns "my.account-tester"
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "my.account-tester"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
 
     val csmPlatformPropertiesUpload = mockk<CsmPlatformProperties.Upload>()

@@ -161,7 +161,7 @@ internal class ScenarioServiceImpl(
     val scenarioToSave =
         scenario.copy(
             id = idGenerator.generate("scenario"),
-            ownerId = getCurrentAuthenticatedUserName(),
+            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
             organizationId = organizationId,
             workspaceId = workspaceId,
             solutionId = solution?.id,

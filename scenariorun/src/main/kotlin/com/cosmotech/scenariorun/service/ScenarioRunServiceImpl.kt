@@ -89,7 +89,7 @@ class ScenarioRunServiceImpl(
 
   override fun deleteScenarioRun(organizationId: String, scenariorunId: String) {
     val scenarioRun = this.findScenarioRunById(organizationId, scenariorunId)
-    if (scenarioRun.ownerId != getCurrentAuthenticatedUserName()) {
+    if (scenarioRun.ownerId != getCurrentAuthenticatedUserName(csmPlatformProperties)) {
       // TODO Only the owner or an admin should be able to perform this operation
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
     }
@@ -577,7 +577,7 @@ class ScenarioRunServiceImpl(
     val scenarioRun =
         scenarioRunRequest.copy(
             id = idGenerator.generate("scenariorun", prependPrefix = "sr-"),
-            ownerId = getCurrentAuthenticatedUserName(),
+            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
             csmSimulationRun = csmSimulationId,
             organizationId = organizationId,
             workspaceId = workspaceId,
