@@ -3,7 +3,9 @@
 package com.cosmotech.connector.service
 
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
@@ -63,8 +65,6 @@ class ConnectorServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `test find All Connectors with different pagination params`() {
     val numberOfConnector = 20
-    val defaultPageSize = csmPlatformProperties.twincache.connector.defaultPageSize
-    val expectedSize = 15
     logger.info("Creating $numberOfConnector connectors...")
     IntRange(1, numberOfConnector).forEach {
       var newConnector = mockConnector("o-connector-test-$it")
@@ -73,75 +73,103 @@ class ConnectorServiceIntegrationTest : CsmRedisTestBase() {
     var connectorList = connectorApiService.findAllConnectors(null, null)
     logger.info("Connector list retrieved contains : ${connectorList.size} elements")
     assertEquals(numberOfConnector, connectorList.size)
-
-    @Test
-    fun `test find All Connector - get first page without size `() {
-      val numberOfConnector = 100
-      logger.info("Creating $numberOfConnector organizations...")
-      IntRange(1, numberOfConnector).forEach {
-        var newConnector = mockConnector("o-connector-test-$it")
-        connectorApiService.registerConnector(newConnector)
-      }
-      val connectorList = connectorApiService.findAllConnectors(0, null)
-      logger.info("Connector list retrieved contains : ${connectorList.size} elements")
-      assertEquals(csmPlatformProperties.twincache.connector.defaultPageSize, connectorList.size)
-    }
-
-    @Test
-    fun `test find All Connector - get first page with size `() {
-      val numberOfConnector = 100
-      val expectedSize = 75
-      logger.info("Creating $numberOfConnector organizations...")
-      IntRange(1, numberOfConnector).forEach {
-        var newConnector = mockConnector("o-connector-test-$it")
-        connectorApiService.registerConnector(newConnector)
-      }
-      var connectorList = connectorApiService.findAllConnectors(0, expectedSize)
-      logger.info("Connector list retrieved contains : ${connectorList.size} elements")
-      assertEquals(defaultPageSize, connectorList.size)
-
-      connectorList = connectorApiService.findAllConnectors(0, expectedSize)
-      logger.info("Connector list retrieved contains : ${connectorList.size} elements")
-      assertEquals(expectedSize, connectorList.size)
-
-      logger.info("Should return the last page")
-      connectorList = connectorApiService.findAllConnectors(1, expectedSize)
-      assertEquals(numberOfConnector - expectedSize, connectorList.size)
-    }
-
-    @Test
-    fun `test find All Connector with wrong pagination params`() {
-      var newConnector = mockConnector("o-connector-test-1")
+  }
+  @Test
+  fun `test find All Connector - get first page without size `() {
+    val numberOfConnector = 100
+    logger.info("Creating $numberOfConnector organizations...")
+    IntRange(1, numberOfConnector).forEach {
+      var newConnector = mockConnector("o-connector-test-$it")
       connectorApiService.registerConnector(newConnector)
-
-      logger.info("Should throw IllegalArgumentException when page and size are zeros")
-      assertThrows<IllegalArgumentException> { connectorApiService.findAllConnectors(0, 0) }
-
-      logger.info("Should throw IllegalArgumentException when page is negative")
-      assertThrows<IllegalArgumentException> { connectorApiService.findAllConnectors(-1, 10) }
-
-      logger.info("Should throw IllegalArgumentException when size is negative")
-      assertThrows<IllegalArgumentException> { connectorApiService.findAllConnectors(0, -1) }
     }
+    val connectorList = connectorApiService.findAllConnectors(0, null)
+    logger.info("Connector list retrieved contains : ${connectorList.size} elements")
+    assertEquals(csmPlatformProperties.twincache.connector.defaultPageSize, connectorList.size)
+  }
 
-    @Test
-    fun registerConnector() {
-      val connector1 = mockConnector("connector1")
-      val connector2 = mockConnector("connector2")
+  @Test
+  fun `test find All Connector - get first page with size `() {
+    val numberOfConnector = 100
+    val expectedSize = 75
+    val defaultPageSize = csmPlatformProperties.twincache.connector.defaultPageSize
+    logger.info("Creating $numberOfConnector organizations...")
+    IntRange(1, numberOfConnector).forEach {
+      var newConnector = mockConnector("o-connector-test-$it")
+      connectorApiService.registerConnector(newConnector)
+    }
+    var connectorList = connectorApiService.findAllConnectors(0, null)
+    logger.info("Connector list retrieved contains : ${connectorList.size} elements")
+    assertEquals(defaultPageSize, connectorList.size)
 
-      logger.info("Create new connector...")
-      val connectorRegistered1 = connectorApiService.registerConnector(connector1)
-      connectorApiService.registerConnector(connector2)
+    connectorList = connectorApiService.findAllConnectors(0, expectedSize)
+    logger.info("Connector list retrieved contains : ${connectorList.size} elements")
+    assertEquals(expectedSize, connectorList.size)
 
-      logger.info("Fetch new connector created ...")
-      val connectorRetrieved = connectorApiService.findConnectorById(connectorRegistered1.id!!)
-      assertEquals(connectorRegistered1, connectorRetrieved)
+    logger.info("Should return the last page")
+    connectorList = connectorApiService.findAllConnectors(1, expectedSize)
+    assertEquals(numberOfConnector - expectedSize, connectorList.size)
+  }
 
-      logger.info("Deleting connector ...")
+  @Test
+  fun `test find All Connector with wrong pagination params`() {
+    var newConnector = mockConnector("o-connector-test-1")
+    connectorApiService.registerConnector(newConnector)
+
+    logger.info("Should throw IllegalArgumentException when page and size are zeros")
+    assertThrows<IllegalArgumentException> { connectorApiService.findAllConnectors(0, 0) }
+
+    logger.info("Should throw IllegalArgumentException when page is negative")
+    assertThrows<IllegalArgumentException> { connectorApiService.findAllConnectors(-1, 10) }
+
+    logger.info("Should throw IllegalArgumentException when size is negative")
+    assertThrows<IllegalArgumentException> { connectorApiService.findAllConnectors(0, -1) }
+  }
+
+  @Test
+  fun registerConnector() {
+    val connector1 = mockConnector("connector1")
+    val connector2 = mockConnector("connector2")
+
+    logger.info("Create new connector...")
+    val connectorRegistered1 = connectorApiService.registerConnector(connector1)
+    connectorApiService.registerConnector(connector2)
+
+    logger.info("Fetch new connector created ...")
+    val connectorRetrieved = connectorApiService.findConnectorById(connectorRegistered1.id!!)
+    assertEquals(connectorRegistered1, connectorRetrieved)
+
+    logger.info("Deleting connector ...")
+    connectorApiService.unregisterConnector(connectorRegistered1.id!!)
+    assertThrows<CsmResourceNotFoundException> {
+      connectorApiService.findConnectorById(connectorRegistered1.id!!)
+    }
+  }
+  @Test
+  fun `can delete connector when user is not the owner and is Platform Admin`() {
+    val connector1 = mockConnector("connector1")
+    logger.info("Create new connector...")
+    val connectorRegistered1 = connectorApiService.registerConnector(connector1)
+    logger.info("Change current user...")
+    every { getCurrentAccountIdentifier(any()) } returns "test.admin@cosmotech.com"
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.admin"
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
+    connectorApiService.unregisterConnector(connectorRegistered1.id!!)
+    assertThrows<CsmResourceNotFoundException> {
+      connectorApiService.findConnectorById(connectorRegistered1.id!!)
+    }
+  }
+
+  @Test
+  fun `cannot delete connector when user is not the owner and is not Platform Admin`() {
+    val connector1 = mockConnector("connector1")
+    logger.info("Create new connector...")
+    val connectorRegistered1 = connectorApiService.registerConnector(connector1)
+    logger.info("Change current user...")
+    every { getCurrentAccountIdentifier(any()) } returns "test.other.user@cosmotech.com"
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.other.user"
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf()
+    assertThrows<CsmAccessForbiddenException> {
       connectorApiService.unregisterConnector(connectorRegistered1.id!!)
-      assertThrows<CsmResourceNotFoundException> {
-        connectorApiService.findConnectorById(connectorRegistered1.id!!)
-      }
     }
   }
 }
