@@ -4,7 +4,10 @@ package com.cosmotech.solution.service
 
 import com.azure.storage.blob.BlobServiceClient
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.api.exceptions.CsmAccessForbiddenException
+import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.ROLE_NONE
+import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
@@ -115,6 +118,76 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val solutionsFoundAfterDelete =
         solutionApiService.findAllSolutions(organizationRegistered.id!!, null, null)
     assertTrue(solutionsFoundAfterDelete.size == 1)
+  }
+
+  @Test
+  fun `can delete solution when user is not the owner and is Platform Admin`() {
+    logger.info("Register new solution...")
+    val solution = mockSolution(organizationRegistered.id!!)
+    val solutionCreated = solutionApiService.createSolution(organizationRegistered.id!!, solution)
+
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.admin"
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
+
+    solutionApiService.deleteSolution(organizationRegistered.id!!, solutionCreated.id!!)
+
+    assertThrows<CsmResourceNotFoundException> {
+      solutionCreated.id?.let {
+        solutionApiService.findSolutionById(organizationRegistered.id!!, it)
+      }
+    }
+  }
+
+  @Test
+  fun `cannot delete solution when user is not the owner and is not Platform Admin`() {
+    logger.info("Register new solution...")
+    val solution = mockSolution(organizationRegistered.id!!)
+    val solutionCreated = solutionApiService.createSolution(organizationRegistered.id!!, solution)
+
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_READER_USER
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.other.user"
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf()
+    assertThrows<CsmAccessForbiddenException> {
+      solutionApiService.deleteSolution(organizationRegistered.id!!, solutionCreated.id!!)
+    }
+  }
+
+  @Test
+  fun `can update solution when user is not the owner and is Platform Admin`() {
+    logger.info("Register new solution...")
+    val solution = mockSolution(organizationRegistered.id!!)
+    val solutionCreated = solutionApiService.createSolution(organizationRegistered.id!!, solution)
+
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.other.user"
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
+    solutionCreated.ownerId = "new_owner_id"
+
+    val updateSolution =
+        solutionApiService.updateSolution(
+            organizationRegistered.id!!, solutionCreated.id!!, solutionCreated)
+
+    updateSolution.id?.let { solutionApiService.findSolutionById(organizationRegistered.id!!, it) }
+
+    assertEquals("new_owner_id", updateSolution.ownerId)
+  }
+
+  @Test
+  fun `cannot update solution when user is not the owner and is not Platform Admin`() {
+    logger.info("Register new solution...")
+    val solution = mockSolution(organizationRegistered.id!!)
+    val solutionCreated = solutionApiService.createSolution(organizationRegistered.id!!, solution)
+
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_READER_USER
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.other.user"
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf()
+    solutionCreated.ownerId = "new_owner_id"
+
+    assertThrows<CsmAccessForbiddenException> {
+      solutionApiService.updateSolution(
+          organizationRegistered.id!!, solutionCreated.id!!, solutionCreated)
+    }
   }
 
   @Test

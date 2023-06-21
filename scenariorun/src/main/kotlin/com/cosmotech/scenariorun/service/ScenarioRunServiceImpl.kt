@@ -23,10 +23,12 @@ import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.scenario.ScenarioRunMetaData
 import com.cosmotech.api.scenariorun.DataIngestionState
+import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.security.coroutine.SecurityCoroutineContext
 import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.findAllPaginated
+import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
@@ -89,7 +91,10 @@ class ScenarioRunServiceImpl(
 
   override fun deleteScenarioRun(organizationId: String, scenariorunId: String) {
     val scenarioRun = this.findScenarioRunById(organizationId, scenariorunId)
-    if (scenarioRun.ownerId != getCurrentAuthenticatedUserName(csmPlatformProperties)) {
+    val isPlatformAdmin =
+        getCurrentAuthenticatedRoles(csmPlatformProperties).contains(ROLE_PLATFORM_ADMIN)
+    if (scenarioRun.ownerId != getCurrentAuthenticatedUserName(csmPlatformProperties) &&
+        !isPlatformAdmin) {
       // TODO Only the owner or an admin should be able to perform this operation
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
     }
