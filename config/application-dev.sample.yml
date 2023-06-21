@@ -65,4 +65,4 @@ csm:
         account-name: "csmphoenixdev"
         account-key: "[fill-this-value]"
       containerRegistries:
-        solutions: "localhost:5000"
+        solutions: "csmenginesdev.azurecr.io"
