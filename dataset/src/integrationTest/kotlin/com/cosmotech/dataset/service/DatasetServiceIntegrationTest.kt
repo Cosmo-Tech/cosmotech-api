@@ -3,6 +3,10 @@
 package com.cosmotech.dataset.service
 
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.api.exceptions.CsmAccessForbiddenException
+import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.security.ROLE_ORGANIZATION_USER
+import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
@@ -114,6 +118,80 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     datasetApiService.deleteDataset(organizationId, registeredDataset2.id!!)
     datasetList = datasetApiService.findAllDatasets(organizationId, null, null)
     assertTrue { datasetList.size == 1 }
+  }
+
+  @Test
+  fun `can delete dataset when user is not the owner and is Platform Admin`() {
+
+    logger.info("Register dataset : ${dataset1.id}...")
+    registeredDataset1 = datasetApiService.createDataset(organizationId, dataset1)
+    assertNotNull(registeredDataset1)
+    logger.info("Change current user...")
+    every { getCurrentAccountIdentifier(any()) } returns "test.user.admin@cosmotech.com"
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.admin"
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
+    assertNotNull(registeredDataset1.id)
+    registeredDataset1.id?.let { datasetApiService.deleteDataset(organizationId, it) }
+
+    logger.info("Fetch dataset : ${registeredDataset1.id}...")
+    assertThrows<CsmResourceNotFoundException> {
+      datasetApiService.findDatasetById(organizationId, registeredDataset1.id!!)
+    }
+  }
+
+  @Test
+  fun `can not delete dataset when user is not the owner and not Platform Admin`() {
+
+    logger.info("Register dataset : ${dataset1.id}...")
+    registeredDataset1 = datasetApiService.createDataset(organizationId, dataset1)
+    assertNotNull(registeredDataset1)
+    logger.info("Change current user...")
+    every { getCurrentAccountIdentifier(any()) } returns "test.user.other@cosmotech.com"
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user.other"
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_ORGANIZATION_USER)
+    assertNotNull(registeredDataset1.id)
+    assertThrows<CsmAccessForbiddenException> {
+      registeredDataset1.id?.let { datasetApiService.deleteDataset(organizationId, it) }
+    }
+  }
+  @Test
+  fun `can update dataset owner when user is not the owner and is Platform Admin`() {
+
+    logger.info("Register dataset : ${dataset1.id}...")
+    registeredDataset1 = datasetApiService.createDataset(organizationId, dataset1)
+    assertNotNull(registeredDataset1)
+    logger.info("Change current user...")
+    every { getCurrentAccountIdentifier(any()) } returns "test.user.admin@cosmotech.com"
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.admin"
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
+    assertNotNull(registeredDataset1.id)
+    registeredDataset1.ownerId = "new_owner_id"
+    registeredDataset1.id?.let {
+      datasetApiService.updateDataset(organizationId, it, registeredDataset1)
+    }
+
+    logger.info("Fetch dataset : ${registeredDataset1.id}...")
+    val datasetUpdated = datasetApiService.findDatasetById(organizationId, registeredDataset1.id!!)
+    assertEquals("new_owner_id", datasetUpdated.ownerId)
+  }
+
+  @Test
+  fun `cannot update dataset owner when user is not the owner and is not Platform Admin`() {
+
+    logger.info("Register dataset : ${dataset1.id}...")
+    registeredDataset1 = datasetApiService.createDataset(organizationId, dataset1)
+    assertNotNull(registeredDataset1)
+    logger.info("Change current user...")
+    every { getCurrentAccountIdentifier(any()) } returns "test.user.admin@cosmotech.com"
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.admin"
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf()
+    assertNotNull(registeredDataset1.id)
+    registeredDataset1.ownerId = "new_owner_id"
+    assertThrows<CsmAccessForbiddenException> {
+      registeredDataset1.id?.let {
+        datasetApiService.updateDataset(organizationId, it, registeredDataset1)
+      }
+    }
   }
 
   fun `test special endpoints`() {
