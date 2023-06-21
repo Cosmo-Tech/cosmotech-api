@@ -42,7 +42,7 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 val kotlinJvmTarget = 17
-val cosmotechApiCommonVersion = "0.1.44-SNAPSHOT"
+val cosmotechApiCommonVersion = "0.1.45-SNAPSHOT"
 val cosmotechApiAzureVersion = "0.1.10-SNAPSHOT"
 val azureSpringBootBomVersion = "3.14.0"
 val jedisVersion = "3.9.0"
@@ -58,6 +58,7 @@ allprojects {
   apply(plugin = "org.owasp.dependencycheck")
 
   repositories {
+    mavenLocal()
     maven {
       name = "GitHubPackages"
       url = uri("https://maven.pkg.github.com/Cosmo-Tech/cosmotech-api-common")

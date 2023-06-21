@@ -4,7 +4,7 @@ package com.cosmotech.dataset.service
 
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.tests.CsmRedisTestBase
-import com.cosmotech.api.utils.getCurrentAuthenticatedMail
+import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.connector.api.ConnectorApiService
@@ -67,7 +67,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   @BeforeEach
   fun setUp() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
-    every { getCurrentAuthenticatedMail(any()) } returns "test.user@cosmotech.com"
+    every { getCurrentAccountIdentifier(any()) } returns "test.user@cosmotech.com"
     every { getCurrentAuthenticatedUserName() } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
     rediSearchIndexer.createIndexFor(Dataset::class.java)

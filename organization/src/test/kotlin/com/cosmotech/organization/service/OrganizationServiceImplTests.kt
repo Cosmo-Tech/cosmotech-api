@@ -17,7 +17,7 @@ import com.cosmotech.api.rbac.ROLE_VALIDATOR
 import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
-import com.cosmotech.api.utils.getCurrentAuthenticatedMail
+import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.domain.Organization
@@ -69,7 +69,7 @@ class OrganizationServiceImplTests {
     every { csmPlatformProperties.rbac.enabled } returns true
 
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
-    every { getCurrentAuthenticatedMail(any()) } returns USER_ID
+    every { getCurrentAccountIdentifier(any()) } returns USER_ID
     every { getCurrentAuthenticatedUserName() } returns "my.account-tester"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
 

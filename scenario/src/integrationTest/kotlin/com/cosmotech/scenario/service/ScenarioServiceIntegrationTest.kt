@@ -10,7 +10,7 @@ import com.cosmotech.api.rbac.ROLE_EDITOR
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.tests.CsmRedisTestBase
-import com.cosmotech.api.utils.getCurrentAuthenticatedMail
+import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.connector.api.ConnectorApiService
@@ -107,7 +107,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   @BeforeEach
   fun setUp() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
-    every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_ADMIN_USER
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName() } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")
 
@@ -390,7 +390,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `test RBAC ScenarioSecurity as User Unauthorized`() {
-    every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_READER_USER
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_READER_USER
 
     logger.info("should throw CsmAccessForbiddenException when trying to access ScenarioSecurity")
     // Test default security
@@ -418,7 +418,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
               CONNECTED_ADMIN_USER to false)
           .map { (mail, shouldThrow) ->
             dynamicTest("Test RBAC findAllScenarioByValidationStatus : $mail") {
-              every { getCurrentAuthenticatedMail(any()) } returns mail
+              every { getCurrentAccountIdentifier(any()) } returns mail
               if (shouldThrow)
                   assertThrows<Exception> {
                     scenarioApiService.findAllScenariosByValidationStatus(
@@ -451,7 +451,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
               CONNECTED_ADMIN_USER to false)
           .map { (mail, shouldThrow) ->
             dynamicTest("Test RBAC findAllScenarioByValidationStatus : $mail") {
-              every { getCurrentAuthenticatedMail(any()) } returns mail
+              every { getCurrentAccountIdentifier(any()) } returns mail
               if (shouldThrow)
                   assertThrows<Exception> {
                     scenarioApiService.deleteScenario(
@@ -476,7 +476,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
               CONNECTED_ADMIN_USER to false)
           .map { (mail, shouldThrow) ->
             dynamicTest("Test RBAC findAllScenarioByValidationStatus : $mail") {
-              every { getCurrentAuthenticatedMail(any()) } returns mail
+              every { getCurrentAccountIdentifier(any()) } returns mail
               if (shouldThrow)
                   assertThrows<Exception> {
                     scenarioApiService.deleteAllScenarios(
@@ -535,7 +535,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `test RBAC AccessControls on Scenario as User Unauthorized`() {
 
-    every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_READER_USER
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_READER_USER
 
     logger.info("should throw CsmAccessForbiddenException when trying to add ScenarioAccessControl")
     val scenarioAccessControl = ScenarioAccessControl(FAKE_MAIL, ROLE_VIEWER)
@@ -577,7 +577,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `test propagation of scenario deletion in children`() {
-    every { getCurrentAuthenticatedMail(any()) } returns CONNECTED_ADMIN_USER
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
     var firstChildScenario =
         scenarioApiService.createScenario(

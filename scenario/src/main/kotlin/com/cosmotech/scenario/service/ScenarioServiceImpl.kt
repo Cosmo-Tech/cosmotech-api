@@ -35,7 +35,7 @@ import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
-import com.cosmotech.api.utils.getCurrentAuthenticatedMail
+import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.service.getRbac
@@ -154,7 +154,7 @@ internal class ScenarioServiceImpl(
 
     var scenarioSecurity = scenario.security
     if (scenarioSecurity == null) {
-      scenarioSecurity = initSecurity(getCurrentAuthenticatedMail(this.csmPlatformProperties))
+      scenarioSecurity = initSecurity(getCurrentAccountIdentifier(this.csmPlatformProperties))
     }
 
     val now = Instant.now().toEpochMilli()
@@ -385,7 +385,7 @@ internal class ScenarioServiceImpl(
 
     if (pageRequest != null) {
       if (rbacEnabled) {
-        val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+        val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
         return scenarioRepository
             .findByValidationStatusAndSecurity(status, currentUser, pageRequest!!)
             .toList()
@@ -399,7 +399,7 @@ internal class ScenarioServiceImpl(
     do {
       var scenarioList: List<Scenario>
       if (rbacEnabled) {
-        val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+        val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
         scenarioList =
             scenarioRepository
                 .findByValidationStatusAndSecurity(status, currentUser, pageRequest!!)
@@ -423,7 +423,7 @@ internal class ScenarioServiceImpl(
   ): List<Scenario> {
     val pageable = PageRequest.of(page, size)
     if (isRbacEnabled(organizationId, workspaceId)) {
-      val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+      val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
       return scenarioRepository
           .findByWorkspaceIdAndSecurity(workspaceId, currentUser, pageable)
           .toList()
@@ -448,7 +448,7 @@ internal class ScenarioServiceImpl(
     do {
       var scenarioList: List<Scenario>
       if (rbacEnabled) {
-        val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+        val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
         scenarioList =
             scenarioRepository.findByRootIdAndSecurity(rootId, currentUser, pageable).toList()
       } else {
@@ -472,7 +472,7 @@ internal class ScenarioServiceImpl(
     do {
       var scenarioList: List<Scenario>
       if (rbacEnabled) {
-        val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+        val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
         scenarioList =
             scenarioRepository.findByParentIdAndSecurity(parentId, currentUser, pageable).toList()
       } else {
