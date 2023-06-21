@@ -130,7 +130,7 @@ class ScenarioServiceImplTests {
 
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
-    every { getCurrentAuthenticatedUserName() } returns AUTHENTICATED_USERNAME
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns AUTHENTICATED_USERNAME
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
 
     every { csmPlatformProperties.rbac.enabled } returns true

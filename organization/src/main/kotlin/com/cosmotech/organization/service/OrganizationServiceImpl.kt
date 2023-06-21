@@ -101,7 +101,7 @@ class OrganizationServiceImpl(
     return organizationRepository.save(
         organization.copy(
             id = newOrganizationId,
-            ownerId = getCurrentAuthenticatedUserName(),
+            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
             security = organizationSecurity))
   }
 

@@ -138,7 +138,7 @@ internal class WorkspaceServiceImpl(
         workspace.copy(
             id = idGenerator.generate("workspace"),
             organizationId = organizationId,
-            ownerId = getCurrentAuthenticatedUserName(),
+            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
             security = workspaceSecurity))
   }
 

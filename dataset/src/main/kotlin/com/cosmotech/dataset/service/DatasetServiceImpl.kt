@@ -68,7 +68,7 @@ internal class DatasetServiceImpl(
     val datasetCopy =
         dataset.copy(
             id = idGenerator.generate("dataset"),
-            ownerId = getCurrentAuthenticatedUserName(),
+            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
             organizationId = organizationId)
     datasetCopy.connector!!.apply {
       name = existingConnector.name
@@ -79,7 +79,7 @@ internal class DatasetServiceImpl(
 
   override fun deleteDataset(organizationId: String, datasetId: String) {
     val dataset = findDatasetById(organizationId, datasetId)
-    if (dataset.ownerId != getCurrentAuthenticatedUserName()) {
+    if (dataset.ownerId != getCurrentAuthenticatedUserName(csmPlatformProperties)) {
       // TODO Only the owner or an admin should be able to perform this operation
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
     }
@@ -96,7 +96,7 @@ internal class DatasetServiceImpl(
 
     if (dataset.ownerId != null && dataset.changed(existingDataset) { ownerId }) {
       // Allow to change the ownerId as well, but only the owner can transfer the ownership
-      if (existingDataset.ownerId != getCurrentAuthenticatedUserName()) {
+      if (existingDataset.ownerId != getCurrentAuthenticatedUserName(csmPlatformProperties)) {
         // TODO Only the owner or an admin should be able to perform this operation
         throw CsmAccessForbiddenException(
             "You are not allowed to change the ownership of this Resource")

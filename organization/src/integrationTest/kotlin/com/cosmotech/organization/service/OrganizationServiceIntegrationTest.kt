@@ -63,7 +63,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   fun setUp() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns defaultName
-    every { getCurrentAuthenticatedUserName() } returns "my.account-tester"
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "my.account-tester"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
     rediSearchIndexer.createIndexFor(Organization::class.java)
   }
