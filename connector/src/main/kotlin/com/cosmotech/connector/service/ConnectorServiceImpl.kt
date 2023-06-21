@@ -37,13 +37,14 @@ internal class ConnectorServiceImpl(var connectorRepository: ConnectorRepository
   override fun registerConnector(connector: Connector): Connector {
     val connectorToSave =
         connector.copy(
-            id = idGenerator.generate("connector"), ownerId = getCurrentAuthenticatedUserName())
+            id = idGenerator.generate("connector"),
+            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties))
     return connectorRepository.save(connectorToSave)
   }
 
   override fun unregisterConnector(connectorId: String) {
     val connector = this.findConnectorById(connectorId)
-    if (connector.ownerId != getCurrentAuthenticatedUserName()) {
+    if (connector.ownerId != getCurrentAuthenticatedUserName(csmPlatformProperties)) {
       // TODO Only the owner or an admin should be able to perform this operation
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
     }

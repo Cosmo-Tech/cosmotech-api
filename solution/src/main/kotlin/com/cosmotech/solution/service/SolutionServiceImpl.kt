@@ -145,11 +145,11 @@ internal class SolutionServiceImpl(
           solution.copy(
               id = idGenerator.generate("solution", prependPrefix = "sol-"),
               organizationId = organizationId,
-              ownerId = getCurrentAuthenticatedUserName()))
+              ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties)))
 
   override fun deleteSolution(organizationId: String, solutionId: String) {
     val solution = findSolutionById(organizationId, solutionId)
-    if (solution.ownerId != getCurrentAuthenticatedUserName()) {
+    if (solution.ownerId != getCurrentAuthenticatedUserName(csmPlatformProperties)) {
       // TODO Only the owner or an admin should be able to perform this operation
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
     }
@@ -183,7 +183,7 @@ internal class SolutionServiceImpl(
 
     if (solution.ownerId != null && solution.changed(existingSolution) { ownerId }) {
       // Allow to change the ownerId as well, but only the owner can transfer the ownership
-      if (existingSolution.ownerId != getCurrentAuthenticatedUserName()) {
+      if (existingSolution.ownerId != getCurrentAuthenticatedUserName(csmPlatformProperties)) {
         // TODO Only the owner or an admin should be able to perform this operation
         throw CsmAccessForbiddenException(
             "You are not allowed to change the ownership of this Resource")
