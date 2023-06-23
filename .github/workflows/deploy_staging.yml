@@ -18,7 +18,7 @@ jobs:
     if: |
       (contains(github.event.client_payload.gh_ref, 'refs/tags')) &&
       ((!contains(github.event.client_payload.gh_ref, '-')) ||
-      (contains(github.event.client_payload.gh_ref, '-preview')) ||
+      (contains(github.event.client_payload.gh_ref, '-private')) ||
       (contains(github.event.client_payload.gh_ref, '-public')))
     runs-on: ubuntu-latest
     concurrency:
@@ -56,7 +56,7 @@ jobs:
           echo "apiScriptVersion=${apiScriptVersion}" >> $GITHUB_OUTPUT
 
           export apiVersion=${apiScriptVersion//./-}
-          if [[ "$gitRefName" == *"-preview"* ]]; then
+          if [[ "$gitRefName" == *"-private"* ]]; then
             export apiVersion=${apiScriptVersion//./-}-preview
           fi
           if [[ "$gitRefName" == *"-public"* ]]; then
