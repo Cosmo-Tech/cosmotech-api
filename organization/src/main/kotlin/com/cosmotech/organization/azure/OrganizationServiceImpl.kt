@@ -28,7 +28,7 @@ import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
-import com.cosmotech.api.utils.getCurrentAuthenticatedMail
+import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.organization.api.OrganizationApiService
@@ -65,7 +65,7 @@ class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin
     if (isAdmin || !this.csmPlatformProperties.rbac.enabled) {
       return cosmosTemplate.findAll(coreOrganizationContainer)
     }
-    val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+    val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
     return cosmosCoreDatabase
         .getContainer(this.coreOrganizationContainer)
         .queryItems(
@@ -101,7 +101,7 @@ class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin
 
     var organizationSecurity = organization.security
     if (organizationSecurity == null) {
-      organizationSecurity = initSecurity(getCurrentAuthenticatedMail(this.csmPlatformProperties))
+      organizationSecurity = initSecurity(getCurrentAccountIdentifier(this.csmPlatformProperties))
     }
 
     val organizationRegistered =
@@ -109,7 +109,7 @@ class OrganizationServiceImpl(private val csmRbac: CsmRbac, private val csmAdmin
             coreOrganizationContainer,
             organization.copy(
                 id = newOrganizationId,
-                ownerId = getCurrentAuthenticatedUserName(),
+                ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
                 security = organizationSecurity))
 
     val organizationId =

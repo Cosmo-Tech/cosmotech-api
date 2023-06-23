@@ -8,6 +8,8 @@ import com.cosmotech.api.azure.cosmosdb.ext.findByIdOrThrow
 import com.cosmotech.api.azure.cosmosdb.service.CsmCosmosDBService
 import com.cosmotech.api.events.ConnectorRemoved
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
+import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
+import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
@@ -46,14 +48,17 @@ internal class ConnectorServiceImpl : CsmCosmosDBService(), ConnectorApiService 
     return cosmosTemplate.insert(
         coreConnectorContainer,
         connector.copy(
-            id = idGenerator.generate("connector"), ownerId = getCurrentAuthenticatedUserName()))
+            id = idGenerator.generate("connector"),
+            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties)))
         ?: throw IllegalStateException("No connector returned in response: $connector")
   }
 
   override fun unregisterConnector(connectorId: String) {
     val connector = this.findConnectorById(connectorId)
-    if (connector.ownerId != getCurrentAuthenticatedUserName()) {
-      // TODO Only the owner or an admin should be able to perform this operation
+    val isPlatformAdmin =
+        getCurrentAuthenticatedRoles(csmPlatformProperties).contains(ROLE_PLATFORM_ADMIN)
+    if (connector.ownerId != getCurrentAuthenticatedUserName(csmPlatformProperties) &&
+        !isPlatformAdmin) {
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
     }
     cosmosTemplate.deleteEntity(coreConnectorContainer, connector)

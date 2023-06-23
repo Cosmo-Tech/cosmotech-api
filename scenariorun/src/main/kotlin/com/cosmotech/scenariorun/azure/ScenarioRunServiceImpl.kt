@@ -28,8 +28,10 @@ import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.scenario.ScenarioRunMetaData
 import com.cosmotech.api.scenariorun.DataIngestionState
+import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.security.coroutine.SecurityCoroutineContext
 import com.cosmotech.api.utils.convertToMap
+import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.scenario.api.ScenarioApiService
@@ -118,8 +120,10 @@ internal class ScenarioRunServiceImpl(
 
   override fun deleteScenarioRun(organizationId: String, scenariorunId: String) {
     val scenarioRun = this.findScenarioRunById(organizationId, scenariorunId)
-    if (scenarioRun.ownerId != getCurrentAuthenticatedUserName()) {
-      // TODO Only the owner or an admin should be able to perform this operation
+    val isPlatformAdmin =
+        getCurrentAuthenticatedRoles(csmPlatformProperties).contains(ROLE_PLATFORM_ADMIN)
+    if (scenarioRun.ownerId != getCurrentAuthenticatedUserName(csmPlatformProperties) &&
+        !isPlatformAdmin) {
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
     }
     deleteScenarioRunWithoutAccessEnforcement(scenarioRun)
@@ -618,7 +622,7 @@ internal class ScenarioRunServiceImpl(
     val scenarioRun =
         scenarioRunRequest.copy(
             id = idGenerator.generate("scenariorun", prependPrefix = "sr-"),
-            ownerId = getCurrentAuthenticatedUserName(),
+            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
             csmSimulationRun = csmSimulationId,
             organizationId = organizationId,
             workspaceId = workspaceId,

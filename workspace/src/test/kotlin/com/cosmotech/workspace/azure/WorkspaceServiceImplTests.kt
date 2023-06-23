@@ -12,7 +12,7 @@ import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.SecretManager
-import com.cosmotech.api.utils.getCurrentAuthenticatedMail
+import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.workspace.domain.Workspace
@@ -67,8 +67,8 @@ class WorkspaceServiceImplTests {
                 resourceScanner,
                 secretManager,
             ))
-    mockkStatic(::getCurrentAuthenticatedMail)
-    every { getCurrentAuthenticatedMail(csmPlatformProperties) } returns "dummy@cosmotech.com"
+    mockkStatic(::getCurrentAccountIdentifier)
+    every { getCurrentAccountIdentifier(csmPlatformProperties) } returns "dummy@cosmotech.com"
 
     val csmPlatformPropertiesUpload = mockk<CsmPlatformProperties.Upload>()
     val csmPlatformPropertiesAuthorizedMimeTypes =

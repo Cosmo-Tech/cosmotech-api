@@ -37,7 +37,7 @@ import com.cosmotech.api.security.coroutine.SecurityCoroutineContext
 import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
-import com.cosmotech.api.utils.getCurrentAuthenticatedMail
+import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.organization.api.OrganizationApiService
@@ -89,7 +89,7 @@ internal class WorkspaceServiceImpl(
             "OR c.security.default NOT LIKE 'none'"
     logger.debug("Template query: $templateQuery")
 
-    val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+    val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
     logger.debug("Getting workspaces for user $currentUser")
     return cosmosCoreDatabase
         .getContainer("${organizationId}_workspaces")
@@ -126,14 +126,14 @@ internal class WorkspaceServiceImpl(
 
     var workspaceSecurity = workspace.security
     if (workspaceSecurity == null) {
-      workspaceSecurity = initSecurity(getCurrentAuthenticatedMail(this.csmPlatformProperties))
+      workspaceSecurity = initSecurity(getCurrentAccountIdentifier(this.csmPlatformProperties))
     }
 
     return cosmosTemplate.insert(
         "${organizationId}_workspaces",
         workspace.copy(
             id = idGenerator.generate("workspace"),
-            ownerId = getCurrentAuthenticatedUserName(),
+            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
             security = workspaceSecurity))
         ?: throw IllegalArgumentException("No Workspace returned in response: $workspace")
   }

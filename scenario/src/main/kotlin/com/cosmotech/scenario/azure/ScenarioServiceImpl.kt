@@ -40,7 +40,7 @@ import com.cosmotech.api.rbac.getScenarioRolesDefinition
 import com.cosmotech.api.scenario.ScenarioMetaData
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
-import com.cosmotech.api.utils.getCurrentAuthenticatedMail
+import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.organization.api.OrganizationApiService
@@ -159,14 +159,14 @@ internal class ScenarioServiceImpl(
 
     var scenarioSecurity = scenario.security
     if (scenarioSecurity == null) {
-      scenarioSecurity = initSecurity(getCurrentAuthenticatedMail(this.csmPlatformProperties))
+      scenarioSecurity = initSecurity(getCurrentAccountIdentifier(this.csmPlatformProperties))
     }
 
     val now = OffsetDateTime.now()
     val scenarioToSave =
         scenario.copy(
             id = idGenerator.generate("scenario"),
-            ownerId = getCurrentAuthenticatedUserName(),
+            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
             solutionId = solution?.id,
             solutionName = solution?.name,
             runTemplateName = runTemplate?.name,
@@ -401,7 +401,7 @@ internal class ScenarioServiceImpl(
     }
     val isAdmin = csmRbac.isAdmin(workspace.getRbac(), getCommonRolesDefinition())
     if (!isAdmin && this.csmPlatformProperties.rbac.enabled) {
-      val currentUser = getCurrentAuthenticatedMail(this.csmPlatformProperties)
+      val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
       templateQuery +=
           " AND (ARRAY_CONTAINS(c.security.accessControlList, {id: @ACL_USER}, true) " +
               "OR c.security.default NOT LIKE 'none')"

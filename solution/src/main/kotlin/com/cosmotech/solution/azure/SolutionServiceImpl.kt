@@ -12,9 +12,11 @@ import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
+import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
@@ -138,13 +140,15 @@ internal class SolutionServiceImpl(
           "${organizationId}_solutions",
           solution.copy(
               id = idGenerator.generate("solution", prependPrefix = "sol-"),
-              ownerId = getCurrentAuthenticatedUserName()))
+              ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties)))
           ?: throw IllegalArgumentException("No solution returned in response: $solution")
 
   override fun deleteSolution(organizationId: String, solutionId: String) {
     val solution = findSolutionById(organizationId, solutionId)
-    if (solution.ownerId != getCurrentAuthenticatedUserName()) {
-      // TODO Only the owner or an admin should be able to perform this operation
+    val isPlatformAdmin =
+        getCurrentAuthenticatedRoles(csmPlatformProperties).contains(ROLE_PLATFORM_ADMIN)
+    if (solution.ownerId != getCurrentAuthenticatedUserName(csmPlatformProperties) &&
+        !isPlatformAdmin) {
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
     }
     cosmosTemplate.deleteEntity("${organizationId}_solutions", solution)
@@ -177,8 +181,10 @@ internal class SolutionServiceImpl(
 
     if (solution.ownerId != null && solution.changed(existingSolution) { ownerId }) {
       // Allow to change the ownerId as well, but only the owner can transfer the ownership
-      if (existingSolution.ownerId != getCurrentAuthenticatedUserName()) {
-        // TODO Only the owner or an admin should be able to perform this operation
+      val isPlatformAdmin =
+          getCurrentAuthenticatedRoles(csmPlatformProperties).contains(ROLE_PLATFORM_ADMIN)
+      if (existingSolution.ownerId != getCurrentAuthenticatedUserName(csmPlatformProperties) &&
+          !isPlatformAdmin) {
         throw CsmAccessForbiddenException(
             "You are not allowed to change the ownership of this Resource")
       }

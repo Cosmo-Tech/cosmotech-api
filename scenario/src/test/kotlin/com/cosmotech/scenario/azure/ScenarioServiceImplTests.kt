@@ -18,7 +18,7 @@ import com.cosmotech.api.events.WorkflowStatusRequest
 import com.cosmotech.api.id.CsmIdGenerator
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
-import com.cosmotech.api.utils.getCurrentAuthenticatedMail
+import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.getCurrentAuthentication
 import com.cosmotech.organization.api.OrganizationApiService
@@ -139,8 +139,8 @@ class ScenarioServiceImplTests {
     every { scenarioServiceImpl getProperty "csmPlatformProperties" } returns csmPlatformProperties
 
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
-    every { getCurrentAuthenticatedUserName() } returns AUTHENTICATED_USERNAME
-    every { getCurrentAuthenticatedMail(csmPlatformProperties) } returns "dummy@cosmotech.com"
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns AUTHENTICATED_USERNAME
+    every { getCurrentAccountIdentifier(csmPlatformProperties) } returns "dummy@cosmotech.com"
 
     scenarioServiceImpl.init()
   }

@@ -14,8 +14,10 @@ import com.cosmotech.api.events.ConnectorRemovedForOrganization
 import com.cosmotech.api.events.OrganizationRegistered
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
+import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
+import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.toDomain
 import com.cosmotech.connector.api.ConnectorApiService
@@ -67,7 +69,8 @@ internal class DatasetServiceImpl(
 
     val datasetCopy =
         dataset.copy(
-            id = idGenerator.generate("dataset"), ownerId = getCurrentAuthenticatedUserName())
+            id = idGenerator.generate("dataset"),
+            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties))
     datasetCopy.connector!!.apply {
       name = existingConnector.name
       version = existingConnector.version
@@ -78,8 +81,10 @@ internal class DatasetServiceImpl(
 
   override fun deleteDataset(organizationId: String, datasetId: String) {
     val dataset = findDatasetById(organizationId, datasetId)
-    if (dataset.ownerId != getCurrentAuthenticatedUserName()) {
-      // TODO Only the owner or an admin should be able to perform this operation
+    val isPlatformAdmin =
+        getCurrentAuthenticatedRoles(csmPlatformProperties).contains(ROLE_PLATFORM_ADMIN)
+    if (dataset.ownerId != getCurrentAuthenticatedUserName(csmPlatformProperties) &&
+        !isPlatformAdmin) {
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
     }
     cosmosTemplate.deleteEntity("${organizationId}_datasets", dataset)
@@ -94,9 +99,11 @@ internal class DatasetServiceImpl(
             .isNotEmpty()
 
     if (dataset.ownerId != null && dataset.changed(existingDataset) { ownerId }) {
+      val isPlatformAdmin =
+          getCurrentAuthenticatedRoles(csmPlatformProperties).contains(ROLE_PLATFORM_ADMIN)
       // Allow to change the ownerId as well, but only the owner can transfer the ownership
-      if (existingDataset.ownerId != getCurrentAuthenticatedUserName()) {
-        // TODO Only the owner or an admin should be able to perform this operation
+      if (existingDataset.ownerId != getCurrentAuthenticatedUserName(csmPlatformProperties) &&
+          !isPlatformAdmin) {
         throw CsmAccessForbiddenException(
             "You are not allowed to change the ownership of this Resource")
       }

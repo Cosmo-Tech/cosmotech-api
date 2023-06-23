@@ -15,6 +15,7 @@ import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.id.CsmIdGenerator
+import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.getCurrentAuthentication
 import com.cosmotech.api.utils.objectMapper
@@ -49,7 +50,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.security.core.Authentication
+import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthentication
 
 private const val ORGANIZATION_ID = "O-AbCdEf123"
 private const val WORKSPACE_ID = "W-AbCdEf123"
@@ -122,8 +123,9 @@ class ScenarioRunServiceImplTests {
         csmPlatformProperties
 
     mockkStatic(::getCurrentAuthentication)
-    val authentication = mockk<Authentication>()
-    every { authentication.name } returns AUTHENTICATED_USERNAME
+    val authentication = mockk<BearerTokenAuthentication>()
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns AUTHENTICATED_USERNAME
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf()
     every { getCurrentAuthentication() } returns authentication
 
     scenarioRunServiceImpl.init()
@@ -446,8 +448,8 @@ class ScenarioRunServiceImplTests {
     every { scenarioRun.workspaceKey } returns "wk"
     every { scenarioRun.csmSimulationRun } returns "csmSimulationRun"
     every { scenarioRun.scenarioId } returns "scenarioId"
-    every { getCurrentAuthenticatedUserName() } returns "ownerId"
-    scenarioRun.ownerId != getCurrentAuthenticatedUserName()
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "ownerId"
+    scenarioRun.ownerId != getCurrentAuthenticatedUserName(csmPlatformProperties)
     scenarioRunServiceImpl.deleteScenarioRun("orgId", "scenariorunId")
     verify(exactly = 1) { scenarioRunServiceImpl.deleteScenarioRun("orgId", "scenariorunId") }
   }
