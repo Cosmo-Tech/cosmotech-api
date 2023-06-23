@@ -57,7 +57,7 @@ jobs:
 
           export apiVersion=${apiScriptVersion//./-}
           if [[ "$gitRefName" == *"-private"* ]]; then
-            export apiVersion=${apiScriptVersion//./-}-preview
+            export apiVersion=${apiScriptVersion//./-}-private
           fi
           if [[ "$gitRefName" == *"-public"* ]]; then
             export apiVersion=${apiScriptVersion//./-}-public
