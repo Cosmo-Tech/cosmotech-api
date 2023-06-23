@@ -34,18 +34,18 @@ fun Sizing.toContainerResourceSizing(): ContainerResourceSizing {
 
 internal val BASIC_SIZING =
     Sizing(
-        requests = SizingInfo(cpu = "1", memory = "64Mi"),
-        limits = SizingInfo(cpu = "4", memory = "6144Mi"))
+        requests = SizingInfo(cpu = "3", memory = "4Gi"),
+        limits = SizingInfo(cpu = "3", memory = "4Gi"))
 
 internal val HIGH_MEMORY_SIZING =
     Sizing(
-        requests = SizingInfo(cpu = "1", memory = "64000Mi"),
-        limits = SizingInfo(cpu = "16", memory = "128000Mi"))
+        requests = SizingInfo(cpu = "7", memory = "57Gi"),
+        limits = SizingInfo(cpu = "7", memory = "57Gi"))
 
 internal val HIGH_CPU_SIZING =
     Sizing(
-        requests = SizingInfo(cpu = "24", memory = "4096Mi"),
-        limits = SizingInfo(cpu = "72", memory = "144000Mi"))
+        requests = SizingInfo(cpu = "70", memory = "130Gi"),
+        limits = SizingInfo(cpu = "70", memory = "130Gi"))
 
 fun ScenarioResourceSizing.toSizing(): Sizing {
   return Sizing(
