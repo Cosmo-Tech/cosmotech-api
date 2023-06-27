@@ -15,7 +15,6 @@ import org.springframework.boot.gradle.dsl.SpringBootExtension
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 import org.springframework.boot.gradle.tasks.run.BootRun
 import com.github.jk1.license.task.CheckLicenseTask
-import com.github.jk1.license.task.CheckLicensePreparationTask
 import com.github.jk1.license.task.ReportTask
 import com.github.jk1.license.filter.LicenseBundleNormalizer
 import com.github.jk1.license.render.*
@@ -66,14 +65,21 @@ fun downloadLicenseConfigFile(name: String): String {
   val localPath = "$configBuildDir/$name"
   val f = file(localPath)
   f.delete()
-  uri("https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-license/main/config/$name").toURL().openStream().use { it.copyTo(
+  val url = "https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-license/main/config/$name"
+  logger.info("Downloading license config file from $url to $localPath")
+  uri(url).toURL().openStream().use { it.copyTo(
     FileOutputStream(f)
   ) }
   return localPath
 }
 
 val licenseNormalizerPath = downloadLicenseConfigFile("license-normalizer-bundle.json")
-val licenseAllowedPath = downloadLicenseConfigFile("allowed-licenses.json")
+val licenseAllowedPath = if (project.properties["useLocalLicenseAllowedFile"] == "true") {
+  "$projectDir/config/allowed-licenses.json"
+} else {
+  downloadLicenseConfigFile("allowed-licenses.json")
+}
+logger.info("Using licenses allowed file: $licenseAllowedPath")
 val licenseEmptyPath = downloadLicenseConfigFile("empty-dependencies-resume.json")
 // Plugin uses a generated report to check the licenses in a prepation task
 val hardCodedLicensesReportPath = "project-licenses-for-check-license-task.json"
@@ -561,9 +567,9 @@ tasks.register("displayLicensesNotAllowed") {
   })
   val dependenciesEmptyResumeTemplate = file(licenseEmptyPath)
   if (notAllowedFile.exists() && (notAllowedFile.readText() != dependenciesEmptyResumeTemplate.readText())) {
-    println("Licenses not allowed:")
-    println(notAllowedFile.readText())
-    println("Please review licenses and add new license check rules in https://github.com/Cosmo-Tech/cosmotech-license")
+    logger.warn("Licenses not allowed:")
+    logger.warn(notAllowedFile.readText())
+    logger.warn("Please review licenses and add new license check rules in https://github.com/Cosmo-Tech/cosmotech-license")
   }
 }
 
