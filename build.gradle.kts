@@ -14,6 +14,10 @@ import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 import org.springframework.boot.gradle.dsl.SpringBootExtension
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 import org.springframework.boot.gradle.tasks.run.BootRun
+import com.github.jk1.license.task.CheckLicenseTask
+import com.github.jk1.license.task.ReportTask
+import com.github.jk1.license.filter.LicenseBundleNormalizer
+import com.github.jk1.license.render.*
 
 // TODO This build script does way too much things.
 // Consider refactoring it by extracting these custom tasks and plugin
@@ -33,6 +37,7 @@ plugins {
   id("org.jetbrains.kotlinx.kover") version "0.6.1"
   id("project-report")
   id("org.owasp.dependencycheck") version "8.2.1"
+  id("com.github.jk1.dependency-license-report") version "1.17"
 }
 
 scmVersion { tag { prefix.set("") } }
@@ -49,6 +54,14 @@ val jedisVersion = "3.9.0"
 val springOauthVersion = "5.8.3"
 val jredistimeseriesVersion = "1.6.0"
 val redisOmSpringVersion = "0.6.4"
+
+var licenseReportDir = "$projectDir/doc/licenses"
+licenseReport {
+  outputDir = licenseReportDir
+  allowedLicensesFile = file("$projectDir/config/allowed-licenses.json")
+  renderers = arrayOf<ReportRenderer>(InventoryHtmlReportRenderer("index.html"), JsonReportRenderer("report.json"))
+  filters = arrayOf<LicenseBundleNormalizer>(LicenseBundleNormalizer("$projectDir/config/license-normalizer-bundle.json", true))
+}
 
 allprojects {
   apply(plugin = "com.diffplug.spotless")
@@ -498,4 +511,37 @@ koverMerged {
     }
     projects { excludes += listOf("cosmotech-api") }
   }
+}
+
+// https://github.com/jk1/Gradle-License-Report/blob/master/README.md
+tasks.register<ReportTask>("generateLicenseDoc") {
+  dependsOn("validateLicense")
+}
+
+tasks.register<CheckLicenseTask>("validateLicense") {
+  // Gradle task must be rerun each time to take new allowed-license into account.
+  // Due to an issue in the plugin, we must define each module name for null licenses
+  // to avoid false negatives in the allowed-license file.
+  outputs.upToDateWhen { false }
+}
+
+tasks.withType<KotlinCompile> {
+  // Run licensing tasks before compiling
+  dependsOn("generateLicenseDoc")
+}
+
+tasks.register("displayLicensesNotAllowed") {
+  val notAllowedFile = file(buildString {
+    append(licenseReportDir)
+    append("/dependencies-without-allowed-license.json")
+  })
+  if (notAllowedFile.exists()) {
+    println("Licenses not allowed:")
+    println(notAllowedFile.readText())
+  }
+}
+
+gradle.buildFinished {
+  val displayTask = tasks.getByName("displayLicensesNotAllowed")
+  displayTask.run {}
 }
