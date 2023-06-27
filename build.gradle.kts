@@ -60,20 +60,26 @@ var licenseReportDir = "$projectDir/doc/licenses"
 
 val configBuildDir = "$buildDir/config"
 mkdir(configBuildDir)
-val normalizerLocalPath = "$configBuildDir/license-normalizer-bundle.json"
-val fn = file(normalizerLocalPath); uri("https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-license/main/config/license-normalizer-bundle.json").toURL().openStream().use { it.copyTo(
-  FileOutputStream(fn)
-) }
-val allowedPath = "$configBuildDir/allowed-licenses.json"
-val fa = file(allowedPath); uri("https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-license/main/config/allowed-licenses.json").toURL().openStream().use { it.copyTo(
-  FileOutputStream(fa)
-) }
+
+fun downloadLicenseConfigFile(name: String): String {
+  val localPath = "$configBuildDir/$name"
+  val f = file(localPath)
+  f.delete()
+  uri("https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-license/main/config/$name").toURL().openStream().use { it.copyTo(
+    FileOutputStream(f)
+  ) }
+  return localPath
+}
+
+val licenseNormalizerPath = downloadLicenseConfigFile("license-normalizer-bundle.json")
+val licenseAllowedPath = downloadLicenseConfigFile("allowed-licenses.json")
+val licenseEmptyPath = downloadLicenseConfigFile("empty-dependencies-resume.json")
 
 licenseReport {
   outputDir = licenseReportDir
-  allowedLicensesFile = file(allowedPath)
+  allowedLicensesFile = file(licenseAllowedPath)
   renderers = arrayOf<ReportRenderer>(InventoryHtmlReportRenderer("index.html"), JsonReportRenderer("report.json"))
-  filters = arrayOf<LicenseBundleNormalizer>(LicenseBundleNormalizer(normalizerLocalPath, true))
+  filters = arrayOf<LicenseBundleNormalizer>(LicenseBundleNormalizer(licenseNormalizerPath, true))
 }
 
 allprojects {
@@ -540,7 +546,9 @@ tasks.register<CheckLicenseTask>("validateLicense") {
 
 tasks.withType<KotlinCompile> {
   // Run licensing tasks before compiling
-  dependsOn("generateLicenseDoc")
+  if (project.properties["skipLicenses"] != "true") {
+    dependsOn("generateLicenseDoc")
+  }
 }
 
 tasks.register("displayLicensesNotAllowed") {
@@ -548,17 +556,17 @@ tasks.register("displayLicensesNotAllowed") {
     append(licenseReportDir)
     append("/dependencies-without-allowed-license.json")
   })
-  val dependenciesEmptyResumeTemplate = file(buildString {
-    append(licenseReportDir)
-    append("/empty-dependencies-resume.json")
-  })
+  val dependenciesEmptyResumeTemplate = file(licenseEmptyPath)
   if (notAllowedFile.readText() != dependenciesEmptyResumeTemplate.readText()) {
     println("Licenses not allowed:")
     println(notAllowedFile.readText())
+    println("Please review licenses and add new license check rules in https://github.com/Cosmo-Tech/cosmotech-license")
   }
 }
 
 gradle.buildFinished {
-  val displayTask = tasks.getByName("displayLicensesNotAllowed")
-  displayTask.run {}
+  if (project.properties["skipLicenses"] != "true") {
+    val displayTask = tasks.getByName("displayLicensesNotAllowed")
+    displayTask.run {}
+  }
 }
