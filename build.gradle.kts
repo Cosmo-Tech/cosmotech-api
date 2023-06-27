@@ -535,7 +535,11 @@ tasks.register("displayLicensesNotAllowed") {
     append(licenseReportDir)
     append("/dependencies-without-allowed-license.json")
   })
-  if (notAllowedFile.exists()) {
+  val dependenciesEmptyResumeTemplate = file(buildString {
+    append(licenseReportDir)
+    append("/empty-dependencies-resume.json")
+  })
+  if (notAllowedFile.readText() != dependenciesEmptyResumeTemplate.readText()) {
     println("Licenses not allowed:")
     println(notAllowedFile.readText())
   }
