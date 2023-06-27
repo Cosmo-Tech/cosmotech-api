@@ -1,0 +1,149 @@
+{
+  "allowedLicenses": [
+    {
+      "moduleLicense": null,
+      "moduleName": "com.azure.spring:azure-spring-boot-bom"
+    },
+    {
+      "moduleLicense": null,
+      "moduleName": "com.azure:azure-sdk-bom"
+    },
+    {
+      "moduleLicense": null,
+      "moduleName": "com.fasterxml.jackson:jackson-bom"
+    },
+    {
+      "moduleLicense": null,
+      "moduleName": "com.squareup.okhttp3:okhttp-bom"
+    },
+    {
+      "moduleLicense": null,
+      "moduleName": "com.squareup.okio:okio"
+    },
+    {
+      "moduleLicense": null,
+      "moduleName": "org.jetbrains.kotlin:kotlin-bom"
+    },
+    {
+      "moduleLicense": null,
+      "moduleName": "org.jetbrains.kotlinx:kotlinx-coroutines-bom"
+    },
+    {
+      "moduleLicense": null,
+      "moduleName": "org.jetbrains.kotlinx:kotlinx-coroutines-core"
+    },
+    {
+      "moduleLicense": null,
+      "moduleName": "org.junit:junit-bom"
+    },
+    {
+      "moduleLicense": null,
+      "moduleName": "org.springframework.boot:spring-boot-dependencies"
+    },
+    {
+      "moduleLicense": "Unlicense"
+    },
+    {
+      "moduleLicense": "\\\"Apache-2.0\\\";link=\\\"https://www.apache.org/licenses/LICENSE-2.0.txt\\\""
+    },
+    {
+      "moduleLicense": "The Apache Software License, Version 2.0"
+    },
+    {
+      "moduleLicense": "The Apache License, Version 2.0"
+    },
+    {
+      "moduleLicense": "Apache License, version 2.0"
+    },
+    {
+      "moduleLicense": "Apache License, Version 2.0"
+    },
+    {
+      "moduleLicense": "Apache License 2.0"
+    },
+    {
+      "moduleLicense": "Apache 2"
+    },
+    {
+      "moduleLicense": "Apache-2.0"
+    },
+    {
+      "moduleLicense": "Apache 2.0"
+    },
+    {
+      "moduleLicense": "BSD License 3"
+    },
+    {
+      "moduleLicense": "BSD-3-Clause"
+    },
+    {
+      "moduleLicense": "BSD-3-Clause;link=https://asm.ow2.io/LICENSE.txt"
+    },
+    {
+      "moduleLicense": "BSD 3 Clause"
+    },
+    {
+      "moduleLicense": "BSD 2 Clause"
+    },
+    {
+      "moduleLicense": "Public Domain"
+    },
+    {
+      "moduleLicense": "Public Domain, per Creative Commons CC0"
+    },
+    {
+      "moduleLicense": "Eclipse Public License 1.0"
+    },
+    {
+      "moduleLicense": "Eclipse Public License - v 1.0"
+    },
+    {
+      "moduleLicense": "EPL 2.0"
+    },
+    {
+      "moduleLicense": "Eclipse Public License v2.0"
+    },
+    {
+      "moduleLicense": "Eclipse Public License v. 2.0"
+    },
+    {
+      "moduleLicense": "Eclipse Public License - v 2.0"
+    },
+    {
+      "moduleLicense": "GNU General Public License, version 2 with the GNU Classpath Exception"
+    },
+    {
+      "moduleLicense": "COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0"
+    },
+    {
+      "moduleLicense": "CDDL + GPLv2 with classpath exception"
+    },
+    {
+      "moduleLicense": "GPL2 w/ CPE"
+    },
+    {
+      "moduleLicense": "LGPL, version 2.1"
+    },
+    {
+      "moduleLicense": "Bouncy Castle Licence"
+    },
+    {
+      "moduleLicense": "The MIT License (MIT)"
+    },
+    {
+      "moduleLicense": "The MIT License"
+    },
+    {
+      "moduleLicense": "MIT License"
+    },
+    {
+      "moduleLicense": "MIT license"
+    },
+    {
+      "moduleLicense": "MIT-0"
+    },
+    {
+      "moduleLicense": "MIT"
+    }
+  ]
+}
