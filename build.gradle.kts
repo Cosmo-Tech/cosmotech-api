@@ -15,6 +15,7 @@ import org.springframework.boot.gradle.dsl.SpringBootExtension
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 import org.springframework.boot.gradle.tasks.run.BootRun
 import com.github.jk1.license.task.CheckLicenseTask
+import com.github.jk1.license.task.CheckLicensePreparationTask
 import com.github.jk1.license.task.ReportTask
 import com.github.jk1.license.filter.LicenseBundleNormalizer
 import com.github.jk1.license.render.*
@@ -74,11 +75,13 @@ fun downloadLicenseConfigFile(name: String): String {
 val licenseNormalizerPath = downloadLicenseConfigFile("license-normalizer-bundle.json")
 val licenseAllowedPath = downloadLicenseConfigFile("allowed-licenses.json")
 val licenseEmptyPath = downloadLicenseConfigFile("empty-dependencies-resume.json")
+// Plugin uses a generated report to check the licenses in a prepation task
+val hardCodedLicensesReportPath = "project-licenses-for-check-license-task.json"
 
 licenseReport {
   outputDir = licenseReportDir
   allowedLicensesFile = file(licenseAllowedPath)
-  renderers = arrayOf<ReportRenderer>(InventoryHtmlReportRenderer("index.html"), JsonReportRenderer("report.json"))
+  renderers = arrayOf<ReportRenderer>(InventoryHtmlReportRenderer("index.html"), JsonReportRenderer("project-licenses-for-check-license-task.json", false))
   filters = arrayOf<LicenseBundleNormalizer>(LicenseBundleNormalizer(licenseNormalizerPath, true))
 }
 
@@ -534,10 +537,10 @@ koverMerged {
 
 // https://github.com/jk1/Gradle-License-Report/blob/master/README.md
 tasks.register<ReportTask>("generateLicenseDoc") {
-  dependsOn("validateLicense")
 }
 
 tasks.register<CheckLicenseTask>("validateLicense") {
+  dependsOn("generateLicenseDoc")
   // Gradle task must be rerun each time to take new allowed-license into account.
   // Due to an issue in the plugin, we must define each module name for null licenses
   // to avoid false negatives in the allowed-license file.
@@ -547,7 +550,7 @@ tasks.register<CheckLicenseTask>("validateLicense") {
 tasks.withType<KotlinCompile> {
   // Run licensing tasks before compiling
   if (project.properties["skipLicenses"] != "true") {
-    dependsOn("generateLicenseDoc")
+    dependsOn("validateLicense")
   }
 }
 
@@ -557,7 +560,7 @@ tasks.register("displayLicensesNotAllowed") {
     append("/dependencies-without-allowed-license.json")
   })
   val dependenciesEmptyResumeTemplate = file(licenseEmptyPath)
-  if (notAllowedFile.readText() != dependenciesEmptyResumeTemplate.readText()) {
+  if (notAllowedFile.exists() && (notAllowedFile.readText() != dependenciesEmptyResumeTemplate.readText())) {
     println("Licenses not allowed:")
     println(notAllowedFile.readText())
     println("Please review licenses and add new license check rules in https://github.com/Cosmo-Tech/cosmotech-license")
