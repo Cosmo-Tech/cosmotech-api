@@ -47,7 +47,7 @@ import org.springframework.stereotype.Service
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import redis.clients.jedis.JedisPool
-import redis.clients.jedis.ScanParams
+//import redis.clients.jedis.ScanParams
 import redis.clients.jedis.exceptions.JedisDataException
 
 const val GRAPH_NAME = "graphName"
@@ -155,16 +155,17 @@ class TwingraphServiceImpl(
   }
 
   private fun getRedisKeyList(keyPattern: String, keyType: String = "graphdata"): List<String> {
-    val matchingKeys = mutableSetOf<String>()
-    csmJedisPool.resource.use { jedis ->
-      var nextCursor = ScanParams.SCAN_POINTER_START
-      do {
-        val scanResult = jedis.scan(nextCursor, ScanParams().match(keyPattern), keyType)
-        nextCursor = scanResult.cursor
-        matchingKeys.addAll(scanResult.result)
-      } while (!nextCursor.equals(ScanParams.SCAN_POINTER_START))
-    }
-    return matchingKeys.toList()
+      return listOf(keyType, keyPattern)
+// SPOK    val matchingKeys = mutableSetOf<String>()
+//    csmJedisPool.resource.use { jedis ->
+//      var nextCursor = ScanParams.SCAN_POINTER_START
+//      do {
+//        val scanResult = jedis.scan(nextCursor, ScanParams().match(keyPattern), keyType)
+//        nextCursor = scanResult.cursor
+//        matchingKeys.addAll(scanResult.result)
+//      } while (!nextCursor.equals(ScanParams.SCAN_POINTER_START))
+//    }
+//    return matchingKeys.toList()
   }
 
   override fun getGraphMetaData(organizationId: String, graphId: String): Map<String, String> {

@@ -26,8 +26,8 @@ plugins {
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.14.2"
   id("com.diffplug.spotless") version "6.11.0"
-  id("org.springframework.boot") version "2.7.11" apply false
-  id("org.openapi.generator") version "5.4.0" apply false
+  id("org.springframework.boot") version "3.1.0" apply false
+  id("org.openapi.generator") version "6.6.0" apply false
   id("com.google.cloud.tools.jib") version "3.3.1" apply false
   id("io.gitlab.arturbosch.detekt") version "1.21.0"
   id("org.jetbrains.kotlinx.kover") version "0.6.1"
@@ -45,10 +45,9 @@ val kotlinJvmTarget = 17
 val cosmotechApiCommonVersion = "0.1.43-SNAPSHOT"
 val cosmotechApiAzureVersion = "0.1.10-SNAPSHOT"
 val azureSpringBootBomVersion = "3.14.0"
-val jedisVersion = "3.9.0"
+val jedisVersion = "4.3.2"
 val springOauthVersion = "5.8.3"
-val jredistimeseriesVersion = "1.6.0"
-val redisOmSpringVersion = "0.6.4"
+val redisOmSpringVersion = "0.8.4"
 
 allprojects {
   apply(plugin = "com.diffplug.spotless")
@@ -58,6 +57,7 @@ allprojects {
   apply(plugin = "org.owasp.dependencycheck")
 
   repositories {
+    mavenLocal()
     maven {
       name = "GitHubPackages"
       url = uri("https://maven.pkg.github.com/Cosmo-Tech/cosmotech-api-common")
@@ -107,6 +107,7 @@ allprojects {
     }
   }
 }
+
 
 subprojects {
   apply(plugin = "org.jetbrains.kotlin.plugin.spring")
@@ -204,9 +205,8 @@ subprojects {
     implementation("org.springframework.boot:spring-boot-starter-web") {
       exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
     }
-    implementation("org.springframework.boot:spring-boot-starter-jetty")
+    implementation("org.springframework.boot:spring-boot-starter-undertow")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("javax.validation:validation-api:2.0.1.Final")
 
     val springDocVersion = "1.6.14"
     implementation("org.springdoc:springdoc-openapi-ui:${springDocVersion}")
@@ -224,7 +224,6 @@ subprojects {
     implementation("com.okta.spring:okta-spring-boot-starter:${oktaSpringBootVersion}")
 
     implementation("redis.clients:jedis:${jedisVersion}")
-    implementation("com.redislabs:jredistimeseries:${jredistimeseriesVersion}")
     implementation("org.apache.commons:commons-csv:1.10.0")
     implementation("com.redis.om:redis-om-spring:${redisOmSpringVersion}") {
       constraints { implementation("org.json:json:20230227") }
@@ -382,6 +381,7 @@ subprojects {
               "exceptionHandler" to false,
               "serviceInterface" to true,
               "swaggerAnnotations" to false,
+              "useSpringBoot3" to true,
               "useTags" to true,
               "modelMutable" to true))
     }
@@ -413,7 +413,7 @@ subprojects {
 
   tasks.getByName<Copy>("processTestResources") { dependsOn("copyOpenApiYamlToTestResources") }
 
-  tasks.getByName<BootJar>("bootJar") { classifier = "uberjar" }
+  tasks.getByName<BootJar>("bootJar") // SPOK { classifier = "uberjar" }
 
   tasks.getByName<BootRun>("bootRun") {
     workingDir = rootDir
@@ -434,7 +434,7 @@ subprojects {
     buildInfo {
       properties {
         // Unsetting time so the task can be deterministic and cacheable, for performance reasons
-        time = null
+        //        time = null SPOK
       }
     }
   }

@@ -53,7 +53,7 @@ internal fun List<Scenario>.addLastRunsInfo(
                 }
                 null
               }
-          scenarios.forEach { it.parentLastRun = parentLastRun }
+// SPOK          scenarios.forEach { it.parentLastRun = parentLastRun }
         }
         scenarios
       }
@@ -77,7 +77,7 @@ internal fun List<Scenario>.addLastRunsInfo(
                 }
                 null
               }
-          scenarios.forEach { it.rootLastRun = rootLastRun }
+// SPOK            scenarios.forEach { it.rootLastRun = rootLastRun }
         }
         scenarios
       }
