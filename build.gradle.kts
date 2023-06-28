@@ -1,6 +1,10 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
 import com.diffplug.gradle.spotless.SpotlessExtension
+import com.github.jk1.license.filter.LicenseBundleNormalizer
+import com.github.jk1.license.render.*
+import com.github.jk1.license.task.CheckLicenseTask
+import com.github.jk1.license.task.ReportTask
 import com.google.cloud.tools.jib.api.buildplan.ImageFormat.OCI
 import com.google.cloud.tools.jib.gradle.JibExtension
 import io.gitlab.arturbosch.detekt.Detekt
@@ -14,10 +18,6 @@ import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 import org.springframework.boot.gradle.dsl.SpringBootExtension
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 import org.springframework.boot.gradle.tasks.run.BootRun
-import com.github.jk1.license.task.CheckLicenseTask
-import com.github.jk1.license.task.ReportTask
-import com.github.jk1.license.filter.LicenseBundleNormalizer
-import com.github.jk1.license.render.*
 
 // TODO This build script does way too much things.
 // Consider refactoring it by extracting these custom tasks and plugin
@@ -56,11 +56,16 @@ val jredistimeseriesVersion = "1.6.0"
 val redisOmSpringVersion = "0.6.4"
 
 var licenseReportDir = "$projectDir/doc/licenses"
+
 licenseReport {
   outputDir = licenseReportDir
   allowedLicensesFile = file("$projectDir/config/allowed-licenses.json")
-  renderers = arrayOf<ReportRenderer>(InventoryHtmlReportRenderer("index.html"), JsonReportRenderer("report.json"))
-  filters = arrayOf<LicenseBundleNormalizer>(LicenseBundleNormalizer("$projectDir/config/license-normalizer-bundle.json", true))
+  renderers =
+      arrayOf<ReportRenderer>(
+          InventoryHtmlReportRenderer("index.html"), JsonReportRenderer("report.json"))
+  filters =
+      arrayOf<LicenseBundleNormalizer>(
+          LicenseBundleNormalizer("$projectDir/config/license-normalizer-bundle.json", true))
 }
 
 allprojects {
@@ -514,9 +519,7 @@ koverMerged {
 }
 
 // https://github.com/jk1/Gradle-License-Report/blob/master/README.md
-tasks.register<ReportTask>("generateLicenseDoc") {
-  dependsOn("validateLicense")
-}
+tasks.register<ReportTask>("generateLicenseDoc") { dependsOn("validateLicense") }
 
 tasks.register<CheckLicenseTask>("validateLicense") {
   // Gradle task must be rerun each time to take new allowed-license into account.
@@ -531,14 +534,18 @@ tasks.withType<KotlinCompile> {
 }
 
 tasks.register("displayLicensesNotAllowed") {
-  val notAllowedFile = file(buildString {
-    append(licenseReportDir)
-    append("/dependencies-without-allowed-license.json")
-  })
-  val dependenciesEmptyResumeTemplate = file(buildString {
-    append(licenseReportDir)
-    append("/empty-dependencies-resume.json")
-  })
+  val notAllowedFile =
+      file(
+          buildString {
+            append(licenseReportDir)
+            append("/dependencies-without-allowed-license.json")
+          })
+  val dependenciesEmptyResumeTemplate =
+      file(
+          buildString {
+            append(licenseReportDir)
+            append("/empty-dependencies-resume.json")
+          })
   if (notAllowedFile.readText() != dependenciesEmptyResumeTemplate.readText()) {
     println("Licenses not allowed:")
     println(notAllowedFile.readText())

@@ -204,7 +204,7 @@
         {
             "moduleName": "com.github.Cosmo-Tech:cosmotech-api-common",
             "moduleUrl": "https://github.com/Cosmo-Tech/cosmotech-api-common",
-            "moduleVersion": "0.1.45-SNAPSHOT",
+            "moduleVersion": "0.1.46-SNAPSHOT",
             "moduleLicense": "MIT License",
             "moduleLicenseUrl": "https://opensource.org/licenses/MIT"
         },
