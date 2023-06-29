@@ -48,7 +48,7 @@ val azureSpringBootBomVersion = "3.14.0"
 val jedisVersion = "3.9.0"
 val springOauthVersion = "5.8.3"
 val jredistimeseriesVersion = "1.6.0"
-val redisOmSpringVersion = "0.6.4"
+val redisOmSpringVersion = "0.8.4"
 
 allprojects {
   apply(plugin = "com.diffplug.spotless")
