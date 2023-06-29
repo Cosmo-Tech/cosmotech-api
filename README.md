@@ -384,3 +384,5 @@ kube-linter --config api/kubernetes/.kube-linter.yaml lint api/kubernetes/csm-ar
     DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+### License dependencies
+The product is using the following dependencies, under their respective licenses: [License check page](./doc/licenses/index.html)
