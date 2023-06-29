@@ -69,7 +69,7 @@ jobs:
       - name: Merge OpenAPI definitions
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: gradle/gradle-build-action@631021b
+        uses: gradle/gradle-build-action@631021bf98316c7b544edd3a462b56f7539303d6
         with:
           cache-disabled: false
           # Cache storage space is limited for GitHub actions
