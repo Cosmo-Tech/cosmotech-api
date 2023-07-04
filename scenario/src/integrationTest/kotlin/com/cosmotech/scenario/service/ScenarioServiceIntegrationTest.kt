@@ -199,7 +199,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("should delete the Scenario and assert there is only one Scenario left")
     scenarioApiService.deleteScenario(
-        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved2.id!!, false)
+        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved2.id!!)
     val scenarioListAfterDelete =
         scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!, null, null)
     assertTrue(scenarioListAfterDelete.size == 1)
@@ -298,8 +298,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(6, scenarios.size)
 
     logger.info("should delete last child (element 5) and assert there are 5 Scenarios left")
-    scenarioApiService.deleteScenario(
-        organizationSaved.id!!, workspaceSaved.id!!, idMap[5]!!, false)
+    scenarioApiService.deleteScenario(organizationSaved.id!!, workspaceSaved.id!!, idMap[5]!!)
     scenarios =
         scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!, null, null)
     assertEquals(5, scenarios.size)
@@ -310,8 +309,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(idMap[3], scenario.parentId)
 
     logger.info("should delete element 3 (in the middle) and assert there are 4 Scenarios left")
-    scenarioApiService.deleteScenario(
-        organizationSaved.id!!, workspaceSaved.id!!, idMap[3]!!, false)
+    scenarioApiService.deleteScenario(organizationSaved.id!!, workspaceSaved.id!!, idMap[3]!!)
     scenarios =
         scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!, null, null)
     assertEquals(4, scenarios.size)
@@ -322,8 +320,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(idMap[2], scenario.parentId)
 
     logger.info("should delete root element (element 1) and assert there are 3 Scenarios left")
-    scenarioApiService.deleteScenario(
-        organizationSaved.id!!, workspaceSaved.id!!, idMap[1]!!, false)
+    scenarioApiService.deleteScenario(organizationSaved.id!!, workspaceSaved.id!!, idMap[1]!!)
     scenarios =
         scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!, null, null)
     assertEquals(3, scenarios.size)
@@ -455,12 +452,12 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
               if (shouldThrow)
                   assertThrows<Exception> {
                     scenarioApiService.deleteScenario(
-                        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, true)
+                        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
                   }
               else
                   assertDoesNotThrow {
                     scenarioApiService.deleteScenario(
-                        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, true)
+                        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
                   }
             }
           }
@@ -608,7 +605,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                 rootId = scenarioSaved.id))
 
     scenarioApiService.deleteScenario(
-        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, true)
+        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
 
     firstChildScenario =
         scenarioApiService.findScenarioById(
