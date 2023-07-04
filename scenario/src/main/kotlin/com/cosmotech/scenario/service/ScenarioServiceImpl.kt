@@ -232,18 +232,13 @@ internal class ScenarioServiceImpl(
     }
   }
 
-  override fun deleteScenario(
-      organizationId: String,
-      workspaceId: String,
-      scenarioId: String,
-      waitRelationshipPropagation: Boolean
-  ) {
+  override fun deleteScenario(organizationId: String, workspaceId: String, scenarioId: String) {
     val scenario = this.findScenarioById(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_DELETE, scenarioPermissions)
 
     scenarioRepository.delete(scenario)
 
-    this.handleScenarioDeletion(organizationId, workspaceId, scenario, waitRelationshipPropagation)
+    this.handleScenarioDeletion(organizationId, workspaceId, scenario)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     deleteScenarioMetadata(organizationId, workspace.key, scenarioId)
 
@@ -305,7 +300,6 @@ internal class ScenarioServiceImpl(
       organizationId: String,
       workspaceId: String,
       deletedScenario: Scenario,
-      waitRelationshipPropagation: Boolean = true
   ) {
     val rootId = deletedScenario.rootId
     val children = this.findScenarioChildrenById(organizationId, workspaceId, deletedScenario.id!!)
@@ -322,18 +316,10 @@ internal class ScenarioServiceImpl(
           }
         }
     runBlocking { childrenUpdatesCoroutines.joinAll() }
-    if (rootId == null)
-        children.forEach {
-          updateRootId(organizationId, workspaceId, it, waitRelationshipPropagation)
-        }
+    if (rootId == null) children.forEach { updateRootId(organizationId, workspaceId, it) }
   }
 
-  private fun updateRootId(
-      organizationId: String,
-      workspaceId: String,
-      scenario: Scenario,
-      waitRelationshipPropagation: Boolean
-  ) {
+  private fun updateRootId(organizationId: String, workspaceId: String, scenario: Scenario) {
     val rootId = if (scenario.rootId == null) scenario.id else scenario.rootId
     val children = this.findScenarioChildrenById(organizationId, workspaceId, scenario.id!!)
     val childrenUpdatesCoroutines =
@@ -345,7 +331,7 @@ internal class ScenarioServiceImpl(
           }
         }
     runBlocking { childrenUpdatesCoroutines.joinAll() }
-    children.forEach { updateRootId(organizationId, workspaceId, it, waitRelationshipPropagation) }
+    children.forEach { updateRootId(organizationId, workspaceId, it) }
   }
 
   override fun findAllScenarios(
