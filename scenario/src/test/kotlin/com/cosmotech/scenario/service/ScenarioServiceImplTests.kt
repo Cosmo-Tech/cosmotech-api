@@ -532,7 +532,7 @@ class ScenarioServiceImplTests {
     every { workspace.sendScenarioMetadataToEventHub } returns false
     every { csmPlatformProperties.twincache.scenario.defaultPageSize } returns 5
 
-    this.scenarioServiceImpl.deleteScenario(ORGANIZATION_ID, WORKSPACE_ID, c111.id!!, false)
+    this.scenarioServiceImpl.deleteScenario(ORGANIZATION_ID, WORKSPACE_ID, c111.id!!)
 
     assertNull(m1.parentId)
     assertNotNull(m1.id)
@@ -594,7 +594,7 @@ class ScenarioServiceImplTests {
     every { csmPlatformProperties.twincache.scenario.defaultPageSize } returns 100
     every { scenarioServiceImpl.isRbacEnabled(ORGANIZATION_ID, WORKSPACE_ID) } returns false
 
-    this.scenarioServiceImpl.deleteScenario(ORGANIZATION_ID, WORKSPACE_ID, m1.id!!, true)
+    this.scenarioServiceImpl.deleteScenario(ORGANIZATION_ID, WORKSPACE_ID, m1.id!!)
 
     assertNull(p11.parentId)
     assertNull(p12.parentId)
@@ -655,7 +655,7 @@ class ScenarioServiceImplTests {
     every { csmPlatformProperties.twincache.scenario.defaultPageSize } returns 100
     every { scenarioServiceImpl.isRbacEnabled(ORGANIZATION_ID, WORKSPACE_ID) } returns false
 
-    this.scenarioServiceImpl.deleteScenario(ORGANIZATION_ID, WORKSPACE_ID, p11.id!!, false)
+    this.scenarioServiceImpl.deleteScenario(ORGANIZATION_ID, WORKSPACE_ID, p11.id!!)
 
     sequenceOf(c111, c112).forEach {
       verify(exactly = 1) { scenarioServiceImpl.upsertScenarioData(it) }
@@ -1070,7 +1070,7 @@ class ScenarioServiceImplTests {
               every { scenarioServiceImpl.findScenarioChildrenById(any(), any(), any()) } returns
                   emptyList()
               scenarioServiceImpl.deleteScenario(
-                  it.organization.id!!, it.workspace.id!!, it.scenario.id!!, false)
+                  it.organization.id!!, it.workspace.id!!, it.scenario.id!!)
             }
           }
 
