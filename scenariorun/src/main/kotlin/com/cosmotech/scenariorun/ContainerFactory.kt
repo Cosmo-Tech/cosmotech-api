@@ -123,7 +123,7 @@ private const val SCENARIO_DATA_UPLOAD_LOG_LEVEL_ENV_VAR = "CSM_LOG_LEVEL"
 internal const val CSM_JOB_ID_LABEL_KEY = "cosmotech.com/job_id"
 internal const val SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME = "downloadUrl"
 internal const val WORKFLOW_TYPE_LABEL = "cosmotech.com/workflowtype"
-private var useScenarioRunSizing = false
+
 const val CSM_DAG_ROOT = "DAG_ROOT"
 
 private val LABEL_SIZING =
@@ -149,6 +149,7 @@ class ContainerFactory(
   private val logger = LoggerFactory.getLogger(ContainerFactory::class.java)
 
   private val steps: Map<String, SolutionContainerStepSpec>
+
   init {
     this.steps =
         mapOf(
@@ -518,7 +519,6 @@ class ContainerFactory(
       }
 
       if (testStep(template.run)) {
-        useScenarioRunSizing = scenario.runSizing?.toSizing()?.let { true } ?: false
         containers.addAll(
             buildRunContainersPipeline(
                 currentDependencies,
@@ -1498,8 +1498,8 @@ private fun mergeSolutionContainer(
       }
 
   val runSizing =
-      if ((stackedContainer.nodeLabel == NODE_LABEL_DEFAULT &&
-          container.nodeLabel != NODE_LABEL_DEFAULT) || useScenarioRunSizing == true) {
+      if (stackedContainer.nodeLabel == NODE_LABEL_DEFAULT &&
+          container.nodeLabel != NODE_LABEL_DEFAULT) {
         container.runSizing
       } else {
         stackedContainer.runSizing
