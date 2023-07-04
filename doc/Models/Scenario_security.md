@@ -1,10 +1,10 @@
-# ScenarioRunLogs
+# Scenario_security
 ## Properties
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-| **scenariorunId** | **String** | the ScenarioRun Id | [optional] [default to null] |
-| **containers** | [**Map**](ScenarioRunContainerLogs.md) | the container map of logs | [optional] [default to null] |
+| **default** | **String** | the role by default | [default to null] |
+| **accessControlList** | [**List**](ScenarioAccessControl.md) | the list which can access this Scenario with detailed access control information | [default to null] |
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

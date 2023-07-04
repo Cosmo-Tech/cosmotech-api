@@ -2,24 +2,24 @@
 
 All URIs are relative to *https://dev.api.cosmotech.com*
 
-Method | HTTP request | Description
-------------- | ------------- | -------------
-[**addOrReplaceParameterGroups**](SolutionApi.md#addOrReplaceParameterGroups) | **POST** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups | Add Parameter Groups. Any item with the same ID will be overwritten
-[**addOrReplaceParameters**](SolutionApi.md#addOrReplaceParameters) | **POST** /organizations/{organization_id}/solutions/{solution_id}/parameters | Add Parameters. Any item with the same ID will be overwritten
-[**addOrReplaceRunTemplates**](SolutionApi.md#addOrReplaceRunTemplates) | **POST** /organizations/{organization_id}/solutions/{solution_id}/runTemplates | Add Run Templates. Any item with the same ID will be overwritten
-[**createSolution**](SolutionApi.md#createSolution) | **POST** /organizations/{organization_id}/solutions | Register a new solution
-[**deleteSolution**](SolutionApi.md#deleteSolution) | **DELETE** /organizations/{organization_id}/solutions/{solution_id} | Delete a solution
-[**deleteSolutionRunTemplate**](SolutionApi.md#deleteSolutionRunTemplate) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id} | Remove the specified Solution Run Template
-[**downloadRunTemplateHandler**](SolutionApi.md#downloadRunTemplateHandler) | **GET** /organizations/{organization_id}/solutions/{solution_id}/runtemplates/{run_template_id}/handlers/{handler_id}/download | Download a Run Template step handler zip file
-[**findAllSolutions**](SolutionApi.md#findAllSolutions) | **GET** /organizations/{organization_id}/solutions | List all Solutions
-[**findSolutionById**](SolutionApi.md#findSolutionById) | **GET** /organizations/{organization_id}/solutions/{solution_id} | Get the details of a solution
-[**importSolution**](SolutionApi.md#importSolution) | **POST** /organizations/{organization_id}/solutions/import | Import a solution
-[**removeAllRunTemplates**](SolutionApi.md#removeAllRunTemplates) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/runTemplates | Remove all Run Templates from the Solution specified
-[**removeAllSolutionParameterGroups**](SolutionApi.md#removeAllSolutionParameterGroups) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups | Remove all Parameter Groups from the Solution specified
-[**removeAllSolutionParameters**](SolutionApi.md#removeAllSolutionParameters) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/parameters | Remove all Parameters from the Solution specified
-[**updateSolution**](SolutionApi.md#updateSolution) | **PATCH** /organizations/{organization_id}/solutions/{solution_id} | Update a solution
-[**updateSolutionRunTemplate**](SolutionApi.md#updateSolutionRunTemplate) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id} | Update the specified Solution Run Template
-[**uploadRunTemplateHandler**](SolutionApi.md#uploadRunTemplateHandler) | **POST** /organizations/{organization_id}/solutions/{solution_id}/runtemplates/{run_template_id}/handlers/{handler_id}/upload | Upload a Run Template step handler zip file
+| Method | HTTP request | Description |
+|------------- | ------------- | -------------|
+| [**addOrReplaceParameterGroups**](SolutionApi.md#addOrReplaceParameterGroups) | **POST** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups | Add Parameter Groups. Any item with the same ID will be overwritten |
+| [**addOrReplaceParameters**](SolutionApi.md#addOrReplaceParameters) | **POST** /organizations/{organization_id}/solutions/{solution_id}/parameters | Add Parameters. Any item with the same ID will be overwritten |
+| [**addOrReplaceRunTemplates**](SolutionApi.md#addOrReplaceRunTemplates) | **POST** /organizations/{organization_id}/solutions/{solution_id}/runTemplates | Add Run Templates. Any item with the same ID will be overwritten |
+| [**createSolution**](SolutionApi.md#createSolution) | **POST** /organizations/{organization_id}/solutions | Register a new solution |
+| [**deleteSolution**](SolutionApi.md#deleteSolution) | **DELETE** /organizations/{organization_id}/solutions/{solution_id} | Delete a solution |
+| [**deleteSolutionRunTemplate**](SolutionApi.md#deleteSolutionRunTemplate) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id} | Remove the specified Solution Run Template |
+| [**downloadRunTemplateHandler**](SolutionApi.md#downloadRunTemplateHandler) | **GET** /organizations/{organization_id}/solutions/{solution_id}/runtemplates/{run_template_id}/handlers/{handler_id}/download | Download a Run Template step handler zip file |
+| [**findAllSolutions**](SolutionApi.md#findAllSolutions) | **GET** /organizations/{organization_id}/solutions | List all Solutions |
+| [**findSolutionById**](SolutionApi.md#findSolutionById) | **GET** /organizations/{organization_id}/solutions/{solution_id} | Get the details of a solution |
+| [**importSolution**](SolutionApi.md#importSolution) | **POST** /organizations/{organization_id}/solutions/import | Import a solution |
+| [**removeAllRunTemplates**](SolutionApi.md#removeAllRunTemplates) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/runTemplates | Remove all Run Templates from the Solution specified |
+| [**removeAllSolutionParameterGroups**](SolutionApi.md#removeAllSolutionParameterGroups) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups | Remove all Parameter Groups from the Solution specified |
+| [**removeAllSolutionParameters**](SolutionApi.md#removeAllSolutionParameters) | **DELETE** /organizations/{organization_id}/solutions/{solution_id}/parameters | Remove all Parameters from the Solution specified |
+| [**updateSolution**](SolutionApi.md#updateSolution) | **PATCH** /organizations/{organization_id}/solutions/{solution_id} | Update a solution |
+| [**updateSolutionRunTemplate**](SolutionApi.md#updateSolutionRunTemplate) | **PATCH** /organizations/{organization_id}/solutions/{solution_id}/runTemplates/{run_template_id} | Update the specified Solution Run Template |
+| [**uploadRunTemplateHandler**](SolutionApi.md#uploadRunTemplateHandler) | **POST** /organizations/{organization_id}/solutions/{solution_id}/runtemplates/{run_template_id}/handlers/{handler_id}/upload | Upload a Run Template step handler zip file |
 
 
 <a name="addOrReplaceParameterGroups"></a>
@@ -30,11 +30,11 @@ Add Parameter Groups. Any item with the same ID will be overwritten
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **solution\_id** | **String**| the Solution identifier | [default to null]
- **RunTemplateParameterGroup** | [**List**](../Models/RunTemplateParameterGroup.md)| the Parameter Groups |
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **RunTemplateParameterGroup** | [**List**](../Models/RunTemplateParameterGroup.md)| the Parameter Groups | |
 
 ### Return type
 
@@ -57,11 +57,11 @@ Add Parameters. Any item with the same ID will be overwritten
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **solution\_id** | **String**| the Solution identifier | [default to null]
- **RunTemplateParameter** | [**List**](../Models/RunTemplateParameter.md)| the Parameters |
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **RunTemplateParameter** | [**List**](../Models/RunTemplateParameter.md)| the Parameters | |
 
 ### Return type
 
@@ -84,11 +84,11 @@ Add Run Templates. Any item with the same ID will be overwritten
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **solution\_id** | **String**| the Solution identifier | [default to null]
- **RunTemplate** | [**List**](../Models/RunTemplate.md)| the Run Templates |
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **RunTemplate** | [**List**](../Models/RunTemplate.md)| the Run Templates | |
 
 ### Return type
 
@@ -111,10 +111,10 @@ Register a new solution
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **Solution** | [**Solution**](../Models/Solution.md)| the Solution to create |
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **Solution** | [**Solution**](../Models/Solution.md)| the Solution to create | |
 
 ### Return type
 
@@ -137,10 +137,10 @@ Delete a solution
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **solution\_id** | **String**| the Solution identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **solution\_id** | **String**| the Solution identifier | [default to null] |
 
 ### Return type
 
@@ -163,11 +163,11 @@ Remove the specified Solution Run Template
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **solution\_id** | **String**| the Solution identifier | [default to null]
- **run\_template\_id** | **String**| the Run Template identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **run\_template\_id** | **String**| the Run Template identifier | [default to null] |
 
 ### Return type
 
@@ -190,12 +190,12 @@ Download a Run Template step handler zip file
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **solution\_id** | **String**| the Solution identifier | [default to null]
- **run\_template\_id** | **String**| the Run Template identifier | [default to null]
- **handler\_id** | [**RunTemplateHandlerId**](../Models/.md)| the Handler identifier | [default to null] [enum: parameters_handler, validator, prerun, engine, postrun, scenariodata_transform]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **run\_template\_id** | **String**| the Run Template identifier | [default to null] |
+| **handler\_id** | [**RunTemplateHandlerId**](../Models/.md)| the Handler identifier | [default to null] [enum: parameters_handler, validator, prerun, engine, postrun, scenariodata_transform] |
 
 ### Return type
 
@@ -218,11 +218,11 @@ List all Solutions
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **page** | **Integer**| page number to query | [optional] [default to null]
- **size** | **Integer**| amount of result by page | [optional] [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **page** | **Integer**| page number to query | [optional] [default to null] |
+| **size** | **Integer**| amount of result by page | [optional] [default to null] |
 
 ### Return type
 
@@ -245,10 +245,10 @@ Get the details of a solution
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **solution\_id** | **String**| the Solution identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **solution\_id** | **String**| the Solution identifier | [default to null] |
 
 ### Return type
 
@@ -271,10 +271,10 @@ Import a solution
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **Solution** | [**Solution**](../Models/Solution.md)| the Solution to import |
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **Solution** | [**Solution**](../Models/Solution.md)| the Solution to import | |
 
 ### Return type
 
@@ -297,10 +297,10 @@ Remove all Run Templates from the Solution specified
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **solution\_id** | **String**| the Solution identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **solution\_id** | **String**| the Solution identifier | [default to null] |
 
 ### Return type
 
@@ -323,10 +323,10 @@ Remove all Parameter Groups from the Solution specified
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **solution\_id** | **String**| the Solution identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **solution\_id** | **String**| the Solution identifier | [default to null] |
 
 ### Return type
 
@@ -349,10 +349,10 @@ Remove all Parameters from the Solution specified
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **solution\_id** | **String**| the Solution identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **solution\_id** | **String**| the Solution identifier | [default to null] |
 
 ### Return type
 
@@ -375,11 +375,11 @@ Update a solution
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **solution\_id** | **String**| the Solution identifier | [default to null]
- **Solution** | [**Solution**](../Models/Solution.md)| the new Solution details. |
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **Solution** | [**Solution**](../Models/Solution.md)| the new Solution details. | |
 
 ### Return type
 
@@ -402,12 +402,12 @@ Update the specified Solution Run Template
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **solution\_id** | **String**| the Solution identifier | [default to null]
- **run\_template\_id** | **String**| the Run Template identifier | [default to null]
- **RunTemplate** | [**RunTemplate**](../Models/RunTemplate.md)| the Run Templates |
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **run\_template\_id** | **String**| the Run Template identifier | [default to null] |
+| **RunTemplate** | [**RunTemplate**](../Models/RunTemplate.md)| the Run Templates | |
 
 ### Return type
 
@@ -430,14 +430,14 @@ Upload a Run Template step handler zip file
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **solution\_id** | **String**| the Solution identifier | [default to null]
- **run\_template\_id** | **String**| the Run Template identifier | [default to null]
- **handler\_id** | [**RunTemplateHandlerId**](../Models/.md)| the Handler identifier | [default to null] [enum: parameters_handler, validator, prerun, engine, postrun, scenariodata_transform]
- **body** | **File**|  |
- **overwrite** | **Boolean**| whether to overwrite any existing handler resource | [optional] [default to false]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **solution\_id** | **String**| the Solution identifier | [default to null] |
+| **run\_template\_id** | **String**| the Run Template identifier | [default to null] |
+| **handler\_id** | [**RunTemplateHandlerId**](../Models/.md)| the Handler identifier | [default to null] [enum: parameters_handler, validator, prerun, engine, postrun, scenariodata_transform] |
+| **body** | **File**|  | |
+| **overwrite** | **Boolean**| whether to overwrite any existing handler resource | [optional] [default to false] |
 
 ### Return type
 

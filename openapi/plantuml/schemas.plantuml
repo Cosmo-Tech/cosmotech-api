@@ -116,8 +116,6 @@ entity OrganizationRole {
 }
 
 entity OrganizationSecurity {
-    * default: String
-    * accessControlList: List<OrganizationAccessControl>
 }
 
 entity OrganizationService {
@@ -233,8 +231,8 @@ entity Scenario {
     runSizing: ScenarioResourceSizing
     parametersValues: List<ScenarioRunTemplateParameterValue>
     lastRun: ScenarioLastRun
-    parentLastRun: ScenarioLastRun
-    rootLastRun: ScenarioLastRun
+    parentLastRun: ScenarioParentLastRun
+    rootLastRun: ScenarioRootLastRun
     validationStatus: ScenarioValidationStatus
     security: ScenarioSecurity
 }
@@ -270,10 +268,9 @@ entity ScenarioJobState {
 }
 
 entity ScenarioLastRun {
-    scenarioRunId: String
-    csmSimulationRun: String
-    workflowId: String
-    workflowName: String
+}
+
+entity ScenarioParentLastRun {
 }
 
 entity ScenarioResourceSizing {
@@ -283,6 +280,9 @@ entity ScenarioResourceSizing {
 
 entity ScenarioRole {
     * role: String
+}
+
+entity ScenarioRootLastRun {
 }
 
 entity ScenarioRun {
@@ -400,8 +400,6 @@ entity ScenarioRunTemplateParameterValue {
 }
 
 entity ScenarioSecurity {
-    * default: String
-    * accessControlList: List<ScenarioAccessControl>
 }
 
 entity ScenarioValidationStatus {
@@ -518,8 +516,6 @@ entity WorkspaceSecret {
 }
 
 entity WorkspaceSecurity {
-    * default: String
-    * accessControlList: List<WorkspaceAccessControl>
 }
 
 entity WorkspaceSolution {
@@ -534,6 +530,12 @@ entity WorkspaceWebApp {
     options: Map
 }
 
+OrganizationSecurity <|--- OrganizationSecurity
+ScenarioLastRun <|--- ScenarioLastRun
+ScenarioLastRun <|--- ScenarioParentLastRun
+ScenarioLastRun <|--- ScenarioRootLastRun
+ScenarioSecurity <|--- ScenarioSecurity
+WorkspaceSecurity <|--- WorkspaceSecurity
 
 RunTemplateResourceSizing -- ResourceSizeInfo : requests
 RunTemplateResourceSizing -- ResourceSizeInfo : limits
@@ -541,25 +543,21 @@ ContainerResourceSizing -- ContainerResourceSizeInfo : requests
 ContainerResourceSizing -- ContainerResourceSizeInfo : limits
 ScenarioRunContainer -- ContainerResourceSizing : runSizing
 ScenarioRunContainer -- "0..*" ScenarioRunContainerArtifact : artifacts
-WorkspaceSecurity -- "0..*" WorkspaceAccessControl : accessControlList
 ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
 OrganizationServices -- OrganizationService : storage
 OrganizationServices -- OrganizationService : solutionsContainerRegistry
 Scenario -- ScenarioResourceSizing : runSizing
 Scenario -- "0..*" ScenarioRunTemplateParameterValue : parametersValues
 Scenario -- ScenarioLastRun : lastRun
-Scenario -- ScenarioLastRun : parentLastRun
-Scenario -- ScenarioLastRun : rootLastRun
-Scenario -- ScenarioValidationStatus : validationStatus
+Scenario -- ScenarioParentLastRun : parentLastRun
+Scenario -- ScenarioRootLastRun : rootLastRun
 Scenario -- ScenarioSecurity : security
-ScenarioRun -- ScenarioRunState : state
 ScenarioRun -- "0..*" RunTemplateParameterValue : parametersValues
 ScenarioRun -- "0..*" ScenarioRunContainer : containers
 ScenarioRunStatus -- "0..*" ScenarioRunStatusNode : nodes
 Connector -- "0..*" ConnectorParameterGroup : parameterGroups
 ScenarioResourceSizing -- ResourceSizeInfo : requests
 ScenarioResourceSizing -- ResourceSizeInfo : limits
-ScenarioSecurity -- "0..*" ScenarioAccessControl : accessControlList
 Organization -- OrganizationServices : services
 Organization -- OrganizationSecurity : security
 RunTemplate -- RunTemplateResourceSizing : runSizing
@@ -571,7 +569,6 @@ ScenarioComparisonResult -- "0..*" ScenarioChangedParameterValue : changedValues
 Dataset -- DatasetConnector : connector
 Dataset -- "0..*" DatasetCompatibility : compatibility
 TwinGraphImport -- SourceInfo : source
-OrganizationSecurity -- "0..*" OrganizationAccessControl : accessControlList
 ScenarioRunStartContainers -- "0..*" ScenarioRunContainer : containers
 Workspace -- WorkspaceSolution : solution
 Workspace -- WorkspaceWebApp : webApp

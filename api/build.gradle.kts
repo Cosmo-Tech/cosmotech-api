@@ -103,6 +103,9 @@ tasks.register<Copy>("copySubProjectsOpenAPIFiles") {
   }
 }
 
+
+
+
 //openApiMerger {
 //  openApi {
 //    openApiVersion.set("3.0.3")
@@ -356,6 +359,7 @@ tasks.register<Exec>("rolloutKindDeployment") {
 }
 
 tasks.register<GreetingTask>("mergeOpenApiFiles") {
+    dependsOn("copySubProjectsOpenAPIFiles")
   inputDirectory.set(file("$buildDir/tmp/openapi"))
   outputFileProperty.set(file("$rootDir/openapi/openapi.yaml"))
 }
@@ -373,10 +377,73 @@ abstract class GreetingTask : DefaultTask() {
     fun greet() {
         val log = LoggerFactory.getLogger(javaClass)
         val outputFile = outputFileProperty.asFile.get()
-        val openApi = OpenApi()
         val validFileExtension = listOf("yaml", "json", "yml")
         val parseOptions = ParseOptions()
         val openApiMerger = OpenApiMerger()
+        var openApi = OpenAPI()
+            .apply { openapi = "3.0.3"
+                        info = Info().apply {
+            title = "Cosmo Tech Platform API"
+            description = "Cosmo Tech Platform API"
+            version = project.version.toString()
+            termsOfService = "http://openapimerger.com/terms-of-service"
+            contact = Contact().apply {
+                name = "Repository"
+                email = "platform@cosmotech.com"
+                url = "https://github.com/Cosmo-Tech/cosmotech-api"
+            }
+            license = License().apply {
+                name = "MIT License"
+                url = "https://github.com/Cosmo-Tech/cosmotech-api/blob/main/LICENSE"
+            }
+        }
+        servers = listOf(
+            Server().apply {
+                url = "https://dev.api.cosmotech.com"
+                description = "Development server"
+            },
+            Server().apply {
+                url = "https://staging.api.cosmotech.com"
+                description = "Staging server"
+            },
+            Server().apply {
+                url = "https://api.cosmotech.com"
+                description = "Production server"
+            }
+        )
+            }
+//    .apply {
+//        version = "3.0.3"
+//        info = Info().apply {
+//            title = "Cosmo Tech Platform API"
+//            description = "Cosmo Tech Platform API"
+//            version = project.version.toString()
+//            termsOfService = "http://openapimerger.com/terms-of-service"
+//            contact = Contact().apply {
+//                name = "Repository"
+//                email = "platform@cosmotech.com"
+//                url = "https://github.com/Cosmo-Tech/cosmotech-api"
+//            }
+//            license = License().apply {
+//                name = "MIT License"
+//                url = "https://github.com/Cosmo-Tech/cosmotech-api/blob/main/LICENSE"
+//            }
+//        }
+//        servers = listOf(
+//            Server().apply {
+//                url = "https://dev.api.cosmotech.com"
+//                description = "Development server"
+//            },
+//            Server().apply {
+//                url = "https://staging.api.cosmotech.com"
+//                description = "Staging server"
+//            },
+//            Server().apply {
+//                url = "https://api.cosmotech.com"
+//                description = "Production server"
+//            }
+//        )
+//    }
 
         inputDirectory.get().asFile.walk().filter {
             validFileExtension.contains(it.extension)
@@ -388,7 +455,7 @@ abstract class GreetingTask : DefaultTask() {
             openApiMerger.merge(openAPI)
         }
 // Convert the server object to open api server objects
-        val servers  = openApi!!.servers.map {
+        val servers  = openApi.servers?.map {
             val s = Server()
             s.url = it.url
             s.description = it.description
@@ -401,7 +468,7 @@ abstract class GreetingTask : DefaultTask() {
             log.debug("Constructing the OpenApi model")
             // Set the openapi model object values to merged file
             openApi.let { openApiModel ->
-                openapi = openApiModel.version
+//                openapi = openApiModel.version
                 // Set the info object
                 info = openApiModel.info?.let { infoModelObj ->
                     val info = Info()
@@ -435,8 +502,10 @@ abstract class GreetingTask : DefaultTask() {
                     externalDocs
                 }
 
-                if (servers.isNotEmpty()) {
-                    this.servers = servers
+                if (servers != null) {
+                    if (servers.isNotEmpty()) {
+                        this.servers = servers
+                    }
                 }
             }
 

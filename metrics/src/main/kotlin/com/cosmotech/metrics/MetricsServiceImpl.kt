@@ -94,16 +94,17 @@ class MetricsServiceImpl(
           )
         } else {}
       } else {
-        val timeSeriesRetention = unifiedJedis.tsInfo(key).getProperty("retentionTime")
-
-        if (!timeSeriesRetention.equals(metricRetention)) {
-          logger.debug(
-              "Redis TS retention changed: $key from $timeSeriesRetention to $metricRetention")
-          logger.debug(
-              "Redis TS library cannot get current labels so it is not possible to check if labels changed")
-          val metricLabels = getMetricLabels(commonLabels)
-            unifiedJedis.tsAlter(key, TSAlterParams().retention(metricRetention).labels(metricLabels))
-        } else {}
+          // SPOK ERROR: java.lang.IndexOutOfBoundsException: Index 3 out of bounds for length 3
+//        val timeSeriesRetention = unifiedJedis.tsInfo(key).getProperty("retentionTime")
+//
+//        if (!timeSeriesRetention.equals(metricRetention)) {
+//          logger.debug(
+//              "Redis TS retention changed: $key from $timeSeriesRetention to $metricRetention")
+//          logger.debug(
+//              "Redis TS library cannot get current labels so it is not possible to check if labels changed")
+//          val metricLabels = getMetricLabels(commonLabels)
+//            unifiedJedis.tsAlter(key, TSAlterParams().retention(metricRetention).labels(metricLabels))
+//        } else {}
       }
   }
 

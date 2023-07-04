@@ -16,8 +16,6 @@ import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.twingraph.domain.TwinGraphBatchResult
 import com.cosmotech.twingraph.domain.TwinGraphQuery
 import com.cosmotech.twingraph.extension.toJsonString
-import com.redislabs.redisgraph.ResultSet
-import com.redislabs.redisgraph.impl.api.RedisGraph
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
@@ -39,6 +37,8 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import redis.clients.jedis.JedisPool
+import redis.clients.jedis.graph.ResultSet
+import redis.clients.jedis.graph.Record
 
 const val AUTHENTICATED_USERNAME = "authenticated-user"
 const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
@@ -287,7 +287,7 @@ class TwingraphServiceImplTests {
     val resultSet = mockk<ResultSet>()
     every { resultSet.toJsonString() } returns "[]"
     every { resultSet.iterator() } returns
-        mockk<MutableIterator<com.redislabs.redisgraph.Record>> {
+        mockk<MutableIterator<Record>> {
           every { hasNext() } returns false
         }
     return resultSet

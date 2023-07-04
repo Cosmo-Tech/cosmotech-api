@@ -11,7 +11,7 @@ management:
       show-details: always
       group:
         readiness:
-          include: "readinessState,argo,csmADX" # SPOK blobStorage
+          include: "readinessState,argo,csmADX" # SPOK blobStorage  not working :(
 
 csm:
   platform:

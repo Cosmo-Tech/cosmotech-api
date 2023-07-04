@@ -26,6 +26,7 @@ Models/OrganizationRole.md
 Models/OrganizationSecurity.md
 Models/OrganizationService.md
 Models/OrganizationServices.md
+Models/Organization_security.md
 Models/ResourceSizeInfo.md
 Models/RunTemplate.md
 Models/RunTemplateHandlerId.md
@@ -57,6 +58,10 @@ Models/ScenarioRunStatusNode.md
 Models/ScenarioRunTemplateParameterValue.md
 Models/ScenarioSecurity.md
 Models/ScenarioValidationStatus.md
+Models/Scenario_lastRun.md
+Models/Scenario_parentLastRun.md
+Models/Scenario_rootLastRun.md
+Models/Scenario_security.md
 Models/Solution.md
 Models/SourceInfo.md
 Models/TwinGraphBatchResult.md
@@ -74,4 +79,5 @@ Models/WorkspaceSecret.md
 Models/WorkspaceSecurity.md
 Models/WorkspaceSolution.md
 Models/WorkspaceWebApp.md
+Models/Workspace_security.md
 README.md

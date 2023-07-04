@@ -7,11 +7,12 @@ import com.cosmotech.twingraph.bulk.model.Edge
 import com.cosmotech.twingraph.bulk.model.Node
 import com.cosmotech.twingraph.bulk.model.TypeEntity
 import redis.clients.jedis.Jedis
+import redis.clients.jedis.UnifiedJedis
 
 const val BULK_QUERY_MAX_SIZE = 512 * 1024 * 1024 /*512 Mo*/
 
 @Suppress("MagicNumber", "SpreadOperator")
-class QueryBuffer(val jedis: Jedis, val graphName: String) {
+class QueryBuffer(val jedis: UnifiedJedis, val graphName: String) {
 
   val tasks: MutableList<BulkQuery> = mutableListOf()
   // map of redis node creation id to node id

@@ -208,9 +208,8 @@ subprojects {
     implementation("org.springframework.boot:spring-boot-starter-undertow")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
-    val springDocVersion = "1.6.14"
-    implementation("org.springdoc:springdoc-openapi-ui:${springDocVersion}")
-    implementation("org.springdoc:springdoc-openapi-kotlin:${springDocVersion}")
+    val springDocVersion = "2.1.0"
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:${springDocVersion}")
     val swaggerParserVersion = "2.1.13"
     implementation("io.swagger.parser.v3:swagger-parser-v3:${swaggerParserVersion}")
 

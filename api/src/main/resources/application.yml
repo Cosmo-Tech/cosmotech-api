@@ -5,12 +5,13 @@ logging:
       OkHttpClient: WARN
 
 spring:
-  redis:
-    host: ${csm.platform.twincache.host}
-    port: 6379
-    password: ${csm.platform.twincache.password}
-    username: ${csm.platform.twincache.username}
-    client-type: jedis
+  data:
+    redis:
+      host: ${csm.platform.twincache.host}
+      port: 6379
+      password: ${csm.platform.twincache.password}
+      username: ${csm.platform.twincache.username}
+      client-type: jedis
   servlet:
     multipart:
       max-file-size: 50MB

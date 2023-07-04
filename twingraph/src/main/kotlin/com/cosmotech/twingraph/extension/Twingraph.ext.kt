@@ -7,12 +7,12 @@ import com.fasterxml.jackson.core.JacksonException
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.redislabs.redisgraph.Record
-import com.redislabs.redisgraph.ResultSet
-import com.redislabs.redisgraph.graph_entities.Edge
-import com.redislabs.redisgraph.graph_entities.GraphEntity
-import com.redislabs.redisgraph.graph_entities.Node
 import org.json.JSONObject
+import redis.clients.jedis.graph.Record
+import redis.clients.jedis.graph.ResultSet
+import redis.clients.jedis.graph.entities.Edge
+import redis.clients.jedis.graph.entities.GraphEntity
+import redis.clients.jedis.graph.entities.Node
 
 private const val ID_PROPERTY_NAME = "id"
 

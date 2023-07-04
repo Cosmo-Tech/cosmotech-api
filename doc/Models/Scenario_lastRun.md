@@ -1,4 +1,4 @@
-# ScenarioLastRun
+# Scenario_lastRun
 ## Properties
 
 | Name | Type | Description | Notes |
