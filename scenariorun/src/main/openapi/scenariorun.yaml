@@ -676,6 +676,14 @@ components:
         containerName:
           type: string
           description: the ScenarioRun container name
+        outboundNodes:
+          type: array
+          readOnly: true
+          description: the list of outbound nodes
+          items:
+            type: string
+        resourcesDuration:
+          $ref: '#/components/schemas/ScenarioRunResourceRequested'
         estimatedDuration:
           type: integer
           description: estimatedDuration in seconds
@@ -697,6 +705,18 @@ components:
         endTime:
           type: string
           description: the node end time
+    ScenarioRunResourceRequested:
+      type: object
+      description: the memory and CPU requested by the pod
+      properties:
+        cpu:
+          type: integer
+          format: int64
+          description: the cpu requested
+        memory:
+          type: integer
+          format: int64
+          description: the memory requested
     ScenarioRun:
       type: object
       x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
