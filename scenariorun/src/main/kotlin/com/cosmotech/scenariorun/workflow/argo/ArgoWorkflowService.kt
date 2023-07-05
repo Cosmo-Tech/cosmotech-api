@@ -7,6 +7,7 @@ import com.cosmotech.api.events.WorkflowStatusRequest
 import com.cosmotech.scenariorun.domain.ScenarioRun
 import com.cosmotech.scenariorun.domain.ScenarioRunContainerLogs
 import com.cosmotech.scenariorun.domain.ScenarioRunLogs
+import com.cosmotech.scenariorun.domain.ScenarioRunResourceRequested
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
 import com.cosmotech.scenariorun.domain.ScenarioRunStatus
 import com.cosmotech.scenariorun.domain.ScenarioRunStatusNode
@@ -437,6 +438,11 @@ internal class ArgoWorkflowService(
                   name = nodeStatus.name,
                   containerName = nodeStatus.displayName,
                   estimatedDuration = nodeStatus.estimatedDuration,
+                  resourcesDuration =
+                      ScenarioRunResourceRequested(
+                          nodeStatus.resourcesDuration?.get("cpu"),
+                          nodeStatus.resourcesDuration?.get("memory")),
+                  outboundNodes = nodeStatus.outboundNodes,
                   hostNodeName = nodeStatus.hostNodeName,
                   message = nodeStatus.message,
                   phase = nodeStatus.phase,
