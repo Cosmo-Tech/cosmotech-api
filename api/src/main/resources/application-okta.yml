@@ -11,6 +11,7 @@ okta:
 csm:
   platform:
     authorization:
-      principal-jwt-claim: "jti"
+      principal-jwt-claim: "email"
+      applicationIdJwtClaim: "cid"
       mailJwtClaim: "sub"
       rolesJwtClaim: "groups"
