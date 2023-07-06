@@ -5,7 +5,7 @@ description: A Brewery Supplier Solution Model which simulate stock, production,
 repository: brewery_solution
 version: "1.0.0"
 ownerId: "1"
-url: https://github.com/Cosm-Tech/brewery.git
+url: https://github.com/Cosmo-Tech/brewery_sample_solution
 tags:
   - Brewery
 parameters:
