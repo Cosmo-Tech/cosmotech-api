@@ -119,7 +119,7 @@ csm:
       - name: "ADTTwingraphImport"
         imageRegistry: "ghcr.io"
         imageName: "cosmo-tech/adt-twincache-connector"
-        imageVersion: "0.2.4"
+        imageVersion: "0.2.5"
       - name: "StorageTwingraphImport"
         imageRegistry: "ghcr.io"
         imageName: "cosmo-tech/azstorage-twincache-connector"
