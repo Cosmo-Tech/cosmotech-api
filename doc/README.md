@@ -185,6 +185,7 @@ Class | Method | HTTP request | Description
  - [ScenarioRunContainerArtifact](./Models/ScenarioRunContainerArtifact.md)
  - [ScenarioRunContainerLogs](./Models/ScenarioRunContainerLogs.md)
  - [ScenarioRunLogs](./Models/ScenarioRunLogs.md)
+ - [ScenarioRunResourceRequested](./Models/ScenarioRunResourceRequested.md)
  - [ScenarioRunSearch](./Models/ScenarioRunSearch.md)
  - [ScenarioRunStartContainers](./Models/ScenarioRunStartContainers.md)
  - [ScenarioRunState](./Models/ScenarioRunState.md)

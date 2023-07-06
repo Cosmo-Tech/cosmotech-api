@@ -49,6 +49,7 @@ Models/ScenarioRunContainer.md
 Models/ScenarioRunContainerArtifact.md
 Models/ScenarioRunContainerLogs.md
 Models/ScenarioRunLogs.md
+Models/ScenarioRunResourceRequested.md
 Models/ScenarioRunSearch.md
 Models/ScenarioRunStartContainers.md
 Models/ScenarioRunState.md

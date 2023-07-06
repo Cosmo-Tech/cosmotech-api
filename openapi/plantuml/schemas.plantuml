@@ -342,6 +342,11 @@ entity ScenarioRunLogs {
     containers: Map
 }
 
+entity ScenarioRunResourceRequested {
+    cpu: Long
+    memory: Long
+}
+
 entity ScenarioRunSearch {
     solutionId: String
     runTemplateId: String
@@ -383,6 +388,8 @@ entity ScenarioRunStatusNode {
     id: String
     name: String
     containerName: String
+    outboundNodes: List<String>
+    resourcesDuration: ScenarioRunResourceRequested
     estimatedDuration: Integer
     hostNodeName: String
     message: String
@@ -556,6 +563,7 @@ ScenarioRun -- ScenarioRunState : state
 ScenarioRun -- "0..*" RunTemplateParameterValue : parametersValues
 ScenarioRun -- "0..*" ScenarioRunContainer : containers
 ScenarioRunStatus -- "0..*" ScenarioRunStatusNode : nodes
+ScenarioRunStatusNode -- ScenarioRunResourceRequested : resourcesDuration
 Connector -- "0..*" ConnectorParameterGroup : parameterGroups
 ScenarioResourceSizing -- ResourceSizeInfo : requests
 ScenarioResourceSizing -- ResourceSizeInfo : limits
