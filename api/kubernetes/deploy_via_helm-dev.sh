@@ -17,6 +17,8 @@ help() {
   echo "- ARGO_MINIO_SECRET_KEY | string | SecretKey for MinIO. Generated when not set"
   echo "- ARGO_REQUEUE_TIME | string | Workflow requeue time, 1s by default"
   echo "- ARGO_MINIO_REQUESTS_MEMORY | units of bytes (default is 4Gi) | Memory requests for the Argo MinIO server"
+  echo "- LOKI_PERSISTENCE_MEMORY | units of bytes (default is 4Gi) | Memory for persistence of Loki system"
+  echo "- LOKI_RETENTION_PERIOD | units of hours (default is 720h) | Loki logs retention period"
   echo "- PROM_STORAGE_CLASS_NAME | storage class name for the prometheus PVC (default is standard)"
   echo "- PROM_STORAGE_RESOURCE_REQUEST | size requested for prometheusPVC (default is 10Gi)"
   echo "- PROM_CPU_MEM_LIMITS | memory size limit for prometheus (default is 2Gi)"
@@ -506,12 +508,6 @@ helm upgrade --install -n ${NAMESPACE} ${ARGO_RELEASE_NAME} argo/argo-workflows 
 
 LOKI_RELEASE_NAME="loki"
 helm repo add grafana https://grafana.github.io/helm-charts
-#Pod errors due to “too many open files”
-#sudo sysctl fs.inotify.max_user_watches=524288
-#sudo sysctl fs.inotify.max_user_instances=512
-#To make the changes persistent, edit the file /etc/sysctl.conf and add these lines
-#fs.inotify.max_user_watches = 524288
-#fs.inotify.max_user_instances = 512
 
 cat <<EOF > loki-values.yaml
 loki:
@@ -519,11 +515,11 @@ loki:
     enabled: true
     accessModes:
     - ReadWriteOnce
-    size: 10Gi
+    size: "${LOKI_PERSISTENCE_MEMORY:-4Gi}"
   config:
     table_manager:
       retention_deletes_enabled: true
-      retention_period: 720h
+      retention_period: "${LOKI_RETENTION_PERIOD:-720h}"
 grafana:
   enabled: true
   persistence:
@@ -532,7 +528,7 @@ grafana:
     # storageClassName: default
     accessModes:
       - ReadWriteOnce
-    size: 10Gi
+    size: "${LOKI_PERSISTENCE_MEMORY:-4Gi}"
 promtail:
   tolerations:
     - effect: NoSchedule

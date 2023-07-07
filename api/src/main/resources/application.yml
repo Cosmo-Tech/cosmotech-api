@@ -221,6 +221,8 @@ csm:
     loki:
       # base Url of Loki where to query logs
       baseUrl: http://localhost:3100
+      # endpoint query of Loki
+      queryPath: /loki/api/v1/query_range
       # duration in days to query logs
       queryDaysAgo: 1
 

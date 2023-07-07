@@ -345,6 +345,21 @@ internal class ArgoWorkflowService(
     return buildScenarioRunStatusFromWorkflowStatus(scenarioRun, workflowStatus)
   }
 
+  internal fun getPodName(
+      workflow: IoArgoprojWorkflowV1alpha1Workflow,
+      nodeValue: IoArgoprojWorkflowV1alpha1NodeStatus
+  ): String {
+    var podName = ""
+    if (workflow.spec.templates?.get(0)?.containerSet != null) {
+      podName = nodeValue.name
+    } else {
+      var name = StringBuilder(nodeValue.id)
+      var toInsert = nodeValue.displayName + "-"
+      name.insert(nodeValue.id.lastIndexOf('-') + 1, toInsert)
+      podName = name.toString()
+    }
+    return podName
+  }
   override fun getScenarioRunLogs(scenarioRun: ScenarioRun): ScenarioRunLogs {
     val workflowId = scenarioRun.workflowId
     val workflowName = scenarioRun.workflowName
@@ -352,23 +367,15 @@ internal class ArgoWorkflowService(
     if (workflowId != null && workflowName != null) {
       val workflow = getActiveWorkflow(workflowId, workflowName)
       workflow.status?.nodes?.forEach { (nodeKey, nodeValue) ->
-        var podName = ""
-        if (workflow.spec.templates?.get(0)?.containerSet != null) {
-          podName = nodeValue.name
-        } else {
-          var name = StringBuilder(nodeValue.id)
-          var toInsert = nodeValue.displayName + "-"
-          name.insert(nodeValue.id.lastIndexOf('-') + 1, toInsert)
-          podName = name.toString()
-        }
-
         containersLogs[nodeValue.displayName.toString()] =
             ScenarioRunContainerLogs(
                 nodeId = nodeKey,
                 containerName = nodeValue.displayName,
                 children = nodeValue.children,
                 logs =
-                    lokiService.getPodLogs(csmPlatformProperties.argo.workflows.namespace, podName))
+                    lokiService.getPodLogs(
+                        csmPlatformProperties.argo.workflows.namespace,
+                        getPodName(workflow, nodeValue)))
       }
     }
     return ScenarioRunLogs(scenariorunId = scenarioRun.id, containers = containersLogs)
