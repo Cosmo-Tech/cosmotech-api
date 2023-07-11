@@ -25,6 +25,7 @@ import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioAccessControl
+import com.cosmotech.scenario.domain.ScenarioJobState
 import com.cosmotech.scenario.domain.ScenarioRole
 import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
 import com.cosmotech.scenario.domain.ScenarioValidationStatus
@@ -626,6 +627,17 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("rootId should be the firstChildScenario Id")
     assertEquals(firstChildScenario.id, secondChildScenario.rootId)
+  }
+
+  @Test
+  fun `test deleting a running scenario`() {
+    scenarioSaved.state = ScenarioJobState.Running
+    scenarioApiService.updateScenario(
+        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, scenarioSaved)
+    assertThrows<Exception> {
+      scenarioApiService.deleteScenario(
+          organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, true)
+    }
   }
 
   private fun makeWorkspaceEventHubInfo(eventHubAvailable: Boolean): WorkspaceEventHubInfo {
