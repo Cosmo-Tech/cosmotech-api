@@ -636,7 +636,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
         organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, scenarioSaved)
     assertThrows<Exception> {
       scenarioApiService.deleteScenario(
-          organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, true)
+          organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
     }
   }
 
