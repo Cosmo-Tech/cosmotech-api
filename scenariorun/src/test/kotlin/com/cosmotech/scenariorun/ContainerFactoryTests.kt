@@ -1891,6 +1891,9 @@ class ContainerFactoryTests {
         mapOf(
             "cosmotech.com/job_id" to "Scenarioid",
             "cosmotech.com/workflowtype" to DEFAULT_WORKFLOW_TYPE,
+            "cosmotech.com/organizationId" to "Organizationid",
+            "cosmotech.com/workspaceId" to "Workspaceid",
+            "cosmotech.com/scenarioId" to "Scenarioid",
         ),
         startInfo.startContainers.labels,
     )

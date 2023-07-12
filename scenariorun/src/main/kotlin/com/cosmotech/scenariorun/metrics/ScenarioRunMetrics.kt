@@ -11,6 +11,7 @@ import com.cosmotech.api.metrics.PersistentMetric
 import com.cosmotech.api.metrics.PersitentMetricType
 import com.cosmotech.scenariorun.WORKFLOW_TYPE_LABEL
 import com.cosmotech.scenariorun.service.WORKFLOW_TYPE_SCENARIO_RUN
+import com.cosmotech.scenariorun.workflow.WorkflowContextData
 import com.cosmotech.scenariorun.workflow.WorkflowService
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Scheduled
@@ -26,34 +27,42 @@ internal class ScenarioRunMetrics(
     private val eventPublisher: CsmEventPublisher,
     private val csmPlatformProperties: CsmPlatformProperties,
 ) {
-  private fun getCurrentRunningScenario(): Double {
+  private fun getRunningWorkflowsCount(): Map<WorkflowContextData?, Int> {
     val runWorkflows =
         this.workflowService.findWorkflowStatusByLabel(
             "$WORKFLOW_TYPE_LABEL=$WORKFLOW_TYPE_SCENARIO_RUN",
             true,
         )
-    return runWorkflows.filter { it.status == RUNNING_STATUS }.size.toDouble()
+    return runWorkflows
+        .filter { it.status == RUNNING_STATUS }
+        .groupingBy { it.contextData }
+        .eachCount()
   }
 
   @Scheduled(fixedDelay = 10000)
   fun publishCurrentRunningScenario() {
     if (!csmPlatformProperties.metrics.enabled) return
-    val currentRunningScenario = getCurrentRunningScenario()
-    val metric =
-        PersistentMetric(
-            service = SERVICE_NAME,
-            name = "running",
-            value = currentRunningScenario.toDouble(),
-            qualifier = "total",
-            labels =
-                mapOf(
-                    "usage" to "licensing",
-                ),
-            type = PersitentMetricType.GAUGE,
-            downSampling = true,
-            downSamplingAggregation = DownSamplingAggregationType.MAX,
-        )
-    eventPublisher.publishEvent(PersistentMetricEvent(this, metric))
+    val countRunningWorkflows = getRunningWorkflowsCount()
+    countRunningWorkflows.forEach { (workflowContext, workflowCount) ->
+      val metric =
+          PersistentMetric(
+              service = SERVICE_NAME,
+              name = "running",
+              value = workflowCount.toDouble(),
+              qualifier = "total",
+              labels =
+                  mapOf(
+                      "usage" to "licensing",
+                      "organizationId" to workflowContext!!.organizationId!!,
+                      "scenarioId" to workflowContext.scenarioId!!,
+                      "workspaceId" to workflowContext.workspaceId!!,
+                  ),
+              type = PersitentMetricType.GAUGE,
+              downSampling = true,
+              downSamplingAggregation = DownSamplingAggregationType.MAX,
+          )
+      eventPublisher.publishEvent(PersistentMetricEvent(this, metric))
+    }
   }
 
   @EventListener(ScenarioRunStartedForScenario::class)
@@ -70,6 +79,9 @@ internal class ScenarioRunMetrics(
             labels =
                 mapOf(
                     "usage" to "licensing",
+                    "organizationId" to event.organizationId,
+                    "scenarioId" to event.scenarioId,
+                    "workspaceId" to event.workspaceId,
                 ),
             type = PersitentMetricType.COUNTER,
             downSampling = true,

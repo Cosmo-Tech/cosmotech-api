@@ -79,4 +79,14 @@ data class WorkflowStatusAndArtifact(
     val artifactContent: String? = null
 )
 
-data class WorkflowStatus(val workflowId: String, val status: String? = null)
+data class WorkflowContextData(
+    val organizationId: String? = null,
+    val workspaceId: String? = null,
+    val scenarioId: String? = null,
+)
+
+data class WorkflowStatus(
+    val workflowId: String,
+    val status: String? = null,
+    val contextData: WorkflowContextData? = null
+)
