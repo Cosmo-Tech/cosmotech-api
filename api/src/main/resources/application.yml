@@ -220,7 +220,7 @@ csm:
         no-data-time-out-seconds: 60
     loki:
       # base Url of Loki where to query logs
-      baseUrl: http://localhost:3100
+      baseUrl: http://loki.default.svc.cluster.local:3100
       # endpoint query of Loki
       queryPath: /loki/api/v1/query_range
       # duration in days to query logs
