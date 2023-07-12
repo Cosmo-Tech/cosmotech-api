@@ -123,6 +123,9 @@ private const val SCENARIO_DATA_UPLOAD_LOG_LEVEL_ENV_VAR = "CSM_LOG_LEVEL"
 internal const val CSM_JOB_ID_LABEL_KEY = "cosmotech.com/job_id"
 internal const val SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME = "downloadUrl"
 internal const val WORKFLOW_TYPE_LABEL = "cosmotech.com/workflowtype"
+internal const val ORGANIZATION_ID_LABEL = "cosmotech.com/organizationId"
+internal const val WORKSPACE_ID_LABEL = "cosmotech.com/workspaceId"
+internal const val SCENARIO_ID_LABEL = "cosmotech.com/scenarioId"
 
 const val CSM_DAG_ROOT = "DAG_ROOT"
 
@@ -305,6 +308,9 @@ class ContainerFactory(
             mapOf(
                 CSM_JOB_ID_LABEL_KEY to jobId,
                 WORKFLOW_TYPE_LABEL to workflowType,
+                ORGANIZATION_ID_LABEL to "none",
+                WORKSPACE_ID_LABEL to "none",
+                SCENARIO_ID_LABEL to "none",
             ))
   }
 
@@ -391,6 +397,9 @@ class ContainerFactory(
             mapOf(
                 CSM_JOB_ID_LABEL_KEY to (scenarioDataDownloadJobId ?: (scenario.id ?: "")),
                 WORKFLOW_TYPE_LABEL to workflowType,
+                ORGANIZATION_ID_LABEL to organization.id!!,
+                WORKSPACE_ID_LABEL to workspace.id!!,
+                SCENARIO_ID_LABEL to scenario.id!!,
             ))
   }
 

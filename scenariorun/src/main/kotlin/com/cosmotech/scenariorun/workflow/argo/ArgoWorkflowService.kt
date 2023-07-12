@@ -4,6 +4,9 @@ package com.cosmotech.scenariorun.workflow.argo
 
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.WorkflowStatusRequest
+import com.cosmotech.scenariorun.ORGANIZATION_ID_LABEL
+import com.cosmotech.scenariorun.SCENARIO_ID_LABEL
+import com.cosmotech.scenariorun.WORKSPACE_ID_LABEL
 import com.cosmotech.api.loki.LokiService
 import com.cosmotech.scenariorun.domain.ScenarioRun
 import com.cosmotech.scenariorun.domain.ScenarioRunContainerLogs
@@ -12,6 +15,7 @@ import com.cosmotech.scenariorun.domain.ScenarioRunResourceRequested
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
 import com.cosmotech.scenariorun.domain.ScenarioRunStatus
 import com.cosmotech.scenariorun.domain.ScenarioRunStatusNode
+import com.cosmotech.scenariorun.workflow.WorkflowContextData
 import com.cosmotech.scenariorun.workflow.WorkflowService
 import com.cosmotech.scenariorun.workflow.WorkflowStatusAndArtifact
 import io.argoproj.workflow.ApiClient
@@ -282,7 +286,13 @@ internal class ArgoWorkflowService(
     return workflowList?.items?.map { workflow ->
       val workflowId = workflow.metadata.uid!!
       val status = workflow.status?.phase
-      com.cosmotech.scenariorun.workflow.WorkflowStatus(workflowId = workflowId, status = status)
+      val organizationId = workflow.metadata.labels!!.getOrDefault(ORGANIZATION_ID_LABEL, "none")
+      val workspaceId = workflow.metadata.labels!!.getOrDefault(WORKSPACE_ID_LABEL, "none")
+      val scenarioId = workflow.metadata.labels!!.getOrDefault(SCENARIO_ID_LABEL, "none")
+      com.cosmotech.scenariorun.workflow.WorkflowStatus(
+          workflowId = workflowId,
+          status = status,
+          contextData = WorkflowContextData(organizationId, workspaceId, scenarioId))
     }
         ?: listOf()
   }
