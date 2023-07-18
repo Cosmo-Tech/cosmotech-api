@@ -11,8 +11,6 @@ management:
           include: "readinessState"
 
 spring:
-  main:
-    allow-bean-definition-overriding: true
   security:
     oauth2:
       resource-server:
