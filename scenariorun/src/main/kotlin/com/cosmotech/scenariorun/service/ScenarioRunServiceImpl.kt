@@ -56,6 +56,7 @@ import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.azure.EventHubRole
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.domain.Workspace
+import java.time.Instant
 import java.time.ZonedDateTime
 import java.util.MissingResourceException
 import kotlinx.coroutines.GlobalScope
@@ -579,6 +580,7 @@ class ScenarioRunServiceImpl(
         containerFactory.getSendOptionValue(
             workspace?.sendInputToDataWarehouse, runTemplate?.sendDatasetsToDataWarehouse)
     // Only send containers if admin or special route
+    val now = Instant.now().toString()
     val scenarioRun =
         scenarioRunRequest.copy(
             id = idGenerator.generate("scenariorun", prependPrefix = "sr-"),
@@ -595,6 +597,7 @@ class ScenarioRunServiceImpl(
             noDataIngestionState = runTemplate?.noDataIngestionState,
             sdkVersion = solution?.sdkVersion,
             datasetList = scenario?.datasetList,
+            creationDate = now,
             parametersValues =
                 (scenario?.parametersValues?.map { scenarioValue ->
                       RunTemplateParameterValue(

@@ -786,6 +786,10 @@ components:
         sdkVersion:
           type: string
           description: the MAJOR.MINOR version used to build the solution solution
+        creationDate:
+          type: string
+          readOnly: true
+          description: the ScenarioRun creation date
         noDataIngestionState:
           type: boolean
           description: set to true if the run template does not use any Datawarehouse consumers (AMQP consumers for Azure)
