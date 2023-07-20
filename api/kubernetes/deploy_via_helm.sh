@@ -17,6 +17,8 @@ help() {
   echo "- ARGO_REQUEUE_TIME | string | Workflow requeue time, 1s by default"
   echo "- ARGO_MINIO_REQUESTS_MEMORY | units of bytes (default is 4Gi) | Memory requests for the Argo MinIO server"
   echo "- ARGO_MINIO_PERSISTENCE_SIZE | units of bytes (default is 500Gi) | Persistence size for the Argo MinIO server"
+  echo "- LOKI_PERSISTENCE_MEMORY | units of bytes (default is 4Gi) | Memory for persistence of Loki system"
+  echo "- LOKI_RETENTION_PERIOD | units of hours (default is 720h) | Loki logs retention period"
   echo "- NGINX_INGRESS_CONTROLLER_ENABLED | boolean (default is false) | indicating whether an NGINX Ingress Controller should be deployed and an Ingress resource created too"
   echo "- NGINX_INGRESS_CONTROLLER_REPLICA_COUNT | int (default is 1) | number of pods for the NGINX Ingress Controller"
   echo "- NGINX_INGRESS_CONTROLLER_LOADBALANCER_IP | IP Address String | optional public IP Address to use as LoadBalancer IP. You can create one with this Azure CLI command: az network public-ip create --resource-group <my-rg>> --name <a-name> --sku Standard --allocation-method static --query publicIp.ipAddress -o tsv "
@@ -70,7 +72,7 @@ echo CHART_PACKAGE_VERSION: $CHART_PACKAGE_VERSION
 echo NAMEPSACE: $NAMESPACE
 echo API_VERSION: $API_VERSION
 
-export ARGO_VERSION="0.22.15"
+export ARGO_VERSION="0.31.0"
 export ARGO_RELEASE_NAME=argocsmv2
 export ARGO_RELEASE_NAMESPACE="${NAMESPACE}"
 export MINIO_VERSION="8.0.10"
@@ -402,11 +404,11 @@ loki:
     enabled: true
     accessModes:
     - ReadWriteOnce
-    size: 10Gi
+    size: "${LOKI_PERSISTENCE_MEMORY:-4Gi}"
   config:
     table_manager:
       retention_deletes_enabled: true
-      retention_period: 720h
+      retention_period: "${LOKI_RETENTION_PERIOD:-720h}"
 grafana:
   enabled: true
   persistence:
@@ -415,7 +417,7 @@ grafana:
     # storageClassName: default
     accessModes:
       - ReadWriteOnce
-    size: 10Gi
+    size: "${LOKI_PERSISTENCE_MEMORY:-4Gi}"
 promtail:
   tolerations:
     - effect: NoSchedule
