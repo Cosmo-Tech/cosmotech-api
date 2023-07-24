@@ -234,7 +234,7 @@ class ConnectorServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(expectedResultSize, connectorList.size)
   }
 
-  internal fun testFindAllConnectorsWithWrongValues() {
+  private fun testFindAllConnectorsWithWrongValues() {
     logger.info("Should throw IllegalArgumentException when page and size are zeros")
     assertThrows<IllegalArgumentException> { connectorApiService.findAllConnectors(0, 0) }
 
