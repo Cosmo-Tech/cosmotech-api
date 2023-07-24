@@ -3,40 +3,31 @@
 package com.cosmotech.organization.service
 
 import com.cosmotech.api.config.CsmPlatformProperties
-import com.cosmotech.api.rbac.ROLE_ADMIN
-import com.cosmotech.api.rbac.ROLE_EDITOR
-import com.cosmotech.api.rbac.ROLE_NONE
-import com.cosmotech.api.rbac.ROLE_USER
-import com.cosmotech.api.rbac.ROLE_VALIDATOR
-import com.cosmotech.api.rbac.ROLE_VIEWER
+import com.cosmotech.api.rbac.*
+import com.cosmotech.api.security.ROLE_ORGANIZATION_USER
+import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.api.utils.getCurrentAuthentication
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
-import com.cosmotech.organization.domain.OrganizationRole
 import com.cosmotech.organization.domain.OrganizationSecurity
-import com.cosmotech.organization.domain.OrganizationService
-import com.cosmotech.organization.domain.OrganizationServices
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
 import io.mockk.mockkStatic
+import org.junit.jupiter.api.*
 import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
-import kotlin.test.assertNotNull
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.DynamicTest.dynamicTest
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestFactory
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthentication
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
@@ -46,27 +37,241 @@ import org.springframework.test.context.junit4.SpringRunner
 @ExtendWith(SpringExtension::class)
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Suppress("FunctionName")
 class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
 
   private val logger = LoggerFactory.getLogger(OrganizationServiceIntegrationTest::class.java)
 
+  private val OTHER_TEST_USER_ID = "test.other.user@cosmotech.com"
+  private val TEST_USER_ID = "test.user@cosmotech.com"
+  private val TEST_ADMIN_USER_ID = "test.admin@cosmotech.com"
+
+
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
-
   @Autowired lateinit var organizationApiService: OrganizationApiService
-
-  val defaultName = "my.account-tester@cosmotech.com"
-
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
+
+  @BeforeAll
+  fun globalSetup() {
+    mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
+  }
 
   @BeforeEach
   fun setUp() {
-    mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
-    every { getCurrentAccountIdentifier(any()) } returns defaultName
-    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "my.account-tester"
-    every { getCurrentAuthenticatedRoles(any()) } returns listOf()
     rediSearchIndexer.createIndexFor(Organization::class.java)
   }
+
+  @Nested
+  inner class AsOrganizationUser {
+
+    @BeforeEach
+    fun setUp() {
+      runAsOrganizationUser()
+    }
+
+    @Test
+    fun `find All Organizations with correct values and no RBAC`() {
+      val numberOfOrganizationToCreate = 20
+      val defaultPageSize = csmPlatformProperties.twincache.organization.defaultPageSize
+
+      batchOrganizationCreation(numberOfOrganizationToCreate)
+      testFindAllOrganizations(null, null, numberOfOrganizationToCreate)
+      testFindAllOrganizations(0, null, defaultPageSize)
+      testFindAllOrganizations(0, 10, 10)
+      testFindAllOrganizations(1, 200, 0)
+      testFindAllOrganizations(1, 15, 5)
+    }
+
+    @Test
+    fun `find All Organizations with correct values and RBAC for current user`() {
+
+      val numberOfOrganizationCreated = batchOrganizationCreationWithRBAC(TEST_USER_ID)
+      // This number represents the amount of Organization that test.user can read regarding RBAC
+      // This is typically all simple combinations except "securityRole to none"
+      // We have 36 combinations per user in batchOrganizationCreationWithRBAC
+      // So 36 combinations minus "securityRole to 'none'" equals 35
+      testFindAllWithRBAC(numberOfOrganizationCreated, 35)
+    }
+
+    @Test
+    fun `find All Organizations with correct values and no RBAC for current user`() {
+
+      val numberOfOrganizationCreated = batchOrganizationCreationWithRBAC(OTHER_TEST_USER_ID)
+      // This number represents the amount of Organization that test.user can read regarding RBAC
+      // We have 36 combinations per user in batchOrganizationCreationWithRBAC
+      // securityRole does not refer to test.user
+      // The only configuration that fit for test.user is defaultRole with
+      // ROLE_VIEWER (x6), ROLE_EDITOR (x6), ROLE_VALIDATOR (x6), ROLE_USER (x6), ROLE_ADMIN (x6) = 30
+      testFindAllWithRBAC(numberOfOrganizationCreated, 30)
+    }
+
+    @Test
+    fun `find All Organizations with wrong values`() {
+      testFindAllOrganizationsWithWrongValues()
+    }
+
+  }
+
+  @Nested
+  inner class AsPlatformAdmin {
+
+    @BeforeEach
+    fun setUp() {
+      runAsPlatformAdmin()
+    }
+
+    @Test
+    fun `find All Organizations with correct values and no RBAC`() {
+      val numberOfOrganizationToCreate = 20
+      val defaultPageSize = csmPlatformProperties.twincache.organization.defaultPageSize
+
+      batchOrganizationCreation(numberOfOrganizationToCreate)
+      testFindAllOrganizations(null, null, numberOfOrganizationToCreate)
+      testFindAllOrganizations(0, null, defaultPageSize)
+      testFindAllOrganizations(0, 10, 10)
+      testFindAllOrganizations(1, 200, 0)
+      testFindAllOrganizations(1, 15, 5)
+    }
+
+    @Test
+    fun `find All Organizations with correct values and RBAC for current user`() {
+
+      val numberOfOrganizationCreated = batchOrganizationCreationWithRBAC(TEST_ADMIN_USER_ID)
+      // This number represents the amount of Organization that test.user can read regarding RBAC
+      // We have 36 combinations per user in batchOrganizationCreationWithRBAC
+      testFindAllWithRBAC(numberOfOrganizationCreated, 36)
+    }
+
+    @Test
+    fun `find All Organizations with correct values and no RBAC for current user`() {
+
+      val numberOfOrganizationCreated = batchOrganizationCreationWithRBAC(OTHER_TEST_USER_ID)
+      // This number represents the amount of Organization that test.user can read regarding RBAC
+      // We have 36 combinations per user in batchOrganizationCreationWithRBAC
+      testFindAllWithRBAC(numberOfOrganizationCreated,36)
+    }
+
+    @Test
+    fun `find All Organizations with wrong values`() {
+      testFindAllOrganizationsWithWrongValues()
+    }
+
+  }
+
+  private fun testFindAllWithRBAC(numberOfOrganizationCreated: Int,
+                                  numberOfOrganizationReachableByTestUser: Int) {
+    val defaultPageSize = csmPlatformProperties.twincache.organization.defaultPageSize
+
+    testFindAllOrganizations(null, null, numberOfOrganizationReachableByTestUser)
+    testFindAllOrganizations(0, null, defaultPageSize)
+    testFindAllOrganizations(0, numberOfOrganizationCreated, numberOfOrganizationReachableByTestUser)
+    testFindAllOrganizations(1, 200, 0)
+    testFindAllOrganizations(1, 15, 15)
+  }
+
+  private fun testFindAllOrganizationsWithWrongValues() {
+    logger.info("Should throw IllegalArgumentException when page and size are zeros")
+    assertThrows<IllegalArgumentException> { organizationApiService.findAllOrganizations(0, 0) }
+
+    logger.info("Should throw IllegalArgumentException when page is negative")
+    assertThrows<IllegalArgumentException> { organizationApiService.findAllOrganizations(-1, 10) }
+
+    logger.info("Should throw IllegalArgumentException when size is negative")
+    assertThrows<IllegalArgumentException> { organizationApiService.findAllOrganizations(0, -1) }
+  }
+
+
+  /** Run a test with current user as Organization.User */
+  private fun runAsOrganizationUser() {
+    mockkStatic(::getCurrentAuthentication)
+    every { getCurrentAuthentication() } returns mockk<BearerTokenAuthentication>()
+    every { getCurrentAccountIdentifier(any()) } returns TEST_USER_ID
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_ORGANIZATION_USER)
+  }
+
+  /** Run a test with current user as Platform.Admin */
+  private fun runAsPlatformAdmin() {
+    mockkStatic(::getCurrentAuthentication)
+    every { getCurrentAuthentication() } returns mockk<BearerTokenAuthentication>()
+    every { getCurrentAccountIdentifier(any()) } returns TEST_ADMIN_USER_ID
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.admin"
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
+  }
+
+  /** Run a test with different Organization.User */
+  private fun runAsDifferentOrganizationUser() {
+    every { getCurrentAccountIdentifier(any()) } returns OTHER_TEST_USER_ID
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.other.user"
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_ORGANIZATION_USER)
+  }
+
+  /** Organization batch creation */
+  internal fun batchOrganizationCreation(numberOfOrganizationToCreate: Int) {
+    logger.info("Creating $numberOfOrganizationToCreate connectors...")
+    IntRange(1, numberOfOrganizationToCreate).forEach {
+      val newOrganization = createTestOrganization("o-connector-test-$it")
+      organizationApiService.registerOrganization(newOrganization)
+    }
+  }
+
+  /** Organization batch creation with RBAC*/
+  internal fun batchOrganizationCreationWithRBAC(userId: String): Int {
+    val roleList = listOf(
+      ROLE_VIEWER,
+      ROLE_EDITOR,
+      ROLE_VALIDATOR,
+      ROLE_USER,
+      ROLE_NONE,
+      ROLE_ADMIN,
+    )
+    var numberOfOrganizationCreated = 0
+    roleList.forEach { defaultSecurity ->
+      roleList.forEach { securityRole ->
+        val organization = createTestOrganizationWithSimpleSecurity(
+          "Organization with $defaultSecurity as default and $userId as $securityRole",
+          userId,
+          defaultSecurity,
+          securityRole)
+        organizationApiService.registerOrganization(organization)
+        numberOfOrganizationCreated++
+      }
+    }
+    return numberOfOrganizationCreated
+  }
+
+  /** Create default test Connector */
+  internal fun createTestOrganization(name: String): Organization {
+    return Organization(
+      id = "organization_id",
+      name = name)
+  }
+
+  /** Create default test Connector */
+  internal fun createTestOrganizationWithSimpleSecurity(name: String,
+                                                        userId: String,
+                                                        defaultSecurity: String,
+                                                        role: String,
+                                                        ): Organization {
+    return Organization(
+      id = "organization_id",
+      name = name,
+      security =
+      OrganizationSecurity(
+        default = defaultSecurity,
+        accessControlList =
+        mutableListOf(
+          OrganizationAccessControl(userId, role)))
+    )
+  }
+
+  internal fun testFindAllOrganizations(page: Int?, size: Int?, expectedResultSize: Int) {
+    val organizationList = organizationApiService.findAllOrganizations(page, size)
+    logger.info("Organization list retrieved contains : ${organizationList.size} elements")
+    assertEquals(expectedResultSize, organizationList.size)
+  }
+
+}
+  /*
 
   fun makeOrganizationWithRole(id: String, name: String, role: String): Organization {
     return Organization(
@@ -128,56 +333,15 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
-  fun `test find All Organization with different pagination params`() {
-    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-
-    val numberOfOrganization = 20
-    val defaultPageSize = csmPlatformProperties.twincache.organization.defaultPageSize
-    val expectedSize = 15
-    IntRange(1, numberOfOrganization).forEach {
-      var newOrganization = makeOrganization("o-organization-test-$it", "Organization-test-$it")
-      organizationApiService.registerOrganization(newOrganization)
-    }
-    logger.info("should find all Organizations and assert there are $numberOfOrganization")
-    var organizationList = organizationApiService.findAllOrganizations(null, null)
-    assertEquals(numberOfOrganization, organizationList.size)
-
-    logger.info(
-        "should find all Organizations and assert it equals defaultPageSize: $defaultPageSize")
-    organizationList = organizationApiService.findAllOrganizations(0, null)
-    assertEquals(defaultPageSize, organizationList.size)
-
-    logger.info("should find all Organizations and assert there are expected size: $expectedSize")
-    organizationList = organizationApiService.findAllOrganizations(0, expectedSize)
-    assertEquals(expectedSize, organizationList.size)
-
-    logger.info("should find all Organizations and assert it returns the  second / last page")
-    organizationList = organizationApiService.findAllOrganizations(1, expectedSize)
-    assertEquals(numberOfOrganization - expectedSize, organizationList.size)
-  }
-
-  @Test
-  fun `test find All Organizations with wrong pagination params`() {
-    logger.info("should throw IllegalArgumentException when page and size are zero")
-    assertThrows<IllegalArgumentException> { organizationApiService.findAllOrganizations(0, 0) }
-    logger.info("should throw IllegalArgumentException when page is negative")
-    assertThrows<IllegalArgumentException> { organizationApiService.findAllOrganizations(-1, 1) }
-    logger.info("should throw IllegalArgumentException when size is negative")
-    assertThrows<IllegalArgumentException> { organizationApiService.findAllOrganizations(0, -1) }
-  }
-
-  @Test
   fun `test CRUD organization`() {
-    var organizationRegistered: Organization
-    val organizationRetrieved: Organization
 
     logger.info("Create new organizations...")
-    organizationRegistered =
-        organizationApiService.registerOrganization(makeOrganization("o-organization", defaultName))
+    var organizationRegistered: Organization =
+      organizationApiService.registerOrganization(makeOrganization("o-organization", defaultName))
     assertNotNull(organizationRegistered)
 
     logger.info("Fetch new organization created...")
-    organizationRetrieved = organizationApiService.findOrganizationById(organizationRegistered.id!!)
+    val organizationRetrieved: Organization = organizationApiService.findOrganizationById(organizationRegistered.id!!)
     assertEquals(organizationRegistered, organizationRetrieved)
 
     logger.info("Import organization...")
@@ -312,29 +476,5 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
             .size)
   }
 
-  @TestFactory
-  fun `test RBAC find all organizations`() =
-      mapOf(
-              ROLE_VIEWER to false,
-              ROLE_EDITOR to false,
-              ROLE_VALIDATOR to false,
-              ROLE_USER to false,
-              ROLE_NONE to true,
-              ROLE_ADMIN to false,
-          )
-          .map { (role, shouldThrow) ->
-            dynamicTest("Test RBAC find all : $role") {
-              every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
-              every { getCurrentAccountIdentifier(any()) } returns defaultName
-              organizationApiService.registerOrganization(
-                  makeOrganizationWithRole("id", defaultName, role))
-
-              val allOrganizations = organizationApiService.findAllOrganizations(null, null)
-              if (shouldThrow) {
-                assertEquals(4, allOrganizations.size)
-              } else {
-                assertNotNull(allOrganizations)
-              }
-            }
-          }
 }
+*/

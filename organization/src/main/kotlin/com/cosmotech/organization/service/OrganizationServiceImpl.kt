@@ -4,6 +4,7 @@ package com.cosmotech.organization.service
 
 import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.events.OrganizationUnregistered
+import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmAdmin
 import com.cosmotech.api.rbac.CsmRbac
@@ -47,14 +48,13 @@ class OrganizationServiceImpl(
 
   override fun findAllOrganizations(page: Int?, size: Int?): List<Organization> {
     val defaultPageSize = csmPlatformProperties.twincache.organization.defaultPageSize
-    var pageable = constructPageRequest(page, size, defaultPageSize)
+    val pageable = constructPageRequest(page, size, defaultPageSize)
     val isAdmin = csmAdmin.verifyCurrentRolesAdmin()
-    var result = mutableListOf<Organization>()
+    val result: MutableList<Organization>
 
     val rbacEnabled = !isAdmin && this.csmPlatformProperties.rbac.enabled
 
     if (pageable == null) {
-
       result =
           findAllPaginated(defaultPageSize) {
             if (rbacEnabled) {
@@ -65,11 +65,11 @@ class OrganizationServiceImpl(
             }
           }
     } else {
-      if (rbacEnabled) {
+      result = if (rbacEnabled) {
         val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
-        result = organizationRepository.findOrganizationsBySecurity(currentUser, pageable).toList()
+        organizationRepository.findOrganizationsBySecurity(currentUser, pageable).toList()
       } else {
-        result = organizationRepository.findAll(pageable).toList()
+        organizationRepository.findAll(pageable).toList()
       }
     }
 
@@ -77,15 +77,11 @@ class OrganizationServiceImpl(
   }
 
   override fun findOrganizationById(organizationId: String): Organization {
-    val organization: Organization =
-        organizationRepository.findByIdOrNull(organizationId)
-            ?: throw CsmResourceNotFoundException("Organization $organizationId does not exist!")
-    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
-    return organization
+    return checkPermissionAndReturnOrganization(organizationId, PERMISSION_READ)
   }
 
   override fun registerOrganization(organization: Organization): Organization {
-    logger.trace("Registering organization : $organization")
+    logger.trace("Registering organization : {}", organization)
 
     if (organization.name.isNullOrBlank()) {
       throw IllegalArgumentException("Organization name must not be null or blank")
@@ -106,8 +102,7 @@ class OrganizationServiceImpl(
   }
 
   override fun unregisterOrganization(organizationId: String) {
-    val organization = findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_DELETE)
+    val organization = checkPermissionAndReturnOrganization(organizationId, PERMISSION_DELETE)
     organizationRepository.delete(organization)
 
     this.eventPublisher.publishEvent(OrganizationUnregistered(this, organizationId))
@@ -117,8 +112,7 @@ class OrganizationServiceImpl(
       organizationId: String,
       organization: Organization
   ): Organization {
-    val existingOrganization = findOrganizationById(organizationId)
-    csmRbac.verify(existingOrganization.getRbac(), PERMISSION_WRITE)
+    val existingOrganization = checkPermissionAndReturnOrganization(organizationId, PERMISSION_WRITE)
     var hasChanged = false
 
     if (organization.name != null && organization.changed(existingOrganization) { name }) {
@@ -158,44 +152,11 @@ class OrganizationServiceImpl(
       organizationService: OrganizationService
   ) = updateOrganizationServiceByOrganizationId(organizationId, organizationService) { storage }
 
-  private fun updateOrganizationServiceByOrganizationId(
-      organizationId: String,
-      organizationService: OrganizationService,
-      memberAccessBlock: OrganizationServices.() -> OrganizationService?
-  ): OrganizationService {
-    val existingOrganization = findOrganizationById(organizationId)
-    csmRbac.verify(existingOrganization.getRbac(), PERMISSION_WRITE)
-    val existingServices = existingOrganization.services ?: OrganizationServices()
-    val existingOrganizationService =
-        with(existingServices, memberAccessBlock) ?: OrganizationService()
-
-    var hasChanged =
-        existingOrganizationService
-            .compareToAndMutateIfNeeded(
-                organizationService, excludedFields = arrayOf("credentials"))
-            .isNotEmpty()
-    if (organizationService.credentials != null) {
-      val existingOrganizationServiceCredentials =
-          existingOrganizationService.credentials?.toMutableMap() ?: mutableMapOf()
-      existingOrganizationServiceCredentials.clear()
-      existingOrganizationServiceCredentials.putAll(organizationService.credentials ?: emptyMap())
-      hasChanged = true
-    }
-
-    if (hasChanged) {
-      existingOrganization.services = existingServices
-      organizationRepository.save(existingOrganization)
-    }
-
-    return existingOrganizationService
-  }
-
   override fun updateTenantCredentialsByOrganizationId(
       organizationId: String,
       requestBody: Map<String, Any>
   ): Map<String, Any> {
-    val existingOrganization = findOrganizationById(organizationId)
-    csmRbac.verify(existingOrganization.getRbac(), PERMISSION_WRITE)
+    val existingOrganization = checkPermissionAndReturnOrganization(organizationId, PERMISSION_WRITE)
     if (requestBody.isEmpty()) {
       return requestBody
     }
@@ -219,8 +180,7 @@ class OrganizationServiceImpl(
   }
 
   override fun getOrganizationSecurity(organizationId: String): OrganizationSecurity {
-    val organization = findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_READ_SECURITY)
+    val organization = checkPermissionAndReturnOrganization(organizationId, PERMISSION_READ_SECURITY)
     return organization.security
         ?: throw CsmResourceNotFoundException("RBAC not defined for ${organization.id}")
   }
@@ -229,8 +189,7 @@ class OrganizationServiceImpl(
       organizationId: String,
       organizationRole: OrganizationRole
   ): OrganizationSecurity {
-    val organization = findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_WRITE_SECURITY)
+    val organization = checkPermissionAndReturnOrganization(organizationId, PERMISSION_WRITE_SECURITY)
     val rbacSecurity = csmRbac.setDefault(organization.getRbac(), organizationRole.role)
     organization.setRbac(rbacSecurity)
     organizationRepository.save(organization)
@@ -241,8 +200,7 @@ class OrganizationServiceImpl(
       organizationId: String,
       identityId: String
   ): OrganizationAccessControl {
-    val organization = findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_READ_SECURITY)
+    val organization = checkPermissionAndReturnOrganization(organizationId, PERMISSION_READ_SECURITY)
     val rbacAccessControl = csmRbac.getAccessControl(organization.getRbac(), identityId)
     return OrganizationAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
@@ -251,8 +209,7 @@ class OrganizationServiceImpl(
       organizationId: String,
       organizationAccessControl: OrganizationAccessControl
   ): OrganizationAccessControl {
-    val organization = findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_WRITE_SECURITY)
+    val organization = checkPermissionAndReturnOrganization(organizationId, PERMISSION_WRITE_SECURITY)
     val rbacSecurity =
         csmRbac.setUserRole(
             organization.getRbac(), organizationAccessControl.id, organizationAccessControl.role)
@@ -268,8 +225,7 @@ class OrganizationServiceImpl(
       identityId: String,
       organizationRole: OrganizationRole
   ): OrganizationAccessControl {
-    val organization = findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_WRITE_SECURITY)
+    val organization = checkPermissionAndReturnOrganization(organizationId, PERMISSION_WRITE_SECURITY)
     csmRbac.checkUserExists(
         organization.getRbac(),
         identityId,
@@ -283,30 +239,69 @@ class OrganizationServiceImpl(
   }
 
   override fun removeOrganizationAccessControl(organizationId: String, identityId: String) {
-    val organization = findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_WRITE_SECURITY)
+    val organization = checkPermissionAndReturnOrganization(organizationId, PERMISSION_WRITE_SECURITY)
     val rbacSecurity = csmRbac.removeUser(organization.getRbac(), identityId)
     organization.setRbac(rbacSecurity)
     organizationRepository.save(organization)
   }
 
   override fun getOrganizationSecurityUsers(organizationId: String): List<String> {
-    val organization = findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_READ_SECURITY)
+    val organization = checkPermissionAndReturnOrganization(organizationId, PERMISSION_READ_SECURITY)
     return csmRbac.getUsers(organization.getRbac())
   }
 
   override fun importOrganization(organization: Organization): Organization {
-    if (organization.id == null) {
-      throw CsmResourceNotFoundException("Organization id is null")
+    if (csmAdmin.verifyCurrentRolesAdmin()) {
+      if (organization.id == null) {
+        throw CsmResourceNotFoundException("Organization id is null")
+      }
+      return organizationRepository.save(organization)
     }
-    return organizationRepository.save(organization)
+    throw CsmAccessForbiddenException("Only admins can use this endpoint")
+  }
+
+  private fun updateOrganizationServiceByOrganizationId(
+    organizationId: String,
+    organizationService: OrganizationService,
+    memberAccessBlock: OrganizationServices.() -> OrganizationService?
+  ): OrganizationService {
+    val existingOrganization = checkPermissionAndReturnOrganization(organizationId, PERMISSION_WRITE)
+    val existingServices = existingOrganization.services ?: OrganizationServices()
+    val existingOrganizationService =
+      with(existingServices, memberAccessBlock) ?: OrganizationService()
+
+    var hasChanged =
+      existingOrganizationService
+        .compareToAndMutateIfNeeded(
+          organizationService, excludedFields = arrayOf("credentials"))
+        .isNotEmpty()
+    if (organizationService.credentials != null) {
+      val existingOrganizationServiceCredentials =
+        existingOrganizationService.credentials?.toMutableMap() ?: mutableMapOf()
+      existingOrganizationServiceCredentials.clear()
+      existingOrganizationServiceCredentials.putAll(organizationService.credentials ?: emptyMap())
+      hasChanged = true
+    }
+
+    if (hasChanged) {
+      existingOrganization.services = existingServices
+      organizationRepository.save(existingOrganization)
+    }
+
+    return existingOrganizationService
   }
 
   private fun initSecurity(userId: String): OrganizationSecurity {
     return OrganizationSecurity(
         default = ROLE_NONE,
         accessControlList = mutableListOf(OrganizationAccessControl(userId, ROLE_ADMIN)))
+  }
+
+  internal fun checkPermissionAndReturnOrganization(organizationId: String, requiredPermission: String): Organization {
+    val organization = organizationRepository.findByIdOrNull(organizationId)
+        ?: throw CsmResourceNotFoundException("Organization $organizationId does not exist!")
+    csmRbac.verify(organization.getRbac(), requiredPermission)
+    return organization
   }
 }
 
