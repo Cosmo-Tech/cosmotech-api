@@ -2,10 +2,10 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenariorun
 
-import com.cosmotech.api.azure.containerregistry.AzureContainerRegistryClient
 import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
+import com.cosmotech.api.containerregistry.RegistryClient
 import com.cosmotech.api.utils.sanitizeForKubernetes
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
@@ -148,7 +148,7 @@ class ContainerFactory(
     private val connectorService: ConnectorApiService,
     private val datasetService: DatasetApiService,
     private val workspaceEventHubService: IWorkspaceEventHubService,
-    private val azureContainerRegistryClient: AzureContainerRegistryClient,
+    private val containerRegistryClient: RegistryClient
 ) {
 
   private val logger = LoggerFactory.getLogger(ContainerFactory::class.java)
@@ -241,7 +241,8 @@ class ContainerFactory(
         throw IllegalStateException("You cannot start a workspace with no solutionId defined")
     val solution =
         solutionService.findSolutionById(organizationId, workspace.solution.solutionId ?: "")
-    azureContainerRegistryClient.checkSolutionImage(solution.repository!!, solution.version!!)
+    containerRegistryClient.checkSolutionImage(solution.repository!!, solution.version!!)
+
     val scenario = scenarioService.findScenarioById(organizationId, workspaceId, scenarioId)
     val runTemplate = this.getRunTemplate(solution, (scenario.runTemplateId ?: ""))
     val datasetsAndConnectors =

@@ -4,7 +4,6 @@ package com.cosmotech.solution.service
 
 import com.azure.storage.blob.BlobServiceClient
 import com.cosmotech.api.CsmPhoenixService
-import com.cosmotech.api.azure.containerregistry.AzureContainerRegistryClient
 import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
@@ -40,8 +39,7 @@ internal class SolutionServiceImpl(
     private val resourceLoader: ResourceLoader,
     private val azureStorageBlobServiceClient: BlobServiceClient,
     private val resourceScanner: ResourceScanner,
-    private val solutionRepository: SolutionRepository,
-    private val azureContainerRegistryClient: AzureContainerRegistryClient,
+    private val solutionRepository: SolutionRepository
 ) : CsmPhoenixService(), SolutionApiService {
 
   override fun findAllSolutions(organizationId: String, page: Int?, size: Int?): List<Solution> {
@@ -200,10 +198,6 @@ internal class SolutionServiceImpl(
       }
       existingSolution.ownerId = solution.ownerId
       hasChanged = true
-    }
-
-    if (hasChanged && existingSolution.repository != null) {
-      azureContainerRegistryClient.checkSolutionImage(solution.repository!!, solution.version!!)
     }
 
     return if (hasChanged) {

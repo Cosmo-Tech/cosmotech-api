@@ -169,8 +169,7 @@ class ContainerFactoryTests {
             connectorService,
             datasetService,
             workspaceEventHubService,
-            azureContainerRegistryClient,
-        )
+            azureContainerRegistryClient)
   }
 
   @Test

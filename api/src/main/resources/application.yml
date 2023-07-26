@@ -179,7 +179,7 @@ csm:
         connection-string: "DefaultEndpointsProtocol=https;AccountName=${csm.platform.azure.storage.account-name};AccountKey=${csm.platform.azure.storage.account-key};EndpointSuffix=core.windows.net"
       containerRegistries:
         core: ghcr.io
-        solutions: "csmenginesdev.azurecr.io"
+        solutions: ""
       eventBus:
         baseUri: ""
         # One of 'tenant_client_credentials' or 'shared_access_policy'.

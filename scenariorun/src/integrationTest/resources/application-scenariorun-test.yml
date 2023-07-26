@@ -90,6 +90,11 @@ csm:
         default-page-size: 5
     rbac:
       enabled: true
+    containerRegistry:
+      provider: "local"
+      registryUrl: "http://localhost:5000"
+      registryUserName: "default"
+      registryPassword: "my-wonderful-password"
 
 
 
