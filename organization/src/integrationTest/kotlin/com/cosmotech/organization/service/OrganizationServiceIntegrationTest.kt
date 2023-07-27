@@ -3,6 +3,7 @@
 package com.cosmotech.organization.service
 
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.rbac.*
 import com.cosmotech.api.security.ROLE_ORGANIZATION_USER
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
@@ -20,8 +21,9 @@ import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
-import org.junit.jupiter.api.*
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
 import org.slf4j.LoggerFactory
@@ -31,6 +33,8 @@ import org.springframework.security.oauth2.server.resource.authentication.Bearer
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
+import java.util.*
+import kotlin.test.assertTrue
 
 @ActiveProfiles(profiles = ["organization-test"])
 @ExtendWith(MockKExtension::class)
@@ -44,7 +48,6 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   private val OTHER_TEST_USER_ID = "test.other.user@cosmotech.com"
   private val TEST_USER_ID = "test.user@cosmotech.com"
   private val TEST_ADMIN_USER_ID = "test.admin@cosmotech.com"
-
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var organizationApiService: OrganizationApiService
@@ -69,7 +72,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `find All Organizations with correct values and no RBAC`() {
+    fun `findAllOrganizations with correct values`() {
       val numberOfOrganizationToCreate = 20
       val defaultPageSize = csmPlatformProperties.twincache.organization.defaultPageSize
 
@@ -82,7 +85,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `find All Organizations with correct values and RBAC for current user`() {
+    fun `findAllOrganizations with correct values and RBAC for current user`() {
 
       val numberOfOrganizationCreated = batchOrganizationCreationWithRBAC(TEST_USER_ID)
       // This number represents the amount of Organization that test.user can read regarding RBAC
@@ -93,22 +96,100 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `find All Organizations with correct values and no RBAC for current user`() {
+    fun `findAllOrganizations with correct values and no RBAC for current user`() {
 
       val numberOfOrganizationCreated = batchOrganizationCreationWithRBAC(OTHER_TEST_USER_ID)
       // This number represents the amount of Organization that test.user can read regarding RBAC
       // We have 36 combinations per user in batchOrganizationCreationWithRBAC
       // securityRole does not refer to test.user
       // The only configuration that fit for test.user is defaultRole with
-      // ROLE_VIEWER (x6), ROLE_EDITOR (x6), ROLE_VALIDATOR (x6), ROLE_USER (x6), ROLE_ADMIN (x6) = 30
+      // ROLE_VIEWER (x6), ROLE_EDITOR (x6), ROLE_VALIDATOR (x6), ROLE_USER (x6), ROLE_ADMIN (x6) =
+      // 30
       testFindAllWithRBAC(numberOfOrganizationCreated, 30)
     }
 
     @Test
-    fun `find All Organizations with wrong values`() {
+    fun `findAllOrganizations with wrong values`() {
       testFindAllOrganizationsWithWrongValues()
     }
 
+    @Test
+    fun `findOrganizationById as owner`() {
+      val organizationRegistered =
+          organizationApiService.registerOrganization(createTestOrganization("o-connector-test-1"))
+      assertNotNull(organizationApiService.findOrganizationById(organizationRegistered.id!!))
+    }
+
+    @Test
+    fun `findOrganizationById as not owner`() {
+      testFindOrganizationByIdAsNotOwner(false, null, null, null, true){
+        runAsOrganizationUser()
+      }
+    }
+
+    @Test
+    fun `findOrganizationById as not owner but with READ role`() {
+      testFindOrganizationByIdAsNotOwner(true, TEST_USER_ID, ROLE_NONE, ROLE_USER, false){
+        runAsOrganizationUser()
+      }
+    }
+
+    @Test
+    fun `findOrganizationById as not owner but with WRITE role`() {
+      testFindOrganizationByIdAsNotOwner(true, TEST_USER_ID, ROLE_NONE, ROLE_EDITOR, false){
+        runAsOrganizationUser()
+      }
+    }
+
+    @Test
+    fun `findOrganizationById as not owner but with NONE role`() {
+      testFindOrganizationByIdAsNotOwner(true, TEST_USER_ID, ROLE_NONE, ROLE_NONE, true) {
+          runAsOrganizationUser()
+      }
+    }
+
+    @Test
+    fun `registerOrganization with minimal values`() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        val organizationToRegister = createTestOrganization(name)
+        val organizationRegistered = organizationApiService.registerOrganization(organizationToRegister)
+        assertEquals(
+          OrganizationSecurity(
+            default = ROLE_NONE,
+            mutableListOf(OrganizationAccessControl(id=TEST_USER_ID, role=ROLE_ADMIN))
+          ),
+          organizationRegistered.security
+        )
+        assertEquals(name, organizationRegistered.name)
+        assertTrue(organizationRegistered.id!!.startsWith("o-"))
+      }
+    }
+
+    @Test
+    fun `registerOrganization without required organization name`() {
+      assertThrows<IllegalArgumentException> {
+        organizationApiService.registerOrganization(createTestOrganization(""))
+      }
+    }
+    @Test
+    fun `registerOrganization with security values`() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        val organizationToRegister = createTestOrganizationWithSimpleSecurity(name,OTHER_TEST_USER_ID, ROLE_USER,
+          ROLE_NONE)
+        val organizationRegistered = organizationApiService.registerOrganization(organizationToRegister)
+        assertEquals(
+          OrganizationSecurity(
+            default = ROLE_USER,
+            mutableListOf(OrganizationAccessControl(id=OTHER_TEST_USER_ID, role=ROLE_NONE))
+          ),
+          organizationRegistered.security
+        )
+        assertEquals(name, organizationRegistered.name)
+        assertTrue(organizationRegistered.id!!.startsWith("o-"))
+      }
+    }
   }
 
   @Nested
@@ -120,7 +201,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `find All Organizations with correct values and no RBAC`() {
+    fun `find All Organizations with correct values`() {
       val numberOfOrganizationToCreate = 20
       val defaultPageSize = csmPlatformProperties.twincache.organization.defaultPageSize
 
@@ -147,7 +228,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
       val numberOfOrganizationCreated = batchOrganizationCreationWithRBAC(OTHER_TEST_USER_ID)
       // This number represents the amount of Organization that test.user can read regarding RBAC
       // We have 36 combinations per user in batchOrganizationCreationWithRBAC
-      testFindAllWithRBAC(numberOfOrganizationCreated,36)
+      testFindAllWithRBAC(numberOfOrganizationCreated, 36)
     }
 
     @Test
@@ -155,15 +236,32 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
       testFindAllOrganizationsWithWrongValues()
     }
 
+    @Test
+    fun `findOrganizationById as owner`() {
+      val organizationRegistered =
+          organizationApiService.registerOrganization(createTestOrganization("o-connector-test-1"))
+      assertNotNull(organizationApiService.findOrganizationById(organizationRegistered.id!!))
+    }
+
+    @Test
+    fun `findOrganizationById as not owner`() {
+      testFindOrganizationByIdAsNotOwner(false, null, null, null, false){
+        runAsPlatformAdmin()
+      }
+    }
+
   }
 
-  private fun testFindAllWithRBAC(numberOfOrganizationCreated: Int,
-                                  numberOfOrganizationReachableByTestUser: Int) {
+  private fun testFindAllWithRBAC(
+      numberOfOrganizationCreated: Int,
+      numberOfOrganizationReachableByTestUser: Int
+  ) {
     val defaultPageSize = csmPlatformProperties.twincache.organization.defaultPageSize
 
     testFindAllOrganizations(null, null, numberOfOrganizationReachableByTestUser)
     testFindAllOrganizations(0, null, defaultPageSize)
-    testFindAllOrganizations(0, numberOfOrganizationCreated, numberOfOrganizationReachableByTestUser)
+    testFindAllOrganizations(
+        0, numberOfOrganizationCreated, numberOfOrganizationReachableByTestUser)
     testFindAllOrganizations(1, 200, 0)
     testFindAllOrganizations(1, 15, 15)
   }
@@ -179,6 +277,36 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     assertThrows<IllegalArgumentException> { organizationApiService.findAllOrganizations(0, -1) }
   }
 
+  private fun testFindOrganizationByIdAsNotOwner(
+    hasUserSecurity: Boolean,
+    userId: String?,
+    defaultRole: String?,
+    userRole: String?,
+    throwException: Boolean,
+    runFindOrganizationByIdAs: () -> Unit
+  ) {
+    runAsDifferentOrganizationUser()
+    val organizationId = "o-connector-test-1"
+    val organization = if (hasUserSecurity) {
+      createTestOrganizationWithSimpleSecurity(
+        organizationId, userId!!, defaultRole!!, userRole!!
+      )
+    } else {
+      createTestOrganization(organizationId)
+    }
+    val organizationRegistered =
+      organizationApiService.registerOrganization(organization)
+
+    runFindOrganizationByIdAs()
+
+    if (throwException) {
+      assertThrows<CsmAccessForbiddenException> {
+        (organizationApiService.findOrganizationById(organizationRegistered.id!!))
+      }
+    } else {
+      assertNotNull(organizationRegistered)
+    }
+  }
 
   /** Run a test with current user as Organization.User */
   private fun runAsOrganizationUser() {
@@ -214,24 +342,26 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
-  /** Organization batch creation with RBAC*/
+  /** Organization batch creation with RBAC */
   internal fun batchOrganizationCreationWithRBAC(userId: String): Int {
-    val roleList = listOf(
-      ROLE_VIEWER,
-      ROLE_EDITOR,
-      ROLE_VALIDATOR,
-      ROLE_USER,
-      ROLE_NONE,
-      ROLE_ADMIN,
-    )
+    val roleList =
+        listOf(
+            ROLE_VIEWER,
+            ROLE_EDITOR,
+            ROLE_VALIDATOR,
+            ROLE_USER,
+            ROLE_NONE,
+            ROLE_ADMIN,
+        )
     var numberOfOrganizationCreated = 0
     roleList.forEach { defaultSecurity ->
       roleList.forEach { securityRole ->
-        val organization = createTestOrganizationWithSimpleSecurity(
-          "Organization with $defaultSecurity as default and $userId as $securityRole",
-          userId,
-          defaultSecurity,
-          securityRole)
+        val organization =
+            createTestOrganizationWithSimpleSecurity(
+                "Organization with $defaultSecurity as default and $userId as $securityRole",
+                userId,
+                defaultSecurity,
+                securityRole)
         organizationApiService.registerOrganization(organization)
         numberOfOrganizationCreated++
       }
@@ -241,27 +371,23 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
 
   /** Create default test Connector */
   internal fun createTestOrganization(name: String): Organization {
-    return Organization(
-      id = "organization_id",
-      name = name)
+    return Organization(name = name)
   }
 
   /** Create default test Connector */
-  internal fun createTestOrganizationWithSimpleSecurity(name: String,
-                                                        userId: String,
-                                                        defaultSecurity: String,
-                                                        role: String,
-                                                        ): Organization {
+  internal fun createTestOrganizationWithSimpleSecurity(
+      name: String,
+      userId: String,
+      defaultSecurity: String,
+      role: String,
+  ): Organization {
     return Organization(
-      id = "organization_id",
-      name = name,
-      security =
-      OrganizationSecurity(
-        default = defaultSecurity,
-        accessControlList =
-        mutableListOf(
-          OrganizationAccessControl(userId, role)))
-    )
+        id = "organization_id",
+        name = name,
+        security =
+            OrganizationSecurity(
+                default = defaultSecurity,
+                accessControlList = mutableListOf(OrganizationAccessControl(userId, role))))
   }
 
   internal fun testFindAllOrganizations(page: Int?, size: Int?, expectedResultSize: Int) {
@@ -269,212 +395,211 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("Organization list retrieved contains : ${organizationList.size} elements")
     assertEquals(expectedResultSize, organizationList.size)
   }
-
 }
   /*
 
-  fun makeOrganizationWithRole(id: String, name: String, role: String): Organization {
-    return Organization(
-        id = id,
-        name = name,
-        ownerId = name,
-        services =
-            OrganizationServices(
-                tenantCredentials = mutableMapOf(),
-                storage =
-                    OrganizationService(
-                        cloudService = "cloud",
-                        baseUri = "base",
-                        platformService = "platform",
-                        resourceUri = "resource",
-                        credentials = mutableMapOf(Pair(name, role))),
-                solutionsContainerRegistry =
-                    OrganizationService(
-                        cloudService = "cloud",
-                        baseUri = "base",
-                        platformService = "platform",
-                        resourceUri = "resource",
-                        credentials = mutableMapOf(Pair(name, role)))),
-        security =
-            OrganizationSecurity(
-                default = "none",
-                accessControlList =
-                    mutableListOf(
-                        OrganizationAccessControl(name, role),
-                        OrganizationAccessControl("2$name", "viewer"))))
-  }
-  fun makeOrganization(id: String, name: String): Organization {
-    return Organization(
-        id = id,
-        name = name,
-        ownerId = name,
-        services =
-            OrganizationServices(
-                tenantCredentials = mutableMapOf(),
-                storage =
-                    OrganizationService(
-                        cloudService = "cloud",
-                        baseUri = "base",
-                        platformService = "platform",
-                        resourceUri = "resource",
-                        credentials = mutableMapOf(Pair(name, "admin"))),
-                solutionsContainerRegistry =
-                    OrganizationService(
-                        cloudService = "cloud",
-                        baseUri = "base",
-                        platformService = "platform",
-                        resourceUri = "resource",
-                        credentials = mutableMapOf(Pair(name, "admin")))),
-        security =
-            OrganizationSecurity(
-                default = "none",
-                accessControlList =
-                    mutableListOf(OrganizationAccessControl(id = name, role = "admin"))))
-  }
+    fun makeOrganizationWithRole(id: String, name: String, role: String): Organization {
+      return Organization(
+          id = id,
+          name = name,
+          ownerId = name,
+          services =
+              OrganizationServices(
+                  tenantCredentials = mutableMapOf(),
+                  storage =
+                      OrganizationService(
+                          cloudService = "cloud",
+                          baseUri = "base",
+                          platformService = "platform",
+                          resourceUri = "resource",
+                          credentials = mutableMapOf(Pair(name, role))),
+                  solutionsContainerRegistry =
+                      OrganizationService(
+                          cloudService = "cloud",
+                          baseUri = "base",
+                          platformService = "platform",
+                          resourceUri = "resource",
+                          credentials = mutableMapOf(Pair(name, role)))),
+          security =
+              OrganizationSecurity(
+                  default = "none",
+                  accessControlList =
+                      mutableListOf(
+                          OrganizationAccessControl(name, role),
+                          OrganizationAccessControl("2$name", "viewer"))))
+    }
+    fun makeOrganization(id: String, name: String): Organization {
+      return Organization(
+          id = id,
+          name = name,
+          ownerId = name,
+          services =
+              OrganizationServices(
+                  tenantCredentials = mutableMapOf(),
+                  storage =
+                      OrganizationService(
+                          cloudService = "cloud",
+                          baseUri = "base",
+                          platformService = "platform",
+                          resourceUri = "resource",
+                          credentials = mutableMapOf(Pair(name, "admin"))),
+                  solutionsContainerRegistry =
+                      OrganizationService(
+                          cloudService = "cloud",
+                          baseUri = "base",
+                          platformService = "platform",
+                          resourceUri = "resource",
+                          credentials = mutableMapOf(Pair(name, "admin")))),
+          security =
+              OrganizationSecurity(
+                  default = "none",
+                  accessControlList =
+                      mutableListOf(OrganizationAccessControl(id = name, role = "admin"))))
+    }
 
-  @Test
-  fun `test CRUD organization`() {
+    @Test
+    fun `test CRUD organization`() {
 
-    logger.info("Create new organizations...")
-    var organizationRegistered: Organization =
-      organizationApiService.registerOrganization(makeOrganization("o-organization", defaultName))
-    assertNotNull(organizationRegistered)
-
-    logger.info("Fetch new organization created...")
-    val organizationRetrieved: Organization = organizationApiService.findOrganizationById(organizationRegistered.id!!)
-    assertEquals(organizationRegistered, organizationRetrieved)
-
-    logger.info("Import organization...")
-    organizationRegistered =
-        organizationApiService.importOrganization(makeOrganization("o-organization-2", defaultName))
-    assertNotNull(organizationRegistered)
-
-    logger.info("Fetch all Organizations...")
-    var organizationList = organizationApiService.findAllOrganizations(null, null)
-    assertEquals(2, organizationList.size)
-
-    logger.info("Deleting organization...")
-    organizationApiService.unregisterOrganization(organizationRegistered.id!!)
-    organizationList = organizationApiService.findAllOrganizations(null, null)
-    assertEquals(1, organizationList.size)
-  }
-
-  @Test
-  fun `test updating organization`() {
-    val organizationRegistered =
+      logger.info("Create new organizations...")
+      var organizationRegistered: Organization =
         organizationApiService.registerOrganization(makeOrganization("o-organization", defaultName))
-    var organizationRetrieved: Organization
+      assertNotNull(organizationRegistered)
 
-    logger.info("Updating organization : ${organizationRegistered.id}...")
-    organizationApiService.updateOrganization(
-        organizationRegistered.id!!, makeOrganization("o-organization-1", "Organization-1.2"))
-    organizationRetrieved = organizationApiService.findOrganizationById(organizationRegistered.id!!)
-    assertNotEquals(organizationRegistered.name, organizationRetrieved.name)
+      logger.info("Fetch new organization created...")
+      val organizationRetrieved: Organization = organizationApiService.findOrganizationById(organizationRegistered.id!!)
+      assertEquals(organizationRegistered, organizationRetrieved)
 
-    logger.info("Update Solution Container Registry...")
-    organizationApiService.updateSolutionsContainerRegistryByOrganizationId(
-        organizationRegistered.id!!,
-        organizationService = OrganizationService(baseUri = "dummyURI"))
-    organizationRetrieved = organizationApiService.findOrganizationById(organizationRegistered.id!!)
-    assertNotEquals(
-        organizationRegistered.services!!.solutionsContainerRegistry!!.baseUri,
-        organizationRetrieved.services!!.solutionsContainerRegistry!!.baseUri)
+      logger.info("Import organization...")
+      organizationRegistered =
+          organizationApiService.importOrganization(makeOrganization("o-organization-2", defaultName))
+      assertNotNull(organizationRegistered)
 
-    logger.info("Update Tenant credentials for organization : ${organizationRegistered.id}...")
-    organizationApiService.updateTenantCredentialsByOrganizationId(
-        organizationRegistered.id!!, mapOf(Pair("my.account-tester2@cosmotech.com", "admin")))
-    organizationRetrieved = organizationApiService.findOrganizationById(organizationRegistered.id!!)
-    assertNotEquals(
-        organizationRegistered.services!!.tenantCredentials,
-        organizationRetrieved.services!!.tenantCredentials)
+      logger.info("Fetch all Organizations...")
+      var organizationList = organizationApiService.findAllOrganizations(null, null)
+      assertEquals(2, organizationList.size)
 
-    logger.info("Update storage configuration for organization : ${organizationRegistered.id}...")
-    organizationApiService.updateStorageByOrganizationId(
-        organizationRegistered.id!!,
-        OrganizationService(baseUri = "https://csmphoenixcontainer.blob.core.windows.net"))
-    organizationRetrieved = organizationApiService.findOrganizationById(organizationRegistered.id!!)
-    assertNotEquals(
-        organizationRegistered.services!!.storage, organizationRetrieved.services!!.storage)
+      logger.info("Deleting organization...")
+      organizationApiService.unregisterOrganization(organizationRegistered.id!!)
+      organizationList = organizationApiService.findAllOrganizations(null, null)
+      assertEquals(1, organizationList.size)
+    }
 
-    logger.info(
-        "Update solutions container registry configuration for organization : " +
-            "${organizationRegistered}...")
-    organizationApiService.updateSolutionsContainerRegistryByOrganizationId(
-        organizationRegistered.id!!, OrganizationService(baseUri = "newBaseUri"))
-    organizationRetrieved = organizationApiService.findOrganizationById(organizationRegistered.id!!)
-    assertNotEquals(
-        organizationRegistered.services!!.solutionsContainerRegistry!!.baseUri,
-        organizationRetrieved.services!!.solutionsContainerRegistry!!.baseUri)
+    @Test
+    fun `test updating organization`() {
+      val organizationRegistered =
+          organizationApiService.registerOrganization(makeOrganization("o-organization", defaultName))
+      var organizationRetrieved: Organization
+
+      logger.info("Updating organization : ${organizationRegistered.id}...")
+      organizationApiService.updateOrganization(
+          organizationRegistered.id!!, makeOrganization("o-organization-1", "Organization-1.2"))
+      organizationRetrieved = organizationApiService.findOrganizationById(organizationRegistered.id!!)
+      assertNotEquals(organizationRegistered.name, organizationRetrieved.name)
+
+      logger.info("Update Solution Container Registry...")
+      organizationApiService.updateSolutionsContainerRegistryByOrganizationId(
+          organizationRegistered.id!!,
+          organizationService = OrganizationService(baseUri = "dummyURI"))
+      organizationRetrieved = organizationApiService.findOrganizationById(organizationRegistered.id!!)
+      assertNotEquals(
+          organizationRegistered.services!!.solutionsContainerRegistry!!.baseUri,
+          organizationRetrieved.services!!.solutionsContainerRegistry!!.baseUri)
+
+      logger.info("Update Tenant credentials for organization : ${organizationRegistered.id}...")
+      organizationApiService.updateTenantCredentialsByOrganizationId(
+          organizationRegistered.id!!, mapOf(Pair("my.account-tester2@cosmotech.com", "admin")))
+      organizationRetrieved = organizationApiService.findOrganizationById(organizationRegistered.id!!)
+      assertNotEquals(
+          organizationRegistered.services!!.tenantCredentials,
+          organizationRetrieved.services!!.tenantCredentials)
+
+      logger.info("Update storage configuration for organization : ${organizationRegistered.id}...")
+      organizationApiService.updateStorageByOrganizationId(
+          organizationRegistered.id!!,
+          OrganizationService(baseUri = "https://csmphoenixcontainer.blob.core.windows.net"))
+      organizationRetrieved = organizationApiService.findOrganizationById(organizationRegistered.id!!)
+      assertNotEquals(
+          organizationRegistered.services!!.storage, organizationRetrieved.services!!.storage)
+
+      logger.info(
+          "Update solutions container registry configuration for organization : " +
+              "${organizationRegistered}...")
+      organizationApiService.updateSolutionsContainerRegistryByOrganizationId(
+          organizationRegistered.id!!, OrganizationService(baseUri = "newBaseUri"))
+      organizationRetrieved = organizationApiService.findOrganizationById(organizationRegistered.id!!)
+      assertNotEquals(
+          organizationRegistered.services!!.solutionsContainerRegistry!!.baseUri,
+          organizationRetrieved.services!!.solutionsContainerRegistry!!.baseUri)
+    }
+
+    @Test
+    fun `test security for organization`() {
+      val organizationRegistered =
+          organizationApiService.registerOrganization(makeOrganization("o-organization", defaultName))
+      val organizationRetrieved: Organization
+
+      logger.info("Get all permissions per component...")
+      val permissionList = organizationApiService.getAllPermissions()
+      assertNotNull(permissionList)
+
+      logger.info("Get organization : ${organizationRegistered.id} permissions for role 'XXXX'...")
+      val permission =
+          organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, "admin")
+      assertNotNull(permission)
+
+      logger.info("Get the security information for organization : ${organizationRegistered.id}...")
+      logger.warn(organizationRegistered.toString())
+      assertNotNull(organizationApiService.getOrganizationSecurity(organizationRegistered.id!!))
+
+      logger.info("Set the organization default security...")
+      organizationApiService.setOrganizationDefaultSecurity(
+          organizationRegistered.id!!, OrganizationRole("editor"))
+      organizationRetrieved = organizationApiService.findOrganizationById(organizationRegistered.id!!)
+      assertNotEquals(organizationRegistered, organizationRetrieved)
+
+      logger.info("Get the security users list for organization : ${organizationRegistered.id}...")
+      val securityUserList =
+          organizationApiService.getOrganizationSecurityUsers(organizationRegistered.id!!)
+      assertNotNull(securityUserList)
+    }
+
+    @Test
+    fun `test access control for organization`() {
+      val organizationRegistered =
+          organizationApiService.registerOrganization(makeOrganization("o-organization", defaultName))
+      var organizationRetrieved: Organization
+
+      logger.info("Add a control access to organization : ${organizationRegistered.id}...")
+      organizationApiService.addOrganizationAccessControl(
+          organizationRegistered.id!!,
+          OrganizationAccessControl("my.account-tester3@cosmotech.com", "viewer"))
+      organizationRetrieved = organizationApiService.findOrganizationById(organizationRegistered.id!!)
+      assertNotEquals(organizationRegistered, organizationRetrieved)
+
+      logger.info("Get a control access for organization : ${organizationRegistered.id}...")
+      val accessControl1 =
+          organizationApiService.getOrganizationAccessControl(
+              organizationRegistered.id!!, "my.account-tester@cosmotech.com")
+      assertNotNull(accessControl1)
+
+      logger.info("Update access control for organization : ${organizationRegistered.id}...")
+      organizationApiService.updateOrganizationAccessControl(
+          organizationRegistered.id!!, "my.account-tester3@cosmotech.com", OrganizationRole("user"))
+      val accessControl2 =
+          organizationApiService.getOrganizationAccessControl(
+              organizationRegistered.id!!, "my.account-tester3@cosmotech.com")
+      assertNotEquals(accessControl1, accessControl2)
+
+      logger.info("Remove access control from organization : ${organizationRegistered.id}...")
+      organizationApiService.removeOrganizationAccessControl(
+          organizationRegistered.id!!, "my.account-tester3@cosmotech.com")
+      assertEquals(
+          1,
+          organizationApiService
+              .getOrganizationSecurity(organizationRegistered.id!!)
+              .accessControlList
+              .size)
+    }
+
   }
-
-  @Test
-  fun `test security for organization`() {
-    val organizationRegistered =
-        organizationApiService.registerOrganization(makeOrganization("o-organization", defaultName))
-    val organizationRetrieved: Organization
-
-    logger.info("Get all permissions per component...")
-    val permissionList = organizationApiService.getAllPermissions()
-    assertNotNull(permissionList)
-
-    logger.info("Get organization : ${organizationRegistered.id} permissions for role 'XXXX'...")
-    val permission =
-        organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, "admin")
-    assertNotNull(permission)
-
-    logger.info("Get the security information for organization : ${organizationRegistered.id}...")
-    logger.warn(organizationRegistered.toString())
-    assertNotNull(organizationApiService.getOrganizationSecurity(organizationRegistered.id!!))
-
-    logger.info("Set the organization default security...")
-    organizationApiService.setOrganizationDefaultSecurity(
-        organizationRegistered.id!!, OrganizationRole("editor"))
-    organizationRetrieved = organizationApiService.findOrganizationById(organizationRegistered.id!!)
-    assertNotEquals(organizationRegistered, organizationRetrieved)
-
-    logger.info("Get the security users list for organization : ${organizationRegistered.id}...")
-    val securityUserList =
-        organizationApiService.getOrganizationSecurityUsers(organizationRegistered.id!!)
-    assertNotNull(securityUserList)
-  }
-
-  @Test
-  fun `test access control for organization`() {
-    val organizationRegistered =
-        organizationApiService.registerOrganization(makeOrganization("o-organization", defaultName))
-    var organizationRetrieved: Organization
-
-    logger.info("Add a control access to organization : ${organizationRegistered.id}...")
-    organizationApiService.addOrganizationAccessControl(
-        organizationRegistered.id!!,
-        OrganizationAccessControl("my.account-tester3@cosmotech.com", "viewer"))
-    organizationRetrieved = organizationApiService.findOrganizationById(organizationRegistered.id!!)
-    assertNotEquals(organizationRegistered, organizationRetrieved)
-
-    logger.info("Get a control access for organization : ${organizationRegistered.id}...")
-    val accessControl1 =
-        organizationApiService.getOrganizationAccessControl(
-            organizationRegistered.id!!, "my.account-tester@cosmotech.com")
-    assertNotNull(accessControl1)
-
-    logger.info("Update access control for organization : ${organizationRegistered.id}...")
-    organizationApiService.updateOrganizationAccessControl(
-        organizationRegistered.id!!, "my.account-tester3@cosmotech.com", OrganizationRole("user"))
-    val accessControl2 =
-        organizationApiService.getOrganizationAccessControl(
-            organizationRegistered.id!!, "my.account-tester3@cosmotech.com")
-    assertNotEquals(accessControl1, accessControl2)
-
-    logger.info("Remove access control from organization : ${organizationRegistered.id}...")
-    organizationApiService.removeOrganizationAccessControl(
-        organizationRegistered.id!!, "my.account-tester3@cosmotech.com")
-    assertEquals(
-        1,
-        organizationApiService
-            .getOrganizationSecurity(organizationRegistered.id!!)
-            .accessControlList
-            .size)
-  }
-
-}
-*/
+  */
