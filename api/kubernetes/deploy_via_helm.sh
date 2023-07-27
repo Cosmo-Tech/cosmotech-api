@@ -391,12 +391,6 @@ helm upgrade --install -n ${NAMESPACE} ${ARGO_RELEASE_NAME} argo/argo-workflows 
 
 LOKI_RELEASE_NAME="loki"
 helm repo add grafana https://grafana.github.io/helm-charts
-#Pod errors due to “too many open files”
-#sudo sysctl fs.inotify.max_user_watches=524288
-#sudo sysctl fs.inotify.max_user_instances=512
-#To make the changes persistent, edit the file /etc/sysctl.conf and add these lines
-#fs.inotify.max_user_watches = 524288
-#fs.inotify.max_user_instances = 512
 
 cat <<EOF > loki-values.yaml
 loki:
