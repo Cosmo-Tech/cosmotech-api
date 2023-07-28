@@ -4,6 +4,7 @@ package com.cosmotech.organization.service
 
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
+import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.*
 import com.cosmotech.api.security.ROLE_ORGANIZATION_USER
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
@@ -13,14 +14,13 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.getCurrentAuthentication
 import com.cosmotech.organization.api.OrganizationApiService
-import com.cosmotech.organization.domain.Organization
-import com.cosmotech.organization.domain.OrganizationAccessControl
-import com.cosmotech.organization.domain.OrganizationSecurity
+import com.cosmotech.organization.domain.*
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import org.junit.Assert.assertNotEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import org.junit.jupiter.api.*
@@ -172,6 +172,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
         organizationApiService.registerOrganization(createTestOrganization(""))
       }
     }
+
     @Test
     fun `registerOrganization with security values`() {
       assertDoesNotThrow {
@@ -190,6 +191,150 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
         assertTrue(organizationRegistered.id!!.startsWith("o-"))
       }
     }
+
+    @Test
+    fun `unregisterOrganization owned organization `() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        val organizationToRegister = createTestOrganization(name)
+        val organizationRegistered = organizationApiService.registerOrganization(organizationToRegister)
+        organizationApiService.unregisterOrganization(organizationRegistered.id!!)
+      }
+    }
+
+    @Test
+    fun `unregisterOrganization unexisting organization `() {
+      assertThrows<CsmResourceNotFoundException> {
+        organizationApiService.unregisterOrganization("o-connector-test-1")
+      }
+    }
+
+    @Test
+    fun `unregisterOrganization no DELETE permission `() {
+      assertThrows<CsmAccessForbiddenException> {
+        val name = "o-connector-test-1"
+        val organizationToRegister = createTestOrganizationWithSimpleSecurity(name,OTHER_TEST_USER_ID, ROLE_USER,
+          ROLE_NONE)
+        val organizationRegistered = organizationApiService.registerOrganization(organizationToRegister)
+        organizationApiService.unregisterOrganization(organizationRegistered.id!!)
+      }
+    }
+
+    @Test
+    fun `unregisterOrganization not owned but DELETE permission `() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        runAsDifferentOrganizationUser()
+        val organizationToRegister = createTestOrganizationWithSimpleSecurity(name,TEST_USER_ID, ROLE_NONE,
+          ROLE_ADMIN)
+        val organizationRegistered = organizationApiService.registerOrganization(organizationToRegister)
+        runAsOrganizationUser()
+        organizationApiService.unregisterOrganization(organizationRegistered.id!!)
+      }
+    }
+
+    @Test
+    fun `updateOrganization owned organization name and services`(){
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+
+        organizationRegistered.name = "my-new-name"
+        organizationRegistered.services = OrganizationServices(
+          tenantCredentials = mutableMapOf(),
+          storage =
+          OrganizationService(
+            cloudService = "cloud",
+            baseUri = "base",
+            platformService = "platform",
+            resourceUri = "resource",
+            credentials = mutableMapOf(Pair("credential1", 10.0))
+          ),
+          solutionsContainerRegistry =
+          OrganizationService(
+            cloudService = "cloud",
+            baseUri = "base",
+            platformService = "platform",
+            resourceUri = "resource",
+            credentials = mutableMapOf(Pair("credential2", "toto"))
+          )
+        )
+        organizationApiService.updateOrganization(organizationRegistered.id!!,organizationRegistered)
+
+        assertEquals(organizationRegistered, organizationApiService.findOrganizationById(organizationRegistered.id!!))
+      }
+    }
+
+    @Test
+    fun `updateOrganization owned organization security`(){
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+
+        organizationRegistered.security = OrganizationSecurity(
+          default = ROLE_NONE,
+          mutableListOf(OrganizationAccessControl(id=OTHER_TEST_USER_ID, role = ROLE_USER))
+        )
+
+        organizationApiService.updateOrganization(organizationRegistered.id!!,organizationRegistered)
+
+        // Organization Security cannot be updated via updateOrganization endpoint
+        // setOrganizationDefaultSecurity or
+        // addOrganizationAccessControl/updateOrganizationAccessControl/removeOrganizationAccessControl
+        // Should be used instead
+        assertNotEquals(organizationRegistered, organizationApiService.findOrganizationById(organizationRegistered.id!!))
+      }
+    }
+
+    @Test
+    fun `updateOrganization not owned organization with WRITE permission`(){
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        runAsDifferentOrganizationUser()
+        val organizationRegistered = organizationApiService.registerOrganization(
+          createTestOrganizationWithSimpleSecurity(name, TEST_USER_ID, ROLE_NONE, ROLE_EDITOR)
+        )
+
+        runAsOrganizationUser()
+
+        organizationRegistered.name = "my-new-name"
+        organizationRegistered.services = OrganizationServices(
+          tenantCredentials = mutableMapOf(),
+          storage =
+          OrganizationService(
+            cloudService = "cloud",
+            baseUri = "base",
+            platformService = "platform",
+            resourceUri = "resource",
+            credentials = mutableMapOf(Pair("credential1", 10.0))
+          ),
+          solutionsContainerRegistry =
+          OrganizationService(
+            cloudService = "cloud",
+            baseUri = "base",
+            platformService = "platform",
+            resourceUri = "resource",
+            credentials = mutableMapOf(Pair("credential2", "toto"))
+          )
+        )
+
+        organizationApiService.updateOrganization(organizationRegistered.id!!,organizationRegistered)
+
+        assertEquals(organizationRegistered, organizationApiService.findOrganizationById(organizationRegistered.id!!))
+      }
+    }
+
+    @Test
+    fun `updateOrganization not owned organization with no WRITE permission`(){
+      assertThrows<CsmAccessForbiddenException> {
+        val name = "o-connector-test-1"
+        runAsDifferentOrganizationUser()
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+        runAsOrganizationUser()
+        organizationApiService.updateOrganization(organizationRegistered.id!!,organizationRegistered)
+      }
+    }
+
   }
 
   @Nested
@@ -250,6 +395,180 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
       }
     }
 
+    @Test
+    fun `registerOrganization with minimal values`() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        val organizationToRegister = createTestOrganization(name)
+        val organizationRegistered = organizationApiService.registerOrganization(organizationToRegister)
+        assertEquals(
+          OrganizationSecurity(
+            default = ROLE_NONE,
+            mutableListOf(OrganizationAccessControl(id=TEST_ADMIN_USER_ID, role=ROLE_ADMIN))
+          ),
+          organizationRegistered.security
+        )
+        assertEquals(name, organizationRegistered.name)
+        assertTrue(organizationRegistered.id!!.startsWith("o-"))
+      }
+    }
+
+    @Test
+    fun `registerOrganization without required organization name`() {
+      assertThrows<IllegalArgumentException> {
+        organizationApiService.registerOrganization(createTestOrganization(""))
+      }
+    }
+    @Test
+    fun `registerOrganization with security values`() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        val organizationToRegister = createTestOrganizationWithSimpleSecurity(name,OTHER_TEST_USER_ID, ROLE_USER,
+          ROLE_NONE)
+        val organizationRegistered = organizationApiService.registerOrganization(organizationToRegister)
+        assertEquals(
+          OrganizationSecurity(
+            default = ROLE_USER,
+            mutableListOf(OrganizationAccessControl(id=OTHER_TEST_USER_ID, role=ROLE_NONE))
+          ),
+          organizationRegistered.security
+        )
+        assertEquals(name, organizationRegistered.name)
+        assertTrue(organizationRegistered.id!!.startsWith("o-"))
+      }
+    }
+
+    @Test
+    fun `unregisterOrganization owned organization `() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        val organizationToRegister = createTestOrganization(name)
+        val organizationRegistered = organizationApiService.registerOrganization(organizationToRegister)
+        organizationApiService.unregisterOrganization(organizationRegistered.id!!)
+      }
+    }
+
+    @Test
+    fun `unregisterOrganization unexisting organization `() {
+      assertThrows<CsmResourceNotFoundException> {
+        organizationApiService.unregisterOrganization("o-connector-test-1")
+      }
+    }
+
+    @Test
+    fun `unregisterOrganization not owned organization `() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        runAsDifferentOrganizationUser()
+        val organizationToRegister = createTestOrganizationWithSimpleSecurity(name,TEST_ADMIN_USER_ID, ROLE_NONE,
+          ROLE_NONE)
+        val organizationRegistered = organizationApiService.registerOrganization(organizationToRegister)
+        runAsPlatformAdmin()
+        organizationApiService.unregisterOrganization(organizationRegistered.id!!)
+      }
+    }
+
+    @Test
+    fun `updateOrganization owned organization name and services`(){
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+
+        organizationRegistered.name = "my-new-name"
+        organizationRegistered.services = OrganizationServices(
+          tenantCredentials = mutableMapOf(),
+          storage =
+          OrganizationService(
+            cloudService = "cloud",
+            baseUri = "base",
+            platformService = "platform",
+            resourceUri = "resource",
+            credentials = mutableMapOf(Pair("credential1", 10.0))
+          ),
+          solutionsContainerRegistry =
+          OrganizationService(
+            cloudService = "cloud",
+            baseUri = "base",
+            platformService = "platform",
+            resourceUri = "resource",
+            credentials = mutableMapOf(Pair("credential2", "toto"))
+          )
+        )
+        organizationApiService.updateOrganization(organizationRegistered.id!!,organizationRegistered)
+
+        assertEquals(organizationRegistered, organizationApiService.findOrganizationById(organizationRegistered.id!!))
+      }
+    }
+
+    @Test
+    fun `updateOrganization owned organization security`(){
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+
+        organizationRegistered.security = OrganizationSecurity(
+          default = ROLE_NONE,
+          mutableListOf(OrganizationAccessControl(id=OTHER_TEST_USER_ID, role = ROLE_USER))
+        )
+
+        organizationApiService.updateOrganization(organizationRegistered.id!!,organizationRegistered)
+
+        // Organization Security cannot be updated via updateOrganization endpoint
+        // setOrganizationDefaultSecurity or
+        // addOrganizationAccessControl/updateOrganizationAccessControl/removeOrganizationAccessControl
+        // Should be used instead
+        assertNotEquals(organizationRegistered, organizationApiService.findOrganizationById(organizationRegistered.id!!))
+      }
+    }
+
+    @Test
+    fun `updateOrganization not owned organization with WRITE permission`(){
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        runAsDifferentOrganizationUser()
+        val organizationRegistered = organizationApiService.registerOrganization(
+          createTestOrganizationWithSimpleSecurity(name, TEST_ADMIN_USER_ID, ROLE_NONE, ROLE_EDITOR)
+        )
+
+        runAsPlatformAdmin()
+
+        organizationRegistered.name = "my-new-name"
+        organizationRegistered.services = OrganizationServices(
+          tenantCredentials = mutableMapOf(),
+          storage =
+          OrganizationService(
+            cloudService = "cloud",
+            baseUri = "base",
+            platformService = "platform",
+            resourceUri = "resource",
+            credentials = mutableMapOf(Pair("credential1", 10.0))
+          ),
+          solutionsContainerRegistry =
+          OrganizationService(
+            cloudService = "cloud",
+            baseUri = "base",
+            platformService = "platform",
+            resourceUri = "resource",
+            credentials = mutableMapOf(Pair("credential2", "toto"))
+          )
+        )
+
+        organizationApiService.updateOrganization(organizationRegistered.id!!,organizationRegistered)
+
+        assertEquals(organizationRegistered, organizationApiService.findOrganizationById(organizationRegistered.id!!))
+      }
+    }
+
+    @Test
+    fun `updateOrganization not owned organization with no WRITE permission`(){
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        runAsDifferentOrganizationUser()
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+        runAsPlatformAdmin()
+        organizationApiService.updateOrganization(organizationRegistered.id!!,organizationRegistered)
+      }
+    }
   }
 
   private fun testFindAllWithRBAC(
