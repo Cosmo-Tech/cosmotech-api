@@ -10,7 +10,7 @@ import redis.clients.jedis.Jedis
 
 const val BULK_QUERY_MAX_SIZE = 512 * 1024 * 1024 /*512 Mo*/
 
-@Suppress("MagicNumber", "SpreadOperator")
+@Suppress("MagicNumber", "SpreadOperator", "ThrowsCount")
 class QueryBuffer(val jedis: Jedis, val graphName: String) {
 
   val tasks: MutableList<BulkQuery> = mutableListOf()
@@ -24,6 +24,10 @@ class QueryBuffer(val jedis: Jedis, val graphName: String) {
   fun addNode(type: String, row: Map<String, String>) {
     var addedSize = 0
     var typeNodes: TypeEntity? = null
+
+    if (!row.keys.contains("id"))
+        throw CsmResourceNotFoundException(
+            "Node property 'id' not found, '${row.keys.elementAt(0)}' found instead")
 
     // create a new TypeNodes (for binary header)
     if (currentType != type) {
@@ -51,6 +55,13 @@ class QueryBuffer(val jedis: Jedis, val graphName: String) {
   fun addEdge(type: String, row: Map<String, String>) {
     var addedSize = 0
     var typeEdges: TypeEntity? = null
+
+    if (!row.keys.contains("source"))
+        throw CsmResourceNotFoundException(
+            "Edge property 'source' not found, '${row.keys.elementAt(0)}' found instead")
+    if (!row.keys.contains("target"))
+        throw CsmResourceNotFoundException(
+            "Edge property 'target' not found, '${row.keys.elementAt(1)}' found instead")
 
     // extact source and target from row
     val sourceKey = row.keys.elementAt(0)
