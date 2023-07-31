@@ -90,19 +90,19 @@ paths:
 
         Your csv files must follow the following header (column name) requirements:
 
-        The Nodes CSVs requires at least one column (the 1st).Column name = 'Id'. It
+        The Nodes CSVs requires at least one column (the 1st).Column name = 'id'. It
         will represent the nodes ID
         Ids must be populated with string
 
         The Edges CSVs require three columns named, in order,
         * source
         * target
-        * Id
+        * id
 
         those colomns represent
         * The source of the edge
         * The target of the edge
-        * The Id of the edge
+        * The id of the edge
 
         All following columns content are up to you.
       requestBody:
