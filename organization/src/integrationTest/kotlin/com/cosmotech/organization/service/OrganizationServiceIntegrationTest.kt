@@ -335,6 +335,279 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
       }
     }
 
+    @Test
+    fun `updateSolutionsContainerRegistryByOrganizationId with owned organization`(){
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+
+        val newSolutionsContainerRegistry = OrganizationService(
+          cloudService = "cloud",
+          baseUri = "base",
+          platformService = "platform",
+          resourceUri = "resource",
+          credentials = mutableMapOf(Pair("cred2", "test2")))
+
+        organizationApiService.updateSolutionsContainerRegistryByOrganizationId(organizationRegistered.id!!,newSolutionsContainerRegistry)
+
+        assertNotEquals(newSolutionsContainerRegistry, organizationApiService.findOrganizationById(organizationRegistered.id!!).services!!.solutionsContainerRegistry)
+      }
+    }
+
+    @Test
+    fun `updateSolutionsContainerRegistryByOrganizationId with not owned organization and WRITE permission`(){
+      assertDoesNotThrow {
+        runAsDifferentOrganizationUser()
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganizationWithSimpleSecurity(name, TEST_USER_ID,
+          ROLE_NONE,
+          ROLE_EDITOR))
+
+        runAsOrganizationUser()
+        val newSolutionsContainerRegistry = OrganizationService(
+          cloudService = "cloud",
+          baseUri = "base",
+          platformService = "platform",
+          resourceUri = "resource",
+          credentials = mutableMapOf(Pair("cred2", "test2")))
+
+        organizationApiService.updateSolutionsContainerRegistryByOrganizationId(organizationRegistered.id!!,newSolutionsContainerRegistry)
+
+        assertNotEquals(newSolutionsContainerRegistry, organizationApiService.findOrganizationById(organizationRegistered.id!!).services!!.solutionsContainerRegistry)
+      }
+    }
+
+    @Test
+    fun `updateSolutionsContainerRegistryByOrganizationId with not owned organization and READ permission`(){
+      assertThrows<CsmAccessForbiddenException> {
+        runAsDifferentOrganizationUser()
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganizationWithSimpleSecurity(name, TEST_USER_ID,
+          ROLE_NONE,
+          ROLE_USER))
+
+        runAsOrganizationUser()
+        val newSolutionsContainerRegistry = OrganizationService(
+          cloudService = "cloud",
+          baseUri = "base",
+          platformService = "platform",
+          resourceUri = "resource",
+          credentials = mutableMapOf(Pair("cred2", "test2")))
+
+        organizationApiService.updateSolutionsContainerRegistryByOrganizationId(organizationRegistered.id!!,newSolutionsContainerRegistry)
+
+      }
+    }
+
+
+    @Test
+    fun `updateStorageByOrganizationId with owned organization`(){
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+
+        val newStorage = OrganizationService(
+          cloudService = "cloud",
+          baseUri = "base",
+          platformService = "platform",
+          resourceUri = "resource",
+          credentials = mutableMapOf(Pair("cred2", "test2")))
+
+        organizationApiService.updateStorageByOrganizationId(organizationRegistered.id!!,newStorage)
+
+        assertNotEquals(newStorage, organizationApiService.findOrganizationById(organizationRegistered.id!!).services!!.storage)
+      }
+    }
+
+    @Test
+    fun `updateStorageByOrganizationId with not owned organization and WRITE permission`(){
+      assertDoesNotThrow {
+        runAsDifferentOrganizationUser()
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganizationWithSimpleSecurity(name, TEST_USER_ID,
+          ROLE_NONE,
+          ROLE_EDITOR))
+
+        runAsOrganizationUser()
+        val newStorage = OrganizationService(
+          cloudService = "cloud",
+          baseUri = "base",
+          platformService = "platform",
+          resourceUri = "resource",
+          credentials = mutableMapOf(Pair("cred2", "test2")))
+
+        organizationApiService.updateStorageByOrganizationId(organizationRegistered.id!!,newStorage)
+
+        assertNotEquals(newStorage, organizationApiService.findOrganizationById(organizationRegistered.id!!).services!!.storage)
+      }
+    }
+
+    @Test
+    fun `updateStorageByOrganizationId with not owned organization and READ permission`(){
+      assertThrows<CsmAccessForbiddenException> {
+        runAsDifferentOrganizationUser()
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganizationWithSimpleSecurity(name, TEST_USER_ID,
+          ROLE_NONE,
+          ROLE_USER))
+
+        runAsOrganizationUser()
+        val newStorage = OrganizationService(
+          cloudService = "cloud",
+          baseUri = "base",
+          platformService = "platform",
+          resourceUri = "resource",
+          credentials = mutableMapOf(Pair("cred2", "test2")))
+
+        organizationApiService.updateStorageByOrganizationId(organizationRegistered.id!!,newStorage)
+
+      }
+    }
+
+    @Test
+    fun `updateTenantCredentialsByOrganizationId with owned organization and empty body`() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+        val updateResult =
+          organizationApiService.updateTenantCredentialsByOrganizationId(organizationRegistered.id!!, mapOf())
+        assertTrue(updateResult.isEmpty())
+      }
+    }
+
+    @Test
+    fun `updateTenantCredentialsByOrganizationId with owned organization and correct body`() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+        val credentials = mutableMapOf(Pair("cred2", "test2"))
+        val updateResult =
+          organizationApiService.updateTenantCredentialsByOrganizationId(organizationRegistered.id!!, credentials)
+        assertEquals(credentials, updateResult)
+      }
+    }
+
+    @Test
+    fun `updateTenantCredentialsByOrganizationId with not owned organization, empty body and no WRITE permission`() {
+      assertThrows<CsmAccessForbiddenException> {
+        runAsDifferentOrganizationUser()
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+        runAsOrganizationUser()
+        organizationApiService.updateTenantCredentialsByOrganizationId(organizationRegistered.id!!, mapOf())
+      }
+    }
+
+    @Test
+    fun `updateTenantCredentialsByOrganizationId with not owned organization, empty body and WRITE permission`() {
+      assertDoesNotThrow {
+        runAsDifferentOrganizationUser()
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(
+          createTestOrganizationWithSimpleSecurity(name,TEST_USER_ID, ROLE_NONE, ROLE_EDITOR))
+        val credentials = mutableMapOf(Pair("cred2", "test2"))
+        runAsOrganizationUser()
+        val updateResult =
+          organizationApiService.updateTenantCredentialsByOrganizationId(organizationRegistered.id!!, credentials)
+        assertEquals(credentials, updateResult)
+      }
+    }
+
+    @Test
+    fun getAllPermissions() {
+      val mapAllPermissions = listOf(ComponentRolePermissions(
+        component = "organization",
+        roles = mutableMapOf(
+          ROLE_VIEWER to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY),
+          ROLE_USER to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_CREATE_CHILDREN),
+          ROLE_EDITOR to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_CREATE_CHILDREN, PERMISSION_WRITE),
+          ROLE_ADMIN to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_CREATE_CHILDREN, PERMISSION_WRITE, PERMISSION_WRITE_SECURITY, PERMISSION_DELETE),
+        )
+      ),
+        ComponentRolePermissions(
+          component = "workspace",
+          roles = mutableMapOf(
+            ROLE_VIEWER to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY),
+            ROLE_USER to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_CREATE_CHILDREN),
+            ROLE_EDITOR to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_CREATE_CHILDREN, PERMISSION_WRITE),
+            ROLE_ADMIN to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_CREATE_CHILDREN, PERMISSION_WRITE, PERMISSION_WRITE_SECURITY, PERMISSION_DELETE),
+          )
+        ),
+        ComponentRolePermissions(
+          component = "scenario",
+          roles = mutableMapOf(
+            ROLE_VIEWER to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY),
+            ROLE_EDITOR to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_LAUNCH, PERMISSION_WRITE),
+            ROLE_VALIDATOR to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_LAUNCH, PERMISSION_WRITE, PERMISSION_VALIDATE),
+            ROLE_ADMIN to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_LAUNCH, PERMISSION_WRITE, PERMISSION_VALIDATE, PERMISSION_WRITE_SECURITY, PERMISSION_DELETE),
+          )
+        )
+      )
+      assertEquals(mapAllPermissions, organizationApiService.getAllPermissions())
+    }
+
+    @Test
+    fun `getOrganizationPermissions with owned organization`() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+        var organizationUserPermissions =
+          organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, ROLE_VIEWER)
+        assertEquals(mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY), organizationUserPermissions)
+        organizationUserPermissions =
+          organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, ROLE_USER)
+        assertEquals(mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_CREATE_CHILDREN), organizationUserPermissions)
+        organizationUserPermissions =
+          organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, ROLE_EDITOR)
+        assertEquals(mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_CREATE_CHILDREN, PERMISSION_WRITE), organizationUserPermissions)
+        organizationUserPermissions =
+          organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, ROLE_ADMIN)
+        assertEquals(mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_CREATE_CHILDREN, PERMISSION_WRITE, PERMISSION_WRITE_SECURITY, PERMISSION_DELETE), organizationUserPermissions)
+        organizationUserPermissions =
+          organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, "UNKNOWN")
+        assertEquals(emptyList(), organizationUserPermissions)
+      }
+    }
+
+    @Test
+    fun `getOrganizationPermissions with not owned organization and READ_SECURITY permission`() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        runAsDifferentOrganizationUser()
+        val organizationRegistered = organizationApiService.registerOrganization(
+          createTestOrganizationWithSimpleSecurity(name,TEST_USER_ID,ROLE_NONE, ROLE_VIEWER)
+        )
+        runAsOrganizationUser()
+        var organizationUserPermissions =
+          organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, ROLE_VIEWER)
+        assertEquals(mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY), organizationUserPermissions)
+        organizationUserPermissions =
+          organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, ROLE_USER)
+        assertEquals(mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_CREATE_CHILDREN), organizationUserPermissions)
+        organizationUserPermissions =
+          organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, ROLE_EDITOR)
+        assertEquals(mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_CREATE_CHILDREN, PERMISSION_WRITE), organizationUserPermissions)
+        organizationUserPermissions =
+          organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, ROLE_ADMIN)
+        assertEquals(mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_CREATE_CHILDREN, PERMISSION_WRITE, PERMISSION_WRITE_SECURITY, PERMISSION_DELETE), organizationUserPermissions)
+        organizationUserPermissions =
+          organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, "UNKNOWN")
+        assertEquals(emptyList(), organizationUserPermissions)
+      }
+    }
+
+    @Test
+    fun `getOrganizationPermissions with not owned organization and no permission`() {
+      assertThrows<CsmAccessForbiddenException> {
+        val name = "o-connector-test-1"
+        runAsDifferentOrganizationUser()
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+        runAsOrganizationUser()
+        organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, ROLE_VIEWER)
+      }
+    }
+
+
   }
 
   @Nested
@@ -569,6 +842,299 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
         organizationApiService.updateOrganization(organizationRegistered.id!!,organizationRegistered)
       }
     }
+
+
+    @Test
+    fun `updateSolutionsContainerRegistryByOrganizationId with owned organization`(){
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+
+        val newSolutionsContainerRegistry = OrganizationService(
+          cloudService = "cloud",
+          baseUri = "base",
+          platformService = "platform",
+          resourceUri = "resource",
+          credentials = mutableMapOf(Pair("cred2", "test2")))
+
+        organizationApiService.updateSolutionsContainerRegistryByOrganizationId(organizationRegistered.id!!,newSolutionsContainerRegistry)
+
+        assertNotEquals(newSolutionsContainerRegistry, organizationApiService.findOrganizationById(organizationRegistered.id!!).services!!.solutionsContainerRegistry)
+      }
+    }
+
+    @Test
+    fun `updateSolutionsContainerRegistryByOrganizationId with not owned organization and WRITE permission`(){
+      assertDoesNotThrow {
+        runAsDifferentOrganizationUser()
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganizationWithSimpleSecurity(name, TEST_USER_ID,
+          ROLE_NONE,
+          ROLE_EDITOR))
+
+        runAsPlatformAdmin()
+        val newSolutionsContainerRegistry = OrganizationService(
+          cloudService = "cloud",
+          baseUri = "base",
+          platformService = "platform",
+          resourceUri = "resource",
+          credentials = mutableMapOf(Pair("cred2", "test2")))
+
+        organizationApiService.updateSolutionsContainerRegistryByOrganizationId(organizationRegistered.id!!,newSolutionsContainerRegistry)
+
+        assertNotEquals(newSolutionsContainerRegistry, organizationApiService.findOrganizationById(organizationRegistered.id!!).services!!.solutionsContainerRegistry)
+      }
+    }
+
+    @Test
+    fun `updateSolutionsContainerRegistryByOrganizationId with not owned organization and READ permission`(){
+      assertDoesNotThrow {
+        runAsDifferentOrganizationUser()
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganizationWithSimpleSecurity(name, TEST_USER_ID,
+          ROLE_NONE,
+          ROLE_EDITOR))
+
+        runAsPlatformAdmin()
+        val newSolutionsContainerRegistry = OrganizationService(
+          cloudService = "cloud",
+          baseUri = "base",
+          platformService = "platform",
+          resourceUri = "resource",
+          credentials = mutableMapOf(Pair("cred2", "test2")))
+
+        organizationApiService.updateSolutionsContainerRegistryByOrganizationId(organizationRegistered.id!!,newSolutionsContainerRegistry)
+
+        assertNotEquals(newSolutionsContainerRegistry, organizationApiService.findOrganizationById(organizationRegistered.id!!).services!!.solutionsContainerRegistry)
+      }
+    }
+
+    @Test
+    fun `updateStorageByOrganizationId with owned organization`(){
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+
+        val newStorage = OrganizationService(
+          cloudService = "cloud",
+          baseUri = "base",
+          platformService = "platform",
+          resourceUri = "resource",
+          credentials = mutableMapOf(Pair("cred2", "test2")))
+
+        organizationApiService.updateStorageByOrganizationId(organizationRegistered.id!!,newStorage)
+
+        assertNotEquals(newStorage, organizationApiService.findOrganizationById(organizationRegistered.id!!).services!!.storage)
+      }
+    }
+
+    @Test
+    fun `updateStorageByOrganizationId with not owned organization and WRITE permission`(){
+      assertDoesNotThrow {
+        runAsDifferentOrganizationUser()
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganizationWithSimpleSecurity(name, TEST_USER_ID,
+          ROLE_NONE,
+          ROLE_EDITOR))
+
+        runAsPlatformAdmin()
+        val newStorage = OrganizationService(
+          cloudService = "cloud",
+          baseUri = "base",
+          platformService = "platform",
+          resourceUri = "resource",
+          credentials = mutableMapOf(Pair("cred2", "test2")))
+
+        organizationApiService.updateStorageByOrganizationId(organizationRegistered.id!!,newStorage)
+
+        assertNotEquals(newStorage, organizationApiService.findOrganizationById(organizationRegistered.id!!).services!!.storage)
+      }
+    }
+
+    @Test
+    fun `updateStorageByOrganizationId with not owned organization and READ permission`(){
+      assertDoesNotThrow {
+        runAsDifferentOrganizationUser()
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganizationWithSimpleSecurity(name, TEST_USER_ID,
+          ROLE_NONE,
+          ROLE_EDITOR))
+
+        runAsPlatformAdmin()
+        val newStorage = OrganizationService(
+          cloudService = "cloud",
+          baseUri = "base",
+          platformService = "platform",
+          resourceUri = "resource",
+          credentials = mutableMapOf(Pair("cred2", "test2")))
+
+        organizationApiService.updateStorageByOrganizationId(organizationRegistered.id!!,newStorage)
+
+        assertNotEquals(newStorage, organizationApiService.findOrganizationById(organizationRegistered.id!!).services!!.storage)
+      }
+    }
+
+    @Test
+    fun `updateTenantCredentialsByOrganizationId with owned organization and empty body`() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+        val updateResult =
+          organizationApiService.updateTenantCredentialsByOrganizationId(organizationRegistered.id!!, mapOf())
+        assertTrue(updateResult.isEmpty())
+      }
+    }
+
+    @Test
+    fun `updateTenantCredentialsByOrganizationId with owned organization and correct body`() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+        val credentials = mutableMapOf(Pair("cred2", "test2"))
+        val updateResult =
+          organizationApiService.updateTenantCredentialsByOrganizationId(organizationRegistered.id!!, credentials)
+        assertEquals(credentials, updateResult)
+      }
+    }
+
+    @Test
+    fun `updateTenantCredentialsByOrganizationId with not owned organization, empty body and no WRITE permission`() {
+      assertDoesNotThrow {
+        runAsDifferentOrganizationUser()
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+        runAsPlatformAdmin()
+        val updateResult =
+          organizationApiService.updateTenantCredentialsByOrganizationId(organizationRegistered.id!!, mapOf())
+        assertTrue(updateResult.isEmpty())
+      }
+    }
+
+    @Test
+    fun `updateTenantCredentialsByOrganizationId with not owned organization, empty body and WRITE permission`() {
+      assertDoesNotThrow {
+        runAsDifferentOrganizationUser()
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(
+          createTestOrganizationWithSimpleSecurity(name,TEST_USER_ID, ROLE_NONE, ROLE_EDITOR))
+        val credentials = mutableMapOf(Pair("cred2", "test2"))
+        runAsPlatformAdmin()
+        val updateResult =
+          organizationApiService.updateTenantCredentialsByOrganizationId(organizationRegistered.id!!, credentials)
+        assertEquals(credentials, updateResult)
+      }
+    }
+
+    @Test
+    fun getAllPermissions() {
+      val mapAllPermissions = listOf(ComponentRolePermissions(
+        component = "organization",
+        roles = mutableMapOf(
+          ROLE_VIEWER to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY),
+          ROLE_USER to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_CREATE_CHILDREN),
+          ROLE_EDITOR to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_CREATE_CHILDREN, PERMISSION_WRITE),
+          ROLE_ADMIN to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_CREATE_CHILDREN, PERMISSION_WRITE, PERMISSION_WRITE_SECURITY, PERMISSION_DELETE),
+        )
+      ),
+        ComponentRolePermissions(
+          component = "workspace",
+          roles = mutableMapOf(
+            ROLE_VIEWER to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY),
+            ROLE_USER to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_CREATE_CHILDREN),
+            ROLE_EDITOR to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_CREATE_CHILDREN, PERMISSION_WRITE),
+            ROLE_ADMIN to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_CREATE_CHILDREN, PERMISSION_WRITE, PERMISSION_WRITE_SECURITY, PERMISSION_DELETE),
+          )
+        ),
+        ComponentRolePermissions(
+          component = "scenario",
+          roles = mutableMapOf(
+            ROLE_VIEWER to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY),
+            ROLE_EDITOR to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_LAUNCH, PERMISSION_WRITE),
+            ROLE_VALIDATOR to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_LAUNCH, PERMISSION_WRITE, PERMISSION_VALIDATE),
+            ROLE_ADMIN to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_LAUNCH, PERMISSION_WRITE, PERMISSION_VALIDATE, PERMISSION_WRITE_SECURITY, PERMISSION_DELETE),
+          )
+        )
+      )
+      assertEquals(mapAllPermissions, organizationApiService.getAllPermissions())
+    }
+
+    @Test
+    fun `getOrganizationPermissions with owned organization`() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+        var organizationUserPermissions =
+          organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, ROLE_VIEWER)
+        assertEquals(mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY), organizationUserPermissions)
+        organizationUserPermissions =
+          organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, ROLE_USER)
+        assertEquals(mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_CREATE_CHILDREN), organizationUserPermissions)
+        organizationUserPermissions =
+          organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, ROLE_EDITOR)
+        assertEquals(mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_CREATE_CHILDREN, PERMISSION_WRITE), organizationUserPermissions)
+        organizationUserPermissions =
+          organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, ROLE_ADMIN)
+        assertEquals(mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_CREATE_CHILDREN, PERMISSION_WRITE, PERMISSION_WRITE_SECURITY, PERMISSION_DELETE), organizationUserPermissions)
+        organizationUserPermissions =
+          organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, "UNKNOWN")
+        assertEquals(emptyList(), organizationUserPermissions)
+      }
+    }
+
+    @Test
+    fun `getOrganizationPermissions with not owned organization and READ_SECURITY permission`() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        runAsDifferentOrganizationUser()
+        val organizationRegistered = organizationApiService.registerOrganization(
+          createTestOrganizationWithSimpleSecurity(name,TEST_USER_ID,ROLE_NONE, ROLE_VIEWER)
+        )
+        runAsPlatformAdmin()
+        var organizationUserPermissions =
+          organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, ROLE_VIEWER)
+        assertEquals(mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY), organizationUserPermissions)
+        organizationUserPermissions =
+          organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, ROLE_USER)
+        assertEquals(mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_CREATE_CHILDREN), organizationUserPermissions)
+        organizationUserPermissions =
+          organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, ROLE_EDITOR)
+        assertEquals(mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_CREATE_CHILDREN, PERMISSION_WRITE), organizationUserPermissions)
+        organizationUserPermissions =
+          organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, ROLE_ADMIN)
+        assertEquals(mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_CREATE_CHILDREN, PERMISSION_WRITE, PERMISSION_WRITE_SECURITY, PERMISSION_DELETE), organizationUserPermissions)
+        organizationUserPermissions =
+          organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, "UNKNOWN")
+        assertEquals(emptyList(), organizationUserPermissions)
+      }
+    }
+
+    @Test
+    fun `getOrganizationPermissions with not owned organization and no permission`() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        runAsDifferentOrganizationUser()
+        val organizationRegistered = organizationApiService.registerOrganization(
+          createTestOrganizationWithSimpleSecurity(name,TEST_USER_ID,ROLE_NONE, ROLE_VIEWER)
+        )
+        runAsPlatformAdmin()
+        var organizationUserPermissions =
+          organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, ROLE_VIEWER)
+        assertEquals(mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY), organizationUserPermissions)
+        organizationUserPermissions =
+          organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, ROLE_USER)
+        assertEquals(mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_CREATE_CHILDREN), organizationUserPermissions)
+        organizationUserPermissions =
+          organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, ROLE_EDITOR)
+        assertEquals(mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_CREATE_CHILDREN, PERMISSION_WRITE), organizationUserPermissions)
+        organizationUserPermissions =
+          organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, ROLE_ADMIN)
+        assertEquals(mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY, PERMISSION_CREATE_CHILDREN, PERMISSION_WRITE, PERMISSION_WRITE_SECURITY, PERMISSION_DELETE), organizationUserPermissions)
+        organizationUserPermissions =
+          organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, "UNKNOWN")
+        assertEquals(emptyList(), organizationUserPermissions)
+      }
+    }
+
   }
 
   private fun testFindAllWithRBAC(

@@ -164,14 +164,14 @@ class OrganizationServiceImpl(
       return requestBody
     }
     val existingServices = existingOrganization.services ?: OrganizationServices()
-    val existingTenantCredentials = existingServices.tenantCredentials?.toMutableMap()
-    existingTenantCredentials?.putAll(requestBody)
+    val existingTenantCredentials = existingServices.tenantCredentials?.toMutableMap() ?: mutableMapOf()
+    existingTenantCredentials.putAll(requestBody)
 
     existingServices.tenantCredentials = existingTenantCredentials
     existingOrganization.services = existingServices
 
-    organizationRepository.save(existingOrganization)
-    return existingTenantCredentials?.toMap() ?: mapOf()
+    val updatedOrganization = organizationRepository.save(existingOrganization)
+    return updatedOrganization.services!!.tenantCredentials!!.toMap()
   }
 
   override fun getAllPermissions(): List<ComponentRolePermissions> {
@@ -179,7 +179,8 @@ class OrganizationServiceImpl(
   }
 
   override fun getOrganizationPermissions(organizationId: String, role: String): List<String> {
-    return com.cosmotech.api.rbac.getPermissions(role, getScenarioRolesDefinition())
+    checkPermissionAndReturnOrganization(organizationId, PERMISSION_READ_SECURITY)
+    return com.cosmotech.api.rbac.getPermissions(role, getCommonRolesDefinition())
   }
 
   override fun getOrganizationSecurity(organizationId: String): OrganizationSecurity {
