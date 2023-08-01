@@ -139,6 +139,49 @@ class OrganizationServiceImplTests {
     }
   }
 
+  @Test
+  fun `getRbac extension test`() {
+    val organization = getMockOrganization()
+    val rbacExtension = organization.getRbac()
+    val expectedRbac = RbacSecurity(
+      id = organization.id,
+      default = ROLE_VIEWER,
+      accessControlList = mutableListOf(RbacAccessControl(id = "ID", role = ROLE_VIEWER))
+    )
+  assertEquals(expectedRbac,rbacExtension)
+  }
+
+  @Test
+  fun `getRbac extension test with empty Rbac`() {
+    val organization = Organization(id="myTestOrganization")
+    val rbacExtension = organization.getRbac()
+    val expectedRbac = RbacSecurity(
+      id = organization.id,
+      default = ROLE_NONE,
+      accessControlList = mutableListOf()
+    )
+    assertEquals(expectedRbac,rbacExtension)
+  }
+
+  @Test
+  fun `setRbac extension test`() {
+    val organization = getMockOrganization()
+    val newRbacSecurity = RbacSecurity(
+      id = organization.id,
+      default = ROLE_VIEWER,
+      accessControlList = mutableListOf(RbacAccessControl(id = "ID2", role = ROLE_ADMIN))
+    )
+    organization.setRbac(newRbacSecurity)
+    assertEquals(newRbacSecurity, organization.getRbac())
+
+    val expectedOrganizationSecurity = OrganizationSecurity(
+      ROLE_VIEWER,
+      mutableListOf(OrganizationAccessControl("ID2", ROLE_ADMIN)))
+
+    assertEquals(expectedOrganizationSecurity,organization.security)
+
+  }
+
   @TestFactory
   fun `test RBAC read organization`() =
       mapOf(

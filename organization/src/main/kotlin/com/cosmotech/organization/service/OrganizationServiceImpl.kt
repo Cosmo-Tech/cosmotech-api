@@ -129,9 +129,6 @@ class OrganizationServiceImpl(
       if (csmRbac.isAdmin(organization.getRbac(), getCommonRolesDefinition())) {
         existingOrganization.security = organization.security
         hasChanged = true
-      } else {
-        logger.warn(
-            "Security cannot by updated directly without admin permissions for ${organization.id}")
       }
     }
     return if (hasChanged) {
