@@ -4,6 +4,7 @@ package com.cosmotech.organization.service
 
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
+import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.*
 import com.cosmotech.api.security.ROLE_ORGANIZATION_USER
@@ -607,6 +608,148 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
       }
     }
 
+    @Test
+    fun `getOrganizationSecurity with owned organization`() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+        assertNotNull(organizationApiService.getOrganizationSecurity(organizationRegistered.id!!))
+      }
+    }
+
+    @Test
+    fun `getOrganizationSecurity with not owned organization with READ_SECURITY permission`() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        runAsDifferentOrganizationUser()
+        val organizationRegistered = organizationApiService.registerOrganization(
+          createTestOrganizationWithSimpleSecurity(name, TEST_USER_ID, ROLE_NONE, ROLE_VIEWER)
+        )
+        runAsOrganizationUser()
+        assertNotNull(organizationApiService.getOrganizationSecurity(organizationRegistered.id!!))
+      }
+    }
+
+    @Test
+    fun `getOrganizationSecurity with not owned organization with no READ_SECURITY permission`() {
+      assertThrows<CsmAccessForbiddenException> {
+        val name = "o-connector-test-1"
+        runAsDifferentOrganizationUser()
+        val organizationRegistered = organizationApiService.registerOrganization(
+          createTestOrganizationWithSimpleSecurity(name, TEST_USER_ID, ROLE_NONE, ROLE_NONE)
+        )
+        runAsOrganizationUser()
+        organizationApiService.getOrganizationSecurity(organizationRegistered.id!!)
+      }
+    }
+
+    @Test
+    fun `setOrganizationDefaultSecurity with owned organization and existing role`() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+        val defaultRoleCreated = organizationRegistered.security?.default
+        assertNotNull(organizationApiService.setOrganizationDefaultSecurity(organizationRegistered.id!!, OrganizationRole(ROLE_ADMIN)))
+        val defaultRoleUpdated = organizationApiService.getOrganizationSecurity(organizationRegistered.id!!).default
+        assertNotEquals(defaultRoleCreated,defaultRoleUpdated)
+      }
+    }
+
+    @Test
+    fun `setOrganizationDefaultSecurity with owned organization and non-existing role`() {
+      assertThrows<CsmClientException> {
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+        organizationApiService.setOrganizationDefaultSecurity(organizationRegistered.id!!, OrganizationRole("UNKNOWN"))
+      }
+    }
+
+    @Test
+    fun `setOrganizationDefaultSecurity with not owned organization and WRITE_SECURITY_PERMISSION`() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        runAsDifferentOrganizationUser()
+        val organizationRegistered = organizationApiService.registerOrganization(
+          createTestOrganizationWithSimpleSecurity(name, TEST_USER_ID, ROLE_NONE, ROLE_ADMIN))
+        val defaultRoleCreated = organizationRegistered.security?.default
+        runAsOrganizationUser()
+        assertNotNull(organizationApiService.setOrganizationDefaultSecurity(organizationRegistered.id!!, OrganizationRole(ROLE_ADMIN)))
+        val defaultRoleUpdated = organizationApiService.getOrganizationSecurity(organizationRegistered.id!!).default
+        assertNotEquals(defaultRoleCreated,defaultRoleUpdated)
+      }
+    }
+
+    @Test
+    fun `setOrganizationDefaultSecurity with not owned organization and no WRITE_SECURITY_PERMISSION`() {
+      assertThrows<CsmAccessForbiddenException> {
+        val name = "o-connector-test-1"
+        runAsDifferentOrganizationUser()
+        val organizationRegistered = organizationApiService.registerOrganization(
+          createTestOrganizationWithSimpleSecurity(name, TEST_USER_ID, ROLE_NONE, ROLE_USER))
+        runAsOrganizationUser()
+        organizationApiService.setOrganizationDefaultSecurity(organizationRegistered.id!!, OrganizationRole(ROLE_ADMIN))
+      }
+    }
+
+    @Test
+    fun `getOrganizationAccessControl with owned organization and current user`() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+        val organizationRole = organizationApiService.getOrganizationAccessControl(organizationRegistered.id!!, TEST_USER_ID)
+        assertNotNull(organizationRole)
+        assertEquals(ROLE_ADMIN, organizationRole.role)
+        assertEquals(TEST_USER_ID, organizationRole.id)
+      }
+    }
+
+    @Test
+    fun `getOrganizationAccessControl with owned organization and non-existing user`() {
+      assertThrows<CsmResourceNotFoundException> {
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+        organizationApiService.getOrganizationAccessControl(organizationRegistered.id!!, "UNKOWN")
+      }
+    }
+
+    @Test
+    fun `getOrganizationAccessControl with not owned organization, READ_SECURITY permission and existing user`() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        runAsDifferentOrganizationUser()
+        val organizationRegistered = organizationApiService.registerOrganization(
+          createTestOrganizationWithSimpleSecurity(name, TEST_USER_ID, ROLE_NONE, ROLE_VIEWER))
+        runAsOrganizationUser()
+        val organizationRole = organizationApiService.getOrganizationAccessControl(organizationRegistered.id!!, TEST_USER_ID)
+        assertNotNull(organizationRole)
+        assertEquals(ROLE_VIEWER, organizationRole.role)
+        assertEquals(TEST_USER_ID, organizationRole.id)
+      }
+    }
+
+    @Test
+    fun `getOrganizationAccessControl with not owned organization, READ_SECURITY permission and non existing user`() {
+      assertThrows<CsmResourceNotFoundException> {
+        val name = "o-connector-test-1"
+        runAsDifferentOrganizationUser()
+        val organizationRegistered = organizationApiService.registerOrganization(
+          createTestOrganizationWithSimpleSecurity(name, TEST_USER_ID, ROLE_NONE, ROLE_VIEWER))
+        runAsOrganizationUser()
+        organizationApiService.getOrganizationAccessControl(organizationRegistered.id!!, "UNKNOWN")
+      }
+    }
+
+    @Test
+    fun `getOrganizationAccessControl with not owned organization, no READ_SECURITY permission`() {
+      assertThrows<CsmAccessForbiddenException> {
+        val name = "o-connector-test-1"
+        runAsDifferentOrganizationUser()
+        val organizationRegistered = organizationApiService.registerOrganization(
+          createTestOrganizationWithSimpleSecurity(name, TEST_USER_ID, ROLE_NONE, ROLE_NONE))
+        runAsOrganizationUser()
+        organizationApiService.getOrganizationAccessControl(organizationRegistered.id!!, "UNKNOWN")
+      }
+    }
 
   }
 
@@ -1132,6 +1275,167 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
         organizationUserPermissions =
           organizationApiService.getOrganizationPermissions(organizationRegistered.id!!, "UNKNOWN")
         assertEquals(emptyList(), organizationUserPermissions)
+      }
+    }
+
+    @Test
+    fun `getOrganizationSecurity with owned organization`() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+        assertNotNull(organizationApiService.getOrganizationSecurity(organizationRegistered.id!!))
+      }
+    }
+
+    @Test
+    fun `getOrganizationSecurity with not owned organization with READ_SECURITY permission`() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        runAsDifferentOrganizationUser()
+        val organizationRegistered = organizationApiService.registerOrganization(
+          createTestOrganizationWithSimpleSecurity(name, TEST_USER_ID, ROLE_NONE, ROLE_VIEWER)
+        )
+        runAsPlatformAdmin()
+        assertNotNull(organizationApiService.getOrganizationSecurity(organizationRegistered.id!!))
+      }
+    }
+
+    @Test
+    fun `getOrganizationSecurity with not owned organization with no READ_SECURITY permission`() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        runAsDifferentOrganizationUser()
+        val organizationRegistered = organizationApiService.registerOrganization(
+          createTestOrganizationWithSimpleSecurity(name, TEST_ADMIN_USER_ID, ROLE_NONE, ROLE_NONE)
+        )
+        runAsPlatformAdmin()
+        assertNotNull(organizationApiService.getOrganizationSecurity(organizationRegistered.id!!))
+      }
+    }
+
+    @Test
+    fun `setOrganizationDefaultSecurity with owned organization and existing role`() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+        val defaultRoleCreated = organizationRegistered.security?.default
+        assertNotNull(organizationApiService.setOrganizationDefaultSecurity(organizationRegistered.id!!, OrganizationRole(ROLE_ADMIN)))
+        val defaultRoleUpdated = organizationApiService.getOrganizationSecurity(organizationRegistered.id!!).default
+        assertNotEquals(defaultRoleCreated,defaultRoleUpdated)
+      }
+    }
+
+    @Test
+    fun `setOrganizationDefaultSecurity with owned organization and non-existing role`() {
+      assertThrows<CsmClientException> {
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+        organizationApiService.setOrganizationDefaultSecurity(organizationRegistered.id!!, OrganizationRole("UNKNOWN"))
+      }
+    }
+
+    @Test
+    fun `setOrganizationDefaultSecurity with not owned organization`() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        runAsDifferentOrganizationUser()
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+        val defaultRoleCreated = organizationRegistered.security?.default
+        runAsPlatformAdmin()
+        assertNotNull(organizationApiService.setOrganizationDefaultSecurity(organizationRegistered.id!!, OrganizationRole(ROLE_ADMIN)))
+        val defaultRoleUpdated = organizationApiService.getOrganizationSecurity(organizationRegistered.id!!).default
+        assertNotEquals(defaultRoleCreated,defaultRoleUpdated)
+      }
+    }
+
+    @Test
+    fun `setOrganizationDefaultSecurity with not owned organization and no WRITE_SECURITY_PERMISSION`() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        runAsDifferentOrganizationUser()
+        val organizationRegistered = organizationApiService.registerOrganization(
+          createTestOrganizationWithSimpleSecurity(name, TEST_ADMIN_USER_ID, ROLE_NONE, ROLE_NONE))
+        val defaultRoleCreated = organizationRegistered.security?.default
+        runAsPlatformAdmin()
+        assertNotNull(organizationApiService.setOrganizationDefaultSecurity(organizationRegistered.id!!, OrganizationRole(ROLE_ADMIN)))
+        val defaultRoleUpdated = organizationApiService.getOrganizationSecurity(organizationRegistered.id!!).default
+        assertNotEquals(defaultRoleCreated,defaultRoleUpdated)
+      }
+    }
+
+    @Test
+    fun `getOrganizationAccessControl with owned organization and current user`() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+        val organizationRole = organizationApiService.getOrganizationAccessControl(organizationRegistered.id!!, TEST_ADMIN_USER_ID)
+        assertNotNull(organizationRole)
+        assertEquals(ROLE_ADMIN, organizationRole.role)
+        assertEquals(TEST_ADMIN_USER_ID, organizationRole.id)
+      }
+    }
+
+    @Test
+    fun `getOrganizationAccessControl with owned organization and non-existing user`() {
+      assertThrows<CsmResourceNotFoundException> {
+        val name = "o-connector-test-1"
+        val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+        organizationApiService.getOrganizationAccessControl(organizationRegistered.id!!, "UNKOWN")
+      }
+    }
+
+    @Test
+    fun `getOrganizationAccessControl with not owned organization, READ_SECURITY permission and existing user`() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        runAsDifferentOrganizationUser()
+        val organizationRegistered = organizationApiService.registerOrganization(
+          createTestOrganizationWithSimpleSecurity(name, TEST_ADMIN_USER_ID, ROLE_NONE, ROLE_VIEWER))
+        runAsPlatformAdmin()
+        val organizationRole = organizationApiService.getOrganizationAccessControl(organizationRegistered.id!!, TEST_ADMIN_USER_ID)
+        assertNotNull(organizationRole)
+        assertEquals(ROLE_VIEWER, organizationRole.role)
+        assertEquals(TEST_ADMIN_USER_ID, organizationRole.id)
+      }
+    }
+
+    @Test
+    fun `getOrganizationAccessControl with not owned organization, READ_SECURITY permission and non existing user`() {
+      assertThrows<CsmResourceNotFoundException> {
+        val name = "o-connector-test-1"
+        runAsDifferentOrganizationUser()
+        val organizationRegistered = organizationApiService.registerOrganization(
+          createTestOrganizationWithSimpleSecurity(name, TEST_ADMIN_USER_ID, ROLE_NONE, ROLE_VIEWER))
+        runAsPlatformAdmin()
+        organizationApiService.getOrganizationAccessControl(organizationRegistered.id!!, "UNKNOWN")
+      }
+    }
+
+    @Test
+    fun `getOrganizationAccessControl with not owned organization, no READ_SECURITY permission, non-existing user`() {
+      assertThrows<CsmResourceNotFoundException> {
+        val name = "o-connector-test-1"
+        runAsDifferentOrganizationUser()
+        val organizationRegistered = organizationApiService.registerOrganization(
+          createTestOrganizationWithSimpleSecurity(name, TEST_ADMIN_USER_ID, ROLE_NONE, ROLE_NONE))
+        runAsPlatformAdmin()
+        organizationApiService.getOrganizationAccessControl(organizationRegistered.id!!, "UNKNOWN")
+      }
+    }
+
+    @Test
+    fun `getOrganizationAccessControl with not owned organization, no READ_SECURITY permission, existing user`() {
+      assertDoesNotThrow {
+        val name = "o-connector-test-1"
+        runAsDifferentOrganizationUser()
+        val organizationRegistered = organizationApiService.registerOrganization(
+          createTestOrganizationWithSimpleSecurity(name, TEST_ADMIN_USER_ID, ROLE_NONE, ROLE_NONE))
+        runAsPlatformAdmin()
+        val organizationAccessControl =
+          organizationApiService.getOrganizationAccessControl(organizationRegistered.id!!, TEST_ADMIN_USER_ID)
+        assertNotNull(organizationAccessControl)
+        assertEquals(TEST_ADMIN_USER_ID, organizationAccessControl.id)
+        assertEquals(ROLE_NONE, organizationAccessControl.role)
       }
     }
 

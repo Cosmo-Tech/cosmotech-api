@@ -124,6 +124,7 @@ class OrganizationServiceImplTests {
   fun `should test import Organization method and assert it registered`() {
     val organization = getMockOrganization()
     every { organizationRepository.save(any()) } returns organization
+    every { csmAdmin.verifyCurrentRolesAdmin() } returns true
     val importedScenario = organizationApiService.importOrganization(organization)
     assertEquals(organization, importedScenario)
   }
@@ -131,6 +132,7 @@ class OrganizationServiceImplTests {
   @Test
   fun `should test import Organization method and assert it throws exception when id scenario is missing`() {
     val organization = getMockOrganization()
+    every { csmAdmin.verifyCurrentRolesAdmin() } returns true
     organization.id = null
     assertThrows<CsmResourceNotFoundException> {
       organizationApiService.importOrganization(organization)
