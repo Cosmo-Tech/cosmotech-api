@@ -401,7 +401,6 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
       }
     }
 
-
     @Test
     fun `updateStorageByOrganizationId with owned organization`(){
       assertDoesNotThrow {
@@ -951,6 +950,95 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
           organizationRegistered.id!!,
           OTHER_TEST_USER_ID,
           OrganizationRole(role= ROLE_NONE))
+      }
+    }
+
+    @Test
+    fun `removeOrganizationAccessControl with owned organization`(){
+      val name = "o-connector-test-1"
+      val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+
+      val otherUserACL = OrganizationAccessControl(id= OTHER_TEST_USER_ID, role= ROLE_VIEWER)
+      organizationApiService.addOrganizationAccessControl(organizationRegistered.id!!,otherUserACL)
+
+      organizationApiService.removeOrganizationAccessControl(organizationRegistered.id!!, OTHER_TEST_USER_ID)
+      assertThrows<CsmResourceNotFoundException> {
+        organizationApiService.getOrganizationAccessControl(organizationRegistered.id!!, OTHER_TEST_USER_ID)
+      }
+
+    }
+
+    @Test
+    fun `removeOrganizationAccessControl with not owned organization, WRITE_SECURITY permission`(){
+      val name = "o-connector-test-1"
+      runAsDifferentOrganizationUser()
+      val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+
+      val otherUserACL = OrganizationAccessControl(id= TEST_USER_ID, role= ROLE_ADMIN)
+      organizationApiService.addOrganizationAccessControl(organizationRegistered.id!!,otherUserACL)
+
+      runAsOrganizationUser()
+      organizationApiService.removeOrganizationAccessControl(organizationRegistered.id!!, OTHER_TEST_USER_ID)
+      assertThrows<CsmResourceNotFoundException> {
+        organizationApiService.getOrganizationAccessControl(organizationRegistered.id!!, OTHER_TEST_USER_ID)
+      }
+
+    }
+
+    @Test
+    fun `removeOrganizationAccessControl with not owned organization, no WRITE_SECURITY permission`(){
+      val name = "o-connector-test-1"
+      runAsDifferentOrganizationUser()
+      val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+
+      val otherUserACL = OrganizationAccessControl(id= TEST_USER_ID, role= ROLE_VIEWER)
+      organizationApiService.addOrganizationAccessControl(organizationRegistered.id!!,otherUserACL)
+
+      runAsOrganizationUser()
+      assertThrows<CsmAccessForbiddenException> {
+        organizationApiService.removeOrganizationAccessControl(organizationRegistered.id!!, OTHER_TEST_USER_ID)
+      }
+    }
+
+    @Test
+    fun `getOrganizationSecurityUsers with owned organization`(){
+      val name = "o-connector-test-1"
+      val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+
+      val orgaUsers = organizationApiService.getOrganizationSecurityUsers(organizationRegistered.id!!)
+      assertEquals(listOf(TEST_USER_ID), orgaUsers)
+
+    }
+
+    @Test
+    fun `getOrganizationSecurityUsers with not owned organization, READ_SECURITY permission`(){
+      val name = "o-connector-test-1"
+      runAsDifferentOrganizationUser()
+      val organizationRegistered = organizationApiService.registerOrganization(
+        createTestOrganizationWithSimpleSecurity(name, TEST_USER_ID, ROLE_NONE, ROLE_VIEWER))
+      runAsOrganizationUser()
+      val orgaUsers = organizationApiService.getOrganizationSecurityUsers(organizationRegistered.id!!)
+      assertEquals(listOf(TEST_USER_ID), orgaUsers)
+
+    }
+
+    @Test
+    fun `getOrganizationSecurityUsers with not owned organization, no READ_SECURITY permission`(){
+      val name = "o-connector-test-1"
+      runAsDifferentOrganizationUser()
+      val organizationRegistered = organizationApiService.registerOrganization(
+        createTestOrganizationWithSimpleSecurity(name, TEST_USER_ID, ROLE_NONE, ROLE_NONE))
+      runAsOrganizationUser()
+      assertThrows<CsmAccessForbiddenException> {
+        organizationApiService.getOrganizationSecurityUsers(organizationRegistered.id!!)
+      }
+
+    }
+    @Test
+    fun `importOrganization organization`(){
+      val name = "o-connector-test-1"
+      assertThrows<CsmAccessForbiddenException> {
+        organizationApiService.importOrganization(createTestOrganization(name))
       }
     }
 
@@ -1851,6 +1939,103 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
       }
     }
 
+
+    @Test
+    fun `removeOrganizationAccessControl with owned organization`(){
+      val name = "o-connector-test-1"
+      val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+
+      val otherUserACL = OrganizationAccessControl(id= OTHER_TEST_USER_ID, role= ROLE_VIEWER)
+      organizationApiService.addOrganizationAccessControl(organizationRegistered.id!!,otherUserACL)
+
+      organizationApiService.removeOrganizationAccessControl(organizationRegistered.id!!, OTHER_TEST_USER_ID)
+      assertThrows<CsmResourceNotFoundException> {
+        organizationApiService.getOrganizationAccessControl(organizationRegistered.id!!, OTHER_TEST_USER_ID)
+      }
+
+    }
+
+    @Test
+    fun `removeOrganizationAccessControl with not owned organization, WRITE_SECURITY permission`(){
+      val name = "o-connector-test-1"
+      runAsDifferentOrganizationUser()
+      val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+
+      val otherUserACL = OrganizationAccessControl(id= TEST_USER_ID, role= ROLE_ADMIN)
+      organizationApiService.addOrganizationAccessControl(organizationRegistered.id!!,otherUserACL)
+
+      runAsPlatformAdmin()
+      organizationApiService.removeOrganizationAccessControl(organizationRegistered.id!!, OTHER_TEST_USER_ID)
+      assertThrows<CsmResourceNotFoundException> {
+        organizationApiService.getOrganizationAccessControl(organizationRegistered.id!!, OTHER_TEST_USER_ID)
+      }
+
+    }
+
+    @Test
+    fun `removeOrganizationAccessControl with not owned organization, no WRITE_SECURITY permission`(){
+      val name = "o-connector-test-1"
+      runAsDifferentOrganizationUser()
+      val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+
+      val otherUserACL = OrganizationAccessControl(id= TEST_USER_ID, role= ROLE_ADMIN)
+      organizationApiService.addOrganizationAccessControl(organizationRegistered.id!!,otherUserACL)
+
+      runAsPlatformAdmin()
+      organizationApiService.removeOrganizationAccessControl(organizationRegistered.id!!, OTHER_TEST_USER_ID)
+      assertThrows<CsmResourceNotFoundException> {
+        organizationApiService.getOrganizationAccessControl(organizationRegistered.id!!, OTHER_TEST_USER_ID)
+      }
+    }
+
+    @Test
+    fun `getOrganizationSecurityUsers with owned organization`(){
+      val name = "o-connector-test-1"
+      val organizationRegistered = organizationApiService.registerOrganization(createTestOrganization(name))
+
+      val orgaUsers = organizationApiService.getOrganizationSecurityUsers(organizationRegistered.id!!)
+      assertEquals(listOf(TEST_ADMIN_USER_ID), orgaUsers)
+
+    }
+
+    @Test
+    fun `getOrganizationSecurityUsers with not owned organization, READ_SECURITY permission`(){
+      val name = "o-connector-test-1"
+      runAsDifferentOrganizationUser()
+      val organizationRegistered = organizationApiService.registerOrganization(
+        createTestOrganizationWithSimpleSecurity(name, TEST_USER_ID, ROLE_NONE, ROLE_VIEWER))
+      runAsPlatformAdmin()
+      val orgaUsers = organizationApiService.getOrganizationSecurityUsers(organizationRegistered.id!!)
+      assertEquals(listOf(TEST_USER_ID), orgaUsers)
+
+    }
+
+    @Test
+    fun `getOrganizationSecurityUsers with not owned organization, no READ_SECURITY permission`(){
+      val name = "o-connector-test-1"
+      runAsDifferentOrganizationUser()
+      val organizationRegistered = organizationApiService.registerOrganization(
+        createTestOrganizationWithSimpleSecurity(name, TEST_USER_ID, ROLE_NONE, ROLE_NONE))
+      runAsPlatformAdmin()
+      val orgaUsers = organizationApiService.getOrganizationSecurityUsers(organizationRegistered.id!!)
+      assertEquals(listOf(TEST_USER_ID), orgaUsers)
+
+    }
+
+    @Test
+    fun `importOrganization organization with minimal properties`(){
+      val id = "minimal-required-properties"
+      organizationApiService.importOrganization(Organization(id = id))
+      assertNotNull(organizationApiService.findOrganizationById(id))
+    }
+
+    @Test
+    fun `importOrganization organization without id`(){
+      val name = "o-connector-test-1"
+      assertThrows<CsmResourceNotFoundException> {
+        organizationApiService.importOrganization(createTestOrganization(name))
+      }
+    }
 
   }
 
