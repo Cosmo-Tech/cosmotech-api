@@ -4,10 +4,10 @@ package com.cosmotech.scenariorun.workflow.argo
 
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.WorkflowStatusRequest
+import com.cosmotech.api.loki.LokiService
 import com.cosmotech.scenariorun.ORGANIZATION_ID_LABEL
 import com.cosmotech.scenariorun.SCENARIO_ID_LABEL
 import com.cosmotech.scenariorun.WORKSPACE_ID_LABEL
-import com.cosmotech.api.loki.LokiService
 import com.cosmotech.scenariorun.domain.ScenarioRun
 import com.cosmotech.scenariorun.domain.ScenarioRunContainerLogs
 import com.cosmotech.scenariorun.domain.ScenarioRunLogs
