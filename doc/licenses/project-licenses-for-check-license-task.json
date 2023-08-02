@@ -396,7 +396,7 @@
         },
         {
             "moduleName": "com.github.Cosmo-Tech:cosmotech-api-azure",
-            "moduleVersion": "0.1.10-SNAPSHOT",
+            "moduleVersion": "0.1.11-SNAPSHOT",
             "moduleUrls": [
                 "https://github.com/Cosmo-Tech/cosmotech-api-azure"
             ],
@@ -409,7 +409,7 @@
         },
         {
             "moduleName": "com.github.Cosmo-Tech:cosmotech-api-common",
-            "moduleVersion": "0.1.48-SNAPSHOT",
+            "moduleVersion": "0.1.49-SNAPSHOT",
             "moduleUrls": [
                 "https://github.com/Cosmo-Tech/cosmotech-api-common"
             ],
