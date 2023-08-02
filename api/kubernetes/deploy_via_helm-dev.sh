@@ -150,14 +150,14 @@ curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deploymen
      -o "${WORKING_DIR}"/csm-keycloak-config-map.yaml
 
 # Create config map for Keycloak base configuration
-kubectl create configmap csm-keycloak-map -n ${KEYCLOAK_NAMESPACE} --from-file=csm-keycloak-config-map.yaml
+kubectl create configmap csm-keycloak-map -n ${KEYCLOAK_NAMESPACE} --from-file=csm-keycloak-config-map.yaml -o yaml --dry-run=client | kubectl -n ${KEYCLOAK_NAMESPACE} apply -f -
 
 KEYCLOAK_ADM_PASSWORD_VAR=${KEYCLOAK_ADM_PASSWORD} \
 KEYCLOAK_DB_PASS_VAR=${KEYCLOAK_DB_PASS} \
 KEYCLOAK_DB_USER_PASS_VAR=${KEYCLOAK_DB_USER_PASS} \
 envsubst < "${WORKING_DIR}"/values-keycloak-config-map-template.yaml > "${WORKING_DIR}"/values-keycloak-config-map.yaml
 
-helm install csm-keycloak bitnami/keycloak -n ${KEYCLOAK_NAMESPACE} --version ${KEYCLOAK_VERSION} \
+helm upgrade --install csm-keycloak bitnami/keycloak -n ${KEYCLOAK_NAMESPACE} --version ${KEYCLOAK_VERSION} \
       --values values-keycloak-config-map.yaml
 
 
