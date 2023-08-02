@@ -154,7 +154,7 @@ internal class ScenarioRunMetrics(
             labels = labels,
             type = PersitentMetricType.GAUGE,
             downSampling = true,
-            downSamplingAggregation = DownSamplingAggregationType.SUM,
+            downSamplingAggregation = DownSamplingAggregationType.MAX,
         )
     eventPublisher.publishEvent(PersistentMetricEvent(this, metric))
   }
