@@ -17,7 +17,6 @@ import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.getAllRolesDefinition
 import com.cosmotech.api.rbac.getCommonRolesDefinition
-import com.cosmotech.api.rbac.getScenarioRolesDefinition
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
 import com.cosmotech.api.utils.changed
@@ -161,7 +160,8 @@ class OrganizationServiceImpl(
       return requestBody
     }
     val existingServices = existingOrganization.services ?: OrganizationServices()
-    val existingTenantCredentials = existingServices.tenantCredentials?.toMutableMap() ?: mutableMapOf()
+    val existingTenantCredentials =
+        existingServices.tenantCredentials?.toMutableMap() ?: mutableMapOf()
     existingTenantCredentials.putAll(requestBody)
 
     existingServices.tenantCredentials = existingTenantCredentials
