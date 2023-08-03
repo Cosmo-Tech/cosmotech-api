@@ -17,8 +17,6 @@ help() {
   echo "- ARGO_MINIO_SECRET_KEY | string | SecretKey for MinIO. Generated when not set"
   echo "- ARGO_REQUEUE_TIME | string | Workflow requeue time, 1s by default"
   echo "- ARGO_MINIO_REQUESTS_MEMORY | units of bytes (default is 4Gi) | Memory requests for the Argo MinIO server"
-  echo "- LOKI_PERSISTENCE_MEMORY | units of bytes (default is 4Gi) | Memory for persistence of Loki system"
-  echo "- LOKI_RETENTION_PERIOD | units of hours (default is 720h) | Loki logs retention period"
   echo "- PROM_STORAGE_CLASS_NAME | storage class name for the prometheus PVC (default is standard)"
   echo "- PROM_STORAGE_RESOURCE_REQUEST | size requested for prometheusPVC (default is 10Gi)"
   echo "- PROM_CPU_MEM_LIMITS | memory size limit for prometheus (default is 2Gi)"
@@ -56,7 +54,7 @@ export REQUEUE_TIME="${ARGO_REQUEUE_TIME:-1s}"
 export ARGO_RELEASE_NAME=argocsmv2
 export MINIO_RELEASE_NAME=miniocsmv2
 export POSTGRES_RELEASE_NAME=postgrescsmv2
-export ARGO_VERSION="0.31.0"
+export ARGO_VERSION="0.16.6"
 export MINIO_VERSION="12.1.3"
 export POSTGRESQL_VERSION="11.6.12"
 export VERSION_REDIS="17.3.14"
@@ -158,7 +156,9 @@ KEYCLOAK_DB_USER_PASS_VAR=${KEYCLOAK_DB_USER_PASS} \
 envsubst < "${WORKING_DIR}"/values-keycloak-config-map-template.yaml > "${WORKING_DIR}"/values-keycloak-config-map.yaml
 
 helm upgrade --install csm-keycloak bitnami/keycloak -n ${KEYCLOAK_NAMESPACE} --version ${KEYCLOAK_VERSION} \
-      --values values-keycloak-config-map.yaml
+      --values values-keycloak-config-map.yaml \
+      --wait \
+      --timeout 10m0s
 
 
 # nginx
