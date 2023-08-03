@@ -150,15 +150,20 @@ curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deploymen
      -o "${WORKING_DIR}"/csm-keycloak-config-map.yaml
 
 # Create config map for Keycloak base configuration
-kubectl create configmap csm-keycloak-map -n ${KEYCLOAK_NAMESPACE} --from-file=csm-keycloak-config-map.yaml
+kubectl create configmap csm-keycloak-map -n ${KEYCLOAK_NAMESPACE} --from-file=csm-keycloak-config-map.yaml -o yaml --dry-run=client | kubectl -n ${KEYCLOAK_NAMESPACE} apply -f -
 
 KEYCLOAK_ADM_PASSWORD_VAR=${KEYCLOAK_ADM_PASSWORD} \
 KEYCLOAK_DB_PASS_VAR=${KEYCLOAK_DB_PASS} \
 KEYCLOAK_DB_USER_PASS_VAR=${KEYCLOAK_DB_USER_PASS} \
 envsubst < "${WORKING_DIR}"/values-keycloak-config-map-template.yaml > "${WORKING_DIR}"/values-keycloak-config-map.yaml
 
-helm install csm-keycloak bitnami/keycloak -n ${KEYCLOAK_NAMESPACE} --version ${KEYCLOAK_VERSION} \
-      --values values-keycloak-config-map.yaml
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+
+helm upgrade --install csm-keycloak bitnami/keycloak -n ${KEYCLOAK_NAMESPACE} --version ${KEYCLOAK_VERSION} \
+      --values values-keycloak-config-map.yaml \
+      --wait \
+      --timeout 10m0s
 
 
 # nginx
@@ -237,7 +242,6 @@ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
   --values /tmp/values-ingress-nginx.yaml
 
 # Redis Cluster
-helm repo add bitnami https://charts.bitnami.com/bitnami
 
 export REDIS_PV_NAME="redis-persistence-volume"
 export REDIS_PVC_NAME="redis-persistence-volume-claim"
@@ -367,7 +371,6 @@ metrics:
     scrapeTimeout: 10s
 EOF
 
-helm repo add bitnami https://charts.bitnami.com/bitnami
 helm upgrade --install ${MINIO_RELEASE_NAME} bitnami/minio --namespace ${NAMESPACE} --version ${MINIO_VERSION} --values values-minio.yaml
 
 # Postgres
@@ -410,7 +413,6 @@ metrics:
     scrapeTimeout: 10s
 EOF
 
-helm repo add bitnami https://charts.bitnami.com/bitnami
 helm upgrade --install -n ${NAMESPACE} ${POSTGRES_RELEASE_NAME} bitnami/postgresql --version ${POSTGRESQL_VERSION} --values values-postgresql.yaml
 
 export ARGO_POSTGRESQL_SECRET_NAME=argo-postgres-config
