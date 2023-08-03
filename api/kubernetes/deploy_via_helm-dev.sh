@@ -17,6 +17,8 @@ help() {
   echo "- ARGO_MINIO_SECRET_KEY | string | SecretKey for MinIO. Generated when not set"
   echo "- ARGO_REQUEUE_TIME | string | Workflow requeue time, 1s by default"
   echo "- ARGO_MINIO_REQUESTS_MEMORY | units of bytes (default is 4Gi) | Memory requests for the Argo MinIO server"
+  echo "- LOKI_PERSISTENCE_MEMORY | units of bytes (default is 4Gi) | Memory for persistence of Loki system"
+  echo "- LOKI_RETENTION_PERIOD | units of hours (default is 720h) | Loki logs retention period"
   echo "- PROM_STORAGE_CLASS_NAME | storage class name for the prometheus PVC (default is standard)"
   echo "- PROM_STORAGE_RESOURCE_REQUEST | size requested for prometheusPVC (default is 10Gi)"
   echo "- PROM_CPU_MEM_LIMITS | memory size limit for prometheus (default is 2Gi)"
@@ -54,7 +56,7 @@ export REQUEUE_TIME="${ARGO_REQUEUE_TIME:-1s}"
 export ARGO_RELEASE_NAME=argocsmv2
 export MINIO_RELEASE_NAME=miniocsmv2
 export POSTGRES_RELEASE_NAME=postgrescsmv2
-export ARGO_VERSION="0.16.6"
+export ARGO_VERSION="0.31.0"
 export MINIO_VERSION="12.1.3"
 export POSTGRESQL_VERSION="11.6.12"
 export VERSION_REDIS="17.3.14"
@@ -155,6 +157,9 @@ KEYCLOAK_DB_PASS_VAR=${KEYCLOAK_DB_PASS} \
 KEYCLOAK_DB_USER_PASS_VAR=${KEYCLOAK_DB_USER_PASS} \
 envsubst < "${WORKING_DIR}"/values-keycloak-config-map-template.yaml > "${WORKING_DIR}"/values-keycloak-config-map.yaml
 
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+
 helm upgrade --install csm-keycloak bitnami/keycloak -n ${KEYCLOAK_NAMESPACE} --version ${KEYCLOAK_VERSION} \
       --values values-keycloak-config-map.yaml \
       --wait \
@@ -237,7 +242,6 @@ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
   --values /tmp/values-ingress-nginx.yaml
 
 # Redis Cluster
-helm repo add bitnami https://charts.bitnami.com/bitnami
 
 export REDIS_PV_NAME="redis-persistence-volume"
 export REDIS_PVC_NAME="redis-persistence-volume-claim"
@@ -367,7 +371,6 @@ metrics:
     scrapeTimeout: 10s
 EOF
 
-helm repo add bitnami https://charts.bitnami.com/bitnami
 helm upgrade --install ${MINIO_RELEASE_NAME} bitnami/minio --namespace ${NAMESPACE} --version ${MINIO_VERSION} --values values-minio.yaml
 
 # Postgres
@@ -410,7 +413,6 @@ metrics:
     scrapeTimeout: 10s
 EOF
 
-helm repo add bitnami https://charts.bitnami.com/bitnami
 helm upgrade --install -n ${NAMESPACE} ${POSTGRES_RELEASE_NAME} bitnami/postgresql --version ${POSTGRESQL_VERSION} --values values-postgresql.yaml
 
 export ARGO_POSTGRESQL_SECRET_NAME=argo-postgres-config
@@ -546,6 +548,36 @@ EOF
 
 helm repo add argo https://argoproj.github.io/argo-helm
 helm upgrade --install -n ${NAMESPACE} ${ARGO_RELEASE_NAME} argo/argo-workflows --version ${ARGO_VERSION} --values values-argo.yaml
+
+LOKI_RELEASE_NAME="loki"
+helm repo add grafana https://grafana.github.io/helm-charts
+
+cat <<EOF > loki-values.yaml
+loki:
+  persistence:
+    enabled: true
+    accessModes:
+    - ReadWriteOnce
+    size: "${LOKI_PERSISTENCE_MEMORY:-4Gi}"
+  config:
+    table_manager:
+      retention_deletes_enabled: true
+      retention_period: "${LOKI_RETENTION_PERIOD:-720h}"
+grafana:
+  enabled: true
+  persistence:
+    type: pvc
+    enabled: true
+    # storageClassName: default
+    accessModes:
+      - ReadWriteOnce
+    size: "${LOKI_PERSISTENCE_MEMORY:-4Gi}"
+promtail:
+  tolerations:
+    - effect: NoSchedule
+      operator: Exists
+EOF
+helm upgrade --install ${LOKI_RELEASE_NAME} grafana/loki-stack -f loki-values.yaml
 
 popd
 
