@@ -786,7 +786,7 @@ components:
         sdkVersion:
           type: string
           description: the MAJOR.MINOR version used to build the solution solution
-        creationDate:
+        createdAt:
           type: string
           readOnly: true
           description: the ScenarioRun creation date

@@ -597,7 +597,7 @@ class ScenarioRunServiceImpl(
             noDataIngestionState = runTemplate?.noDataIngestionState,
             sdkVersion = solution?.sdkVersion,
             datasetList = scenario?.datasetList,
-            creationDate = now,
+            createdAt = now,
             parametersValues =
                 (scenario?.parametersValues?.map { scenarioValue ->
                       RunTemplateParameterValue(
