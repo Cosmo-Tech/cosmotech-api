@@ -17,7 +17,7 @@ tags:
     description: ScenarioRunResult Management
 
 paths:
-  /organizations/{organization_id}/workspace/{workspace_id}/scenario/{scenario_id}/scenariorun/{scenariorun_id}/scenariorunresult/{scenariorunresult_id}:
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarioruns/{scenariorun_id}/probes/{probe_id}:
     parameters:
       - name: organization_id
         in: path
@@ -31,21 +31,15 @@ paths:
         required: true
         schema:
           type: string
-      - name: scenario_id
-        in: path
-        description: the Scenario identifier
-        required: true
-        schema:
-          type: string
       - name: scenariorun_id
         in: path
         description: the ScenarioRun identifier
         required: true
         schema:
           type: string
-      - name: scenariorunresult_id
+      - name: probe_id
         in: path
-        description: the ScenarioRunResult identifier
+        description: the Probe identifier
         required: true
         schema:
           type: string
@@ -54,6 +48,13 @@ paths:
       tags:
         - scenariorunresult
       summary: Create a new ScenarioRunResult in the Organization
+      requestBody:
+        description: the ScenarioRunResult to register
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScenarioRunResult'
       responses:
         "204":
           description: Request succeeded
@@ -67,12 +68,14 @@ paths:
         - scenariorunresult
       summary: Get a ScenarioRunResult in the Organization
       responses:
-        "204":
-          description: Request succeeded
-        "400":
-          description: Bad request
+        "200":
+          description: the Organization details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioRunResult'
         "404":
-          description: the Organization specified is unknown or you don't have access to it
+          description: the ScenarioRunResult specified is unknown or you don't have access to it
 components:
   securitySchemes:
     oAuth2AuthCode:
@@ -92,10 +95,7 @@ components:
       properties:
         id:
           type: string
-          x-field-extra-annotation: "@org.springframework.data.annotation.Id"
-          readOnly: true
-          description: the ScenarioRunResult
-        organizationId:
+        name:
           type: string
-          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
-          description: the Organization id
+        result:
+          type: string
