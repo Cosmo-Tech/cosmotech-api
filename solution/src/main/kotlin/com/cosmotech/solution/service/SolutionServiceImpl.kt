@@ -39,7 +39,7 @@ internal class SolutionServiceImpl(
     private val resourceLoader: ResourceLoader,
     private val azureStorageBlobServiceClient: BlobServiceClient,
     private val resourceScanner: ResourceScanner,
-    private val solutionRepository: SolutionRepository,
+    private val solutionRepository: SolutionRepository
 ) : CsmPhoenixService(), SolutionApiService {
 
   override fun findAllSolutions(organizationId: String, page: Int?, size: Int?): List<Solution> {

@@ -225,6 +225,13 @@ csm:
       queryPath: /loki/api/v1/query_range
       # duration in days to query logs
       queryDaysAgo: 1
+    containerRegistry:
+      # azure or local
+      provider: local
+      # https://csmenginesdev.azurecr.io or localhost:5000
+      registryUrl: localhost:5000
+      registryUserName: csmenginesdev
+      registryPassword: "my_registry_password"
 
 springdoc:
   # See https://springdoc.org/#properties
