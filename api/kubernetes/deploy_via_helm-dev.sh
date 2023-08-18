@@ -56,7 +56,7 @@ export REQUEUE_TIME="${ARGO_REQUEUE_TIME:-1s}"
 export ARGO_RELEASE_NAME=argocsmv2
 export MINIO_RELEASE_NAME=miniocsmv2
 export POSTGRES_RELEASE_NAME=postgrescsmv2
-export ARGO_VERSION="0.31.0"
+export ARGO_VERSION="0.32.2"
 export MINIO_VERSION="12.1.3"
 export POSTGRESQL_VERSION="11.6.12"
 export VERSION_REDIS="17.3.14"
@@ -431,6 +431,18 @@ type: Opaque
 EOF
 kubectl apply -n ${NAMESPACE} -f postgres-secret.yaml
 
+# To fix CRD errors due to Argo update
+# Only on update case otherwise you'll get an error crd doesn't exist
+#CRD=('clusterworkflowtemplates.argoproj.io' 'cronworkflows.argoproj.io' 'workfloweventbindings.argoproj.io' \
+# 'workflows.argoproj.io' 'workflowtaskresults.argoproj.io' 'workflowtasksets.argoproj.io' 'workflowtemplates.argoproj.io')
+#
+#for crd in "${CRD[@]}"
+#do
+#  kubectl label --overwrite crd $crd app.kubernetes.io/managed-by=Helm
+#  kubectl annotate --overwrite crd $crd meta.helm.sh/release-namespace=phoenix
+#  kubectl annotate --overwrite crd $crd meta.helm.sh/release-name=argocsmv2
+#done
+
 # Argo
 cat <<EOF > values-argo.yaml
 images:
@@ -577,7 +589,7 @@ promtail:
     - effect: NoSchedule
       operator: Exists
 EOF
-helm upgrade --install ${LOKI_RELEASE_NAME} grafana/loki-stack -f loki-values.yaml
+helm upgrade --install ${LOKI_RELEASE_NAME} --namespace=${MONITORING_NAMESPACE} grafana/loki-stack -f loki-values.yaml
 
 popd
 
