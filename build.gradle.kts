@@ -266,7 +266,7 @@ subprojects {
     implementation("org.springframework.security:spring-security-oauth2-jose:${springOauthVersion}")
     implementation(
         "org.springframework.security:spring-security-oauth2-resource-server:${springOauthVersion}")
-    val oktaSpringBootVersion = "2.1.6"
+    val oktaSpringBootVersion = "3.0.5"
     implementation("com.okta.spring:okta-spring-boot-starter:${oktaSpringBootVersion}")
 
     implementation("redis.clients:jedis:${jedisVersion}")
