@@ -17,7 +17,7 @@ tags:
     description: ScenarioRunResult Management
 
 paths:
-  /organizations/{organization_id}/workspaces/{workspace_id}/scenarioruns/{scenariorun_id}/probes/{probe_id}:
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/scenarioruns/{scenariorun_id}/probes/{probe_id}:
     parameters:
       - name: organization_id
         in: path
@@ -28,6 +28,12 @@ paths:
       - name: workspace_id
         in: path
         description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: scenario_id
+        in: path
+        description: the Scenario identifier
         required: true
         schema:
           type: string
@@ -44,7 +50,7 @@ paths:
         schema:
           type: string
     post:
-      operationId: createScenarioRunResult
+      operationId: sendScenarioRunResult
       tags:
         - scenariorunresult
       summary: Create a new ScenarioRunResult in the Organization
@@ -54,11 +60,12 @@ paths:
         content:
           application/json:
             schema:
-              item:
-              $ref: '#/components/schemas/ScenarioRunResult'
+              type: object
+              additionalProperties:
+                type: string
             examples:
               ScenarioRunResult:
-                $ref: '#/components/examples/ScenarioRunResultExample'
+                $ref: '#/components/examples/ScenarioRunProbeResultExample'
       responses:
         "200":
           description: the Organization details
@@ -69,7 +76,7 @@ paths:
               examples:
                 ScenarioRunResult:
                   $ref: '#/components/examples/ScenarioRunResultExample'
-        "404":
+        "400":
           description: the ScenarioRunResult specified is unknown or you don't have access to it
     get:
       operationId: getScenarioRunResult
@@ -103,24 +110,29 @@ components:
     ScenarioRunResult:
       type: object
       x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
-      description: a ScenarioRunResult with only base properties
+      description: a ScenarioRunProbeResult with all ScenarioRunResult
       properties:
         id:
+          x-field-extra-annotation: "@org.springframework.data.annotation.Id"
           type: string
         results:
+          type: array
+          items:
             type: object
+            additionalProperties:
+              type: string
   examples:
+    ScenarioRunProbeResultExample:
+      summary:
+      description:
+      value:
+        name: StockProbe
+        run: 0
+        stockMeasure: 50
     ScenarioRunResultExample:
       summary:
       description:
       value:
-        id: Id
+        id: sr-feai8feu44_stock
         results:
-          probe1:
-            var1: var
-            value1: value
-          probe2:
-            var1: var
-            value1: value
-
-
+          $ref: '#/components/examples/ScenarioRunResultExample'
