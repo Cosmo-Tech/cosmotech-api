@@ -589,7 +589,7 @@ promtail:
     - effect: NoSchedule
       operator: Exists
 EOF
-helm upgrade --install ${LOKI_RELEASE_NAME} --namespace=${MONITORING_NAMESPACE} grafana/loki-stack -f loki-values.yaml
+helm upgrade --install ${LOKI_RELEASE_NAME} --namespace=${NAMESPACE} grafana/loki-stack -f loki-values.yaml
 
 popd
 
