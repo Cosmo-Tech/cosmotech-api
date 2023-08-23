@@ -4,6 +4,7 @@ package com.cosmotech.organization.service
 
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
+import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.*
@@ -24,6 +25,13 @@ import io.mockk.mockkStatic
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DynamicTest.dynamicTest
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestFactory
+import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.Assert.assertNotEquals
@@ -43,6 +51,7 @@ import org.springframework.test.context.junit4.SpringRunner
 @ExtendWith(SpringExtension::class)
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Suppress("FunctionName")
 class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
 
   private val logger = LoggerFactory.getLogger(OrganizationServiceIntegrationTest::class.java)
@@ -54,7 +63,10 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var organizationApiService: OrganizationApiService
+
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
+
+  val defaultName = "my.account-tester@cosmotech.com"
 
   @BeforeAll
   fun globalSetup() {
@@ -2556,8 +2568,27 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
       numberOfOrganizationReachableByTestUser: Int
   ) {
     val defaultPageSize = csmPlatformProperties.twincache.organization.defaultPageSize
+  @Nested
+  inner class RBACTest {
 
-    testFindAllOrganizations(null, null, numberOfOrganizationReachableByTestUser)
+    @TestFactory
+    fun `test RBAC findAllOrganizations`() =
+        mapOf(
+                ROLE_VIEWER to false,
+                ROLE_EDITOR to false,
+                ROLE_VALIDATOR to false,
+                ROLE_USER to false,
+                ROLE_NONE to true,
+                ROLE_ADMIN to false,
+            )
+            .map { (role, shouldThrow) ->
+              dynamicTest("Test RBAC findAllOrganizations : $role") {
+                every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
+                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                organizationApiService.registerOrganization(
+                    makeOrganizationWithRole("id", defaultName, role))
+
+            testFindAllOrganizations(null, null, numberOfOrganizationReachableByTestUser)
     testFindAllOrganizations(0, null, defaultPageSize)
     testFindAllOrganizations(
         0, numberOfOrganizationCreated, numberOfOrganizationReachableByTestUser)
@@ -2596,13 +2627,12 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     val organizationRegistered = organizationApiService.registerOrganization(organization)
 
     runFindOrganizationByIdAs()
-
-    if (throwException) {
-      assertThrows<CsmAccessForbiddenException> {
+                if (throwException) {
+                  assertThrows<CsmAccessForbiddenException> {
         (organizationApiService.findOrganizationById(organizationRegistered.id!!))
       }
-    } else {
-      assertNotNull(organizationRegistered)
+                } else {
+                  assertNotNull(organizationRegistered)
     }
   }
 
@@ -2626,8 +2656,8 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
 
   /** Run a test with different Organization.User */
   private fun runAsDifferentOrganizationUser() {
-    every { getCurrentAccountIdentifier(any()) } returns OTHER_TEST_USER_ID
-    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.other.user"
+                every { getCurrentAccountIdentifier(any()) } returns OTHER_TEST_USER_ID
+              every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.other.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_ORGANIZATION_USER)
   }
 
@@ -2692,5 +2722,504 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     val organizationList = organizationApiService.findAllOrganizations(page, size)
     logger.info("Organization list retrieved contains : ${organizationList.size} elements")
     assertEquals(expectedResultSize, organizationList.size)
+            }
+
+    @TestFactory
+    fun `test RBAC registerOrganization`() =
+        mapOf(
+                ROLE_VIEWER to false,
+                ROLE_EDITOR to false,
+                ROLE_VALIDATOR to false,
+                ROLE_USER to false,
+                ROLE_NONE to false,
+                ROLE_ADMIN to false,
+            )
+            .map { (role, shouldThrow) ->
+              dynamicTest("Test RBAC registerOrganization : $role") {
+                every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
+                every { getCurrentAccountIdentifier(any()) } returns defaultName
+
+                assertDoesNotThrow {
+                  organizationApiService.registerOrganization(makeOrganization("id", "name"))
+                }
+              }
+            }
+
+    @TestFactory
+    fun `test RBAC findOrganizationById`() =
+        mapOf(
+                ROLE_VIEWER to false,
+                ROLE_EDITOR to false,
+                ROLE_VALIDATOR to true,
+                ROLE_USER to false,
+                ROLE_NONE to true,
+                ROLE_ADMIN to false,
+            )
+            .map { (role, shouldThrow) ->
+              dynamicTest("Test RBAC findOrganizationById : $role") {
+                every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
+                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                val organization =
+                    organizationApiService.registerOrganization(
+                        makeOrganizationWithRole("id", defaultName, role))
+
+                if (shouldThrow) {
+                  assertThrows<CsmAccessForbiddenException> {
+                    organizationApiService.findOrganizationById(organization.id!!)
+                  }
+                } else {
+                  assertDoesNotThrow {
+                    organizationApiService.findOrganizationById(organization.id!!)
+                  }
+                }
+              }
+            }
+
+    @TestFactory
+    fun `test RBAC unregisterOrganization`() =
+        mapOf(
+                ROLE_VIEWER to true,
+                ROLE_EDITOR to true,
+                ROLE_VALIDATOR to true,
+                ROLE_USER to true,
+                ROLE_NONE to true,
+                ROLE_ADMIN to false,
+            )
+            .map { (role, shouldThrow) ->
+              dynamicTest("Test RBAC unregisterOrganization : $role") {
+                every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
+                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                val organization =
+                    organizationApiService.registerOrganization(
+                        makeOrganizationWithRole("id", defaultName, role))
+
+                if (shouldThrow) {
+                  assertThrows<CsmAccessForbiddenException> {
+                    organizationApiService.unregisterOrganization(organization.id!!)
+                  }
+                } else {
+                  assertDoesNotThrow {
+                    organizationApiService.unregisterOrganization(organization.id!!)
+                  }
+                }
+              }
+            }
+
+    @TestFactory
+    fun `test RBAC updateOrganization`() =
+        mapOf(
+                ROLE_VIEWER to true,
+                ROLE_EDITOR to false,
+                ROLE_VALIDATOR to true,
+                ROLE_USER to true,
+                ROLE_NONE to true,
+                ROLE_ADMIN to false,
+            )
+            .map { (role, shouldThrow) ->
+              dynamicTest("Test RBAC updateOrganization : $role") {
+                every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
+                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                val organization =
+                    organizationApiService.registerOrganization(
+                        makeOrganizationWithRole("id", defaultName, role))
+
+                if (shouldThrow) {
+                  assertThrows<CsmAccessForbiddenException> {
+                    organizationApiService.updateOrganization(
+                        organization.id!!, makeOrganization("id", "name"))
+                  }
+                } else {
+                  assertDoesNotThrow {
+                    organizationApiService.updateOrganization(
+                        organization.id!!, makeOrganization("id", "name"))
+                  }
+                }
+              }
+            }
+
+    @TestFactory
+    fun `test RBAC updateTenantCredentialsByOrganizationId`() =
+        mapOf(
+                ROLE_VIEWER to true,
+                ROLE_EDITOR to false,
+                ROLE_VALIDATOR to true,
+                ROLE_USER to true,
+                ROLE_NONE to true,
+                ROLE_ADMIN to false,
+            )
+            .map { (role, shouldThrow) ->
+              dynamicTest("Test RBAC updateTenantCredentialsByOrganizationId : $role") {
+                every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
+                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                val organization =
+                    organizationApiService.registerOrganization(
+                        makeOrganizationWithRole("id", defaultName, role))
+
+                if (shouldThrow) {
+                  assertThrows<CsmAccessForbiddenException> {
+                    organizationApiService.updateTenantCredentialsByOrganizationId(
+                        organization.id!!, mapOf())
+                  }
+                } else {
+                  assertDoesNotThrow {
+                    organizationApiService.updateTenantCredentialsByOrganizationId(
+                        organization.id!!, mapOf())
+                  }
+                }
+              }
+            }
+
+    @TestFactory
+    fun `test RBAC updateStorageByOrganizationId`() =
+        mapOf(
+                ROLE_VIEWER to true,
+                ROLE_EDITOR to false,
+                ROLE_VALIDATOR to true,
+                ROLE_USER to true,
+                ROLE_NONE to true,
+                ROLE_ADMIN to false,
+            )
+            .map { (role, shouldThrow) ->
+              dynamicTest("Test RBAC updateStorageByOrganizationId : $role") {
+                every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
+                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                val organization =
+                    organizationApiService.registerOrganization(
+                        makeOrganizationWithRole("id", defaultName, role))
+
+                if (shouldThrow) {
+                  assertThrows<CsmAccessForbiddenException> {
+                    organizationApiService.updateStorageByOrganizationId(
+                        organization.id!!, OrganizationService())
+                  }
+                } else {
+                  assertDoesNotThrow {
+                    organizationApiService.updateStorageByOrganizationId(
+                        organization.id!!, OrganizationService())
+                  }
+                }
+              }
+            }
+
+    @TestFactory
+    fun `test RBAC updateSolutionsContainerRegistryByOrganizationId`() =
+        mapOf(
+                ROLE_VIEWER to true,
+                ROLE_EDITOR to false,
+                ROLE_VALIDATOR to true,
+                ROLE_USER to true,
+                ROLE_NONE to true,
+                ROLE_ADMIN to false,
+            )
+            .map { (role, shouldThrow) ->
+              dynamicTest("Test RBAC updateSolutionsContainerRegistryByOrganizationId : $role") {
+                every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
+                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                val organization =
+                    organizationApiService.registerOrganization(
+                        makeOrganizationWithRole("id", defaultName, role))
+
+                if (shouldThrow) {
+                  assertThrows<CsmAccessForbiddenException> {
+                    organizationApiService.updateSolutionsContainerRegistryByOrganizationId(
+                        organization.id!!, OrganizationService())
+                  }
+                } else {
+                  assertDoesNotThrow {
+                    organizationApiService.updateSolutionsContainerRegistryByOrganizationId(
+                        organization.id!!, OrganizationService())
+                  }
+                }
+              }
+            }
+
+    @TestFactory
+    fun `test RBAC getAllPermissions`() =
+        mapOf(
+                ROLE_VIEWER to false,
+                ROLE_EDITOR to false,
+                ROLE_VALIDATOR to false,
+                ROLE_USER to false,
+                ROLE_NONE to false,
+                ROLE_ADMIN to false,
+            )
+            .map { (role, shouldThrow) ->
+              dynamicTest("Test RBAC getAllPermissions : $role") {
+                every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
+                every { getCurrentAccountIdentifier(any()) } returns defaultName
+
+                assertDoesNotThrow { organizationApiService.getAllPermissions() }
+              }
+            }
+
+    @TestFactory
+    fun `test RBAC getOrganizationPermissions`() =
+        mapOf(
+                ROLE_VIEWER to false,
+                ROLE_EDITOR to false,
+                ROLE_VALIDATOR to false,
+                ROLE_USER to false,
+                ROLE_NONE to true,
+                ROLE_ADMIN to false,
+            )
+            .map { (role, shouldThrow) ->
+              dynamicTest("Test RBAC getOrganizationPermissions : $role") {
+                every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
+                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                val organization =
+                    organizationApiService.registerOrganization(
+                        makeOrganizationWithRole("id", defaultName, role))
+
+                assertDoesNotThrow {
+                  organizationApiService.getOrganizationPermissions(organization.id!!, role)
+                }
+              }
+            }
+
+    @TestFactory
+    fun `test RBAC getOrganizationSecurity`() =
+        mapOf(
+                ROLE_VIEWER to false,
+                ROLE_EDITOR to false,
+                ROLE_VALIDATOR to true,
+                ROLE_USER to false,
+                ROLE_NONE to true,
+                ROLE_ADMIN to false,
+            )
+            .map { (role, shouldThrow) ->
+              dynamicTest("Test RBAC getOrganizationSecurity : $role") {
+                every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
+                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                val organization =
+                    organizationApiService.registerOrganization(
+                        makeOrganizationWithRole("id", defaultName, role))
+
+                if (shouldThrow) {
+                  assertThrows<CsmAccessForbiddenException> {
+                    organizationApiService.getOrganizationSecurity(organization.id!!)
+                  }
+                } else {
+                  assertDoesNotThrow {
+                    organizationApiService.getOrganizationSecurity(organization.id!!)
+                  }
+                }
+              }
+            }
+
+    @TestFactory
+    fun `test RBAC setOrganizationDefaultSecurity`() =
+        mapOf(
+                ROLE_VIEWER to true,
+                ROLE_EDITOR to true,
+                ROLE_VALIDATOR to true,
+                ROLE_USER to true,
+                ROLE_NONE to true,
+                ROLE_ADMIN to false,
+            )
+            .map { (role, shouldThrow) ->
+              dynamicTest("Test RBAC setOrganizationDefaultSecurity : $role") {
+                every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
+                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                val organization =
+                    organizationApiService.registerOrganization(
+                        makeOrganizationWithRole("id", defaultName, role))
+
+                if (shouldThrow) {
+                  assertThrows<CsmAccessForbiddenException> {
+                    organizationApiService.setOrganizationDefaultSecurity(
+                        organization.id!!, OrganizationRole(role))
+                  }
+                } else {
+                  assertDoesNotThrow {
+                    organizationApiService.setOrganizationDefaultSecurity(
+                        organization.id!!, OrganizationRole(role))
+                  }
+                }
+              }
+            }
+
+    @TestFactory
+    fun `test RBAC addOrganizationAccessControl`() =
+        mapOf(
+                ROLE_VIEWER to true,
+                ROLE_EDITOR to true,
+                ROLE_VALIDATOR to true,
+                ROLE_USER to true,
+                ROLE_NONE to true,
+                ROLE_ADMIN to false,
+            )
+            .map { (role, shouldThrow) ->
+              dynamicTest("Test RBAC addOrganizationAccessControl : $role") {
+                every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
+                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                val organization =
+                    organizationApiService.registerOrganization(
+                        makeOrganizationWithRole("id", defaultName, role))
+
+                if (shouldThrow) {
+                  assertThrows<CsmAccessForbiddenException> {
+                    organizationApiService.addOrganizationAccessControl(
+                        organization.id!!, OrganizationAccessControl("id", role))
+                  }
+                } else {
+                  assertDoesNotThrow {
+                    organizationApiService.addOrganizationAccessControl(
+                        organization.id!!, OrganizationAccessControl("id", role))
+                  }
+                }
+              }
+            }
+
+    @TestFactory
+    fun `test RBAC getOrganizationAccessControl`() =
+        mapOf(
+                ROLE_VIEWER to false,
+                ROLE_EDITOR to false,
+                ROLE_VALIDATOR to true,
+                ROLE_USER to false,
+                ROLE_NONE to true,
+                ROLE_ADMIN to false,
+            )
+            .map { (role, shouldThrow) ->
+              dynamicTest("Test RBAC getOrganizationAccessControl : $role") {
+                every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
+                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                val organization =
+                    organizationApiService.registerOrganization(
+                        makeOrganizationWithRole("id", defaultName, role))
+
+                if (shouldThrow) {
+                  assertThrows<CsmAccessForbiddenException> {
+                    organizationApiService.getOrganizationAccessControl(
+                        organization.id!!, defaultName)
+                  }
+                } else {
+                  assertDoesNotThrow {
+                    organizationApiService.getOrganizationAccessControl(
+                        organization.id!!, defaultName)
+                  }
+                }
+              }
+            }
+
+    @TestFactory
+    fun `test RBAC removeOrganizationAccessControl`() =
+        mapOf(
+                ROLE_VIEWER to true,
+                ROLE_EDITOR to true,
+                ROLE_VALIDATOR to true,
+                ROLE_USER to true,
+                ROLE_NONE to true,
+                ROLE_ADMIN to false,
+            )
+            .map { (role, shouldThrow) ->
+              dynamicTest("Test RBAC removeOrganizationAccessControl : $role") {
+                every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
+                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                val organization =
+                    organizationApiService.registerOrganization(
+                        makeOrganizationWithRole("id", defaultName, role))
+
+                if (shouldThrow) {
+                  assertThrows<CsmAccessForbiddenException> {
+                    organizationApiService.removeOrganizationAccessControl(
+                        organization.id!!, defaultName)
+                  }
+                } else {
+                  organizationApiService.addOrganizationAccessControl(
+                      organization.id!!, OrganizationAccessControl("id", ROLE_ADMIN))
+                  assertDoesNotThrow {
+                    organizationApiService.removeOrganizationAccessControl(
+                        organization.id!!, defaultName)
+                  }
+                }
+              }
+            }
+
+    @TestFactory
+    fun `test RBAC updateOrganizationAccessControl`() =
+        mapOf(
+                ROLE_VIEWER to true,
+                ROLE_EDITOR to true,
+                ROLE_VALIDATOR to true,
+                ROLE_USER to true,
+                ROLE_NONE to true,
+                ROLE_ADMIN to false,
+            )
+            .map { (role, shouldThrow) ->
+              dynamicTest("Test RBAC updateOrganizationAccessControl : $role") {
+                every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
+                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                val organization =
+                    organizationApiService.registerOrganization(
+                        makeOrganizationWithRole("id", defaultName, role))
+
+                if (shouldThrow) {
+                  assertThrows<CsmAccessForbiddenException> {
+                    organizationApiService.updateOrganizationAccessControl(
+                        organization.id!!, defaultName, OrganizationRole(role))
+                  }
+                } else {
+                  assertDoesNotThrow {
+                    organizationApiService.updateOrganizationAccessControl(
+                        organization.id!!, defaultName, OrganizationRole(role))
+                  }
+                }
+              }
+            }
+
+    @TestFactory
+    fun `test RBAC getOrganizationSecurityUsers`() =
+        mapOf(
+                ROLE_VIEWER to false,
+                ROLE_EDITOR to false,
+                ROLE_VALIDATOR to true,
+                ROLE_USER to false,
+                ROLE_NONE to true,
+                ROLE_ADMIN to false,
+            )
+            .map { (role, shouldThrow) ->
+              dynamicTest("Test RBAC getOrganizationSecurityUsers : $role") {
+                every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
+                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                val organization =
+                    organizationApiService.registerOrganization(
+                        makeOrganizationWithRole("id", defaultName, role))
+
+                if (shouldThrow) {
+                  assertThrows<CsmAccessForbiddenException> {
+                    organizationApiService.getOrganizationSecurityUsers(organization.id!!)
+                  }
+                } else {
+                  assertDoesNotThrow {
+                    organizationApiService.getOrganizationSecurityUsers(organization.id!!)
+                  }
+                }
+              }
+            }
+
+    @TestFactory
+    fun `test RBAC importOrganization`() =
+        mapOf(
+                ROLE_VIEWER to false,
+                ROLE_EDITOR to false,
+                ROLE_VALIDATOR to false,
+                ROLE_USER to false,
+                ROLE_NONE to false,
+                ROLE_ADMIN to false,
+            )
+            .map { (role, shouldThrow) ->
+              dynamicTest("Test RBAC importOrganization : $role") {
+                every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
+                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                val organization =
+                    organizationApiService.registerOrganization(
+                        makeOrganizationWithRole("id", defaultName, role))
+
+                assertDoesNotThrow {
+                  organizationApiService.importOrganization(makeOrganization("id", "name"))
+                }
+              }
+            }
   }
 }
