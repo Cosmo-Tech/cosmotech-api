@@ -15,13 +15,17 @@ Class | Method | HTTP request | Description
 *DatasetApi* | [**addOrReplaceDatasetCompatibilityElements**](Apis/DatasetApi.md#addorreplacedatasetcompatibilityelements) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/compatibility | Add Dataset Compatibility elements.
 *DatasetApi* | [**copyDataset**](Apis/DatasetApi.md#copydataset) | **POST** /organizations/{organization_id}/datasets/copy | Copy a Dataset to another Dataset. Source must have a read capable connector and Target a write capable connector.
 *DatasetApi* | [**createDataset**](Apis/DatasetApi.md#createdataset) | **POST** /organizations/{organization_id}/datasets | Create a new Dataset
+*DatasetApi* | [**createSubDataset**](Apis/DatasetApi.md#createsubdataset) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/subdataset | Run a query on a dataset
 *DatasetApi* | [**deleteDataset**](Apis/DatasetApi.md#deletedataset) | **DELETE** /organizations/{organization_id}/datasets/{dataset_id} | Delete a dataset
 *DatasetApi* | [**findAllDatasets**](Apis/DatasetApi.md#findalldatasets) | **GET** /organizations/{organization_id}/datasets | List all Datasets
 *DatasetApi* | [**findDatasetById**](Apis/DatasetApi.md#finddatasetbyid) | **GET** /organizations/{organization_id}/datasets/{dataset_id} | Get the details of a Dataset
+*DatasetApi* | [**getDatasetTwingraphStatus**](Apis/DatasetApi.md#getdatasettwingraphstatus) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/job/{job_id}/status | Get the status of twingraph import
 *DatasetApi* | [**importDataset**](Apis/DatasetApi.md#importdataset) | **POST** /organizations/{organization_id}/datasets/import | Import a new Dataset
+*DatasetApi* | [**refreshDataset**](Apis/DatasetApi.md#refreshdataset) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/refresh | Refresh dataset
 *DatasetApi* | [**removeAllDatasetCompatibilityElements**](Apis/DatasetApi.md#removealldatasetcompatibilityelements) | **DELETE** /organizations/{organization_id}/datasets/{dataset_id}/compatibility | Remove all Dataset Compatibility elements from the Dataset specified
 *DatasetApi* | [**searchDatasets**](Apis/DatasetApi.md#searchdatasets) | **POST** /organizations/{organization_id}/datasets/search | Search Datasets
 *DatasetApi* | [**updateDataset**](Apis/DatasetApi.md#updatedataset) | **PATCH** /organizations/{organization_id}/datasets/{dataset_id} | Update a dataset
+*DatasetApi* | [**uploadTwingraph**](Apis/DatasetApi.md#uploadtwingraph) | **POST** /organizations/{organization_id}/datasets/{dataset_id} | Upload Twingraph with ZIP File
 *OrganizationApi* | [**addOrganizationAccessControl**](Apis/OrganizationApi.md#addorganizationaccesscontrol) | **POST** /organizations/{organization_id}/security/access | Add a control access to the Organization
 *OrganizationApi* | [**findAllOrganizations**](Apis/OrganizationApi.md#findallorganizations) | **GET** /organizations | List all Organizations
 *OrganizationApi* | [**findOrganizationById**](Apis/OrganizationApi.md#findorganizationbyid) | **GET** /organizations/{organization_id} | Get the details of an Organization
@@ -155,8 +159,9 @@ Class | Method | HTTP request | Description
  - [DatasetCompatibility](./Models/DatasetCompatibility.md)
  - [DatasetCopyParameters](./Models/DatasetCopyParameters.md)
  - [DatasetSearch](./Models/DatasetSearch.md)
- - [Dataset_data](./Models/Dataset_data.md)
- - [Dataset_source](./Models/Dataset_source.md)
+ - [DatasetSourceType](./Models/DatasetSourceType.md)
+ - [DatasetTwinGraphInfo](./Models/DatasetTwinGraphInfo.md)
+ - [Dataset_connector](./Models/Dataset_connector.md)
  - [DeleteHistoricalData](./Models/DeleteHistoricalData.md)
  - [GraphProperties](./Models/GraphProperties.md)
  - [Organization](./Models/Organization.md)
@@ -204,6 +209,7 @@ Class | Method | HTTP request | Description
  - [SolutionRole](./Models/SolutionRole.md)
  - [SolutionSecurity](./Models/SolutionSecurity.md)
  - [SourceInfo](./Models/SourceInfo.md)
+ - [SubDatasetGraphQuery](./Models/SubDatasetGraphQuery.md)
  - [TwinGraphBatchResult](./Models/TwinGraphBatchResult.md)
  - [TwinGraphHash](./Models/TwinGraphHash.md)
  - [TwinGraphImport](./Models/TwinGraphImport.md)

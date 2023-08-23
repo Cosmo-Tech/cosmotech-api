@@ -54,10 +54,13 @@ entity Dataset {
     description: String
     ownerId: String
     organizationId: String
+    parentId: String
+    twingraphId: String
+    sourceType: DatasetSourceType
+    source: SourceInfo
+    status: String
     tags: List<String>
-    isMaster: Boolean
-    data: DatasetData
-    source: DatasetSource
+    connector: DatasetConnector
     fragmentsIds: List<String>
     validatorId: String
     compatibility: List<DatasetCompatibility>
@@ -69,27 +72,30 @@ entity DatasetCompatibility {
     maximumVersion: String
 }
 
+entity DatasetConnector {
+    id: String
+    name: String
+    version: String
+    parametersValues: Map
+}
+
 entity DatasetCopyParameters {
     sourceId: String
     targetId: String
     options: Map
 }
 
-entity DatasetData {
-    type: String
-    id: String
-}
-
 entity DatasetSearch {
     * datasetTags: List<String>
 }
 
-entity DatasetSource {
-    type: String
-    id: String
-    name: String
-    version: String
-    parametersValues: Map
+entity DatasetSourceType {
+}
+
+entity DatasetTwinGraphInfo {
+    jobId: String
+    datasetId: String
+    status: String
 }
 
 entity DeleteHistoricalData {
@@ -469,7 +475,12 @@ entity SourceInfo {
     name: String
     * location: String
     path: String
-    * type: String
+}
+
+entity SubDatasetGraphQuery {
+    name: String
+    description: String
+    query: String
 }
 
 entity TwinGraphBatchResult {
@@ -611,8 +622,8 @@ Solution -- "0..*" RunTemplateParameterGroup : parameterGroups
 Solution -- "0..*" RunTemplate : runTemplates
 Solution -- SolutionSecurity : security
 ScenarioComparisonResult -- "0..*" ScenarioChangedParameterValue : changedValues
-Dataset -- DatasetData : data
-Dataset -- DatasetSource : source
+Dataset -- SourceInfo : source
+Dataset -- DatasetConnector : connector
 Dataset -- "0..*" DatasetCompatibility : compatibility
 TwinGraphImport -- SourceInfo : source
 OrganizationSecurity -- "0..*" OrganizationAccessControl : accessControlList

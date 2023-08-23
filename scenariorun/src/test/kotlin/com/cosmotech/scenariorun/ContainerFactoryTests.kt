@@ -150,6 +150,7 @@ class ContainerFactoryTests {
             host = "this_is_a_host",
             port = "6973",
             password = "this_is_a_password",
+            connectorId = "default",
         )
 
     val dedicatedStrategy: IWorkspaceEventHubStrategy =

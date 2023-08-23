@@ -18,8 +18,9 @@ Models/Dataset.md
 Models/DatasetCompatibility.md
 Models/DatasetCopyParameters.md
 Models/DatasetSearch.md
-Models/Dataset_data.md
-Models/Dataset_source.md
+Models/DatasetSourceType.md
+Models/DatasetTwinGraphInfo.md
+Models/Dataset_connector.md
 Models/DeleteHistoricalData.md
 Models/GraphProperties.md
 Models/Organization.md
@@ -67,6 +68,7 @@ Models/SolutionAccessControl.md
 Models/SolutionRole.md
 Models/SolutionSecurity.md
 Models/SourceInfo.md
+Models/SubDatasetGraphQuery.md
 Models/TwinGraphBatchResult.md
 Models/TwinGraphHash.md
 Models/TwinGraphImport.md

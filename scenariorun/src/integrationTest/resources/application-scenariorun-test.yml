@@ -88,6 +88,7 @@ csm:
       password: "my-wonderful-password"
       scenariorun:
         default-page-size: 5
+      connectorId: "twincache"
     rbac:
       enabled: true
     containerRegistry:
