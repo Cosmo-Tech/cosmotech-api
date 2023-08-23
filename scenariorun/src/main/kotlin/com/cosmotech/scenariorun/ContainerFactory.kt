@@ -1502,7 +1502,7 @@ internal fun getMinimalCommonEnvVars(
     val twinCacheInfo = csmPlatformProperties.twincache!!
     twinCacheEnvVars.putAll(
         mapOf(
-            TWIN_CACHE_HOST to "cosmotechredis-master.phoenix.svc.cluster.local",//to (twinCacheInfo.host),
+            TWIN_CACHE_HOST to (twinCacheInfo.host),
             TWIN_CACHE_PORT to (twinCacheInfo.port),
             TWIN_CACHE_PASSWORD to (twinCacheInfo.password),
             TWIN_CACHE_USERNAME to (twinCacheInfo.username),

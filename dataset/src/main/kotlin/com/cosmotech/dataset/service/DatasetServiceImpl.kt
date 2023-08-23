@@ -32,9 +32,7 @@ import com.cosmotech.dataset.domain.DatasetConnector
 import com.cosmotech.dataset.domain.DatasetCopyParameters
 import com.cosmotech.dataset.domain.DatasetSearch
 import com.cosmotech.dataset.domain.DatasetSourceType
-import com.cosmotech.dataset.domain.DatasetTwinGraph
 import com.cosmotech.dataset.domain.DatasetTwinGraphInfo
-import com.cosmotech.dataset.domain.SourceInfo
 import com.cosmotech.dataset.domain.SubDatasetGraphQuery
 import com.cosmotech.dataset.domain.TwinGraphBatchResult
 import com.cosmotech.dataset.repository.DatasetRepository
@@ -66,7 +64,7 @@ const val DEFAULT_GRAPH_ROTATION = "3"
 
 @Service
 @Suppress("TooManyFunctions")
-internal class DatasetServiceImpl(
+class DatasetServiceImpl(
     private val connectorService: ConnectorApiService,
     private val organizationService: OrganizationApiService,
     private val datasetRepository: DatasetRepository,
@@ -77,7 +75,7 @@ internal class DatasetServiceImpl(
 
   override fun findAllDatasets(organizationId: String, page: Int?, size: Int?): List<Dataset> {
     val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
-    var pageable = constructPageRequest(page, size, defaultPageSize)
+    val pageable = constructPageRequest(page, size, defaultPageSize)
     if (pageable != null) {
       return datasetRepository.findByOrganizationId(organizationId, pageable).toList()
     }
@@ -101,20 +99,41 @@ internal class DatasetServiceImpl(
 
   override fun createDataset(organizationId: String, dataset: Dataset): Dataset {
     dataset.takeUnless { it.name.isNullOrBlank() }
-      ?: throw IllegalArgumentException("Name cannot be null or blank")
-    if ( dataset.sourceType in listOf(DatasetSourceType.ADT, DatasetSourceType.Storage) && dataset.source == null) {
-        throw IllegalArgumentException("Source cannot be null for source type 'ADT' or 'Storage'")
+        ?: throw IllegalArgumentException("Name cannot be null or blank")
+
+    dataset.takeUnless {
+      dataset.sourceType in listOf(DatasetSourceType.ADT, DatasetSourceType.Storage) &&
+          dataset.source == null
     }
+        ?: throw IllegalArgumentException(
+            "Source cannot be null for source type 'ADT' or 'Storage'")
+
+    val twingraphId = idGenerator.generate("twingraph")
+    if (dataset.sourceType != null) {
+      dataset.connector =
+          DatasetConnector(
+              id = csmPlatformProperties.twincache.connectorId,
+              parametersValues = mutableMapOf("TWIN_CACHE_NAME" to twingraphId))
+    }
+
+    dataset.takeUnless { it.connector == null || dataset.connector!!.id.isNullOrBlank() }
+        ?: throw IllegalArgumentException("Connector or its ID cannot be null or blank")
+
+    val existingConnector = connectorService.findConnectorById(dataset.connector!!.id!!)
+    logger.debug("Found connector: {}", existingConnector)
 
     val datasetCopy =
         dataset.copy(
             id = idGenerator.generate("dataset"),
-            twingraphId = idGenerator.generate("twingraph"),
+            twingraphId = twingraphId,
             sourceType = dataset.sourceType ?: DatasetSourceType.File,
             status = Dataset.Status.DRAFT,
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
             organizationId = organizationId)
-
+    datasetCopy.connector!!.apply {
+      name = existingConnector.name
+      version = existingConnector.version
+    }
     return datasetRepository.save(datasetCopy)
   }
 
@@ -151,7 +170,6 @@ internal class DatasetServiceImpl(
     }
   }
 
-
   override fun uploadTwingraph(organizationId: String, datasetId: String, body: Resource) {
     val archiverType = ArchiveStreamFactory.detect(body.inputStream.buffered())
     archiverType.takeIf { it == ArchiveStreamFactory.ZIP }
@@ -161,17 +179,14 @@ internal class DatasetServiceImpl(
     val dataset = findDatasetById(organizationId, datasetId)
     dataset.sourceType.takeIf { it == DatasetSourceType.File }
         ?: throw CsmResourceNotFoundException("SourceType Dataset must be 'File'")
-
-    val uploadStatus = getDatasetTwingraphStatus(organizationId, datasetId, dataset.twingraphId!!)
-    dataset.sourceType.takeUnless {
-      it == DatasetSourceType.File && uploadStatus == Dataset.Status.PENDING.value
-    }
+    val twinGraphId =
+        dataset.twingraphId
+            ?: throw CsmResourceNotFoundException("TwingraphId is not defined for the dataset")
+    val uploadStatus = getDatasetTwingraphStatus(organizationId, datasetId, twinGraphId)
+    uploadStatus.takeUnless { it == Dataset.Status.PENDING.value }
         ?: throw CsmResourceNotFoundException("Uploading not yet completed. Wait. Cannot update")
 
-    dataset.apply {
-        sourceType = DatasetSourceType.File
-        status = Dataset.Status.PENDING
-    }
+    dataset.status = Dataset.Status.PENDING
     datasetRepository.save(dataset)
 
     val twingraphId = dataset.twingraphId!!
@@ -213,7 +228,7 @@ internal class DatasetServiceImpl(
       DatasetSourceType.File -> {
         csmJedisPool.resource.use { jedis ->
           if (!jedis.exists(dataset.twingraphId!!.toRedisMetaDataKey())) {
-            return Dataset.Status.PENDING.value
+            Dataset.Status.PENDING.value
           } else {
             dataset
                 .takeIf { it.status == Dataset.Status.PENDING }
@@ -221,7 +236,7 @@ internal class DatasetServiceImpl(
                   this.status = Dataset.Status.COMPLETED
                   datasetRepository.save(this)
                 }
-            return Dataset.Status.COMPLETED.value
+            Dataset.Status.COMPLETED.value
           }
         }
       }
@@ -233,49 +248,46 @@ internal class DatasetServiceImpl(
         dataset
             .takeIf { it.status == Dataset.Status.PENDING }
             ?.apply {
-                when( twingraphImportJobInfoRequest.response) {
-                    "Succeeded" -> status = Dataset.Status.COMPLETED
-                    "Error" -> status = Dataset.Status.ERROR
-                }
-                datasetRepository.save(this)
+              when (twingraphImportJobInfoRequest.response) {
+                "Succeeded" -> status = Dataset.Status.COMPLETED
+                "Error" -> status = Dataset.Status.ERROR
+              }
+              datasetRepository.save(this)
             }
-        return twingraphImportJobInfoRequest.response ?: "Unknown"
+        twingraphImportJobInfoRequest.response ?: "Unknown"
       }
     }
   }
 
-  override fun refreshDataset(
-      organizationId: String,
-      datasetId: String,
-      body: Any?
-  ): DatasetTwinGraphInfo {
-      val dataset = findDatasetById(organizationId, datasetId)
-      dataset.takeUnless { it.sourceType == DatasetSourceType.File }
-          ?: throw CsmResourceNotFoundException("Cannot be applied to source type 'File'")
-      dataset.takeUnless { it.status == Dataset.Status.PENDING }
-          ?.apply {
-            this.status = Dataset.Status.PENDING
-            datasetRepository.save(this)
-          }
+  override fun refreshDataset(organizationId: String, datasetId: String): DatasetTwinGraphInfo {
+    val dataset = findDatasetById(organizationId, datasetId)
+    dataset.takeUnless { it.sourceType == DatasetSourceType.File }
+        ?: throw CsmResourceNotFoundException("Cannot be applied to source type 'File'")
+    dataset
+        .takeUnless { it.status == Dataset.Status.PENDING }
+        ?.apply {
+          this.status = Dataset.Status.PENDING
+          datasetRepository.save(this)
+        }
 
-      val requestJobId = this.idGenerator.generate(scope = "graphdataimport", prependPrefix = "gdi-")
-      val graphImportEvent =
-          TwingraphImportEvent(
-              this,
-              requestJobId,
-              organizationId,
-              dataset.twingraphId!!,
-              dataset.source!!.name ?: "",
-              dataset.source!!.location,
-              dataset.source!!.path ?: "",
-              dataset.sourceType!!.value,
-              "1")
-      this.eventPublisher.publishEvent(graphImportEvent)
-      logger.debug("refreshDataset={}", graphImportEvent.response)
-      return DatasetTwinGraphInfo(
-          jobId = requestJobId, datasetId = dataset.id, status = dataset.status?.value)
+    val requestJobId = this.idGenerator.generate(scope = "graphdataimport", prependPrefix = "gdi-")
+    val graphImportEvent =
+        TwingraphImportEvent(
+            this,
+            requestJobId,
+            organizationId,
+            dataset.twingraphId
+                ?: throw CsmResourceNotFoundException("TwingraphId is not defined for the dataset"),
+            dataset.source!!.name ?: "",
+            dataset.source!!.location,
+            dataset.source!!.path ?: "",
+            dataset.sourceType!!.value,
+            "1")
+    this.eventPublisher.publishEvent(graphImportEvent)
+    logger.debug("refreshDataset={}", graphImportEvent.response)
+    return DatasetTwinGraphInfo(
+        jobId = requestJobId, datasetId = dataset.id, status = dataset.status?.value)
   }
-
 
   override fun deleteDataset(organizationId: String, datasetId: String) {
     val dataset = findDatasetById(organizationId, datasetId)

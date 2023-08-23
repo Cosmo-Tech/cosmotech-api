@@ -7,13 +7,17 @@ Method | HTTP request | Description
 [**addOrReplaceDatasetCompatibilityElements**](DatasetApi.md#addOrReplaceDatasetCompatibilityElements) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/compatibility | Add Dataset Compatibility elements.
 [**copyDataset**](DatasetApi.md#copyDataset) | **POST** /organizations/{organization_id}/datasets/copy | Copy a Dataset to another Dataset. Source must have a read capable connector and Target a write capable connector.
 [**createDataset**](DatasetApi.md#createDataset) | **POST** /organizations/{organization_id}/datasets | Create a new Dataset
+[**createSubDataset**](DatasetApi.md#createSubDataset) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/subdataset | Run a query on a dataset
 [**deleteDataset**](DatasetApi.md#deleteDataset) | **DELETE** /organizations/{organization_id}/datasets/{dataset_id} | Delete a dataset
 [**findAllDatasets**](DatasetApi.md#findAllDatasets) | **GET** /organizations/{organization_id}/datasets | List all Datasets
 [**findDatasetById**](DatasetApi.md#findDatasetById) | **GET** /organizations/{organization_id}/datasets/{dataset_id} | Get the details of a Dataset
+[**getDatasetTwingraphStatus**](DatasetApi.md#getDatasetTwingraphStatus) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/job/{job_id}/status | Get the status of twingraph import
 [**importDataset**](DatasetApi.md#importDataset) | **POST** /organizations/{organization_id}/datasets/import | Import a new Dataset
+[**refreshDataset**](DatasetApi.md#refreshDataset) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/refresh | Refresh dataset
 [**removeAllDatasetCompatibilityElements**](DatasetApi.md#removeAllDatasetCompatibilityElements) | **DELETE** /organizations/{organization_id}/datasets/{dataset_id}/compatibility | Remove all Dataset Compatibility elements from the Dataset specified
 [**searchDatasets**](DatasetApi.md#searchDatasets) | **POST** /organizations/{organization_id}/datasets/search | Search Datasets
 [**updateDataset**](DatasetApi.md#updateDataset) | **PATCH** /organizations/{organization_id}/datasets/{dataset_id} | Update a dataset
+[**uploadTwingraph**](DatasetApi.md#uploadTwingraph) | **POST** /organizations/{organization_id}/datasets/{dataset_id} | Upload Twingraph with ZIP File
 
 
 <a name="addOrReplaceDatasetCompatibilityElements"></a>
@@ -95,6 +99,35 @@ Name | Type | Description  | Notes
 - **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
+<a name="createSubDataset"></a>
+# **createSubDataset**
+> Dataset createSubDataset(organization\_id, dataset\_id, SubDatasetGraphQuery)
+
+Run a query on a dataset
+
+    Run a query on a dataset
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **dataset\_id** | **String**| the Dataset identifier | [default to null]
+ **SubDatasetGraphQuery** | [**SubDatasetGraphQuery**](../Models/SubDatasetGraphQuery.md)| the query to run |
+
+### Return type
+
+[**Dataset**](../Models/Dataset.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
 <a name="deleteDataset"></a>
 # **deleteDataset**
 > deleteDataset(organization\_id, dataset\_id)
@@ -174,6 +207,35 @@ Name | Type | Description  | Notes
 - **Content-Type**: Not defined
 - **Accept**: application/json
 
+<a name="getDatasetTwingraphStatus"></a>
+# **getDatasetTwingraphStatus**
+> String getDatasetTwingraphStatus(organization\_id, dataset\_id, job\_id)
+
+Get the status of twingraph import
+
+    Get the status of a twingraph import
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **dataset\_id** | **String**| the dataset identifier | [default to null]
+ **job\_id** | **String**| the job identifier | [default to null]
+
+### Return type
+
+**String**
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/yaml, application/json
+
 <a name="importDataset"></a>
 # **importDataset**
 > Dataset importDataset(organization\_id, Dataset)
@@ -198,6 +260,34 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
 - **Content-Type**: application/json
+- **Accept**: application/json
+
+<a name="refreshDataset"></a>
+# **refreshDataset**
+> DatasetTwinGraphInfo refreshDataset(organization\_id, dataset\_id)
+
+Refresh dataset
+
+    Refresh ADT, Storage dataset
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **dataset\_id** | **String**| the Dataset identifier | [default to null]
+
+### Return type
+
+[**DatasetTwinGraphInfo**](../Models/DatasetTwinGraphInfo.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
 - **Accept**: application/json
 
 <a name="removeAllDatasetCompatibilityElements"></a>
@@ -280,4 +370,33 @@ Name | Type | Description  | Notes
 
 - **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
+
+<a name="uploadTwingraph"></a>
+# **uploadTwingraph**
+> uploadTwingraph(organization\_id, dataset\_id, body)
+
+Upload Twingraph with ZIP File
+
+    Upload Twingraph ZIP
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **dataset\_id** | **String**| the Dataset identifier | [default to null]
+ **body** | **File**|  |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/octet-stream
+- **Accept**: Not defined
 

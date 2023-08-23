@@ -89,4 +89,5 @@ csm:
       password: "my-wonderful-password"
       organization:
         default-page-size: 5
+      connectorId: "twincache"
 

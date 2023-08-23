@@ -339,12 +339,6 @@ paths:
         - dataset
       summary: Refresh dataset
       description: Refresh ADT, Storage dataset
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              nullable: true
       responses:
         '200':
           description: Successful response
