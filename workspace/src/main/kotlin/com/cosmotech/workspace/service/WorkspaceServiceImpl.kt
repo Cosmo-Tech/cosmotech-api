@@ -35,7 +35,6 @@ import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.api.OrganizationApiService
-import com.cosmotech.organization.repository.OrganizationRepository
 import com.cosmotech.organization.service.getRbac
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.workspace.api.WorkspaceApiService
@@ -71,15 +70,12 @@ internal class WorkspaceServiceImpl(
     private val csmRbac: CsmRbac,
     private val resourceScanner: ResourceScanner,
     private val secretManager: SecretManager,
-    private val organizationRepository: OrganizationRepository,
     private val workspaceRepository: WorkspaceRepository
 ) : CsmPhoenixService(), WorkspaceApiService {
 
   override fun findAllWorkspaces(organizationId: String, page: Int?, size: Int?): List<Workspace> {
-    val organization =
-        organizationRepository.findById(organizationId).orElseThrow {
-          CsmResourceNotFoundException("Organization $organizationId")
-        }
+    // The security check is done in organization service
+    val organization = organizationService.findOrganizationById(organizationId)
     val isAdmin = csmRbac.isAdmin(organization.getRbac(), getCommonRolesDefinition())
     val defaultPageSize = csmPlatformProperties.twincache.workspace.defaultPageSize
     var result: List<Workspace>
