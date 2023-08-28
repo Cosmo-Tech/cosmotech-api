@@ -343,8 +343,7 @@ internal class ScenarioServiceImpl(
       page: Int?,
       size: Int?
   ): List<Scenario> {
-    val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.getRbac(), PERMISSION_READ)
+    workspaceService.findWorkspaceById(organizationId, workspaceId)
     val defaultPageSize = csmPlatformProperties.twincache.scenario.defaultPageSize
     var pageable = constructPageRequest(page, size, defaultPageSize)
     if (pageable != null) {
@@ -499,7 +498,6 @@ internal class ScenarioServiceImpl(
       scenarioId: String
   ): ScenarioValidationStatus {
     val scenario = this.findScenarioById(organizationId, workspaceId, scenarioId)
-    csmRbac.verify(scenario.getRbac(), PERMISSION_READ, scenarioPermissions)
     return scenario.validationStatus ?: ScenarioValidationStatus.Unknown
   }
 
