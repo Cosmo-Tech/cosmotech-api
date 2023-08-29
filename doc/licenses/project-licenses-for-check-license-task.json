@@ -78,8 +78,18 @@
             ]
         },
         {
+            "moduleName": "com.azure:azure-containers-containerregistry",
+            "moduleVersion": "1.1.0",
+            "moduleLicenses": [
+                {
+                    "moduleLicense": "MIT License",
+                    "moduleLicenseUrl": "https://opensource.org/licenses/MIT"
+                }
+            ]
+        },
+        {
             "moduleName": "com.azure:azure-core",
-            "moduleVersion": "1.33.0",
+            "moduleVersion": "1.39.0",
             "moduleUrls": [
                 "https://github.com/Azure/azure-sdk-for-java"
             ],
@@ -105,7 +115,7 @@
         },
         {
             "moduleName": "com.azure:azure-core-http-netty",
-            "moduleVersion": "1.12.6",
+            "moduleVersion": "1.13.3",
             "moduleUrls": [
                 "https://github.com/Azure/azure-sdk-for-java"
             ],
@@ -119,6 +129,19 @@
         {
             "moduleName": "com.azure:azure-identity",
             "moduleVersion": "1.6.1",
+            "moduleUrls": [
+                "https://github.com/Azure/azure-sdk-for-java"
+            ],
+            "moduleLicenses": [
+                {
+                    "moduleLicense": "MIT License",
+                    "moduleLicenseUrl": "https://opensource.org/licenses/MIT"
+                }
+            ]
+        },
+        {
+            "moduleName": "com.azure:azure-json",
+            "moduleVersion": "1.0.1",
             "moduleUrls": [
                 "https://github.com/Azure/azure-sdk-for-java"
             ],
@@ -396,7 +419,7 @@
         },
         {
             "moduleName": "com.github.Cosmo-Tech:cosmotech-api-azure",
-            "moduleVersion": "0.1.11-SNAPSHOT",
+            "moduleVersion": "0.1.12-SNAPSHOT",
             "moduleUrls": [
                 "https://github.com/Cosmo-Tech/cosmotech-api-azure"
             ],
@@ -409,7 +432,7 @@
         },
         {
             "moduleName": "com.github.Cosmo-Tech:cosmotech-api-common",
-            "moduleVersion": "0.1.49-SNAPSHOT",
+            "moduleVersion": "0.1.51-SNAPSHOT",
             "moduleUrls": [
                 "https://github.com/Cosmo-Tech/cosmotech-api-common"
             ],
@@ -422,7 +445,20 @@
         },
         {
             "moduleName": "com.github.docker-java:docker-java-api",
-            "moduleVersion": "3.2.13",
+            "moduleVersion": "3.3.2",
+            "moduleUrls": [
+                "https://github.com/docker-java/docker-java"
+            ],
+            "moduleLicenses": [
+                {
+                    "moduleLicense": "Apache License, Version 2.0",
+                    "moduleLicenseUrl": "http://www.apache.org/licenses/LICENSE-2.0"
+                }
+            ]
+        },
+        {
+            "moduleName": "com.github.docker-java:docker-java-core",
+            "moduleVersion": "3.3.2",
             "moduleUrls": [
                 "https://github.com/docker-java/docker-java"
             ],
@@ -435,7 +471,20 @@
         },
         {
             "moduleName": "com.github.docker-java:docker-java-transport",
-            "moduleVersion": "3.2.13",
+            "moduleVersion": "3.3.2",
+            "moduleUrls": [
+                "https://github.com/docker-java/docker-java"
+            ],
+            "moduleLicenses": [
+                {
+                    "moduleLicense": "Apache License, Version 2.0",
+                    "moduleLicenseUrl": "http://www.apache.org/licenses/LICENSE-2.0"
+                }
+            ]
+        },
+        {
+            "moduleName": "com.github.docker-java:docker-java-transport-httpclient5",
+            "moduleVersion": "3.3.2",
             "moduleUrls": [
                 "https://github.com/docker-java/docker-java"
             ],
@@ -2203,7 +2252,7 @@
         },
         {
             "moduleName": "net.java.dev.jna:jna",
-            "moduleVersion": "5.8.0",
+            "moduleVersion": "5.12.1",
             "moduleUrls": [
                 "https://github.com/java-native-access/jna"
             ],
@@ -2213,8 +2262,8 @@
                     "moduleLicenseUrl": "http://www.apache.org/licenses/LICENSE-2.0"
                 },
                 {
-                    "moduleLicense": "LGPL, version 2.1",
-                    "moduleLicenseUrl": "http://www.gnu.org/licenses/licenses.html"
+                    "moduleLicense": "GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1",
+                    "moduleLicenseUrl": "https://www.gnu.org/licenses/lgpl-2.1"
                 }
             ]
         },

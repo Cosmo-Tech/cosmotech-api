@@ -301,6 +301,7 @@ entity ScenarioRun {
     runTemplateId: String
     computeSize: String
     sdkVersion: String
+    createdAt: String
     noDataIngestionState: Boolean
     datasetList: List<String>
     parametersValues: List<RunTemplateParameterValue>
