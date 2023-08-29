@@ -51,11 +51,11 @@ export REQUEUE_TIME="${ARGO_REQUEUE_TIME:-1s}"
 export ARGO_RELEASE_NAME=argocsmv2
 export MINIO_RELEASE_NAME=miniocsmv2
 export POSTGRES_RELEASE_NAME=postgrescsmv2
-export ARGO_VERSION="0.16.6"
+export ARGO_VERSION="0.32.2"
 export MINIO_VERSION="12.1.3"
 export POSTGRESQL_VERSION="11.6.12"
 export VERSION_REDIS="17.3.14"
-export VERSION_REDIS_COSMOTECH="1.0.2"
+export VERSION_REDIS_COSMOTECH="1.0.7"
 export VERSION_REDIS_INSIGHT="0.1.0"
 export INGRESS_NGINX_VERSION="4.2.5"
 export PROMETHEUS_STACK_VERSION="45.0.0"
@@ -210,11 +210,11 @@ master:
     cosmotech.com/tier: "db"
   resources:
     requests:
-      cpu: 500m
-      memory: 512Mi
+      cpu: 1200m
+      memory: 4Gi
     limits:
-      cpu: 1000m
-      memory: 1024Mi
+      cpu: 1200m
+      memory: 4Gi
 replica:
   replicaCount: 1
   podLabels:
@@ -228,11 +228,11 @@ replica:
     "cosmotech.com/tier": "db"
   resources:
     requests:
-      cpu: 500m
-      memory: 512Mi
+      cpu: 1200m
+      memory: 4Gi
     limits:
-      cpu: 1000m
-      memory: 1024Mi
+      cpu: 1200m
+      memory: 4Gi
 
 EOF
 
