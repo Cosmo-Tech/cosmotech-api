@@ -66,7 +66,7 @@ jobs:
 
       - name: Prepare values.yaml
         env:
-          VALUES_YAML: "${{ secrets.STAGING_ENV_VALUES_YAML_112022_2 }}"
+          VALUES_YAML: "${{ secrets.STAGING_ENV_VALUES_YAML_082023 }}"
         run: |
           echo "${VALUES_YAML}" > /tmp/values_for_environment.yaml
 
