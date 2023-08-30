@@ -5,10 +5,12 @@ package com.cosmotech.dataset.service
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.events.TwingraphImportJobInfoRequest
+import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.id.CsmIdGenerator
 import com.cosmotech.api.rbac.CsmAdmin
 import com.cosmotech.api.rbac.CsmRbac
+import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -383,5 +385,38 @@ class DatasetServiceImplTests {
     verify(exactly = 1) { datasetRepository.save(any()) }
     assertEquals(dataset.id, datasetInfo.datasetId)
     assertEquals(dataset.status!!.value, datasetInfo.status)
+  }
+
+  @Test
+  fun `deleteDataset should throw CsmResourceNotFoundException when Dataset is not found`() {
+    every { datasetRepository.findById(DATASET_ID) } returns Optional.empty()
+    assertThrows<CsmResourceNotFoundException> {
+      datasetService.deleteDataset(ORGANIZATION_ID, DATASET_ID)
+    }
+  }
+
+    @Test
+    fun  `deleteDataset should throw CsmAccessForbiddenException`() {
+        val dataset = baseDataset()
+        every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+        every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "my.account-tester"
+        assertThrows<CsmAccessForbiddenException> {
+            datasetService.deleteDataset(ORGANIZATION_ID, DATASET_ID)
+        }
+    }
+
+  @Test
+  fun  `deleteDataset should delete Dataset and its twingraph`() {
+    val dataset = baseDataset().copy(
+        twingraphId = "twingraphId",
+    )
+    every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+    every { getCurrentAuthenticatedRoles(csmPlatformProperties) } returns listOf(ROLE_PLATFORM_ADMIN)
+    every { csmJedisPool.resource.exists(any<String>()) } returns true
+    every { csmJedisPool.resource.del(any<String>()) } returns 1
+    every { datasetRepository.delete(any()) } returns Unit
+    datasetService.deleteDataset(ORGANIZATION_ID, DATASET_ID)
+    verify(exactly = 1) { datasetRepository.delete(any()) }
+    verify(exactly = 1) { csmJedisPool.resource.del(any<String>()) }
   }
 }

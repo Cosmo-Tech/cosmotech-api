@@ -299,6 +299,11 @@ class DatasetServiceImpl(
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
     }
     datasetRepository.delete(dataset)
+    csmJedisPool.resource.use { jedis ->
+      if (jedis.exists(dataset.twingraphId!!.toRedisMetaDataKey())) {
+        jedis.del(dataset.twingraphId!!.toRedisMetaDataKey())
+      }
+    }
   }
 
   override fun updateDataset(organizationId: String, datasetId: String, dataset: Dataset): Dataset {
