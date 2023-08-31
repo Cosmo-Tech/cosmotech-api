@@ -33,9 +33,11 @@ import com.cosmotech.dataset.domain.DatasetCopyParameters
 import com.cosmotech.dataset.domain.DatasetSearch
 import com.cosmotech.dataset.domain.DatasetSourceType
 import com.cosmotech.dataset.domain.DatasetTwinGraphInfo
+import com.cosmotech.dataset.domain.DatasetTwinGraphQuery
 import com.cosmotech.dataset.domain.SubDatasetGraphQuery
 import com.cosmotech.dataset.domain.TwinGraphBatchResult
 import com.cosmotech.dataset.repository.DatasetRepository
+import com.cosmotech.dataset.utils.toJsonString
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.service.getRbac
 import com.redislabs.redisgraph.RedisGraph
@@ -349,6 +351,22 @@ class DatasetServiceImpl(
     } else {
       existingDataset
     }
+  }
+
+  override fun twingraphQuery(
+      organizationId: String,
+      datasetId: String,
+      datasetTwinGraphQuery: DatasetTwinGraphQuery
+  ): String {
+    val dataset = findDatasetById(organizationId, datasetId)
+    dataset.takeUnless { it.twingraphId.isNullOrBlank() }
+        ?: throw CsmResourceNotFoundException("TwingraphId is not defined for the dataset")
+    val resultSet =
+        csmRedisGraph.query(
+            getLastVersion(dataset.twingraphId!!),
+            datasetTwinGraphQuery.query,
+            csmPlatformProperties.twincache.queryTimeout)
+    return resultSet.toJsonString()
   }
 
   override fun addOrReplaceDatasetCompatibilityElements(

@@ -2409,19 +2409,6 @@
             ]
         },
         {
-            "moduleName": "org.apache.commons:commons-text",
-            "moduleVersion": "1.9",
-            "moduleUrls": [
-                "https://commons.apache.org/proper/commons-text"
-            ],
-            "moduleLicenses": [
-                {
-                    "moduleLicense": "Apache License, Version 2.0",
-                    "moduleLicenseUrl": "https://www.apache.org/licenses/LICENSE-2.0"
-                }
-            ]
-        },
-        {
             "moduleName": "org.apache.httpcomponents.client5:httpclient5",
             "moduleVersion": "5.1.4",
             "moduleLicenses": [

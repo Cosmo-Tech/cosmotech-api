@@ -346,6 +346,44 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DatasetTwinGraphInfo'
+
+  /organizations/{organization_id}/datasets/{dataset_id}/twingraph:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: dataset_id
+        in: path
+        description: the Dataset identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: twingraphQuery
+      tags:
+        - dataset
+      summary: Run a query on a graph instance and return the result as a json
+      description: Run a query on a graph instance and return the result as a json
+      requestBody:
+        description: the query to run
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DatasetTwinGraphQuery'
+            examples:
+              GetAllNodes:
+                $ref: '#/components/examples/TwinGraphGetAllNodes'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: string
   /organizations/{organization_id}/datasets/{dataset_id}/job/{job_id}/status:
     parameters:
       - name: organization_id
@@ -882,6 +920,15 @@ components:
         status:
           type: string
           description: Twingraph status
+    DatasetTwinGraphQuery:
+      type: object
+      description: a twin graph query in cypher language
+      properties:
+        query:
+          type: string
+          description: the query in cypher language
+      required:
+        - query
     DatasetCompatibility:
       type: object
       description: a Dataset compatibility constraint to a Solution version open range
@@ -1243,4 +1290,8 @@ components:
           name: "my-storage-account-name"
           location: "my-container-name"
           path: "my-data-folder"
-
+    TwinGraphGetAllNodes:
+      summary: Get all nodes query
+      description: Get all nodes query (be careful if you want to query large graph)
+      value:
+        query: "MATCH(n) RETURN n"

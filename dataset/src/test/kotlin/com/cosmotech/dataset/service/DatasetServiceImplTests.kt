@@ -18,13 +18,15 @@ import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetConnector
 import com.cosmotech.dataset.domain.DatasetSourceType
+import com.cosmotech.dataset.domain.DatasetTwinGraphQuery
 import com.cosmotech.dataset.domain.SourceInfo
 import com.cosmotech.dataset.domain.SubDatasetGraphQuery
 import com.cosmotech.dataset.repository.DatasetRepository
+import com.cosmotech.dataset.utils.toJsonString
 import com.cosmotech.organization.api.OrganizationApiService
 import com.redislabs.redisgraph.RedisGraph
+import com.redislabs.redisgraph.ResultSet
 import io.mockk.MockKAnnotations
-import io.mockk.MockKSettings.relaxed
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
@@ -34,8 +36,8 @@ import io.mockk.mockk
 import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
 import io.mockk.verify
+import io.mockk.verifyAll
 import java.io.File
-import java.lang.IllegalArgumentException
 import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -395,28 +397,68 @@ class DatasetServiceImplTests {
     }
   }
 
-    @Test
-    fun  `deleteDataset should throw CsmAccessForbiddenException`() {
-        val dataset = baseDataset()
-        every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
-        every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "my.account-tester"
-        assertThrows<CsmAccessForbiddenException> {
-            datasetService.deleteDataset(ORGANIZATION_ID, DATASET_ID)
-        }
+  @Test
+  fun `deleteDataset should throw CsmAccessForbiddenException`() {
+    val dataset = baseDataset()
+    every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "my.account-tester"
+    assertThrows<CsmAccessForbiddenException> {
+      datasetService.deleteDataset(ORGANIZATION_ID, DATASET_ID)
     }
+  }
 
   @Test
-  fun  `deleteDataset should delete Dataset and its twingraph`() {
-    val dataset = baseDataset().copy(
-        twingraphId = "twingraphId",
-    )
+  fun `deleteDataset should delete Dataset and its twingraph`() {
+    val dataset =
+        baseDataset()
+            .copy(
+                twingraphId = "twingraphId",
+            )
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
-    every { getCurrentAuthenticatedRoles(csmPlatformProperties) } returns listOf(ROLE_PLATFORM_ADMIN)
+    every { getCurrentAuthenticatedRoles(csmPlatformProperties) } returns
+        listOf(ROLE_PLATFORM_ADMIN)
     every { csmJedisPool.resource.exists(any<String>()) } returns true
     every { csmJedisPool.resource.del(any<String>()) } returns 1
     every { datasetRepository.delete(any()) } returns Unit
     datasetService.deleteDataset(ORGANIZATION_ID, DATASET_ID)
     verify(exactly = 1) { datasetRepository.delete(any()) }
     verify(exactly = 1) { csmJedisPool.resource.del(any<String>()) }
+  }
+
+  @Test
+  fun `twingraphQuery should call query and set data to Redis`() {
+    val dataset =
+        baseDataset()
+            .copy(
+                twingraphId = "graphId",
+            )
+    every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+    every { csmPlatformProperties.twincache.queryBulkTTL } returns 1000L
+
+    every { csmJedisPool.resource.exists(any<String>()) } returns true
+    every { csmJedisPool.resource.hgetAll(any<String>()) } returns
+        mapOf("graphName" to "graphName", "graphRotation" to "2")
+
+    every { csmRedisGraph.query(any(), any(), any<Long>()) } returns mockEmptyResultSet()
+
+    val twinGraphQuery = DatasetTwinGraphQuery("MATCH(n) RETURN n")
+    datasetService.twingraphQuery(ORGANIZATION_ID, DATASET_ID, twinGraphQuery)
+
+    verifyAll {
+      csmJedisPool.resource.exists(any<String>())
+      csmRedisGraph.query(any(), any(), any<Long>())
+      csmJedisPool.resource.hgetAll(any<String>())
+      csmJedisPool.resource.close()
+    }
+  }
+
+  private fun mockEmptyResultSet(): ResultSet {
+    val resultSet = mockk<ResultSet>()
+    every { resultSet.toJsonString() } returns "[]"
+    every { resultSet.iterator() } returns
+        mockk<MutableIterator<com.redislabs.redisgraph.Record>> {
+          every { hasNext() } returns false
+        }
+    return resultSet
   }
 }
