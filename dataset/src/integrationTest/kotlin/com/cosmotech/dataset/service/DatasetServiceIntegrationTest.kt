@@ -18,7 +18,10 @@ import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetCompatibility
 import com.cosmotech.dataset.domain.DatasetConnector
 import com.cosmotech.dataset.domain.DatasetSearch
+import com.cosmotech.organization.domain.Organization
 import com.redis.om.spring.RediSearchIndexer
+import com.redis.testcontainers.RedisStackContainer
+import com.redislabs.redisgraph.impl.api.RedisGraph
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
@@ -38,6 +41,8 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
+import org.springframework.test.util.ReflectionTestUtils
+import redis.clients.jedis.JedisPool
 
 @ActiveProfiles(profiles = ["dataset-test"])
 @ExtendWith(MockKExtension::class)
@@ -68,6 +73,10 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   lateinit var registeredDataset1: Dataset
   lateinit var retrievedDataset1: Dataset
 
+  lateinit var jedisPool: JedisPool
+  lateinit var redisGraph: RedisGraph
+  lateinit var organization: Organization
+
   @BeforeEach
   fun setUp() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
@@ -80,6 +89,14 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     dataset1 = mockDataset("d-dataset-1", "dataset-1")
     dataset2 = mockDataset("d-dataset-2", "dataset-2")
+
+    val context = getContext(redisStackServer)
+    val containerIp =
+        (context.server as RedisStackContainer).containerInfo.networkSettings.ipAddress
+    jedisPool = JedisPool(containerIp, 6379)
+    redisGraph = RedisGraph(jedisPool)
+    ReflectionTestUtils.setField(datasetApiService, "csmJedisPool", jedisPool)
+    ReflectionTestUtils.setField(datasetApiService, "csmRedisGraph", redisGraph)
   }
 
   fun mockDataset(id: String, name: String): Dataset {
@@ -240,19 +257,19 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     logger.info("should find all datasets and assert there are $numberOfDatasets")
-    var datasetList = datasetApiService.findAllDatasets(organizationId!!, null, null)
+    var datasetList = datasetApiService.findAllDatasets(organizationId, null, null)
     assertEquals(numberOfDatasets, datasetList.size)
 
     logger.info("should find all datasets and assert it equals defaultPageSize: $defaultPageSize")
-    datasetList = datasetApiService.findAllDatasets(organizationId!!, 0, null)
+    datasetList = datasetApiService.findAllDatasets(organizationId, 0, null)
     assertEquals(defaultPageSize, datasetList.size)
 
     logger.info("should find all datasets and assert there are expected size: $expectedSize")
-    datasetList = datasetApiService.findAllDatasets(organizationId!!, 0, expectedSize)
+    datasetList = datasetApiService.findAllDatasets(organizationId, 0, expectedSize)
     assertEquals(expectedSize, datasetList.size)
 
     logger.info("should find all solutions and assert it returns the second / last page")
-    datasetList = datasetApiService.findAllDatasets(organizationId!!, 1, expectedSize)
+    datasetList = datasetApiService.findAllDatasets(organizationId, 1, expectedSize)
     assertEquals(numberOfDatasets - expectedSize, datasetList.size)
   }
 
@@ -263,17 +280,17 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("Should throw IllegalArgumentException when page and size are zeros")
     assertThrows<IllegalArgumentException> {
-      datasetApiService.findAllDatasets(organizationId!!, 0, 0)
+      datasetApiService.findAllDatasets(organizationId, 0, 0)
     }
 
     logger.info("Should throw IllegalArgumentException when page is negative")
     assertThrows<IllegalArgumentException> {
-      datasetApiService.findAllDatasets(organizationId!!, -1, 10)
+      datasetApiService.findAllDatasets(organizationId, -1, 10)
     }
 
     logger.info("Should throw IllegalArgumentException when size is negative")
     assertThrows<IllegalArgumentException> {
-      datasetApiService.findAllDatasets(organizationId!!, 0, -1)
+      datasetApiService.findAllDatasets(organizationId, 0, -1)
     }
   }
 }

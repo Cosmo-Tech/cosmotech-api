@@ -20,6 +20,7 @@ Models/DatasetCopyParameters.md
 Models/DatasetSearch.md
 Models/DatasetSourceType.md
 Models/DatasetTwinGraphInfo.md
+Models/DatasetTwinGraphQuery.md
 Models/Dataset_connector.md
 Models/DeleteHistoricalData.md
 Models/GraphProperties.md

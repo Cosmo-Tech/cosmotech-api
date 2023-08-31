@@ -24,6 +24,7 @@ Class | Method | HTTP request | Description
 *DatasetApi* | [**refreshDataset**](Apis/DatasetApi.md#refreshdataset) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/refresh | Refresh dataset
 *DatasetApi* | [**removeAllDatasetCompatibilityElements**](Apis/DatasetApi.md#removealldatasetcompatibilityelements) | **DELETE** /organizations/{organization_id}/datasets/{dataset_id}/compatibility | Remove all Dataset Compatibility elements from the Dataset specified
 *DatasetApi* | [**searchDatasets**](Apis/DatasetApi.md#searchdatasets) | **POST** /organizations/{organization_id}/datasets/search | Search Datasets
+*DatasetApi* | [**twingraphQuery**](Apis/DatasetApi.md#twingraphquery) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/twingraph | Run a query on a graph instance and return the result as a json
 *DatasetApi* | [**updateDataset**](Apis/DatasetApi.md#updatedataset) | **PATCH** /organizations/{organization_id}/datasets/{dataset_id} | Update a dataset
 *DatasetApi* | [**uploadTwingraph**](Apis/DatasetApi.md#uploadtwingraph) | **POST** /organizations/{organization_id}/datasets/{dataset_id} | Upload Twingraph with ZIP File
 *OrganizationApi* | [**addOrganizationAccessControl**](Apis/OrganizationApi.md#addorganizationaccesscontrol) | **POST** /organizations/{organization_id}/security/access | Add a control access to the Organization
@@ -161,6 +162,7 @@ Class | Method | HTTP request | Description
  - [DatasetSearch](./Models/DatasetSearch.md)
  - [DatasetSourceType](./Models/DatasetSourceType.md)
  - [DatasetTwinGraphInfo](./Models/DatasetTwinGraphInfo.md)
+ - [DatasetTwinGraphQuery](./Models/DatasetTwinGraphQuery.md)
  - [Dataset_connector](./Models/Dataset_connector.md)
  - [DeleteHistoricalData](./Models/DeleteHistoricalData.md)
  - [GraphProperties](./Models/GraphProperties.md)

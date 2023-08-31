@@ -98,6 +98,10 @@ entity DatasetTwinGraphInfo {
     status: String
 }
 
+entity DatasetTwinGraphQuery {
+    * query: String
+}
+
 entity DeleteHistoricalData {
     * enable: Boolean
     pollFrequency: Integer
