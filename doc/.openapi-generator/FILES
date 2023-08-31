@@ -18,7 +18,8 @@ Models/Dataset.md
 Models/DatasetCompatibility.md
 Models/DatasetCopyParameters.md
 Models/DatasetSearch.md
-Models/Dataset_connector.md
+Models/Dataset_data.md
+Models/Dataset_source.md
 Models/DeleteHistoricalData.md
 Models/GraphProperties.md
 Models/Organization.md

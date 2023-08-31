@@ -55,7 +55,9 @@ entity Dataset {
     ownerId: String
     organizationId: String
     tags: List<String>
-    connector: DatasetConnector
+    isMaster: Boolean
+    data: DatasetData
+    source: DatasetSource
     fragmentsIds: List<String>
     validatorId: String
     compatibility: List<DatasetCompatibility>
@@ -67,21 +69,27 @@ entity DatasetCompatibility {
     maximumVersion: String
 }
 
-entity DatasetConnector {
-    id: String
-    name: String
-    version: String
-    parametersValues: Map
-}
-
 entity DatasetCopyParameters {
     sourceId: String
     targetId: String
     options: Map
 }
 
+entity DatasetData {
+    type: String
+    id: String
+}
+
 entity DatasetSearch {
     * datasetTags: List<String>
+}
+
+entity DatasetSource {
+    type: String
+    id: String
+    name: String
+    version: String
+    parametersValues: Map
 }
 
 entity DeleteHistoricalData {
@@ -603,7 +611,8 @@ Solution -- "0..*" RunTemplateParameterGroup : parameterGroups
 Solution -- "0..*" RunTemplate : runTemplates
 Solution -- SolutionSecurity : security
 ScenarioComparisonResult -- "0..*" ScenarioChangedParameterValue : changedValues
-Dataset -- DatasetConnector : connector
+Dataset -- DatasetData : data
+Dataset -- DatasetSource : source
 Dataset -- "0..*" DatasetCompatibility : compatibility
 TwinGraphImport -- SourceInfo : source
 OrganizationSecurity -- "0..*" OrganizationAccessControl : accessControlList
