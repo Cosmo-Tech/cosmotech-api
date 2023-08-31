@@ -271,7 +271,7 @@ master:
       memory: 512Mi
     limits:
       cpu: 1000m
-      memory: 1024Mi
+      memory: 8192Mi
 replica:
   replicaCount: 1
   podLabels:

@@ -47,6 +47,10 @@ paths:
             examples:
               BreweryADT:
                 $ref: '#/components/examples/BreweryADT'
+              RunJobImportWithADT:
+                $ref: '#/components/examples/DatasetWithADT'
+              RunJobImportWithStorage:
+                $ref: '#/components/examples/DatasetWithStorage'
       responses:
         "201":
           description: the dataset details
@@ -255,6 +259,22 @@ paths:
           description: Bad request
         "404":
           description: the Dataset specified is unknown or you don't have access to it
+    post:
+      operationId: uploadTwingraph
+      tags:
+        - dataset
+      summary: Upload Twingraph with ZIP File
+      description: Upload Twingraph ZIP
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        "200":
+          description: Twingraph File Uploaded
     delete:
       operationId: deleteDataset
       tags:
@@ -265,7 +285,112 @@ paths:
           description: Request successful
         "404":
           description: the Dataset specified is unknown or you don't have access to it
-
+  /organizations/{organization_id}/datasets/{dataset_id}/subdataset:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: dataset_id
+        in: path
+        description: the Dataset identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: createSubDataset
+      tags:
+        - dataset
+      summary: Run a query on a dataset
+      description: Run a query on a dataset
+      requestBody:
+        description: the query to run
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubDatasetGraphQuery'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dataset'
+  /organizations/{organization_id}/datasets/{dataset_id}/refresh:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: dataset_id
+        in: path
+        description: the Dataset identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: refreshDataset
+      tags:
+        - dataset
+      summary: Refresh dataset
+      description: Refresh ADT, Storage dataset
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              nullable: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetTwinGraphInfo'
+  /organizations/{organization_id}/datasets/{dataset_id}/job/{job_id}/status:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: dataset_id
+        in: path
+        description: the dataset identifier
+        required: true
+        schema:
+          type: string
+      - name: job_id
+        in: path
+        description: the job identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getDatasetTwingraphStatus
+      tags:
+        - dataset
+      summary: Get the status of twingraph import
+      description: Get the status of a twingraph import
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/yaml:
+              schema:
+                type: string
+            application/json:
+              schema:
+                type: string
+                enum:
+                  - PENDING
+                  - COMPLETED
   /organizations/{organization_id}/datasets/{dataset_id}/compatibility:
     parameters:
       - name: organization_id
@@ -681,6 +806,24 @@ components:
           type: string
           readOnly: true
           description: the Organization Id related to this Dataset
+        parentId:
+          type: string
+          description: the Dataset id which is the parent of this Dataset
+        twingraphId:
+          type: string
+          description: the twin graph id
+        sourceType:
+          $ref: '#/components/schemas/DatasetSourceType'
+        source:
+          $ref: '#/components/schemas/SourceInfo'
+        status:
+          type: string
+          description: the Dataset status
+          enum:
+            - DRAFT
+            - PENDING
+            - ERROR
+            - COMPLETED
         tags:
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           type: array
@@ -725,6 +868,26 @@ components:
 #      required:
 #        - name
 #        - connector
+    DatasetSourceType:
+      type: string
+      description: the Dataset Source Type
+      enum:
+        - ADT
+        - Storage
+        - File
+    DatasetTwinGraphInfo:
+      type: object
+      description: a twin graph query in cypher language
+      properties:
+        jobId:
+          type: string
+          description: the import job id
+        datasetId:
+          type: string
+          description: the Dataset id
+        status:
+          type: string
+          description: Twingraph status
     DatasetCompatibility:
       type: object
       description: a Dataset compatibility constraint to a Solution version open range
@@ -829,6 +992,50 @@ components:
           type: object
           description: freeform options to path to connectors
           additionalProperties: true
+    SubDatasetGraphQuery:
+      type: object
+      description: a twin graph query in cypher language
+      properties:
+        name:
+          type: string
+          description: the name of the subdataset
+        description:
+          type: string
+          description: the description of the subdataset
+        query:
+          type: string
+          description: the query in cypher language
+    SourceInfo:
+      type: object
+      description: Source job import information
+      properties:
+        name:
+          type: string
+          description: the source name containing the files to import
+        location:
+          type: string
+          description: the source location containing the files to import
+        path:
+          type: string
+          description: the source location containing the files to import
+      required:
+        - location
+    TwinGraphBatchResult:
+      type: object
+      description: Processing result
+      properties:
+        totalLines:
+          type: integer
+        processedLines:
+          type: integer
+        errors:
+          type: array
+          items:
+            type: string
+      required:
+        - totalLines
+        - processedLines
+        - errors
   examples:
     BreweryADT:
       summary: Brewery ADT Dataset
@@ -1016,3 +1223,30 @@ components:
       value:
         datasetTags:
           - dataset
+    DatasetWithADT:
+      summary: Dataset creation with ADT as source
+      description: Dataset creation with ADT as source
+      value:
+        name: "My Amazing ADT Dataset"
+        description: "Description about my data"
+        sourceType: "ADT"
+        tags:
+          - adt
+          - data
+        source:
+          location: "https://my-adt-name-instance.api.weu.digitaltwins.azure.net"
+    DatasetWithStorage:
+      summary: Dataset creation with Storage as source
+      description: Dataset creation with Storage as source
+      value:
+        name: "My Amazing Storage Dataset"
+        description: "Description about my data from Azure Storage"
+        sourceType: "Storage"
+        tags:
+          - storage
+          - file
+        source:
+          name: "my-storage-account-name"
+          location: "my-container-name"
+          path: "my-data-folder"
+
