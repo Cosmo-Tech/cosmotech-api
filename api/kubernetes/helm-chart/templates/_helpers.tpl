@@ -80,11 +80,7 @@ Create Docker secrets so Argo Workflows can pull images from a private container
 Default Ingress path
 */}}
 {{- define "cosmotech-api.ingressTenantPath" -}}
-{{- if .Values.api.multiTenant }}
-{{- printf "%s/%s/" (printf "%s" .Values.api.servletContextPath | trimSuffix "/" ) .Release.Namespace }}
-{{- else }}
-{{- printf "%s/" (printf "%s" .Values.api.servletContextPath | trimSuffix "/" ) }}
-{{- end }}
+{{- printf "%s" (printf "%s" .Values.api.servletContextPath | trimSuffix "/" ) }}
 {{- end }}
 
 {{/*
@@ -92,9 +88,9 @@ API Base path with servlet context, namespace, version
 */}}
 {{- define "cosmotech-api.apiBasePath" -}}
 {{- if eq .Values.api.version "latest" }}
-{{- printf "%s/" (include "cosmotech-api.ingressTenantPath" . | trimSuffix "/" ) }}
+{{- printf "%s" (include "cosmotech-api.ingressTenantPath" . | trimSuffix "/" ) }}
 {{- else }}
-{{- printf "%s/%s/" (include "cosmotech-api.ingressTenantPath" . | trimSuffix "/" ) (printf "%s" .Values.api.version | trimSuffix "/" ) }}
+{{- printf "%s/%s" (include "cosmotech-api.ingressTenantPath" . | trimSuffix "/" ) (printf "%s" .Values.api.version | trimSuffix "/" ) }}
 {{- end }}
 {{- end }}
 
@@ -108,6 +104,7 @@ spring:
 
 api:
   version: "{{ .Values.api.version }}"
+  servletContextPath: {{ include "cosmotech-api.apiBasePath" . }}
 
 server:
   servlet:
