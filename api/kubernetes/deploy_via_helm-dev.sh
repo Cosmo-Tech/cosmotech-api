@@ -15,6 +15,10 @@ help() {
   echo "- NAMESPACE | string | name of the targeted namespace. Generated when not set"
   echo "- ARGO_MINIO_ACCESS_KEY | string | AccessKey for MinIO. Generated when not set"
   echo "- ARGO_MINIO_SECRET_KEY | string | SecretKey for MinIO. Generated when not set"
+  echo "- ARGO_VERSION | string | Version for Argo. default 3.4.9"
+  echo "- ARGO_CHART_VERSION | string | Version for Argo chart used for Argo. default 0.32.2"
+  echo "- ARGO_MINIO_VERSION | string | Version for MinIO in Argo. default 12.1.3"
+  echo "- ARGO_POSTGRESQL_VERSION | string | Version for PostgreSQL in Argo. default 12.1.3"
   echo "- ARGO_REQUEUE_TIME | string | Workflow requeue time, 1s by default"
   echo "- ARGO_MINIO_REQUESTS_MEMORY | units of bytes (default is 4Gi) | Memory requests for the Argo MinIO server"
   echo "- LOKI_PERSISTENCE_MEMORY | units of bytes (default is 4Gi) | Memory for persistence of Loki system"
@@ -29,7 +33,6 @@ help() {
   echo "- KEYCLOAK_ADMIN_PASSWORD | admin password for keycloak (generated if not specified)"
   echo "- KEYCLOAK_DB_PASSWORD | admin password for keycloak db (generated if not specified)"
   echo "- KEYCLOAK_DB_USER_PASSWORD | admin password for keycloak db user (generated if not specified)"
-  echo "- MULTI_TENANT | boolean | enable multi-tenant mode (default is false)"
   echo
   echo "Usage: ./$(basename "$0") API_IMAGE_TAG NAMESPACE ARGO_POSTGRESQL_PASSWORD API_VERSION [any additional options to pass as is to the cosmotech-api Helm Chart]"
 }
@@ -54,13 +57,13 @@ export ARGO_POSTGRESQL_PASSWORD="$3"
 export API_VERSION="$4"
 export REQUEUE_TIME="${ARGO_REQUEUE_TIME:-1s}"
 
-export ARGO_RELEASE_NAME=argocsmv2
-export MINIO_RELEASE_NAME=miniocsmv2
-export POSTGRES_RELEASE_NAME=postgrescsmv2
-export ARGO_VERSION="3.4.9"
-export ARGO_CHART_VERSION="0.32.2"
-export MINIO_VERSION="12.1.3"
-export POSTGRESQL_VERSION="11.6.12"
+export ARGO_RELEASE_NAME=argo-${NAMESPACE}
+export MINIO_RELEASE_NAME=argo-minio-${NAMESPACE}
+export POSTGRES_RELEASE_NAME=argo-postgres-${NAMESPACE}
+export ARGO_VERSION_ENV=${ARGO_VERSION:-"3.4.9"}
+export ARGO_CHART_VERSION_ENV=${ARGO_CHART_VERSION:-"0.32.2"}
+export MINIO_VERSION_ENV=${ARGO_MINIO_VERSION:-"12.1.3"}
+export POSTGRESQL_VERSION_ENV=${ARGO_POSTGRESQL_VERSION:-"11.6.12"}
 export VERSION_REDIS="17.3.14"
 export VERSION_REDIS_COSMOTECH="1.0.7"
 export VERSION_REDIS_INSIGHT="0.1.0"
@@ -71,7 +74,7 @@ export KEYCLOAK_VERSION="13.4.1"
 export ARGO_DATABASE=argo_workflows
 export ARGO_POSTGRESQL_USER=argo
 export ARGO_BUCKET_NAME=argo-workflows
-export ARGO_SERVICE_ACCOUNT=workflowcsmv2
+export ARGO_SERVICE_ACCOUNT=argo-${NAMESPACE}-service-account
 
 export NAMESPACE_NGINX="ingress-nginx"
 export MONITORING_NAMESPACE="cosmotech-monitoring"
@@ -81,20 +84,21 @@ HELM_CHARTS_BASE_PATH=$(realpath "$(dirname "$0")")
 WORKING_DIR=$(mktemp -d -t cosmotech-api-helm-XXXXXXXXXX)
 echo "[info] Working directory: ${WORKING_DIR}"
 pushd "${WORKING_DIR}"
-export KEYCLOAK_NAMESPACE="keycloak"
+#export KEYCLOAK_NAMESPACE="cosmotech-iam"
+export KEYCLOAK_NAMESPACE="${NAMESPACE}"
 
 # Create namespace if it does not exist
 kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
 
 # common exports
-export COSMOTECH_API_RELEASE_NAME="cosmotech-api-${API_VERSION}"
+export COSMOTECH_API_RELEASE_NAME="cosmotech-api-${NAMESPACE}-${API_VERSION}"
 export REDIS_PORT=6379
 REDIS_PASSWORD=${REDIS_ADMIN_PASSWORD:-$(kubectl get secret --namespace ${NAMESPACE} cosmotechredis -o jsonpath="{.data.redis-password}" | base64 -d || "")}
 if [[ -z "${REDIS_PASSWORD}" ]] ; then
   REDIS_PASSWORD=$(date +%s | sha256sum | base64 | head -c 32)
 fi
 
-PROM_PASSWORD=${PROM_ADMIN_PASSWORD:-$(kubectl get secret --namespace ${NAMESPACE}-monitoring prometheus-operator-grafana -o jsonpath="{.data.admin-password}" | base64 -d || "")}
+PROM_PASSWORD=${PROM_ADMIN_PASSWORD:-$(kubectl get secret --namespace ${MONITORING_NAMESPACE} prometheus-operator-grafana -o jsonpath="{.data.admin-password}" | base64 -d || "")}
 if [[ -z "${PROM_PASSWORD}" ]] ; then
   PROM_PASSWORD=$(date +%s | sha256sum | base64 | head -c 32)
 fi
@@ -106,7 +110,7 @@ kubectl create namespace "${MONITORING_NAMESPACE}" --dry-run=client -o yaml | ku
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
 
-curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/main/deployment_scripts/v3.0/kube-prometheus-stack-template.yaml" \
+curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/JREY/keycloak/deployment_scripts/v3.0/kube-prometheus-stack-template.yaml" \
      -o "${WORKING_DIR}"/kube-prometheus-stack-template.yaml
 
 MONITORING_NAMESPACE_VAR=${MONITORING_NAMESPACE} \
@@ -130,17 +134,17 @@ helm upgrade --install prometheus-operator prometheus-community/kube-prometheus-
 # Create namespace keycloak if it does not exist
 kubectl create namespace ${KEYCLOAK_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
 
-KEYCLOAK_ADM_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-$(kubectl get secret --namespace ${KEYCLOAK_NAMESPACE} csm-keycloak -o jsonpath="{.data.admin-password}" | base64 -d || "")}
+KEYCLOAK_ADM_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-$(kubectl get secret --namespace ${KEYCLOAK_NAMESPACE} ${NAMESPACE}-keycloak -o jsonpath="{.data.admin-password}" | base64 -d || "")}
 if [[ -z "${KEYCLOAK_ADM_PASSWORD}" ]] ; then
   KEYCLOAK_ADM_PASSWORD=$(date +%s | sha256sum | base64 | head -c 32)
 fi
 
-KEYCLOAK_DB_PASS=${KEYCLOAK_DB_PASSWORD:-$(kubectl get secret --namespace ${KEYCLOAK_NAMESPACE} csm-keycloak-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d || "")}
+KEYCLOAK_DB_PASS=${KEYCLOAK_DB_PASSWORD:-$(kubectl get secret --namespace ${KEYCLOAK_NAMESPACE} ${NAMESPACE}-keycloak-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d || "")}
 if [[ -z "${KEYCLOAK_DB_PASS}" ]] ; then
   KEYCLOAK_DB_PASS=$(date +%s | sha256sum | base64 | head -c 32)
 fi
 
-KEYCLOAK_DB_USER_PASS=${KEYCLOAK_DB_USER_PASSWORD:-$(kubectl get secret --namespace ${KEYCLOAK_NAMESPACE} csm-keycloak-postgresql -o jsonpath="{.data.password}" | base64 -d || "")}
+KEYCLOAK_DB_USER_PASS=${KEYCLOAK_DB_USER_PASSWORD:-$(kubectl get secret --namespace ${KEYCLOAK_NAMESPACE} ${NAMESPACE}-keycloak-postgresql -o jsonpath="{.data.password}" | base64 -d || "")}
 if [[ -z "${KEYCLOAK_DB_USER_PASS}" ]] ; then
   KEYCLOAK_DB_USER_PASS=$(date +%s | sha256sum | base64 | head -c 32)
 fi
@@ -152,17 +156,18 @@ curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deploymen
      -o "${WORKING_DIR}"/csm-keycloak-config-map.yaml
 
 # Create config map for Keycloak base configuration
-kubectl create configmap csm-keycloak-map -n ${KEYCLOAK_NAMESPACE} --from-file=csm-keycloak-config-map.yaml -o yaml --dry-run=client | kubectl -n ${KEYCLOAK_NAMESPACE} apply -f -
+kubectl create configmap ${NAMESPACE}-keycloak-map -n ${KEYCLOAK_NAMESPACE} --from-file=csm-keycloak-config-map.yaml -o yaml --dry-run=client | kubectl -n ${KEYCLOAK_NAMESPACE} apply -f -
 
 KEYCLOAK_ADM_PASSWORD_VAR=${KEYCLOAK_ADM_PASSWORD} \
 KEYCLOAK_DB_PASS_VAR=${KEYCLOAK_DB_PASS} \
 KEYCLOAK_DB_USER_PASS_VAR=${KEYCLOAK_DB_USER_PASS} \
+NAMESPACE_VAR=${NAMESPACE} \
 envsubst < "${WORKING_DIR}"/values-keycloak-config-map-template.yaml > "${WORKING_DIR}"/values-keycloak-config-map.yaml
 
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
 
-helm upgrade --install csm-keycloak bitnami/keycloak -n ${KEYCLOAK_NAMESPACE} --version ${KEYCLOAK_VERSION} \
+helm upgrade --install ${NAMESPACE}-keycloak bitnami/keycloak -n ${KEYCLOAK_NAMESPACE} --version ${KEYCLOAK_VERSION} \
       --values values-keycloak-config-map.yaml \
       --wait \
       --timeout 10m0s
@@ -245,8 +250,8 @@ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
 
 # Redis Cluster
 
-export REDIS_PV_NAME="redis-persistence-volume"
-export REDIS_PVC_NAME="redis-persistence-volume-claim"
+export REDIS_PV_NAME="${NAMESPACE}-redis-persistence-volume"
+export REDIS_PVC_NAME="${NAMESPACE}-redis-persistence-volume-claim"
 
 cat <<EOF > redis-pv.yaml
 apiVersion: v1
@@ -373,7 +378,7 @@ metrics:
     scrapeTimeout: 10s
 EOF
 
-helm upgrade --install ${MINIO_RELEASE_NAME} bitnami/minio --namespace ${NAMESPACE} --version ${MINIO_VERSION} --values values-minio.yaml
+helm upgrade --install ${MINIO_RELEASE_NAME} bitnami/minio --namespace ${NAMESPACE} --version ${MINIO_VERSION_ENV} --values values-minio.yaml
 
 # Postgres
 cat <<EOF > values-postgresql.yaml
@@ -415,7 +420,7 @@ metrics:
     scrapeTimeout: 10s
 EOF
 
-helm upgrade --install -n ${NAMESPACE} ${POSTGRES_RELEASE_NAME} bitnami/postgresql --version ${POSTGRESQL_VERSION} --values values-postgresql.yaml
+helm upgrade --install -n ${NAMESPACE} ${POSTGRES_RELEASE_NAME} bitnami/postgresql --version ${POSTGRESQL_VERSION_ENV} --values values-postgresql.yaml
 
 export ARGO_POSTGRESQL_SECRET_NAME=argo-postgres-config
 cat <<EOF > postgres-secret.yaml
@@ -435,15 +440,22 @@ kubectl apply -n ${NAMESPACE} -f postgres-secret.yaml
 
 # Argo
 ## CRDs
-echo "Installing Argo CRDs"
-kubectl apply -n ${NAMESPACE} -f https://raw.githubusercontent.com/argoproj/argo-workflows/v${ARGO_VERSION}/manifests/base/crds/minimal/argoproj.io_clusterworkflowtemplates.yaml
-kubectl apply -n ${NAMESPACE} -f https://raw.githubusercontent.com/argoproj/argo-workflows/v${ARGO_VERSION}/manifests/base/crds/minimal/argoproj.io_cronworkflows.yaml
-kubectl apply -n ${NAMESPACE} -f https://raw.githubusercontent.com/argoproj/argo-workflows/v${ARGO_VERSION}/manifests/base/crds/minimal/argoproj.io_workflowartifactgctasks.yaml
-kubectl apply -n ${NAMESPACE} -f https://raw.githubusercontent.com/argoproj/argo-workflows/v${ARGO_VERSION}/manifests/base/crds/minimal/argoproj.io_workfloweventbindings.yaml
-kubectl apply -n ${NAMESPACE} -f https://raw.githubusercontent.com/argoproj/argo-workflows/v${ARGO_VERSION}/manifests/base/crds/minimal/argoproj.io_workflows.yaml
-kubectl apply -n ${NAMESPACE} -f https://raw.githubusercontent.com/argoproj/argo-workflows/v${ARGO_VERSION}/manifests/base/crds/minimal/argoproj.io_workflowtaskresults.yaml
-kubectl apply -n ${NAMESPACE} -f https://raw.githubusercontent.com/argoproj/argo-workflows/v${ARGO_VERSION}/manifests/base/crds/minimal/argoproj.io_workflowtasksets.yaml
-kubectl apply -n ${NAMESPACE} -f https://raw.githubusercontent.com/argoproj/argo-workflows/v${ARGO_VERSION}/manifests/base/crds/minimal/argoproj.io_workflowtemplates.yaml
+
+CRD=('argoproj.io_clusterworkflowtemplates.yaml' 'argoproj.io_cronworkflows.yaml' \
+'argoproj.io_workflowartifactgctasks.yaml' 'argoproj.io_workfloweventbindings.yaml' \
+'argoproj.io_workflows.yaml' 'argoproj.io_workflowtaskresults.yaml' 'argoproj.io_workflowtasksets.yaml' \
+'argoproj.io_workflowtemplates.yaml')
+
+for crd in "${CRD[@]}"
+do
+  echo "Downloading Argo CRDs: https://raw.githubusercontent.com/argoproj/argo-workflows/v${ARGO_VERSION_ENV}/manifests/base/crds/minimal/$crd"
+  curl -sSL --fail "https://raw.githubusercontent.com/argoproj/argo-workflows/v${ARGO_VERSION_ENV}/manifests/base/crds/minimal/$crd" -o $crd || true
+  if [[ -e "$crd" ]] ; then
+    echo "Installing Argo CRDs: $crd"
+    kubectl apply -n ${NAMESPACE} -f "$crd"
+  fi
+done
+
 
 ## Chart
 cat <<EOF > values-argo.yaml
@@ -569,7 +581,7 @@ mainContainer:
 EOF
 
 helm repo add argo https://argoproj.github.io/argo-helm
-helm upgrade --install -n ${NAMESPACE} ${ARGO_RELEASE_NAME} argo/argo-workflows --version ${ARGO_CHART_VERSION} --values values-argo.yaml
+helm upgrade --install -n ${NAMESPACE} ${ARGO_RELEASE_NAME} argo/argo-workflows --version ${ARGO_CHART_VERSION_ENV} --values values-argo.yaml
 
 LOKI_RELEASE_NAME="loki"
 helm repo add grafana https://grafana.github.io/helm-charts
@@ -641,15 +653,44 @@ cat <<EOF > values-cosmotech-api-deploy.yaml
 replicaCount: 2
 api:
   version: "$API_VERSION"
-  multiTenant: ${MULTI_TENANT:-false}
+  multiTenant: ${MULTI_TENANT:-true}
+
 
 image:
   repository: ghcr.io/cosmo-tech/cosmotech-api
   tag: "$API_IMAGE_TAG"
 
 config:
+  spring:
+    security:
+      oauth2:
+        resource-server:
+          jwt:
+            issuer-uri: "https://localhost/${NAMESPACE}/auth/realms/cosmotech"
+            jwk-set-uri: "http://${NAMESPACE}-keycloak.${NAMESPACE}.svc.cluster.local/auth/realms/cosmotech/protocol/openid-connect/certs"
+            audiences:
+              - "account"
   csm:
     platform:
+      authorization:
+        allowed-tenants:
+          - "${NAMESPACE}"
+          - "cosmotech"
+      identityProvider:
+        code: keycloak
+        # Use to overwrite openAPI configuration
+        authorizationUrl: "https://localhost/${NAMESPACE}/auth/realms/cosmotech/protocol/openid-connect/auth"
+        tokenUrl: "https://localhost/${NAMESPACE}/auth/realms/cosmotech/protocol/openid-connect/token"
+        defaultScopes:
+          openid: "OpenId Scope"
+          email: "Email Scope"
+        #containerScopes:
+        #  csm.scenario.read: "Read access to scenarios"
+        # Here you can set custom user and admin groups
+        # - adminGroup will have same rights that Organization.Admin
+        # - userGroup will have same rights that Organization.User
+        # - viewerGroup will have same rights that Organization.Viewer
+      # Use to define Okta Configuration
       argo:
         base-uri: "http://${ARGO_RELEASE_NAME}-argo-workflows-server.${NAMESPACE}.svc.cluster.local:2746"
         workflows:
