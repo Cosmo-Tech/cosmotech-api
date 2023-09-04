@@ -797,8 +797,8 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
-            "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "false",
-            "CSM_SEND_DATAWAREHOUSE_DATASETS" to "false",
+            "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "true",
+            "CSM_SEND_DATAWAREHOUSE_DATASETS" to "true",
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
@@ -3517,6 +3517,15 @@ class ContainerFactoryTests {
         name = "Test Run",
         csmSimulation = "TestSimulation",
         computeSize = "highcpupool",
+        fetchDatasets = true,
+        fetchScenarioParameters = true,
+        applyParameters = true,
+        validateData = true,
+        run = true,
+        sendDatasetsToDataWarehouse = true,
+        sendInputParametersToDataWarehouse = true,
+        preRun = true,
+        postRun = true,
     )
   }
 
@@ -3527,6 +3536,15 @@ class ContainerFactoryTests {
         csmSimulation = "TestSimulation",
         computeSize = "highcpu",
         stackSteps = true,
+        fetchDatasets = true,
+        fetchScenarioParameters = true,
+        applyParameters = true,
+        validateData = true,
+        run = true,
+        sendDatasetsToDataWarehouse = true,
+        sendInputParametersToDataWarehouse = true,
+        preRun = true,
+        postRun = true,
     )
   }
 
@@ -3539,6 +3557,13 @@ class ContainerFactoryTests {
         stackSteps = true,
         sendDatasetsToDataWarehouse = false,
         sendInputParametersToDataWarehouse = false,
+        fetchDatasets = true,
+        fetchScenarioParameters = true,
+        applyParameters = true,
+        validateData = true,
+        run = true,
+        preRun = true,
+        postRun = true,
     )
   }
 
@@ -3549,6 +3574,15 @@ class ContainerFactoryTests {
         csmSimulation = "TestSimulation",
         computeSize = "highcpu",
         parameterGroups = mutableListOf("group1"),
+        fetchDatasets = true,
+        fetchScenarioParameters = true,
+        applyParameters = true,
+        validateData = true,
+        run = true,
+        sendDatasetsToDataWarehouse = true,
+        sendInputParametersToDataWarehouse = true,
+        preRun = true,
+        postRun = true,
     )
   }
 
@@ -3557,6 +3591,15 @@ class ContainerFactoryTests {
         id = "testruntemplate",
         name = "Test Run",
         csmSimulation = "TestSimulation",
+        fetchDatasets = true,
+        fetchScenarioParameters = true,
+        applyParameters = true,
+        validateData = true,
+        run = true,
+        sendDatasetsToDataWarehouse = true,
+        sendInputParametersToDataWarehouse = true,
+        preRun = true,
+        postRun = true,
     )
   }
 
@@ -3566,6 +3609,15 @@ class ContainerFactoryTests {
         name = "Test Run",
         csmSimulation = "TestSimulation",
         computeSize = "%NONE%",
+        fetchDatasets = true,
+        fetchScenarioParameters = true,
+        applyParameters = true,
+        validateData = true,
+        run = true,
+        sendDatasetsToDataWarehouse = true,
+        sendInputParametersToDataWarehouse = true,
+        preRun = true,
+        postRun = true,
     )
   }
 
@@ -3575,7 +3627,16 @@ class ContainerFactoryTests {
         id = "testruntemplate",
         name = "Test Run",
         csmSimulation = "TestSimulation",
-        sendDatasetsToDataWarehouse = false)
+        sendDatasetsToDataWarehouse = false,
+        fetchDatasets = true,
+        fetchScenarioParameters = true,
+        applyParameters = true,
+        validateData = true,
+        run = true,
+        sendInputParametersToDataWarehouse = true,
+        preRun = true,
+        postRun = true,
+    )
   }
 
   private fun getRunTemplateNoParametersSend(): RunTemplate {
@@ -3584,7 +3645,16 @@ class ContainerFactoryTests {
         id = "testruntemplate",
         name = "Test Run",
         csmSimulation = "TestSimulation",
-        sendInputParametersToDataWarehouse = false)
+        sendInputParametersToDataWarehouse = false,
+        fetchDatasets = true,
+        fetchScenarioParameters = true,
+        applyParameters = true,
+        validateData = true,
+        run = true,
+        sendDatasetsToDataWarehouse = true,
+        preRun = true,
+        postRun = true,
+    )
   }
 
   private fun getRunTemplateOnlyRun(): RunTemplate {
@@ -3597,6 +3667,7 @@ class ContainerFactoryTests {
         fetchScenarioParameters = false,
         applyParameters = false,
         validateData = false,
+        run = true,
         sendDatasetsToDataWarehouse = false,
         sendInputParametersToDataWarehouse = false,
         preRun = false,
@@ -3615,6 +3686,15 @@ class ContainerFactoryTests {
         preRunSource = RunTemplateStepSource.cloud,
         runSource = RunTemplateStepSource.cloud,
         postRunSource = RunTemplateStepSource.cloud,
+        fetchDatasets = true,
+        fetchScenarioParameters = true,
+        applyParameters = true,
+        validateData = true,
+        run = true,
+        sendDatasetsToDataWarehouse = true,
+        sendInputParametersToDataWarehouse = true,
+        preRun = true,
+        postRun = true,
     )
   }
 
@@ -3629,6 +3709,15 @@ class ContainerFactoryTests {
         preRunSource = RunTemplateStepSource.local,
         runSource = RunTemplateStepSource.local,
         postRunSource = RunTemplateStepSource.local,
+        fetchDatasets = true,
+        fetchScenarioParameters = true,
+        applyParameters = true,
+        validateData = true,
+        run = true,
+        sendDatasetsToDataWarehouse = true,
+        sendInputParametersToDataWarehouse = true,
+        preRun = true,
+        postRun = true,
     )
   }
 
