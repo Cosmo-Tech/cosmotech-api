@@ -41,7 +41,7 @@ jobs:
           - twingraph
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Validate '${{ matrix.project }}' definition
         uses: char0n/swagger-editor-validate@v1.3.2
@@ -55,7 +55,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           # Fetch all tags since Gradle project version is built upon SCM
           fetch-depth: 0
@@ -99,7 +99,7 @@ jobs:
           - 80:8080
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Download openapi artifact
         uses: actions/download-artifact@v3
