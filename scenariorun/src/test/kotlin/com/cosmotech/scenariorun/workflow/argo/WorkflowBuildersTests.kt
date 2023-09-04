@@ -195,7 +195,7 @@ class WorkflowBuildersTests {
     val sc = getStartContainersRun()
     val workflowSpec = buildWorkflowSpec(csmPlatformProperties, sc, null)
 
-    assertEquals("runcontainer", workflowSpec.templates?.getOrNull(0)?.name)
+    assertEquals("runContainer", workflowSpec.templates?.getOrNull(0)?.name)
   }
 
   @Test
@@ -237,36 +237,36 @@ class WorkflowBuildersTests {
     val expected =
         listOf(
             IoArgoprojWorkflowV1alpha1DAGTask()
-                .name("fetchdatasetcontainer-1")
-                .template("fetchdatasetcontainer-1"),
+                .name("fetchDatasetContainer-1")
+                .template("fetchDatasetContainer-1"),
             IoArgoprojWorkflowV1alpha1DAGTask()
-                .name("fetchscenarioparameterscontainer")
-                .template("fetchscenarioparameterscontainer"),
+                .name("fetchScenarioParametersContainer")
+                .template("fetchScenarioParametersContainer"),
             IoArgoprojWorkflowV1alpha1DAGTask()
-                .name("applyparameterscontainer")
-                .template("applyparameterscontainer")
+                .name("applyParametersContainer")
+                .template("applyParametersContainer")
                 .dependencies(
-                    listOf("fetchdatasetcontainer-1", "fetchscenarioparameterscontainer")),
+                    listOf("fetchDatasetContainer-1", "fetchScenarioParametersContainer")),
             IoArgoprojWorkflowV1alpha1DAGTask()
-                .name("validatedatacontainer")
-                .template("validatedatacontainer")
-                .dependencies(listOf("applyparameterscontainer")),
+                .name("validateDataContainer")
+                .template("validateDataContainer")
+                .dependencies(listOf("applyParametersContainer")),
             IoArgoprojWorkflowV1alpha1DAGTask()
-                .name("senddatawarehousecontainer")
-                .template("senddatawarehousecontainer")
-                .dependencies(listOf("validatedatacontainer")),
+                .name("sendDataWarehouseContainer")
+                .template("sendDataWarehouseContainer")
+                .dependencies(listOf("validateDataContainer")),
             IoArgoprojWorkflowV1alpha1DAGTask()
-                .name("preruncontainer")
-                .template("preruncontainer")
-                .dependencies(listOf("validatedatacontainer")),
+                .name("preRunContainer")
+                .template("preRunContainer")
+                .dependencies(listOf("validateDataContainer")),
             IoArgoprojWorkflowV1alpha1DAGTask()
-                .name("runcontainer")
-                .template("runcontainer")
-                .dependencies(listOf("preruncontainer")),
+                .name("runContainer")
+                .template("runContainer")
+                .dependencies(listOf("preRunContainer")),
             IoArgoprojWorkflowV1alpha1DAGTask()
-                .name("postruncontainer")
-                .template("postruncontainer")
-                .dependencies(listOf("runcontainer")),
+                .name("postRunContainer")
+                .template("postRunContainer")
+                .dependencies(listOf("runContainer")),
         )
 
     assertEquals(expected, entrypointTemplate?.dag?.tasks)
@@ -282,36 +282,36 @@ class WorkflowBuildersTests {
     val expected =
         listOf(
             IoArgoprojWorkflowV1alpha1DAGTask()
-                .name("fetchdatasetcontainer-1")
-                .template("fetchdatasetcontainer-1"),
+                .name("fetchDatasetContainer-1")
+                .template("fetchDatasetContainer-1"),
             IoArgoprojWorkflowV1alpha1DAGTask()
-                .name("fetchscenarioparameterscontainer")
-                .template("fetchscenarioparameterscontainer")
-                .dependencies(listOf("fetchdatasetcontainer-1")),
+                .name("fetchScenarioParametersContainer")
+                .template("fetchScenarioParametersContainer")
+                .dependencies(listOf("fetchDatasetContainer-1")),
             IoArgoprojWorkflowV1alpha1DAGTask()
-                .name("applyparameterscontainer")
-                .template("applyparameterscontainer")
-                .dependencies(listOf("fetchscenarioparameterscontainer")),
+                .name("applyParametersContainer")
+                .template("applyParametersContainer")
+                .dependencies(listOf("fetchScenarioParametersContainer")),
             IoArgoprojWorkflowV1alpha1DAGTask()
-                .name("validatedatacontainer")
-                .template("validatedatacontainer")
-                .dependencies(listOf("applyparameterscontainer")),
+                .name("validateDataContainer")
+                .template("validateDataContainer")
+                .dependencies(listOf("applyParametersContainer")),
             IoArgoprojWorkflowV1alpha1DAGTask()
-                .name("senddatawarehousecontainer")
-                .template("senddatawarehousecontainer")
-                .dependencies(listOf("validatedatacontainer")),
+                .name("sendDataWarehouseContainer")
+                .template("sendDataWarehouseContainer")
+                .dependencies(listOf("validateDataContainer")),
             IoArgoprojWorkflowV1alpha1DAGTask()
-                .name("preruncontainer")
-                .template("preruncontainer")
-                .dependencies(listOf("senddatawarehousecontainer")),
+                .name("preRunContainer")
+                .template("preRunContainer")
+                .dependencies(listOf("sendDataWarehouseContainer")),
             IoArgoprojWorkflowV1alpha1DAGTask()
-                .name("runcontainer")
-                .template("runcontainer")
-                .dependencies(listOf("preruncontainer")),
+                .name("runContainer")
+                .template("runContainer")
+                .dependencies(listOf("preRunContainer")),
             IoArgoprojWorkflowV1alpha1DAGTask()
-                .name("postruncontainer")
-                .template("postruncontainer")
-                .dependencies(listOf("runcontainer")),
+                .name("postRunContainer")
+                .template("postRunContainer")
+                .dependencies(listOf("runContainer")),
         )
 
     assertEquals(expected, entrypointTemplate?.dag?.tasks)
@@ -327,13 +327,13 @@ class WorkflowBuildersTests {
     val expected =
         listOf(
             null,
-            "fetchdatasetcontainer-1",
-            "fetchscenarioparameterscontainer",
-            "applyparameterscontainer",
-            "validatedatacontainer",
-            "senddatawarehousecontainer",
-            "preruncontainer",
-            "runcontainer",
+            "fetchDatasetContainer-1",
+            "fetchScenarioParametersContainer",
+            "applyParametersContainer",
+            "validateDataContainer",
+            "sendDataWarehouseContainer",
+            "preRunContainer",
+            "runContainer",
         )
 
     val dependencies =
@@ -351,19 +351,19 @@ class WorkflowBuildersTests {
         workflowSpec.templates?.find { template -> template.name.equals("entrypoint") }
     val expected =
         listOf(
-            IoArgoprojWorkflowV1alpha1DAGTask().name("diamond-a").template("diamond-a"),
+            IoArgoprojWorkflowV1alpha1DAGTask().name("Diamond-A").template("Diamond-A"),
             IoArgoprojWorkflowV1alpha1DAGTask()
-                .name("diamond-b")
-                .template("diamond-b")
-                .dependencies(listOf("diamond-a")),
+                .name("Diamond-B")
+                .template("Diamond-B")
+                .dependencies(listOf("Diamond-A")),
             IoArgoprojWorkflowV1alpha1DAGTask()
-                .name("diamond-c")
-                .template("diamond-c")
-                .dependencies(listOf("diamond-a")),
+                .name("Diamond-C")
+                .template("Diamond-C")
+                .dependencies(listOf("Diamond-A")),
             IoArgoprojWorkflowV1alpha1DAGTask()
-                .name("diamond-d")
-                .template("diamond-d")
-                .dependencies(listOf("diamond-b", "diamond-c")),
+                .name("Diamond-D")
+                .template("Diamond-D")
+                .dependencies(listOf("Diamond-B", "Diamond-C")),
         )
 
     assertEquals(expected, entrypointTemplate?.dag?.tasks)
@@ -451,7 +451,7 @@ class WorkflowBuildersTests {
     val sc = getStartContainersWithLabels()
     val workflow = buildWorkflowSpec(csmPlatformProperties, sc, null)
     val labeledTemplate =
-        workflow.templates?.find { template -> template.name.equals("fetchdatasetcontainer-1") }
+        workflow.templates?.find { template -> template.name.equals("fetchDatasetContainer-1") }
 
     val expected =
         mapOf(
@@ -549,7 +549,7 @@ class WorkflowBuildersTests {
     val sc =
         ScenarioRunStartContainers(
             nodeLabel = "highcpupool",
-            containers = listOf(getScenarioRunContainerEntrypoint("runcontainer")),
+            containers = listOf(getScenarioRunContainerEntrypoint("runContainer")),
             csmSimulationId = csmSimulationId)
     return sc
   }
@@ -557,7 +557,7 @@ class WorkflowBuildersTests {
   private fun getStartContainersRunNoPool(): ScenarioRunStartContainers {
     val sc =
         ScenarioRunStartContainers(
-            containers = listOf(getScenarioRunContainerEntrypoint("runcontainer")),
+            containers = listOf(getScenarioRunContainerEntrypoint("runContainer")),
             csmSimulationId = csmSimulationId)
     return sc
   }
@@ -568,14 +568,14 @@ class WorkflowBuildersTests {
             nodeLabel = "highcpupool",
             containers =
                 listOf(
-                    getScenarioRunContainer("fetchdatasetcontainer-1"),
-                    getScenarioRunContainer("fetchscenarioparameterscontainer"),
-                    getScenarioRunContainerEntrypoint("applyparameterscontainer"),
-                    getScenarioRunContainerEntrypoint("validatedatacontainer"),
-                    getScenarioRunContainer("senddatawarehousecontainer"),
-                    getScenarioRunContainerEntrypoint("preruncontainer"),
-                    getScenarioRunContainerEntrypoint("runcontainer"),
-                    getScenarioRunContainerEntrypoint("postruncontainer"),
+                    getScenarioRunContainer("fetchDatasetContainer-1"),
+                    getScenarioRunContainer("fetchScenarioParametersContainer"),
+                    getScenarioRunContainerEntrypoint("applyParametersContainer"),
+                    getScenarioRunContainerEntrypoint("validateDataContainer"),
+                    getScenarioRunContainer("sendDataWarehouseContainer"),
+                    getScenarioRunContainerEntrypoint("preRunContainer"),
+                    getScenarioRunContainerEntrypoint("runContainer"),
+                    getScenarioRunContainerEntrypoint("postRunContainer"),
                 ),
             csmSimulationId = csmSimulationId)
     return sc
@@ -588,20 +588,20 @@ class WorkflowBuildersTests {
             containers =
                 listOf(
                     getScenarioRunContainerDependencies(
-                        "fetchdatasetcontainer-1", listOf("DAG_ROOT")),
+                        "fetchDatasetContainer-1", listOf("DAG_ROOT")),
                     getScenarioRunContainerDependencies(
-                        "fetchscenarioparameterscontainer", listOf("DAG_ROOT")),
+                        "fetchScenarioParametersContainer", listOf("DAG_ROOT")),
                     getScenarioRunContainerEntrypointDependencies(
-                        "applyparameterscontainer",
-                        listOf("fetchdatasetcontainer-1", "fetchscenarioparameterscontainer")),
+                        "applyParametersContainer",
+                        listOf("fetchDatasetContainer-1", "fetchScenarioParametersContainer")),
                     getScenarioRunContainerEntrypointDependencies(
-                        "validatedatacontainer", listOf("applyparameterscontainer")),
+                        "validateDataContainer", listOf("applyParametersContainer")),
                     getScenarioRunContainerDependencies(
-                        "senddatawarehousecontainer", listOf("validatedatacontainer")),
+                        "sendDataWarehouseContainer", listOf("validateDataContainer")),
                     getScenarioRunContainerEntrypointDependencies(
-                        "preruncontainer", listOf("validatedatacontainer")),
-                    getScenarioRunContainerEntrypoint("runcontainer"),
-                    getScenarioRunContainerEntrypoint("postruncontainer"),
+                        "preRunContainer", listOf("validateDataContainer")),
+                    getScenarioRunContainerEntrypoint("runContainer"),
+                    getScenarioRunContainerEntrypoint("postRunContainer"),
                 ),
             csmSimulationId = csmSimulationId)
     return sc
@@ -613,14 +613,14 @@ class WorkflowBuildersTests {
             nodeLabel = "highcpupool",
             containers =
                 listOf(
-                    getScenarioRunContainerWithLabels("fetchdatasetcontainer-1"),
-                    getScenarioRunContainer("fetchscenarioparameterscontainer"),
-                    getScenarioRunContainerEntrypoint("applyparameterscontainer"),
-                    getScenarioRunContainerEntrypoint("validatedatacontainer"),
-                    getScenarioRunContainer("senddatawarehousecontainer"),
-                    getScenarioRunContainerEntrypoint("preruncontainer"),
-                    getScenarioRunContainerEntrypoint("runcontainer"),
-                    getScenarioRunContainerEntrypoint("postruncontainer"),
+                    getScenarioRunContainerWithLabels("fetchDatasetContainer-1"),
+                    getScenarioRunContainer("fetchScenarioParametersContainer"),
+                    getScenarioRunContainerEntrypoint("applyParametersContainer"),
+                    getScenarioRunContainerEntrypoint("validateDataContainer"),
+                    getScenarioRunContainer("sendDataWarehouseContainer"),
+                    getScenarioRunContainerEntrypoint("preRunContainer"),
+                    getScenarioRunContainerEntrypoint("runContainer"),
+                    getScenarioRunContainerEntrypoint("postRunContainer"),
                 ),
             csmSimulationId = csmSimulationId)
     return sc
@@ -633,14 +633,14 @@ class WorkflowBuildersTests {
             nodeLabel = "highcpupool",
             containers =
                 listOf(
-                    getScenarioRunContainer("fetchdatasetcontainer-1"),
-                    getScenarioRunContainer("fetchscenarioparameterscontainer"),
-                    getScenarioRunContainerEntrypoint("applyparameterscontainer"),
-                    getScenarioRunContainerEntrypoint("validatedatacontainer"),
-                    getScenarioRunContainer("senddatawarehousecontainer"),
-                    getScenarioRunContainerEntrypoint("preruncontainer"),
-                    getScenarioRunContainerEntrypoint("runcontainer"),
-                    getScenarioRunContainerEntrypoint("postruncontainer"),
+                    getScenarioRunContainer("fetchDatasetContainer-1"),
+                    getScenarioRunContainer("fetchScenarioParametersContainer"),
+                    getScenarioRunContainerEntrypoint("applyParametersContainer"),
+                    getScenarioRunContainerEntrypoint("validateDataContainer"),
+                    getScenarioRunContainer("sendDataWarehouseContainer"),
+                    getScenarioRunContainerEntrypoint("preRunContainer"),
+                    getScenarioRunContainerEntrypoint("runContainer"),
+                    getScenarioRunContainerEntrypoint("postRunContainer"),
                 ),
             csmSimulationId = csmSimulationId)
     return sc
