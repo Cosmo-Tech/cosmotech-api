@@ -38,6 +38,9 @@ import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.dataset.api.DatasetApiService
+import com.cosmotech.dataset.domain.Dataset
+import com.cosmotech.dataset.domain.SubDatasetGraphQuery
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.service.getRbac
 import com.cosmotech.scenario.api.ScenarioApiService
@@ -74,8 +77,9 @@ import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
 @Service
-@Suppress("LargeClass", "TooManyFunctions")
+@Suppress("LargeClass", "TooManyFunctions", "LongParameterList")
 internal class ScenarioServiceImpl(
+    private val datasetService: DatasetApiService,
     private val solutionService: SolutionApiService,
     private val organizationService: OrganizationApiService,
     private val workspaceService: WorkspaceApiService,
@@ -120,6 +124,7 @@ internal class ScenarioServiceImpl(
     TODO("Not yet implemented")
   }
 
+  @Suppress("LongMethod")
   override fun createScenario(
       organizationId: String,
       workspaceId: String,
@@ -158,6 +163,24 @@ internal class ScenarioServiceImpl(
       scenarioSecurity = initSecurity(getCurrentAccountIdentifier(this.csmPlatformProperties))
     }
 
+    val datasetCopyList =
+        datasetList
+            ?.map {
+              val dataset = datasetService.findDatasetById(organizationId, it)
+              when {
+                dataset.twingraphId == null -> it
+                dataset.status == Dataset.Status.COMPLETED ->
+                    datasetService
+                        .createSubDataset(
+                            organizationId,
+                            it,
+                            SubDatasetGraphQuery("Scenario - ${scenario.name})"))
+                        .id!!
+                else -> throw CsmClientException("Dataset ${dataset.id} is not completed")
+              }
+            }
+            ?.toMutableList()
+
     val now = Instant.now().toEpochMilli()
     val scenarioToSave =
         scenario.copy(
@@ -171,7 +194,7 @@ internal class ScenarioServiceImpl(
             creationDate = now,
             lastUpdate = now,
             state = ScenarioJobState.Created,
-            datasetList = datasetList,
+            datasetList = datasetCopyList,
             rootId = rootId,
             parametersValues = newParametersValuesList,
             validationStatus = ScenarioValidationStatus.Draft,

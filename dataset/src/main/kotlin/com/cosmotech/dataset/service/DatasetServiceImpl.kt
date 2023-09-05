@@ -20,8 +20,6 @@ import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.api.utils.getLocalDateNow
-import com.cosmotech.api.utils.toRedisMetaDataKey
 import com.cosmotech.api.utils.unzip
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.dataset.api.DatasetApiService
@@ -56,13 +54,8 @@ import redis.clients.jedis.JedisPool
 
 const val GRAPH_NAME = "graphName"
 const val GRAPH_ROTATION = "graphRotation"
-const val TYPE_NODE = "node"
-const val TYPE_RELATIONSHIP = "relationship"
 const val NODES_ZIP_FOLDER = "nodes"
 const val EDGES_ZIP_FOLDER = "edges"
-
-const val INITIAL_VERSION = "1"
-const val DEFAULT_GRAPH_ROTATION = "3"
 
 @Service
 @Suppress("TooManyFunctions")
@@ -150,8 +143,9 @@ class DatasetServiceImpl(
 
     csmJedisPool.resource.use { jedis ->
       val graphDump =
-          jedis.dump(getLastVersion(dataset.twingraphId!!))
-              ?: throw CsmResourceNotFoundException("Twingraph not found for dataset $datasetId")
+          jedis.dump(dataset.twingraphId!!)
+              ?: throw CsmResourceNotFoundException(
+                  "Twingraph ${dataset.twingraphId!!} " + "not found for dataset $datasetId")
 
       val subTwinraphId = idGenerator.generate("twingraph")
       jedis.restore(subTwinraphId.toByteArray(), 0L, graphDump)
@@ -191,19 +185,8 @@ class DatasetServiceImpl(
     dataset.status = Dataset.Status.PENDING
     datasetRepository.save(dataset)
 
-    val twingraphId = dataset.twingraphId!!
-    csmJedisPool.resource.use { jedis ->
-      jedis.hset(
-          twingraphId.toRedisMetaDataKey(),
-          mutableMapOf(
-              "lastVersion" to INITIAL_VERSION,
-              "graphName" to "$twingraphId:1",
-              "graphRotation" to DEFAULT_GRAPH_ROTATION,
-              "lastModifiedDate" to getLocalDateNow()))
-    }
-
     GlobalScope.launch(SecurityCoroutineContext()) {
-      val queryBuffer = QueryBuffer(csmJedisPool.resource, getLastVersion(twingraphId))
+      val queryBuffer = QueryBuffer(csmJedisPool.resource, dataset.twingraphId!!)
       unzip(body.inputStream, listOf(NODES_ZIP_FOLDER, EDGES_ZIP_FOLDER), "csv")
           .sortedByDescending { it.prefix } // Nodes first
           .forEach { node ->
@@ -229,7 +212,7 @@ class DatasetServiceImpl(
       null -> Dataset.Status.DRAFT.value
       DatasetSourceType.File -> {
         csmJedisPool.resource.use { jedis ->
-          if (!jedis.exists(dataset.twingraphId!!.toRedisMetaDataKey())) {
+          if (!jedis.exists(dataset.twingraphId!!)) {
             Dataset.Status.PENDING.value
           } else {
             dataset
@@ -302,8 +285,8 @@ class DatasetServiceImpl(
     }
     datasetRepository.delete(dataset)
     csmJedisPool.resource.use { jedis ->
-      if (jedis.exists(dataset.twingraphId!!.toRedisMetaDataKey())) {
-        jedis.del(dataset.twingraphId!!.toRedisMetaDataKey())
+      if (jedis.exists(dataset.twingraphId!!)) {
+        jedis.del(dataset.twingraphId!!)
       }
     }
   }
@@ -363,7 +346,7 @@ class DatasetServiceImpl(
         ?: throw CsmResourceNotFoundException("TwingraphId is not defined for the dataset")
     val resultSet =
         csmRedisGraph.query(
-            getLastVersion(dataset.twingraphId!!),
+            dataset.twingraphId!!,
             datasetTwinGraphQuery.query,
             csmPlatformProperties.twincache.queryTimeout)
     return resultSet.toJsonString()
@@ -481,11 +464,11 @@ class DatasetServiceImpl(
     }
 
     csmJedisPool.resource.use { jedis ->
-      if (jedis.exists(graphId.toRedisMetaDataKey())) {
+      if (jedis.exists(graphId)) {
         requestBody
             .filterKeys { it == GRAPH_NAME || it == GRAPH_ROTATION }
-            .forEach { (key, value) -> jedis.hset(graphId.toRedisMetaDataKey(), key, value) }
-        return jedis.hgetAll(graphId.toRedisMetaDataKey())
+            .forEach { (key, value) -> jedis.hset(graphId, key, value) }
+        return jedis.hgetAll(graphId)
       }
       throw CsmResourceNotFoundException("No metadata found for graphId $graphId")
     }
@@ -493,16 +476,11 @@ class DatasetServiceImpl(
 
   fun getGraphMetaData(graphId: String): Map<String, String> {
     csmJedisPool.resource.use { jedis ->
-      if (jedis.exists(graphId.toRedisMetaDataKey())) {
-        return jedis.hgetAll(graphId.toRedisMetaDataKey())
+      if (jedis.exists(graphId)) {
+        return jedis.hgetAll(graphId)
       }
       throw CsmResourceNotFoundException("No metadata found for graphId $graphId")
     }
-  }
-
-  fun getLastVersion(graphId: String): String {
-    val graphMetadata = getGraphMetaData(graphId)
-    return graphId + ":" + graphMetadata["lastVersion"].toString()
   }
 
   override fun importDataset(organizationId: String, dataset: Dataset): Dataset {

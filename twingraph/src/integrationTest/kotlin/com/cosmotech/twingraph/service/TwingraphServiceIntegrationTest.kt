@@ -25,6 +25,7 @@ import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
@@ -62,13 +63,25 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
 
   val graphId = "graph"
 
-  @BeforeEach
-  fun init() {
+  @BeforeAll
+  fun beforeAll() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
+    val context = getContext(redisStackServer)
+    val containerIp =
+        (context.server as RedisStackContainer).containerInfo.networkSettings.ipAddress
+    jedisPool = JedisPool(containerIp, 6379)
+    redisGraph = RedisGraph(jedisPool)
+    ReflectionTestUtils.setField(twingraphApiService, "csmJedisPool", jedisPool)
+    ReflectionTestUtils.setField(twingraphApiService, "csmRedisGraph", redisGraph)
+
+    context.sync().hset("${graphId}MetaData", mapOf("lastVersion" to "1"))
+  }
+
+  @BeforeEach
+  fun beforeEach() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("admin")
-
     organization =
         organizationApiService.registerOrganization(
             Organization(
@@ -81,16 +94,6 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
                             mutableListOf(
                                 OrganizationAccessControl(
                                     id = CONNECTED_ADMIN_USER, role = "admin")))))
-
-    val context = getContext(redisStackServer)
-    val containerIp =
-        (context.server as RedisStackContainer).containerInfo.networkSettings.ipAddress
-    jedisPool = JedisPool(containerIp, 6379)
-    redisGraph = RedisGraph(jedisPool)
-    ReflectionTestUtils.setField(twingraphApiService, "csmJedisPool", jedisPool)
-    ReflectionTestUtils.setField(twingraphApiService, "csmRedisGraph", redisGraph)
-
-    context.sync().hset("${graphId}MetaData", mapOf("lastVersion" to "1"))
   }
 
   @Test
