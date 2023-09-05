@@ -126,44 +126,44 @@ helm upgrade --install prometheus-operator prometheus-community/kube-prometheus-
 
 
 # Create namespace keycloak if it does not exist
-kubectl create namespace ${KEYCLOAK_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
+# kubectl create namespace ${KEYCLOAK_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
 
-KEYCLOAK_ADM_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-$(kubectl get secret --namespace ${KEYCLOAK_NAMESPACE} csm-keycloak -o jsonpath="{.data.admin-password}" | base64 -d || "")}
-if [[ -z "${KEYCLOAK_ADM_PASSWORD}" ]] ; then
-  KEYCLOAK_ADM_PASSWORD=$(date +%s | sha256sum | base64 | head -c 32)
-fi
+# KEYCLOAK_ADM_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-$(kubectl get secret --namespace ${KEYCLOAK_NAMESPACE} csm-keycloak -o jsonpath="{.data.admin-password}" | base64 -d || "")}
+# if [[ -z "${KEYCLOAK_ADM_PASSWORD}" ]] ; then
+  # KEYCLOAK_ADM_PASSWORD=$(date +%s | sha256sum | base64 | head -c 32)
+# fi
 
-KEYCLOAK_DB_PASS=${KEYCLOAK_DB_PASSWORD:-$(kubectl get secret --namespace ${KEYCLOAK_NAMESPACE} csm-keycloak-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d || "")}
-if [[ -z "${KEYCLOAK_DB_PASS}" ]] ; then
-  KEYCLOAK_DB_PASS=$(date +%s | sha256sum | base64 | head -c 32)
-fi
+# KEYCLOAK_DB_PASS=${KEYCLOAK_DB_PASSWORD:-$(kubectl get secret --namespace ${KEYCLOAK_NAMESPACE} csm-keycloak-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d || "")}
+# if [[ -z "${KEYCLOAK_DB_PASS}" ]] ; then
+#   KEYCLOAK_DB_PASS=$(date +%s | sha256sum | base64 | head -c 32)
+# fi
 
-KEYCLOAK_DB_USER_PASS=${KEYCLOAK_DB_USER_PASSWORD:-$(kubectl get secret --namespace ${KEYCLOAK_NAMESPACE} csm-keycloak-postgresql -o jsonpath="{.data.password}" | base64 -d || "")}
-if [[ -z "${KEYCLOAK_DB_USER_PASS}" ]] ; then
-  KEYCLOAK_DB_USER_PASS=$(date +%s | sha256sum | base64 | head -c 32)
-fi
+# KEYCLOAK_DB_USER_PASS=${KEYCLOAK_DB_USER_PASSWORD:-$(kubectl get secret --namespace ${KEYCLOAK_NAMESPACE} csm-keycloak-postgresql -o jsonpath="{.data.password}" | base64 -d || "")}
+# if [[ -z "${KEYCLOAK_DB_USER_PASS}" ]] ; then
+  # KEYCLOAK_DB_USER_PASS=$(date +%s | sha256sum | base64 | head -c 32)
+# fi
 
-curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/JREY/keycloak/deployment_scripts/v3.0/values-keycloak-config-map-template.yaml" \
-     -o "${WORKING_DIR}"/values-keycloak-config-map-template.yaml
+# curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/JREY/keycloak/deployment_scripts/v3.0/values-keycloak-config-map-template.yaml" \
+  #    -o "${WORKING_DIR}"/values-keycloak-config-map-template.yaml
 
-curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/JREY/keycloak/deployment_scripts/v3.0/csm-keycloak-config-map.yaml" \
-     -o "${WORKING_DIR}"/csm-keycloak-config-map.yaml
+# curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/JREY/keycloak/deployment_scripts/v3.0/csm-keycloak-config-map.yaml" \
+  #    -o "${WORKING_DIR}"/csm-keycloak-config-map.yaml
 
 # Create config map for Keycloak base configuration
-kubectl create configmap csm-keycloak-map -n ${KEYCLOAK_NAMESPACE} --from-file=csm-keycloak-config-map.yaml -o yaml --dry-run=client | kubectl -n ${KEYCLOAK_NAMESPACE} apply -f -
+# kubectl create configmap csm-keycloak-map -n ${KEYCLOAK_NAMESPACE} --from-file=csm-keycloak-config-map.yaml -o yaml --dry-run=client | kubectl -n ${KEYCLOAK_NAMESPACE} apply -f -
 
-KEYCLOAK_ADM_PASSWORD_VAR=${KEYCLOAK_ADM_PASSWORD} \
-KEYCLOAK_DB_PASS_VAR=${KEYCLOAK_DB_PASS} \
-KEYCLOAK_DB_USER_PASS_VAR=${KEYCLOAK_DB_USER_PASS} \
-envsubst < "${WORKING_DIR}"/values-keycloak-config-map-template.yaml > "${WORKING_DIR}"/values-keycloak-config-map.yaml
+# KEYCLOAK_ADM_PASSWORD_VAR=${KEYCLOAK_ADM_PASSWORD} \
+# KEYCLOAK_DB_PASS_VAR=${KEYCLOAK_DB_PASS} \
+# KEYCLOAK_DB_USER_PASS_VAR=${KEYCLOAK_DB_USER_PASS} \
+# envsubst < "${WORKING_DIR}"/values-keycloak-config-map-template.yaml > "${WORKING_DIR}"/values-keycloak-config-map.yaml
 
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
 
-helm upgrade --install csm-keycloak bitnami/keycloak -n ${KEYCLOAK_NAMESPACE} --version ${KEYCLOAK_VERSION} \
-      --values values-keycloak-config-map.yaml \
-      --wait \
-      --timeout 10m0s
+# helm upgrade --install csm-keycloak bitnami/keycloak -n ${KEYCLOAK_NAMESPACE} --version ${KEYCLOAK_VERSION} \
+#       --values values-keycloak-config-map.yaml \
+#       --wait \
+#       --timeout 10m0s
 
 
 # nginx
