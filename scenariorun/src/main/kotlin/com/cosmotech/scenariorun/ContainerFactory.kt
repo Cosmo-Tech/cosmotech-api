@@ -902,7 +902,7 @@ class ContainerFactory(
   }
 
   private fun testStep(step: Boolean?): Boolean {
-    return step ?: true
+    return step ?: false
   }
 
   @Suppress("LongParameterList")
