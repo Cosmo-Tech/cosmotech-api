@@ -170,11 +170,15 @@ entity RunTemplate {
     gitRepositoryUrl: String
     gitBranchName: String
     runTemplateSourceDir: String
+    orchestratorType: RunTemplateOrchestrator
     executionTimeout: Integer
     deleteHistoricalData: DeleteHistoricalData
 }
 
 entity RunTemplateHandlerId {
+}
+
+entity RunTemplateOrchestrator {
 }
 
 entity RunTemplateParameter {
