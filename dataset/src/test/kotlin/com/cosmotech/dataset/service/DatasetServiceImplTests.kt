@@ -36,7 +36,6 @@ import io.mockk.mockk
 import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
 import io.mockk.verify
-import io.mockk.verifyAll
 import java.io.File
 import java.util.*
 import kotlin.test.Test
@@ -204,7 +203,7 @@ class DatasetServiceImplTests {
     val dataset = baseDataset().copy(twingraphId = "twingraphId")
     val subDatasetGraphQuery = SubDatasetGraphQuery()
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
-    every { csmJedisPool.resource.exists(any<String>()) } returns false
+    every { csmJedisPool.resource.dump(any<String>()) } throws CsmResourceNotFoundException("")
     assertThrows<CsmResourceNotFoundException> {
       datasetService.createSubDataset(ORGANIZATION_ID, dataset.id!!, subDatasetGraphQuery)
     }
@@ -444,12 +443,7 @@ class DatasetServiceImplTests {
     val twinGraphQuery = DatasetTwinGraphQuery("MATCH(n) RETURN n")
     datasetService.twingraphQuery(ORGANIZATION_ID, DATASET_ID, twinGraphQuery)
 
-    verifyAll {
-      csmJedisPool.resource.exists(any<String>())
-      csmRedisGraph.query(any(), any(), any<Long>())
-      csmJedisPool.resource.hgetAll(any<String>())
-      csmJedisPool.resource.close()
-    }
+    verify(exactly = 1) { csmRedisGraph.query(any(), any(), any<Long>()) }
   }
 
   private fun mockEmptyResultSet(): ResultSet {

@@ -25,6 +25,7 @@ import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.getCurrentAuthentication
+import com.cosmotech.dataset.api.DatasetApiService
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
@@ -94,6 +95,7 @@ const val CONNECTED_DEFAULT_USER = "test.user@cosmotech.com"
 class ScenarioServiceImplTests {
 
   @MockK private lateinit var organizationService: OrganizationApiService
+  @Suppress("unused") @MockK private lateinit var datasetService: DatasetApiService
   @MockK private lateinit var solutionService: SolutionApiService
   @RelaxedMockK private lateinit var workspaceService: WorkspaceApiService
 

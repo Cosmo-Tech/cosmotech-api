@@ -13,6 +13,9 @@ dependencies {
   implementation(platform("com.squareup.okhttp3:okhttp-bom:4.10.0"))
   implementation("com.squareup.okhttp3:okhttp")
   implementation("com.squareup.okhttp3:logging-interceptor")
+  implementation("com.redislabs:jredisgraph:2.5.1") {
+    constraints { implementation("org.apache.commons:commons-text:1.10.0") }
+  }
 
   implementation(projects.cosmotechConnectorApi)
   implementation(projects.cosmotechDatasetApi)

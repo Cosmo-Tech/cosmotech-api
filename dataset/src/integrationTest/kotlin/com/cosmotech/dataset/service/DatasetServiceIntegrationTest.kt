@@ -30,6 +30,7 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -44,11 +45,14 @@ import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
 import redis.clients.jedis.JedisPool
 
+const val REDIS_PORT = 6379
+
 @ActiveProfiles(profiles = ["dataset-test"])
 @ExtendWith(MockKExtension::class)
 @ExtendWith(SpringExtension::class)
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Suppress("LargeClass", "TooManyFunctions")
 class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
   private val logger = LoggerFactory.getLogger(DatasetServiceIntegrationTest::class.java)
@@ -77,9 +81,20 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   lateinit var redisGraph: RedisGraph
   lateinit var organization: Organization
 
-  @BeforeEach
-  fun setUp() {
+  @BeforeAll
+  fun beforeAll() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
+    val context = getContext(redisStackServer)
+    val containerIp =
+        (context.server as RedisStackContainer).containerInfo.networkSettings.ipAddress
+    jedisPool = JedisPool(containerIp, REDIS_PORT)
+    redisGraph = RedisGraph(jedisPool)
+    ReflectionTestUtils.setField(datasetApiService, "csmJedisPool", jedisPool)
+    ReflectionTestUtils.setField(datasetApiService, "csmRedisGraph", redisGraph)
+  }
+
+  @BeforeEach
+  fun beforeEach() {
     every { getCurrentAccountIdentifier(any()) } returns "test.user@cosmotech.com"
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
@@ -87,19 +102,11 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     registeredConnector = connectorApiService.registerConnector(connector)
 
-    dataset1 = mockDataset("d-dataset-1", "dataset-1")
-    dataset2 = mockDataset("d-dataset-2", "dataset-2")
-
-    val context = getContext(redisStackServer)
-    val containerIp =
-        (context.server as RedisStackContainer).containerInfo.networkSettings.ipAddress
-    jedisPool = JedisPool(containerIp, 6379)
-    redisGraph = RedisGraph(jedisPool)
-    ReflectionTestUtils.setField(datasetApiService, "csmJedisPool", jedisPool)
-    ReflectionTestUtils.setField(datasetApiService, "csmRedisGraph", redisGraph)
+    dataset1 = makeDataset("d-dataset-1", "dataset-1")
+    dataset2 = makeDataset("d-dataset-2", "dataset-2")
   }
 
-  fun mockDataset(id: String, name: String): Dataset {
+  fun makeDataset(id: String, name: String): Dataset {
     return Dataset(
         id = id,
         name = name,
@@ -253,7 +260,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
     val expectedSize = 15
     IntRange(1, numberOfDatasets).forEach {
-      datasetApiService.createDataset(organizationId, mockDataset("d-dataset-$it", "dataset-$it"))
+      datasetApiService.createDataset(organizationId, makeDataset("d-dataset-$it", "dataset-$it"))
     }
 
     logger.info("should find all datasets and assert there are $numberOfDatasets")
