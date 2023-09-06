@@ -4,7 +4,6 @@ package com.cosmotech.scenario.service
 
 import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.config.CsmPlatformProperties
-import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
@@ -656,8 +655,6 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   @Nested
   inner class RBACTests {
 
-    @MockK private lateinit var csmEventPublisher: CsmEventPublisher
-
     @TestFactory
     fun `test RBAC findAllScenarios`() =
         mapOf(
@@ -670,6 +667,8 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
             )
             .map { (role, shouldThrow) ->
               dynamicTest("Test RBAC findAllScenarios : $role") {
+                every { getCurrentAccountIdentifier(any()) } returns defaultName
+
                 organizationSaved =
                     organizationApiService.registerOrganization(
                         mockOrganization(id = "id", roleName = defaultName))
@@ -686,20 +685,14 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                         workspaceSaved.id!!,
                         mockScenario(roleName = defaultName, role = role))
 
-                every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
-                every { getCurrentAccountIdentifier(any()) } returns defaultName
-
                 val allScenarios =
                     scenarioApiService.findAllScenarios(
-                        organizationSaved.id!!, workspace.id!!, null, null)
+                        organizationSaved.id!!, workspaceSaved.id!!, null, null)
 
-                if (shouldThrow) {
-                  assertEquals(0, allScenarios.size)
-                } else {
-                  assertNotNull(allScenarios)
-                }
+                assertNotNull(allScenarios)
               }
             }
+
     @TestFactory
     fun `test RBAC createScenario`() =
         mapOf(
@@ -739,6 +732,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                 }
               }
             }
+
     @TestFactory
     fun `test RBAC deleteAllScenarios`() =
         mapOf(
@@ -777,6 +771,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                 }
               }
             }
+
     @TestFactory
     fun `test RBAC findAllScenariosByValidationStatus`() =
         mapOf(
@@ -819,6 +814,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                 assertTrue { allScenarios.size > 1 }
               }
             }
+
     @TestFactory
     fun `test RBAC getScenariosTree`() =
         mapOf(
@@ -855,6 +851,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                 }
               }
             }
+
     @TestFactory
     fun `test RBAC findScenarioById`() =
         mapOf(
@@ -898,6 +895,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                 }
               }
             }
+
     @TestFactory
     fun `test RBAC deleteScenario`() =
         mapOf(
@@ -941,6 +939,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                 }
               }
             }
+
     @TestFactory
     fun `test RBAC updateScenario`() =
         mapOf(
@@ -990,6 +989,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                 }
               }
             }
+
     @TestFactory
     fun `test RBAC getScenarioValidationStatusById`() =
         mapOf(
@@ -1083,6 +1083,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                 }
               }
             }
+
     @TestFactory
     fun `test RBAC removeAllScenarioParameterValues`() =
         mapOf(
@@ -1126,6 +1127,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                 }
               }
             }
+
     @TestFactory
     fun `test RBAC downloadScenarioData`() =
         mapOf(
@@ -1169,6 +1171,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                 }
               }
             }
+
     @TestFactory
     fun `test RBAC getScenarioDataDownloadJobInfo`() =
         mapOf(
@@ -1216,14 +1219,15 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                 }
               }
             }
+
     @TestFactory
     fun `test RBAC getScenarioPermissions`() =
         mapOf(
                 ROLE_VIEWER to false,
                 ROLE_EDITOR to false,
                 ROLE_VALIDATOR to false,
-                ROLE_USER to false,
-                ROLE_NONE to false,
+                ROLE_USER to true,
+                ROLE_NONE to true,
                 ROLE_ADMIN to false,
             )
             .map { (role, shouldThrow) ->
@@ -1238,7 +1242,6 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                     workspaceApiService.createWorkspace(
                         organizationSaved.id!!, mockWorkspace(roleName = defaultName))
 
-                every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
                 every { getCurrentAccountIdentifier(any()) } returns defaultName
 
                 scenarioSaved =
@@ -1247,12 +1250,20 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                         workspaceSaved.id!!,
                         mockScenario(roleName = defaultName, role = role))
 
-                assertDoesNotThrow {
-                  scenarioApiService.getScenarioPermissions(
-                      organizationSaved.id!!, workspaceSaved.id!!, role)
+                if (shouldThrow) {
+                  assertThrows<CsmAccessForbiddenException> {
+                    scenarioApiService.getScenarioPermissions(
+                        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, role)
+                  }
+                } else {
+                  assertDoesNotThrow {
+                    scenarioApiService.getScenarioPermissions(
+                        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, role)
+                  }
                 }
               }
             }
+
     @TestFactory
     fun `test RBAC getScenarioSecurity`() =
         mapOf(
@@ -1296,6 +1307,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                 }
               }
             }
+
     @TestFactory
     fun `test RBAC setScenarioDefaultSecurity`() =
         mapOf(
@@ -1345,6 +1357,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                 }
               }
             }
+
     @TestFactory
     fun `test RBAC addScenarioAccessControl`() =
         mapOf(
@@ -1394,6 +1407,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                 }
               }
             }
+
     @TestFactory
     fun `test RBAC getScenarioAccessControl`() =
         mapOf(
@@ -1443,6 +1457,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                 }
               }
             }
+
     @TestFactory
     fun `test RBAC removeScenarioAccessControl`() =
         mapOf(
@@ -1492,6 +1507,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                 }
               }
             }
+
     @TestFactory
     fun `test RBAC updateScenarioAccessControl`() =
         mapOf(
@@ -1543,6 +1559,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                 }
               }
             }
+
     @TestFactory
     fun `test RBAC getScenarioSecurityUsers`() =
         mapOf(
@@ -1586,6 +1603,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                 }
               }
             }
+
     @TestFactory
     fun `test RBAC importScenario`() =
         mapOf(
@@ -1672,7 +1690,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
 
   fun mockOrganization(
       id: String = "id",
-      roleName: String = "roleName",
+      roleName: String = defaultName,
       role: String = ROLE_ADMIN
   ): Organization {
     return Organization(

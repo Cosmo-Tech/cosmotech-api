@@ -983,9 +983,9 @@ class ScenarioServiceImplTests {
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
               ROLE_ADMIN to false,
-              ROLE_VALIDATOR to true,
+              ROLE_VALIDATOR to false,
               ROLE_USER to false,
-              ROLE_NONE to true)
+              ROLE_NONE to false)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC find all scenarios: $role", role, shouldThrow) {
               every { workspaceService.findWorkspaceById(any(), any()) } returns it.workspace
