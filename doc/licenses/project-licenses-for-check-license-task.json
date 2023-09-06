@@ -432,7 +432,7 @@
         },
         {
             "moduleName": "com.github.Cosmo-Tech:cosmotech-api-common",
-            "moduleVersion": "0.1.51-SNAPSHOT",
+            "moduleVersion": "0.1.52-SNAPSHOT",
             "moduleUrls": [
                 "https://github.com/Cosmo-Tech/cosmotech-api-common"
             ],
