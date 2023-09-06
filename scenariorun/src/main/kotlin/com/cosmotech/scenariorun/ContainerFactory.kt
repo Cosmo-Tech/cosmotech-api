@@ -33,6 +33,7 @@ import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateHandlerId
+import com.cosmotech.solution.domain.RunTemplateOrchestrator
 import com.cosmotech.solution.domain.RunTemplateStepSource
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.utils.getCloudPath
@@ -60,6 +61,7 @@ private const val CONTAINER_RUN = "runContainer"
 private const val CONTAINER_RUN_MODE = "engine"
 private const val CONTAINER_POSTRUN = "postRunContainer"
 private const val CONTAINER_POSTRUN_MODE = "postrun"
+private const val CONTAINER_CSM_ORC = "CSMOrchestrator"
 internal const val IDENTITY_PROVIDER = "IDENTITY_PROVIDER"
 internal const val AZURE_TENANT_ID_VAR = "AZURE_TENANT_ID"
 internal const val AZURE_CLIENT_ID_VAR = "AZURE_CLIENT_ID"
@@ -94,7 +96,9 @@ private const val AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI_VAR =
 private const val AZURE_DATA_EXPLORER_DATABASE_NAME = "AZURE_DATA_EXPLORER_DATABASE_NAME"
 private const val RUN_TEMPLATE_ID_VAR = "CSM_RUN_TEMPLATE_ID"
 private const val CONTAINER_MODE_VAR = "CSM_CONTAINER_MODE"
+private const val CONTAINER_ORCHESTRATOR_LEGACY_VAR = "CSM_ENTRYPOINT_LEGACY"
 private const val ENTRYPOINT_NAME = "entrypoint.py"
+private const val ENTRYPOINT_NAME_CSM_ORC = "csm-orc"
 private const val EVENT_HUB_MEASURES_VAR = "CSM_PROBES_MEASURES_TOPIC"
 internal const val EVENT_HUB_CONTROL_PLANE_VAR = "CSM_CONTROL_PLANE_TOPIC"
 private const val CSM_SIMULATION_VAR = "CSM_SIMULATION"
@@ -136,6 +140,8 @@ private val LABEL_SIZING =
         NODE_LABEL_HIGH_CPU to HIGH_CPU_SIZING,
         NODE_LABEL_HIGH_MEMORY to HIGH_MEMORY_SIZING,
     )
+
+private val CSM_ORC_ORCHESTRATOR_VALUE = RunTemplateOrchestrator.csmMinusOrc.value
 
 @Component
 @Suppress("LargeClass", "TooManyFunctions")
@@ -408,6 +414,10 @@ class ContainerFactory(
             ))
   }
 
+  internal fun getOrchestratorType(orchestratorType: String?): String {
+    return orchestratorType ?: CSM_ORC_ORCHESTRATOR_VALUE
+  }
+
   @Suppress("LongMethod", "LongParameterList") // Exception for this method - too tedious to update
   internal fun buildContainersPipeline(
       scenario: Scenario,
@@ -430,143 +440,223 @@ class ContainerFactory(
 
     var containers: MutableList<ScenarioRunContainer> = mutableListOf()
 
-    var currentDependencies: MutableList<String>? = mutableListOf()
-
-    containers.addAll(
-        buildFetchDatasetsContainersPipeline(
-            currentDependencies,
-            template,
-            datasets,
-            connectors,
-            scenario,
-            organization,
-            workspace,
-            csmSimulationId,
-            NODE_LABEL_DEFAULT,
-            BASIC_SIZING))
-
-    if (scenarioDataDownload) {
+    if (getOrchestratorType(template.orchestratorType?.value) == CSM_ORC_ORCHESTRATOR_VALUE) {
       containers.addAll(
-          buildScenarioDataDownloadContainersPipeline(
-              currentDependencies,
+          buildCSMOrchestratorPipeline(
               organization,
               workspace,
               scenario,
               solution,
-              template,
+              runTemplateId,
               csmSimulationId,
-              scenarioDataDownloadJobId!!,
-              NODE_LABEL_DEFAULT,
-              BASIC_SIZING))
+              scenarioRunLabel,
+              scenarioRunSizing))
     } else {
+      var currentDependencies: MutableList<String>? = mutableListOf()
+
       containers.addAll(
-          buildFetchScenarioParametersContainersPipeline(
+          buildFetchDatasetsContainersPipeline(
               currentDependencies,
               template,
-              organization,
-              workspace,
-              scenario,
-              csmSimulationId,
-              solution,
               datasets,
               connectors,
-              NODE_LABEL_DEFAULT,
-              BASIC_SIZING))
-
-      if (currentDependencies.isNullOrEmpty()) {
-        currentDependencies = null
-      }
-
-      if (testStep(template.applyParameters)) {
-        containers.addAll(
-            buildApplyParametersContainersPipeline(
-                currentDependencies,
-                organization,
-                workspace,
-                scenario,
-                solution,
-                runTemplateId,
-                csmSimulationId,
-                NODE_LABEL_DEFAULT,
-                BASIC_SIZING))
-        currentDependencies = mutableListOf(CONTAINER_APPLY_PARAMETERS)
-      }
-      if (testStep(template.validateData)) {
-        containers.addAll(
-            buildValidateDataContainersPipeline(
-                currentDependencies,
-                organization,
-                workspace,
-                scenario,
-                solution,
-                runTemplateId,
-                csmSimulationId,
-                NODE_LABEL_DEFAULT,
-                BASIC_SIZING))
-        currentDependencies = mutableListOf(CONTAINER_VALIDATE_DATA)
-      }
-
-      containers.addAll(
-          buildSendDataWarehouseContainersPipeline(
-              currentDependencies,
-              workspace,
-              template,
-              organization,
               scenario,
+              organization,
+              workspace,
               csmSimulationId,
               NODE_LABEL_DEFAULT,
               BASIC_SIZING))
 
-      if (testStep(template.preRun)) {
+      if (scenarioDataDownload) {
         containers.addAll(
-            buildPreRunContainersPipeline(
+            buildScenarioDataDownloadContainersPipeline(
                 currentDependencies,
                 organization,
                 workspace,
                 scenario,
                 solution,
-                runTemplateId,
+                template,
+                csmSimulationId,
+                scenarioDataDownloadJobId!!,
+                NODE_LABEL_DEFAULT,
+                BASIC_SIZING))
+      } else {
+        containers.addAll(
+            buildFetchScenarioParametersContainersPipeline(
+                currentDependencies,
+                template,
+                organization,
+                workspace,
+                scenario,
+                csmSimulationId,
+                solution,
+                datasets,
+                connectors,
+                NODE_LABEL_DEFAULT,
+                BASIC_SIZING))
+
+        if (currentDependencies.isNullOrEmpty()) {
+          currentDependencies = null
+        }
+
+        if (testStep(template.applyParameters)) {
+          containers.addAll(
+              buildApplyParametersContainersPipeline(
+                  currentDependencies,
+                  organization,
+                  workspace,
+                  scenario,
+                  solution,
+                  runTemplateId,
+                  csmSimulationId,
+                  NODE_LABEL_DEFAULT,
+                  BASIC_SIZING))
+          currentDependencies = mutableListOf(CONTAINER_APPLY_PARAMETERS)
+        }
+        if (testStep(template.validateData)) {
+          containers.addAll(
+              buildValidateDataContainersPipeline(
+                  currentDependencies,
+                  organization,
+                  workspace,
+                  scenario,
+                  solution,
+                  runTemplateId,
+                  csmSimulationId,
+                  NODE_LABEL_DEFAULT,
+                  BASIC_SIZING))
+          currentDependencies = mutableListOf(CONTAINER_VALIDATE_DATA)
+        }
+
+        containers.addAll(
+            buildSendDataWarehouseContainersPipeline(
+                currentDependencies,
+                workspace,
+                template,
+                organization,
+                scenario,
                 csmSimulationId,
                 NODE_LABEL_DEFAULT,
                 BASIC_SIZING))
-        currentDependencies = mutableListOf(CONTAINER_PRERUN)
+
+        if (testStep(template.preRun)) {
+          containers.addAll(
+              buildPreRunContainersPipeline(
+                  currentDependencies,
+                  organization,
+                  workspace,
+                  scenario,
+                  solution,
+                  runTemplateId,
+                  csmSimulationId,
+                  NODE_LABEL_DEFAULT,
+                  BASIC_SIZING))
+          currentDependencies = mutableListOf(CONTAINER_PRERUN)
+        }
+
+        if (testStep(template.run)) {
+          containers.addAll(
+              buildRunContainersPipeline(
+                  currentDependencies,
+                  organization,
+                  workspace,
+                  scenario,
+                  solution,
+                  runTemplateId,
+                  csmSimulationId,
+                  scenarioRunLabel,
+                  scenarioRunSizing))
+          currentDependencies = mutableListOf(CONTAINER_RUN)
+        }
+
+        if (testStep(template.postRun)) {
+          containers.addAll(
+              buildPostRunContainersPipeline(
+                  currentDependencies,
+                  organization,
+                  workspace,
+                  scenario,
+                  solution,
+                  runTemplateId,
+                  csmSimulationId,
+                  NODE_LABEL_DEFAULT,
+                  BASIC_SIZING))
+        }
       }
 
-      if (testStep(template.run)) {
-        containers.addAll(
-            buildRunContainersPipeline(
-                currentDependencies,
-                organization,
-                workspace,
-                scenario,
-                solution,
-                runTemplateId,
-                csmSimulationId,
-                scenarioRunLabel,
-                scenarioRunSizing))
-        currentDependencies = mutableListOf(CONTAINER_RUN)
+      if (template.stackSteps == true) {
+        containers = stackSolutionContainers(containers)
       }
-
-      if (testStep(template.postRun)) {
-        containers.addAll(
-            buildPostRunContainersPipeline(
-                currentDependencies,
-                organization,
-                workspace,
-                scenario,
-                solution,
-                runTemplateId,
-                csmSimulationId,
-                NODE_LABEL_DEFAULT,
-                BASIC_SIZING))
-      }
-    }
-
-    if (template.stackSteps == true) {
-      containers = stackSolutionContainers(containers)
     }
 
     return containers.toList()
+  }
+
+  private fun buildCSMOrchestratorPipeline(
+      organization: Organization,
+      workspace: Workspace,
+      scenario: Scenario,
+      solution: Solution,
+      runTemplateId: String,
+      csmSimulationId: String,
+      nodeSizingLabel: String,
+      customSizing: Sizing
+  ) =
+      listOf(
+          this.buildCSMOrchestratorContainer(
+              organization,
+              workspace,
+              scenario,
+              solution,
+              runTemplateId,
+              csmSimulationId,
+              nodeSizingLabel,
+              customSizing))
+
+  internal fun buildCSMOrchestratorContainer(
+      organization: Organization,
+      workspace: Workspace,
+      scenario: Scenario,
+      solution: Solution,
+      runTemplateId: String,
+      csmSimulationId: String,
+      nodeSizingLabel: String,
+      customSizing: Sizing
+  ): ScenarioRunContainer {
+
+    val imageName =
+        getImageName(
+            csmPlatformProperties.azure?.containerRegistries?.solutions ?: "",
+            solution.repository,
+            solution.version)
+    val envVars =
+        getCommonEnvVars(
+            csmPlatformProperties,
+            csmSimulationId,
+            organization.id ?: "",
+            workspace.id ?: "",
+            scenario.id ?: "",
+            workspace.key)
+    envVars[RUN_TEMPLATE_ID_VAR] = runTemplateId
+    envVars[CONTAINER_MODE_VAR] = CSM_ORC_ORCHESTRATOR_VALUE
+    envVars[CONTAINER_ORCHESTRATOR_LEGACY_VAR] = "false"
+
+    envVars.putAll(getEventHubEnvVars(organization, workspace))
+
+    val template = getRunTemplate(solution, runTemplateId)
+    val csmSimulation = template.csmSimulation
+    if (csmSimulation != null) {
+      envVars[CSM_SIMULATION_VAR] = csmSimulation
+    }
+    return ScenarioRunContainer(
+        name = CONTAINER_CSM_ORC,
+        image = imageName,
+        envVars = envVars,
+        dependencies = null,
+        entrypoint = ENTRYPOINT_NAME_CSM_ORC,
+        solutionContainer = true,
+        nodeLabel = nodeSizingLabel,
+        runSizing = customSizing.toContainerResourceSizing())
   }
 
   private fun buildPostRunContainersPipeline(
@@ -1260,6 +1350,7 @@ class ContainerFactory(
             workspace.key)
     envVars[RUN_TEMPLATE_ID_VAR] = runTemplateId
     envVars[CONTAINER_MODE_VAR] = step.mode
+    envVars[CONTAINER_ORCHESTRATOR_LEGACY_VAR] = "true"
 
     envVars.putAll(getEventHubEnvVars(organization, workspace))
 

@@ -33,6 +33,7 @@ import com.cosmotech.scenariorun.container.StartInfo
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
+import com.cosmotech.solution.domain.RunTemplateOrchestrator
 import com.cosmotech.solution.domain.RunTemplateParameter
 import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.RunTemplateStepSource
@@ -1080,7 +1081,8 @@ class OktaContainerFactoryTests {
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default")
+            "TWIN_CACHE_USERNAME" to "default",
+            "CSM_ENTRYPOINT_LEGACY" to "true")
     assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
   }
 
@@ -1122,7 +1124,8 @@ class OktaContainerFactoryTests {
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default")
+            "TWIN_CACHE_USERNAME" to "default",
+            "CSM_ENTRYPOINT_LEGACY" to "true")
     assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
   }
 
@@ -2355,7 +2358,8 @@ class OktaContainerFactoryTests {
                 "TWIN_CACHE_HOST" to "this_is_a_host",
                 "TWIN_CACHE_PORT" to "6973",
                 "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-                "TWIN_CACHE_USERNAME" to "default")
+                "TWIN_CACHE_USERNAME" to "default",
+                "CSM_ENTRYPOINT_LEGACY" to "true")
             .toSortedMap(),
         container.envVars?.toSortedMap())
   }
@@ -2405,7 +2409,8 @@ class OktaContainerFactoryTests {
                 "TWIN_CACHE_HOST" to "this_is_a_host",
                 "TWIN_CACHE_PORT" to "6973",
                 "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-                "TWIN_CACHE_USERNAME" to "default")
+                "TWIN_CACHE_USERNAME" to "default",
+                "CSM_ENTRYPOINT_LEGACY" to "true")
             .toSortedMap(),
         container.envVars?.toSortedMap())
   }
@@ -2467,7 +2472,8 @@ class OktaContainerFactoryTests {
                 "TWIN_CACHE_HOST" to "this_is_a_host",
                 "TWIN_CACHE_PORT" to "6973",
                 "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-                "TWIN_CACHE_USERNAME" to "default")
+                "TWIN_CACHE_USERNAME" to "default",
+                "CSM_ENTRYPOINT_LEGACY" to "true")
             .toSortedMap(),
         container.envVars?.toSortedMap())
   }
@@ -2480,6 +2486,68 @@ class OktaContainerFactoryTests {
             authentication = Authentication(strategy = SHARED_ACCESS_POLICY))
 
     assertThrows(IllegalStateException::class.java) { buildRunContainer() }
+  }
+  @Test
+  fun `CSMOrchestrator Container is not null`() {
+    val container = this.buildCSMOrchestratorContainer()
+    assertNotNull(container)
+  }
+
+  @Test
+  fun `CSMOrchestrator Container name valid`() {
+    val container = this.buildCSMOrchestratorContainer()
+    assertEquals("CSMOrchestrator", container.name)
+  }
+
+  @Test
+  fun `CSMOrchestrator Container env vars valid`() {
+    val container = this.buildCSMOrchestratorContainer()
+    this.validateCSMOrchestratorContainer(container)
+  }
+
+  @Test
+  fun `Build all containers for a Scenario with csm-orc count`() {
+    val scenario = getScenario()
+    val datasets = listOf(getDataset())
+    val connectors = listOf(getConnector())
+    val workspace = getWorkspace()
+    val solution = getCSMOrcSolution()
+    val containers =
+        factory.buildContainersPipeline(
+            scenario,
+            datasets,
+            connectors,
+            workspace,
+            getOrganization(),
+            solution,
+            CSM_SIMULATION_ID,
+            scenarioRunLabel = NODE_LABEL_DEFAULT,
+            scenarioRunSizing = BASIC_SIZING)
+    assertEquals(containers.size, 1)
+  }
+  @Test
+  fun `Build all containers for a Scenario with csm-orc list`() {
+    val scenario = getScenario()
+    val datasets = listOf(getDataset())
+    val connectors = listOf(getConnector())
+    val workspace = getWorkspace()
+    val solution = getCSMOrcSolution()
+    val containers =
+        factory.buildContainersPipeline(
+            scenario,
+            datasets,
+            connectors,
+            workspace,
+            getOrganization(),
+            solution,
+            CSM_SIMULATION_ID,
+            scenarioRunLabel = NODE_LABEL_DEFAULT,
+            scenarioRunSizing = BASIC_SIZING)
+    val expected =
+        listOf(
+            "CSMOrchestrator",
+        )
+    assertEquals(expected, containers.map { container -> container.name })
   }
 
   private fun getStartInfoFromIds(): StartInfo {
@@ -2597,7 +2665,8 @@ class OktaContainerFactoryTests {
                 "TWIN_CACHE_HOST" to "this_is_a_host",
                 "TWIN_CACHE_PORT" to "6973",
                 "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-                "TWIN_CACHE_USERNAME" to "default")
+                "TWIN_CACHE_USERNAME" to "default",
+                "CSM_ENTRYPOINT_LEGACY" to "true")
             .toSortedMap(),
         container.envVars?.toSortedMap())
   }
@@ -2644,7 +2713,8 @@ class OktaContainerFactoryTests {
                 "TWIN_CACHE_HOST" to "this_is_a_host",
                 "TWIN_CACHE_PORT" to "6973",
                 "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-                "TWIN_CACHE_USERNAME" to "default")
+                "TWIN_CACHE_USERNAME" to "default",
+                "CSM_ENTRYPOINT_LEGACY" to "true")
             .toSortedMap(),
         container.envVars?.toSortedMap())
   }
@@ -2709,6 +2779,18 @@ class OktaContainerFactoryTests {
         customSizing = BASIC_SIZING)
   }
 
+  private fun buildCSMOrchestratorContainer(): ScenarioRunContainer {
+    return factory.buildCSMOrchestratorContainer(
+        getOrganization(),
+        getWorkspace(),
+        getScenario(),
+        getSolution(),
+        "testruntemplate",
+        CSM_SIMULATION_ID,
+        nodeSizingLabel = NODE_LABEL_DEFAULT,
+        customSizing = BASIC_SIZING)
+  }
+
   private fun validateEnvVarsSolutionContainer(container: ScenarioRunContainer?, mode: String) {
     val expected =
         mapOf(
@@ -2741,7 +2823,44 @@ class OktaContainerFactoryTests {
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default")
+            "TWIN_CACHE_USERNAME" to "default",
+            "CSM_ENTRYPOINT_LEGACY" to "true")
+    assertEquals(expected.toSortedMap(), container?.envVars?.toSortedMap())
+  }
+  private fun validateCSMOrchestratorContainer(container: ScenarioRunContainer?) {
+    val expected =
+        mapOf(
+            "IDENTITY_PROVIDER" to "okta",
+            "OKTA_CLIENT_ID" to "123456",
+            "OKTA_CLIENT_SECRET" to "azerty",
+            "OKTA_CLIENT_ISSUER" to "http://okta.com/oauth2/default",
+            "AZURE_TENANT_ID" to "12345678",
+            "AZURE_CLIENT_ID" to "98765432",
+            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "CSM_SIMULATION_ID" to "simulationrunid",
+            "CSM_API_URL" to "https://api.cosmotech.com",
+            "CSM_API_SCOPE" to "scope1,scope2",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
+            "CSM_ORGANIZATION_ID" to "Organizationid",
+            "CSM_WORKSPACE_ID" to "Workspaceid",
+            "CSM_SCENARIO_ID" to "Scenarioid",
+            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
+            "CSM_CONTAINER_MODE" to "csm-orc",
+            "CSM_PROBES_MEASURES_TOPIC" to
+                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
+            "CSM_CONTROL_PLANE_TOPIC" to
+                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
+            "CSM_SIMULATION" to "TestSimulation",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default",
+            "CSM_ENTRYPOINT_LEGACY" to "false")
     assertEquals(expected.toSortedMap(), container?.envVars?.toSortedMap())
   }
 
@@ -3110,6 +3229,16 @@ class OktaContainerFactoryTests {
         runTemplates = mutableListOf(getRunTemplateLocalSources()),
     )
   }
+  private fun getCSMOrcSolution(): Solution {
+    return Solution(
+        id = "1",
+        key = "TestSolution",
+        name = "Test Solution",
+        repository = "cosmotech/testsolution_simulator",
+        version = "1.0.0",
+        runTemplates = mutableListOf(getCSMOrcRunTemplate()),
+    )
+  }
 
   private fun getRunTemplate(): RunTemplate {
     return RunTemplate(
@@ -3126,6 +3255,7 @@ class OktaContainerFactoryTests {
         sendInputParametersToDataWarehouse = true,
         preRun = true,
         postRun = true,
+        orchestratorType = RunTemplateOrchestrator.argoMinusWorkflow,
     )
   }
 
@@ -3145,6 +3275,7 @@ class OktaContainerFactoryTests {
         sendInputParametersToDataWarehouse = true,
         preRun = true,
         postRun = true,
+        orchestratorType = RunTemplateOrchestrator.argoMinusWorkflow,
     )
   }
 
@@ -3164,6 +3295,7 @@ class OktaContainerFactoryTests {
         run = true,
         preRun = true,
         postRun = true,
+        orchestratorType = RunTemplateOrchestrator.argoMinusWorkflow,
     )
   }
 
@@ -3183,6 +3315,7 @@ class OktaContainerFactoryTests {
         sendInputParametersToDataWarehouse = true,
         preRun = true,
         postRun = true,
+        orchestratorType = RunTemplateOrchestrator.argoMinusWorkflow,
     )
   }
 
@@ -3200,6 +3333,7 @@ class OktaContainerFactoryTests {
         sendInputParametersToDataWarehouse = true,
         preRun = true,
         postRun = true,
+        orchestratorType = RunTemplateOrchestrator.argoMinusWorkflow,
     )
   }
 
@@ -3218,6 +3352,7 @@ class OktaContainerFactoryTests {
         sendInputParametersToDataWarehouse = true,
         preRun = true,
         postRun = true,
+        orchestratorType = RunTemplateOrchestrator.argoMinusWorkflow,
     )
   }
 
@@ -3236,6 +3371,7 @@ class OktaContainerFactoryTests {
         sendInputParametersToDataWarehouse = true,
         preRun = true,
         postRun = true,
+        orchestratorType = RunTemplateOrchestrator.argoMinusWorkflow,
     )
   }
 
@@ -3254,6 +3390,7 @@ class OktaContainerFactoryTests {
         sendDatasetsToDataWarehouse = true,
         preRun = true,
         postRun = true,
+        orchestratorType = RunTemplateOrchestrator.argoMinusWorkflow,
     )
   }
 
@@ -3272,6 +3409,7 @@ class OktaContainerFactoryTests {
         sendInputParametersToDataWarehouse = false,
         preRun = false,
         postRun = false,
+        orchestratorType = RunTemplateOrchestrator.argoMinusWorkflow,
     )
   }
 
@@ -3295,6 +3433,7 @@ class OktaContainerFactoryTests {
         sendInputParametersToDataWarehouse = true,
         preRun = true,
         postRun = true,
+        orchestratorType = RunTemplateOrchestrator.argoMinusWorkflow,
     )
   }
 
@@ -3318,6 +3457,16 @@ class OktaContainerFactoryTests {
         sendInputParametersToDataWarehouse = true,
         preRun = true,
         postRun = true,
+        orchestratorType = RunTemplateOrchestrator.argoMinusWorkflow,
+    )
+  }
+  private fun getCSMOrcRunTemplate(): RunTemplate {
+    return RunTemplate(
+        id = "testruntemplate",
+        name = "Test Run",
+        csmSimulation = "TestSimulation",
+        computeSize = "highcpupool",
+        orchestratorType = RunTemplateOrchestrator.csmMinusOrc,
     )
   }
 
