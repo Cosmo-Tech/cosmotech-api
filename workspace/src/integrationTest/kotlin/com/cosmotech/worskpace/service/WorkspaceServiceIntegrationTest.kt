@@ -35,8 +35,10 @@ import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
+import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
+import java.io.InputStream
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -77,7 +79,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   @MockK(relaxed = true) private lateinit var azureStorageBlobServiceClient: BlobServiceClient
   @MockK private lateinit var secretManagerMock: SecretManager
   @MockK private lateinit var resource: Resource
-  @MockK private lateinit var resourceScanner: ResourceScanner
+  @RelaxedMockK private lateinit var resourceScanner: ResourceScanner
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var organizationApiService: OrganizationApiService
@@ -159,7 +161,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `test CRUD operations on Workspace as User Unauthorized`() {
 
-    every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+    every { getCurrentAccountIdentifier(any()) } returns "userLambda"
 
     logger.info("should not create a new workspace")
     val workspace2 = mockWorkspace(organization.id!!, solution.id!!, "Workspace 2")
@@ -270,7 +272,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `test RBAC as User Unauthorized`() {
-    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
+    every { getCurrentAccountIdentifier(any()) } returns "userLambda"
 
     assertEquals(0, workspaceApiService.findAllWorkspaces(organization.id!!, null, null).size)
   }
@@ -345,6 +347,8 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
   @Nested
   inner class RBACTests {
+
+    @MockK private lateinit var inputStream: InputStream
 
     @TestFactory
     fun `test RBAC findAllWorkspaces`() =
@@ -573,15 +577,19 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
             )
             .map { (role, shouldThrow) ->
               DynamicTest.dynamicTest("Test RBAC uploadWorkspaceFile : $role") {
+                ReflectionTestUtils.setField(
+                    workspaceApiService, "resourceScanner", resourceScanner)
+
                 organization =
                     organizationApiService.registerOrganization(
                         mockOrganization(id = "id", roleName = defaultName))
                 solution = solutionApiService.createSolution(organization.id!!, mockSolution())
 
-                every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
                 every { getCurrentAccountIdentifier(any()) } returns defaultName
-                every { resource.getFilename() } returns ""
                 every { resourceScanner.scanMimeTypes(any(), any()) } returns Unit
+                every { resource.getFilename() } returns ""
+                every { resource.contentLength() } returns 1
+                every { resource.getInputStream() } returns inputStream
                 every {
                   azureStorageBlobServiceClient
                       .getBlobContainerClient(any())
@@ -720,9 +728,9 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
         mapOf(
                 ROLE_VIEWER to false,
                 ROLE_EDITOR to false,
-                ROLE_VALIDATOR to false,
+                ROLE_VALIDATOR to true,
                 ROLE_USER to false,
-                ROLE_NONE to false,
+                ROLE_NONE to true,
                 ROLE_ADMIN to false,
             )
             .map { (role, shouldThrow) ->
@@ -738,11 +746,16 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
                 workspace =
                     workspaceApiService.createWorkspace(
                         organization.id!!, mockWorkspace(roleName = defaultName, role = role))
-
-                assertDoesNotThrow {
-                  workspaceApiService.getWorkspacePermissions(
-                      organization.id!!, workspace.id!!, ROLE_USER)
-                }
+                if (shouldThrow)
+                    assertThrows<CsmAccessForbiddenException> {
+                      workspaceApiService.getWorkspacePermissions(
+                          organization.id!!, workspace.id!!, ROLE_USER)
+                    }
+                else
+                    assertDoesNotThrow {
+                      workspaceApiService.getWorkspacePermissions(
+                          organization.id!!, workspace.id!!, ROLE_USER)
+                    }
               }
             }
 
@@ -763,7 +776,6 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
                         mockOrganization(id = "id", roleName = defaultName))
                 solution = solutionApiService.createSolution(organization.id!!, mockSolution())
 
-                every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
                 every { getCurrentAccountIdentifier(any()) } returns defaultName
 
                 workspace =
@@ -1063,7 +1075,6 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
                         mockOrganization(id = "id", roleName = defaultName))
                 solution = solutionApiService.createSolution(organization.id!!, mockSolution())
 
-                every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
                 every { getCurrentAccountIdentifier(any()) } returns defaultName
 
                 assertDoesNotThrow {
@@ -1075,7 +1086,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
   fun mockOrganization(
       id: String,
-      roleName: String = CONNECTED_ADMIN_USER,
+      roleName: String = defaultName,
       role: String = ROLE_ADMIN
   ): Organization {
     return Organization(
@@ -1104,7 +1115,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
       organizationId: String = organization.id!!,
       solutionId: String = solution.id!!,
       name: String = "name",
-      roleName: String = CONNECTED_ADMIN_USER,
+      roleName: String = defaultName,
       role: String = ROLE_ADMIN
   ): Workspace {
     return Workspace(
@@ -1123,6 +1134,6 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
                 accessControlList =
                     mutableListOf(
                         WorkspaceAccessControl(id = roleName, role = role),
-                        WorkspaceAccessControl(name, "viewer"))))
+                        WorkspaceAccessControl(CONNECTED_DEFAULT_USER, "viewer"))))
   }
 }

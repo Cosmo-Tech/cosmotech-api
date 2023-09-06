@@ -849,8 +849,11 @@ internal class ScenarioServiceImpl(
   override fun getScenarioPermissions(
       organizationId: String,
       workspaceId: String,
+      scenarioId: String,
       role: String
   ): List<String> {
+    val scenario = findScenarioById(organizationId, workspaceId, scenarioId)
+    csmRbac.verify(scenario.getRbac(), PERMISSION_READ_SECURITY, scenarioPermissions)
     return com.cosmotech.api.rbac.getPermissions(role, getScenarioRolesDefinition())
   }
 

@@ -359,6 +359,8 @@ internal class WorkspaceServiceImpl(
       workspaceId: String,
       role: String
   ): List<String> {
+    val workspace = findWorkspaceById(organizationId, workspaceId)
+    csmRbac.verify(workspace.getRbac(), PERMISSION_READ_SECURITY)
     return getPermissions(role, getCommonRolesDefinition())
   }
 
