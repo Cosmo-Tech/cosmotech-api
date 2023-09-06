@@ -529,8 +529,8 @@ internal class ScenarioServiceImpl(
   ): Scenario =
       scenarioRepository.findBy(organizationId, workspaceId, scenarioId).orElseThrow {
         CsmResourceNotFoundException(
-            "Resource of type '${Scenario::class.java.simpleName}'" +
-                " and workspaceId=$workspaceId, scenarioId=$scenarioId not found")
+            "Resource of type '${Scenario::class.java.simpleName}' not found" +
+                " with workspaceId=$workspaceId, scenarioId=$scenarioId")
       }
 
   private fun addStateToScenario(organizationId: String, scenario: Scenario?) {

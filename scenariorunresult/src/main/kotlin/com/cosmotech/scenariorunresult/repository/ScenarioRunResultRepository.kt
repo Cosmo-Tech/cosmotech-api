@@ -3,7 +3,6 @@
 package com.cosmotech.scenariorunresult.repository
 
 import com.cosmotech.scenariorunresult.domain.ScenarioRunResult
-import com.redis.om.spring.annotations.Query
 import com.redis.om.spring.repository.RedisDocumentRepository
 import org.springframework.stereotype.Repository
 
