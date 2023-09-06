@@ -393,7 +393,7 @@ entity ScenarioRunResourceRequested {
 
 entity ScenarioRunResult {
     id: String
-    results: Object
+    results: List<Map>
 }
 
 entity ScenarioRunSearch {
