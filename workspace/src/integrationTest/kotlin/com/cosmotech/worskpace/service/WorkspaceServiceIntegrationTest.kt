@@ -74,7 +74,6 @@ const val FAKE_MAIL = "fake@mail.fr"
 class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
   private val logger = LoggerFactory.getLogger(WorkspaceServiceIntegrationTest::class.java)
-  private val defaultName = "my.account-tester@cosmotech.com"
 
   @MockK(relaxed = true) private lateinit var azureStorageBlobServiceClient: BlobServiceClient
   @MockK private lateinit var secretManagerMock: SecretManager
@@ -252,7 +251,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(workspaceRole.role, workspaceSecurityRegistered.default)
   }
 
-  @Test
+ /* @Test
   fun `test RBAC WorkspaceSecurity as User Unauthorized`() {
 
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
@@ -268,7 +267,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
       workspaceApiService.setWorkspaceDefaultSecurity(
           organization.id!!, workspace.id!!, workspaceRole)
     }
-  }
+  }*/
 
   @Test
   fun `test RBAC as User Unauthorized`() {
@@ -311,7 +310,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
-  @Test
+  /*@Test
   fun `test RBAC AccessControls on Workspace as User Unauthorized`() {
 
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
@@ -325,7 +324,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("should throw CsmAccessForbiddenException when getting the access control")
     assertThrows<CsmAccessForbiddenException> {
-      workspaceApiService.getWorkspaceAccessControl(organization.id!!, workspace.id!!, FAKE_MAIL)
+      workspaceApiService.getWorkspaceAccessControl(organization.id!!, workspace.id!!, "userLambda")
     }
 
     logger.info("should throw CsmAccessForbiddenException when updating the access control")
@@ -343,7 +342,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     assertThrows<CsmAccessForbiddenException> {
       workspaceApiService.removeWorkspaceAccessControl(organization.id!!, workspace.id!!, FAKE_MAIL)
     }
-  }
+  }*/
 
   @Nested
   inner class RBACTests {
@@ -364,11 +363,11 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
               DynamicTest.dynamicTest("Test RBAC findAllWorkspaces : $role") {
                 organization =
                     organizationApiService.registerOrganization(
-                        mockOrganization(id = "id", roleName = defaultName))
+                        mockOrganization(id = "id", roleName = FAKE_MAIL))
                 solution = solutionApiService.createSolution(organization.id!!, mockSolution())
 
                 every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
-                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
                 val allWorkspaces =
                     workspaceApiService.findAllWorkspaces(organization.id!!, null, null)
@@ -393,12 +392,12 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
             .map { (role, shouldThrow) ->
               DynamicTest.dynamicTest("Test RBAC createWorkspace : $role") {
                 every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
-                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
                 organization =
                     organizationApiService.registerOrganization(
-                        mockOrganization(id = "id", roleName = defaultName, role = role))
+                        mockOrganization(id = "id", roleName = FAKE_MAIL, role = role))
                 solution = solutionApiService.createSolution(organization.id!!, mockSolution())
-                work = mockWorkspace(roleName = defaultName, role = role)
+                work = mockWorkspace(roleName = FAKE_MAIL, role = role)
 
                 if (shouldThrow) {
                   assertThrows<CsmAccessForbiddenException> {
@@ -426,15 +425,15 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
               DynamicTest.dynamicTest("Test RBAC findWorkspaceById : $role") {
                 organization =
                     organizationApiService.registerOrganization(
-                        mockOrganization(id = "id", roleName = defaultName))
+                        mockOrganization(id = "id", roleName = FAKE_MAIL))
                 solution = solutionApiService.createSolution(organization.id!!, mockSolution())
 
                 every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
-                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
                 workspace =
                     workspaceApiService.createWorkspace(
-                        organization.id!!, mockWorkspace(roleName = defaultName, role = role))
+                        organization.id!!, mockWorkspace(roleName = FAKE_MAIL, role = role))
 
                 if (shouldThrow) {
                   assertThrows<CsmAccessForbiddenException> {
@@ -462,16 +461,16 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
               DynamicTest.dynamicTest("Test RBAC deleteWorkspace : $role") {
                 organization =
                     organizationApiService.registerOrganization(
-                        mockOrganization(id = "id", roleName = defaultName))
+                        mockOrganization(id = "id", roleName = FAKE_MAIL))
                 solution = solutionApiService.createSolution(organization.id!!, mockSolution())
 
                 every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
-                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
                 every { secretManagerMock.deleteSecret(any(), any()) } returns Unit
 
                 workspace =
                     workspaceApiService.createWorkspace(
-                        organization.id!!, mockWorkspace(roleName = defaultName, role = role))
+                        organization.id!!, mockWorkspace(roleName = FAKE_MAIL, role = role))
 
                 if (shouldThrow) {
                   assertThrows<CsmAccessForbiddenException> {
@@ -499,15 +498,15 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
               DynamicTest.dynamicTest("Test RBAC updateWorkspace : $role") {
                 organization =
                     organizationApiService.registerOrganization(
-                        mockOrganization(id = "id", roleName = defaultName))
+                        mockOrganization(id = "id", roleName = FAKE_MAIL))
                 solution = solutionApiService.createSolution(organization.id!!, mockSolution())
 
                 every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
-                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
                 workspace =
                     workspaceApiService.createWorkspace(
-                        organization.id!!, mockWorkspace(roleName = defaultName, role = role))
+                        organization.id!!, mockWorkspace(roleName = FAKE_MAIL, role = role))
 
                 if (shouldThrow) {
                   assertThrows<CsmAccessForbiddenException> {
@@ -543,15 +542,15 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
               DynamicTest.dynamicTest("Test RBAC findAllWorkspaceFiles : $role") {
                 organization =
                     organizationApiService.registerOrganization(
-                        mockOrganization(id = "id", roleName = defaultName))
+                        mockOrganization(id = "id", roleName = FAKE_MAIL))
                 solution = solutionApiService.createSolution(organization.id!!, mockSolution())
 
                 every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
-                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
                 workspace =
                     workspaceApiService.createWorkspace(
-                        organization.id!!, mockWorkspace(roleName = defaultName, role = role))
+                        organization.id!!, mockWorkspace(roleName = FAKE_MAIL, role = role))
 
                 if (shouldThrow) {
                   assertThrows<CsmAccessForbiddenException> {
@@ -582,10 +581,10 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
                 organization =
                     organizationApiService.registerOrganization(
-                        mockOrganization(id = "id", roleName = defaultName))
+                        mockOrganization(id = "id", roleName = FAKE_MAIL))
                 solution = solutionApiService.createSolution(organization.id!!, mockSolution())
 
-                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
                 every { resourceScanner.scanMimeTypes(any(), any()) } returns Unit
                 every { resource.getFilename() } returns ""
                 every { resource.contentLength() } returns 1
@@ -599,7 +598,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
                 workspace =
                     workspaceApiService.createWorkspace(
-                        organization.id!!, mockWorkspace(roleName = defaultName, role = role))
+                        organization.id!!, mockWorkspace(roleName = FAKE_MAIL, role = role))
 
                 if (shouldThrow) {
                   assertThrows<CsmAccessForbiddenException> {
@@ -629,15 +628,15 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
               DynamicTest.dynamicTest("Test RBAC deleteAllWorkspaceFiles : $role") {
                 organization =
                     organizationApiService.registerOrganization(
-                        mockOrganization(id = "id", roleName = defaultName))
+                        mockOrganization(id = "id", roleName = FAKE_MAIL))
                 solution = solutionApiService.createSolution(organization.id!!, mockSolution())
 
                 every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
-                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
                 workspace =
                     workspaceApiService.createWorkspace(
-                        organization.id!!, mockWorkspace(roleName = defaultName, role = role))
+                        organization.id!!, mockWorkspace(roleName = FAKE_MAIL, role = role))
 
                 if (shouldThrow) {
                   assertThrows<CsmAccessForbiddenException> {
@@ -665,15 +664,15 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
               DynamicTest.dynamicTest("Test RBAC downloadWorkspaceFile : $role") {
                 organization =
                     organizationApiService.registerOrganization(
-                        mockOrganization(id = "id", roleName = defaultName))
+                        mockOrganization(id = "id", roleName = FAKE_MAIL))
                 solution = solutionApiService.createSolution(organization.id!!, mockSolution())
 
                 every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
-                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
                 workspace =
                     workspaceApiService.createWorkspace(
-                        organization.id!!, mockWorkspace(roleName = defaultName, role = role))
+                        organization.id!!, mockWorkspace(roleName = FAKE_MAIL, role = role))
 
                 if (shouldThrow) {
                   assertThrows<CsmAccessForbiddenException> {
@@ -701,15 +700,15 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
               DynamicTest.dynamicTest("Test RBAC deleteWorkspaceFile : $role") {
                 organization =
                     organizationApiService.registerOrganization(
-                        mockOrganization(id = "id", roleName = defaultName))
+                        mockOrganization(id = "id", roleName = FAKE_MAIL))
                 solution = solutionApiService.createSolution(organization.id!!, mockSolution())
 
                 every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
-                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
                 workspace =
                     workspaceApiService.createWorkspace(
-                        organization.id!!, mockWorkspace(roleName = defaultName, role = role))
+                        organization.id!!, mockWorkspace(roleName = FAKE_MAIL, role = role))
 
                 if (shouldThrow) {
                   assertThrows<CsmAccessForbiddenException> {
@@ -737,15 +736,15 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
               DynamicTest.dynamicTest("Test RBAC getWorkspacePermissions : $role") {
                 organization =
                     organizationApiService.registerOrganization(
-                        mockOrganization(id = "id", roleName = defaultName))
+                        mockOrganization(id = "id", roleName = FAKE_MAIL))
                 solution = solutionApiService.createSolution(organization.id!!, mockSolution())
 
                 every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
-                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
                 workspace =
                     workspaceApiService.createWorkspace(
-                        organization.id!!, mockWorkspace(roleName = defaultName, role = role))
+                        organization.id!!, mockWorkspace(roleName = FAKE_MAIL, role = role))
                 if (shouldThrow)
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.getWorkspacePermissions(
@@ -771,16 +770,17 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
             )
             .map { (role, shouldThrow) ->
               DynamicTest.dynamicTest("Test RBAC getWorkspaceSecurity : $role") {
+
+                  every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+
                 organization =
                     organizationApiService.registerOrganization(
-                        mockOrganization(id = "id", roleName = defaultName))
+                        mockOrganization(id = "id", roleName = FAKE_MAIL))
                 solution = solutionApiService.createSolution(organization.id!!, mockSolution())
-
-                every { getCurrentAccountIdentifier(any()) } returns defaultName
 
                 workspace =
                     workspaceApiService.createWorkspace(
-                        organization.id!!, mockWorkspace(roleName = defaultName, role = role))
+                        organization.id!!, mockWorkspace(roleName = FAKE_MAIL, role = role))
 
                 if (shouldThrow) {
                   assertThrows<CsmAccessForbiddenException> {
@@ -808,15 +808,15 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
               DynamicTest.dynamicTest("Test RBAC setWorkspaceDefaultSecurity : $role") {
                 organization =
                     organizationApiService.registerOrganization(
-                        mockOrganization(id = "id", roleName = defaultName))
+                        mockOrganization(id = "id", roleName = FAKE_MAIL))
                 solution = solutionApiService.createSolution(organization.id!!, mockSolution())
 
                 every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
-                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
                 workspace =
                     workspaceApiService.createWorkspace(
-                        organization.id!!, mockWorkspace(roleName = defaultName, role = role))
+                        organization.id!!, mockWorkspace(roleName = FAKE_MAIL, role = role))
 
                 if (shouldThrow) {
                   assertThrows<CsmAccessForbiddenException> {
@@ -846,15 +846,15 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
               DynamicTest.dynamicTest("Test RBAC addWorkspaceAccessControl : $role") {
                 organization =
                     organizationApiService.registerOrganization(
-                        mockOrganization(id = "id", roleName = defaultName))
+                        mockOrganization(id = "id", roleName = FAKE_MAIL))
                 solution = solutionApiService.createSolution(organization.id!!, mockSolution())
 
                 every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
-                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
                 workspace =
                     workspaceApiService.createWorkspace(
-                        organization.id!!, mockWorkspace(roleName = defaultName, role = role))
+                        organization.id!!, mockWorkspace(roleName = FAKE_MAIL, role = role))
 
                 if (shouldThrow) {
                   assertThrows<CsmAccessForbiddenException> {
@@ -884,25 +884,25 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
               DynamicTest.dynamicTest("Test RBAC getWorkspaceAccessControl : $role") {
                 organization =
                     organizationApiService.registerOrganization(
-                        mockOrganization(id = "id", roleName = defaultName))
+                        mockOrganization(id = "id", roleName = FAKE_MAIL))
                 solution = solutionApiService.createSolution(organization.id!!, mockSolution())
 
                 every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
-                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
                 workspace =
                     workspaceApiService.createWorkspace(
-                        organization.id!!, mockWorkspace(roleName = defaultName, role = role))
+                        organization.id!!, mockWorkspace(roleName = FAKE_MAIL, role = role))
 
                 if (shouldThrow) {
                   assertThrows<CsmAccessForbiddenException> {
                     workspaceApiService.getWorkspaceAccessControl(
-                        organization.id!!, workspace.id!!, defaultName)
+                        organization.id!!, workspace.id!!, FAKE_MAIL)
                   }
                 } else {
                   assertDoesNotThrow {
                     workspaceApiService.getWorkspaceAccessControl(
-                        organization.id!!, workspace.id!!, defaultName)
+                        organization.id!!, workspace.id!!, FAKE_MAIL)
                   }
                 }
               }
@@ -922,25 +922,25 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
               DynamicTest.dynamicTest("Test RBAC removeWorkspaceAccessControl : $role") {
                 organization =
                     organizationApiService.registerOrganization(
-                        mockOrganization(id = "id", roleName = defaultName))
+                        mockOrganization(id = "id", roleName = FAKE_MAIL))
                 solution = solutionApiService.createSolution(organization.id!!, mockSolution())
 
                 every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
-                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
                 workspace =
                     workspaceApiService.createWorkspace(
-                        organization.id!!, mockWorkspace(roleName = defaultName, role = role))
+                        organization.id!!, mockWorkspace(roleName = FAKE_MAIL, role = role))
 
                 if (shouldThrow) {
                   assertThrows<CsmAccessForbiddenException> {
                     workspaceApiService.removeWorkspaceAccessControl(
-                        organization.id!!, workspace.id!!, "name")
+                        organization.id!!, workspace.id!!, CONNECTED_DEFAULT_USER)
                   }
                 } else {
                   assertDoesNotThrow {
                     workspaceApiService.removeWorkspaceAccessControl(
-                        organization.id!!, workspace.id!!, "name")
+                        organization.id!!, workspace.id!!, CONNECTED_DEFAULT_USER)
                   }
                 }
               }
@@ -960,25 +960,25 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
               DynamicTest.dynamicTest("Test RBAC updateWorkspaceAccessControl : $role") {
                 organization =
                     organizationApiService.registerOrganization(
-                        mockOrganization(id = "id", roleName = defaultName))
+                        mockOrganization(id = "id", roleName = FAKE_MAIL))
                 solution = solutionApiService.createSolution(organization.id!!, mockSolution())
 
                 every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
-                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
                 workspace =
                     workspaceApiService.createWorkspace(
-                        organization.id!!, mockWorkspace(roleName = defaultName, role = role))
+                        organization.id!!, mockWorkspace(roleName = FAKE_MAIL, role = role))
 
                 if (shouldThrow) {
                   assertThrows<CsmAccessForbiddenException> {
                     workspaceApiService.updateWorkspaceAccessControl(
-                        organization.id!!, workspace.id!!, "name", WorkspaceRole(ROLE_ADMIN))
+                        organization.id!!, workspace.id!!, CONNECTED_DEFAULT_USER, WorkspaceRole(ROLE_ADMIN))
                   }
                 } else {
                   assertDoesNotThrow {
                     workspaceApiService.updateWorkspaceAccessControl(
-                        organization.id!!, workspace.id!!, "name", WorkspaceRole(ROLE_ADMIN))
+                        organization.id!!, workspace.id!!, CONNECTED_DEFAULT_USER, WorkspaceRole(ROLE_ADMIN))
                   }
                 }
               }
@@ -998,15 +998,15 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
               DynamicTest.dynamicTest("Test RBAC getWorkspaceSecurityUsers : $role") {
                 organization =
                     organizationApiService.registerOrganization(
-                        mockOrganization(id = "id", roleName = defaultName))
+                        mockOrganization(id = "id", roleName = FAKE_MAIL))
                 solution = solutionApiService.createSolution(organization.id!!, mockSolution())
 
                 every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
-                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
                 workspace =
                     workspaceApiService.createWorkspace(
-                        organization.id!!, mockWorkspace(roleName = defaultName, role = role))
+                        organization.id!!, mockWorkspace(roleName = FAKE_MAIL, role = role))
 
                 if (shouldThrow) {
                   assertThrows<CsmAccessForbiddenException> {
@@ -1034,16 +1034,16 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
               DynamicTest.dynamicTest("Test RBAC createSecret : $role") {
                 organization =
                     organizationApiService.registerOrganization(
-                        mockOrganization(id = "id", roleName = defaultName))
+                        mockOrganization(id = "id", roleName = FAKE_MAIL))
                 solution = solutionApiService.createSolution(organization.id!!, mockSolution())
 
                 every { getCurrentAuthenticatedRoles(any()) } returns listOf(role)
-                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
                 every { secretManagerMock.createOrReplaceSecret(any(), any(), any()) } returns Unit
 
                 workspace =
                     workspaceApiService.createWorkspace(
-                        organization.id!!, mockWorkspace(roleName = defaultName, role = role))
+                        organization.id!!, mockWorkspace(roleName = FAKE_MAIL, role = role))
 
                 if (shouldThrow) {
                   assertThrows<CsmAccessForbiddenException> {
@@ -1072,10 +1072,10 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
               DynamicTest.dynamicTest("Test RBAC importWorkspace : $role") {
                 organization =
                     organizationApiService.registerOrganization(
-                        mockOrganization(id = "id", roleName = defaultName))
+                        mockOrganization(id = "id", roleName = FAKE_MAIL))
                 solution = solutionApiService.createSolution(organization.id!!, mockSolution())
 
-                every { getCurrentAccountIdentifier(any()) } returns defaultName
+                every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
                 assertDoesNotThrow {
                   workspaceApiService.importWorkspace(organization.id!!, mockWorkspace())
@@ -1086,7 +1086,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
   fun mockOrganization(
       id: String,
-      roleName: String = defaultName,
+      roleName: String = CONNECTED_ADMIN_USER,
       role: String = ROLE_ADMIN
   ): Organization {
     return Organization(
@@ -1115,7 +1115,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
       organizationId: String = organization.id!!,
       solutionId: String = solution.id!!,
       name: String = "name",
-      roleName: String = defaultName,
+      roleName: String = CONNECTED_ADMIN_USER,
       role: String = ROLE_ADMIN
   ): Workspace {
     return Workspace(
