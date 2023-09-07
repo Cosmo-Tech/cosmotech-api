@@ -8,10 +8,8 @@ import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.events.TwingraphImportEvent
 import com.cosmotech.api.events.TwingraphImportJobInfoRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
-import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
-import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.security.coroutine.SecurityCoroutineContext
 import com.cosmotech.api.utils.changed
@@ -37,7 +35,6 @@ import com.cosmotech.dataset.domain.TwinGraphBatchResult
 import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.dataset.utils.toJsonString
 import com.cosmotech.organization.api.OrganizationApiService
-import com.cosmotech.organization.service.getRbac
 import com.redislabs.redisgraph.RedisGraph
 import java.io.InputStream
 import kotlinx.coroutines.GlobalScope
@@ -72,10 +69,10 @@ class DatasetServiceImpl(
     val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
     val pageable = constructPageRequest(page, size, defaultPageSize)
     if (pageable != null) {
-      return datasetRepository.findByOrganizationId(organizationId, pageable).toList()
+      return datasetRepository.findByOrganizationIdAndMain(organizationId, true, pageable).toList()
     }
     return findAllPaginated(defaultPageSize) {
-      datasetRepository.findByOrganizationId(organizationId, it).toList()
+      datasetRepository.findByOrganizationIdAndMain(organizationId, true,  it).toList()
     }
   }
 
@@ -122,6 +119,7 @@ class DatasetServiceImpl(
             id = idGenerator.generate("dataset"),
             twingraphId = twingraphId,
             sourceType = dataset.sourceType ?: DatasetSourceType.File,
+            main = dataset.main ?: true,
             status = Dataset.Status.DRAFT,
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
             organizationId = organizationId)
@@ -158,6 +156,7 @@ class DatasetServiceImpl(
               ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
               organizationId = organizationId,
               twingraphId = subTwinraphId,
+              main = subDatasetGraphQuery.main ?: false,
               parentId = dataset.id,
               connector = dataset.connector,
               sourceType = dataset.sourceType,
@@ -329,6 +328,11 @@ class DatasetServiceImpl(
       hasChanged = true
     }
 
+    dataset.main?.let {
+      existingDataset.main = it
+      hasChanged = true
+    }
+
     return if (hasChanged) {
       datasetRepository.save(existingDataset)
     } else {
@@ -409,7 +413,7 @@ class DatasetServiceImpl(
     do {
       val datasetList =
           datasetRepository
-              .findByOrganizationId(organizationUnregistered.organizationId, pageable)
+              .findByOrganizationIdAndMain(organizationUnregistered.organizationId, true, pageable)
               .toList()
       datasetRepository.deleteAll(datasetList)
       pageable = pageable.next()
@@ -450,38 +454,6 @@ class DatasetServiceImpl(
     return map
   }
 
-  fun updateGraphMetaData(
-      organizationId: String,
-      graphId: String,
-      requestBody: Map<String, String>
-  ): Any {
-    val organization = organizationService.findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
-
-    val graphRotation = requestBody[GRAPH_ROTATION]?.toInt()
-    if (graphRotation != null && graphRotation < 1) {
-      throw CsmClientException("GraphRotation should be a positive integer")
-    }
-
-    csmJedisPool.resource.use { jedis ->
-      if (jedis.exists(graphId)) {
-        requestBody
-            .filterKeys { it == GRAPH_NAME || it == GRAPH_ROTATION }
-            .forEach { (key, value) -> jedis.hset(graphId, key, value) }
-        return jedis.hgetAll(graphId)
-      }
-      throw CsmResourceNotFoundException("No metadata found for graphId $graphId")
-    }
-  }
-
-  fun getGraphMetaData(graphId: String): Map<String, String> {
-    csmJedisPool.resource.use { jedis ->
-      if (jedis.exists(graphId)) {
-        return jedis.hgetAll(graphId)
-      }
-      throw CsmResourceNotFoundException("No metadata found for graphId $graphId")
-    }
-  }
 
   override fun importDataset(organizationId: String, dataset: Dataset): Dataset {
     if (dataset.id == null) {

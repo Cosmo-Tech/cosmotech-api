@@ -844,6 +844,10 @@ components:
         twingraphId:
           type: string
           description: the twin graph id
+        main:
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
+          type: boolean
+          description: is this the main dataset
         sourceType:
           $ref: '#/components/schemas/DatasetSourceType'
         source:
@@ -1046,6 +1050,9 @@ components:
         query:
           type: string
           description: the query in cypher language
+        main:
+          type: boolean
+          description: is this the main dataset
     SourceInfo:
       type: object
       description: Source job import information

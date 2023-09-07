@@ -14,7 +14,7 @@ import org.springframework.stereotype.Repository
 @Repository
 interface DatasetRepository : RedisDocumentRepository<Dataset, String> {
 
-  fun findByOrganizationId(organizationId: String, pageRequest: PageRequest): Page<Dataset>
+  fun findByOrganizationIdAndMain(organizationId: String, main: Boolean, pageRequest: PageRequest): Page<Dataset>
 
   @Query("@tags:{\$tags}")
   fun findDatasetByTags(@Param("tags") tags: Set<String>, pageRequest: PageRequest): Page<Dataset>
