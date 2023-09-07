@@ -98,7 +98,6 @@ private const val RUN_TEMPLATE_ID_VAR = "CSM_RUN_TEMPLATE_ID"
 private const val CONTAINER_MODE_VAR = "CSM_CONTAINER_MODE"
 private const val CONTAINER_ORCHESTRATOR_LEGACY_VAR = "CSM_ENTRYPOINT_LEGACY"
 private const val ENTRYPOINT_NAME = "entrypoint.py"
-private const val ENTRYPOINT_NAME_CSM_ORC = "csm-orc"
 private const val EVENT_HUB_MEASURES_VAR = "CSM_PROBES_MEASURES_TOPIC"
 internal const val EVENT_HUB_CONTROL_PLANE_VAR = "CSM_CONTROL_PLANE_TOPIC"
 private const val CSM_SIMULATION_VAR = "CSM_SIMULATION"
@@ -653,7 +652,7 @@ class ContainerFactory(
         image = imageName,
         envVars = envVars,
         dependencies = null,
-        entrypoint = ENTRYPOINT_NAME_CSM_ORC,
+        entrypoint = ENTRYPOINT_NAME,
         solutionContainer = true,
         nodeLabel = nodeSizingLabel,
         runSizing = customSizing.toContainerResourceSizing())
