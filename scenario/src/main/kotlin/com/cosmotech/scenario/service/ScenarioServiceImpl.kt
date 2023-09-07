@@ -174,7 +174,8 @@ internal class ScenarioServiceImpl(
                         .createSubDataset(
                             organizationId,
                             it,
-                            SubDatasetGraphQuery(name = "Scenario - ${scenario.name})", main = false))
+                            SubDatasetGraphQuery(
+                                name = "Scenario - ${scenario.name})", main = false))
                         .id!!
                 else -> throw CsmClientException("Dataset ${dataset.id} is not completed")
               }
@@ -264,9 +265,7 @@ internal class ScenarioServiceImpl(
         throw CsmClientException("Can't delete a running scenario : ${scenario.id}")
     scenarioRepository.delete(scenario)
 
-    scenario.datasetList?.forEach {
-      datasetService.deleteDataset(organizationId, it)
-    }
+    scenario.datasetList?.forEach { datasetService.deleteDataset(organizationId, it) }
 
     this.handleScenarioDeletion(organizationId, workspaceId, scenario)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)

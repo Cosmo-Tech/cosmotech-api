@@ -26,7 +26,6 @@ import com.cosmotech.dataset.utils.toJsonString
 import com.cosmotech.organization.api.OrganizationApiService
 import com.redislabs.redisgraph.RedisGraph
 import com.redislabs.redisgraph.ResultSet
-import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
@@ -71,13 +70,13 @@ class DatasetServiceImplTests {
   @MockK val csmJedisPool: JedisPool = mockk(relaxed = true)
   @MockK val csmRedisGraph: RedisGraph = mockk(relaxed = true)
   @MockK var csmPlatformProperties: CsmPlatformProperties = mockk(relaxed = true)
-  @Suppress("unused") @MockK private var csmAdmin: CsmAdmin = CsmAdmin(csmPlatformProperties)
+  @Suppress("unused") @SpyK private var csmAdmin: CsmAdmin = CsmAdmin(csmPlatformProperties)
   @SpyK var csmRbac: CsmRbac = CsmRbac(csmPlatformProperties, csmAdmin)
   @SpyK @InjectMockKs lateinit var datasetService: DatasetServiceImpl
 
   @BeforeEach
   fun setUp() {
-    every { csmPlatformProperties.rbac.enabled } returns true
+    every { csmPlatformProperties.rbac.enabled } returns false
 
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns USER_ID
@@ -88,14 +87,13 @@ class DatasetServiceImplTests {
     every { csmJedisPool.resource.close() } returns Unit
 
     every { csmPlatformProperties.twincache.dataset.defaultPageSize } returns 10
-
-    MockKAnnotations.init(this)
   }
 
   @Test
   fun `findAllDatasets should return empty list when no dataset exists`() {
 
-    every { datasetRepository.findByOrganizationIdAndMain(ORGANIZATION_ID, true, any()) } returns Page.empty()
+    every { datasetRepository.findByOrganizationIdAndMain(ORGANIZATION_ID, true, any()) } returns
+        Page.empty()
     val result = datasetService.findAllDatasets(ORGANIZATION_ID, null, null)
     assertEquals(emptyList<Dataset>(), result)
   }

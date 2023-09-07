@@ -384,6 +384,121 @@ paths:
             application/json:
               schema:
                 type: string
+
+  /organizations/{organization_id}/datasets/{dataset_id}/twingraph/{type}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: dataset_id
+        in: path
+        description: the Dataset Identifier
+        required: true
+        schema:
+          type: string
+      - name: type
+        in: path
+        description: the entity model type
+        required: true
+        schema:
+          type: string
+          enum:
+            - node
+            - relationship
+    post:
+      operationId: createTwingraphEntities
+      tags:
+        - dataset
+      summary: Create new entities in a graph instance
+      description: create new entities in a graph instance
+      requestBody:
+        description: the entities to create
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/GraphProperties'
+            examples:
+              QueryEntities:
+                $ref: '#/components/examples/QueryEntities'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: string
+    get:
+      operationId: getTwingraphEntities
+      tags:
+        - dataset
+      summary: Get entities in a graph instance
+      description: get entities in a graph instance
+      parameters:
+        - name: ids
+          in: query
+          description: the entities to get
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: string
+    patch:
+      operationId: updateTwingraphEntities
+      tags:
+        - dataset
+      summary: Update entities in a graph instance
+      description: update entities in a graph instance
+      requestBody:
+        description: the entities to update
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/GraphProperties'
+            examples:
+              QueryEntities:
+                $ref: '#/components/examples/QueryEntities'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: string
+    delete:
+      operationId: deleteTwingraphEntities
+      tags:
+        - dataset
+      summary: Delete entities in a graph instance
+      description: delete entities in a graph instance
+      parameters:
+        - name: ids
+          in: query
+          description: the entities to delete
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: Successful response
+
   /organizations/{organization_id}/datasets/{dataset_id}/job/{job_id}/status:
     parameters:
       - name: organization_id
@@ -754,7 +869,6 @@ paths:
           description: Request succeeded
         "404":
           description: the ValidatorRun specified is unknown or you don't have access to it
-
   /organizations/{organization_id}/datasets/import:
     parameters:
       - name: organization_id
@@ -1084,6 +1198,24 @@ components:
         - totalLines
         - processedLines
         - errors
+    GraphProperties:
+      type: object
+      properties:
+        type:
+          type: string
+          description: the type of the relationship
+        source:
+          type: string
+          description: the source node of the relationship
+        target:
+          type: string
+          description: the target node of the relationship
+        name:
+          type: string
+          description: the name of the graph data object
+        params:
+          type: string
+          description: the parameters of the graph data object
   examples:
     BreweryADT:
       summary: Brewery ADT Dataset
@@ -1302,3 +1434,17 @@ components:
       description: Get all nodes query (be careful if you want to query large graph)
       value:
         query: "MATCH(n) RETURN n"
+    QueryEntities:
+      summary: Run action on a graph relationship
+      description: Run action on a graph relationship
+      value:
+        - type: "entityType"
+          source: "source-node-name"
+          target: "target-node-name"
+          name: "entity-name"
+          params: "param1: 'value1', param2: 'value2'"
+        - type: "entityType"
+          source: "source-node-name"
+          target: "target-node-name"
+          name: "entity-name"
+          params: "param1: 'value1', param2: 'value2'"
