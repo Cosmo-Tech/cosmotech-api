@@ -264,6 +264,10 @@ internal class ScenarioServiceImpl(
         throw CsmClientException("Can't delete a running scenario : ${scenario.id}")
     scenarioRepository.delete(scenario)
 
+    scenario.datasetList?.forEach {
+      datasetService.deleteDataset(organizationId, it)
+    }
+
     this.handleScenarioDeletion(organizationId, workspaceId, scenario)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     deleteScenarioMetadata(organizationId, workspace.key, scenarioId)
