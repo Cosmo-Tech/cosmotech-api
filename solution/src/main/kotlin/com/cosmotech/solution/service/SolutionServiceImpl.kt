@@ -213,23 +213,16 @@ internal class SolutionServiceImpl(
       runTemplateId: String,
       runTemplate: RunTemplate
   ): List<RunTemplate> {
-    val existingSolution = findSolutionById(organizationId, solutionId)
-    val runTemplates =
-        existingSolution.runTemplates?.filter { it.id == runTemplateId }?.toMutableList()
-    if (runTemplates == null || runTemplates.isEmpty()) {
-      throw CsmResourceNotFoundException("Run Template '$runTemplateId' *not* found")
-    }
-    var hasChanged = false
-    for (existingRunTemplate in runTemplates) {
-      hasChanged =
-          hasChanged || existingRunTemplate.compareToAndMutateIfNeeded(runTemplate).isNotEmpty()
-    }
 
-    if (hasChanged) {
-      existingSolution.runTemplates = runTemplates
-      solutionRepository.save(existingSolution)
-    }
-    return runTemplates
+    val existingSolution = findSolutionById(organizationId, solutionId)
+    val runTemplateToChange =
+        existingSolution.runTemplates?.first { it.id == runTemplateId }
+            ?: throw CsmResourceNotFoundException("Run Template '$runTemplateId' *not* found")
+
+    runTemplateToChange.compareToAndMutateIfNeeded(runTemplate).isNotEmpty()
+    solutionRepository.save(existingSolution)
+
+    return existingSolution.runTemplates!!.toList()
   }
 
   @EventListener(OrganizationUnregistered::class)

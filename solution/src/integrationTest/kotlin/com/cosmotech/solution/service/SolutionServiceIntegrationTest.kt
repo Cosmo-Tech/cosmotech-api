@@ -88,6 +88,38 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
+  fun `test verify updateRunTemplate works as intended`() {
+
+    val solution =
+        Solution(
+            "id",
+            organizationRegistered.id!!,
+            "key",
+            "name",
+            runTemplates = mutableListOf(RunTemplate(id = "one"), RunTemplate(id = "two")))
+    solutionRegistered = solutionApiService.createSolution(organizationRegistered.id!!, solution)
+
+    val endTemplates =
+        solutionApiService.updateSolutionRunTemplate(
+            organizationRegistered.id!!,
+            solutionRegistered.id!!,
+            "one",
+            RunTemplate(id = "one", name = "name_one"))
+
+    val expectedSolution =
+        Solution(
+            "id",
+            organizationRegistered.id!!,
+            "key",
+            "name",
+            runTemplates =
+                mutableListOf(RunTemplate(id = "one", name = "name_one"), RunTemplate(id = "two")))
+    // Assert that no runTemplate were deleted
+    assertEquals(expectedSolution.runTemplates!!.size, endTemplates.size)
+    assertEquals(expectedSolution.runTemplates!!, endTemplates)
+  }
+
+  @Test
   fun `test CRUD operations on Solution`() {
 
     logger.info("should add a new solution")
