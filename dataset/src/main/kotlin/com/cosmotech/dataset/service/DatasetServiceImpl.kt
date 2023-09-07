@@ -10,6 +10,8 @@ import com.cosmotech.api.events.TwingraphImportJobInfoRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
+import com.cosmotech.api.rbac.PERMISSION_DELETE
+import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.security.coroutine.SecurityCoroutineContext
 import com.cosmotech.api.utils.changed
@@ -30,11 +32,13 @@ import com.cosmotech.dataset.domain.DatasetSearch
 import com.cosmotech.dataset.domain.DatasetSourceType
 import com.cosmotech.dataset.domain.DatasetTwinGraphInfo
 import com.cosmotech.dataset.domain.DatasetTwinGraphQuery
+import com.cosmotech.dataset.domain.GraphProperties
 import com.cosmotech.dataset.domain.SubDatasetGraphQuery
 import com.cosmotech.dataset.domain.TwinGraphBatchResult
 import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.dataset.utils.toJsonString
 import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.service.getRbac
 import com.redislabs.redisgraph.RedisGraph
 import java.io.InputStream
 import kotlinx.coroutines.GlobalScope
@@ -49,8 +53,8 @@ import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import redis.clients.jedis.JedisPool
 
-const val GRAPH_NAME = "graphName"
-const val GRAPH_ROTATION = "graphRotation"
+const val TYPE_NODE = "node"
+const val TYPE_RELATIONSHIP = "relationship"
 const val NODES_ZIP_FOLDER = "nodes"
 const val EDGES_ZIP_FOLDER = "edges"
 
@@ -66,13 +70,16 @@ class DatasetServiceImpl(
 ) : CsmPhoenixService(), DatasetApiService {
 
   override fun findAllDatasets(organizationId: String, page: Int?, size: Int?): List<Dataset> {
+    val organization = organizationService.findOrganizationById(organizationId)
+    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
+
     val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
     val pageable = constructPageRequest(page, size, defaultPageSize)
     if (pageable != null) {
       return datasetRepository.findByOrganizationIdAndMain(organizationId, true, pageable).toList()
     }
     return findAllPaginated(defaultPageSize) {
-      datasetRepository.findByOrganizationIdAndMain(organizationId, true,  it).toList()
+      datasetRepository.findByOrganizationIdAndMain(organizationId, true, it).toList()
     }
   }
 
@@ -274,6 +281,9 @@ class DatasetServiceImpl(
   }
 
   override fun deleteDataset(organizationId: String, datasetId: String) {
+    val organization = organizationService.findOrganizationById(organizationId)
+    csmRbac.verify(organization.getRbac(), PERMISSION_DELETE)
+
     val dataset = findDatasetById(organizationId, datasetId)
     val isPlatformAdmin =
         getCurrentAuthenticatedRoles(csmPlatformProperties).contains(ROLE_PLATFORM_ADMIN)
@@ -354,6 +364,131 @@ class DatasetServiceImpl(
             datasetTwinGraphQuery.query,
             csmPlatformProperties.twincache.queryTimeout)
     return resultSet.toJsonString()
+  }
+
+  override fun createTwingraphEntities(
+      organizationId: String,
+      datasetId: String,
+      type: String,
+      graphProperties: List<GraphProperties>
+  ): String {
+    val dataset = findDatasetById(organizationId, datasetId)
+    dataset.takeUnless { it.twingraphId.isNullOrBlank() }
+        ?: throw CsmResourceNotFoundException("TwingraphId is not defined for the dataset")
+
+    var result = ""
+    when (type) {
+      TYPE_NODE ->
+          graphProperties.forEach {
+            result +=
+                csmRedisGraph
+                    .query(
+                        dataset.twingraphId,
+                        "CREATE (a:${it.type} {id:'${it.name}',${it.params}}) RETURN a")
+                    .toJsonString()
+          }
+      TYPE_RELATIONSHIP ->
+          graphProperties.forEach {
+            result +=
+                csmRedisGraph
+                    .query(
+                        dataset.twingraphId,
+                        "MATCH (a),(b) WHERE a.id='${it.source}' AND b.id='${it.target}'" +
+                            "CREATE (a)-[r:${it.type} {id:'${it.name}', ${it.params}}]->(b) RETURN r")
+                    .toJsonString()
+          }
+      else -> throw CsmResourceNotFoundException("Bad Type : $type")
+    }
+    return result
+  }
+
+  override fun getTwingraphEntities(
+      organizationId: String,
+      datasetId: String,
+      type: String,
+      ids: List<String>
+  ): String {
+    val dataset = findDatasetById(organizationId, datasetId)
+    dataset.takeUnless { it.twingraphId.isNullOrBlank() }
+        ?: throw CsmResourceNotFoundException("TwingraphId is not defined for the dataset")
+
+    var result = ""
+    when (type) {
+      TYPE_NODE ->
+          ids.forEach {
+            result +=
+                csmRedisGraph
+                    .query(dataset.twingraphId, "MATCH (a) WHERE a.id='$it' RETURN a")
+                    .toJsonString()
+          }
+      TYPE_RELATIONSHIP ->
+          ids.forEach {
+            result +=
+                csmRedisGraph
+                    .query(dataset.twingraphId, "MATCH ()-[r]->() WHERE r.id='$it' RETURN r")
+                    .toJsonString()
+          }
+      else -> throw CsmResourceNotFoundException("Bad Type : $type")
+    }
+    return result
+  }
+
+  override fun updateTwingraphEntities(
+      organizationId: String,
+      datasetId: String,
+      type: String,
+      graphProperties: List<GraphProperties>
+  ): String {
+    val dataset = findDatasetById(organizationId, datasetId)
+    dataset.takeUnless { it.twingraphId.isNullOrBlank() }
+        ?: throw CsmResourceNotFoundException("TwingraphId is not defined for the dataset")
+
+    var result = ""
+    when (type) {
+      TYPE_NODE ->
+          graphProperties.forEach {
+            result +=
+                csmRedisGraph
+                    .query(
+                        dataset.twingraphId,
+                        "MATCH (a {id:'${it.name}'}) SET a = {id:'${it.name}',${it.params}} RETURN a")
+                    .toJsonString()
+          }
+      TYPE_RELATIONSHIP ->
+          graphProperties.forEach {
+            result +=
+                csmRedisGraph
+                    .query(
+                        dataset.twingraphId,
+                        "MATCH ()-[r {id:'${it.name}'}]-() SET r = {id:'${it.name}', ${it.params}} RETURN r")
+                    .toJsonString()
+          }
+      else -> throw CsmResourceNotFoundException("Bad Type : $type")
+    }
+    return result
+  }
+
+  override fun deleteTwingraphEntities(
+      organizationId: String,
+      datasetId: String,
+      type: String,
+      ids: List<String>
+  ) {
+    val dataset = findDatasetById(organizationId, datasetId)
+    dataset.takeUnless { it.twingraphId.isNullOrBlank() }
+        ?: throw CsmResourceNotFoundException("TwingraphId is not defined for the dataset")
+
+    return when (type) {
+      TYPE_NODE ->
+          ids.forEach {
+            csmRedisGraph.query(dataset.twingraphId, "MATCH (a) WHERE a.id='$it' DELETE a")
+          }
+      TYPE_RELATIONSHIP ->
+          ids.forEach {
+            csmRedisGraph.query(dataset.twingraphId, "MATCH ()-[r]-() WHERE r.id='$it' DELETE r")
+          }
+      else -> throw CsmResourceNotFoundException("Bad Type : $type")
+    }
   }
 
   override fun addOrReplaceDatasetCompatibilityElements(
@@ -453,7 +588,6 @@ class DatasetServiceImpl(
     }
     return map
   }
-
 
   override fun importDataset(organizationId: String, dataset: Dataset): Dataset {
     if (dataset.id == null) {

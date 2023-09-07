@@ -8,16 +8,20 @@ Method | HTTP request | Description
 [**copyDataset**](DatasetApi.md#copyDataset) | **POST** /organizations/{organization_id}/datasets/copy | Copy a Dataset to another Dataset. Source must have a read capable connector and Target a write capable connector.
 [**createDataset**](DatasetApi.md#createDataset) | **POST** /organizations/{organization_id}/datasets | Create a new Dataset
 [**createSubDataset**](DatasetApi.md#createSubDataset) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/subdataset | Run a query on a dataset
+[**createTwingraphEntities**](DatasetApi.md#createTwingraphEntities) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/twingraph/{type} | Create new entities in a graph instance
 [**deleteDataset**](DatasetApi.md#deleteDataset) | **DELETE** /organizations/{organization_id}/datasets/{dataset_id} | Delete a dataset
+[**deleteTwingraphEntities**](DatasetApi.md#deleteTwingraphEntities) | **DELETE** /organizations/{organization_id}/datasets/{dataset_id}/twingraph/{type} | Delete entities in a graph instance
 [**findAllDatasets**](DatasetApi.md#findAllDatasets) | **GET** /organizations/{organization_id}/datasets | List all Datasets
 [**findDatasetById**](DatasetApi.md#findDatasetById) | **GET** /organizations/{organization_id}/datasets/{dataset_id} | Get the details of a Dataset
 [**getDatasetTwingraphStatus**](DatasetApi.md#getDatasetTwingraphStatus) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/job/{job_id}/status | Get the status of twingraph import
+[**getTwingraphEntities**](DatasetApi.md#getTwingraphEntities) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/twingraph/{type} | Get entities in a graph instance
 [**importDataset**](DatasetApi.md#importDataset) | **POST** /organizations/{organization_id}/datasets/import | Import a new Dataset
 [**refreshDataset**](DatasetApi.md#refreshDataset) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/refresh | Refresh dataset
 [**removeAllDatasetCompatibilityElements**](DatasetApi.md#removeAllDatasetCompatibilityElements) | **DELETE** /organizations/{organization_id}/datasets/{dataset_id}/compatibility | Remove all Dataset Compatibility elements from the Dataset specified
 [**searchDatasets**](DatasetApi.md#searchDatasets) | **POST** /organizations/{organization_id}/datasets/search | Search Datasets
 [**twingraphQuery**](DatasetApi.md#twingraphQuery) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/twingraph | Run a query on a graph instance and return the result as a json
 [**updateDataset**](DatasetApi.md#updateDataset) | **PATCH** /organizations/{organization_id}/datasets/{dataset_id} | Update a dataset
+[**updateTwingraphEntities**](DatasetApi.md#updateTwingraphEntities) | **PATCH** /organizations/{organization_id}/datasets/{dataset_id}/twingraph/{type} | Update entities in a graph instance
 [**uploadTwingraph**](DatasetApi.md#uploadTwingraph) | **POST** /organizations/{organization_id}/datasets/{dataset_id} | Upload Twingraph with ZIP File
 
 
@@ -129,6 +133,36 @@ Name | Type | Description  | Notes
 - **Content-Type**: application/json
 - **Accept**: application/json
 
+<a name="createTwingraphEntities"></a>
+# **createTwingraphEntities**
+> String createTwingraphEntities(organization\_id, dataset\_id, type, GraphProperties)
+
+Create new entities in a graph instance
+
+    create new entities in a graph instance
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **dataset\_id** | **String**| the Dataset Identifier | [default to null]
+ **type** | **String**| the entity model type | [default to null] [enum: node, relationship]
+ **GraphProperties** | [**List**](../Models/GraphProperties.md)| the entities to create |
+
+### Return type
+
+**String**
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
 <a name="deleteDataset"></a>
 # **deleteDataset**
 > deleteDataset(organization\_id, dataset\_id)
@@ -141,6 +175,36 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **dataset\_id** | **String**| the Dataset identifier | [default to null]
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
+
+<a name="deleteTwingraphEntities"></a>
+# **deleteTwingraphEntities**
+> deleteTwingraphEntities(organization\_id, dataset\_id, type, ids)
+
+Delete entities in a graph instance
+
+    delete entities in a graph instance
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **dataset\_id** | **String**| the Dataset Identifier | [default to null]
+ **type** | **String**| the entity model type | [default to null] [enum: node, relationship]
+ **ids** | [**List**](../Models/String.md)| the entities to delete | [default to null]
 
 ### Return type
 
@@ -236,6 +300,36 @@ Name | Type | Description  | Notes
 
 - **Content-Type**: Not defined
 - **Accept**: application/yaml, application/json
+
+<a name="getTwingraphEntities"></a>
+# **getTwingraphEntities**
+> String getTwingraphEntities(organization\_id, dataset\_id, type, ids)
+
+Get entities in a graph instance
+
+    get entities in a graph instance
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **dataset\_id** | **String**| the Dataset Identifier | [default to null]
+ **type** | **String**| the entity model type | [default to null] [enum: node, relationship]
+ **ids** | [**List**](../Models/String.md)| the entities to get | [default to null]
+
+### Return type
+
+**String**
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
 
 <a name="importDataset"></a>
 # **importDataset**
@@ -399,6 +493,36 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
 - **Content-Type**: application/json, application/yaml
+- **Accept**: application/json
+
+<a name="updateTwingraphEntities"></a>
+# **updateTwingraphEntities**
+> String updateTwingraphEntities(organization\_id, dataset\_id, type, GraphProperties)
+
+Update entities in a graph instance
+
+    update entities in a graph instance
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **organization\_id** | **String**| the Organization identifier | [default to null]
+ **dataset\_id** | **String**| the Dataset Identifier | [default to null]
+ **type** | **String**| the entity model type | [default to null] [enum: node, relationship]
+ **GraphProperties** | [**List**](../Models/GraphProperties.md)| the entities to update |
+
+### Return type
+
+**String**
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
 - **Accept**: application/json
 
 <a name="uploadTwingraph"></a>

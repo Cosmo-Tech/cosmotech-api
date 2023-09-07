@@ -56,6 +56,7 @@ entity Dataset {
     organizationId: String
     parentId: String
     twingraphId: String
+    main: Boolean
     sourceType: DatasetSourceType
     source: SourceInfo
     status: String
@@ -485,6 +486,7 @@ entity SubDatasetGraphQuery {
     name: String
     description: String
     query: String
+    main: Boolean
 }
 
 entity TwinGraphBatchResult {

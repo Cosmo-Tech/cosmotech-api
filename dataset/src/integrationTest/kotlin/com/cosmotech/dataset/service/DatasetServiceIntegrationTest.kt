@@ -5,6 +5,7 @@ package com.cosmotech.dataset.service
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.security.ROLE_ORGANIZATION_USER
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.tests.CsmRedisTestBase
@@ -18,13 +19,19 @@ import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetCompatibility
 import com.cosmotech.dataset.domain.DatasetConnector
 import com.cosmotech.dataset.domain.DatasetSearch
+import com.cosmotech.dataset.domain.GraphProperties
+import com.cosmotech.dataset.repository.DatasetRepository
+import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
+import com.cosmotech.organization.domain.OrganizationAccessControl
+import com.cosmotech.organization.domain.OrganizationSecurity
 import com.redis.om.spring.RediSearchIndexer
 import com.redis.testcontainers.RedisStackContainer
 import com.redislabs.redisgraph.impl.api.RedisGraph
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
+import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
@@ -33,12 +40,14 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.core.io.ByteArrayResource
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
@@ -46,6 +55,7 @@ import org.springframework.test.util.ReflectionTestUtils
 import redis.clients.jedis.JedisPool
 
 const val REDIS_PORT = 6379
+const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
 
 @ActiveProfiles(profiles = ["dataset-test"])
 @ExtendWith(MockKExtension::class)
@@ -59,27 +69,21 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var datasetApiService: DatasetApiService
+  @Autowired lateinit var datasetRepository: DatasetRepository
   @Autowired lateinit var connectorApiService: ConnectorApiService
+  @Autowired lateinit var organizationApiService: OrganizationApiService
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
-  val organizationId = "O-AbCdEf123"
-  var connector =
-      Connector(
-          key = "connector",
-          name = "connector-1",
-          repository = "repo",
-          version = "1.0.0",
-          ioTypes = listOf(),
-          id = "c-AbCdEf123")
-  lateinit var registeredConnector: Connector
-  lateinit var dataset1: Dataset
+  lateinit var connectorSaved: Connector
+  lateinit var dataset: Dataset
   lateinit var dataset2: Dataset
-  lateinit var registeredDataset1: Dataset
+  lateinit var datasetSaved: Dataset
   lateinit var retrievedDataset1: Dataset
 
   lateinit var jedisPool: JedisPool
   lateinit var redisGraph: RedisGraph
   lateinit var organization: Organization
+  lateinit var organizationSaved: Organization
 
   @BeforeAll
   fun beforeAll() {
@@ -100,120 +104,111 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
     rediSearchIndexer.createIndexFor(Dataset::class.java)
 
-    registeredConnector = connectorApiService.registerConnector(connector)
+    connectorSaved = connectorApiService.registerConnector(makeConnector())
 
-    dataset1 = makeDataset("d-dataset-1", "dataset-1")
+    organization = makeOrganization("Organization")
+    organizationSaved = organizationApiService.registerOrganization(organization)
+
+    dataset = makeDataset("d-dataset-1", "dataset-1")
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    materializeTwingraph(datasetSaved)
+
     dataset2 = makeDataset("d-dataset-2", "dataset-2")
-  }
-
-  fun makeDataset(id: String, name: String): Dataset {
-    return Dataset(
-        id = id,
-        name = name,
-        connector = DatasetConnector(id = registeredConnector.id, name = registeredConnector.name),
-        tags = mutableListOf("test", "data"))
   }
 
   @Test
   fun `test Dataset CRUD`() {
 
-    logger.info("Register dataset : ${dataset1.id}...")
-    registeredDataset1 = datasetApiService.createDataset(organizationId, dataset1)
-    assertNotNull(registeredDataset1)
-    val registeredDataset2 = datasetApiService.createDataset(organizationId, dataset2)
+    val registeredDataset2 = datasetApiService.createDataset(organizationSaved.id!!, dataset2)
 
-    logger.info("Import a new Dataset...")
-    // TODO once the problem of adding the organizationId to the dataset has been fixed
-    /*val registeredDataset2 = datasetApiService.importDataset(organizationId, dataset2)
-    assertNotNull(registeredDataset2)*/
-
-    logger.info("Fetch dataset : ${registeredDataset1.id}...")
-    retrievedDataset1 = datasetApiService.findDatasetById(organizationId, registeredDataset1.id!!)
+    logger.info("Fetch dataset : ${datasetSaved.id}...")
+    retrievedDataset1 = datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
     assertNotNull(retrievedDataset1)
 
     logger.info("Fetch all datasets...")
-    var datasetList = datasetApiService.findAllDatasets(organizationId, null, null)
+    var datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, null, null)
     for (item in datasetList) {
       logger.warn(item.id)
     }
     assertTrue { datasetList.size == 2 }
 
     logger.info("Delete Dataset : ${registeredDataset2.id}...")
-    datasetApiService.deleteDataset(organizationId, registeredDataset2.id!!)
-    datasetList = datasetApiService.findAllDatasets(organizationId, null, null)
+    datasetApiService.deleteDataset(organizationSaved.id!!, registeredDataset2.id!!)
+    datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, null, null)
     assertTrue { datasetList.size == 1 }
   }
 
   @Test
   fun `can delete dataset when user is not the owner and is Platform Admin`() {
 
-    logger.info("Register dataset : ${dataset1.id}...")
-    registeredDataset1 = datasetApiService.createDataset(organizationId, dataset1)
-    assertNotNull(registeredDataset1)
+    logger.info("Register dataset : ${dataset.id}...")
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    assertNotNull(datasetSaved)
     logger.info("Change current user...")
     every { getCurrentAccountIdentifier(any()) } returns "test.user.admin@cosmotech.com"
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.admin"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
-    assertNotNull(registeredDataset1.id)
-    registeredDataset1.id?.let { datasetApiService.deleteDataset(organizationId, it) }
+    assertNotNull(datasetSaved.id)
+    datasetSaved.id?.let { datasetApiService.deleteDataset(organizationSaved.id!!, it) }
 
-    logger.info("Fetch dataset : ${registeredDataset1.id}...")
+    logger.info("Fetch dataset : ${datasetSaved.id}...")
     assertThrows<CsmResourceNotFoundException> {
-      datasetApiService.findDatasetById(organizationId, registeredDataset1.id!!)
+      datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
     }
   }
 
   @Test
   fun `can not delete dataset when user is not the owner and not Platform Admin`() {
 
-    logger.info("Register dataset : ${dataset1.id}...")
-    registeredDataset1 = datasetApiService.createDataset(organizationId, dataset1)
-    assertNotNull(registeredDataset1)
+    logger.info("Register dataset : ${dataset.id}...")
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    assertNotNull(datasetSaved)
     logger.info("Change current user...")
     every { getCurrentAccountIdentifier(any()) } returns "test.user.other@cosmotech.com"
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user.other"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_ORGANIZATION_USER)
-    assertNotNull(registeredDataset1.id)
+    assertNotNull(datasetSaved.id)
     assertThrows<CsmAccessForbiddenException> {
-      registeredDataset1.id?.let { datasetApiService.deleteDataset(organizationId, it) }
+      datasetSaved.id?.let { datasetApiService.deleteDataset(organizationSaved.id!!, it) }
     }
   }
   @Test
   fun `can update dataset owner when user is not the owner and is Platform Admin`() {
 
-    logger.info("Register dataset : ${dataset1.id}...")
-    registeredDataset1 = datasetApiService.createDataset(organizationId, dataset1)
-    assertNotNull(registeredDataset1)
+    logger.info("Register dataset : ${dataset.id}...")
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    assertNotNull(datasetSaved)
     logger.info("Change current user...")
     every { getCurrentAccountIdentifier(any()) } returns "test.user.admin@cosmotech.com"
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.admin"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
-    assertNotNull(registeredDataset1.id)
-    registeredDataset1.ownerId = "new_owner_id"
-    registeredDataset1.id?.let {
-      datasetApiService.updateDataset(organizationId, it, registeredDataset1)
+    assertNotNull(datasetSaved.id)
+    datasetSaved.ownerId = "new_owner_id"
+    datasetSaved.id?.let {
+      datasetApiService.updateDataset(organizationSaved.id!!, it, datasetSaved)
     }
 
-    logger.info("Fetch dataset : ${registeredDataset1.id}...")
-    val datasetUpdated = datasetApiService.findDatasetById(organizationId, registeredDataset1.id!!)
+    logger.info("Fetch dataset : ${datasetSaved.id}...")
+    val datasetUpdated =
+        datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
     assertEquals("new_owner_id", datasetUpdated.ownerId)
   }
 
   @Test
   fun `cannot update dataset owner when user is not the owner and is not Platform Admin`() {
 
-    logger.info("Register dataset : ${dataset1.id}...")
-    registeredDataset1 = datasetApiService.createDataset(organizationId, dataset1)
-    assertNotNull(registeredDataset1)
+    logger.info("Register dataset : ${dataset.id}...")
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    assertNotNull(datasetSaved)
     logger.info("Change current user...")
     every { getCurrentAccountIdentifier(any()) } returns "test.user.admin@cosmotech.com"
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.admin"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
-    assertNotNull(registeredDataset1.id)
-    registeredDataset1.ownerId = "new_owner_id"
+    assertNotNull(datasetSaved.id)
+    datasetSaved.ownerId = "new_owner_id"
     assertThrows<CsmAccessForbiddenException> {
-      registeredDataset1.id?.let {
-        datasetApiService.updateDataset(organizationId, it, registeredDataset1)
+      datasetSaved.id?.let {
+        datasetApiService.updateDataset(organizationSaved.id!!, it, datasetSaved)
       }
     }
   }
@@ -225,32 +220,32 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("Search Datasets...")
     val datasetList =
         datasetApiService.searchDatasets(
-            organizationId, DatasetSearch(mutableListOf("data")), null, null)
+            organizationSaved.id!!, DatasetSearch(mutableListOf("data")), null, null)
     assertTrue { datasetList.size == 2 }
 
-    logger.info("Update Dataset : ${registeredDataset1.id}...")
+    logger.info("Update Dataset : ${datasetSaved.id}...")
     val retrievedDataset1 =
-        datasetApiService.updateDataset(organizationId, registeredDataset1.id!!, dataset2)
-    assertNotEquals(retrievedDataset1, registeredDataset1)
+        datasetApiService.updateDataset(organizationSaved.id!!, datasetSaved.id!!, dataset2)
+    assertNotEquals(retrievedDataset1, datasetSaved)
   }
 
   fun `test dataset compatibility elements`() {
     logger.info("Add Dataset Compatibility elements...")
     var datasetCompatibilityList =
         datasetApiService.addOrReplaceDatasetCompatibilityElements(
-            organizationId,
-            registeredDataset1.id!!,
+            organizationSaved.id!!,
+            datasetSaved.id!!,
             datasetCompatibility =
                 listOf(
                     DatasetCompatibility(solutionKey = "solution"),
                     DatasetCompatibility(solutionKey = "test")))
     assertFalse { datasetCompatibilityList.isEmpty() }
 
-    logger.info(
-        "Remove all Dataset Compatibility elements from dataset : ${registeredDataset1.id!!}...")
-    datasetApiService.removeAllDatasetCompatibilityElements(organizationId, registeredDataset1.id!!)
+    logger.info("Remove all Dataset Compatibility elements from dataset : ${datasetSaved.id!!}...")
+    datasetApiService.removeAllDatasetCompatibilityElements(
+        organizationSaved.id!!, datasetSaved.id!!)
     datasetCompatibilityList =
-        datasetApiService.findDatasetById(organizationId, registeredDataset1.id!!).compatibility!!
+        datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!).compatibility!!
     assertTrue { datasetCompatibilityList.isEmpty() }
   }
 
@@ -260,44 +255,185 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
     val expectedSize = 15
     IntRange(1, numberOfDatasets).forEach {
-      datasetApiService.createDataset(organizationId, makeDataset("d-dataset-$it", "dataset-$it"))
+      datasetApiService.createDataset(
+          organizationSaved.id!!, makeDataset("d-dataset-$it", "dataset-$it"))
     }
 
     logger.info("should find all datasets and assert there are $numberOfDatasets")
-    var datasetList = datasetApiService.findAllDatasets(organizationId, null, null)
-    assertEquals(numberOfDatasets, datasetList.size)
+    var datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, null, null)
+    assertEquals(numberOfDatasets + 1, datasetList.size)
 
     logger.info("should find all datasets and assert it equals defaultPageSize: $defaultPageSize")
-    datasetList = datasetApiService.findAllDatasets(organizationId, 0, null)
+    datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, 0, null)
     assertEquals(defaultPageSize, datasetList.size)
 
     logger.info("should find all datasets and assert there are expected size: $expectedSize")
-    datasetList = datasetApiService.findAllDatasets(organizationId, 0, expectedSize)
+    datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, 0, expectedSize)
     assertEquals(expectedSize, datasetList.size)
 
     logger.info("should find all solutions and assert it returns the second / last page")
-    datasetList = datasetApiService.findAllDatasets(organizationId, 1, expectedSize)
-    assertEquals(numberOfDatasets - expectedSize, datasetList.size)
+    datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, 1, expectedSize)
+    assertEquals(numberOfDatasets + 1 - expectedSize, datasetList.size)
   }
 
   @Test
   fun `test find All Datasets with wrong pagination params`() {
 
-    datasetApiService.createDataset(organizationId, dataset1)
+    datasetApiService.createDataset(organizationSaved.id!!, dataset)
 
     logger.info("Should throw IllegalArgumentException when page and size are zeros")
     assertThrows<IllegalArgumentException> {
-      datasetApiService.findAllDatasets(organizationId, 0, 0)
+      datasetApiService.findAllDatasets(organizationSaved.id!!, 0, 0)
     }
 
     logger.info("Should throw IllegalArgumentException when page is negative")
     assertThrows<IllegalArgumentException> {
-      datasetApiService.findAllDatasets(organizationId, -1, 10)
+      datasetApiService.findAllDatasets(organizationSaved.id!!, -1, 10)
     }
 
     logger.info("Should throw IllegalArgumentException when size is negative")
     assertThrows<IllegalArgumentException> {
-      datasetApiService.findAllDatasets(organizationId, 0, -1)
+      datasetApiService.findAllDatasets(organizationSaved.id!!, 0, -1)
     }
+  }
+
+  @Test
+  fun `graph creation`() {
+    logger.info("Create a Graph with a ZIP Entry")
+    val file = this::class.java.getResource("/integrationTest.zip")?.file
+    val resource = ByteArrayResource(File(file!!).readBytes())
+    datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
+  }
+
+  @Test
+  fun `twingraph CRUD test`() {
+
+    logger.info("Create Nodes")
+    val nodeStart =
+        datasetApiService.createTwingraphEntities(
+            organizationSaved.id!!,
+            datasetSaved.id!!,
+            "node",
+            listOf(
+                GraphProperties().apply {
+                  type = "node"
+                  name = "node_a"
+                  params = "size:0"
+                },
+                GraphProperties().apply {
+                  type = "node"
+                  name = "node_b"
+                  params = "size:1"
+                }))
+    assertNotEquals(String(), nodeStart)
+
+    logger.info("Read Nodes")
+    var nodeResult =
+        datasetApiService.getTwingraphEntities(
+            organizationSaved.id!!, datasetSaved.id!!, "node", listOf("node_a", "node_b"))
+    assertEquals(nodeStart, nodeResult)
+
+    logger.info("Create Relationships")
+    val relationshipStart =
+        datasetApiService.createTwingraphEntities(
+            organizationSaved.id!!,
+            datasetSaved.id!!,
+            "relationship",
+            listOf(
+                GraphProperties().apply {
+                  type = "relationship"
+                  source = "node_a"
+                  target = "node_b"
+                  name = "relationship_a"
+                  params = "duration:0"
+                }))
+
+    logger.info("Read Relationships")
+    var relationshipResult =
+        datasetApiService.getTwingraphEntities(
+            organizationSaved.id!!, datasetSaved.id!!, "relationship", listOf("relationship_a"))
+    assertEquals(relationshipStart, relationshipResult)
+
+    logger.info("Update Nodes")
+    nodeResult =
+        datasetApiService.updateTwingraphEntities(
+            organizationSaved.id!!,
+            datasetSaved.id!!,
+            "node",
+            listOf(
+                GraphProperties().apply {
+                  name = "node_a"
+                  params = "size:2"
+                }))
+    assertNotEquals(nodeStart, nodeResult)
+
+    logger.info("Update Relationships")
+    relationshipResult =
+        datasetApiService.updateTwingraphEntities(
+            organizationSaved.id!!,
+            datasetSaved.id!!,
+            "relationship",
+            listOf(
+                GraphProperties().apply {
+                  source = "node_a"
+                  target = "node_b"
+                  name = "relationship_a"
+                  params = "duration:2"
+                }))
+    assertNotEquals(relationshipStart, relationshipResult)
+
+    logger.info("Delete Relationships")
+    datasetApiService.deleteTwingraphEntities(
+        organizationSaved.id!!, datasetSaved.id!!, "node", listOf("relationship_a"))
+    assertDoesNotThrow {
+      datasetApiService.getTwingraphEntities(
+          organizationSaved.id!!, datasetSaved.id!!, "node", listOf("relationship_a"))
+    }
+
+    logger.info("Delete Nodes")
+    datasetApiService.deleteTwingraphEntities(
+        organizationSaved.id!!, datasetSaved.id!!, "relationship", listOf("node_a"))
+    assertDoesNotThrow {
+      datasetApiService.getTwingraphEntities(
+          organizationSaved.id!!, datasetSaved.id!!, "relationship", listOf("node_a"))
+    }
+  }
+
+  private fun materializeTwingraph(dataset: Dataset): Dataset {
+    dataset.apply {
+      redisGraph.query(this.twingraphId, "CREATE (n)")
+      this.status = Dataset.Status.COMPLETED
+    }
+    return datasetRepository.save(dataset)
+  }
+
+  fun makeConnector(): Connector {
+    return Connector(
+        key = "connector",
+        name = "connector-1",
+        repository = "repo",
+        version = "1.0.0",
+        ioTypes = listOf(),
+        id = "c-AbCdEf123")
+  }
+  fun makeDataset(id: String, name: String): Dataset {
+    return Dataset(
+        id = id,
+        name = name,
+        main = true,
+        connector = DatasetConnector(id = connectorSaved.id, name = connectorSaved.name),
+        tags = mutableListOf("test", "data"))
+  }
+
+  fun makeOrganization(name: String): Organization {
+    return Organization(
+        name = name,
+        ownerId = "my.account-tester@cosmotech.com",
+        security =
+            OrganizationSecurity(
+                default = ROLE_ADMIN,
+                accessControlList =
+                    mutableListOf(
+                        OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"))))
   }
 }
