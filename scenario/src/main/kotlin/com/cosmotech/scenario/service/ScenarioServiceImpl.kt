@@ -174,7 +174,7 @@ internal class ScenarioServiceImpl(
                         .createSubDataset(
                             organizationId,
                             it,
-                            SubDatasetGraphQuery("Scenario - ${scenario.name})"))
+                            SubDatasetGraphQuery(name = "Scenario - ${scenario.name})", main = false))
                         .id!!
                 else -> throw CsmClientException("Dataset ${dataset.id} is not completed")
               }
