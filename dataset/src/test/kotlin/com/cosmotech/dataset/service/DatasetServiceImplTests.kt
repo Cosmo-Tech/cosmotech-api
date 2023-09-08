@@ -11,6 +11,7 @@ import com.cosmotech.api.id.CsmIdGenerator
 import com.cosmotech.api.rbac.CsmAdmin
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
+import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
@@ -21,6 +22,7 @@ import com.cosmotech.dataset.domain.DatasetSourceType
 import com.cosmotech.dataset.domain.DatasetTwinGraphQuery
 import com.cosmotech.dataset.domain.SourceInfo
 import com.cosmotech.dataset.domain.SubDatasetGraphQuery
+import com.cosmotech.dataset.domain.TwinGraphBatchResult
 import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.dataset.utils.toJsonString
 import com.cosmotech.organization.api.OrganizationApiService
@@ -69,6 +71,7 @@ class DatasetServiceImplTests {
   @MockK val datasetRepository: DatasetRepository = mockk(relaxed = true)
   @MockK val csmJedisPool: JedisPool = mockk(relaxed = true)
   @MockK val csmRedisGraph: RedisGraph = mockk(relaxed = true)
+  @Suppress("unused") @MockK private lateinit var resourceScanner: ResourceScanner
   @MockK var csmPlatformProperties: CsmPlatformProperties = mockk(relaxed = true)
   @Suppress("unused") @SpyK private var csmAdmin: CsmAdmin = CsmAdmin(csmPlatformProperties)
   @SpyK var csmRbac: CsmRbac = CsmRbac(csmPlatformProperties, csmAdmin)
@@ -188,17 +191,17 @@ class DatasetServiceImplTests {
 
   @Test
   fun `createSubDataset should throw IllegalArgumentException when twingraphId is empty`() {
-    val dataset = baseDataset().copy(twingraphId = "")
+    val dataset = baseDataset().copy(twingraphId = "", status = Dataset.Status.COMPLETED)
     val subDatasetGraphQuery = SubDatasetGraphQuery()
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
-    assertThrows<IllegalArgumentException> {
+    assertThrows<CsmResourceNotFoundException> {
       datasetService.createSubDataset(ORGANIZATION_ID, dataset.id!!, subDatasetGraphQuery)
     }
   }
 
   @Test
   fun `createSubDataset should throw CsmResourceNotFoundException when Twingraph not found`() {
-    val dataset = baseDataset().copy(twingraphId = "twingraphId")
+    val dataset = baseDataset().copy(twingraphId = "twingraphId", status = Dataset.Status.COMPLETED)
     val subDatasetGraphQuery = SubDatasetGraphQuery()
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
     every { csmJedisPool.resource.dump(any<String>()) } throws CsmResourceNotFoundException("")
@@ -424,11 +427,7 @@ class DatasetServiceImplTests {
 
   @Test
   fun `twingraphQuery should call query and set data to Redis`() {
-    val dataset =
-        baseDataset()
-            .copy(
-                twingraphId = "graphId",
-            )
+    val dataset = baseDataset().copy(twingraphId = "graphId", status = Dataset.Status.COMPLETED)
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
     every { csmPlatformProperties.twincache.queryBulkTTL } returns 1000L
 
@@ -442,6 +441,20 @@ class DatasetServiceImplTests {
     datasetService.twingraphQuery(ORGANIZATION_ID, DATASET_ID, twinGraphQuery)
 
     verify(exactly = 1) { csmRedisGraph.query(any(), any(), any<Long>()) }
+  }
+
+  @Test
+  fun `test processCSV - should create cypher requests by line`() {
+    val fileName = this::class.java.getResource("/Users.csv")?.file
+    val file = File(fileName!!)
+    val query =
+        DatasetTwinGraphQuery(
+            "CREATE (:Person {id: toInteger(\$id), name: \$name, rank: toInteger(\$rank), object: \$object})")
+    val result = TwinGraphBatchResult(0, 0, mutableListOf())
+    datasetService.processCSVBatch(file.inputStream(), query, result) { result.processedLines++ }
+    assertEquals(9, result.totalLines)
+    assertEquals(9, result.processedLines)
+    assertEquals(0, result.errors.size)
   }
 
   private fun mockEmptyResultSet(): ResultSet {
