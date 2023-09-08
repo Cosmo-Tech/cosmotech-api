@@ -45,10 +45,12 @@ class ScenarioRunResultServiceImpl(
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE, scenarioPermissions)
 
     if (requestBody.isNotEmpty()) {
-      val redisId = createResultId(scenariorunId, probeId)
+      val resultId = createResultId(scenariorunId, probeId)
       val scenarioRunResult =
-          scenarioRunResultRepository.findById(redisId).orElse(createNewScenarioRunResult(redisId))
-      scenarioRunResult.results?.add(requestBody.toMutableMap())
+          scenarioRunResultRepository
+              .findById(resultId)
+              .orElse(ScenarioRunResult(resultId, mutableListOf()))
+      scenarioRunResult.results!!.add(requestBody.toMutableMap())
       return scenarioRunResultRepository.save(scenarioRunResult)
     } else {
       throw CsmClientException("no data sent")
@@ -62,14 +64,17 @@ class ScenarioRunResultServiceImpl(
       scenariorunId: String,
       probeId: String
   ): ScenarioRunResult {
-    // TODO ADD RBAC
-    val redisId = createResultId(scenariorunId, probeId)
-    return scenarioRunResultRepository.findById(redisId).orElseThrow {
-      CsmResourceNotFoundException("no probe $redisId found")
+    val organization = organizationService.findOrganizationById(organizationId)
+    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
+    val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
+    csmRbac.verify(workspace.getRbac(), PERMISSION_READ)
+    val scenario = scenarioService.findScenarioById(organizationId, workspaceId, scenarioId)
+    csmRbac.verify(scenario.getRbac(), PERMISSION_READ, scenarioPermissions)
+
+    val resultId = createResultId(scenariorunId, probeId)
+    return scenarioRunResultRepository.findById(resultId).orElseThrow {
+      CsmResourceNotFoundException("no probe $resultId found")
     }
-  }
-  internal fun createNewScenarioRunResult(id: String): ScenarioRunResult {
-    return ScenarioRunResult(id, mutableListOf())
   }
 
   internal fun createResultId(scenariorunId: String, probeId: String): String {

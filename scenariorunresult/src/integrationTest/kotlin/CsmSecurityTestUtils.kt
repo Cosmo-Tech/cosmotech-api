@@ -9,17 +9,17 @@ import com.cosmotech.scenario.domain.ScenarioSecurity
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 
+const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
+const val CONNECTED_EDITOR_USER = "test.editor@cosmotech.com"
+const val CONNECTED_READER_USER = "test.reader@cosmotech.com"
+const val CONNECTED_VIEWER_USER = "test.user@cosmotech.com"
+const val CONNECTED_VALIDATOR_USER = "test.validator@cosmotech.com"
+const val CONNECTED_NONE_USER = "test.none@cosmotech.com"
+
 class CsmSecurity(
     var defaultRole: String,
     var accessList: MutableList<Pair<String, String>> = mutableListOf()
 ) {
-  val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
-  val CONNECTED_EDITOR_USER = "test.editor@cosmotech.com"
-  val CONNECTED_READER_USER = "test.reader@cosmotech.com"
-  val CONNECTED_VIEWER_USER = "test.user@cosmotech.com"
-  val CONNECTED_VALIDATOR_USER = "test.validator@cosmotech.com"
-  val CONNECTED_NONE_USER = "test.none@cosmotech.com"
-
   fun addRole(id: String, role: String): CsmSecurity {
     this.accessList.add(Pair(id, role))
     return this

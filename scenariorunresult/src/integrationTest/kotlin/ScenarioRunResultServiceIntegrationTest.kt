@@ -6,6 +6,7 @@ import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.metrics.MonitorServiceAspect
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
@@ -34,6 +35,7 @@ import io.mockk.mockkStatic
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -47,18 +49,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
 
-const val ORGANIZATION_ID = "Organization"
-const val WORKSPACE_ID = "Workspace"
-const val SCENARIO_ID = "Scenario"
 const val SCENARIORUN_ID = "ScenarioRun"
 const val PROBE_ID = "Probe"
-
-const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
-const val CONNECTED_NONE_USER = "test.none@cosmotech.com"
-const val CONNECTED_EDITOR_USER = "test.editor@cosmotech.com"
-const val CONNECTED_VALIDATOR_USER = "test.validator@cosmotech.com"
-const val CONNECTED_READER_USER = "test.reader@cosmotech.com"
-const val CONNECTED_VIEWER_USER = "test.user@cosmotech.com"
 
 @ActiveProfiles(profiles = ["scenariorunresult-test"])
 @ExtendWith(MockKExtension::class)
@@ -70,6 +62,7 @@ class ScenarioRunResultServiceIntegrationTest : CsmRedisTestBase() {
 
   @MockkBean lateinit var csmADX: AzureDataExplorerClient
   @MockK(relaxed = true) private lateinit var workspaceEventHubService: IWorkspaceEventHubService
+  @MockK lateinit var monitorServiceAspect: MonitorServiceAspect
 
   // NEEDED: recreate indexes in redis
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
@@ -83,43 +76,134 @@ class ScenarioRunResultServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var datasetApiService: DatasetApiService
   @Autowired lateinit var scenarioRunResultApiService: ScenariorunresultApiService
 
-  @BeforeEach
-  fun setUp() {
+  lateinit var cosmoArbo: CosmoArbo
+
+  @BeforeAll
+  fun isolateFromContext() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
-    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
-    every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")
+    every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns
+        "test.user" // patch for monitoring
+    every { getCurrentAuthenticatedRoles(any()) } returns
+        listOf("user") // use for diferenciate admin
 
     ReflectionTestUtils.setField(
         scenarioApiService, "workspaceEventHubService", workspaceEventHubService)
     every { workspaceEventHubService.getWorkspaceEventHubInfo(any(), any(), any()) } returns
         makeWorkspaceEventHubInfo(false)
+  }
 
+  @BeforeEach
+  fun setUp() {
     // NEEDED: recreate indexes in redis
     rediSearchIndexer.createIndexFor(Organization::class.java)
     rediSearchIndexer.createIndexFor(Solution::class.java)
     rediSearchIndexer.createIndexFor(Workspace::class.java)
     rediSearchIndexer.createIndexFor(Scenario::class.java)
+
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+    cosmoArbo = createCosmoArbo()
   }
 
   @Test
   fun `test fail get no existing scenarioRunResult`() {
-    assertThrows<CsmResourceNotFoundException> {
-      scenarioRunResultApiService.getScenarioRunResult(
-          ORGANIZATION_ID, WORKSPACE_ID, SCENARIO_ID, SCENARIORUN_ID, PROBE_ID)
-    }
+    val exception =
+        assertThrows<CsmResourceNotFoundException> {
+          scenarioRunResultApiService.getScenarioRunResult(
+              cosmoArbo.organizationId,
+              cosmoArbo.workspaceId,
+              cosmoArbo.scenarioId,
+              SCENARIORUN_ID,
+              PROBE_ID)
+        }
+    val resultId = SCENARIORUN_ID + "_" + PROBE_ID
+    assertEquals("no probe $resultId found", exception.message)
   }
 
   @Test
   fun `test fail create with empty body`() {
-    assertThrows<CsmClientException> {
-      scenarioRunResultApiService.sendScenarioRunResult(
-          ORGANIZATION_ID, WORKSPACE_ID, SCENARIO_ID, SCENARIORUN_ID, PROBE_ID, mutableMapOf())
-    }
+    val exception =
+        assertThrows<CsmClientException> {
+          scenarioRunResultApiService.sendScenarioRunResult(
+              cosmoArbo.organizationId,
+              cosmoArbo.workspaceId,
+              cosmoArbo.scenarioId,
+              SCENARIORUN_ID,
+              PROBE_ID,
+              mutableMapOf())
+        }
+    assertEquals("no data sent", exception.message)
   }
 
   @Test
   fun `test success Create scenarioRunResult`() {
+    logger.info("create a scenarioRunResult with result")
+    var result =
+        scenarioRunResultApiService.sendScenarioRunResult(
+            cosmoArbo.organizationId,
+            cosmoArbo.workspaceId,
+            cosmoArbo.scenarioId,
+            SCENARIORUN_ID,
+            PROBE_ID,
+            mutableMapOf("var1" to "var", "value1" to "value"))
+
+    assertNotNull(result)
+
+    var scenarioRunResult =
+        ScenarioRunResult(
+            id = "${SCENARIORUN_ID}_${PROBE_ID}",
+            results = mutableListOf(mutableMapOf("var1" to "var", "value1" to "value")))
+    logger.info("get scenarioRunResult")
+    var getResult =
+        scenarioRunResultApiService.getScenarioRunResult(
+            cosmoArbo.organizationId,
+            cosmoArbo.workspaceId,
+            cosmoArbo.scenarioId,
+            SCENARIORUN_ID,
+            PROBE_ID)
+
+    assertEquals(scenarioRunResult, getResult)
+
+    logger.info("create second result in scenarioRunResult")
+    result =
+        scenarioRunResultApiService.sendScenarioRunResult(
+            cosmoArbo.organizationId,
+            cosmoArbo.workspaceId,
+            cosmoArbo.scenarioId,
+            SCENARIORUN_ID,
+            PROBE_ID,
+            mutableMapOf("var2" to "var", "value2" to "value"))
+
+    assertNotNull(result)
+
+    logger.info("get scenarioRunResult")
+    getResult =
+        scenarioRunResultApiService.getScenarioRunResult(
+            cosmoArbo.organizationId,
+            cosmoArbo.workspaceId,
+            cosmoArbo.scenarioId,
+            SCENARIORUN_ID,
+            PROBE_ID)
+    scenarioRunResult =
+        ScenarioRunResult(
+            id = "${SCENARIORUN_ID}_${PROBE_ID}",
+            results =
+                mutableListOf(
+                    mutableMapOf("var1" to "var", "value1" to "value"),
+                    mutableMapOf("var2" to "var", "value2" to "value")))
+
+    assertEquals(scenarioRunResult, getResult)
+  }
+
+  data class CosmoArbo(
+      val organizationId: String,
+      val workspaceId: String,
+      val scenarioId: String,
+      val solutionId: String,
+      val connectorId: String,
+      val datasetId: String
+  )
+
+  private fun createCosmoArbo(): CosmoArbo {
     val organization =
         makeOrganization(
             security = CsmSecurity(ROLE_NONE).addClassicRole().toOrganisationSecurity())
@@ -136,9 +220,10 @@ class ScenarioRunResultServiceIntegrationTest : CsmRedisTestBase() {
     val workspaceSavedId = workspaceApiService.createWorkspace(organizationSavedId, workspace).id!!
 
     val connector = makeConnector()
-    val connectorSavedId = connectorApiService.registerConnector(connector)
+    val connectorSaved = connectorApiService.registerConnector(connector)
+    val connectorSavedId = connectorSaved.id!!
 
-    val dataset = makeDataset(organizationSavedId, connectorSavedId)
+    val dataset = makeDataset(organizationSavedId, connectorSaved)
     val datasetSavedId = datasetApiService.createDataset(organizationSavedId, dataset).id!!
 
     val scenario =
@@ -151,54 +236,13 @@ class ScenarioRunResultServiceIntegrationTest : CsmRedisTestBase() {
     val scenarioSavedId =
         scenarioApiService.createScenario(organizationSavedId, workspaceSavedId, scenario).id!!
 
-    logger.info("create a scenarioRunResult with result")
-    var result =
-        scenarioRunResultApiService.sendScenarioRunResult(
-            organizationSavedId,
-            workspaceSavedId,
-            scenarioSavedId,
-            SCENARIORUN_ID,
-            PROBE_ID,
-            mutableMapOf("var1" to "var", "value1" to "value"))
-
-    assertNotNull(result)
-
-    var scenarioRunResult =
-        ScenarioRunResult(
-            id = "${SCENARIORUN_ID}_${PROBE_ID}",
-            results = mutableListOf(mutableMapOf("var1" to "var", "value1" to "value")))
-    logger.info("get scenarioRunResult")
-    var getResult =
-        scenarioRunResultApiService.getScenarioRunResult(
-            organizationSavedId, workspaceSavedId, scenarioSavedId, SCENARIORUN_ID, PROBE_ID)
-
-    assertEquals(scenarioRunResult, getResult)
-
-    logger.info("create second result in scenarioRunResult")
-    result =
-        scenarioRunResultApiService.sendScenarioRunResult(
-            organizationSavedId,
-            workspaceSavedId,
-            scenarioSavedId,
-            SCENARIORUN_ID,
-            PROBE_ID,
-            mutableMapOf("var2" to "var", "value2" to "value"))
-
-    assertNotNull(result)
-
-    logger.info("get scenarioRunResult")
-    getResult =
-        scenarioRunResultApiService.getScenarioRunResult(
-            organizationSavedId, workspaceSavedId, scenarioSavedId, SCENARIORUN_ID, PROBE_ID)
-    scenarioRunResult =
-        ScenarioRunResult(
-            id = "${SCENARIORUN_ID}_${PROBE_ID}",
-            results =
-                mutableListOf(
-                    mutableMapOf("var1" to "var", "value1" to "value"),
-                    mutableMapOf("var2" to "var", "value2" to "value")))
-
-    assertEquals(scenarioRunResult, getResult)
+    return CosmoArbo(
+        organizationSavedId,
+        workspaceSavedId,
+        scenarioSavedId,
+        solutionSavedId,
+        connectorSavedId,
+        datasetSavedId)
   }
 
   private fun makeWorkspaceEventHubInfo(eventHubAvailable: Boolean): WorkspaceEventHubInfo {
