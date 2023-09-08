@@ -8,16 +8,19 @@ import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.events.TwingraphImportEvent
 import com.cosmotech.api.events.TwingraphImportJobInfoRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
+import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.security.coroutine.SecurityCoroutineContext
+import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
+import com.cosmotech.api.utils.formatQuery
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.unzip
@@ -36,6 +39,7 @@ import com.cosmotech.dataset.domain.GraphProperties
 import com.cosmotech.dataset.domain.SubDatasetGraphQuery
 import com.cosmotech.dataset.domain.TwinGraphBatchResult
 import com.cosmotech.dataset.repository.DatasetRepository
+import com.cosmotech.dataset.utils.TwingraphUtils
 import com.cosmotech.dataset.utils.toJsonString
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.service.getRbac
@@ -52,6 +56,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import redis.clients.jedis.JedisPool
+import redis.clients.jedis.exceptions.JedisDataException
 
 const val TYPE_NODE = "node"
 const val TYPE_RELATIONSHIP = "relationship"
@@ -59,7 +64,7 @@ const val NODES_ZIP_FOLDER = "nodes"
 const val EDGES_ZIP_FOLDER = "edges"
 
 @Service
-@Suppress("TooManyFunctions")
+@Suppress("TooManyFunctions", "LongParameterList")
 class DatasetServiceImpl(
     private val connectorService: ConnectorApiService,
     private val organizationService: OrganizationApiService,
@@ -67,6 +72,7 @@ class DatasetServiceImpl(
     private val csmJedisPool: JedisPool,
     private val csmRedisGraph: RedisGraph,
     private val csmRbac: CsmRbac,
+    private val resourceScanner: ResourceScanner
 ) : CsmPhoenixService(), DatasetApiService {
 
   override fun findAllDatasets(organizationId: String, page: Int?, size: Int?): List<Dataset> {
@@ -142,9 +148,8 @@ class DatasetServiceImpl(
       datasetId: String,
       subDatasetGraphQuery: SubDatasetGraphQuery
   ): Dataset {
-    val dataset = findDatasetById(organizationId, datasetId)
-    dataset.takeUnless { it.twingraphId.isNullOrBlank() }
-        ?: throw IllegalArgumentException("TwingraphId is not defined for the dataset")
+    val dataset =
+        getPrerequisiteDataset(organizationId, datasetId, status = Dataset.Status.COMPLETED)
 
     csmJedisPool.resource.use { jedis ->
       val graphDump =
@@ -178,13 +183,10 @@ class DatasetServiceImpl(
         ?: throw IllegalArgumentException(
             "Invalid archive type: '$archiverType'. A Zip Archive is expected.")
 
-    val dataset = findDatasetById(organizationId, datasetId)
+    val dataset = getPrerequisiteDataset(organizationId, datasetId)
     dataset.sourceType.takeIf { it == DatasetSourceType.File }
         ?: throw CsmResourceNotFoundException("SourceType Dataset must be 'File'")
-    val twinGraphId =
-        dataset.twingraphId
-            ?: throw CsmResourceNotFoundException("TwingraphId is not defined for the dataset")
-    val uploadStatus = getDatasetTwingraphStatus(organizationId, datasetId, twinGraphId)
+    val uploadStatus = getDatasetTwingraphStatus(organizationId, datasetId, dataset.twingraphId!!)
     uploadStatus.takeUnless { it == Dataset.Status.PENDING.value }
         ?: throw CsmResourceNotFoundException("Uploading not yet completed. Wait. Cannot update")
 
@@ -355,9 +357,7 @@ class DatasetServiceImpl(
       datasetId: String,
       datasetTwinGraphQuery: DatasetTwinGraphQuery
   ): String {
-    val dataset = findDatasetById(organizationId, datasetId)
-    dataset.takeUnless { it.twingraphId.isNullOrBlank() }
-        ?: throw CsmResourceNotFoundException("TwingraphId is not defined for the dataset")
+    val dataset = getPrerequisiteDataset(organizationId, datasetId)
     val resultSet =
         csmRedisGraph.query(
             dataset.twingraphId!!,
@@ -366,15 +366,67 @@ class DatasetServiceImpl(
     return resultSet.toJsonString()
   }
 
+  override fun twingraphBatchUpdate(
+      organizationId: String,
+      datasetId: String,
+      twinGraphQuery: DatasetTwinGraphQuery,
+      body: Resource
+  ): TwinGraphBatchResult {
+
+    val dataset = getPrerequisiteDataset(organizationId, datasetId)
+    resourceScanner.scanMimeTypes(body, listOf("text/csv", "text/plain"))
+
+    val result = TwinGraphBatchResult(0, 0, mutableListOf())
+    processCSVBatch(body.inputStream, twinGraphQuery, result) {
+      try {
+        csmRedisGraph.query(dataset.twingraphId, it)
+        result.processedLines++
+      } catch (e: JedisDataException) {
+        result.errors.add("#${result.totalLines}: ${e.message}")
+      }
+    }
+    return result
+  }
+
+  @Suppress("ThrowsCount")
+  fun getPrerequisiteDataset(
+      organizationId: String,
+      datasetId: String,
+      status: Dataset.Status? = null,
+      query: String? = null
+  ): Dataset {
+    val organization = organizationService.findOrganizationById(organizationId)
+    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
+
+    val dataset = findDatasetById(organizationId, datasetId)
+    dataset.takeUnless { it.twingraphId.isNullOrBlank() }
+        ?: throw CsmResourceNotFoundException("TwingraphId is not defined for the dataset")
+    status?.let {
+      dataset.status?.takeIf { it == status }
+          ?: throw CsmClientException(
+              "Dataset status is " + "${dataset.status?.value}, but ${status?.value} was required")
+    }
+    query?.let {
+      it.takeUnless { !TwingraphUtils.isReadOnlyQuery(it) }
+          ?: throw CsmClientException("Read Only queries authorized only")
+    }
+    return dataset
+  }
+
+  fun processCSVBatch(
+      inputStream: InputStream,
+      twinGraphQuery: DatasetTwinGraphQuery,
+      result: TwinGraphBatchResult,
+      actionLambda: (String) -> Unit
+  ) = readCSV(inputStream, result) { actionLambda(twinGraphQuery.query.formatQuery(it)) }
+
   override fun createTwingraphEntities(
       organizationId: String,
       datasetId: String,
       type: String,
       graphProperties: List<GraphProperties>
   ): String {
-    val dataset = findDatasetById(organizationId, datasetId)
-    dataset.takeUnless { it.twingraphId.isNullOrBlank() }
-        ?: throw CsmResourceNotFoundException("TwingraphId is not defined for the dataset")
+    val dataset = getPrerequisiteDataset(organizationId, datasetId)
 
     var result = ""
     when (type) {
@@ -408,9 +460,8 @@ class DatasetServiceImpl(
       type: String,
       ids: List<String>
   ): String {
-    val dataset = findDatasetById(organizationId, datasetId)
-    dataset.takeUnless { it.twingraphId.isNullOrBlank() }
-        ?: throw CsmResourceNotFoundException("TwingraphId is not defined for the dataset")
+    val dataset =
+        getPrerequisiteDataset(organizationId, datasetId, status = Dataset.Status.COMPLETED)
 
     var result = ""
     when (type) {
@@ -439,9 +490,8 @@ class DatasetServiceImpl(
       type: String,
       graphProperties: List<GraphProperties>
   ): String {
-    val dataset = findDatasetById(organizationId, datasetId)
-    dataset.takeUnless { it.twingraphId.isNullOrBlank() }
-        ?: throw CsmResourceNotFoundException("TwingraphId is not defined for the dataset")
+    val dataset =
+        getPrerequisiteDataset(organizationId, datasetId, status = Dataset.Status.COMPLETED)
 
     var result = ""
     when (type) {
@@ -474,9 +524,7 @@ class DatasetServiceImpl(
       type: String,
       ids: List<String>
   ) {
-    val dataset = findDatasetById(organizationId, datasetId)
-    dataset.takeUnless { it.twingraphId.isNullOrBlank() }
-        ?: throw CsmResourceNotFoundException("TwingraphId is not defined for the dataset")
+    val dataset = getPrerequisiteDataset(organizationId, datasetId)
 
     return when (type) {
       TYPE_NODE ->
