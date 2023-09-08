@@ -585,6 +585,38 @@ grafana:
       - ReadWriteOnce
     size: "${LOKI_PERSISTENCE_MEMORY:-4Gi}"
 promtail:
+  config:
+    snippets:
+      pipelineStages:
+      - cri: {}
+      - match:
+          pipeline_name: "keep only ${NAMESPACE} ns"
+          selector: '{namespace!="${NAMESPACE}"}'
+          action: drop
+      - match:
+          pipeline_name: "drop argo server"
+          selector: '{app="argo-workflows-server"}'
+          action: drop
+      - match:
+          pipeline_name: "drop argo controller"
+          selector: '{app="argo-workflows-workflow-controller"}'
+          action: drop
+      - match:
+          pipeline_name: "drop redis"
+          selector: '{app="redis"}'
+          action: drop
+      - match:
+          pipeline_name: "drop minio"
+          selector: '{app="minio"}'
+          action: drop
+      - match:
+          pipeline_name: "drop postgresql"
+          selector: '{app="postgresql"}'
+          action: drop
+      - match:
+          pipeline_name: "drop cosmotech-api"
+          selector: '{app="cosmotech-api"}'
+          action: drop
   tolerations:
     - effect: NoSchedule
       operator: Exists
