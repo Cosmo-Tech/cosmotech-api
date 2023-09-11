@@ -16,6 +16,7 @@ import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.security.coroutine.SecurityCoroutineContext
 import com.cosmotech.api.utils.ResourceScanner
+import com.cosmotech.api.utils.bulkQueryKey
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.constructPageRequest
@@ -24,6 +25,7 @@ import com.cosmotech.api.utils.formatQuery
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.unzip
+import com.cosmotech.api.utils.zipBytesWithFileNames
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.dataset.api.DatasetApiService
 import com.cosmotech.dataset.bulk.QueryBuffer
@@ -33,6 +35,7 @@ import com.cosmotech.dataset.domain.DatasetConnector
 import com.cosmotech.dataset.domain.DatasetCopyParameters
 import com.cosmotech.dataset.domain.DatasetSearch
 import com.cosmotech.dataset.domain.DatasetSourceType
+import com.cosmotech.dataset.domain.DatasetTwinGraphHash
 import com.cosmotech.dataset.domain.DatasetTwinGraphInfo
 import com.cosmotech.dataset.domain.DatasetTwinGraphQuery
 import com.cosmotech.dataset.domain.GraphProperties
@@ -45,16 +48,22 @@ import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.service.getRbac
 import com.redislabs.redisgraph.RedisGraph
 import java.io.InputStream
+import java.nio.charset.StandardCharsets
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.apache.commons.compress.archivers.ArchiveStreamFactory
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVRecord
 import org.springframework.context.event.EventListener
+import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
 import org.springframework.data.domain.PageRequest
+import org.springframework.http.ContentDisposition
+import org.springframework.http.HttpHeaders
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
+import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.context.request.ServletRequestAttributes
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.exceptions.JedisDataException
 
@@ -390,6 +399,59 @@ class DatasetServiceImpl(
       }
     }
     return result
+  }
+
+  override fun twingraphBatchQuery(
+      organizationId: String,
+      datasetId: String,
+      datasetTwinGraphQuery: DatasetTwinGraphQuery
+  ): DatasetTwinGraphHash {
+    val dataset =
+        getPrerequisiteDataset(
+            organizationId,
+            datasetId,
+            status = Dataset.Status.COMPLETED,
+            datasetTwinGraphQuery.query)
+    val bulkQueryKey = bulkQueryKey(dataset.twingraphId!!, datasetTwinGraphQuery.query, null)
+    val twinGraphHash = DatasetTwinGraphHash(bulkQueryKey.second)
+    csmJedisPool.resource.use { jedis ->
+      val keyExists = jedis.exists(bulkQueryKey.first)
+      if (keyExists) {
+        return twinGraphHash
+      }
+      val resultSet = csmRedisGraph.query(dataset.twingraphId, datasetTwinGraphQuery.query)
+
+      GlobalScope.launch(SecurityCoroutineContext()) {
+        val zip =
+            zipBytesWithFileNames(
+                mapOf(
+                    "bulkQuery.json" to
+                        resultSet.toJsonString().toByteArray(StandardCharsets.UTF_8)))
+        jedis.setex(bulkQueryKey.first, csmPlatformProperties.twincache.queryBulkTTL, zip)
+      }
+    }
+    return twinGraphHash
+  }
+
+  override fun downloadTwingraph(organizationId: String, hash: String): Resource {
+    val organization = organizationService.findOrganizationById(organizationId)
+    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
+
+    val bulkQueryId = bulkQueryKey(hash)
+    csmJedisPool.resource.use { jedis ->
+      if (!jedis.exists(bulkQueryId)) {
+        throw CsmResourceNotFoundException("No graph found with hash: $hash  Try later")
+      } else if (jedis.ttl(bulkQueryId) < 0) {
+        throw CsmResourceNotFoundException(
+            "Graph with hash: $hash is expired. Try to repeat bulk query")
+      }
+    }
+    val httpServletResponse =
+        ((RequestContextHolder.getRequestAttributes() as ServletRequestAttributes).response)
+    val contentDisposition =
+        ContentDisposition.builder("attachment").filename("TwinGraph-$hash.zip").build()
+    httpServletResponse!!.setHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
+    return ByteArrayResource(csmJedisPool.resource.use { jedis -> jedis.get(bulkQueryId) })
   }
 
   @Suppress("ThrowsCount")

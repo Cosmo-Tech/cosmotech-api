@@ -584,6 +584,72 @@ paths:
         "400":
           description: Bad request
 
+  /organizations/{organization_id}/datasets/{dataset_id}/batch-query:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: dataset_id
+        in: path
+        description: the Graph Identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: twingraphBatchQuery
+      tags:
+        - dataset
+      summary: Run a query on a graph instance and return the result as a zip file in async mode
+      description: Run a query on a graph instance and return the result as a zip file in async mode
+      requestBody:
+        description: the query to run
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DatasetTwinGraphQuery'
+            examples:
+              GetAllNodes:
+                $ref: '#/components/examples/GetAllNodes'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetTwinGraphHash'
+  /organizations/{organization_id}/datasets/twingraph/download/{hash}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: hash
+        in: path
+        description: the Graph download identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: downloadTwingraph
+      tags:
+        - dataset
+      summary: Download a graph compressed in a zip file
+      description: Download a graph compressed in a zip file
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+
   /organizations/{organization_id}/datasets/{dataset_id}/job/{job_id}/status:
     parameters:
       - name: organization_id
@@ -1132,6 +1198,13 @@ components:
           description: the query in cypher language
       required:
         - query
+    DatasetTwinGraphHash:
+      type: object
+      description: a twin graph hash
+      properties:
+        hash:
+          type: string
+          description: the hash of the graph
     DatasetCompatibility:
       type: object
       description: a Dataset compatibility constraint to a Solution version open range
@@ -1533,3 +1606,8 @@ components:
           target: "target-node-name"
           name: "entity-name"
           params: "param1: 'value1', param2: 'value2'"
+    GetAllNodes:
+      summary: Get all nodes query
+      description: Get all nodes query (be careful if you want to query large graph)
+      value:
+        query: "MATCH(n) RETURN n"
