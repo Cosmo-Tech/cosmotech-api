@@ -93,6 +93,10 @@ entity DatasetSearch {
 entity DatasetSourceType {
 }
 
+entity DatasetTwinGraphHash {
+    hash: String
+}
+
 entity DatasetTwinGraphInfo {
     jobId: String
     datasetId: String

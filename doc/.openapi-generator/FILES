@@ -19,6 +19,7 @@ Models/DatasetCompatibility.md
 Models/DatasetCopyParameters.md
 Models/DatasetSearch.md
 Models/DatasetSourceType.md
+Models/DatasetTwinGraphHash.md
 Models/DatasetTwinGraphInfo.md
 Models/DatasetTwinGraphQuery.md
 Models/Dataset_connector.md

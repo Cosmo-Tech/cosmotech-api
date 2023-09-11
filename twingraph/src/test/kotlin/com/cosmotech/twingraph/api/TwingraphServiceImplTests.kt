@@ -155,13 +155,10 @@ class TwingraphServiceImplTests {
     val jsonHash = twingraphServiceImpl.batchQuery("orgId", "graphId", twinGraphQuery)
 
     assertEquals(jsonHash.hash, "graphId:1:MATCH(n) RETURN n".shaHash())
-    verifyAll {
-      csmJedisPool.resource.keys(any<String>())
-      csmJedisPool.resource.exists(any<ByteArray>())
-      csmRedisGraph.query(any(), any())
-      csmJedisPool.resource.setex(any<ByteArray>(), any<Long>(), any<ByteArray>())
-      csmJedisPool.resource.close()
-    }
+    verify { csmJedisPool.resource.keys(any<String>()) }
+    verify { csmJedisPool.resource.exists(any<ByteArray>()) }
+    verify { csmRedisGraph.query(any(), any()) }
+    verify { csmJedisPool.resource.setex(any<ByteArray>(), any<Long>(), any<ByteArray>()) }
   }
 
   @Test

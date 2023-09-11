@@ -15,6 +15,7 @@ import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.api.utils.shaHash
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetConnector
@@ -37,6 +38,7 @@ import io.mockk.mockk
 import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
 import io.mockk.verify
+import io.mockk.verifyAll
 import java.io.File
 import java.util.*
 import kotlin.test.Test
@@ -48,6 +50,8 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.data.domain.Page
+import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.context.request.ServletRequestAttributes
 import redis.clients.jedis.JedisPool
 
 const val USER_ID = "bob@mycompany.com"
@@ -457,6 +461,90 @@ class DatasetServiceImplTests {
     assertEquals(9, result.totalLines)
     assertEquals(9, result.processedLines)
     assertEquals(0, result.errors.size)
+  }
+
+  @Test
+  fun `test bulkQueryGraphs as Admin - should call query and set data to Redis`() {
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
+    every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
+    val dataset = baseDataset().copy(twingraphId = "graphId", status = Dataset.Status.COMPLETED)
+    every { datasetRepository.save(any()) } returnsArgument 0
+    every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+    every { csmPlatformProperties.twincache.queryBulkTTL } returns 1000L
+
+    every { csmJedisPool.resource.keys(any<String>()) } returns setOf("graphId")
+    every { csmJedisPool.resource.exists(any<ByteArray>()) } returns false
+
+    every { csmRedisGraph.query(any(), any()) } returns mockEmptyResultSet()
+    every { csmJedisPool.resource.setex(any<ByteArray>(), any<Long>(), any<ByteArray>()) } returns
+        "OK"
+
+    val twinGraphQuery = DatasetTwinGraphQuery("MATCH(n) RETURN n")
+    val jsonHash = datasetService.twingraphBatchQuery("orgId", DATASET_ID, twinGraphQuery)
+
+    assertEquals(jsonHash.hash, "graphId:MATCH(n) RETURN n".shaHash())
+    verifyAll {
+      csmJedisPool.resource.exists(any<ByteArray>())
+      csmRedisGraph.query(any(), any())
+      csmJedisPool.resource.setex(any<ByteArray>(), any<Long>(), any<ByteArray>())
+      csmJedisPool.resource.close()
+    }
+  }
+
+  @Test
+  fun `test bulkQueryGraphs as Admin - should return existing Hash when data found`() {
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
+    every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
+    val dataset = baseDataset().copy(twingraphId = "graphId", status = Dataset.Status.COMPLETED)
+    every { datasetRepository.save(any()) } returnsArgument 0
+    every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+    every { csmJedisPool.resource.keys(any<String>()) } returns setOf("graphId")
+    every { csmJedisPool.resource.exists(any<ByteArray>()) } returns true
+
+    val twinGraphQuery = DatasetTwinGraphQuery("MATCH(n) RETURN n")
+    val jsonHash = datasetService.twingraphBatchQuery("orgId", DATASET_ID, twinGraphQuery)
+    assertEquals(jsonHash.hash, "graphId:MATCH(n) RETURN n".shaHash())
+  }
+
+  @Test
+  fun `test downloadGraph as Admin - should get graph data`() {
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
+    every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
+
+    every { csmJedisPool.resource.exists(any<ByteArray>()) } returns true
+    every { csmJedisPool.resource.ttl(any<ByteArray>()) } returns 1000L
+    mockkStatic("org.springframework.web.context.request.RequestContextHolder")
+    every {
+      (RequestContextHolder.getRequestAttributes() as ServletRequestAttributes).response
+    } returns mockk(relaxed = true)
+    every { csmJedisPool.resource.get(any<ByteArray>()) } returns "[]".toByteArray()
+
+    datasetService.downloadTwingraph("orgId", "hash")
+
+    verify { csmJedisPool.resource.exists(any<ByteArray>()) }
+    verify { csmJedisPool.resource.ttl(any<ByteArray>()) }
+    verify { csmJedisPool.resource.get(any<ByteArray>()) }
+  }
+
+  @Test
+  fun `test downloadGraph as Admin - should throw exception if data not found`() {
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
+    every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
+
+    every { csmJedisPool.resource.exists(any<ByteArray>()) } returns false
+
+    assertThrows<CsmResourceNotFoundException> { datasetService.downloadTwingraph("orgId", "hash") }
+  }
+
+  @Test
+  fun `test downloadGraph as Admin - should throw exception if data expired`() {
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
+    every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
+
+    every { csmJedisPool.resource.exists(any<ByteArray>()) } returns true
+    every { csmJedisPool.resource.ttl(any<ByteArray>()) } returns -1L
+
+    assertThrows<CsmResourceNotFoundException> { datasetService.downloadTwingraph("orgId", "hash") }
   }
 
   private fun mockEmptyResultSet(): ResultSet {
