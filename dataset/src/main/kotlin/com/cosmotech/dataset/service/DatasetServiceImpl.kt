@@ -151,30 +151,31 @@ class DatasetServiceImpl(
     val dataset =
         getPrerequisiteDataset(organizationId, datasetId, status = Dataset.Status.COMPLETED)
 
-    csmJedisPool.resource.use { jedis ->
-      val graphDump =
-          jedis.dump(dataset.twingraphId!!)
-              ?: throw CsmResourceNotFoundException(
-                  "Twingraph ${dataset.twingraphId!!} " + "not found for dataset $datasetId")
-
-      val subTwinraphId = idGenerator.generate("twingraph")
-      jedis.restore(subTwinraphId.toByteArray(), 0L, graphDump)
-      subDatasetGraphQuery.query?.let { csmRedisGraph.query(datasetId, it) }
-      val subDataset =
-          dataset.copy(
-              id = idGenerator.generate("dataset"),
-              name = subDatasetGraphQuery.name ?: ("Subdataset " + dataset.name),
-              description = subDatasetGraphQuery.description ?: dataset.description,
-              ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
-              organizationId = organizationId,
-              twingraphId = subTwinraphId,
-              main = subDatasetGraphQuery.main ?: false,
-              parentId = dataset.id,
-              connector = dataset.connector,
-              sourceType = dataset.sourceType,
-              tags = dataset.tags)
-      return datasetRepository.save(subDataset)
+    val subTwinraphId = idGenerator.generate("twingraph")
+    trx(dataset) {
+      csmJedisPool.resource.use { jedis ->
+        val graphDump =
+            jedis.dump(it.twingraphId!!)
+                ?: throw CsmResourceNotFoundException(
+                    "Twingraph ${it.twingraphId!!} " + "not found for dataset $datasetId")
+        jedis.restore(subTwinraphId.toByteArray(), 0L, graphDump)
+        subDatasetGraphQuery.query?.let { csmRedisGraph.query(datasetId, it) }
+      }
     }
+    val subDataset =
+        dataset.copy(
+            id = idGenerator.generate("dataset"),
+            name = subDatasetGraphQuery.name ?: ("Subdataset " + dataset.name),
+            description = subDatasetGraphQuery.description ?: dataset.description,
+            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
+            organizationId = organizationId,
+            twingraphId = subTwinraphId,
+            main = subDatasetGraphQuery.main ?: false,
+            parentId = dataset.id,
+            connector = dataset.connector,
+            sourceType = dataset.sourceType,
+            tags = dataset.tags)
+    return datasetRepository.save(subDataset)
   }
 
   override fun uploadTwingraph(organizationId: String, datasetId: String, body: Resource) {
@@ -190,9 +191,7 @@ class DatasetServiceImpl(
     uploadStatus.takeUnless { it == Dataset.Status.PENDING.value }
         ?: throw CsmResourceNotFoundException("Uploading not yet completed. Wait. Cannot update")
 
-    dataset.status = Dataset.Status.PENDING
-    datasetRepository.save(dataset)
-
+    datasetRepository.save(dataset.apply { status = Dataset.Status.PENDING })
     GlobalScope.launch(SecurityCoroutineContext()) {
       val queryBuffer = QueryBuffer(csmJedisPool.resource, dataset.twingraphId!!)
       unzip(body.inputStream, listOf(NODES_ZIP_FOLDER, EDGES_ZIP_FOLDER), "csv")
@@ -225,10 +224,7 @@ class DatasetServiceImpl(
           } else {
             dataset
                 .takeIf { it.status == Dataset.Status.PENDING }
-                ?.apply {
-                  this.status = Dataset.Status.COMPLETED
-                  datasetRepository.save(this)
-                }
+                ?.apply { datasetRepository.save(this.apply { status = Dataset.Status.COMPLETED }) }
             Dataset.Status.COMPLETED.value
           }
         }
@@ -258,10 +254,7 @@ class DatasetServiceImpl(
         ?: throw CsmResourceNotFoundException("Cannot be applied to source type 'File'")
     dataset
         .takeUnless { it.status == Dataset.Status.PENDING }
-        ?.apply {
-          this.status = Dataset.Status.PENDING
-          datasetRepository.save(this)
-        }
+        ?.apply { datasetRepository.save(this.apply { status = Dataset.Status.PENDING }) }
 
     val requestJobId = this.idGenerator.generate(scope = "graphdataimport", prependPrefix = "gdi-")
     val graphImportEvent =
@@ -359,11 +352,20 @@ class DatasetServiceImpl(
   ): String {
     val dataset = getPrerequisiteDataset(organizationId, datasetId)
     val resultSet =
-        csmRedisGraph.query(
-            dataset.twingraphId!!,
-            datasetTwinGraphQuery.query,
-            csmPlatformProperties.twincache.queryTimeout)
+        trx(dataset) {
+          csmRedisGraph.query(
+              it.twingraphId!!,
+              datasetTwinGraphQuery.query,
+              csmPlatformProperties.twincache.queryTimeout)
+        }
     return resultSet.toJsonString()
+  }
+
+  fun <T> trx(dataset: Dataset, actionLambda: (Dataset) -> T): T {
+    datasetRepository.save(dataset.apply { status = Dataset.Status.PENDING })
+    val result = actionLambda(dataset)
+    datasetRepository.save(dataset.apply { status = Dataset.Status.COMPLETED })
+    return result
   }
 
   override fun twingraphBatchUpdate(
@@ -377,12 +379,14 @@ class DatasetServiceImpl(
     resourceScanner.scanMimeTypes(body, listOf("text/csv", "text/plain"))
 
     val result = TwinGraphBatchResult(0, 0, mutableListOf())
-    processCSVBatch(body.inputStream, twinGraphQuery, result) {
-      try {
-        csmRedisGraph.query(dataset.twingraphId, it)
-        result.processedLines++
-      } catch (e: JedisDataException) {
-        result.errors.add("#${result.totalLines}: ${e.message}")
+    trx(dataset) { localDataset ->
+      processCSVBatch(body.inputStream, twinGraphQuery, result) {
+        try {
+          csmRedisGraph.query(localDataset.twingraphId, it)
+          result.processedLines++
+        } catch (e: JedisDataException) {
+          result.errors.add("#${result.totalLines}: ${e.message}")
+        }
       }
     }
     return result
@@ -427,29 +431,30 @@ class DatasetServiceImpl(
       graphProperties: List<GraphProperties>
   ): String {
     val dataset = getPrerequisiteDataset(organizationId, datasetId)
-
     var result = ""
-    when (type) {
-      TYPE_NODE ->
-          graphProperties.forEach {
-            result +=
-                csmRedisGraph
-                    .query(
-                        dataset.twingraphId,
-                        "CREATE (a:${it.type} {id:'${it.name}',${it.params}}) RETURN a")
-                    .toJsonString()
-          }
-      TYPE_RELATIONSHIP ->
-          graphProperties.forEach {
-            result +=
-                csmRedisGraph
-                    .query(
-                        dataset.twingraphId,
-                        "MATCH (a),(b) WHERE a.id='${it.source}' AND b.id='${it.target}'" +
-                            "CREATE (a)-[r:${it.type} {id:'${it.name}', ${it.params}}]->(b) RETURN r")
-                    .toJsonString()
-          }
-      else -> throw CsmResourceNotFoundException("Bad Type : $type")
+    trx(dataset) { localDataset ->
+      when (type) {
+        TYPE_NODE ->
+            graphProperties.forEach {
+              result +=
+                  csmRedisGraph
+                      .query(
+                          localDataset.twingraphId,
+                          "CREATE (a:${it.type} {id:'${it.name}',${it.params}}) RETURN a")
+                      .toJsonString()
+            }
+        TYPE_RELATIONSHIP ->
+            graphProperties.forEach {
+              result +=
+                  csmRedisGraph
+                      .query(
+                          dataset.twingraphId,
+                          "MATCH (a),(b) WHERE a.id='${it.source}' AND b.id='${it.target}'" +
+                              "CREATE (a)-[r:${it.type} {id:'${it.name}', ${it.params}}]->(b) RETURN r")
+                      .toJsonString()
+            }
+        else -> throw CsmResourceNotFoundException("Bad Type : $type")
+      }
     }
     return result
   }
@@ -492,28 +497,30 @@ class DatasetServiceImpl(
   ): String {
     val dataset =
         getPrerequisiteDataset(organizationId, datasetId, status = Dataset.Status.COMPLETED)
-
     var result = ""
-    when (type) {
-      TYPE_NODE ->
-          graphProperties.forEach {
-            result +=
-                csmRedisGraph
-                    .query(
-                        dataset.twingraphId,
-                        "MATCH (a {id:'${it.name}'}) SET a = {id:'${it.name}',${it.params}} RETURN a")
-                    .toJsonString()
-          }
-      TYPE_RELATIONSHIP ->
-          graphProperties.forEach {
-            result +=
-                csmRedisGraph
-                    .query(
-                        dataset.twingraphId,
-                        "MATCH ()-[r {id:'${it.name}'}]-() SET r = {id:'${it.name}', ${it.params}} RETURN r")
-                    .toJsonString()
-          }
-      else -> throw CsmResourceNotFoundException("Bad Type : $type")
+    trx(dataset) { localDataset ->
+      when (type) {
+        TYPE_NODE ->
+            graphProperties.forEach {
+              result +=
+                  csmRedisGraph
+                      .query(
+                          localDataset.twingraphId,
+                          "MATCH (a {id:'${it.name}'}) SET a = {id:'${it.name}',${it.params}} RETURN a")
+                      .toJsonString()
+            }
+        TYPE_RELATIONSHIP ->
+            graphProperties.forEach {
+              result +=
+                  csmRedisGraph
+                      .query(
+                          dataset.twingraphId,
+                          "MATCH ()-[r {id:'${it.name}'}]-() SET r = {id:'${it.name}', " +
+                              "${it.params}} RETURN r")
+                      .toJsonString()
+            }
+        else -> throw CsmResourceNotFoundException("Bad Type : $type")
+      }
     }
     return result
   }
@@ -525,17 +532,19 @@ class DatasetServiceImpl(
       ids: List<String>
   ) {
     val dataset = getPrerequisiteDataset(organizationId, datasetId)
-
-    return when (type) {
-      TYPE_NODE ->
-          ids.forEach {
-            csmRedisGraph.query(dataset.twingraphId, "MATCH (a) WHERE a.id='$it' DELETE a")
-          }
-      TYPE_RELATIONSHIP ->
-          ids.forEach {
-            csmRedisGraph.query(dataset.twingraphId, "MATCH ()-[r]-() WHERE r.id='$it' DELETE r")
-          }
-      else -> throw CsmResourceNotFoundException("Bad Type : $type")
+    return trx(dataset) { localDataset ->
+      when (type) {
+        TYPE_NODE ->
+            ids.forEach {
+              csmRedisGraph.query(localDataset.twingraphId, "MATCH (a) WHERE a.id='$it' DELETE a")
+            }
+        TYPE_RELATIONSHIP ->
+            ids.forEach {
+              csmRedisGraph.query(
+                  localDataset.twingraphId, "MATCH ()-[r]-() WHERE r.id='$it' DELETE r")
+            }
+        else -> throw CsmResourceNotFoundException("Bad Type : $type")
+      }
     }
   }
 
