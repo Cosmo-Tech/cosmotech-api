@@ -204,6 +204,7 @@ class DatasetServiceImplTests {
     val dataset = baseDataset().copy(twingraphId = "twingraphId", status = Dataset.Status.COMPLETED)
     val subDatasetGraphQuery = SubDatasetGraphQuery()
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+    every { datasetRepository.save(any()) } returnsArgument 0
     every { csmJedisPool.resource.dump(any<String>()) } throws CsmResourceNotFoundException("")
     assertThrows<CsmResourceNotFoundException> {
       datasetService.createSubDataset(ORGANIZATION_ID, dataset.id!!, subDatasetGraphQuery)
@@ -428,6 +429,7 @@ class DatasetServiceImplTests {
   @Test
   fun `twingraphQuery should call query and set data to Redis`() {
     val dataset = baseDataset().copy(twingraphId = "graphId", status = Dataset.Status.COMPLETED)
+    every { datasetRepository.save(any()) } returnsArgument 0
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
     every { csmPlatformProperties.twincache.queryBulkTTL } returns 1000L
 
