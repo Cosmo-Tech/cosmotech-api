@@ -103,33 +103,37 @@ if [[ -z "${PROM_PASSWORD}" ]] ; then
   PROM_PASSWORD=$(date +%s | sha256sum | base64 | head -c 32)
 fi
 
-# kube-prometheus-stack
-# https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
-# https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack
-kubectl create namespace "${MONITORING_NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo update
+IS_MONITORING_ACTIVE=$(kubectl get ns ${MONITORING_NAMESPACE} -o json | jq .status.phase -r)
+if [ "$IS_MONITORING_ACTIVE" = "Active" ]; then
+    echo "${MONITORING_NAMESPACE} is already in the cluster, there's no need to recreate it and install kube-prometheus-stack"
+else
+  # kube-prometheus-stack
+  # https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
+  # https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack
+  kubectl create namespace "${MONITORING_NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
+  helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+  helm repo update
 
-curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/JREY/keycloak/deployment_scripts/v3.0/kube-prometheus-stack-template.yaml" \
-     -o "${WORKING_DIR}"/kube-prometheus-stack-template.yaml
+  curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/JREY/keycloak/deployment_scripts/v3.0/kube-prometheus-stack-template.yaml" \
+       -o "${WORKING_DIR}"/kube-prometheus-stack-template.yaml
 
-MONITORING_NAMESPACE_VAR=${MONITORING_NAMESPACE} \
-PROM_STORAGE_CLASS_NAME_VAR=${PROM_STORAGE_CLASS_NAME:-"standard"} \
-PROM_STORAGE_RESOURCE_REQUEST_VAR=${PROM_STORAGE_RESOURCE_REQUEST:-"10Gi"} \
-PROM_CPU_MEM_LIMITS_VAR=${PROM_CPU_MEM_LIMITS:-"2Gi"} \
-PROM_CPU_MEM_REQUESTS_VAR=${PROM_CPU_MEM_REQUESTS:-"2Gi"} \
-PROM_REPLICAS_NUMBER_VAR=${PROM_REPLICAS_NUMBER:-"1"} \
-PROM_ADMIN_PASSWORD_VAR=${PROM_PASSWORD} \
-REDIS_ADMIN_PASSWORD_VAR=${REDIS_PASSWORD} \
-REDIS_HOST_VAR=cosmotechredis-master.${NAMESPACE}.svc.cluster.local \
-REDIS_PORT_VAR=${REDIS_PORT} \
-envsubst < "${WORKING_DIR}"/kube-prometheus-stack-template.yaml > "${WORKING_DIR}"/kube-prometheus-stack.yaml
+  MONITORING_NAMESPACE_VAR=${MONITORING_NAMESPACE} \
+  PROM_STORAGE_CLASS_NAME_VAR=${PROM_STORAGE_CLASS_NAME:-"standard"} \
+  PROM_STORAGE_RESOURCE_REQUEST_VAR=${PROM_STORAGE_RESOURCE_REQUEST:-"10Gi"} \
+  PROM_CPU_MEM_LIMITS_VAR=${PROM_CPU_MEM_LIMITS:-"2Gi"} \
+  PROM_CPU_MEM_REQUESTS_VAR=${PROM_CPU_MEM_REQUESTS:-"2Gi"} \
+  PROM_REPLICAS_NUMBER_VAR=${PROM_REPLICAS_NUMBER:-"1"} \
+  PROM_ADMIN_PASSWORD_VAR=${PROM_PASSWORD} \
+  REDIS_ADMIN_PASSWORD_VAR=${REDIS_PASSWORD} \
+  REDIS_HOST_VAR=cosmotechredis-master.${NAMESPACE}.svc.cluster.local \
+  REDIS_PORT_VAR=${REDIS_PORT} \
+  envsubst < "${WORKING_DIR}"/kube-prometheus-stack-template.yaml > "${WORKING_DIR}"/kube-prometheus-stack.yaml
 
-helm upgrade --install prometheus-operator prometheus-community/kube-prometheus-stack \
-             --namespace "${MONITORING_NAMESPACE}" \
-             --version ${PROMETHEUS_STACK_VERSION} \
-             --values "${WORKING_DIR}/kube-prometheus-stack.yaml"
-
+  helm upgrade --install prometheus-operator prometheus-community/kube-prometheus-stack \
+               --namespace "${MONITORING_NAMESPACE}" \
+               --version ${PROMETHEUS_STACK_VERSION} \
+               --values "${WORKING_DIR}/kube-prometheus-stack.yaml"
+fi
 
 # Create namespace keycloak if it does not exist
 kubectl create namespace ${KEYCLOAK_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
