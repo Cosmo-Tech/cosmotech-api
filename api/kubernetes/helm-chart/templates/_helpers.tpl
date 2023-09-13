@@ -77,20 +77,17 @@ Create Docker secrets so Argo Workflows can pull images from a private container
 {{- end }}
 
 {{/*
-Default Ingress path
+Context path:
+This path will follow the pattern /{rootName}/{namespace|tenantId}/{apiVersion}
+E.g:
+- /cosmotech-api/myTenant/v1
+- /cosmotech-api/myTenant/ if apiVersion is set to "latest"
 */}}
-{{- define "cosmotech-api.ingressTenantPath" -}}
-{{- printf "%s" (printf "%s" .Values.api.servletContextPath | trimSuffix "/" ) }}
-{{- end }}
-
-{{/*
-API Base path with servlet context, namespace, version
-*/}}
-{{- define "cosmotech-api.apiBasePath" -}}
+{{- define "cosmotech-api.contexPath" -}}
 {{- if eq .Values.api.version "latest" }}
-{{- printf "%s" (include "cosmotech-api.ingressTenantPath" . | trimSuffix "/" ) }}
+{{- printf "%s/%s" (printf "%s" .Values.api.servletContextPath | trimSuffix "/" ) .Release.Namespace }}
 {{- else }}
-{{- printf "%s/%s" (include "cosmotech-api.ingressTenantPath" . | trimSuffix "/" ) (printf "%s" .Values.api.version | trimSuffix "/" ) }}
+{{- printf "%s/%s/%s" (printf "%s" .Values.api.servletContextPath | trimSuffix "/" ) .Release.Namespace (printf "%s" .Values.api.version | trimSuffix "/" ) }}
 {{- end }}
 {{- end }}
 
@@ -104,11 +101,12 @@ spring:
 
 api:
   version: "{{ .Values.api.version }}"
-  servletContextPath: {{ include "cosmotech-api.apiBasePath" . }}
+  multiTenant: {{ default true .Values.api.multiTenant }}
+  servletContextPath: {{ include "cosmotech-api.contexPath" . }}
 
 server:
   servlet:
-    context-path: {{ include "cosmotech-api.apiBasePath" . }}
+    context-path: {{ include "cosmotech-api.contexPath" . }}
   jetty:
     accesslog:
       ignore-paths:
@@ -137,7 +135,7 @@ management:
 csm:
   platform:
     api:
-      base-url: "http://{{ include "cosmotech-api.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}{{ include "cosmotech-api.apiBasePath" . | trimSuffix "/" }}"
+      base-url: "http://{{ include "cosmotech-api.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}{{ include "cosmotech-api.contexPath" . | trimSuffix "/" }}"
       # API Base Path for OpenAPI-generated controllers.
       # Might conflict with the SpringBoot context path, hence leaving it at the root
       base-path: /
