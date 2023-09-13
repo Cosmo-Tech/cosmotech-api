@@ -1,4 +1,4 @@
-{{- $apiBasePath := include "cosmotech-api.apiBasePath" . -}}
+{{- $contexPath := include "cosmotech-api.contexPath" . -}}
 apiVersion: v1
 kind: Pod
 metadata:
@@ -38,7 +38,7 @@ spec:
         - '-S'
         - '-O'
         - '-'
-        - 'http://{{ include "cosmotech-api.fullname" . }}:{{ .Values.service.port }}{{ $apiBasePath | trimSuffix "/" }}/swagger-ui/index.html'
+        - 'http://{{ include "cosmotech-api.fullname" . }}:{{ .Values.service.port }}{{ $contexPath | trimSuffix "/" }}/swagger-ui/index.html'
       securityContext:
         readOnlyRootFilesystem: true
       resources:
