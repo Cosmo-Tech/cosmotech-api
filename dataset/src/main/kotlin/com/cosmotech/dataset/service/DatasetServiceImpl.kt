@@ -181,7 +181,7 @@ class DatasetServiceImpl(
             twingraphId = subTwinraphId,
             main = subDatasetGraphQuery.main ?: false,
             parentId = dataset.id,
-            connector = dataset.connector,
+            connector = dataset.connector?.apply { parametersValues?.set("TWIN_CACHE_NAME", subTwinraphId) },
             sourceType = dataset.sourceType,
             tags = dataset.tags)
     return datasetRepository.save(subDataset)
@@ -359,7 +359,7 @@ class DatasetServiceImpl(
       datasetId: String,
       datasetTwinGraphQuery: DatasetTwinGraphQuery
   ): String {
-    val dataset = getPrerequisiteDataset(organizationId, datasetId)
+    val dataset = getPrerequisiteDataset(organizationId, datasetId, status = Dataset.Status.COMPLETED)
     val resultSet =
         trx(dataset) {
           csmRedisGraph.query(
@@ -470,7 +470,7 @@ class DatasetServiceImpl(
     status?.let {
       dataset.status?.takeIf { it == status }
           ?: throw CsmClientException(
-              "Dataset status is " + "${dataset.status?.value}, but ${status?.value} was required")
+              "Dataset status is ${dataset.status?.value}, not $status")
     }
     query?.let {
       it.takeUnless { !TwingraphUtils.isReadOnlyQuery(it) }

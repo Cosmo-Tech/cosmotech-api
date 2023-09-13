@@ -284,9 +284,9 @@ internal class ArgoWorkflowService(
     return workflowList?.items?.map { workflow ->
       val workflowId = workflow.metadata.uid!!
       val status = workflow.status?.phase
-      val organizationId = workflow.metadata.labels!!.getOrDefault(ORGANIZATION_ID_LABEL, "none")
-      val workspaceId = workflow.metadata.labels!!.getOrDefault(WORKSPACE_ID_LABEL, "none")
-      val scenarioId = workflow.metadata.labels!!.getOrDefault(SCENARIO_ID_LABEL, "none")
+      val organizationId = workflow.metadata.labels?.getOrDefault(ORGANIZATION_ID_LABEL, "none")
+      val workspaceId = workflow.metadata.labels?.getOrDefault(WORKSPACE_ID_LABEL, "none")
+      val scenarioId = workflow.metadata.labels?.getOrDefault(SCENARIO_ID_LABEL, "none")
       com.cosmotech.scenariorun.workflow.WorkflowStatus(
           workflowId = workflowId,
           status = status,
