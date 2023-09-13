@@ -440,6 +440,21 @@ entity Solution {
     parameters: List<RunTemplateParameter>
     parameterGroups: List<RunTemplateParameterGroup>
     runTemplates: List<RunTemplate>
+    security: SolutionSecurity
+}
+
+entity SolutionAccessControl {
+    * id: String
+    * role: String
+}
+
+entity SolutionRole {
+    * role: String
+}
+
+entity SolutionSecurity {
+    * default: String
+    * accessControlList: List<SolutionAccessControl>
 }
 
 entity SourceInfo {
@@ -558,6 +573,7 @@ ContainerResourceSizing -- ContainerResourceSizeInfo : requests
 ContainerResourceSizing -- ContainerResourceSizeInfo : limits
 ScenarioRunContainer -- ContainerResourceSizing : runSizing
 ScenarioRunContainer -- "0..*" ScenarioRunContainerArtifact : artifacts
+SolutionSecurity -- "0..*" SolutionAccessControl : accessControlList
 WorkspaceSecurity -- "0..*" WorkspaceAccessControl : accessControlList
 ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
 OrganizationServices -- OrganizationService : storage
@@ -585,6 +601,7 @@ RunTemplate -- DeleteHistoricalData : deleteHistoricalData
 Solution -- "0..*" RunTemplateParameter : parameters
 Solution -- "0..*" RunTemplateParameterGroup : parameterGroups
 Solution -- "0..*" RunTemplate : runTemplates
+Solution -- SolutionSecurity : security
 ScenarioComparisonResult -- "0..*" ScenarioChangedParameterValue : changedValues
 Dataset -- DatasetConnector : connector
 Dataset -- "0..*" DatasetCompatibility : compatibility

@@ -62,6 +62,9 @@ Models/ScenarioRunTemplateParameterValue.md
 Models/ScenarioSecurity.md
 Models/ScenarioValidationStatus.md
 Models/Solution.md
+Models/SolutionAccessControl.md
+Models/SolutionRole.md
+Models/SolutionSecurity.md
 Models/SourceInfo.md
 Models/TwinGraphBatchResult.md
 Models/TwinGraphHash.md

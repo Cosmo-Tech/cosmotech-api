@@ -8,6 +8,16 @@ import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.rbac.CsmRbac
+import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
+import com.cosmotech.api.rbac.PERMISSION_DELETE
+import com.cosmotech.api.rbac.PERMISSION_READ
+import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
+import com.cosmotech.api.rbac.PERMISSION_WRITE
+import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
+import com.cosmotech.api.rbac.ROLE_NONE
+import com.cosmotech.api.rbac.model.RbacAccessControl
+import com.cosmotech.api.rbac.model.RbacSecurity
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.changed
@@ -16,6 +26,8 @@ import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.service.getRbac
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateHandlerId
@@ -23,6 +35,9 @@ import com.cosmotech.solution.domain.RunTemplateParameter
 import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.RunTemplateStepSource
 import com.cosmotech.solution.domain.Solution
+import com.cosmotech.solution.domain.SolutionAccessControl
+import com.cosmotech.solution.domain.SolutionRole
+import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.solution.repository.SolutionRepository
 import org.apache.commons.compress.archivers.ArchiveException
 import org.apache.commons.compress.archivers.ArchiveStreamFactory
@@ -39,7 +54,9 @@ internal class SolutionServiceImpl(
     private val resourceLoader: ResourceLoader,
     private val azureStorageBlobServiceClient: BlobServiceClient,
     private val resourceScanner: ResourceScanner,
-    private val solutionRepository: SolutionRepository
+    private val solutionRepository: SolutionRepository,
+    private val organizationApiService: OrganizationApiService,
+    private val csmRbac: CsmRbac
 ) : CsmPhoenixService(), SolutionApiService {
 
   override fun findAllSolutions(organizationId: String, page: Int?, size: Int?): List<Solution> {
@@ -53,14 +70,20 @@ internal class SolutionServiceImpl(
     }
   }
 
-  override fun findSolutionById(organizationId: String, solutionId: String): Solution =
-      solutionRepository.findBy(organizationId, solutionId).orElseThrow {
-        CsmResourceNotFoundException(
-            "Solution $solutionId not found in organization $organizationId")
-      }
+  override fun findSolutionById(organizationId: String, solutionId: String): Solution {
+    val solution =
+        solutionRepository.findBy(organizationId, solutionId).orElseThrow {
+          CsmResourceNotFoundException(
+              "Solution $solutionId not found in organization $organizationId")
+        }
+    csmRbac.verify(solution.getRbac(), PERMISSION_READ)
+    return solution
+  }
 
   override fun removeAllRunTemplates(organizationId: String, solutionId: String) {
     val solution = findSolutionById(organizationId, solutionId)
+    csmRbac.verify(solution.getRbac(), PERMISSION_DELETE)
+
     if (!solution.runTemplates.isNullOrEmpty()) {
       solution.runTemplates = mutableListOf()
       solutionRepository.save(solution)
@@ -69,6 +92,8 @@ internal class SolutionServiceImpl(
 
   override fun removeAllSolutionParameterGroups(organizationId: String, solutionId: String) {
     val solution = findSolutionById(organizationId, solutionId)
+    csmRbac.verify(solution.getRbac(), PERMISSION_DELETE)
+
     if (!solution.parameterGroups.isNullOrEmpty()) {
       solution.parameterGroups = mutableListOf()
       solutionRepository.save(solution)
@@ -77,6 +102,8 @@ internal class SolutionServiceImpl(
 
   override fun removeAllSolutionParameters(organizationId: String, solutionId: String) {
     val solution = findSolutionById(organizationId, solutionId)
+    csmRbac.verify(solution.getRbac(), PERMISSION_DELETE)
+
     if (!solution.parameters.isNullOrEmpty()) {
       solution.parameters = mutableListOf()
       solutionRepository.save(solution)
@@ -88,11 +115,13 @@ internal class SolutionServiceImpl(
       solutionId: String,
       runTemplateParameterGroup: List<RunTemplateParameterGroup>
   ): List<RunTemplateParameterGroup> {
+    val existingSolution = findSolutionById(organizationId, solutionId)
+    csmRbac.verify(existingSolution.getRbac(), PERMISSION_WRITE)
+
     if (runTemplateParameterGroup.isEmpty()) {
       return runTemplateParameterGroup
     }
 
-    val existingSolution = findSolutionById(organizationId, solutionId)
     val runTemplateParameterGroupMap =
         existingSolution.parameterGroups?.associateBy { it.id }?.toMutableMap() ?: mutableMapOf()
     runTemplateParameterGroupMap.putAll(
@@ -108,11 +137,13 @@ internal class SolutionServiceImpl(
       solutionId: String,
       runTemplateParameter: List<RunTemplateParameter>
   ): List<RunTemplateParameter> {
+    val existingSolution = findSolutionById(organizationId, solutionId)
+    csmRbac.verify(existingSolution.getRbac(), PERMISSION_WRITE)
+
     if (runTemplateParameter.isEmpty()) {
       return runTemplateParameter
     }
 
-    val existingSolution = findSolutionById(organizationId, solutionId)
     val runTemplateParameterMap =
         existingSolution.parameters?.associateBy { it.id }?.toMutableMap() ?: mutableMapOf()
     runTemplateParameterMap.putAll(
@@ -128,11 +159,13 @@ internal class SolutionServiceImpl(
       solutionId: String,
       runTemplate: List<RunTemplate>
   ): List<RunTemplate> {
+    val existingSolution = findSolutionById(organizationId, solutionId)
+    csmRbac.verify(existingSolution.getRbac(), PERMISSION_WRITE)
+
     if (runTemplate.isEmpty()) {
       return runTemplate
     }
 
-    val existingSolution = findSolutionById(organizationId, solutionId)
     val runTemplateMap =
         existingSolution.runTemplates?.associateBy { it.id }?.toMutableMap() ?: mutableMapOf()
     runTemplateMap.putAll(runTemplate.filter { it.id.isNotBlank() }.associateBy { it.id })
@@ -142,22 +175,20 @@ internal class SolutionServiceImpl(
     return runTemplate
   }
 
-  override fun createSolution(organizationId: String, solution: Solution) =
-      solutionRepository.save(
-          solution.copy(
-              id = idGenerator.generate("solution", prependPrefix = "sol-"),
-              organizationId = organizationId,
-              ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties)))
+  override fun createSolution(organizationId: String, solution: Solution): Solution {
+    val organization = organizationApiService.findOrganizationById(organizationId)
+    csmRbac.verify(organization.getRbac(), PERMISSION_CREATE_CHILDREN)
+    return solutionRepository.save(
+        solution.copy(
+            id = idGenerator.generate("solution", prependPrefix = "sol-"),
+            organizationId = organizationId,
+            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties)))
+  }
 
   override fun deleteSolution(organizationId: String, solutionId: String) {
     val solution = findSolutionById(organizationId, solutionId)
-    val isPlatformAdmin =
-        getCurrentAuthenticatedRoles(csmPlatformProperties).contains(ROLE_PLATFORM_ADMIN)
-    if (solution.ownerId != getCurrentAuthenticatedUserName(csmPlatformProperties) &&
-        !isPlatformAdmin) {
-      // TODO Only the owner or an admin should be able to perform this operation
-      throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
-    }
+    csmRbac.verify(solution.getRbac(), PERMISSION_DELETE)
+    // TODO Only the owner or an admin should be able to perform this operation
     solutionRepository.delete(solution)
   }
 
@@ -167,6 +198,8 @@ internal class SolutionServiceImpl(
       runTemplateId: String
   ) {
     val existingSolution = findSolutionById(organizationId, solutionId)
+    csmRbac.verify(existingSolution.getRbac(), PERMISSION_DELETE)
+
     if (existingSolution.runTemplates?.removeIf { it.id == runTemplateId } == false) {
       throw CsmResourceNotFoundException("Run Template '$runTemplateId' *not* found")
     }
@@ -179,6 +212,7 @@ internal class SolutionServiceImpl(
       solution: Solution
   ): Solution {
     val existingSolution = findSolutionById(organizationId, solutionId)
+    csmRbac.verify(existingSolution.getRbac(), PERMISSION_WRITE)
 
     // solutionId update is allowed but must be done with care. Maybe limit to minor update?
     var hasChanged =
@@ -213,8 +247,8 @@ internal class SolutionServiceImpl(
       runTemplateId: String,
       runTemplate: RunTemplate
   ): List<RunTemplate> {
-
     val existingSolution = findSolutionById(organizationId, solutionId)
+    csmRbac.verify(existingSolution.getRbac(), PERMISSION_WRITE)
     val runTemplateToChange =
         existingSolution.runTemplates?.first { it.id == runTemplateId }
             ?: throw CsmResourceNotFoundException("Run Template '$runTemplateId' *not* found")
@@ -246,6 +280,7 @@ internal class SolutionServiceImpl(
       overwrite: Boolean
   ) {
     val solution = this.validateRunTemplate(organizationId, solutionId, runTemplateId)
+    csmRbac.verify(solution.getRbac(), PERMISSION_WRITE)
     logger.debug(
         "Uploading run template handler to solution #{} ({} - {})",
         solution.id,
@@ -297,6 +332,7 @@ internal class SolutionServiceImpl(
       runTemplateId: String,
       handlerId: RunTemplateHandlerId
   ): Resource {
+    // READ permission is checked in the following function call
     val solution = this.validateRunTemplate(organizationId, solutionId, runTemplateId)
     val blobPath =
         "${organizationId.sanitizeForAzureStorage()}/" +
@@ -335,9 +371,95 @@ internal class SolutionServiceImpl(
   }
 
   override fun importSolution(organizationId: String, solution: Solution): Solution {
+    val organization = organizationApiService.findOrganizationById(organizationId)
+    csmRbac.verify(organization.getRbac(), PERMISSION_WRITE)
+
     if (solution.id == null) {
       throw CsmResourceNotFoundException("Solution id is null")
     }
     return solutionRepository.save(solution)
   }
+
+  override fun addSolutionAccessControl(
+      organizationId: String,
+      solutionId: String,
+      solutionAccessControl: SolutionAccessControl
+  ): SolutionAccessControl {
+    val solution = findSolutionById(organizationId, solutionId)
+    csmRbac.verify(solution.getRbac(), PERMISSION_WRITE_SECURITY)
+    var organization = organizationApiService.findOrganizationById(organizationId)
+    val rbacSecurity =
+        csmRbac.addUserRole(
+            organization.getRbac(),
+            solution.getRbac(),
+            solutionAccessControl.id,
+            solutionAccessControl.role)
+    solution.setRbac(rbacSecurity)
+    solutionRepository.save(solution)
+    var rbacAccessControl = csmRbac.getAccessControl(solution.getRbac(), solutionAccessControl.id)
+    return SolutionAccessControl(rbacAccessControl.id, rbacAccessControl.role)
+  }
+
+  override fun getSolutionAccessControl(
+      organizationId: String,
+      solutionId: String,
+      identityId: String
+  ): SolutionAccessControl {
+    val solution = findSolutionById(organizationId, solutionId)
+    csmRbac.verify(solution.getRbac(), PERMISSION_READ_SECURITY)
+    var rbacAccessControl = csmRbac.getAccessControl(solution.getRbac(), identityId)
+    return SolutionAccessControl(rbacAccessControl.id, rbacAccessControl.role)
+  }
+
+  override fun updateSolutionAccessControl(
+      organizationId: String,
+      solutionId: String,
+      identityId: String,
+      solutionRole: SolutionRole
+  ): SolutionAccessControl {
+    val solution = findSolutionById(organizationId, solutionId)
+    csmRbac.verify(solution.getRbac(), PERMISSION_WRITE_SECURITY)
+    csmRbac.checkUserExists(
+        solution.getRbac(), identityId, "User '$identityId' not found in solution $solutionId")
+    val rbacSecurity = csmRbac.setUserRole(solution.getRbac(), identityId, solutionRole.role)
+    solution.setRbac(rbacSecurity)
+    solutionRepository.save(solution)
+    val rbacAccessControl = csmRbac.getAccessControl(solution.getRbac(), identityId)
+    return SolutionAccessControl(rbacAccessControl.id, rbacAccessControl.role)
+  }
+
+  override fun removeSolutionAccessControl(
+      organizationId: String,
+      solutionId: String,
+      identityId: String
+  ) {
+    val solution = findSolutionById(organizationId, solutionId)
+    csmRbac.verify(solution.getRbac(), PERMISSION_WRITE_SECURITY)
+    val rbacSecurity = csmRbac.removeUser(solution.getRbac(), identityId)
+    solution.setRbac(rbacSecurity)
+    solutionRepository.save(solution)
+  }
+
+  override fun getSolutionSecurityUsers(organizationId: String, solutionId: String): List<String> {
+    val solution = findSolutionById(organizationId, solutionId)
+    csmRbac.verify(solution.getRbac(), PERMISSION_READ_SECURITY)
+    return csmRbac.getUsers(solution.getRbac())
+  }
+}
+
+fun Solution.getRbac(): RbacSecurity {
+  return RbacSecurity(
+      this.id,
+      this.security?.default ?: ROLE_NONE,
+      this.security?.accessControlList?.map { RbacAccessControl(it.id, it.role) }?.toMutableList()
+          ?: mutableListOf())
+}
+
+fun Solution.setRbac(rbacSecurity: RbacSecurity) {
+  this.security =
+      SolutionSecurity(
+          rbacSecurity.default,
+          rbacSecurity.accessControlList
+              .map { SolutionAccessControl(it.id, it.role) }
+              .toMutableList())
 }
