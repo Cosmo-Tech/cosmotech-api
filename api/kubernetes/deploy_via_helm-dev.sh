@@ -654,7 +654,7 @@ replicaCount: 2
 api:
   version: "$API_VERSION"
   multiTenant: ${MULTI_TENANT:-true}
-
+  servletContextPath: /cosmotech-api
 
 image:
   repository: ghcr.io/cosmo-tech/cosmotech-api
@@ -667,30 +667,35 @@ config:
         resource-server:
           jwt:
             issuer-uri: "https://localhost/${NAMESPACE}/auth/realms/cosmotech"
-            jwk-set-uri: "http://${NAMESPACE}-keycloak.${NAMESPACE}.svc.cluster.local/auth/realms/cosmotech/protocol/openid-connect/certs"
+            jwk-set-uri: "http://${NAMESPACE}-keycloak.${NAMESPACE}.svc.cluster.local/${NAMESPACE}/auth/realms/cosmotech/protocol/openid-connect/certs"
             audiences:
               - "account"
+  logging:
+    level:
+      com.cosmotech: TRACE
+      web: TRACE
+      org.springframework: TRACE
+      com.redis: TRACE
+  server:
+    error:
+      include-stacktrace: always
   csm:
     platform:
       authorization:
+        mailJwtClaim: "email"
+        rolesJwtClaim: "customRoles"
+        principalJwtClaim: "email"
+        tenantIdJwtClaim: "iss"
         allowed-tenants:
           - "${NAMESPACE}"
           - "cosmotech"
       identityProvider:
         code: keycloak
-        # Use to overwrite openAPI configuration
         authorizationUrl: "https://localhost/${NAMESPACE}/auth/realms/cosmotech/protocol/openid-connect/auth"
         tokenUrl: "https://localhost/${NAMESPACE}/auth/realms/cosmotech/protocol/openid-connect/token"
         defaultScopes:
           openid: "OpenId Scope"
           email: "Email Scope"
-        #containerScopes:
-        #  csm.scenario.read: "Read access to scenarios"
-        # Here you can set custom user and admin groups
-        # - adminGroup will have same rights that Organization.Admin
-        # - userGroup will have same rights that Organization.User
-        # - viewerGroup will have same rights that Organization.Viewer
-      # Use to define Okta Configuration
       argo:
         base-uri: "http://${ARGO_RELEASE_NAME}-argo-workflows-server.${NAMESPACE}.svc.cluster.local:2746"
         workflows:
@@ -718,13 +723,12 @@ ingress:
       hosts: [${COSMOTECH_API_DNS_NAME}]
 
 resources:
-  # Recommended in production environments
   limits:
-    #   cpu: 100m
-    memory: 2048Mi
-  requests:
-    #   cpu: 100m
+    cpu: 1000m
     memory: 1024Mi
+  requests:
+    cpu: 500m
+    memory: 512Mi
 
 tolerations:
 - key: "vendor"
