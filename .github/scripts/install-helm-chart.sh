@@ -7,7 +7,6 @@ CURRENT_SCRIPT_DIR=$(realpath "$(dirname "$0")")
 HELM_DEPLOY_SCRIPT_BASE_PATH=$(realpath "${CURRENT_SCRIPT_DIR}"/../../api/kubernetes)
 
 PASSWORD_FOR_ARGO_PASSWORD="a-super-secure-password-we-dont-care-about"
-NAMESPACE="phoenix"
 
 # Generate a sample values-ci.yaml. We will also inherit configuration from values-dev.yaml
 cat <<EOF > values-ci.yaml
@@ -28,8 +27,8 @@ config:
       oauth2:
         resource-server:
           jwt:
-            issuer-uri: "https://localhost/${NAMESPACE}/auth/realms/cosmotech"
-            jwk-set-uri: "http://${NAMESPACE}-keycloak.${NAMESPACE}.svc.cluster.local/${NAMESPACE}/auth/realms/cosmotech/protocol/openid-connect/certs"
+            issuer-uri: "https://localhost/${CHART_RELEASE_TEST_NAMESPACE}/auth/realms/cosmotech"
+            jwk-set-uri: "http://${CHART_RELEASE_TEST_NAMESPACE}-keycloak.${CHART_RELEASE_TEST_NAMESPACE}.svc.cluster.local/${CHART_RELEASE_TEST_NAMESPACE}/auth/realms/cosmotech/protocol/openid-connect/certs"
             audiences:
               - "account"
 
@@ -45,12 +44,12 @@ config:
         principalJwtClaim: "email"
         tenantIdJwtClaim: "iss"
         allowed-tenants:
-          - "${NAMESPACE}"
+          - "${CHART_RELEASE_TEST_NAMESPACE}"
           - "cosmotech"
       identityProvider:
         code: keycloak
-        authorizationUrl: "https://localhost/${NAMESPACE}/auth/realms/cosmotech/protocol/openid-connect/auth"
-        tokenUrl: "https://localhost/${NAMESPACE}/auth/realms/cosmotech/protocol/openid-connect/token"
+        authorizationUrl: "https://localhost/${CHART_RELEASE_TEST_NAMESPACE}/auth/realms/cosmotech/protocol/openid-connect/auth"
+        tokenUrl: "https://localhost/${CHART_RELEASE_TEST_NAMESPACE}/auth/realms/cosmotech/protocol/openid-connect/token"
         defaultScopes:
           openid: "OpenId Scope"
           email: "Email Scope"
