@@ -7,10 +7,31 @@ CURRENT_SCRIPT_DIR=$(realpath "$(dirname "$0")")
 HELM_DEPLOY_SCRIPT_BASE_PATH=$(realpath "${CURRENT_SCRIPT_DIR}"/../../api/kubernetes)
 
 PASSWORD_FOR_ARGO_PASSWORD="a-super-secure-password-we-dont-care-about"
+NAMESPACE="phoenix"
 
 # Generate a sample values-ci.yaml. We will also inherit configuration from values-dev.yaml
 cat <<EOF > values-ci.yaml
 replicaCount: 1
+
+api:
+  version: "${API_VERSION}"
+  multiTenant: true
+  servletContextPath: /cosmotech-api
+
+server:
+  error:
+    include-stacktrace: always
+
+config:
+  spring:
+    security:
+      oauth2:
+        resource-server:
+          jwt:
+            issuer-uri: "https://localhost/${NAMESPACE}/auth/realms/cosmotech"
+            jwk-set-uri: "http://${NAMESPACE}-keycloak.${NAMESPACE}.svc.cluster.local/${NAMESPACE}/auth/realms/cosmotech/protocol/openid-connect/certs"
+            audiences:
+              - "account"
 
 image:
   repository: localhost:5000/cosmotech-api
@@ -18,6 +39,21 @@ image:
 config:
   csm:
     platform:
+      authorization:
+        mailJwtClaim: "email"
+        rolesJwtClaim: "customRoles"
+        principalJwtClaim: "email"
+        tenantIdJwtClaim: "iss"
+        allowed-tenants:
+          - "${NAMESPACE}"
+          - "cosmotech"
+      identityProvider:
+        code: keycloak
+        authorizationUrl: "https://localhost/${NAMESPACE}/auth/realms/cosmotech/protocol/openid-connect/auth"
+        tokenUrl: "https://localhost/${NAMESPACE}/auth/realms/cosmotech/protocol/openid-connect/token"
+        defaultScopes:
+          openid: "OpenId Scope"
+          email: "Email Scope"
       azure:
         credentials:
           core:
