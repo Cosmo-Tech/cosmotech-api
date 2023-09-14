@@ -12,6 +12,8 @@ checks:
     # use-namespace because the resources here are deployed via Helm and, as such, are very likely
     # to be deployed in a different namespace
     - "use-namespace"
+    - "access-to-secrets"
+    - "access-to-create-pods"
 
 ## customChecks defines custom checks.
 #customChecks:
