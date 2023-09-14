@@ -39,7 +39,6 @@ spec:
         - '-O'
         - '-'
         - 'http://{{ include "cosmotech-api.fullname" . }}:{{ .Values.service.port }}{{ $contextPath | trimSuffix "/" }}/openapi'
-        - 'http://{{ include "cosmotech-api.fullname" . }}:{{ .Values.service.port }}{{ $contextPath | trimSuffix "/" }}/openapi.json'
         - 'http://{{ include "cosmotech-api.fullname" . }}:{{ .Values.service.port }}{{ $contextPath | trimSuffix "/" }}/openapi.yaml'
       securityContext:
         readOnlyRootFilesystem: true
