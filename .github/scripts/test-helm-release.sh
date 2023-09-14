@@ -2,7 +2,7 @@
 
 API_VERSION=${1:-latest}
 
-helm -n "${CHART_RELEASE_TEST_NAMESPACE}" test "cosmotech-api-${API_VERSION}"
+helm -n "${CHART_RELEASE_TEST_NAMESPACE}" test "cosmotech-api-${CHART_RELEASE_TEST_NAMESPACE}-${API_VERSION}"
 
 retVal=$?
 echo "retVal=$retVal"
