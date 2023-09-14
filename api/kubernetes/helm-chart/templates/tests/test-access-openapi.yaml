@@ -1,4 +1,4 @@
-{{- $contexPath := include "cosmotech-api.contexPath" . -}}
+{{- $contextPath := include "cosmotech-api.contextPath" . -}}
 apiVersion: v1
 kind: Pod
 metadata:
@@ -38,9 +38,9 @@ spec:
         - '-S'
         - '-O'
         - '-'
-        - 'http://{{ include "cosmotech-api.fullname" . }}:{{ .Values.service.port }}{{ $contexPath | trimSuffix "/" }}/openapi'
-        - 'http://{{ include "cosmotech-api.fullname" . }}:{{ .Values.service.port }}{{ $contexPath | trimSuffix "/" }}/openapi.json'
-        - 'http://{{ include "cosmotech-api.fullname" . }}:{{ .Values.service.port }}{{ $contexPath | trimSuffix "/" }}/openapi.yaml'
+        - 'http://{{ include "cosmotech-api.fullname" . }}:{{ .Values.service.port }}{{ $contextPath | trimSuffix "/" }}/openapi'
+        - 'http://{{ include "cosmotech-api.fullname" . }}:{{ .Values.service.port }}{{ $contextPath | trimSuffix "/" }}/openapi.json'
+        - 'http://{{ include "cosmotech-api.fullname" . }}:{{ .Values.service.port }}{{ $contextPath | trimSuffix "/" }}/openapi.yaml'
       securityContext:
         readOnlyRootFilesystem: true
       resources:
