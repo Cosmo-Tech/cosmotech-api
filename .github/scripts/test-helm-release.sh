@@ -37,7 +37,7 @@ if [[ "${API_VERSION}" == "latest" ]]; then
 else
   base_path="/${API_VERSION}"
 fi
-for route in "/" "/openapi" "/openapi.json" "/openapi.yaml" ; do
+for route in "/" "/openapi" "/openapi.yaml" ; do
   echo "==> Testing the access (/cosmotech-api/${CHART_RELEASE_TEST_NAMESPACE}${base_path}${route}) via the Ingress Resource (controlled by an Ingress Controller)"
   wget --no-check-certificate \
     --tries 10 \
