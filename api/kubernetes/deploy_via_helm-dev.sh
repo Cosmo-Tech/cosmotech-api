@@ -621,11 +621,11 @@ promtail:
           action: drop
       - match:
           pipeline_name: "drop argo server"
-          selector: '{app="argo-workflows-server"}'
+          selector: '{app="argo-${NAMESPACE}-argo-workflows-server"}'
           action: drop
       - match:
           pipeline_name: "drop argo controller"
-          selector: '{app="argo-workflows-workflow-controller"}'
+          selector: '{app="argo-${NAMESPACE}-argo-workflows-workflow-controller"}'
           action: drop
       - match:
           pipeline_name: "drop redis"
@@ -641,13 +641,13 @@ promtail:
           action: drop
       - match:
           pipeline_name: "drop cosmotech-api"
-          selector: '{app="cosmotech-api"}'
+          selector: '{app="${COSMOTECH_API_RELEASE_NAME}"}'
           action: drop
   tolerations:
     - effect: NoSchedule
       operator: Exists
 EOF
-helm upgrade --install ${LOKI_RELEASE_NAME} --namespace=${NAMESPACE} grafana/loki-stack -f loki-values.yaml
+#helm upgrade --install ${LOKI_RELEASE_NAME} --namespace=${NAMESPACE} grafana/loki-stack -f loki-values.yaml
 
 popd
 
