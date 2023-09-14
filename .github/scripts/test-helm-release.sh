@@ -20,7 +20,7 @@ kubectl describe all --all-namespaces
 echo "=== ==="
 
 for test in openapi swaggerui; do
-  echo ">>> Logs for cosmotech-api-${API_VERSION}-test-connection-${test} <<<"
+  echo ">>> Logs for cosmotech-api-${CHART_RELEASE_TEST_NAMESPACE}-${API_VERSION}-test-connection-${test} <<<"
   kubectl -n "${CHART_RELEASE_TEST_NAMESPACE}" logs "cosmotech-api-${CHART_RELEASE_TEST_NAMESPACE}-${API_VERSION}-test-connection-${test}"
   echo "-"
 done
@@ -38,7 +38,7 @@ else
   base_path="/${API_VERSION}"
 fi
 for route in "/" "/openapi" "/openapi.json" "/openapi.yaml" ; do
-  echo "==> Testing the access (${base_path}${route}) via the Ingress Resource (controlled by an Ingress Controller)"
+  echo "==> Testing the access (/cosmotech-api/${CHART_RELEASE_TEST_NAMESPACE}${base_path}${route}) via the Ingress Resource (controlled by an Ingress Controller)"
   wget --no-check-certificate \
     --tries 10 \
     -S \
