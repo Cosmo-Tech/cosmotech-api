@@ -83,7 +83,7 @@ E.g:
 - /cosmotech-api/myTenant/v1
 - /cosmotech-api/myTenant/ if apiVersion is set to "latest"
 */}}
-{{- define "cosmotech-api.contexPath" -}}
+{{- define "cosmotech-api.contextPath" -}}
 {{- if eq .Values.api.version "latest" }}
 {{- printf "%s/%s" (printf "%s" .Values.api.servletContextPath | trimSuffix "/" ) .Release.Namespace }}
 {{- else }}
@@ -102,11 +102,11 @@ spring:
 api:
   version: "{{ .Values.api.version }}"
   multiTenant: {{ default true .Values.api.multiTenant }}
-  servletContextPath: {{ include "cosmotech-api.contexPath" . }}
+  servletContextPath: {{ include "cosmotech-api.contextPath" . }}
 
 server:
   servlet:
-    context-path: {{ include "cosmotech-api.contexPath" . }}
+    context-path: {{ include "cosmotech-api.contextPath" . }}
   jetty:
     accesslog:
       ignore-paths:
@@ -135,7 +135,7 @@ management:
 csm:
   platform:
     api:
-      base-url: "http://{{ include "cosmotech-api.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}{{ include "cosmotech-api.contexPath" . | trimSuffix "/" }}"
+      base-url: "http://{{ include "cosmotech-api.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}{{ include "cosmotech-api.contextPath" . | trimSuffix "/" }}"
       # API Base Path for OpenAPI-generated controllers.
       # Might conflict with the SpringBoot context path, hence leaving it at the root
       base-path: /
