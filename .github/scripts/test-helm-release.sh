@@ -21,13 +21,13 @@ echo "=== ==="
 
 for test in openapi swaggerui; do
   echo ">>> Logs for cosmotech-api-${API_VERSION}-test-connection-${test} <<<"
-  kubectl -n "${CHART_RELEASE_TEST_NAMESPACE}" logs "cosmotech-api-${API_VERSION}-test-connection-${test}"
+  kubectl -n "${CHART_RELEASE_TEST_NAMESPACE}" logs "cosmotech-api-${CHART_RELEASE_TEST_NAMESPACE}-${API_VERSION}-test-connection-${test}"
   echo "-"
 done
 
 if [[ "${retVal}" != "0" ]]; then
   echo "Helm Release testing did not complete successfully: $retVal."
-  echo "  Command: helm -n ${CHART_RELEASE_TEST_NAMESPACE} test cosmotech-api-${API_VERSION}"
+  echo "  Command: helm -n ${CHART_RELEASE_TEST_NAMESPACE} test cosmotech-api-${CHART_RELEASE_TEST_NAMESPACE}-${API_VERSION}"
   exit $retVal
 fi
 
@@ -43,5 +43,5 @@ for route in "/" "/openapi" "/openapi.json" "/openapi.yaml" ; do
     --tries 10 \
     -S \
     -O - \
-    "https://localhost/cosmotech-api${base_path}${route}" || exit 1
+    "https://localhost/cosmotech-api/${CHART_RELEASE_TEST_NAMESPACE}${base_path}${route}" || exit 1
 done
