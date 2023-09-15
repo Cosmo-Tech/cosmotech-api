@@ -123,7 +123,7 @@ class DatasetServiceImplTests {
     val result = datasetService.createDataset(ORGANIZATION_ID, dataset)
     assertEquals(dataset.organizationId, result.organizationId)
     assertEquals(
-        DatasetSourceType.File,
+        DatasetSourceType.None,
         result.sourceType,
     )
     assertEquals(Dataset.Status.DRAFT, result.status)

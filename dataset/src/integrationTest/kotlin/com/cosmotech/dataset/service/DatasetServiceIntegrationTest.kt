@@ -19,6 +19,7 @@ import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetCompatibility
 import com.cosmotech.dataset.domain.DatasetConnector
 import com.cosmotech.dataset.domain.DatasetSearch
+import com.cosmotech.dataset.domain.DatasetSourceType
 import com.cosmotech.dataset.domain.GraphProperties
 import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.organization.api.OrganizationApiService
@@ -302,6 +303,13 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("Create a Graph with a ZIP Entry")
     val file = this::class.java.getResource("/integrationTest.zip")?.file
     val resource = ByteArrayResource(File(file!!).readBytes())
+
+    val dataset = datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+    datasetApiService.updateDataset(
+        organizationSaved.id!!,
+        datasetSaved.id!!,
+        dataset.copy(sourceType = DatasetSourceType.File))
+
     datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
   }
 
