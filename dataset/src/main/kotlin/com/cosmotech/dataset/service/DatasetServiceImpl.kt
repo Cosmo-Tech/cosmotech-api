@@ -140,7 +140,7 @@ class DatasetServiceImpl(
         dataset.copy(
             id = idGenerator.generate("dataset"),
             twingraphId = twingraphId,
-            sourceType = dataset.sourceType ?: DatasetSourceType.File,
+            sourceType = dataset.sourceType ?: DatasetSourceType.None,
             main = dataset.main ?: true,
             status = Dataset.Status.DRAFT,
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
@@ -228,7 +228,8 @@ class DatasetServiceImpl(
   ): String {
     val dataset = findDatasetById(organizationId, datasetId)
     return when (dataset.sourceType) {
-      null -> Dataset.Status.DRAFT.value
+      null,
+      DatasetSourceType.None -> Dataset.Status.DRAFT.value
       DatasetSourceType.File -> {
         csmJedisPool.resource.use { jedis ->
           if (!jedis.exists(dataset.twingraphId!!)) {
