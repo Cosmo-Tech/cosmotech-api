@@ -1110,7 +1110,6 @@ components:
           type: string
           description: the twin graph id
         main:
-          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           type: boolean
           description: is this the main dataset
         sourceType:

@@ -91,10 +91,10 @@ class DatasetServiceImpl(
     val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
     val pageable = constructPageRequest(page, size, defaultPageSize)
     if (pageable != null) {
-      return datasetRepository.findByOrganizationIdAndMain(organizationId, true, pageable).toList()
+      return datasetRepository.findByOrganizationId(organizationId, pageable).toList()
     }
     return findAllPaginated(defaultPageSize) {
-      datasetRepository.findByOrganizationIdAndMain(organizationId, true, it).toList()
+      datasetRepository.findByOrganizationId(organizationId, it).toList()
     }
   }
 
@@ -181,7 +181,10 @@ class DatasetServiceImpl(
             twingraphId = subTwinraphId,
             main = subDatasetGraphQuery.main ?: false,
             parentId = dataset.id,
-            connector = dataset.connector?.apply { parametersValues?.set("TWIN_CACHE_NAME", subTwinraphId) },
+            connector =
+                dataset.connector?.apply {
+                  parametersValues?.set("TWIN_CACHE_NAME", subTwinraphId)
+                },
             sourceType = dataset.sourceType,
             tags = dataset.tags)
     return datasetRepository.save(subDataset)
@@ -359,7 +362,8 @@ class DatasetServiceImpl(
       datasetId: String,
       datasetTwinGraphQuery: DatasetTwinGraphQuery
   ): String {
-    val dataset = getPrerequisiteDataset(organizationId, datasetId, status = Dataset.Status.COMPLETED)
+    val dataset =
+        getPrerequisiteDataset(organizationId, datasetId, status = Dataset.Status.COMPLETED)
     val resultSet =
         trx(dataset) {
           csmRedisGraph.query(
@@ -469,8 +473,7 @@ class DatasetServiceImpl(
         ?: throw CsmResourceNotFoundException("TwingraphId is not defined for the dataset")
     status?.let {
       dataset.status?.takeIf { it == status }
-          ?: throw CsmClientException(
-              "Dataset status is ${dataset.status?.value}, not $status")
+          ?: throw CsmClientException("Dataset status is ${dataset.status?.value}, not $status")
     }
     query?.let {
       it.takeUnless { !TwingraphUtils.isReadOnlyQuery(it) }
@@ -667,7 +670,7 @@ class DatasetServiceImpl(
     do {
       val datasetList =
           datasetRepository
-              .findByOrganizationIdAndMain(organizationUnregistered.organizationId, true, pageable)
+              .findByOrganizationId(organizationUnregistered.organizationId, pageable)
               .toList()
       datasetRepository.deleteAll(datasetList)
       pageable = pageable.next()
