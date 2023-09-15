@@ -88,7 +88,6 @@ csm:
       queryTimeout: 10
       scenariorun:
         default-page-size: 5
-      connectorId: "c-177velrvov5"
     rbac:
       enabled: true
 

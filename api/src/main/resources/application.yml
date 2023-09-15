@@ -124,6 +124,10 @@ csm:
         imageRegistry: "ghcr.io"
         imageName: "cosmo-tech/azstorage-twincache-connector"
         imageVersion: "1.1.5"
+      - name: "TwincacheConnector"
+        imageRegistry: "ghcr.io"
+        imageName: "cosmo-tech/twincache-connector"
+        imageVersion: "0.0.7"
     authorization:
       principal-jwt-claim: "sub"
       tenant-id-jwt-claim: "iss"

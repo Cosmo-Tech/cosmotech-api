@@ -27,6 +27,9 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.unzip
 import com.cosmotech.api.utils.zipBytesWithFileNames
 import com.cosmotech.connector.api.ConnectorApiService
+import com.cosmotech.connector.domain.Connector
+import com.cosmotech.connector.domain.ConnectorParameter
+import com.cosmotech.connector.domain.ConnectorParameterGroup
 import com.cosmotech.dataset.api.DatasetApiService
 import com.cosmotech.dataset.bulk.QueryBuffer
 import com.cosmotech.dataset.domain.Dataset
@@ -71,9 +74,11 @@ const val TYPE_NODE = "node"
 const val TYPE_RELATIONSHIP = "relationship"
 const val NODES_ZIP_FOLDER = "nodes"
 const val EDGES_ZIP_FOLDER = "edges"
+const val TWINCACHE_CONNECTOR = "TwincacheConnector"
+const val TWINCACHE_NAME = "TWIN_CACHE_NAME"
 
 @Service
-@Suppress("TooManyFunctions", "LongParameterList")
+@Suppress("TooManyFunctions", "LongParameterList", "LargeClass")
 class DatasetServiceImpl(
     private val connectorService: ConnectorApiService,
     private val organizationService: OrganizationApiService,
@@ -124,10 +129,11 @@ class DatasetServiceImpl(
 
     val twingraphId = idGenerator.generate("twingraph")
     if (dataset.sourceType != null) {
+      val twincacheConnector = getCreateTwincacheConnector()
       dataset.connector =
           DatasetConnector(
-              id = csmPlatformProperties.twincache.connectorId,
-              parametersValues = mutableMapOf("TWIN_CACHE_NAME" to twingraphId))
+              id = twincacheConnector.id,
+              parametersValues = mutableMapOf(TWINCACHE_NAME to twingraphId))
     }
 
     dataset.takeUnless { it.connector == null || dataset.connector!!.id.isNullOrBlank() }
@@ -710,6 +716,43 @@ class DatasetServiceImpl(
       }
     }
     return map
+  }
+
+  fun getCreateTwincacheConnector(): Connector {
+    val twinCacheConnectorProperties =
+        csmPlatformProperties.containers.find { it.name == TWINCACHE_CONNECTOR }
+            ?: throw CsmResourceNotFoundException(
+                "Connector $TWINCACHE_CONNECTOR not found in application.yml")
+    val connectorName =
+        twinCacheConnectorProperties.name + " " + twinCacheConnectorProperties.imageVersion
+    try {
+      return connectorService.findConnectorByName(connectorName)
+    } catch (exception: CsmClientException) {
+      if (exception is CsmResourceNotFoundException) {
+        logger.debug("Connector $connectorName not found. Registering it...")
+        return connectorService.registerConnector(
+            Connector(
+                name = connectorName,
+                key = twinCacheConnectorProperties.name,
+                version = twinCacheConnectorProperties.imageVersion,
+                repository = twinCacheConnectorProperties.imageName,
+                description = "Auto-generated connector for TwinCache",
+                ioTypes = listOf(Connector.IoTypes.read),
+                parameterGroups =
+                    listOf(
+                        ConnectorParameterGroup(
+                            "parameters",
+                            "Parameters",
+                            listOf(
+                                ConnectorParameter(
+                                    TWINCACHE_NAME,
+                                    "TwinCache name",
+                                    "string",
+                                    envVar = TWINCACHE_NAME))))))
+      } else {
+        throw exception
+      }
+    }
   }
 
   override fun importDataset(organizationId: String, dataset: Dataset): Dataset {

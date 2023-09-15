@@ -87,5 +87,4 @@ csm:
       password: "my-wonderful-password"
       dataset:
         default-page-size: 5
-      connectorId: "c-177velrvov5"
 
