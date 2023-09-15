@@ -36,6 +36,12 @@ internal class ConnectorServiceImpl(var connectorRepository: ConnectorRepository
     }
   }
 
+  override fun findConnectorByName(connectorName: String): Connector {
+    return connectorRepository.findByName(connectorName)
+        ?: throw CsmResourceNotFoundException(
+            "Resource of type '${Connector::class.java.simpleName}' and identifier '$connectorName' not found")
+  }
+
   override fun registerConnector(connector: Connector): Connector {
     val connectorToSave =
         connector.copy(

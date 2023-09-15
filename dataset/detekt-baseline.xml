@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>NestedBlockDepth:DatasetServiceImpl.kt$DatasetServiceImpl$override fun getDatasetTwingraphStatus( organizationId: String, datasetId: String, jobId: String ): String</ID>
+    <ID>NestedBlockDepth:Twingraph.ext.kt$@Suppress("SwallowedException") fun Any.convertToJsonValue(): Any</ID>
+    <ID>SwallowedException:DatasetServiceImpl.kt$DatasetServiceImpl$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:DatasetServiceImpl.kt$DatasetServiceImpl$e: Exception</ID>
+  </CurrentIssues>
+</SmellBaseline>

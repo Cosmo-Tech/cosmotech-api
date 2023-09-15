@@ -94,4 +94,3 @@ csm:
       port: "6379"
       username: "default"
       password: "my-wonderful-password"
-      connectorId: "twincache"
