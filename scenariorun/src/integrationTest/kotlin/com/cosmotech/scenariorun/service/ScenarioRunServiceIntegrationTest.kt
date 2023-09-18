@@ -4,8 +4,13 @@ package com.cosmotech.scenariorun.service
 
 import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.rbac.ROLE_ADMIN
+import com.cosmotech.api.rbac.ROLE_EDITOR
 import com.cosmotech.api.rbac.ROLE_NONE
+import com.cosmotech.api.rbac.ROLE_USER
+import com.cosmotech.api.rbac.ROLE_VALIDATOR
+import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
@@ -21,6 +26,8 @@ import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
+import com.cosmotech.scenario.domain.ScenarioAccessControl
+import com.cosmotech.scenario.domain.ScenarioSecurity
 import com.cosmotech.scenariorun.ContainerFactory
 import com.cosmotech.scenariorun.api.ScenariorunApiService
 import com.cosmotech.scenariorun.domain.ScenarioRun
@@ -35,6 +42,8 @@ import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.azure.WorkspaceEventHubInfo
 import com.cosmotech.workspace.domain.Workspace
+import com.cosmotech.workspace.domain.WorkspaceAccessControl
+import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.ninjasquad.springmockk.MockkBean
 import com.redis.om.spring.RediSearchIndexer
@@ -46,7 +55,11 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DynamicTest
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestFactory
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
@@ -69,6 +82,7 @@ const val CONNECTED_READER_USER = "test.user@cosmotech.com"
 class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
 
   private val logger = LoggerFactory.getLogger(ScenarioRunServiceIntegrationTest::class.java)
+  private val defaultName = "my.account-tester@cosmotech.com"
 
   @MockkBean lateinit var csmADX: AzureDataExplorerClient
   @MockK private lateinit var workspaceEventHubService: IWorkspaceEventHubService
@@ -263,6 +277,314 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
+  @Nested
+  inner class RBACTests {
+
+    fun prepareTestEnvironment(role: String) {
+      every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+      scenario = mockScenario(role = role)
+      scenarioSaved =
+          scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, scenario)
+
+      scenarioRunSaved =
+          scenariorunApiService.runScenario(
+              organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+
+      every { getCurrentAccountIdentifier(any()) } returns defaultName
+    }
+
+    @TestFactory
+    fun `test RBAC findScenarioRunById`() =
+        mapOf(
+                ROLE_VIEWER to false,
+                ROLE_EDITOR to false,
+                ROLE_VALIDATOR to false,
+                ROLE_USER to true,
+                ROLE_NONE to true,
+                ROLE_ADMIN to false,
+            )
+            .map { (role, shouldThrow) ->
+              DynamicTest.dynamicTest("Test RBAC findScenarioRunById : $role") {
+                prepareTestEnvironment(role)
+
+                if (shouldThrow) {
+                  assertThrows<CsmAccessForbiddenException> {
+                    scenariorunApiService.findScenarioRunById(
+                        organizationSaved.id!!, scenarioRunSaved.id!!)
+                  }
+                } else {
+                  assertDoesNotThrow {
+                    scenariorunApiService.findScenarioRunById(
+                        organizationSaved.id!!, scenarioRunSaved.id!!)
+                  }
+                }
+              }
+            }
+
+    @TestFactory
+    fun `test RBAC deleteScenarioRun`() =
+        mapOf(
+                ROLE_VIEWER to true,
+                ROLE_EDITOR to true,
+                ROLE_VALIDATOR to true,
+                ROLE_USER to true,
+                ROLE_NONE to true,
+                ROLE_ADMIN to false,
+            )
+            .map { (role, shouldThrow) ->
+              DynamicTest.dynamicTest("Test RBAC deleteScenarioRun : $role") {
+                prepareTestEnvironment(role)
+
+                if (shouldThrow) {
+                  assertThrows<CsmAccessForbiddenException> {
+                    scenariorunApiService.deleteScenarioRun(
+                        organizationSaved.id!!, scenarioRunSaved.id!!)
+                  }
+                } else {
+                  assertDoesNotThrow {
+                    scenariorunApiService.deleteScenarioRun(
+                        organizationSaved.id!!, scenarioRunSaved.id!!)
+                  }
+                }
+              }
+            }
+
+    @TestFactory
+    fun `test RBAC getScenarioRunStatus`() =
+        mapOf(
+                ROLE_VIEWER to false,
+                ROLE_EDITOR to false,
+                ROLE_VALIDATOR to false,
+                ROLE_USER to true,
+                ROLE_NONE to true,
+                ROLE_ADMIN to false,
+            )
+            .map { (role, shouldThrow) ->
+              DynamicTest.dynamicTest("Test RBAC getScenarioRunStatus : $role") {
+                prepareTestEnvironment(role)
+
+                if (shouldThrow) {
+                  assertThrows<CsmAccessForbiddenException> {
+                    scenariorunApiService.getScenarioRunStatus(
+                        organizationSaved.id!!, scenarioRunSaved.id!!)
+                  }
+                } else {
+                  assertDoesNotThrow {
+                    scenariorunApiService.getScenarioRunStatus(
+                        organizationSaved.id!!, scenarioRunSaved.id!!)
+                  }
+                }
+              }
+            }
+
+    @TestFactory
+    fun `test RBAC getScenarioRunLogs`() =
+        mapOf(
+                ROLE_VIEWER to false,
+                ROLE_EDITOR to false,
+                ROLE_VALIDATOR to false,
+                ROLE_USER to true,
+                ROLE_NONE to true,
+                ROLE_ADMIN to false,
+            )
+            .map { (role, shouldThrow) ->
+              DynamicTest.dynamicTest("Test RBAC getScenarioRunLogs : $role") {
+                prepareTestEnvironment(role)
+
+                if (shouldThrow) {
+                  assertThrows<CsmAccessForbiddenException> {
+                    scenariorunApiService.getScenarioRunLogs(
+                        organizationSaved.id!!, scenarioRunSaved.id!!)
+                  }
+                } else {
+                  assertDoesNotThrow {
+                    scenariorunApiService.getScenarioRunLogs(
+                        organizationSaved.id!!, scenarioRunSaved.id!!)
+                  }
+                }
+              }
+            }
+
+    @TestFactory
+    fun `test RBAC getScenarioRunCumulatedLogs`() =
+        mapOf(
+                ROLE_VIEWER to false,
+                ROLE_EDITOR to false,
+                ROLE_VALIDATOR to false,
+                ROLE_USER to true,
+                ROLE_NONE to true,
+                ROLE_ADMIN to false,
+            )
+            .map { (role, shouldThrow) ->
+              DynamicTest.dynamicTest("Test RBAC getScenarioRunCumulatedLogs : $role") {
+                prepareTestEnvironment(role)
+
+                if (shouldThrow) {
+                  assertThrows<CsmAccessForbiddenException> {
+                    scenariorunApiService.getScenarioRunCumulatedLogs(
+                        organizationSaved.id!!, scenarioRunSaved.id!!)
+                  }
+                } else {
+                  assertDoesNotThrow {
+                    scenariorunApiService.getScenarioRunCumulatedLogs(
+                        organizationSaved.id!!, scenarioRunSaved.id!!)
+                  }
+                }
+              }
+            }
+
+    @TestFactory
+    fun `test RBAC getWorkspaceScenarioRuns`() =
+        mapOf(
+                ROLE_VIEWER to false,
+                ROLE_EDITOR to false,
+                ROLE_VALIDATOR to true,
+                ROLE_USER to false,
+                ROLE_NONE to true,
+                ROLE_ADMIN to false,
+            )
+            .map { (role, shouldThrow) ->
+              DynamicTest.dynamicTest("Test RBAC getWorkspaceScenarioRuns : $role") {
+                workspace = mockWorkspace(roleName = defaultName, role = role)
+                workspaceSaved =
+                    workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+                prepareTestEnvironment(role)
+
+                if (shouldThrow) {
+                  assertThrows<CsmAccessForbiddenException> {
+                    scenariorunApiService.getWorkspaceScenarioRuns(
+                        organizationSaved.id!!, workspaceSaved.id!!, null, null)
+                  }
+                } else {
+                  assertDoesNotThrow {
+                    scenariorunApiService.getWorkspaceScenarioRuns(
+                        organizationSaved.id!!, workspaceSaved.id!!, null, null)
+                  }
+                }
+              }
+            }
+
+    @TestFactory
+    fun `test RBAC getScenarioRuns`() =
+        mapOf(
+                ROLE_VIEWER to false,
+                ROLE_EDITOR to false,
+                ROLE_VALIDATOR to false,
+                ROLE_USER to true,
+                ROLE_NONE to true,
+                ROLE_ADMIN to false,
+            )
+            .map { (role, shouldThrow) ->
+              DynamicTest.dynamicTest("Test RBAC getScenarioRuns : $role") {
+                prepareTestEnvironment(role)
+
+                if (shouldThrow) {
+                  assertThrows<CsmAccessForbiddenException> {
+                    scenariorunApiService.getScenarioRuns(
+                        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, null, null)
+                  }
+                } else {
+                  assertDoesNotThrow {
+                    scenariorunApiService.getScenarioRuns(
+                        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, null, null)
+                  }
+                }
+              }
+            }
+
+    @TestFactory
+    fun `test RBAC runScenario`() =
+        mapOf(
+                ROLE_VIEWER to true,
+                ROLE_EDITOR to false,
+                ROLE_VALIDATOR to false,
+                ROLE_USER to true,
+                ROLE_NONE to true,
+                ROLE_ADMIN to false,
+            )
+            .map { (role, shouldThrow) ->
+              DynamicTest.dynamicTest("Test RBAC runScenario : $role") {
+                prepareTestEnvironment(role)
+
+                if (shouldThrow) {
+                  assertThrows<CsmAccessForbiddenException> {
+                    scenariorunApiService.runScenario(
+                        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+                  }
+                } else {
+                  assertDoesNotThrow {
+                    scenariorunApiService.runScenario(
+                        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+                  }
+                }
+              }
+            }
+
+    @TestFactory
+    fun `test RBAC stopScenarioRun`() =
+        mapOf(
+                ROLE_VIEWER to true,
+                ROLE_EDITOR to false,
+                ROLE_VALIDATOR to false,
+                ROLE_USER to true,
+                ROLE_NONE to true,
+                ROLE_ADMIN to false,
+            )
+            .map { (role, shouldThrow) ->
+              DynamicTest.dynamicTest("Test RBAC stopScenarioRun : $role") {
+                prepareTestEnvironment(role)
+
+                if (shouldThrow) {
+                  assertThrows<CsmAccessForbiddenException> {
+                    scenariorunApiService.stopScenarioRun(
+                        organizationSaved.id!!, scenarioRunSaved.id!!)
+                  }
+                } else {
+                  assertDoesNotThrow {
+                    scenariorunApiService.stopScenarioRun(
+                        organizationSaved.id!!, scenarioRunSaved.id!!)
+                  }
+                }
+              }
+            }
+
+    @TestFactory
+    fun `test RBAC importScenarioRun`() =
+        mapOf(
+                ROLE_VIEWER to true,
+                ROLE_EDITOR to false,
+                ROLE_VALIDATOR to false,
+                ROLE_USER to true,
+                ROLE_NONE to true,
+                ROLE_ADMIN to false,
+            )
+            .map { (role, shouldThrow) ->
+              DynamicTest.dynamicTest("Test RBAC importScenarioRun : $role") {
+                prepareTestEnvironment(role)
+
+                val scenarioRun = ScenarioRun(id = "id")
+
+                if (shouldThrow) {
+                  assertThrows<CsmAccessForbiddenException> {
+                    scenariorunApiService.importScenarioRun(
+                        organizationSaved.id!!,
+                        workspaceSaved.id!!,
+                        scenarioSaved.id!!,
+                        scenarioRun)
+                  }
+                } else {
+                  assertDoesNotThrow {
+                    scenariorunApiService.importScenarioRun(
+                        organizationSaved.id!!,
+                        workspaceSaved.id!!,
+                        scenarioSaved.id!!,
+                        scenarioRun)
+                  }
+                }
+              }
+            }
+  }
+
   private fun mockWorkspaceEventHubInfo(eventHubAvailable: Boolean): WorkspaceEventHubInfo {
     return WorkspaceEventHubInfo(
         eventHubNamespace = "eventHubNamespace",
@@ -276,7 +598,7 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
                 .SHARED_ACCESS_POLICY)
   }
 
-  private fun mockConnector(name: String): Connector {
+  private fun mockConnector(name: String = "connector"): Connector {
     return Connector(
         key = UUID.randomUUID().toString(),
         name = name,
@@ -285,7 +607,13 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
         ioTypes = listOf(Connector.IoTypes.read))
   }
 
-  fun mockDataset(organizationId: String, name: String, connector: Connector): Dataset {
+  fun mockDataset(
+      organizationId: String = organizationSaved.id!!,
+      name: String = "Dataset",
+      connector: Connector = connectorSaved,
+      roleName: String = defaultName,
+      role: String = ROLE_ADMIN
+  ): Dataset {
     return Dataset(
         name = name,
         organizationId = organizationId,
@@ -299,7 +627,7 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
     )
   }
 
-  fun mockSolution(organizationId: String): Solution {
+  fun mockSolution(organizationId: String = organizationSaved.id!!): Solution {
     return Solution(
         id = "solutionId",
         key = UUID.randomUUID().toString(),
@@ -320,7 +648,11 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
                         SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
   }
 
-  fun mockOrganization(id: String): Organization {
+  fun mockOrganization(
+      id: String = "organizationId",
+      roleName: String = defaultName,
+      role: String = ROLE_ADMIN
+  ): Organization {
     return Organization(
         id = id,
         name = "Organization Name",
@@ -331,10 +663,17 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
                 accessControlList =
                     mutableListOf(
                         OrganizationAccessControl(id = CONNECTED_READER_USER, role = "reader"),
-                        OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"))))
+                        OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"),
+                        OrganizationAccessControl(roleName, role))))
   }
 
-  fun mockWorkspace(organizationId: String, solutionId: String, name: String): Workspace {
+  fun mockWorkspace(
+      organizationId: String = organizationSaved.id!!,
+      solutionId: String = solutionSaved.id!!,
+      name: String = "workspace",
+      roleName: String = defaultName,
+      role: String = ROLE_ADMIN
+  ): Workspace {
     return Workspace(
         key = UUID.randomUUID().toString(),
         name = name,
@@ -344,16 +683,23 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
             ),
         organizationId = organizationId,
         ownerId = "ownerId",
-    )
+        security =
+            WorkspaceSecurity(
+                ROLE_NONE,
+                mutableListOf(
+                    WorkspaceAccessControl(roleName, role),
+                    WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
   }
 
   fun mockScenario(
-      organizationId: String,
-      workspaceId: String,
-      solutionId: String,
-      runTemplateId: String,
-      name: String,
-      datasetList: MutableList<String>
+      organizationId: String = organizationSaved.id!!,
+      workspaceId: String = workspaceSaved.id!!,
+      solutionId: String = solutionSaved.id!!,
+      runTemplateId: String = solutionSaved.runTemplates?.get(0)?.id!!,
+      name: String = "scenario",
+      datasetList: MutableList<String> = mutableListOf(datasetSaved.id!!),
+      roleName: String = defaultName,
+      role: String = ROLE_ADMIN
   ): Scenario {
     return Scenario(
         name = name,
@@ -362,7 +708,13 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
         solutionId = solutionId,
         runTemplateId = runTemplateId,
         ownerId = "ownerId",
-        datasetList = datasetList)
+        datasetList = datasetList,
+        security =
+            ScenarioSecurity(
+                ROLE_NONE,
+                mutableListOf(
+                    ScenarioAccessControl(roleName, role),
+                    ScenarioAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
   }
 
   fun mockScenarioRun(
