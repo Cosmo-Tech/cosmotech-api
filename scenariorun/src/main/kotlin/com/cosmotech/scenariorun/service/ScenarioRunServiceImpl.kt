@@ -35,6 +35,7 @@ import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioJobState
@@ -88,6 +89,7 @@ internal const val WORKFLOW_TYPE_TWIN_GRAPH_IMPORT = "twin-graph-import"
 class ScenarioRunServiceImpl(
     private val containerFactory: ContainerFactory,
     private val workflowService: WorkflowService,
+    private val organizationService: OrganizationApiService,
     private val workspaceService: WorkspaceApiService,
     private val scenarioApiService: ScenarioApiService,
     private val azureDataExplorerClient: AzureDataExplorerClient,
@@ -557,6 +559,8 @@ class ScenarioRunServiceImpl(
       page: Int?,
       size: Int?
   ): List<ScenarioRun> {
+    // This call verify by itself that we have the read authorization in the organization
+    organizationService.findOrganizationById(organizationId)
     val defaultPageSize = csmPlatformProperties.twincache.scenariorun.defaultPageSize
     var pageable = constructPageRequest(page, size, defaultPageSize)
     if (pageable != null) {

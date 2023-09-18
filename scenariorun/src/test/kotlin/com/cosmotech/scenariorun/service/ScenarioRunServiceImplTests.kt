@@ -7,6 +7,7 @@ import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.id.CsmIdGenerator
+import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.utils.*
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.scenario.api.ScenarioApiService
@@ -26,6 +27,7 @@ import com.cosmotech.workspace.domain.WorkspaceSolution
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
+import io.mockk.impl.annotations.SpyK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -67,6 +69,7 @@ class ScenarioRunServiceImplTests {
   @MockK(relaxed = true) private lateinit var workflowService: WorkflowService
 
   @MockK(relaxed = true) private lateinit var scenarioApiService: ScenarioApiService
+  @SpyK private lateinit var csmRbac: CsmRbac
 
   @MockK(relaxed = true) private lateinit var azureDataExplorerClient: AzureDataExplorerClient
   @MockK(relaxed = true) private lateinit var azureEventHubsClient: AzureEventHubsClient
@@ -83,12 +86,14 @@ class ScenarioRunServiceImplTests {
             ScenarioRunServiceImpl(
                 containerFactory,
                 workflowService,
+                organizationService,
                 workspaceService,
                 scenarioApiService,
                 azureDataExplorerClient,
                 azureEventHubsClient,
                 workspaceEventHubService,
-                scenarioRunRepository))
+                scenarioRunRepository,
+                csmRbac))
 
     every { scenarioRunServiceImpl getProperty "idGenerator" } returns idGenerator
     every { scenarioRunServiceImpl getProperty "eventPublisher" } returns eventPublisher
