@@ -22,6 +22,7 @@ import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
+import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.PERMISSION_LAUNCH
 import com.cosmotech.api.rbac.PERMISSION_WRITE
@@ -36,6 +37,7 @@ import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.service.getRbac
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioJobState
@@ -63,6 +65,7 @@ import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.azure.EventHubRole
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.domain.Workspace
+import com.cosmotech.workspace.service.getRbac
 import java.time.Instant
 import java.time.ZonedDateTime
 import java.util.MissingResourceException
@@ -161,6 +164,8 @@ class ScenarioRunServiceImpl(
   }
 
   override fun deleteHistoricalDataOrganization(organizationId: String, deleteUnknown: Boolean) {
+    val organization = organizationService.findOrganizationById(organizationId)
+    csmRbac.verify(organization.getRbac(), PERMISSION_DELETE)
     this.eventPublisher.publishEvent(
         DeleteHistoricalDataOrganization(this, organizationId = organizationId, deleteUnknown))
   }
@@ -170,6 +175,8 @@ class ScenarioRunServiceImpl(
       workspaceId: String,
       deleteUnknown: Boolean
   ) {
+    val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
+    csmRbac.verify(workspace.getRbac(), PERMISSION_DELETE)
     this.eventPublisher.publishEvent(
         DeleteHistoricalDataWorkspace(
             this, organizationId = organizationId, workspaceId = workspaceId, deleteUnknown))
@@ -181,6 +188,8 @@ class ScenarioRunServiceImpl(
       scenarioId: String,
       deleteUnknown: Boolean
   ) {
+    val scenario = scenarioApiService.findScenarioById(organizationId, workspaceId, scenarioId)
+    csmRbac.verify(scenario.getRbac(), PERMISSION_DELETE)
     GlobalScope.launch {
       this@ScenarioRunServiceImpl.deleteScenarioRunsByScenarioWithoutAccessEnforcement(
           organizationId, workspaceId, scenarioId, deleteUnknown)
@@ -579,6 +588,8 @@ class ScenarioRunServiceImpl(
       organizationId: String,
       scenarioRunStartContainers: ScenarioRunStartContainers
   ): ScenarioRun {
+    val organization = organizationService.findOrganizationById(organizationId)
+    csmRbac.verify(organization.getRbac(), PERMISSION_CREATE_CHILDREN)
     val scenarioRunRequest = workflowService.launchScenarioRun(scenarioRunStartContainers, null)
     return this.dbCreateScenarioRun(
             scenarioRunRequest,
