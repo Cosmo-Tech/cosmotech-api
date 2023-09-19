@@ -254,8 +254,8 @@ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
 
 # Redis Cluster
 
-export REDIS_PV_NAME="${NAMESPACE}-redis-persistence-volume"
-export REDIS_PVC_NAME="${NAMESPACE}-redis-persistence-volume-claim"
+export REDIS_PV_NAME="redis-persistence-volume-${NAMESPACE}"
+export REDIS_PVC_NAME="redis-persistence-volume-claim-${NAMESPACE}"
 
 cat <<EOF > redis-pv.yaml
 apiVersion: v1
@@ -339,7 +339,7 @@ replica:
 EOF
 
 helm upgrade --install \
-    --namespace ${NAMESPACE} cosmotechredis bitnami/redis \
+    --namespace ${NAMESPACE} cosmotechredis-${NAMESPACE} bitnami/redis \
     --version "${VERSION_REDIS}" \
     --values https://raw.githubusercontent.com/Cosmo-Tech/cosmotech-redis/main/values/v2/values-cosmotech-cluster.yaml \
     --values values-redis.yaml \
@@ -520,6 +520,9 @@ controller:
   extraEnv:
   - name: DEFAULT_REQUEUE_TIME
     value: "${REQUEUE_TIME}"
+  extraArgs:
+  - "--managed-namespace"
+  - "${NAMESPACE}"
   clusterWorkflowTemplates:
     enabled: false
   podLabels:
@@ -706,7 +709,7 @@ config:
           namespace: ${NAMESPACE}
           service-account-name: ${ARGO_SERVICE_ACCOUNT}
       twincache:
-        host: "cosmotechredis-master.${NAMESPACE}.svc.cluster.local"
+        host: "cosmotechredis-${NAMESPACE}-master.${NAMESPACE}.svc.cluster.local"
         port: ${REDIS_PORT}
         username: "default"
         password: "${REDIS_PASSWORD}"
