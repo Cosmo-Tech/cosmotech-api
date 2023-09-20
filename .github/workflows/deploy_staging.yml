@@ -129,6 +129,8 @@ jobs:
           REDIS_DISK_RESOURCE: "/subscriptions/a24b131f-bd0b-42e8-872a-bded9b91ab74/resourceGroups/phoenixstaging/providers/Microsoft.Compute/disks/cosmotech-database-disk"
           REDIS_RESOURCES_LIMITS_MEMORY: 8Gi
           REDIS_RESOURCES_REQUESTS_MEMORY: 8Gi
+          REDIS_RESOURCES_LIMITS_CPU: 2000m
+          REDIS_RESOURCES_REQUESTS_CPU: 1000m
         run: |
           curl -o- -sSL https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/main/deployment_scripts/${{ steps.apiVersionVar.outputs.apiScriptVersion }}/deploy_via_helm.sh | bash -s -- \
             "${GH_SHA}" \
