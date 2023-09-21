@@ -85,9 +85,9 @@ E.g:
 */}}
 {{- define "cosmotech-api.contextPath" -}}
 {{- if eq .Values.api.version "latest" }}
-{{- printf "%s/%s" (printf "%s" .Values.api.servletContextPath | trimSuffix "/" ) .Release.Namespace }}
+{{- printf "%s/%s/" (printf "%s" .Values.api.servletContextPath | trimSuffix "/" ) .Release.Namespace }}
 {{- else }}
-{{- printf "%s/%s/%s" (printf "%s" .Values.api.servletContextPath | trimSuffix "/" ) .Release.Namespace (printf "%s" .Values.api.version | trimSuffix "/" ) }}
+{{- printf "%s/%s/%s/" (printf "%s" .Values.api.servletContextPath | trimSuffix "/" ) .Release.Namespace (printf "%s" .Values.api.version | trimSuffix "/" ) }}
 {{- end }}
 {{- end }}
 
