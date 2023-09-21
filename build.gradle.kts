@@ -557,13 +557,6 @@ tasks.register<CheckLicenseTask>("validateLicense") {
   outputs.upToDateWhen { false }
 }
 
-tasks.withType<KotlinCompile> {
-  // Run licensing tasks before compiling
-  if (project.properties["skipLicenses"] != "true") {
-    dependsOn("validateLicense")
-  }
-}
-
 tasks.register("displayLicensesNotAllowed") {
   val notAllowedFile =
       file(
@@ -572,17 +565,23 @@ tasks.register("displayLicensesNotAllowed") {
             append("/dependencies-without-allowed-license.json")
           })
   val dependenciesEmptyResumeTemplate = file(licenseEmptyPath)
-  if (notAllowedFile.exists() &&
-      (notAllowedFile.readText() != dependenciesEmptyResumeTemplate.readText())) {
-    logger.warn("Licenses not allowed:")
-    logger.warn(notAllowedFile.readText())
-    logger.warn(
+  if (notAllowedFile.exists() && dependenciesEmptyResumeTemplate.exists()) {
+    if (notAllowedFile.readText() != dependenciesEmptyResumeTemplate.readText()) {
+      logger.warn("Licenses not allowed:")
+      logger.warn(notAllowedFile.readText())
+      logger.warn(
         "Please review licenses and add new license check rules in https://github.com/Cosmo-Tech/cosmotech-license")
+    } else {
+      logger.warn("No error in licences detected!")
+    }
   }
+
 }
 
 gradle.buildFinished {
   if (project.properties["skipLicenses"] != "true") {
+    val validateLicenseTask = tasks.getByName("validateLicense")
+    validateLicenseTask.run {}
     val displayTask = tasks.getByName("displayLicensesNotAllowed")
     displayTask.run {}
   }
