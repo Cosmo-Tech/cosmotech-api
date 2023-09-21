@@ -570,12 +570,11 @@ tasks.register("displayLicensesNotAllowed") {
       logger.warn("Licenses not allowed:")
       logger.warn(notAllowedFile.readText())
       logger.warn(
-        "Please review licenses and add new license check rules in https://github.com/Cosmo-Tech/cosmotech-license")
+          "Please review licenses and add new license check rules in https://github.com/Cosmo-Tech/cosmotech-license")
     } else {
       logger.warn("No error in licences detected!")
     }
   }
-
 }
 
 gradle.buildFinished {
