@@ -58,7 +58,7 @@ class OrganizationServiceImplTests {
   @Suppress("unused")
   @MockK
   private var csmPlatformProperties: CsmPlatformProperties = mockk(relaxed = true)
-  @Suppress("unused") @SpyK private var csmAdmin: CsmAdmin = CsmAdmin(csmPlatformProperties)
+  @Suppress("unused") @MockK private var csmAdmin: CsmAdmin = CsmAdmin(csmPlatformProperties)
   @SpyK private var csmRbac: CsmRbac = CsmRbac(csmPlatformProperties, csmAdmin)
 
   @MockK private var organizationRepository: OrganizationRepository = mockk(relaxed = true)
