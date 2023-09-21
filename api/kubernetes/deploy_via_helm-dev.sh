@@ -556,6 +556,7 @@ loki:
     - ReadWriteOnce
     size: "${LOKI_PERSISTENCE_MEMORY:-4Gi}"
   config:
+    auth_enabled: true
     table_manager:
       retention_deletes_enabled: true
       retention_period: "${LOKI_RETENTION_PERIOD:-720h}"
@@ -570,42 +571,23 @@ grafana:
     size: "${LOKI_PERSISTENCE_MEMORY:-4Gi}"
 promtail:
   config:
+    clients:
+      - url: http://loki-gateway.cosmotech-monitoring/loki/api/v1/push
     snippets:
       pipelineStages:
       - cri: {}
       - match:
-          pipeline_name: "keep only ${NAMESPACE} ns"
-          selector: '{namespace!="${NAMESPACE}"}'
-          action: drop
-      - match:
-          pipeline_name: "drop argo server"
-          selector: '{app="argo-${NAMESPACE}-argo-workflows-server"}'
-          action: drop
-      - match:
-          pipeline_name: "drop argo controller"
-          selector: '{app="argo-${NAMESPACE}-argo-workflows-workflow-controller"}'
-          action: drop
-      - match:
-          pipeline_name: "drop redis"
-          selector: '{app="redis"}'
-          action: drop
-      - match:
-          pipeline_name: "drop minio"
-          selector: '{app="minio"}'
-          action: drop
-      - match:
-          pipeline_name: "drop postgresql"
-          selector: '{app="postgresql"}'
-          action: drop
-      - match:
-          pipeline_name: "drop cosmotech-api"
-          selector: '{app="${COSMOTECH_API_RELEASE_NAME}"}'
-          action: drop
+          selector: '{namespace="phoenix"}'
+          stages:
+            - tenant:
+               value: phoenix
+      - output:
+          source: message
   tolerations:
     - effect: NoSchedule
       operator: Exists
 EOF
-#helm upgrade --install ${LOKI_RELEASE_NAME} --namespace=${NAMESPACE} grafana/loki-stack -f loki-values.yaml
+helm upgrade --install ${LOKI_RELEASE_NAME} --namespace=${MONITORING_NAMESPACE} grafana/loki-stack -f loki-values.yaml
 
 popd
 
