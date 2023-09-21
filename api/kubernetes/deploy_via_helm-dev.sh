@@ -209,6 +209,9 @@ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
 export REDIS_PV_NAME="redis-persistence-volume-${NAMESPACE}"
 export REDIS_PVC_NAME="redis-persistence-volume-claim-${NAMESPACE}"
 
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+
 cat <<EOF > redis-pv.yaml
 apiVersion: v1
 kind: PersistentVolume
