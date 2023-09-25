@@ -72,3 +72,6 @@ config:
         storage:
           account-name: "changeme"
           account-key: "changeme"
+      containerRegistry:
+        provider: azure
+        registryUrl: "https://changeme.azurecr.io"
