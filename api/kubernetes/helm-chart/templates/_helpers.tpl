@@ -85,9 +85,17 @@ E.g:
 */}}
 {{- define "cosmotech-api.contextPath" -}}
 {{- if eq .Values.api.version "latest" }}
+{{- if .Values.api.multiTenant }}
 {{- printf "%s/%s/" (printf "%s" .Values.api.servletContextPath | trimSuffix "/" ) .Release.Namespace }}
 {{- else }}
+{{- printf "%s/" (printf "%s" .Values.api.servletContextPath | trimSuffix "/" ) }}
+{{- end }}
+{{- else }}
+{{- if .Values.api.multiTenant }}
 {{- printf "%s/%s/%s/" (printf "%s" .Values.api.servletContextPath | trimSuffix "/" ) .Release.Namespace (printf "%s" .Values.api.version | trimSuffix "/" ) }}
+{{- else }}
+{{- printf "%s/%s/" (printf "%s" .Values.api.servletContextPath | trimSuffix "/" ) (printf "%s" .Values.api.version | trimSuffix "/" ) }}
+{{- end }}
 {{- end }}
 {{- end }}
 
