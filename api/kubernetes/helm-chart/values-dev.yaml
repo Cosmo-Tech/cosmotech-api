@@ -72,3 +72,6 @@ config:
           account-key: "changeme"
         containerRegistries:
           solutions: "localhost:5000"
+      containerRegistry:
+        provider: local
+        registryUrl: "localhost:5000"
