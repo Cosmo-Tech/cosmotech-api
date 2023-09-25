@@ -28,7 +28,7 @@ done
 if [[ "${retVal}" != "0" ]]; then
   echo "Helm Release testing did not complete successfully: $retVal."
   echo "  Command: helm -n ${CHART_RELEASE_TEST_NAMESPACE} test cosmotech-api-${CHART_RELEASE_TEST_NAMESPACE}-${API_VERSION}"
-  exit $retVald
+  exit $retVal
 fi
 
 # Also test the access via the Ingress
