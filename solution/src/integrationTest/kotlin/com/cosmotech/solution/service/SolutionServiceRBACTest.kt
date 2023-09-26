@@ -5,6 +5,12 @@ package com.cosmotech.solution.service
 import com.azure.storage.blob.BlobServiceClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
+import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
+import com.cosmotech.api.rbac.PERMISSION_DELETE
+import com.cosmotech.api.rbac.PERMISSION_READ
+import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
+import com.cosmotech.api.rbac.PERMISSION_WRITE
+import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_EDITOR
 import com.cosmotech.api.rbac.ROLE_NONE
@@ -27,13 +33,13 @@ import com.cosmotech.solution.domain.RunTemplateParameter
 import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
+import com.cosmotech.solution.domain.SolutionRole
 import com.cosmotech.solution.domain.SolutionSecurity
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
-import io.mockk.unmockkStatic
 import java.io.InputStream
 import java.util.*
 import kotlin.test.assertEquals
@@ -45,7 +51,6 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.core.io.Resource
@@ -60,8 +65,6 @@ import org.springframework.test.util.ReflectionTestUtils
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class SolutionServiceRBACTest : CsmRedisTestBase() {
-
-  private val logger = LoggerFactory.getLogger(SolutionServiceIntegrationTest::class.java)
 
   @MockK(relaxed = true) private lateinit var azureStorageBlobServiceClient: BlobServiceClient
 
@@ -102,7 +105,6 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -120,9 +122,14 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
               if (shouldThrow) {
-                assertThrows<CsmAccessForbiddenException> {
-                  solutionApiService.findSolutionById(organizationSaved.id!!, solutionSaved.id!!)
-                }
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.findSolutionById(
+                          organizationSaved.id!!, solutionSaved.id!!)
+                    }
+                assertEquals(
+                    "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.findSolutionById(organizationSaved.id!!, solutionSaved.id!!)
@@ -136,13 +143,12 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to 1,
               ROLE_EDITOR to 2,
-              ROLE_VALIDATOR to 3,
-              ROLE_USER to 4,
-              ROLE_NONE to 4,
-              ROLE_ADMIN to 5,
+              ROLE_USER to 3,
+              ROLE_NONE to 3,
+              ROLE_ADMIN to 4,
           )
           .map { (role, expectedSize) ->
-            DynamicTest.dynamicTest("Test RBAC findAllWorkspaces : $role") {
+            DynamicTest.dynamicTest("Test RBAC findAllSolutions : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               if (!::organizationSaved.isInitialized) {
@@ -172,7 +178,6 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -188,8 +193,18 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
               if (shouldThrow) {
-                assertThrows<CsmAccessForbiddenException> {
-                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.createSolution(organizationSaved.id!!, solution)
+                    }
+                if (role == ROLE_NONE) {
+                  assertEquals(
+                      "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      exception.message)
+                } else {
+                  assertEquals(
+                      "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_CREATE_CHILDREN",
+                      exception.message)
                 }
               } else {
                 assertDoesNotThrow {
@@ -204,7 +219,6 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to true,
-              ROLE_VALIDATOR to true,
               ROLE_USER to true,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -222,8 +236,18 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
               if (shouldThrow) {
-                assertThrows<CsmAccessForbiddenException> {
-                  solutionApiService.deleteSolution(organizationSaved.id!!, solutionSaved.id!!)
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.deleteSolution(organizationSaved.id!!, solutionSaved.id!!)
+                    }
+                if (role == ROLE_NONE) {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      exception.message)
+                } else {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_DELETE",
+                      exception.message)
                 }
               } else {
                 assertDoesNotThrow {
@@ -238,7 +262,6 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to true,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -258,9 +281,19 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
               if (shouldThrow) {
-                assertThrows<CsmAccessForbiddenException> {
-                  solutionApiService.updateSolution(
-                      organizationSaved.id!!, solutionSaved.id!!, solution)
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.updateSolution(
+                          organizationSaved.id!!, solutionSaved.id!!, solution)
+                    }
+                if (role == ROLE_NONE) {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      exception.message)
+                } else {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                      exception.message)
                 }
               } else {
                 assertDoesNotThrow {
@@ -272,11 +305,247 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
+  fun `test RBAC addSolutionAccessControl`() =
+      mapOf(
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test RBAC addSolutionAccessControl : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              organization = mockOrganization()
+              solution = mockSolution(organization.id!!, role = role)
+
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.addSolutionAccessControl(
+                          organizationSaved.id!!,
+                          solutionSaved.id!!,
+                          SolutionAccessControl("user", ROLE_USER))
+                    }
+                if (role == ROLE_NONE) {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      exception.message)
+                } else {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                      exception.message)
+                }
+              } else {
+                assertDoesNotThrow {
+                  solutionApiService.addSolutionAccessControl(
+                      organizationSaved.id!!,
+                      solutionSaved.id!!,
+                      SolutionAccessControl("user", ROLE_USER))
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC getSolutionAccessControl`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test RBAC getSolutionAccessControl : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              organization = mockOrganization()
+              solution = mockSolution(organization.id!!, role = role)
+
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.getSolutionAccessControl(
+                          organizationSaved.id!!, solutionSaved.id!!, FAKE_MAIL)
+                    }
+                if (role == ROLE_NONE) {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      exception.message)
+                } else {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                      exception.message)
+                }
+              } else {
+                assertDoesNotThrow {
+                  solutionApiService.getSolutionAccessControl(
+                      organizationSaved.id!!, solutionSaved.id!!, FAKE_MAIL)
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC getSolutionSecurityUsers`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test RBAC getSolutionSecurityUsers : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              organization = mockOrganization()
+              solution = mockSolution(organization.id!!, role = role)
+
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.getSolutionSecurityUsers(
+                          organizationSaved.id!!, solutionSaved.id!!)
+                    }
+                if (role == ROLE_NONE) {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      exception.message)
+                } else {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                      exception.message)
+                }
+              } else {
+                assertDoesNotThrow {
+                  solutionApiService.getSolutionSecurityUsers(
+                      organizationSaved.id!!, solutionSaved.id!!)
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC removeSolutionAccessControl`() =
+      mapOf(
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test RBAC removeSolutionAccessControl : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              organization = mockOrganization()
+              solution = mockSolution(organization.id!!, role = role)
+
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.removeSolutionAccessControl(
+                          organizationSaved.id!!, solutionSaved.id!!, FAKE_MAIL)
+                    }
+                if (role == ROLE_NONE) {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      exception.message)
+                } else {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                      exception.message)
+                }
+              } else {
+                assertDoesNotThrow {
+                  solutionApiService.removeSolutionAccessControl(
+                      organizationSaved.id!!, solutionSaved.id!!, FAKE_MAIL)
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC updateSolutionAccessControl`() =
+      mapOf(
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test RBAC updateSolutionAccessControl : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              organization = mockOrganization()
+              solution = mockSolution(organization.id!!, role = role)
+
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+              solution = mockSolution()
+
+              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.updateSolutionAccessControl(
+                          organizationSaved.id!!,
+                          solutionSaved.id!!,
+                          FAKE_MAIL,
+                          SolutionRole(ROLE_USER))
+                    }
+                if (role == ROLE_NONE) {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      exception.message)
+                } else {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                      exception.message)
+                }
+              } else {
+                assertDoesNotThrow {
+                  solutionApiService.updateSolutionAccessControl(
+                      organizationSaved.id!!,
+                      solutionSaved.id!!,
+                      FAKE_MAIL,
+                      SolutionRole(ROLE_USER))
+                }
+              }
+            }
+          }
+
+  @TestFactory
   fun `test RBAC addOrReplaceParameters`() =
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to true,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -296,9 +565,19 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
               if (shouldThrow) {
-                assertThrows<CsmAccessForbiddenException> {
-                  solutionApiService.addOrReplaceParameters(
-                      organizationSaved.id!!, solutionSaved.id!!, listOf(runTemplateParameter))
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.addOrReplaceParameters(
+                          organizationSaved.id!!, solutionSaved.id!!, listOf(runTemplateParameter))
+                    }
+                if (role == ROLE_NONE) {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      exception.message)
+                } else {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                      exception.message)
                 }
               } else {
                 assertDoesNotThrow {
@@ -314,7 +593,6 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to true,
-              ROLE_VALIDATOR to true,
               ROLE_USER to true,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -332,9 +610,19 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
               if (shouldThrow) {
-                assertThrows<CsmAccessForbiddenException> {
-                  solutionApiService.removeAllSolutionParameters(
-                      organizationSaved.id!!, solutionSaved.id!!)
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.removeAllSolutionParameters(
+                          organizationSaved.id!!, solutionSaved.id!!)
+                    }
+                if (role == ROLE_NONE) {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      exception.message)
+                } else {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_DELETE",
+                      exception.message)
                 }
               } else {
                 assertDoesNotThrow {
@@ -350,7 +638,6 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to true,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -370,9 +657,21 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
               if (shouldThrow) {
-                assertThrows<CsmAccessForbiddenException> {
-                  solutionApiService.addOrReplaceParameterGroups(
-                      organizationSaved.id!!, solutionSaved.id!!, listOf(runTemplateParameterGroup))
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.addOrReplaceParameterGroups(
+                          organizationSaved.id!!,
+                          solutionSaved.id!!,
+                          listOf(runTemplateParameterGroup))
+                    }
+                if (role == ROLE_NONE) {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      exception.message)
+                } else {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                      exception.message)
                 }
               } else {
                 assertDoesNotThrow {
@@ -388,7 +687,6 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to true,
-              ROLE_VALIDATOR to true,
               ROLE_USER to true,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -406,9 +704,19 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
               if (shouldThrow) {
-                assertThrows<CsmAccessForbiddenException> {
-                  solutionApiService.removeAllSolutionParameterGroups(
-                      organizationSaved.id!!, solutionSaved.id!!)
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.removeAllSolutionParameterGroups(
+                          organizationSaved.id!!, solutionSaved.id!!)
+                    }
+                if (role == ROLE_NONE) {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      exception.message)
+                } else {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_DELETE",
+                      exception.message)
                 }
               } else {
                 assertDoesNotThrow {
@@ -424,7 +732,6 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to true,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -444,9 +751,19 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
               if (shouldThrow) {
-                assertThrows<CsmAccessForbiddenException> {
-                  solutionApiService.addOrReplaceRunTemplates(
-                      organizationSaved.id!!, solutionSaved.id!!, listOf(runTemplate))
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.addOrReplaceRunTemplates(
+                          organizationSaved.id!!, solutionSaved.id!!, listOf(runTemplate))
+                    }
+                if (role == ROLE_NONE) {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      exception.message)
+                } else {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                      exception.message)
                 }
               } else {
                 assertDoesNotThrow {
@@ -462,7 +779,6 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to true,
-              ROLE_VALIDATOR to true,
               ROLE_USER to true,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -480,9 +796,19 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
               if (shouldThrow) {
-                assertThrows<CsmAccessForbiddenException> {
-                  solutionApiService.removeAllRunTemplates(
-                      organizationSaved.id!!, solutionSaved.id!!)
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.removeAllRunTemplates(
+                          organizationSaved.id!!, solutionSaved.id!!)
+                    }
+                if (role == ROLE_NONE) {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      exception.message)
+                } else {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_DELETE",
+                      exception.message)
                 }
               } else {
                 assertDoesNotThrow {
@@ -498,7 +824,6 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to true,
-              ROLE_VALIDATOR to true,
               ROLE_USER to true,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -516,9 +841,19 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
               if (shouldThrow) {
-                assertThrows<CsmAccessForbiddenException> {
-                  solutionApiService.deleteSolutionRunTemplate(
-                      organizationSaved.id!!, solutionSaved.id!!, "runTemplate")
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.deleteSolutionRunTemplate(
+                          organizationSaved.id!!, solutionSaved.id!!, "runTemplate")
+                    }
+                if (role == ROLE_NONE) {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      exception.message)
+                } else {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_DELETE",
+                      exception.message)
                 }
               } else {
                 assertDoesNotThrow {
@@ -534,7 +869,6 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to true,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -554,9 +888,19 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
               if (shouldThrow) {
-                assertThrows<CsmAccessForbiddenException> {
-                  solutionApiService.updateSolutionRunTemplate(
-                      organizationSaved.id!!, solutionSaved.id!!, "runTemplate", runTemplate)
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.updateSolutionRunTemplate(
+                          organizationSaved.id!!, solutionSaved.id!!, "runTemplate", runTemplate)
+                    }
+                if (role == ROLE_NONE) {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      exception.message)
+                } else {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                      exception.message)
                 }
               } else {
                 assertDoesNotThrow {
@@ -572,7 +916,6 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -592,13 +935,17 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
               if (shouldThrow) {
-                assertThrows<CsmAccessForbiddenException> {
-                  solutionApiService.downloadRunTemplateHandler(
-                      organizationSaved.id!!,
-                      solutionSaved.id!!,
-                      "runTemplate",
-                      runTemplateHandlerId)
-                }
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.downloadRunTemplateHandler(
+                          organizationSaved.id!!,
+                          solutionSaved.id!!,
+                          "runTemplate",
+                          runTemplateHandlerId)
+                    }
+                assertEquals(
+                    "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.downloadRunTemplateHandler(
@@ -616,7 +963,6 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to true,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -655,14 +1001,24 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
               if (shouldThrow) {
-                assertThrows<CsmAccessForbiddenException> {
-                  solutionApiService.uploadRunTemplateHandler(
-                      organizationSaved.id!!,
-                      solutionSaved.id!!,
-                      "runTemplate",
-                      runTemplateHandlerId,
-                      resource,
-                      true)
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.uploadRunTemplateHandler(
+                          organizationSaved.id!!,
+                          solutionSaved.id!!,
+                          "runTemplate",
+                          runTemplateHandlerId,
+                          resource,
+                          true)
+                    }
+                if (role == ROLE_NONE) {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      exception.message)
+                } else {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                      exception.message)
                 }
               } else {
                 assertDoesNotThrow {
@@ -674,8 +1030,6 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                       resource,
                       true)
                 }
-
-                unmockkStatic(ArchiveStreamFactory::class)
               }
             }
           }
@@ -685,7 +1039,6 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to true,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -700,8 +1053,18 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
               if (shouldThrow) {
-                assertThrows<CsmAccessForbiddenException> {
-                  solutionApiService.importSolution(organizationSaved.id!!, solution)
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.importSolution(organizationSaved.id!!, solution)
+                    }
+                if (role == ROLE_NONE) {
+                  assertEquals(
+                      "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      exception.message)
+                } else {
+                  assertEquals(
+                      "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                      exception.message)
                 }
               } else {
                 assertDoesNotThrow {
