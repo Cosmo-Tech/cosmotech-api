@@ -8,6 +8,7 @@ import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.rbac.CsmAdmin
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.api.rbac.PERMISSION_DELETE
@@ -24,6 +25,7 @@ import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
+import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.organization.api.OrganizationApiService
@@ -56,18 +58,42 @@ internal class SolutionServiceImpl(
     private val resourceScanner: ResourceScanner,
     private val solutionRepository: SolutionRepository,
     private val organizationApiService: OrganizationApiService,
-    private val csmRbac: CsmRbac
+    private val csmRbac: CsmRbac,
+    private val csmAdmin: CsmAdmin
 ) : CsmPhoenixService(), SolutionApiService {
 
   override fun findAllSolutions(organizationId: String, page: Int?, size: Int?): List<Solution> {
     val defaultPageSize = csmPlatformProperties.twincache.solution.defaultPageSize
     var pageable = constructPageRequest(page, size, defaultPageSize)
-    if (pageable != null) {
-      return solutionRepository.findByOrganizationId(organizationId, pageable).toList()
+    val isAdmin = csmAdmin.verifyCurrentRolesAdmin()
+    val result: MutableList<Solution>
+
+    val rbacEnabled = !isAdmin && this.csmPlatformProperties.rbac.enabled
+
+    if (pageable == null) {
+      result =
+          findAllPaginated(defaultPageSize) {
+            if (rbacEnabled) {
+              val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
+              solutionRepository
+                  .findByOrganizationIdAndSecurity(organizationId, currentUser, it)
+                  .toList()
+            } else {
+              solutionRepository.findAll(it).toList()
+            }
+          }
+    } else {
+      result =
+          if (rbacEnabled) {
+            val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
+            solutionRepository
+                .findByOrganizationIdAndSecurity(organizationId, currentUser, pageable)
+                .toList()
+          } else {
+            solutionRepository.findAll(pageable).toList()
+          }
     }
-    return findAllPaginated(defaultPageSize) {
-      solutionRepository.findByOrganizationId(organizationId, it).toList()
-    }
+    return result
   }
 
   override fun findSolutionById(organizationId: String, solutionId: String): Solution {

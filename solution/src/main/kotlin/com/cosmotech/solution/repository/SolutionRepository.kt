@@ -3,6 +3,7 @@
 package com.cosmotech.solution.repository
 
 import com.cosmotech.api.redis.Sanitize
+import com.cosmotech.api.redis.SecurityConstraint
 import com.cosmotech.solution.domain.Solution
 import com.redis.om.spring.annotations.Query
 import com.redis.om.spring.repository.RedisDocumentRepository
@@ -20,6 +21,13 @@ interface SolutionRepository : RedisDocumentRepository<Solution, String> {
       @Sanitize @Param("organizationId") organizationId: String,
       @Sanitize @Param("solutionId") solutionId: String
   ): Optional<Solution>
+
+  @Query("(@organizationId:{\$organizationId})  \$securityConstraint")
+  fun findByOrganizationIdAndSecurity(
+      @Sanitize @Param("organizationId") organizationId: String,
+      @SecurityConstraint @Param("securityConstraint") securityConstraint: String,
+      pageable: Pageable
+  ): Page<Solution>
 
   fun findByOrganizationId(organizationId: String, pageable: Pageable): Page<Solution>
 }
