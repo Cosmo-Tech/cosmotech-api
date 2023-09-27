@@ -1448,7 +1448,7 @@ internal fun getContainerScopes(csmPlatformProperties: CsmPlatformProperties): S
 
   if (csmPlatformProperties.identityProvider != null) {
     val containerScopes =
-        csmPlatformProperties.identityProvider?.containerScopes?.keys?.joinToString(separator = ",")
+        csmPlatformProperties.identityProvider?.containerScopes?.keys?.joinToString(separator = " ")
             ?: ""
     if (containerScopes.isBlank() && csmPlatformProperties.identityProvider!!.code == "azure") {
       return "${csmPlatformProperties.azure?.appIdUri}$API_SCOPE_SUFFIX"
