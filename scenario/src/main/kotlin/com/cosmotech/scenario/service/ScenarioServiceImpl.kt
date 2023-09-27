@@ -343,6 +343,7 @@ internal class ScenarioServiceImpl(
       page: Int?,
       size: Int?
   ): List<Scenario> {
+    // This call verify by itself that we have the read authorization in the workspace
     workspaceService.findWorkspaceById(organizationId, workspaceId)
     val defaultPageSize = csmPlatformProperties.twincache.scenario.defaultPageSize
     var pageable = constructPageRequest(page, size, defaultPageSize)
