@@ -48,6 +48,8 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    needs:
+      - build
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -377,6 +379,8 @@ jobs:
   test_helm:
     name: Test Helm Chart
     runs-on: ubuntu-latest
+    needs:
+      - build
 
     # If the PR is coming from a fork (pull_request_target), ensure it's opened by "dependabot[bot]".
     # Otherwise, clone it normally.
@@ -583,7 +587,6 @@ jobs:
   scan_and_push_container_images_to_registries:
     runs-on: ubuntu-latest
     needs:
-      - build
       - test
       - connector_it
       - dataset_it
@@ -705,8 +708,17 @@ jobs:
             chart_name: cosmotech-api-chart
             name: API
     needs:
-      - build
       - test
+      - connector_it
+      - dataset_it
+      - organization_it
+      - scenario_it
+      - scenariorun_it
+      - scenariorunresult_it
+      - solution_it
+      - twingraph_it
+      - workspace_it
+      - homecontroller_it
       - test_helm
     permissions:
       packages: write
