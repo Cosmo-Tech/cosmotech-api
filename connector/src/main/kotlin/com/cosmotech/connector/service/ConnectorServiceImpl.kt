@@ -37,7 +37,7 @@ internal class ConnectorServiceImpl(var connectorRepository: ConnectorRepository
   }
 
   override fun findConnectorByName(connectorName: String): Connector {
-    return connectorRepository.findByName(connectorName)
+    return connectorRepository.findFirstByName(connectorName)
         ?: throw CsmResourceNotFoundException(
             "Resource of type '${Connector::class.java.simpleName}' and identifier '$connectorName' not found")
   }
