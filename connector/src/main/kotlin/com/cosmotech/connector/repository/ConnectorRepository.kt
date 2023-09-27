@@ -8,5 +8,5 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface ConnectorRepository : RedisDocumentRepository<Connector, String> {
-  fun findByName(name: String): Connector?
+  fun findFirstByName(name: String): Connector?
 }
