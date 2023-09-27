@@ -149,7 +149,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -170,7 +169,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
                     }
-                if (role == ROLE_VALIDATOR || role == ROLE_NONE) {
+                if (role == ROLE_NONE) {
                   assertEquals(
                       "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
                       exception.message)
@@ -192,7 +191,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -233,7 +231,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -273,7 +270,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -315,7 +311,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to true,
-              ROLE_VALIDATOR to true,
               ROLE_USER to true,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -342,7 +337,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       workspaceApiService.deleteWorkspace(
                           organizationSaved.id!!, workspaceSaved.id!!)
                     }
-                if (role == ROLE_VALIDATOR || role == ROLE_NONE) {
+                if (role == ROLE_NONE) {
                   assertEquals(
                       "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
                       exception.message)
@@ -364,7 +359,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -413,7 +407,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to true,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -461,7 +454,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -503,7 +495,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -544,7 +535,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -597,7 +587,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to true,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -633,7 +622,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       workspaceApiService.uploadWorkspaceFile(
                           organizationSaved.id!!, workspaceSaved.id!!, resource, true, "")
                     }
-                if (role == ROLE_VALIDATOR || role == ROLE_NONE) {
+                if (role == ROLE_NONE) {
                   assertEquals(
                       "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
                       exception.message)
@@ -656,7 +645,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -698,7 +686,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to true,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -722,7 +709,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       workspaceApiService.deleteAllWorkspaceFiles(
                           organizationSaved.id!!, workspaceSaved.id!!)
                     }
-                if (role == ROLE_VALIDATOR || role == ROLE_NONE) {
+                if (role == ROLE_NONE) {
                   assertEquals(
                       "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
                       exception.message)
@@ -745,7 +732,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -787,7 +773,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -828,7 +813,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -870,7 +854,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to true,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -894,7 +877,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       workspaceApiService.deleteWorkspaceFile(
                           organizationSaved.id!!, workspaceSaved.id!!, "")
                     }
-                if (role == ROLE_VALIDATOR || role == ROLE_NONE) {
+                if (role == ROLE_NONE) {
                   assertEquals(
                       "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
                       exception.message)
@@ -917,7 +900,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -959,7 +941,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -983,7 +964,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       workspaceApiService.getWorkspacePermissions(
                           organizationSaved.id!!, workspaceSaved.id!!, ROLE_USER)
                     }
-                if (role == ROLE_VALIDATOR || role == ROLE_NONE) {
+                if (role == ROLE_NONE) {
                   assertEquals(
                       "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
                       exception.message)
@@ -1006,7 +987,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -1048,7 +1028,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -1072,7 +1051,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       workspaceApiService.getWorkspaceSecurity(
                           organizationSaved.id!!, workspaceSaved.id!!)
                     }
-                if (role == ROLE_VALIDATOR || role == ROLE_NONE) {
+                if (role == ROLE_NONE) {
                   assertEquals(
                       "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
                       exception.message)
@@ -1095,7 +1074,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -1137,7 +1115,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to true,
-              ROLE_VALIDATOR to true,
               ROLE_USER to true,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -1178,7 +1155,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -1224,7 +1200,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to true,
-              ROLE_VALIDATOR to true,
               ROLE_USER to true,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -1269,7 +1244,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -1311,7 +1285,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -1335,7 +1308,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       workspaceApiService.getWorkspaceAccessControl(
                           organizationSaved.id!!, workspaceSaved.id!!, FAKE_MAIL)
                     }
-                if (role == ROLE_VALIDATOR || role == ROLE_NONE) {
+                if (role == ROLE_NONE) {
                   assertEquals(
                       "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
                       exception.message)
@@ -1358,7 +1331,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -1400,7 +1372,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to true,
-              ROLE_VALIDATOR to true,
               ROLE_USER to true,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -1424,7 +1395,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       workspaceApiService.removeWorkspaceAccessControl(
                           organizationSaved.id!!, workspaceSaved.id!!, FAKE_MAIL)
                     }
-                if (role == ROLE_VALIDATOR || role == ROLE_NONE) {
+                if (role == ROLE_NONE) {
                   assertEquals(
                       "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
                       exception.message)
@@ -1447,7 +1418,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -1495,7 +1465,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to true,
-              ROLE_VALIDATOR to true,
               ROLE_USER to true,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -1542,7 +1511,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -1584,7 +1552,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -1608,7 +1575,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       workspaceApiService.getWorkspaceSecurityUsers(
                           organizationSaved.id!!, workspaceSaved.id!!)
                     }
-                if (role == ROLE_VALIDATOR || role == ROLE_NONE) {
+                if (role == ROLE_NONE) {
                   assertEquals(
                       "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
                       exception.message)
@@ -1631,7 +1598,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
@@ -1674,7 +1640,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
               ROLE_USER to false,
               ROLE_NONE to true,
               ROLE_ADMIN to false,
