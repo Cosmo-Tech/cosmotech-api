@@ -631,7 +631,7 @@ class ContainerFactoryTests {
             "AZURE_CLIENT_SECRET" to "azertyuiop",
             "CSM_SIMULATION_ID" to "simulationrunid",
             "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "scope1,scope2",
+            "CSM_API_SCOPE" to "scope1 scope2",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
