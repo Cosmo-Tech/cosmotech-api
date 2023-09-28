@@ -63,6 +63,9 @@ internal class SolutionServiceImpl(
 ) : CsmPhoenixService(), SolutionApiService {
 
   override fun findAllSolutions(organizationId: String, page: Int?, size: Int?): List<Solution> {
+    // This call verify by itself that we have the read authorization in the organization
+    organizationApiService.findOrganizationById(organizationId)
+
     val defaultPageSize = csmPlatformProperties.twincache.solution.defaultPageSize
     var pageable = constructPageRequest(page, size, defaultPageSize)
     val isAdmin = csmAdmin.verifyCurrentRolesAdmin()

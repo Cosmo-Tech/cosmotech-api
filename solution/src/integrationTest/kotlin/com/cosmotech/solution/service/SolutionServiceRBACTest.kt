@@ -15,7 +15,6 @@ import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_EDITOR
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_USER
-import com.cosmotech.api.rbac.ROLE_VALIDATOR
 import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.ResourceScanner
@@ -141,34 +140,34 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
   @TestFactory
   fun `test RBAC findAllSolutions`() =
       mapOf(
-              ROLE_VIEWER to 1,
-              ROLE_EDITOR to 2,
-              ROLE_USER to 3,
-              ROLE_NONE to 3,
-              ROLE_ADMIN to 4,
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
           )
-          .map { (role, expectedSize) ->
+          .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC findAllSolutions : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-
-              if (!::organizationSaved.isInitialized) {
-                organizationSaved =
-                    organizationApiService.registerOrganization(
-                        mockOrganization(id = "id", userName = FAKE_MAIL, role = ROLE_USER))
-              }
+              organizationSaved =
+                  organizationApiService.registerOrganization(
+                      mockOrganization(id = "id", userName = FAKE_MAIL, role = role))
               solutionApiService.createSolution(
-                  organizationSaved.id!!, mockSolution(userName = FAKE_MAIL, role = role))
+                  organizationSaved.id!!, mockSolution(userName = FAKE_MAIL))
               every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
-              val solutions =
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.findAllSolutions(organizationSaved.id!!, null, null)
+                    }
+                assertEquals(
+                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
                   solutionApiService.findAllSolutions(organizationSaved.id!!, null, null)
-              when (role) {
-                ROLE_VIEWER -> assertEquals(expectedSize, solutions.size)
-                ROLE_EDITOR -> assertEquals(expectedSize, solutions.size)
-                ROLE_VALIDATOR -> assertEquals(expectedSize, solutions.size)
-                ROLE_USER -> assertEquals(expectedSize, solutions.size)
-                ROLE_NONE -> assertEquals(expectedSize, solutions.size)
-                ROLE_ADMIN -> assertEquals(expectedSize, solutions.size)
+                }
               }
             }
           }
