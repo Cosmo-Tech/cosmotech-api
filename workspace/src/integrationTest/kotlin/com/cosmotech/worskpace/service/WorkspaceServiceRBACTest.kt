@@ -15,7 +15,6 @@ import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_EDITOR
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_USER
-import com.cosmotech.api.rbac.ROLE_VALIDATOR
 import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.ResourceScanner
@@ -94,7 +93,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
-    every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")
+    every { getCurrentAuthenticatedRoles(any()) } returns listOf()
 
     ReflectionTestUtils.setField(
         workspaceApiService, "azureStorageBlobServiceClient", azureStorageBlobServiceClient)
@@ -104,43 +103,30 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
     rediSearchIndexer.createIndexFor(Organization::class.java)
     rediSearchIndexer.createIndexFor(Solution::class.java)
     rediSearchIndexer.createIndexFor(Workspace::class.java)
+    organizationSaved = organizationApiService.registerOrganization(mockOrganization(userName = FAKE_MAIL, role = ROLE_USER))
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, mockSolution())
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, mockWorkspace(userName = FAKE_MAIL, role = ROLE_USER))
   }
 
   @TestFactory
   fun `test RBAC findAllWorkspaces`() =
       mapOf(
-              ROLE_VIEWER to 1,
-              ROLE_EDITOR to 2,
-              ROLE_VALIDATOR to 3,
+              ROLE_VIEWER to 2,
+              ROLE_EDITOR to 3,
               ROLE_USER to 4,
               ROLE_NONE to 4,
               ROLE_ADMIN to 5,
           )
-          .map { (role, shouldThrow) ->
+          .map { (role, expectedSize) ->
             DynamicTest.dynamicTest("Test RBAC findAllWorkspaces : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-
-              if (!::organizationSaved.isInitialized) {
-                organizationSaved =
-                    organizationApiService.registerOrganization(
-                        mockOrganization(id = "id", userName = FAKE_MAIL, role = ROLE_USER))
-              }
-              solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, mockSolution())
               workspaceApiService.createWorkspace(
                   organizationSaved.id!!, mockWorkspace(userName = FAKE_MAIL, role = role))
               every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
               val workspaces =
                   workspaceApiService.findAllWorkspaces(organizationSaved.id!!, null, null)
-              when (role) {
-                ROLE_VIEWER -> assertEquals(shouldThrow, workspaces.size)
-                ROLE_EDITOR -> assertEquals(shouldThrow, workspaces.size)
-                ROLE_VALIDATOR -> assertEquals(shouldThrow, workspaces.size)
-                ROLE_USER -> assertEquals(shouldThrow, workspaces.size)
-                ROLE_NONE -> assertEquals(shouldThrow, workspaces.size)
-                ROLE_ADMIN -> assertEquals(shouldThrow, workspaces.size)
-              }
+              assertEquals(expectedSize, workspaces.size)
             }
           }
 
