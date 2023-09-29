@@ -157,25 +157,46 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
   @TestFactory
   fun `test RBAC findAllScenarios`() =
       mapOf(
-              ROLE_VIEWER to 2,
-              ROLE_EDITOR to 3,
-              ROLE_VALIDATOR to 4,
-              ROLE_NONE to 4,
-              ROLE_ADMIN to 5,
+              ROLE_USER to false,
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_VALIDATOR to true,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
             dynamicTest("Test RBAC findAllWorkspaces : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              scenarioApiService.createScenario(
-                  organizationSaved.id!!, workspaceSaved.id!!, mockScenario(role = role))
-              workspaceApiService.updateWorkspaceAccessControl(
-                  organizationSaved.id!!, workspaceSaved.id!!, FAKE_MAIL, WorkspaceRole(ROLE_USER))
+              organization = mockOrganization("Organization")
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              dataset = mockDataset()
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              solution = mockSolution()
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              workspace = mockWorkspace(userName = FAKE_MAIL, role = role)
+              workspaceSaved =
+                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+              scenario = mockScenario()
+              scenarioSaved =
+                  scenarioApiService.createScenario(
+                      organizationSaved.id!!, workspaceSaved.id!!, scenario)
               every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
-              val scenarios =
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      scenarioApiService.findAllScenarios(
+                          organizationSaved.id!!, workspaceSaved.id!!, null, null)
+                    }
+                assertEquals(
+                    "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
                   scenarioApiService.findAllScenarios(
                       organizationSaved.id!!, workspaceSaved.id!!, null, null)
-              assertEquals(shouldThrow, scenarios.size)
+                }
+              }
             }
           }
 

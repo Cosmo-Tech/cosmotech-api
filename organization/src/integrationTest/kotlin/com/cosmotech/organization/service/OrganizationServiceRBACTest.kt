@@ -89,7 +89,7 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
               organizationApiService.registerOrganization(mockOrganizationWithRole(role = role))
 
               val organizations = organizationApiService.findAllOrganizations(null, null)
-                assertEquals(shouldThrow, organizations.size)
+              assertEquals(shouldThrow, organizations.size)
             }
           }
 
