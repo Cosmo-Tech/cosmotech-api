@@ -103,30 +103,42 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
     rediSearchIndexer.createIndexFor(Organization::class.java)
     rediSearchIndexer.createIndexFor(Solution::class.java)
     rediSearchIndexer.createIndexFor(Workspace::class.java)
-    organizationSaved = organizationApiService.registerOrganization(mockOrganization(userName = FAKE_MAIL, role = ROLE_USER))
-    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, mockSolution())
-    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, mockWorkspace(userName = FAKE_MAIL, role = ROLE_USER))
   }
 
   @TestFactory
   fun `test RBAC findAllWorkspaces`() =
       mapOf(
-              ROLE_VIEWER to 2,
-              ROLE_EDITOR to 3,
-              ROLE_USER to 4,
-              ROLE_NONE to 4,
-              ROLE_ADMIN to 5,
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
           )
-          .map { (role, expectedSize) ->
+          .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC findAllWorkspaces : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              workspaceApiService.createWorkspace(
-                  organizationSaved.id!!, mockWorkspace(userName = FAKE_MAIL, role = role))
+              organizationSaved =
+                  organizationApiService.registerOrganization(
+                      mockOrganization(userName = FAKE_MAIL, role = role))
+              solutionSaved =
+                  solutionApiService.createSolution(organizationSaved.id!!, mockSolution())
+              workspaceSaved =
+                  workspaceApiService.createWorkspace(organizationSaved.id!!, mockWorkspace())
               every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
-              val workspaces =
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      workspaceApiService.findAllWorkspaces(organizationSaved.id!!, null, null)
+                    }
+                assertEquals(
+                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
                   workspaceApiService.findAllWorkspaces(organizationSaved.id!!, null, null)
-              assertEquals(expectedSize, workspaces.size)
+                }
+              }
             }
           }
 
