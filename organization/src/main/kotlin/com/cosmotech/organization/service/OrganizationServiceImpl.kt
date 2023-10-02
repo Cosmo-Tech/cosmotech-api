@@ -4,7 +4,6 @@ package com.cosmotech.organization.service
 
 import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.events.OrganizationUnregistered
-import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmAdmin
 import com.cosmotech.api.rbac.CsmRbac
@@ -256,16 +255,6 @@ class OrganizationServiceImpl(
     val organization =
         checkPermissionAndReturnOrganization(organizationId, PERMISSION_READ_SECURITY)
     return csmRbac.getUsers(organization.getRbac())
-  }
-
-  override fun importOrganization(organization: Organization): Organization {
-    if (csmAdmin.verifyCurrentRolesAdmin()) {
-      if (organization.id == null) {
-        throw CsmResourceNotFoundException("Organization id is null")
-      }
-      return organizationRepository.save(organization)
-    }
-    throw CsmAccessForbiddenException("Only admins can use this endpoint")
   }
 
   private fun updateOrganizationServiceByOrganizationId(
