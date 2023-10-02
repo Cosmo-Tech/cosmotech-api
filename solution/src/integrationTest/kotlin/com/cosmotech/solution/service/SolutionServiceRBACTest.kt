@@ -1033,46 +1033,6 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
             }
           }
 
-  @TestFactory
-  fun `test RBAC importSolution`() =
-      mapOf(
-              ROLE_VIEWER to true,
-              ROLE_EDITOR to false,
-              ROLE_USER to true,
-              ROLE_NONE to true,
-              ROLE_ADMIN to false,
-          )
-          .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC importSolution : $role") {
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-
-              val organization = mockOrganization(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
-
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
-
-              if (shouldThrow) {
-                val exception =
-                    assertThrows<CsmAccessForbiddenException> {
-                      solutionApiService.importSolution(organizationSaved.id!!, solution)
-                    }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_WRITE",
-                      exception.message)
-                }
-              } else {
-                assertDoesNotThrow {
-                  solutionApiService.importSolution(organizationSaved.id!!, solution)
-                }
-              }
-            }
-          }
-
   fun mockOrganization(
       id: String = "organization_id",
       userName: String = FAKE_MAIL,

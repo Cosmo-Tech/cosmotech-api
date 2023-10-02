@@ -399,16 +399,6 @@ internal class SolutionServiceImpl(
     return solution
   }
 
-  override fun importSolution(organizationId: String, solution: Solution): Solution {
-    val organization = organizationApiService.findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_WRITE)
-
-    if (solution.id == null) {
-      throw CsmResourceNotFoundException("Solution id is null")
-    }
-    return solutionRepository.save(solution)
-  }
-
   override fun addSolutionAccessControl(
       organizationId: String,
       solutionId: String,
