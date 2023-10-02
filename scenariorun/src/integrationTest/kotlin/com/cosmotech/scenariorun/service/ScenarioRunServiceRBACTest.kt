@@ -916,69 +916,6 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
             }
           }
 
-  @TestFactory
-  fun `test RBAC importScenarioRun`() =
-      mapOf(
-              ROLE_VIEWER to true,
-              ROLE_EDITOR to false,
-              ROLE_VALIDATOR to false,
-              ROLE_USER to true,
-              ROLE_NONE to true,
-              ROLE_ADMIN to false,
-          )
-          .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC importScenarioRun : $role") {
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              connector = mockConnector()
-              connectorSaved = connectorApiService.registerConnector(connector)
-              organization = mockOrganization()
-              organizationSaved = organizationApiService.registerOrganization(organization)
-              dataset = mockDataset()
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              solution = mockSolution()
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
-              workspace = mockWorkspace()
-              workspaceSaved =
-                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
-              scenario = mockScenario(role = role)
-              scenarioSaved =
-                  scenarioApiService.createScenario(
-                      organizationSaved.id!!, workspaceSaved.id!!, scenario)
-              every { workflowService.launchScenarioRun(any(), any()) } returns mockScenarioRun()
-              scenarioRunSaved =
-                  scenariorunApiService.runScenario(
-                      organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
-
-              val scenarioRun = ScenarioRun(id = "id")
-
-              if (shouldThrow) {
-                val exception =
-                    assertThrows<CsmAccessForbiddenException> {
-                      scenariorunApiService.importScenarioRun(
-                          organizationSaved.id!!,
-                          workspaceSaved.id!!,
-                          scenarioSaved.id!!,
-                          scenarioRun)
-                    }
-                if (role == ROLE_USER || role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_WRITE",
-                      exception.message)
-                }
-              } else {
-                assertDoesNotThrow {
-                  scenariorunApiService.importScenarioRun(
-                      organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, scenarioRun)
-                }
-              }
-            }
-          }
-
   private fun mockWorkspaceEventHubInfo(eventHubAvailable: Boolean): WorkspaceEventHubInfo {
     return WorkspaceEventHubInfo(
         eventHubNamespace = "eventHubNamespace",
