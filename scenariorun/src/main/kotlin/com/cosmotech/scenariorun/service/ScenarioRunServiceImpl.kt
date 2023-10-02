@@ -20,7 +20,6 @@ import com.cosmotech.api.events.TwingraphImportEvent
 import com.cosmotech.api.events.TwingraphImportJobInfoRequest
 import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
-import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.api.rbac.PERMISSION_DELETE
@@ -534,6 +533,7 @@ class ScenarioRunServiceImpl(
     }
     return scenarioRun.withoutSensitiveData()!!
   }
+
   private fun deletePreviousSimulationDataIfCurrentSimulationIsSuccessful(
       currentRun: ScenarioRun,
       purgeHistoricalDataConfiguration: DeleteHistoricalData
@@ -890,19 +890,5 @@ class ScenarioRunServiceImpl(
             eventHubInfo.eventHubNamespace, eventHubInfo.eventHubName, scenarioMetaData)
       }
     }
-  }
-
-  override fun importScenarioRun(
-      organizationId: String,
-      workspaceId: String,
-      scenarioId: String,
-      scenarioRun: ScenarioRun
-  ): ScenarioRun {
-    val scenario = scenarioApiService.findScenarioById(organizationId, workspaceId, scenarioId)
-    csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE, scenarioPermissions)
-    if (scenarioRun.id == null) {
-      throw CsmResourceNotFoundException("ScenarioRun id is null")
-    }
-    return scenarioRunRepository.save(scenarioRun)
   }
 }
