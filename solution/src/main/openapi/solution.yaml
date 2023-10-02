@@ -478,49 +478,6 @@ paths:
           description: zip file uploaded
         "400":
           description: Bad request
-  /organizations/{organization_id}/solutions/import:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-    post:
-      operationId: importSolution
-      tags:
-        - solution
-      summary: Import a solution
-      requestBody:
-        description: the Solution to import
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Solution'
-            examples:
-              Brewery:
-                $ref: '#/components/examples/Brewery'
-          application/yaml:
-            schema:
-              type: string
-              format: binary
-            examples:
-              ADTConnector:
-                $ref: '#/components/examples/Brewery'
-      responses:
-        "201":
-          description: the solution details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Solution'
-              examples:
-                Brewery:
-                  $ref: '#/components/examples/Brewery'
-        "400":
-          description: Bad request
-
   /organizations/{organization_id}/solutions/{solution_id}/security/users:
     parameters:
       - name: organization_id
