@@ -1,7 +1,6 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.worskpace.service // Copyright (c) Cosmo Tech.
-// Licensed under the MIT license.
+package com.cosmotech.worskpace.service
 
 import com.azure.storage.blob.BlobServiceClient
 import com.cosmotech.api.config.CsmPlatformProperties
@@ -12,7 +11,6 @@ import com.cosmotech.api.rbac.ROLE_EDITOR
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.tests.CsmRedisTestBase
-import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
@@ -32,7 +30,6 @@ import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
-import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
 import java.util.UUID
@@ -46,7 +43,6 @@ import org.junit.runner.RunWith
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.core.io.Resource
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
@@ -68,8 +64,6 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
   @MockK(relaxed = true) private lateinit var azureStorageBlobServiceClient: BlobServiceClient
   @MockK private lateinit var secretManagerMock: SecretManager
-  @MockK private lateinit var resource: Resource
-  @RelaxedMockK private lateinit var resourceScanner: ResourceScanner
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var organizationApiService: OrganizationApiService

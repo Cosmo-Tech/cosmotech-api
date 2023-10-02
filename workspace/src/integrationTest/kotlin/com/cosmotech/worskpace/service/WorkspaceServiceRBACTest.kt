@@ -80,8 +80,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
   @Autowired lateinit var workspaceApiService: WorkspaceApiService
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
-  lateinit var organization: Organization
-  lateinit var solution: Solution
   lateinit var workspace: Workspace
 
   lateinit var organizationSaved: Organization

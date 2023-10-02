@@ -268,8 +268,8 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       scenarioId: String
   ): ScenarioDataDownloadJob {
+    // This call verify by itself that we have the read authorization in the scenario
     val scenario = this.findScenarioById(organizationId, workspaceId, scenarioId)
-    csmRbac.verify(scenario.getRbac(), PERMISSION_READ, scenarioPermissions)
     val resourceId =
         this.idGenerator.generate(scope = "scenariodatadownload", prependPrefix = "sdl-")
     val scenarioDataDownloadRequest =
@@ -367,6 +367,8 @@ internal class ScenarioServiceImpl(
       page: Int?,
       size: Int?
   ): List<Scenario> {
+    // This call verify by itself that we have the read authorization in the workspace
+    workspaceService.findWorkspaceById(organizationId, workspaceId)
     val status = validationStatus.toString()
     val defaultPageSize = csmPlatformProperties.twincache.scenario.defaultPageSize
     var pageRequest = constructPageRequest(page, size, defaultPageSize)
@@ -498,6 +500,7 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       scenarioId: String
   ): ScenarioValidationStatus {
+    // This call verify by itself that we have the read authorization in the scenario
     val scenario = this.findScenarioById(organizationId, workspaceId, scenarioId)
     return scenario.validationStatus ?: ScenarioValidationStatus.Unknown
   }
@@ -508,8 +511,8 @@ internal class ScenarioServiceImpl(
       scenarioId: String,
       downloadId: String
   ): ScenarioDataDownloadInfo {
+    // This call verify by itself that we have the read authorization in the scenario
     val scenario = this.findScenarioById(organizationId, workspaceId, scenarioId)
-    csmRbac.verify(scenario.getRbac(), PERMISSION_READ, scenarioPermissions)
     val scenarioDataDownloadJobInfoRequest =
         ScenarioDataDownloadJobInfoRequest(this, downloadId, organizationId)
     this.eventPublisher.publishEvent(scenarioDataDownloadJobInfoRequest)
@@ -622,7 +625,9 @@ internal class ScenarioServiceImpl(
       scenarioId: String,
       scenario: Scenario
   ): Scenario {
+    // This call verify by itself that we have the read authorization in the organization
     var organization = organizationService.findOrganizationById(organizationId)
+    // This call verify by itself that we have the read authorization in the workspace
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     val existingScenario = findScenarioById(organizationId, workspaceId, scenarioId)
     csmRbac.verify(existingScenario.getRbac(), PERMISSION_WRITE, scenarioPermissions)
@@ -964,17 +969,5 @@ internal class ScenarioServiceImpl(
     return ScenarioSecurity(
         default = ROLE_NONE,
         accessControlList = mutableListOf(ScenarioAccessControl(userId, ROLE_ADMIN)))
-  }
-
-  override fun importScenario(
-      organizationId: String,
-      workspaceId: String,
-      scenario: Scenario
-  ): Scenario {
-    if (scenario.id == null) {
-      throw CsmResourceNotFoundException("Scenario id is null")
-    }
-
-    return scenarioRepository.save(scenario)
   }
 }

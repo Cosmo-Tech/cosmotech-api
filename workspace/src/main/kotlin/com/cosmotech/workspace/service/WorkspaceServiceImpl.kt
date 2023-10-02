@@ -12,9 +12,7 @@ import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.events.DeleteHistoricalDataOrganization
 import com.cosmotech.api.events.DeleteHistoricalDataWorkspace
 import com.cosmotech.api.events.OrganizationUnregistered
-import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
-import com.cosmotech.api.rbac.CsmAdmin
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.api.rbac.PERMISSION_DELETE
@@ -70,7 +68,6 @@ internal class WorkspaceServiceImpl(
     private val azureStorageBlobServiceClient: BlobServiceClient,
     private val azureStorageBlobBatchClient: BlobBatchClient,
     private val csmRbac: CsmRbac,
-    private val csmAdmin: CsmAdmin,
     private val resourceScanner: ResourceScanner,
     private val secretManager: SecretManager,
     private val workspaceRepository: WorkspaceRepository
@@ -116,7 +113,7 @@ internal class WorkspaceServiceImpl(
       }
 
   override fun findWorkspaceById(organizationId: String, workspaceId: String): Workspace {
-    // This call verify by itself that we have the read authorization in the scenario
+    // This call verify by itself that we have the read authorization in the organization
     organizationService.findOrganizationById(organizationId)
     val workspace: Workspace = this.findWorkspaceByIdNoSecurity(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_READ)
@@ -469,16 +466,6 @@ internal class WorkspaceServiceImpl(
     val workspace = findWorkspaceById(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_READ_SECURITY)
     return csmRbac.getUsers(workspace.getRbac())
-  }
-
-  override fun importWorkspace(organizationId: String, workspace: Workspace): Workspace {
-    if (csmAdmin.verifyCurrentRolesAdmin()) {
-      if (workspace.id == null) {
-        throw CsmResourceNotFoundException("Workspace id is null")
-      }
-      return workspaceRepository.save(workspace)
-    }
-    throw CsmAccessForbiddenException("Only admins can use this endpoint")
   }
 
   private fun initSecurity(userId: String): WorkspaceSecurity {

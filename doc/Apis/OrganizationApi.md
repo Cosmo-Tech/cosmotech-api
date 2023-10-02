@@ -12,7 +12,6 @@ Method | HTTP request | Description
 [**getOrganizationPermissions**](OrganizationApi.md#getOrganizationPermissions) | **GET** /organizations/{organization_id}/permissions/{role} | Get the Organization permissions by given role
 [**getOrganizationSecurity**](OrganizationApi.md#getOrganizationSecurity) | **GET** /organizations/{organization_id}/security | Get the Organization security information
 [**getOrganizationSecurityUsers**](OrganizationApi.md#getOrganizationSecurityUsers) | **GET** /organizations/{organization_id}/security/users | Get the Organization security users list
-[**importOrganization**](OrganizationApi.md#importOrganization) | **POST** /organizations/import | Import an organization
 [**registerOrganization**](OrganizationApi.md#registerOrganization) | **POST** /organizations | Register a new organization
 [**removeOrganizationAccessControl**](OrganizationApi.md#removeOrganizationAccessControl) | **DELETE** /organizations/{organization_id}/security/access/{identity_id} | Remove the specified access from the given Organization
 [**setOrganizationDefaultSecurity**](OrganizationApi.md#setOrganizationDefaultSecurity) | **POST** /organizations/{organization_id}/security/default | Set the Organization default security
@@ -223,31 +222,6 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
-
-<a name="importOrganization"></a>
-# **importOrganization**
-> Organization importOrganization(Organization)
-
-Import an organization
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **Organization** | [**Organization**](../Models/Organization.md)| the Organization to import |
-
-### Return type
-
-[**Organization**](../Models/Organization.md)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: application/json, application/yaml
 - **Accept**: application/json
 
 <a name="registerOrganization"></a>

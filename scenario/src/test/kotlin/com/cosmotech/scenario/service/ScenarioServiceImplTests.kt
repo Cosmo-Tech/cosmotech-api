@@ -922,24 +922,6 @@ class ScenarioServiceImplTests {
     assertEquals(rootLastRun, scenarioReturned.rootLastRun)
   }
 
-  @Test
-  fun `should test import Scenario method and assert it registered`() {
-    val scenario = mockScenario()
-    every { scenarioRepository.save(any()) } returns scenario
-    val importedScenario =
-        scenarioServiceImpl.importScenario(ORGANIZATION_ID, WORKSPACE_ID, scenario)
-    assertEquals(scenario, importedScenario)
-  }
-
-  @Test
-  fun `should test import Scenario method and assert it throws exception when id scenario is missing`() {
-    val scenario = mockScenario()
-    scenario.id = null
-    assertThrows<CsmResourceNotFoundException> {
-      scenarioServiceImpl.importScenario(ORGANIZATION_ID, WORKSPACE_ID, scenario)
-    }
-  }
-
   @TestFactory
   fun `test RBAC create Scenario`() =
       mapOf(

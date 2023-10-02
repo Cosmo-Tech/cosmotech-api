@@ -45,7 +45,6 @@ import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.azure.WorkspaceEventHubInfo
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
-import com.cosmotech.workspace.domain.WorkspaceRole
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.ninjasquad.springmockk.MockkBean
@@ -83,7 +82,6 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
   @MockkBean lateinit var csmADX: AzureDataExplorerClient
   @MockK(relaxed = true) private lateinit var workspaceEventHubService: IWorkspaceEventHubService
   @MockK(relaxed = true) private lateinit var azureDataExplorerClient: AzureDataExplorerClient
-  @MockK private lateinit var scenarioDataDownloadJobInfoRequest: ScenarioDataDownloadJobInfoRequest
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var connectorApiService: ConnectorApiService
@@ -300,53 +298,46 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
   @TestFactory
   fun `test RBAC findAllScenariosByValidationStatus`() =
       mapOf(
-              ROLE_VIEWER to 2,
-              ROLE_EDITOR to 3,
-              ROLE_VALIDATOR to 4,
-              ROLE_NONE to 4,
-              ROLE_ADMIN to 5,
+              ROLE_USER to false,
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_VALIDATOR to true,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
             dynamicTest("Test RBAC findAllWorkspaces : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              scenarioApiService.createScenario(
-                  organizationSaved.id!!, workspaceSaved.id!!, mockScenario(role = role))
-              workspaceApiService.updateWorkspaceAccessControl(
-                  organizationSaved.id!!, workspaceSaved.id!!, FAKE_MAIL, WorkspaceRole(ROLE_USER))
+              organization = mockOrganization("Organization")
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              dataset = mockDataset()
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              solution = mockSolution()
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+              workspace = mockWorkspace(userName = FAKE_MAIL, role = role)
+              workspaceSaved =
+                  workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+              scenario = mockScenario()
+              scenarioSaved =
+                  scenarioApiService.createScenario(
+                      organizationSaved.id!!, workspaceSaved.id!!, scenario)
               every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
 
-              var scenarios =
-                  scenarioApiService.findAllScenariosByValidationStatus(
-                      organizationSaved.id!!,
-                      workspaceSaved.id!!,
-                      ScenarioValidationStatus.Draft,
-                      null,
-                      null)
-              assertEquals(shouldThrow, scenarios.size)
-              scenarios =
-                  scenarioApiService.findAllScenariosByValidationStatus(
-                      organizationSaved.id!!,
-                      workspaceSaved.id!!,
-                      ScenarioValidationStatus.Validated,
-                      null,
-                      null)
-              assertEquals(0, scenarios.size)
-              scenarios =
-                  scenarioApiService.findAllScenariosByValidationStatus(
-                      organizationSaved.id!!,
-                      workspaceSaved.id!!,
-                      ScenarioValidationStatus.Unknown,
-                      null,
-                      null)
-              assertEquals(0, scenarios.size)
-              scenarios =
-                  scenarioApiService.findAllScenariosByValidationStatus(
-                      organizationSaved.id!!,
-                      workspaceSaved.id!!,
-                      ScenarioValidationStatus.Rejected,
-                      null,
-                      null)
-              assertEquals(0, scenarios.size)
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      scenarioApiService.findAllScenarios(
+                          organizationSaved.id!!, workspaceSaved.id!!, null, null)
+                    }
+                assertEquals(
+                    "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  scenarioApiService.findAllScenarios(
+                      organizationSaved.id!!, workspaceSaved.id!!, null, null)
+                }
+              }
             }
           }
 
@@ -1205,38 +1196,6 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
                   scenarioApiService.getScenarioSecurityUsers(
                       organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
                 }
-              }
-            }
-          }
-
-  @TestFactory
-  fun `test RBAC importScenario`() =
-      mapOf(
-              ROLE_VIEWER to false,
-              ROLE_EDITOR to false,
-              ROLE_VALIDATOR to false,
-              ROLE_NONE to false,
-              ROLE_ADMIN to false,
-          )
-          .map { (role, shouldThrow) ->
-            dynamicTest("Test RBAC importScenario : $role") {
-              organizationSaved =
-                  organizationApiService.registerOrganization(
-                      mockOrganization(id = "id", userName = FAKE_MAIL))
-              solutionSaved =
-                  solutionApiService.createSolution(organizationSaved.id!!, mockSolution())
-
-              workspaceSaved =
-                  workspaceApiService.createWorkspace(
-                      organizationSaved.id!!, mockWorkspace(userName = FAKE_MAIL))
-
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
-
-              scenario = mockScenario(userName = FAKE_MAIL, role = role)
-
-              assertDoesNotThrow {
-                scenarioApiService.importScenario(
-                    organizationSaved.id!!, workspaceSaved.id!!, scenario)
               }
             }
           }

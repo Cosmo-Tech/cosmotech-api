@@ -814,49 +814,6 @@ paths:
                   - bob@mycompany.com
         "404":
           description: the Scenario specified is unknown or you don't have access to it
-  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/import:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-    post:
-      operationId: importScenario
-      tags:
-        - scenario
-      summary: Import Scenario
-      requestBody:
-        description: the Scenario to import
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Scenario'
-            examples:
-              MasterScenario:
-                $ref: '#/components/examples/BreweryScenarioIn'
-              ChildScenario:
-                $ref: '#/components/examples/BreweryChildScenarioIn'
-      responses:
-        "201":
-          description: the scenario details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Scenario'
-              examples:
-                Scenario:
-                  $ref: '#/components/examples/BreweryScenario'
-        "400":
-          description: Bad request
 
 
 components:

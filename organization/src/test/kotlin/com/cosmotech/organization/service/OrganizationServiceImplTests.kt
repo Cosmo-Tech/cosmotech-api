@@ -44,7 +44,6 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.data.repository.findByIdOrNull
-import org.testcontainers.shaded.org.bouncycastle.asn1.x509.X509ObjectIdentifiers.organization
 
 const val ORGANIZATION_ID = "O-AbCdEf123"
 const val USER_ID = "bob@mycompany.com"
@@ -117,25 +116,6 @@ class OrganizationServiceImplTests {
     assertThrows<CsmResourceNotFoundException> {
       organizationApiService.updateOrganizationAccessControl(
           ORGANIZATION_ID, USER_ID, organizationRole)
-    }
-  }
-
-  @Test
-  fun `should test import Organization method and assert it registered`() {
-    val organization = getMockOrganization()
-    every { organizationRepository.save(any()) } returns organization
-    every { csmAdmin.verifyCurrentRolesAdmin() } returns true
-    val importedScenario = organizationApiService.importOrganization(organization)
-    assertEquals(organization, importedScenario)
-  }
-
-  @Test
-  fun `should test import Organization method and assert it throws exception when id scenario is missing`() {
-    val organization = getMockOrganization()
-    every { csmAdmin.verifyCurrentRolesAdmin() } returns true
-    organization.id = null
-    assertThrows<CsmResourceNotFoundException> {
-      organizationApiService.importOrganization(organization)
     }
   }
 
