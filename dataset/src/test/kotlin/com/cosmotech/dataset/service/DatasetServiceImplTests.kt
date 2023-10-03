@@ -208,7 +208,8 @@ class DatasetServiceImplTests {
     val subDatasetGraphQuery = SubDatasetGraphQuery()
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
     every { datasetRepository.save(any()) } returnsArgument 0
-    every { csmJedisPool.resource.dump(any<String>()) } throws CsmResourceNotFoundException("")
+    every { csmJedisPool.resource.eval(any<String>(), any(), any(), any()) } throws
+        CsmResourceNotFoundException("")
     assertThrows<CsmResourceNotFoundException> {
       datasetService.createSubDataset(ORGANIZATION_ID, dataset.id!!, subDatasetGraphQuery)
     }

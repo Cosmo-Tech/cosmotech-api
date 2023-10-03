@@ -20,7 +20,6 @@ import com.cosmotech.dataset.domain.DatasetCompatibility
 import com.cosmotech.dataset.domain.DatasetConnector
 import com.cosmotech.dataset.domain.DatasetSearch
 import com.cosmotech.dataset.domain.DatasetSourceType
-import com.cosmotech.dataset.domain.DatasetTwinGraphQuery
 import com.cosmotech.dataset.domain.GraphProperties
 import com.cosmotech.dataset.domain.SubDatasetGraphQuery
 import com.cosmotech.dataset.repository.DatasetRepository
@@ -320,41 +319,45 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
         organizationSaved.id!!, datasetSaved.id!!, null) != Dataset.Status.COMPLETED.value) {
       Thread.sleep(500)
     }
+    assertEquals(12, countEntities(datasetSaved.twingraphId!!, "MATCH (n) RETURN count(n)"))
+    assertEquals(5, countEntities(datasetSaved.twingraphId!!, "MATCH ()-[r]-() RETURN count(r)"))
 
-    val datasetGraphQuery =
-        DatasetTwinGraphQuery(
-            query = "MATCH (n:Users) RETURN count(n) as count",
-        )
-    var str =
-        datasetApiService.twingraphQuery(
-            organizationSaved.id!!, datasetSaved.id!!, datasetGraphQuery)
-    logger.info("assert that 'Users' node number equals 9 from string: [{\"count\":9}]")
-    assertEquals("9", str.substring(10, 11))
+    //    logger.info("assert that subdataset without query has 12 initial nodes")
+    //    val subDatasetParams =
+    //            SubDatasetGraphQuery(
+    //                    name = "subDataset",
+    //                    description = "subDataset description",
+    //    )
+    //    val subDataset =
+    //            datasetApiService.createSubDataset(
+    //                    organizationSaved.id!!, datasetSaved.id!!, subDatasetParams)
+    //
+    //    assertEquals("subDataset", subDataset.name)
+    //    assertEquals("subDataset description", subDataset.description)
+    //    assertEquals(12, countEntities(subDataset.twingraphId!!, "MATCH (n) RETURN count(n)"))
+    //    assertEquals(5, countEntities(subDataset.twingraphId!!, "MATCH ()-[r]-() RETURN
+    // count(r)"))
 
     logger.info("assert that subdataset with given query get 2 'Double' nodes")
-    val subDatasetQuery =
+    val subDatasetParamsQuery =
         SubDatasetGraphQuery(
-            name = "subDataset",
-            description = "subDataset description",
-            queries =
-                mutableListOf(
-                    "MATCH (n:Double) return n", "MATCH (n:Double)-[r]-(m:Double) return r"))
-    val subDatasetWithQueries =
+            name = "subDatasetWithQuery",
+            description = "subDatasetWithQuery description",
+            queries = mutableListOf("MATCH (n)-[r:DoubleEdge]-(m) return n,r"))
+    val subDatasetWithQuery =
         datasetApiService.createSubDataset(
-            organizationSaved.id!!, datasetSaved.id!!, subDatasetQuery)
+            organizationSaved.id!!, datasetSaved.id!!, subDatasetParamsQuery)
 
-    val datasetAllCountQuery =
-        DatasetTwinGraphQuery(
-            query = "MATCH (n) RETURN count(n) as count",
-        )
-    str =
-        datasetApiService.twingraphQuery(
-            organizationSaved.id!!, subDatasetWithQueries.id!!, datasetAllCountQuery)
+    assertEquals("subDatasetWithQuery", subDatasetWithQuery.name)
+    assertEquals("subDatasetWithQuery description", subDatasetWithQuery.description)
+    assertEquals(3, countEntities(subDatasetWithQuery.twingraphId!!, "MATCH (n) RETURN count(n)"))
+    assertEquals(
+        2, countEntities(subDatasetWithQuery.twingraphId!!, "MATCH ()-[r]-() RETURN count(r)"))
+  }
 
-    assertEquals("subDataset", subDatasetWithQueries.name)
-    assertEquals("subDataset description", subDatasetWithQueries.description)
-    logger.info("assert that 'Double' node number equals 2 from string: [{\"count\":2}]")
-    assertEquals("2", str.substring(10, 11))
+  fun countEntities(twingraphId: String, query: String): Int {
+    val resultSet = redisGraph.query(twingraphId, query)
+    return resultSet.next().values()[0].toString().toInt()
   }
 
   @Test
