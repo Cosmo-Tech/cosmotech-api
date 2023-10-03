@@ -12,6 +12,7 @@ import com.redislabs.redisgraph.ResultSet
 import com.redislabs.redisgraph.graph_entities.Edge
 import com.redislabs.redisgraph.graph_entities.GraphEntity
 import com.redislabs.redisgraph.graph_entities.Node
+import java.lang.IndexOutOfBoundsException
 import org.json.JSONObject
 
 private const val ID_PROPERTY_NAME = "id"
@@ -45,8 +46,11 @@ fun GraphEntity.toCsmGraphEntity(type: CsmGraphEntityType): CsmGraphEntity {
           .associateWith { getJsonCompliantPropertyByName(it) }
 
   val label =
-      if (type == CsmGraphEntityType.RELATION) (this as Edge).relationshipType
-      else (this as Node).getLabel(0)
+      when (type) {
+        CsmGraphEntityType.RELATION -> (this as Edge).relationshipType
+        CsmGraphEntityType.NODE -> (this as Node).takeIf { it.numberOfLabels > 0 }?.getLabel(0)
+                ?: throw IndexOutOfBoundsException("Node has no label: $entityId")
+      }
 
   return CsmGraphEntity(label, entityId, properties, type.toString())
 }
@@ -101,4 +105,11 @@ fun ResultSet.toJsonString(): String {
     result.add(entries)
   }
   return result.map { element -> JSONObject(element) }.joinToString(",", "[", "]")
+}
+
+fun String.isReadOnlyQuery(): Boolean {
+  val queryNormalized = this.trim().lowercase()
+  val matchResults =
+      "\\b(create|set|merge|delete|remove)\\b".toRegex().findAll(queryNormalized).toList()
+  return matchResults.isEmpty()
 }

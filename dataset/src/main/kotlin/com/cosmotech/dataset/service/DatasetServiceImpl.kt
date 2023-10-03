@@ -45,11 +45,17 @@ import com.cosmotech.dataset.domain.GraphProperties
 import com.cosmotech.dataset.domain.SubDatasetGraphQuery
 import com.cosmotech.dataset.domain.TwinGraphBatchResult
 import com.cosmotech.dataset.repository.DatasetRepository
-import com.cosmotech.dataset.utils.TwingraphUtils
+import com.cosmotech.dataset.utils.CsmGraphEntityType
+import com.cosmotech.dataset.utils.isReadOnlyQuery
+import com.cosmotech.dataset.utils.toCsmGraphEntity
 import com.cosmotech.dataset.utils.toJsonString
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.service.getRbac
+import com.redislabs.redisgraph.Record
 import com.redislabs.redisgraph.RedisGraph
+import com.redislabs.redisgraph.ResultSet
+import com.redislabs.redisgraph.graph_entities.Edge
+import com.redislabs.redisgraph.graph_entities.Node
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
 import kotlinx.coroutines.GlobalScope
@@ -169,12 +175,20 @@ class DatasetServiceImpl(
     val subTwinraphId = idGenerator.generate("twingraph")
     trx(dataset) {
       csmJedisPool.resource.use { jedis ->
-        val graphDump =
-            jedis.dump(it.twingraphId!!)
-                ?: throw CsmResourceNotFoundException(
-                    "Twingraph ${it.twingraphId!!} " + "not found for dataset $datasetId")
-        jedis.restore(subTwinraphId.toByteArray(), 0L, graphDump)
-        subDatasetGraphQuery.query?.let { csmRedisGraph.query(datasetId, it) }
+        if (subDatasetGraphQuery.queries.isNullOrEmpty()) {
+          val graphDump =
+              jedis.dump(dataset.twingraphId!!)
+                  ?: throw CsmResourceNotFoundException(
+                      "Twingraph ${dataset.twingraphId!!} " + "not found for dataset $datasetId")
+          jedis.restore(subTwinraphId.toByteArray(), 0L, graphDump)
+        } else {
+          val queryBuffer = QueryBuffer(csmJedisPool.resource, subTwinraphId)
+          subDatasetGraphQuery.queries?.forEach { query ->
+            val resultSet = query(dataset, query)
+            query.takeIf { it.isReadOnlyQuery() }?.apply { bulkQueryResult(queryBuffer, resultSet) }
+          }
+          queryBuffer.send()
+        }
       }
     }
     val subDataset =
@@ -185,15 +199,38 @@ class DatasetServiceImpl(
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
             organizationId = organizationId,
             twingraphId = subTwinraphId,
+            queries = subDatasetGraphQuery.queries,
             main = subDatasetGraphQuery.main ?: false,
             parentId = dataset.id,
+            status = Dataset.Status.COMPLETED,
             connector =
-                dataset.connector?.apply {
-                  parametersValues?.set("TWIN_CACHE_NAME", subTwinraphId)
-                },
+                dataset.connector?.apply { parametersValues?.set(TWINCACHE_NAME, subTwinraphId) },
             sourceType = dataset.sourceType,
             tags = dataset.tags)
     return datasetRepository.save(subDataset)
+  }
+
+  fun bulkQueryResult(queryBuffer: QueryBuffer, resultSet: ResultSet) {
+
+    resultSet.forEach { record: Record? ->
+      record?.values()?.forEach { element ->
+        when (element) {
+          is Node -> {
+            val csmGraphEntity = element.toCsmGraphEntity(CsmGraphEntityType.NODE)
+            queryBuffer.addNode(csmGraphEntity.label, csmGraphEntity.id, csmGraphEntity.properties)
+          }
+          is Edge -> {
+            val csmGraphEntity = element.toCsmGraphEntity(CsmGraphEntityType.RELATION)
+            queryBuffer.addEdge(
+                csmGraphEntity.label,
+                element.source,
+                element.destination,
+                csmGraphEntity.properties)
+          }
+          else -> throw CsmClientException("Query doesn't match Node, either Edge")
+        }
+      }
+    }
   }
 
   override fun uploadTwingraph(organizationId: String, datasetId: String, body: Resource) {
@@ -205,11 +242,12 @@ class DatasetServiceImpl(
     val dataset = getPrerequisiteDataset(organizationId, datasetId)
     dataset.sourceType.takeIf { it == DatasetSourceType.File }
         ?: throw CsmResourceNotFoundException("SourceType Dataset must be 'File'")
-    val uploadStatus = getDatasetTwingraphStatus(organizationId, datasetId, dataset.twingraphId!!)
+    val uploadStatus = getDatasetTwingraphStatus(organizationId, datasetId, null)
     uploadStatus.takeUnless { it == Dataset.Status.PENDING.value }
         ?: throw CsmResourceNotFoundException("Uploading not yet completed. Wait. Cannot update")
 
     datasetRepository.save(dataset.apply { status = Dataset.Status.PENDING })
+
     GlobalScope.launch(SecurityCoroutineContext()) {
       val queryBuffer = QueryBuffer(csmJedisPool.resource, dataset.twingraphId!!)
       unzip(body.inputStream, listOf(NODES_ZIP_FOLDER, EDGES_ZIP_FOLDER), "csv")
@@ -217,26 +255,37 @@ class DatasetServiceImpl(
           .forEach { node ->
             readCSV(node.content.inputStream()) {
               if (node.prefix == NODES_ZIP_FOLDER) {
-                queryBuffer.addNode(node.filename, it)
+                val id: String =
+                    it["id"] ?: throw CsmResourceNotFoundException("Node property 'id' not found")
+                queryBuffer.addNode(node.filename, id, it.minus("id"))
               } else {
-                queryBuffer.addEdge(node.filename, it)
+                val sourceKey = it.keys.elementAt(0)
+                val targetKey = it.keys.elementAt(1)
+                val source = it[sourceKey].toString().trim()
+                val target = it[targetKey].toString().trim()
+                val properties = it.minus(sourceKey).minus(targetKey)
+                queryBuffer.addEdge(node.filename, source, target, properties)
               }
             }
           }
       queryBuffer.send()
+      datasetRepository.save(dataset.apply { status = Dataset.Status.COMPLETED })
     }
   }
 
   override fun getDatasetTwingraphStatus(
       organizationId: String,
       datasetId: String,
-      jobId: String
+      jobId: String?
   ): String {
     val dataset = findDatasetById(organizationId, datasetId)
     return when (dataset.sourceType) {
       null,
       DatasetSourceType.None -> Dataset.Status.DRAFT.value
       DatasetSourceType.File -> {
+        if (dataset.status == Dataset.Status.DRAFT) {
+          return Dataset.Status.DRAFT.value
+        }
         csmJedisPool.resource.use { jedis ->
           if (!jedis.exists(dataset.twingraphId!!)) {
             Dataset.Status.PENDING.value
@@ -251,7 +300,7 @@ class DatasetServiceImpl(
       DatasetSourceType.ADT,
       DatasetSourceType.Storage -> {
         val twingraphImportJobInfoRequest =
-            TwingraphImportJobInfoRequest(this, jobId, organizationId)
+            TwingraphImportJobInfoRequest(this, jobId!!, organizationId)
         this.eventPublisher.publishEvent(twingraphImportJobInfoRequest)
         dataset
             .takeIf { it.status == Dataset.Status.PENDING }
@@ -371,21 +420,26 @@ class DatasetServiceImpl(
   ): String {
     val dataset =
         getPrerequisiteDataset(organizationId, datasetId, status = Dataset.Status.COMPLETED)
-    val resultSet =
-        trx(dataset) {
-          csmRedisGraph.query(
-              it.twingraphId!!,
-              datasetTwinGraphQuery.query,
-              csmPlatformProperties.twincache.queryTimeout)
-        }
-    return resultSet.toJsonString()
+    return trx(dataset) { query(dataset, datasetTwinGraphQuery.query).toJsonString() }
+  }
+
+  fun query(dataset: Dataset, query: String): ResultSet {
+    return if (query.isReadOnlyQuery()) {
+      csmRedisGraph.readOnlyQuery(
+          dataset.twingraphId!!, query, csmPlatformProperties.twincache.queryTimeout)
+    } else {
+      csmRedisGraph.query(
+          dataset.twingraphId!!, query, csmPlatformProperties.twincache.queryTimeout)
+    }
   }
 
   fun <T> trx(dataset: Dataset, actionLambda: (Dataset) -> T): T {
     datasetRepository.save(dataset.apply { status = Dataset.Status.PENDING })
-    val result = actionLambda(dataset)
-    datasetRepository.save(dataset.apply { status = Dataset.Status.COMPLETED })
-    return result
+    try {
+      return actionLambda(dataset)
+    } finally {
+      datasetRepository.save(dataset.apply { status = Dataset.Status.COMPLETED })
+    }
   }
 
   override fun twingraphBatchUpdate(
@@ -483,7 +537,7 @@ class DatasetServiceImpl(
           ?: throw CsmClientException("Dataset status is ${dataset.status?.value}, not $status")
     }
     query?.let {
-      it.takeUnless { !TwingraphUtils.isReadOnlyQuery(it) }
+      it.takeUnless { !it.isReadOnlyQuery() }
           ?: throw CsmClientException("Read Only queries authorized only")
     }
     return dataset
@@ -546,14 +600,15 @@ class DatasetServiceImpl(
           ids.forEach {
             result +=
                 csmRedisGraph
-                    .query(dataset.twingraphId, "MATCH (a) WHERE a.id='$it' RETURN a")
+                    .readOnlyQuery(dataset.twingraphId, "MATCH (a) WHERE a.id='$it' RETURN a")
                     .toJsonString()
           }
       TYPE_RELATIONSHIP ->
           ids.forEach {
             result +=
                 csmRedisGraph
-                    .query(dataset.twingraphId, "MATCH ()-[r]->() WHERE r.id='$it' RETURN r")
+                    .readOnlyQuery(
+                        dataset.twingraphId, "MATCH ()-[r]->() WHERE r.id='$it' RETURN r")
                     .toJsonString()
           }
       else -> throw CsmResourceNotFoundException("Bad Type : $type")
