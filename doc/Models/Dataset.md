@@ -14,6 +14,7 @@ Name | Type | Description | Notes
 **sourceType** | [**DatasetSourceType**](DatasetSourceType.md) |  | [optional] [default to null]
 **source** | [**SourceInfo**](SourceInfo.md) |  | [optional] [default to null]
 **status** | **String** | the Dataset status | [optional] [default to null]
+**queries** | **List** | the list of queries | [optional] [default to null]
 **tags** | **List** | the list of tags | [optional] [default to null]
 **connector** | [**Dataset_connector**](Dataset_connector.md) |  | [optional] [default to null]
 **fragmentsIds** | **List** | the list of other Datasets ids to compose as fragments | [optional] [default to null]

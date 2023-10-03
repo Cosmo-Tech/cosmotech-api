@@ -302,7 +302,7 @@ class DatasetServiceImplTests {
   }
 
   @Test
-  fun `getDatasetTwingraphStatus should return Pending status for File Dataset if twingraph not exists`() {
+  fun `getDatasetTwingraphStatus should return Draft status for File Dataset if twingraph not exists`() {
     val dataset =
         baseDataset()
             .copy(
@@ -312,7 +312,7 @@ class DatasetServiceImplTests {
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
     every { csmJedisPool.resource.exists(any<String>()) } returns false
     val result = datasetService.getDatasetTwingraphStatus(ORGANIZATION_ID, DATASET_ID, "JOB_ID")
-    assertEquals(Dataset.Status.PENDING.value, result)
+    assertEquals(Dataset.Status.DRAFT.value, result)
   }
 
   @Test
@@ -320,12 +320,12 @@ class DatasetServiceImplTests {
     val dataset =
         baseDataset()
             .copy(
-                status = Dataset.Status.DRAFT,
+                status = Dataset.Status.COMPLETED,
                 sourceType = DatasetSourceType.File,
                 twingraphId = "twingraphId")
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
     every { csmJedisPool.resource.exists(any<String>()) } returns true
-    val result = datasetService.getDatasetTwingraphStatus(ORGANIZATION_ID, DATASET_ID, "JOB_ID")
+    val result = datasetService.getDatasetTwingraphStatus(ORGANIZATION_ID, DATASET_ID, null)
     assertEquals(Dataset.Status.COMPLETED.value, result)
   }
 
@@ -440,12 +440,12 @@ class DatasetServiceImplTests {
     every { csmJedisPool.resource.hgetAll(any<String>()) } returns
         mapOf("graphName" to "graphName", "graphRotation" to "2")
 
-    every { csmRedisGraph.query(any(), any(), any<Long>()) } returns mockEmptyResultSet()
+    every { csmRedisGraph.readOnlyQuery(any(), any(), any<Long>()) } returns mockEmptyResultSet()
 
     val twinGraphQuery = DatasetTwinGraphQuery("MATCH(n) RETURN n")
     datasetService.twingraphQuery(ORGANIZATION_ID, DATASET_ID, twinGraphQuery)
 
-    verify(exactly = 1) { csmRedisGraph.query(any(), any(), any<Long>()) }
+    verify(exactly = 1) { csmRedisGraph.readOnlyQuery(any(), any(), any<Long>()) }
   }
 
   @Test

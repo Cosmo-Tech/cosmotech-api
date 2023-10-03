@@ -667,7 +667,6 @@ paths:
       - name: job_id
         in: path
         description: the job identifier
-        required: true
         schema:
           type: string
     get:
@@ -1124,6 +1123,11 @@ components:
             - PENDING
             - ERROR
             - COMPLETED
+        queries:
+          type: array
+          description: the list of queries
+          items:
+            type: string
         tags:
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           type: array
@@ -1319,9 +1323,11 @@ components:
         description:
           type: string
           description: the description of the subdataset
-        query:
-          type: string
+        queries:
+          type: array
           description: the query in cypher language
+          items:
+              type: string
         main:
           type: boolean
           description: is this the main dataset

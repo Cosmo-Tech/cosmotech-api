@@ -60,6 +60,7 @@ entity Dataset {
     sourceType: DatasetSourceType
     source: SourceInfo
     status: String
+    queries: List<String>
     tags: List<String>
     connector: DatasetConnector
     fragmentsIds: List<String>
@@ -489,7 +490,7 @@ entity SourceInfo {
 entity SubDatasetGraphQuery {
     name: String
     description: String
-    query: String
+    queries: List<String>
     main: Boolean
 }
 

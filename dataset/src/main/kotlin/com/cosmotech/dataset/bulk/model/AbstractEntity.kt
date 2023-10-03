@@ -7,7 +7,7 @@ import com.cosmotech.dataset.bulk.toPropertyType
 
 abstract class AbstractEntity {
 
-  abstract val properties: Map<String, String>
+  abstract val properties: Map<String, Any?>
 
   fun getPropertiesBinary(): List<ByteArray> {
     return properties.values.map { getPropertyBinaryBlobFormat(it.toPropertyType(), it) }

@@ -22,18 +22,18 @@ class QueryBuffer(val jedis: Jedis, val graphName: String) {
       BulkQuery.Builder().graphName(graphName).first()
   private var currentType: String? = null
 
-  fun addNode(type: String, row: Map<String, String>) {
+  fun addNode(type: String, id: String, properties: Map<String, Any?>) {
     var addedSize = 0
     var typeNodes: TypeEntity? = null
 
     // create a new TypeNodes (for binary header)
     if (currentType != type) {
       currentType = type
-      typeNodes = TypeEntity(type, row.keys.toList())
+      typeNodes = TypeEntity(type, properties.keys.toList())
       addedSize += typeNodes.size
     }
     // create the node
-    val node = Node(row)
+    val node = Node(id, properties)
     addedSize += node.size()
     nodesCreationId += node.id to nodesCreationId.size.toLong()
 
@@ -41,7 +41,7 @@ class QueryBuffer(val jedis: Jedis, val graphName: String) {
     if (currentBulkQueryBuilder.size() + addedSize > BULK_QUERY_MAX_SIZE) {
       tasks.add(currentBulkQueryBuilder.build())
       currentBulkQueryBuilder = BulkQuery.Builder().graphName(graphName)
-      typeNodes = TypeEntity(type, row.keys.toList())
+      typeNodes = TypeEntity(type, properties.keys.toList())
     }
 
     // add to bulk query builder
@@ -49,38 +49,41 @@ class QueryBuffer(val jedis: Jedis, val graphName: String) {
     currentBulkQueryBuilder.addNodeToTypeNode(type, node)
   }
 
-  fun addEdge(type: String, row: Map<String, String>) {
+  fun addEdge(type: String, sourceId: Long, targetId: Long, properties: Map<String, Any?>) {
+    // get SourceKey from nodesCreationId by value if it exists
+    val sourceKey =
+        nodesCreationId.filterValues { it == sourceId }.keys.firstOrNull()
+            ?: throw CsmResourceNotFoundException("Source Node $sourceId doesn't exist")
+    val targetKey =
+        nodesCreationId.filterValues { it == targetId }.keys.firstOrNull()
+            ?: throw CsmResourceNotFoundException("Target Node $targetId doesn't exist")
+    addEdge(type, sourceKey, targetKey, properties)
+  }
+
+  fun addEdge(type: String, source: String, target: String, properties: Map<String, Any?>) {
     var addedSize = 0
     var typeEdges: TypeEntity? = null
-
-    // extact source and target from row
-    val sourceKey = row.keys.elementAt(0)
-    val targetKey = row.keys.elementAt(1)
-    val sourceName = row[sourceKey].toString().trim()
-    val targetName = row[targetKey].toString().trim()
-
-    val newRows = row.minus(sourceKey).minus(targetKey)
 
     // create a new edge type (for binary header)
     if (type != currentType) {
       currentType = type
-      typeEdges = TypeEntity(type, newRows.keys.toList())
+      typeEdges = TypeEntity(type, properties.keys.toList())
       addedSize += typeEdges.size
     }
 
     // create edge
-    if (sourceName !in nodesCreationId.keys)
-        throw CsmResourceNotFoundException("Source Node $sourceName doesn't exist")
-    if (targetName !in nodesCreationId.keys)
-        throw CsmResourceNotFoundException("Target Node $targetName doesn't exist")
-    val edge = Edge(nodesCreationId[sourceName]!!, nodesCreationId[targetName]!!, newRows)
+    if (source !in nodesCreationId.keys)
+        throw CsmResourceNotFoundException("Source Node $source doesn't exist")
+    if (target !in nodesCreationId.keys)
+        throw CsmResourceNotFoundException("Target Node $target doesn't exist")
+    val edge = Edge(nodesCreationId[source]!!, nodesCreationId[target]!!, properties)
     addedSize += edge.size()
 
     // check query max size
     if (currentBulkQueryBuilder.size() + addedSize > BULK_QUERY_MAX_SIZE) {
       tasks.add(currentBulkQueryBuilder.build())
       currentBulkQueryBuilder = BulkQuery.Builder().graphName(graphName)
-      typeEdges = TypeEntity(type, newRows.keys.toList())
+      typeEdges = TypeEntity(type, properties.keys.toList())
     }
 
     // add to bulk query builder
