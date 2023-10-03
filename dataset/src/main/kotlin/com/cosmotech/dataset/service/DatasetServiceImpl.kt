@@ -176,11 +176,12 @@ class DatasetServiceImpl(
     trx(dataset) {
       csmJedisPool.resource.use { jedis ->
         if (subDatasetGraphQuery.queries.isNullOrEmpty()) {
-          val graphDump =
-              jedis.dump(dataset.twingraphId!!)
-                  ?: throw CsmResourceNotFoundException(
-                      "Twingraph ${dataset.twingraphId!!} " + "not found for dataset $datasetId")
-          jedis.restore(subTwinraphId.toByteArray(), 0L, graphDump)
+          jedis.eval(
+              "local o = redis.call('DUMP', KEYS[1]);redis.call('RENAME', KEYS[1], KEYS[2]);" +
+                  "redis.call('RESTORE', KEYS[1], 0, o)",
+              2,
+              dataset.twingraphId,
+              subTwinraphId)
         } else {
           val queryBuffer = QueryBuffer(csmJedisPool.resource, subTwinraphId)
           subDatasetGraphQuery.queries?.forEach { query ->
