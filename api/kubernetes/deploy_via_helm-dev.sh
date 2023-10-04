@@ -652,6 +652,9 @@ curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deploymen
 
 echo "Apply namespace to realm-config.json file"
 NAMESPACE_VAR=${NAMESPACE} \
+APP_ID_URI_VAR="https://localhost" \
+CONTEXT_PATH_VAR="/cosmotech-api" \
+COSMOTECH_CLIENT_SECRET_VAR=$(date +%s | sha256sum | base64 | head -c 32) \
 envsubst < "${WORKING_DIR}"/realm-config.json > "${WORKING_DIR}"/namespaced-realm-config.json
 
 echo "Retrieve Keycloak Admin password"
@@ -665,19 +668,22 @@ export KEYCLOAK_TOKEN=$(curl --insecure -X POST 'https://localhost/auth/realms/m
  -d "grant_type=password" \
  -d "client_id=admin-cli" | jq -r '.access_token')
 
-echo "Create realm ${NAMESPACE}"
-curl --insecure --location --request POST 'https://localhost/auth/admin/realms' \
--H "Authorization: Bearer ${KEYCLOAK_TOKEN}" \
--H 'Content-Type: application/json' \
---data-binary "@${WORKING_DIR}/namespaced-realm-config.json"
+
+GET_REALM_STATUS_CODE=$(curl --insecure --location --request GET "https://localhost/auth/realms/${NAMESPACE}" \
+     --header "Authorization: Bearer $KEYCLOAK_TOKEN" \
+     --head --write-out '%{http_code}' \
+     --silent --output /dev/null)
 
 
-#echo "Check if ${NAMESPACE} realm exist in cosmotech-iam solution"
-#echo "${NAMESPACE} realm exists, try to upgrade it"
-#echo "${NAMESPACE} realm doesn't exist, try to create it"
-
-
-
+if [ "$GET_REALM_STATUS_CODE" = "200" ]; then
+    echo "${NAMESPACE} realm already exist in ${KEYCLOAK_SVC_NAME} solution"
+else
+  echo "Create realm ${NAMESPACE}"
+  curl --insecure --location --request POST 'https://localhost/auth/admin/realms' \
+  -H "Authorization: Bearer ${KEYCLOAK_TOKEN}" \
+  -H 'Content-Type: application/json' \
+  --data-binary "@${WORKING_DIR}/namespaced-realm-config.json"
+fi
 # cosmotech-api
 
 cat <<EOF > values-cosmotech-api-deploy.yaml
