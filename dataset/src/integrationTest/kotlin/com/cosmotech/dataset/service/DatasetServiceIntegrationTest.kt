@@ -54,6 +54,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
+import org.testcontainers.shaded.org.bouncycastle.asn1.x500.style.RFC4519Style.name
 import redis.clients.jedis.JedisPool
 
 const val REDIS_PORT = 6379
@@ -322,28 +323,27 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(12, countEntities(datasetSaved.twingraphId!!, "MATCH (n) RETURN count(n)"))
     assertEquals(5, countEntities(datasetSaved.twingraphId!!, "MATCH ()-[r]-() RETURN count(r)"))
 
-    //    logger.info("assert that subdataset without query has 12 initial nodes")
-    //    val subDatasetParams =
-    //            SubDatasetGraphQuery(
-    //                    name = "subDataset",
-    //                    description = "subDataset description",
-    //    )
-    //    val subDataset =
-    //            datasetApiService.createSubDataset(
-    //                    organizationSaved.id!!, datasetSaved.id!!, subDatasetParams)
-    //
-    //    assertEquals("subDataset", subDataset.name)
-    //    assertEquals("subDataset description", subDataset.description)
-    //    assertEquals(12, countEntities(subDataset.twingraphId!!, "MATCH (n) RETURN count(n)"))
-    //    assertEquals(5, countEntities(subDataset.twingraphId!!, "MATCH ()-[r]-() RETURN
-    // count(r)"))
+    logger.info("assert that subdataset without query has 12 initial nodes")
+    val subDatasetParams =
+            SubDatasetGraphQuery(
+                    name = "subDataset",
+                    description = "subDataset description",
+    )
+    val subDataset =
+            datasetApiService.createSubDataset(
+                    organizationSaved.id!!, datasetSaved.id!!, subDatasetParams)
+
+    assertEquals("subDataset", subDataset.name)
+    assertEquals("subDataset description", subDataset.description)
+    assertEquals(12, countEntities(subDataset.twingraphId!!, "MATCH (n) RETURN count(n)"))
+    assertEquals(5, countEntities(subDataset.twingraphId!!, "MATCH ()-[r]-() RETURN count(r)"))
 
     logger.info("assert that subdataset with given query get 2 'Double' nodes")
     val subDatasetParamsQuery =
         SubDatasetGraphQuery(
             name = "subDatasetWithQuery",
             description = "subDatasetWithQuery description",
-            queries = mutableListOf("MATCH (n)-[r:DoubleEdge]-(m) return n,r"))
+            queries = mutableListOf("MATCH (n)-[r:Double]-(m) return n,r"))
     val subDatasetWithQuery =
         datasetApiService.createSubDataset(
             organizationSaved.id!!, datasetSaved.id!!, subDatasetParamsQuery)
