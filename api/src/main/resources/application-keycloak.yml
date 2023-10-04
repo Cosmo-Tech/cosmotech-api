@@ -24,9 +24,10 @@ csm:
   platform:
     authorization:
       mailJwtClaim: "email"
-      rolesJwtClaim: "customRoles"
+      rolesJwtClaim: "userRoles"
       principalJwtClaim: "sub"
       tenantIdJwtClaim: "iss"
-      allowed-tenants: ["cosmotech"]
+      allowed-tenants:
+        - "cosmotech"
 
 

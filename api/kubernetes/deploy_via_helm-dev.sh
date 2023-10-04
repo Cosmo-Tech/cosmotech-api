@@ -30,6 +30,7 @@ help() {
   echo "- PROM_REPLICAS_NUMBER | number of prometheus replicas (default is 1)"
   echo "- PROM_ADMIN_PASSWORD | admin password for grafana (generated if not specified)"
   echo "- REDIS_ADMIN_PASSWORD | admin password for redis (generated if not specified)"
+  echo "- KEYCLOAK_ADMIN_USERNAME | admin username for keycloak (default: admin)"
   echo "- KEYCLOAK_ADMIN_PASSWORD | admin password for keycloak (generated if not specified)"
   echo "- KEYCLOAK_DB_PASSWORD | admin password for keycloak db (generated if not specified)"
   echo "- KEYCLOAK_DB_USER_PASSWORD | admin password for keycloak db user (generated if not specified)"
@@ -70,6 +71,7 @@ export VERSION_REDIS_INSIGHT="0.1.0"
 export INGRESS_NGINX_VERSION="4.2.5"
 export PROMETHEUS_STACK_VERSION="45.0.0"
 export KEYCLOAK_VERSION="13.4.1"
+export REDIS_PORT=6379
 
 export ARGO_DATABASE=argo_workflows
 export ARGO_POSTGRESQL_USER=argo
@@ -78,28 +80,33 @@ export ARGO_SERVICE_ACCOUNT=argo-${NAMESPACE}-service-account
 
 export NAMESPACE_NGINX="ingress-nginx"
 export MONITORING_NAMESPACE="cosmotech-monitoring"
+export KEYCLOAK_NAMESPACE="cosmotech-iam"
+export KEYCLOAK_ADM_USERNAME=${KEYCLOAK_ADMIN_USERNAME:-admin}
+export KEYCLOAK_SVC_NAME="csm-keycloak"
 
 HELM_CHARTS_BASE_PATH=$(realpath "$(dirname "$0")")
 
 WORKING_DIR=$(mktemp -d -t cosmotech-api-helm-XXXXXXXXXX)
 echo "[info] Working directory: ${WORKING_DIR}"
 pushd "${WORKING_DIR}"
-export KEYCLOAK_NAMESPACE="keycloak"
+
+### Add helm repositories
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo add argo https://argoproj.github.io/argo-helm
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo update
 
 # Create namespace if it does not exist
 kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
 
 # common exports
 export COSMOTECH_API_RELEASE_NAME="cosmotech-api-${NAMESPACE}-${API_VERSION}"
-export REDIS_PORT=6379
 REDIS_PASSWORD=${REDIS_ADMIN_PASSWORD:-$(kubectl get secret --namespace ${NAMESPACE} cosmotechredis -o jsonpath="{.data.redis-password}" | base64 -d || "")}
 if [[ -z "${REDIS_PASSWORD}" ]] ; then
   REDIS_PASSWORD=$(date +%s | sha256sum | base64 | head -c 32)
-fi
-
-PROM_PASSWORD=${PROM_ADMIN_PASSWORD:-$(kubectl get secret --namespace ${MONITORING_NAMESPACE} prometheus-operator-grafana -o jsonpath="{.data.admin-password}" | base64 -d || "")}
-if [[ -z "${PROM_PASSWORD}" ]] ; then
-  PROM_PASSWORD=$(date +%s | sha256sum | base64 | head -c 32)
 fi
 
 IS_MONITORING_ACTIVE=$(kubectl get ns ${MONITORING_NAMESPACE} -o json | jq .status.phase -r)
@@ -110,8 +117,6 @@ else
   # https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
   # https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack
   kubectl create namespace "${MONITORING_NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
-  helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-  helm repo update
 
   curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/main/deployment_scripts/v3.0/kube-prometheus-stack-template.yaml" \
        -o "${WORKING_DIR}"/kube-prometheus-stack-template.yaml
@@ -122,7 +127,7 @@ else
   PROM_CPU_MEM_LIMITS_VAR=${PROM_CPU_MEM_LIMITS:-"2Gi"} \
   PROM_CPU_MEM_REQUESTS_VAR=${PROM_CPU_MEM_REQUESTS:-"2Gi"} \
   PROM_REPLICAS_NUMBER_VAR=${PROM_REPLICAS_NUMBER:-"1"} \
-  PROM_ADMIN_PASSWORD_VAR=${PROM_PASSWORD} \
+  PROM_ADMIN_PASSWORD_VAR=$(date +%s | sha256sum | base64 | head -c 32) \
   REDIS_ADMIN_PASSWORD_VAR=${REDIS_PASSWORD} \
   REDIS_HOST_VAR=cosmotechredis-master.${NAMESPACE}.svc.cluster.local \
   REDIS_PORT_VAR=${REDIS_PORT} \
@@ -134,38 +139,38 @@ else
                --values "${WORKING_DIR}/kube-prometheus-stack.yaml"
 fi
 
-KEYCLOAK_DB_USER_PASS=${KEYCLOAK_DB_USER_PASSWORD:-$(kubectl get secret --namespace ${KEYCLOAK_NAMESPACE} csm-keycloak-postgresql -o jsonpath="{.data.password}" | base64 -d || "")}
-if [[ -z "${KEYCLOAK_DB_USER_PASS}" ]] ; then
+## KEYCLOAK
+IS_IAM_ACTIVE=$(kubectl get ns ${KEYCLOAK_NAMESPACE} -o json | jq .status.phase -r)
+if [ "$IS_IAM_ACTIVE" = "Active" ]; then
+  echo "${KEYCLOAK_NAMESPACE} is already in the cluster"
+else
+  echo "${KEYCLOAK_NAMESPACE} does not exist in the cluster, install cosmotech-iam solution"
+  # Create namespace if it does not exist
+  kubectl create namespace "${KEYCLOAK_NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
+
   KEYCLOAK_DB_USER_PASS=$(date +%s | sha256sum | base64 | head -c 32)
+  KEYCLOAK_DB_PASS=$(date +%s | sha256sum | base64 | head -c 32)
+  KEYCLOAK_ADMIN_PASSWORD=$(date +%s | sha256sum | base64 | head -c 32)
+
+  curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/JREY/multitenant-keycloak/deployment_scripts/v3.0/values-keycloak-config-map-template.yaml" \
+       -o "${WORKING_DIR}"/values-keycloak-config-map-template.yaml
+
+  KEYCLOAK_ADM_PASSWORD_VAR=${KEYCLOAK_ADMIN_PASSWORD} \
+  KEYCLOAK_ADM_USERNAME_VAR=${KEYCLOAK_ADM_USERNAME} \
+  KEYCLOAK_DB_PASS_VAR=${KEYCLOAK_DB_PASS} \
+  KEYCLOAK_DB_USER_PASS_VAR=${KEYCLOAK_DB_USER_PASS} \
+  envsubst < "${WORKING_DIR}"/values-keycloak-config-map-template.yaml > "${WORKING_DIR}"/values-keycloak-config-map.yaml
+
+  #      --values values-keycloak-config-map.yaml \
+  helm upgrade --install ${KEYCLOAK_SVC_NAME} bitnami/keycloak -n ${KEYCLOAK_NAMESPACE} --version ${KEYCLOAK_VERSION} \
+        --values values-keycloak-config-map.yaml \
+        --wait \
+        --timeout 10m0s
+
 fi
-
-curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/JREY/keycloak/deployment_scripts/v3.0/values-keycloak-config-map-template.yaml" \
-     -o "${WORKING_DIR}"/values-keycloak-config-map-template.yaml
-
-curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/JREY/keycloak/deployment_scripts/v3.0/csm-keycloak-config-map.yaml" \
-     -o "${WORKING_DIR}"/csm-keycloak-config-map.yaml
-
-# Create config map for Keycloak base configuration
-kubectl create configmap csm-keycloak-map -n ${KEYCLOAK_NAMESPACE} --from-file=csm-keycloak-config-map.yaml -o yaml --dry-run=client | kubectl -n ${KEYCLOAK_NAMESPACE} apply -f -
-
-KEYCLOAK_ADM_PASSWORD_VAR=${KEYCLOAK_ADM_PASSWORD} \
-KEYCLOAK_DB_PASS_VAR=${KEYCLOAK_DB_PASS} \
-KEYCLOAK_DB_USER_PASS_VAR=${KEYCLOAK_DB_USER_PASS} \
-envsubst < "${WORKING_DIR}"/values-keycloak-config-map-template.yaml > "${WORKING_DIR}"/values-keycloak-config-map.yaml
-
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo update
-
-helm upgrade --install csm-keycloak bitnami/keycloak -n ${KEYCLOAK_NAMESPACE} --version ${KEYCLOAK_VERSION} \
-      --values values-keycloak-config-map.yaml \
-      --wait \
-      --timeout 10m0s
-
 
 # nginx
 kubectl create namespace "${NAMESPACE_NGINX}" --dry-run=client -o yaml | kubectl apply -f -
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-helm repo update
 
 cat <<EOF > /tmp/values-ingress-nginx.yaml
 # https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/hack/manifest-templates/provider/kind/values.yaml
@@ -235,15 +240,14 @@ EOF
 helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
   --namespace ${NAMESPACE_NGINX} \
   --version ${INGRESS_NGINX_VERSION} \
-  --values /tmp/values-ingress-nginx.yaml
+  --values /tmp/values-ingress-nginx.yaml \
+  --wait \
+  --timeout 10m0s
 
 # Redis Cluster
 
 export REDIS_PV_NAME="redis-persistence-volume-${NAMESPACE}"
 export REDIS_PVC_NAME="redis-persistence-volume-claim-${NAMESPACE}"
-
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo update
 
 cat <<EOF > redis-pv.yaml
 apiVersion: v1
@@ -575,11 +579,9 @@ mainContainer:
 
 EOF
 
-helm repo add argo https://argoproj.github.io/argo-helm
 helm upgrade --install -n ${NAMESPACE} ${ARGO_RELEASE_NAME} argo/argo-workflows --version ${ARGO_CHART_VERSION_ENV} --values values-argo.yaml
 
 LOKI_RELEASE_NAME="loki"
-helm repo add grafana https://grafana.github.io/helm-charts
 
 cat <<EOF > loki-values.yaml
 loki:
@@ -642,6 +644,40 @@ EOF
 
 popd
 
+# Keycloak configuration
+
+echo "Get realm-config.json file"
+curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/JREY/multitenant-keycloak/deployment_scripts/v3.0/realm-config.json" \
+     -o "${WORKING_DIR}"/realm-config.json
+
+echo "Apply namespace to realm-config.json file"
+NAMESPACE_VAR=${NAMESPACE} \
+envsubst < "${WORKING_DIR}"/realm-config.json > "${WORKING_DIR}"/namespaced-realm-config.json
+
+echo "Retrieve Keycloak Admin password"
+KEYCLOAK_ADM_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD:-$(kubectl get secret --namespace ${KEYCLOAK_NAMESPACE} ${KEYCLOAK_SVC_NAME} -o jsonpath="{.data.admin-password}" | base64 -d || "")}
+
+echo "Retrieve Keycloak access token"
+export KEYCLOAK_TOKEN=$(curl --insecure -X POST 'https://localhost/auth/realms/master/protocol/openid-connect/token' \
+ -H "Content-Type: application/x-www-form-urlencoded" \
+ -d "username=${KEYCLOAK_ADM_USERNAME}" \
+ -d "password=${KEYCLOAK_ADM_PASSWORD}" \
+ -d "grant_type=password" \
+ -d "client_id=admin-cli" | jq -r '.access_token')
+
+echo "Create realm ${NAMESPACE}"
+curl --insecure --location --request POST 'https://localhost/auth/admin/realms' \
+-H "Authorization: Bearer ${KEYCLOAK_TOKEN}" \
+-H 'Content-Type: application/json' \
+--data-binary "@${WORKING_DIR}/namespaced-realm-config.json"
+
+
+#echo "Check if ${NAMESPACE} realm exist in cosmotech-iam solution"
+#echo "${NAMESPACE} realm exists, try to upgrade it"
+#echo "${NAMESPACE} realm doesn't exist, try to create it"
+
+
+
 # cosmotech-api
 
 cat <<EOF > values-cosmotech-api-deploy.yaml
@@ -655,6 +691,16 @@ image:
   repository: ghcr.io/cosmo-tech/cosmotech-api
   tag: "$API_IMAGE_TAG"
 
+spring:
+  security:
+    oauth2:
+      resource-server:
+        jwt:
+          issuer-uri: https://localhost/auth/realms/${NAMESPACE}
+          jwk-set-uri: http://localhost/auth/realms/${NAMESPACE}/protocol/openid-connect/certs
+          audiences:
+            - "account"
+
 config:
   logging:
     level:
@@ -667,6 +713,18 @@ config:
       include-stacktrace: always
   csm:
     platform:
+      authorization:
+        mailJwtClaim: "email"
+        rolesJwtClaim: "userRoles"
+        principalJwtClaim: "sub"
+        tenantIdJwtClaim: "iss"
+      identityProvider:
+        code: keycloak
+        authorizationUrl: https://localhost/auth/realms/${NAMESPACE}/protocol/openid-connect/auth
+        tokenUrl: https://localhost/auth/realms/${NAMESPACE}/protocol/openid-connect/token
+        defaultScopes:
+          email: Email Scope
+          openid: OpenId Scope
       authorization:
         allowed-tenants:
           - "${NAMESPACE}"

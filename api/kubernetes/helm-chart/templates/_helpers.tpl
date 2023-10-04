@@ -99,6 +99,38 @@ E.g:
 {{- end }}
 {{- end }}
 
+{{/*
+Cosmotech-IAM Jwk set uri:
+This define the jwk set uri pointing to cosmotech-iam service exposing keys
+E.g:
+- http://csm-keycloak.cosmotech-iam.svc.cluster.local/auth/realms/<my-tenant-name>/protocol/openid-connect/certs
+*/}}
+{{- define "cosmotech-iam.jwtSetUri" -}}
+{{- printf "http://csm-keycloak.cosmotech-iam.svc.cluster.local/auth/realms/%s/protocol/openid-connect/certs" .Release.Namespace }}
+{{- end }}
+
+{{/*
+Cosmotech-IAM issuer uri:
+This define the issuer uri (used as claim "iss" in Bearer token
+E.g:
+- "https://localhost/auth/realms/cosmotech"
+*/}}
+{{- define "cosmotech-iam.issuerId" -}}
+{{- if .Values.ingress.enabled -}}
+{{- if eq (len .Values.ingress.hosts) 0 -}}
+{{- printf "https://localhost/auth/realms/%s" .Release.Namespace }}
+{{- else }}
+{{- $namespace := .Release.Namespace -}}
+{{- with (index .Values.ingress.hosts 0) }}
+{{- printf "https://%s/auth/realms/%s" (printf "%s" .host | trimSuffix "/" ) $namespace }}
+{{- end }}
+{{- end }}
+{{- else }}
+{{- printf "https://localhost/auth/realms/%s" .Release.Namespace }}
+{{- end }}
+{{- end }}
+
+
 {{- define "cosmotech-api.baseConfig" -}}
 spring:
   application:
@@ -106,6 +138,20 @@ spring:
   output:
     ansi:
       enabled: never
+{{- if .Values.config.csm.platform.identityProvider }}
+{{- if eq .Values.config.csm.platform.identityProvider.code "keycloak" }}
+  security:
+    oauth2:
+      resource-server:
+        jwt:
+          issuer-uri: {{ include "cosmotech-iam.issuerId" . }}
+          jwk-set-uri: {{ include "cosmotech-iam.jwtSetUri" . }}
+          audiences:
+            - "account"
+{{- end }}
+{{- end }}
+
+
 
 api:
   version: "{{ .Values.api.version }}"
