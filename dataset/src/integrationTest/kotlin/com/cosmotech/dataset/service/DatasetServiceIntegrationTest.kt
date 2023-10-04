@@ -317,7 +317,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
     while (datasetApiService.getDatasetTwingraphStatus(
-        organizationSaved.id!!, datasetSaved.id!!, null) != Dataset.Status.COMPLETED.value) {
+        organizationSaved.id!!, datasetSaved.id!!, null) != Dataset.Status.READY.value) {
       Thread.sleep(500)
     }
     assertEquals(12, countEntities(datasetSaved.twingraphId!!, "MATCH (n) RETURN count(n)"))
@@ -325,13 +325,13 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("assert that subdataset without query has 12 initial nodes")
     val subDatasetParams =
-            SubDatasetGraphQuery(
-                    name = "subDataset",
-                    description = "subDataset description",
-    )
+        SubDatasetGraphQuery(
+            name = "subDataset",
+            description = "subDataset description",
+        )
     val subDataset =
-            datasetApiService.createSubDataset(
-                    organizationSaved.id!!, datasetSaved.id!!, subDatasetParams)
+        datasetApiService.createSubDataset(
+            organizationSaved.id!!, datasetSaved.id!!, subDatasetParams)
 
     assertEquals("subDataset", subDataset.name)
     assertEquals("subDataset description", subDataset.description)
@@ -457,7 +457,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   private fun materializeTwingraph(dataset: Dataset): Dataset {
     dataset.apply {
       redisGraph.query(this.twingraphId, "CREATE (n)")
-      this.status = Dataset.Status.COMPLETED
+      this.status = Dataset.Status.READY
     }
     return datasetRepository.save(dataset)
   }

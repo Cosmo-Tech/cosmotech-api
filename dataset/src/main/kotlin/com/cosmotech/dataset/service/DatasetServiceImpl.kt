@@ -169,8 +169,7 @@ class DatasetServiceImpl(
       datasetId: String,
       subDatasetGraphQuery: SubDatasetGraphQuery
   ): Dataset {
-    val dataset =
-        getPrerequisiteDataset(organizationId, datasetId, status = Dataset.Status.COMPLETED)
+    val dataset = getDatasetWithStatus(organizationId, datasetId, status = Dataset.Status.READY)
 
     val subTwinraphId = idGenerator.generate("twingraph")
     trx(dataset) {
@@ -203,7 +202,7 @@ class DatasetServiceImpl(
             queries = subDatasetGraphQuery.queries,
             main = subDatasetGraphQuery.main ?: false,
             parentId = dataset.id,
-            status = Dataset.Status.COMPLETED,
+            status = Dataset.Status.READY,
             connector =
                 dataset.connector?.apply { parametersValues?.set(TWINCACHE_NAME, subTwinraphId) },
             sourceType = dataset.sourceType,
@@ -240,12 +239,12 @@ class DatasetServiceImpl(
         ?: throw IllegalArgumentException(
             "Invalid archive type: '$archiverType'. A Zip Archive is expected.")
 
-    val dataset = getPrerequisiteDataset(organizationId, datasetId)
+    val dataset = getDatasetWithStatus(organizationId, datasetId)
     dataset.sourceType.takeIf { it == DatasetSourceType.File }
         ?: throw CsmResourceNotFoundException("SourceType Dataset must be 'File'")
     val uploadStatus = getDatasetTwingraphStatus(organizationId, datasetId, null)
     uploadStatus.takeUnless { it == Dataset.Status.PENDING.value }
-        ?: throw CsmResourceNotFoundException("Uploading not yet completed. Wait. Cannot update")
+        ?: throw CsmResourceNotFoundException("Dataset in use, cannot update. Retry later")
 
     datasetRepository.save(dataset.apply { status = Dataset.Status.PENDING })
 
@@ -270,7 +269,7 @@ class DatasetServiceImpl(
             }
           }
       queryBuffer.send()
-      datasetRepository.save(dataset.apply { status = Dataset.Status.COMPLETED })
+      datasetRepository.save(dataset.apply { status = Dataset.Status.READY })
     }
   }
 
@@ -293,8 +292,8 @@ class DatasetServiceImpl(
           } else {
             dataset
                 .takeIf { it.status == Dataset.Status.PENDING }
-                ?.apply { datasetRepository.save(this.apply { status = Dataset.Status.COMPLETED }) }
-            Dataset.Status.COMPLETED.value
+                ?.apply { datasetRepository.save(this.apply { status = Dataset.Status.READY }) }
+            Dataset.Status.READY.value
           }
         }
       }
@@ -307,7 +306,7 @@ class DatasetServiceImpl(
             .takeIf { it.status == Dataset.Status.PENDING }
             ?.apply {
               when (twingraphImportJobInfoRequest.response) {
-                "Succeeded" -> status = Dataset.Status.COMPLETED
+                "Succeeded" -> status = Dataset.Status.READY
                 "Error" -> status = Dataset.Status.ERROR
               }
               datasetRepository.save(this)
@@ -321,9 +320,10 @@ class DatasetServiceImpl(
     val dataset = findDatasetById(organizationId, datasetId)
     dataset.takeUnless { it.sourceType == DatasetSourceType.File }
         ?: throw CsmResourceNotFoundException("Cannot be applied to source type 'File'")
-    dataset
-        .takeUnless { it.status == Dataset.Status.PENDING }
-        ?.apply { datasetRepository.save(this.apply { status = Dataset.Status.PENDING }) }
+    dataset.status?.takeUnless { it == Dataset.Status.PENDING }
+        ?: throw CsmClientException("Dataset in use, cannot update. Retry later")
+
+    datasetRepository.save(dataset.apply { status = Dataset.Status.PENDING })
 
     val requestJobId = this.idGenerator.generate(scope = "graphdataimport", prependPrefix = "gdi-")
     val graphImportEvent =
@@ -419,8 +419,7 @@ class DatasetServiceImpl(
       datasetId: String,
       datasetTwinGraphQuery: DatasetTwinGraphQuery
   ): String {
-    val dataset =
-        getPrerequisiteDataset(organizationId, datasetId, status = Dataset.Status.COMPLETED)
+    val dataset = getDatasetWithStatus(organizationId, datasetId, status = Dataset.Status.READY)
     return trx(dataset) { query(dataset, datasetTwinGraphQuery.query).toJsonString() }
   }
 
@@ -435,11 +434,13 @@ class DatasetServiceImpl(
   }
 
   fun <T> trx(dataset: Dataset, actionLambda: (Dataset) -> T): T {
+    dataset.status?.takeUnless { it == Dataset.Status.PENDING }
+        ?: throw CsmClientException("Dataset in use, cannot update. Retry later")
     datasetRepository.save(dataset.apply { status = Dataset.Status.PENDING })
     try {
       return actionLambda(dataset)
     } finally {
-      datasetRepository.save(dataset.apply { status = Dataset.Status.COMPLETED })
+      datasetRepository.save(dataset.apply { status = Dataset.Status.READY })
     }
   }
 
@@ -450,15 +451,15 @@ class DatasetServiceImpl(
       body: Resource
   ): TwinGraphBatchResult {
 
-    val dataset = getPrerequisiteDataset(organizationId, datasetId)
+    val dataset = getDatasetWithStatus(organizationId, datasetId)
     resourceScanner.scanMimeTypes(body, listOf("text/csv", "text/plain"))
 
     val result = TwinGraphBatchResult(0, 0, mutableListOf())
     trx(dataset) { localDataset ->
       processCSVBatch(body.inputStream, twinGraphQuery, result) {
         try {
-          csmRedisGraph.query(localDataset.twingraphId, it)
           result.processedLines++
+          csmRedisGraph.query(localDataset.twingraphId, it)
         } catch (e: JedisDataException) {
           result.errors.add("#${result.totalLines}: ${e.message}")
         }
@@ -472,12 +473,7 @@ class DatasetServiceImpl(
       datasetId: String,
       datasetTwinGraphQuery: DatasetTwinGraphQuery
   ): DatasetTwinGraphHash {
-    val dataset =
-        getPrerequisiteDataset(
-            organizationId,
-            datasetId,
-            status = Dataset.Status.COMPLETED,
-            datasetTwinGraphQuery.query)
+    val dataset = getDatasetWithStatus(organizationId, datasetId, status = Dataset.Status.READY)
     val bulkQueryKey = bulkQueryKey(dataset.twingraphId!!, datasetTwinGraphQuery.query, null)
     val twinGraphHash = DatasetTwinGraphHash(bulkQueryKey.second)
     csmJedisPool.resource.use { jedis ->
@@ -521,11 +517,10 @@ class DatasetServiceImpl(
   }
 
   @Suppress("ThrowsCount")
-  fun getPrerequisiteDataset(
+  fun getDatasetWithStatus(
       organizationId: String,
       datasetId: String,
-      status: Dataset.Status? = null,
-      query: String? = null
+      status: Dataset.Status? = null
   ): Dataset {
     val organization = organizationService.findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_READ)
@@ -536,10 +531,6 @@ class DatasetServiceImpl(
     status?.let {
       dataset.status?.takeIf { it == status }
           ?: throw CsmClientException("Dataset status is ${dataset.status?.value}, not $status")
-    }
-    query?.let {
-      it.takeUnless { !it.isReadOnlyQuery() }
-          ?: throw CsmClientException("Read Only queries authorized only")
     }
     return dataset
   }
@@ -557,7 +548,7 @@ class DatasetServiceImpl(
       type: String,
       graphProperties: List<GraphProperties>
   ): String {
-    val dataset = getPrerequisiteDataset(organizationId, datasetId)
+    val dataset = getDatasetWithStatus(organizationId, datasetId)
     var result = ""
     trx(dataset) { localDataset ->
       when (type) {
@@ -592,8 +583,7 @@ class DatasetServiceImpl(
       type: String,
       ids: List<String>
   ): String {
-    val dataset =
-        getPrerequisiteDataset(organizationId, datasetId, status = Dataset.Status.COMPLETED)
+    val dataset = getDatasetWithStatus(organizationId, datasetId, status = Dataset.Status.READY)
 
     var result = ""
     when (type) {
@@ -623,8 +613,7 @@ class DatasetServiceImpl(
       type: String,
       graphProperties: List<GraphProperties>
   ): String {
-    val dataset =
-        getPrerequisiteDataset(organizationId, datasetId, status = Dataset.Status.COMPLETED)
+    val dataset = getDatasetWithStatus(organizationId, datasetId, status = Dataset.Status.READY)
     var result = ""
     trx(dataset) { localDataset ->
       when (type) {
@@ -659,7 +648,7 @@ class DatasetServiceImpl(
       type: String,
       ids: List<String>
   ) {
-    val dataset = getPrerequisiteDataset(organizationId, datasetId)
+    val dataset = getDatasetWithStatus(organizationId, datasetId)
     return trx(dataset) { localDataset ->
       when (type) {
         TYPE_NODE ->

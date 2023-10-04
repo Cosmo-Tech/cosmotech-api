@@ -169,7 +169,7 @@ internal class ScenarioServiceImpl(
               val dataset = datasetService.findDatasetById(organizationId, it)
               when {
                 dataset.twingraphId == null -> it
-                dataset.status == Dataset.Status.COMPLETED ->
+                dataset.status == Dataset.Status.READY ->
                     datasetService
                         .createSubDataset(
                             organizationId,

@@ -1122,7 +1122,7 @@ components:
             - DRAFT
             - PENDING
             - ERROR
-            - COMPLETED
+            - READY
         queries:
           type: array
           description: the list of queries
