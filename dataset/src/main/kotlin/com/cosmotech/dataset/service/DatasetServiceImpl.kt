@@ -200,7 +200,7 @@ class DatasetServiceImpl(
             organizationId = organizationId,
             twingraphId = subTwinraphId,
             queries = subDatasetGraphQuery.queries,
-            main = subDatasetGraphQuery.main ?: false,
+            main = subDatasetGraphQuery.main ?: dataset.main,
             parentId = dataset.id,
             status = Dataset.Status.READY,
             connector =
