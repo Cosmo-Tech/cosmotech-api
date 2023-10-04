@@ -21,7 +21,9 @@ class QueryBuffer(val jedis: Jedis, val graphName: String) {
 
   private var currentBulkQueryBuilder: BulkQuery.Builder =
       BulkQuery.Builder().graphName(graphName).first()
-  private var currentType: String? = null
+
+  private var currentNodeType: String? = null
+  private var currentEdgeType: String? = null
 
   private val nodeSet: HashSet<String> = hashSetOf()
   private val edgeSet: HashSet<String> = hashSetOf()
@@ -65,15 +67,25 @@ class QueryBuffer(val jedis: Jedis, val graphName: String) {
     var addedSize = 0
     var typeEntities: TypeEntity? = null
 
-    // create a new edge type (for binary header)
-    if (type != currentType) {
-      currentType = type
-      typeEntities = TypeEntity(type, properties.keys.toList())
-      addedSize += typeEntities.size
+    val entity = addingEntityLambda() ?: return
+
+    when (entity) {
+      is Node -> {
+        if (currentNodeType != type) {
+          currentNodeType = type
+          typeEntities = TypeEntity(type, properties.keys.toList())
+          addedSize += typeEntities.size
+        }
+      }
+      is Edge -> {
+        if (currentEdgeType != type) {
+          currentEdgeType = type
+          typeEntities = TypeEntity(type, properties.keys.toList())
+          addedSize += typeEntities.size
+        }
+      }
     }
 
-    // create edge
-    val entity = addingEntityLambda() ?: return
     addedSize += entity.size()
 
     // check query max size
