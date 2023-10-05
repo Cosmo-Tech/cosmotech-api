@@ -62,10 +62,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
 
-const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
-const val CONNECTED_READER_USER = "test.user@cosmotech.com"
-const val FAKE_MAIL = "fake@mail.fr"
-
 @ActiveProfiles(profiles = ["scenariorun-test"])
 @ExtendWith(MockKExtension::class)
 @ExtendWith(SpringExtension::class)
@@ -73,6 +69,8 @@ const val FAKE_MAIL = "fake@mail.fr"
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
 
+  val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
+  val CONNECTED_READER_USER = "test.user@cosmotech.com"
   private val logger = LoggerFactory.getLogger(ScenarioRunServiceIntegrationTest::class.java)
   private val defaultName = "my.account-tester@cosmotech.com"
 
@@ -332,11 +330,7 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
                         SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
   }
 
-  fun mockOrganization(
-      id: String = "organizationId",
-      roleName: String = defaultName,
-      role: String = ROLE_ADMIN
-  ): Organization {
+  fun mockOrganization(id: String = "organizationId"): Organization {
     return Organization(
         id = id,
         name = "Organization Name",
@@ -347,16 +341,13 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
                 accessControlList =
                     mutableListOf(
                         OrganizationAccessControl(id = CONNECTED_READER_USER, role = "reader"),
-                        OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"),
-                        OrganizationAccessControl(roleName, role))))
+                        OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"))))
   }
 
   fun mockWorkspace(
       organizationId: String = organizationSaved.id!!,
       solutionId: String = solutionSaved.id!!,
-      name: String = "workspace",
-      roleName: String = defaultName,
-      role: String = ROLE_ADMIN
+      name: String = "workspace"
   ): Workspace {
     return Workspace(
         key = UUID.randomUUID().toString(),
@@ -369,10 +360,7 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
         ownerId = "ownerId",
         security =
             WorkspaceSecurity(
-                ROLE_NONE,
-                mutableListOf(
-                    WorkspaceAccessControl(roleName, role),
-                    WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
+                ROLE_NONE, mutableListOf(WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
   }
 
   fun mockScenario(
@@ -381,9 +369,7 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
       solutionId: String = solutionSaved.id!!,
       runTemplateId: String = solutionSaved.runTemplates?.get(0)?.id!!,
       name: String = "scenario",
-      datasetList: MutableList<String> = mutableListOf(datasetSaved.id!!),
-      userName: String = defaultName,
-      role: String = ROLE_ADMIN
+      datasetList: MutableList<String> = mutableListOf(datasetSaved.id!!)
   ): Scenario {
     return Scenario(
         name = name,
@@ -395,10 +381,7 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
         datasetList = datasetList,
         security =
             ScenarioSecurity(
-                ROLE_NONE,
-                mutableListOf(
-                    ScenarioAccessControl(userName, role),
-                    ScenarioAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
+                ROLE_NONE, mutableListOf(ScenarioAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
   }
 
   fun mockScenarioRun(
