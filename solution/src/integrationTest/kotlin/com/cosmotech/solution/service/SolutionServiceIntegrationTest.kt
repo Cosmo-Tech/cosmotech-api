@@ -6,7 +6,6 @@ import com.azure.storage.blob.BlobServiceClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
-import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.tests.CsmRedisTestBase
@@ -45,7 +44,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
 
-const val FAKE_MAIL = "fake@mail.fr"
 const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
 const val CONNECTED_READER_USER = "test.user@cosmotech.com"
 
@@ -84,10 +82,10 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     rediSearchIndexer.createIndexFor(Organization::class.java)
     rediSearchIndexer.createIndexFor(Solution::class.java)
 
-    organization = mockOrganization("Organization test")
+    organization = makeOrganization("Organization test")
     organizationRegistered = organizationApiService.registerOrganization(organization)
 
-    solution = mockSolution(organizationRegistered.id!!)
+    solution = makeSolution(organizationRegistered.id!!)
     solutionRegistered = solutionApiService.createSolution(organizationRegistered.id!!, solution)
   }
 
@@ -127,7 +125,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   fun `test CRUD operations on Solution`() {
 
     logger.info("should add a new solution")
-    val solution2 = mockSolution(organizationRegistered.id!!)
+    val solution2 = makeSolution(organizationRegistered.id!!)
     val solutionCreated = solutionApiService.createSolution(organizationRegistered.id!!, solution2)
 
     logger.info("should find the new solution by id and assert it is the same as the one created")
@@ -159,7 +157,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `can delete solution when user is not the owner and is Platform Admin`() {
     logger.info("Register new solution...")
-    val solution = mockSolution(organizationRegistered.id!!)
+    val solution = makeSolution(organizationRegistered.id!!)
     val solutionCreated = solutionApiService.createSolution(organizationRegistered.id!!, solution)
 
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
@@ -178,7 +176,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `cannot delete solution when user is not the owner and is not Platform Admin`() {
     logger.info("Register new solution...")
-    val solution = mockSolution(organizationRegistered.id!!)
+    val solution = makeSolution(organizationRegistered.id!!)
     val solutionCreated = solutionApiService.createSolution(organizationRegistered.id!!, solution)
 
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_READER_USER
@@ -192,7 +190,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `can update solution when user is not the owner and is Platform Admin`() {
     logger.info("Register new solution...")
-    val solution = mockSolution(organizationRegistered.id!!)
+    val solution = makeSolution(organizationRegistered.id!!)
     val solutionCreated = solutionApiService.createSolution(organizationRegistered.id!!, solution)
 
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
@@ -212,7 +210,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `cannot update solution when user is not the owner and is not Platform Admin`() {
     logger.info("Register new solution...")
-    val solution = mockSolution(organizationRegistered.id!!)
+    val solution = makeSolution(organizationRegistered.id!!)
     val solutionCreated = solutionApiService.createSolution(organizationRegistered.id!!, solution)
 
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_READER_USER
@@ -353,7 +351,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     IntRange(1, numberOfSolutions - 1).forEach {
       solutionApiService.createSolution(
           organizationId = organizationRegistered.id!!,
-          solution = mockSolution(organizationRegistered.id!!))
+          solution = makeSolution(organizationRegistered.id!!))
     }
     logger.info("should find all solutions and assert there are $numberOfSolutions")
     var solutions = solutionApiService.findAllSolutions(organizationRegistered.id!!, null, null)
@@ -387,11 +385,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
       solutionApiService.findAllSolutions(organizationRegistered.id!!, 0, -1)
     }
   }
-  fun mockOrganization(
-      id: String = "organization_id",
-      roleName: String = FAKE_MAIL,
-      role: String = ROLE_ADMIN
-  ): Organization {
+  fun makeOrganization(id: String = "organization_id"): Organization {
     return Organization(
         id = id,
         name = "Organization Name",
@@ -402,14 +396,11 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
                 accessControlList =
                     mutableListOf(
                         OrganizationAccessControl(id = CONNECTED_READER_USER, role = "reader"),
-                        OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"),
-                        OrganizationAccessControl(id = roleName, role = role))))
+                        OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"))))
   }
 
-  fun mockSolution(
+  fun makeSolution(
       organizationId: String = organizationRegistered.id!!,
-      roleName: String = FAKE_MAIL,
-      role: String = ROLE_ADMIN
   ): Solution {
     return Solution(
         id = "solutionId",
@@ -424,7 +415,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
                 accessControlList =
                     mutableListOf(
                         SolutionAccessControl(id = CONNECTED_READER_USER, role = "reader"),
-                        SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"),
-                        SolutionAccessControl(id = roleName, role = role))))
+                        SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"))))
   }
 }
