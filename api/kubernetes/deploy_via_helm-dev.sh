@@ -651,10 +651,13 @@ curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deploymen
      -o "${WORKING_DIR}"/realm-config.json
 
 echo "Apply namespace to realm-config.json file"
+export TENANT_KEYCLOAK_ADMIN_PASSWORD=$(date +%s | sha256sum | base64 | head -c 32)
+
 NAMESPACE_VAR=${NAMESPACE} \
 APP_ID_URI_VAR="https://localhost" \
 CONTEXT_PATH_VAR="/cosmotech-api" \
 COSMOTECH_CLIENT_SECRET_VAR=$(date +%s | sha256sum | base64 | head -c 32) \
+TENANT_KEYCLOAK_ADMIN_PASSWORD_VAR=${TENANT_KEYCLOAK_ADMIN_PASSWORD} \
 envsubst < "${WORKING_DIR}"/realm-config.json > "${WORKING_DIR}"/namespaced-realm-config.json
 
 echo "Retrieve Keycloak Admin password"
@@ -683,6 +686,8 @@ else
   -H "Authorization: Bearer ${KEYCLOAK_TOKEN}" \
   -H 'Content-Type: application/json' \
   --data-binary "@${WORKING_DIR}/namespaced-realm-config.json"
+
+  echo "Tenant Admin credentials: admin-${NAMESPACE} / ${TENANT_KEYCLOAK_ADMIN_PASSWORD}"
 fi
 # cosmotech-api
 
