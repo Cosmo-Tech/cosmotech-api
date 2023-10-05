@@ -1025,10 +1025,6 @@
             "moduleVersion": "4.10.0"
         },
         {
-            "moduleName": "com.squareup.okio:okio",
-            "moduleVersion": "3.0.0"
-        },
-        {
             "moduleName": "com.squareup.okio:okio-jvm",
             "moduleVersion": "3.0.0",
             "moduleUrls": [
@@ -3510,10 +3506,6 @@
                     "moduleLicenseUrl": "https://www.eclipse.org/org/documents/epl-2.0/EPL-2.0.txt"
                 }
             ]
-        },
-        {
-            "moduleName": "org.junit:junit-bom",
-            "moduleVersion": "5.8.2"
         },
         {
             "moduleName": "org.latencyutils:LatencyUtils",

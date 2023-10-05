@@ -10,6 +10,8 @@ dependencies {
   implementation("com.redislabs:jredisgraph:2.5.1") {
     constraints { implementation("org.apache.commons:commons-text:1.10.0") }
   }
+  implementation(project(mapOf("path" to ":cosmotech-workspace-api")))
+  implementation(project(mapOf("path" to ":cosmotech-workspace-api")))
   testImplementation("org.testng:testng:7.7.0")
   testImplementation("com.redis.testcontainers:testcontainers-redis-junit:1.6.2")
   testImplementation("org.springframework.boot:spring-boot-starter-test:2.7.3")

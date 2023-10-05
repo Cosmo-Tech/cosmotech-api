@@ -20,6 +20,7 @@ Name | Type | Description | Notes
 **fragmentsIds** | **List** | the list of other Datasets ids to compose as fragments | [optional] [default to null]
 **validatorId** | **String** | the validator id | [optional] [default to null]
 **compatibility** | [**List**](DatasetCompatibility.md) | the list of compatible Solutions versions | [optional] [default to null]
+**security** | [**DatasetSecurity**](DatasetSecurity.md) |  | [optional] [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

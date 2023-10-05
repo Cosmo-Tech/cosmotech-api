@@ -66,6 +66,12 @@ entity Dataset {
     fragmentsIds: List<String>
     validatorId: String
     compatibility: List<DatasetCompatibility>
+    security: DatasetSecurity
+}
+
+entity DatasetAccessControl {
+    * id: String
+    * role: String
 }
 
 entity DatasetCompatibility {
@@ -87,8 +93,17 @@ entity DatasetCopyParameters {
     options: Map
 }
 
+entity DatasetRole {
+    * role: String
+}
+
 entity DatasetSearch {
     * datasetTags: List<String>
+}
+
+entity DatasetSecurity {
+    * default: String
+    * accessControlList: List<DatasetAccessControl>
 }
 
 entity DatasetSourceType {
@@ -485,6 +500,7 @@ entity SourceInfo {
     name: String
     * location: String
     path: String
+    * type: String
 }
 
 entity SubDatasetGraphQuery {
@@ -599,6 +615,7 @@ entity WorkspaceWebApp {
 
 RunTemplateResourceSizing -- ResourceSizeInfo : requests
 RunTemplateResourceSizing -- ResourceSizeInfo : limits
+DatasetSecurity -- "0..*" DatasetAccessControl : accessControlList
 ContainerResourceSizing -- ContainerResourceSizeInfo : requests
 ContainerResourceSizing -- ContainerResourceSizeInfo : limits
 ScenarioRunContainer -- ContainerResourceSizing : runSizing
@@ -636,6 +653,7 @@ ScenarioComparisonResult -- "0..*" ScenarioChangedParameterValue : changedValues
 Dataset -- SourceInfo : source
 Dataset -- DatasetConnector : connector
 Dataset -- "0..*" DatasetCompatibility : compatibility
+Dataset -- DatasetSecurity : security
 TwinGraphImport -- SourceInfo : source
 OrganizationSecurity -- "0..*" OrganizationAccessControl : accessControlList
 ScenarioRunStartContainers -- "0..*" ScenarioRunContainer : containers
