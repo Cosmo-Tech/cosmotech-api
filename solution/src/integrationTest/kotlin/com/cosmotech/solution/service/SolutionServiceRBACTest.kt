@@ -65,6 +65,8 @@ import org.springframework.test.util.ReflectionTestUtils
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class SolutionServiceRBACTest : CsmRedisTestBase() {
 
+  val TEST_USER_MAIL = "testuser@mail.fr"
+
   @MockK(relaxed = true) private lateinit var azureStorageBlobServiceClient: BlobServiceClient
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
@@ -112,13 +114,13 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test RBAC findSolutionById : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = mockOrganization()
-              val solution = mockSolution(organization.id!!, role = role)
-
+              val organization =
+                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
+              val solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -151,10 +153,11 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               organizationSaved =
                   organizationApiService.registerOrganization(
-                      mockOrganization(id = "id", userName = FAKE_MAIL, role = role))
+                      makeOrganizationWithRole(id = "id", userName = TEST_USER_MAIL, role = role))
               solutionApiService.createSolution(
-                  organizationSaved.id!!, mockSolution(userName = FAKE_MAIL))
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+                  organizationSaved.id!!,
+                  makeSolutionWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN))
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -185,11 +188,11 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test RBAC createSolution : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              organization = mockOrganization(role = role)
+              organization = makeOrganizationWithRole(userName = TEST_USER_MAIL, role = role)
               organizationSaved = organizationApiService.registerOrganization(organization)
-              solution = mockSolution()
+              solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
 
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -226,13 +229,13 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test RBAC deleteSolution : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = mockOrganization()
-              val solution = mockSolution(organization.id!!, role = role)
-
+              val organization =
+                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
+              val solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -269,15 +272,14 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test RBAC updateSolution : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              organization = mockOrganization()
-              solution = mockSolution(organization.id!!, role = role)
-
+              organization = makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
+              solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
-              solution = mockSolution()
+              solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
 
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -316,13 +318,12 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test RBAC addSolutionAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              organization = mockOrganization()
-              solution = mockSolution(organization.id!!, role = role)
-
+              organization = makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
+              solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -365,19 +366,18 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test RBAC getSolutionAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              organization = mockOrganization()
-              solution = mockSolution(organization.id!!, role = role)
-
+              organization = makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
+              solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.getSolutionAccessControl(
-                          organizationSaved.id!!, solutionSaved.id!!, FAKE_MAIL)
+                          organizationSaved.id!!, solutionSaved.id!!, TEST_USER_MAIL)
                     }
                 if (role == ROLE_NONE) {
                   assertEquals(
@@ -391,7 +391,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   solutionApiService.getSolutionAccessControl(
-                      organizationSaved.id!!, solutionSaved.id!!, FAKE_MAIL)
+                      organizationSaved.id!!, solutionSaved.id!!, TEST_USER_MAIL)
                 }
               }
             }
@@ -410,13 +410,12 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test RBAC getSolutionSecurityUsers : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              organization = mockOrganization()
-              solution = mockSolution(organization.id!!, role = role)
-
+              organization = makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
+              solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -455,19 +454,18 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test RBAC removeSolutionAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              organization = mockOrganization()
-              solution = mockSolution(organization.id!!, role = role)
-
+              organization = makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
+              solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.removeSolutionAccessControl(
-                          organizationSaved.id!!, solutionSaved.id!!, FAKE_MAIL)
+                          organizationSaved.id!!, solutionSaved.id!!, TEST_USER_MAIL)
                     }
                 if (role == ROLE_NONE) {
                   assertEquals(
@@ -481,7 +479,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   solutionApiService.removeSolutionAccessControl(
-                      organizationSaved.id!!, solutionSaved.id!!, FAKE_MAIL)
+                      organizationSaved.id!!, solutionSaved.id!!, TEST_USER_MAIL)
                 }
               }
             }
@@ -500,15 +498,14 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test RBAC updateSolutionAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              organization = mockOrganization()
-              solution = mockSolution(organization.id!!, role = role)
-
+              organization = makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
+              solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
-              solution = mockSolution()
+              solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
 
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -516,7 +513,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                       solutionApiService.updateSolutionAccessControl(
                           organizationSaved.id!!,
                           solutionSaved.id!!,
-                          FAKE_MAIL,
+                          TEST_USER_MAIL,
                           SolutionRole(ROLE_USER))
                     }
                 if (role == ROLE_NONE) {
@@ -533,7 +530,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                   solutionApiService.updateSolutionAccessControl(
                       organizationSaved.id!!,
                       solutionSaved.id!!,
-                      FAKE_MAIL,
+                      TEST_USER_MAIL,
                       SolutionRole(ROLE_USER))
                 }
               }
@@ -553,15 +550,15 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test RBAC addOrReplaceParameters : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = mockOrganization()
-              val solution = mockSolution(organization.id!!, role = role)
-
+              val organization =
+                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
+              val solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
               val runTemplateParameter = RunTemplateParameter("id")
 
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -600,13 +597,13 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test RBAC removeAllSolutionParameters : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = mockOrganization()
-              val solution = mockSolution(organization.id!!, role = role)
-
+              val organization =
+                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
+              val solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -645,15 +642,15 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test RBAC addOrReplaceParameterGroups : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = mockOrganization()
-              val solution = mockSolution(organization.id!!, role = role)
-
+              val organization =
+                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
+              val solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
               val runTemplateParameterGroup = RunTemplateParameterGroup("id")
 
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -694,13 +691,13 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test RBAC removeAllSolutionParameterGroups : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = mockOrganization()
-              val solution = mockSolution(organization.id!!, role = role)
-
+              val organization =
+                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
+              val solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -739,15 +736,15 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test RBAC addOrReplaceRunTemplates : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = mockOrganization()
-              val solution = mockSolution(organization.id!!, role = role)
-
+              val organization =
+                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
+              val solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
               val runTemplate = RunTemplate("id")
 
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -786,13 +783,13 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test RBAC addOrReplaceRunTemplates : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = mockOrganization()
-              val solution = mockSolution(organization.id!!, role = role)
-
+              val organization =
+                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
+              val solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -831,13 +828,13 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test RBAC deleteSolutionRunTemplate : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = mockOrganization()
-              val solution = mockSolution(organization.id!!, role = role)
-
+              val organization =
+                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
+              val solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -876,15 +873,15 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test RBAC updateSolutionRunTemplate : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = mockOrganization()
-              val solution = mockSolution(organization.id!!, role = role)
-
+              val organization =
+                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
+              val solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
               val runTemplate = RunTemplate("runTemplate", "name")
 
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -923,15 +920,15 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test RBAC downloadRunTemplateHandler : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = mockOrganization()
-              val solution = mockSolution(organization.id!!, role = role)
-
+              val organization =
+                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
+              val solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
               val runTemplateHandlerId = RunTemplateHandlerId.values().first()
 
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -970,10 +967,10 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test RBAC uploadRunTemplateHandler : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = mockOrganization()
-              val solution = mockSolution(organization.id!!, role = role)
-
+              val organization =
+                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
+              val solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
               ReflectionTestUtils.setField(solutionApiService, "resourceScanner", resourceScanner)
@@ -997,7 +994,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
 
               val runTemplateHandlerId = RunTemplateHandlerId.values().first()
 
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -1033,10 +1030,10 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
             }
           }
 
-  fun mockOrganization(
+  fun makeOrganizationWithRole(
       id: String = "organization_id",
-      userName: String = FAKE_MAIL,
-      role: String = ROLE_ADMIN
+      userName: String,
+      role: String
   ): Organization {
     return Organization(
         id = id,
@@ -1047,14 +1044,14 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 default = ROLE_NONE,
                 accessControlList =
                     mutableListOf(
-                        OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"),
+                        OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
                         OrganizationAccessControl(id = userName, role = role))))
   }
 
-  fun mockSolution(
+  fun makeSolutionWithRole(
       organizationId: String = organizationSaved.id!!,
-      userName: String = FAKE_MAIL,
-      role: String = ROLE_ADMIN
+      userName: String,
+      role: String
   ): Solution {
     return Solution(
         id = "solutionId",
@@ -1068,7 +1065,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 default = ROLE_NONE,
                 accessControlList =
                     mutableListOf(
-                        SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"),
+                        SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
                         SolutionAccessControl(id = userName, role = role))))
   }
 }
