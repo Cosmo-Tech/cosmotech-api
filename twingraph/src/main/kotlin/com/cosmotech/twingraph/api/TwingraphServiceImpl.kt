@@ -127,8 +127,7 @@ class TwingraphServiceImpl(
             twinGraphImport.source.location,
             twinGraphImport.source.path ?: "",
             twinGraphImport.source.type.value,
-            twinGraphImport.version,
-            null)
+            twinGraphImport.version,)
     this.eventPublisher.publishEvent(graphImportEvent)
     logger.debug("TwingraphImportEventResponse={}", graphImportEvent.response)
     return TwinGraphImportInfo(jobId = requestJobId, graphName = twinGraphImport.graphId)

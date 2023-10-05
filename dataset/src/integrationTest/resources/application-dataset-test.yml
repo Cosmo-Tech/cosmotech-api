@@ -19,6 +19,8 @@ azure:
 
 csm:
   platform:
+    rbac:
+      enabled: true
     metrics:
       enabled: false
     api:
@@ -44,6 +46,10 @@ csm:
         imageRegistry: "ghcr.io"
         imageName: "cosmo-tech/azstorage-twincache-connector"
         imageVersion: "latest"
+      - name: "TwincacheConnector"
+        imageRegistry: "ghcr.io"
+        imageName: "cosmo-tech/twincache-connector"
+        imageVersion: "0.0.7"
     upload:
       authorized-mime-types:
         workspaces:
@@ -85,6 +91,7 @@ csm:
       port: "6379"
       username: "default"
       password: "my-wonderful-password"
+      queryTimeout: 5
       dataset:
         default-page-size: 5
 
