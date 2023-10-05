@@ -423,21 +423,23 @@ class ScenarioRunServiceImpl(
   internal fun getEnvVarsForJobImportInfo(
       jobImportInfo: TwingraphImportEvent
   ): MutableMap<String, String> {
-
+    val queries = jobImportInfo.queries?.joinToString(";") ?: ""
     return when (jobImportInfo.sourceType) {
       "ADT" -> {
         mutableMapOf(
-            "TWIN_CACHE_NAME" to jobImportInfo.graphId,
+            "TWIN_CACHE_NAME" to jobImportInfo.twingraphId,
             "LOG_LEVEL" to "DEBUG",
-            "AZURE_DIGITAL_TWINS_URL" to jobImportInfo.sourceLocation)
+            "AZURE_DIGITAL_TWINS_URL" to jobImportInfo.sourceLocation,
+            "QUERIES" to queries)
       }
       "Storage" -> {
         mutableMapOf(
-            "TWIN_CACHE_NAME" to jobImportInfo.graphId,
+            "TWIN_CACHE_NAME" to jobImportInfo.twingraphId,
             "LOG_LEVEL" to "DEBUG",
             "ACCOUNT_NAME" to jobImportInfo.sourceName,
             "CONTAINER_NAME" to jobImportInfo.sourceLocation,
-            "STORAGE_PATH" to jobImportInfo.sourcePath)
+            "STORAGE_PATH" to jobImportInfo.sourcePath,
+            "QUERIES" to queries)
       }
       else -> {
         throw IllegalArgumentException(

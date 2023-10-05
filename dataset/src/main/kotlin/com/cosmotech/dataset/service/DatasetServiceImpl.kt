@@ -337,7 +337,8 @@ class DatasetServiceImpl(
             dataset.source!!.location,
             dataset.source!!.path ?: "",
             dataset.sourceType!!.value,
-            "1")
+            "",
+            dataset.queries)
     this.eventPublisher.publishEvent(graphImportEvent)
     logger.debug("refreshDataset={}", graphImportEvent.response)
     return DatasetTwinGraphInfo(
