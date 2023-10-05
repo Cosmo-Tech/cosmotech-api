@@ -79,6 +79,9 @@ import org.springframework.test.util.ReflectionTestUtils
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
 
+  val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
+  val TEST_USER_MAIL = "testuser@mail.fr"
+
   @MockkBean lateinit var csmADX: AzureDataExplorerClient
   @MockK private lateinit var workspaceEventHubService: IWorkspaceEventHubService
   @MockK(relaxed = true) private lateinit var azureDataExplorerClient: AzureDataExplorerClient
@@ -95,21 +98,6 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
   @Autowired lateinit var scenariorunApiService: ScenariorunApiService
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
-  lateinit var connector: Connector
-  lateinit var dataset: Dataset
-  lateinit var solution: Solution
-  lateinit var organization: Organization
-  lateinit var workspace: Workspace
-  lateinit var scenario: Scenario
-
-  lateinit var connectorSaved: Connector
-  lateinit var datasetSaved: Dataset
-  lateinit var solutionSaved: Solution
-  lateinit var organizationSaved: Organization
-  lateinit var workspaceSaved: Workspace
-  lateinit var scenarioSaved: Scenario
-  lateinit var scenarioRunSaved: ScenarioRun
-
   @BeforeEach
   fun setUp() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
@@ -118,7 +106,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
 
     every { workspaceEventHubService.getWorkspaceEventHubInfo(any(), any(), any()) } returns
-        mockWorkspaceEventHubInfo(false)
+        makeWorkspaceEventHubInfo(false)
 
     ReflectionTestUtils.setField(
         scenarioApiService, "workspaceEventHubService", workspaceEventHubService)
@@ -150,26 +138,45 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC deleteHistoricalDataOrganization : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              connector = mockConnector()
-              connectorSaved = connectorApiService.registerConnector(connector)
-              organization = mockOrganization(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
-              dataset = mockDataset()
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              solution = mockSolution()
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
-              workspace = mockWorkspace()
-              workspaceSaved =
+              val connector = makeConnector()
+              val connectorSaved = connectorApiService.registerConnector(connector)
+              val organization = makeOrganizationWithRole(userName = TEST_USER_MAIL, role = role)
+              val organizationSaved = organizationApiService.registerOrganization(organization)
+              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              val solution = makeSolution(organizationSaved.id!!)
+              val solutionSaved =
+                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val workspace =
+                  makeWorkspaceWithRole(
+                      organizationSaved.id!!,
+                      solutionSaved.id!!,
+                      userName = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
+              val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
-              scenario = mockScenario(role = ROLE_ADMIN)
-              scenarioSaved =
+              val scenario =
+                  makeScenarioWithRole(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      solutionSaved.runTemplates!!.first().id,
+                      mutableListOf(datasetSaved.id!!),
+                      userName = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
+              val scenarioSaved =
                   scenarioApiService.createScenario(
                       organizationSaved.id!!, workspaceSaved.id!!, scenario)
-              every { workflowService.launchScenarioRun(any(), any()) } returns mockScenarioRun()
-              scenarioRunSaved =
-                  scenariorunApiService.runScenario(
-                      organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { workflowService.launchScenarioRun(any(), any()) } returns
+                  makeScenarioRun(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      solutionSaved.id!!,
+                      mutableListOf(datasetSaved.id!!))
+              scenariorunApiService.runScenario(
+                  organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -208,26 +215,46 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC deleteHistoricalDataWorkspace : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              connector = mockConnector()
-              connectorSaved = connectorApiService.registerConnector(connector)
-              organization = mockOrganization()
-              organizationSaved = organizationApiService.registerOrganization(organization)
-              dataset = mockDataset()
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              solution = mockSolution()
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
-              workspace = mockWorkspace(role = role)
-              workspaceSaved =
+              val connector = makeConnector()
+              val connectorSaved = connectorApiService.registerConnector(connector)
+              val organization =
+                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organizationSaved = organizationApiService.registerOrganization(organization)
+              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              val solution = makeSolution(organizationSaved.id!!)
+              val solutionSaved =
+                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val workspace =
+                  makeWorkspaceWithRole(
+                      organizationSaved.id!!,
+                      solutionSaved.id!!,
+                      userName = TEST_USER_MAIL,
+                      role = role)
+              val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
-              scenario = mockScenario()
-              scenarioSaved =
+              val scenario =
+                  makeScenarioWithRole(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      solutionSaved.runTemplates!!.first().id,
+                      mutableListOf(datasetSaved.id!!),
+                      userName = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
+              val scenarioSaved =
                   scenarioApiService.createScenario(
                       organizationSaved.id!!, workspaceSaved.id!!, scenario)
-              every { workflowService.launchScenarioRun(any(), any()) } returns mockScenarioRun()
-              scenarioRunSaved =
-                  scenariorunApiService.runScenario(
-                      organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { workflowService.launchScenarioRun(any(), any()) } returns
+                  makeScenarioRun(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      solutionSaved.id!!,
+                      mutableListOf(datasetSaved.id!!))
+              scenariorunApiService.runScenario(
+                  organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -266,26 +293,46 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC deleteHistoricalDataScenario : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              connector = mockConnector()
-              connectorSaved = connectorApiService.registerConnector(connector)
-              organization = mockOrganization()
-              organizationSaved = organizationApiService.registerOrganization(organization)
-              dataset = mockDataset()
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              solution = mockSolution()
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
-              workspace = mockWorkspace()
-              workspaceSaved =
+              val connector = makeConnector()
+              val connectorSaved = connectorApiService.registerConnector(connector)
+              val organization =
+                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organizationSaved = organizationApiService.registerOrganization(organization)
+              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              val solution = makeSolution(organizationSaved.id!!)
+              val solutionSaved =
+                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val workspace =
+                  makeWorkspaceWithRole(
+                      organizationSaved.id!!,
+                      solutionSaved.id!!,
+                      userName = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
+              val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
-              scenario = mockScenario(role = role)
-              scenarioSaved =
+              val scenario =
+                  makeScenarioWithRole(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      solutionSaved.runTemplates!!.first().id,
+                      mutableListOf(datasetSaved.id!!),
+                      userName = TEST_USER_MAIL,
+                      role = role)
+              val scenarioSaved =
                   scenarioApiService.createScenario(
                       organizationSaved.id!!, workspaceSaved.id!!, scenario)
-              every { workflowService.launchScenarioRun(any(), any()) } returns mockScenarioRun()
-              scenarioRunSaved =
-                  scenariorunApiService.runScenario(
-                      organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { workflowService.launchScenarioRun(any(), any()) } returns
+                  makeScenarioRun(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      solutionSaved.id!!,
+                      mutableListOf(datasetSaved.id!!))
+              scenariorunApiService.runScenario(
+                  organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -324,26 +371,45 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC searchScenarioRuns : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              connector = mockConnector()
-              connectorSaved = connectorApiService.registerConnector(connector)
-              organization = mockOrganization(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
-              dataset = mockDataset()
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              solution = mockSolution()
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
-              workspace = mockWorkspace()
-              workspaceSaved =
+              val connector = makeConnector()
+              val connectorSaved = connectorApiService.registerConnector(connector)
+              val organization = makeOrganizationWithRole(userName = TEST_USER_MAIL, role = role)
+              val organizationSaved = organizationApiService.registerOrganization(organization)
+              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              val solution = makeSolution(organizationSaved.id!!)
+              val solutionSaved =
+                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val workspace =
+                  makeWorkspaceWithRole(
+                      organizationSaved.id!!,
+                      solutionSaved.id!!,
+                      userName = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
+              val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
-              scenario = mockScenario()
-              scenarioSaved =
+              val scenario =
+                  makeScenarioWithRole(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      solutionSaved.runTemplates!!.first().id,
+                      mutableListOf(datasetSaved.id!!),
+                      userName = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
+              val scenarioSaved =
                   scenarioApiService.createScenario(
                       organizationSaved.id!!, workspaceSaved.id!!, scenario)
-              every { workflowService.launchScenarioRun(any(), any()) } returns mockScenarioRun()
-              scenarioRunSaved =
-                  scenariorunApiService.runScenario(
-                      organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { workflowService.launchScenarioRun(any(), any()) } returns
+                  makeScenarioRun(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      solutionSaved.id!!,
+                      mutableListOf(datasetSaved.id!!))
+              scenariorunApiService.runScenario(
+                  organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               val scenarioRunSearch = ScenarioRunSearch(scenarioSaved.id!!)
 
@@ -378,26 +444,45 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC startScenarioRunContainers : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              connector = mockConnector()
-              connectorSaved = connectorApiService.registerConnector(connector)
-              organization = mockOrganization(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
-              dataset = mockDataset()
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              solution = mockSolution()
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
-              workspace = mockWorkspace()
-              workspaceSaved =
+              val connector = makeConnector()
+              val connectorSaved = connectorApiService.registerConnector(connector)
+              val organization = makeOrganizationWithRole(userName = TEST_USER_MAIL, role = role)
+              val organizationSaved = organizationApiService.registerOrganization(organization)
+              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              val solution = makeSolution(organizationSaved.id!!)
+              val solutionSaved =
+                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val workspace =
+                  makeWorkspaceWithRole(
+                      organizationSaved.id!!,
+                      solutionSaved.id!!,
+                      userName = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
+              val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
-              scenario = mockScenario()
-              scenarioSaved =
+              val scenario =
+                  makeScenarioWithRole(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      solutionSaved.runTemplates!!.first().id,
+                      mutableListOf(datasetSaved.id!!),
+                      userName = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
+              val scenarioSaved =
                   scenarioApiService.createScenario(
                       organizationSaved.id!!, workspaceSaved.id!!, scenario)
-              every { workflowService.launchScenarioRun(any(), any()) } returns mockScenarioRun()
-              scenarioRunSaved =
-                  scenariorunApiService.runScenario(
-                      organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { workflowService.launchScenarioRun(any(), any()) } returns
+                  makeScenarioRun(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      solutionSaved.id!!,
+                      mutableListOf(datasetSaved.id!!))
+              scenariorunApiService.runScenario(
+                  organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               val scenarioRunStartContainers =
                   ScenarioRunStartContainers("id", listOf(ScenarioRunContainer("name", "image")))
@@ -439,26 +524,47 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC findScenarioRunById : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              connector = mockConnector()
-              connectorSaved = connectorApiService.registerConnector(connector)
-              organization = mockOrganization()
-              organizationSaved = organizationApiService.registerOrganization(organization)
-              dataset = mockDataset()
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              solution = mockSolution()
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
-              workspace = mockWorkspace()
-              workspaceSaved =
+              val connector = makeConnector()
+              val connectorSaved = connectorApiService.registerConnector(connector)
+              val organization =
+                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organizationSaved = organizationApiService.registerOrganization(organization)
+              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              val solution = makeSolution(organizationSaved.id!!)
+              val solutionSaved =
+                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val workspace =
+                  makeWorkspaceWithRole(
+                      organizationSaved.id!!,
+                      solutionSaved.id!!,
+                      userName = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
+              val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
-              scenario = mockScenario(role = role)
-              scenarioSaved =
+              val scenario =
+                  makeScenarioWithRole(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      solutionSaved.runTemplates!!.first().id,
+                      mutableListOf(datasetSaved.id!!),
+                      userName = TEST_USER_MAIL,
+                      role = role)
+              val scenarioSaved =
                   scenarioApiService.createScenario(
                       organizationSaved.id!!, workspaceSaved.id!!, scenario)
-              every { workflowService.launchScenarioRun(any(), any()) } returns mockScenarioRun()
-              scenarioRunSaved =
+              every { workflowService.launchScenarioRun(any(), any()) } returns
+                  makeScenarioRun(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      solutionSaved.id!!,
+                      mutableListOf(datasetSaved.id!!))
+              val scenarioRunSaved =
                   scenariorunApiService.runScenario(
                       organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -491,26 +597,47 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC deleteScenarioRun : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              connector = mockConnector()
-              connectorSaved = connectorApiService.registerConnector(connector)
-              organization = mockOrganization()
-              organizationSaved = organizationApiService.registerOrganization(organization)
-              dataset = mockDataset()
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              solution = mockSolution()
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
-              workspace = mockWorkspace()
-              workspaceSaved =
+              val connector = makeConnector()
+              val connectorSaved = connectorApiService.registerConnector(connector)
+              val organization =
+                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organizationSaved = organizationApiService.registerOrganization(organization)
+              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              val solution = makeSolution(organizationSaved.id!!)
+              val solutionSaved =
+                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val workspace =
+                  makeWorkspaceWithRole(
+                      organizationSaved.id!!,
+                      solutionSaved.id!!,
+                      userName = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
+              val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
-              scenario = mockScenario(role = role)
-              scenarioSaved =
+              val scenario =
+                  makeScenarioWithRole(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      solutionSaved.runTemplates!!.first().id,
+                      mutableListOf(datasetSaved.id!!),
+                      userName = TEST_USER_MAIL,
+                      role = role)
+              val scenarioSaved =
                   scenarioApiService.createScenario(
                       organizationSaved.id!!, workspaceSaved.id!!, scenario)
-              every { workflowService.launchScenarioRun(any(), any()) } returns mockScenarioRun()
-              scenarioRunSaved =
+              every { workflowService.launchScenarioRun(any(), any()) } returns
+                  makeScenarioRun(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      solutionSaved.id!!,
+                      mutableListOf(datasetSaved.id!!))
+              val scenarioRunSaved =
                   scenariorunApiService.runScenario(
                       organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -549,26 +676,47 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC getScenarioRunStatus : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              connector = mockConnector()
-              connectorSaved = connectorApiService.registerConnector(connector)
-              organization = mockOrganization()
-              organizationSaved = organizationApiService.registerOrganization(organization)
-              dataset = mockDataset()
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              solution = mockSolution()
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
-              workspace = mockWorkspace()
-              workspaceSaved =
+              val connector = makeConnector()
+              val connectorSaved = connectorApiService.registerConnector(connector)
+              val organization =
+                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organizationSaved = organizationApiService.registerOrganization(organization)
+              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              val solution = makeSolution(organizationSaved.id!!)
+              val solutionSaved =
+                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val workspace =
+                  makeWorkspaceWithRole(
+                      organizationSaved.id!!,
+                      solutionSaved.id!!,
+                      userName = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
+              val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
-              scenario = mockScenario(role = role)
-              scenarioSaved =
+              val scenario =
+                  makeScenarioWithRole(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      solutionSaved.runTemplates!!.first().id,
+                      mutableListOf(datasetSaved.id!!),
+                      userName = TEST_USER_MAIL,
+                      role = role)
+              val scenarioSaved =
                   scenarioApiService.createScenario(
                       organizationSaved.id!!, workspaceSaved.id!!, scenario)
-              every { workflowService.launchScenarioRun(any(), any()) } returns mockScenarioRun()
-              scenarioRunSaved =
+              every { workflowService.launchScenarioRun(any(), any()) } returns
+                  makeScenarioRun(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      solutionSaved.id!!,
+                      mutableListOf(datasetSaved.id!!))
+              val scenarioRunSaved =
                   scenariorunApiService.runScenario(
                       organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -601,26 +749,47 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC getScenarioRunLogs : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              connector = mockConnector()
-              connectorSaved = connectorApiService.registerConnector(connector)
-              organization = mockOrganization()
-              organizationSaved = organizationApiService.registerOrganization(organization)
-              dataset = mockDataset()
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              solution = mockSolution()
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
-              workspace = mockWorkspace()
-              workspaceSaved =
+              val connector = makeConnector()
+              val connectorSaved = connectorApiService.registerConnector(connector)
+              val organization =
+                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organizationSaved = organizationApiService.registerOrganization(organization)
+              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              val solution = makeSolution(organizationSaved.id!!)
+              val solutionSaved =
+                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val workspace =
+                  makeWorkspaceWithRole(
+                      organizationSaved.id!!,
+                      solutionSaved.id!!,
+                      userName = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
+              val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
-              scenario = mockScenario(role = role)
-              scenarioSaved =
+              val scenario =
+                  makeScenarioWithRole(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      solutionSaved.runTemplates!!.first().id,
+                      mutableListOf(datasetSaved.id!!),
+                      userName = TEST_USER_MAIL,
+                      role = role)
+              val scenarioSaved =
                   scenarioApiService.createScenario(
                       organizationSaved.id!!, workspaceSaved.id!!, scenario)
-              every { workflowService.launchScenarioRun(any(), any()) } returns mockScenarioRun()
-              scenarioRunSaved =
+              every { workflowService.launchScenarioRun(any(), any()) } returns
+                  makeScenarioRun(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      solutionSaved.id!!,
+                      mutableListOf(datasetSaved.id!!))
+              val scenarioRunSaved =
                   scenariorunApiService.runScenario(
                       organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -653,26 +822,47 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC getScenarioRunCumulatedLogs : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              connector = mockConnector()
-              connectorSaved = connectorApiService.registerConnector(connector)
-              organization = mockOrganization()
-              organizationSaved = organizationApiService.registerOrganization(organization)
-              dataset = mockDataset()
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              solution = mockSolution()
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
-              workspace = mockWorkspace()
-              workspaceSaved =
+              val connector = makeConnector()
+              val connectorSaved = connectorApiService.registerConnector(connector)
+              val organization =
+                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organizationSaved = organizationApiService.registerOrganization(organization)
+              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              val solution = makeSolution(organizationSaved.id!!)
+              val solutionSaved =
+                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val workspace =
+                  makeWorkspaceWithRole(
+                      organizationSaved.id!!,
+                      solutionSaved.id!!,
+                      userName = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
+              val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
-              scenario = mockScenario(role = role)
-              scenarioSaved =
+              val scenario =
+                  makeScenarioWithRole(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      solutionSaved.runTemplates!!.first().id,
+                      mutableListOf(datasetSaved.id!!),
+                      userName = TEST_USER_MAIL,
+                      role = role)
+              val scenarioSaved =
                   scenarioApiService.createScenario(
                       organizationSaved.id!!, workspaceSaved.id!!, scenario)
-              every { workflowService.launchScenarioRun(any(), any()) } returns mockScenarioRun()
-              scenarioRunSaved =
+              every { workflowService.launchScenarioRun(any(), any()) } returns
+                  makeScenarioRun(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      solutionSaved.id!!,
+                      mutableListOf(datasetSaved.id!!))
+              val scenarioRunSaved =
                   scenariorunApiService.runScenario(
                       organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -705,26 +895,46 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC getWorkspaceScenarioRuns : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              connector = mockConnector()
-              connectorSaved = connectorApiService.registerConnector(connector)
-              organization = mockOrganization()
-              organizationSaved = organizationApiService.registerOrganization(organization)
-              dataset = mockDataset()
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              solution = mockSolution()
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
-              workspace = mockWorkspace(role = role)
-              workspaceSaved =
+              val connector = makeConnector()
+              val connectorSaved = connectorApiService.registerConnector(connector)
+              val organization =
+                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organizationSaved = organizationApiService.registerOrganization(organization)
+              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              val solution = makeSolution(organizationSaved.id!!)
+              val solutionSaved =
+                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val workspace =
+                  makeWorkspaceWithRole(
+                      organizationSaved.id!!,
+                      solutionSaved.id!!,
+                      userName = TEST_USER_MAIL,
+                      role = role)
+              val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
-              scenario = mockScenario()
-              scenarioSaved =
+              val scenario =
+                  makeScenarioWithRole(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      solutionSaved.runTemplates!!.first().id,
+                      mutableListOf(datasetSaved.id!!),
+                      userName = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
+              val scenarioSaved =
                   scenarioApiService.createScenario(
                       organizationSaved.id!!, workspaceSaved.id!!, scenario)
-              every { workflowService.launchScenarioRun(any(), any()) } returns mockScenarioRun()
-              scenarioRunSaved =
-                  scenariorunApiService.runScenario(
-                      organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { workflowService.launchScenarioRun(any(), any()) } returns
+                  makeScenarioRun(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      solutionSaved.id!!,
+                      mutableListOf(datasetSaved.id!!))
+              scenariorunApiService.runScenario(
+                  organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -757,26 +967,46 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC getScenarioRuns : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              connector = mockConnector()
-              connectorSaved = connectorApiService.registerConnector(connector)
-              organization = mockOrganization()
-              organizationSaved = organizationApiService.registerOrganization(organization)
-              dataset = mockDataset()
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              solution = mockSolution()
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
-              workspace = mockWorkspace()
-              workspaceSaved =
+              val connector = makeConnector()
+              val connectorSaved = connectorApiService.registerConnector(connector)
+              val organization =
+                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organizationSaved = organizationApiService.registerOrganization(organization)
+              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              val solution = makeSolution(organizationSaved.id!!)
+              val solutionSaved =
+                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val workspace =
+                  makeWorkspaceWithRole(
+                      organizationSaved.id!!,
+                      solutionSaved.id!!,
+                      userName = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
+              val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
-              scenario = mockScenario(role = role)
-              scenarioSaved =
+              val scenario =
+                  makeScenarioWithRole(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      solutionSaved.runTemplates!!.first().id,
+                      mutableListOf(datasetSaved.id!!),
+                      userName = TEST_USER_MAIL,
+                      role = role)
+              val scenarioSaved =
                   scenarioApiService.createScenario(
                       organizationSaved.id!!, workspaceSaved.id!!, scenario)
-              every { workflowService.launchScenarioRun(any(), any()) } returns mockScenarioRun()
-              scenarioRunSaved =
-                  scenariorunApiService.runScenario(
-                      organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { workflowService.launchScenarioRun(any(), any()) } returns
+                  makeScenarioRun(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      solutionSaved.id!!,
+                      mutableListOf(datasetSaved.id!!))
+              scenariorunApiService.runScenario(
+                  organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -813,26 +1043,46 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC runScenario : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              connector = mockConnector()
-              connectorSaved = connectorApiService.registerConnector(connector)
-              organization = mockOrganization()
-              organizationSaved = organizationApiService.registerOrganization(organization)
-              dataset = mockDataset()
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              solution = mockSolution()
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
-              workspace = mockWorkspace()
-              workspaceSaved =
+              val connector = makeConnector()
+              val connectorSaved = connectorApiService.registerConnector(connector)
+              val organization =
+                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organizationSaved = organizationApiService.registerOrganization(organization)
+              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              val solution = makeSolution(organizationSaved.id!!)
+              val solutionSaved =
+                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val workspace =
+                  makeWorkspaceWithRole(
+                      organizationSaved.id!!,
+                      solutionSaved.id!!,
+                      userName = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
+              val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
-              scenario = mockScenario(role = role)
-              scenarioSaved =
+              val scenario =
+                  makeScenarioWithRole(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      solutionSaved.runTemplates!!.first().id,
+                      mutableListOf(datasetSaved.id!!),
+                      userName = TEST_USER_MAIL,
+                      role = role)
+              val scenarioSaved =
                   scenarioApiService.createScenario(
                       organizationSaved.id!!, workspaceSaved.id!!, scenario)
-              every { workflowService.launchScenarioRun(any(), any()) } returns mockScenarioRun()
-              scenarioRunSaved =
-                  scenariorunApiService.runScenario(
-                      organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { workflowService.launchScenarioRun(any(), any()) } returns
+                  makeScenarioRun(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      solutionSaved.id!!,
+                      mutableListOf(datasetSaved.id!!))
+              scenariorunApiService.runScenario(
+                  organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -871,26 +1121,47 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC stopScenarioRun : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              connector = mockConnector()
-              connectorSaved = connectorApiService.registerConnector(connector)
-              organization = mockOrganization()
-              organizationSaved = organizationApiService.registerOrganization(organization)
-              dataset = mockDataset()
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              solution = mockSolution()
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
-              workspace = mockWorkspace()
-              workspaceSaved =
+              val connector = makeConnector()
+              val connectorSaved = connectorApiService.registerConnector(connector)
+              val organization =
+                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organizationSaved = organizationApiService.registerOrganization(organization)
+              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              val solution = makeSolution(organizationSaved.id!!)
+              val solutionSaved =
+                  solutionApiService.createSolution(organizationSaved.id!!, solution)
+              val workspace =
+                  makeWorkspaceWithRole(
+                      organizationSaved.id!!,
+                      solutionSaved.id!!,
+                      userName = TEST_USER_MAIL,
+                      role = ROLE_ADMIN)
+              val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
-              scenario = mockScenario(role = role)
-              scenarioSaved =
+              val scenario =
+                  makeScenarioWithRole(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      solutionSaved.runTemplates!!.first().id,
+                      mutableListOf(datasetSaved.id!!),
+                      userName = TEST_USER_MAIL,
+                      role = role)
+              val scenarioSaved =
                   scenarioApiService.createScenario(
                       organizationSaved.id!!, workspaceSaved.id!!, scenario)
-              every { workflowService.launchScenarioRun(any(), any()) } returns mockScenarioRun()
-              scenarioRunSaved =
+              every { workflowService.launchScenarioRun(any(), any()) } returns
+                  makeScenarioRun(
+                      organizationSaved.id!!,
+                      workspaceSaved.id!!,
+                      solutionSaved.id!!,
+                      solutionSaved.id!!,
+                      mutableListOf(datasetSaved.id!!))
+              val scenarioRunSaved =
                   scenariorunApiService.runScenario(
                       organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
-              every { getCurrentAccountIdentifier(any()) } returns FAKE_MAIL
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
@@ -916,7 +1187,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
             }
           }
 
-  private fun mockWorkspaceEventHubInfo(eventHubAvailable: Boolean): WorkspaceEventHubInfo {
+  fun makeWorkspaceEventHubInfo(eventHubAvailable: Boolean): WorkspaceEventHubInfo {
     return WorkspaceEventHubInfo(
         eventHubNamespace = "eventHubNamespace",
         eventHubAvailable = eventHubAvailable,
@@ -929,7 +1200,7 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                 .SHARED_ACCESS_POLICY)
   }
 
-  private fun mockConnector(name: String = "connector"): Connector {
+  fun makeConnector(name: String = "connector"): Connector {
     return Connector(
         key = UUID.randomUUID().toString(),
         name = name,
@@ -938,15 +1209,12 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
         ioTypes = listOf(Connector.IoTypes.read))
   }
 
-  fun mockDataset(
-      organizationId: String = organizationSaved.id!!,
-      name: String = "Dataset",
-      connector: Connector = connectorSaved,
-      roleName: String = FAKE_MAIL,
-      role: String = ROLE_ADMIN
+  fun makeDataset(
+      organizationId: String,
+      connector: Connector,
   ): Dataset {
     return Dataset(
-        name = name,
+        name = "Dataset",
         organizationId = organizationId,
         ownerId = "ownerId",
         connector =
@@ -958,9 +1226,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
     )
   }
 
-  fun mockSolution(organizationId: String = organizationSaved.id!!): Solution {
+  fun makeSolution(organizationId: String): Solution {
     return Solution(
-        id = "solutionId",
+        id = UUID.randomUUID().toString(),
         key = UUID.randomUUID().toString(),
         name = "My solution",
         organizationId = organizationId,
@@ -973,13 +1241,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                     description = "RunTemplate1 description")))
   }
 
-  fun mockOrganization(
-      id: String = "organizationId",
-      roleName: String = FAKE_MAIL,
-      role: String = ROLE_ADMIN
-  ): Organization {
+  fun makeOrganizationWithRole(userName: String, role: String): Organization {
     return Organization(
-        id = id,
+        id = UUID.randomUUID().toString(),
         name = "Organization Name",
         ownerId = "my.account-tester@cosmotech.com",
         security =
@@ -987,21 +1251,19 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                 default = ROLE_NONE,
                 accessControlList =
                     mutableListOf(
-                        OrganizationAccessControl(id = CONNECTED_READER_USER, role = "reader"),
                         OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"),
-                        OrganizationAccessControl(roleName, role))))
+                        OrganizationAccessControl(userName, role))))
   }
 
-  fun mockWorkspace(
-      organizationId: String = organizationSaved.id!!,
-      solutionId: String = solutionSaved.id!!,
-      name: String = "workspace",
-      roleName: String = FAKE_MAIL,
-      role: String = ROLE_ADMIN
+  fun makeWorkspaceWithRole(
+      organizationId: String,
+      solutionId: String,
+      userName: String,
+      role: String
   ): Workspace {
     return Workspace(
         key = UUID.randomUUID().toString(),
-        name = name,
+        name = "Workspace",
         solution =
             WorkspaceSolution(
                 solutionId = solutionId,
@@ -1012,22 +1274,21 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
             WorkspaceSecurity(
                 ROLE_NONE,
                 mutableListOf(
-                    WorkspaceAccessControl(roleName, role),
+                    WorkspaceAccessControl(userName, role),
                     WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
   }
 
-  fun mockScenario(
-      organizationId: String = organizationSaved.id!!,
-      workspaceId: String = workspaceSaved.id!!,
-      solutionId: String = solutionSaved.id!!,
-      runTemplateId: String = solutionSaved.runTemplates?.get(0)?.id!!,
-      name: String = "scenario",
-      datasetList: MutableList<String> = mutableListOf(datasetSaved.id!!),
-      userName: String = FAKE_MAIL,
-      role: String = ROLE_ADMIN
+  fun makeScenarioWithRole(
+      organizationId: String,
+      workspaceId: String,
+      solutionId: String,
+      runTemplateId: String,
+      datasetList: MutableList<String>,
+      userName: String,
+      role: String,
   ): Scenario {
     return Scenario(
-        name = name,
+        name = UUID.randomUUID().toString(),
         organizationId = organizationId,
         workspaceId = workspaceId,
         solutionId = solutionId,
@@ -1042,12 +1303,12 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
                     ScenarioAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
   }
 
-  fun mockScenarioRun(
-      organizationId: String = organizationSaved.id!!,
-      workspaceId: String = workspaceSaved.id!!,
-      scenarioId: String = scenarioSaved.id!!,
-      solutionId: String = solutionSaved.id!!,
-      datasetList: MutableList<String> = mutableListOf(datasetSaved.id!!)
+  fun makeScenarioRun(
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String,
+      solutionId: String,
+      datasetList: MutableList<String>
   ): ScenarioRun {
     return ScenarioRun(
         organizationId = organizationId,
