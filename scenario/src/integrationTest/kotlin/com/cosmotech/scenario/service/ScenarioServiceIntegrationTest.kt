@@ -67,20 +67,20 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
 
-const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
-const val CONNECTED_NONE_USER = "test.none@cosmotech.com"
-const val CONNECTED_EDITOR_USER = "test.editor@cosmotech.com"
-const val CONNECTED_VALIDATOR_USER = "test.validator@cosmotech.com"
-const val CONNECTED_READER_USER = "test.reader@cosmotech.com"
-const val CONNECTED_VIEWER_USER = "test.user@cosmotech.com"
-const val FAKE_MAIL = "fake@mail.fr"
-
 @ActiveProfiles(profiles = ["scenario-test"])
 @ExtendWith(MockKExtension::class)
 @ExtendWith(SpringExtension::class)
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
+
+  val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
+  val CONNECTED_NONE_USER = "test.none@cosmotech.com"
+  val CONNECTED_EDITOR_USER = "test.editor@cosmotech.com"
+  val CONNECTED_VALIDATOR_USER = "test.validator@cosmotech.com"
+  val CONNECTED_READER_USER = "test.reader@cosmotech.com"
+  val CONNECTED_VIEWER_USER = "test.user@cosmotech.com"
+  val TEST_USER_MAIL = "fake@mail.fr"
 
   private val logger = LoggerFactory.getLogger(ScenarioServiceIntegrationTest::class.java)
   private val defaultName = "my.account-tester@cosmotech.com"
@@ -500,7 +500,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   fun `test RBAC AccessControls on Scenario as User Admin`() {
 
     logger.info("should add an Access Control and assert it has been added")
-    val scenarioAccessControl = ScenarioAccessControl(FAKE_MAIL, ROLE_VIEWER)
+    val scenarioAccessControl = ScenarioAccessControl(TEST_USER_MAIL, ROLE_VIEWER)
     var scenarioAccessControlRegistered =
         scenarioApiService.addScenarioAccessControl(
             organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, scenarioAccessControl)
@@ -509,7 +509,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("should get the Access Control and assert it is the one created")
     scenarioAccessControlRegistered =
         scenarioApiService.getScenarioAccessControl(
-            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, FAKE_MAIL)
+            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, TEST_USER_MAIL)
     assertEquals(scenarioAccessControl, scenarioAccessControlRegistered)
 
     logger.info("should update the Access Control and assert it has been updated")
@@ -518,7 +518,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
             organizationSaved.id!!,
             workspaceSaved.id!!,
             scenarioSaved.id!!,
-            FAKE_MAIL,
+            TEST_USER_MAIL,
             ScenarioRole(ROLE_EDITOR))
     assertEquals(ROLE_EDITOR, scenarioAccessControlRegistered.role)
 
@@ -530,11 +530,11 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("should remove the Access Control and assert it has been removed")
     scenarioApiService.removeScenarioAccessControl(
-        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, FAKE_MAIL)
+        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, TEST_USER_MAIL)
     assertThrows<CsmResourceNotFoundException> {
       scenarioAccessControlRegistered =
           scenarioApiService.getScenarioAccessControl(
-              organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, FAKE_MAIL)
+              organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, TEST_USER_MAIL)
     }
   }
 
@@ -544,7 +544,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_READER_USER
 
     logger.info("should throw CsmAccessForbiddenException when trying to add ScenarioAccessControl")
-    val scenarioAccessControl = ScenarioAccessControl(FAKE_MAIL, ROLE_VIEWER)
+    val scenarioAccessControl = ScenarioAccessControl(TEST_USER_MAIL, ROLE_VIEWER)
     assertThrows<CsmAccessForbiddenException> {
       scenarioApiService.addScenarioAccessControl(
           organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, scenarioAccessControl)
@@ -553,7 +553,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("should throw CsmAccessForbiddenException when trying to get ScenarioAccessControl")
     assertThrows<CsmAccessForbiddenException> {
       scenarioApiService.getScenarioAccessControl(
-          organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, FAKE_MAIL)
+          organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, TEST_USER_MAIL)
     }
 
     logger.info(
@@ -563,7 +563,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
           organizationSaved.id!!,
           workspaceSaved.id!!,
           scenarioSaved.id!!,
-          FAKE_MAIL,
+          TEST_USER_MAIL,
           ScenarioRole(ROLE_VIEWER))
     }
 
@@ -577,7 +577,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
         "should throw CsmAccessForbiddenException when trying to remove ScenarioAccessControl")
     assertThrows<CsmAccessForbiddenException> {
       scenarioApiService.removeScenarioAccessControl(
-          organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, FAKE_MAIL)
+          organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, TEST_USER_MAIL)
     }
   }
 

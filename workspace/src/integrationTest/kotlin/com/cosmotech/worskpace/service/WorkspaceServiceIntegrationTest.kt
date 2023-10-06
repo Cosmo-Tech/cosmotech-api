@@ -48,10 +48,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
 
-const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
-const val CONNECTED_DEFAULT_USER = "test.user@cosmotech.com"
-const val FAKE_MAIL = "fake@mail.fr"
-
 @ActiveProfiles(profiles = ["workspace-test"])
 @ExtendWith(MockKExtension::class)
 @ExtendWith(SpringExtension::class)
@@ -59,7 +55,9 @@ const val FAKE_MAIL = "fake@mail.fr"
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Suppress("FunctionName")
 class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
-
+  val TEST_USER_MAIL = "testuser@mail.fr"
+  val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
+  val CONNECTED_DEFAULT_USER = "test.user@cosmotech.com"
   private val logger = LoggerFactory.getLogger(WorkspaceServiceIntegrationTest::class.java)
 
   @MockK(relaxed = true) private lateinit var azureStorageBlobServiceClient: BlobServiceClient
@@ -268,7 +266,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   fun `test RBAC AccessControls on Workspace as User Admin`() {
 
     logger.info("should add a new access control")
-    val workspaceAccessControl = WorkspaceAccessControl(FAKE_MAIL, ROLE_VIEWER)
+    val workspaceAccessControl = WorkspaceAccessControl(TEST_USER_MAIL, ROLE_VIEWER)
     var workspaceAccessControlRegistered =
         workspaceApiService.addWorkspaceAccessControl(
             organizationSaved.id!!, workspaceSaved.id!!, workspaceAccessControl)
@@ -277,13 +275,13 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("should get the access control")
     workspaceAccessControlRegistered =
         workspaceApiService.getWorkspaceAccessControl(
-            organizationSaved.id!!, workspaceSaved.id!!, FAKE_MAIL)
+            organizationSaved.id!!, workspaceSaved.id!!, TEST_USER_MAIL)
     assertEquals(workspaceAccessControl, workspaceAccessControlRegistered)
 
     logger.info("should update the access control")
     workspaceAccessControlRegistered =
         workspaceApiService.updateWorkspaceAccessControl(
-            organizationSaved.id!!, workspaceSaved.id!!, FAKE_MAIL, WorkspaceRole(ROLE_EDITOR))
+            organizationSaved.id!!, workspaceSaved.id!!, TEST_USER_MAIL, WorkspaceRole(ROLE_EDITOR))
     assertEquals(ROLE_EDITOR, workspaceAccessControlRegistered.role)
 
     logger.info("should get the list of users and assert there are 3")
@@ -293,11 +291,11 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("should remove the access control")
     workspaceApiService.removeWorkspaceAccessControl(
-        organizationSaved.id!!, workspaceSaved.id!!, FAKE_MAIL)
+        organizationSaved.id!!, workspaceSaved.id!!, TEST_USER_MAIL)
     assertThrows<CsmResourceNotFoundException> {
       workspaceAccessControlRegistered =
           workspaceApiService.getWorkspaceAccessControl(
-              organizationSaved.id!!, workspaceSaved.id!!, FAKE_MAIL)
+              organizationSaved.id!!, workspaceSaved.id!!, TEST_USER_MAIL)
     }
   }
 
@@ -307,7 +305,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
 
     logger.info("should throw CsmAccessForbiddenException when adding a new access control")
-    val workspaceAccessControl = WorkspaceAccessControl(FAKE_MAIL, ROLE_VIEWER)
+    val workspaceAccessControl = WorkspaceAccessControl(TEST_USER_MAIL, ROLE_VIEWER)
     assertThrows<CsmAccessForbiddenException> {
       workspaceApiService.addWorkspaceAccessControl(
           organizationSaved.id!!, workspaceSaved.id!!, workspaceAccessControl)
@@ -322,7 +320,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("should throw CsmAccessForbiddenException when updating the access control")
     assertThrows<CsmAccessForbiddenException> {
       workspaceApiService.updateWorkspaceAccessControl(
-          organizationSaved.id!!, workspaceSaved.id!!, FAKE_MAIL, WorkspaceRole(ROLE_VIEWER))
+          organizationSaved.id!!, workspaceSaved.id!!, TEST_USER_MAIL, WorkspaceRole(ROLE_VIEWER))
     }
 
     logger.info("should throw CsmAccessForbiddenException when getting the list of users")
@@ -333,7 +331,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("should throw CsmAccessForbiddenException when removing the access control")
     assertThrows<CsmAccessForbiddenException> {
       workspaceApiService.removeWorkspaceAccessControl(
-          organizationSaved.id!!, workspaceSaved.id!!, FAKE_MAIL)
+          organizationSaved.id!!, workspaceSaved.id!!, TEST_USER_MAIL)
     }
   }
 
