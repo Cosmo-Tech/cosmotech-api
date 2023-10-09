@@ -391,11 +391,6 @@ entity ScenarioRunResourceRequested {
     memory: Long
 }
 
-entity ScenarioRunResult {
-    id: String
-    results: List<Map>
-}
-
 entity ScenarioRunSearch {
     solutionId: String
     runTemplateId: String
@@ -500,7 +495,6 @@ entity SourceInfo {
     name: String
     * location: String
     path: String
-    * type: String
 }
 
 entity SubDatasetGraphQuery {
