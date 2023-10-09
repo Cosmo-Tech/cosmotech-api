@@ -9,6 +9,7 @@ Cosmo Tech Platform API
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | affinity | object | `{}` | default behavior is a pod anti-affinity, which prevents pods from co-locating on a same node |
+| api.multiTenant | bool | `true` |  |
 | api.probes.liveness.failureThreshold | int | `5` |  |
 | api.probes.liveness.timeoutSeconds | int | `10` |  |
 | api.probes.readiness.failureThreshold | int | `5` |  |
@@ -17,7 +18,7 @@ Cosmo Tech Platform API
 | api.probes.startup.initialDelaySeconds | int | `60` |  |
 | api.serviceMonitor.additionalLabels | object | `{}` |  |
 | api.serviceMonitor.enabled | bool | `true` |  |
-| api.serviceMonitor.namespace | string | `"phoenix-monitoring"` |  |
+| api.serviceMonitor.namespace | string | `"cosmotech-monitoring"` |  |
 | api.servletContextPath | string | `"/"` |  |
 | api.version | string | `"latest"` |  |
 | argo.imageCredentials.password | string | `""` | password for registry to use for pulling the Workflow images. Useful if you are using a private registry |
