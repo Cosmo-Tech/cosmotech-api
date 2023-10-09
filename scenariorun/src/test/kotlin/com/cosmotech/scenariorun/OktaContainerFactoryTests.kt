@@ -3466,7 +3466,7 @@ class OktaContainerFactoryTests {
         name = "Test Run",
         csmSimulation = "TestSimulation",
         computeSize = "highcpupool",
-        orchestratorType = RunTemplateOrchestrator.csmMinusOrc,
+        orchestratorType = RunTemplateOrchestrator.csmOrc,
     )
   }
 

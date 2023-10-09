@@ -726,7 +726,9 @@ components:
     RunTemplateOrchestrator:
       type: string
       description: the Orchestrator to use for the Run Template
-      enum: ["argo-workflow","csm-orc"]
+      enum:
+        - argoWorkflow
+        - csmOrc
     RunTemplateHandlerId:
       type: string
       description: the Run Template step handler identifier
