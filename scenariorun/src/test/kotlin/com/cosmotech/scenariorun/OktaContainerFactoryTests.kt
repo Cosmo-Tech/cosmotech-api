@@ -2850,7 +2850,7 @@ class OktaContainerFactoryTests {
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
-            "CSM_CONTAINER_MODE" to "csm-orc",
+            "CSM_CONTAINER_MODE" to "csmOrc",
             "CSM_PROBES_MEASURES_TOPIC" to
                 "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
             "CSM_CONTROL_PLANE_TOPIC" to
@@ -3255,7 +3255,7 @@ class OktaContainerFactoryTests {
         sendInputParametersToDataWarehouse = true,
         preRun = true,
         postRun = true,
-        orchestratorType = RunTemplateOrchestrator.argoMinusWorkflow,
+        orchestratorType = RunTemplateOrchestrator.argoWorkflow,
     )
   }
 
@@ -3275,7 +3275,7 @@ class OktaContainerFactoryTests {
         sendInputParametersToDataWarehouse = true,
         preRun = true,
         postRun = true,
-        orchestratorType = RunTemplateOrchestrator.argoMinusWorkflow,
+        orchestratorType = RunTemplateOrchestrator.argoWorkflow,
     )
   }
 
@@ -3295,7 +3295,7 @@ class OktaContainerFactoryTests {
         run = true,
         preRun = true,
         postRun = true,
-        orchestratorType = RunTemplateOrchestrator.argoMinusWorkflow,
+        orchestratorType = RunTemplateOrchestrator.argoWorkflow,
     )
   }
 
@@ -3315,7 +3315,7 @@ class OktaContainerFactoryTests {
         sendInputParametersToDataWarehouse = true,
         preRun = true,
         postRun = true,
-        orchestratorType = RunTemplateOrchestrator.argoMinusWorkflow,
+        orchestratorType = RunTemplateOrchestrator.argoWorkflow,
     )
   }
 
@@ -3333,7 +3333,7 @@ class OktaContainerFactoryTests {
         sendInputParametersToDataWarehouse = true,
         preRun = true,
         postRun = true,
-        orchestratorType = RunTemplateOrchestrator.argoMinusWorkflow,
+        orchestratorType = RunTemplateOrchestrator.argoWorkflow,
     )
   }
 
@@ -3352,7 +3352,7 @@ class OktaContainerFactoryTests {
         sendInputParametersToDataWarehouse = true,
         preRun = true,
         postRun = true,
-        orchestratorType = RunTemplateOrchestrator.argoMinusWorkflow,
+        orchestratorType = RunTemplateOrchestrator.argoWorkflow,
     )
   }
 
@@ -3371,7 +3371,7 @@ class OktaContainerFactoryTests {
         sendInputParametersToDataWarehouse = true,
         preRun = true,
         postRun = true,
-        orchestratorType = RunTemplateOrchestrator.argoMinusWorkflow,
+        orchestratorType = RunTemplateOrchestrator.argoWorkflow,
     )
   }
 
@@ -3390,7 +3390,7 @@ class OktaContainerFactoryTests {
         sendDatasetsToDataWarehouse = true,
         preRun = true,
         postRun = true,
-        orchestratorType = RunTemplateOrchestrator.argoMinusWorkflow,
+        orchestratorType = RunTemplateOrchestrator.argoWorkflow,
     )
   }
 
@@ -3409,7 +3409,7 @@ class OktaContainerFactoryTests {
         sendInputParametersToDataWarehouse = false,
         preRun = false,
         postRun = false,
-        orchestratorType = RunTemplateOrchestrator.argoMinusWorkflow,
+        orchestratorType = RunTemplateOrchestrator.argoWorkflow,
     )
   }
 
@@ -3433,7 +3433,7 @@ class OktaContainerFactoryTests {
         sendInputParametersToDataWarehouse = true,
         preRun = true,
         postRun = true,
-        orchestratorType = RunTemplateOrchestrator.argoMinusWorkflow,
+        orchestratorType = RunTemplateOrchestrator.argoWorkflow,
     )
   }
 
@@ -3457,7 +3457,7 @@ class OktaContainerFactoryTests {
         sendInputParametersToDataWarehouse = true,
         preRun = true,
         postRun = true,
-        orchestratorType = RunTemplateOrchestrator.argoMinusWorkflow,
+        orchestratorType = RunTemplateOrchestrator.argoWorkflow,
     )
   }
   private fun getCSMOrcRunTemplate(): RunTemplate {
