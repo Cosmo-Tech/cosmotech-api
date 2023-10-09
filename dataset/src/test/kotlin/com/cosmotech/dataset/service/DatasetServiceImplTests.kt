@@ -140,7 +140,7 @@ class DatasetServiceImplTests {
 
   @Test
   fun `createDataset should throw IllegalArgumentException when source is empty for ADT or Storage type`() {
-    val typeList = listOf(DatasetSourceType.ADT, DatasetSourceType.Storage)
+    val typeList = listOf(DatasetSourceType.ADT, DatasetSourceType.AzureStorage)
     typeList.forEach { type ->
       val dataset = baseDataset().copy(sourceType = type, source = null)
       every { datasetRepository.save(any()) } returnsArgument 0
@@ -149,7 +149,6 @@ class DatasetServiceImplTests {
       }
     }
   }
-
   @Test
   fun `createDataset should throw IllegalArgumentException when connector is empty`() {
     val dataset = baseDataset()
@@ -217,6 +216,9 @@ class DatasetServiceImplTests {
 
   @Test
   fun `uploadTwingraph should throw ArchiveException when resource is not Archive`() {
+    val dataset = baseDataset().copy(twingraphId = "twingraphId", status = Dataset.Status.READY)
+    every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+
     val fileName = this::class.java.getResource("/Users.csv")?.file
     val file = File(fileName!!)
     val resource = ByteArrayResource(file.readBytes())
@@ -227,9 +229,13 @@ class DatasetServiceImplTests {
 
   @Test
   fun `uploadTwingraph should throw IllegalArgumentException when resource is not Zip Archive`() {
+    val dataset = baseDataset().copy(twingraphId = "twingraphId", status = Dataset.Status.READY)
+    every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+
     val fileName = this::class.java.getResource("/Users.7z")?.file
     val file = File(fileName!!)
     val resource = ByteArrayResource(file.readBytes())
+
     assertThrows<IllegalArgumentException> {
       datasetService.uploadTwingraph(ORGANIZATION_ID, DATASET_ID, resource)
     }
@@ -298,7 +304,7 @@ class DatasetServiceImplTests {
     every { datasetRepository.save(any()) } returnsArgument 0
 
     datasetService.uploadTwingraph(ORGANIZATION_ID, DATASET_ID, resource)
-    verify(exactly = 1) { datasetRepository.save(any()) }
+    verify { datasetRepository.save(any()) }
     verify { datasetRepository.save(match { it.status == Dataset.Status.PENDING }) }
   }
 

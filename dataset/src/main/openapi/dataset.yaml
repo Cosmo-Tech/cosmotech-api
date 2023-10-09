@@ -1343,7 +1343,7 @@ components:
       description: the Dataset Source Type
       enum:
         - ADT
-        - Storage
+        - AzureStorage
         - File
         - None
     DatasetTwinGraphInfo:

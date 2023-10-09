@@ -147,7 +147,7 @@ class DatasetServiceImpl(
         ?: throw IllegalArgumentException("Name cannot be null or blank")
 
     dataset.takeUnless {
-      dataset.sourceType in listOf(DatasetSourceType.ADT, DatasetSourceType.Storage) &&
+      dataset.sourceType in listOf(DatasetSourceType.ADT, DatasetSourceType.AzureStorage) &&
           dataset.source == null
     }
         ?: throw IllegalArgumentException(
@@ -322,7 +322,7 @@ class DatasetServiceImpl(
         }
       }
       DatasetSourceType.ADT,
-      DatasetSourceType.Storage -> {
+      DatasetSourceType.AzureStorage -> {
         val twingraphImportJobInfoRequest =
             TwingraphImportJobInfoRequest(this, jobId!!, organizationId)
         this.eventPublisher.publishEvent(twingraphImportJobInfoRequest)
@@ -581,30 +581,30 @@ class DatasetServiceImpl(
     val dataset = getDatasetWithStatus(organizationId, datasetId)
     csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE)
     var result = ""
-    trx(dataset) { localDataset ->
-      when (type) {
-        TYPE_NODE ->
-            graphProperties.forEach {
-              result +=
-                  csmRedisGraph
-                      .query(
-                          localDataset.twingraphId,
-                          "CREATE (a:${it.type} {id:'${it.name}',${it.params}}) RETURN a")
-                      .toJsonString()
-            }
-        TYPE_RELATIONSHIP ->
-            graphProperties.forEach {
-              result +=
-                  csmRedisGraph
-                      .query(
-                          dataset.twingraphId,
-                          "MATCH (a),(b) WHERE a.id='${it.source}' AND b.id='${it.target}'" +
-                              "CREATE (a)-[r:${it.type} {id:'${it.name}', ${it.params}}]->(b) RETURN r")
-                      .toJsonString()
-            }
-        else -> throw CsmResourceNotFoundException("Bad Type : $type")
-      }
+    //    trx(dataset) { localDataset ->
+    when (type) {
+      TYPE_NODE ->
+          graphProperties.forEach {
+            result +=
+                csmRedisGraph
+                    .query(
+                        dataset.twingraphId,
+                        "CREATE (a:${it.type} {id:'${it.name}',${it.params}}) RETURN a")
+                    .toJsonString()
+          }
+      TYPE_RELATIONSHIP ->
+          graphProperties.forEach {
+            result +=
+                csmRedisGraph
+                    .query(
+                        dataset.twingraphId,
+                        "MATCH (a),(b) WHERE a.id='${it.source}' AND b.id='${it.target}'" +
+                            "CREATE (a)-[r:${it.type} {id:'${it.name}', ${it.params}}]->(b) RETURN r")
+                    .toJsonString()
+          }
+      else -> throw CsmResourceNotFoundException("Bad Type : $type")
     }
+    //    }
     return result
   }
 
@@ -615,7 +615,7 @@ class DatasetServiceImpl(
       ids: List<String>
   ): String {
     // This call verify by itself that we have the read authorization in the dataset
-    val dataset = getDatasetWithStatus(organizationId, datasetId, status = Dataset.Status.READY)
+    val dataset = getDatasetWithStatus(organizationId, datasetId)
     var result = ""
     when (type) {
       TYPE_NODE ->
@@ -644,7 +644,7 @@ class DatasetServiceImpl(
       type: String,
       graphProperties: List<GraphProperties>
   ): String {
-    val dataset = getDatasetWithStatus(organizationId, datasetId, status = Dataset.Status.READY)
+    val dataset = getDatasetWithStatus(organizationId, datasetId)
     csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE)
     var result = ""
     trx(dataset) { localDataset ->
