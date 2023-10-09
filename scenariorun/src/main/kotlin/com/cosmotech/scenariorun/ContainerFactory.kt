@@ -140,7 +140,7 @@ private val LABEL_SIZING =
         NODE_LABEL_HIGH_MEMORY to HIGH_MEMORY_SIZING,
     )
 
-private val CSM_ORC_ORCHESTRATOR_VALUE = RunTemplateOrchestrator.csmMinusOrc.value
+private val CSM_ORC_ORCHESTRATOR_VALUE = RunTemplateOrchestrator.csmOrc.value
 
 @Component
 @Suppress("LargeClass", "TooManyFunctions")
