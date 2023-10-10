@@ -142,17 +142,15 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     connectorSaved = connectorApiService.registerConnector(makeConnector())
 
     organization = makeOrganization("Organization")
-    organizationSaved = organizationApiService.registerOrganization(organization)
-
     dataset = makeDataset("d-dataset-1", "dataset-1")
-    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-    //    materializeTwingraph(datasetSaved)
-
     dataset2 = makeDataset("d-dataset-2", "dataset-2")
   }
 
   @Test
   fun `test Dataset CRUD`() {
+
+    organizationSaved = organizationApiService.registerOrganization(organization)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
 
     val registeredDataset2 = datasetApiService.createDataset(organizationSaved.id!!, dataset2)
 
@@ -177,6 +175,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   fun `can delete dataset when user is not the owner and is Platform Admin`() {
 
     logger.info("Register dataset : ${dataset.id}...")
+    organizationSaved = organizationApiService.registerOrganization(organization)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
     assertNotNull(datasetSaved)
     logger.info("Change current user...")
@@ -196,6 +195,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   fun `can not delete dataset when user is not the owner and not Platform Admin`() {
 
     logger.info("Register dataset : ${dataset.id}...")
+    organizationSaved = organizationApiService.registerOrganization(organization)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
     assertNotNull(datasetSaved)
     logger.info("Change current user...")
@@ -211,6 +211,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   fun `can update dataset owner when user is not the owner and is Platform Admin`() {
 
     logger.info("Register dataset : ${dataset.id}...")
+    organizationSaved = organizationApiService.registerOrganization(organization)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
     assertNotNull(datasetSaved)
     logger.info("Change current user...")
@@ -233,6 +234,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   fun `cannot update dataset owner when user is not the owner and is not Platform Admin`() {
 
     logger.info("Register dataset : ${dataset.id}...")
+    organizationSaved = organizationApiService.registerOrganization(organization)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
     assertNotNull(datasetSaved)
     logger.info("Change current user...")
@@ -286,6 +288,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `test find All Datasets with different pagination params`() {
+    organizationSaved = organizationApiService.registerOrganization(organization)
     val numberOfDatasets = 20
     val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
     val expectedSize = 15
@@ -296,7 +299,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("should find all datasets and assert there are $numberOfDatasets")
     var datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, null, null)
-    assertEquals(numberOfDatasets + 1, datasetList.size)
+    assertEquals(numberOfDatasets, datasetList.size)
 
     logger.info("should find all datasets and assert it equals defaultPageSize: $defaultPageSize")
     datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, 0, null)
@@ -308,12 +311,12 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("should find all solutions and assert it returns the second / last page")
     datasetList = datasetApiService.findAllDatasets(organizationSaved.id!!, 1, expectedSize)
-    assertEquals(numberOfDatasets + 1 - expectedSize, datasetList.size)
+    assertEquals(numberOfDatasets - expectedSize, datasetList.size)
   }
 
   @Test
   fun `test find All Datasets with wrong pagination params`() {
-
+    organizationSaved = organizationApiService.registerOrganization(organization)
     datasetApiService.createDataset(organizationSaved.id!!, dataset)
 
     logger.info("Should throw IllegalArgumentException when page and size are zeros")
@@ -339,7 +342,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
         "loading nodes: Double=2, Single=1, Users=9 & relationships: Double=2, Single=1, Follows=2")
     val file = this::class.java.getResource("/integrationTest.zip")?.file
     val resource = ByteArrayResource(File(file!!).readBytes())
-
+    organizationSaved = organizationApiService.registerOrganization(organization)
     dataset = makeDataset("d-dataset-1", "dataset-1")
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
     datasetApiService.updateDataset(
@@ -396,6 +399,8 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   fun `Twingraph CRUD test`() {
 
     logger.info("Create Nodes")
+    organizationSaved = organizationApiService.registerOrganization(organization)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
     val nodeStart =
         datasetApiService.createTwingraphEntities(
             organizationSaved.id!!,
@@ -817,19 +822,20 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
               ROLE_USER to false,
-              //                  ROLE_NONE to true,
-              //                  ROLE_ADMIN to false,
-              )
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC downloadTwingraph : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
-              val organization = makeOrganizationWithRole()
+              val organization = makeOrganizationWithRole(role = role)
               organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset = makeDatasetWithRole(role = role)
+              val dataset = makeDatasetWithRole()
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
+
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               every { bulkQueryKey(any()) } returns "hash".toByteArray()
               jedisPool.resource.setex("hash", 10.toLong(), "hashValue")
@@ -844,7 +850,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
                       datasetApiService.downloadTwingraph(organizationSaved.id!!, "hash")
                     }
                 assertEquals(
-                    "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
                 assertDoesNotThrow {
