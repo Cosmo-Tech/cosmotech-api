@@ -4,6 +4,7 @@ package com.cosmotech.scenariorun.service
 
 import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
@@ -28,6 +29,8 @@ import com.cosmotech.scenariorun.workflow.WorkflowService
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
+import com.cosmotech.solution.domain.SolutionAccessControl
+import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.azure.WorkspaceEventHubInfo
@@ -308,7 +311,13 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
                 RunTemplate(
                     id = UUID.randomUUID().toString(),
                     name = "RunTemplate1",
-                    description = "RunTemplate1 description")))
+                    description = "RunTemplate1 description")),
+        security =
+            SolutionSecurity(
+                default = ROLE_NONE,
+                accessControlList =
+                    mutableListOf(
+                        SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
   }
 
   fun mockOrganization(id: String): Organization {

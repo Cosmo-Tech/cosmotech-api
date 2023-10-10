@@ -21,6 +21,8 @@ import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.Solution
+import com.cosmotech.solution.domain.SolutionAccessControl
+import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
@@ -360,7 +362,13 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
         key = UUID.randomUUID().toString(),
         name = "My solution",
         organizationId = organizationId,
-        ownerId = "ownerId")
+        ownerId = "ownerId",
+        security =
+            SolutionSecurity(
+                default = ROLE_NONE,
+                accessControlList =
+                    mutableListOf(
+                        SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
   }
 
   fun mockWorkspace(
