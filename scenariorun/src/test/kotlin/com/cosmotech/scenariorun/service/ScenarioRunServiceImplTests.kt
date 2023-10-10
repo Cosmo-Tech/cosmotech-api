@@ -10,6 +10,7 @@ import com.cosmotech.api.id.CsmIdGenerator
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.utils.*
 import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.domain.Organization
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenariorun.ContainerFactory
 import com.cosmotech.scenariorun.domain.ScenarioRun
@@ -27,7 +28,6 @@ import com.cosmotech.workspace.domain.WorkspaceSolution
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
-import io.mockk.impl.annotations.SpyK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -69,7 +69,7 @@ class ScenarioRunServiceImplTests {
   @MockK(relaxed = true) private lateinit var workflowService: WorkflowService
 
   @MockK(relaxed = true) private lateinit var scenarioApiService: ScenarioApiService
-  @SpyK private lateinit var csmRbac: CsmRbac
+  @MockK private lateinit var csmRbac: CsmRbac
 
   @MockK(relaxed = true) private lateinit var azureDataExplorerClient: AzureDataExplorerClient
   @MockK(relaxed = true) private lateinit var azureEventHubsClient: AzureEventHubsClient
@@ -124,6 +124,9 @@ class ScenarioRunServiceImplTests {
     val myScenarioRun =
         ScenarioRun(
             id = "sr-myscenariorun1",
+            organizationId = ORGANIZATION_ID,
+            workspaceId = WORKSPACE_ID,
+            scenarioId = "scenario",
             workspaceKey = "my-workspaceKey",
             containers =
                 listOf(
@@ -136,7 +139,6 @@ class ScenarioRunServiceImplTests {
 
     val scenarioRunById =
         this.scenarioRunServiceImpl.findScenarioRunById(ORGANIZATION_ID, myScenarioRun.id!!)
-
     assertNotNull(scenarioRunById)
     assertNotNull(scenarioRunById.id)
     assertEquals(myScenarioRun.id, scenarioRunById.id)
@@ -218,7 +220,8 @@ class ScenarioRunServiceImplTests {
     every { scenarioRunRepository.findByWorkspaceId(any(), any()).toList() } returns
         listOf(myScenarioRun1, myScenarioRun2).toMutableList()
     every { csmPlatformProperties.twincache.scenariorun.defaultPageSize } returns 5
-
+    every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns mockk()
+    every { csmRbac.verify(any(), any(), any()) } returns Unit
     val scenarioRuns =
         this.scenarioRunServiceImpl.getWorkspaceScenarioRuns(ORGANIZATION_ID, WORKSPACE_ID, 0, 10)
 
@@ -256,7 +259,8 @@ class ScenarioRunServiceImplTests {
                         name = "my-container22",
                         envVars = mapOf("KEY" to "value"),
                         image = "rhel:7")))
-
+    every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns
+        Organization(id = ORGANIZATION_ID)
     every { csmPlatformProperties.twincache.scenariorun.defaultPageSize } returns 5
     every { scenarioRunRepository.findByPredicate(any(), any()).toList() } returns
         listOf(myScenarioRun1, myScenarioRun2)
@@ -295,7 +299,9 @@ class ScenarioRunServiceImplTests {
             containers = containers)
     every { workflowService.launchScenarioRun(any(), null) } returns myScenarioRun
     every { idGenerator.generate("scenariorun", "sr-") } returns myScenarioRun.id!!
-
+    every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns
+        Organization(id = ORGANIZATION_ID)
+    every { csmRbac.verify(any(), any(), any()) } returns Unit
     every { scenarioRunRepository.save(any()) } returns myScenarioRun
 
     val scenarioRun =
@@ -324,7 +330,7 @@ class ScenarioRunServiceImplTests {
     every { solution.id } returns SOLUTION_ID
     every { solution.name } returns "test solution"
     every { solutionService.findSolutionById(ORGANIZATION_ID, SOLUTION_ID) } returns solution
-
+    every { csmRbac.verify(any(), any(), any()) } returns Unit
     val myScenarioRun =
         ScenarioRun(
             id = "sr-myscenariorun1",
@@ -382,6 +388,7 @@ class ScenarioRunServiceImplTests {
     every { scenarioRun.csmSimulationRun } returns simulationRunId
     every { scenarioRun.scenarioId } returns "scenarioId"
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "ownerId"
+    every { csmRbac.verify(any(), any(), any()) } returns Unit
     scenarioRunServiceImpl.deleteScenarioRun("orgId", "scenariorunId")
     verify(exactly = 1) {
       azureDataExplorerClient.deleteDataFromADXbyExtentShard(
