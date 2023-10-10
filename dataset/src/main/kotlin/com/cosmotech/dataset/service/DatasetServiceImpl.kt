@@ -226,7 +226,7 @@ class DatasetServiceImpl(
             status = Dataset.Status.READY,
             connector =
                 dataset.connector?.apply { parametersValues?.set(TWINCACHE_NAME, subTwingraphId) },
-            sourceType = dataset.sourceType,
+            sourceType = DatasetSourceType.Twincache,
             tags = dataset.tags)
     return datasetRepository.save(subDataset)
   }
@@ -322,6 +322,7 @@ class DatasetServiceImpl(
         }
       }
       DatasetSourceType.ADT,
+      DatasetSourceType.Twincache,
       DatasetSourceType.AzureStorage -> {
         val twingraphImportJobInfoRequest =
             TwingraphImportJobInfoRequest(this, jobId!!, organizationId)
@@ -581,25 +582,28 @@ class DatasetServiceImpl(
     val dataset = getDatasetWithStatus(organizationId, datasetId)
     csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE)
     var result = ""
-    //    trx(dataset) { localDataset ->
-    when (type) {
-      TYPE_NODE ->
-          graphProperties.forEach {
-            result +=
-                query(dataset, "CREATE (a:${it.type} {id:'${it.name}',${it.params}}) RETURN a")
-                    .toJsonString()
-          }
-      TYPE_RELATIONSHIP ->
-          graphProperties.forEach {
-            result +=
-                query(dataset,
-                        "MATCH (a),(b) WHERE a.id='${it.source}' AND b.id='${it.target}'" +
-                            "CREATE (a)-[r:${it.type} {id:'${it.name}', ${it.params}}]->(b) RETURN r")
-                    .toJsonString()
-          }
-      else -> throw CsmResourceNotFoundException("Bad Type : $type")
+    trx(dataset) { localDataset ->
+      when (type) {
+        TYPE_NODE ->
+            graphProperties.forEach {
+              result +=
+                  query(
+                          localDataset,
+                          "CREATE (a:${it.type} {id:'${it.name}',${it.params}}) RETURN a")
+                      .toJsonString()
+            }
+        TYPE_RELATIONSHIP ->
+            graphProperties.forEach {
+              result +=
+                  query(
+                          localDataset,
+                          "MATCH (a),(b) WHERE a.id='${it.source}' AND b.id='${it.target}'" +
+                              "CREATE (a)-[r:${it.type} {id:'${it.name}', ${it.params}}]->(b) RETURN r")
+                      .toJsonString()
+            }
+        else -> throw CsmResourceNotFoundException("Bad Type : $type")
+      }
     }
-    //    }
     return result
   }
 
@@ -615,15 +619,12 @@ class DatasetServiceImpl(
     when (type) {
       TYPE_NODE ->
           ids.forEach {
-            result +=
-                query(dataset,"MATCH (a) WHERE a.id='$it' RETURN a", true)
-                    .toJsonString()
+            result += query(dataset, "MATCH (a) WHERE a.id='$it' RETURN a", true).toJsonString()
           }
       TYPE_RELATIONSHIP ->
           ids.forEach {
             result +=
-                query(dataset, "MATCH ()-[r]->() WHERE r.id='$it' RETURN r", true)
-                    .toJsonString()
+                query(dataset, "MATCH ()-[r]->() WHERE r.id='$it' RETURN r", true).toJsonString()
           }
       else -> throw CsmResourceNotFoundException("Bad Type : $type")
     }
@@ -644,14 +645,16 @@ class DatasetServiceImpl(
         TYPE_NODE ->
             graphProperties.forEach {
               result +=
-                  query(localDataset,
+                  query(
+                          localDataset,
                           "MATCH (a {id:'${it.name}'}) SET a = {id:'${it.name}',${it.params}} RETURN a")
                       .toJsonString()
             }
         TYPE_RELATIONSHIP ->
             graphProperties.forEach {
               result +=
-                  query(dataset,
+                  query(
+                          dataset,
                           "MATCH ()-[r {id:'${it.name}'}]-() SET r = {id:'${it.name}', " +
                               "${it.params}} RETURN r")
                       .toJsonString()
@@ -672,14 +675,9 @@ class DatasetServiceImpl(
     csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE)
     return trx(dataset) { localDataset ->
       when (type) {
-        TYPE_NODE ->
-            ids.forEach {
-              query(localDataset, "MATCH (a) WHERE a.id='$it' DELETE a")
-            }
+        TYPE_NODE -> ids.forEach { query(localDataset, "MATCH (a) WHERE a.id='$it' DELETE a") }
         TYPE_RELATIONSHIP ->
-            ids.forEach {
-              query(localDataset, "MATCH ()-[r]-() WHERE r.id='$it' DELETE r")
-            }
+            ids.forEach { query(localDataset, "MATCH ()-[r]-() WHERE r.id='$it' DELETE r") }
         else -> throw CsmResourceNotFoundException("Bad Type : $type")
       }
     }

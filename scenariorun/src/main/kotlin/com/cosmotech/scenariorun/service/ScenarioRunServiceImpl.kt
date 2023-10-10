@@ -432,13 +432,19 @@ class ScenarioRunServiceImpl(
             "AZURE_DIGITAL_TWINS_URL" to jobImportInfo.sourceLocation,
             "QUERIES" to queries)
       }
-      "Storage" -> {
+      "AzureStorage" -> {
         mutableMapOf(
             "TWIN_CACHE_NAME" to jobImportInfo.twingraphId,
             "LOG_LEVEL" to "DEBUG",
             "ACCOUNT_NAME" to jobImportInfo.sourceName,
             "CONTAINER_NAME" to jobImportInfo.sourceLocation,
             "STORAGE_PATH" to jobImportInfo.sourcePath,
+            "QUERIES" to queries)
+      }
+      "Twincache" -> {
+        mutableMapOf(
+            "TWIN_CACHE_NAME" to jobImportInfo.twingraphId,
+            "LOG_LEVEL" to "DEBUG",
             "QUERIES" to queries)
       }
       else -> {

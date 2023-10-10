@@ -164,7 +164,7 @@ class DatasetServiceImplTests {
         baseDataset()
             .copy(
                 status = Dataset.Status.READY,
-                sourceType = DatasetSourceType.ADT,
+                sourceType = DatasetSourceType.Twincache,
                 source = SourceInfo("http://storage.location"),
                 twingraphId = "twingraphId")
     val subDatasetGraphQuery =
@@ -176,6 +176,7 @@ class DatasetServiceImplTests {
     every { csmJedisPool.resource.exists(any<String>()) } returns true
     every { csmJedisPool.resource.hgetAll(any<String>()) } returns
         mapOf("lastVersion" to "lastVersion", "graphRotation" to "2")
+    every { csmRedisGraph.readOnlyQuery(any(), any(), any<Long>()) } returns mockEmptyResultSet()
     every { csmJedisPool.resource.dump(any<String>()) } returns ByteArray(0)
     every { datasetRepository.save(any()) } returnsArgument 0
     val result =
@@ -452,7 +453,7 @@ class DatasetServiceImplTests {
     val twinGraphQuery = DatasetTwinGraphQuery("MATCH(n) RETURN n")
     datasetService.twingraphQuery(ORGANIZATION_ID, DATASET_ID, twinGraphQuery)
 
-    verify(exactly = 1) { csmRedisGraph.readOnlyQuery(any(), any(), any<Long>()) }
+    verify { csmRedisGraph.query(any(), any(), any<Long>()) }
   }
 
   @Test
@@ -491,7 +492,7 @@ class DatasetServiceImplTests {
     assertEquals(jsonHash.hash, "graphId:MATCH(n) RETURN n".shaHash())
     verifyAll {
       csmJedisPool.resource.exists(any<ByteArray>())
-      csmRedisGraph.query(any(), any())
+      csmRedisGraph.query(any(), any(), any<Long>())
       csmJedisPool.resource.setex(any<ByteArray>(), any<Long>(), any<ByteArray>())
       csmJedisPool.resource.close()
     }

@@ -1346,6 +1346,7 @@ components:
         - AzureStorage
         - File
         - None
+        - Twincache
     DatasetTwinGraphInfo:
       type: object
       description: a twin graph query in cypher language
