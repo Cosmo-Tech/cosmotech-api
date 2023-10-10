@@ -54,6 +54,7 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import java.io.File
 import java.io.InputStream
+import java.time.Instant
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -80,7 +81,6 @@ import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
-import org.testcontainers.shaded.org.bouncycastle.asn1.iana.IANAObjectIdentifiers.security
 import redis.clients.jedis.JedisPool
 
 const val REDIS_PORT = 6379
@@ -351,8 +351,13 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
         dataset.copy(sourceType = DatasetSourceType.File))
 
     datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
+    // add timout for while loop
+    val timeout = Instant.now()
     while (datasetApiService.getDatasetTwingraphStatus(
         organizationSaved.id!!, datasetSaved.id!!, null) != Dataset.Status.READY.value) {
+      if (Instant.now().minusSeconds(10).isAfter(timeout)) {
+        throw Exception("Timeout while waiting for dataset twingraph to be ready")
+      }
       Thread.sleep(500)
     }
     assertEquals(12, countEntities(datasetSaved.twingraphId!!, "MATCH (n) RETURN count(n)"))
