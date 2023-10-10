@@ -451,8 +451,8 @@ class DatasetServiceImpl(
     return trx(dataset) { query(dataset, datasetTwinGraphQuery.query).toJsonString() }
   }
 
-  fun query(dataset: Dataset, query: String): ResultSet {
-    return if (query.isReadOnlyQuery()) {
+  fun query(dataset: Dataset, query: String, isReadOnly: Boolean = false): ResultSet {
+    return if (isReadOnly) {
       csmRedisGraph.readOnlyQuery(
           dataset.twingraphId!!, query, csmPlatformProperties.twincache.queryTimeout)
     } else {
@@ -488,7 +488,7 @@ class DatasetServiceImpl(
       processCSVBatch(body.inputStream, twinGraphQuery, result) {
         try {
           result.processedLines++
-          csmRedisGraph.query(localDataset.twingraphId, it)
+          query(localDataset, it)
         } catch (e: JedisDataException) {
           result.errors.add("#${result.totalLines}: ${e.message}")
         }
@@ -511,7 +511,7 @@ class DatasetServiceImpl(
       if (keyExists) {
         return twinGraphHash
       }
-      val resultSet = csmRedisGraph.query(dataset.twingraphId, datasetTwinGraphQuery.query)
+      val resultSet = query(dataset, datasetTwinGraphQuery.query)
 
       GlobalScope.launch(SecurityCoroutineContext()) {
         val zip =
@@ -586,18 +586,13 @@ class DatasetServiceImpl(
       TYPE_NODE ->
           graphProperties.forEach {
             result +=
-                csmRedisGraph
-                    .query(
-                        dataset.twingraphId,
-                        "CREATE (a:${it.type} {id:'${it.name}',${it.params}}) RETURN a")
+                query(dataset, "CREATE (a:${it.type} {id:'${it.name}',${it.params}}) RETURN a")
                     .toJsonString()
           }
       TYPE_RELATIONSHIP ->
           graphProperties.forEach {
             result +=
-                csmRedisGraph
-                    .query(
-                        dataset.twingraphId,
+                query(dataset,
                         "MATCH (a),(b) WHERE a.id='${it.source}' AND b.id='${it.target}'" +
                             "CREATE (a)-[r:${it.type} {id:'${it.name}', ${it.params}}]->(b) RETURN r")
                     .toJsonString()
@@ -621,16 +616,13 @@ class DatasetServiceImpl(
       TYPE_NODE ->
           ids.forEach {
             result +=
-                csmRedisGraph
-                    .readOnlyQuery(dataset.twingraphId, "MATCH (a) WHERE a.id='$it' RETURN a")
+                query(dataset,"MATCH (a) WHERE a.id='$it' RETURN a", true)
                     .toJsonString()
           }
       TYPE_RELATIONSHIP ->
           ids.forEach {
             result +=
-                csmRedisGraph
-                    .readOnlyQuery(
-                        dataset.twingraphId, "MATCH ()-[r]->() WHERE r.id='$it' RETURN r")
+                query(dataset, "MATCH ()-[r]->() WHERE r.id='$it' RETURN r", true)
                     .toJsonString()
           }
       else -> throw CsmResourceNotFoundException("Bad Type : $type")
@@ -652,18 +644,14 @@ class DatasetServiceImpl(
         TYPE_NODE ->
             graphProperties.forEach {
               result +=
-                  csmRedisGraph
-                      .query(
-                          localDataset.twingraphId,
+                  query(localDataset,
                           "MATCH (a {id:'${it.name}'}) SET a = {id:'${it.name}',${it.params}} RETURN a")
                       .toJsonString()
             }
         TYPE_RELATIONSHIP ->
             graphProperties.forEach {
               result +=
-                  csmRedisGraph
-                      .query(
-                          dataset.twingraphId,
+                  query(dataset,
                           "MATCH ()-[r {id:'${it.name}'}]-() SET r = {id:'${it.name}', " +
                               "${it.params}} RETURN r")
                       .toJsonString()
@@ -686,12 +674,11 @@ class DatasetServiceImpl(
       when (type) {
         TYPE_NODE ->
             ids.forEach {
-              csmRedisGraph.query(localDataset.twingraphId, "MATCH (a) WHERE a.id='$it' DELETE a")
+              query(localDataset, "MATCH (a) WHERE a.id='$it' DELETE a")
             }
         TYPE_RELATIONSHIP ->
             ids.forEach {
-              csmRedisGraph.query(
-                  localDataset.twingraphId, "MATCH ()-[r]-() WHERE r.id='$it' DELETE r")
+              query(localDataset, "MATCH ()-[r]-() WHERE r.id='$it' DELETE r")
             }
         else -> throw CsmResourceNotFoundException("Bad Type : $type")
       }
