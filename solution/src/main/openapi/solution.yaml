@@ -1077,6 +1077,11 @@ components:
       value:
         id: "bob.doe@cosmotech.com"
         role: "editor"
+    BrewerySolutionRole:
+      summary: Set a Solution Role.
+      description: Set a Role for a user to a solution.
+      value:
+        role: "editor"
     OneSolution:
       summary: Brewery Solution
       description: Brewery Solution example
