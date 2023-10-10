@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenariorunresult.service
 
+import com.cosmotech.api.rbac.ROLE_ADMIN
+import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetConnector
@@ -10,6 +12,8 @@ import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioSecurity
 import com.cosmotech.solution.domain.Solution
+import com.cosmotech.solution.domain.SolutionAccessControl
+import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
@@ -55,7 +59,13 @@ fun makeSolution(organizationId: String, name: String = "MyTestSolution"): Solut
       key = UUID.randomUUID().toString(),
       name = name,
       organizationId = organizationId,
-      ownerId = "ownerId")
+      ownerId = "ownerId",
+      security =
+          SolutionSecurity(
+              default = ROLE_NONE,
+              accessControlList =
+                  mutableListOf(
+                      SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
 }
 
 fun makeWorkspace(

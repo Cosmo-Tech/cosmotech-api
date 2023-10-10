@@ -6,6 +6,7 @@ import com.azure.storage.blob.BlobServiceClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.tests.CsmRedisTestBase
@@ -98,7 +99,11 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
             organizationRegistered.id!!,
             "key",
             "name",
-            runTemplates = mutableListOf(RunTemplate(id = "one"), RunTemplate(id = "two")))
+            runTemplates = mutableListOf(RunTemplate(id = "one"), RunTemplate(id = "two")),
+            security =
+                SolutionSecurity(
+                    ROLE_NONE,
+                    mutableListOf(SolutionAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
     solutionRegistered = solutionApiService.createSolution(organizationRegistered.id!!, solution)
 
     val endTemplates =
@@ -312,7 +317,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val foundSolution =
         solutionApiService.findSolutionById(
             solutionRegistered.organizationId!!, solutionRegistered.id!!)
-    assertTrue(foundSolution.runTemplates!!.size == 2)
+    assertEquals(2, foundSolution.runTemplates!!.size)
 
     logger.info(
         "should replace the first run template and assert that the list contains 2 elements")
@@ -322,8 +327,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val foundSolutionAfterReplace =
         solutionApiService.findSolutionById(
             solutionRegistered.organizationId!!, solutionRegistered.id!!)
-    assertTrue(foundSolutionAfterReplace.runTemplates!!.size == 2)
-    assertTrue(foundSolutionAfterReplace.runTemplates!!.first().name == "runTemplateName")
+    assertEquals(2, foundSolutionAfterReplace.runTemplates!!.size)
+    assertEquals("runTemplateName", foundSolutionAfterReplace.runTemplates!!.first().name)
 
     logger.info("should update the run template and assert that the name has been updated")
     val runTemplate4 = RunTemplate(id = "runTemplateId1", name = "runTemplateNameNew")
@@ -332,7 +337,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val foundSolutionAfterUpdate =
         solutionApiService.findSolutionById(
             solutionRegistered.organizationId!!, solutionRegistered.id!!)
-    assertTrue(foundSolutionAfterUpdate.runTemplates!!.first().name == "runTemplateNameNew")
+    assertEquals("runTemplateNameNew", foundSolutionAfterUpdate.runTemplates!!.first().name)
 
     logger.info("should remove all run templates and assert that the list is empty")
     solutionApiService.removeAllRunTemplates(
@@ -408,7 +413,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
         name = "My solution",
         organizationId = organizationId,
         ownerId = "ownerId",
-        runTemplates = mutableListOf(RunTemplate("runTemplate")),
         security =
             SolutionSecurity(
                 default = ROLE_NONE,
