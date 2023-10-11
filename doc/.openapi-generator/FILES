@@ -3,6 +3,7 @@ Apis/DatasetApi.md
 Apis/OrganizationApi.md
 Apis/ScenarioApi.md
 Apis/ScenariorunApi.md
+Apis/ScenariorunresultApi.md
 Apis/SolutionApi.md
 Apis/TwingraphApi.md
 Apis/ValidatorApi.md
@@ -58,6 +59,7 @@ Models/ScenarioRunContainerArtifact.md
 Models/ScenarioRunContainerLogs.md
 Models/ScenarioRunLogs.md
 Models/ScenarioRunResourceRequested.md
+Models/ScenarioRunResult.md
 Models/ScenarioRunSearch.md
 Models/ScenarioRunStartContainers.md
 Models/ScenarioRunState.md
