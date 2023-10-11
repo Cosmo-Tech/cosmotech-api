@@ -444,6 +444,7 @@ class ScenarioRunServiceImpl(
       "Twincache" -> {
         mutableMapOf(
             "TWIN_CACHE_NAME" to jobImportInfo.twingraphId,
+            "TWIN_CACHE_SOURCE" to jobImportInfo.sourceLocation,
             "LOG_LEVEL" to "DEBUG",
             "QUERIES" to queries)
       }
