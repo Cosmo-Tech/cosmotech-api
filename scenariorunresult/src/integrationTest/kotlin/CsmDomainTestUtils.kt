@@ -6,7 +6,9 @@ import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.dataset.domain.Dataset
+import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetConnector
+import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.scenario.domain.Scenario
@@ -50,7 +52,12 @@ fun makeDataset(
               name = connector.name,
               version = connector.version,
           ),
-  )
+      security =
+          DatasetSecurity(
+              default = ROLE_NONE,
+              accessControlList =
+                  mutableListOf(
+                      DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
 }
 
 fun makeSolution(organizationId: String, name: String = "MyTestSolution"): Solution {

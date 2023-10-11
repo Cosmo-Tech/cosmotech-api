@@ -18,6 +18,7 @@ import com.cosmotech.api.events.ScenarioLastRunChanged
 import com.cosmotech.api.events.ScenarioRunEndToEndStateRequest
 import com.cosmotech.api.events.ScenarioRunStartedForScenario
 import com.cosmotech.api.events.WorkflowPhaseToStateRequest
+import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
@@ -177,7 +178,7 @@ internal class ScenarioServiceImpl(
                             SubDatasetGraphQuery(
                                 name = "Scenario - ${scenario.name})", main = false))
                         .id!!
-                else -> throw CsmClientException("Dataset ${dataset.id} is not completed")
+                else -> throw CsmClientException("Dataset ${dataset.id} is not ready")
               }
             }
             ?.toMutableList()
@@ -265,7 +266,13 @@ internal class ScenarioServiceImpl(
         throw CsmClientException("Can't delete a running scenario : ${scenario.id}")
     scenarioRepository.delete(scenario)
 
-    scenario.datasetList?.forEach { datasetService.deleteDataset(organizationId, it) }
+    scenario.datasetList?.forEach {
+      try {
+        datasetService.deleteDataset(organizationId, it)
+      } catch (e: CsmAccessForbiddenException) {
+        logger.warn("Error while deleting dataset $it", e)
+      }
+    }
 
     this.handleScenarioDeletion(organizationId, workspaceId, scenario)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)

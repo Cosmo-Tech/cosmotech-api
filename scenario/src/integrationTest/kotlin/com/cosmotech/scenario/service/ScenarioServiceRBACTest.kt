@@ -26,7 +26,10 @@ import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.dataset.api.DatasetApiService
 import com.cosmotech.dataset.domain.Dataset
+import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetConnector
+import com.cosmotech.dataset.domain.DatasetSecurity
+import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
@@ -50,10 +53,12 @@ import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.ninjasquad.springmockk.MockkBean
+import com.ninjasquad.springmockk.SpykBean
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
 import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
 import java.util.UUID
@@ -86,10 +91,11 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
   @MockK(relaxed = true) private lateinit var workspaceEventHubService: IWorkspaceEventHubService
   @MockK(relaxed = true) private lateinit var azureDataExplorerClient: AzureDataExplorerClient
 
+  @Autowired lateinit var datasetRepository: DatasetRepository
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var connectorApiService: ConnectorApiService
   @Autowired lateinit var organizationApiService: OrganizationApiService
-  @Autowired lateinit var datasetApiService: DatasetApiService
+  @SpykBean @Autowired lateinit var datasetApiService: DatasetApiService
   @Autowired lateinit var solutionApiService: SolutionApiService
   @Autowired lateinit var workspaceApiService: WorkspaceApiService
   @Autowired lateinit var scenarioApiService: ScenarioApiService
@@ -135,6 +141,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               val organizationSaved = organizationApiService.registerOrganization(organization)
               val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
               val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              every { datasetApiService.findDatasetById(any(), any()) } returns
+                  datasetSaved.apply { status = Dataset.Status.READY }
+              every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+                  mockk(relaxed = true)
               val solution = makeSolution(organizationSaved.id!!)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -410,6 +420,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
                       mutableListOf(datasetSaved.id!!),
                       userName = TEST_USER_MAIL,
                       role = role)
+              every { datasetApiService.findDatasetById(any(), any()) } returns
+                  datasetSaved.apply { status = Dataset.Status.READY }
+              every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+                  mockk(relaxed = true)
               val scenarioSaved =
                   scenarioApiService.createScenario(
                       organizationSaved.id!!, workspaceSaved.id!!, scenario)
@@ -500,8 +514,7 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               ROLE_EDITOR to true,
               ROLE_VALIDATOR to true,
               ROLE_NONE to true,
-              ROLE_ADMIN to false,
-          )
+              ROLE_ADMIN to false)
           .map { (role, shouldThrow) ->
             dynamicTest("Test RBAC deleteScenario : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
@@ -512,6 +525,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               val organizationSaved = organizationApiService.registerOrganization(organization)
               val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
               val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              every { datasetApiService.findDatasetById(any(), any()) } returns
+                  datasetSaved.apply { status = Dataset.Status.READY }
+              every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+                  mockk(relaxed = true)
               val solution = makeSolution(organizationSaved.id!!)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -945,6 +962,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
                       mutableListOf(datasetSaved.id!!),
                       userName = TEST_USER_MAIL,
                       role = role)
+              every { datasetApiService.findDatasetById(any(), any()) } returns
+                  datasetSaved.apply { status = Dataset.Status.READY }
+              every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+                  mockk(relaxed = true)
               val scenarioSaved =
                   scenarioApiService.createScenario(
                       organizationSaved.id!!, workspaceSaved.id!!, scenario)
@@ -1011,6 +1032,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
                       mutableListOf(datasetSaved.id!!),
                       userName = TEST_USER_MAIL,
                       role = role)
+              every { datasetApiService.findDatasetById(any(), any()) } returns
+                  datasetSaved.apply { status = Dataset.Status.READY }
+              every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+                  mockk(relaxed = true)
               val scenarioSaved =
                   scenarioApiService.createScenario(
                       organizationSaved.id!!, workspaceSaved.id!!, scenario)
@@ -1333,6 +1358,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               val organizationSaved = organizationApiService.registerOrganization(organization)
               val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
               val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              every { datasetApiService.findDatasetById(any(), any()) } returns
+                  datasetSaved.apply { status = Dataset.Status.READY }
+              every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+                  mockk(relaxed = true)
               val solution = makeSolution(organizationSaved.id!!)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -1417,6 +1446,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
                       role = ROLE_ADMIN)
               val workspaceSaved =
                   workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+              every { datasetApiService.findDatasetById(any(), any()) } returns
+                  datasetSaved.apply { status = Dataset.Status.READY }
+              every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+                  mockk(relaxed = true)
               val scenario =
                   makeScenarioWithRole(
                       organizationSaved.id!!,
@@ -1494,6 +1527,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
                       mutableListOf(datasetSaved.id!!),
                       userName = TEST_USER_MAIL,
                       role = role)
+              every { datasetApiService.findDatasetById(any(), any()) } returns
+                  datasetSaved.apply { status = Dataset.Status.READY }
+              every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+                  mockk(relaxed = true)
               val scenarioSaved =
                   scenarioApiService.createScenario(
                       organizationSaved.id!!, workspaceSaved.id!!, scenario)
@@ -1536,6 +1573,11 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
                 .SHARED_ACCESS_POLICY)
   }
 
+  private fun applyDatasetReady(dataset: Dataset): Dataset {
+    dataset.apply { this.status = Dataset.Status.READY }
+    return datasetRepository.save(dataset)
+  }
+
   private fun makeConnector(): Connector {
     return Connector(
         key = UUID.randomUUID().toString(),
@@ -1550,13 +1592,19 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
         name = "Dataset",
         organizationId = organizationId,
         ownerId = "ownerId",
+        status = Dataset.Status.READY,
         connector =
             DatasetConnector(
                 id = connector.id,
                 name = connector.name,
                 version = connector.version,
             ),
-    )
+        security =
+            DatasetSecurity(
+                default = ROLE_NONE,
+                accessControlList =
+                    mutableListOf(
+                        DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
   }
 
   fun makeSolution(organizationId: String): Solution {

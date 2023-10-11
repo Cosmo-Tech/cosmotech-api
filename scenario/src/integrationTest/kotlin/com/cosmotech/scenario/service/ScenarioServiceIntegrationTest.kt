@@ -20,7 +20,9 @@ import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.dataset.api.DatasetApiService
 import com.cosmotech.dataset.domain.Dataset
+import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetConnector
+import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
@@ -45,14 +47,18 @@ import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.ninjasquad.springmockk.MockkBean
+import com.ninjasquad.springmockk.SpykBean
 import com.redis.om.spring.RediSearchIndexer
+import com.redis.testcontainers.RedisStackContainer
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
 import io.mockk.mockkStatic
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.Test
@@ -68,6 +74,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
+import redis.clients.jedis.JedisPool
 
 @ActiveProfiles(profiles = ["scenario-test"])
 @ExtendWith(MockKExtension::class)
@@ -83,6 +90,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   val CONNECTED_READER_USER = "test.reader@cosmotech.com"
   val CONNECTED_VIEWER_USER = "test.user@cosmotech.com"
   val TEST_USER_MAIL = "fake@mail.fr"
+  val REDIS_PORT = 6379
 
   private val logger = LoggerFactory.getLogger(ScenarioServiceIntegrationTest::class.java)
   private val defaultName = "my.account-tester@cosmotech.com"
@@ -95,7 +103,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var connectorApiService: ConnectorApiService
   @Autowired lateinit var organizationApiService: OrganizationApiService
-  @Autowired lateinit var datasetApiService: DatasetApiService
+  @SpykBean @Autowired lateinit var datasetApiService: DatasetApiService
   @Autowired lateinit var solutionApiService: SolutionApiService
   @Autowired lateinit var workspaceApiService: WorkspaceApiService
   @Autowired lateinit var scenarioApiService: ScenarioApiService
@@ -115,6 +123,20 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   lateinit var workspaceSaved: Workspace
   lateinit var scenarioSaved: Scenario
 
+  lateinit var jedisPool: JedisPool
+
+  @BeforeAll
+  fun beforeAll() {
+    mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
+    mockkStatic("com.cosmotech.api.utils.RedisUtilsKt")
+    mockkStatic("org.springframework.web.context.request.RequestContextHolder")
+    val context = getContext(redisStackServer)
+    val containerIp =
+        (context.server as RedisStackContainer).containerInfo.networkSettings.ipAddress
+    jedisPool = JedisPool(containerIp, REDIS_PORT)
+    ReflectionTestUtils.setField(datasetApiService, "csmJedisPool", jedisPool)
+  }
+
   @BeforeEach
   fun setUp() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
@@ -127,36 +149,38 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     ReflectionTestUtils.setField(
         scenarioApiService, "azureDataExplorerClient", azureDataExplorerClient)
     every { workspaceEventHubService.getWorkspaceEventHubInfo(any(), any(), any()) } returns
-        mockWorkspaceEventHubInfo(false)
+        makeWorkspaceEventHubInfo(false)
 
     rediSearchIndexer.createIndexFor(Organization::class.java)
     rediSearchIndexer.createIndexFor(Solution::class.java)
     rediSearchIndexer.createIndexFor(Workspace::class.java)
     rediSearchIndexer.createIndexFor(Scenario::class.java)
 
-    connector = mockConnector("Connector")
+    connector = makeConnector("Connector")
     connectorSaved = connectorApiService.registerConnector(connector)
 
-    organization = mockOrganization("Organization")
+    organization = makeOrganization("Organization")
     organizationSaved = organizationApiService.registerOrganization(organization)
 
-    dataset = mockDataset(organizationSaved.id!!, "Dataset", connectorSaved)
+    dataset = makeDataset(organizationSaved.id!!, "Dataset", connectorSaved)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
 
-    solution = mockSolution(organizationSaved.id!!)
+    solution = makeSolution(organizationSaved.id!!)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
-    workspace = mockWorkspace(organizationSaved.id!!, solutionSaved.id!!, "Workspace")
+    workspace = makeWorkspace(organizationSaved.id!!, solutionSaved.id!!, "Workspace")
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
 
     scenario =
-        mockScenario(
+        makeScenario(
             organizationSaved.id!!,
             workspaceSaved.id!!,
             solutionSaved.id!!,
             "Scenario",
             mutableListOf(datasetSaved.id!!))
-
+    every { datasetApiService.findDatasetById(any(), any()) } returns
+        datasetSaved.apply { status = Dataset.Status.READY }
+    every { datasetApiService.createSubDataset(any(), any(), any()) } returns mockk(relaxed = true)
     scenarioSaved =
         scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, scenario)
   }
@@ -167,7 +191,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("should create a second Scenario")
     val scenario2 =
-        mockScenario(
+        makeScenario(
             organizationSaved.id!!,
             workspaceSaved.id!!,
             solutionSaved.id!!,
@@ -229,7 +253,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     val expectedSize = 15
     IntRange(1, numberOfScenarios - 1).forEach {
       val scenario =
-          mockScenario(
+          makeScenario(
               organizationSaved.id!!,
               workspaceSaved.id!!,
               solutionSaved.id!!,
@@ -285,14 +309,14 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     logger.info(
         "should create a child Scenario with dataset different from parent and " +
             "assert the dataset list is the same as parent")
-    val dataset = mockDataset(organizationSaved.id!!, "Dataset", connectorSaved)
+    val dataset = makeDataset(organizationSaved.id!!, "Dataset", connectorSaved)
     val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
 
     logger.info("should create a tree of Scenarios")
     val idMap = mutableMapOf<Int, String>()
     IntRange(1, 5).forEach {
       var scenario =
-          mockScenario(
+          makeScenario(
               organizationSaved.id!!,
               workspaceSaved.id!!,
               solutionSaved.id!!,
@@ -650,7 +674,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
-  private fun mockWorkspaceEventHubInfo(eventHubAvailable: Boolean): WorkspaceEventHubInfo {
+  private fun makeWorkspaceEventHubInfo(eventHubAvailable: Boolean): WorkspaceEventHubInfo {
     return WorkspaceEventHubInfo(
         eventHubNamespace = "eventHubNamespace",
         eventHubAvailable = eventHubAvailable,
@@ -663,7 +687,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                 .SHARED_ACCESS_POLICY)
   }
 
-  private fun mockConnector(name: String = "name"): Connector {
+  private fun makeConnector(name: String = "name"): Connector {
     return Connector(
         key = UUID.randomUUID().toString(),
         name = name,
@@ -672,7 +696,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
         ioTypes = listOf(Connector.IoTypes.read))
   }
 
-  fun mockDataset(
+  fun makeDataset(
       organizationId: String = organizationSaved.id!!,
       name: String = "name",
       connector: Connector = connectorSaved
@@ -687,10 +711,15 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                 name = connector.name,
                 version = connector.version,
             ),
-    )
+        security =
+            DatasetSecurity(
+                default = ROLE_NONE,
+                accessControlList =
+                    mutableListOf(
+                        DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
   }
 
-  fun mockSolution(organizationId: String = organizationSaved.id!!): Solution {
+  fun makeSolution(organizationId: String = organizationSaved.id!!): Solution {
     return Solution(
         id = "solutionId",
         key = UUID.randomUUID().toString(),
@@ -705,7 +734,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                         SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
   }
 
-  fun mockOrganization(
+  fun makeOrganization(
       id: String = "id",
       userName: String = defaultName,
       role: String = ROLE_ADMIN
@@ -724,7 +753,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                         OrganizationAccessControl(id = userName, role = role))))
   }
 
-  fun mockWorkspace(
+  fun makeWorkspace(
       organizationId: String = organizationSaved.id!!,
       solutionId: String = solutionSaved.id!!,
       name: String = "name",
@@ -748,7 +777,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                     WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
   }
 
-  fun mockScenario(
+  fun makeScenario(
       organizationId: String = organizationSaved.id!!,
       workspaceId: String = workspaceSaved.id!!,
       solutionId: String = solutionSaved.id!!,

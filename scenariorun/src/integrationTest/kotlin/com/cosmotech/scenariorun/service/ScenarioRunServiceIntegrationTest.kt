@@ -24,7 +24,9 @@ import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.dataset.api.DatasetApiService
 import com.cosmotech.dataset.domain.Dataset
+import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetConnector
+import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
@@ -53,10 +55,12 @@ import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.ninjasquad.springmockk.MockkBean
+import com.ninjasquad.springmockk.SpykBean
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
 import io.mockk.mockkStatic
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -102,7 +106,7 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
     @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
     @Autowired lateinit var connectorApiService: ConnectorApiService
     @Autowired lateinit var organizationApiService: OrganizationApiService
-    @Autowired lateinit var datasetApiService: DatasetApiService
+    @SpykBean @Autowired lateinit var datasetApiService: DatasetApiService
     @Autowired lateinit var solutionApiService: SolutionApiService
     @Autowired lateinit var workspaceApiService: WorkspaceApiService
     @Autowired lateinit var scenarioApiService: ScenarioApiService
@@ -172,7 +176,10 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
               solutionSaved.runTemplates?.get(0)?.id!!,
               "Scenario",
               mutableListOf(datasetSaved.id!!))
-
+      every { datasetApiService.findDatasetById(any(), any()) } returns
+          datasetSaved.apply { status = Dataset.Status.READY }
+      every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+          mockk(relaxed = true)
       scenarioSaved =
           scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, scenario)
 
@@ -440,7 +447,7 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
     @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
     @Autowired lateinit var connectorApiService: ConnectorApiService
     @Autowired lateinit var organizationApiService: OrganizationApiService
-    @Autowired lateinit var datasetApiService: DatasetApiService
+    @SpykBean @Autowired lateinit var datasetApiService: DatasetApiService
     @Autowired lateinit var solutionApiService: SolutionApiService
     @Autowired lateinit var workspaceApiService: WorkspaceApiService
     @Autowired lateinit var scenarioApiService: ScenarioApiService
@@ -492,6 +499,10 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
                 val organizationSaved = organizationApiService.registerOrganization(organization)
                 val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
                 val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                every { datasetApiService.findDatasetById(any(), any()) } returns
+                    datasetSaved.apply { status = Dataset.Status.READY }
+                every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+                    mockk(relaxed = true)
                 val solution = makeSolution(organizationSaved.id!!)
                 val solutionSaved =
                     solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -570,6 +581,10 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
                 val organizationSaved = organizationApiService.registerOrganization(organization)
                 val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
                 val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                every { datasetApiService.findDatasetById(any(), any()) } returns
+                    datasetSaved.apply { status = Dataset.Status.READY }
+                every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+                    mockk(relaxed = true)
                 val solution = makeSolution(organizationSaved.id!!)
                 val solutionSaved =
                     solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -648,6 +663,10 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
                 val organizationSaved = organizationApiService.registerOrganization(organization)
                 val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
                 val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                every { datasetApiService.findDatasetById(any(), any()) } returns
+                    datasetSaved.apply { status = Dataset.Status.READY }
+                every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+                    mockk(relaxed = true)
                 val solution = makeSolution(organizationSaved.id!!)
                 val solutionSaved =
                     solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -725,6 +744,10 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
                 val organizationSaved = organizationApiService.registerOrganization(organization)
                 val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
                 val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                every { datasetApiService.findDatasetById(any(), any()) } returns
+                    datasetSaved.apply { status = Dataset.Status.READY }
+                every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+                    mockk(relaxed = true)
                 val solution = makeSolution(organizationSaved.id!!)
                 val solutionSaved =
                     solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -798,6 +821,10 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
                 val organizationSaved = organizationApiService.registerOrganization(organization)
                 val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
                 val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                every { datasetApiService.findDatasetById(any(), any()) } returns
+                    datasetSaved.apply { status = Dataset.Status.READY }
+                every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+                    mockk(relaxed = true)
                 val solution = makeSolution(organizationSaved.id!!)
                 val solutionSaved =
                     solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -879,6 +906,10 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
                 val organizationSaved = organizationApiService.registerOrganization(organization)
                 val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
                 val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                every { datasetApiService.findDatasetById(any(), any()) } returns
+                    datasetSaved.apply { status = Dataset.Status.READY }
+                every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+                    mockk(relaxed = true)
                 val solution = makeSolution(organizationSaved.id!!)
                 val solutionSaved =
                     solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -952,6 +983,10 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
                 val organizationSaved = organizationApiService.registerOrganization(organization)
                 val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
                 val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                every { datasetApiService.findDatasetById(any(), any()) } returns
+                    datasetSaved.apply { status = Dataset.Status.READY }
+                every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+                    mockk(relaxed = true)
                 val solution = makeSolution(organizationSaved.id!!)
                 val solutionSaved =
                     solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -1031,6 +1066,10 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
                 val organizationSaved = organizationApiService.registerOrganization(organization)
                 val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
                 val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                every { datasetApiService.findDatasetById(any(), any()) } returns
+                    datasetSaved.apply { status = Dataset.Status.READY }
+                every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+                    mockk(relaxed = true)
                 val solution = makeSolution(organizationSaved.id!!)
                 val solutionSaved =
                     solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -1104,6 +1143,10 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
                 val organizationSaved = organizationApiService.registerOrganization(organization)
                 val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
                 val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                every { datasetApiService.findDatasetById(any(), any()) } returns
+                    datasetSaved.apply { status = Dataset.Status.READY }
+                every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+                    mockk(relaxed = true)
                 val solution = makeSolution(organizationSaved.id!!)
                 val solutionSaved =
                     solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -1177,6 +1220,10 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
                 val organizationSaved = organizationApiService.registerOrganization(organization)
                 val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
                 val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                every { datasetApiService.findDatasetById(any(), any()) } returns
+                    datasetSaved.apply { status = Dataset.Status.READY }
+                every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+                    mockk(relaxed = true)
                 val solution = makeSolution(organizationSaved.id!!)
                 val solutionSaved =
                     solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -1250,6 +1297,10 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
                 val organizationSaved = organizationApiService.registerOrganization(organization)
                 val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
                 val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                every { datasetApiService.findDatasetById(any(), any()) } returns
+                    datasetSaved.apply { status = Dataset.Status.READY }
+                every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+                    mockk(relaxed = true)
                 val solution = makeSolution(organizationSaved.id!!)
                 val solutionSaved =
                     solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -1322,6 +1373,10 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
                 val organizationSaved = organizationApiService.registerOrganization(organization)
                 val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
                 val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                every { datasetApiService.findDatasetById(any(), any()) } returns
+                    datasetSaved.apply { status = Dataset.Status.READY }
+                every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+                    mockk(relaxed = true)
                 val solution = makeSolution(organizationSaved.id!!)
                 val solutionSaved =
                     solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -1398,6 +1453,10 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
                 val organizationSaved = organizationApiService.registerOrganization(organization)
                 val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
                 val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                every { datasetApiService.findDatasetById(any(), any()) } returns
+                    datasetSaved.apply { status = Dataset.Status.READY }
+                every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+                    mockk(relaxed = true)
                 val solution = makeSolution(organizationSaved.id!!)
                 val solutionSaved =
                     solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -1476,6 +1535,10 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
                 val organizationSaved = organizationApiService.registerOrganization(organization)
                 val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
                 val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+                every { datasetApiService.findDatasetById(any(), any()) } returns
+                    datasetSaved.apply { status = Dataset.Status.READY }
+                every { datasetApiService.createSubDataset(any(), any(), any()) } returns
+                    mockk(relaxed = true)
                 val solution = makeSolution(organizationSaved.id!!)
                 val solutionSaved =
                     solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -1572,7 +1635,12 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
                   name = connector.name,
                   version = connector.version,
               ),
-      )
+          security =
+              DatasetSecurity(
+                  default = ROLE_NONE,
+                  accessControlList =
+                      mutableListOf(
+                          DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
     }
 
     fun makeSolution(organizationId: String): Solution {
