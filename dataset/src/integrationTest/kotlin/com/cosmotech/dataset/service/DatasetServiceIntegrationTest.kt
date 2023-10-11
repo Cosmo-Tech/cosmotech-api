@@ -1334,12 +1334,9 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
               organizationSaved = organizationApiService.registerOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              materializeTwingraph()
-              mockkStatic(ArchiveStreamFactory::class)
-              every { ArchiveStreamFactory.detect(any()) } returns "zip"
-              val resource = mockk<ByteArrayResource>()
-              val inputStream = mockk<InputStream>()
-              every { resource.inputStream } returns inputStream
+              val fileName = this::class.java.getResource("/integrationTest.zip")?.file
+              val file = File(fileName!!)
+              val resource = ByteArrayResource(file.readBytes())
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -1600,9 +1597,11 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
             }
           }
 
-  private fun materializeTwingraph(dataset: Dataset = datasetSaved): Dataset {
+  private fun materializeTwingraph(dataset: Dataset = datasetSaved, createTwingraph: Boolean = true): Dataset {
     dataset.apply {
-      redisGraph.query(this.twingraphId, "CREATE (n:labelrouge)")
+      if (createTwingraph) {
+        redisGraph.query(this.twingraphId, "CREATE (n:labelrouge)")
+      }
       this.status = Dataset.Status.READY
     }
     return datasetRepository.save(dataset)

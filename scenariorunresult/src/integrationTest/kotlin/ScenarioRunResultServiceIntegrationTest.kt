@@ -14,6 +14,7 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.dataset.api.DatasetApiService
+import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.scenario.api.ScenarioApiService
@@ -27,10 +28,12 @@ import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.azure.WorkspaceEventHubInfo
 import com.cosmotech.workspace.domain.Workspace
 import com.ninjasquad.springmockk.MockkBean
+import com.ninjasquad.springmockk.SpykBean
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
 import io.mockk.mockkStatic
 import java.util.*
 import kotlin.test.assertEquals
@@ -73,7 +76,7 @@ class ScenarioRunResultServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var workspaceApiService: WorkspaceApiService
   @Autowired lateinit var scenarioApiService: ScenarioApiService
   @Autowired lateinit var connectorApiService: ConnectorApiService
-  @Autowired lateinit var datasetApiService: DatasetApiService
+  @SpykBean @Autowired lateinit var datasetApiService: DatasetApiService
   @Autowired lateinit var scenarioRunResultApiService: ScenariorunresultApiService
 
   lateinit var cosmoArbo: CosmoArbo
@@ -224,14 +227,16 @@ class ScenarioRunResultServiceIntegrationTest : CsmRedisTestBase() {
     val connectorSavedId = connectorSaved.id!!
 
     val dataset = makeDataset(organizationSavedId, connectorSaved)
-    val datasetSavedId = datasetApiService.createDataset(organizationSavedId, dataset).id!!
-
+    val datasetSaved = datasetApiService.createDataset(organizationSavedId, dataset)
+    every { datasetApiService.findDatasetById(any(), any()) } returns
+        datasetSaved.apply { status = Dataset.Status.READY }
+    every { datasetApiService.createSubDataset(any(), any(), any()) } returns mockk(relaxed = true)
     val scenario =
         makeScenario(
             organizationSavedId,
             workspaceSavedId,
             solutionSavedId,
-            datasetList = mutableListOf(datasetSavedId),
+            datasetList = mutableListOf(datasetSaved.id!!),
             security = CsmSecurity(ROLE_NONE).addClassicRole().toScenarioSecurity())
     val scenarioSavedId =
         scenarioApiService.createScenario(organizationSavedId, workspaceSavedId, scenario).id!!
@@ -242,7 +247,7 @@ class ScenarioRunResultServiceIntegrationTest : CsmRedisTestBase() {
         scenarioSavedId,
         solutionSavedId,
         connectorSavedId,
-        datasetSavedId)
+        datasetSaved.id!!)
   }
 
   private fun makeWorkspaceEventHubInfo(eventHubAvailable: Boolean): WorkspaceEventHubInfo {
