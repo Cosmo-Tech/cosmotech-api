@@ -2,6 +2,7 @@ kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: {{ include "cosmotech-api.fullname" . }}-role
+  namespace: {{ .Release.Namespace }}
   labels:
   {{- include "cosmotech-api.labels" . | nindent 4 }}
   annotations:
