@@ -391,6 +391,12 @@ entity ScenarioRunResourceRequested {
     memory: Long
 }
 
+entity ScenarioRunResult {
+    id: String
+    name: String
+    result: String
+}
+
 entity ScenarioRunSearch {
     solutionId: String
     runTemplateId: String
