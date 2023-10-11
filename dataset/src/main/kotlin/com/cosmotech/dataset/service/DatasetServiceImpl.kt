@@ -352,6 +352,14 @@ class DatasetServiceImpl(
 
     datasetRepository.save(dataset.apply { status = Dataset.Status.PENDING })
 
+    val dataSourceLocation =
+        if (dataset.sourceType == DatasetSourceType.Twincache) {
+          val parentDataset = findDatasetById(organizationId, dataset.parentId!!)
+          parentDataset.twingraphId
+        } else {
+          dataset.source!!.location
+        }
+
     val requestJobId = this.idGenerator.generate(scope = "graphdataimport", prependPrefix = "gdi-")
     val graphImportEvent =
         TwingraphImportEvent(
@@ -361,7 +369,7 @@ class DatasetServiceImpl(
             dataset.twingraphId
                 ?: throw CsmResourceNotFoundException("TwingraphId is not defined for the dataset"),
             dataset.source!!.name ?: "",
-            dataset.source!!.location,
+            dataSourceLocation ?: "",
             dataset.source!!.path ?: "",
             dataset.sourceType!!.value,
             "",
