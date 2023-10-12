@@ -63,11 +63,4 @@ internal class ConnectorServiceImpl(var connectorRepository: ConnectorRepository
     connectorRepository.delete(connector)
     this.eventPublisher.publishEvent(ConnectorRemoved(this, connectorId))
   }
-
-  override fun importConnector(connector: Connector): Connector {
-    if (connector.id == null) {
-      throw CsmResourceNotFoundException("Connector id is null")
-    }
-    return connectorRepository.save(connector)
-  }
 }
