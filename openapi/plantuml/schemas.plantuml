@@ -519,17 +519,6 @@ entity TwinGraphHash {
     hash: String
 }
 
-entity TwinGraphImport {
-    * source: SourceInfo
-    * graphId: String
-    version: String
-}
-
-entity TwinGraphImportInfo {
-    jobId: String
-    graphName: String
-}
-
 entity TwinGraphQuery {
     version: String
     * query: String
@@ -653,7 +642,6 @@ Dataset -- SourceInfo : source
 Dataset -- DatasetConnector : connector
 Dataset -- "0..*" DatasetCompatibility : compatibility
 Dataset -- DatasetSecurity : security
-TwinGraphImport -- SourceInfo : source
 OrganizationSecurity -- "0..*" OrganizationAccessControl : accessControlList
 ScenarioRunStartContainers -- "0..*" ScenarioRunContainer : containers
 Workspace -- WorkspaceSolution : solution

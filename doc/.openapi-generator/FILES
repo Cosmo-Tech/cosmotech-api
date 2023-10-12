@@ -76,8 +76,6 @@ Models/SourceInfo.md
 Models/SubDatasetGraphQuery.md
 Models/TwinGraphBatchResult.md
 Models/TwinGraphHash.md
-Models/TwinGraphImport.md
-Models/TwinGraphImportInfo.md
 Models/TwinGraphQuery.md
 Models/Validator.md
 Models/ValidatorRun.md

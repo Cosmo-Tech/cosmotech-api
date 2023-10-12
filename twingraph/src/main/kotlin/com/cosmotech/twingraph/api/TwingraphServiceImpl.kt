@@ -3,7 +3,6 @@
 package com.cosmotech.twingraph.api
 
 import com.cosmotech.api.CsmPhoenixService
-import com.cosmotech.api.events.TwingraphImportEvent
 import com.cosmotech.api.events.TwingraphImportJobInfoRequest
 import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
@@ -26,8 +25,6 @@ import com.cosmotech.twingraph.bulk.QueryBuffer
 import com.cosmotech.twingraph.domain.GraphProperties
 import com.cosmotech.twingraph.domain.TwinGraphBatchResult
 import com.cosmotech.twingraph.domain.TwinGraphHash
-import com.cosmotech.twingraph.domain.TwinGraphImport
-import com.cosmotech.twingraph.domain.TwinGraphImportInfo
 import com.cosmotech.twingraph.domain.TwinGraphQuery
 import com.cosmotech.twingraph.extension.toJsonString
 import com.cosmotech.twingraph.utils.TwingraphUtils
@@ -110,28 +107,6 @@ class TwingraphServiceImpl(
       // element
       getEntities(organizationId, graphId, TYPE_NODE, listOf("node_a"))
     }
-  }
-
-  override fun importGraph(
-      organizationId: String,
-      twinGraphImport: TwinGraphImport
-  ): TwinGraphImportInfo {
-    val requestJobId = this.idGenerator.generate(scope = "graphdataimport", prependPrefix = "gdi-")
-    val graphImportEvent =
-        TwingraphImportEvent(
-            this,
-            requestJobId,
-            organizationId,
-            twinGraphImport.graphId,
-            twinGraphImport.source.name ?: "",
-            twinGraphImport.source.location,
-            twinGraphImport.source.path ?: "",
-            twinGraphImport.source.type.value,
-            twinGraphImport.version,
-            null)
-    this.eventPublisher.publishEvent(graphImportEvent)
-    logger.debug("TwingraphImportEventResponse={}", graphImportEvent.response)
-    return TwinGraphImportInfo(jobId = requestJobId, graphName = twinGraphImport.graphId)
   }
 
   override fun jobStatus(organizationId: String, jobId: String): String {

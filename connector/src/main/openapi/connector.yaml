@@ -142,34 +142,6 @@ paths:
                 ADTConnector:
                   $ref: '#/components/examples/ADTConnector'
 
-  /connectors/import:
-    post:
-      operationId: importConnector
-      tags:
-        - connector
-      summary: Import existing connector
-      requestBody:
-        description: the Connector to import
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Connector'
-            examples:
-              ADTConnector:
-                $ref: '#/components/examples/ADTConnector'
-      responses:
-        "201":
-          description: the connector details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Connector'
-              examples:
-                ADTConnector:
-                  $ref: '#/components/examples/ADTConnector'
-        "400":
-          description: Bad request
 components:
   securitySchemes:
     oAuth2AuthCode:
