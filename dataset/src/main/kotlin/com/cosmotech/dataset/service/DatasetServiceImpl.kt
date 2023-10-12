@@ -265,7 +265,7 @@ class DatasetServiceImpl(
 
     dataset.sourceType.takeIf { it == DatasetSourceType.File }
         ?: throw CsmResourceNotFoundException("SourceType Dataset must be 'File'")
-    val uploadStatus = getDatasetTwingraphStatus(organizationId, datasetId, null)
+    val uploadStatus = getDatasetTwingraphStatus(organizationId, datasetId, "jobIdRandom")
     uploadStatus.takeUnless { it == Dataset.Status.PENDING.value }
         ?: throw CsmResourceNotFoundException("Dataset in use, cannot update. Retry later")
 
@@ -299,7 +299,7 @@ class DatasetServiceImpl(
   override fun getDatasetTwingraphStatus(
       organizationId: String,
       datasetId: String,
-      jobId: String?
+      jobId: String
   ): String {
     // This call verify by itself that we have the read authorization in the dataset
     val dataset = findDatasetById(organizationId, datasetId)

@@ -401,7 +401,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **dataset\_id** | **String**| the dataset identifier | [default to null]
- **job\_id** | **String**| the job identifier | [optional] [default to null]
+ **job\_id** | **String**| the job identifier | [default to null]
 
 ### Return type
 
