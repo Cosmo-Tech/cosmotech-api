@@ -667,6 +667,7 @@ paths:
       - name: job_id
         in: path
         description: the job identifier
+        required: true
         schema:
           type: string
     get:
