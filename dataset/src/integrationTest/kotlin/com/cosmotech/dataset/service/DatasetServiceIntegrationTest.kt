@@ -53,13 +53,11 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import java.io.File
-import java.io.InputStream
 import java.time.Instant
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
-import org.apache.commons.compress.archivers.ArchiveStreamFactory
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeAll
@@ -1597,7 +1595,10 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
             }
           }
 
-  private fun materializeTwingraph(dataset: Dataset = datasetSaved, createTwingraph: Boolean = true): Dataset {
+  private fun materializeTwingraph(
+      dataset: Dataset = datasetSaved,
+      createTwingraph: Boolean = true
+  ): Dataset {
     dataset.apply {
       if (createTwingraph) {
         redisGraph.query(this.twingraphId, "CREATE (n:labelrouge)")
