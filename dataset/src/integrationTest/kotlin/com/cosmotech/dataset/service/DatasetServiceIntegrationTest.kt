@@ -506,7 +506,6 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC twingraphBatchUpdate : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               val organization = makeOrganizationWithRole()
               organizationSaved = organizationApiService.registerOrganization(organization)
@@ -517,6 +516,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
               val datasetTwinGraphQuery = DatasetTwinGraphQuery("MATCH (n) RETURN n")
               val resource = ByteArrayResource("".toByteArray())
               every { resourceScanner.scanMimeTypes(any(), any()) } returns Unit
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
                 val exception =
