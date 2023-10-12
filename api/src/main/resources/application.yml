@@ -127,7 +127,7 @@ csm:
       - name: "TwincacheConnector"
         imageRegistry: "ghcr.io"
         imageName: "cosmo-tech/twincache-connector"
-        imageVersion: "0.4.0"
+        imageVersion: "0.4.1"
     authorization:
       principal-jwt-claim: "sub"
       tenant-id-jwt-claim: "iss"
