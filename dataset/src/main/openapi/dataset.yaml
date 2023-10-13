@@ -1234,6 +1234,16 @@ components:
         main:
           type: boolean
           description: is this the main dataset
+        creationDate:
+          type: integer
+          format: int64
+          readOnly: true
+          description: the Dataset creation date
+        refreshDate:
+          type: integer
+          format: int64
+          readOnly: true
+          description: the last time a refresh was done
         sourceType:
           $ref: '#/components/schemas/DatasetSourceType'
         source:

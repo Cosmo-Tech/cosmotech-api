@@ -57,6 +57,8 @@ entity Dataset {
     parentId: String
     twingraphId: String
     main: Boolean
+    creationDate: Long
+    refreshDate: Long
     sourceType: DatasetSourceType
     source: SourceInfo
     status: String
