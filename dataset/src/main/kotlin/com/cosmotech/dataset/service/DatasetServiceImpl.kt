@@ -68,6 +68,7 @@ import com.redislabs.redisgraph.graph_entities.Edge
 import com.redislabs.redisgraph.graph_entities.Node
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
+import java.time.Instant
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.apache.commons.compress.archivers.ArchiveStreamFactory
@@ -174,6 +175,7 @@ class DatasetServiceImpl(
             twingraphId = twingraphId,
             sourceType = dataset.sourceType ?: DatasetSourceType.None,
             main = dataset.main ?: true,
+            creationDate = Instant.now().toEpochMilli(),
             status = Dataset.Status.DRAFT,
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
             organizationId = organizationId)
@@ -222,6 +224,7 @@ class DatasetServiceImpl(
             twingraphId = subTwingraphId,
             queries = subDatasetGraphQuery.queries,
             main = subDatasetGraphQuery.main ?: dataset.main,
+            creationDate = Instant.now().toEpochMilli(),
             parentId = dataset.id,
             status = Dataset.Status.READY,
             connector =
@@ -350,7 +353,11 @@ class DatasetServiceImpl(
     dataset.status?.takeUnless { it == Dataset.Status.PENDING }
         ?: throw CsmClientException("Dataset in use, cannot update. Retry later")
 
-    datasetRepository.save(dataset.apply { status = Dataset.Status.PENDING })
+    datasetRepository.save(
+        dataset.apply {
+          refreshDate = Instant.now().toEpochMilli()
+          status = Dataset.Status.PENDING
+        })
 
     val dataSourceLocation =
         if (dataset.sourceType == DatasetSourceType.Twincache) {
