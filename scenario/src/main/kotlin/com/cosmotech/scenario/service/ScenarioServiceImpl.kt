@@ -268,7 +268,11 @@ internal class ScenarioServiceImpl(
 
     scenario.datasetList?.forEach {
       try {
-        datasetService.deleteDataset(organizationId, it)
+        // This check that it's a v3 dataset that meant to be deleted with the scenario
+        // TODO remove went retro compat to  v2.x is remove
+        if (datasetService.findDatasetById(organizationId, it).creationDate != null) {
+          datasetService.deleteDataset(organizationId, it)
+        }
       } catch (e: CsmAccessForbiddenException) {
         logger.warn("Error while deleting dataset $it", e)
       }
