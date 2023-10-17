@@ -23,6 +23,7 @@ import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetConnector
 import com.cosmotech.dataset.domain.DatasetSecurity
+import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
@@ -50,10 +51,10 @@ import com.ninjasquad.springmockk.MockkBean
 import com.ninjasquad.springmockk.SpykBean
 import com.redis.om.spring.RediSearchIndexer
 import com.redis.testcontainers.RedisStackContainer
+import com.redislabs.redisgraph.impl.api.RedisGraph
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.mockk
 import io.mockk.mockkStatic
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -104,6 +105,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var connectorApiService: ConnectorApiService
   @Autowired lateinit var organizationApiService: OrganizationApiService
   @SpykBean @Autowired lateinit var datasetApiService: DatasetApiService
+  @Autowired lateinit var datasetRepository: DatasetRepository
   @Autowired lateinit var solutionApiService: SolutionApiService
   @Autowired lateinit var workspaceApiService: WorkspaceApiService
   @Autowired lateinit var scenarioApiService: ScenarioApiService
@@ -164,6 +166,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
 
     dataset = makeDataset(organizationSaved.id!!, "Dataset", connectorSaved)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    materializeTwingraph()
 
     solution = makeSolution(organizationSaved.id!!)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -178,9 +181,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
             solutionSaved.id!!,
             "Scenario",
             mutableListOf(datasetSaved.id!!))
-    every { datasetApiService.findDatasetById(any(), any()) } returns
-        datasetSaved.apply { status = Dataset.Status.READY }
-    every { datasetApiService.createSubDataset(any(), any(), any()) } returns mockk(relaxed = true)
+
     scenarioSaved =
         scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, scenario)
   }
@@ -306,13 +307,8 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `test parent scenario operations as User Admin`() {
 
-    logger.info(
-        "should create a child Scenario with dataset different from parent and " +
-            "assert the dataset list is the same as parent")
-    val dataset = makeDataset(organizationSaved.id!!, "Dataset", connectorSaved)
-    val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-
-    logger.info("should create a tree of Scenarios")
+    logger.info("should create a child Scenario with dataset different from parent")
+    logger.info("Create a tree of Scenarios")
     val idMap = mutableMapOf<Int, String>()
     IntRange(1, 5).forEach {
       var scenario =
@@ -674,6 +670,41 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
+  @Test
+  fun `test deleting dataset with scenario`() {
+    scenarioApiService.deleteScenario(
+        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+
+    assertDoesNotThrow {
+      datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+    }
+    scenarioSaved.datasetList!!.forEach { dataset ->
+      assertThrows<CsmResourceNotFoundException> {
+        datasetApiService.findDatasetById(organizationSaved.id!!, dataset)
+      }
+    }
+  }
+
+  @Test
+  fun `test do not delete old style dataset with scenario`() {
+    // old style dataset doesn't have the creationDate property set
+    // set all dataset in scenario datasetList to old style
+    scenarioSaved.datasetList!!.forEach { datasetId ->
+      val scenarioDataset = datasetApiService.findDatasetById(organizationSaved.id!!, datasetId)
+      datasetRepository.save(scenarioDataset.apply { creationDate = null })
+    }
+
+    scenarioApiService.deleteScenario(
+        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+
+    assertDoesNotThrow {
+      datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+    }
+    scenarioSaved.datasetList!!.forEach { dataset ->
+      assertDoesNotThrow { datasetApiService.findDatasetById(organizationSaved.id!!, dataset) }
+    }
+  }
+
   private fun makeWorkspaceEventHubInfo(eventHubAvailable: Boolean): WorkspaceEventHubInfo {
     return WorkspaceEventHubInfo(
         eventHubNamespace = "eventHubNamespace",
@@ -804,5 +835,18 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                 mutableListOf(
                     ScenarioAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                     ScenarioAccessControl(userName, role))))
+  }
+
+  private fun materializeTwingraph(
+      dataset: Dataset = datasetSaved,
+      createTwingraph: Boolean = true
+  ): Dataset {
+    dataset.apply {
+      if (createTwingraph) {
+        RedisGraph(jedisPool).query(this.twingraphId, "MATCH (n:labelrouge) return 1")
+      }
+      this.status = Dataset.Status.READY
+    }
+    return datasetRepository.save(dataset)
   }
 }
