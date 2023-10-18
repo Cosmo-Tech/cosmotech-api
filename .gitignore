@@ -49,7 +49,8 @@ api/kubernetes/cronjob/*.yaml
 ### Personal directory ###
 perso
 config/application-dev*.properties
-config/application-dev*.yml
+config/application-*.yml
+!config/application-dev.sample.yml
 api/kubernetes/helm-chart/values-vcr.yaml
 /api/kubernetes/helm-chart/values-JREY*.yaml
 

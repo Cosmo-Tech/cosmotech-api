@@ -317,7 +317,7 @@ internal class ScenarioServiceImpl(
     // TODO Only the workspace owner should be able to do this
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE)
-    var pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenario.defaultPageSize)
+    val pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenario.defaultPageSize)
 
     do {
       val scenarioList =
@@ -327,7 +327,6 @@ internal class ScenarioServiceImpl(
         scenarioRepository.delete(it)
         eventPublisher.publishEvent(ScenarioDeleted(this, organizationId, workspaceId, it.id!!))
       }
-      pageable = pageable.next()
     } while (scenarioList.isNotEmpty())
   }
 
