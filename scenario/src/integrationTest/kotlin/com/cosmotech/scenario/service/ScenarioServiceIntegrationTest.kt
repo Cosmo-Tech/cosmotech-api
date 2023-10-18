@@ -240,6 +240,12 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
         scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!, null, null)
     assertTrue(scenarioListAfterDelete.size == 1)
 
+    // We create more scenario than there can be on one page of default size to assert
+    // deleteAllScenarios still works with high quantities of scenarios
+    repeat(csmPlatformProperties.twincache.scenario.defaultPageSize + 1) {
+      scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, makeScenario())
+    }
+
     logger.info("should delete all Scenarios and assert there is no Scenario left")
     scenarioApiService.deleteAllScenarios(organizationSaved.id!!, workspaceSaved.id!!)
     val scenarioListAfterDeleteAll =
