@@ -118,7 +118,7 @@ else
   # https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack
   kubectl create namespace "${MONITORING_NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
 
-  curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/main/deployment_scripts/v3.1/kube-prometheus-stack-template.yaml" \
+  curl -sSL "https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/JREY/multitenant-keycloak/deployment_scripts/v3.1/kube-prometheus-stack-template.yaml" \
        -o "${WORKING_DIR}"/kube-prometheus-stack-template.yaml
 
   MONITORING_NAMESPACE_VAR=${MONITORING_NAMESPACE} \
