@@ -540,6 +540,14 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
             organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, TEST_USER_MAIL)
     assertEquals(scenarioAccessControl, scenarioAccessControlRegistered)
 
+    logger.info(
+        "should add an Access Control and assert it is the one created in the linked datasets")
+    scenario.datasetList!!.forEach {
+      assertDoesNotThrow {
+        datasetApiService.getDatasetAccessControl(organizationSaved.id!!, it, TEST_USER_MAIL)
+      }
+    }
+
     logger.info("should update the Access Control and assert it has been updated")
     scenarioAccessControlRegistered =
         scenarioApiService.updateScenarioAccessControl(
@@ -549,6 +557,16 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
             TEST_USER_MAIL,
             ScenarioRole(ROLE_EDITOR))
     assertEquals(ROLE_EDITOR, scenarioAccessControlRegistered.role)
+
+    logger.info(
+        "should update the Access Control and assert it has been updated in the linked datasets")
+    scenario.datasetList!!.forEach {
+      assertEquals(
+          ROLE_EDITOR,
+          datasetApiService
+              .getDatasetAccessControl(organizationSaved.id!!, it, TEST_USER_MAIL)
+              .role)
+    }
 
     logger.info("should get the list of users and assert there are 2")
     var userList =
@@ -563,6 +581,14 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
       scenarioAccessControlRegistered =
           scenarioApiService.getScenarioAccessControl(
               organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, TEST_USER_MAIL)
+    }
+
+    logger.info(
+        "should remove the Access Control and assert it has been removed in the linked datasets")
+    scenario.datasetList!!.forEach {
+      assertThrows<CsmResourceNotFoundException> {
+        datasetApiService.getDatasetAccessControl(organizationSaved.id!!, it, TEST_USER_MAIL)
+      }
     }
   }
 
