@@ -542,7 +542,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info(
         "should add an Access Control and assert it is the one created in the linked datasets")
-    scenario.datasetList!!.forEach {
+    scenarioSaved.datasetList!!.forEach {
       assertDoesNotThrow {
         datasetApiService.getDatasetAccessControl(organizationSaved.id!!, it, TEST_USER_MAIL)
       }
@@ -560,7 +560,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info(
         "should update the Access Control and assert it has been updated in the linked datasets")
-    scenario.datasetList!!.forEach {
+    scenarioSaved.datasetList!!.forEach {
       assertEquals(
           ROLE_EDITOR,
           datasetApiService
@@ -585,7 +585,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info(
         "should remove the Access Control and assert it has been removed in the linked datasets")
-    scenario.datasetList!!.forEach {
+    scenarioSaved.datasetList!!.forEach {
       assertThrows<CsmResourceNotFoundException> {
         datasetApiService.getDatasetAccessControl(organizationSaved.id!!, it, TEST_USER_MAIL)
       }
@@ -734,6 +734,27 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     }
     scenarioSaved.datasetList!!.forEach { dataset ->
       assertDoesNotThrow { datasetApiService.findDatasetById(organizationSaved.id!!, dataset) }
+    }
+  }
+
+  @Test
+  fun `test updating datasetList and assert the accessControlList has the correct users`() {
+    val newDataset = datasetApiService.createDataset(organizationSaved.id!!, makeDataset())
+    scenarioSaved =
+        scenarioApiService.updateScenario(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            scenarioSaved.id!!,
+            scenario.copy(datasetList = mutableListOf(datasetSaved.id!!, newDataset.id!!)))
+
+    val scenarioUserList =
+        scenarioApiService.getScenarioSecurityUsers(
+            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+
+    scenarioSaved.datasetList!!.forEach { thisDataset ->
+      val datasetUserList =
+          datasetApiService.getDatasetSecurityUsers(organizationSaved.id!!, thisDataset)
+      scenarioUserList.forEach { user -> assertTrue(datasetUserList.contains(user)) }
     }
   }
 
