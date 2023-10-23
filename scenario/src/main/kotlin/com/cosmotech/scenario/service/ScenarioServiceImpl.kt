@@ -742,7 +742,7 @@ internal class ScenarioServiceImpl(
       return false
     }
     scenario.security!!.accessControlList.forEach {
-      updateLinkedDatasetAccessControl(scenario.organizationId!!, scenario, it)
+      updateLinkedDatasetsAccessControl(scenario.organizationId!!, scenario, it)
     }
     // TODO Need to validate those IDs too ?
     existingScenario.datasetList = scenario.datasetList
@@ -961,7 +961,7 @@ internal class ScenarioServiceImpl(
             scenarioAccessControl.role,
             scenarioPermissions)
     scenario.setRbac(rbacSecurity)
-    updateLinkedDatasetAccessControl(organizationId, scenario, scenarioAccessControl)
+    updateLinkedDatasetsAccessControl(organizationId, scenario, scenarioAccessControl)
     upsertScenarioData(scenario)
     val rbacAccessControl = csmRbac.getAccessControl(scenario.getRbac(), scenarioAccessControl.id)
     return ScenarioAccessControl(rbacAccessControl.id, rbacAccessControl.role)
@@ -982,13 +982,13 @@ internal class ScenarioServiceImpl(
         csmRbac.setUserRole(scenario.getRbac(), identityId, scenarioRole.role, scenarioPermissions)
     scenario.setRbac(rbacSecurity)
     upsertScenarioData(scenario)
-    updateLinkedDatasetAccessControl(
+    updateLinkedDatasetsAccessControl(
         organizationId, scenario, ScenarioAccessControl(identityId, scenarioRole.role))
     val rbacAccessControl = csmRbac.getAccessControl(scenario.getRbac(), identityId)
     return ScenarioAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 
-  fun updateLinkedDatasetAccessControl(
+  fun updateLinkedDatasetsAccessControl(
       organizationId: String,
       scenario: Scenario,
       scenarioAccessControl: ScenarioAccessControl
@@ -1001,11 +1001,8 @@ internal class ScenarioServiceImpl(
           scenarioAccessControl.role
         }
     scenario.datasetList!!.forEach {
-      val datasetRBACIds = mutableListOf<String>()
-      datasetService.findDatasetById(organizationId, it).getRbac().accessControlList.forEach { it ->
-        datasetRBACIds.add(it.id)
-      }
-      if (datasetRBACIds.contains(id)) {
+      val datasetUsers = datasetService.getDatasetSecurityUsers(organizationId, it)
+      if (datasetUsers.contains(id)) {
         datasetService.updateDatasetAccessControl(organizationId, it, id, DatasetRole(role))
       } else {
         datasetService.addDatasetAccessControl(organizationId, it, DatasetAccessControl(id, role))
