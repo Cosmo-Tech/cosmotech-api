@@ -30,6 +30,8 @@ import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
+import com.cosmotech.api.rbac.ROLE_USER
+import com.cosmotech.api.rbac.ROLE_VALIDATOR
 import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.getScenarioRolesDefinition
 import com.cosmotech.api.scenario.ScenarioMetaData
@@ -41,7 +43,10 @@ import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.dataset.api.DatasetApiService
 import com.cosmotech.dataset.domain.Dataset
+import com.cosmotech.dataset.domain.DatasetAccessControl
+import com.cosmotech.dataset.domain.DatasetRole
 import com.cosmotech.dataset.domain.SubDatasetGraphQuery
+import com.cosmotech.dataset.service.getRbac
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.service.getRbac
 import com.cosmotech.scenario.api.ScenarioApiService
@@ -281,7 +286,6 @@ internal class ScenarioServiceImpl(
     this.handleScenarioDeletion(organizationId, workspaceId, scenario)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     deleteScenarioMetadata(organizationId, workspace.key, scenarioId)
-
     eventPublisher.publishEvent(ScenarioDeleted(this, organizationId, workspaceId, scenarioId))
   }
 
@@ -737,6 +741,9 @@ internal class ScenarioServiceImpl(
           "Cannot set Dataset list on child Scenario ${scenario.id}. Only root scenarios can be set.")
       return false
     }
+    scenario.security!!.accessControlList.forEach {
+      updateLinkedDatasetAccessControl(scenario.organizationId!!, scenario, it)
+    }
     // TODO Need to validate those IDs too ?
     existingScenario.datasetList = scenario.datasetList
     return true
@@ -954,6 +961,7 @@ internal class ScenarioServiceImpl(
             scenarioAccessControl.role,
             scenarioPermissions)
     scenario.setRbac(rbacSecurity)
+    updateLinkedDatasetAccessControl(organizationId, scenario, scenarioAccessControl)
     upsertScenarioData(scenario)
     val rbacAccessControl = csmRbac.getAccessControl(scenario.getRbac(), scenarioAccessControl.id)
     return ScenarioAccessControl(rbacAccessControl.id, rbacAccessControl.role)
@@ -974,8 +982,35 @@ internal class ScenarioServiceImpl(
         csmRbac.setUserRole(scenario.getRbac(), identityId, scenarioRole.role, scenarioPermissions)
     scenario.setRbac(rbacSecurity)
     upsertScenarioData(scenario)
+    updateLinkedDatasetAccessControl(
+        organizationId, scenario, ScenarioAccessControl(identityId, scenarioRole.role))
     val rbacAccessControl = csmRbac.getAccessControl(scenario.getRbac(), identityId)
     return ScenarioAccessControl(rbacAccessControl.id, rbacAccessControl.role)
+  }
+
+  fun updateLinkedDatasetAccessControl(
+      organizationId: String,
+      scenario: Scenario,
+      scenarioAccessControl: ScenarioAccessControl
+  ) {
+    val id = scenarioAccessControl.id
+    val role: String =
+        if (scenarioAccessControl.role == ROLE_VALIDATOR) {
+          ROLE_USER
+        } else {
+          scenarioAccessControl.role
+        }
+    scenario.datasetList!!.forEach {
+      val datasetRBACIds = mutableListOf<String>()
+      datasetService.findDatasetById(organizationId, it).getRbac().accessControlList.forEach { it ->
+        datasetRBACIds.add(it.id)
+      }
+      if (datasetRBACIds.contains(id)) {
+        datasetService.updateDatasetAccessControl(organizationId, it, id, DatasetRole(role))
+      } else {
+        datasetService.addDatasetAccessControl(organizationId, it, DatasetAccessControl(id, role))
+      }
+    }
   }
 
   override fun removeScenarioAccessControl(
@@ -988,6 +1023,15 @@ internal class ScenarioServiceImpl(
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
     val rbacSecurity = csmRbac.removeUser(scenario.getRbac(), identityId, scenarioPermissions)
     scenario.setRbac(rbacSecurity)
+    scenario.datasetList!!.forEach {
+      val datasetRBACIds = mutableListOf<String>()
+      datasetService.findDatasetById(organizationId, it).getRbac().accessControlList.forEach {
+        datasetRBACIds.add(it.id)
+      }
+      if (datasetRBACIds.contains(identityId)) {
+        datasetService.removeDatasetAccessControl(organizationId, it, identityId)
+      }
+    }
     upsertScenarioData(scenario)
   }
 
