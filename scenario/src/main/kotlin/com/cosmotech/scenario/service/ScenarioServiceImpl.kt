@@ -1020,6 +1020,15 @@ internal class ScenarioServiceImpl(
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
     val rbacSecurity = csmRbac.removeUser(scenario.getRbac(), identityId, scenarioPermissions)
     scenario.setRbac(rbacSecurity)
+    removeLinkedDatasetsAccessControl(organizationId, scenario, identityId)
+    upsertScenarioData(scenario)
+  }
+
+  fun removeLinkedDatasetsAccessControl(
+      organizationId: String,
+      scenario: Scenario,
+      identityId: String
+  ) {
     scenario.datasetList!!.forEach {
       val datasetRBACIds = mutableListOf<String>()
       datasetService.findDatasetById(organizationId, it).getRbac().accessControlList.forEach {
@@ -1029,7 +1038,6 @@ internal class ScenarioServiceImpl(
         datasetService.removeDatasetAccessControl(organizationId, it, identityId)
       }
     }
-    upsertScenarioData(scenario)
   }
 
   override fun getScenarioSecurityUsers(
