@@ -596,6 +596,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               val organizationSaved = organizationApiService.registerOrganization(organization)
               val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
               val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetApiService.addDatasetAccessControl(
+                  organizationSaved.id!!,
+                  datasetSaved.id!!,
+                  DatasetAccessControl(TEST_USER_MAIL, ROLE_ADMIN))
               val solution = makeSolution(organizationSaved.id!!)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -1218,6 +1222,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               val organizationSaved = organizationApiService.registerOrganization(organization)
               val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
               val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetApiService.addDatasetAccessControl(
+                  organizationSaved.id!!,
+                  datasetSaved.id!!,
+                  DatasetAccessControl(TEST_USER_MAIL, ROLE_ADMIN))
               val solution = makeSolution(organizationSaved.id!!)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -1435,6 +1443,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               val organizationSaved = organizationApiService.registerOrganization(organization)
               val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
               val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetApiService.addDatasetAccessControl(
+                  organizationSaved.id!!,
+                  datasetSaved.id!!,
+                  DatasetAccessControl(TEST_USER_MAIL, ROLE_ADMIN))
               val solution = makeSolution(organizationSaved.id!!)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -1448,8 +1460,12 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
                   workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
               every { datasetApiService.findDatasetById(any(), any()) } returns
                   datasetSaved.apply { status = Dataset.Status.READY }
-              every { datasetApiService.createSubDataset(any(), any(), any()) } returns
-                  mockk(relaxed = true)
+              every { datasetApiService.createSubDataset(any(), any(), any()) } returns datasetSaved
+              every { datasetApiService.getDatasetSecurityUsers(any(), any()) } returns
+                  listOf(TEST_USER_MAIL, CONNECTED_ADMIN_USER)
+              every {
+                datasetApiService.updateDatasetAccessControl(any(), any(), any(), any())
+              } returns mockk()
               val scenario =
                   makeScenarioWithRole(
                       organizationSaved.id!!,

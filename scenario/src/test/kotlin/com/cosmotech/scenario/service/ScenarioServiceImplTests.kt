@@ -1129,6 +1129,9 @@ class ScenarioServiceImplTests {
               every { scenarioRepository.findBy(any(), any(), any()) } returns
                   Optional.of(it.scenario)
               every { scenarioRepository.save(any()) } returns it.scenario
+              every {
+                scenarioServiceImpl.removeLinkedDatasetsAccessControl(any(), any(), any())
+              } returns Unit
               scenarioServiceImpl.removeScenarioAccessControl(
                   it.organization.id!!, it.workspace.id!!, it.scenario.id!!, CONNECTED_DEFAULT_USER)
             }
@@ -1150,6 +1153,9 @@ class ScenarioServiceImplTests {
               every { scenarioRepository.save(any()) } returns it.scenario
               every { organizationService.findOrganizationById(any()) } returns it.organization
               every { workspaceService.findWorkspaceById(any(), any()) } returns it.workspace
+              every {
+                scenarioServiceImpl.updateLinkedDatasetsAccessControl(any(), any(), any())
+              } returns Unit
               scenarioServiceImpl.updateScenarioAccessControl(
                   it.organization.id!!,
                   it.workspace.id!!,
