@@ -994,6 +994,8 @@ internal class ScenarioServiceImpl(
       scenarioAccessControl: ScenarioAccessControl
   ) {
     val id = scenarioAccessControl.id
+    // Scenario and Dataset don't have the same roles
+    // This function translates the role set from one to another
     val role: String =
         if (scenarioAccessControl.role == ROLE_VALIDATOR) {
           ROLE_USER
