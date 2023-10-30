@@ -677,9 +677,29 @@ class ScenarioRunServiceImpl(
     val scenarioRun =
         this.findScenarioRunById(organizationId, scenariorunId, withStateInformation = false)
     // This call verify by itself that we have the read authorization in the scenario
-    scenarioApiService.findScenarioById(
-        organizationId, scenarioRun.workspaceId!!, scenarioRun.scenarioId!!)
-    return getScenarioRunStatus(organizationId, scenarioRun)
+    val scenario =
+        scenarioApiService.findScenarioById(
+            organizationId, scenarioRun.workspaceId!!, scenarioRun.scenarioId!!)
+
+    // PROD-12524
+    // due to the hack do not check the status as usual as we forced the scenario's status to failed
+    val scenariorRunStatus = getScenarioRunStatus(organizationId, scenarioRun)
+    if (scenario.state == ScenarioJobState.Failed) {
+      return ScenarioRunStatus(
+          id = scenariorRunStatus.id,
+          organizationId = scenariorRunStatus.organizationId,
+          workflowId = scenariorRunStatus.workflowId,
+          workflowName = scenariorRunStatus.workflowName,
+          startTime = scenariorRunStatus.startTime,
+          endTime = scenariorRunStatus.endTime,
+          phase = scenariorRunStatus.state.toString(),
+          progress = scenariorRunStatus.progress,
+          message = scenariorRunStatus.message,
+          estimatedDuration = scenariorRunStatus.estimatedDuration,
+          nodes = scenariorRunStatus.nodes)
+    }
+
+    return scenariorRunStatus
   }
 
   private fun getScenarioRunStatus(
@@ -857,10 +877,19 @@ class ScenarioRunServiceImpl(
 
   override fun stopScenarioRun(organizationId: String, scenariorunId: String): ScenarioRunStatus {
     val scenarioRun = findScenarioRunById(organizationId, scenariorunId)
-    val scenario =
+    var scenario =
         scenarioApiService.findScenarioById(
             organizationId, scenarioRun.workspaceId!!, scenarioRun.scenarioId!!)
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE, scenarioPermissions)
+    // PROD-12524
+    // As the workflow is not stopping when trying to stop it(argo version 0.16.6)
+    // the workaround is to set the scenario's state to failed
+    scenario.state = ScenarioJobState.Failed
+    eventPublisher.publishEvent(
+        ScenarioLastRunChanged(this, organizationId, scenarioRun.workspaceId, scenario))
+
+    val sr = scenarioRun.copy(state = ScenarioRunState.Failed)
+    scenarioRunRepository.save(sr)
     return workflowService.stopWorkflow(findScenarioRunById(organizationId, scenariorunId))
   }
 

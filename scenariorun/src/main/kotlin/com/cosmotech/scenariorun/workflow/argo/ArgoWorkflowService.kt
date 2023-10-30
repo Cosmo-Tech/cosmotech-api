@@ -12,6 +12,7 @@ import com.cosmotech.scenariorun.domain.ScenarioRunContainerLogs
 import com.cosmotech.scenariorun.domain.ScenarioRunLogs
 import com.cosmotech.scenariorun.domain.ScenarioRunResourceRequested
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
+import com.cosmotech.scenariorun.domain.ScenarioRunState
 import com.cosmotech.scenariorun.domain.ScenarioRunStatus
 import com.cosmotech.scenariorun.domain.ScenarioRunStatusNode
 import com.cosmotech.scenariorun.workflow.WorkflowContextData
@@ -437,7 +438,9 @@ internal class ArgoWorkflowService(
         workflowName = scenarioRun.workflowName,
         startTime = workflowStatus?.startedAt?.toString(),
         endTime = workflowStatus?.finishedAt?.toString(),
-        phase = workflowStatus?.phase,
+        phase =
+            if (scenarioRun.state == ScenarioRunState.Failed) ScenarioRunState.Failed.toString()
+            else workflowStatus?.phase,
         progress = workflowStatus?.progress,
         message = workflowStatus?.message,
         estimatedDuration = workflowStatus?.estimatedDuration,
