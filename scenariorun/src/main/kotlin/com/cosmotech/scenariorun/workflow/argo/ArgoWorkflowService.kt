@@ -439,7 +439,8 @@ internal class ArgoWorkflowService(
         startTime = workflowStatus?.startedAt?.toString(),
         endTime = workflowStatus?.finishedAt?.toString(),
         phase =
-            if (scenarioRun.state == ScenarioRunState.Failed) "Failed" else workflowStatus?.phase,
+            if (scenarioRun.state == ScenarioRunState.Failed) ScenarioRunState.Failed.toString()
+            else workflowStatus?.phase,
         progress = workflowStatus?.progress,
         message = workflowStatus?.message,
         estimatedDuration = workflowStatus?.estimatedDuration,

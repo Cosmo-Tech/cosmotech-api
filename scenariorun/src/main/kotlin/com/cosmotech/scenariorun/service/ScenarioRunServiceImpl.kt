@@ -692,7 +692,7 @@ class ScenarioRunServiceImpl(
           workflowName = scenariorRunStatus.workflowName,
           startTime = scenariorRunStatus.startTime,
           endTime = scenariorRunStatus.endTime,
-          phase = "Failed",
+          phase = scenariorRunStatus.state.toString(),
           progress = scenariorRunStatus.progress,
           message = scenariorRunStatus.message,
           estimatedDuration = scenariorRunStatus.estimatedDuration,
