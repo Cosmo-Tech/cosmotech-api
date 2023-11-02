@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.workspace.service
 
-import com.azure.spring.autoconfigure.storage.resource.AzureStorageResourcePatternResolver
-import com.azure.spring.autoconfigure.storage.resource.BlobStorageResource
+import com.azure.spring.cloud.core.resource.AzureStorageBlobProtocolResolver
 import com.azure.storage.blob.BlobServiceClient
 import com.azure.storage.blob.batch.BlobBatchClient
 import com.azure.storage.blob.models.DeleteSnapshotsOptionType
@@ -57,7 +56,6 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.context.annotation.Scope
 import org.springframework.context.event.EventListener
 import org.springframework.core.io.Resource
-import org.springframework.core.io.ResourceLoader
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.scheduling.annotation.Async
@@ -67,7 +65,7 @@ import org.springframework.stereotype.Service
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Suppress("TooManyFunctions")
 internal class WorkspaceServiceImpl(
-    private val resourceLoader: ResourceLoader,
+    private val azureStorageBlobProtocolResolver: AzureStorageBlobProtocolResolver,
     private val organizationService: OrganizationApiServiceInterface,
     private val solutionService: SolutionApiService,
     private val azureStorageBlobServiceClient: BlobServiceClient,
@@ -244,7 +242,7 @@ internal class WorkspaceServiceImpl(
         workspace.id,
         workspace.name,
         fileName)
-    return resourceLoader.getResource(
+    return azureStorageBlobProtocolResolver.getResource(
         "azure-blob://$organizationId/$workspaceId/".sanitizeForAzureStorage() + fileName)
   }
 
@@ -395,6 +393,16 @@ internal class WorkspaceServiceImpl(
     return workspace
   }
 
+  private fun getWorkspaceFileResources(
+      organizationId: String,
+      workspaceId: String
+  ): List<Resource> {
+    findWorkspaceById(organizationId, workspaceId)
+    return AzureStorageBlobProtocolResolver()
+        .getResources("azure-blob://$organizationId/$workspaceId/**/*".sanitizeForAzureStorage())
+        .map { it as Resource }
+  }
+
   override fun getWorkspacePermissions(
       organizationId: String,
       workspaceId: String,
@@ -524,16 +532,6 @@ internal class WorkspaceServiceImpl(
       workspace.linkedDatasetIdList = mutableListOf(datasetId)
     }
     return workspaceRepository.save(workspace)
-  }
-
-  private fun getWorkspaceFileResources(
-      organizationId: String,
-      workspaceId: String
-  ): List<BlobStorageResource> {
-    findWorkspaceById(organizationId, workspaceId)
-    return AzureStorageResourcePatternResolver(azureStorageBlobServiceClient)
-        .getResources("azure-blob://$organizationId/$workspaceId/**/*".sanitizeForAzureStorage())
-        .map { it as BlobStorageResource }
   }
 
   private fun initSecurity(userId: String): WorkspaceSecurity {

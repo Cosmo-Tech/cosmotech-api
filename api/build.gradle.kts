@@ -7,7 +7,7 @@ import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
-  id("com.rameshkp.openapi-merger-gradle-plugin") version "1.0.4"
+  id("com.rameshkp.openapi-merger-gradle-plugin") version "1.0.5"
   id("org.jetbrains.kotlinx.kover")
 }
 
@@ -67,7 +67,7 @@ tasks.register<Copy>("copySubProjectsOpenAPIFiles") {
   logger.debug("sourcePaths for 'copySubProjectsOpenAPIFiles' task: $sourcePaths")
   if (sourcePaths.isNotEmpty()) {
     from(*sourcePaths.toTypedArray())
-    into("$buildDir/tmp/openapi")
+    into("${layout.buildDirectory.get()}/tmp/openapi")
   } else {
     logger.warn(
         "Unable to find OpenAPI definitions in project dependencies => 'copySubProjectsOpenAPIFiles' not configured!")
@@ -111,14 +111,14 @@ openApiMerger {
 
 tasks.getByName<OpenApiMergerTask>("mergeOpenApiFiles") {
   dependsOn("copySubProjectsOpenAPIFiles")
-  inputDirectory.set(file("$buildDir/tmp/openapi"))
+  inputDirectory.set(file("${layout.buildDirectory.get()}/tmp/openapi"))
   outputFileProperty.set(file("$rootDir/openapi/openapi.yaml"))
 }
 
 tasks.register<GenerateTask>("openApiJSGenerate") {
   dependsOn("mergeOpenApiFiles")
   inputSpec.set("${rootDir}/openapi/openapi.yaml")
-  outputDir.set("$buildDir/generated-sources/openapi/javascript")
+  outputDir.set("${layout.buildDirectory.get()}/generated-sources/openapi/javascript")
   generatorName.set("javascript")
   additionalProperties.set(
       mapOf(
@@ -131,13 +131,13 @@ tasks.register<GenerateTask>("openApiJSGenerate") {
 tasks.register<Copy>("copyJSGitPushScript") {
   dependsOn("openApiJSGenerate")
   from("${rootDir}/scripts/clients/build_override/git_push.sh")
-  into("$buildDir/generated-sources/openapi/javascript/scripts")
+  into("${layout.buildDirectory.get()}/generated-sources/openapi/javascript/scripts")
 }
 
 tasks.register<Copy>("copyJSLicense") {
   dependsOn("openApiJSGenerate")
   from("${rootDir}/scripts/clients/build_override/LICENSE")
-  into("$buildDir/generated-sources/openapi/javascript")
+  into("${layout.buildDirectory.get()}/generated-sources/openapi/javascript")
 }
 
 tasks.register("generateJSClient") { dependsOn("copyJSGitPushScript", "copyJSLicense") }
@@ -145,7 +145,7 @@ tasks.register("generateJSClient") { dependsOn("copyJSGitPushScript", "copyJSLic
 tasks.register<GenerateTask>("openApiTypescriptGenerate") {
   dependsOn("mergeOpenApiFiles")
   inputSpec.set("${rootDir}/openapi/openapi.yaml")
-  outputDir.set("$buildDir/generated-sources/openapi/typescript")
+  outputDir.set("${layout.buildDirectory.get()}/generated-sources/openapi/typescript")
   generatorName.set("typescript-axios")
   additionalProperties.set(
       mapOf(
@@ -156,13 +156,13 @@ tasks.register<GenerateTask>("openApiTypescriptGenerate") {
 tasks.register<Copy>("copyTypescriptGitPushScript") {
   dependsOn("openApiTypescriptGenerate")
   from("${rootDir}/scripts/clients/build_override/git_push.sh")
-  into("$buildDir/generated-sources/openapi/typescript/scripts")
+  into("${layout.buildDirectory.get()}/generated-sources/openapi/typescript/scripts")
 }
 
 tasks.register<Copy>("copyTypescriptLicense") {
   dependsOn("openApiTypescriptGenerate")
   from("${rootDir}/scripts/clients/build_override/LICENSE")
-  into("$buildDir/generated-sources/openapi/typescript")
+  into("${layout.buildDirectory.get()}/generated-sources/openapi/typescript")
 }
 
 tasks.register("generateTypescriptClient") {
@@ -172,7 +172,7 @@ tasks.register("generateTypescriptClient") {
 tasks.register<GenerateTask>("openApiPythonGenerate") {
   dependsOn("mergeOpenApiFiles")
   inputSpec.set("${rootDir}/openapi/openapi.yaml")
-  outputDir.set("$buildDir/generated-sources/openapi/python")
+  outputDir.set("${layout.buildDirectory.get()}/generated-sources/openapi/python")
   generatorName.set("python")
   additionalProperties.set(
       mapOf(
@@ -184,13 +184,13 @@ tasks.register<GenerateTask>("openApiPythonGenerate") {
 tasks.register<Copy>("copyPythonGitPushScript") {
   dependsOn("openApiPythonGenerate")
   from("${rootDir}/scripts/clients/build_override/git_push.sh")
-  into("$buildDir/generated-sources/openapi/python/scripts")
+  into("${layout.buildDirectory.get()}/generated-sources/openapi/python/scripts")
 }
 
 tasks.register<Copy>("copyPythonLicense") {
   dependsOn("openApiPythonGenerate")
   from("${rootDir}/scripts/clients/build_override/LICENSE")
-  into("$buildDir/generated-sources/openapi/python")
+  into("${layout.buildDirectory.get()}/generated-sources/openapi/python")
 }
 
 tasks.register("generatePythonClient") { dependsOn("copyPythonGitPushScript", "copyPythonLicense") }
@@ -198,7 +198,7 @@ tasks.register("generatePythonClient") { dependsOn("copyPythonGitPushScript", "c
 tasks.register<GenerateTask>("openApiJavaGenerate") {
   dependsOn("mergeOpenApiFiles")
   inputSpec.set("${rootDir}/openapi/openapi.yaml")
-  outputDir.set("$buildDir/generated-sources/openapi/java")
+  outputDir.set("${layout.buildDirectory.get()}/generated-sources/openapi/java")
   generatorName.set("java")
   additionalProperties.set(
       mapOf(
@@ -224,13 +224,13 @@ tasks.register<GenerateTask>("openApiJavaGenerate") {
 tasks.register<Copy>("copyJavaGitPushScript") {
   dependsOn("openApiJavaGenerate")
   from("${rootDir}/scripts/clients/build_override/git_push.sh")
-  into("$buildDir/generated-sources/openapi/java/scripts")
+  into("${layout.buildDirectory.get()}/generated-sources/openapi/java/scripts")
 }
 
 tasks.register<Copy>("copyJavaLicense") {
   dependsOn("openApiJavaGenerate")
   from("${rootDir}/scripts/clients/build_override/LICENSE")
-  into("$buildDir/generated-sources/openapi/java")
+  into("${layout.buildDirectory.get()}/generated-sources/openapi/java")
 }
 
 tasks.register("generateJavaClient") { dependsOn("copyJavaGitPushScript", "copyJavaLicense") }
@@ -238,21 +238,21 @@ tasks.register("generateJavaClient") { dependsOn("copyJavaGitPushScript", "copyJ
 tasks.register<GenerateTask>("openApiCSharpGenerate") {
   dependsOn("mergeOpenApiFiles")
   inputSpec.set("${rootDir}/openapi/openapi.yaml")
-  outputDir.set("$buildDir/generated-sources/openapi/csharp")
-  generatorName.set("csharp-netcore")
+  outputDir.set("${layout.buildDirectory.get()}/generated-sources/openapi/csharp")
+  generatorName.set("csharp")
   additionalProperties.set(mapOf("packageName" to "Com.Cosmotech"))
 }
 
 tasks.register<Copy>("copyCSharpGitPushScript") {
   dependsOn("openApiCSharpGenerate")
   from("${rootDir}/scripts/clients/build_override/git_push.sh")
-  into("$buildDir/generated-sources/openapi/csharp/scripts")
+  into("${layout.buildDirectory.get()}/generated-sources/openapi/csharp/scripts")
 }
 
 tasks.register<Copy>("copyCSharpLicense") {
   dependsOn("openApiCSharpGenerate")
   from("${rootDir}/scripts/clients/build_override/LICENSE")
-  into("$buildDir/generated-sources/openapi/csharp")
+  into("${layout.buildDirectory.get()}/generated-sources/openapi/csharp")
 }
 
 tasks.register("generateCSharpClient") { dependsOn("copyCSharpGitPushScript", "copyCSharpLicense") }

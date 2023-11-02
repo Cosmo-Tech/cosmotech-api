@@ -1,5 +1,7 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
+@file:Suppress("DEPRECATION")
+
 package com.cosmotech.twingraph.api
 
 import com.cosmotech.api.CsmPhoenixService
@@ -26,7 +28,6 @@ import com.cosmotech.twingraph.domain.TwinGraphHash
 import com.cosmotech.twingraph.domain.TwinGraphQuery
 import com.cosmotech.twingraph.extension.toJsonString
 import com.cosmotech.twingraph.utils.TwingraphUtils
-import com.redislabs.redisgraph.impl.api.RedisGraph
 import java.io.InputStream
 import java.nio.charset.StandardCharsets.UTF_8
 import kotlinx.coroutines.GlobalScope
@@ -41,9 +42,9 @@ import org.springframework.http.HttpHeaders
 import org.springframework.stereotype.Service
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
-import redis.clients.jedis.JedisPool
-import redis.clients.jedis.ScanParams
+import redis.clients.jedis.UnifiedJedis
 import redis.clients.jedis.exceptions.JedisDataException
+import redis.clients.jedis.params.ScanParams
 
 const val GRAPH_NAME = "graphName"
 const val GRAPH_ROTATION = "graphRotation"
@@ -60,8 +61,7 @@ const val DEFAULT_GRAPH_ROTATION = "3"
 @Deprecated("Use dataset service instead")
 class TwingraphServiceImpl(
     private val organizationService: OrganizationApiServiceInterface,
-    private val csmJedisPool: JedisPool,
-    private val csmRedisGraph: RedisGraph,
+    private val unifiedJedis: UnifiedJedis,
     private val resourceScanner: ResourceScanner
 ) : CsmPhoenixService(), TwingraphApiServiceInterface {
 
@@ -71,15 +71,14 @@ class TwingraphServiceImpl(
     if (graphList.contains(graphId))
         throw CsmServerException("There is already a graph with the id : $graphId")
 
-    csmJedisPool.resource.use { jedis ->
-      jedis.hset(
-          graphId.toRedisMetaDataKey(),
-          mutableMapOf(
-              "lastVersion" to INITIAL_VERSION,
-              "graphName" to "$graphId:1",
-              "graphRotation" to DEFAULT_GRAPH_ROTATION,
-              "lastModifiedDate" to getLocalDateNow()))
-    }
+    unifiedJedis.hset(
+        graphId.toRedisMetaDataKey(),
+        mutableMapOf(
+            "lastVersion" to INITIAL_VERSION,
+            "graphName" to "$graphId:1",
+            "graphRotation" to DEFAULT_GRAPH_ROTATION,
+            "lastModifiedDate" to getLocalDateNow()))
+
     if (body != null) {
       val archiverType = ArchiveStreamFactory.detect(body.inputStream.buffered())
       if (ArchiveStreamFactory.ZIP != archiverType) {
@@ -87,7 +86,7 @@ class TwingraphServiceImpl(
             "Invalid archive type: '$archiverType'. A Zip Archive is expected.")
       }
 
-      val queryBuffer = QueryBuffer(csmJedisPool.resource, getLastVersion(organizationId, graphId))
+      val queryBuffer = QueryBuffer(unifiedJedis, getLastVersion(organizationId, graphId))
       unzip(body.inputStream, listOf(NODES_ZIP_FOLDER, EDGES_ZIP_FOLDER), "csv")
           .sortedByDescending { it.prefix } // Nodes first
           .forEach { node ->
@@ -118,7 +117,7 @@ class TwingraphServiceImpl(
   override fun delete(organizationId: String, graphId: String) {
     organizationService.getVerifiedOrganization(organizationId, PERMISSION_DELETE)
     val versions = getRedisKeyList("$graphId:*")
-    versions.forEach { csmRedisGraph.deleteGraph(it) }
+    versions.forEach { unifiedJedis.graphDelete(it) }
   }
 
   override fun findAllTwingraphs(organizationId: String): List<String> {
@@ -128,24 +127,20 @@ class TwingraphServiceImpl(
 
   private fun getRedisKeyList(keyPattern: String, keyType: String = "graphdata"): List<String> {
     val matchingKeys = mutableSetOf<String>()
-    csmJedisPool.resource.use { jedis ->
-      var nextCursor = ScanParams.SCAN_POINTER_START
-      do {
-        val scanResult = jedis.scan(nextCursor, ScanParams().match(keyPattern), keyType)
-        nextCursor = scanResult.cursor
-        matchingKeys.addAll(scanResult.result)
-      } while (!nextCursor.equals(ScanParams.SCAN_POINTER_START))
-    }
+    var nextCursor = ScanParams.SCAN_POINTER_START
+    do {
+      val scanResult = unifiedJedis.scan(nextCursor, ScanParams().match(keyPattern), keyType)
+      nextCursor = scanResult.cursor
+      matchingKeys.addAll(scanResult.result)
+    } while (!nextCursor.equals(ScanParams.SCAN_POINTER_START))
     return matchingKeys.toList()
   }
 
   override fun getGraphMetaData(organizationId: String, graphId: String): Map<String, String> {
-    csmJedisPool.resource.use { jedis ->
-      if (jedis.exists(graphId.toRedisMetaDataKey())) {
-        return jedis.hgetAll(graphId.toRedisMetaDataKey())
-      }
-      throw CsmResourceNotFoundException("No metadata found for graphId $graphId")
+    if (unifiedJedis.exists(graphId.toRedisMetaDataKey())) {
+      return unifiedJedis.hgetAll(graphId.toRedisMetaDataKey())
     }
+    throw CsmResourceNotFoundException("No metadata found for graphId $graphId")
   }
 
   private fun checkTwinGraphPrerequisites(
@@ -160,20 +155,16 @@ class TwingraphServiceImpl(
     }
 
     if (twinGraphQuery.version.isNullOrEmpty()) {
-      csmJedisPool.resource.use { jedis ->
-        twinGraphQuery.version = jedis.hget(graphId.toRedisMetaDataKey(), "lastVersion")
-        if (twinGraphQuery.version.isNullOrEmpty()) {
-          throw CsmResourceNotFoundException(
-              "Cannot find lastVersion in ${graphId.toRedisMetaDataKey()}")
-        }
+      twinGraphQuery.version = unifiedJedis.hget(graphId.toRedisMetaDataKey(), "lastVersion")
+      if (twinGraphQuery.version.isNullOrEmpty()) {
+        throw CsmResourceNotFoundException(
+            "Cannot find lastVersion in ${graphId.toRedisMetaDataKey()}")
       }
     }
     val redisGraphId = redisGraphKey(graphId, twinGraphQuery.version!!)
-    csmJedisPool.resource.use { jedis ->
-      val redisGraphMatchingKeys = jedis.keys(redisGraphId)
-      if (redisGraphMatchingKeys.size == 0) {
-        throw CsmResourceNotFoundException("No graph found with id: $redisGraphId")
-      }
+    val redisGraphMatchingKeys = unifiedJedis.keys(redisGraphId)
+    if (redisGraphMatchingKeys.size == 0) {
+      throw CsmResourceNotFoundException("No graph found with id: $redisGraphId")
     }
   }
 
@@ -184,7 +175,7 @@ class TwingraphServiceImpl(
   ): String {
     checkTwinGraphPrerequisites(organizationId, graphId, twinGraphQuery, true)
     val resultSet =
-        csmRedisGraph.query(
+        unifiedJedis.graphQuery(
             redisGraphKey(graphId, twinGraphQuery.version!!),
             twinGraphQuery.query,
             csmPlatformProperties.twincache.queryTimeout)
@@ -203,15 +194,13 @@ class TwingraphServiceImpl(
       throw CsmClientException("GraphRotation should be a positive integer")
     }
 
-    csmJedisPool.resource.use { jedis ->
-      if (jedis.exists(graphId.toRedisMetaDataKey())) {
-        requestBody
-            .filterKeys { it == GRAPH_NAME || it == GRAPH_ROTATION }
-            .forEach { (key, value) -> jedis.hset(graphId.toRedisMetaDataKey(), key, value) }
-        return jedis.hgetAll(graphId.toRedisMetaDataKey())
-      }
-      throw CsmResourceNotFoundException("No metadata found for graphId $graphId")
+    if (unifiedJedis.exists(graphId.toRedisMetaDataKey())) {
+      requestBody
+          .filterKeys { it == GRAPH_NAME || it == GRAPH_ROTATION }
+          .forEach { (key, value) -> unifiedJedis.hset(graphId.toRedisMetaDataKey(), key, value) }
+      return unifiedJedis.hgetAll(graphId.toRedisMetaDataKey())
     }
+    throw CsmResourceNotFoundException("No metadata found for graphId $graphId")
   }
 
   override fun batchQuery(
@@ -223,19 +212,17 @@ class TwingraphServiceImpl(
     val redisGraphKey = redisGraphKey(graphId, twinGraphQuery.version!!)
     val bulkQueryKey = bulkQueryKey(graphId, twinGraphQuery.query, twinGraphQuery.version!!)
     val twinGraphHash = TwinGraphHash(bulkQueryKey.second)
-    csmJedisPool.resource.use { jedis ->
-      val keyExists = jedis.exists(bulkQueryKey.first)
-      if (keyExists) {
-        return twinGraphHash
-      }
-      val resultSet = csmRedisGraph.query(redisGraphKey, twinGraphQuery.query)
+    val keyExists = unifiedJedis.exists(bulkQueryKey.first)
+    if (keyExists) {
+      return twinGraphHash
+    }
+    val resultSet = unifiedJedis.graphQuery(redisGraphKey, twinGraphQuery.query)
 
-      GlobalScope.launch(SecurityCoroutineContext()) {
-        val zip =
-            zipBytesWithFileNames(
-                mapOf("bulkQuery.json" to resultSet.toJsonString().toByteArray(UTF_8)))
-        jedis.setex(bulkQueryKey.first, csmPlatformProperties.twincache.queryBulkTTL, zip)
-      }
+    GlobalScope.launch(SecurityCoroutineContext()) {
+      val zip =
+          zipBytesWithFileNames(
+              mapOf("bulkQuery.json" to resultSet.toJsonString().toByteArray(UTF_8)))
+      unifiedJedis.setex(bulkQueryKey.first, csmPlatformProperties.twincache.queryBulkTTL, zip)
     }
     return twinGraphHash
   }
@@ -252,7 +239,7 @@ class TwingraphServiceImpl(
     val result = TwinGraphBatchResult(0, 0, mutableListOf())
     processCSVBatch(body.inputStream, twinGraphQuery, result) {
       try {
-        csmRedisGraph.query(redisGraphKey(graphId, twinGraphQuery.version!!), it)
+        unifiedJedis.graphQuery(redisGraphKey(graphId, twinGraphQuery.version!!), it)
         result.processedLines++
       } catch (e: JedisDataException) {
         result.errors.add("#${result.totalLines}: ${e.message}")
@@ -291,20 +278,19 @@ class TwingraphServiceImpl(
     organizationService.getVerifiedOrganization(organizationId)
 
     val bulkQueryId = bulkQueryKey(hash)
-    csmJedisPool.resource.use { jedis ->
-      if (!jedis.exists(bulkQueryId)) {
-        throw CsmResourceNotFoundException("No graph found with hash: $hash  Try later")
-      } else if (jedis.ttl(bulkQueryId) < 0) {
-        throw CsmResourceNotFoundException(
-            "Graph with hash: $hash is expired. Try to repeat bulk query")
-      }
+    if (!unifiedJedis.exists(bulkQueryId)) {
+      throw CsmResourceNotFoundException("No graph found with hash: $hash  Try later")
+    } else if (unifiedJedis.ttl(bulkQueryId) < 0) {
+      throw CsmResourceNotFoundException(
+          "Graph with hash: $hash is expired. Try to repeat bulk query")
     }
+
     val httpServletResponse =
         ((RequestContextHolder.getRequestAttributes() as ServletRequestAttributes).response)
     val contentDisposition =
         ContentDisposition.builder("attachment").filename("TwinGraph-$hash.zip").build()
     httpServletResponse!!.setHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
-    return ByteArrayResource(csmJedisPool.resource.use { jedis -> jedis.get(bulkQueryId) })
+    return ByteArrayResource(unifiedJedis.get(bulkQueryId))
   }
 
   override fun createEntities(
@@ -319,8 +305,8 @@ class TwingraphServiceImpl(
       TYPE_NODE ->
           graphProperties.forEach {
             result +=
-                csmRedisGraph
-                    .query(
+                unifiedJedis
+                    .graphQuery(
                         getLastVersion(organizationId, graphId),
                         "CREATE (a:${it.type} {id:'${it.name}',${it.params}}) RETURN a")
                     .toJsonString()
@@ -328,8 +314,8 @@ class TwingraphServiceImpl(
       TYPE_RELATIONSHIP ->
           graphProperties.forEach {
             result +=
-                csmRedisGraph
-                    .query(
+                unifiedJedis
+                    .graphQuery(
                         getLastVersion(organizationId, graphId),
                         "MATCH (a),(b) WHERE a.id='${it.source}' AND b.id='${it.target}'" +
                             "CREATE (a)-[r:${it.type} {id:'${it.name}', ${it.params}}]->(b) RETURN r")
@@ -352,8 +338,8 @@ class TwingraphServiceImpl(
       TYPE_NODE ->
           ids.forEach {
             result +=
-                csmRedisGraph
-                    .query(
+                unifiedJedis
+                    .graphQuery(
                         getLastVersion(organizationId, graphId),
                         "MATCH (a) WHERE a.id='$it' RETURN a")
                     .toJsonString()
@@ -361,8 +347,8 @@ class TwingraphServiceImpl(
       TYPE_RELATIONSHIP ->
           ids.forEach {
             result +=
-                csmRedisGraph
-                    .query(
+                unifiedJedis
+                    .graphQuery(
                         getLastVersion(organizationId, graphId),
                         "MATCH ()-[r]->() WHERE r.id='$it' RETURN r")
                     .toJsonString()
@@ -384,8 +370,8 @@ class TwingraphServiceImpl(
       TYPE_NODE ->
           graphProperties.forEach {
             result +=
-                csmRedisGraph
-                    .query(
+                unifiedJedis
+                    .graphQuery(
                         getLastVersion(organizationId, graphId),
                         "MATCH (a {id:'${it.name}'}) SET a = {id:'${it.name}',${it.params}} RETURN a")
                     .toJsonString()
@@ -393,8 +379,8 @@ class TwingraphServiceImpl(
       TYPE_RELATIONSHIP ->
           graphProperties.forEach {
             result +=
-                csmRedisGraph
-                    .query(
+                unifiedJedis
+                    .graphQuery(
                         getLastVersion(organizationId, graphId),
                         "MATCH ()-[r {id:'${it.name}'}]-() SET r = {id:'${it.name}', ${it.params}} RETURN r")
                     .toJsonString()
@@ -407,23 +393,23 @@ class TwingraphServiceImpl(
   override fun deleteEntities(
       organizationId: String,
       graphId: String,
-      modelType: String,
-      requestBody: List<String>
+      type: String,
+      ids: List<String>
   ) {
     updateGraphMetaData(organizationId, graphId, mapOf("lastModifiedDate" to getLocalDateNow()))
-    return when (modelType) {
+    return when (type) {
       TYPE_NODE ->
-          requestBody.forEach {
-            csmRedisGraph.query(
+          ids.forEach {
+            unifiedJedis.graphQuery(
                 getLastVersion(organizationId, graphId), "MATCH (a) WHERE a.id='$it' DELETE a")
           }
       TYPE_RELATIONSHIP ->
-          requestBody.forEach {
-            csmRedisGraph.query(
+          ids.forEach {
+            unifiedJedis.graphQuery(
                 getLastVersion(organizationId, graphId),
                 "MATCH ()-[r]-() WHERE r.id='$it' DELETE r")
           }
-      else -> throw CsmResourceNotFoundException("Bad Type : $modelType")
+      else -> throw CsmResourceNotFoundException("Bad Type : $type")
     }
   }
 
