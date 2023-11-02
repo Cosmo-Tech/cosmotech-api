@@ -1,5 +1,7 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
+@file:Suppress("DEPRECATION")
+
 package com.cosmotech.twingraph.api
 
 import com.cosmotech.api.config.CsmPlatformProperties
@@ -17,8 +19,6 @@ import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.twingraph.domain.TwinGraphBatchResult
 import com.cosmotech.twingraph.domain.TwinGraphQuery
 import com.cosmotech.twingraph.extension.toJsonString
-import com.redislabs.redisgraph.ResultSet
-import com.redislabs.redisgraph.impl.api.RedisGraph
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
@@ -39,7 +39,8 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
-import redis.clients.jedis.JedisPool
+import redis.clients.jedis.UnifiedJedis
+import redis.clients.jedis.graph.ResultSet
 
 const val AUTHENTICATED_USERNAME = "authenticated-user"
 const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
@@ -55,8 +56,7 @@ class TwingraphServiceImplTests {
 
   @Suppress("unused") @SpyK private var csmRbac: CsmRbac = CsmRbac(csmPlatformProperties, csmAdmin)
 
-  @MockK private lateinit var csmJedisPool: JedisPool
-  @MockK private lateinit var csmRedisGraph: RedisGraph
+  @MockK private lateinit var unifiedJedis: UnifiedJedis
   @Suppress("unused") @MockK private lateinit var resourceScanner: ResourceScanner
   @MockK private lateinit var organizationService: OrganizationApiServiceInterface
 
@@ -66,8 +66,7 @@ class TwingraphServiceImplTests {
   fun setUp() {
     MockKAnnotations.init(this)
 
-    every { csmJedisPool.resource } returns mockk(relaxed = true)
-    every { csmJedisPool.resource.close() } returns Unit
+    every { unifiedJedis } returns mockk(relaxed = true)
 
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
@@ -88,17 +87,17 @@ class TwingraphServiceImplTests {
     every { organizationService.getVerifiedOrganization(any(), PERMISSION_DELETE) } returns
         mockk(relaxed = true)
 
-    every { csmJedisPool.resource.scan(any<String>(), any(), any()) } returns
+    every { unifiedJedis.scan(any<String>(), any(), any()) } returns
         mockk {
           every { result } returns listOf("graphId")
           every { cursor } answers { "0" }
         }
 
-    every { csmRedisGraph.deleteGraph(any()) } returns 1L.toString()
+    every { unifiedJedis.graphDelete(any()) } returns 1L.toString()
     twingraphServiceImpl.delete("orgId", "graphId")
 
-    verify { csmJedisPool.resource.scan(any<String>(), any(), any()) }
-    verify { csmRedisGraph.deleteGraph(any()) }
+    verify { unifiedJedis.scan(any<String>(), any(), any()) }
+    verify { unifiedJedis.graphDelete(any()) }
   }
 
   @Test
@@ -106,7 +105,7 @@ class TwingraphServiceImplTests {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
     every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
 
-    every { csmJedisPool.resource.scan(any<String>(), any(), any()) } returns
+    every { unifiedJedis.scan(any<String>(), any(), any()) } returns
         mockk {
           every { result } returns listOf("graphId", "graphId2")
           every { cursor } answers { "0" }
@@ -121,8 +120,8 @@ class TwingraphServiceImplTests {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
     every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
 
-    every { csmJedisPool.resource.exists(any<String>()) } returns true
-    every { csmJedisPool.resource.hgetAll(any<String>()) } returns
+    every { unifiedJedis.exists(any<String>()) } returns true
+    every { unifiedJedis.hgetAll(any<String>()) } returns
         mapOf("lastVersion" to "lastVersion", "graphRotation" to "2")
     val metadataMap = twingraphServiceImpl.getGraphMetaData("orgId", "graphId")
     assertEquals(metadataMap["lastVersion"], "lastVersion")
@@ -134,7 +133,7 @@ class TwingraphServiceImplTests {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
     every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
 
-    every { csmJedisPool.resource.exists(any<String>()) } returns false
+    every { unifiedJedis.exists(any<String>()) } returns false
     assertThrows<CsmResourceNotFoundException> {
       twingraphServiceImpl.getGraphMetaData("orgId", "graphId")
     }
@@ -146,12 +145,11 @@ class TwingraphServiceImplTests {
     every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
     every { csmPlatformProperties.twincache.queryBulkTTL } returns 1000L
 
-    every { csmJedisPool.resource.keys(any<String>()) } returns setOf("graphId")
-    every { csmJedisPool.resource.exists(any<ByteArray>()) } returns false
+    every { unifiedJedis.keys(any<String>()) } returns setOf("graphId")
+    every { unifiedJedis.exists(any<ByteArray>()) } returns false
 
-    every { csmRedisGraph.query(any(), any()) } returns mockEmptyResultSet()
-    every { csmJedisPool.resource.setex(any<ByteArray>(), any<Long>(), any<ByteArray>()) } returns
-        "OK"
+    every { unifiedJedis.graphQuery(any(), any()) } returns mockEmptyResultSet()
+    every { unifiedJedis.setex(any<ByteArray>(), any<Long>(), any<ByteArray>()) } returns "OK"
 
     val twinGraphQuery = TwinGraphQuery("MATCH(n) RETURN n", "1")
     val jsonHash = twingraphServiceImpl.batchQuery("orgId", "graphId", twinGraphQuery)
@@ -164,8 +162,8 @@ class TwingraphServiceImplTests {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
     every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
 
-    every { csmJedisPool.resource.keys(any<String>()) } returns setOf("graphId")
-    every { csmJedisPool.resource.exists(any<ByteArray>()) } returns true
+    every { unifiedJedis.keys(any<String>()) } returns setOf("graphId")
+    every { unifiedJedis.exists(any<ByteArray>()) } returns true
 
     val twinGraphQuery = TwinGraphQuery("MATCH(n) RETURN n", "1")
     val jsonHash = twingraphServiceImpl.batchQuery("orgId", "graphId", twinGraphQuery)
@@ -177,19 +175,19 @@ class TwingraphServiceImplTests {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
     every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
 
-    every { csmJedisPool.resource.exists(any<ByteArray>()) } returns true
-    every { csmJedisPool.resource.ttl(any<ByteArray>()) } returns 1000L
+    every { unifiedJedis.exists(any<ByteArray>()) } returns true
+    every { unifiedJedis.ttl(any<ByteArray>()) } returns 1000L
     mockkStatic("org.springframework.web.context.request.RequestContextHolder")
     every {
       (RequestContextHolder.getRequestAttributes() as ServletRequestAttributes).response
     } returns mockk(relaxed = true)
-    every { csmJedisPool.resource.get(any<ByteArray>()) } returns "[]".toByteArray()
+    every { unifiedJedis.get(any<ByteArray>()) } returns "[]".toByteArray()
 
     twingraphServiceImpl.downloadGraph("orgId", "hash")
 
-    verify { csmJedisPool.resource.exists(any<ByteArray>()) }
-    verify { csmJedisPool.resource.ttl(any<ByteArray>()) }
-    verify { csmJedisPool.resource.get(any<ByteArray>()) }
+    verify { unifiedJedis.exists(any<ByteArray>()) }
+    verify { unifiedJedis.ttl(any<ByteArray>()) }
+    verify { unifiedJedis.get(any<ByteArray>()) }
   }
 
   @Test
@@ -197,7 +195,7 @@ class TwingraphServiceImplTests {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
     every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
 
-    every { csmJedisPool.resource.exists(any<ByteArray>()) } returns false
+    every { unifiedJedis.exists(any<ByteArray>()) } returns false
 
     assertThrows<CsmResourceNotFoundException> {
       twingraphServiceImpl.downloadGraph("orgId", "hash")
@@ -209,8 +207,8 @@ class TwingraphServiceImplTests {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
     every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
 
-    every { csmJedisPool.resource.exists(any<ByteArray>()) } returns true
-    every { csmJedisPool.resource.ttl(any<ByteArray>()) } returns -1L
+    every { unifiedJedis.exists(any<ByteArray>()) } returns true
+    every { unifiedJedis.ttl(any<ByteArray>()) } returns -1L
 
     assertThrows<CsmResourceNotFoundException> {
       twingraphServiceImpl.downloadGraph("orgId", "hash")
@@ -222,9 +220,9 @@ class TwingraphServiceImplTests {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
     every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
 
-    every { csmJedisPool.resource.exists(any<String>()) } returns true
-    every { csmJedisPool.resource.hset(any<String>(), any<String>(), any<String>()) } returns 1L
-    every { csmJedisPool.resource.hgetAll(any<String>()) } returns
+    every { unifiedJedis.exists(any<String>()) } returns true
+    every { unifiedJedis.hset(any<String>(), any<String>(), any<String>()) } returns 1L
+    every { unifiedJedis.hgetAll(any<String>()) } returns
         mapOf("graphName" to "graphName", "graphRotation" to "2")
 
     var metadata =
@@ -235,11 +233,11 @@ class TwingraphServiceImplTests {
             "url" to "dummy")
     twingraphServiceImpl.updateGraphMetaData("orgId", "graphId", metadata)
     verifyAll {
-      csmJedisPool.resource.exists(any<String>())
-      csmJedisPool.resource.hset(any(), "graphName", "graphName")
-      csmJedisPool.resource.hset(any(), "graphRotation", "2")
-      csmJedisPool.resource.hgetAll(any<String>())
-      csmJedisPool.resource.close()
+      unifiedJedis.exists(any<String>())
+      unifiedJedis.hset(any(), "graphName", "graphName")
+      unifiedJedis.hset(any(), "graphRotation", "2")
+      unifiedJedis.hgetAll(any<String>())
+      unifiedJedis.close()
     }
   }
 
@@ -248,17 +246,17 @@ class TwingraphServiceImplTests {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
     every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
 
-    every { csmJedisPool.resource.exists(any<String>()) } returns true
-    every { csmJedisPool.resource.hset(any<String>(), any<String>(), any<String>()) } returns 1L
-    every { csmJedisPool.resource.hgetAll(any<String>()) } returns
+    every { unifiedJedis.exists(any<String>()) } returns true
+    every { unifiedJedis.hset(any<String>(), any<String>(), any<String>()) } returns 1L
+    every { unifiedJedis.hgetAll(any<String>()) } returns
         mapOf("graphName" to "graphName", "graphRotation" to "2")
 
     var metadata = mapOf("lastVersion" to "last", "url" to "dummy")
     twingraphServiceImpl.updateGraphMetaData("orgId", "graphId", metadata)
     verifyAll {
-      csmJedisPool.resource.exists(any<String>())
-      csmJedisPool.resource.hgetAll(any<String>())
-      csmJedisPool.resource.close()
+      unifiedJedis.exists(any<String>())
+      unifiedJedis.hgetAll(any<String>())
+      unifiedJedis.close()
     }
   }
 
@@ -282,7 +280,7 @@ class TwingraphServiceImplTests {
     val resultSet = mockk<ResultSet>()
     every { resultSet.toJsonString() } returns "[]"
     every { resultSet.iterator() } returns
-        mockk<MutableIterator<com.redislabs.redisgraph.Record>> {
+        mockk<MutableIterator<redis.clients.jedis.graph.Record>> {
           every { hasNext() } returns false
         }
     return resultSet

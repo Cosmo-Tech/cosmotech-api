@@ -16,7 +16,6 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.util.capitalizeDecapitalize.capitalizeAsciiOnly
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import org.openapitools.generator.gradle.plugin.tasks.ValidateTask
-import org.springframework.boot.gradle.dsl.SpringBootExtension
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 import org.springframework.boot.gradle.tasks.run.BootRun
 
@@ -26,19 +25,19 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 // See https://docs.gradle.org/current/userguide/organizing_gradle_projects.html#sec:build_sources
 
 plugins {
-  val kotlinVersion = "1.8.0"
+  val kotlinVersion = "1.9.10"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion apply false
-  id("pl.allegro.tech.build.axion-release") version "1.14.2"
-  id("com.diffplug.spotless") version "6.11.0"
-  id("org.springframework.boot") version "2.7.11" apply false
-  id("org.openapi.generator") version "5.4.0" apply false
-  id("com.google.cloud.tools.jib") version "3.3.1" apply false
-  id("io.gitlab.arturbosch.detekt") version "1.21.0"
-  id("org.jetbrains.kotlinx.kover") version "0.6.1"
+  id("pl.allegro.tech.build.axion-release") version "1.15.5"
+  id("com.diffplug.spotless") version "6.22.0"
+  id("org.springframework.boot") version "3.1.5" apply false
   id("project-report")
-  id("org.owasp.dependencycheck") version "8.2.1"
-  id("com.github.jk1.dependency-license-report") version "1.17"
+  id("org.owasp.dependencycheck") version "8.4.2"
+  id("com.github.jk1.dependency-license-report") version "2.5"
+  id("org.jetbrains.kotlinx.kover") version "0.7.4"
+  id("io.gitlab.arturbosch.detekt") version "1.23.1"
+  id("org.openapi.generator") version "7.0.1" apply false
+  id("com.google.cloud.tools.jib") version "3.4.0" apply false
 }
 
 scmVersion { tag { prefix.set("") } }
@@ -47,18 +46,41 @@ group = "com.cosmotech"
 
 version = scmVersion.version
 
+// Dependencies version
+
+// Required versions
+val jacksonVersion = "2.15.3"
+val springWebVersion = "6.0.13"
+val springBootVersion = "3.1.5"
+
+// Implementation
 val kotlinJvmTarget = 17
-val cosmotechApiCommonVersion = "0.3.0"
-val cosmotechApiAzureVersion = "0.2.1"
+val cosmotechApiCommonVersion = "1.0.0-SNAPSHOT"
+val cosmotechApiAzureVersion = "1.0.0-SNAPSHOT"
 val azureSpringBootBomVersion = "3.14.0"
-val jedisVersion = "3.9.0"
-val springOauthVersion = "5.8.3"
-val jredistimeseriesVersion = "1.6.0"
-val redisOmSpringVersion = "0.6.4"
+val jedisVersion = "5.0.2"
+val springOauthVersion = "6.1.5"
+val redisOmSpringVersion = "0.8.7"
+val kotlinCoroutinesCoreVersion = "1.7.3"
+val oktaSpringBootVersion = "3.0.5"
+val springDocVersion = "1.7.0"
+val swaggerParserVersion = "2.1.18"
+val commonsCsvVersion = "1.10.0"
+val apiValidationVersion = "3.0.2"
+
+// Checks
+val detektVersion = "1.23.1"
+
+// Tests
+val jUnitBomVersion = "5.10.0"
+val mockkVersion = "1.13.8"
+val awaitilityKVersion = "4.2.0"
+val testcontainersRedis = "1.6.4"
+val springMockkVersion = "4.0.2"
 
 var licenseReportDir = "$projectDir/doc/licenses"
 
-val configBuildDir = "$buildDir/config"
+val configBuildDir = "${layout.buildDirectory.get()}/config"
 
 mkdir(configBuildDir)
 
@@ -167,7 +189,8 @@ subprojects {
   val projectDirName = projectDir.relativeTo(rootDir).name
   val openApiDefinitionFile = file("${projectDir}/src/main/openapi/${projectDirName}.yaml")
 
-  val openApiServerSourcesGenerationDir = "${buildDir}/generated-sources/openapi/kotlin-spring"
+  val openApiServerSourcesGenerationDir =
+      "${layout.buildDirectory.get()}/generated-sources/openapi/kotlin-spring"
 
   sourceSets {
     create("integrationTest") {
@@ -203,23 +226,27 @@ subprojects {
       html {
         // observe findings in your browser with structure and code snippets
         required.set(true)
-        outputLocation.set(file("$buildDir/reports/detekt/${project.name}-detekt.html"))
+        outputLocation.set(
+            file("${layout.buildDirectory.get()}/reports/detekt/${project.name}-detekt.html"))
       }
       xml {
         // checkstyle like format mainly for integrations like Jenkins
         required.set(false)
-        outputLocation.set(file("$buildDir/reports/detekt/${project.name}-detekt.xml"))
+        outputLocation.set(
+            file("${layout.buildDirectory.get()}/reports/detekt/${project.name}-detekt.xml"))
       }
       txt {
         // similar to the console output, contains issue signature to manually edit baseline files
         required.set(true)
-        outputLocation.set(file("$buildDir/reports/detekt/${project.name}-detekt.txt"))
+        outputLocation.set(
+            file("${layout.buildDirectory.get()}/reports/detekt/${project.name}-detekt.txt"))
       }
       sarif {
         // standardized SARIF format (https://sarifweb.azurewebsites.net/) to support integrations
         // with Github Code Scanning
         required.set(true)
-        outputLocation.set(file("$buildDir/reports/detekt/${project.name}-detekt.sarif"))
+        outputLocation.set(
+            file("${layout.buildDirectory.get()}/reports/detekt/${project.name}-detekt.sarif"))
       }
     }
 
@@ -228,17 +255,18 @@ subprojects {
   }
 
   dependencies {
-
+    detekt("io.gitlab.arturbosch.detekt:detekt-cli:$detektVersion")
+    detekt("io.gitlab.arturbosch.detekt:detekt-formatting:$detektVersion")
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-rules-libraries:$detektVersion")
     // Workaround until Detekt adds support for JVM Target 17
     // See https://github.com/detekt/detekt/issues/4287
-    detekt("io.gitlab.arturbosch.detekt:detekt-cli:1.19.0")
-    detekt("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.7.20")
+    detekt("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.9.0")
 
     val developmentOnly = configurations.getByName("developmentOnly")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3-native-mt")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesCoreVersion")
 
     implementation(
         platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES))
@@ -252,71 +280,47 @@ subprojects {
     }
     implementation("org.springframework.boot:spring-boot-starter-jetty")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("javax.validation:validation-api:2.0.1.Final")
+    // https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api
+    implementation("jakarta.validation:jakarta.validation-api:$apiValidationVersion")
 
-    val springDocVersion = "1.6.14"
     implementation("org.springdoc:springdoc-openapi-ui:${springDocVersion}")
     implementation("org.springdoc:springdoc-openapi-kotlin:${springDocVersion}")
-    val swaggerParserVersion = "2.1.13"
     implementation("io.swagger.parser.v3:swagger-parser-v3:${swaggerParserVersion}")
-
-    implementation("org.zalando:problem-spring-web-starter:0.27.0")
-
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.security:spring-security-oauth2-jose:${springOauthVersion}")
     implementation(
         "org.springframework.security:spring-security-oauth2-resource-server:${springOauthVersion}")
-    val oktaSpringBootVersion = "2.1.6"
     implementation("com.okta.spring:okta-spring-boot-starter:${oktaSpringBootVersion}")
-
     implementation("redis.clients:jedis:${jedisVersion}")
-    implementation("com.redislabs:jredistimeseries:${jredistimeseriesVersion}")
-    implementation("org.apache.commons:commons-csv:1.10.0")
-    implementation("com.redis.om:redis-om-spring:${redisOmSpringVersion}") {
-      constraints { implementation("org.json:json:20230227") }
-    }
+    implementation("org.apache.commons:commons-csv:$commonsCsvVersion")
+    implementation("com.redis.om:redis-om-spring:${redisOmSpringVersion}")
 
     testImplementation(kotlin("test"))
-    testImplementation(platform("org.junit:junit-bom:5.9.2"))
+    testImplementation(platform("org.junit:junit-bom:$jUnitBomVersion"))
     testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("io.mockk:mockk:1.13.2")
-    testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    testImplementation("io.mockk:mockk:$mockkVersion")
+    testImplementation("org.awaitility:awaitility-kotlin:$awaitilityKVersion")
+      testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 
     integrationTestImplementation("org.springframework.boot:spring-boot-starter-test") {
       // Drop legacy Junit < 5
       exclude(module = "junit")
       exclude(module = "mockito-core")
     }
-    integrationTestImplementation("com.ninja-squad:springmockk:3.1.1")
-    integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
-
+    integrationTestImplementation("com.ninja-squad:springmockk:$springMockkVersion")
+      integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
-    api("com.github.Cosmo-Tech:cosmotech-api-common:$cosmotechApiCommonVersion") {
-      exclude(group = "org.slf4j", module = "slf4j-api")
-      because(
-          "this depends on org.slf4j:slf4j-api 2.0.3," +
-              "which is not backward-compatible with 1.7.x." +
-              "See http://www.slf4j.org/faq.html#changesInVersion200")
-    }
+    api("com.github.Cosmo-Tech:cosmotech-api-common:$cosmotechApiCommonVersion")
+    api("com.github.Cosmo-Tech:cosmotech-api-azure:$cosmotechApiAzureVersion")
 
-    api("com.github.Cosmo-Tech:cosmotech-api-azure:$cosmotechApiAzureVersion") {
-      exclude(group = "org.slf4j", module = "slf4j-api")
-      because(
-          "this depends on org.slf4j:slf4j-api 1.8.0-beta4 (pre 2.x)," +
-              "which is not backward-compatible with 1.7.x." +
-              "See http://www.slf4j.org/faq.html#changesInVersion200")
-    }
-    implementation(platform("com.azure.spring:azure-spring-boot-bom:$azureSpringBootBomVersion"))
-    api("com.azure.spring:azure-spring-boot-starter-storage")
-    constraints {
-      implementation("redis.clients:jedis:3.9.0") {
-        because(
-            "3.9.0 version does not contain the UnifiedClient class that we used previously" +
-                "and we cannot use 4.X versions as they are not compatible with Spring Boot 2.X")
-      }
-    }
+    // https://mvnrepository.com/artifact/com.azure.spring/spring-cloud-azure-dependencies
+    implementation("com.azure.spring:spring-cloud-azure-dependencies:6.0.0-beta.4")
+    // https://mvnrepository.com/artifact/com.azure.spring/spring-cloud-azure-starter-storage-blob
+    implementation("com.azure.spring:spring-cloud-azure-starter-storage-blob:6.0.0-beta.4")
+    implementation("com.azure.spring:spring-cloud-azure-starter-storage:6.0.0-beta.4")
+    // https://mvnrepository.com/artifact/com.azure/azure-storage-blob-batch
+    implementation("com.azure:azure-storage-blob-batch:12.20.1")
 
     implementation("org.springframework.data:spring-data-redis")
   }
@@ -325,7 +329,9 @@ subprojects {
     if (openApiDefinitionFile.exists()) {
       dependsOn("openApiGenerate")
     }
+  }
 
+  tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions {
       languageVersion = "1.8"
       freeCompilerArgs = listOf("-Xjsr305=strict")
@@ -347,7 +353,7 @@ subprojects {
   tasks.check { dependsOn(integrationTest) }
 
   tasks.withType<Test> {
-    val testWorkingDir = file("${buildDir}/run")
+    val testWorkingDir = file("${layout.buildDirectory.get()}/run")
     workingDir = testWorkingDir
 
     doFirst { testWorkingDir.mkdirs() }
@@ -430,7 +436,9 @@ subprojects {
               "exceptionHandler" to false,
               "serviceInterface" to true,
               "swaggerAnnotations" to false,
+              "useSpringBoot3" to true,
               "useTags" to true,
+              "beanQualifiers" to true,
               "modelMutable" to true))
     }
   }
@@ -443,12 +451,12 @@ subprojects {
       }
   tasks.register<Copy>("copyOpenApiYamlToMainResources") {
     from(openApiFileDefinition)
-    into("$buildDir/resources/main/static")
+    into("${layout.buildDirectory.get()}/resources/main/static")
     rename { if (it != "openapi.yaml") "openapi.yaml" else it }
   }
   tasks.register<Copy>("copyOpenApiYamlToTestResources") {
     from(openApiFileDefinition)
-    into("$buildDir/resources/test/static")
+    into("${layout.buildDirectory.get()}/resources/test/static")
     rename { if (it != "openapi.yaml") "openapi.yaml" else it }
   }
 
@@ -461,7 +469,7 @@ subprojects {
 
   tasks.getByName<Copy>("processTestResources") { dependsOn("copyOpenApiYamlToTestResources") }
 
-  tasks.getByName<BootJar>("bootJar") { classifier = "uberjar" }
+  tasks.getByName<BootJar>("bootJar") { archiveClassifier.set("uberjar") }
 
   tasks.getByName<BootRun>("bootRun") {
     workingDir = rootDir
@@ -478,14 +486,6 @@ subprojects {
     args = listOf("--spring.profiles.active=dev")
   }
 
-  configure<SpringBootExtension> {
-    buildInfo {
-      properties {
-        // Unsetting time so the task can be deterministic and cacheable, for performance reasons
-        time = null
-      }
-    }
-  }
   configure<JibExtension> {
     from { image = "eclipse-temurin:17-alpine" }
     to { image = "${project.group}/${project.name}:${project.version}" }
@@ -509,6 +509,7 @@ subprojects {
   }
 }
 
+/*TODO Should be rework with gradle 8.4 ...
 val copySubProjectsDetektReportsTasks =
     subprojects.flatMap { subProject ->
       listOf("html", "xml", "txt", "sarif").map { format ->
@@ -523,7 +524,7 @@ val copySubProjectsDetektReportsTasks =
                   from(
                       file(
                           "${subProject.projectDir}/build/reports/detekt/${subProject.name}-detekt.$format"))
-                  into("${rootProject.buildDir}/reports/detekt/$format")
+                  into("${rootProject.layout.buildDirectory}/reports/detekt/$format")
                 }
         subProject.tasks.getByName("detekt") { finalizedBy(copyTask) }
         copyTask
@@ -536,15 +537,19 @@ tasks.register<Copy>("copySubProjectsDetektReports") {
 }
 
 tasks.getByName("detekt") { finalizedBy("copySubProjectsDetektReports") }
+*/
 
-koverMerged {
-  enable()
+extensions.configure<kotlinx.kover.gradle.plugin.dsl.KoverReportExtension> {
+  defaults {
+    // reports configs for XML, HTML, verify reports
+  }
   filters {
-    classes {
-      excludes +=
-          listOf("com.cosmotech.Application*", "com.cosmotech.*.api.*", "com.cosmotech.*.domain.*")
+    excludes {
+      projects { excludes { cosmotechApi } }
+      classes("com.cosmotech.Application*")
+      classes("com.cosmotech.*.api.*")
+      classes("com.cosmotech.*.domain.*")
     }
-    projects { excludes += listOf("cosmotech-api") }
   }
 }
 

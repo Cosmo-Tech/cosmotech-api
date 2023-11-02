@@ -1,5 +1,7 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
+@file:Suppress("DEPRECATION")
+
 package com.cosmotech.dataset.service
 
 import com.cosmotech.api.config.CsmPlatformProperties
@@ -52,7 +54,6 @@ import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.ninjasquad.springmockk.SpykBean
 import com.redis.om.spring.RediSearchIndexer
 import com.redis.testcontainers.RedisStackContainer
-import com.redislabs.redisgraph.impl.api.RedisGraph
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -69,13 +70,6 @@ import kotlin.test.assertTrue
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.DynamicTest
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestFactory
-import org.junit.jupiter.api.assertDoesNotThrow
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
 import org.slf4j.LoggerFactory
@@ -86,7 +80,11 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
-import redis.clients.jedis.JedisPool
+import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.context.request.ServletRequestAttributes
+import redis.clients.jedis.HostAndPort
+import redis.clients.jedis.Protocol
+import redis.clients.jedis.UnifiedJedis
 
 const val REDIS_PORT = 6379
 const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
@@ -122,8 +120,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   lateinit var solution: Solution
   lateinit var workspace: Workspace
 
-  lateinit var jedisPool: JedisPool
-  lateinit var redisGraph: RedisGraph
+  lateinit var unifiedJedis: UnifiedJedis
   lateinit var organization: Organization
   lateinit var organizationSaved: Organization
   lateinit var solutionSaved: Solution
@@ -137,10 +134,9 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     val context = getContext(redisStackServer)
     val containerIp =
         (context.server as RedisStackContainer).containerInfo.networkSettings.ipAddress
-    jedisPool = JedisPool(containerIp, REDIS_PORT)
-    redisGraph = RedisGraph(jedisPool)
-    ReflectionTestUtils.setField(datasetApiService, "csmJedisPool", jedisPool)
-    ReflectionTestUtils.setField(datasetApiService, "csmRedisGraph", redisGraph)
+    unifiedJedis = UnifiedJedis(HostAndPort(containerIp, Protocol.DEFAULT_PORT))
+    ReflectionTestUtils.setField(datasetApiService, "unifiedJedis", unifiedJedis)
+    ReflectionTestUtils.setField(datasetApiService, "eventPublisher", eventPublisher)
   }
 
   @BeforeEach
@@ -456,8 +452,8 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   fun countEntities(twingraphId: String, query: String): Int {
-    val resultSet = redisGraph.query(twingraphId, query)
-    return resultSet.next().values()[0].toString().toInt()
+    val resultSet = unifiedJedis.graphQuery(twingraphId, query)
+    return resultSet.iterator().next().values()[0].toString().toInt()
   }
 
   @Test

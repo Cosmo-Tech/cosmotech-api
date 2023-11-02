@@ -1,5 +1,7 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
+@file:Suppress("DEPRECATION")
+
 package com.cosmotech.dataset.service
 
 import com.cosmotech.api.CsmPhoenixService
@@ -22,7 +24,6 @@ import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
-import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
@@ -71,11 +72,6 @@ import com.cosmotech.dataset.utils.toCsmGraphEntity
 import com.cosmotech.dataset.utils.toJsonString
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.service.getRbac
-import com.redislabs.redisgraph.Record
-import com.redislabs.redisgraph.RedisGraph
-import com.redislabs.redisgraph.ResultSet
-import com.redislabs.redisgraph.graph_entities.Edge
-import com.redislabs.redisgraph.graph_entities.Node
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
 import java.time.Instant
@@ -94,8 +90,12 @@ import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
-import redis.clients.jedis.JedisPool
+import redis.clients.jedis.UnifiedJedis
 import redis.clients.jedis.exceptions.JedisDataException
+import redis.clients.jedis.graph.Record
+import redis.clients.jedis.graph.ResultSet
+import redis.clients.jedis.graph.entities.Edge
+import redis.clients.jedis.graph.entities.Node
 
 const val TYPE_NODE = "node"
 const val TYPE_RELATIONSHIP = "relationship"
@@ -117,8 +117,7 @@ class DatasetServiceImpl(
     private val connectorService: ConnectorApiServiceInterface,
     private val organizationService: OrganizationApiServiceInterface,
     private val datasetRepository: DatasetRepository,
-    private val csmJedisPool: JedisPool,
-    private val csmRedisGraph: RedisGraph,
+    private val unifiedJedis: UnifiedJedis,
     private val csmRbac: CsmRbac,
     private val resourceScanner: ResourceScanner
 ) : CsmPhoenixService(), DatasetApiServiceInterface {
@@ -334,19 +333,18 @@ class DatasetServiceImpl(
 
     GlobalScope.launch(SecurityCoroutineContext()) {
       var safeReplace = false
-      csmJedisPool.resource.use { jedis ->
-        if (jedis.exists(dataset.twingraphId!!)) {
-          jedis.eval(
+        if (unifiedJedis.exists(dataset.twingraphId!!)) {
+            unifiedJedis.eval(
               "redis.call('RENAME', KEYS[1], KEYS[2]);",
               2,
               dataset.twingraphId,
               "backupGraph-$datasetId")
           safeReplace = true
         }
-      }
+
       try {
         trx(dataset) {
-          val queryBuffer = QueryBuffer(csmJedisPool.resource, dataset.twingraphId!!)
+          val queryBuffer = QueryBuffer(unifiedJedis, dataset.twingraphId!!)
           nodes.forEach { file ->
             readCSV(file.content.inputStream()) {
               queryBuffer.addNode(file.filename, it.values.first(), it)
@@ -364,21 +362,18 @@ class DatasetServiceImpl(
           }
           queryBuffer.send()
           if (safeReplace) {
-            csmJedisPool.resource.use { jedis ->
-              jedis.eval("redis.call('DEL', KEYS[1]);", 1, "backupGraph-$datasetId")
-            }
+              unifiedJedis.eval("redis.call('DEL', KEYS[1]);", 1, "backupGraph-$datasetId")
+
           }
         }
         datasetRepository.save(dataset.apply { twincacheStatus = Dataset.TwincacheStatus.FULL })
       } catch (e: Exception) {
         if (safeReplace) {
-          csmJedisPool.resource.use { jedis ->
-            jedis.eval(
+            unifiedJedis.eval(
                 "redis.call('RENAME', KEYS[2], KEYS[1]);",
                 2,
                 dataset.twingraphId,
                 "backupGraph-$datasetId")
-          }
         }
         throw CsmClientException(e.message ?: "Twingraph upload error", e)
       }
@@ -395,11 +390,9 @@ class DatasetServiceImpl(
       null -> Dataset.IngestionStatus.NONE.value
       DatasetSourceType.None -> {
         var twincacheStatus = Dataset.TwincacheStatus.EMPTY
-        csmJedisPool.resource.use { jedis ->
-          if (jedis.exists(dataset.twingraphId!!)) {
+          if (unifiedJedis.exists(dataset.twingraphId!!)) {
             twincacheStatus = Dataset.TwincacheStatus.FULL
           }
-        }
         datasetRepository.apply { dataset.twincacheStatus = twincacheStatus }
 
         dataset.ingestionStatus!!.value
@@ -408,10 +401,9 @@ class DatasetServiceImpl(
         if (dataset.ingestionStatus == Dataset.IngestionStatus.NONE) {
           return Dataset.IngestionStatus.NONE.value
         }
-        csmJedisPool.resource.use { jedis ->
           if (dataset.ingestionStatus == Dataset.IngestionStatus.ERROR) {
             return Dataset.IngestionStatus.ERROR.value
-          } else if (!jedis.exists(dataset.twingraphId!!)) {
+          } else if (!unifiedJedis.exists(dataset.twingraphId!!)) {
             Dataset.IngestionStatus.PENDING.value
           } else {
             dataset
@@ -423,7 +415,7 @@ class DatasetServiceImpl(
             datasetRepository.save(dataset)
             Dataset.IngestionStatus.SUCCESS.value
           }
-        }
+
       }
       DatasetSourceType.ADT,
       DatasetSourceType.Twincache,
@@ -555,10 +547,8 @@ class DatasetServiceImpl(
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
     }
 
-    csmJedisPool.resource.use { jedis ->
-      if (jedis.exists(dataset.twingraphId!!)) {
-        jedis.del(dataset.twingraphId!!)
-      }
+    if (unifiedJedis.exists(dataset.twingraphId!!)) {
+      unifiedJedis.del(dataset.twingraphId!!)
     }
 
     dataset.linkedWorkspaceIdList?.forEach { unlinkWorkspace(organizationId, datasetId, it) }
@@ -634,10 +624,10 @@ class DatasetServiceImpl(
 
   override fun query(dataset: Dataset, query: String, isReadOnly: Boolean): ResultSet {
     return if (isReadOnly) {
-      csmRedisGraph.readOnlyQuery(
+      unifiedJedis.graphReadonlyQuery(
           dataset.twingraphId!!, query, csmPlatformProperties.twincache.queryTimeout)
     } else {
-      csmRedisGraph.query(
+      unifiedJedis.graphQuery(
           dataset.twingraphId!!, query, csmPlatformProperties.twincache.queryTimeout)
     }
   }
@@ -690,22 +680,20 @@ class DatasetServiceImpl(
         getDatasetWithStatus(organizationId, datasetId, status = Dataset.IngestionStatus.SUCCESS)
     val bulkQueryKey = bulkQueryKey(dataset.twingraphId!!, datasetTwinGraphQuery.query, null)
     val twinGraphHash = DatasetTwinGraphHash(bulkQueryKey.second)
-    csmJedisPool.resource.use { jedis ->
-      val keyExists = jedis.exists(bulkQueryKey.first)
-      if (keyExists) {
-        return twinGraphHash
-      }
-      val resultSet = query(dataset, datasetTwinGraphQuery.query)
-
-      GlobalScope.launch(SecurityCoroutineContext()) {
-        val zip =
-            zipBytesWithFileNames(
-                mapOf(
-                    "bulkQuery.json" to
-                        resultSet.toJsonString().toByteArray(StandardCharsets.UTF_8)))
-        jedis.setex(bulkQueryKey.first, csmPlatformProperties.twincache.queryBulkTTL, zip)
-      }
+    val keyExists = unifiedJedis.exists(bulkQueryKey.first)
+    if (keyExists) {
+      return twinGraphHash
     }
+    val resultSet = query(dataset, datasetTwinGraphQuery.query)
+
+    GlobalScope.launch(SecurityCoroutineContext()) {
+      val zip =
+          zipBytesWithFileNames(
+              mapOf(
+                  "bulkQuery.json" to resultSet.toJsonString().toByteArray(StandardCharsets.UTF_8)))
+      unifiedJedis.setex(bulkQueryKey.first, csmPlatformProperties.twincache.queryBulkTTL, zip)
+    }
+
     return twinGraphHash
   }
 
@@ -713,20 +701,19 @@ class DatasetServiceImpl(
     organizationService.getVerifiedOrganization(organizationId)
 
     val bulkQueryId = bulkQueryKey(hash)
-    csmJedisPool.resource.use { jedis ->
-      if (!jedis.exists(bulkQueryId)) {
-        throw CsmResourceNotFoundException("No graph found with hash: $hash  Try later")
-      } else if (jedis.ttl(bulkQueryId) < 0) {
-        throw CsmResourceNotFoundException(
-            "Graph with hash: $hash is expired. Try to repeat bulk query")
-      }
+    if (!unifiedJedis.exists(bulkQueryId)) {
+      throw CsmResourceNotFoundException("No graph found with hash: $hash  Try later")
+    } else if (unifiedJedis.ttl(bulkQueryId) < 0) {
+      throw CsmResourceNotFoundException(
+          "Graph with hash: $hash is expired. Try to repeat bulk query")
     }
+
     val httpServletResponse =
         ((RequestContextHolder.getRequestAttributes() as ServletRequestAttributes).response)
     val contentDisposition =
         ContentDisposition.builder("attachment").filename("TwinGraph-$hash.zip").build()
     httpServletResponse!!.setHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
-    return ByteArrayResource(csmJedisPool.resource.use { jedis -> jedis.get(bulkQueryId) })
+    return ByteArrayResource(unifiedJedis.get(bulkQueryId))
   }
 
   @Suppress("ThrowsCount")

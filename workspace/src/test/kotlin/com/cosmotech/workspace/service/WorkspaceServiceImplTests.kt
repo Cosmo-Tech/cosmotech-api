@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.workspace.service
 
-import com.azure.spring.autoconfigure.storage.resource.AzureStorageResourcePatternResolver
+import com.azure.spring.cloud.core.resource.AzureStorageBlobProtocolResolver
 import com.azure.storage.blob.BlobContainerClient
 import com.azure.storage.blob.BlobServiceClient
 import com.azure.storage.blob.batch.BlobBatchClient
@@ -12,7 +12,14 @@ import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.id.CsmIdGenerator
-import com.cosmotech.api.rbac.*
+import com.cosmotech.api.rbac.CsmAdmin
+import com.cosmotech.api.rbac.CsmRbac
+import com.cosmotech.api.rbac.ROLE_ADMIN
+import com.cosmotech.api.rbac.ROLE_EDITOR
+import com.cosmotech.api.rbac.ROLE_NONE
+import com.cosmotech.api.rbac.ROLE_USER
+import com.cosmotech.api.rbac.ROLE_VALIDATOR
+import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
@@ -56,7 +63,6 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.core.io.Resource
-import org.springframework.core.io.ResourceLoader
 import org.springframework.data.repository.findByIdOrNull
 
 const val ORGANIZATION_ID = "O-AbCdEf123"
@@ -68,7 +74,7 @@ const val CONNECTED_DEFAULT_USER = "test.user@cosmotech.com"
 @Suppress("LargeClass")
 class WorkspaceServiceImplTests {
 
-  @MockK private lateinit var resourceLoader: ResourceLoader
+  @MockK private lateinit var azureStorageBlobProtocolResolver: AzureStorageBlobProtocolResolver
   @MockK private lateinit var solutionService: SolutionApiServiceInterface
   @MockK private lateinit var resource: Resource
   @MockK private lateinit var inputStream: InputStream
@@ -315,8 +321,8 @@ class WorkspaceServiceImplTests {
           ORGANIZATION_ID, WORKSPACE_ID, "my/../../other/destination/file")
     }
 
-    verify(exactly = 0) { resourceLoader.getResource(any()) }
-    confirmVerified(resourceLoader)
+    verify(exactly = 0) { azureStorageBlobProtocolResolver.getResource(any()) }
+    confirmVerified(azureStorageBlobProtocolResolver)
   }
 
   @Test
@@ -490,7 +496,7 @@ class WorkspaceServiceImplTests {
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC download workspace file: $role", role, shouldThrow) {
               every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
-              every { resourceLoader.getResource(any()) } returns mockk()
+              every { azureStorageBlobProtocolResolver.getResource(any()) } returns mockk()
               workspaceServiceImpl.downloadWorkspaceFile(
                   it.organization.id!!, it.workspace.id!!, "")
             }
@@ -535,9 +541,9 @@ class WorkspaceServiceImplTests {
             rbacTest("Test RBAC findAllWorkspaceFiles: $role", role, shouldThrow) {
               every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
               every { azureStorageBlobServiceClient.getBlobContainerClient(any()) } returns mockk()
-              mockkConstructor(AzureStorageResourcePatternResolver::class)
+              mockkConstructor(AzureStorageBlobProtocolResolver::class)
               every {
-                anyConstructed<AzureStorageResourcePatternResolver>().getResources(any())
+                anyConstructed<AzureStorageBlobProtocolResolver>().getResources(any())
               } returns arrayOf()
               workspaceServiceImpl.findAllWorkspaceFiles(it.organization.id!!, it.workspace.id!!)
             }

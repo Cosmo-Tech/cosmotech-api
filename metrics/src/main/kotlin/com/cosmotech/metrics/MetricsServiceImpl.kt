@@ -6,19 +6,19 @@ import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.PersistentMetricEvent
 import com.cosmotech.api.metrics.PersistentMetric
 import com.cosmotech.api.metrics.toRedisAggregation
-import com.redislabs.redistimeseries.RedisTimeSeries
 import org.slf4j.LoggerFactory
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
-import redis.clients.jedis.JedisPool
+import redis.clients.jedis.UnifiedJedis
+import redis.clients.jedis.timeseries.TSAlterParams
+import redis.clients.jedis.timeseries.TSCreateParams
 
 private const val MILLISECONDS_IN_DAY = 86400000
 private const val KEY_PREFIX = "ts"
 
 @Service
 class MetricsServiceImpl(
-    private val jedisPool: JedisPool,
-    private val timeSeries: RedisTimeSeries,
+    private val unifiedJedis: UnifiedJedis,
     private val csmPlatformProperties: CsmPlatformProperties,
 ) : MetricsService {
 
@@ -37,8 +37,16 @@ class MetricsServiceImpl(
 
     val timestamp =
         when (metric.incrementBy) {
-          0 -> timeSeries.add(key, metric.value)
-          else -> timeSeries.incrBy(key, metric.incrementBy)
+          0 ->
+              unifiedJedis.tsAdd(
+                  key,
+                  metric.value
+              )
+          else ->
+              unifiedJedis.tsIncrBy(
+                  key,
+                  metric.incrementBy.toDouble()
+              )
         }
 
     logger.debug("METRICS: addMetricToTimeSeries done for $key at $timestamp")
@@ -46,59 +54,50 @@ class MetricsServiceImpl(
 
   @Suppress("EmptyElseBlock")
   private fun createOrAlterTimeSeries(metric: PersistentMetric) {
-    jedisPool.resource.use { jedis ->
-      val key = getMetricKey(metric)
-      logger.debug("Testing Redis TS exist: $key")
-      val exist = jedis.exists(key)
-      logger.debug("Redis TS exist: $key:$exist")
+    val key = getMetricKey(metric)
+    logger.debug("Testing Redis TS exist: $key")
+    val exist = unifiedJedis.exists(key)
+    logger.debug("Redis TS exist: $key:$exist")
 
-      val metricRetention = getMetricRetention(metric)
+    val metricRetention = getMetricRetention(metric)
 
-      val commonLabels = getCommonLabels(metric)
-      if (!exist) {
-        val metricLabels = getMetricLabels(commonLabels)
+    val commonLabels = getCommonLabels(metric)
+    if (!exist) {
+      val metricLabels = getMetricLabels(commonLabels)
+      logger.debug(
+          "Creating Redis TS: $key with retention: $metricRetention and ${metricLabels.count()} labels")
+      unifiedJedis.tsCreate(key, TSCreateParams().retention(metricRetention).labels(metricLabels))
+      if (metric.downSampling || csmPlatformProperties.metrics.downSamplingDefaultEnabled) {
+        val downSamplingKey = getDownSamplingKey(metric)
+        val downSamplingMetricLabels = getDownSamplingMetricLabels(commonLabels)
+        val downSamplingRetention = getDownSamplingRetention(metric)
+        val downSamplingBucketDuration = getDownSamplingBucketDuration(metric)
         logger.debug(
-            "Creating Redis TS: $key with retention: $metricRetention and ${metricLabels.count()} labels")
-        timeSeries.create(
+            "Creating Redis DownSampling TS: $downSamplingKey with retention: $metricRetention " +
+                "and ${downSamplingMetricLabels.count()} labels")
+        unifiedJedis.tsCreate(
+            downSamplingKey,
+            TSCreateParams().retention(downSamplingRetention).labels(downSamplingMetricLabels))
+        logger.debug(
+            "Creating Redis DownSampling TS rule: from $key to $downSamplingKey, " +
+                "aggregation: ${metric.downSamplingAggregation.value}, bucketDuration: $downSamplingBucketDuration")
+        unifiedJedis.tsCreateRule(
             key,
-            metricRetention,
-            metricLabels,
-        )
-        if (metric.downSampling || csmPlatformProperties.metrics.downSamplingDefaultEnabled) {
-          val downSamplingKey = getDownSamplingKey(metric)
-          val downSamplingMetricLabels = getDownSamplingMetricLabels(commonLabels)
-          val downSamplingRetention = getDownSamplingRetention(metric)
-          val downSamplingBucketDuration = getDownSamplingBucketDuration(metric)
-          logger.debug(
-              "Creating Redis DownSampling TS: $downSamplingKey with retention: $metricRetention " +
-                  "and ${downSamplingMetricLabels.count()} labels")
-          timeSeries.create(
-              downSamplingKey,
-              downSamplingRetention,
-              downSamplingMetricLabels,
-          )
-          logger.debug(
-              "Creating Redis DownSampling TS rule: from $key to $downSamplingKey, " +
-                  "aggregation: ${metric.downSamplingAggregation.value}, bucketDuration: $downSamplingBucketDuration")
-          timeSeries.createRule(
-              key,
-              metric.downSamplingAggregation.toRedisAggregation(),
-              downSamplingBucketDuration,
-              downSamplingKey,
-          )
-        } else {}
-      } else {
-        val timeSeriesRetention = timeSeries.info(key).getProperty("retentionTime")
+            downSamplingKey,
+            metric.downSamplingAggregation.toRedisAggregation(),
+            downSamplingBucketDuration)
+      } else {}
+    } else {
+      val timeSeriesRetention = unifiedJedis.tsInfo(key).getProperty("retentionTime")
 
-        if (!timeSeriesRetention.equals(metricRetention)) {
-          logger.debug(
-              "Redis TS retention changed: $key from $timeSeriesRetention to $metricRetention")
-          logger.debug(
-              "Redis TS library cannot get current labels so it is not possible to check if labels changed")
-          val metricLabels = getMetricLabels(commonLabels)
-          timeSeries.alter(key, metricRetention, metricLabels)
-        } else {}
-      }
+      if (!timeSeriesRetention.equals(metricRetention)) {
+        logger.debug(
+            "Redis TS retention changed: $key from $timeSeriesRetention to $metricRetention")
+        logger.debug(
+            "Redis TS library cannot get current labels so it is not possible to check if labels changed")
+        val metricLabels = getMetricLabels(commonLabels)
+        unifiedJedis.tsAlter(key, TSAlterParams().retention(metricRetention).labels(metricLabels))
+      } else {}
     }
   }
 
