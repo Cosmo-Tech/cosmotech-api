@@ -48,7 +48,7 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 val kotlinJvmTarget = 17
-val cosmotechApiCommonVersion = "0.2.0"
+val cosmotechApiCommonVersion = "0.2.1-SNAPSHOT"
 val cosmotechApiAzureVersion = "0.1.12-SNAPSHOT"
 val azureSpringBootBomVersion = "3.14.0"
 val jedisVersion = "3.9.0"
