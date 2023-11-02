@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenariorun
 
-import com.cosmotech.api.azure.containerregistry.AzureContainerRegistryClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCredentials
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCredentials.CsmPlatformAzureCredentialsCore
@@ -12,6 +11,7 @@ import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatfo
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.SharedAccessPolicyDetails
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
+import com.cosmotech.api.containerregistry.ContainerRegistryService
 import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.connector.api.ConnectorApiService
@@ -79,7 +79,7 @@ class ContainerFactoryTests {
   @MockK private lateinit var connectorService: ConnectorApiService
   @MockK private lateinit var datasetService: DatasetApiService
   @MockK private lateinit var secretManager: SecretManager
-  @MockK private lateinit var azureContainerRegistryClient: AzureContainerRegistryClient
+  @MockK private lateinit var containerRegistryService: ContainerRegistryService
   private lateinit var workspaceEventHubService: IWorkspaceEventHubService
 
   private lateinit var factory: ContainerFactory
@@ -170,7 +170,7 @@ class ContainerFactoryTests {
             connectorService,
             datasetService,
             workspaceEventHubService,
-            azureContainerRegistryClient)
+            containerRegistryService)
   }
 
   @Test
@@ -2586,7 +2586,7 @@ class ContainerFactoryTests {
     every { connectorService.findConnectorById("AzErTyUiOp") } returns getConnector()
     every { connectorService.findConnectorById("AzErTyUiOp2") } returns getConnector2()
     every { connectorService.findConnectorById("AzErTyUiOp3") } returns getConnector3()
-    every { azureContainerRegistryClient.checkSolutionImage(any(), any()) } returns Unit
+    every { containerRegistryService.checkSolutionImage(any(), any()) } returns Unit
 
     return factory.getStartInfo(
         organizationId,

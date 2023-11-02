@@ -73,5 +73,6 @@ config:
         containerRegistries:
           solutions: "localhost:5000"
       containerRegistry:
-        provider: local
-        registryUrl: "localhost:5000"
+        registryUrl: "https://csmenginesdev.azurecr.io"
+        registryUserName: "user-name"
+        registryPassword: "a-super-secret-password"
