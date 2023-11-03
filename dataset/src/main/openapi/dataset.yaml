@@ -118,7 +118,7 @@ paths:
       operationId: searchDatasets
       tags:
         - dataset
-      summary: Search Datasets
+      summary: Search Datasets by tags
       requestBody:
         description: the Dataset search parameters
         required: true
@@ -160,7 +160,8 @@ paths:
       operationId: copyDataset
       tags:
         - dataset
-      summary: Copy a Dataset to another Dataset. Source must have a read capable connector and Target a write capable connector.
+      summary: Copy a Dataset to another Dataset.
+      description: Not implemented!
       requestBody:
         description: the Dataset copy parameters
         required: true
@@ -263,8 +264,8 @@ paths:
       operationId: uploadTwingraph
       tags:
         - dataset
-      summary: Upload Twingraph with ZIP File
-      description: Upload Twingraph ZIP
+      summary: Upload data from zip file to dataset's twingraph
+      description: Upload data from zip containing two folder 'edges' and 'nodes' themself containing nodes and edges as csv files.
       requestBody:
         required: true
         content:
@@ -303,10 +304,10 @@ paths:
       operationId: createSubDataset
       tags:
         - dataset
-      summary: Run a query on a dataset
-      description: Run a query on a dataset
+      summary: Create a sub-dataset from the dataset in parameter
+      description: Create a copy of the dataset using the results of the list of queries given in parameter.
       requestBody:
-        description: the query to run
+        description: the Cypher query to filter
         required: true
         content:
           application/json:
@@ -337,8 +338,8 @@ paths:
       operationId: refreshDataset
       tags:
         - dataset
-      summary: Refresh dataset
-      description: Refresh ADT, Storage dataset
+      summary: Refresh data on dataset from dataset's source
+      description: Lauch a import from source (ADT or Azure Storage). This replace currently stored data with just extracted data from source.
       responses:
         '200':
           description: Successful response
@@ -365,7 +366,7 @@ paths:
       operationId: twingraphQuery
       tags:
         - dataset
-      summary: Run a query on a graph instance and return the result as a json
+      summary: Return the result of a query made on the graph instance as a json
       description: Run a query on a graph instance and return the result as a json
       requestBody:
         description: the query to run
@@ -639,8 +640,8 @@ paths:
       operationId: downloadTwingraph
       tags:
         - dataset
-      summary: Download a graph compressed in a zip file
-      description: Download a graph compressed in a zip file
+      summary: Download a graph as a zip file
+      description: Download the compressed graph reference by the hash in a zip file
       responses:
         '200':
           description: Successful response
@@ -674,8 +675,8 @@ paths:
       operationId: getDatasetTwingraphStatus
       tags:
         - dataset
-      summary: Get the status of twingraph import
-      description: Get the status of a twingraph import
+      summary: Get the dataset's refresh job status
+      description: Get the status of the import workflow lauch on the dataset's refresh.
       responses:
         '200':
           description: Successful response
