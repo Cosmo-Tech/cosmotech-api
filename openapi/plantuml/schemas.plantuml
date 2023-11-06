@@ -502,6 +502,7 @@ entity SourceInfo {
     name: String
     * location: String
     path: String
+    jobId: String
 }
 
 entity SubDatasetGraphQuery {

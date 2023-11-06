@@ -350,8 +350,8 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
     // add timout for while loop
     val timeout = Instant.now()
-    while (datasetApiService.getDatasetTwingraphStatus(
-        organizationSaved.id!!, datasetSaved.id!!, "randomJobId") != Dataset.Status.READY.value) {
+    while (datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!) !=
+        Dataset.Status.READY.value) {
       if (Instant.now().minusSeconds(10).isAfter(timeout)) {
         throw Exception("Timeout while waiting for dataset twingraph to be ready")
       }
@@ -983,7 +983,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.getDatasetTwingraphStatus(
-                          organizationSaved.id!!, datasetSaved.id!!, "randomJobId")
+                          organizationSaved.id!!, datasetSaved.id!!)
                     }
                 assertEquals(
                     "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -991,7 +991,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   datasetApiService.getDatasetTwingraphStatus(
-                      organizationSaved.id!!, datasetSaved.id!!, "randomJobId")
+                      organizationSaved.id!!, datasetSaved.id!!)
                 }
               }
             }

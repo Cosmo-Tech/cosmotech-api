@@ -270,7 +270,7 @@ class DatasetServiceImpl(
 
     dataset.sourceType.takeIf { it == DatasetSourceType.File }
         ?: throw CsmResourceNotFoundException("SourceType Dataset must be 'File'")
-    val uploadStatus = getDatasetTwingraphStatus(organizationId, datasetId, "jobIdRandom")
+    val uploadStatus = getDatasetTwingraphStatus(organizationId, datasetId)
     uploadStatus.takeUnless { it == Dataset.Status.PENDING.value }
         ?: throw CsmResourceNotFoundException("Dataset in use, cannot update. Retry later")
 
@@ -304,7 +304,6 @@ class DatasetServiceImpl(
   override fun getDatasetTwingraphStatus(
       organizationId: String,
       datasetId: String,
-      jobId: String
   ): String {
     // This call verify by itself that we have the read authorization in the dataset
     val dataset = findDatasetById(organizationId, datasetId)
@@ -330,7 +329,7 @@ class DatasetServiceImpl(
       DatasetSourceType.Twincache,
       DatasetSourceType.AzureStorage -> {
         val twingraphImportJobInfoRequest =
-            TwingraphImportJobInfoRequest(this, jobId!!, organizationId)
+            TwingraphImportJobInfoRequest(this, dataset.source!!.jobId!!, organizationId)
         this.eventPublisher.publishEvent(twingraphImportJobInfoRequest)
         dataset
             .takeIf { it.status == Dataset.Status.PENDING }
@@ -384,6 +383,8 @@ class DatasetServiceImpl(
             "",
             dataset.queries)
     this.eventPublisher.publishEvent(graphImportEvent)
+
+    datasetRepository.save(dataset.apply { source!!.jobId = requestJobId })
     logger.debug("refreshDataset={}", graphImportEvent.response)
     return DatasetTwinGraphInfo(
         jobId = requestJobId, datasetId = dataset.id, status = dataset.status?.value)
