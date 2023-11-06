@@ -678,7 +678,7 @@ paths:
                 type: string
                 format: binary
 
-  /organizations/{organization_id}/datasets/{dataset_id}/job/{job_id}/status:
+  /organizations/{organization_id}/datasets/{dataset_id}/status:
     parameters:
       - name: organization_id
         in: path
@@ -689,12 +689,6 @@ paths:
       - name: dataset_id
         in: path
         description: the dataset identifier
-        required: true
-        schema:
-          type: string
-      - name: job_id
-        in: path
-        description: the job identifier
         required: true
         schema:
           type: string
@@ -1623,6 +1617,9 @@ components:
         path:
           type: string
           description: the source location containing the files to import
+        jobId:
+          type: string
+          description: indicate the last import jobId
       required:
         - location
     TwinGraphBatchResult:

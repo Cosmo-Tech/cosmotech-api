@@ -319,7 +319,7 @@ class DatasetServiceImplTests {
                 twingraphId = "twingraphId")
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
     every { csmJedisPool.resource.exists(any<String>()) } returns false
-    val result = datasetService.getDatasetTwingraphStatus(ORGANIZATION_ID, DATASET_ID, "JOB_ID")
+    val result = datasetService.getDatasetTwingraphStatus(ORGANIZATION_ID, DATASET_ID)
     assertEquals(Dataset.Status.DRAFT.value, result)
   }
 
@@ -333,8 +333,7 @@ class DatasetServiceImplTests {
                 twingraphId = "twingraphId")
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
     every { csmJedisPool.resource.exists(any<String>()) } returns true
-    val result =
-        datasetService.getDatasetTwingraphStatus(ORGANIZATION_ID, DATASET_ID, "JobIdRandom")
+    val result = datasetService.getDatasetTwingraphStatus(ORGANIZATION_ID, DATASET_ID)
     assertEquals(Dataset.Status.READY.value, result)
   }
 
@@ -345,12 +344,13 @@ class DatasetServiceImplTests {
             .copy(
                 status = Dataset.Status.DRAFT,
                 sourceType = DatasetSourceType.ADT,
+                source = SourceInfo(location = "test", jobId = "0"),
                 twingraphId = "twingraphId")
     mockkConstructor(TwingraphImportJobInfoRequest::class)
     every { anyConstructed<TwingraphImportJobInfoRequest>().response } returns
         Dataset.Status.PENDING.value
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
-    val result = datasetService.getDatasetTwingraphStatus(ORGANIZATION_ID, DATASET_ID, "JOB_ID")
+    val result = datasetService.getDatasetTwingraphStatus(ORGANIZATION_ID, DATASET_ID)
     assertEquals(Dataset.Status.PENDING.value, result)
   }
 
@@ -361,6 +361,7 @@ class DatasetServiceImplTests {
             .copy(
                 status = Dataset.Status.PENDING,
                 sourceType = DatasetSourceType.ADT,
+                source = SourceInfo(location = "test", jobId = "0"),
                 twingraphId = "twingraphId")
     mockkConstructor(TwingraphImportJobInfoRequest::class)
     every { anyConstructed<TwingraphImportJobInfoRequest>().response } returns
@@ -368,7 +369,7 @@ class DatasetServiceImplTests {
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
     every { csmJedisPool.resource.exists(any<String>()) } returns true
     every { datasetRepository.save(any()) } returnsArgument 0
-    val result = datasetService.getDatasetTwingraphStatus(ORGANIZATION_ID, DATASET_ID, "JOB_ID")
+    val result = datasetService.getDatasetTwingraphStatus(ORGANIZATION_ID, DATASET_ID)
     assertEquals(Dataset.Status.READY.value, result)
   }
 
@@ -391,13 +392,13 @@ class DatasetServiceImplTests {
             .copy(
                 status = Dataset.Status.DRAFT,
                 sourceType = DatasetSourceType.ADT,
-                source = SourceInfo("http://storage.location"),
+                source = SourceInfo("http://storage.location", jobId = "0"),
                 twingraphId = "twingraphId")
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
     every { csmJedisPool.resource.exists(any<String>()) } returns true
     every { datasetRepository.save(any()) } returnsArgument 0
     val datasetInfo = datasetService.refreshDataset(ORGANIZATION_ID, DATASET_ID)
-    verify(exactly = 1) { datasetRepository.save(any()) }
+    verify(atLeast = 1) { datasetRepository.save(any()) }
     assertEquals(dataset.id, datasetInfo.datasetId)
     assertEquals(dataset.status!!.value, datasetInfo.status)
   }

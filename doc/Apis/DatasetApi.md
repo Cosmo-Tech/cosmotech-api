@@ -6,32 +6,32 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**addDatasetAccessControl**](DatasetApi.md#addDatasetAccessControl) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/security/access | Add a control access to the Dataset
 [**addOrReplaceDatasetCompatibilityElements**](DatasetApi.md#addOrReplaceDatasetCompatibilityElements) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/compatibility | Add Dataset Compatibility elements.
-[**copyDataset**](DatasetApi.md#copyDataset) | **POST** /organizations/{organization_id}/datasets/copy | Copy a Dataset to another Dataset. Source must have a read capable connector and Target a write capable connector.
+[**copyDataset**](DatasetApi.md#copyDataset) | **POST** /organizations/{organization_id}/datasets/copy | Copy a Dataset to another Dataset.
 [**createDataset**](DatasetApi.md#createDataset) | **POST** /organizations/{organization_id}/datasets | Create a new Dataset
-[**createSubDataset**](DatasetApi.md#createSubDataset) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/subdataset | Run a query on a dataset
+[**createSubDataset**](DatasetApi.md#createSubDataset) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/subdataset | Create a sub-dataset from the dataset in parameter
 [**createTwingraphEntities**](DatasetApi.md#createTwingraphEntities) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/twingraph/{type} | Create new entities in a graph instance
 [**deleteDataset**](DatasetApi.md#deleteDataset) | **DELETE** /organizations/{organization_id}/datasets/{dataset_id} | Delete a dataset
 [**deleteTwingraphEntities**](DatasetApi.md#deleteTwingraphEntities) | **DELETE** /organizations/{organization_id}/datasets/{dataset_id}/twingraph/{type} | Delete entities in a graph instance
-[**downloadTwingraph**](DatasetApi.md#downloadTwingraph) | **GET** /organizations/{organization_id}/datasets/twingraph/download/{hash} | Download a graph compressed in a zip file
+[**downloadTwingraph**](DatasetApi.md#downloadTwingraph) | **GET** /organizations/{organization_id}/datasets/twingraph/download/{hash} | Download a graph as a zip file
 [**findAllDatasets**](DatasetApi.md#findAllDatasets) | **GET** /organizations/{organization_id}/datasets | List all Datasets
 [**findDatasetById**](DatasetApi.md#findDatasetById) | **GET** /organizations/{organization_id}/datasets/{dataset_id} | Get the details of a Dataset
 [**getDatasetAccessControl**](DatasetApi.md#getDatasetAccessControl) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/security/access/{identity_id} | Get a control access for the Dataset
 [**getDatasetSecurity**](DatasetApi.md#getDatasetSecurity) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/security | Get the Dataset security information
 [**getDatasetSecurityUsers**](DatasetApi.md#getDatasetSecurityUsers) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/security/users | Get the Dataset security users list
-[**getDatasetTwingraphStatus**](DatasetApi.md#getDatasetTwingraphStatus) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/job/{job_id}/status | Get the status of twingraph import
+[**getDatasetTwingraphStatus**](DatasetApi.md#getDatasetTwingraphStatus) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/status | Get the dataset&#39;s refresh job status
 [**getTwingraphEntities**](DatasetApi.md#getTwingraphEntities) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/twingraph/{type} | Get entities in a graph instance
-[**refreshDataset**](DatasetApi.md#refreshDataset) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/refresh | Refresh dataset
+[**refreshDataset**](DatasetApi.md#refreshDataset) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/refresh | Refresh data on dataset from dataset&#39;s source
 [**removeAllDatasetCompatibilityElements**](DatasetApi.md#removeAllDatasetCompatibilityElements) | **DELETE** /organizations/{organization_id}/datasets/{dataset_id}/compatibility | Remove all Dataset Compatibility elements from the Dataset specified
 [**removeDatasetAccessControl**](DatasetApi.md#removeDatasetAccessControl) | **DELETE** /organizations/{organization_id}/datasets/{dataset_id}/security/access/{identity_id} | Remove the specified access from the given Dataset
-[**searchDatasets**](DatasetApi.md#searchDatasets) | **POST** /organizations/{organization_id}/datasets/search | Search Datasets
+[**searchDatasets**](DatasetApi.md#searchDatasets) | **POST** /organizations/{organization_id}/datasets/search | Search Datasets by tags
 [**setDatasetDefaultSecurity**](DatasetApi.md#setDatasetDefaultSecurity) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/security/default | Set the Dataset default security
 [**twingraphBatchQuery**](DatasetApi.md#twingraphBatchQuery) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/batch-query | Run a query on a graph instance and return the result as a zip file in async mode
 [**twingraphBatchUpdate**](DatasetApi.md#twingraphBatchUpdate) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/batch | Async batch update by loading a CSV file on a graph instance 
-[**twingraphQuery**](DatasetApi.md#twingraphQuery) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/twingraph | Run a query on a graph instance and return the result as a json
+[**twingraphQuery**](DatasetApi.md#twingraphQuery) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/twingraph | Return the result of a query made on the graph instance as a json
 [**updateDataset**](DatasetApi.md#updateDataset) | **PATCH** /organizations/{organization_id}/datasets/{dataset_id} | Update a dataset
 [**updateDatasetAccessControl**](DatasetApi.md#updateDatasetAccessControl) | **PATCH** /organizations/{organization_id}/datasets/{dataset_id}/security/access/{identity_id} | Update the specified access to User for a Dataset
 [**updateTwingraphEntities**](DatasetApi.md#updateTwingraphEntities) | **PATCH** /organizations/{organization_id}/datasets/{dataset_id}/twingraph/{type} | Update entities in a graph instance
-[**uploadTwingraph**](DatasetApi.md#uploadTwingraph) | **POST** /organizations/{organization_id}/datasets/{dataset_id} | Upload Twingraph with ZIP File
+[**uploadTwingraph**](DatasetApi.md#uploadTwingraph) | **POST** /organizations/{organization_id}/datasets/{dataset_id} | Upload data from zip file to dataset&#39;s twingraph
 
 
 <a name="addDatasetAccessControl"></a>
@@ -92,7 +92,9 @@ Name | Type | Description  | Notes
 # **copyDataset**
 > DatasetCopyParameters copyDataset(organization\_id, DatasetCopyParameters)
 
-Copy a Dataset to another Dataset. Source must have a read capable connector and Target a write capable connector.
+Copy a Dataset to another Dataset.
+
+    Not implemented!
 
 ### Parameters
 
@@ -144,9 +146,9 @@ Name | Type | Description  | Notes
 # **createSubDataset**
 > Dataset createSubDataset(organization\_id, dataset\_id, SubDatasetGraphQuery)
 
-Run a query on a dataset
+Create a sub-dataset from the dataset in parameter
 
-    Run a query on a dataset
+    Create a copy of the dataset using the results of the list of queries given in parameter.
 
 ### Parameters
 
@@ -154,7 +156,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **dataset\_id** | **String**| the Dataset identifier | [default to null]
- **SubDatasetGraphQuery** | [**SubDatasetGraphQuery**](../Models/SubDatasetGraphQuery.md)| the query to run |
+ **SubDatasetGraphQuery** | [**SubDatasetGraphQuery**](../Models/SubDatasetGraphQuery.md)| the Cypher query to filter |
 
 ### Return type
 
@@ -259,9 +261,9 @@ null (empty response body)
 # **downloadTwingraph**
 > File downloadTwingraph(organization\_id, hash)
 
-Download a graph compressed in a zip file
+Download a graph as a zip file
 
-    Download a graph compressed in a zip file
+    Download the compressed graph reference by the hash in a zip file
 
 ### Parameters
 
@@ -417,11 +419,11 @@ Name | Type | Description  | Notes
 
 <a name="getDatasetTwingraphStatus"></a>
 # **getDatasetTwingraphStatus**
-> String getDatasetTwingraphStatus(organization\_id, dataset\_id, job\_id)
+> String getDatasetTwingraphStatus(organization\_id, dataset\_id)
 
-Get the status of twingraph import
+Get the dataset&#39;s refresh job status
 
-    Get the status of a twingraph import
+    Get the status of the import workflow lauch on the dataset&#39;s refresh.
 
 ### Parameters
 
@@ -429,7 +431,6 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **dataset\_id** | **String**| the dataset identifier | [default to null]
- **job\_id** | **String**| the job identifier | [default to null]
 
 ### Return type
 
@@ -478,9 +479,9 @@ Name | Type | Description  | Notes
 # **refreshDataset**
 > DatasetTwinGraphInfo refreshDataset(organization\_id, dataset\_id)
 
-Refresh dataset
+Refresh data on dataset from dataset&#39;s source
 
-    Refresh ADT, Storage dataset
+    Lauch a import from source (ADT or Azure Storage). This replace currently stored data with just extracted data from source.
 
 ### Parameters
 
@@ -559,7 +560,7 @@ null (empty response body)
 # **searchDatasets**
 > List searchDatasets(organization\_id, DatasetSearch, page, size)
 
-Search Datasets
+Search Datasets by tags
 
 ### Parameters
 
@@ -673,7 +674,7 @@ Name | Type | Description  | Notes
 # **twingraphQuery**
 > String twingraphQuery(organization\_id, dataset\_id, DatasetTwinGraphQuery)
 
-Run a query on a graph instance and return the result as a json
+Return the result of a query made on the graph instance as a json
 
     Run a query on a graph instance and return the result as a json
 
@@ -787,9 +788,9 @@ Name | Type | Description  | Notes
 # **uploadTwingraph**
 > uploadTwingraph(organization\_id, dataset\_id, body)
 
-Upload Twingraph with ZIP File
+Upload data from zip file to dataset&#39;s twingraph
 
-    Upload Twingraph ZIP
+    To create a new graph from flat files,  you need to create a Zip file. This Zip file must countain two folders named Edges and Nodes.  .zip hierarchy: *main_folder/Nodes *main_folder/Edges  In each folder you can place one or multiple csv files containing your Nodes or Edges data.  Your csv files must follow the following header (column name) requirements:  The Nodes CSVs requires at least one column (the 1st).Column name &#x3D; &#39;id&#39;. It will represent the nodes ID Ids must be populated with string  The Edges CSVs require three columns named, in order, * source * target * id  those colomns represent * The source of the edge * The target of the edge * The id of the edge  All following columns content are up to you. 
 
 ### Parameters
 
