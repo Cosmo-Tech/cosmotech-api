@@ -1030,6 +1030,97 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
             }
           }
 
+  @TestFactory
+  fun `test RBAC getSolutionSecurity`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test RBAC getSolutionSecurity : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              val organization =
+                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              val solution =
+                  makeSolutionWithRole(organizationSaved.id!!, TEST_USER_MAIL, role = role)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.getSolutionSecurity(
+                          organizationSaved.id!!, solutionSaved.id!!)
+                    }
+                if (role == ROLE_NONE) {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      exception.message)
+                } else {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                      exception.message)
+                }
+              } else {
+                assertDoesNotThrow {
+                  solutionApiService.getSolutionSecurity(organizationSaved.id!!, solutionSaved.id!!)
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC setSolutionDefaultSecurity`() =
+      mapOf(
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test RBAC setSolutionDefaultSecurity : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              val organization =
+                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              val solution =
+                  makeSolutionWithRole(organizationSaved.id!!, TEST_USER_MAIL, role = role)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.setSolutionDefaultSecurity(
+                          organizationSaved.id!!, solutionSaved.id!!, SolutionRole(ROLE_VIEWER))
+                    }
+                if (role == ROLE_NONE) {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      exception.message)
+                } else {
+                  assertEquals(
+                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                      exception.message)
+                }
+              } else {
+                assertDoesNotThrow {
+                  solutionApiService.setSolutionDefaultSecurity(
+                      organizationSaved.id!!, solutionSaved.id!!, SolutionRole(ROLE_VIEWER))
+                }
+              }
+            }
+          }
+
   fun makeOrganizationWithRole(
       id: String = "organization_id",
       userName: String,

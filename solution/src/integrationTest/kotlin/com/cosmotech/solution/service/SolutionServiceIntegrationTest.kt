@@ -8,6 +8,7 @@ import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
+import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
@@ -23,6 +24,7 @@ import com.cosmotech.solution.domain.RunTemplateParameter
 import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
+import com.cosmotech.solution.domain.SolutionRole
 import com.cosmotech.solution.domain.SolutionSecurity
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
@@ -390,6 +392,23 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
       solutionApiService.findAllSolutions(organizationRegistered.id!!, 0, -1)
     }
   }
+
+  @Test
+  fun `test security endpoints`() {
+    logger.info("should return the current security")
+    val solutionSecurity =
+        solutionApiService.getSolutionSecurity(organizationRegistered.id!!, solutionRegistered.id!!)
+    assertEquals(solutionRegistered.security, solutionSecurity)
+
+    logger.info("should update the default security and assert it worked")
+    val solutionDefaultSecurity =
+        solutionApiService.setSolutionDefaultSecurity(
+            organizationRegistered.id!!, solutionRegistered.id!!, SolutionRole(ROLE_VIEWER))
+    solutionRegistered =
+        solutionApiService.findSolutionById(organizationRegistered.id!!, solutionRegistered.id!!)
+    assertEquals(solutionRegistered.security!!, solutionDefaultSecurity)
+  }
+
   fun makeOrganization(id: String = "organization_id"): Organization {
     return Organization(
         id = id,
