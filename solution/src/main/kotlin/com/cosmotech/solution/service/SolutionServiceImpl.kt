@@ -399,6 +399,28 @@ internal class SolutionServiceImpl(
     return solution
   }
 
+  override fun getSolutionSecurity(organizationId: String, solutionId: String): SolutionSecurity {
+    val solution = findSolutionById(organizationId, solutionId)
+    csmRbac.verify(solution.getRbac(), PERMISSION_READ_SECURITY)
+    return solution.security
+        ?: throw CsmResourceNotFoundException("RBAC not defined for ${solution.id}")
+  }
+
+  override fun setSolutionDefaultSecurity(
+      organizationId: String,
+      solutionId: String,
+      solutionRole: SolutionRole
+  ): SolutionSecurity {
+    // This call verify by itself that we have the read authorization in the organization
+    organizationApiService.findOrganizationById(organizationId)
+    val solution = findSolutionById(organizationId, solutionId)
+    csmRbac.verify(solution.getRbac(), PERMISSION_WRITE_SECURITY)
+    val rbacSecurity = csmRbac.setDefault(solution.getRbac(), solutionRole.role)
+    solution.setRbac(rbacSecurity)
+    solutionRepository.save(solution)
+    return solution.security as SolutionSecurity
+  }
+
   override fun addSolutionAccessControl(
       organizationId: String,
       solutionId: String,

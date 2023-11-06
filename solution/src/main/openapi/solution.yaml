@@ -478,6 +478,82 @@ paths:
           description: zip file uploaded
         "400":
           description: Bad request
+  /organizations/{organization_id}/solutions/{solution_id}/security:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: solution_id
+        in: path
+        description: the Solution identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getSolutionSecurity
+      tags:
+        - solution
+      summary: Get the Solution security information
+      responses:
+        "200":
+          description: The Solution security
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SolutionSecurity'
+              examples:
+                SolutionSecurity:
+                  $ref: '#/components/examples/BrewerySolutionSecurity'
+        "404":
+          description: the Solution specified is unknown or you don't have access to it
+  /organizations/{organization_id}/solutions/{solution_id}/security/default:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: solution_id
+        in: path
+        description: the Solution identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: setSolutionDefaultSecurity
+      tags:
+        - solution
+      summary: Set the Solution default security
+      requestBody:
+        description: the new Solution default security.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SolutionRole'
+            examples:
+              BrewerySolutionRole:
+                $ref: '#/components/examples/BrewerySolutionRole'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            examples:
+              BrewerySolutionRole:
+                $ref: '#/components/examples/BrewerySolutionRole'
+      responses:
+        "201":
+          description: The Solution default visibility
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SolutionSecurity'
+        "404":
+          description: the Solution specified is unknown or you don't have access to it
   /organizations/{organization_id}/solutions/{solution_id}/security/users:
     parameters:
       - name: organization_id

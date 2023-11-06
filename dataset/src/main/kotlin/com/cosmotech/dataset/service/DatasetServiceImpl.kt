@@ -61,6 +61,8 @@ import com.cosmotech.dataset.utils.toCsmGraphEntity
 import com.cosmotech.dataset.utils.toJsonString
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.service.getRbac
+import com.cosmotech.workspace.service.getRbac
+import com.cosmotech.workspace.service.setRbac
 import com.redislabs.redisgraph.Record
 import com.redislabs.redisgraph.RedisGraph
 import com.redislabs.redisgraph.ResultSet
@@ -750,6 +752,29 @@ class DatasetServiceImpl(
     return findAllPaginated(defaultPageSize) {
       datasetRepository.findDatasetByTags(datasetSearch.datasetTags.toSet(), it).toList()
     }
+  }
+
+  override fun getDatasetSecurity(organizationId: String, datasetId: String): DatasetSecurity {
+
+    val dataset = findDatasetById(organizationId, datasetId)
+    csmRbac.verify(dataset.getRbac(), PERMISSION_READ_SECURITY)
+    return dataset.security
+        ?: throw CsmResourceNotFoundException("RBAC not defined for ${dataset.id}")
+  }
+
+  override fun setDatasetDefaultSecurity(
+      organizationId: String,
+      datasetId: String,
+      datasetRole: DatasetRole
+  ): DatasetSecurity {
+    // This call verify by itself that we have the read authorization in the organization
+    organizationService.findOrganizationById(organizationId)
+    val dataset = findDatasetById(organizationId, datasetId)
+    csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE_SECURITY)
+    val rbacSecurity = csmRbac.setDefault(dataset.getRbac(), datasetRole.role)
+    dataset.setRbac(rbacSecurity)
+    datasetRepository.save(dataset)
+    return dataset.security as DatasetSecurity
   }
 
   override fun addDatasetAccessControl(

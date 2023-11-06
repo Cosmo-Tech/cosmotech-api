@@ -1048,6 +1048,82 @@ paths:
           description: Request succeeded
         "404":
           description: the ValidatorRun specified is unknown or you don't have access to it
+  /organizations/{organization_id}/datasets/{dataset_id}/security:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: dataset_id
+        in: path
+        description: the Dataset identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getDatasetSecurity
+      tags:
+        - dataset
+      summary: Get the Dataset security information
+      responses:
+        "200":
+          description: The Dataset security
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetSecurity'
+              examples:
+                DatasetSecurity:
+                  $ref: '#/components/examples/BreweryDatasetSecurity'
+        "404":
+          description: the Dataset specified is unknown or you don't have access to it
+  /organizations/{organization_id}/datasets/{dataset_id}/security/default:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: dataset_id
+        in: path
+        description: the Dataset identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: setDatasetDefaultSecurity
+      tags:
+        - dataset
+      summary: Set the Dataset default security
+      requestBody:
+        description: the new Dataset default security.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DatasetRole'
+            examples:
+              BreweryDatasetRole:
+                $ref: '#/components/examples/BreweryDatasetRole'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            examples:
+              BreweryDatasetRole:
+                $ref: '#/components/examples/BreweryDatasetRole'
+      responses:
+        "201":
+          description: The Dataset default visibility
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetSecurity'
+        "404":
+          description: the Dataset specified is unknown or you don't have access to it
   /organizations/{organization_id}/datasets/{dataset_id}/security/access:
     parameters:
       - name: organization_id
