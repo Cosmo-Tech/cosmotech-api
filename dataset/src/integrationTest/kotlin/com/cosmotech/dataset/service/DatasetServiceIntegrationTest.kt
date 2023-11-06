@@ -494,6 +494,23 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
+  @Test
+  fun `test security endpoints`() {
+    organizationSaved = organizationApiService.registerOrganization(organization)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    logger.info("should return the current security")
+    val datasetSecurity =
+        datasetApiService.getDatasetSecurity(organizationSaved.id!!, datasetSaved.id!!)
+    assertEquals(datasetSaved.security, datasetSecurity)
+
+    logger.info("should update the default security and assert it worked")
+    val datasetDefaultSecurity =
+        datasetApiService.setDatasetDefaultSecurity(
+            organizationSaved.id!!, datasetSaved.id!!, DatasetRole(ROLE_VIEWER))
+    datasetSaved = datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+    assertEquals(datasetSaved.security!!, datasetDefaultSecurity)
+  }
+
   @TestFactory
   fun `test RBAC twingraphBatchUpdate`() =
       mapOf(
@@ -1590,6 +1607,95 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
                 assertDoesNotThrow {
                   datasetApiService.getDatasetSecurityUsers(
                       organizationSaved.id!!, datasetSaved.id!!)
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC getDatasetSecurity`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test RBAC getDatasetSecurity : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              val organization = makeOrganizationWithRole()
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              val dataset = makeDatasetWithRole(role = role)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              materializeTwingraph()
+
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      datasetApiService.getDatasetSecurity(
+                          organizationSaved.id!!, datasetSaved.id!!)
+                    }
+                if (role == ROLE_NONE) {
+                  assertEquals(
+                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      exception.message)
+                } else {
+                  assertEquals(
+                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                      exception.message)
+                }
+              } else {
+                assertDoesNotThrow {
+                  datasetApiService.getDatasetSecurity(organizationSaved.id!!, datasetSaved.id!!)
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC setDatasetDefaultSecurity`() =
+      mapOf(
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test RBAC setDatasetDefaultSecurity : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              val organization = makeOrganizationWithRole()
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              val dataset = makeDatasetWithRole(role = role)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              materializeTwingraph()
+
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      datasetApiService.setDatasetDefaultSecurity(
+                          organizationSaved.id!!, datasetSaved.id!!, DatasetRole(ROLE_VIEWER))
+                    }
+                if (role == ROLE_NONE) {
+                  assertEquals(
+                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      exception.message)
+                } else {
+                  assertEquals(
+                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                      exception.message)
+                }
+              } else {
+                assertDoesNotThrow {
+                  datasetApiService.setDatasetDefaultSecurity(
+                      organizationSaved.id!!, datasetSaved.id!!, DatasetRole(ROLE_VIEWER))
                 }
               }
             }
