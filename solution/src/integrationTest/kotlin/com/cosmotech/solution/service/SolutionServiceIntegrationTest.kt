@@ -31,7 +31,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
-import java.util.UUID
+import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -394,13 +394,16 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
-  fun `test security endpoints`() {
-    logger.info("should return the current security")
+  fun `test get security endpoint`() {
+    // should return the current security
     val solutionSecurity =
         solutionApiService.getSolutionSecurity(organizationRegistered.id!!, solutionRegistered.id!!)
     assertEquals(solutionRegistered.security, solutionSecurity)
+  }
 
-    logger.info("should update the default security and assert it worked")
+  @Test
+  fun `test set default security endpoint`() {
+    // should update the default security and assert it worked
     val solutionDefaultSecurity =
         solutionApiService.setSolutionDefaultSecurity(
             organizationRegistered.id!!, solutionRegistered.id!!, SolutionRole(ROLE_VIEWER))

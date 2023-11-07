@@ -1074,9 +1074,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DatasetSecurity'
-              examples:
-                DatasetSecurity:
-                  $ref: '#/components/examples/BreweryDatasetSecurity'
         "404":
           description: the Dataset specified is unknown or you don't have access to it
   /organizations/{organization_id}/datasets/{dataset_id}/security/default:

@@ -19,7 +19,6 @@ import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.security.ROLE_ORGANIZATION_USER
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.tests.CsmRedisTestBase
-import com.cosmotech.api.tests.CsmRedisTestBase.Companion.redisStackServer
 import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.bulkQueryKey
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
@@ -495,15 +494,20 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
-  fun `test security endpoints`() {
+  fun `test get security endpoint`() {
     organizationSaved = organizationApiService.registerOrganization(organization)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-    logger.info("should return the current security")
+    // should return the current security
     val datasetSecurity =
         datasetApiService.getDatasetSecurity(organizationSaved.id!!, datasetSaved.id!!)
     assertEquals(datasetSaved.security, datasetSecurity)
+  }
 
-    logger.info("should update the default security and assert it worked")
+  @Test
+  fun `test set default security endpoint`() {
+    organizationSaved = organizationApiService.registerOrganization(organization)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    // should update the default security and assert it worked
     val datasetDefaultSecurity =
         datasetApiService.setDatasetDefaultSecurity(
             organizationSaved.id!!, datasetSaved.id!!, DatasetRole(ROLE_VIEWER))
@@ -1629,7 +1633,6 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
               organizationSaved = organizationApiService.registerOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              materializeTwingraph()
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -1673,7 +1676,6 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
               organizationSaved = organizationApiService.registerOrganization(organization)
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              materializeTwingraph()
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
