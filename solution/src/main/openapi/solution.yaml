@@ -504,9 +504,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SolutionSecurity'
-              examples:
-                SolutionSecurity:
-                  $ref: '#/components/examples/BrewerySolutionSecurity'
         "404":
           description: the Solution specified is unknown or you don't have access to it
   /organizations/{organization_id}/solutions/{solution_id}/security/default:
