@@ -26,7 +26,7 @@ fun Any?.toPropertyType(): PropertyType {
         "true",
         "false" -> type = PropertyType.BI_BOOL
         else -> {
-          if (this.startsWith('[') and this.endsWith(']')) type = PropertyType.BI_ARRAY
+          if (this.startsWith('[') and this.endsWith(']')) type = PropertyType.BI_STRING
         }
       }
     }
