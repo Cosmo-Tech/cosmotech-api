@@ -608,7 +608,9 @@ paths:
         - scenario
       summary: Set the Scenario default security
       requestBody:
-        description: the new Scenario default security.
+        description: This change the scenario default security.
+          The default security is the role assigned to any person not on the Access Control List.
+          If the default security is None, then nobody outside of the ACL can access the scenario.
         required: true
         content:
           application/json:

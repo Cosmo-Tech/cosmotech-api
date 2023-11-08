@@ -526,7 +526,9 @@ paths:
         - solution
       summary: Set the Solution default security
       requestBody:
-        description: the new Solution default security.
+        description: This change the solution default security.
+          The default security is the role assigned to any person not on the Access Control List.
+          If the default security is None, then nobody outside of the ACL can access the solution.
         required: true
         content:
           application/json:
