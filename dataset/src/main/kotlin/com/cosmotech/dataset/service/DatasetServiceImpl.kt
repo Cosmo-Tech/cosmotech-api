@@ -69,9 +69,6 @@ import com.redislabs.redisgraph.RedisGraph
 import com.redislabs.redisgraph.ResultSet
 import com.redislabs.redisgraph.graph_entities.Edge
 import com.redislabs.redisgraph.graph_entities.Node
-import java.io.InputStream
-import java.nio.charset.StandardCharsets
-import java.time.Instant
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.apache.commons.compress.archivers.ArchiveStreamFactory
@@ -89,6 +86,9 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.exceptions.JedisDataException
+import java.io.InputStream
+import java.nio.charset.StandardCharsets
+import java.time.Instant
 
 const val TYPE_NODE = "node"
 const val TYPE_RELATIONSHIP = "relationship"
@@ -284,6 +284,7 @@ class DatasetServiceImpl(
     datasetRepository.save(dataset.apply { status = Dataset.Status.PENDING })
 
     GlobalScope.launch(SecurityCoroutineContext()) {
+        try {
       val queryBuffer = QueryBuffer(csmJedisPool.resource, dataset.twingraphId!!)
       unzip(body.inputStream, listOf(NODES_ZIP_FOLDER, EDGES_ZIP_FOLDER), "csv")
           .sortedByDescending { it.prefix } // Nodes first
@@ -303,8 +304,11 @@ class DatasetServiceImpl(
               }
             }
           }
-      queryBuffer.send()
-      datasetRepository.save(dataset.apply { status = Dataset.Status.READY })
+            queryBuffer.send()
+            datasetRepository.save(dataset.apply { status = Dataset.Status.READY })
+        }catch (e:Exception){
+            datasetRepository.save(dataset.apply { status = Dataset.Status.ERROR })
+        }
     }
   }
 
@@ -324,12 +328,14 @@ class DatasetServiceImpl(
         csmJedisPool.resource.use { jedis ->
           if (!jedis.exists(dataset.twingraphId!!)) {
             Dataset.Status.PENDING.value
-          } else {
-            dataset
-                .takeIf { it.status == Dataset.Status.PENDING }
-                ?.apply { datasetRepository.save(this.apply { status = Dataset.Status.READY }) }
+          } else if (dataset.status == Dataset.Status.ERROR){
+            return Dataset.Status.ERROR.value
+          }else{
+              dataset
+                  .takeIf { it.status == Dataset.Status.PENDING }
+                  ?.apply { datasetRepository.save(this.apply { status = Dataset.Status.READY }) }
             Dataset.Status.READY.value
-          }
+        }
         }
       }
       DatasetSourceType.ADT,

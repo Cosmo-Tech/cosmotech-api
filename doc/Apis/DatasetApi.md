@@ -18,7 +18,7 @@ Method | HTTP request | Description
 [**getDatasetAccessControl**](DatasetApi.md#getDatasetAccessControl) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/security/access/{identity_id} | Get a control access for the Dataset
 [**getDatasetSecurity**](DatasetApi.md#getDatasetSecurity) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/security | Get the Dataset security information
 [**getDatasetSecurityUsers**](DatasetApi.md#getDatasetSecurityUsers) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/security/users | Get the Dataset security users list
-[**getDatasetTwingraphStatus**](DatasetApi.md#getDatasetTwingraphStatus) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/status | Get the dataset&#39;s refresh job status
+[**getDatasetTwingraphStatus**](DatasetApi.md#getDatasetTwingraphStatus) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/job/{job_id}/status | Get the dataset&#39;s refresh job status
 [**getTwingraphEntities**](DatasetApi.md#getTwingraphEntities) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/twingraph/{type} | Get entities in a graph instance
 [**refreshDataset**](DatasetApi.md#refreshDataset) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/refresh | Refresh data on dataset from dataset&#39;s source
 [**removeAllDatasetCompatibilityElements**](DatasetApi.md#removeAllDatasetCompatibilityElements) | **DELETE** /organizations/{organization_id}/datasets/{dataset_id}/compatibility | Remove all Dataset Compatibility elements from the Dataset specified
@@ -419,7 +419,7 @@ Name | Type | Description  | Notes
 
 <a name="getDatasetTwingraphStatus"></a>
 # **getDatasetTwingraphStatus**
-> String getDatasetTwingraphStatus(organization\_id, dataset\_id)
+> String getDatasetTwingraphStatus(organization\_id, dataset\_id, job\_id)
 
 Get the dataset&#39;s refresh job status
 
@@ -431,6 +431,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **dataset\_id** | **String**| the dataset identifier | [default to null]
+ **job\_id** | **String**| the job identifier | [default to null]
 
 ### Return type
 
@@ -596,7 +597,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **dataset\_id** | **String**| the Dataset identifier | [default to null]
- **DatasetRole** | [**DatasetRole**](../Models/DatasetRole.md)| This change the dataset default security. The default security is the role assigned to any person not on the Access Control List. If the default security is None, then nobody outside of the ACL can access the dataset. |
+ **DatasetRole** | [**DatasetRole**](../Models/DatasetRole.md)| the new Dataset default security. |
 
 ### Return type
 
