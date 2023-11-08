@@ -435,7 +435,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **workspace\_id** | **String**| the Workspace identifier | [default to null]
- **WorkspaceRole** | [**WorkspaceRole**](../Models/WorkspaceRole.md)| the new Workspace default security. |
+ **WorkspaceRole** | [**WorkspaceRole**](../Models/WorkspaceRole.md)| This change the workspace default security. The default security is the role assigned to any person not on the Access Control List. If the default security is None, then nobody outside of the ACL can access the workspace. |
 
 ### Return type
 

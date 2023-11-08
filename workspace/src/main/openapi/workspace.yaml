@@ -449,7 +449,9 @@ paths:
         - workspace
       summary: Set the Workspace default security
       requestBody:
-        description: the new Workspace default security.
+        description: This change the workspace default security.
+          The default security is the role assigned to any person not on the Access Control List.
+          If the default security is None, then nobody outside of the ACL can access the workspace.
         required: true
         content:
           application/json:
