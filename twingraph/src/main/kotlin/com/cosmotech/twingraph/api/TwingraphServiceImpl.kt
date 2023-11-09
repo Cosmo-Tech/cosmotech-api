@@ -59,6 +59,7 @@ const val DEFAULT_GRAPH_ROTATION = "3"
 
 @Service
 @Suppress("TooManyFunctions")
+@Deprecated("Use dataset service instead")
 class TwingraphServiceImpl(
     private val organizationService: OrganizationApiService,
     private val csmJedisPool: JedisPool,
