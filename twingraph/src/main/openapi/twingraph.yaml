@@ -32,6 +32,7 @@ paths:
         schema:
           type: string
     post:
+      deprecated: true
       operationId: createGraph
       tags:
         - twingraph
@@ -79,6 +80,7 @@ paths:
         '204':
           description: Successful response
     delete:
+      deprecated: true
       operationId: delete
       tags:
         - twingraph
@@ -96,6 +98,7 @@ paths:
         schema:
           type: string
     get:
+      deprecated: true
       operationId: findAllTwingraphs
       tags:
         - twingraph
@@ -125,6 +128,7 @@ paths:
         schema:
           type: string
     get:
+      deprecated: true
       operationId: jobStatus
       tags:
         - twingraph
@@ -155,6 +159,7 @@ paths:
         schema:
           type: string
     post:
+      deprecated: true
       operationId: query
       tags:
         - twingraph
@@ -198,6 +203,7 @@ paths:
         schema:
           type: string
     post:
+      deprecated: true
       operationId: batchQuery
       tags:
         - twingraph
@@ -235,6 +241,7 @@ paths:
         schema:
           type: string
     get:
+      deprecated: true
       operationId: downloadGraph
       tags:
         - twingraph
@@ -272,6 +279,7 @@ paths:
             - node
             - relationship
     post:
+      deprecated: true
       operationId: createEntities
       tags:
         - twingraph
@@ -297,6 +305,7 @@ paths:
               schema:
                 type: string
     get:
+      deprecated: true
       operationId: getEntities
       tags:
         - twingraph
@@ -319,6 +328,7 @@ paths:
               schema:
                 type: string
     patch:
+      deprecated: true
       operationId: updateEntities
       tags:
         - twingraph
@@ -344,6 +354,7 @@ paths:
               schema:
                 type: string
     delete:
+      deprecated: true
       operationId: deleteEntities
       tags:
         - twingraph
@@ -376,6 +387,7 @@ paths:
         schema:
           type: string
     get:
+      deprecated: true
       operationId: getGraphMetaData
       tags:
         - twingraph
@@ -391,6 +403,7 @@ paths:
               example:
                 $ref: "#/components/examples/MetaDataResponse"
     patch:
+      deprecated: true
       operationId: updateGraphMetaData
       tags:
         - twingraph
@@ -479,6 +492,7 @@ paths:
             value:
               query: "MATCH (p:Person {id: toInteger($id)}) DELETE p"
     post:
+      deprecated: true
       operationId: batchUploadUpdate
       tags:
         - twingraph
