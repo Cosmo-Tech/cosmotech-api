@@ -594,24 +594,6 @@ promtail:
                 namespace:
             - tenant:
                 value: ${NAMESPACE}
-#      - match:
-#          selector: '{namespace="${NAMESPACE}2"}'
-#          stages:
-#            - json:
-#                expressions:
-#                  output: log
-#            - json:
-#                source: output
-#                expressions:
-#                  tenant_id: ${NAMESPACE}2
-#                  message: message
-#                  level: log.level
-#            - labels:
-#                tenant_id:
-#                message:
-#                namespace:
-#            - tenant:
-#                value: ${NAMESPACE}2
       - output:
           source: message
   tolerations:

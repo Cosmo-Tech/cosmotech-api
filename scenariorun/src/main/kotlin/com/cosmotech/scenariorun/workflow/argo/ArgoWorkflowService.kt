@@ -4,6 +4,7 @@ package com.cosmotech.scenariorun.workflow.argo
 
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.WorkflowStatusRequest
+import com.cosmotech.api.loki.LokiService
 import com.cosmotech.scenariorun.ORGANIZATION_ID_LABEL
 import com.cosmotech.scenariorun.SCENARIO_ID_LABEL
 import com.cosmotech.scenariorun.WORKSPACE_ID_LABEL
@@ -50,6 +51,7 @@ import retrofit2.converter.scalars.ScalarsConverterFactory
 internal class ArgoWorkflowService(
     @Value("\${api.version:?}") private val apiVersion: String,
     private val csmPlatformProperties: CsmPlatformProperties,
+    private val lokiService: LokiService,
 ) : WorkflowService {
 
   private val logger = LoggerFactory.getLogger(ArgoWorkflowService::class.java)
@@ -357,22 +359,18 @@ internal class ArgoWorkflowService(
   override fun getScenarioRunLogs(scenarioRun: ScenarioRun): ScenarioRunLogs {
     val workflowId = scenarioRun.workflowId
     val workflowName = scenarioRun.workflowName
-    var containersLogs: Map<String, ScenarioRunContainerLogs> = mapOf()
+    var containersLogs = mutableMapOf<String, ScenarioRunContainerLogs>()
     if (workflowId != null && workflowName != null) {
       val workflow = getActiveWorkflow(workflowId, workflowName)
-      val nodeLogs = getWorkflowLogs(workflow)
-      containersLogs =
-          nodeLogs
-              .map { (nodeId, logs) ->
-                (workflow.status?.nodes?.get(nodeId)?.displayName
-                    ?: "") to
-                    ScenarioRunContainerLogs(
-                        nodeId = nodeId,
-                        containerName = workflow.status?.nodes?.get(nodeId)?.displayName,
-                        children = workflow.status?.nodes?.get(nodeId)?.children,
-                        logs = logs)
-              }
-              .toMap()
+      workflow.status?.nodes?.forEach { (nodeKey, nodeValue) ->
+        containersLogs[nodeValue.displayName.toString()] =
+            ScenarioRunContainerLogs(
+                nodeId = nodeKey,
+                containerName = nodeValue.displayName,
+                children = nodeValue.children,
+                logs =
+                    lokiService.getPodLogs(csmPlatformProperties.argo.workflows.namespace, nodeKey))
+      }
     }
     return ScenarioRunLogs(scenariorunId = scenarioRun.id, containers = containersLogs)
   }
