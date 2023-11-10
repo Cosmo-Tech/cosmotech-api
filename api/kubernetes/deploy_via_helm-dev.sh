@@ -572,13 +572,12 @@ grafana:
 promtail:
   config:
     clients:
-      - url: http://loki.cosmotech-monitoring:3100/loki/api/v1/push
-        tenant_id: admins
+      - url: http://loki.${MONITORING_NAMESPACE}:3100/loki/api/v1/push
     snippets:
       pipelineStages:
       - cri: {}
       - match:
-          selector: '{namespace="phoenix"}'
+          selector: '{namespace="${NAMESPACE}"}'
           stages:
             - json:
                 expressions:
@@ -586,7 +585,7 @@ promtail:
             - json:
                 source: output
                 expressions:
-                  tenant_id: phoenix
+                  tenant_id: ${NAMESPACE}
                   message: message
                   level: log.level
             - labels:
@@ -594,7 +593,25 @@ promtail:
                 message:
                 namespace:
             - tenant:
-                value: phoenix
+                value: ${NAMESPACE}
+#      - match:
+#          selector: '{namespace="${NAMESPACE}2"}'
+#          stages:
+#            - json:
+#                expressions:
+#                  output: log
+#            - json:
+#                source: output
+#                expressions:
+#                  tenant_id: ${NAMESPACE}2
+#                  message: message
+#                  level: log.level
+#            - labels:
+#                tenant_id:
+#                message:
+#                namespace:
+#            - tenant:
+#                value: ${NAMESPACE}2
       - output:
           source: message
   tolerations:
