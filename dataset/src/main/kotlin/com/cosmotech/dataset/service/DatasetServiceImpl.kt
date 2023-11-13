@@ -345,7 +345,7 @@ class DatasetServiceImpl(
     dataset.takeUnless { it.sourceType == DatasetSourceType.File }
         ?: throw CsmResourceNotFoundException("Cannot be applied to source type 'File'")
     dataset.takeUnless { it.sourceType == DatasetSourceType.None }
-      ?: throw CsmResourceNotFoundException("Cannot be applied to source type 'None'")
+        ?: throw CsmResourceNotFoundException("Cannot be applied to source type 'None'")
     dataset.status?.takeUnless { it == Dataset.Status.PENDING }
         ?: throw CsmClientException("Dataset in use, cannot update. Retry later")
 

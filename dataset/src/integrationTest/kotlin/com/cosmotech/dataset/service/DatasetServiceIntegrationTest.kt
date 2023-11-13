@@ -3,6 +3,8 @@
 package com.cosmotech.dataset.service
 
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.api.events.CsmEventPublisher
+import com.cosmotech.api.events.TwingraphImportEvent
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
@@ -48,6 +50,7 @@ import com.redis.om.spring.RediSearchIndexer
 import com.redis.testcontainers.RedisStackContainer
 import com.redislabs.redisgraph.impl.api.RedisGraph
 import io.mockk.every
+import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -101,6 +104,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var connectorApiService: ConnectorApiService
   @Autowired lateinit var organizationApiService: OrganizationApiService
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
+  @MockK(relaxUnitFun = true) private lateinit var eventPublisher: CsmEventPublisher
 
   lateinit var connectorSaved: Connector
   lateinit var dataset: Dataset
@@ -125,6 +129,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     redisGraph = RedisGraph(jedisPool)
     ReflectionTestUtils.setField(datasetApiService, "csmJedisPool", jedisPool)
     ReflectionTestUtils.setField(datasetApiService, "csmRedisGraph", redisGraph)
+    ReflectionTestUtils.setField(datasetApiService, "eventPublisher", eventPublisher)
   }
 
   @BeforeEach
@@ -1051,10 +1056,20 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
               val organization = makeOrganizationWithRole()
               organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset = makeDatasetWithRole(role = role, sourceType = DatasetSourceType.None)
-              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              val dataset =
+                  makeDatasetWithRole(role = role, sourceType = DatasetSourceType.Twincache)
+              val datasetParentSaved =
+                  datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              datasetSaved = datasetParentSaved
               materializeTwingraph()
+              datasetSaved =
+                  datasetApiService.createSubDataset(
+                      organizationSaved.id!!, datasetParentSaved.id!!, SubDatasetGraphQuery())
 
+              every { eventPublisher.publishEvent(any<TwingraphImportEvent>()) } answers
+                  {
+                    firstArg<TwingraphImportEvent>().response = null
+                  }
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
