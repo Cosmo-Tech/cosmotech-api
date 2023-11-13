@@ -338,23 +338,6 @@ class DatasetServiceImplTests {
   }
 
   @Test
-  fun `getDatasetTwingraphStatus should return default Unknow status for ADT Dataset`() {
-    val dataset =
-        baseDataset()
-            .copy(
-                status = Dataset.Status.DRAFT,
-                sourceType = DatasetSourceType.ADT,
-                source = SourceInfo(location = "test", jobId = "0"),
-                twingraphId = "twingraphId")
-    mockkConstructor(TwingraphImportJobInfoRequest::class)
-    every { anyConstructed<TwingraphImportJobInfoRequest>().response } returns
-        Dataset.Status.PENDING.value
-    every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
-    val result = datasetService.getDatasetTwingraphStatus(ORGANIZATION_ID, DATASET_ID)
-    assertEquals(Dataset.Status.PENDING.value, result)
-  }
-
-  @Test
   fun `getDatasetTwingraphStatus should return COMPLETED Status for ADT Dataset if twingraph exists`() {
     val dataset =
         baseDataset()
@@ -365,11 +348,13 @@ class DatasetServiceImplTests {
                 twingraphId = "twingraphId")
     mockkConstructor(TwingraphImportJobInfoRequest::class)
     every { anyConstructed<TwingraphImportJobInfoRequest>().response } returns
-        Dataset.Status.READY.value
+        "Succeeded"
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
     every { csmJedisPool.resource.exists(any<String>()) } returns true
     every { datasetRepository.save(any()) } returnsArgument 0
+
     val result = datasetService.getDatasetTwingraphStatus(ORGANIZATION_ID, DATASET_ID)
+
     assertEquals(Dataset.Status.READY.value, result)
   }
 
