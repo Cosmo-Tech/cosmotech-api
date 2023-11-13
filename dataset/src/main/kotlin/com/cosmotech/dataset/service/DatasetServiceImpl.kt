@@ -39,21 +39,7 @@ import com.cosmotech.connector.domain.ConnectorParameter
 import com.cosmotech.connector.domain.ConnectorParameterGroup
 import com.cosmotech.dataset.api.DatasetApiService
 import com.cosmotech.dataset.bulk.QueryBuffer
-import com.cosmotech.dataset.domain.Dataset
-import com.cosmotech.dataset.domain.DatasetAccessControl
-import com.cosmotech.dataset.domain.DatasetCompatibility
-import com.cosmotech.dataset.domain.DatasetConnector
-import com.cosmotech.dataset.domain.DatasetCopyParameters
-import com.cosmotech.dataset.domain.DatasetRole
-import com.cosmotech.dataset.domain.DatasetSearch
-import com.cosmotech.dataset.domain.DatasetSecurity
-import com.cosmotech.dataset.domain.DatasetSourceType
-import com.cosmotech.dataset.domain.DatasetTwinGraphHash
-import com.cosmotech.dataset.domain.DatasetTwinGraphInfo
-import com.cosmotech.dataset.domain.DatasetTwinGraphQuery
-import com.cosmotech.dataset.domain.GraphProperties
-import com.cosmotech.dataset.domain.SubDatasetGraphQuery
-import com.cosmotech.dataset.domain.TwinGraphBatchResult
+import com.cosmotech.dataset.domain.*
 import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.dataset.utils.CsmGraphEntityType
 import com.cosmotech.dataset.utils.isReadOnlyQuery
@@ -176,6 +162,7 @@ class DatasetServiceImpl(
             id = idGenerator.generate("dataset"),
             twingraphId = twingraphId,
             sourceType = dataset.sourceType ?: DatasetSourceType.None,
+            source = dataset.source ?: SourceInfo("none"),
             main = dataset.main ?: true,
             creationDate = Instant.now().toEpochMilli(),
             status = Dataset.Status.DRAFT,
@@ -357,6 +344,8 @@ class DatasetServiceImpl(
 
     dataset.takeUnless { it.sourceType == DatasetSourceType.File }
         ?: throw CsmResourceNotFoundException("Cannot be applied to source type 'File'")
+    dataset.takeUnless { it.sourceType == DatasetSourceType.None }
+      ?: throw CsmResourceNotFoundException("Cannot be applied to source type 'None'")
     dataset.status?.takeUnless { it == Dataset.Status.PENDING }
         ?: throw CsmClientException("Dataset in use, cannot update. Retry later")
 
