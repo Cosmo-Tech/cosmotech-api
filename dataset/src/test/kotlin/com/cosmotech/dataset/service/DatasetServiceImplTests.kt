@@ -347,8 +347,7 @@ class DatasetServiceImplTests {
                 source = SourceInfo(location = "test", jobId = "0"),
                 twingraphId = "twingraphId")
     mockkConstructor(TwingraphImportJobInfoRequest::class)
-    every { anyConstructed<TwingraphImportJobInfoRequest>().response } returns
-        "Succeeded"
+    every { anyConstructed<TwingraphImportJobInfoRequest>().response } returns "Succeeded"
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
     every { csmJedisPool.resource.exists(any<String>()) } returns true
     every { datasetRepository.save(any()) } returnsArgument 0
