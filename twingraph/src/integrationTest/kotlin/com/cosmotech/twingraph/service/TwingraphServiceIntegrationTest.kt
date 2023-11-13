@@ -1,5 +1,7 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
+@file:Suppress("DEPRECATION")
+
 package com.cosmotech.twingraph.service
 
 import com.cosmotech.api.config.CsmPlatformProperties
@@ -17,7 +19,6 @@ import com.cosmotech.twingraph.domain.GraphProperties
 import com.cosmotech.twingraph.domain.TwinGraphBatchResult
 import com.cosmotech.twingraph.domain.TwinGraphQuery
 import com.redis.testcontainers.RedisStackContainer
-import com.redislabs.redisgraph.impl.api.RedisGraph
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
@@ -40,7 +41,10 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
+import redis.clients.jedis.HostAndPort
 import redis.clients.jedis.JedisPool
+import redis.clients.jedis.Protocol
+import redis.clients.jedis.UnifiedJedis
 
 const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
 
@@ -58,7 +62,7 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   lateinit var jedisPool: JedisPool
-  lateinit var redisGraph: RedisGraph
+  lateinit var unifiedJedis: UnifiedJedis
   lateinit var organization: Organization
 
   val graphId = "graph"
@@ -70,9 +74,8 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
     val containerIp =
         (context.server as RedisStackContainer).containerInfo.networkSettings.ipAddress
     jedisPool = JedisPool(containerIp, 6379)
-    redisGraph = RedisGraph(jedisPool)
-    ReflectionTestUtils.setField(twingraphApiService, "csmJedisPool", jedisPool)
-    ReflectionTestUtils.setField(twingraphApiService, "csmRedisGraph", redisGraph)
+    unifiedJedis = UnifiedJedis(HostAndPort(containerIp, Protocol.DEFAULT_PORT))
+    ReflectionTestUtils.setField(twingraphApiService, "unifiedJedis", unifiedJedis)
 
     context.sync().hset("${graphId}MetaData", mapOf("lastVersion" to "1"))
   }
@@ -212,7 +215,7 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
     val fileRelationshipName = this::class.java.getResource("/Follows.csv")?.file
     val fileRelationship: Resource = ByteArrayResource(File(fileRelationshipName!!).readBytes())
 
-    redisGraph.query("$graphId:1", "CREATE (n)")
+    unifiedJedis.graphQuery("$graphId:1", "CREATE (n)")
 
     listOf(
             listOf(

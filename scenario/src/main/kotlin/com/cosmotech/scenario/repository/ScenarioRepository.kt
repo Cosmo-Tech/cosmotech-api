@@ -11,9 +11,7 @@ import java.util.*
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.query.Param
-import org.springframework.stereotype.Repository
 
-@Repository
 interface ScenarioRepository : RedisDocumentRepository<Scenario, String> {
 
   @Query("@organizationId:{\$organizationId} @workspaceId:{\$workspaceId} @id:{\$scenarioId}")

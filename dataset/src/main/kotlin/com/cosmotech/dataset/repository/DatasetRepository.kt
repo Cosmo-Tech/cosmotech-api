@@ -11,9 +11,7 @@ import java.util.*
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.query.Param
-import org.springframework.stereotype.Repository
 
-@Repository
 interface DatasetRepository : RedisDocumentRepository<Dataset, String> {
 
   @Query("@organizationId:{\$organizationId} @id:{\$datasetId}")
