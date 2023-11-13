@@ -14,7 +14,7 @@ security:
 
 tags:
   - name: twingraph
-    description: Twin Graph Management
+    description: Twin Graph Management | This service is deprecated, use Dataset Service instead
 
 paths:
   /organizations/{organization_id}/twingraph/{graph_id}:
