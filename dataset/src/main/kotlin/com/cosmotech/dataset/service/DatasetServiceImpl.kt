@@ -328,19 +328,23 @@ class DatasetServiceImpl(
       DatasetSourceType.ADT,
       DatasetSourceType.Twincache,
       DatasetSourceType.AzureStorage -> {
-        val twingraphImportJobInfoRequest =
+        if (dataset.status == Dataset.Status.PENDING) {
+          dataset.source!!.takeIf { !it.jobId.isNullOrEmpty() }
+            ?: throw IllegalStateException("Dataset doesn't have a job id to get status from. Refresh dataset first.")
+          val twingraphImportJobInfoRequest =
             TwingraphImportJobInfoRequest(this, dataset.source!!.jobId!!, organizationId)
-        this.eventPublisher.publishEvent(twingraphImportJobInfoRequest)
-        dataset
-            .takeIf { it.status == Dataset.Status.PENDING }
-            ?.apply {
-              when (twingraphImportJobInfoRequest.response) {
-                "Succeeded" -> status = Dataset.Status.READY
-                "Error" -> status = Dataset.Status.ERROR
-              }
-              datasetRepository.save(this)
+
+          this.eventPublisher.publishEvent(twingraphImportJobInfoRequest)
+
+          dataset.apply {
+            when (twingraphImportJobInfoRequest.response) {
+              "Succeeded" -> status = Dataset.Status.READY
+              "Error", "Failed" -> status = Dataset.Status.ERROR
             }
-        twingraphImportJobInfoRequest.response ?: "Unknown"
+            datasetRepository.save(this)
+          }
+        }
+        return dataset.status!!.value
       }
     }
   }
