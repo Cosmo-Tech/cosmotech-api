@@ -5,12 +5,14 @@ logging:
       OkHttpClient: WARN
 
 spring:
-  redis:
-    host: ${csm.platform.twincache.host}
-    port: 6379
-    password: ${csm.platform.twincache.password}
-    username: ${csm.platform.twincache.username}
-    client-type: jedis
+  data:
+    redis:
+      host: ${csm.platform.twincache.host}
+      port: 6379
+      password: ${csm.platform.twincache.password}
+      username: ${csm.platform.twincache.username}
+      timeout: 60000
+      client-type: jedis
   servlet:
     multipart:
       max-file-size: 50MB
@@ -23,13 +25,6 @@ spring:
       enabled: false
     kubernetes:
       enabled: false
-
-security:
-  oauth2:
-    resource:
-      user-info-uri: https://graph.microsoft.com/oidc/userinfo
-      jwk:
-        key-set-uri: https://login.microsoftonline.com/common/discovery/v2.0/keys
 
 management:
   endpoint:
@@ -49,10 +44,9 @@ management:
     port: 8081
 
 server:
-  jetty:
+  undertow:
     accesslog:
       enabled: true
-      format: extended_ncsa
   servlet:
     context-path:
   forward-headers-strategy: native
@@ -61,7 +55,7 @@ csm:
   platform:
     summary: Cosmo Tech Platform
     description: Cosmo Tech Digital Twins Simulation Platform
-    version: "1.0.0"
+    version: "3.0.0"
     namespace: "phoenix"
     # Commit ID and Ref have to be set in the config, but a better approach could be to
     # generate such info at build time
@@ -154,78 +148,6 @@ csm:
           - text/x-python
           - text/plain
           - text/x-yaml
-    vendor: azure
-    azure:
-      appIdUri: "http://dev.api.cosmotech.com"
-      credentials:
-        # Deprecated - use csm.platform.azure.credentials.core.tenantId instead
-        tenantId: "credentials-tenant-id"
-        # Deprecated - use csm.platform.azure.credentials.core.clientId instead
-        clientId: "credentials-client-id"
-        # Deprecated - use csm.platform.azure.credentials.core.clientSecret instead
-        clientSecret: "credentials-secret-id"
-        # Deprecated - use csm.platform.azure.credentials.core.aadPodIdBinding instead
-        aadPodIdBinding: "phoenix-pod-identity"
-        core:
-          tenantId: "${csm.platform.azure.credentials.tenantId}"
-          clientId: "${csm.platform.azure.credentials.clientId}"
-          clientSecret: "${csm.platform.azure.credentials.clientSecret}"
-          aadPodIdBinding: "${csm.platform.azure.credentials.aadPodIdBinding}"
-        customer:
-          tenantId: null
-          clientId: null
-          clientSecret: null
-      storage:
-        baseUri: ""
-        resourceUri: ""
-        # Storage account name length should be between 3 and 24 and use numbers and lower-case letters only
-        account-name: "storageaccountname"
-        # Fill storage account access key copied from portal
-        account-key: "[storage-account-access-key]"
-        # Fill storage endpoint URL copied from portal
-        blob-endpoint: "https://${csm.platform.azure.storage.account-name}.blob.core.windows.net"
-        connection-string: "DefaultEndpointsProtocol=https;AccountName=${csm.platform.azure.storage.account-name};AccountKey=${csm.platform.azure.storage.account-key};EndpointSuffix=core.windows.net"
-      containerRegistries:
-        core: ghcr.io
-        solutions: ""
-      eventBus:
-        baseUri: ""
-        # One of 'tenant_client_credentials' or 'shared_access_policy'.
-        # Due to PROD-8071, shared_access_policy is needed when the platform is deployed in a tenant
-        # different from the core Platform one. This is applicable to managed applications
-        # provisioned via the Azure Marketplace
-        authentication:
-          strategy: tenant_client_credentials
-          sharedAccessPolicy:
-            namespace:
-              name: RootManageSharedAccessKey
-              key: null
-      dataWarehouseCluster:
-        # e.g. https://{account-name}.{location}.kusto.windows.net
-        baseUri: "adx-base-uri"
-        options:
-          # e.g. https://ingest-{account-name}.{location}.kusto.windows.net
-          ingestionUri: "adx-ingestion-uri"
-      keyVault:
-      analytics:
-        resourceUri: ""
-        instrumentationKey: ""
-        connectionString: "InstrumentationKey=${csm.platform.azure.analytics.instrumentationKey};IngestionEndpoint=https://francecentral-0.in.applicationinsights.azure.com/"
-    data-ingestion:
-      # Number of seconds to wait after a scenario run workflow end time, before
-      # starting to check ADX for data ingestion state.
-      # See https://bit.ly/3FXshzE for the rationale
-      waiting-time-before-ingestion-seconds: 15
-      # number of minutes after a scenario run workflow end time during which an ingestion failure
-      # detected is considered linked to the current scenario run
-      ingestion-observation-window-to-be-considered-a-failure-minutes: 5
-      # number of seconds to wait after the checking the scenario validation ingestion status
-      sleeping-time-before-querying-scenario-validation-status-seconds: 5
-      # number of retry to query the scenario validation status
-      max-retry-authorized: 5
-      state:
-        # the timeout in second before considering no data in probes measures and control plane is an issue
-        no-data-time-out-seconds: 60
     loki:
       # base Url of Loki where to query logs
       baseUrl: http://loki.phoenix.svc.cluster.local:3100

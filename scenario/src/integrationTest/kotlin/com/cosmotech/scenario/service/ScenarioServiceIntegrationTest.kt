@@ -1,5 +1,7 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
+@file:Suppress("DEPRECATION")
+
 package com.cosmotech.scenario.service
 
 import com.cosmotech.api.azure.adx.AzureDataExplorerClient
@@ -51,7 +53,6 @@ import com.ninjasquad.springmockk.MockkBean
 import com.ninjasquad.springmockk.SpykBean
 import com.redis.om.spring.RediSearchIndexer
 import com.redis.testcontainers.RedisStackContainer
-import com.redislabs.redisgraph.impl.api.RedisGraph
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -76,7 +77,9 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
-import redis.clients.jedis.JedisPool
+import redis.clients.jedis.HostAndPort
+import redis.clients.jedis.Protocol
+import redis.clients.jedis.UnifiedJedis
 
 @ActiveProfiles(profiles = ["scenario-test"])
 @ExtendWith(MockKExtension::class)
@@ -126,7 +129,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   lateinit var workspaceSaved: Workspace
   lateinit var scenarioSaved: Scenario
 
-  lateinit var jedisPool: JedisPool
+  lateinit var unifiedJedis: UnifiedJedis
 
   @BeforeAll
   fun beforeAll() {
@@ -136,8 +139,8 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     val context = getContext(redisStackServer)
     val containerIp =
         (context.server as RedisStackContainer).containerInfo.networkSettings.ipAddress
-    jedisPool = JedisPool(containerIp, REDIS_PORT)
-    ReflectionTestUtils.setField(datasetApiService, "csmJedisPool", jedisPool)
+    unifiedJedis = UnifiedJedis(HostAndPort(containerIp, Protocol.DEFAULT_PORT))
+    ReflectionTestUtils.setField(datasetApiService, "unifiedJedis", unifiedJedis)
   }
 
   @BeforeEach
@@ -1043,7 +1046,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   ): Dataset {
     dataset.apply {
       if (createTwingraph) {
-        RedisGraph(jedisPool).query(this.twingraphId, "MATCH (n:labelrouge) return 1")
+        unifiedJedis.graphQuery(this.twingraphId, "MATCH (n:labelrouge) return 1")
       }
       this.ingestionStatus = Dataset.IngestionStatus.SUCCESS
       this.twincacheStatus = Dataset.TwincacheStatus.FULL

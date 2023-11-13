@@ -54,11 +54,10 @@ val springWebVersion = "6.0.13"
 val springBootVersion = "3.1.5"
 
 // Implementation
-val kotlinJvmTarget = 17
+val kotlinJvmTarget = 19
 val cosmotechApiCommonVersion = "1.0.0-SNAPSHOT"
 val cosmotechApiAzureVersion = "1.0.0-SNAPSHOT"
-val azureSpringBootBomVersion = "3.14.0"
-val jedisVersion = "5.0.2"
+val jedisVersion = "4.4.6"
 val springOauthVersion = "6.1.5"
 val redisOmSpringVersion = "0.8.7"
 val kotlinCoroutinesCoreVersion = "1.7.3"
@@ -125,6 +124,13 @@ allprojects {
   apply(plugin = "project-report")
   apply(plugin = "org.owasp.dependencycheck")
 
+  java {
+    targetCompatibility = JavaVersion.VERSION_19
+    sourceCompatibility = JavaVersion.VERSION_19
+    toolchain { languageVersion.set(JavaLanguageVersion.of(kotlinJvmTarget)) }
+  }
+  configurations { all { resolutionStrategy { force("com.redis.om:redis-om-spring:0.8.7") } } }
+
   repositories {
     maven {
       name = "GitHubPackages"
@@ -183,8 +189,6 @@ subprojects {
   apply(plugin = "com.google.cloud.tools.jib")
 
   version = rootProject.scmVersion.version ?: error("Root project did not configure scmVersion!")
-
-  java { toolchain { languageVersion.set(JavaLanguageVersion.of(kotlinJvmTarget)) } }
 
   val projectDirName = projectDir.relativeTo(rootDir).name
   val openApiDefinitionFile = file("${projectDir}/src/main/openapi/${projectDirName}.yaml")
@@ -264,8 +268,8 @@ subprojects {
 
     val developmentOnly = configurations.getByName("developmentOnly")
 
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    /*    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.10")*/
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesCoreVersion")
 
     implementation(
@@ -278,7 +282,7 @@ subprojects {
     implementation("org.springframework.boot:spring-boot-starter-web") {
       exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
     }
-    implementation("org.springframework.boot:spring-boot-starter-jetty")
+    implementation("org.springframework.boot:spring-boot-starter-undertow")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     // https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api
     implementation("jakarta.validation:jakarta.validation-api:$apiValidationVersion")
@@ -291,9 +295,11 @@ subprojects {
     implementation(
         "org.springframework.security:spring-security-oauth2-resource-server:${springOauthVersion}")
     implementation("com.okta.spring:okta-spring-boot-starter:${oktaSpringBootVersion}")
-    implementation("redis.clients:jedis:${jedisVersion}")
+
     implementation("org.apache.commons:commons-csv:$commonsCsvVersion")
     implementation("com.redis.om:redis-om-spring:${redisOmSpringVersion}")
+    implementation("org.springframework.data:spring-data-redis")
+    implementation("redis.clients:jedis:${jedisVersion}")
 
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:$jUnitBomVersion"))
@@ -308,6 +314,7 @@ subprojects {
       exclude(module = "mockito-core")
     }
     integrationTestImplementation("com.ninja-squad:springmockk:$springMockkVersion")
+    // developmentOnly("org.springframework.boot:spring-boot-devtools")
       integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
@@ -315,14 +322,13 @@ subprojects {
     api("com.github.Cosmo-Tech:cosmotech-api-azure:$cosmotechApiAzureVersion")
 
     // https://mvnrepository.com/artifact/com.azure.spring/spring-cloud-azure-dependencies
-    implementation("com.azure.spring:spring-cloud-azure-dependencies:6.0.0-beta.4")
+    implementation("com.azure.spring:spring-cloud-azure-dependencies:5.7.0")
     // https://mvnrepository.com/artifact/com.azure.spring/spring-cloud-azure-starter-storage-blob
-    implementation("com.azure.spring:spring-cloud-azure-starter-storage-blob:6.0.0-beta.4")
-    implementation("com.azure.spring:spring-cloud-azure-starter-storage:6.0.0-beta.4")
+    implementation("com.azure.spring:spring-cloud-azure-starter-storage-blob:5.7.0")
+    implementation("com.azure.spring:spring-cloud-azure-starter-storage:5.7.0")
+    implementation("com.azure.spring:spring-cloud-azure-starter-actuator:5.7.0")
     // https://mvnrepository.com/artifact/com.azure/azure-storage-blob-batch
     implementation("com.azure:azure-storage-blob-batch:12.20.1")
-
-    implementation("org.springframework.data:spring-data-redis")
   }
 
   tasks.withType<KotlinCompile> {
@@ -331,12 +337,22 @@ subprojects {
     }
   }
 
+  tasks.withType<JavaCompile> {
+    val compilerArgs = options.compilerArgs
+    compilerArgs.add("-parameters")
+  }
+
   tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions {
-      languageVersion = "1.8"
-      freeCompilerArgs = listOf("-Xjsr305=strict")
+      languageVersion = "1.9"
+      freeCompilerArgs = listOf("-Xjsr305=strict", "-java-parameters")
       jvmTarget = kotlinJvmTarget.toString()
-      java { toolchain { languageVersion.set(JavaLanguageVersion.of(kotlinJvmTarget)) } }
+      javaParameters = true
+      java {
+        targetCompatibility = JavaVersion.VERSION_19
+        sourceCompatibility = JavaVersion.VERSION_19
+        toolchain { languageVersion.set(JavaLanguageVersion.of(kotlinJvmTarget)) }
+      }
     }
   }
 
@@ -487,7 +503,7 @@ subprojects {
   }
 
   configure<JibExtension> {
-    from { image = "eclipse-temurin:17-alpine" }
+    from { image = "eclipse-temurin:19-alpine" }
     to { image = "${project.group}/${project.name}:${project.version}" }
     container {
       format = OCI

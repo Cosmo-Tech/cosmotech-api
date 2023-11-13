@@ -8,7 +8,7 @@ management:
       show-details: always
       group:
         readiness:
-          include: "readinessState"
+          include: "readinessState,argo"
 
 spring:
   security:
