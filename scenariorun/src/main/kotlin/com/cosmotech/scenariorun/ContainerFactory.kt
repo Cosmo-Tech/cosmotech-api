@@ -86,6 +86,7 @@ internal const val FETCH_PATH_VAR = "CSM_FETCH_ABSOLUTE_PATH"
 private const val PARAMETERS_ORGANIZATION_VAR = "CSM_ORGANIZATION_ID"
 private const val PARAMETERS_WORKSPACE_VAR = "CSM_WORKSPACE_ID"
 private const val PARAMETERS_SCENARIO_VAR = "CSM_SCENARIO_ID"
+private const val PARAMETERS_SCENARIO_RUN_VAR = "CSM_SCENARIO_RUN_ID"
 private const val PARAMETERS_FETCH_CONTAINER_CSV_VAR = "WRITE_CSV"
 private const val PARAMETERS_FETCH_CONTAINER_JSON_VAR = "WRITE_JSON"
 private const val SEND_DATAWAREHOUSE_PARAMETERS_VAR = "CSM_SEND_DATAWAREHOUSE_PARAMETERS"
@@ -237,6 +238,7 @@ class ContainerFactory(
       workspaceId: String,
       scenarioId: String,
       workflowType: String,
+      scenarioRunId: String? = "",
       scenarioDataDownload: Boolean = false,
       scenarioDataDownloadJobId: String? = null,
   ): StartInfo {
@@ -264,6 +266,7 @@ class ContainerFactory(
                 workspace,
                 organization,
                 solution,
+                scenarioRunId!!,
                 csmSimulationId,
                 workflowType,
                 scenarioDataDownload,
@@ -347,6 +350,7 @@ class ContainerFactory(
         runSizing = nodeSizing.toContainerResourceSizing())
   }
 
+  @SuppressWarnings("LongParameterList")
   internal fun buildContainersStart(
       scenario: Scenario,
       datasets: List<Dataset>?,
@@ -354,6 +358,7 @@ class ContainerFactory(
       workspace: Workspace,
       organization: Organization,
       solution: Solution,
+      scenarioRunId: String,
       csmSimulationId: String,
       workflowType: String,
       scenarioDataDownload: Boolean = false,
@@ -390,6 +395,7 @@ class ContainerFactory(
             workspace,
             organization,
             solution,
+            scenarioRunId,
             csmSimulationId,
             scenarioDataDownload,
             scenarioDataDownloadJobId,
@@ -425,6 +431,7 @@ class ContainerFactory(
       workspace: Workspace,
       organization: Organization,
       solution: Solution,
+      scenarioRunId: String,
       csmSimulationId: String,
       scenarioDataDownload: Boolean = false,
       scenarioDataDownloadJobId: String? = null,
@@ -446,6 +453,7 @@ class ContainerFactory(
               workspace,
               scenario,
               solution,
+              scenarioRunId,
               runTemplateId,
               csmSimulationId,
               scenarioRunLabel,
@@ -462,6 +470,7 @@ class ContainerFactory(
               scenario,
               organization,
               workspace,
+              scenarioRunId,
               csmSimulationId,
               NODE_LABEL_DEFAULT,
               BASIC_SIZING))
@@ -475,6 +484,7 @@ class ContainerFactory(
                 scenario,
                 solution,
                 template,
+                scenarioRunId,
                 csmSimulationId,
                 scenarioDataDownloadJobId!!,
                 NODE_LABEL_DEFAULT,
@@ -487,6 +497,7 @@ class ContainerFactory(
                 organization,
                 workspace,
                 scenario,
+                scenarioRunId,
                 csmSimulationId,
                 solution,
                 datasets,
@@ -506,6 +517,7 @@ class ContainerFactory(
                   workspace,
                   scenario,
                   solution,
+                  scenarioRunId,
                   runTemplateId,
                   csmSimulationId,
                   NODE_LABEL_DEFAULT,
@@ -520,6 +532,7 @@ class ContainerFactory(
                   workspace,
                   scenario,
                   solution,
+                  scenarioRunId,
                   runTemplateId,
                   csmSimulationId,
                   NODE_LABEL_DEFAULT,
@@ -534,6 +547,7 @@ class ContainerFactory(
                 template,
                 organization,
                 scenario,
+                scenarioRunId,
                 csmSimulationId,
                 NODE_LABEL_DEFAULT,
                 BASIC_SIZING))
@@ -546,6 +560,7 @@ class ContainerFactory(
                   workspace,
                   scenario,
                   solution,
+                  scenarioRunId,
                   runTemplateId,
                   csmSimulationId,
                   NODE_LABEL_DEFAULT,
@@ -561,6 +576,7 @@ class ContainerFactory(
                   workspace,
                   scenario,
                   solution,
+                  scenarioRunId,
                   runTemplateId,
                   csmSimulationId,
                   scenarioRunLabel,
@@ -576,6 +592,7 @@ class ContainerFactory(
                   workspace,
                   scenario,
                   solution,
+                  scenarioRunId,
                   runTemplateId,
                   csmSimulationId,
                   NODE_LABEL_DEFAULT,
@@ -596,6 +613,7 @@ class ContainerFactory(
       workspace: Workspace,
       scenario: Scenario,
       solution: Solution,
+      scenarioRunId: String,
       runTemplateId: String,
       csmSimulationId: String,
       nodeSizingLabel: String,
@@ -607,6 +625,7 @@ class ContainerFactory(
               workspace,
               scenario,
               solution,
+              scenarioRunId,
               runTemplateId,
               csmSimulationId,
               nodeSizingLabel,
@@ -617,6 +636,7 @@ class ContainerFactory(
       workspace: Workspace,
       scenario: Scenario,
       solution: Solution,
+      scenarioRunId: String,
       runTemplateId: String,
       csmSimulationId: String,
       nodeSizingLabel: String,
@@ -635,6 +655,7 @@ class ContainerFactory(
             organization.id ?: "",
             workspace.id ?: "",
             scenario.id ?: "",
+            scenarioRunId,
             workspace.key)
     envVars[RUN_TEMPLATE_ID_VAR] = runTemplateId
     envVars[CONTAINER_MODE_VAR] = CSM_ORC_ORCHESTRATOR_VALUE
@@ -664,6 +685,7 @@ class ContainerFactory(
       workspace: Workspace,
       scenario: Scenario,
       solution: Solution,
+      scenarioRunId: String,
       runTemplateId: String,
       csmSimulationId: String,
       nodeSizingLabel: String,
@@ -675,12 +697,14 @@ class ContainerFactory(
               workspace,
               scenario,
               solution,
+              scenarioRunId,
               runTemplateId,
               csmSimulationId,
               currentDependencies,
               nodeSizingLabel,
               customSizing))
 
+  @SuppressWarnings("LongParameterList")
   private fun buildScenarioDataDownloadContainersPipeline(
       dependencies: MutableList<String>?,
       organization: Organization,
@@ -688,6 +712,7 @@ class ContainerFactory(
       scenario: Scenario,
       solution: Solution,
       template: RunTemplate,
+      scenarioRunId: String,
       csmSimulationId: String,
       scenarioDataDownloadJobId: String,
       nodeSizingLabel: String,
@@ -701,6 +726,7 @@ class ContainerFactory(
               organization,
               workspace,
               scenario.id ?: "",
+              scenarioRunId,
               solution,
               runTemplateId,
               "${RunTemplateHandlerId.scenariodata_transform}Container".sanitizeForKubernetes(),
@@ -721,6 +747,7 @@ class ContainerFactory(
             workspace.id!!,
             workspace.key,
             scenario.id!!,
+            scenarioRunId,
             csmSimulationId,
             scenarioDataDownloadJobId,
             nodeSizingLabel,
@@ -734,6 +761,7 @@ class ContainerFactory(
       workspace: Workspace,
       scenario: Scenario,
       solution: Solution,
+      scenarioRunId: String,
       runTemplateId: String,
       csmSimulationId: String,
       nodeSizingLabel: String,
@@ -745,6 +773,7 @@ class ContainerFactory(
               workspace,
               scenario,
               solution,
+              scenarioRunId,
               runTemplateId,
               csmSimulationId,
               currentDependencies,
@@ -757,6 +786,7 @@ class ContainerFactory(
       workspace: Workspace,
       scenario: Scenario,
       solution: Solution,
+      scenarioRunId: String,
       runTemplateId: String,
       csmSimulationId: String,
       nodeSizingLabel: String,
@@ -768,6 +798,7 @@ class ContainerFactory(
               workspace,
               scenario,
               solution,
+              scenarioRunId,
               runTemplateId,
               csmSimulationId,
               currentDependencies,
@@ -780,6 +811,7 @@ class ContainerFactory(
       template: RunTemplate,
       organization: Organization,
       scenario: Scenario,
+      scenarioRunId: String,
       csmSimulationId: String,
       nodeSizingLabel: String,
       customSizing: Sizing
@@ -796,6 +828,7 @@ class ContainerFactory(
                 organization.id ?: "",
                 workspace,
                 scenario.id ?: "",
+                scenarioRunId,
                 template,
                 csmSimulationId,
                 currentDependencies,
@@ -810,6 +843,7 @@ class ContainerFactory(
       workspace: Workspace,
       scenario: Scenario,
       solution: Solution,
+      scenarioRunId: String,
       runTemplateId: String,
       csmSimulationId: String,
       nodeSizingLabel: String,
@@ -821,6 +855,7 @@ class ContainerFactory(
               workspace,
               scenario,
               solution,
+              scenarioRunId,
               runTemplateId,
               csmSimulationId,
               currentDependencies,
@@ -833,6 +868,7 @@ class ContainerFactory(
       workspace: Workspace,
       scenario: Scenario,
       solution: Solution,
+      scenarioRunId: String,
       runTemplateId: String,
       csmSimulationId: String,
       nodeSizingLabel: String,
@@ -844,6 +880,7 @@ class ContainerFactory(
               workspace,
               scenario,
               solution,
+              scenarioRunId,
               runTemplateId,
               csmSimulationId,
               currentDependencies,
@@ -856,6 +893,7 @@ class ContainerFactory(
       workspaceId: String,
       workspaceKey: String,
       scenarioId: String,
+      scenarioRunId: String,
       csmSimulationId: String,
       scenarioDataDownloadJobId: String,
       nodeSizingLabel: String,
@@ -868,6 +906,7 @@ class ContainerFactory(
             organizationId,
             workspaceId,
             scenarioId,
+            scenarioRunId,
             workspaceKey)
     envVars[SCENARIO_DATA_ABSOLUTE_PATH_ENV_VAR] = DATASET_PATH
     envVars[SCENARIO_DATA_UPLOAD_LOG_LEVEL_ENV_VAR] = if (logger.isDebugEnabled) "debug" else "info"
@@ -906,6 +945,7 @@ class ContainerFactory(
       organization: Organization,
       workspace: Workspace,
       scenario: Scenario,
+      scenarioRunId: String,
       csmSimulationId: String,
       solution: Solution,
       datasets: List<Dataset>?,
@@ -920,6 +960,7 @@ class ContainerFactory(
               organization.id ?: "",
               workspace.id ?: "",
               scenario.id ?: "",
+              scenarioRunId,
               workspace.key,
               csmSimulationId,
               template.parametersJson,
@@ -935,6 +976,7 @@ class ContainerFactory(
               connectors,
               organization.id ?: "",
               workspace.id ?: "",
+              scenarioRunId,
               workspace.key,
               csmSimulationId,
               nodeSizingLabel,
@@ -945,6 +987,7 @@ class ContainerFactory(
     return containers.toList()
   }
 
+  @SuppressWarnings("LongParameterList")
   private fun buildFetchDatasetsContainersPipeline(
       currentDependencies: MutableList<String>?,
       template: RunTemplate,
@@ -953,6 +996,7 @@ class ContainerFactory(
       scenario: Scenario,
       organization: Organization,
       workspace: Workspace,
+      scenarioRunId: String,
       csmSimulationId: String,
       nodeSizingLabel: String,
       customSizing: Sizing
@@ -978,6 +1022,7 @@ class ContainerFactory(
                 organization.id ?: "",
                 workspace.id ?: "",
                 scenario.id ?: "",
+                scenarioRunId,
                 workspace.key,
                 csmSimulationId,
                 nodeSizingLabel,
@@ -1004,6 +1049,7 @@ class ContainerFactory(
       organizationId: String,
       workspaceId: String,
       scenarioId: String,
+      scenarioRunId: String,
       workspaceKey: String,
       csmSimulationId: String,
       nodeSizingLabel: String,
@@ -1045,6 +1091,7 @@ class ContainerFactory(
                 organizationId,
                 workspaceId,
                 scenarioId,
+                scenarioRunId,
                 workspaceKey,
                 csmSimulationId),
         runArgs =
@@ -1054,6 +1101,7 @@ class ContainerFactory(
         runSizing = customSizing.toContainerResourceSizing())
   }
 
+  @SuppressWarnings("LongParameterList")
   private fun buildScenarioParametersDatasetFetchContainers(
       scenario: Scenario,
       solution: Solution,
@@ -1061,6 +1109,7 @@ class ContainerFactory(
       connectors: List<Connector>?,
       organizationId: String,
       workspaceId: String,
+      scenarioRunId: String,
       workspaceKey: String,
       csmSimulationId: String,
       nodeSizingLabel: String,
@@ -1098,6 +1147,7 @@ class ContainerFactory(
                     organizationId,
                     workspaceId,
                     scenario.id ?: "",
+                    scenarioRunId,
                     workspaceKey,
                     csmSimulationId,
                     nodeSizingLabel,
@@ -1115,6 +1165,7 @@ class ContainerFactory(
       organizationId: String,
       workspaceId: String,
       scenarioId: String,
+      scenarioRunId: String,
       workspaceKey: String,
       csmSimulationId: String,
       jsonFile: Boolean? = null,
@@ -1128,6 +1179,7 @@ class ContainerFactory(
             organizationId,
             workspaceId,
             scenarioId,
+            scenarioRunId,
             workspaceKey)
     envVars[FETCH_PATH_VAR] = PARAMETERS_PATH
     if (jsonFile != null && jsonFile) {
@@ -1150,6 +1202,7 @@ class ContainerFactory(
       organizationId: String,
       workspace: Workspace,
       scenarioId: String,
+      scenarioRunId: String,
       runTemplate: RunTemplate,
       csmSimulationId: String,
       dependencies: List<String>? = null,
@@ -1163,6 +1216,7 @@ class ContainerFactory(
             organizationId,
             workspace.id ?: "",
             scenarioId,
+            scenarioRunId,
             workspace.key)
     val sendParameters =
         getSendOptionValue(
@@ -1189,6 +1243,7 @@ class ContainerFactory(
       workspace: Workspace,
       scenario: Scenario,
       solution: Solution,
+      scenarioRunId: String,
       runTemplateId: String,
       csmSimulationId: String,
       dependencies: List<String>? = null,
@@ -1199,6 +1254,7 @@ class ContainerFactory(
         organization,
         workspace,
         scenario.id ?: "",
+        scenarioRunId,
         solution,
         runTemplateId,
         CONTAINER_APPLY_PARAMETERS,
@@ -1214,6 +1270,7 @@ class ContainerFactory(
       workspace: Workspace,
       scenario: Scenario,
       solution: Solution,
+      scenarioRunId: String,
       runTemplateId: String,
       csmSimulationId: String,
       dependencies: List<String>? = null,
@@ -1224,6 +1281,7 @@ class ContainerFactory(
         organization,
         workspace,
         scenario.id ?: "",
+        scenarioRunId,
         solution,
         runTemplateId,
         CONTAINER_VALIDATE_DATA,
@@ -1239,6 +1297,7 @@ class ContainerFactory(
       workspace: Workspace,
       scenario: Scenario,
       solution: Solution,
+      scenarioRunId: String,
       runTemplateId: String,
       csmSimulationId: String,
       dependencies: List<String>? = null,
@@ -1249,6 +1308,7 @@ class ContainerFactory(
         organization,
         workspace,
         scenario.id ?: "",
+        scenarioRunId,
         solution,
         runTemplateId,
         CONTAINER_PRERUN,
@@ -1264,6 +1324,7 @@ class ContainerFactory(
       workspace: Workspace,
       scenario: Scenario,
       solution: Solution,
+      scenarioRunId: String,
       runTemplateId: String,
       csmSimulationId: String,
       dependencies: List<String>? = null,
@@ -1274,6 +1335,7 @@ class ContainerFactory(
         organization,
         workspace,
         scenario.id ?: "",
+        scenarioRunId,
         solution,
         runTemplateId,
         CONTAINER_RUN,
@@ -1289,6 +1351,7 @@ class ContainerFactory(
       workspace: Workspace,
       scenario: Scenario,
       solution: Solution,
+      scenarioRunId: String,
       runTemplateId: String,
       csmSimulationId: String,
       dependencies: List<String>? = null,
@@ -1299,6 +1362,7 @@ class ContainerFactory(
         organization,
         workspace,
         scenario.id ?: "",
+        scenarioRunId,
         solution,
         runTemplateId,
         CONTAINER_POSTRUN,
@@ -1323,6 +1387,7 @@ class ContainerFactory(
       organization: Organization,
       workspace: Workspace,
       scenarioId: String,
+      scenarioRunId: String,
       solution: Solution,
       runTemplateId: String,
       name: String,
@@ -1346,7 +1411,10 @@ class ContainerFactory(
             organization.id ?: "",
             workspace.id ?: "",
             scenarioId,
-            workspace.key)
+            scenarioRunId,
+            workspace.key,
+        )
+    envVars[RUN_TEMPLATE_ID_VAR] = runTemplateId
     envVars[RUN_TEMPLATE_ID_VAR] = runTemplateId
     envVars[CONTAINER_MODE_VAR] = step.mode
     envVars[CONTAINER_ORCHESTRATOR_LEGACY_VAR] = "true"
@@ -1526,6 +1594,7 @@ internal fun getCommonEnvVars(
     organizationId: String,
     workspaceId: String,
     scenarioId: String,
+    scenarioRunId: String,
     workspaceKey: String,
     azureManagedIdentity: Boolean? = null,
     azureAuthenticationWithCustomerAppRegistration: Boolean? = null,
@@ -1548,7 +1617,7 @@ internal fun getCommonEnvVars(
           PARAMETERS_ORGANIZATION_VAR to organizationId,
           PARAMETERS_WORKSPACE_VAR to workspaceId,
           PARAMETERS_SCENARIO_VAR to scenarioId,
-      )
+          PARAMETERS_SCENARIO_RUN_VAR to scenarioRunId)
   return (minimalEnvVars + commonEnvVars).toMutableMap()
 }
 

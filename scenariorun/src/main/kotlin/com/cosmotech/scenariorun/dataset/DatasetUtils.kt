@@ -118,6 +118,7 @@ internal fun addDatasetAndConnector(
   }
 }
 
+@SuppressWarnings("LongParameterList")
 internal fun getDatasetEnvVars(
     csmPlatformProperties: CsmPlatformProperties,
     dataset: Dataset,
@@ -127,6 +128,7 @@ internal fun getDatasetEnvVars(
     organizationId: String,
     workspaceId: String,
     scenarioId: String,
+    scenarioRunId: String,
     workspaceKey: String,
     csmSimulationId: String
 ): Map<String, String> {
@@ -137,6 +139,7 @@ internal fun getDatasetEnvVars(
           organizationId,
           workspaceId,
           scenarioId,
+          scenarioRunId,
           workspaceKey,
           azureManagedIdentity = connector.azureManagedIdentity,
           azureAuthenticationWithCustomerAppRegistration =
