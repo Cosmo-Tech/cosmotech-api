@@ -266,15 +266,9 @@ subprojects {
     // See https://github.com/detekt/detekt/issues/4287
     detekt("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.9.0")
 
-    val developmentOnly = configurations.getByName("developmentOnly")
-
-    /*    implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.10")*/
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesCoreVersion")
 
     implementation(
-        platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES))
-    developmentOnly(
         platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES))
 
     implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -282,7 +276,7 @@ subprojects {
     implementation("org.springframework.boot:spring-boot-starter-web") {
       exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
     }
-    implementation("org.springframework.boot:spring-boot-starter-undertow")
+    implementation("org.springframework.boot:spring-boot-starter-jetty")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     // https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api
     implementation("jakarta.validation:jakarta.validation-api:$apiValidationVersion")
@@ -329,6 +323,13 @@ subprojects {
     implementation("com.azure.spring:spring-cloud-azure-starter-actuator:5.7.0")
     // https://mvnrepository.com/artifact/com.azure/azure-storage-blob-batch
     implementation("com.azure:azure-storage-blob-batch:12.20.1")
+
+    api("jakarta.servlet:jakarta.servlet-api") {
+      version {
+        strictly("5.0.0")
+        because("Jetty 11 does not support Servlet 6 yet")
+      }
+    }
   }
 
   tasks.withType<KotlinCompile> {
