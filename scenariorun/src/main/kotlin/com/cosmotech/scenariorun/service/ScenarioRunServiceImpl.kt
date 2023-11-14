@@ -489,15 +489,18 @@ class ScenarioRunServiceImpl(
   ): ScenarioRun {
     val scenario = scenarioApiService.findScenarioById(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_LAUNCH, scenarioPermissions)
+
+    val scenarioRunId = idGenerator.generate("scenariorun", prependPrefix = "sr-")
     val startInfo =
         containerFactory.getStartInfo(
-            organizationId, workspaceId, scenarioId, WORKFLOW_TYPE_SCENARIO_RUN)
+            organizationId, workspaceId, scenarioId, WORKFLOW_TYPE_SCENARIO_RUN, scenarioRunId)
     logger.debug(startInfo.toString())
     val scenarioRunRequest =
         workflowService.launchScenarioRun(
             startInfo.startContainers, startInfo.runTemplate.executionTimeout)
     val scenarioRun =
         this.dbCreateScenarioRun(
+            scenarioRunId,
             scenarioRunRequest,
             organizationId,
             workspaceId,
@@ -601,6 +604,7 @@ class ScenarioRunServiceImpl(
     csmRbac.verify(organization.getRbac(), PERMISSION_CREATE_CHILDREN)
     val scenarioRunRequest = workflowService.launchScenarioRun(scenarioRunStartContainers, null)
     return this.dbCreateScenarioRun(
+            scenarioRunId = null,
             scenarioRunRequest,
             organizationId,
             "None",
@@ -615,7 +619,9 @@ class ScenarioRunServiceImpl(
         .withoutSensitiveData()!!
   }
 
+  @SuppressWarnings("LongParameterList")
   private fun dbCreateScenarioRun(
+      scenarioRunId: String?,
       scenarioRunRequest: ScenarioRun,
       organizationId: String,
       workspaceId: String,
@@ -636,9 +642,10 @@ class ScenarioRunServiceImpl(
             workspace?.sendInputToDataWarehouse, runTemplate?.sendDatasetsToDataWarehouse)
     // Only send containers if admin or special route
     val now = Instant.now().toString()
+
     val scenarioRun =
         scenarioRunRequest.copy(
-            id = idGenerator.generate("scenariorun", prependPrefix = "sr-"),
+            id = scenarioRunId ?: idGenerator.generate("scenariorun", prependPrefix = "sr-"),
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
             csmSimulationRun = csmSimulationId,
             organizationId = organizationId,
