@@ -36,7 +36,7 @@ plugins {
   id("com.github.jk1.dependency-license-report") version "2.5"
   id("org.jetbrains.kotlinx.kover") version "0.7.4"
   id("io.gitlab.arturbosch.detekt") version "1.23.1"
-  id("org.openapi.generator") version "7.0.1" apply false
+  id("org.openapi.generator") version "7.1.0" apply false
   id("com.google.cloud.tools.jib") version "3.4.0" apply false
 }
 
@@ -62,7 +62,7 @@ val springOauthVersion = "6.1.5"
 val redisOmSpringVersion = "0.8.7"
 val kotlinCoroutinesCoreVersion = "1.7.3"
 val oktaSpringBootVersion = "3.0.5"
-val springDocVersion = "1.7.0"
+val springDocVersion = "2.2.0"
 val swaggerParserVersion = "2.1.18"
 val commonsCsvVersion = "1.10.0"
 val apiValidationVersion = "3.0.2"
@@ -281,8 +281,7 @@ subprojects {
     // https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api
     implementation("jakarta.validation:jakarta.validation-api:$apiValidationVersion")
 
-    implementation("org.springdoc:springdoc-openapi-ui:${springDocVersion}")
-    implementation("org.springdoc:springdoc-openapi-kotlin:${springDocVersion}")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:${springDocVersion}")
     implementation("io.swagger.parser.v3:swagger-parser-v3:${swaggerParserVersion}")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.security:spring-security-oauth2-jose:${springOauthVersion}")
@@ -346,9 +345,8 @@ subprojects {
   tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions {
       languageVersion = "1.9"
-      freeCompilerArgs = listOf("-Xjsr305=strict", "-java-parameters")
+      freeCompilerArgs = listOf("-Xjsr305=strict")
       jvmTarget = kotlinJvmTarget.toString()
-      javaParameters = true
       java {
         targetCompatibility = JavaVersion.VERSION_19
         sourceCompatibility = JavaVersion.VERSION_19
