@@ -310,8 +310,8 @@ class DatasetServiceImpl(
     // This call verify by itself that we have the read authorization in the dataset
     val dataset = findDatasetById(organizationId, datasetId)
     return when (dataset.sourceType) {
-      null,
-      DatasetSourceType.None -> Dataset.Status.DRAFT.value
+      null -> Dataset.Status.DRAFT.value
+      DatasetSourceType.None -> dataset.status!!.value
       DatasetSourceType.File -> {
         if (dataset.status == Dataset.Status.DRAFT) {
           return Dataset.Status.DRAFT.value
