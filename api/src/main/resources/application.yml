@@ -8,7 +8,7 @@ spring:
   data:
     redis:
       host: ${csm.platform.twincache.host}
-      port: 6379
+      port: ${csm.platform.twincache.port}
       password: ${csm.platform.twincache.password}
       username: ${csm.platform.twincache.username}
       timeout: 60000
