@@ -16,6 +16,7 @@ import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
+import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
@@ -207,11 +208,18 @@ internal class SolutionServiceImpl(
   override fun createSolution(organizationId: String, solution: Solution): Solution {
     val organization = organizationApiService.findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_CREATE_CHILDREN)
+
+    var solutionSecurity = solution.security
+    if (solutionSecurity == null) {
+      solutionSecurity = initSecurity(getCurrentAccountIdentifier(this.csmPlatformProperties))
+    }
+
     return solutionRepository.save(
         solution.copy(
             id = idGenerator.generate("solution", prependPrefix = "sol-"),
             organizationId = organizationId,
-            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties)))
+            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
+            security = solutionSecurity))
   }
 
   override fun deleteSolution(organizationId: String, solutionId: String) {
@@ -494,6 +502,12 @@ fun Solution.getRbac(): RbacSecurity {
       this.security?.default ?: ROLE_NONE,
       this.security?.accessControlList?.map { RbacAccessControl(it.id, it.role) }?.toMutableList()
           ?: mutableListOf())
+}
+
+private fun initSecurity(userId: String): SolutionSecurity {
+  return SolutionSecurity(
+      default = ROLE_NONE,
+      accessControlList = mutableListOf(SolutionAccessControl(userId, ROLE_ADMIN)))
 }
 
 fun Solution.setRbac(rbacSecurity: RbacSecurity) {
