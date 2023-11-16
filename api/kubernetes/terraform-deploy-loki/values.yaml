@@ -1,0 +1,49 @@
+loki:
+  persistence:
+    enabled: true
+    accessModes:
+    - ReadWriteOnce
+    size: "${LOKI_PERSISTENCE_MEMORY}"
+  config:
+    auth_enabled: true
+    table_manager:
+      retention_deletes_enabled: true
+      retention_period: "${LOKI_RETENTION_PERIOD}"
+grafana:
+  enabled: true
+  persistence:
+    type: pvc
+    enabled: true
+    accessModes:
+      - ReadWriteOnce
+    size: "${LOKI_PERSISTENCE_MEMORY}"
+promtail:
+  config:
+    clients:
+      - url: http://loki.${MONITORING_NAMESPACE}:3100/loki/api/v1/push
+    snippets:
+      pipelineStages:
+      - cri: {}
+      - match:
+          selector: '{namespace="${NAMESPACE}"}'
+          stages:
+            - json:
+                expressions:
+                  output: log
+            - json:
+                source: output
+                expressions:
+                  tenant_id: ${NAMESPACE}
+                  message: message
+                  level: log.level
+            - labels:
+                tenant_id:
+                message:
+                namespace:
+            - tenant:
+                value: ${NAMESPACE}
+      - output:
+          source: message
+  tolerations:
+    - effect: NoSchedule
+      operator: Exists
