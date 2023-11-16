@@ -60,6 +60,8 @@ import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeAll
@@ -518,6 +520,21 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
             organizationSaved.id!!, datasetSaved.id!!, DatasetRole(ROLE_VIEWER))
     datasetSaved = datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
     assertEquals(datasetSaved.security!!, datasetDefaultSecurity)
+  }
+
+  @Test
+  fun `test uploadTwingraph fail set dataset status to error`() {
+    organizationSaved = organizationApiService.registerOrganization(organization)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    val file = this::class.java.getResource("/brokenGraph.zip")?.file
+    val resource = ByteArrayResource(File(file!!).readBytes())
+    runBlocking {
+      datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
+      delay(1000L)
+    }
+    datasetSaved = datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+
+    assertEquals(Dataset.Status.ERROR, datasetSaved.status)
   }
 
   @TestFactory
@@ -1740,13 +1757,18 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
         ioTypes = listOf(),
         id = "c-AbCdEf123")
   }
-  fun makeDataset(id: String, name: String): Dataset {
+  fun makeDataset(
+      id: String,
+      name: String,
+      sourceType: DatasetSourceType = DatasetSourceType.File
+  ): Dataset {
     return Dataset(
         id = id,
         name = name,
         main = true,
         connector = DatasetConnector(id = connectorSaved.id, name = connectorSaved.name),
         tags = mutableListOf("test", "data"),
+        sourceType = sourceType,
         security =
             DatasetSecurity(
                 default = ROLE_NONE,

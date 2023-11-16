@@ -98,7 +98,7 @@ const val TWINCACHE_CONNECTOR = "TwincacheConnector"
 const val TWINCACHE_NAME = "TWIN_CACHE_NAME"
 
 @Service
-@Suppress("TooManyFunctions", "LongParameterList", "LargeClass")
+@Suppress("TooManyFunctions", "LongParameterList", "LargeClass", "ReturnCount")
 class DatasetServiceImpl(
     private val connectorService: ConnectorApiService,
     private val organizationService: OrganizationApiService,
@@ -284,31 +284,31 @@ class DatasetServiceImpl(
     datasetRepository.save(dataset.apply { status = Dataset.Status.PENDING })
 
     GlobalScope.launch(SecurityCoroutineContext()) {
-        try {
-      val queryBuffer = QueryBuffer(csmJedisPool.resource, dataset.twingraphId!!)
-      unzip(body.inputStream, listOf(NODES_ZIP_FOLDER, EDGES_ZIP_FOLDER), "csv")
-          .sortedByDescending { it.prefix } // Nodes first
-          .forEach { node ->
-            readCSV(node.content.inputStream()) {
-              if (node.prefix == NODES_ZIP_FOLDER) {
-                val id: String =
-                    it["id"] ?: throw CsmResourceNotFoundException("Node property 'id' not found")
-                queryBuffer.addNode(node.filename, id, it.minus("id"))
-              } else {
-                val sourceKey = it.keys.elementAt(0)
-                val targetKey = it.keys.elementAt(1)
-                val source = it[sourceKey].toString().trim()
-                val target = it[targetKey].toString().trim()
-                val properties = it.minus(sourceKey).minus(targetKey)
-                queryBuffer.addEdge(node.filename, source, target, properties)
+      try {
+        val queryBuffer = QueryBuffer(csmJedisPool.resource, dataset.twingraphId!!)
+        unzip(body.inputStream, listOf(NODES_ZIP_FOLDER, EDGES_ZIP_FOLDER), "csv")
+            .sortedByDescending { it.prefix } // Nodes first
+            .forEach { node ->
+              readCSV(node.content.inputStream()) {
+                if (node.prefix == NODES_ZIP_FOLDER) {
+                  val id: String =
+                      it["id"] ?: throw CsmResourceNotFoundException("Node property 'id' not found")
+                  queryBuffer.addNode(node.filename, id, it.minus("id"))
+                } else {
+                  val sourceKey = it.keys.elementAt(0)
+                  val targetKey = it.keys.elementAt(1)
+                  val source = it[sourceKey].toString().trim()
+                  val target = it[targetKey].toString().trim()
+                  val properties = it.minus(sourceKey).minus(targetKey)
+                  queryBuffer.addEdge(node.filename, source, target, properties)
+                }
               }
             }
-          }
-            queryBuffer.send()
-            datasetRepository.save(dataset.apply { status = Dataset.Status.READY })
-        }catch (e:Exception){
-            datasetRepository.save(dataset.apply { status = Dataset.Status.ERROR })
-        }
+        queryBuffer.send()
+        datasetRepository.save(dataset.apply { status = Dataset.Status.READY })
+      } catch (e: Exception) {
+        datasetRepository.save(dataset.apply { status = Dataset.Status.ERROR })
+      }
     }
   }
 
@@ -328,14 +328,14 @@ class DatasetServiceImpl(
         csmJedisPool.resource.use { jedis ->
           if (!jedis.exists(dataset.twingraphId!!)) {
             Dataset.Status.PENDING.value
-          } else if (dataset.status == Dataset.Status.ERROR){
+          } else if (dataset.status == Dataset.Status.ERROR) {
             return Dataset.Status.ERROR.value
-          }else{
-              dataset
-                  .takeIf { it.status == Dataset.Status.PENDING }
-                  ?.apply { datasetRepository.save(this.apply { status = Dataset.Status.READY }) }
+          } else {
+            dataset
+                .takeIf { it.status == Dataset.Status.PENDING }
+                ?.apply { datasetRepository.save(this.apply { status = Dataset.Status.READY }) }
             Dataset.Status.READY.value
-        }
+          }
         }
       }
       DatasetSourceType.ADT,
