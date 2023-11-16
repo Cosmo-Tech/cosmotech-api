@@ -17,6 +17,7 @@ import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
+import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
@@ -29,6 +30,7 @@ import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.formatQuery
+import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.unzip
@@ -62,8 +64,6 @@ import com.cosmotech.dataset.utils.toCsmGraphEntity
 import com.cosmotech.dataset.utils.toJsonString
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.service.getRbac
-import com.cosmotech.workspace.service.getRbac
-import com.cosmotech.workspace.service.setRbac
 import com.redislabs.redisgraph.Record
 import com.redislabs.redisgraph.RedisGraph
 import com.redislabs.redisgraph.ResultSet
@@ -172,6 +172,10 @@ class DatasetServiceImpl(
     val existingConnector = connectorService.findConnectorById(dataset.connector!!.id!!)
     logger.debug("Found connector: {}", existingConnector)
 
+    var datasetSecurity = dataset.security
+    if (datasetSecurity == null) {
+      datasetSecurity = initSecurity(getCurrentAccountIdentifier(this.csmPlatformProperties))
+    }
     val datasetCopy =
         dataset.copy(
             id = idGenerator.generate("dataset"),
@@ -182,7 +186,8 @@ class DatasetServiceImpl(
             creationDate = Instant.now().toEpochMilli(),
             status = Dataset.Status.DRAFT,
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
-            organizationId = organizationId)
+            organizationId = organizationId,
+            security = datasetSecurity)
     datasetCopy.connector!!.apply {
       name = existingConnector.name
       version = existingConnector.version
@@ -938,6 +943,12 @@ class DatasetServiceImpl(
       }
     }
   }
+}
+
+private fun initSecurity(userId: String): DatasetSecurity {
+  return DatasetSecurity(
+      default = ROLE_NONE,
+      accessControlList = mutableListOf(DatasetAccessControl(userId, ROLE_ADMIN)))
 }
 
 fun Dataset.getRbac(): RbacSecurity {
