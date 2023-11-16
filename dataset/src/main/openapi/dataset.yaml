@@ -1685,6 +1685,13 @@ components:
         compatibility:
           - solutionKey: Brewery Solution
             minimumVersion: "1.0.0"
+        security:
+          default: none
+          accessControlList:
+            - id: "jane.doe@cosmotech.com"
+              role: "editor"
+            - id: "john.doe@cosmotech.com"
+              role: "viewer"
     TwoDatasets:
       summary: Two Datasets example
       description: Two ADT Datasets example

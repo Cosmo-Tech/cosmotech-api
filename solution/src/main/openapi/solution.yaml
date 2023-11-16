@@ -1103,6 +1103,13 @@ components:
             deleteHistoricalData:
               enable: true
               pollFrequency: 10000
+        security:
+          default: none
+          accessControlList:
+            - id: "jane.doe@cosmotech.com"
+              role: "editor"
+            - id: "john.doe@cosmotech.com"
+              role: "viewer"
     BreweryUpdate:
       summary: Brewery Solution update
       description: Brewery Solution update example
