@@ -12,6 +12,6 @@ csm:
   platform:
     authorization:
       principal-jwt-claim: "email"
-      applicationIdJwtClaim: "cid"
-      mailJwtClaim: "sub"
-      rolesJwtClaim: "groups"
+      application-id-jwt-claim: "cid"
+      mail-jwt-claim: "sub"
+      roles-jwt-claim: "groups"
