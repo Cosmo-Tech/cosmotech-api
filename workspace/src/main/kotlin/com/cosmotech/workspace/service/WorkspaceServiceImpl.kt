@@ -131,6 +131,15 @@ internal class WorkspaceServiceImpl(
     var workspaceSecurity = workspace.security
     if (workspaceSecurity == null) {
       workspaceSecurity = initSecurity(getCurrentAccountIdentifier(this.csmPlatformProperties))
+    } else {
+      val accessControls = mutableListOf<String>()
+      workspaceSecurity.accessControlList.forEach {
+        if (!accessControls.contains(it.id)) {
+          accessControls.add(it.id)
+        } else {
+          throw IllegalArgumentException("User $it is referenced multiple times in the security")
+        }
+      }
     }
 
     return workspaceRepository.save(
@@ -195,6 +204,14 @@ internal class WorkspaceServiceImpl(
     if (workspace.security != null && existingWorkspace.security == null) {
       if (csmRbac.isAdmin(workspace.getRbac(), getCommonRolesDefinition())) {
         existingWorkspace.security = workspace.security
+        val accessControls = mutableListOf<String>()
+        existingWorkspace.security!!.accessControlList.forEach {
+          if (!accessControls.contains(it.id)) {
+            accessControls.add(it.id)
+          } else {
+            throw IllegalArgumentException("User $it is referenced multiple times in the security")
+          }
+        }
         hasChanged = true
       } else {
         logger.warn(
@@ -416,6 +433,12 @@ internal class WorkspaceServiceImpl(
     csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE_SECURITY)
     // This call verify by itself that we have the read authorization in the organization
     var organization = organizationService.findOrganizationById(organizationId)
+
+    val users = getWorkspaceSecurityUsers(organizationId, workspaceId)
+    if (users.contains(workspaceAccessControl.id)) {
+      throw IllegalArgumentException("User is already in this Workspace security")
+    }
+
     val rbacSecurity =
         csmRbac.addUserRole(
             organization.getRbac(),

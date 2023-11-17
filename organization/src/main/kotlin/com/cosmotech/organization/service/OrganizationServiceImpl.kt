@@ -91,6 +91,15 @@ class OrganizationServiceImpl(
     if (organizationSecurity == null) {
       val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
       organizationSecurity = initSecurity(currentUser)
+    } else {
+      val accessControls = mutableListOf<String>()
+      organizationSecurity.accessControlList.forEach {
+        if (!accessControls.contains(it.id)) {
+          accessControls.add(it.id)
+        } else {
+          throw IllegalArgumentException("User $it is referenced multiple times in the security")
+        }
+      }
     }
 
     return organizationRepository.save(
@@ -126,6 +135,14 @@ class OrganizationServiceImpl(
     if (organization.security != null && existingOrganization.security == null) {
       if (csmRbac.isAdmin(organization.getRbac(), getCommonRolesDefinition())) {
         existingOrganization.security = organization.security
+        val accessControls = mutableListOf<String>()
+        existingOrganization.security!!.accessControlList.forEach {
+          if (!accessControls.contains(it.id)) {
+            accessControls.add(it.id)
+          } else {
+            throw IllegalArgumentException("User $it is referenced multiple times in the security")
+          }
+        }
         hasChanged = true
       }
     }
@@ -214,6 +231,12 @@ class OrganizationServiceImpl(
   ): OrganizationAccessControl {
     val organization =
         checkPermissionAndReturnOrganization(organizationId, PERMISSION_WRITE_SECURITY)
+
+    val users = getOrganizationSecurityUsers(organizationId)
+    if (users.contains(organizationAccessControl.id)) {
+      throw IllegalArgumentException("User is already in this Organization security")
+    }
+
     val rbacSecurity =
         csmRbac.setUserRole(
             organization.getRbac(), organizationAccessControl.id, organizationAccessControl.role)

@@ -18,6 +18,7 @@ import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
+import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
@@ -212,6 +213,15 @@ internal class SolutionServiceImpl(
     var solutionSecurity = solution.security
     if (solutionSecurity == null) {
       solutionSecurity = initSecurity(getCurrentAccountIdentifier(this.csmPlatformProperties))
+    } else {
+      val accessControls = mutableListOf<String>()
+      solutionSecurity.accessControlList.forEach {
+        if (!accessControls.contains(it.id)) {
+          accessControls.add(it.id)
+        } else {
+          throw IllegalArgumentException("User $it is referenced multiple times in the security")
+        }
+      }
     }
 
     return solutionRepository.save(
@@ -269,6 +279,24 @@ internal class SolutionServiceImpl(
       }
       existingSolution.ownerId = solution.ownerId
       hasChanged = true
+    }
+
+    if (solution.security != null && existingSolution.security == null) {
+      if (csmRbac.isAdmin(solution.getRbac(), getCommonRolesDefinition())) {
+        existingSolution.security = solution.security
+        val accessControls = mutableListOf<String>()
+        existingSolution.security!!.accessControlList.forEach {
+          if (!accessControls.contains(it.id)) {
+            accessControls.add(it.id)
+          } else {
+            throw IllegalArgumentException("User $it is referenced multiple times in the security")
+          }
+        }
+        hasChanged = true
+      } else {
+        logger.warn(
+            "Security cannot by updated directly without admin permissions for ${solution.id}")
+      }
     }
 
     return if (hasChanged) {
@@ -437,6 +465,12 @@ internal class SolutionServiceImpl(
     val solution = findSolutionById(organizationId, solutionId)
     csmRbac.verify(solution.getRbac(), PERMISSION_WRITE_SECURITY)
     var organization = organizationApiService.findOrganizationById(organizationId)
+
+    val users = getSolutionSecurityUsers(organizationId, solutionId)
+    if (users.contains(solutionAccessControl.id)) {
+      throw IllegalArgumentException("User is already in this Solution security")
+    }
+
     val rbacSecurity =
         csmRbac.addUserRole(
             organization.getRbac(),
