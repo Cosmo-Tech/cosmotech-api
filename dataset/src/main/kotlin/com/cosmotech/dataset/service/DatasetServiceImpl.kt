@@ -19,6 +19,7 @@ import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
+import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
@@ -175,7 +176,17 @@ class DatasetServiceImpl(
     var datasetSecurity = dataset.security
     if (datasetSecurity == null) {
       datasetSecurity = initSecurity(getCurrentAccountIdentifier(this.csmPlatformProperties))
+    } else {
+      val accessControls = mutableListOf<String>()
+      datasetSecurity.accessControlList.forEach {
+        if (!accessControls.contains(it.id)) {
+          accessControls.add(it.id)
+        } else {
+          throw IllegalArgumentException("User $it is referenced multiple times in the security")
+        }
+      }
     }
+
     val datasetCopy =
         dataset.copy(
             id = idGenerator.generate("dataset"),
@@ -472,6 +483,24 @@ class DatasetServiceImpl(
     dataset.main?.let {
       existingDataset.main = it
       hasChanged = true
+    }
+
+    if (dataset.security != null && existingDataset.security == null) {
+      if (csmRbac.isAdmin(dataset.getRbac(), getCommonRolesDefinition())) {
+        existingDataset.security = dataset.security
+        val accessControls = mutableListOf<String>()
+        existingDataset.security!!.accessControlList.forEach {
+          if (!accessControls.contains(it.id)) {
+            accessControls.add(it.id)
+          } else {
+            throw IllegalArgumentException("User $it is referenced multiple times in the security")
+          }
+        }
+        hasChanged = true
+      } else {
+        logger.warn(
+            "Security cannot by updated directly without admin permissions for ${dataset.id}")
+      }
     }
 
     return if (hasChanged) {
@@ -807,6 +836,12 @@ class DatasetServiceImpl(
     val dataset = findDatasetById(organizationId, datasetId)
     csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE_SECURITY)
     val organization = organizationService.findOrganizationById(organizationId)
+
+    val users = getDatasetSecurityUsers(organizationId, datasetId)
+    if (users.contains(datasetAccessControl.id)) {
+      throw IllegalArgumentException("User is already in this Dataset security")
+    }
+
     val rbacSecurity =
         csmRbac.addUserRole(
             organization.getRbac(),

@@ -48,7 +48,6 @@ import com.cosmotech.dataset.domain.DatasetRole
 import com.cosmotech.dataset.domain.SubDatasetGraphQuery
 import com.cosmotech.dataset.service.getRbac
 import com.cosmotech.organization.api.OrganizationApiService
-import com.cosmotech.organization.service.getRbac
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioAccessControl
@@ -167,6 +166,15 @@ internal class ScenarioServiceImpl(
     var scenarioSecurity = scenario.security
     if (scenarioSecurity == null) {
       scenarioSecurity = initSecurity(getCurrentAccountIdentifier(this.csmPlatformProperties))
+    } else {
+      val accessControls = mutableListOf<String>()
+      scenarioSecurity.accessControlList.forEach {
+        if (!accessControls.contains(it.id)) {
+          accessControls.add(it.id)
+        } else {
+          throw IllegalArgumentException("User $it is referenced multiple times in the security")
+        }
+      }
     }
 
     val datasetCopyList =
@@ -712,8 +720,16 @@ internal class ScenarioServiceImpl(
     }
 
     if (scenario.security != null && existingScenario.security == null) {
-      if (csmRbac.isAdmin(organization.getRbac(), getCommonRolesDefinition())) {
+      if (csmRbac.isAdmin(scenario.getRbac(), getScenarioRolesDefinition())) {
         existingScenario.security = scenario.security
+        val accessControls = mutableListOf<String>()
+        existingScenario.security!!.accessControlList.forEach {
+          if (!accessControls.contains(it.id)) {
+            accessControls.add(it.id)
+          } else {
+            throw IllegalArgumentException("User $it is referenced multiple times in the security")
+          }
+        }
         hasChanged = true
       } else {
         logger.warn(
@@ -953,6 +969,12 @@ internal class ScenarioServiceImpl(
     val scenario = findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
+
+    val users = getScenarioSecurityUsers(organizationId, workspaceId, scenarioId)
+    if (users.contains(scenarioAccessControl.id)) {
+      throw IllegalArgumentException("User is already in this Scenario security")
+    }
+
     val rbacSecurity =
         csmRbac.addUserRole(
             workspace.getRbac(),
