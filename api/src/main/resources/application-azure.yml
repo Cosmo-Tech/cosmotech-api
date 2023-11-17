@@ -26,7 +26,7 @@ csm:
     authorization:
       principal-jwt-claim: "oid"
       tenant-id-jwt-claim: "tid"
-      mailJwtClaim: "preferred_username"
+      mail-jwt-claim: "preferred_username"
     azure:
       appIdUri: "http://dev.api.cosmotech.com"
       credentials:
@@ -117,4 +117,5 @@ spring:
           account-key: "${csm.platform.azure.storage.account-key}"
           # Fill storage endpoint URL copied from portal
           endpoint: "https://${csm.platform.azure.storage.account-name}.blob.core.windows.net"
+          enabled: true
 
