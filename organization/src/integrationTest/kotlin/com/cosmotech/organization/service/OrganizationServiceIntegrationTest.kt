@@ -6,7 +6,20 @@ import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
-import com.cosmotech.api.rbac.*
+import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
+import com.cosmotech.api.rbac.PERMISSION_DELETE
+import com.cosmotech.api.rbac.PERMISSION_LAUNCH
+import com.cosmotech.api.rbac.PERMISSION_READ
+import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
+import com.cosmotech.api.rbac.PERMISSION_VALIDATE
+import com.cosmotech.api.rbac.PERMISSION_WRITE
+import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
+import com.cosmotech.api.rbac.ROLE_ADMIN
+import com.cosmotech.api.rbac.ROLE_EDITOR
+import com.cosmotech.api.rbac.ROLE_NONE
+import com.cosmotech.api.rbac.ROLE_USER
+import com.cosmotech.api.rbac.ROLE_VALIDATOR
+import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.security.ROLE_ORGANIZATION_USER
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.tests.CsmRedisTestBase
@@ -15,18 +28,23 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.getCurrentAuthentication
 import com.cosmotech.organization.api.OrganizationApiService
-import com.cosmotech.organization.domain.*
+import com.cosmotech.organization.domain.ComponentRolePermissions
+import com.cosmotech.organization.domain.Organization
+import com.cosmotech.organization.domain.OrganizationAccessControl
+import com.cosmotech.organization.domain.OrganizationRole
+import com.cosmotech.organization.domain.OrganizationSecurity
+import com.cosmotech.organization.domain.OrganizationService
+import com.cosmotech.organization.domain.OrganizationServices
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
-import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import org.junit.Assert.assertNotEquals
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -2528,6 +2546,40 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
         val orgaUsers =
             organizationApiService.getOrganizationSecurityUsers(organizationRegistered.id!!)
         assertEquals(listOf(TEST_USER_ID), orgaUsers)
+      }
+
+      @Test
+      fun `access control list shouldn't contain more than one time each user`() {
+        logger.info("testing organization creation")
+        val brokenOrganization =
+            Organization(
+                name = "organization",
+                security =
+                    OrganizationSecurity(
+                        default = ROLE_NONE,
+                        accessControlList =
+                            mutableListOf(
+                                OrganizationAccessControl(TEST_USER_ID, ROLE_ADMIN),
+                                OrganizationAccessControl(TEST_USER_ID, ROLE_EDITOR))))
+        assertThrows<IllegalArgumentException> {
+          organizationApiService.registerOrganization(brokenOrganization)
+        }
+
+        val workingOrganization =
+            Organization(
+                name = "organization",
+                security =
+                    OrganizationSecurity(
+                        default = ROLE_NONE,
+                        accessControlList =
+                            mutableListOf(OrganizationAccessControl(TEST_USER_ID, ROLE_ADMIN))))
+        val organizationSaved = organizationApiService.registerOrganization(workingOrganization)
+
+        logger.info("testing adding access control")
+        assertThrows<IllegalArgumentException> {
+          organizationApiService.addOrganizationAccessControl(
+              organizationSaved.id!!, OrganizationAccessControl(TEST_USER_ID, ROLE_EDITOR))
+        }
       }
     }
 

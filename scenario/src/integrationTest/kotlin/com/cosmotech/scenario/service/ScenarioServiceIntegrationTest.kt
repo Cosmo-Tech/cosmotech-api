@@ -56,7 +56,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
-import java.util.UUID
+import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeAll
@@ -755,6 +755,43 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
       val datasetUserList =
           datasetApiService.getDatasetSecurityUsers(organizationSaved.id!!, thisDataset)
       scenarioUserList.forEach { user -> assertTrue(datasetUserList.contains(user)) }
+    }
+  }
+
+  @Test
+  fun `access control list shouldn't contain more than one time each user`() {
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+    organizationSaved =
+        organizationApiService.registerOrganization(makeOrganization("organization"))
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, makeSolution())
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, makeWorkspace())
+    logger.info("testing scenario creation")
+    val brokenScenario =
+        Scenario(
+            name = "scenario",
+            security =
+                ScenarioSecurity(
+                    default = ROLE_NONE,
+                    accessControlList =
+                        mutableListOf(
+                            ScenarioAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                            ScenarioAccessControl(CONNECTED_ADMIN_USER, ROLE_EDITOR))))
+    assertThrows<IllegalArgumentException> {
+      scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, brokenScenario)
+    }
+
+    val workingScenario = makeScenario()
+    scenarioSaved =
+        scenarioApiService.createScenario(
+            organizationSaved.id!!, workspaceSaved.id!!, workingScenario)
+
+    logger.info("testing adding access control")
+    assertThrows<IllegalArgumentException> {
+      scenarioApiService.addScenarioAccessControl(
+          organizationSaved.id!!,
+          workspaceSaved.id!!,
+          scenarioSaved.id!!,
+          ScenarioAccessControl(CONNECTED_ADMIN_USER, ROLE_EDITOR))
     }
   }
 

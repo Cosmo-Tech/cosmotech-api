@@ -545,6 +545,40 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(Dataset.Status.ERROR.value, datasetStatus)
   }
 
+  @Test
+  fun `access control list shouldn't contain more than one time each user`() {
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+    connectorSaved = connectorApiService.registerConnector(makeConnector())
+    organizationSaved =
+        organizationApiService.registerOrganization(makeOrganization("organization"))
+    logger.info("testing dataset creation")
+    val brokenDataset =
+        Dataset(
+            name = "dataset",
+            connector = DatasetConnector(connectorSaved.id!!, connectorSaved.name),
+            security =
+                DatasetSecurity(
+                    default = ROLE_NONE,
+                    accessControlList =
+                        mutableListOf(
+                            DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                            DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_EDITOR))))
+    assertThrows<IllegalArgumentException> {
+      datasetApiService.createDataset(organizationSaved.id!!, brokenDataset)
+    }
+
+    val workingDataset = makeDataset(id = "id", "dataset", DatasetSourceType.None)
+    val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, workingDataset)
+
+    logger.info("testing adding access control")
+    assertThrows<IllegalArgumentException> {
+      datasetApiService.addDatasetAccessControl(
+          organizationSaved.id!!,
+          datasetSaved.id!!,
+          DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_EDITOR))
+    }
+  }
+
   @TestFactory
   fun `test RBAC twingraphBatchUpdate`() =
       mapOf(
