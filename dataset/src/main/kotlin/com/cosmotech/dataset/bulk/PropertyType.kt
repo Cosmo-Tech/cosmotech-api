@@ -26,6 +26,8 @@ fun Any?.toPropertyType(): PropertyType {
         "true",
         "false" -> type = PropertyType.BI_BOOL
         else -> {
+          // Putting BI_String instead of BI_ARRAY is a workaround to avoid having empty arrays
+          // breaking redis graph
           if (this.startsWith('[') and this.endsWith(']')) type = PropertyType.BI_STRING
         }
       }
