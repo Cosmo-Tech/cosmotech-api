@@ -34,7 +34,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
-import java.util.UUID
+import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -337,6 +337,40 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
+  @Test
+  fun `access control list shouldn't contain more than one time each user`() {
+    organizationSaved =
+        organizationApiService.registerOrganization(mockOrganization("organization"))
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, mockSolution())
+    logger.info("testing workspace creation")
+    val brokenWorkspace =
+        Workspace(
+            name = "workspace",
+            key = "key",
+            solution = WorkspaceSolution(solutionSaved.id!!),
+            security =
+                WorkspaceSecurity(
+                    default = ROLE_NONE,
+                    accessControlList =
+                        mutableListOf(
+                            WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                            WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_EDITOR))))
+    assertThrows<IllegalArgumentException> {
+      workspaceApiService.createWorkspace(organizationSaved.id!!, brokenWorkspace)
+    }
+
+    val workingWorkspace = mockWorkspace()
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workingWorkspace)
+
+    logger.info("testing adding access control")
+    assertThrows<IllegalArgumentException> {
+      workspaceApiService.addWorkspaceAccessControl(
+          organizationSaved.id!!,
+          workspaceSaved.id!!,
+          WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_EDITOR))
+    }
+  }
+
   fun mockOrganization(
       id: String,
       userName: String = CONNECTED_ADMIN_USER,
@@ -352,7 +386,6 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
                 accessControlList =
                     mutableListOf(
                         OrganizationAccessControl(id = userName, role = role),
-                        OrganizationAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
                         OrganizationAccessControl("userLambda", "viewer"))))
   }
 
