@@ -54,12 +54,6 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
-import java.io.File
-import java.time.Instant
-import java.util.*
-import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
-import kotlin.test.assertTrue
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -84,6 +78,12 @@ import org.springframework.test.util.ReflectionTestUtils
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import redis.clients.jedis.JedisPool
+import java.io.File
+import java.time.Instant
+import java.util.*
+import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
 
 const val REDIS_PORT = 6379
 const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
@@ -528,13 +528,21 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
     val file = this::class.java.getResource("/brokenGraph.zip")?.file
     val resource = ByteArrayResource(File(file!!).readBytes())
+    var datasetStatus: String
     runBlocking {
       datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
-      delay(1000L)
-    }
-    datasetSaved = datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
 
-    assertEquals(Dataset.Status.ERROR, datasetSaved.status)
+      datasetStatus =
+          datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
+
+      while (datasetStatus == Dataset.Status.PENDING.value) {
+        delay(50L)
+        datasetStatus =
+            datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
+      }
+    }
+
+    assertEquals(Dataset.Status.ERROR.value, datasetStatus)
   }
 
   @TestFactory

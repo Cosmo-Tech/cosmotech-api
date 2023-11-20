@@ -326,10 +326,10 @@ class DatasetServiceImpl(
           return Dataset.Status.DRAFT.value
         }
         csmJedisPool.resource.use { jedis ->
-          if (!jedis.exists(dataset.twingraphId!!)) {
-            Dataset.Status.PENDING.value
-          } else if (dataset.status == Dataset.Status.ERROR) {
+          if (dataset.status == Dataset.Status.ERROR) {
             return Dataset.Status.ERROR.value
+          } else if (!jedis.exists(dataset.twingraphId!!)) {
+            Dataset.Status.PENDING.value
           } else {
             dataset
                 .takeIf { it.status == Dataset.Status.PENDING }
