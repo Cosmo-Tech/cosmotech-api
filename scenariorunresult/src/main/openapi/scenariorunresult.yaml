@@ -17,7 +17,7 @@ tags:
     description: ScenarioRunResult Management
 
 paths:
-  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/  scenarioruns/{scenariorun_id}/probes/{probe_id}:
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/scenarioruns/{scenariorun_id}/probes/{probe_id}:
     parameters:
       - name: organization_id
         in: path
