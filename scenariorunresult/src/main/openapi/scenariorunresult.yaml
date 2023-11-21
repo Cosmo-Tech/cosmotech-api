@@ -17,7 +17,7 @@ tags:
     description: ScenarioRunResult Management
 
 paths:
-  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/scenarioruns/{scenariorun_id}/probes/{probe_id}:
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/  scenarioruns/{scenariorun_id}/probes/{probe_id}:
     parameters:
       - name: organization_id
         in: path
@@ -133,6 +133,14 @@ components:
       summary:
       description:
       value:
-        id: sr-feai8feu44_stock
+        id: sr-mysrId_StockProbe
         results:
-          $ref: '#/components/examples/ScenarioRunResultExample'
+          - name: StockProbe
+            run: 0
+            stockMeasure: 50
+          -  name: StockProbe
+             run: 1
+             stockMeasure: 100
+          -  name: StockProbe
+             run: 2
+             stockMeasure: 150
