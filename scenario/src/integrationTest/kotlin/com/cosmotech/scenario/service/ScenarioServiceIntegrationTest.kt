@@ -760,7 +760,6 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `access control list shouldn't contain more than one time each user on creation`() {
-    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     organizationSaved =
         organizationApiService.registerOrganization(makeOrganization("organization"))
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, makeSolution())
@@ -781,6 +780,10 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   }
   @Test
   fun `access control list shouldn't contain more than one time each user on ACL addition`() {
+    organizationSaved =
+        organizationApiService.registerOrganization(makeOrganization("organization"))
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, makeSolution())
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, makeWorkspace())
     val workingScenario = makeScenario()
     scenarioSaved =
         scenarioApiService.createScenario(

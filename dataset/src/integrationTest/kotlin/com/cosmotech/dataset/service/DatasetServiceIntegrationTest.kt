@@ -547,7 +547,6 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `access control list shouldn't contain more than one time each user on creation`() {
-    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     connectorSaved = connectorApiService.registerConnector(makeConnector())
     organizationSaved =
         organizationApiService.registerOrganization(makeOrganization("organization"))
@@ -569,6 +568,9 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `access control list shouldn't contain more than one time each user on ACL addition`() {
+    connectorSaved = connectorApiService.registerConnector(makeConnector())
+    organizationSaved =
+        organizationApiService.registerOrganization(makeOrganization("organization"))
     val workingDataset = makeDataset(id = "id", "dataset", DatasetSourceType.None)
     val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, workingDataset)
 
