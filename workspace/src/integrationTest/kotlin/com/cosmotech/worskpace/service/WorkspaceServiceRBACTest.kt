@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.worskpace.service
 
+import com.azure.spring.cloud.core.resource.AzureStorageBlobProtocolResolver
 import com.azure.storage.blob.BlobServiceClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
@@ -42,6 +43,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
 import java.io.InputStream
 import java.util.*
@@ -524,6 +526,8 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test Organization RBAC findAllWorkspaceFiles : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+              mockkConstructor(AzureStorageBlobProtocolResolver::class)
+              every { anyConstructed<AzureStorageBlobProtocolResolver>().getResources(any()) } returns emptyArray()
               val organizationSaved =
                   organizationApiService.registerOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = role))
