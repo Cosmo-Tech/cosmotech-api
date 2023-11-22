@@ -759,13 +759,12 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
-  fun `access control list shouldn't contain more than one time each user`() {
+  fun `access control list shouldn't contain more than one time each user on creation`() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     organizationSaved =
         organizationApiService.registerOrganization(makeOrganization("organization"))
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, makeSolution())
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, makeWorkspace())
-    logger.info("testing scenario creation")
     val brokenScenario =
         Scenario(
             name = "scenario",
@@ -779,13 +778,14 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     assertThrows<IllegalArgumentException> {
       scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, brokenScenario)
     }
-
+  }
+  @Test
+  fun `access control list shouldn't contain more than one time each user on ACL addition`() {
     val workingScenario = makeScenario()
     scenarioSaved =
         scenarioApiService.createScenario(
             organizationSaved.id!!, workspaceSaved.id!!, workingScenario)
 
-    logger.info("testing adding access control")
     assertThrows<IllegalArgumentException> {
       scenarioApiService.addScenarioAccessControl(
           organizationSaved.id!!,

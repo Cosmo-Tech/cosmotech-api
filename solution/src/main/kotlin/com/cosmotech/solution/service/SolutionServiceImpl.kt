@@ -18,7 +18,6 @@ import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
-import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
@@ -281,22 +280,10 @@ internal class SolutionServiceImpl(
       hasChanged = true
     }
 
-    if (solution.security != null && existingSolution.security == null) {
-      if (csmRbac.isAdmin(solution.getRbac(), getCommonRolesDefinition())) {
-        existingSolution.security = solution.security
-        val accessControls = mutableListOf<String>()
-        existingSolution.security!!.accessControlList.forEach {
-          if (!accessControls.contains(it.id)) {
-            accessControls.add(it.id)
-          } else {
-            throw IllegalArgumentException("User $it is referenced multiple times in the security")
-          }
-        }
-        hasChanged = true
-      } else {
-        logger.warn(
-            "Security cannot by updated directly without admin permissions for ${solution.id}")
-      }
+    if (solution.security != existingSolution.security) {
+      logger.warn(
+          "Security modification has not been applied to solution $solutionId," +
+              " please refer to the appropriate security endpoints to perform this maneuver")
     }
 
     return if (hasChanged) {

@@ -2549,8 +2549,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
       }
 
       @Test
-      fun `access control list shouldn't contain more than one time each user`() {
-        logger.info("testing organization creation")
+      fun `access control list shouldn't contain more than one time each user on creation`() {
         val brokenOrganization =
             Organization(
                 name = "organization",
@@ -2564,7 +2563,10 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
         assertThrows<IllegalArgumentException> {
           organizationApiService.registerOrganization(brokenOrganization)
         }
+      }
 
+      @Test
+      fun `access control list shouldn't contain more than one time each user on ACL addition`() {
         val workingOrganization =
             Organization(
                 name = "organization",
@@ -2575,7 +2577,6 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
                             mutableListOf(OrganizationAccessControl(TEST_USER_ID, ROLE_ADMIN))))
         val organizationSaved = organizationApiService.registerOrganization(workingOrganization)
 
-        logger.info("testing adding access control")
         assertThrows<IllegalArgumentException> {
           organizationApiService.addOrganizationAccessControl(
               organizationSaved.id!!, OrganizationAccessControl(TEST_USER_ID, ROLE_EDITOR))

@@ -201,22 +201,10 @@ internal class WorkspaceServiceImpl(
       hasChanged = true
     }
 
-    if (workspace.security != null && existingWorkspace.security == null) {
-      if (csmRbac.isAdmin(workspace.getRbac(), getCommonRolesDefinition())) {
-        existingWorkspace.security = workspace.security
-        val accessControls = mutableListOf<String>()
-        existingWorkspace.security!!.accessControlList.forEach {
-          if (!accessControls.contains(it.id)) {
-            accessControls.add(it.id)
-          } else {
-            throw IllegalArgumentException("User $it is referenced multiple times in the security")
-          }
-        }
-        hasChanged = true
-      } else {
-        logger.warn(
-            "Security cannot by updated directly without admin permissions for ${workspace.id}")
-      }
+    if (workspace.security != existingWorkspace.security) {
+      logger.warn(
+          "Security modification has not been applied to workspace $workspaceId," +
+              " please refer to the appropriate security endpoints to perform this maneuver")
     }
     return if (hasChanged) {
       workspaceRepository.save(existingWorkspace)
