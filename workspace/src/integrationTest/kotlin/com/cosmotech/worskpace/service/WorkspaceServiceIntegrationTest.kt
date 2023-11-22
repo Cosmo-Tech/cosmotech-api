@@ -361,6 +361,9 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `access control list shouldn't contain more than one time each user on ACL addition`() {
+    organizationSaved =
+        organizationApiService.registerOrganization(mockOrganization("organization"))
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, mockSolution())
     val workingWorkspace = mockWorkspace()
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workingWorkspace)
 
