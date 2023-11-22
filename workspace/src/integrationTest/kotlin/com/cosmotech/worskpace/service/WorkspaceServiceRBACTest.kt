@@ -527,7 +527,9 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test Organization RBAC findAllWorkspaceFiles : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               mockkConstructor(AzureStorageBlobProtocolResolver::class)
-              every { anyConstructed<AzureStorageBlobProtocolResolver>().getResources(any()) } returns emptyArray()
+              every {
+                anyConstructed<AzureStorageBlobProtocolResolver>().getResources(any())
+              } returns emptyArray()
               val organizationSaved =
                   organizationApiService.registerOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = role))
