@@ -114,7 +114,7 @@ paths:
         - organization
       summary: Update an Organization
       requestBody:
-        description: the new Organization details
+        description: the new Organization details. This endpoint can't be used to update security
         required: true
         content:
           application/json:

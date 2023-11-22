@@ -127,7 +127,7 @@ paths:
         - solution
       summary: Update a solution
       requestBody:
-        description: the new Solution details.
+        description: the new Solution details. This endpoint can't be used to update security
         required: true
         content:
           application/json:

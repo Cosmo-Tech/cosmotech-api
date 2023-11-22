@@ -69,6 +69,8 @@ import com.cosmotech.workspace.azure.EventHubRole
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.service.getRbac
+import java.time.Instant
+import java.time.ZonedDateTime
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -78,8 +80,6 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
-import java.time.Instant
-import java.time.ZonedDateTime
 
 @Service
 @Suppress("LargeClass", "TooManyFunctions", "LongParameterList")

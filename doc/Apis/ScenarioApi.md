@@ -590,7 +590,7 @@ Name | Type | Description  | Notes
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **workspace\_id** | **String**| the Workspace identifier | [default to null]
  **scenario\_id** | **String**| the Scenario identifier | [default to null]
- **Scenario** | [**Scenario**](../Models/Scenario.md)| the new Scenario details. |
+ **Scenario** | [**Scenario**](../Models/Scenario.md)| the new Scenario details. This endpoint can&#39;t be used to update security |
 
 ### Return type
 

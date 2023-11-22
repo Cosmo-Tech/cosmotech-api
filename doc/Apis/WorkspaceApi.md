@@ -462,7 +462,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **workspace\_id** | **String**| the Workspace identifier | [default to null]
- **Workspace** | [**Workspace**](../Models/Workspace.md)| The new Workspace details. |
+ **Workspace** | [**Workspace**](../Models/Workspace.md)| The new Workspace details. This endpoint can&#39;t be used to update security |
 
 ### Return type
 

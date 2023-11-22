@@ -230,7 +230,7 @@ paths:
         - dataset
       summary: Update a dataset
       requestBody:
-        description: the new Dataset details.
+        description: the new Dataset details. This endpoint can't be used to update security
         required: true
         content:
           application/json:

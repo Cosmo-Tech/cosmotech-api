@@ -337,7 +337,7 @@ Update an Organization
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
- **Organization** | [**Organization**](../Models/Organization.md)| the new Organization details |
+ **Organization** | [**Organization**](../Models/Organization.md)| the new Organization details. This endpoint can&#39;t be used to update security |
 
 ### Return type
 

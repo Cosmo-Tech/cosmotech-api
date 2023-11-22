@@ -519,7 +519,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **solution\_id** | **String**| the Solution identifier | [default to null]
- **Solution** | [**Solution**](../Models/Solution.md)| the new Solution details. |
+ **Solution** | [**Solution**](../Models/Solution.md)| the new Solution details. This endpoint can&#39;t be used to update security |
 
 ### Return type
 
