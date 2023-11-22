@@ -711,7 +711,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **organization\_id** | **String**| the Organization identifier | [default to null]
  **dataset\_id** | **String**| the Dataset identifier | [default to null]
- **Dataset** | [**Dataset**](../Models/Dataset.md)| the new Dataset details. |
+ **Dataset** | [**Dataset**](../Models/Dataset.md)| the new Dataset details. This endpoint can&#39;t be used to update security |
 
 ### Return type
 

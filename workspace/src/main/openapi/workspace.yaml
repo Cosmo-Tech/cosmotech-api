@@ -130,7 +130,7 @@ paths:
         - workspace
       summary: Update a workspace
       requestBody:
-        description: The new Workspace details.
+        description: The new Workspace details. This endpoint can't be used to update security
         required: true
         content:
           application/json:
