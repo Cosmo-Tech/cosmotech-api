@@ -338,11 +338,10 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
-  fun `access control list shouldn't contain more than one time each user`() {
+  fun `access control list shouldn't contain more than one time each user on creation`() {
     organizationSaved =
         organizationApiService.registerOrganization(mockOrganization("organization"))
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, mockSolution())
-    logger.info("testing workspace creation")
     val brokenWorkspace =
         Workspace(
             name = "workspace",
@@ -358,11 +357,13 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     assertThrows<IllegalArgumentException> {
       workspaceApiService.createWorkspace(organizationSaved.id!!, brokenWorkspace)
     }
+  }
 
+  @Test
+  fun `access control list shouldn't contain more than one time each user on ACL addition`() {
     val workingWorkspace = mockWorkspace()
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workingWorkspace)
 
-    logger.info("testing adding access control")
     assertThrows<IllegalArgumentException> {
       workspaceApiService.addWorkspaceAccessControl(
           organizationSaved.id!!,

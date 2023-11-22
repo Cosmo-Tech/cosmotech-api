@@ -132,20 +132,13 @@ class OrganizationServiceImpl(
       existingOrganization.services = organization.services
       hasChanged = true
     }
-    if (organization.security != null && existingOrganization.security == null) {
-      if (csmRbac.isAdmin(organization.getRbac(), getCommonRolesDefinition())) {
-        existingOrganization.security = organization.security
-        val accessControls = mutableListOf<String>()
-        existingOrganization.security!!.accessControlList.forEach {
-          if (!accessControls.contains(it.id)) {
-            accessControls.add(it.id)
-          } else {
-            throw IllegalArgumentException("User $it is referenced multiple times in the security")
-          }
-        }
-        hasChanged = true
-      }
+
+    if (organization.security != existingOrganization.security) {
+      logger.warn(
+          "Security modification has not been applied to organization $organizationId," +
+              " please refer to the appropriate security endpoints to perform this maneuver")
     }
+
     return if (hasChanged) {
       organizationRepository.save(existingOrganization)
     } else {

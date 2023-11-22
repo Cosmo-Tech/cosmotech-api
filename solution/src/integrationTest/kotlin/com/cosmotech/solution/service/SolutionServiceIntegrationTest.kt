@@ -394,11 +394,10 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
-  fun `access control list shouldn't contain more than one time each user`() {
+  fun `access control list shouldn't contain more than one time each user on creation`() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     organizationSaved =
         organizationApiService.registerOrganization(makeOrganization("organization"))
-    logger.info("testing solution creation")
     val brokenSolution =
         Solution(
             name = "solution",
@@ -412,11 +411,13 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     assertThrows<IllegalArgumentException> {
       solutionApiService.createSolution(organizationSaved.id!!, brokenSolution)
     }
+  }
+  @Test
+  fun `access control list shouldn't contain more than one time each user on ACL addition`() {
 
     val workingSolution = makeSolution()
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, workingSolution)
 
-    logger.info("testing adding access control")
     assertThrows<IllegalArgumentException> {
       solutionApiService.addSolutionAccessControl(
           organizationSaved.id!!,

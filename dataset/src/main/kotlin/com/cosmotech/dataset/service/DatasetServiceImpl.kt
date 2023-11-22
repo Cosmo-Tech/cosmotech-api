@@ -19,7 +19,6 @@ import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
-import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
@@ -485,22 +484,10 @@ class DatasetServiceImpl(
       hasChanged = true
     }
 
-    if (dataset.security != null && existingDataset.security == null) {
-      if (csmRbac.isAdmin(dataset.getRbac(), getCommonRolesDefinition())) {
-        existingDataset.security = dataset.security
-        val accessControls = mutableListOf<String>()
-        existingDataset.security!!.accessControlList.forEach {
-          if (!accessControls.contains(it.id)) {
-            accessControls.add(it.id)
-          } else {
-            throw IllegalArgumentException("User $it is referenced multiple times in the security")
-          }
-        }
-        hasChanged = true
-      } else {
-        logger.warn(
-            "Security cannot by updated directly without admin permissions for ${dataset.id}")
-      }
+    if (dataset.security != existingDataset.security) {
+      logger.warn(
+          "Security modification has not been applied to dataset $datasetId," +
+              " please refer to the appropriate security endpoints to perform this maneuver")
     }
 
     return if (hasChanged) {

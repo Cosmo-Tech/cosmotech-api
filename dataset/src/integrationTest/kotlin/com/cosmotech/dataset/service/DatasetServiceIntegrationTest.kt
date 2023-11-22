@@ -546,12 +546,11 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
-  fun `access control list shouldn't contain more than one time each user`() {
+  fun `access control list shouldn't contain more than one time each user on creation`() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     connectorSaved = connectorApiService.registerConnector(makeConnector())
     organizationSaved =
         organizationApiService.registerOrganization(makeOrganization("organization"))
-    logger.info("testing dataset creation")
     val brokenDataset =
         Dataset(
             name = "dataset",
@@ -566,11 +565,13 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     assertThrows<IllegalArgumentException> {
       datasetApiService.createDataset(organizationSaved.id!!, brokenDataset)
     }
+  }
 
+  @Test
+  fun `access control list shouldn't contain more than one time each user on ACL addition`() {
     val workingDataset = makeDataset(id = "id", "dataset", DatasetSourceType.None)
     val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, workingDataset)
 
-    logger.info("testing adding access control")
     assertThrows<IllegalArgumentException> {
       datasetApiService.addDatasetAccessControl(
           organizationSaved.id!!,

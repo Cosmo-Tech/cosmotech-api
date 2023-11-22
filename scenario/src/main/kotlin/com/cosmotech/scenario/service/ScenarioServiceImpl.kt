@@ -69,8 +69,6 @@ import com.cosmotech.workspace.azure.EventHubRole
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.service.getRbac
-import java.time.Instant
-import java.time.ZonedDateTime
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -80,6 +78,8 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
+import java.time.Instant
+import java.time.ZonedDateTime
 
 @Service
 @Suppress("LargeClass", "TooManyFunctions", "LongParameterList")
@@ -674,7 +674,7 @@ internal class ScenarioServiceImpl(
       scenario: Scenario
   ): Scenario {
     // This call verify by itself that we have the read authorization in the organization
-    var organization = organizationService.findOrganizationById(organizationId)
+    organizationService.findOrganizationById(organizationId)
     // This call verify by itself that we have the read authorization in the workspace
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     val existingScenario = findScenarioById(organizationId, workspaceId, scenarioId)
@@ -719,22 +719,10 @@ internal class ScenarioServiceImpl(
       hasChanged = true
     }
 
-    if (scenario.security != null && existingScenario.security == null) {
-      if (csmRbac.isAdmin(scenario.getRbac(), getScenarioRolesDefinition())) {
-        existingScenario.security = scenario.security
-        val accessControls = mutableListOf<String>()
-        existingScenario.security!!.accessControlList.forEach {
-          if (!accessControls.contains(it.id)) {
-            accessControls.add(it.id)
-          } else {
-            throw IllegalArgumentException("User $it is referenced multiple times in the security")
-          }
-        }
-        hasChanged = true
-      } else {
-        logger.warn(
-            "Security cannot by updated directly without admin permissions for ${scenario.id}")
-      }
+    if (scenario.security != existingScenario.security) {
+      logger.warn(
+          "Security modification has not been applied to scenario $scenarioId," +
+              " please refer to the appropriate security endpoints to perform this maneuver")
     }
 
     if (hasChanged) {
