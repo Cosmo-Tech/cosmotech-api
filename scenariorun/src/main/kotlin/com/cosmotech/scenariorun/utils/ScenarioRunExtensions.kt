@@ -56,7 +56,7 @@ internal fun getRedisQuery(pair: Pair<String, Any?>, isSearchable: Boolean): Str
 }
 
 fun String.sanitizeForRedisQuery(searchable: Boolean = false): String {
-  val result = this.replace("@", "\\@").replace(".", "\\.").replace("-", "\\-")
+  val result = this.replace("@", "\\\\@").replace(".", "\\\\.").replace("-", "\\\\-")
   return if (searchable) {
     if (result.startsWith("*") || result.endsWith("*")) {
       return result
