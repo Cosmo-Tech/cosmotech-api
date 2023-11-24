@@ -1,26 +1,77 @@
-spring:
-  redis:
-    host: ${csm.platform.twincache.host}
-    username: ${csm.platform.twincache.username}
-    password: ${csm.platform.twincache.password}
-    client-type: jedis
-  main:
-    lazy-initialization: true
-
 management:
   endpoints:
     enabled-by-default: false
 
 azure:
   storage:
-    account-name: "faketestaccountname"
+    account-name: "fake_test_account_name"
     account-key: "this_is_a_key_base64_encoded"
     blob-endpoint: "https://faketestaccountname.blob.core.windows.net"
 
+
+spring:
+  data:
+    redis:
+      host: "localhost"
+      username: "default"
+      # Leave it as blank as there's no auth with test container
+      password:
+      client-type: jedis
+  cloud:
+    azure:
+      # Required to auto-configure the beans provided by the Azure Spring Boot AutoConfigurations
+      active-directory:
+        profile:
+          # tenantId is 'common' to use the login process of multi-tenant access
+          # See https://github.com/Azure/azure-sdk-for-java/blob/master/sdk/spring/azure-spring-boot-starter-active-directory/ACCESS_TO_MULTI_TENANT_APP.md
+          tenant-id: "fake_tenant_id"
+        credential:
+          client-id: "fake_client_id"
+          client-secret: "fake_client_secret"
+        session-stateless: true
+        app-id-uri: "fake_app_id_uri"
+        enabled: true
+      storage:
+        blob:
+          # Storage account name length should be between 3 and 24 and use numbers and lower-case letters only
+          account-name: "fakeaccountname"
+          # Fill storage account access key copied from portal
+          account-key: "fakeaccountkey"
+          # Fill storage endpoint URL copied from portal
+          endpoint: "https://fakeaccountname.blob.core.windows.net"
+          enabled: true
+
 csm:
   platform:
-    rbac:
-      enabled: true
+    azure:
+      appIdUri: "api://fake_app_id_uri"
+      credentials:
+        core:
+          tenantId: "fake_tenant_id"
+          clientId: "fake_client_id"
+          clientSecret: "fake_client_secret"
+      dataWarehouseCluster:
+        baseUri: "https://fake_uri.kusto.windows.net"
+        options:
+          ingestionUri: "https://ingest-fake_uri.kusto.windows.net"
+      eventBus:
+        baseUri: "amqps://fake_uri.servicebus.windows.net"
+      storage:
+        baseUri: "fake_base_uri"
+        resourceUri: "fake_resource_uri"
+        account-name: "fake_account_name"
+        account-key: "fake_account_key"
+        blob-endpoint: "https://fake_uri.blob.core.windows.net"
+        connectionString: "fake_connection_string"
+      containerRegistries:
+        core: ghcr.io
+        solutions: "localhost:5000"
+      keyVault: "changeme"
+      analytics:
+        resourceUri: ""
+        instrumentationKey: ""
+        connectionString: "changeme"
+    runOutsideKubernetes: true
     metrics:
       enabled: false
     api:
@@ -86,7 +137,11 @@ csm:
       host: "localhost"
       port: "6379"
       username: "default"
-      password: "my-wonderful-password"
+      # Leave it as blank as there's no auth with test container
+      password:
       organization:
         default-page-size: 5
+    rbac:
+      enabled: true
+
 
