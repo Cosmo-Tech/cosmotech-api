@@ -1624,25 +1624,48 @@ internal fun getCommonEnvVars(
   return (minimalEnvVars + commonEnvVars).toMutableMap()
 }
 
+private fun getNewDependenciesIfExist(
+    mergedContainerNames: MutableMap<String, String>,
+    container: ScenarioRunContainer
+): ScenarioRunContainer {
+  var tmp: ScenarioRunContainer = container
+  var dependencies: MutableList<String> = mutableListOf()
+  container.dependencies?.forEach {
+    if (mergedContainerNames.containsKey(it)) {
+      dependencies.add(mergedContainerNames.get(it)!!)
+    }
+  }
+  if (dependencies.isNotEmpty()) {
+    tmp = container.copy(dependencies = dependencies)
+  }
+  return tmp
+}
+
 private fun stackSolutionContainers(
     containers: MutableList<ScenarioRunContainer>
 ): MutableList<ScenarioRunContainer> {
   val stackedContainers: MutableList<ScenarioRunContainer> = mutableListOf()
   var stackedContainer: ScenarioRunContainer? = null
   var stackedIndex = 1
+  val mergedContainerNames: MutableMap<String, String> = mutableMapOf()
   for (container in containers) {
     if (container.solutionContainer != true) {
+      var tmpContainer: ScenarioRunContainer = container
       if (stackedContainer != null) {
         stackedContainers.add(stackedContainer)
+        tmpContainer = container.copy(dependencies = mutableListOf(stackedContainer.name))
         stackedIndex++
       }
       stackedContainer = null
-      stackedContainers.add(container)
+      stackedContainers.add(tmpContainer)
     } else {
       if (stackedContainer == null) {
-        stackedContainer = container
+        stackedContainer = getNewDependenciesIfExist(mergedContainerNames, container)
       } else {
+        val previousStackedContainer = stackedContainer
         stackedContainer = mergeSolutionContainer(stackedIndex, stackedContainer, container)
+        mergedContainerNames[previousStackedContainer.name] = stackedContainer.name
+        mergedContainerNames[container.name] = stackedContainer.name
       }
     }
   }
