@@ -411,6 +411,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
       solutionApiService.createSolution(organizationSaved.id!!, brokenSolution)
     }
   }
+
   @Test
   fun `access control list shouldn't contain more than one time each user on ACL addition`() {
     organizationSaved =

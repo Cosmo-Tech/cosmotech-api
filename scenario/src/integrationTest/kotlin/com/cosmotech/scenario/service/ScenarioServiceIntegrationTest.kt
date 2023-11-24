@@ -778,6 +778,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
       scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, brokenScenario)
     }
   }
+
   @Test
   fun `access control list shouldn't contain more than one time each user on ACL addition`() {
     organizationSaved =
