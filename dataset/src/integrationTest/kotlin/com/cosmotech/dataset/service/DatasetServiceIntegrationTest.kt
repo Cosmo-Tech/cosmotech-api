@@ -54,12 +54,6 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
-import java.io.File
-import java.time.Instant
-import java.util.*
-import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
-import kotlin.test.assertTrue
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -84,6 +78,12 @@ import org.springframework.test.util.ReflectionTestUtils
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import redis.clients.jedis.JedisPool
+import java.io.File
+import java.time.Instant
+import java.util.*
+import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
 
 const val REDIS_PORT = 6379
 const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
@@ -579,6 +579,25 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
           organizationSaved.id!!,
           datasetSaved.id!!,
           DatasetAccessControl(CONNECTED_ADMIN_USER, ROLE_EDITOR))
+    }
+  }
+
+  @Test
+  fun `refresh dataset`() {
+    organizationSaved =
+        organizationApiService.registerOrganization(makeOrganization("organization"))
+    datasetSaved =
+        datasetApiService.createDataset(
+            organizationSaved.id!!,
+            makeDatasetWithRole(sourceType = DatasetSourceType.AzureStorage))
+
+    every { eventPublisher.publishEvent(any<TwingraphImportEvent>()) } answers
+        {
+          firstArg<TwingraphImportEvent>().response = null
+        }
+
+    assertDoesNotThrow {
+      datasetApiService.refreshDataset(organizationSaved.id!!, datasetSaved.id!!)
     }
   }
 
