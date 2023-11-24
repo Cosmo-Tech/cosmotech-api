@@ -61,7 +61,7 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
-import java.util.UUID
+import java.util.*
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DynamicTest.dynamicTest
@@ -139,13 +139,14 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val dataset =
+                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
               val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               every { datasetApiService.findDatasetById(any(), any()) } returns
                   datasetSaved.apply { status = Dataset.Status.READY }
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns
                   mockk(relaxed = true)
-              val solution = makeSolution(organizationSaved.id!!)
+              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
               val workspace =
@@ -204,9 +205,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val dataset =
+                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
               val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              val solution = makeSolution(organizationSaved.id!!)
+              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
               val workspace =
@@ -271,9 +273,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val dataset =
+                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
               val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              val solution = makeSolution(organizationSaved.id!!)
+              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
               val workspace =
@@ -338,9 +341,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val dataset =
+                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
               val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              val solution = makeSolution(organizationSaved.id!!)
+              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
               val workspace =
@@ -399,9 +403,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val dataset =
+                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
               val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              val solution = makeSolution(organizationSaved.id!!)
+              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
               val workspace =
@@ -463,9 +468,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val dataset =
+                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
               val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              val solution = makeSolution(organizationSaved.id!!)
+              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
               val workspace =
@@ -523,13 +529,15 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val dataset =
+                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
               val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               every { datasetApiService.findDatasetById(any(), any()) } returns
                   datasetSaved.apply { status = Dataset.Status.READY }
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns
                   mockk(relaxed = true)
-              val solution = makeSolution(organizationSaved.id!!)
+              every { datasetApiService.deleteDataset(any(), any()) } returns Unit
+              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
               val workspace =
@@ -594,13 +602,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val dataset =
+                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
               val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              datasetApiService.addDatasetAccessControl(
-                  organizationSaved.id!!,
-                  datasetSaved.id!!,
-                  DatasetAccessControl(TEST_USER_MAIL, ROLE_ADMIN))
-              val solution = makeSolution(organizationSaved.id!!)
+              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
               val workspace =
@@ -683,9 +688,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val dataset =
+                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
               val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              val solution = makeSolution(organizationSaved.id!!)
+              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
               val workspace =
@@ -744,9 +750,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val dataset =
+                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
               val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              val solution = makeSolution(organizationSaved.id!!)
+              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
               val workspace =
@@ -817,9 +824,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val dataset =
+                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
               val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              val solution = makeSolution(organizationSaved.id!!)
+              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
               val workspace =
@@ -884,9 +892,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val dataset =
+                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
               val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              val solution = makeSolution(organizationSaved.id!!)
+              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
               val workspace =
@@ -945,9 +954,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val dataset =
+                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
               val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              val solution = makeSolution(organizationSaved.id!!)
+              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
               val workspace =
@@ -1015,9 +1025,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val dataset =
+                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
               val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              val solution = makeSolution(organizationSaved.id!!)
+              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
               val workspace =
@@ -1086,9 +1097,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val dataset =
+                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
               val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              val solution = makeSolution(organizationSaved.id!!)
+              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
               val workspace =
@@ -1153,9 +1165,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val dataset =
+                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
               val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              val solution = makeSolution(organizationSaved.id!!)
+              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
               val workspace =
@@ -1220,13 +1233,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val dataset =
+                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
               val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              datasetApiService.addDatasetAccessControl(
-                  organizationSaved.id!!,
-                  datasetSaved.id!!,
-                  DatasetAccessControl(TEST_USER_MAIL, ROLE_ADMIN))
-              val solution = makeSolution(organizationSaved.id!!)
+              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
               val workspace =
@@ -1291,9 +1301,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val dataset =
+                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
               val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              val solution = makeSolution(organizationSaved.id!!)
+              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
               val workspace =
@@ -1364,13 +1375,14 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val dataset =
+                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
               val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               every { datasetApiService.findDatasetById(any(), any()) } returns
                   datasetSaved.apply { status = Dataset.Status.READY }
               every { datasetApiService.createSubDataset(any(), any(), any()) } returns
                   mockk(relaxed = true)
-              val solution = makeSolution(organizationSaved.id!!)
+              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
               val workspace =
@@ -1441,13 +1453,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val dataset =
+                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
               val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              datasetApiService.addDatasetAccessControl(
-                  organizationSaved.id!!,
-                  datasetSaved.id!!,
-                  DatasetAccessControl(TEST_USER_MAIL, ROLE_ADMIN))
-              val solution = makeSolution(organizationSaved.id!!)
+              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
               val workspace =
@@ -1522,9 +1531,10 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
               val organization =
                   makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
               val organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset = makeDataset(organizationSaved.id!!, connectorSaved)
+              val dataset =
+                  makeDataset(organizationSaved.id!!, connectorSaved, TEST_USER_MAIL, ROLE_ADMIN)
               val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              val solution = makeSolution(organizationSaved.id!!)
+              val solution = makeSolution(organizationSaved.id!!, TEST_USER_MAIL, ROLE_ADMIN)
               val solutionSaved =
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
               val workspace =
@@ -1603,7 +1613,12 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
         ioTypes = listOf(Connector.IoTypes.read))
   }
 
-  fun makeDataset(organizationId: String, connector: Connector): Dataset {
+  fun makeDataset(
+      organizationId: String,
+      connector: Connector,
+      userName: String,
+      role: String
+  ): Dataset {
     return Dataset(
         name = "Dataset",
         organizationId = organizationId,
@@ -1620,10 +1635,11 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
                 default = ROLE_NONE,
                 accessControlList =
                     mutableListOf(
-                        DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
+                        DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
+                        DatasetAccessControl(id = userName, role = role))))
   }
 
-  fun makeSolution(organizationId: String): Solution {
+  fun makeSolution(organizationId: String, userName: String, role: String): Solution {
     return Solution(
         id = "solutionId",
         key = UUID.randomUUID().toString(),
@@ -1635,7 +1651,7 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
                 default = ROLE_NONE,
                 mutableListOf(
                     SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
-                    SolutionAccessControl(id = TEST_USER_MAIL, role = ROLE_ADMIN))))
+                    SolutionAccessControl(id = userName, role = role))))
   }
 
   fun makeOrganizationWithRole(userName: String, role: String): Organization {

@@ -5,7 +5,14 @@ package com.cosmotech.scenariorunresult.service
 import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
-import com.cosmotech.api.rbac.*
+import com.cosmotech.api.rbac.PERMISSION_READ
+import com.cosmotech.api.rbac.PERMISSION_WRITE
+import com.cosmotech.api.rbac.ROLE_ADMIN
+import com.cosmotech.api.rbac.ROLE_EDITOR
+import com.cosmotech.api.rbac.ROLE_NONE
+import com.cosmotech.api.rbac.ROLE_USER
+import com.cosmotech.api.rbac.ROLE_VALIDATOR
+import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
@@ -35,9 +42,13 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
-import java.util.*
 import kotlin.test.assertEquals
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DynamicTest
+import org.junit.jupiter.api.TestFactory
+import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
 import org.slf4j.LoggerFactory
@@ -152,6 +163,9 @@ class ScenarioRunResultServiceRBACTest : CsmRedisTestBase() {
                   "RBAC ${cosmoArbo.organizationId} - User does not have permission $PERMISSION_READ",
                   exception.message)
             }
+            every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+            organizationApiService.removeOrganizationAccessControl(
+                cosmoArbo.organizationId, TEST_USER)
           }
         }
   }
@@ -208,6 +222,9 @@ class ScenarioRunResultServiceRBACTest : CsmRedisTestBase() {
                   "RBAC ${cosmoArbo.workspaceId} - User does not have permission $PERMISSION_READ",
                   exception.message)
             }
+            every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+            workspaceApiService.removeWorkspaceAccessControl(
+                cosmoArbo.organizationId, cosmoArbo.workspaceId, TEST_USER)
           }
         }
   }
@@ -264,6 +281,9 @@ class ScenarioRunResultServiceRBACTest : CsmRedisTestBase() {
                   "RBAC ${cosmoArbo.scenarioId} - User does not have permission $PERMISSION_WRITE",
                   exception.message)
             }
+            every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+            scenarioApiService.removeScenarioAccessControl(
+                cosmoArbo.organizationId, cosmoArbo.workspaceId, cosmoArbo.scenarioId, TEST_USER)
           }
         }
   }
@@ -325,6 +345,9 @@ class ScenarioRunResultServiceRBACTest : CsmRedisTestBase() {
                   "RBAC ${cosmoArbo.organizationId} - User does not have permission $PERMISSION_READ",
                   exception.message)
             }
+            every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+            organizationApiService.removeOrganizationAccessControl(
+                cosmoArbo.organizationId, TEST_USER)
           }
         }
   }
@@ -386,6 +409,9 @@ class ScenarioRunResultServiceRBACTest : CsmRedisTestBase() {
                   "RBAC ${cosmoArbo.workspaceId} - User does not have permission $PERMISSION_READ",
                   exception.message)
             }
+            every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+            workspaceApiService.removeWorkspaceAccessControl(
+                cosmoArbo.organizationId, cosmoArbo.workspaceId, TEST_USER)
           }
         }
   }
@@ -447,6 +473,9 @@ class ScenarioRunResultServiceRBACTest : CsmRedisTestBase() {
                   "RBAC ${cosmoArbo.scenarioId} - User does not have permission $PERMISSION_READ",
                   exception.message)
             }
+            every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+            scenarioApiService.removeScenarioAccessControl(
+                cosmoArbo.organizationId, cosmoArbo.workspaceId, cosmoArbo.scenarioId, TEST_USER)
           }
         }
   }
