@@ -582,24 +582,42 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
-  @Test
-  fun `refresh dataset`() {
-    organizationSaved =
-        organizationApiService.registerOrganization(makeOrganization("organization"))
-    datasetSaved =
-        datasetApiService.createDataset(
-            organizationSaved.id!!,
-            makeDatasetWithRole(sourceType = DatasetSourceType.AzureStorage))
+  @TestFactory
+  fun `test refreshDataset`() =
+      mapOf(
+              DatasetSourceType.AzureStorage to false,
+              DatasetSourceType.ADT to false,
+              DatasetSourceType.Twincache to false,
+              DatasetSourceType.File to true,
+              DatasetSourceType.None to true)
+          .map { (source, shouldThrow) ->
+            DynamicTest.dynamicTest("Test RBAC refreshDataset : $source") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+              organizationSaved =
+                  organizationApiService.registerOrganization(makeOrganization("organization"))
+              val parentDataset =
+                  datasetApiService.createDataset(
+                      organizationSaved.id!!, makeDatasetWithRole(sourceType = source))
+              datasetSaved =
+                  datasetApiService.createDataset(
+                      organizationSaved.id!!,
+                      makeDatasetWithRole(parentId = parentDataset.id!!, sourceType = source))
 
-    every { eventPublisher.publishEvent(any<TwingraphImportEvent>()) } answers
-        {
-          firstArg<TwingraphImportEvent>().response = null
-        }
-
-    assertDoesNotThrow {
-      datasetApiService.refreshDataset(organizationSaved.id!!, datasetSaved.id!!)
-    }
-  }
+              every { eventPublisher.publishEvent(any<TwingraphImportEvent>()) } answers
+                  {
+                    firstArg<TwingraphImportEvent>().response = null
+                  }
+              if (shouldThrow) {
+                assertThrows<CsmResourceNotFoundException> {
+                  datasetApiService.refreshDataset(organizationSaved.id!!, datasetSaved.id!!)
+                }
+              } else {
+                assertDoesNotThrow {
+                  datasetApiService.refreshDataset(organizationSaved.id!!, datasetSaved.id!!)
+                }
+              }
+            }
+          }
 
   @TestFactory
   fun `test RBAC twingraphBatchUpdate`() =
@@ -1872,6 +1890,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
   fun makeDatasetWithRole(
       organizationId: String = organizationSaved.id!!,
+      parentId: String = "",
       userName: String = TEST_USER_MAIL,
       role: String = ROLE_ADMIN,
       sourceType: DatasetSourceType = DatasetSourceType.File
@@ -1880,6 +1899,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
         id = UUID.randomUUID().toString(),
         name = "My datasetRbac",
         organizationId = organizationId,
+        parentId = parentId,
         ownerId = "ownerId",
         connector = DatasetConnector(connectorSaved.id!!),
         twingraphId = "graph",
