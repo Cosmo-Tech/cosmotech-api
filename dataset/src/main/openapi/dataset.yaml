@@ -340,6 +340,9 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/SubDatasetGraphQuery'
+            examples:
+              BreweryADT:
+                $ref: '#/components/examples/BreweryADT'
       responses:
         '200':
           description: Successful response
@@ -347,6 +350,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Dataset'
+              examples:
+                BreweryADT:
+                  $ref: '#/components/examples/BreweryADT'
   /organizations/{organization_id}/datasets/{dataset_id}/refresh:
     parameters:
       - name: organization_id
@@ -1690,7 +1696,7 @@ components:
             - location: "containerName"
             - path: "path"
         status: "null"
-        queries: "null"
+        queries: ["MATCH (n) RETURN n"]
         tags:
           - ADT
           - Brewery
@@ -1739,7 +1745,7 @@ components:
               - location: "containerName"
               - path: "path"
           status: "null"
-          queries: "null"
+          queries: ["MATCH (n) RETURN n"]
           tags:
             - ADT
             - Brewery
@@ -1784,7 +1790,7 @@ components:
               - location: "containerName"
               - path: "path"
           status: "null"
-          queries: "null"
+          queries: ["MATCH (n) RETURN n"]
           tags:
             - ADT
             - Brewery
@@ -1838,7 +1844,7 @@ components:
             - location: "containerName"
             - path: "path"
         status: "null"
-        queries: "null"
+        queries: ["MATCH (n) RETURN n"]
         tags:
           - ADT
           - Brewery
