@@ -54,12 +54,6 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
-import java.io.File
-import java.time.Instant
-import java.util.*
-import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
-import kotlin.test.assertTrue
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -84,6 +78,12 @@ import org.springframework.test.util.ReflectionTestUtils
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import redis.clients.jedis.JedisPool
+import java.io.File
+import java.time.Instant
+import java.util.*
+import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
 
 const val REDIS_PORT = 6379
 const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
@@ -590,27 +590,29 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
               DatasetSourceType.Twincache to false,
               DatasetSourceType.File to true,
               DatasetSourceType.None to true)
-          .map { (source, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC refreshDataset : $source") {
+          .map { (sourceType, shouldThrow) ->
+            DynamicTest.dynamicTest("Test RBAC refreshDataset : $sourceType") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               organizationSaved =
                   organizationApiService.registerOrganization(makeOrganization("organization"))
               val parentDataset =
                   datasetApiService.createDataset(
-                      organizationSaved.id!!, makeDatasetWithRole(sourceType = source))
+                      organizationSaved.id!!, makeDatasetWithRole(sourceType = sourceType))
               datasetSaved =
                   datasetApiService.createDataset(
                       organizationSaved.id!!,
-                      makeDatasetWithRole(parentId = parentDataset.id!!, sourceType = source))
+                      makeDatasetWithRole(parentId = parentDataset.id!!, sourceType = sourceType))
 
               every { eventPublisher.publishEvent(any<TwingraphImportEvent>()) } answers
                   {
                     firstArg<TwingraphImportEvent>().response = null
                   }
               if (shouldThrow) {
-                assertThrows<CsmResourceNotFoundException> {
-                  datasetApiService.refreshDataset(organizationSaved.id!!, datasetSaved.id!!)
-                }
+                val exception =
+                    assertThrows<CsmResourceNotFoundException> {
+                      datasetApiService.refreshDataset(organizationSaved.id!!, datasetSaved.id!!)
+                    }
+                assertEquals("Cannot be applied to source type '$sourceType'", exception.message)
               } else {
                 assertDoesNotThrow {
                   datasetApiService.refreshDataset(organizationSaved.id!!, datasetSaved.id!!)
