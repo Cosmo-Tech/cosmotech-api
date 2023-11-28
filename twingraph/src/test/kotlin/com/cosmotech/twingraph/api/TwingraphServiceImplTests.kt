@@ -16,6 +16,7 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.getCurrentAuthentication
 import com.cosmotech.api.utils.shaHash
 import com.cosmotech.organization.OrganizationApiServiceInterface
+import com.cosmotech.organization.domain.Organization
 import com.cosmotech.twingraph.domain.TwinGraphBatchResult
 import com.cosmotech.twingraph.domain.TwinGraphQuery
 import com.cosmotech.twingraph.extension.toJsonString
@@ -23,7 +24,6 @@ import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
-import io.mockk.impl.annotations.SpyK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -49,25 +49,23 @@ const val CONNECTED_DEFAULT_USER = "test.user@cosmotech.com"
 @ExtendWith(MockKExtension::class)
 class TwingraphServiceImplTests {
 
-  @Suppress("unused")
-  @MockK
-  private var csmPlatformProperties: CsmPlatformProperties = mockk(relaxed = true)
-  @Suppress("unused") @MockK private var csmAdmin: CsmAdmin = CsmAdmin(csmPlatformProperties)
+  private var csmPlatformProperties = mockk<CsmPlatformProperties>(relaxed = true)
 
-  @Suppress("unused") @SpyK private var csmRbac: CsmRbac = CsmRbac(csmPlatformProperties, csmAdmin)
+  private var csmAdmin: CsmAdmin = CsmAdmin(csmPlatformProperties)
+
+  @Suppress("unused") private var csmRbac: CsmRbac = CsmRbac(csmPlatformProperties, csmAdmin)
 
   @MockK private lateinit var unifiedJedis: UnifiedJedis
+
   @Suppress("unused") @MockK private lateinit var resourceScanner: ResourceScanner
+
   @MockK private lateinit var organizationService: OrganizationApiServiceInterface
 
-  @SpyK @InjectMockKs private lateinit var twingraphServiceImpl: TwingraphServiceImpl
+  @InjectMockKs private lateinit var twingraphServiceImpl: TwingraphServiceImpl
 
   @BeforeTest
   fun setUp() {
     MockKAnnotations.init(this)
-
-    every { unifiedJedis } returns mockk(relaxed = true)
-
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns AUTHENTICATED_USERNAME
@@ -85,7 +83,7 @@ class TwingraphServiceImplTests {
   fun `test delete graph as Admin - should call delete`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
     every { organizationService.getVerifiedOrganization(any(), PERMISSION_DELETE) } returns
-        mockk(relaxed = true)
+        Organization()
 
     every { unifiedJedis.scan(any<String>(), any(), any()) } returns
         mockk {
@@ -103,7 +101,7 @@ class TwingraphServiceImplTests {
   @Test
   fun `test findAllTwingraphs as Admin - should return all graphs`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
+    every { organizationService.getVerifiedOrganization(any()) } returns Organization()
 
     every { unifiedJedis.scan(any<String>(), any(), any()) } returns
         mockk {
@@ -118,7 +116,7 @@ class TwingraphServiceImplTests {
   @Test
   fun `test getGraphMetadata as Admin - should return metadata`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
+    every { organizationService.getVerifiedOrganization(any()) } returns Organization()
 
     every { unifiedJedis.exists(any<String>()) } returns true
     every { unifiedJedis.hgetAll(any<String>()) } returns
@@ -131,7 +129,7 @@ class TwingraphServiceImplTests {
   @Test
   fun `test getGraphMetadata as Admin - should throw exception if graph does not exist`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
+    every { organizationService.getVerifiedOrganization(any()) } returns Organization()
 
     every { unifiedJedis.exists(any<String>()) } returns false
     assertThrows<CsmResourceNotFoundException> {
@@ -142,7 +140,7 @@ class TwingraphServiceImplTests {
   @Test
   fun `test bulkQueryGraphs as Admin - should call query and set data to Redis`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
+    every { organizationService.getVerifiedOrganization(any()) } returns Organization()
     every { csmPlatformProperties.twincache.queryBulkTTL } returns 1000L
 
     every { unifiedJedis.keys(any<String>()) } returns setOf("graphId")
@@ -160,7 +158,7 @@ class TwingraphServiceImplTests {
   @Test
   fun `test bulkQueryGraphs as Admin - should return existing Hash when data found`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
+    every { organizationService.getVerifiedOrganization(any()) } returns Organization()
 
     every { unifiedJedis.keys(any<String>()) } returns setOf("graphId")
     every { unifiedJedis.exists(any<ByteArray>()) } returns true
@@ -173,7 +171,7 @@ class TwingraphServiceImplTests {
   @Test
   fun `test downloadGraph as Admin - should get graph data`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
+    every { organizationService.getVerifiedOrganization(any()) } returns Organization()
 
     every { unifiedJedis.exists(any<ByteArray>()) } returns true
     every { unifiedJedis.ttl(any<ByteArray>()) } returns 1000L
@@ -193,7 +191,7 @@ class TwingraphServiceImplTests {
   @Test
   fun `test downloadGraph as Admin - should throw exception if data not found`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
+    every { organizationService.getVerifiedOrganization(any()) } returns Organization()
 
     every { unifiedJedis.exists(any<ByteArray>()) } returns false
 
@@ -205,7 +203,7 @@ class TwingraphServiceImplTests {
   @Test
   fun `test downloadGraph as Admin - should throw exception if data expired`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
+    every { organizationService.getVerifiedOrganization(any()) } returns Organization()
 
     every { unifiedJedis.exists(any<ByteArray>()) } returns true
     every { unifiedJedis.ttl(any<ByteArray>()) } returns -1L
@@ -218,7 +216,7 @@ class TwingraphServiceImplTests {
   @Test
   fun `test updateGraphMetaData as Admin should modify graphName & graphVersion`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
+    every { organizationService.getVerifiedOrganization(any()) } returns Organization()
 
     every { unifiedJedis.exists(any<String>()) } returns true
     every { unifiedJedis.hset(any<String>(), any<String>(), any<String>()) } returns 1L
@@ -237,14 +235,13 @@ class TwingraphServiceImplTests {
       unifiedJedis.hset(any(), "graphName", "graphName")
       unifiedJedis.hset(any(), "graphRotation", "2")
       unifiedJedis.hgetAll(any<String>())
-      unifiedJedis.close()
     }
   }
 
   @Test
   fun `test updateGraphMetaData as Admin should not modify graphName & graphVersion if not present`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
+    every { organizationService.getVerifiedOrganization(any()) } returns Organization()
 
     every { unifiedJedis.exists(any<String>()) } returns true
     every { unifiedJedis.hset(any<String>(), any<String>(), any<String>()) } returns 1L
@@ -256,7 +253,6 @@ class TwingraphServiceImplTests {
     verifyAll {
       unifiedJedis.exists(any<String>())
       unifiedJedis.hgetAll(any<String>())
-      unifiedJedis.close()
     }
   }
 
