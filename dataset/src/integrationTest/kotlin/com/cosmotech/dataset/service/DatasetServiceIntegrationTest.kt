@@ -582,6 +582,54 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
+  @Test
+  fun `reupload a twingraph in dataset with source type File`() {
+    organizationSaved = organizationApiService.registerOrganization(organization)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+
+    val fileName = this::class.java.getResource("/integrationTest.zip")?.file
+    val file = File(fileName!!)
+    val resource = ByteArrayResource(file.readBytes())
+    datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
+    var datasetStatus =
+        datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
+    runBlocking {
+      while (datasetStatus == Dataset.Status.PENDING.value) {
+        delay(50L)
+        datasetStatus =
+            datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
+      }
+    }
+    datasetApiService.createTwingraphEntities(
+        organizationSaved.id!!,
+        datasetSaved.id!!,
+        "node",
+        listOf(GraphProperties(type = "Node", name = "newNode", params = "value:0")))
+    datasetStatus =
+        datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
+    var queryResult =
+        datasetApiService.twingraphQuery(
+            organizationSaved.id!!, datasetSaved.id!!, DatasetTwinGraphQuery("MATCH (n) RETURN n"))
+    val initalNodeAmount = queryResult.split("}}}").size
+
+    datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
+    datasetStatus =
+        datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
+    runBlocking {
+      while (datasetStatus == Dataset.Status.PENDING.value) {
+        delay(50L)
+        datasetStatus =
+            datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
+      }
+    }
+    queryResult =
+        datasetApiService.twingraphQuery(
+            organizationSaved.id!!, datasetSaved.id!!, DatasetTwinGraphQuery("MATCH (n) RETURN n"))
+    val newNodeAmount = queryResult.split("}}}").size
+
+    assertNotEquals(initalNodeAmount, newNodeAmount)
+  }
+
   @TestFactory
   fun `test refreshDataset`() =
       mapOf(

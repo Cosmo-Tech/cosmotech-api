@@ -276,6 +276,7 @@ class DatasetServiceImpl(
     }
   }
 
+  @Suppress("LongMethod")
   override fun uploadTwingraph(organizationId: String, datasetId: String, body: Resource) {
     val dataset = getDatasetWithStatus(organizationId, datasetId)
     csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE)
@@ -292,8 +293,18 @@ class DatasetServiceImpl(
         ?: throw CsmResourceNotFoundException("Dataset in use, cannot update. Retry later")
 
     datasetRepository.save(dataset.apply { status = Dataset.Status.PENDING })
-
+    var overriding = false
     GlobalScope.launch(SecurityCoroutineContext()) {
+      csmJedisPool.resource.use { jedis ->
+        if (jedis.exists(dataset.twingraphId!!)) {
+          jedis.eval(
+              "redis.call('RENAME', KEYS[1], KEYS[2]);",
+              2,
+              dataset.twingraphId,
+              "backupGraph-$datasetId")
+          overriding = true
+        }
+      }
       try {
         val queryBuffer = QueryBuffer(csmJedisPool.resource, dataset.twingraphId!!)
         unzip(body.inputStream, listOf(NODES_ZIP_FOLDER, EDGES_ZIP_FOLDER), "csv")
@@ -315,8 +326,22 @@ class DatasetServiceImpl(
               }
             }
         queryBuffer.send()
+        if (overriding) {
+          csmJedisPool.resource.use { jedis ->
+            jedis.eval("redis.call('DEL', KEYS[1]);", 1, "backupGraph-$datasetId")
+          }
+        }
         datasetRepository.save(dataset.apply { status = Dataset.Status.READY })
       } catch (e: Exception) {
+        if (overriding) {
+          csmJedisPool.resource.use { jedis ->
+            jedis.eval(
+                "redis.call('RENAME', KEYS[2], KEYS[1]);",
+                2,
+                dataset.twingraphId,
+                "backupGraph-$datasetId")
+          }
+        }
         datasetRepository.save(dataset.apply { status = Dataset.Status.ERROR })
       }
     }
