@@ -301,6 +301,7 @@ class DatasetServiceImpl(
     }
   }
 
+  @Suppress("LongMethod")
   override fun uploadTwingraph(
       organizationId: String,
       datasetId: String,
@@ -339,7 +340,7 @@ class DatasetServiceImpl(
     if (nodes.all { it.content.isEmpty() }) {
       throw CsmClientException("All nodes files ${nodes.map { it.filename }} found are empty")
     }
-
+    var overriding = false
     GlobalScope.launch(SecurityCoroutineContext()) {
       var safeReplace = false
       csmJedisPool.resource.use { jedis ->
