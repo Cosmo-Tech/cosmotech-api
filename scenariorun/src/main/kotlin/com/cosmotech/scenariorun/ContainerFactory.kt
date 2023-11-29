@@ -316,7 +316,7 @@ class ContainerFactory(
 
     return ScenarioRunStartContainers(
         generateName = generateName,
-        nodeLabel = nodeLabel?.plus(NODE_LABEL_SUFFIX),
+        nodeLabel = nodeLabel.plus(NODE_LABEL_SUFFIX),
         containers = listOf(container),
         csmSimulationId = jobId,
         labels =
@@ -1568,16 +1568,14 @@ internal fun getMinimalCommonEnvVars(
   }
 
   val twinCacheEnvVars: MutableMap<String, String> = mutableMapOf()
-  if (csmPlatformProperties.twincache != null) {
-    val twinCacheInfo = csmPlatformProperties.twincache!!
-    twinCacheEnvVars.putAll(
-        mapOf(
-            TWIN_CACHE_HOST to (twinCacheInfo.host),
-            TWIN_CACHE_PORT to (twinCacheInfo.port),
-            TWIN_CACHE_PASSWORD to (twinCacheInfo.password),
-            TWIN_CACHE_USERNAME to (twinCacheInfo.username),
-        ))
-  }
+  val twinCacheInfo = csmPlatformProperties.twincache
+  twinCacheEnvVars.putAll(
+      mapOf(
+          TWIN_CACHE_HOST to (twinCacheInfo.host),
+          TWIN_CACHE_PORT to (twinCacheInfo.port),
+          TWIN_CACHE_PASSWORD to (twinCacheInfo.password),
+          TWIN_CACHE_USERNAME to (twinCacheInfo.username),
+      ))
   val containerScopes = getContainerScopes(csmPlatformProperties)
   val commonEnvVars =
       mapOf(
