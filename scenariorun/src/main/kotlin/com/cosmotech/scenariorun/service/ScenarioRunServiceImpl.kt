@@ -717,7 +717,7 @@ class ScenarioRunServiceImpl(
     var versionWithDataIngestionState = true
     if (scenarioRun.sdkVersion != null) {
       logger.debug("SDK version for scenario run status detected: {}", scenarioRun.sdkVersion)
-      val splitVersion = scenarioRun.sdkVersion.split(".") ?: listOf()
+      val splitVersion = scenarioRun.sdkVersion.split(".")
       if (splitVersion.size < 2) {
         logger.error("Malformed SDK version for scenario run status data ingestion check")
       } else {
@@ -837,7 +837,6 @@ class ScenarioRunServiceImpl(
               "Data Ingestion status for ScenarioRun $scenarioRunId " +
                   "(csmSimulationRun=$csmSimulationRun): $postProcessingState")
           when (postProcessingState) {
-            null,
             DataIngestionState.Unknown -> ScenarioRunState.Unknown
             DataIngestionState.InProgress -> ScenarioRunState.DataIngestionInProgress
             DataIngestionState.Successful -> ScenarioRunState.Successful

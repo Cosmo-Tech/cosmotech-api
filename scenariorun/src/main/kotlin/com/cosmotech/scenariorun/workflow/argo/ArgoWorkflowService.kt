@@ -164,7 +164,7 @@ internal class ArgoWorkflowService(
     if (workflowId != null) {
       workflow.status?.nodes?.forEach { (nodeKey, nodeValue) ->
         nodeValue.outputs?.artifacts?.forEach {
-          val artifactName = it.name ?: ""
+          val artifactName = it.name
           it.s3.let {
             val artifactLogs =
                 artifactsByUidService
