@@ -1624,43 +1624,44 @@ internal fun getCommonEnvVars(
   return (minimalEnvVars + commonEnvVars).toMutableMap()
 }
 
-private fun getNewDependenciesIfExist(
+private fun getReplacedDependenciesFromPreviousStackedContainer(
     mergedContainerNames: MutableMap<String, String>,
     container: ScenarioRunContainer
 ): ScenarioRunContainer {
-  var tmp: ScenarioRunContainer = container
-  var dependencies: MutableList<String> = mutableListOf()
+  var copyOfCurrentContainer: ScenarioRunContainer = container
+  var dependencies = mutableListOf<String>()
   container.dependencies?.forEach {
     if (mergedContainerNames.containsKey(it)) {
       dependencies.add(mergedContainerNames.get(it)!!)
     }
   }
   if (dependencies.isNotEmpty()) {
-    tmp = container.copy(dependencies = dependencies)
+    copyOfCurrentContainer = container.copy(dependencies = dependencies)
   }
-  return tmp
+  return copyOfCurrentContainer
 }
 
 private fun stackSolutionContainers(
     containers: MutableList<ScenarioRunContainer>
 ): MutableList<ScenarioRunContainer> {
-  val stackedContainers: MutableList<ScenarioRunContainer> = mutableListOf()
+  val stackedContainers = mutableListOf<ScenarioRunContainer>()
   var stackedContainer: ScenarioRunContainer? = null
   var stackedIndex = 1
-  val mergedContainerNames: MutableMap<String, String> = mutableMapOf()
+  val mergedContainerNames = mutableMapOf<String, String>()
   for (container in containers) {
     if (container.solutionContainer != true) {
-      var tmpContainer: ScenarioRunContainer = container
+      var copyOfCurrentContainer: ScenarioRunContainer = container
       if (stackedContainer != null) {
         stackedContainers.add(stackedContainer)
-        tmpContainer = container.copy(dependencies = mutableListOf(stackedContainer.name))
+        copyOfCurrentContainer = container.copy(dependencies = mutableListOf(stackedContainer.name))
         stackedIndex++
       }
       stackedContainer = null
-      stackedContainers.add(tmpContainer)
+      stackedContainers.add(copyOfCurrentContainer)
     } else {
       if (stackedContainer == null) {
-        stackedContainer = getNewDependenciesIfExist(mergedContainerNames, container)
+        stackedContainer =
+            getReplacedDependenciesFromPreviousStackedContainer(mergedContainerNames, container)
       } else {
         val previousStackedContainer = stackedContainer
         stackedContainer = mergeSolutionContainer(stackedIndex, stackedContainer, container)
