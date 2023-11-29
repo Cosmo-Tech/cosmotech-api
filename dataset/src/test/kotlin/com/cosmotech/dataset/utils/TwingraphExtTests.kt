@@ -2,25 +2,34 @@
 // Licensed under the MIT license.
 package com.cosmotech.dataset.utils
 
+import io.mockk.every
+import io.mockk.mockk
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
+import redis.clients.jedis.graph.Record
+import redis.clients.jedis.graph.ResultSet
 
 class TwingraphExtTests {
 
-  /* TODO find a solution for this test
-    @Test
-    fun `ResultSet to json on null values`() {
-      val resultSet = spyk<ResultSet>()
-      val rec1 = RecordImpl(listOf("name", "value1", "value2"), listOf("a", "b", null))
-      val rec2 = RecordImpl(listOf("name", "value1", "value2"), listOf("c", null, "d"))
-      every { resultSet.iterator() } returns mutableListOf(rec1, rec2).iterator()
+  @Test
+  fun `ResultSet to json on null values`() {
+    val resultSet = mockk<ResultSet>()
+    val record1 = mockk<Record>()
+    val record2 = mockk<Record>()
 
-      val jsonResult = resultSet.toJsonString()
+    every { resultSet.iterator() } returns arrayListOf(record1, record2).listIterator()
+    every { record1.keys() } returns listOf("name", "value1", "value2")
+    every { record1.values() } returns listOf("a", "b", null)
 
-      assert(jsonResult == "[{\"name\":\"a\",\"value1\":\"b\"},{\"name\":\"c\",\"value2\":\"d\"}]")
-    }
-  */
+    every { record2.keys() } returns listOf("name", "value1", "value2")
+    every { record2.values() } returns listOf("c", null, "d")
+
+    val jsonResult = resultSet.toJsonString()
+
+    assert(jsonResult == "[{\"name\":\"a\",\"value1\":\"b\"},{\"name\":\"c\",\"value2\":\"d\"}]")
+  }
 
   @TestFactory
   fun `given a query, when we check the query syntax, then return if the query is readonly`() =

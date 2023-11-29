@@ -19,6 +19,8 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.shaHash
 import com.cosmotech.connector.ConnectorApiServiceInterface
+import com.cosmotech.connector.api.ConnectorApiServiceInterface
+import com.cosmotech.connector.domain.Connector
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetConnector
 import com.cosmotech.dataset.domain.DatasetSourceType
@@ -31,16 +33,11 @@ import com.cosmotech.dataset.domain.TwinGraphBatchResult
 import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.dataset.utils.toJsonString
 import com.cosmotech.organization.api.OrganizationApiServiceInterface
-import io.mockk.every
+import com.cosmotech.organization.domain.Organization
+import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
-import io.mockk.impl.annotations.SpyK
 import io.mockk.junit5.MockKExtension
-import io.mockk.mockk
-import io.mockk.mockkConstructor
-import io.mockk.mockkStatic
-import io.mockk.verify
-import io.mockk.verifyAll
 import java.io.File
 import java.util.*
 import kotlin.test.Test
@@ -73,17 +70,27 @@ fun baseDataset() =
 
 @ExtendWith(MockKExtension::class)
 class DatasetServiceImplTests {
-  @Suppress("unused") @MockK var idGenerator: CsmIdGenerator = mockk(relaxed = true)
+  @Suppress("unused") var idGenerator: CsmIdGenerator = mockk(relaxed = true)
+
   @MockK var eventPublisher: CsmEventPublisher = mockk(relaxed = true)
-  @MockK val connectorService: ConnectorApiServiceInterface = mockk(relaxed = true)
-  @MockK val organizationService: OrganizationApiServiceInterface = mockk(relaxed = true)
-  @MockK val datasetRepository: DatasetRepository = mockk(relaxed = true)
-  @MockK val unifiedJedis: UnifiedJedis = mockk(relaxed = true)
+
+  @Suppress("unused") @MockK private lateinit var connectorService: ConnectorApiServiceInterface
+
+  @MockK private lateinit var organizationService: OrganizationApiServiceInterface
+
+  @MockK private lateinit var datasetRepository: DatasetRepository
+
+  @MockK private lateinit var unifiedJedis: UnifiedJedis
+
   @Suppress("unused") @MockK private lateinit var resourceScanner: ResourceScanner
-  @MockK var csmPlatformProperties: CsmPlatformProperties = mockk(relaxed = true)
-  @Suppress("unused") @SpyK private var csmAdmin: CsmAdmin = CsmAdmin(csmPlatformProperties)
-  @SpyK var csmRbac: CsmRbac = CsmRbac(csmPlatformProperties, csmAdmin)
-  @SpyK @InjectMockKs lateinit var datasetService: DatasetServiceImpl
+
+  private var csmPlatformProperties: CsmPlatformProperties = mockk(relaxed = true)
+
+  private var csmAdmin: CsmAdmin = CsmAdmin(csmPlatformProperties)
+
+  @Suppress("unused") private var csmRbac: CsmRbac = CsmRbac(csmPlatformProperties, csmAdmin)
+
+  @InjectMockKs private lateinit var datasetService: DatasetServiceImpl
 
   @BeforeEach
   fun setUp() {
@@ -99,7 +106,7 @@ class DatasetServiceImplTests {
 
   @Test
   fun `findAllDatasets should return empty list when no dataset exists`() {
-
+    every { organizationService.findOrganizationById(any()) } returns Organization()
     every { datasetRepository.findByOrganizationId(ORGANIZATION_ID, any(), any()) } returns
         Page.empty()
     val result = datasetService.findAllDatasets(ORGANIZATION_ID, null, null)
@@ -121,6 +128,14 @@ class DatasetServiceImplTests {
             .copy(
                 connector = DatasetConnector(id = "connectorId", name = "connectorName"),
             )
+    every { organizationService.findOrganizationById(any()) } returns Organization()
+    every { connectorService.findConnectorById(any()) } returns
+        Connector(
+            key = "key",
+            name = "name",
+            repository = "repository",
+            version = "version",
+            ioTypes = listOf(Connector.IoTypes.read))
     every { datasetRepository.save(any()) } returnsArgument 0
     val result = datasetService.createDataset(ORGANIZATION_ID, dataset)
     assertEquals(dataset.organizationId, result.organizationId)
@@ -134,6 +149,7 @@ class DatasetServiceImplTests {
   @Test
   fun `createDataset should throw IllegalArgumentException when the name is empty`() {
     val dataset = baseDataset().copy(name = "")
+    every { organizationService.findOrganizationById(any()) } returns Organization()
     every { datasetRepository.save(any()) } returnsArgument 0
     assertThrows<IllegalArgumentException> {
       datasetService.createDataset(ORGANIZATION_ID, dataset)
@@ -143,6 +159,7 @@ class DatasetServiceImplTests {
   @Test
   fun `createDataset should throw IllegalArgumentException when source is empty for ADT or Storage type`() {
     val typeList = listOf(DatasetSourceType.ADT, DatasetSourceType.AzureStorage)
+    every { organizationService.findOrganizationById(any()) } returns Organization()
     typeList.forEach { type ->
       val dataset = baseDataset().copy(sourceType = type, source = null)
       every { datasetRepository.save(any()) } returnsArgument 0
@@ -154,6 +171,7 @@ class DatasetServiceImplTests {
   @Test
   fun `createDataset should throw IllegalArgumentException when connector is empty`() {
     val dataset = baseDataset()
+    every { organizationService.findOrganizationById(any()) } returns Organization()
     every { datasetRepository.save(any()) } returnsArgument 0
     assertThrows<IllegalArgumentException> {
       datasetService.createDataset(ORGANIZATION_ID, dataset)
@@ -419,10 +437,15 @@ class DatasetServiceImplTests {
     val dataset =
         baseDataset()
             .copy(twingraphId = "graphId", ingestionStatus = Dataset.IngestionStatus.SUCCESS)
+    val graphQuery = "MATCH(n) RETURN n"
+    val twinGraphQuery = DatasetTwinGraphQuery(graphQuery)
+
+    every { organizationService.findOrganizationById(any()) } returns Organization()
     every { datasetRepository.save(any()) } returnsArgument 0
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { csmPlatformProperties.twincache.queryBulkTTL } returns 1000L
 
+    every { unifiedJedis.graphQuery("graphId", graphQuery, 0) } returns mockEmptyResultSet()
     every { unifiedJedis.exists(any<String>()) } returns true
     every { unifiedJedis.hgetAll(any<String>()) } returns
         mapOf("graphName" to "graphName", "graphRotation" to "2")
@@ -430,10 +453,9 @@ class DatasetServiceImplTests {
     every { unifiedJedis.graphReadonlyQuery(any(), any(), any<Long>()) } returns
         mockEmptyResultSet()
 
-    val twinGraphQuery = DatasetTwinGraphQuery("MATCH(n) RETURN n")
     datasetService.twingraphQuery(ORGANIZATION_ID, DATASET_ID, twinGraphQuery)
 
-    verify { unifiedJedis.graphQuery(any(), any(), any<Long>()) }
+    verify { unifiedJedis.graphQuery("graphId", graphQuery, 0) }
   }
 
   @Test
@@ -457,12 +479,14 @@ class DatasetServiceImplTests {
     val dataset =
         baseDataset()
             .copy(twingraphId = "graphId", ingestionStatus = Dataset.IngestionStatus.SUCCESS)
+    val graphQuery = "MATCH(n) RETURN n"
     every { datasetRepository.save(any()) } returnsArgument 0
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { csmPlatformProperties.twincache.queryBulkTTL } returns 1000L
 
     every { unifiedJedis.keys(any<String>()) } returns setOf("graphId")
     every { unifiedJedis.exists(any<ByteArray>()) } returns false
+    every { unifiedJedis.graphQuery("graphId", graphQuery, 0) } returns mockEmptyResultSet()
 
     every { unifiedJedis.graphQuery(any(), any()) } returns mockEmptyResultSet()
     every { unifiedJedis.setex(any<ByteArray>(), any<Long>(), any<ByteArray>()) } returns "OK"
@@ -473,9 +497,8 @@ class DatasetServiceImplTests {
     assertEquals(jsonHash.hash, "graphId:MATCH(n) RETURN n".shaHash())
     verifyAll {
       unifiedJedis.exists(any<ByteArray>())
-      unifiedJedis.graphQuery(any(), any(), any<Long>())
+      unifiedJedis.graphQuery("graphId", graphQuery, 0)
       unifiedJedis.setex(any<ByteArray>(), any<Long>(), any<ByteArray>())
-      unifiedJedis.close()
     }
   }
 
