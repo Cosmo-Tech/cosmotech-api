@@ -286,7 +286,7 @@ Set the Organization default security
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **OrganizationRole** | [**OrganizationRole**](../Models/OrganizationRole.md)| the new Organization default security. | |
+| **OrganizationRole** | [**OrganizationRole**](../Models/OrganizationRole.md)| This change the organization default security. The default security is the role assigned to any person not on the Access Control List. If the default security is None, then nobody outside of the ACL can access the organization. | |
 
 ### Return type
 
@@ -337,7 +337,7 @@ Update an Organization
 |Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **Organization** | [**Organization**](../Models/Organization.md)| the new Organization details | |
+| **Organization** | [**Organization**](../Models/Organization.md)| the new Organization details. This endpoint can&#39;t be used to update security | |
 
 ### Return type
 
