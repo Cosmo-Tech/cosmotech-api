@@ -24,6 +24,7 @@ import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
+import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
@@ -402,7 +403,7 @@ class DatasetServiceImpl(
           return Dataset.IngestionStatus.NONE.value
         }
           if (dataset.ingestionStatus == Dataset.IngestionStatus.ERROR) {
-            return Dataset.IngestionStatus.ERROR.value
+          return Dataset.IngestionStatus.ERROR.value
           } else if (!unifiedJedis.exists(dataset.twingraphId!!)) {
             Dataset.IngestionStatus.PENDING.value
           } else {
@@ -415,7 +416,6 @@ class DatasetServiceImpl(
             datasetRepository.save(dataset)
             Dataset.IngestionStatus.SUCCESS.value
           }
-
       }
       DatasetSourceType.ADT,
       DatasetSourceType.Twincache,
