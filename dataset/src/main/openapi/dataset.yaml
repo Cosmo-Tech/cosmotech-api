@@ -301,8 +301,9 @@ paths:
               type: string
               format: binary
       responses:
-        "200":
-          description: Twingraph File Uploaded
+        "201":
+          description: Twingraph file upload started
+
     delete:
       operationId: deleteDataset
       tags:
@@ -1334,6 +1335,10 @@ components:
           type: string
           readOnly: true
           description: the User id which own this Dataset
+        ownerName:
+          type: string
+          readOnly: true
+          description: the name of the owner
         organizationId:
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           type: string
@@ -1684,6 +1689,7 @@ components:
         name: Brewery ADT reference
         description: Brewery reference model in ADT
         ownerId: "ownerId"
+        ownerName: "Bob"
         parentId: "null"
         twingraphId: "null"
         main: "null"
@@ -1733,6 +1739,7 @@ components:
           name: Brewery ADT reference
           description: Brewery reference model in ADT
           ownerId: "ownerId"
+          ownerName: "Bob"
           parentId: "null"
           twingraphId: "null"
           main: "null"
@@ -1778,6 +1785,7 @@ components:
           name: Brewery ADT reference
           description: Brewery reference model in ADT
           ownerId: "ownerId"
+          ownerName: "Bob"
           parentId: "null"
           twingraphId: "null"
           main: "null"
@@ -1832,6 +1840,7 @@ components:
         name: Brewery ADT new reference
         description: Brewery reference model in ADT
         ownerId: "ownerId"
+        ownerName: "Bob"
         parentId: "null"
         twingraphId: "null"
         main: "null"
