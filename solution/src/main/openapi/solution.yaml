@@ -845,6 +845,9 @@ components:
         name:
           type: string
           description: the Run Template name
+          deprecated: true
+        labels:
+          $ref: '#/components/schemas/TranslatedLabels'
         description:
           type: string
           description: the Run Template description
