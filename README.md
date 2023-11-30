@@ -386,3 +386,4 @@ kube-linter --config api/kubernetes/.kube-linter.yaml lint api/kubernetes/csm-ar
 
 ### License dependencies
 The product is using the following dependencies, under their respective licenses: [License check page](https://htmlpreview.github.io/?https://github.com/Cosmo-Tech/cosmotech-api/blob/main/doc/licenses/index.html)
+
