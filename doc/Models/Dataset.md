@@ -7,6 +7,7 @@ Name | Type | Description | Notes
 **name** | **String** | the Dataset name | [optional] [default to null]
 **description** | **String** | the Dataset description | [optional] [default to null]
 **ownerId** | **String** | the User id which own this Dataset | [optional] [default to null]
+**ownerName** | **String** | the name of the owner | [optional] [default to null]
 **organizationId** | **String** | the Organization Id related to this Dataset | [optional] [default to null]
 **parentId** | **String** | the Dataset id which is the parent of this Dataset | [optional] [default to null]
 **twingraphId** | **String** | the twin graph id | [optional] [default to null]

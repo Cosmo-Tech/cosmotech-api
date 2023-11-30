@@ -53,6 +53,7 @@ entity Dataset {
     name: String
     description: String
     ownerId: String
+    ownerName: String
     organizationId: String
     parentId: String
     twingraphId: String
