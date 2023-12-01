@@ -526,7 +526,6 @@ subprojects {
   }
 }
 
-/*TODO Should be rework with gradle 8.4 ...
 val copySubProjectsDetektReportsTasks =
     subprojects.flatMap { subProject ->
       listOf("html", "xml", "txt", "sarif").map { format ->
@@ -537,11 +536,12 @@ val copySubProjectsDetektReportsTasks =
                     "${subProject.projectDir.relativeTo(rootDir)}"
                         .capitalizeAsciiOnly()
                         .replace("/", "_")) {
-                  shouldRunAfter(subProject.tasks.getByName("detekt"))
+                  dependsOn("spotlessKotlin", "spotlessKotlinGradle", "spotlessJava")
                   from(
                       file(
                           "${subProject.projectDir}/build/reports/detekt/${subProject.name}-detekt.$format"))
-                  into("${rootProject.layout.buildDirectory}/reports/detekt/$format")
+                  into(
+                      "${subProject.parent!!.layout.projectDirectory}/build/reports/detekt/$format")
                 }
         subProject.tasks.getByName("detekt") { finalizedBy(copyTask) }
         copyTask
@@ -554,7 +554,6 @@ tasks.register<Copy>("copySubProjectsDetektReports") {
 }
 
 tasks.getByName("detekt") { finalizedBy("copySubProjectsDetektReports") }
-*/
 
 extensions.configure<kotlinx.kover.gradle.plugin.dsl.KoverReportExtension> {
   defaults {
