@@ -23,6 +23,7 @@ help() {
   echo "- ARGO_MINIO_REQUESTS_MEMORY | units of bytes (default is 4Gi) | Memory requests for the Argo MinIO server"
   echo "- LOKI_PERSISTENCE_MEMORY | units of bytes (default is 4Gi) | Memory for persistence of Loki system"
   echo "- LOKI_RETENTION_PERIOD | units of hours (default is 720h) | Loki logs retention period"
+  echo "- LOKI_MAX_ENTRIES_LIMIT_PER_QUERY | string | Maximum number of log entries per query"
   echo "- PROM_STORAGE_CLASS_NAME | storage class name for the prometheus PVC (default is standard)"
   echo "- PROM_STORAGE_RESOURCE_REQUEST | size requested for prometheusPVC (default is 10Gi)"
   echo "- PROM_CPU_MEM_LIMITS | memory size limit for prometheus (default is 2Gi)"
@@ -560,6 +561,8 @@ loki:
     table_manager:
       retention_deletes_enabled: true
       retention_period: "${LOKI_RETENTION_PERIOD:-720h}"
+    limits_config:
+      max_entries_limit_per_query: ${LOKI_MAX_ENTRIES_LIMIT_PER_QUERY:-50000}
 grafana:
   enabled: true
   persistence:
