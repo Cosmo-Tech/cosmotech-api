@@ -49,6 +49,7 @@ import com.ninjasquad.springmockk.SpykBean
 import com.redis.om.spring.RediSearchIndexer
 import com.redis.testcontainers.RedisStackContainer
 import com.redislabs.redisgraph.impl.api.RedisGraph
+import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -62,6 +63,7 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeAll
@@ -105,7 +107,8 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var datasetRepository: DatasetRepository
   @Autowired lateinit var connectorApiService: ConnectorApiService
   @Autowired lateinit var organizationApiService: OrganizationApiService
-  @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
+  @SpykBean @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
+  @SpykBean @Autowired lateinit var csmRedisGraph: RedisGraph
   @MockK(relaxUnitFun = true) private lateinit var eventPublisher: CsmEventPublisher
 
   lateinit var connectorSaved: Connector
@@ -148,6 +151,11 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     organization = makeOrganization("Organization")
     dataset = makeDataset("d-dataset-1", "dataset-1")
     dataset2 = makeDataset("d-dataset-2", "dataset-2")
+  }
+
+  @AfterEach
+  fun afterEach() {
+    clearAllMocks()
   }
 
   @Test
@@ -1349,6 +1357,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
               materializeTwingraph()
 
               val datasetTwinGraphQuery = DatasetTwinGraphQuery("MATCH (n) RETURN n")
+              every { datasetApiService.query(any(), any()) } returns mockk()
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
