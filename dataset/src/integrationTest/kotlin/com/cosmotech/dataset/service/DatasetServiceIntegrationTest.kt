@@ -160,6 +160,11 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     clearAllMocks()
   }
 
+  @AfterEach
+  fun afterEach() {
+    clearAllMocks()
+  }
+
   @Test
   fun `test Dataset CRUD`() {
 
