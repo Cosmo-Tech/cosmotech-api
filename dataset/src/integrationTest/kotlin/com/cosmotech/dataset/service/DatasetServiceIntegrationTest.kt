@@ -601,12 +601,10 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
     var datasetStatus =
         datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
-    runBlocking {
-      while (datasetStatus == Dataset.Status.PENDING.value) {
-        delay(50L)
-        datasetStatus =
-            datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
-      }
+    while (datasetStatus == Dataset.Status.PENDING.value) {
+      Thread.sleep(50L)
+      datasetStatus =
+          datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
     }
     datasetApiService.createTwingraphEntities(
         organizationSaved.id!!,
@@ -623,12 +621,10 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
     datasetStatus =
         datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
-    runBlocking {
-      while (datasetStatus == Dataset.Status.PENDING.value) {
-        delay(50L)
-        datasetStatus =
-            datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
-      }
+    while (datasetStatus == Dataset.Status.PENDING.value) {
+      Thread.sleep(50L)
+      datasetStatus =
+          datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
     }
     queryResult =
         datasetApiService.twingraphQuery(
