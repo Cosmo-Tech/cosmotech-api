@@ -293,8 +293,8 @@ class DatasetServiceImpl(
         ?: throw CsmResourceNotFoundException("Dataset in use, cannot update. Retry later")
 
     datasetRepository.save(dataset.apply { status = Dataset.Status.PENDING })
-    var overriding = false
     GlobalScope.launch(SecurityCoroutineContext()) {
+      var safeReplace = false
       csmJedisPool.resource.use { jedis ->
         if (jedis.exists(dataset.twingraphId!!)) {
           jedis.eval(
@@ -302,7 +302,7 @@ class DatasetServiceImpl(
               2,
               dataset.twingraphId,
               "backupGraph-$datasetId")
-          overriding = true
+          safeReplace = true
         }
       }
       try {
@@ -326,14 +326,14 @@ class DatasetServiceImpl(
               }
             }
         queryBuffer.send()
-        if (overriding) {
+        if (safeReplace) {
           csmJedisPool.resource.use { jedis ->
             jedis.eval("redis.call('DEL', KEYS[1]);", 1, "backupGraph-$datasetId")
           }
         }
         datasetRepository.save(dataset.apply { status = Dataset.Status.READY })
       } catch (e: Exception) {
-        if (overriding) {
+        if (safeReplace) {
           csmJedisPool.resource.use { jedis ->
             jedis.eval(
                 "redis.call('RENAME', KEYS[2], KEYS[1]);",
