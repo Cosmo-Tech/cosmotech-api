@@ -184,6 +184,7 @@ entity ResourceSizeInfo {
 entity RunTemplate {
     * id: String
     name: String
+    labels: Map
     description: String
     csmSimulation: String
     tags: List<String>
