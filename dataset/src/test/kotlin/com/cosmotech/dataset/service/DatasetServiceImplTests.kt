@@ -126,7 +126,7 @@ class DatasetServiceImplTests {
         DatasetSourceType.None,
         result.sourceType,
     )
-    assertEquals(Dataset.Status.DRAFT, result.status)
+    assertEquals(Dataset.IngestionStatus.NONE, result.ingestionStatus)
   }
 
   @Test
@@ -163,7 +163,7 @@ class DatasetServiceImplTests {
     val dataset =
         baseDataset()
             .copy(
-                status = Dataset.Status.READY,
+                ingestionStatus = Dataset.IngestionStatus.SUCCESS,
                 sourceType = DatasetSourceType.Twincache,
                 source = SourceInfo("http://storage.location"),
                 twingraphId = "twingraphId")
@@ -182,7 +182,7 @@ class DatasetServiceImplTests {
     val result =
         datasetService.createSubDataset(ORGANIZATION_ID, dataset.id!!, subDatasetGraphQuery)
     assertEquals(dataset.organizationId, result.organizationId)
-    assertEquals(Dataset.Status.READY, result.status)
+    assertEquals(Dataset.IngestionStatus.SUCCESS, result.ingestionStatus)
     assertEquals(dataset.sourceType, result.sourceType)
     assertEquals(dataset.source, result.source)
     assertEquals(subDatasetGraphQuery.name, result.name)
@@ -194,7 +194,8 @@ class DatasetServiceImplTests {
 
   @Test
   fun `createSubDataset should throw IllegalArgumentException when twingraphId is empty`() {
-    val dataset = baseDataset().copy(twingraphId = "", status = Dataset.Status.READY)
+    val dataset =
+        baseDataset().copy(twingraphId = "", ingestionStatus = Dataset.IngestionStatus.SUCCESS)
     val subDatasetGraphQuery = SubDatasetGraphQuery()
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
     assertThrows<CsmResourceNotFoundException> {
@@ -204,7 +205,9 @@ class DatasetServiceImplTests {
 
   @Test
   fun `createSubDataset should throw CsmResourceNotFoundException when Twingraph not found`() {
-    val dataset = baseDataset().copy(twingraphId = "twingraphId", status = Dataset.Status.READY)
+    val dataset =
+        baseDataset()
+            .copy(twingraphId = "twingraphId", ingestionStatus = Dataset.IngestionStatus.SUCCESS)
     val subDatasetGraphQuery = SubDatasetGraphQuery()
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
     every { datasetRepository.save(any()) } returnsArgument 0
@@ -217,7 +220,9 @@ class DatasetServiceImplTests {
 
   @Test
   fun `uploadTwingraph should throw ArchiveException when resource is not Archive`() {
-    val dataset = baseDataset().copy(twingraphId = "twingraphId", status = Dataset.Status.READY)
+    val dataset =
+        baseDataset()
+            .copy(twingraphId = "twingraphId", ingestionStatus = Dataset.IngestionStatus.SUCCESS)
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
 
     val fileName = this::class.java.getResource("/Users.csv")?.file
@@ -230,7 +235,9 @@ class DatasetServiceImplTests {
 
   @Test
   fun `uploadTwingraph should throw IllegalArgumentException when resource is not Zip Archive`() {
-    val dataset = baseDataset().copy(twingraphId = "twingraphId", status = Dataset.Status.READY)
+    val dataset =
+        baseDataset()
+            .copy(twingraphId = "twingraphId", ingestionStatus = Dataset.IngestionStatus.SUCCESS)
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
 
     val fileName = this::class.java.getResource("/Users.7z")?.file
@@ -277,7 +284,7 @@ class DatasetServiceImplTests {
     val dataset =
         baseDataset()
             .copy(
-                status = Dataset.Status.PENDING,
+                ingestionStatus = Dataset.IngestionStatus.PENDING,
                 sourceType = DatasetSourceType.File,
                 twingraphId = "twingraphId")
     val fileName = this::class.java.getResource("/Graph.zip")?.file
@@ -294,7 +301,7 @@ class DatasetServiceImplTests {
     val dataset =
         baseDataset()
             .copy(
-                status = Dataset.Status.DRAFT,
+                ingestionStatus = Dataset.IngestionStatus.NONE,
                 sourceType = DatasetSourceType.File,
                 twingraphId = "twingraphId")
     val fileName = this::class.java.getResource("/Graph.zip")?.file
@@ -306,7 +313,9 @@ class DatasetServiceImplTests {
 
     datasetService.uploadTwingraph(ORGANIZATION_ID, DATASET_ID, resource)
     verify { datasetRepository.save(any()) }
-    verify { datasetRepository.save(match { it.status == Dataset.Status.PENDING }) }
+    verify {
+      datasetRepository.save(match { it.ingestionStatus == Dataset.IngestionStatus.PENDING })
+    }
   }
 
   @Test
@@ -314,13 +323,13 @@ class DatasetServiceImplTests {
     val dataset =
         baseDataset()
             .copy(
-                status = Dataset.Status.DRAFT,
+                ingestionStatus = Dataset.IngestionStatus.NONE,
                 sourceType = DatasetSourceType.File,
                 twingraphId = "twingraphId")
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
     every { csmJedisPool.resource.exists(any<String>()) } returns false
     val result = datasetService.getDatasetTwingraphStatus(ORGANIZATION_ID, DATASET_ID)
-    assertEquals(Dataset.Status.DRAFT.value, result)
+    assertEquals(Dataset.IngestionStatus.NONE.value, result)
   }
 
   @Test
@@ -328,13 +337,13 @@ class DatasetServiceImplTests {
     val dataset =
         baseDataset()
             .copy(
-                status = Dataset.Status.READY,
+                ingestionStatus = Dataset.IngestionStatus.SUCCESS,
                 sourceType = DatasetSourceType.File,
                 twingraphId = "twingraphId")
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
     every { csmJedisPool.resource.exists(any<String>()) } returns true
     val result = datasetService.getDatasetTwingraphStatus(ORGANIZATION_ID, DATASET_ID)
-    assertEquals(Dataset.Status.READY.value, result)
+    assertEquals(Dataset.IngestionStatus.SUCCESS.value, result)
   }
 
   @Test
@@ -342,7 +351,7 @@ class DatasetServiceImplTests {
     val dataset =
         baseDataset()
             .copy(
-                status = Dataset.Status.PENDING,
+                ingestionStatus = Dataset.IngestionStatus.PENDING,
                 sourceType = DatasetSourceType.ADT,
                 source = SourceInfo(location = "test", jobId = "0"),
                 twingraphId = "twingraphId")
@@ -354,7 +363,7 @@ class DatasetServiceImplTests {
 
     val result = datasetService.getDatasetTwingraphStatus(ORGANIZATION_ID, DATASET_ID)
 
-    assertEquals(Dataset.Status.READY.value, result)
+    assertEquals(Dataset.IngestionStatus.SUCCESS.value, result)
   }
 
   @Test
@@ -374,7 +383,7 @@ class DatasetServiceImplTests {
     val dataset =
         baseDataset()
             .copy(
-                status = Dataset.Status.DRAFT,
+                ingestionStatus = Dataset.IngestionStatus.NONE,
                 sourceType = DatasetSourceType.ADT,
                 source = SourceInfo("http://storage.location", jobId = "0"),
                 twingraphId = "twingraphId")
@@ -384,7 +393,7 @@ class DatasetServiceImplTests {
     val datasetInfo = datasetService.refreshDataset(ORGANIZATION_ID, DATASET_ID)
     verify(atLeast = 1) { datasetRepository.save(any()) }
     assertEquals(dataset.id, datasetInfo.datasetId)
-    assertEquals(dataset.status!!.value, datasetInfo.status)
+    assertEquals(dataset.ingestionStatus!!.value, datasetInfo.status)
   }
 
   @Test
@@ -425,7 +434,9 @@ class DatasetServiceImplTests {
 
   @Test
   fun `twingraphQuery should call query and set data to Redis`() {
-    val dataset = baseDataset().copy(twingraphId = "graphId", status = Dataset.Status.READY)
+    val dataset =
+        baseDataset()
+            .copy(twingraphId = "graphId", ingestionStatus = Dataset.IngestionStatus.SUCCESS)
     every { datasetRepository.save(any()) } returnsArgument 0
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
     every { csmPlatformProperties.twincache.queryBulkTTL } returns 1000L
@@ -460,7 +471,9 @@ class DatasetServiceImplTests {
   fun `test bulkQueryGraphs as Admin - should call query and set data to Redis`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
     every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
-    val dataset = baseDataset().copy(twingraphId = "graphId", status = Dataset.Status.READY)
+    val dataset =
+        baseDataset()
+            .copy(twingraphId = "graphId", ingestionStatus = Dataset.IngestionStatus.SUCCESS)
     every { datasetRepository.save(any()) } returnsArgument 0
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
     every { csmPlatformProperties.twincache.queryBulkTTL } returns 1000L
@@ -488,7 +501,9 @@ class DatasetServiceImplTests {
   fun `test bulkQueryGraphs as Admin - should return existing Hash when data found`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
     every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
-    val dataset = baseDataset().copy(twingraphId = "graphId", status = Dataset.Status.READY)
+    val dataset =
+        baseDataset()
+            .copy(twingraphId = "graphId", ingestionStatus = Dataset.IngestionStatus.SUCCESS)
     every { datasetRepository.save(any()) } returnsArgument 0
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
     every { csmJedisPool.resource.keys(any<String>()) } returns setOf("graphId")
