@@ -62,7 +62,8 @@ entity Dataset {
     refreshDate: Long
     sourceType: DatasetSourceType
     source: SourceInfo
-    status: String
+    ingestionStatus: String
+    twincacheStatus: String
     queries: List<String>
     tags: List<String>
     connector: DatasetConnector

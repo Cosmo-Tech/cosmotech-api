@@ -69,9 +69,6 @@ import com.redislabs.redisgraph.RedisGraph
 import com.redislabs.redisgraph.ResultSet
 import com.redislabs.redisgraph.graph_entities.Edge
 import com.redislabs.redisgraph.graph_entities.Node
-import java.io.InputStream
-import java.nio.charset.StandardCharsets
-import java.time.Instant
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.apache.commons.compress.archivers.ArchiveStreamFactory
@@ -89,6 +86,9 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.exceptions.JedisDataException
+import java.io.InputStream
+import java.nio.charset.StandardCharsets
+import java.time.Instant
 
 const val TYPE_NODE = "node"
 const val TYPE_RELATIONSHIP = "relationship"
@@ -98,7 +98,14 @@ const val TWINCACHE_CONNECTOR = "TwincacheConnector"
 const val TWINCACHE_NAME = "TWIN_CACHE_NAME"
 
 @Service
-@Suppress("TooManyFunctions", "LongParameterList", "LargeClass", "ReturnCount")
+@Suppress(
+    "TooManyFunctions",
+    "LongParameterList",
+    "LargeClass",
+    "ReturnCount",
+    "ComplexMethod",
+    "LongMethod",
+    "NestedBlockDepth")
 class DatasetServiceImpl(
     private val connectorService: ConnectorApiService,
     private val organizationService: OrganizationApiService,
@@ -194,7 +201,8 @@ class DatasetServiceImpl(
             source = dataset.source ?: SourceInfo("none"),
             main = dataset.main ?: true,
             creationDate = Instant.now().toEpochMilli(),
-            status = Dataset.Status.DRAFT,
+            ingestionStatus = Dataset.IngestionStatus.NONE,
+            twincacheStatus = Dataset.TwincacheStatus.EMPTY,
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
             organizationId = organizationId,
             security = datasetSecurity)
@@ -210,9 +218,10 @@ class DatasetServiceImpl(
       datasetId: String,
       subDatasetGraphQuery: SubDatasetGraphQuery
   ): Dataset {
-    val dataset = getDatasetWithStatus(organizationId, datasetId, status = Dataset.Status.READY)
+    val dataset =
+        getDatasetWithStatus(organizationId, datasetId, status = Dataset.IngestionStatus.SUCCESS)
     csmRbac.verify(dataset.getRbac(), PERMISSION_CREATE_CHILDREN)
-
+    var twincacheStatus = Dataset.TwincacheStatus.EMPTY
     val subTwingraphId = idGenerator.generate("twingraph")
     trx(dataset) {
       csmJedisPool.resource.use { jedis ->
@@ -230,6 +239,7 @@ class DatasetServiceImpl(
             query.takeIf { it.isReadOnlyQuery() }?.apply { bulkQueryResult(queryBuffer, resultSet) }
           }
           queryBuffer.send()
+          twincacheStatus = Dataset.TwincacheStatus.FULL
         }
       }
     }
@@ -245,7 +255,8 @@ class DatasetServiceImpl(
             main = subDatasetGraphQuery.main ?: dataset.main,
             creationDate = Instant.now().toEpochMilli(),
             parentId = dataset.id,
-            status = Dataset.Status.READY,
+            ingestionStatus = Dataset.IngestionStatus.SUCCESS,
+            twincacheStatus = twincacheStatus,
             connector =
                 dataset.connector?.apply { parametersValues?.set(TWINCACHE_NAME, subTwingraphId) },
             sourceType = DatasetSourceType.Twincache,
@@ -289,10 +300,10 @@ class DatasetServiceImpl(
     dataset.sourceType.takeIf { it == DatasetSourceType.File }
         ?: throw CsmResourceNotFoundException("SourceType Dataset must be 'File'")
     val uploadStatus = getDatasetTwingraphStatus(organizationId, datasetId)
-    uploadStatus.takeUnless { it == Dataset.Status.PENDING.value }
+    uploadStatus.takeUnless { it == Dataset.IngestionStatus.PENDING.value }
         ?: throw CsmResourceNotFoundException("Dataset in use, cannot update. Retry later")
 
-    datasetRepository.save(dataset.apply { status = Dataset.Status.PENDING })
+    datasetRepository.save(dataset.apply { ingestionStatus = Dataset.IngestionStatus.PENDING })
     GlobalScope.launch(SecurityCoroutineContext()) {
       var safeReplace = false
       csmJedisPool.resource.use { jedis ->
@@ -331,7 +342,7 @@ class DatasetServiceImpl(
             jedis.eval("redis.call('DEL', KEYS[1]);", 1, "backupGraph-$datasetId")
           }
         }
-        datasetRepository.save(dataset.apply { status = Dataset.Status.READY })
+        datasetRepository.save(dataset.apply { ingestionStatus = Dataset.IngestionStatus.SUCCESS })
       } catch (e: Exception) {
         if (safeReplace) {
           csmJedisPool.resource.use { jedis ->
@@ -342,7 +353,7 @@ class DatasetServiceImpl(
                 "backupGraph-$datasetId")
           }
         }
-        datasetRepository.save(dataset.apply { status = Dataset.Status.ERROR })
+        datasetRepository.save(dataset.apply { ingestionStatus = Dataset.IngestionStatus.ERROR })
       }
     }
   }
@@ -354,29 +365,38 @@ class DatasetServiceImpl(
     // This call verify by itself that we have the read authorization in the dataset
     val dataset = findDatasetById(organizationId, datasetId)
     return when (dataset.sourceType) {
-      null -> Dataset.Status.DRAFT.value
-      DatasetSourceType.None -> dataset.status!!.value
+      null -> Dataset.IngestionStatus.NONE.value
+      DatasetSourceType.None -> dataset.ingestionStatus!!.value
       DatasetSourceType.File -> {
-        if (dataset.status == Dataset.Status.DRAFT) {
-          return Dataset.Status.DRAFT.value
+        if (dataset.ingestionStatus == Dataset.IngestionStatus.NONE) {
+          return Dataset.IngestionStatus.NONE.value
         }
         csmJedisPool.resource.use { jedis ->
-          if (dataset.status == Dataset.Status.ERROR) {
-            return Dataset.Status.ERROR.value
+          if (dataset.ingestionStatus == Dataset.IngestionStatus.ERROR) {
+            return Dataset.IngestionStatus.ERROR.value
           } else if (!jedis.exists(dataset.twingraphId!!)) {
-            Dataset.Status.PENDING.value
+            Dataset.IngestionStatus.PENDING.value
           } else {
             dataset
-                .takeIf { it.status == Dataset.Status.PENDING }
-                ?.apply { datasetRepository.save(this.apply { status = Dataset.Status.READY }) }
-            Dataset.Status.READY.value
+                .takeIf { it.ingestionStatus == Dataset.IngestionStatus.PENDING }
+                ?.apply {
+                  datasetRepository.save(
+                      this.apply { ingestionStatus = Dataset.IngestionStatus.SUCCESS })
+                }
+            if (dataset.twincacheStatus == Dataset.TwincacheStatus.EMPTY) {
+              apply {
+                datasetRepository.save(
+                    dataset.apply { twincacheStatus = Dataset.TwincacheStatus.FULL })
+              }
+            }
+            Dataset.IngestionStatus.SUCCESS.value
           }
         }
       }
       DatasetSourceType.ADT,
       DatasetSourceType.Twincache,
       DatasetSourceType.AzureStorage -> {
-        if (dataset.status == Dataset.Status.PENDING) {
+        if (dataset.ingestionStatus == Dataset.IngestionStatus.PENDING) {
           dataset.source!!.takeIf { !it.jobId.isNullOrEmpty() }
               ?: throw IllegalStateException(
                   "Dataset doesn't have a job id to get status from. Refresh dataset first.")
@@ -387,14 +407,22 @@ class DatasetServiceImpl(
 
           dataset.apply {
             when (twingraphImportJobInfoRequest.response) {
-              "Succeeded" -> status = Dataset.Status.READY
+              "Succeeded" -> {
+                ingestionStatus = Dataset.IngestionStatus.SUCCESS
+                if (dataset.twincacheStatus == Dataset.TwincacheStatus.EMPTY) {
+                  apply {
+                    datasetRepository.save(
+                        dataset.apply { twincacheStatus = Dataset.TwincacheStatus.FULL })
+                  }
+                }
+              }
               "Error",
-              "Failed" -> status = Dataset.Status.ERROR
+              "Failed" -> ingestionStatus = Dataset.IngestionStatus.ERROR
             }
             datasetRepository.save(this)
           }
         }
-        return dataset.status!!.value
+        return dataset.ingestionStatus!!.value
       }
     }
   }
@@ -407,14 +435,24 @@ class DatasetServiceImpl(
         ?: throw CsmResourceNotFoundException("Cannot be applied to source type 'File'")
     dataset.takeUnless { it.sourceType == DatasetSourceType.None }
         ?: throw CsmResourceNotFoundException("Cannot be applied to source type 'None'")
-    dataset.status?.takeUnless { it == Dataset.Status.PENDING }
+    dataset.ingestionStatus?.takeUnless { it == Dataset.IngestionStatus.PENDING }
         ?: throw CsmClientException("Dataset in use, cannot update. Retry later")
 
     datasetRepository.save(
         dataset.apply {
           refreshDate = Instant.now().toEpochMilli()
-          status = Dataset.Status.PENDING
+          ingestionStatus = Dataset.IngestionStatus.PENDING
         })
+
+    csmJedisPool.resource.use { jedis ->
+      if (jedis.exists(dataset.twingraphId!!)) {
+        jedis.eval(
+            "redis.call('RENAME', KEYS[1], KEYS[2]);",
+            2,
+            dataset.twingraphId,
+            "backupGraph-$datasetId")
+      }
+    }
 
     val dataSourceLocation =
         if (dataset.sourceType == DatasetSourceType.Twincache) {
@@ -443,7 +481,28 @@ class DatasetServiceImpl(
     datasetRepository.save(dataset.apply { source!!.jobId = requestJobId })
     logger.debug("refreshDataset={}", graphImportEvent.response)
     return DatasetTwinGraphInfo(
-        jobId = requestJobId, datasetId = dataset.id, status = dataset.status?.value)
+        jobId = requestJobId, datasetId = dataset.id, status = dataset.ingestionStatus?.value)
+  }
+
+  override fun rollbackRefresh(organizationId: String, datasetId: String): String {
+    // This call verify by itself that we have the read authorization in the organization
+    organizationService.findOrganizationById(organizationId)
+    var dataset = findDatasetById(organizationId, datasetId)
+    csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE)
+
+    if (dataset.ingestionStatus != Dataset.IngestionStatus.ERROR) {
+      throw IllegalArgumentException("The dataset hasn't failed and can't be rolled back")
+    }
+
+    dataset =
+        if (dataset.twincacheStatus == Dataset.TwincacheStatus.FULL) {
+          datasetRepository.save(
+              dataset.apply { dataset.ingestionStatus = Dataset.IngestionStatus.SUCCESS })
+        } else {
+          datasetRepository.save(
+              dataset.apply { dataset.ingestionStatus = Dataset.IngestionStatus.NONE })
+        }
+    return "Dataset $datasetId status is now ${dataset.ingestionStatus}"
   }
 
   override fun deleteDataset(organizationId: String, datasetId: String) {
@@ -528,7 +587,8 @@ class DatasetServiceImpl(
       datasetTwinGraphQuery: DatasetTwinGraphQuery
   ): String {
     // This call verify by itself that we have the read authorization in the dataset
-    val dataset = getDatasetWithStatus(organizationId, datasetId, status = Dataset.Status.READY)
+    val dataset =
+        getDatasetWithStatus(organizationId, datasetId, status = Dataset.IngestionStatus.SUCCESS)
     return trx(dataset) { query(dataset, datasetTwinGraphQuery.query).toJsonString() }
   }
 
@@ -543,13 +603,13 @@ class DatasetServiceImpl(
   }
 
   fun <T> trx(dataset: Dataset, actionLambda: (Dataset) -> T): T {
-    dataset.status?.takeUnless { it == Dataset.Status.PENDING }
+    dataset.ingestionStatus?.takeUnless { it == Dataset.IngestionStatus.PENDING }
         ?: throw CsmClientException("Dataset in use, cannot update. Retry later")
-    datasetRepository.save(dataset.apply { status = Dataset.Status.PENDING })
+    datasetRepository.save(dataset.apply { ingestionStatus = Dataset.IngestionStatus.PENDING })
     try {
       return actionLambda(dataset)
     } finally {
-      datasetRepository.save(dataset.apply { status = Dataset.Status.READY })
+      datasetRepository.save(dataset.apply { ingestionStatus = Dataset.IngestionStatus.SUCCESS })
     }
   }
 
@@ -584,7 +644,8 @@ class DatasetServiceImpl(
       datasetTwinGraphQuery: DatasetTwinGraphQuery
   ): DatasetTwinGraphHash {
     // This call verify by itself that we have the read authorization in the dataset
-    val dataset = getDatasetWithStatus(organizationId, datasetId, status = Dataset.Status.READY)
+    val dataset =
+        getDatasetWithStatus(organizationId, datasetId, status = Dataset.IngestionStatus.SUCCESS)
     val bulkQueryKey = bulkQueryKey(dataset.twingraphId!!, datasetTwinGraphQuery.query, null)
     val twinGraphHash = DatasetTwinGraphHash(bulkQueryKey.second)
     csmJedisPool.resource.use { jedis ->
@@ -631,7 +692,7 @@ class DatasetServiceImpl(
   fun getDatasetWithStatus(
       organizationId: String,
       datasetId: String,
-      status: Dataset.Status? = null
+      status: Dataset.IngestionStatus? = null
   ): Dataset {
     // This call verify by itself that we have the read authorization in the organization
     organizationService.findOrganizationById(organizationId)
@@ -640,8 +701,9 @@ class DatasetServiceImpl(
     dataset.takeUnless { it.twingraphId.isNullOrBlank() }
         ?: throw CsmResourceNotFoundException("TwingraphId is not defined for the dataset")
     status?.let {
-      dataset.status?.takeIf { it == status }
-          ?: throw CsmClientException("Dataset status is ${dataset.status?.value}, not $status")
+      dataset.ingestionStatus?.takeIf { it == status }
+          ?: throw CsmClientException(
+              "Dataset status is ${dataset.ingestionStatus?.value}, not $status")
     }
     return dataset
   }
