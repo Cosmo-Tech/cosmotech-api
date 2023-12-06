@@ -392,6 +392,33 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DatasetTwinGraphInfo'
+  /organizations/{organization_id}/datasets/{dataset_id}/refresh/rollback:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: dataset_id
+        in: path
+        description: the Dataset identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: rollbackRefresh
+      tags:
+        - dataset
+      summary: Rollback the dataset after a failed refresh
+      description: Rollback the twingraph on a dataset after a failed refresh
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: string
 
   /organizations/{organization_id}/datasets/{dataset_id}/twingraph:
     parameters:
@@ -1367,14 +1394,20 @@ components:
           $ref: '#/components/schemas/DatasetSourceType'
         source:
           $ref: '#/components/schemas/SourceInfo'
-        status:
+        ingestionStatus:
           type: string
-          description: the Dataset status
+          description: the Dataset ingestion status
           enum:
-            - DRAFT
+            - NONE
             - PENDING
             - ERROR
-            - READY
+            - SUCCESS
+        twincacheStatus:
+          type: string
+          description: the twincache data status
+          enum:
+            - EMPTY
+            - FULL
         queries:
           type: array
           description: the list of queries
