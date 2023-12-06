@@ -71,9 +71,6 @@ import com.redislabs.redisgraph.RedisGraph
 import com.redislabs.redisgraph.ResultSet
 import com.redislabs.redisgraph.graph_entities.Edge
 import com.redislabs.redisgraph.graph_entities.Node
-import java.io.InputStream
-import java.nio.charset.StandardCharsets
-import java.time.Instant
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.apache.commons.compress.archivers.ArchiveStreamFactory
@@ -91,6 +88,9 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.exceptions.JedisDataException
+import java.io.InputStream
+import java.nio.charset.StandardCharsets
+import java.time.Instant
 
 const val TYPE_NODE = "node"
 const val TYPE_RELATIONSHIP = "relationship"
@@ -487,6 +487,16 @@ class DatasetServiceImpl(
           refreshDate = Instant.now().toEpochMilli()
           ingestionStatus = Dataset.IngestionStatus.PENDING
         })
+
+    csmJedisPool.resource.use { jedis ->
+      if (jedis.exists(dataset.twingraphId!!)) {
+        jedis.eval(
+            "redis.call('RENAME', KEYS[1], KEYS[2]);",
+            2,
+            dataset.twingraphId,
+            "backupGraph-$datasetId")
+      }
+    }
 
     val dataSourceLocation =
         if (dataset.sourceType == DatasetSourceType.Twincache) {
