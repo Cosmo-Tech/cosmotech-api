@@ -37,6 +37,8 @@ import com.cosmotech.dataset.domain.DatasetSearch
 import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.dataset.domain.DatasetSourceType
 import com.cosmotech.dataset.domain.DatasetTwinGraphQuery
+import com.cosmotech.dataset.domain.FileUploadMetadata
+import com.cosmotech.dataset.domain.FileUploadValidation
 import com.cosmotech.dataset.domain.GraphProperties
 import com.cosmotech.dataset.domain.SourceInfo
 import com.cosmotech.dataset.domain.SubDatasetGraphQuery
@@ -363,7 +365,21 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
         datasetSaved.id!!,
         dataset.copy(sourceType = DatasetSourceType.File))
 
-    datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
+    val fileUploadValidation = datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
+    assertEquals(
+      FileUploadValidation(
+        mutableListOf(
+          FileUploadMetadata("Double", 90),
+          FileUploadMetadata("Single", 54),
+          FileUploadMetadata("Users", 749),
+        ),
+        mutableListOf(
+          FileUploadMetadata("Double", 214),
+          FileUploadMetadata("Follows", 47),
+          FileUploadMetadata("SingleEdge", 59),
+        )),
+      fileUploadValidation)
+
     // add timout for while loop
     val timeout = Instant.now()
     while (datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!) !=
@@ -540,19 +556,15 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
     val file = this::class.java.getResource("/brokenGraph.zip")?.file
     val resource = ByteArrayResource(File(file!!).readBytes())
+
+    datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
+
     var datasetStatus: String
-    runBlocking {
-      datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
-
+    do {
+      Thread.sleep(50L)
       datasetStatus =
-          datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
-
-      while (datasetStatus == Dataset.IngestionStatus.PENDING.value) {
-        delay(50L)
-        datasetStatus =
-            datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
-      }
-    }
+        datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
+    } while (datasetStatus == Dataset.IngestionStatus.PENDING.value)
 
     assertEquals(Dataset.IngestionStatus.ERROR.value, datasetStatus)
   }

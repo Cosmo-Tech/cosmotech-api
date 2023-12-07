@@ -133,6 +133,16 @@ entity DeleteHistoricalData {
     timeOut: Integer
 }
 
+entity FileUploadMetadata {
+    name: String
+    size: Integer
+}
+
+entity FileUploadValidation {
+    nodes: List<FileUploadMetadata>
+    edges: List<FileUploadMetadata>
+}
+
 entity GraphProperties {
     type: String
     source: String
@@ -637,6 +647,8 @@ ScenarioResourceSizing -- ResourceSizeInfo : limits
 ScenarioSecurity -- "0..*" ScenarioAccessControl : accessControlList
 Organization -- OrganizationServices : services
 Organization -- OrganizationSecurity : security
+FileUploadValidation -- "0..*" FileUploadMetadata : nodes
+FileUploadValidation -- "0..*" FileUploadMetadata : edges
 RunTemplate -- RunTemplateResourceSizing : runSizing
 RunTemplate -- DeleteHistoricalData : deleteHistoricalData
 Solution -- "0..*" RunTemplateParameter : parameters

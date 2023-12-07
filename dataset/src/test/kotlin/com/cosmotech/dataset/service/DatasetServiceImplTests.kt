@@ -6,6 +6,7 @@ import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.events.TwingraphImportJobInfoRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
+import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.id.CsmIdGenerator
 import com.cosmotech.api.rbac.CsmAdmin
@@ -21,6 +22,8 @@ import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetConnector
 import com.cosmotech.dataset.domain.DatasetSourceType
 import com.cosmotech.dataset.domain.DatasetTwinGraphQuery
+import com.cosmotech.dataset.domain.FileUploadMetadata
+import com.cosmotech.dataset.domain.FileUploadValidation
 import com.cosmotech.dataset.domain.SourceInfo
 import com.cosmotech.dataset.domain.SubDatasetGraphQuery
 import com.cosmotech.dataset.domain.TwinGraphBatchResult
@@ -291,9 +294,10 @@ class DatasetServiceImplTests {
     val file = File(fileName!!)
     val resource = ByteArrayResource(file.readBytes())
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
-    assertThrows<CsmResourceNotFoundException> {
+    val exceptionCatch = assertThrows<CsmClientException> {
       datasetService.uploadTwingraph(ORGANIZATION_ID, DATASET_ID, resource)
     }
+    assertEquals("Dataset in use, cannot update. Retry later", exceptionCatch.message)
   }
 
   @Test
@@ -311,11 +315,9 @@ class DatasetServiceImplTests {
     every { csmJedisPool.resource.exists(any<String>()) } returns true
     every { datasetRepository.save(any()) } returnsArgument 0
 
-    datasetService.uploadTwingraph(ORGANIZATION_ID, DATASET_ID, resource)
-    verify { datasetRepository.save(any()) }
-    verify {
-      datasetRepository.save(match { it.ingestionStatus == Dataset.IngestionStatus.PENDING })
-    }
+    val fileUploadValidation = datasetService.uploadTwingraph(ORGANIZATION_ID, DATASET_ID, resource)
+
+    assertEquals(FileUploadValidation(mutableListOf(FileUploadMetadata("Users", 749)), mutableListOf(FileUploadMetadata("Follows", 50))), fileUploadValidation)
   }
 
   @Test
