@@ -815,7 +815,7 @@ Name | Type | Description  | Notes
 
 <a name="uploadTwingraph"></a>
 # **uploadTwingraph**
-> uploadTwingraph(organization\_id, dataset\_id, body)
+> FileUploadValidation uploadTwingraph(organization\_id, dataset\_id, body)
 
 Upload data from zip file to dataset&#39;s twingraph
 
@@ -831,7 +831,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-null (empty response body)
+[**FileUploadValidation**](../Models/FileUploadValidation.md)
 
 ### Authorization
 
@@ -840,5 +840,5 @@ null (empty response body)
 ### HTTP request headers
 
 - **Content-Type**: application/octet-stream
-- **Accept**: Not defined
+- **Accept**: application/json
 

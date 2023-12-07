@@ -184,6 +184,8 @@ Class | Method | HTTP request | Description
  - [DatasetTwinGraphQuery](./Models/DatasetTwinGraphQuery.md)
  - [Dataset_connector](./Models/Dataset_connector.md)
  - [DeleteHistoricalData](./Models/DeleteHistoricalData.md)
+ - [FileUploadMetadata](./Models/FileUploadMetadata.md)
+ - [FileUploadValidation](./Models/FileUploadValidation.md)
  - [GraphProperties](./Models/GraphProperties.md)
  - [Organization](./Models/Organization.md)
  - [OrganizationAccessControl](./Models/OrganizationAccessControl.md)
