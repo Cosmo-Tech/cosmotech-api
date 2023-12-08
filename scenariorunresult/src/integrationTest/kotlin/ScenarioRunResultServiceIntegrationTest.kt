@@ -35,7 +35,6 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
-import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import org.junit.jupiter.api.BeforeAll
@@ -229,7 +228,7 @@ class ScenarioRunResultServiceIntegrationTest : CsmRedisTestBase() {
     val dataset = makeDataset(organizationSavedId, connectorSaved)
     val datasetSaved = datasetApiService.createDataset(organizationSavedId, dataset)
     every { datasetApiService.findDatasetById(any(), any()) } returns
-        datasetSaved.apply { status = Dataset.Status.READY }
+        datasetSaved.apply { ingestionStatus = Dataset.IngestionStatus.SUCCESS }
     every { datasetApiService.createSubDataset(any(), any(), any()) } returns mockk(relaxed = true)
     val scenario =
         makeScenario(
