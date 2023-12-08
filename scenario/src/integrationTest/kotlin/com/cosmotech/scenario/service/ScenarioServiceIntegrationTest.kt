@@ -939,7 +939,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
       if (createTwingraph) {
         RedisGraph(jedisPool).query(this.twingraphId, "MATCH (n:labelrouge) return 1")
       }
-      this.status = Dataset.Status.READY
+      this.ingestionStatus = Dataset.IngestionStatus.SUCCESS
     }
     return datasetRepository.save(dataset)
   }

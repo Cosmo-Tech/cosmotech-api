@@ -505,7 +505,7 @@ class ScenarioRunResultServiceRBACTest : CsmRedisTestBase() {
     val dataset = makeDataset(organizationSavedId, connectorSavedId)
     val datasetSaved = datasetApiService.createDataset(organizationSavedId, dataset)
     every { datasetApiService.findDatasetById(any(), any()) } returns
-        datasetSaved.apply { status = Dataset.Status.READY }
+        datasetSaved.apply { ingestionStatus = Dataset.IngestionStatus.SUCCESS }
     every { datasetApiService.createSubDataset(any(), any(), any()) } returns mockk(relaxed = true)
 
     val scenario =

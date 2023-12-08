@@ -668,16 +668,33 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
-  fun `status should go back to SUCCESS on rollback endpoint call`() {
+  fun `status should go back to normal on rollback endpoint call`() {
     organizationSaved = organizationApiService.registerOrganization(organization)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-    materializeTwingraph()
 
     datasetRepository.save(datasetSaved.apply { ingestionStatus = Dataset.IngestionStatus.ERROR })
     datasetApiService.rollbackRefresh(organizationSaved.id!!, datasetSaved.id!!)
-    val status =
+    var datasetStatus =
         datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
-    assertEquals(Dataset.IngestionStatus.SUCCESS.value, status)
+    assertEquals(Dataset.IngestionStatus.NONE.value, datasetStatus)
+
+    every { datasetApiService.query(any(), any()) } returns mockk()
+    val fileName = this::class.java.getResource("/integrationTest.zip")?.file
+    val file = File(fileName!!)
+    val resource = ByteArrayResource(file.readBytes())
+    datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
+    datasetStatus =
+        datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
+    while (datasetStatus == Dataset.IngestionStatus.PENDING.value) {
+      Thread.sleep(50L)
+      datasetStatus =
+          datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
+    }
+    datasetRepository.save(datasetSaved.apply { ingestionStatus = Dataset.IngestionStatus.ERROR })
+    datasetApiService.rollbackRefresh(organizationSaved.id!!, datasetSaved.id!!)
+    datasetStatus =
+        datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
+    assertEquals(Dataset.IngestionStatus.NONE.value, datasetStatus)
   }
 
   @TestFactory
@@ -714,6 +731,49 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   datasetApiService.refreshDataset(organizationSaved.id!!, datasetSaved.id!!)
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test RBAC rollbackRefresh`() =
+      mapOf(
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to false,
+              ROLE_USER to true,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test RBAC rollbackRefresh : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              val organization = makeOrganizationWithRole()
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              val dataset = makeDatasetWithRole(role = role)
+              datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+              materializeTwingraph()
+
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      datasetApiService.rollbackRefresh(organizationSaved.id!!, datasetSaved.id!!)
+                    }
+                if (role == ROLE_NONE) {
+                  assertEquals(
+                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      exception.message)
+                } else {
+                  assertEquals(
+                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                      exception.message)
+                }
+              } else {
+                assertDoesNotThrow {
+                  datasetApiService.rollbackRefresh(organizationSaved.id!!, datasetSaved.id!!)
                 }
               }
             }
