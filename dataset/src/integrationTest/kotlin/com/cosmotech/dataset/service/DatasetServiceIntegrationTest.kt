@@ -113,7 +113,6 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var solutionApiService: SolutionApiServiceInterface
   @Autowired lateinit var workspaceApiService: WorkspaceApiServiceInterface
   @SpykBean @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
-  @SpykBean @Autowired lateinit var csmRedisGraph: RedisGraph
   @MockK(relaxUnitFun = true) private lateinit var eventPublisher: CsmEventPublisher
 
   lateinit var connectorSaved: Connector
