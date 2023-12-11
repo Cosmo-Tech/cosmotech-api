@@ -289,38 +289,40 @@ class DatasetServiceImpl(
     }
   }
 
-  override fun uploadTwingraph(organizationId: String, datasetId: String, body: Resource): FileUploadValidation {
+  override fun uploadTwingraph(
+      organizationId: String,
+      datasetId: String,
+      body: Resource
+  ): FileUploadValidation {
     val dataset = getDatasetWithStatus(organizationId, datasetId)
     csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE)
 
     dataset.sourceType.takeIf { it == DatasetSourceType.File }
-      ?: throw CsmResourceNotFoundException("SourceType Dataset must be 'File'")
+        ?: throw CsmResourceNotFoundException("SourceType Dataset must be 'File'")
 
     dataset.ingestionStatus?.takeUnless { it == Dataset.IngestionStatus.PENDING }
-      ?: throw CsmClientException("Dataset in use, cannot update. Retry later")
+        ?: throw CsmClientException("Dataset in use, cannot update. Retry later")
 
     // TODO: Validated with ressourceScanner
     val archiverType = ArchiveStreamFactory.detect(body.inputStream.buffered())
     archiverType.takeIf { it == ArchiveStreamFactory.ZIP }
-      ?: throw IllegalArgumentException(
-        "Invalid archive type: '$archiverType'. A Zip Archive is expected."
-      )
+        ?: throw IllegalArgumentException(
+            "Invalid archive type: '$archiverType'. A Zip Archive is expected.")
 
     val csvFiles = unzip(body.inputStream, listOf(NODES_ZIP_FOLDER, EDGES_ZIP_FOLDER), "csv")
     val nodes = csvFiles.filter { it.prefix == NODES_ZIP_FOLDER }
     val edges = csvFiles.filter { it.prefix == EDGES_ZIP_FOLDER }
 
     val fileUpload =
-      FileUploadValidation(
-        nodes.mapTo(mutableListOf()) { FileUploadMetadata(it.filename, it.content.size) },
-        edges.mapTo(mutableListOf()) { FileUploadMetadata(it.filename, it.content.size) })
+        FileUploadValidation(
+            nodes.mapTo(mutableListOf()) { FileUploadMetadata(it.filename, it.content.size) },
+            edges.mapTo(mutableListOf()) { FileUploadMetadata(it.filename, it.content.size) })
     logger.info(fileUpload.toString())
 
     if (nodes.isEmpty()) {
       throw CsmClientException(
-        "No nodes csv file found in zip. Nodes files must placed under a folder named 'nodes' " +
-                "and edges under a folder named 'edges'"
-      )
+          "No nodes csv file found in zip. Nodes files must placed under a folder named 'nodes' " +
+              "and edges under a folder named 'edges'")
     }
     if (nodes.all { it.content.isEmpty() }) {
       throw CsmClientException("All nodes files ${nodes.map { it.filename }} found are empty")
@@ -331,11 +333,10 @@ class DatasetServiceImpl(
       csmJedisPool.resource.use { jedis ->
         if (jedis.exists(dataset.twingraphId!!)) {
           jedis.eval(
-            "redis.call('RENAME', KEYS[1], KEYS[2]);",
-            2,
-            dataset.twingraphId,
-            "backupGraph-$datasetId"
-          )
+              "redis.call('RENAME', KEYS[1], KEYS[2]);",
+              2,
+              dataset.twingraphId,
+              "backupGraph-$datasetId")
           safeReplace = true
         }
       }
@@ -345,7 +346,7 @@ class DatasetServiceImpl(
           nodes.forEach { file ->
             readCSV(file.content.inputStream()) {
               val id: String =
-                it["id"] ?: throw CsmResourceNotFoundException("Node property 'id' not found")
+                  it["id"] ?: throw CsmResourceNotFoundException("Node property 'id' not found")
               queryBuffer.addNode(file.filename, id, it.minus("id"))
             }
           }
@@ -365,21 +366,21 @@ class DatasetServiceImpl(
               jedis.eval("redis.call('DEL', KEYS[1]);", 1, "backupGraph-$datasetId")
             }
           }
-          datasetRepository.save(dataset.apply { ingestionStatus = Dataset.IngestionStatus.SUCCESS })
+          datasetRepository.save(
+              dataset.apply { ingestionStatus = Dataset.IngestionStatus.SUCCESS })
         }
       } catch (e: Exception) {
-          if (safeReplace) {
-            csmJedisPool.resource.use { jedis ->
-              jedis.eval(
+        if (safeReplace) {
+          csmJedisPool.resource.use { jedis ->
+            jedis.eval(
                 "redis.call('RENAME', KEYS[2], KEYS[1]);",
                 2,
                 dataset.twingraphId,
-                "backupGraph-$datasetId"
-              )
-            }
+                "backupGraph-$datasetId")
           }
-          datasetRepository.save(dataset.apply { ingestionStatus = Dataset.IngestionStatus.ERROR })
-          throw CsmClientException(e.message ?: "Twingraph upload error", e)
+        }
+        datasetRepository.save(dataset.apply { ingestionStatus = Dataset.IngestionStatus.ERROR })
+        throw CsmClientException(e.message ?: "Twingraph upload error", e)
       }
     }
     return fileUpload
