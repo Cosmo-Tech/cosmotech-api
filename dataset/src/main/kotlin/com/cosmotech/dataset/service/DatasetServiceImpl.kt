@@ -334,14 +334,15 @@ class DatasetServiceImpl(
 
     GlobalScope.launch(SecurityCoroutineContext()) {
       var safeReplace = false
-        if (unifiedJedis.exists(dataset.twingraphId!!)) {
-            unifiedJedis.eval(
-              "redis.call('RENAME', KEYS[1], KEYS[2]);",
-              2,
-              dataset.twingraphId,
-              "backupGraph-$datasetId")
-          safeReplace = true
-        }
+
+      if (unifiedJedis.exists(dataset.twingraphId!!)) {
+        unifiedJedis.eval(
+            "redis.call('RENAME', KEYS[1], KEYS[2]);",
+            2,
+            dataset.twingraphId,
+            "backupGraph-$datasetId")
+        safeReplace = true
+      }
 
       try {
         trx(dataset) {
