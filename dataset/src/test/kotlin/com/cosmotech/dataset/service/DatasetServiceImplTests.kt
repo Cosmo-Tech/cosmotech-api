@@ -225,7 +225,10 @@ class DatasetServiceImplTests {
   fun `uploadTwingraph should throw ArchiveException when resource is not Archive`() {
     val dataset =
         baseDataset()
-            .copy(twingraphId = "twingraphId", ingestionStatus = Dataset.IngestionStatus.SUCCESS)
+            .copy(
+                twingraphId = "twingraphId",
+                sourceType = DatasetSourceType.File,
+                ingestionStatus = Dataset.IngestionStatus.SUCCESS)
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
 
     val fileName = this::class.java.getResource("/Users.csv")?.file
@@ -240,7 +243,10 @@ class DatasetServiceImplTests {
   fun `uploadTwingraph should throw IllegalArgumentException when resource is not Zip Archive`() {
     val dataset =
         baseDataset()
-            .copy(twingraphId = "twingraphId", ingestionStatus = Dataset.IngestionStatus.SUCCESS)
+            .copy(
+                twingraphId = "twingraphId",
+                sourceType = DatasetSourceType.File,
+                ingestionStatus = Dataset.IngestionStatus.SUCCESS)
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
 
     val fileName = this::class.java.getResource("/Users.7z")?.file
@@ -294,9 +300,10 @@ class DatasetServiceImplTests {
     val file = File(fileName!!)
     val resource = ByteArrayResource(file.readBytes())
     every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
-    val exceptionCatch = assertThrows<CsmClientException> {
-      datasetService.uploadTwingraph(ORGANIZATION_ID, DATASET_ID, resource)
-    }
+    val exceptionCatch =
+        assertThrows<CsmClientException> {
+          datasetService.uploadTwingraph(ORGANIZATION_ID, DATASET_ID, resource)
+        }
     assertEquals("Dataset in use, cannot update. Retry later", exceptionCatch.message)
   }
 
@@ -317,7 +324,11 @@ class DatasetServiceImplTests {
 
     val fileUploadValidation = datasetService.uploadTwingraph(ORGANIZATION_ID, DATASET_ID, resource)
 
-    assertEquals(FileUploadValidation(mutableListOf(FileUploadMetadata("Users", 749)), mutableListOf(FileUploadMetadata("Follows", 50))), fileUploadValidation)
+    assertEquals(
+        FileUploadValidation(
+            mutableListOf(FileUploadMetadata("Users", 749)),
+            mutableListOf(FileUploadMetadata("Follows", 50))),
+        fileUploadValidation)
   }
 
   @Test
