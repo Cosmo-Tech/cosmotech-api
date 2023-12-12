@@ -669,7 +669,10 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `status should go back to normal on rollback endpoint call`() {
+    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+    organization = makeOrganization("organization")
     organizationSaved = organizationApiService.registerOrganization(organization)
+    makeDataset("d-0123456789", "dataset", DatasetSourceType.File)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
 
     datasetRepository.save(datasetSaved.apply { ingestionStatus = Dataset.IngestionStatus.ERROR })
@@ -683,13 +686,11 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     val file = File(fileName!!)
     val resource = ByteArrayResource(file.readBytes())
     datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
-    datasetStatus =
-        datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
-    while (datasetStatus == Dataset.IngestionStatus.PENDING.value) {
+    do {
       Thread.sleep(50L)
       datasetStatus =
           datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
-    }
+    } while (datasetStatus == Dataset.IngestionStatus.PENDING.value)
     datasetRepository.save(datasetSaved.apply { ingestionStatus = Dataset.IngestionStatus.ERROR })
     datasetApiService.rollbackRefresh(organizationSaved.id!!, datasetSaved.id!!)
     datasetStatus =
@@ -754,6 +755,10 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
               val dataset = makeDatasetWithRole(role = role)
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
+              datasetRepository.save(
+                  datasetSaved.apply {
+                    datasetSaved.ingestionStatus = Dataset.IngestionStatus.ERROR
+                  })
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
