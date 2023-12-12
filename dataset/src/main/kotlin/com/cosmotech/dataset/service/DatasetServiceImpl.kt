@@ -239,8 +239,8 @@ class DatasetServiceImpl(
             query.takeIf { it.isReadOnlyQuery() }?.apply { bulkQueryResult(queryBuffer, resultSet) }
           }
           queryBuffer.send()
-          twincacheStatus = Dataset.TwincacheStatus.FULL
         }
+        twincacheStatus = Dataset.TwincacheStatus.FULL
       }
     }
     val subDataset =
@@ -383,11 +383,9 @@ class DatasetServiceImpl(
                   datasetRepository.save(
                       this.apply { ingestionStatus = Dataset.IngestionStatus.SUCCESS })
                 }
-            if (dataset.twincacheStatus == Dataset.TwincacheStatus.EMPTY) {
-              apply {
-                datasetRepository.save(
-                    dataset.apply { twincacheStatus = Dataset.TwincacheStatus.FULL })
-              }
+            apply {
+              datasetRepository.save(
+                  dataset.apply { twincacheStatus = Dataset.TwincacheStatus.FULL })
             }
             Dataset.IngestionStatus.SUCCESS.value
           }
@@ -409,11 +407,9 @@ class DatasetServiceImpl(
             when (twingraphImportJobInfoRequest.response) {
               "Succeeded" -> {
                 ingestionStatus = Dataset.IngestionStatus.SUCCESS
-                if (dataset.twincacheStatus == Dataset.TwincacheStatus.EMPTY) {
-                  apply {
-                    datasetRepository.save(
-                        dataset.apply { twincacheStatus = Dataset.TwincacheStatus.FULL })
-                  }
+                apply {
+                  datasetRepository.save(
+                      dataset.apply { twincacheStatus = Dataset.TwincacheStatus.FULL })
                 }
               }
               "Error",
@@ -443,16 +439,6 @@ class DatasetServiceImpl(
           refreshDate = Instant.now().toEpochMilli()
           ingestionStatus = Dataset.IngestionStatus.PENDING
         })
-
-    csmJedisPool.resource.use { jedis ->
-      if (jedis.exists(dataset.twingraphId!!)) {
-        jedis.eval(
-            "redis.call('RENAME', KEYS[1], KEYS[2]);",
-            2,
-            dataset.twingraphId,
-            "backupGraph-$datasetId")
-      }
-    }
 
     val dataSourceLocation =
         if (dataset.sourceType == DatasetSourceType.Twincache) {
@@ -490,7 +476,8 @@ class DatasetServiceImpl(
     var dataset = findDatasetById(organizationId, datasetId)
     csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE)
 
-    if (dataset.ingestionStatus != Dataset.IngestionStatus.ERROR) {
+    val status = getDatasetTwingraphStatus(organizationId, datasetId)
+    if (status != Dataset.IngestionStatus.ERROR.value) {
       throw IllegalArgumentException("The dataset hasn't failed and can't be rolled back")
     }
 
