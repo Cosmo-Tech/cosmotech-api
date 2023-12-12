@@ -488,16 +488,6 @@ class DatasetServiceImpl(
           ingestionStatus = Dataset.IngestionStatus.PENDING
         })
 
-    csmJedisPool.resource.use { jedis ->
-      if (jedis.exists(dataset.twingraphId!!)) {
-        jedis.eval(
-            "redis.call('RENAME', KEYS[1], KEYS[2]);",
-            2,
-            dataset.twingraphId,
-            "backupGraph-$datasetId")
-      }
-    }
-
     val dataSourceLocation =
         if (dataset.sourceType == DatasetSourceType.Twincache) {
           val parentDataset = findDatasetById(organizationId, dataset.parentId!!)
