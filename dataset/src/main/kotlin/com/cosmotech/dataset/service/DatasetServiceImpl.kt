@@ -381,12 +381,11 @@ class DatasetServiceImpl(
                 .takeIf { it.ingestionStatus == Dataset.IngestionStatus.PENDING }
                 ?.apply {
                   datasetRepository.save(
-                      this.apply { ingestionStatus = Dataset.IngestionStatus.SUCCESS })
+                      this.apply {
+                        ingestionStatus = Dataset.IngestionStatus.SUCCESS
+                        twincacheStatus = Dataset.TwincacheStatus.FULL
+                      })
                 }
-            apply {
-              datasetRepository.save(
-                  dataset.apply { twincacheStatus = Dataset.TwincacheStatus.FULL })
-            }
             Dataset.IngestionStatus.SUCCESS.value
           }
         }
