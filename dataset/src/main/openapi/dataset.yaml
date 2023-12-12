@@ -2058,6 +2058,6 @@ components:
         query: "MATCH(n) RETURN n"
     SuccessfulRollback:
       summary: Successful status rollback
-      description:
+      description: Successful status after rollback
       value:
         message: "Dataset d-012456789 status is now SUCCESS"
