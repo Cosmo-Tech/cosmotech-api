@@ -303,7 +303,7 @@ class DatasetServiceImpl(
     dataset.ingestionStatus?.takeUnless { it == Dataset.IngestionStatus.PENDING }
         ?: throw CsmClientException("Dataset in use, cannot update. Retry later")
 
-    // TODO: Validated with ressourceScanner
+    // TODx: Validated with ressourceScanner PROD-12822
     val archiverType = ArchiveStreamFactory.detect(body.inputStream.buffered())
     archiverType.takeIf { it == ArchiveStreamFactory.ZIP }
         ?: throw IllegalArgumentException(
