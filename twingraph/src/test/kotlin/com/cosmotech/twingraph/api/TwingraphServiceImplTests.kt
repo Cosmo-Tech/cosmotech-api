@@ -28,7 +28,6 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
-import io.mockk.verify
 import io.mockk.verifyAll
 import java.io.File
 import kotlin.test.AfterTest
@@ -90,12 +89,14 @@ class TwingraphServiceImplTests {
           every { result } returns listOf("graphId")
           every { cursor } answers { "0" }
         }
-
     every { unifiedJedis.graphDelete(any()) } returns 1L.toString()
+
     twingraphServiceImpl.delete("orgId", "graphId")
 
-    verify { unifiedJedis.scan(any<String>(), any(), any()) }
-    verify { unifiedJedis.graphDelete(any()) }
+    verifyAll {
+      unifiedJedis.scan(any<String>(), any(), any())
+      unifiedJedis.graphDelete(any())
+    }
   }
 
   @Test
@@ -145,7 +146,6 @@ class TwingraphServiceImplTests {
 
     every { unifiedJedis.keys(any<String>()) } returns setOf("graphId")
     every { unifiedJedis.exists(any<ByteArray>()) } returns false
-
     every { unifiedJedis.graphQuery(any(), any()) } returns mockEmptyResultSet()
     every { unifiedJedis.setex(any<ByteArray>(), any<Long>(), any<ByteArray>()) } returns "OK"
 
@@ -175,17 +175,20 @@ class TwingraphServiceImplTests {
 
     every { unifiedJedis.exists(any<ByteArray>()) } returns true
     every { unifiedJedis.ttl(any<ByteArray>()) } returns 1000L
+    every { unifiedJedis.get(any<ByteArray>()) } returns "[]".toByteArray()
+
     mockkStatic("org.springframework.web.context.request.RequestContextHolder")
     every {
       (RequestContextHolder.getRequestAttributes() as ServletRequestAttributes).response
     } returns mockk(relaxed = true)
-    every { unifiedJedis.get(any<ByteArray>()) } returns "[]".toByteArray()
 
     twingraphServiceImpl.downloadGraph("orgId", "hash")
 
-    verify { unifiedJedis.exists(any<ByteArray>()) }
-    verify { unifiedJedis.ttl(any<ByteArray>()) }
-    verify { unifiedJedis.get(any<ByteArray>()) }
+    verifyAll {
+      unifiedJedis.exists(any<ByteArray>())
+      unifiedJedis.ttl(any<ByteArray>())
+      unifiedJedis.get(any<ByteArray>())
+    }
   }
 
   @Test
@@ -248,7 +251,7 @@ class TwingraphServiceImplTests {
     every { unifiedJedis.hgetAll(any<String>()) } returns
         mapOf("graphName" to "graphName", "graphRotation" to "2")
 
-    var metadata = mapOf("lastVersion" to "last", "url" to "dummy")
+    val metadata = mapOf("lastVersion" to "last", "url" to "dummy")
     twingraphServiceImpl.updateGraphMetaData("orgId", "graphId", metadata)
     verifyAll {
       unifiedJedis.exists(any<String>())

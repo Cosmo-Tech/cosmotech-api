@@ -487,7 +487,6 @@ class DatasetServiceImplTests {
     every { unifiedJedis.keys(any<String>()) } returns setOf("graphId")
     every { unifiedJedis.exists(any<ByteArray>()) } returns false
     every { unifiedJedis.graphQuery("graphId", graphQuery, 0) } returns mockEmptyResultSet()
-
     every { unifiedJedis.graphQuery(any(), any()) } returns mockEmptyResultSet()
     every { unifiedJedis.setex(any<ByteArray>(), any<Long>(), any<ByteArray>()) } returns "OK"
 
@@ -524,26 +523,27 @@ class DatasetServiceImplTests {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
     every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
 
-    every { unifiedJedis.exists(any<ByteArray>()) } returns true
-    every { unifiedJedis.ttl(any<ByteArray>()) } returns 1000L
     mockkStatic("org.springframework.web.context.request.RequestContextHolder")
     every {
       (RequestContextHolder.getRequestAttributes() as ServletRequestAttributes).response
     } returns mockk(relaxed = true)
+
+    every { unifiedJedis.exists(any<ByteArray>()) } returns true
+    every { unifiedJedis.ttl(any<ByteArray>()) } returns 1000L
     every { unifiedJedis.get(any<ByteArray>()) } returns "[]".toByteArray()
 
     datasetService.downloadTwingraph("orgId", "hash")
-
-    verify { unifiedJedis.exists(any<ByteArray>()) }
-    verify { unifiedJedis.ttl(any<ByteArray>()) }
-    verify { unifiedJedis.get(any<ByteArray>()) }
+    verifyAll {
+      unifiedJedis.exists(any<ByteArray>())
+      unifiedJedis.ttl(any<ByteArray>())
+      unifiedJedis.get(any<ByteArray>())
+    }
   }
 
   @Test
   fun `test downloadGraph as Admin - should throw exception if data not found`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
-
+    every { organizationService.findOrganizationById(any()) } returns mockk()
     every { unifiedJedis.exists(any<ByteArray>()) } returns false
 
     assertThrows<CsmResourceNotFoundException> { datasetService.downloadTwingraph("orgId", "hash") }

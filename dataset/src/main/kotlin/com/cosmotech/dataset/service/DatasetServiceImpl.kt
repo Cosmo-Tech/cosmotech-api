@@ -334,7 +334,6 @@ class DatasetServiceImpl(
 
     GlobalScope.launch(SecurityCoroutineContext()) {
       var safeReplace = false
-
       if (unifiedJedis.exists(dataset.twingraphId!!)) {
         unifiedJedis.eval(
             "redis.call('RENAME', KEYS[1], KEYS[2]);",
@@ -343,7 +342,6 @@ class DatasetServiceImpl(
             "backupGraph-$datasetId")
         safeReplace = true
       }
-
       try {
         trx(dataset) {
           val queryBuffer = QueryBuffer(unifiedJedis, dataset.twingraphId!!)
@@ -708,13 +706,15 @@ class DatasetServiceImpl(
       throw CsmResourceNotFoundException(
           "Graph with hash: $hash is expired. Try to repeat bulk query")
     }
+    val twinData = unifiedJedis.get(bulkQueryId)
 
     val httpServletResponse =
         ((RequestContextHolder.getRequestAttributes() as ServletRequestAttributes).response)
     val contentDisposition =
         ContentDisposition.builder("attachment").filename("TwinGraph-$hash.zip").build()
     httpServletResponse!!.setHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
-    return ByteArrayResource(unifiedJedis.get(bulkQueryId))
+
+    return ByteArrayResource(twinData)
   }
 
   @Suppress("ThrowsCount")
