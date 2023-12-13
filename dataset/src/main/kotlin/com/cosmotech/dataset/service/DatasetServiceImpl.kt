@@ -603,7 +603,7 @@ class DatasetServiceImpl(
     // This call verify by itself that we have the read authorization in the dataset
     val dataset =
         getDatasetWithStatus(organizationId, datasetId, status = Dataset.IngestionStatus.SUCCESS)
-    return trx(dataset) { query(dataset, datasetTwinGraphQuery.query).toJsonString() }
+    return query(dataset, datasetTwinGraphQuery.query).toJsonString()
   }
 
   fun query(dataset: Dataset, query: String, isReadOnly: Boolean = false): ResultSet {
