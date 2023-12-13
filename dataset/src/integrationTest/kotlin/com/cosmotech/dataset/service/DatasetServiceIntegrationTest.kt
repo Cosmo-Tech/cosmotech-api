@@ -614,33 +614,28 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     val file = File(fileName!!)
     val resource = ByteArrayResource(file.readBytes())
     datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
-    var datasetStatus =
-        datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
-    while (datasetStatus == Dataset.IngestionStatus.PENDING.value) {
+    var datasetStatus: String
+    do {
       Thread.sleep(50L)
-      datasetStatus =
-          datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
-    }
+    } while (datasetApiService.getDatasetTwingraphStatus(
+        organizationSaved.id!!, datasetSaved.id!!) == Dataset.IngestionStatus.PENDING.value)
+
     datasetApiService.createTwingraphEntities(
         organizationSaved.id!!,
         datasetSaved.id!!,
         "node",
         listOf(GraphProperties(type = "Node", name = "newNode", params = "value:0")))
-    datasetStatus =
-        datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
     var queryResult =
         datasetApiService.twingraphQuery(
             organizationSaved.id!!, datasetSaved.id!!, DatasetTwinGraphQuery("MATCH (n) RETURN n"))
     val initalNodeAmount = queryResult.split("}}}").size
 
     datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
-    datasetStatus =
-        datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
-    while (datasetStatus == Dataset.IngestionStatus.PENDING.value) {
+    do {
       Thread.sleep(50L)
-      datasetStatus =
-          datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
-    }
+    } while (datasetApiService.getDatasetTwingraphStatus(
+        organizationSaved.id!!, datasetSaved.id!!) == Dataset.IngestionStatus.PENDING.value)
+
     queryResult =
         datasetApiService.twingraphQuery(
             organizationSaved.id!!, datasetSaved.id!!, DatasetTwinGraphQuery("MATCH (n) RETURN n"))
