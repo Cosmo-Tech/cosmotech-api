@@ -485,6 +485,7 @@ entity Solution {
     name: String
     description: String
     repository: String
+    alwaysPull: Boolean
     csmSimulator: String
     version: String
     ownerId: String
@@ -538,6 +539,26 @@ entity TwinGraphHash {
 entity TwinGraphQuery {
     version: String
     * query: String
+}
+
+entity User {
+    id: String
+    name: String
+    platformRoles: List<String>
+    organizations: List<UserOrganization>
+}
+
+entity UserOrganization {
+    id: String
+    name: String
+    roles: List<String>
+    workspaces: List<UserWorkspace>
+}
+
+entity UserWorkspace {
+    id: String
+    name: String
+    roles: List<String>
 }
 
 entity Validator {
@@ -649,8 +670,10 @@ Organization -- OrganizationServices : services
 Organization -- OrganizationSecurity : security
 FileUploadValidation -- "0..*" FileUploadMetadata : nodes
 FileUploadValidation -- "0..*" FileUploadMetadata : edges
+User -- "0..*" UserOrganization : organizations
 RunTemplate -- RunTemplateResourceSizing : runSizing
 RunTemplate -- DeleteHistoricalData : deleteHistoricalData
+UserOrganization -- "0..*" UserWorkspace : workspaces
 Solution -- "0..*" RunTemplateParameter : parameters
 Solution -- "0..*" RunTemplateParameterGroup : parameterGroups
 Solution -- "0..*" RunTemplate : runTemplates

@@ -497,7 +497,9 @@ class ScenarioRunServiceImpl(
     logger.debug(startInfo.toString())
     val scenarioRunRequest =
         workflowService.launchScenarioRun(
-            startInfo.startContainers, startInfo.runTemplate.executionTimeout)
+            startInfo.startContainers,
+            startInfo.runTemplate.executionTimeout,
+            startInfo.solution.alwaysPull!!)
     val scenarioRun =
         this.dbCreateScenarioRun(
             scenarioRunId,

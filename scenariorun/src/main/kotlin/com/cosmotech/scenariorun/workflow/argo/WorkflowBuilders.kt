@@ -41,10 +41,12 @@ internal const val VOLUME_CLAIM_PARAMETERS_SUBPATH = "parametersdir"
 private const val VOLUME_DATASETS_PATH = "/mnt/scenariorun-data"
 private const val VOLUME_PARAMETERS_PATH = "/mnt/scenariorun-parameters"
 internal const val CSM_ARGO_WORKFLOWS_TIMEOUT = 28800
+internal const val ALWAYS_PULL_POLICY = "Always"
 
 internal fun buildTemplate(
     scenarioRunContainer: ScenarioRunContainer,
-    csmPlatformProperties: CsmPlatformProperties
+    csmPlatformProperties: CsmPlatformProperties,
+    alwaysPull: Boolean = false
 ): IoArgoprojWorkflowV1alpha1Template {
   var envVars: MutableList<V1EnvVar>? = null
   if (scenarioRunContainer.envVars != null) {
@@ -68,11 +70,13 @@ internal fun buildTemplate(
 
   val sizingInfo = scenarioRunContainer.runSizing ?: BASIC_SIZING.toContainerResourceSizing()
 
+  val imagePullPolicy =
+      if (alwaysPull) ALWAYS_PULL_POLICY else csmPlatformProperties.argo.imagePullPolicy
   scenarioRunContainer.nodeLabel
   val container =
       V1Container()
           .image(scenarioRunContainer.image)
-          .imagePullPolicy(csmPlatformProperties.argo.imagePullPolicy)
+          .imagePullPolicy(imagePullPolicy)
           .env(envVars)
           .args(scenarioRunContainer.runArgs)
           .volumeMounts(volumeMounts)
@@ -109,12 +113,13 @@ internal fun buildTemplate(
 internal fun buildWorkflowSpec(
     csmPlatformProperties: CsmPlatformProperties,
     startContainers: ScenarioRunStartContainers,
-    executionTimeout: Int?
+    executionTimeout: Int?,
+    alwaysPull: Boolean = false
 ): IoArgoprojWorkflowV1alpha1WorkflowSpec {
   val nodeSelector = mutableMapOf("kubernetes.io/os" to "linux", "cosmotech.com/tier" to "compute")
   val templates =
       startContainers.containers
-          .map { container -> buildTemplate(container, csmPlatformProperties) }
+          .map { container -> buildTemplate(container, csmPlatformProperties, alwaysPull) }
           .toMutableList()
   val entrypointTemplate = buildEntrypointTemplate(startContainers)
   templates.add(entrypointTemplate)
@@ -141,14 +146,16 @@ internal fun buildWorkflowSpec(
 internal fun buildWorkflow(
     csmPlatformProperties: CsmPlatformProperties,
     startContainers: ScenarioRunStartContainers,
-    executionTimeout: Int?
+    executionTimeout: Int?,
+    alwaysPull: Boolean = false
 ) =
     IoArgoprojWorkflowV1alpha1Workflow()
         .metadata(
             V1ObjectMeta()
                 .generateName(startContainers.generateName ?: CSM_DEFAULT_WORKFLOW_NAME)
                 .labels(startContainers.labels))
-        .spec(buildWorkflowSpec(csmPlatformProperties, startContainers, executionTimeout))
+        .spec(
+            buildWorkflowSpec(csmPlatformProperties, startContainers, executionTimeout, alwaysPull))
 
 private fun buildEntrypointTemplate(
     startContainers: ScenarioRunStartContainers
