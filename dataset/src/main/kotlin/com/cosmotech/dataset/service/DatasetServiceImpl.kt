@@ -575,7 +575,7 @@ class DatasetServiceImpl(
     // This call verify by itself that we have the read authorization in the dataset
     val dataset =
         getDatasetWithStatus(organizationId, datasetId, status = Dataset.IngestionStatus.SUCCESS)
-    return trx(dataset) { query(dataset, datasetTwinGraphQuery.query).toJsonString() }
+    return query(dataset, datasetTwinGraphQuery.query).toJsonString()
   }
 
   fun query(dataset: Dataset, query: String, isReadOnly: Boolean = false): ResultSet {
@@ -583,8 +583,11 @@ class DatasetServiceImpl(
       csmRedisGraph.readOnlyQuery(
           dataset.twingraphId!!, query, csmPlatformProperties.twincache.queryTimeout)
     } else {
-      csmRedisGraph.query(
-          dataset.twingraphId!!, query, csmPlatformProperties.twincache.queryTimeout)
+      trx(dataset) {
+        csmRedisGraph.query(
+          dataset.twingraphId!!, query, csmPlatformProperties.twincache.queryTimeout
+        )
+      }
     }
   }
 
