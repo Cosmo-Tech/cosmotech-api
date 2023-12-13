@@ -284,13 +284,15 @@ class TwingraphServiceImpl(
       throw CsmResourceNotFoundException(
           "Graph with hash: $hash is expired. Try to repeat bulk query")
     }
+    val twinData = unifiedJedis.get(bulkQueryId)
 
     val httpServletResponse =
         ((RequestContextHolder.getRequestAttributes() as ServletRequestAttributes).response)
     val contentDisposition =
         ContentDisposition.builder("attachment").filename("TwinGraph-$hash.zip").build()
     httpServletResponse!!.setHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
-    return ByteArrayResource(unifiedJedis.get(bulkQueryId))
+
+    return ByteArrayResource(twinData)
   }
 
   override fun createEntities(

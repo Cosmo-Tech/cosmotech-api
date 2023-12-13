@@ -912,7 +912,6 @@ components:
           items:
             type: string
         runSizing:
-          description: definition of resources needed for the scenario run
           $ref: "#/components/schemas/ScenarioResourceSizing"
         parametersValues:
           type: array
@@ -921,24 +920,20 @@ components:
             $ref: '#/components/schemas/ScenarioRunTemplateParameterValue'
         lastRun:
           $ref: '#/components/schemas/ScenarioLastRun'
-          description: the last Scenario Run for this Scenario
         parentLastRun:
           $ref: '#/components/schemas/ScenarioLastRun'
-          description: the last Scenario Run for the parent of this Scenario
         rootLastRun:
           $ref: '#/components/schemas/ScenarioLastRun'
-          description: the last Scenario Run for the root (master) of Scenario
         validationStatus:
-          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
           $ref: '#/components/schemas/ScenarioValidationStatus'
         security:
-          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           $ref: '#/components/schemas/ScenarioSecurity'
 #      required:
 #        - name
 #        - runTemplateId
     ScenarioSecurity:
       type: object
+      x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
       description: the Scenario security information
       properties:
         default:
@@ -1111,6 +1106,7 @@ components:
         # PROD-7420 : return data ingestion status
         - DataIngestionInProgress
     ScenarioValidationStatus:
+      x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
       type: string
       description: the validation status of the scenario
       enum:
