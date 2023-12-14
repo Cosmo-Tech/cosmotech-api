@@ -342,7 +342,6 @@ class DatasetServiceImpl(
             jedis.eval("redis.call('DEL', KEYS[1]);", 1, "backupGraph-$datasetId")
           }
         }
-        datasetRepository.save(dataset.apply { ingestionStatus = Dataset.IngestionStatus.SUCCESS })
       } catch (e: Exception) {
         if (safeReplace) {
           csmJedisPool.resource.use { jedis ->
