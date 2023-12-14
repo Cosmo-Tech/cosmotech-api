@@ -27,6 +27,8 @@ Models/DatasetTwinGraphInfo.md
 Models/DatasetTwinGraphQuery.md
 Models/Dataset_connector.md
 Models/DeleteHistoricalData.md
+Models/FileUploadMetadata.md
+Models/FileUploadValidation.md
 Models/GraphProperties.md
 Models/Organization.md
 Models/OrganizationAccessControl.md

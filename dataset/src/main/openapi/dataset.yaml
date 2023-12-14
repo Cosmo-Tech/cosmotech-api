@@ -301,9 +301,12 @@ paths:
               type: string
               format: binary
       responses:
-        "201":
-          description: Twingraph file upload started
-
+        '202':
+          description: File uploaded successfully. Processing...
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileUploadValidation'
     delete:
       operationId: deleteDataset
       tags:
@@ -1333,6 +1336,27 @@ components:
           scopes:
             http://dev.api.cosmotech.com/platform: Platform scope
   schemas:
+    FileUploadValidation:
+      type: object
+      description: files read on upload
+      properties:
+        nodes:
+          type: array
+          description: list of filename found on nodes folder
+          items:
+            $ref: '#/components/schemas/FileUploadMetadata'
+        edges:
+          type: array
+          description: list of filename found on edges folder
+          items:
+            $ref: '#/components/schemas/FileUploadMetadata'
+    FileUploadMetadata:
+      type: object
+      properties:
+        name:
+          type: string
+        size:
+          type: integer
     DatasetSearch:
       type: object
       description: the search options
