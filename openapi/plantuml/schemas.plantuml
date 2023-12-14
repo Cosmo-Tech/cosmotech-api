@@ -9,17 +9,17 @@ entity ComponentRolePermissions {
 
 entity Connector {
     id: String
-    * key: String
-    * name: String
+    key: String
+    name: String
     description: String
-    * repository: String
-    * version: String
+    repository: String
+    version: String
     tags: List<String>
     ownerId: String
     url: String
     azureManagedIdentity: Boolean
     azureAuthenticationWithCustomerAppRegistration: Boolean
-    * ioTypes: List<String>
+    ioTypes: List<String>
     parameterGroups: List<ConnectorParameterGroup>
 }
 
