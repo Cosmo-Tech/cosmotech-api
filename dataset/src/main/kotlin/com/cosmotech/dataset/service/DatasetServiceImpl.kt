@@ -366,8 +366,6 @@ class DatasetServiceImpl(
               jedis.eval("redis.call('DEL', KEYS[1]);", 1, "backupGraph-$datasetId")
             }
           }
-          datasetRepository.save(
-              dataset.apply { ingestionStatus = Dataset.IngestionStatus.SUCCESS })
         }
       } catch (e: Exception) {
         if (safeReplace) {
@@ -394,7 +392,17 @@ class DatasetServiceImpl(
     val dataset = findDatasetById(organizationId, datasetId)
     return when (dataset.sourceType) {
       null -> Dataset.IngestionStatus.NONE.value
-      DatasetSourceType.None -> dataset.ingestionStatus!!.value
+      DatasetSourceType.None -> {
+        var twincacheStatus = Dataset.TwincacheStatus.EMPTY
+        csmJedisPool.resource.use { jedis ->
+          if (jedis.exists(dataset.twingraphId!!)) {
+            twincacheStatus = Dataset.TwincacheStatus.FULL
+          }
+        }
+        datasetRepository.apply { dataset.twincacheStatus = twincacheStatus }
+
+        dataset.ingestionStatus!!.value
+      }
       DatasetSourceType.File -> {
         if (dataset.ingestionStatus == Dataset.IngestionStatus.NONE) {
           return Dataset.IngestionStatus.NONE.value
