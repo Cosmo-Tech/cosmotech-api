@@ -928,9 +928,6 @@ components:
           $ref: '#/components/schemas/ScenarioValidationStatus'
         security:
           $ref: '#/components/schemas/ScenarioSecurity'
-#      required:
-#        - name
-#        - runTemplateId
     ScenarioSecurity:
       type: object
       x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
