@@ -748,7 +748,7 @@ paths:
       tags:
         - dataset
       summary: Get the dataset's refresh job status
-      description: Get the status of the import workflow lauch on the dataset's refresh.
+      description: Get the status of the import workflow lauch on the dataset's refresh. This endpoint needs to be called to update a dataset IngestionStatus or TwincacheStatus
       responses:
         '200':
           description: Successful response
