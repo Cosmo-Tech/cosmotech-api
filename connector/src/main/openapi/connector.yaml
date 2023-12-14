@@ -210,12 +210,6 @@ components:
           description: the list of connector parameters groups
           items:
             $ref: '#/components/schemas/ConnectorParameterGroup'
-      required:
-        - key
-        - name
-        - repository
-        - version
-        - ioTypes
     ConnectorParameterGroup:
       type: object
       description: a connector parameters group
