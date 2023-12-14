@@ -71,9 +71,6 @@ import com.redislabs.redisgraph.RedisGraph
 import com.redislabs.redisgraph.ResultSet
 import com.redislabs.redisgraph.graph_entities.Edge
 import com.redislabs.redisgraph.graph_entities.Node
-import java.io.InputStream
-import java.nio.charset.StandardCharsets
-import java.time.Instant
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.apache.commons.compress.archivers.ArchiveStreamFactory
@@ -91,6 +88,9 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.exceptions.JedisDataException
+import java.io.InputStream
+import java.nio.charset.StandardCharsets
+import java.time.Instant
 
 const val TYPE_NODE = "node"
 const val TYPE_RELATIONSHIP = "relationship"
@@ -366,8 +366,6 @@ class DatasetServiceImpl(
               jedis.eval("redis.call('DEL', KEYS[1]);", 1, "backupGraph-$datasetId")
             }
           }
-          datasetRepository.save(
-              dataset.apply { ingestionStatus = Dataset.IngestionStatus.SUCCESS })
         }
       } catch (e: Exception) {
         if (safeReplace) {
@@ -394,7 +392,17 @@ class DatasetServiceImpl(
     val dataset = findDatasetById(organizationId, datasetId)
     return when (dataset.sourceType) {
       null -> Dataset.IngestionStatus.NONE.value
-      DatasetSourceType.None -> dataset.ingestionStatus!!.value
+      DatasetSourceType.None -> {
+        var twincacheStatus = Dataset.TwincacheStatus.EMPTY
+        csmJedisPool.resource.use { jedis ->
+          if (jedis.exists(dataset.twingraphId!!)) {
+            twincacheStatus = Dataset.TwincacheStatus.FULL
+          }
+        }
+        datasetRepository.apply { dataset.twincacheStatus = twincacheStatus }
+
+        dataset.ingestionStatus!!.value
+      }
       DatasetSourceType.File -> {
         if (dataset.ingestionStatus == Dataset.IngestionStatus.NONE) {
           return Dataset.IngestionStatus.NONE.value
