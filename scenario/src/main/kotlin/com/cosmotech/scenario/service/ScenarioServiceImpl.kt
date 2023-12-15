@@ -177,24 +177,26 @@ internal class ScenarioServiceImpl(
       }
     }
 
-    val datasetCopyList =
-        datasetList
-            ?.map {
-              val dataset = datasetService.findDatasetById(organizationId, it)
-              when {
-                dataset.twingraphId == null -> it
-                dataset.ingestionStatus == Dataset.IngestionStatus.SUCCESS ->
-                    datasetService
-                        .createSubDataset(
-                            organizationId,
-                            it,
-                            SubDatasetGraphQuery(
-                                name = "Scenario - ${scenario.name})", main = false))
-                        .id!!
-                else -> throw CsmClientException("Dataset ${dataset.id} is not ready")
+    if (workspace.datasetCopy == true) {
+      datasetList =
+          datasetList
+              ?.map {
+                val dataset = datasetService.findDatasetById(organizationId, it)
+                when {
+                  dataset.twingraphId == null -> it
+                  dataset.ingestionStatus == Dataset.IngestionStatus.SUCCESS ->
+                      datasetService
+                          .createSubDataset(
+                              organizationId,
+                              it,
+                              SubDatasetGraphQuery(
+                                  name = "Scenario - ${scenario.name})", main = false))
+                          .id!!
+                  else -> throw CsmClientException("Dataset ${dataset.id} is not ready")
+                }
               }
-            }
-            ?.toMutableList()
+              ?.toMutableList()
+    }
 
     val now = Instant.now().toEpochMilli()
     val scenarioToSave =
@@ -209,7 +211,7 @@ internal class ScenarioServiceImpl(
             creationDate = now,
             lastUpdate = now,
             state = ScenarioJobState.Created,
-            datasetList = datasetCopyList,
+            datasetList = datasetList,
             rootId = rootId,
             parametersValues = newParametersValuesList,
             validationStatus = ScenarioValidationStatus.Draft,

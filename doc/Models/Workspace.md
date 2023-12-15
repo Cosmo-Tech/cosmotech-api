@@ -19,6 +19,7 @@ Name | Type | Description | Notes
 **dedicatedEventHubAuthenticationStrategy** | **String** | the Event Hub authentication strategy, SHARED_ACCESS_POLICY or TENANT_CLIENT_CREDENTIALS. Default to the one defined for the tenant. | [optional] [default to null]
 **sendScenarioRunToEventHub** | **Boolean** | default setting for all Scenarios and Run Templates to set whether or not the ScenarioRun is send to the Event Hub | [optional] [default to true]
 **sendScenarioMetadataToEventHub** | **Boolean** | Set this property to false to not send scenario metada to Azure Event Hub Namespace for this Workspace. The Event Hub Namespace must be named \\&#39;&lt;organization_id\\&gt;-&lt;workspace_id\\&gt;\\&#39; (in lower case). This Namespace must also contain two Event Hubs named \\&#39;scenariometadata\\&#39; and \\&#39;scenariorunmetadata\\&#39;. | [optional] [default to false]
+**datasetCopy** | **Boolean** | Activate the copy of dataset on scenario creation, meaning that each scenario created in this workspace will make this copy. when false, scenario use directly the dataset specified. | [optional] [default to true]
 **security** | [**WorkspaceSecurity**](WorkspaceSecurity.md) |  | [optional] [default to null]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

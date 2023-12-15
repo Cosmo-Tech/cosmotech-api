@@ -26,6 +26,7 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.getCurrentAuthentication
 import com.cosmotech.dataset.api.DatasetApiService
+import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
@@ -144,6 +145,129 @@ class ScenarioServiceImplTests {
   }
 
   @Test
+  fun `do not creates copy of dataset for new scenario when workspace datasetCopy is true`() {
+    justRun { csmRbac.verify(any(), PERMISSION_CREATE_CHILDREN) }
+
+    // mock solution return
+    every { solutionService.findSolutionById(any(), any()) } returns
+        Solution().apply {
+          this.runTemplates =
+              mutableListOf(mockk<RunTemplate>(relaxed = true) { every { id } returns "rt-id" })
+        }
+
+    // mock workspace
+    every { workspaceService.findWorkspaceById(any(), any()) } returns
+        Workspace(
+                key = "key",
+                name = "w",
+                solution = WorkspaceSolution().apply { this.solutionId = "sol-id" })
+            .apply { this.datasetCopy = true }
+
+    // mock scenario save
+    every { scenarioRepository.save(any()) } returns mockk<Scenario>()
+
+    // mock dataset
+    every { datasetService.findDatasetById(any(), any()) } returns
+        Dataset().apply {
+          this.twingraphId = "1"
+          this.ingestionStatus = Dataset.IngestionStatus.SUCCESS
+        }
+    every { datasetService.createSubDataset(any(), any(), any()) } returns mockk(relaxed = true)
+
+    val scenario =
+        Scenario().apply {
+          this.id = "s-id"
+          this.runTemplateId = "rt-id"
+          this.datasetList = mutableListOf("d-1", "d-2")
+        }
+    scenarioServiceImpl.createScenario("o-id", "w-id", scenario)
+
+    verify(exactly = 2) { datasetService.createSubDataset("o-id", any(), any()) }
+  }
+
+  @Test
+  fun `do not creates copy of dataset for new scenario when workspace datasetCopy is false`() {
+    justRun { csmRbac.verify(any(), PERMISSION_CREATE_CHILDREN) }
+
+    // mock solution return
+    every { solutionService.findSolutionById(any(), any()) } returns
+        Solution().apply {
+          this.runTemplates =
+              mutableListOf(mockk<RunTemplate>(relaxed = true) { every { id } returns "rt-id" })
+        }
+
+    // mock workspace
+    every { workspaceService.findWorkspaceById(any(), any()) } returns
+        Workspace(
+                key = "key",
+                name = "w",
+                solution = WorkspaceSolution().apply { this.solutionId = "sol-id" })
+            .apply { this.datasetCopy = false }
+
+    // mock scenario save
+    every { scenarioRepository.save(any()) } returns mockk<Scenario>()
+
+    // mock dataset
+    every { datasetService.findDatasetById(any(), any()) } returns
+        Dataset().apply {
+          this.twingraphId = "1"
+          this.ingestionStatus = Dataset.IngestionStatus.SUCCESS
+        }
+    every { datasetService.createSubDataset(any(), any(), any()) } returns mockk(relaxed = true)
+
+    val scenario =
+        Scenario().apply {
+          this.id = "s-id"
+          this.runTemplateId = "rt-id"
+          this.datasetList = mutableListOf("d-1", "d-2")
+        }
+    scenarioServiceImpl.createScenario("o-id", "w-id", scenario)
+
+    verify(exactly = 0) { datasetService.createSubDataset("o-id", any(), any()) }
+  }
+
+  @Test
+  fun `do not creates copy of dataset for new scenario when workspace datasetCopy is null`() {
+    justRun { csmRbac.verify(any(), PERMISSION_CREATE_CHILDREN) }
+
+    // mock solution return
+    every { solutionService.findSolutionById(any(), any()) } returns
+        Solution().apply {
+          this.runTemplates =
+              mutableListOf(mockk<RunTemplate>(relaxed = true) { every { id } returns "rt-id" })
+        }
+
+    // mock workspace
+    every { workspaceService.findWorkspaceById(any(), any()) } returns
+        Workspace(
+                key = "key",
+                name = "w",
+                solution = WorkspaceSolution().apply { this.solutionId = "sol-id" })
+            .apply { this.datasetCopy = null }
+
+    // mock scenario save
+    every { scenarioRepository.save(any()) } returns mockk<Scenario>()
+
+    // mock dataset
+    every { datasetService.findDatasetById(any(), any()) } returns
+        Dataset().apply {
+          this.twingraphId = "1"
+          this.ingestionStatus = Dataset.IngestionStatus.SUCCESS
+        }
+    every { datasetService.createSubDataset(any(), any(), any()) } returns mockk(relaxed = true)
+
+    val scenario =
+        Scenario().apply {
+          this.id = "s-id"
+          this.runTemplateId = "rt-id"
+          this.datasetList = mutableListOf("d-1", "d-2")
+        }
+    scenarioServiceImpl.createScenario("o-id", "w-id", scenario)
+
+    verify(exactly = 0) { datasetService.createSubDataset("o-id", any(), any()) }
+  }
+
+  @Test
   fun `PROD-7687 - should initialize Child Scenario Parameters values with parent ones`() {
     val workspace = mockk<Workspace>()
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
@@ -155,6 +279,7 @@ class ScenarioServiceImplTests {
     val workspaceSolution = mockk<WorkspaceSolution>()
     every { workspaceSolution.solutionId } returns SOLUTION_ID
     every { workspace.solution } returns workspaceSolution
+    every { workspace.datasetCopy } returns null
 
     val solution = mockk<Solution>()
     every { solution.id } returns SOLUTION_ID
@@ -264,6 +389,7 @@ class ScenarioServiceImplTests {
     val workspaceSolution = mockk<WorkspaceSolution>()
     every { workspaceSolution.solutionId } returns SOLUTION_ID
     every { workspace.solution } returns workspaceSolution
+    every { workspace.datasetCopy } returns null
 
     val solution = mockk<Solution>()
     every { solution.id } returns SOLUTION_ID
@@ -343,20 +469,23 @@ class ScenarioServiceImplTests {
   fun `PROD-7687 - Child Scenario Parameters values take precedence over the parent ones`() {
     val workspace = mockk<Workspace>()
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
+
     val workspaceSecurity = mockk<WorkspaceSecurity>()
     every { workspace.security } returns workspaceSecurity
     every { workspace.security?.default } returns String()
     every { workspace.security?.accessControlList } returns mutableListOf()
     justRun { csmRbac.verify(any(), PERMISSION_CREATE_CHILDREN) }
-    val workspaceSolution = mockk<WorkspaceSolution>()
 
+    val workspaceSolution = mockk<WorkspaceSolution>()
     every { workspaceSolution.solutionId } returns SOLUTION_ID
     every { workspace.solution } returns workspaceSolution
+    every { workspace.datasetCopy } returns null
 
     val solution = mockk<Solution>()
     every { solution.id } returns SOLUTION_ID
     every { solution.name } returns "test solution"
     every { solutionService.findSolutionById(ORGANIZATION_ID, SOLUTION_ID) } returns solution
+
     val runTemplate1 = mockk<RunTemplate>()
     every { runTemplate1.id } returns "runTemplate1_id"
     every { runTemplate1.name } returns "runTemplate1 name"
