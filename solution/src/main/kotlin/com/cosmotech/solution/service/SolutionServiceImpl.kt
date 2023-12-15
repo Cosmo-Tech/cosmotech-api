@@ -101,6 +101,9 @@ internal class SolutionServiceImpl(
   }
 
   override fun findSolutionById(organizationId: String, solutionId: String): Solution {
+    // This call verify by itself that we have the read authorization in the organization
+    organizationApiService.findOrganizationById(organizationId)
+
     val solution =
         solutionRepository.findBy(organizationId, solutionId).orElseThrow {
           CsmResourceNotFoundException(
@@ -434,8 +437,6 @@ internal class SolutionServiceImpl(
       solutionId: String,
       solutionRole: SolutionRole
   ): SolutionSecurity {
-    // This call verify by itself that we have the read authorization in the organization
-    organizationApiService.findOrganizationById(organizationId)
     val solution = findSolutionById(organizationId, solutionId)
     csmRbac.verify(solution.getRbac(), PERMISSION_WRITE_SECURITY)
     val rbacSecurity = csmRbac.setDefault(solution.getRbac(), solutionRole.role)
