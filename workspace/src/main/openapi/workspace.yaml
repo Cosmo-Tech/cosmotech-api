@@ -757,6 +757,11 @@ components:
           description: Set this property to false to not send scenario metada to Azure Event Hub Namespace for this Workspace.
             The Event Hub Namespace must be named \'<organization_id\>-<workspace_id\>\' (in lower case).
             This Namespace must also contain two Event Hubs named \'scenariometadata\' and \'scenariorunmetadata\'.
+        datasetCopy:
+          type: boolean
+          default: true
+          description: Activate the copy of dataset on scenario creation, meaning that each scenario created in this workspace
+            will make this copy. when false, scenario use directly the dataset specified.
         security:
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           allOf:
