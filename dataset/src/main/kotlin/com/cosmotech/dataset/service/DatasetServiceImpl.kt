@@ -133,8 +133,10 @@ class DatasetServiceImpl(
   }
 
   override fun findDatasetById(organizationId: String, datasetId: String): Dataset {
+    // This call verify by itself that we have the read authorization in the organization
+    organizationService.findOrganizationById(organizationId)
     val dataset =
-        datasetRepository.findById(datasetId).orElseThrow {
+        datasetRepository.findBy(organizationId, datasetId).orElseThrow {
           CsmResourceNotFoundException(
               "Dataset $datasetId not found in organization $organizationId")
         }
@@ -519,8 +521,6 @@ class DatasetServiceImpl(
   }
 
   override fun rollbackRefresh(organizationId: String, datasetId: String): String {
-    // This call verify by itself that we have the read authorization in the organization
-    organizationService.findOrganizationById(organizationId)
     var dataset = findDatasetById(organizationId, datasetId)
     csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE)
 
@@ -658,7 +658,6 @@ class DatasetServiceImpl(
       twinGraphQuery: DatasetTwinGraphQuery,
       body: Resource
   ): TwinGraphBatchResult {
-
     val dataset = getDatasetWithStatus(organizationId, datasetId)
     csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE)
     resourceScanner.scanMimeTypes(body, listOf("text/csv", "text/plain"))
@@ -733,9 +732,6 @@ class DatasetServiceImpl(
       datasetId: String,
       status: Dataset.IngestionStatus? = null
   ): Dataset {
-    // This call verify by itself that we have the read authorization in the organization
-    organizationService.findOrganizationById(organizationId)
-
     val dataset = findDatasetById(organizationId, datasetId)
     dataset.takeUnless { it.twingraphId.isNullOrBlank() }
         ?: throw CsmResourceNotFoundException("TwingraphId is not defined for the dataset")
@@ -919,7 +915,6 @@ class DatasetServiceImpl(
   }
 
   override fun getDatasetSecurity(organizationId: String, datasetId: String): DatasetSecurity {
-
     val dataset = findDatasetById(organizationId, datasetId)
     csmRbac.verify(dataset.getRbac(), PERMISSION_READ_SECURITY)
     return dataset.security
@@ -931,8 +926,6 @@ class DatasetServiceImpl(
       datasetId: String,
       datasetRole: DatasetRole
   ): DatasetSecurity {
-    // This call verify by itself that we have the read authorization in the organization
-    organizationService.findOrganizationById(organizationId)
     val dataset = findDatasetById(organizationId, datasetId)
     csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE_SECURITY)
     val rbacSecurity = csmRbac.setDefault(dataset.getRbac(), datasetRole.role)
