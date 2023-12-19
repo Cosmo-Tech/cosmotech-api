@@ -51,8 +51,7 @@ import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
 import io.mockk.verify
 import java.io.InputStream
-import java.util.Optional
-import java.util.UUID
+import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -359,9 +358,8 @@ class WorkspaceServiceImplTests {
             name = "my workspace name",
             solution = WorkspaceSolution(solutionId = "SOL-my-solution-id"))
     workspace.security = WorkspaceSecurity(ROLE_ADMIN, mutableListOf())
-    every {
-      workspaceServiceImpl.findWorkspaceByIdNoSecurity(ORGANIZATION_ID, WORKSPACE_ID)
-    } returns workspace
+    every { workspaceServiceImpl.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns
+        workspace
     every { solutionService.findSolutionById(ORGANIZATION_ID, any()) } throws
         CsmResourceNotFoundException("Solution not found")
     assertThrows<CsmResourceNotFoundException> {
@@ -444,8 +442,7 @@ class WorkspaceServiceImplTests {
             rbacTest("test RBAC update workspace: $role", role, shouldThrow) {
               every { organizationService.findOrganizationById(any()) } returns it.organization
               every { solutionService.findSolutionById(any(), any()) } returns it.solution
-              every { workspaceServiceImpl.findWorkspaceByIdNoSecurity(any(), any()) } returns
-                  it.workspace
+              every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
               every { workspaceRepository.save(any()) } returns it.workspace
               workspaceServiceImpl.updateWorkspace(
                   it.organization.id!!, it.workspace.id!!, it.workspace)
@@ -648,8 +645,7 @@ class WorkspaceServiceImplTests {
           .map { (role, shouldThrow) ->
             rbacTest("test RBAC add workspace access control: $role", role, shouldThrow) {
               every { organizationService.findOrganizationById(any()) } returns it.organization
-              every { workspaceServiceImpl.findWorkspaceByIdNoSecurity(any(), any()) } returns
-                  it.workspace
+              every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
               every { workspaceRepository.save(any()) } returns it.workspace
               workspaceServiceImpl.addWorkspaceAccessControl(
                   it.organization.id!!,
@@ -670,8 +666,7 @@ class WorkspaceServiceImplTests {
           .map { (role, shouldThrow) ->
             rbacTest("test RBAC update workspace access control: $role", role, shouldThrow) {
               every { organizationService.findOrganizationById(any()) } returns it.organization
-              every { workspaceServiceImpl.findWorkspaceByIdNoSecurity(any(), any()) } returns
-                  it.workspace
+              every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
               every { workspaceRepository.save(any()) } returns it.workspace
               workspaceServiceImpl.updateWorkspaceAccessControl(
                   it.organization.id!!,
@@ -693,8 +688,7 @@ class WorkspaceServiceImplTests {
           .map { (role, shouldThrow) ->
             rbacTest("test RBAC remove workspace access control: $role", role, shouldThrow) {
               every { organizationService.findOrganizationById(any()) } returns it.organization
-              every { workspaceServiceImpl.findWorkspaceByIdNoSecurity(any(), any()) } returns
-                  it.workspace
+              every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
               every { workspaceRepository.save(any()) } returns it.workspace
               workspaceServiceImpl.removeWorkspaceAccessControl(
                   it.organization.id!!, it.workspace.id!!, "2$CONNECTED_DEFAULT_USER")
@@ -712,8 +706,7 @@ class WorkspaceServiceImplTests {
           .map { (role, shouldThrow) ->
             rbacTest("test RBAC get workspace security users: $role", role, shouldThrow) {
               every { organizationService.findOrganizationById(any()) } returns it.organization
-              every { workspaceServiceImpl.findWorkspaceByIdNoSecurity(any(), any()) } returns
-                  it.workspace
+              every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
               every { workspaceRepository.save(any()) } returns it.workspace
               workspaceServiceImpl.getWorkspaceSecurityUsers(
                   it.organization.id!!, it.workspace.id!!)
