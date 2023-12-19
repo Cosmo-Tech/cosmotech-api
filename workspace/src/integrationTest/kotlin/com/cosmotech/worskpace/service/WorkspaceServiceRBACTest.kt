@@ -500,9 +500,15 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                               userName = TEST_USER_MAIL,
                               role = role))
                     }
-                assertEquals(
-                    "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_WRITE",
-                    exception.message)
+                if (role == ROLE_NONE) {
+                  assertEquals(
+                      "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      exception.message)
+                } else {
+                  assertEquals(
+                      "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                      exception.message)
+                }
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.updateWorkspace(
@@ -1294,9 +1300,15 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                       workspaceApiService.setWorkspaceDefaultSecurity(
                           organizationSaved.id!!, workspaceSaved.id!!, WorkspaceRole(ROLE_USER))
                     }
-                assertEquals(
-                    "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
-                    exception.message)
+                if (role == ROLE_NONE) {
+                  assertEquals(
+                      "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      exception.message)
+                } else {
+                  assertEquals(
+                      "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                      exception.message)
+                }
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.setWorkspaceDefaultSecurity(
@@ -1392,9 +1404,15 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                           workspaceSaved.id!!,
                           WorkspaceAccessControl("id", ROLE_USER))
                     }
-                assertEquals(
-                    "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
-                    exception.message)
+                if (role == ROLE_NONE) {
+                  assertEquals(
+                      "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      exception.message)
+                } else {
+                  assertEquals(
+                      "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                      exception.message)
+                }
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.addWorkspaceAccessControl(
@@ -1691,9 +1709,15 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                           TEST_USER_MAIL,
                           WorkspaceRole(ROLE_ADMIN))
                     }
-                assertEquals(
-                    "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
-                    exception.message)
+                if (role == ROLE_NONE) {
+                  assertEquals(
+                      "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
+                      exception.message)
+                } else {
+                  assertEquals(
+                      "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                      exception.message)
+                }
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.updateWorkspaceAccessControl(

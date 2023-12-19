@@ -110,7 +110,7 @@ class DatasetServiceImplTests {
   @Test
   fun `findDatasetById should return the dataset when it exists`() {
     val dataset = baseDataset()
-    every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+    every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     val result = datasetService.findDatasetById(ORGANIZATION_ID, DATASET_ID)
     assertEquals(dataset, result)
   }
@@ -175,7 +175,7 @@ class DatasetServiceImplTests {
             name = "My Sub Dataset",
             description = "My Sub Dataset description",
         )
-    every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+    every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { csmJedisPool.resource.exists(any<String>()) } returns true
     every { csmJedisPool.resource.hgetAll(any<String>()) } returns
         mapOf("lastVersion" to "lastVersion", "graphRotation" to "2")
@@ -200,7 +200,7 @@ class DatasetServiceImplTests {
     val dataset =
         baseDataset().copy(twingraphId = "", ingestionStatus = Dataset.IngestionStatus.SUCCESS)
     val subDatasetGraphQuery = SubDatasetGraphQuery()
-    every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+    every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     assertThrows<CsmResourceNotFoundException> {
       datasetService.createSubDataset(ORGANIZATION_ID, dataset.id!!, subDatasetGraphQuery)
     }
@@ -212,7 +212,7 @@ class DatasetServiceImplTests {
         baseDataset()
             .copy(twingraphId = "twingraphId", ingestionStatus = Dataset.IngestionStatus.SUCCESS)
     val subDatasetGraphQuery = SubDatasetGraphQuery()
-    every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+    every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { datasetRepository.save(any()) } returnsArgument 0
     every { csmJedisPool.resource.eval(any<String>(), any(), any(), any()) } throws
         CsmResourceNotFoundException("")
@@ -229,7 +229,7 @@ class DatasetServiceImplTests {
                 twingraphId = "twingraphId",
                 sourceType = DatasetSourceType.File,
                 ingestionStatus = Dataset.IngestionStatus.SUCCESS)
-    every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+    every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
 
     val fileName = this::class.java.getResource("/Users.csv")?.file
     val file = File(fileName!!)
@@ -247,7 +247,7 @@ class DatasetServiceImplTests {
                 twingraphId = "twingraphId",
                 sourceType = DatasetSourceType.File,
                 ingestionStatus = Dataset.IngestionStatus.SUCCESS)
-    every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+    every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
 
     val fileName = this::class.java.getResource("/Users.7z")?.file
     val file = File(fileName!!)
@@ -267,7 +267,7 @@ class DatasetServiceImplTests {
     val fileName = this::class.java.getResource("/Graph.zip")?.file
     val file = File(fileName!!)
     val resource = ByteArrayResource(file.readBytes())
-    every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+    every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     assertThrows<CsmResourceNotFoundException> {
       datasetService.uploadTwingraph(ORGANIZATION_ID, DATASET_ID, resource)
     }
@@ -282,7 +282,7 @@ class DatasetServiceImplTests {
     val fileName = this::class.java.getResource("/Graph.zip")?.file
     val file = File(fileName!!)
     val resource = ByteArrayResource(file.readBytes())
-    every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+    every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     assertThrows<CsmResourceNotFoundException> {
       datasetService.uploadTwingraph(ORGANIZATION_ID, DATASET_ID, resource)
     }
@@ -299,7 +299,7 @@ class DatasetServiceImplTests {
     val fileName = this::class.java.getResource("/Graph.zip")?.file
     val file = File(fileName!!)
     val resource = ByteArrayResource(file.readBytes())
-    every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+    every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     val exceptionCatch =
         assertThrows<CsmClientException> {
           datasetService.uploadTwingraph(ORGANIZATION_ID, DATASET_ID, resource)
@@ -318,7 +318,7 @@ class DatasetServiceImplTests {
     val fileName = this::class.java.getResource("/Graph.zip")?.file
     val file = File(fileName!!)
     val resource = ByteArrayResource(file.readBytes())
-    every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+    every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { csmJedisPool.resource.exists(any<String>()) } returns true
     every { datasetRepository.save(any()) } returnsArgument 0
 
@@ -339,7 +339,7 @@ class DatasetServiceImplTests {
                 ingestionStatus = Dataset.IngestionStatus.NONE,
                 sourceType = DatasetSourceType.File,
                 twingraphId = "twingraphId")
-    every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+    every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { csmJedisPool.resource.exists(any<String>()) } returns false
     val result = datasetService.getDatasetTwingraphStatus(ORGANIZATION_ID, DATASET_ID)
     assertEquals(Dataset.IngestionStatus.NONE.value, result)
@@ -353,7 +353,7 @@ class DatasetServiceImplTests {
                 ingestionStatus = Dataset.IngestionStatus.SUCCESS,
                 sourceType = DatasetSourceType.File,
                 twingraphId = "twingraphId")
-    every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+    every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { csmJedisPool.resource.exists(any<String>()) } returns true
     val result = datasetService.getDatasetTwingraphStatus(ORGANIZATION_ID, DATASET_ID)
     assertEquals(Dataset.IngestionStatus.SUCCESS.value, result)
@@ -370,7 +370,7 @@ class DatasetServiceImplTests {
                 twingraphId = "twingraphId")
     mockkConstructor(TwingraphImportJobInfoRequest::class)
     every { anyConstructed<TwingraphImportJobInfoRequest>().response } returns "Succeeded"
-    every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+    every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { csmJedisPool.resource.exists(any<String>()) } returns true
     every { datasetRepository.save(any()) } returnsArgument 0
 
@@ -385,7 +385,7 @@ class DatasetServiceImplTests {
         baseDataset()
             .copy(
                 sourceType = DatasetSourceType.File, source = SourceInfo("http://storage.location"))
-    every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+    every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     assertThrows<CsmResourceNotFoundException> {
       datasetService.refreshDataset(ORGANIZATION_ID, DATASET_ID)
     }
@@ -400,7 +400,7 @@ class DatasetServiceImplTests {
                 sourceType = DatasetSourceType.ADT,
                 source = SourceInfo("http://storage.location", jobId = "0"),
                 twingraphId = "twingraphId")
-    every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+    every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { csmJedisPool.resource.exists(any<String>()) } returns true
     every { datasetRepository.save(any()) } returnsArgument 0
     val datasetInfo = datasetService.refreshDataset(ORGANIZATION_ID, DATASET_ID)
@@ -411,7 +411,7 @@ class DatasetServiceImplTests {
 
   @Test
   fun `deleteDataset should throw CsmResourceNotFoundException when Dataset is not found`() {
-    every { datasetRepository.findById(DATASET_ID) } returns Optional.empty()
+    every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.empty()
     assertThrows<CsmResourceNotFoundException> {
       datasetService.deleteDataset(ORGANIZATION_ID, DATASET_ID)
     }
@@ -420,7 +420,7 @@ class DatasetServiceImplTests {
   @Test
   fun `deleteDataset should throw CsmAccessForbiddenException`() {
     val dataset = baseDataset()
-    every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+    every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "my.account-tester"
     assertThrows<CsmAccessForbiddenException> {
       datasetService.deleteDataset(ORGANIZATION_ID, DATASET_ID)
@@ -434,7 +434,7 @@ class DatasetServiceImplTests {
             .copy(
                 twingraphId = "twingraphId",
             )
-    every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+    every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { getCurrentAuthenticatedRoles(csmPlatformProperties) } returns
         listOf(ROLE_PLATFORM_ADMIN)
     every { csmJedisPool.resource.exists(any<String>()) } returns true
@@ -451,7 +451,7 @@ class DatasetServiceImplTests {
         baseDataset()
             .copy(twingraphId = "graphId", ingestionStatus = Dataset.IngestionStatus.SUCCESS)
     every { datasetRepository.save(any()) } returnsArgument 0
-    every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+    every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { csmPlatformProperties.twincache.queryBulkTTL } returns 1000L
 
     every { csmJedisPool.resource.exists(any<String>()) } returns true
@@ -488,7 +488,7 @@ class DatasetServiceImplTests {
         baseDataset()
             .copy(twingraphId = "graphId", ingestionStatus = Dataset.IngestionStatus.SUCCESS)
     every { datasetRepository.save(any()) } returnsArgument 0
-    every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+    every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { csmPlatformProperties.twincache.queryBulkTTL } returns 1000L
 
     every { csmJedisPool.resource.keys(any<String>()) } returns setOf("graphId")
@@ -499,7 +499,7 @@ class DatasetServiceImplTests {
         "OK"
 
     val twinGraphQuery = DatasetTwinGraphQuery("MATCH(n) RETURN n")
-    val jsonHash = datasetService.twingraphBatchQuery("orgId", DATASET_ID, twinGraphQuery)
+    val jsonHash = datasetService.twingraphBatchQuery(ORGANIZATION_ID, DATASET_ID, twinGraphQuery)
 
     assertEquals(jsonHash.hash, "graphId:MATCH(n) RETURN n".shaHash())
     verifyAll {
@@ -518,12 +518,12 @@ class DatasetServiceImplTests {
         baseDataset()
             .copy(twingraphId = "graphId", ingestionStatus = Dataset.IngestionStatus.SUCCESS)
     every { datasetRepository.save(any()) } returnsArgument 0
-    every { datasetRepository.findById(DATASET_ID) } returns Optional.of(dataset)
+    every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { csmJedisPool.resource.keys(any<String>()) } returns setOf("graphId")
     every { csmJedisPool.resource.exists(any<ByteArray>()) } returns true
 
     val twinGraphQuery = DatasetTwinGraphQuery("MATCH(n) RETURN n")
-    val jsonHash = datasetService.twingraphBatchQuery("orgId", DATASET_ID, twinGraphQuery)
+    val jsonHash = datasetService.twingraphBatchQuery(ORGANIZATION_ID, DATASET_ID, twinGraphQuery)
     assertEquals(jsonHash.hash, "graphId:MATCH(n) RETURN n".shaHash())
   }
 
