@@ -154,6 +154,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
         makeWorkspaceEventHubInfo(false)
 
     rediSearchIndexer.createIndexFor(Organization::class.java)
+    rediSearchIndexer.createIndexFor(Dataset::class.java)
     rediSearchIndexer.createIndexFor(Solution::class.java)
     rediSearchIndexer.createIndexFor(Workspace::class.java)
     rediSearchIndexer.createIndexFor(Scenario::class.java)
