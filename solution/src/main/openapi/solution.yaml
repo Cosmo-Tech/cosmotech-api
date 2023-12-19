@@ -751,7 +751,7 @@ components:
           description: the registry repository containing the image
         alwaysPull:
           type: boolean
-          description: the image pull policy
+          description: set to true if the runtemplate wants to always pull the image
           default: false
         csmSimulator:
           type: string

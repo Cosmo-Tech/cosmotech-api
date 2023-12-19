@@ -9,7 +9,7 @@ Name | Type | Description | Notes
 **name** | **String** | the Solution name | [optional] [default to null]
 **description** | **String** | the Solution description | [optional] [default to null]
 **repository** | **String** | the registry repository containing the image | [optional] [default to null]
-**alwaysPull** | **Boolean** | the image pull policy | [optional] [default to false]
+**alwaysPull** | **Boolean** | set to true if the runtemplate wants to always pull the image | [optional] [default to false]
 **csmSimulator** | **String** | the main Cosmo Tech simulator name used in standard Run Template | [optional] [default to null]
 **version** | **String** | the Solution version MAJOR.MINOR.PATCH. Must be aligned with an existing repository tag | [optional] [default to null]
 **ownerId** | **String** | the User id which own this Solution | [optional] [default to null]
