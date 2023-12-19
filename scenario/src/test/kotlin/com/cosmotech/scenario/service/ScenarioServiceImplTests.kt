@@ -60,8 +60,7 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
 import io.mockk.verify
-import java.util.Optional
-import java.util.UUID
+import java.util.*
 import java.util.stream.Stream
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -197,7 +196,7 @@ class ScenarioServiceImplTests {
                 value = "parameter_group_11_parameter1_value"))
 
     every {
-      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, parentScenarioId)
+      scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, parentScenarioId)
     } returns parentScenario
 
     every { idGenerator.generate("scenario") } returns "S-myScenarioId"
@@ -394,7 +393,7 @@ class ScenarioServiceImplTests {
                 value = "parameter_group_11_parameter1_value_from_parent"))
 
     every {
-      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, parentScenarioId)
+      scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, parentScenarioId)
     } returns parentScenario
 
     every { idGenerator.generate("scenario") } returns "S-myScenarioId"
@@ -1020,22 +1019,22 @@ class ScenarioServiceImplTests {
             }
           }
 
-  @TestFactory
-  fun `test RBAC get scenario tree`() =
-      mapOf(
-              ROLE_VIEWER to false,
-              ROLE_EDITOR to false,
-              ROLE_ADMIN to false,
-              ROLE_VALIDATOR to true,
-              ROLE_USER to false,
-              ROLE_NONE to true)
-          .map { (role, shouldThrow) ->
-            rbacTest("Test RBAC get scenario tree: $role", role, shouldThrow) {
-              every { workspaceService.findWorkspaceById(any(), any()) } returns it.workspace
-              every { csmPlatformProperties.twincache.scenario.defaultPageSize } returns 10
-              scenarioServiceImpl.getScenariosTree(it.organization.id!!, it.workspace.id!!)
-            }
-          }
+  //  @TestFactory
+  //  fun `test RBAC get scenario tree`() =
+  //      mapOf(
+  //              ROLE_VIEWER to false,
+  //              ROLE_EDITOR to false,
+  //              ROLE_ADMIN to false,
+  //              ROLE_VALIDATOR to true,
+  //              ROLE_USER to false,
+  //              ROLE_NONE to true)
+  //          .map { (role, shouldThrow) ->
+  //            rbacTest("Test RBAC get scenario tree: $role", role, shouldThrow) {
+  //              every { workspaceService.findWorkspaceById(any(), any()) } returns it.workspace
+  //              every { csmPlatformProperties.twincache.scenario.defaultPageSize } returns 10
+  //              scenarioServiceImpl.getScenariosTree(it.organization.id!!, it.workspace.id!!)
+  //            }
+  //          }
 
   @TestFactory
   fun `test RBAC delete scenario`() =

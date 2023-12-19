@@ -152,7 +152,7 @@ internal class ScenarioServiceImpl(
 
     if (parentId != null) {
       logger.debug("Applying / Overwriting Dataset list from parent $parentId")
-      val parent = this.findScenarioByIdNoState(organizationId, workspaceId, parentId)
+      val parent = this.findScenarioById(organizationId, workspaceId, parentId)
       datasetList = parent.datasetList
       rootId = parent.rootId
       if (rootId == null) {
@@ -535,6 +535,7 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       scenarioId: String
   ): Scenario {
+    workspaceService.findWorkspaceById(organizationId, workspaceId)
     val scenario =
         this.findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
             .addLastRunsInfo(this, organizationId, workspaceId)
@@ -634,8 +635,7 @@ internal class ScenarioServiceImpl(
   }
 
   override fun getScenariosTree(organizationId: String, workspaceId: String): List<Scenario> {
-    val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.getRbac(), PERMISSION_READ)
+    workspaceService.findWorkspaceById(organizationId, workspaceId)
 
     var pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenario.defaultPageSize)
     val scenarioTree = mutableListOf<Scenario>()
@@ -927,7 +927,7 @@ internal class ScenarioServiceImpl(
       scenarioId: String,
       scenarioRole: ScenarioRole
   ): ScenarioSecurity {
-    val scenario = findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
+    val scenario = findScenarioById(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
     val rbacSecurity =
         csmRbac.setDefault(scenario.getRbac(), scenarioRole.role, scenarioPermissions)
@@ -954,7 +954,7 @@ internal class ScenarioServiceImpl(
       scenarioId: String,
       scenarioAccessControl: ScenarioAccessControl
   ): ScenarioAccessControl {
-    val scenario = findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
+    val scenario = findScenarioById(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
 
@@ -984,7 +984,7 @@ internal class ScenarioServiceImpl(
       identityId: String,
       scenarioRole: ScenarioRole
   ): ScenarioAccessControl {
-    val scenario = findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
+    val scenario = findScenarioById(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
     csmRbac.checkUserExists(
         scenario.getRbac(), identityId, "User '$identityId' not found in scenario $workspaceId")
