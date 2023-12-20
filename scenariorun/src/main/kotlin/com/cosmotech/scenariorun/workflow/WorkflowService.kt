@@ -14,11 +14,13 @@ interface WorkflowService : HealthIndicator {
    * Launch a new Scenario run, using the request specified
    * @param scenarioRunStartContainers the scenario run start request
    * @param executionTimeout the duration in which the workflow is allowed to run
+   * @param alwaysPull the image pull policy
    * @return a new ScenarioRun
    */
   fun launchScenarioRun(
       scenarioRunStartContainers: ScenarioRunStartContainers,
-      executionTimeout: Int?
+      executionTimeout: Int?,
+      alwaysPull: Boolean = false
   ): ScenarioRun
 
   /**

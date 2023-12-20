@@ -749,6 +749,10 @@ components:
         repository:
           type: string
           description: the registry repository containing the image
+        alwaysPull:
+          type: boolean
+          description: set to true if the runtemplate wants to always pull the image
+          default: false
         csmSimulator:
           type: string
           description: the main Cosmo Tech simulator name used in standard Run Template

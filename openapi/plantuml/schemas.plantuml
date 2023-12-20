@@ -485,6 +485,7 @@ entity Solution {
     name: String
     description: String
     repository: String
+    alwaysPull: Boolean
     csmSimulator: String
     version: String
     ownerId: String
