@@ -246,16 +246,16 @@ class DatasetServiceImpl(
     GlobalScope.launch(SecurityCoroutineContext()) {
       trx(dataset) {
         if (subDatasetGraphQuery.queries.isNullOrEmpty()) {
-          csmJedisPool.resource.use { jedis ->
-            jedis.eval(
+
+            unifiedJedis.eval(
                 "local o = redis.call('DUMP', KEYS[1]);redis.call('RENAME', KEYS[1], KEYS[2]);" +
                     "redis.call('RESTORE', KEYS[1], 0, o)",
                 2,
                 dataset.twingraphId,
                 subTwingraphId)
-          }
+
         } else {
-          val queryBuffer = QueryBuffer(csmJedisPool.resource, subTwingraphId)
+          val queryBuffer = QueryBuffer(unifiedJedis, subTwingraphId)
           subDatasetGraphQuery.queries?.forEach { query ->
             val resultSet = query(dataset, query)
             query.takeIf { it.isReadOnlyQuery() }?.apply { bulkQueryResult(queryBuffer, resultSet) }
@@ -362,18 +362,17 @@ class DatasetServiceImpl(
           }
           queryBuffer.send()
           if (safeReplace) {
-              unifiedJedis.eval("redis.call('DEL', KEYS[1]);", 1, "backupGraph-$datasetId")
-
+            unifiedJedis.eval("redis.call('DEL', KEYS[1]);", 1, "backupGraph-$datasetId")
           }
         }
         datasetRepository.save(dataset.apply { twincacheStatus = Dataset.TwincacheStatus.FULL })
       } catch (e: Exception) {
         if (safeReplace) {
-            unifiedJedis.eval(
-                "redis.call('RENAME', KEYS[2], KEYS[1]);",
-                2,
-                dataset.twingraphId,
-                "backupGraph-$datasetId")
+          unifiedJedis.eval(
+              "redis.call('RENAME', KEYS[2], KEYS[1]);",
+              2,
+              dataset.twingraphId,
+              "backupGraph-$datasetId")
         }
         throw CsmClientException(e.message ?: "Twingraph upload error", e)
       }
@@ -391,8 +390,8 @@ class DatasetServiceImpl(
       DatasetSourceType.None -> {
         var twincacheStatus = Dataset.TwincacheStatus.EMPTY
           if (unifiedJedis.exists(dataset.twingraphId!!)) {
-            twincacheStatus = Dataset.TwincacheStatus.FULL
-          }
+          twincacheStatus = Dataset.TwincacheStatus.FULL
+        }
         datasetRepository.apply { dataset.twincacheStatus = twincacheStatus }
 
         dataset.ingestionStatus!!.value
@@ -401,7 +400,7 @@ class DatasetServiceImpl(
         if (dataset.ingestionStatus == Dataset.IngestionStatus.NONE) {
           return Dataset.IngestionStatus.NONE.value
         }
-          if (dataset.ingestionStatus == Dataset.IngestionStatus.ERROR) {
+        if (dataset.ingestionStatus == Dataset.IngestionStatus.ERROR) {
           return Dataset.IngestionStatus.ERROR.value
           } else if (!unifiedJedis.exists(dataset.twingraphId!!)) {
             Dataset.IngestionStatus.PENDING.value
