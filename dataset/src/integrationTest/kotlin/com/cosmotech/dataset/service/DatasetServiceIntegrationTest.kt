@@ -148,9 +148,11 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     connectorSaved = connectorApiService.registerConnector(makeConnector())
 
-    organization = makeOrganization("Organization")
-    dataset = makeDataset("d-dataset-1", "dataset-1")
-    dataset2 = makeDataset("d-dataset-2", "dataset-2")
+    organization = makeOrganizationWithRole("Organization")
+    organizationSaved = organizationApiService.registerOrganization(organization)
+    dataset = makeDatasetWithRole()
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    dataset2 = makeDatasetWithRole()
   }
 
   @AfterEach
@@ -307,7 +309,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     val expectedSize = 15
     IntRange(1, numberOfDatasets).forEach {
       datasetApiService.createDataset(
-          organizationSaved.id!!, makeDataset("d-dataset-$it", "dataset-$it"))
+          organizationSaved.id!!, makeDatasetWithRole("d-dataset-$it", "dataset-$it"))
     }
 
     logger.info("should find all datasets and assert there are $numberOfDatasets")
@@ -356,7 +358,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     val file = this::class.java.getResource("/integrationTest.zip")?.file
     val resource = ByteArrayResource(File(file!!).readBytes())
     organizationSaved = organizationApiService.registerOrganization(organization)
-    dataset = makeDataset("d-dataset-1", "dataset-1")
+    dataset = makeDatasetWithRole("d-dataset-1", "dataset-1")
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
     datasetApiService.updateDataset(
         organizationSaved.id!!,
@@ -388,6 +390,12 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
       }
       Thread.sleep(500)
     }
+    datasetSaved = datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+    do {
+      Thread.sleep(50L)
+      val datasetStatus =
+          datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
+    } while (datasetStatus == Dataset.IngestionStatus.PENDING.value)
     assertEquals(12, countEntities(datasetSaved.twingraphId!!, "MATCH (n) RETURN count(n)"))
     assertEquals(5, countEntities(datasetSaved.twingraphId!!, "MATCH ()-[r]-() RETURN count(r)"))
 
@@ -400,6 +408,11 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     val subDataset =
         datasetApiService.createSubDataset(
             organizationSaved.id!!, datasetSaved.id!!, subDatasetParams)
+    do {
+      Thread.sleep(50L)
+      val datasetStatus =
+          datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, subDataset.id!!)
+    } while (datasetStatus == Dataset.IngestionStatus.PENDING.value)
 
     assertEquals("subDataset", subDataset.name)
     assertEquals("subDataset description", subDataset.description)
@@ -416,6 +429,11 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     val subDatasetWithQuery =
         datasetApiService.createSubDataset(
             organizationSaved.id!!, datasetSaved.id!!, subDatasetParamsQuery)
+    do {
+      Thread.sleep(50L)
+      val datasetStatus =
+          datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
+    } while (datasetStatus == Dataset.IngestionStatus.PENDING.value)
     /*
     assertEquals("subDatasetWithQuery", subDatasetWithQuery.name)
     assertEquals("subDatasetWithQuery description", subDatasetWithQuery.description)
@@ -572,7 +590,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   fun `access control list shouldn't contain more than one time each user on creation`() {
     connectorSaved = connectorApiService.registerConnector(makeConnector())
     organizationSaved =
-        organizationApiService.registerOrganization(makeOrganization("organization"))
+        organizationApiService.registerOrganization(makeOrganizationWithRole("organization"))
     val brokenDataset =
         Dataset(
             name = "dataset",
@@ -593,8 +611,8 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   fun `access control list shouldn't contain more than one time each user on ACL addition`() {
     connectorSaved = connectorApiService.registerConnector(makeConnector())
     organizationSaved =
-        organizationApiService.registerOrganization(makeOrganization("organization"))
-    val workingDataset = makeDataset(id = "id", "dataset", DatasetSourceType.None)
+        organizationApiService.registerOrganization(makeOrganizationWithRole("organization"))
+    val workingDataset = makeDatasetWithRole("dataset", sourceType = DatasetSourceType.None)
     val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, workingDataset)
 
     assertThrows<IllegalArgumentException> {
@@ -680,9 +698,9 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `status should go back to normal on rollback endpoint call`() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-    organization = makeOrganization("organization")
+    organization = makeOrganizationWithRole("organization")
     organizationSaved = organizationApiService.registerOrganization(organization)
-    makeDataset("d-0123456789", "dataset", DatasetSourceType.File)
+    makeDatasetWithRole(sourceType = DatasetSourceType.File)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
 
     datasetRepository.save(datasetSaved.apply { ingestionStatus = Dataset.IngestionStatus.ERROR })
@@ -720,7 +738,8 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test RBAC refreshDataset : $sourceType") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               organizationSaved =
-                  organizationApiService.registerOrganization(makeOrganization("organization"))
+                  organizationApiService.registerOrganization(
+                      makeOrganizationWithRole("organization"))
               val parentDataset =
                   datasetApiService.createDataset(
                       organizationSaved.id!!, makeDatasetWithRole(sourceType = sourceType))
@@ -1339,6 +1358,13 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
               datasetSaved =
                   datasetApiService.createSubDataset(
                       organizationSaved.id!!, datasetParentSaved.id!!, SubDatasetGraphQuery())
+
+              do {
+                Thread.sleep(50L)
+                val datasetStatus =
+                    datasetApiService.getDatasetTwingraphStatus(
+                        organizationSaved.id!!, datasetSaved.id!!)
+              } while (datasetStatus == Dataset.IngestionStatus.PENDING.value)
 
               every { eventPublisher.publishEvent(any<TwingraphImportEvent>()) } answers
                   {
@@ -2014,37 +2040,6 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
         version = "1.0.0",
         ioTypes = listOf(),
         id = "c-AbCdEf123")
-  }
-  fun makeDataset(
-      id: String,
-      name: String,
-      sourceType: DatasetSourceType = DatasetSourceType.File
-  ): Dataset {
-    return Dataset(
-        id = id,
-        name = name,
-        main = true,
-        connector = DatasetConnector(id = connectorSaved.id, name = connectorSaved.name),
-        tags = mutableListOf("test", "data"),
-        sourceType = sourceType,
-        security =
-            DatasetSecurity(
-                default = ROLE_NONE,
-                accessControlList =
-                    mutableListOf(
-                        DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
-  }
-
-  fun makeOrganization(name: String): Organization {
-    return Organization(
-        name = name,
-        ownerId = "my.account-tester@cosmotech.com",
-        security =
-            OrganizationSecurity(
-                default = ROLE_ADMIN,
-                accessControlList =
-                    mutableListOf(
-                        OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"))))
   }
 
   fun makeOrganizationWithRole(

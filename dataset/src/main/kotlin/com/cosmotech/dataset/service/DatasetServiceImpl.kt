@@ -223,31 +223,11 @@ class DatasetServiceImpl(
     val dataset =
         getDatasetWithStatus(organizationId, datasetId, status = Dataset.IngestionStatus.SUCCESS)
     csmRbac.verify(dataset.getRbac(), PERMISSION_CREATE_CHILDREN)
-    var twincacheStatus = Dataset.TwincacheStatus.EMPTY
     val subTwingraphId = idGenerator.generate("twingraph")
-    trx(dataset) {
-      csmJedisPool.resource.use { jedis ->
-        if (subDatasetGraphQuery.queries.isNullOrEmpty()) {
-          jedis.eval(
-              "local o = redis.call('DUMP', KEYS[1]);redis.call('RENAME', KEYS[1], KEYS[2]);" +
-                  "redis.call('RESTORE', KEYS[1], 0, o)",
-              2,
-              dataset.twingraphId,
-              subTwingraphId)
-        } else {
-          val queryBuffer = QueryBuffer(csmJedisPool.resource, subTwingraphId)
-          subDatasetGraphQuery.queries?.forEach { query ->
-            val resultSet = query(dataset, query)
-            query.takeIf { it.isReadOnlyQuery() }?.apply { bulkQueryResult(queryBuffer, resultSet) }
-          }
-          queryBuffer.send()
-        }
-        twincacheStatus = Dataset.TwincacheStatus.FULL
-      }
-    }
+    val subDatasetId = idGenerator.generate("dataset")
     val subDataset =
         dataset.copy(
-            id = idGenerator.generate("dataset"),
+            id = subDatasetId,
             name = subDatasetGraphQuery.name ?: ("Subdataset " + dataset.name),
             description = subDatasetGraphQuery.description ?: dataset.description,
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
@@ -257,13 +237,45 @@ class DatasetServiceImpl(
             main = subDatasetGraphQuery.main ?: dataset.main,
             creationDate = Instant.now().toEpochMilli(),
             parentId = dataset.id,
-            ingestionStatus = Dataset.IngestionStatus.SUCCESS,
-            twincacheStatus = twincacheStatus,
+            ingestionStatus = Dataset.IngestionStatus.PENDING,
+            twincacheStatus = Dataset.TwincacheStatus.EMPTY,
             connector =
                 dataset.connector?.apply { parametersValues?.set(TWINCACHE_NAME, subTwingraphId) },
             sourceType = DatasetSourceType.Twincache,
             tags = dataset.tags)
-    return datasetRepository.save(subDataset)
+
+    val datasetSaved = datasetRepository.save(subDataset)
+
+    GlobalScope.launch(SecurityCoroutineContext()) {
+      trx(dataset) {
+        csmJedisPool.resource.use { jedis ->
+          if (subDatasetGraphQuery.queries.isNullOrEmpty()) {
+            jedis.eval(
+                "local o = redis.call('DUMP', KEYS[1]);redis.call('RENAME', KEYS[1], KEYS[2]);" +
+                    "redis.call('RESTORE', KEYS[1], 0, o)",
+                2,
+                dataset.twingraphId,
+                subTwingraphId)
+          } else {
+            val queryBuffer = QueryBuffer(csmJedisPool.resource, subTwingraphId)
+            subDatasetGraphQuery.queries?.forEach { query ->
+              val resultSet = query(dataset, query)
+              query
+                  .takeIf { it.isReadOnlyQuery() }
+                  ?.apply { bulkQueryResult(queryBuffer, resultSet) }
+            }
+            queryBuffer.send()
+          }
+
+          datasetRepository.save(
+              datasetSaved.apply {
+                ingestionStatus = Dataset.IngestionStatus.SUCCESS
+                twincacheStatus = Dataset.TwincacheStatus.FULL
+              })
+        }
+      }
+    }
+    return datasetSaved
   }
 
   fun bulkQueryResult(queryBuffer: QueryBuffer, resultSet: ResultSet) {
