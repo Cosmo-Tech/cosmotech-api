@@ -7,6 +7,15 @@ okta:
     clientSecret: ${csm.platform.okta.clientSecret}
     audience: ${csm.platform.okta.audience}
 
+spring:
+  security:
+    oauth2:
+      resource-server:
+        jwt:
+          issuer-uri: "https://myOktaDomain/oauth2/default"
+          jwk-set-uri: "https://myOktaDomain/oauth2/default/v1/keys"
+          audiences:
+            - "api://default"
 
 csm:
   platform:
@@ -15,3 +24,4 @@ csm:
       application-id-jwt-claim: "cid"
       mail-jwt-claim: "sub"
       roles-jwt-claim: "groups"
+      allowed-tenants: ["cosmotech"]
