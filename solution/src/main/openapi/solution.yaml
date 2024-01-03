@@ -419,10 +419,17 @@ paths:
       responses:
         "200":
           description: the run template handle file as a resource
+          headers:
+            Content-Disposition:
+              schema:
+                type: ByteArray
+                format: binary
+              description: Run Template step handler zip file
+              example: attachment; filename="name.zip"
           content:
             application/octet-stream:
               schema:
-                type: string
+                type: ByteArray
                 format: binary
         "404":
           description: the Run Template Handler file specified is unknown or you don't have access to it

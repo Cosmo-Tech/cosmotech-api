@@ -217,7 +217,7 @@ null (empty response body)
 
 <a name="downloadRunTemplateHandler"></a>
 # **downloadRunTemplateHandler**
-> File downloadRunTemplateHandler(organization\_id, solution\_id, run\_template\_id, handler\_id)
+> byte[] downloadRunTemplateHandler(organization\_id, solution\_id, run\_template\_id, handler\_id)
 
 Download a Run Template step handler zip file
 
@@ -232,7 +232,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-**File**
+**byte[]**
 
 ### Authorization
 
