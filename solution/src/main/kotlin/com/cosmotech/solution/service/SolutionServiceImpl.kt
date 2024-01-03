@@ -383,7 +383,7 @@ internal class SolutionServiceImpl(
       solutionId: String,
       runTemplateId: String,
       handlerId: RunTemplateHandlerId
-  ): Resource {
+  ): ByteArray {
     // READ permission is checked in the following function call
     val solution = this.validateRunTemplate(organizationId, solutionId, runTemplateId)
     val blobPath =
@@ -398,7 +398,7 @@ internal class SolutionServiceImpl(
         runTemplateId,
         handlerId,
         blobPath)
-    return resourceLoader.getResource("azure-blob://$blobPath")
+    return resourceLoader.getResource("azure-blob://$blobPath").inputStream.readAllBytes()
   }
 
   private fun validateRunTemplate(
