@@ -5,7 +5,7 @@ package com.cosmotech.dataset.bulk.model
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.dataset.bulk.getHeaderBinaryBlobFormat
 
-class TypeEntity(val type: String, private val header: List<String>) {
+class BinaryEntities(val type: String, private val header: List<String>) {
 
   private val headerBinaryBlobFormat = getHeaderBinaryBlobFormat(type, header)
   var size: Int = headerBinaryBlobFormat.size
