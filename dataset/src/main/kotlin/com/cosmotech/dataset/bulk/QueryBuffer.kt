@@ -4,9 +4,9 @@ package com.cosmotech.dataset.bulk
 
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.dataset.bulk.model.AbstractEntity
+import com.cosmotech.dataset.bulk.model.BinaryEntities
 import com.cosmotech.dataset.bulk.model.Edge
 import com.cosmotech.dataset.bulk.model.Node
-import com.cosmotech.dataset.bulk.model.TypeEntity
 import com.cosmotech.twingraph.bulk.BulkQuery
 import redis.clients.jedis.Jedis
 
@@ -65,7 +65,7 @@ class QueryBuffer(val jedis: Jedis, val graphName: String) {
       addingEntityLambda: () -> AbstractEntity?
   ) {
     var addedSize = 0
-    var typeEntities: TypeEntity? = null
+    var typeEntities: BinaryEntities? = null
 
     val entity = addingEntityLambda() ?: return
 
@@ -73,14 +73,14 @@ class QueryBuffer(val jedis: Jedis, val graphName: String) {
       is Node -> {
         if (currentNodeType != type) {
           currentNodeType = type
-          typeEntities = TypeEntity(type, properties.keys.toList())
+          typeEntities = BinaryEntities(type, properties.keys.toList())
           addedSize += typeEntities.size
         }
       }
       is Edge -> {
         if (currentEdgeType != type) {
           currentEdgeType = type
-          typeEntities = TypeEntity(type, properties.keys.toList())
+          typeEntities = BinaryEntities(type, properties.keys.toList())
           addedSize += typeEntities.size
         }
       }
@@ -92,18 +92,18 @@ class QueryBuffer(val jedis: Jedis, val graphName: String) {
     if (currentBulkQueryBuilder.size() + addedSize > BULK_QUERY_MAX_SIZE) {
       tasks.add(currentBulkQueryBuilder.build())
       currentBulkQueryBuilder = BulkQuery.Builder().graphName(graphName)
-      typeEntities = TypeEntity(type, entity.properties.keys.toList())
+      typeEntities = BinaryEntities(type, entity.properties.keys.toList())
     }
 
     // add to bulk query builder
     when (entity) {
       is Node -> {
-        typeEntities?.let { currentBulkQueryBuilder.addTypeNode(type, it) }
-        currentBulkQueryBuilder.addNodeToTypeNode(type, entity)
+        typeEntities?.let { currentBulkQueryBuilder.addNodeTypeGroup(type, it) }
+        currentBulkQueryBuilder.addNodeToNodeTypeGroup(type, entity)
       }
       is Edge -> {
-        typeEntities?.let { currentBulkQueryBuilder.addTypeEdge(type, it) }
-        currentBulkQueryBuilder.addEdgeToTypeEdge(type, entity)
+        typeEntities?.let { currentBulkQueryBuilder.addEdgeTypeGroup(type, it) }
+        currentBulkQueryBuilder.addEdgeToEdgeTypeGroup(type, entity)
       }
     }
   }
