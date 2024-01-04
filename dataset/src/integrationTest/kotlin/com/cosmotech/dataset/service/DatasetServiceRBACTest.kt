@@ -2421,7 +2421,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
   }
 
   fun makeOrganizationWithRole(
-      userName: String = TEST_USER_MAIL,
+      id: String = TEST_USER_MAIL,
       role: String = ROLE_ADMIN
   ): Organization {
     return Organization(
@@ -2434,13 +2434,13 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 accessControlList =
                     mutableListOf(
                         OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
-                        OrganizationAccessControl(id = userName, role = role))))
+                        OrganizationAccessControl(id = id, role = role))))
   }
 
   fun makeDatasetWithRole(
       organizationId: String = organizationSaved.id!!,
       parentId: String = "",
-      userName: String = TEST_USER_MAIL,
+      id: String = TEST_USER_MAIL,
       role: String = ROLE_ADMIN,
       sourceType: DatasetSourceType = DatasetSourceType.File
   ): Dataset {
@@ -2461,6 +2461,6 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                 accessControlList =
                     mutableListOf(
                         DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
-                        DatasetAccessControl(id = userName, role = role))))
+                        DatasetAccessControl(id = id, role = role))))
   }
 }
