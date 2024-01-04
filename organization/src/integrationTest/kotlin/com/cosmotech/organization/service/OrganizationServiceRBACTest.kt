@@ -87,7 +87,7 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test RBAC findAllOrganizations : $role") {
               organizationApiService.registerOrganization(
-                  mockOrganizationWithRole(userName = TEST_USER_MAIL, role = role))
+                  mockOrganizationWithRole(id = TEST_USER_MAIL, role = role))
 
               val organizations = organizationApiService.findAllOrganizations(null, null)
               assertEquals(shouldThrow, organizations.size)
@@ -173,14 +173,14 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test RBAC updateOrganization : $role") {
               val organization =
                   organizationApiService.registerOrganization(
-                      mockOrganizationWithRole(userName = TEST_USER_MAIL, role = role))
+                      mockOrganizationWithRole(id = TEST_USER_MAIL, role = role))
 
               if (shouldThrow) {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       organizationApiService.updateOrganization(
                           organization.id!!,
-                          mockOrganizationWithRole(userName = TEST_USER_MAIL, role = role))
+                          mockOrganizationWithRole(id = TEST_USER_MAIL, role = role))
                     }
                 assertEquals(
                     "RBAC ${organization.id!!} - User does not have permission $PERMISSION_WRITE",
@@ -188,8 +188,7 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   organizationApiService.updateOrganization(
-                      organization.id!!,
-                      mockOrganizationWithRole(userName = TEST_USER_MAIL, role = role))
+                      organization.id!!, mockOrganizationWithRole(id = TEST_USER_MAIL, role = role))
                 }
               }
             }
@@ -563,7 +562,7 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
             }
           }
 
-  fun mockOrganizationWithRole(userName: String, role: String): Organization {
+  fun mockOrganizationWithRole(id: String, role: String): Organization {
     return Organization(
         id = UUID.randomUUID().toString(),
         name = "Organization Name",
@@ -573,7 +572,7 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
                 default = ROLE_NONE,
                 accessControlList =
                     mutableListOf(
-                        OrganizationAccessControl(id = userName, role = role),
-                        OrganizationAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
+                        OrganizationAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                        OrganizationAccessControl(id = id, role = role))))
   }
 }
