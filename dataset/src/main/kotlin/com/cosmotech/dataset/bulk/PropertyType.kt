@@ -12,6 +12,7 @@ enum class PropertyType(val code: Byte) {
   BI_ARRAY(5)
 }
 
+@Suppress("ReturnCount")
 fun Any?.toPropertyType(): PropertyType {
 
   if (this == null) return PropertyType.BI_NULL
