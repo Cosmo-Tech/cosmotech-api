@@ -55,6 +55,8 @@ import io.mockk.mockkStatic
 import java.io.File
 import java.util.*
 import kotlin.test.assertEquals
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -1122,104 +1124,107 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test Organization RBAC refreshDataset`() =
-      mapOf(
-              ROLE_VIEWER to false,
-              ROLE_EDITOR to false,
-              ROLE_USER to false,
-              ROLE_NONE to true,
-              ROLE_ADMIN to false,
-          )
-          .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test Organization RBAC refreshDataset : $role") {
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+  fun `test Organization RBAC refreshDataset`() = runTest {
+    mapOf(
+            ROLE_VIEWER to false,
+            ROLE_EDITOR to false,
+            ROLE_USER to false,
+            ROLE_NONE to true,
+            ROLE_ADMIN to false,
+        )
+        .map { (role, shouldThrow) ->
+          DynamicTest.dynamicTest("Test Organization RBAC refreshDataset : $role") {
+            every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole(role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset =
-                  makeDatasetWithRole(role = ROLE_ADMIN, sourceType = DatasetSourceType.Twincache)
-              val datasetParentSaved =
-                  datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              datasetSaved = datasetParentSaved
-              materializeTwingraph()
-              datasetSaved =
-                  datasetApiService.createSubDataset(
-                      organizationSaved.id!!, datasetParentSaved.id!!, SubDatasetGraphQuery())
+            val organization = makeOrganizationWithRole(role = role)
+            organizationSaved = organizationApiService.registerOrganization(organization)
+            val dataset =
+                makeDatasetWithRole(role = ROLE_ADMIN, sourceType = DatasetSourceType.Twincache)
+            val datasetParentSaved =
+                datasetApiService.createDataset(organizationSaved.id!!, dataset)
+            datasetSaved = datasetParentSaved
+            materializeTwingraph()
+            datasetSaved =
+                datasetApiService.createSubDataset(
+                    organizationSaved.id!!, datasetParentSaved.id!!, SubDatasetGraphQuery())
 
-              every { eventPublisher.publishEvent(any<TwingraphImportEvent>()) } answers
-                  {
-                    firstArg<TwingraphImportEvent>().response = null
-                  }
-              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
-
-              if (shouldThrow) {
-                val exception =
-                    assertThrows<CsmAccessForbiddenException> {
-                      datasetApiService.refreshDataset(organizationSaved.id!!, datasetSaved.id!!)
-                    }
-                assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
-                    exception.message)
-              } else {
-                assertDoesNotThrow {
-                  datasetApiService.refreshDataset(organizationSaved.id!!, datasetSaved.id!!)
+            advanceUntilIdle()
+            every { eventPublisher.publishEvent(any<TwingraphImportEvent>()) } answers
+                {
+                  firstArg<TwingraphImportEvent>().response = null
                 }
+            every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+            if (shouldThrow) {
+              val exception =
+                  assertThrows<CsmAccessForbiddenException> {
+                    datasetApiService.refreshDataset(organizationSaved.id!!, datasetSaved.id!!)
+                  }
+              assertEquals(
+                  "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                  exception.message)
+            } else {
+              assertDoesNotThrow {
+                datasetApiService.refreshDataset(organizationSaved.id!!, datasetSaved.id!!)
               }
             }
           }
+        }
+  }
 
   @TestFactory
-  fun `test Dataset RBAC refreshDataset`() =
-      mapOf(
-              ROLE_VIEWER to true,
-              ROLE_EDITOR to false,
-              ROLE_USER to true,
-              ROLE_NONE to true,
-              ROLE_ADMIN to false,
-          )
-          .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test Dataset RBAC refreshDataset : $role") {
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+  fun `test Dataset RBAC refreshDataset`() = runTest {
+    mapOf(
+            ROLE_VIEWER to true,
+            ROLE_EDITOR to false,
+            ROLE_USER to true,
+            ROLE_NONE to true,
+            ROLE_ADMIN to false,
+        )
+        .map { (role, shouldThrow) ->
+          DynamicTest.dynamicTest("Test Dataset RBAC refreshDataset : $role") {
+            every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization = makeOrganizationWithRole()
-              organizationSaved = organizationApiService.registerOrganization(organization)
-              val dataset =
-                  makeDatasetWithRole(role = role, sourceType = DatasetSourceType.Twincache)
-              val datasetParentSaved =
-                  datasetApiService.createDataset(organizationSaved.id!!, dataset)
-              datasetSaved = datasetParentSaved
-              materializeTwingraph()
-              datasetSaved =
-                  datasetApiService.createSubDataset(
-                      organizationSaved.id!!, datasetParentSaved.id!!, SubDatasetGraphQuery())
+            val organization = makeOrganizationWithRole()
+            organizationSaved = organizationApiService.registerOrganization(organization)
+            val dataset = makeDatasetWithRole(role = role, sourceType = DatasetSourceType.Twincache)
+            val datasetParentSaved =
+                datasetApiService.createDataset(organizationSaved.id!!, dataset)
+            datasetSaved = datasetParentSaved
+            materializeTwingraph()
+            datasetSaved =
+                datasetApiService.createSubDataset(
+                    organizationSaved.id!!, datasetParentSaved.id!!, SubDatasetGraphQuery())
 
-              every { eventPublisher.publishEvent(any<TwingraphImportEvent>()) } answers
-                  {
-                    firstArg<TwingraphImportEvent>().response = null
+            advanceUntilIdle()
+            every { eventPublisher.publishEvent(any<TwingraphImportEvent>()) } answers
+                {
+                  firstArg<TwingraphImportEvent>().response = null
+                }
+            every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+            if (shouldThrow) {
+              val exception =
+                  assertThrows<CsmAccessForbiddenException> {
+                    datasetApiService.refreshDataset(organizationSaved.id!!, datasetSaved.id!!)
                   }
-              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
-
-              if (shouldThrow) {
-                val exception =
-                    assertThrows<CsmAccessForbiddenException> {
-                      datasetApiService.refreshDataset(organizationSaved.id!!, datasetSaved.id!!)
-                    }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE",
-                      exception.message)
-                }
+              if (role == ROLE_NONE) {
+                assertEquals(
+                    "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    exception.message)
               } else {
-                assertDoesNotThrow {
-                  datasetApiService.refreshDataset(organizationSaved.id!!, datasetSaved.id!!)
-                }
+                assertEquals(
+                    "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                    exception.message)
+              }
+            } else {
+              assertDoesNotThrow {
+                datasetApiService.refreshDataset(organizationSaved.id!!, datasetSaved.id!!)
               }
             }
           }
+        }
+  }
 
   @TestFactory
   fun `test Organization RBAC removeAllDatasetCompatibilityElements`() =

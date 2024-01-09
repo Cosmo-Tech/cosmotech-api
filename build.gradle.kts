@@ -289,6 +289,7 @@ subprojects {
       exclude(module = "mockito-core")
     }
     integrationTestImplementation("com.ninja-squad:springmockk:3.1.1")
+    integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
