@@ -348,7 +348,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     val file = this::class.java.getResource("/integrationTest.zip")?.file
     val resource = ByteArrayResource(File(file!!).readBytes())
     organizationSaved = organizationApiService.registerOrganization(organization)
-    dataset = makeDatasetWithRole("d-dataset-1", "dataset-1")
+    dataset = makeDatasetWithRole()
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
     datasetApiService.updateDataset(
         organizationSaved.id!!,
