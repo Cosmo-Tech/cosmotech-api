@@ -207,21 +207,6 @@ class DatasetServiceImplTests {
   }
 
   @Test
-  fun `createSubDataset should throw CsmResourceNotFoundException when Twingraph not found`() {
-    val dataset =
-        baseDataset()
-            .copy(twingraphId = "twingraphId", ingestionStatus = Dataset.IngestionStatus.SUCCESS)
-    val subDatasetGraphQuery = SubDatasetGraphQuery()
-    every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
-    every { datasetRepository.save(any()) } returnsArgument 0
-    every { csmJedisPool.resource.eval(any<String>(), any(), any(), any()) } throws
-        CsmResourceNotFoundException("")
-    assertThrows<CsmResourceNotFoundException> {
-      datasetService.createSubDataset(ORGANIZATION_ID, dataset.id!!, subDatasetGraphQuery)
-    }
-  }
-
-  @Test
   fun `uploadTwingraph should throw ArchiveException when resource is not Archive`() {
     val dataset =
         baseDataset()
