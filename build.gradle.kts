@@ -281,6 +281,7 @@ subprojects {
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("io.mockk:mockk:1.13.2")
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 
     integrationTestImplementation("org.springframework.boot:spring-boot-starter-test") {
       // Drop legacy Junit < 5

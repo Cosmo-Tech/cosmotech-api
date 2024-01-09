@@ -47,6 +47,8 @@ import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.advanceUntilIdle
 import org.apache.commons.compress.archivers.ArchiveException
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertThrows
@@ -162,38 +164,42 @@ class DatasetServiceImplTests {
   }
 
   @Test
-  fun `createSubDataset create Dataset copy with new id, name, description, parentId & twingraphId`() {
-    val dataset =
-        baseDataset()
-            .copy(
-                ingestionStatus = Dataset.IngestionStatus.SUCCESS,
-                sourceType = DatasetSourceType.Twincache,
-                source = SourceInfo("http://storage.location"),
-                twingraphId = "twingraphId")
-    val subDatasetGraphQuery =
-        SubDatasetGraphQuery(
-            name = "My Sub Dataset",
-            description = "My Sub Dataset description",
-        )
-    every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
-    every { csmJedisPool.resource.exists(any<String>()) } returns true
-    every { csmJedisPool.resource.hgetAll(any<String>()) } returns
-        mapOf("lastVersion" to "lastVersion", "graphRotation" to "2")
-    every { csmRedisGraph.readOnlyQuery(any(), any(), any<Long>()) } returns mockEmptyResultSet()
-    every { csmJedisPool.resource.dump(any<String>()) } returns ByteArray(0)
-    every { datasetRepository.save(any()) } returnsArgument 0
-    val result =
-        datasetService.createSubDataset(ORGANIZATION_ID, dataset.id!!, subDatasetGraphQuery)
-    assertEquals(dataset.organizationId, result.organizationId)
-    assertEquals(Dataset.IngestionStatus.SUCCESS, result.ingestionStatus)
-    assertEquals(dataset.sourceType, result.sourceType)
-    assertEquals(dataset.source, result.source)
-    assertEquals(subDatasetGraphQuery.name, result.name)
-    assertEquals(subDatasetGraphQuery.description, result.description)
-    assertNotEquals(dataset.id, result.id)
-    assertNotEquals(dataset.twingraphId, result.twingraphId)
-    assertEquals(dataset.id, result.parentId)
-  }
+  fun `createSubDataset create Dataset copy with new id, name, description, parentId & twingraphId`() =
+      runTest {
+        val dataset =
+            baseDataset()
+                .copy(
+                    ingestionStatus = Dataset.IngestionStatus.SUCCESS,
+                    sourceType = DatasetSourceType.Twincache,
+                    source = SourceInfo("http://storage.location"),
+                    twingraphId = "twingraphId")
+        val subDatasetGraphQuery =
+            SubDatasetGraphQuery(
+                name = "My Sub Dataset",
+                description = "My Sub Dataset description",
+            )
+        every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
+        every { csmJedisPool.resource.exists(any<String>()) } returns true
+        every { csmJedisPool.resource.hgetAll(any<String>()) } returns
+            mapOf("lastVersion" to "lastVersion", "graphRotation" to "2")
+        every { csmRedisGraph.readOnlyQuery(any(), any(), any<Long>()) } returns
+            mockEmptyResultSet()
+        every { csmJedisPool.resource.dump(any<String>()) } returns ByteArray(0)
+        every { datasetRepository.save(any()) } returnsArgument 0
+        val result =
+            datasetService.createSubDataset(ORGANIZATION_ID, dataset.id!!, subDatasetGraphQuery)
+        advanceUntilIdle()
+
+        assertEquals(dataset.organizationId, result.organizationId)
+        assertEquals(Dataset.IngestionStatus.SUCCESS, result.ingestionStatus)
+        assertEquals(dataset.sourceType, result.sourceType)
+        assertEquals(dataset.source, result.source)
+        assertEquals(subDatasetGraphQuery.name, result.name)
+        assertEquals(subDatasetGraphQuery.description, result.description)
+        assertNotEquals(dataset.id, result.id)
+        assertNotEquals(dataset.twingraphId, result.twingraphId)
+        assertEquals(dataset.id, result.parentId)
+      }
 
   @Test
   fun `createSubDataset should throw IllegalArgumentException when twingraphId is empty`() {
