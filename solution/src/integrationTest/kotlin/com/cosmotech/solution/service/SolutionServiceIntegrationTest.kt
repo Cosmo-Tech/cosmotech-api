@@ -310,21 +310,25 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info(
         "should replace the first run template and assert that the list contains 2 elements")
-    val runTemplate3 = RunTemplate(id = "runTemplateId1", name = "runTemplateName")
+    val labels: MutableMap<String, String>? = mutableMapOf("fr" to "runTemplateName")
+    val runTemplate3 = RunTemplate(id = "runTemplateId1", labels = labels)
     solutionApiService.addOrReplaceRunTemplates(
         solutionSaved.organizationId!!, solutionSaved.id!!, listOf(runTemplate3))
     val foundSolutionAfterReplace =
         solutionApiService.findSolutionById(solutionSaved.organizationId!!, solutionSaved.id!!)
     assertEquals(2, foundSolutionAfterReplace.runTemplates!!.size)
-    assertEquals("runTemplateName", foundSolutionAfterReplace.runTemplates!!.first().name)
+    assertEquals(
+        "runTemplateName", foundSolutionAfterReplace.runTemplates!!.first().labels?.get("fr"))
 
     logger.info("should update the run template and assert that the name has been updated")
-    val runTemplate4 = RunTemplate(id = "runTemplateId1", name = "runTemplateNameNew")
+    labels?.set("fr", "runTemplateNameNew")
+    val runTemplate4 = RunTemplate(id = "runTemplateId1", labels = labels)
     solutionApiService.updateSolutionRunTemplate(
         solutionSaved.organizationId!!, solutionSaved.id!!, runTemplate4.id, runTemplate4)
     val foundSolutionAfterUpdate =
         solutionApiService.findSolutionById(solutionSaved.organizationId!!, solutionSaved.id!!)
-    assertEquals("runTemplateNameNew", foundSolutionAfterUpdate.runTemplates!!.first().name)
+    assertEquals(
+        "runTemplateNameNew", foundSolutionAfterUpdate.runTemplates!!.first().labels?.get("fr"))
 
     logger.info("should remove all run templates and assert that the list is empty")
     solutionApiService.removeAllRunTemplates(solutionSaved.organizationId!!, solutionSaved.id!!)
