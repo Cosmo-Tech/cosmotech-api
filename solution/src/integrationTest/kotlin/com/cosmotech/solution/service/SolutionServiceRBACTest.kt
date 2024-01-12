@@ -5,6 +5,8 @@ package com.cosmotech.solution.service
 import com.azure.storage.blob.BlobServiceClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
+import com.cosmotech.api.rbac.CsmAdmin
+import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.PERMISSION_READ
@@ -34,11 +36,13 @@ import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
 import com.cosmotech.solution.domain.SolutionRole
 import com.cosmotech.solution.domain.SolutionSecurity
+import com.cosmotech.solution.repository.SolutionRepository
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
+import io.mockk.spyk
 import java.io.InputStream
 import java.util.*
 import kotlin.test.assertEquals
@@ -53,6 +57,7 @@ import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.core.io.Resource
+import org.springframework.core.io.ResourceLoader
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
@@ -86,6 +91,10 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
   @MockK lateinit var resource: Resource
   @MockK lateinit var resourceScanner: ResourceScanner
   @MockK lateinit var inputStream: InputStream
+  @MockK lateinit var resourceLoader: ResourceLoader
+  @MockK lateinit var solutionRepository: SolutionRepository
+  @MockK lateinit var csmRbac: CsmRbac
+  @MockK lateinit var csmAdmin: CsmAdmin
 
   @BeforeEach
   fun setUp() {
@@ -1606,6 +1615,28 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                     "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
+                // Fixing the PROD-9972 by using readAllBytes thows an exception if the blob
+                // or container does not exist, therefore have to mock the
+                // downloadRunTemplateHandler method
+                val solutionApiService =
+                    spyk(
+                        SolutionServiceImpl(
+                            resourceLoader,
+                            azureStorageBlobServiceClient,
+                            resourceScanner,
+                            solutionRepository,
+                            organizationApiService,
+                            csmRbac,
+                            csmAdmin))
+
+                every {
+                  solutionApiService.downloadRunTemplateHandler(
+                      organizationSaved.id!!,
+                      solutionSaved.id!!,
+                      "runTemplate",
+                      runTemplateHandlerId)
+                } returns byteArrayOf(0x2E, 0x38)
+
                 assertDoesNotThrow {
                   solutionApiService.downloadRunTemplateHandler(
                       organizationSaved.id!!,
