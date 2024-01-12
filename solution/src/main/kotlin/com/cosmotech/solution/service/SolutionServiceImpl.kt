@@ -53,7 +53,7 @@ import org.springframework.stereotype.Service
 
 @Service
 @Suppress("TooManyFunctions")
-internal class SolutionServiceImpl(
+public class SolutionServiceImpl(
     private val resourceLoader: ResourceLoader,
     private val azureStorageBlobServiceClient: BlobServiceClient,
     private val resourceScanner: ResourceScanner,
