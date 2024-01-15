@@ -83,7 +83,7 @@ internal class SolutionServiceImpl(
                   .findByOrganizationIdAndSecurity(organizationId, currentUser, it)
                   .toList()
             } else {
-              solutionRepository.findAll(it).toList()
+              solutionRepository.findByOrganizationId(organizationId, it).toList()
             }
           }
     } else {
@@ -94,7 +94,7 @@ internal class SolutionServiceImpl(
                 .findByOrganizationIdAndSecurity(organizationId, currentUser, pageable)
                 .toList()
           } else {
-            solutionRepository.findAll(pageable).toList()
+            solutionRepository.findByOrganizationId(organizationId, pageable).toList()
           }
     }
     return result
