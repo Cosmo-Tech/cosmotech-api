@@ -449,10 +449,7 @@ class DatasetServiceImpl(
             when (twingraphImportJobInfoRequest.response) {
               "Succeeded" -> {
                 ingestionStatus = Dataset.IngestionStatus.SUCCESS
-                apply {
-                  datasetRepository.save(
-                      dataset.apply { twincacheStatus = Dataset.TwincacheStatus.FULL })
-                }
+                twincacheStatus = Dataset.TwincacheStatus.FULL
               }
               "Error",
               "Failed" -> ingestionStatus = Dataset.IngestionStatus.ERROR
