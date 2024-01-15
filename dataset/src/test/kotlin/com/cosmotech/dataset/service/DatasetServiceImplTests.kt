@@ -188,8 +188,8 @@ class DatasetServiceImplTests {
         every { datasetRepository.save(any()) } returnsArgument 0
         val result =
             datasetService.createSubDataset(ORGANIZATION_ID, dataset.id!!, subDatasetGraphQuery)
-        advanceUntilIdle()
 
+        advanceUntilIdle()
         assertEquals(dataset.organizationId, result.organizationId)
         assertEquals(Dataset.IngestionStatus.SUCCESS, result.ingestionStatus)
         assertEquals(dataset.sourceType, result.sourceType)
