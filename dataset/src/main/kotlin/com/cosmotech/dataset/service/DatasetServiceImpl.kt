@@ -253,20 +253,17 @@ class DatasetServiceImpl(
         if (subDatasetGraphQuery.queries.isNullOrEmpty()) {
           csmJedisPool.resource.use { jedis ->
             jedis.eval(
-              "local o = redis.call('DUMP', KEYS[1]);redis.call('RENAME', KEYS[1], KEYS[2]);" +
-                      "redis.call('RESTORE', KEYS[1], 0, o)",
-              2,
-              dataset.twingraphId,
-              subTwingraphId
-            )
+                "local o = redis.call('DUMP', KEYS[1]);redis.call('RENAME', KEYS[1], KEYS[2]);" +
+                    "redis.call('RESTORE', KEYS[1], 0, o)",
+                2,
+                dataset.twingraphId,
+                subTwingraphId)
           }
         } else {
           val queryBuffer = QueryBuffer(csmJedisPool.resource, subTwingraphId)
           subDatasetGraphQuery.queries?.forEach { query ->
             val resultSet = query(dataset, query)
-            query
-                .takeIf { it.isReadOnlyQuery() }
-                ?.apply { bulkQueryResult(queryBuffer, resultSet) }
+            query.takeIf { it.isReadOnlyQuery() }?.apply { bulkQueryResult(queryBuffer, resultSet) }
           }
           queryBuffer.send()
         }
