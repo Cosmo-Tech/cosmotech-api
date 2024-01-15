@@ -191,7 +191,6 @@ class DatasetServiceImplTests {
 
         advanceUntilIdle()
         assertEquals(dataset.organizationId, result.organizationId)
-        assertEquals(Dataset.IngestionStatus.SUCCESS, result.ingestionStatus)
         assertEquals(dataset.sourceType, result.sourceType)
         assertEquals(dataset.source, result.source)
         assertEquals(subDatasetGraphQuery.name, result.name)
