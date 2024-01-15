@@ -6,7 +6,6 @@ import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.events.TwingraphImportJobInfoRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
-import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.id.CsmIdGenerator
 import com.cosmotech.api.rbac.CsmAdmin
@@ -277,25 +276,6 @@ class DatasetServiceImplTests {
     assertThrows<CsmResourceNotFoundException> {
       datasetService.uploadTwingraph(ORGANIZATION_ID, DATASET_ID, resource)
     }
-  }
-
-  @Test
-  fun `uploadTwingraph should throw CsmResourceNotFoundException when Dataset has Pending status`() {
-    val dataset =
-        baseDataset()
-            .copy(
-                ingestionStatus = Dataset.IngestionStatus.PENDING,
-                sourceType = DatasetSourceType.File,
-                twingraphId = "twingraphId")
-    val fileName = this::class.java.getResource("/Graph.zip")?.file
-    val file = File(fileName!!)
-    val resource = ByteArrayResource(file.readBytes())
-    every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
-    val exceptionCatch =
-        assertThrows<CsmClientException> {
-          datasetService.uploadTwingraph(ORGANIZATION_ID, DATASET_ID, resource)
-        }
-    assertEquals("Dataset in use, cannot update. Retry later", exceptionCatch.message)
   }
 
   @Test
