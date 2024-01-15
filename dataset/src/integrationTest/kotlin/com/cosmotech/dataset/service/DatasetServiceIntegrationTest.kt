@@ -557,6 +557,29 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
+  fun `test uploadTwingraph status`(){
+    organizationSaved = organizationApiService.registerOrganization(organization)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    val file = this::class.java.getResource("/integrationTest.zip")?.file
+    val resource = ByteArrayResource(File(file!!).readBytes())
+
+    datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
+
+    var datasetStatus: String
+    do {
+      Thread.sleep(50L)
+      datasetStatus =
+        datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
+    } while (datasetStatus == Dataset.IngestionStatus.PENDING.value)
+
+    assertEquals(Dataset.IngestionStatus.SUCCESS.value, datasetStatus)
+
+    val modifiedDataset = datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+    assertEquals(Dataset.IngestionStatus.SUCCESS.value, modifiedDataset.ingestionStatus!!.value)
+    assertEquals(Dataset.TwincacheStatus.FULL.value, modifiedDataset.twincacheStatus!!.value)
+  }
+
+  @Test
   fun `test uploadTwingraph fail set dataset status to error`() {
     organizationSaved = organizationApiService.registerOrganization(organization)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -573,6 +596,10 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     } while (datasetStatus == Dataset.IngestionStatus.PENDING.value)
 
     assertEquals(Dataset.IngestionStatus.ERROR.value, datasetStatus)
+
+    val modifiedDataset = datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+    assertEquals(Dataset.IngestionStatus.ERROR.value, modifiedDataset.ingestionStatus!!.value)
+    assertEquals(Dataset.TwincacheStatus.EMPTY.value, modifiedDataset.twincacheStatus!!.value)
   }
 
   @Test

@@ -374,6 +374,7 @@ class DatasetServiceImpl(
             }
           }
         }
+        datasetRepository.save(dataset.apply { twincacheStatus = Dataset.TwincacheStatus.FULL })
       } catch (e: Exception) {
         if (safeReplace) {
           csmJedisPool.resource.use { jedis ->
