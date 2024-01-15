@@ -422,16 +422,15 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     do {
       Thread.sleep(50L)
       val datasetStatus =
-          datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
+          datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, subDatasetWithQuery.id!!)
     } while (datasetStatus == Dataset.IngestionStatus.PENDING.value)
-    /*
+
     assertEquals("subDatasetWithQuery", subDatasetWithQuery.name)
     assertEquals("subDatasetWithQuery description", subDatasetWithQuery.description)
     assertEquals(3, countEntities(subDatasetWithQuery.twingraphId!!, "MATCH (n) RETURN count(n)"))
     assertEquals(
       2, countEntities(subDatasetWithQuery.twingraphId!!, "MATCH ()-[r]-() RETURN count(r)")
     )
-    */
   }
 
   fun countEntities(twingraphId: String, query: String): Int {

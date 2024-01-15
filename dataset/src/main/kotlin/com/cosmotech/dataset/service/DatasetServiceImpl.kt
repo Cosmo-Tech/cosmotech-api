@@ -250,31 +250,32 @@ class DatasetServiceImpl(
 
     GlobalScope.launch(SecurityCoroutineContext()) {
       trx(dataset) {
-        csmJedisPool.resource.use { jedis ->
-          if (subDatasetGraphQuery.queries.isNullOrEmpty()) {
+        if (subDatasetGraphQuery.queries.isNullOrEmpty()) {
+          csmJedisPool.resource.use { jedis ->
             jedis.eval(
-                "local o = redis.call('DUMP', KEYS[1]);redis.call('RENAME', KEYS[1], KEYS[2]);" +
-                    "redis.call('RESTORE', KEYS[1], 0, o)",
-                2,
-                dataset.twingraphId,
-                subTwingraphId)
-          } else {
-            val queryBuffer = QueryBuffer(csmJedisPool.resource, subTwingraphId)
-            subDatasetGraphQuery.queries?.forEach { query ->
-              val resultSet = query(dataset, query)
-              query
-                  .takeIf { it.isReadOnlyQuery() }
-                  ?.apply { bulkQueryResult(queryBuffer, resultSet) }
-            }
-            queryBuffer.send()
+              "local o = redis.call('DUMP', KEYS[1]);redis.call('RENAME', KEYS[1], KEYS[2]);" +
+                      "redis.call('RESTORE', KEYS[1], 0, o)",
+              2,
+              dataset.twingraphId,
+              subTwingraphId
+            )
           }
-
-          datasetRepository.save(
-              datasetSaved.apply {
-                ingestionStatus = Dataset.IngestionStatus.SUCCESS
-                twincacheStatus = Dataset.TwincacheStatus.FULL
-              })
+        } else {
+          val queryBuffer = QueryBuffer(csmJedisPool.resource, subTwingraphId)
+          subDatasetGraphQuery.queries?.forEach { query ->
+            val resultSet = query(dataset, query)
+            query
+                .takeIf { it.isReadOnlyQuery() }
+                ?.apply { bulkQueryResult(queryBuffer, resultSet) }
+          }
+          queryBuffer.send()
         }
+
+        datasetRepository.save(
+            datasetSaved.apply {
+              ingestionStatus = Dataset.IngestionStatus.SUCCESS
+              twincacheStatus = Dataset.TwincacheStatus.FULL
+            })
       }
     }
     return datasetSaved
@@ -313,9 +314,6 @@ class DatasetServiceImpl(
 
     dataset.sourceType.takeIf { it == DatasetSourceType.File }
         ?: throw CsmResourceNotFoundException("SourceType Dataset must be 'File'")
-
-    dataset.ingestionStatus?.takeUnless { it == Dataset.IngestionStatus.PENDING }
-        ?: throw CsmClientException("Dataset in use, cannot update. Retry later")
 
     // TODx: Validated with ressourceScanner PROD-12822
     val archiverType = ArchiveStreamFactory.detect(body.inputStream.buffered())
@@ -359,9 +357,7 @@ class DatasetServiceImpl(
           val queryBuffer = QueryBuffer(csmJedisPool.resource, dataset.twingraphId!!)
           nodes.forEach { file ->
             readCSV(file.content.inputStream()) {
-              val id: String =
-                  it["id"] ?: throw CsmResourceNotFoundException("Node property 'id' not found")
-              queryBuffer.addNode(file.filename, id, it.minus("id"))
+              queryBuffer.addNode(file.filename, it.values.first(), it)
             }
           }
           edges.forEach { file ->
@@ -391,7 +387,6 @@ class DatasetServiceImpl(
                 "backupGraph-$datasetId")
           }
         }
-        datasetRepository.save(dataset.apply { ingestionStatus = Dataset.IngestionStatus.ERROR })
         throw CsmClientException(e.message ?: "Twingraph upload error", e)
       }
     }
@@ -445,8 +440,8 @@ class DatasetServiceImpl(
       DatasetSourceType.AzureStorage -> {
         if (dataset.ingestionStatus == Dataset.IngestionStatus.PENDING) {
           dataset.source!!.takeIf { !it.jobId.isNullOrEmpty() }
-              ?: throw IllegalStateException(
-                  "Dataset doesn't have a job id to get status from. Refresh dataset first.")
+              ?: return dataset.ingestionStatus!!.value
+
           val twingraphImportJobInfoRequest =
               TwingraphImportJobInfoRequest(this, dataset.source!!.jobId!!, organizationId)
 

@@ -15,7 +15,6 @@ import com.redislabs.redisgraph.graph_entities.Node
 import java.lang.IndexOutOfBoundsException
 import org.json.JSONObject
 
-private const val ID_PROPERTY_NAME = "id"
 
 data class CsmGraphEntity(
     var label: String,
@@ -36,13 +35,8 @@ val jsonObjectMapper: ObjectMapper =
 fun GraphEntity.toCsmGraphEntity(type: CsmGraphEntityType): CsmGraphEntity {
   var entityId = this.id.toString()
 
-  if (this.entityPropertyNames.contains(ID_PROPERTY_NAME)) {
-    entityId = this.getProperty(ID_PROPERTY_NAME).value.toString()
-  }
-
   val properties =
       this.entityPropertyNames
-          .filter { it != ID_PROPERTY_NAME }
           .associateWith { getJsonCompliantPropertyByName(it) }
 
   val label =
