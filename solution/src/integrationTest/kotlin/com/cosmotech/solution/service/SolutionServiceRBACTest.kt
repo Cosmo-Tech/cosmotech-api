@@ -5,8 +5,6 @@ package com.cosmotech.solution.service
 import com.azure.storage.blob.BlobServiceClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
-import com.cosmotech.api.rbac.CsmAdmin
-import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.PERMISSION_READ
@@ -36,13 +34,11 @@ import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
 import com.cosmotech.solution.domain.SolutionRole
 import com.cosmotech.solution.domain.SolutionSecurity
-import com.cosmotech.solution.repository.SolutionRepository
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
-import io.mockk.spyk
 import java.io.InputStream
 import java.util.*
 import kotlin.test.assertEquals
@@ -92,9 +88,6 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
   @MockK lateinit var resourceScanner: ResourceScanner
   @MockK lateinit var inputStream: InputStream
   @MockK lateinit var resourceLoader: ResourceLoader
-  @MockK lateinit var solutionRepository: SolutionRepository
-  @MockK lateinit var csmRbac: CsmRbac
-  @MockK lateinit var csmAdmin: CsmAdmin
 
   @BeforeEach
   fun setUp() {
@@ -102,9 +95,6 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")
-
-    ReflectionTestUtils.setField(
-        solutionApiService, "azureStorageBlobServiceClient", azureStorageBlobServiceClient)
 
     rediSearchIndexer.createIndexFor(Organization::class.java)
     rediSearchIndexer.createIndexFor(Solution::class.java)
@@ -1545,6 +1535,12 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
           )
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test Organization RBAC downloadRunTemplateHandler : $role") {
+              ReflectionTestUtils.setField(
+                  solutionApiService,
+                  "azureStorageBlobServiceClient",
+                  azureStorageBlobServiceClient)
+              ReflectionTestUtils.setField(solutionApiService, "resourceLoader", resourceLoader)
+
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
               val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = role)
@@ -1615,27 +1611,8 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                     "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
-                // Fixing the PROD-9972 by using readAllBytes thows an exception if the blob
-                // or container does not exist, therefore have to mock the
-                // downloadRunTemplateHandler method
-                val solutionApiService =
-                    spyk(
-                        SolutionServiceImpl(
-                            resourceLoader,
-                            azureStorageBlobServiceClient,
-                            resourceScanner,
-                            solutionRepository,
-                            organizationApiService,
-                            csmRbac,
-                            csmAdmin))
-
-                every {
-                  solutionApiService.downloadRunTemplateHandler(
-                      organizationSaved.id!!,
-                      solutionSaved.id!!,
-                      "runTemplate",
-                      runTemplateHandlerId)
-                } returns byteArrayOf(0x2E, 0x38)
+                every { resourceLoader.getResource(any()).inputStream } returns
+                    (this::class.java.getResource("/test_download.zip")?.openStream()!!)
 
                 assertDoesNotThrow {
                   solutionApiService.downloadRunTemplateHandler(
