@@ -1684,14 +1684,8 @@ private fun mergeSolutionContainer(
   val stackedMode = stackedContainer.envVars?.getOrDefault(CONTAINER_MODE_VAR, "") ?: ""
   val containerMode = container.envVars?.getOrDefault(CONTAINER_MODE_VAR, "") ?: ""
   val modes = "$stackedMode,$containerMode"
-  val envVars =
-      container.envVars
-          ?.let { envVarsOfContainer ->
-            stackedContainer.envVars?.let { envVarsOfstackedContainer ->
-              envVarsOfContainer + envVarsOfstackedContainer
-            }
-          }
-          ?.toMutableMap()
+  val envVars = container.envVars?.toMutableMap()
+  stackedContainer.envVars?.let { envVars?.putAll(it) }
 
   envVars?.put(CONTAINER_MODE_VAR, modes)
 
