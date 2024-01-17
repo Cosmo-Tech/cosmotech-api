@@ -7,7 +7,7 @@ import com.cosmotech.api.redis.SecurityConstraint
 import com.cosmotech.solution.domain.Solution
 import com.redis.om.spring.annotations.Query
 import com.redis.om.spring.repository.RedisDocumentRepository
-import java.util.Optional
+import java.util.*
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.query.Param
@@ -29,5 +29,9 @@ interface SolutionRepository : RedisDocumentRepository<Solution, String> {
       pageable: Pageable
   ): Page<Solution>
 
-  fun findByOrganizationId(organizationId: String, pageable: Pageable): Page<Solution>
+  @Query("@organizationId:{\$organizationId}")
+  fun findByOrganizationId(
+      @Sanitize @Param("organizationId") organizationId: String,
+      pageable: Pageable
+  ): Page<Solution>
 }

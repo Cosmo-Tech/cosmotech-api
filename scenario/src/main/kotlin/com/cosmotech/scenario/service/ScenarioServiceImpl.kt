@@ -428,10 +428,13 @@ internal class ScenarioServiceImpl(
       if (rbacEnabled) {
         val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
         return scenarioRepository
-            .findByValidationStatusAndSecurity(status, currentUser, pageRequest!!)
+            .findByValidationStatusAndSecurity(
+                organizationId, workspaceId, status, currentUser, pageRequest!!)
             .toList()
       } else {
-        return scenarioRepository.findByValidationStatus(status, pageRequest!!).toList()
+        return scenarioRepository
+            .findByValidationStatus(organizationId, workspaceId, status, pageRequest!!)
+            .toList()
       }
     }
 
@@ -443,10 +446,14 @@ internal class ScenarioServiceImpl(
         val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
         scenarioList =
             scenarioRepository
-                .findByValidationStatusAndSecurity(status, currentUser, pageRequest!!)
+                .findByValidationStatusAndSecurity(
+                    organizationId, workspaceId, status, currentUser, pageRequest!!)
                 .toList()
       } else {
-        scenarioList = scenarioRepository.findByValidationStatus(status, pageRequest!!).toList()
+        scenarioList =
+            scenarioRepository
+                .findByValidationStatus(organizationId, workspaceId, status, pageRequest!!)
+                .toList()
       }
       findAllScenarioByValidationStatus.addAll(scenarioList)
       pageRequest = pageRequest.next()
@@ -466,11 +473,12 @@ internal class ScenarioServiceImpl(
     if (isRbacEnabled(organizationId, workspaceId)) {
       val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
       return scenarioRepository
-          .findByWorkspaceIdAndSecurity(workspaceId, currentUser, pageable)
+          .findByWorkspaceIdAndSecurity(organizationId, workspaceId, currentUser, pageable)
           .toList()
     }
 
-    val scenarios = scenarioRepository.findByWorkspaceId(workspaceId, pageable).toList()
+    val scenarios =
+        scenarioRepository.findByWorkspaceId(organizationId, workspaceId, pageable).toList()
     if (addState) {
       scenarios.forEach { this.addStateToScenario(organizationId, it) }
     }
@@ -491,9 +499,12 @@ internal class ScenarioServiceImpl(
       if (rbacEnabled) {
         val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
         scenarioList =
-            scenarioRepository.findByRootIdAndSecurity(rootId, currentUser, pageable).toList()
+            scenarioRepository
+                .findByRootIdAndSecurity(organizationId, workspaceId, rootId, currentUser, pageable)
+                .toList()
       } else {
-        scenarioList = scenarioRepository.findByRootId(rootId, pageable).toList()
+        scenarioList =
+            scenarioRepository.findByRootId(organizationId, workspaceId, rootId, pageable).toList()
       }
       findAllScenariosByRootId.addAll(scenarioList)
       pageable = pageable.next()
@@ -515,9 +526,15 @@ internal class ScenarioServiceImpl(
       if (rbacEnabled) {
         val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
         scenarioList =
-            scenarioRepository.findByParentIdAndSecurity(parentId, currentUser, pageable).toList()
+            scenarioRepository
+                .findByParentIdAndSecurity(
+                    organizationId, workspaceId, parentId, currentUser, pageable)
+                .toList()
       } else {
-        scenarioList = scenarioRepository.findByParentId(parentId, pageable).toList()
+        scenarioList =
+            scenarioRepository
+                .findByParentId(organizationId, workspaceId, parentId, pageable)
+                .toList()
       }
       findScenarioChildrenById.addAll(scenarioList)
       pageable = pageable.next()

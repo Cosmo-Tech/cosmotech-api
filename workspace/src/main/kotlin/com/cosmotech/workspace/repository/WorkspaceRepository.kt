@@ -7,7 +7,7 @@ import com.cosmotech.api.redis.SecurityConstraint
 import com.cosmotech.workspace.domain.Workspace
 import com.redis.om.spring.annotations.Query
 import com.redis.om.spring.repository.RedisDocumentRepository
-import java.util.Optional
+import java.util.*
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.query.Param
@@ -21,7 +21,12 @@ interface WorkspaceRepository : RedisDocumentRepository<Workspace, String> {
       @Sanitize @Param("organizationId") organizationId: String,
       @Sanitize @Param("workspaceId") workspaceId: String
   ): Optional<Workspace>
-  fun findByOrganizationId(organizationId: String, pageable: Pageable): Page<Workspace>
+
+  @Query("@organizationId:{\$organizationId}")
+  fun findByOrganizationId(
+      @Sanitize @Param("organizationId") organizationId: String,
+      pageable: Pageable
+  ): Page<Workspace>
 
   @Query("(@organizationId:{\$organizationId})  \$securityConstraint")
   fun findByOrganizationIdAndSecurity(
