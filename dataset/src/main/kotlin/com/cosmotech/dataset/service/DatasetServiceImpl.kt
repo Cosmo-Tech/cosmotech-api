@@ -122,13 +122,14 @@ class DatasetServiceImpl(
     // This call verify by itself that we have the read authorization in the organization
     organizationService.findOrganizationById(organizationId)
 
+    val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
     val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
     val pageable = constructPageRequest(page, size, defaultPageSize)
     if (pageable != null) {
-      return datasetRepository.findByOrganizationId(organizationId, pageable).toList()
+      return datasetRepository.findByOrganizationId(organizationId, currentUser, pageable).toList()
     }
     return findAllPaginated(defaultPageSize) {
-      datasetRepository.findByOrganizationId(organizationId, it).toList()
+      datasetRepository.findByOrganizationId(organizationId, currentUser, it).toList()
     }
   }
 
@@ -423,12 +424,10 @@ class DatasetServiceImpl(
             dataset
                 .takeIf { it.ingestionStatus == Dataset.IngestionStatus.PENDING }
                 ?.apply {
-                  datasetRepository.save(
-                      this.apply {
-                        ingestionStatus = Dataset.IngestionStatus.SUCCESS
-                        twincacheStatus = Dataset.TwincacheStatus.FULL
-                      })
+                  ingestionStatus = Dataset.IngestionStatus.SUCCESS
+                  twincacheStatus = Dataset.TwincacheStatus.FULL
                 }
+            datasetRepository.save(dataset)
             Dataset.IngestionStatus.SUCCESS.value
           }
         }
@@ -895,11 +894,13 @@ class DatasetServiceImpl(
     var pageable = constructPageRequest(page, size, defaultPageSize)
     if (pageable != null) {
       return datasetRepository
-          .findDatasetByTags(datasetSearch.datasetTags.toSet(), pageable)
+          .findDatasetByTags(organizationId, datasetSearch.datasetTags.toSet(), pageable)
           .toList()
     }
     return findAllPaginated(defaultPageSize) {
-      datasetRepository.findDatasetByTags(datasetSearch.datasetTags.toSet(), it).toList()
+      datasetRepository
+          .findDatasetByTags(organizationId, datasetSearch.datasetTags.toSet(), it)
+          .toList()
     }
   }
 
@@ -998,11 +999,12 @@ class DatasetServiceImpl(
   @EventListener(OrganizationUnregistered::class)
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
+    val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
     var pageable = PageRequest.ofSize(csmPlatformProperties.twincache.dataset.defaultPageSize)
     do {
       val datasetList =
           datasetRepository
-              .findByOrganizationId(organizationUnregistered.organizationId, pageable)
+              .findByOrganizationIdNoSecurity(organizationUnregistered.organizationId, pageable)
               .toList()
       datasetRepository.deleteAll(datasetList)
       pageable = pageable.next()
