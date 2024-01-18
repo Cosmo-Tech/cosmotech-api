@@ -8,7 +8,10 @@ import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.id.CsmIdGenerator
 import com.cosmotech.api.rbac.CsmRbac
-import com.cosmotech.api.utils.*
+import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
+import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.api.utils.getCurrentAuthentication
+import com.cosmotech.api.utils.objectMapper
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.scenario.api.ScenarioApiService
@@ -34,7 +37,7 @@ import io.mockk.mockkStatic
 import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
-import java.util.Optional
+import java.util.*
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -42,7 +45,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthentication
 
 private const val ORGANIZATION_ID = "O-AbCdEf123"
@@ -174,7 +176,7 @@ class ScenarioRunServiceImplTests {
                         envVars = mapOf("KEY" to "value"),
                         image = "rhel:7")))
 
-    every { scenarioRunRepository.findByScenarioId(any(), any()).toList() } returns
+    every { scenarioRunRepository.findByScenarioId(any(), any(), any(), any()).toList() } returns
         listOf(myScenarioRun1, myScenarioRun2).toMutableList()
     every { csmPlatformProperties.twincache.scenariorun.defaultPageSize } returns 5
 
@@ -217,7 +219,7 @@ class ScenarioRunServiceImplTests {
                         envVars = mapOf("KEY" to "value"),
                         image = "rhel:7")))
 
-    every { scenarioRunRepository.findByWorkspaceId(any(), any()).toList() } returns
+    every { scenarioRunRepository.findByWorkspaceId(any(), any(), any()).toList() } returns
         listOf(myScenarioRun1, myScenarioRun2).toMutableList()
     every { csmPlatformProperties.twincache.scenariorun.defaultPageSize } returns 5
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns mockk()
@@ -262,7 +264,7 @@ class ScenarioRunServiceImplTests {
     every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns
         Organization(id = ORGANIZATION_ID)
     every { csmPlatformProperties.twincache.scenariorun.defaultPageSize } returns 5
-    every { scenarioRunRepository.findByPredicate(any(), any()).toList() } returns
+    every { scenarioRunRepository.findByPredicate(any(), any(), any()).toList() } returns
         listOf(myScenarioRun1, myScenarioRun2)
 
     var scenarioRunSearch = ScenarioRunSearch(ownerId = AUTHENTICATED_USERNAME)

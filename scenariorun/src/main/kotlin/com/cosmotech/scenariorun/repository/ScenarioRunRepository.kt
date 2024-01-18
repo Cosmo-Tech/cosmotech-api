@@ -22,7 +22,7 @@ interface ScenarioRunRepository : RedisDocumentRepository<ScenarioRun, String> {
   ): Optional<ScenarioRun>
 
   @Query(
-      "@organizationId:{\$organizationId} @workspaceId:{\$workspaceId} @scenarioId:{\$scenarioRunId}")
+      "@organizationId:{\$organizationId} @workspaceId:{\$workspaceId} @scenarioId:{\$scenarioId}")
   fun findByScenarioId(
       @Sanitize @Param("organizationId") organizationId: String,
       @Sanitize @Param("workspaceId") workspaceId: String,

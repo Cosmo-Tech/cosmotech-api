@@ -326,6 +326,7 @@ class DatasetServiceImplTests {
                 twingraphId = "twingraphId")
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { csmJedisPool.resource.exists(any<String>()) } returns true
+    every { datasetRepository.save(any()) } returns mockk()
     val result = datasetService.getDatasetTwingraphStatus(ORGANIZATION_ID, DATASET_ID)
     assertEquals(Dataset.IngestionStatus.SUCCESS.value, result)
   }
