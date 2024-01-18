@@ -8,6 +8,7 @@ Name | Type | Description | Notes
 **key** | **String** | technical key for resource name convention and version grouping. Must be unique | [default to null]
 **name** | **String** | Workspace name. This name is display in the sample webApp | [default to null]
 **description** | **String** | the Workspace description | [optional] [default to null]
+**linkedDatasetIdList** | **List** | list of dataset linked to this dataset | [optional] [default to null]
 **version** | **String** | the Workspace version MAJOR.MINOR.PATCH. | [optional] [default to null]
 **tags** | **List** | the list of tags | [optional] [default to null]
 **ownerId** | **String** | the user id which own this workspace. set by the API from Authentification service receved id | [optional] [default to null]

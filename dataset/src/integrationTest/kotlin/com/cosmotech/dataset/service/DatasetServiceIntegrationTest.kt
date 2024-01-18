@@ -39,6 +39,15 @@ import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
+import com.cosmotech.solution.api.SolutionApiService
+import com.cosmotech.solution.domain.Solution
+import com.cosmotech.solution.domain.SolutionAccessControl
+import com.cosmotech.solution.domain.SolutionSecurity
+import com.cosmotech.workspace.api.WorkspaceApiService
+import com.cosmotech.workspace.domain.Workspace
+import com.cosmotech.workspace.domain.WorkspaceAccessControl
+import com.cosmotech.workspace.domain.WorkspaceSecurity
+import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.ninjasquad.springmockk.SpykBean
 import com.redis.om.spring.RediSearchIndexer
 import com.redis.testcontainers.RedisStackContainer
@@ -52,6 +61,7 @@ import io.mockk.mockkStatic
 import java.io.File
 import java.time.Instant
 import java.util.*
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
@@ -97,6 +107,8 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var datasetRepository: DatasetRepository
   @Autowired lateinit var connectorApiService: ConnectorApiService
   @Autowired lateinit var organizationApiService: OrganizationApiService
+  @Autowired lateinit var solutionApiService: SolutionApiService
+  @Autowired lateinit var workspaceApiService: WorkspaceApiService
   @SpykBean @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
   @SpykBean @Autowired lateinit var csmRedisGraph: RedisGraph
   @MockK(relaxUnitFun = true) private lateinit var eventPublisher: CsmEventPublisher
@@ -106,11 +118,15 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   lateinit var dataset2: Dataset
   lateinit var datasetSaved: Dataset
   lateinit var retrievedDataset1: Dataset
+  lateinit var solution: Solution
+  lateinit var workspace: Workspace
 
   lateinit var jedisPool: JedisPool
   lateinit var redisGraph: RedisGraph
   lateinit var organization: Organization
   lateinit var organizationSaved: Organization
+  lateinit var solutionSaved: Solution
+  lateinit var workspaceSaved: Workspace
 
   @BeforeAll
   fun beforeAll() {
@@ -124,7 +140,6 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     redisGraph = RedisGraph(jedisPool)
     ReflectionTestUtils.setField(datasetApiService, "csmJedisPool", jedisPool)
     ReflectionTestUtils.setField(datasetApiService, "csmRedisGraph", redisGraph)
-    ReflectionTestUtils.setField(datasetApiService, "eventPublisher", eventPublisher)
   }
 
   @BeforeEach
@@ -135,6 +150,8 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     rediSearchIndexer.createIndexFor(Connector::class.java)
     rediSearchIndexer.createIndexFor(Organization::class.java)
     rediSearchIndexer.createIndexFor(Dataset::class.java)
+    rediSearchIndexer.createIndexFor(Solution::class.java)
+    rediSearchIndexer.createIndexFor(Workspace::class.java)
 
     connectorSaved = connectorApiService.registerConnector(makeConnector())
 
@@ -143,6 +160,10 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     dataset = makeDatasetWithRole()
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
     dataset2 = makeDatasetWithRole()
+    solution = makeSolution()
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+    workspace = makeWorkspace()
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
   }
 
   @AfterEach
@@ -745,45 +766,96 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @TestFactory
-  fun `test refreshDataset`() =
-      mapOf(
-              DatasetSourceType.AzureStorage to false,
-              DatasetSourceType.ADT to false,
-              DatasetSourceType.Twincache to false,
-              DatasetSourceType.File to true,
-              DatasetSourceType.None to true)
-          .map { (sourceType, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC refreshDataset : $sourceType") {
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              organizationSaved =
-                  organizationApiService.registerOrganization(
-                      makeOrganizationWithRole("organization"))
-              val parentDataset =
-                  datasetApiService.createDataset(
-                      organizationSaved.id!!, makeDatasetWithRole(sourceType = sourceType))
-              datasetSaved =
-                  datasetApiService.createDataset(
-                      organizationSaved.id!!,
-                      makeDatasetWithRole(parentId = parentDataset.id!!, sourceType = sourceType))
+  fun `test refreshDataset`() {
+    ReflectionTestUtils.setField(datasetApiService, "eventPublisher", eventPublisher)
+    mapOf(
+            DatasetSourceType.AzureStorage to false,
+            DatasetSourceType.ADT to false,
+            DatasetSourceType.Twincache to false,
+            DatasetSourceType.File to true,
+            DatasetSourceType.None to true)
+        .map { (sourceType, shouldThrow) ->
+          DynamicTest.dynamicTest("Test RBAC refreshDataset : $sourceType") {
+            every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+            organizationSaved =
+                organizationApiService.registerOrganization(
+                    makeOrganizationWithRole("organization"))
+            val parentDataset =
+                datasetApiService.createDataset(
+                    organizationSaved.id!!, makeDatasetWithRole(sourceType = sourceType))
+            datasetSaved =
+                datasetApiService.createDataset(
+                    organizationSaved.id!!,
+                    makeDatasetWithRole(parentId = parentDataset.id!!, sourceType = sourceType))
 
-              every { eventPublisher.publishEvent(any<TwingraphImportEvent>()) } answers
-                  {
-                    firstArg<TwingraphImportEvent>().response = null
-                  }
-              if (shouldThrow) {
-                val exception =
-                    assertThrows<CsmResourceNotFoundException> {
-                      datasetApiService.refreshDataset(organizationSaved.id!!, datasetSaved.id!!)
-                    }
-                assertEquals("Cannot be applied to source type '$sourceType'", exception.message)
-              } else {
-                assertDoesNotThrow {
-                  datasetApiService.refreshDataset(organizationSaved.id!!, datasetSaved.id!!)
+            every { eventPublisher.publishEvent(any<TwingraphImportEvent>()) } answers
+                {
+                  firstArg<TwingraphImportEvent>().response = null
                 }
+            if (shouldThrow) {
+              val exception =
+                  assertThrows<CsmResourceNotFoundException> {
+                    datasetApiService.refreshDataset(organizationSaved.id!!, datasetSaved.id!!)
+                  }
+              assertEquals("Cannot be applied to source type '$sourceType'", exception.message)
+            } else {
+              assertDoesNotThrow {
+                datasetApiService.refreshDataset(organizationSaved.id!!, datasetSaved.id!!)
               }
             }
           }
+        }
+  }
 
+  @Test
+  fun `link workspace from dataset`() {
+    datasetApiService.linkWorkspace(organizationSaved.id!!, datasetSaved.id!!, workspaceSaved.id!!)
+
+    assertContains(
+        datasetApiService
+            .findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+            .linkedWorkspaceIdList!!
+            .toList(),
+        workspaceSaved.id!!)
+    assertContains(
+        workspaceApiService
+            .findWorkspaceById(organizationSaved.id!!, workspaceSaved.id!!)
+            .linkedDatasetIdList!!
+            .toList(),
+        datasetSaved.id!!)
+  }
+
+  @Test
+  fun `unlink workspace from dataset`() {
+    datasetApiService.linkWorkspace(organizationSaved.id!!, datasetSaved.id!!, workspaceSaved.id!!)
+
+    assertContains(
+        datasetApiService
+            .findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+            .linkedWorkspaceIdList!!
+            .toList(),
+        workspaceSaved.id!!)
+    assertContains(
+        workspaceApiService
+            .findWorkspaceById(organizationSaved.id!!, workspaceSaved.id!!)
+            .linkedDatasetIdList!!
+            .toList(),
+        datasetSaved.id!!)
+
+    datasetApiService.unlinkWorkspace(
+        organizationSaved.id!!, datasetSaved.id!!, workspaceSaved.id!!)
+
+    kotlin.test.assertFalse(
+        datasetApiService
+            .findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+            .linkedWorkspaceIdList!!
+            .contains(workspaceSaved.id!!))
+    kotlin.test.assertFalse(
+        workspaceApiService
+            .findWorkspaceById(organizationSaved.id!!, workspaceSaved.id!!)
+            .linkedDatasetIdList!!
+            .contains(datasetSaved.id!!))
+  }
   private fun materializeTwingraph(
       dataset: Dataset = datasetSaved,
       createTwingraph: Boolean = true
@@ -849,5 +921,46 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
                     mutableListOf(
                         DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
                         DatasetAccessControl(id = userName, role = role))))
+  }
+
+  fun makeSolution(organizationId: String = organizationSaved.id!!): Solution {
+    return Solution(
+        id = "solutionId",
+        key = UUID.randomUUID().toString(),
+        name = "My solution",
+        organizationId = organizationId,
+        ownerId = "ownerId",
+        security =
+            SolutionSecurity(
+                default = ROLE_NONE,
+                accessControlList =
+                    mutableListOf(
+                        SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
+  }
+
+  fun makeWorkspace(
+      organizationId: String = organizationSaved.id!!,
+      solutionId: String = solutionSaved.id!!,
+      name: String = "name",
+      userName: String = TEST_USER_MAIL,
+      role: String = ROLE_ADMIN
+  ): Workspace {
+    return Workspace(
+        key = UUID.randomUUID().toString(),
+        name = name,
+        solution =
+            WorkspaceSolution(
+                solutionId = solutionId,
+            ),
+        id = UUID.randomUUID().toString(),
+        organizationId = organizationId,
+        ownerId = "ownerId",
+        security =
+            WorkspaceSecurity(
+                default = ROLE_NONE,
+                accessControlList =
+                    mutableListOf(
+                        WorkspaceAccessControl(id = userName, role = role),
+                        WorkspaceAccessControl(CONNECTED_ADMIN_USER, "admin"))))
   }
 }

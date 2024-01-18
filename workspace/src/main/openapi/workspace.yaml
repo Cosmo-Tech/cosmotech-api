@@ -354,6 +354,86 @@ paths:
         "404":
           description: the Workspace or the file specified is unknown or you don't have access to them
 
+  /organizations/{organization_id}/workspaces/{workspace_id}/link:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+    post:
+      parameters:
+        - name: datasetId
+          in: query
+          description: dataset id to be linked to
+          required: true
+          schema:
+            type: string
+      operationId: linkDataset
+      tags:
+        - workspace
+      responses:
+        "200":
+          description: the workspace details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+              examples:
+                BreweryADTUpdated:
+                  $ref: '#/components/examples/BreweryWorkspaceWithLink'
+        "400":
+          description: Bad request
+        "404":
+          description: the workspace specified is unknown or you don't have access to it
+
+  /organizations/{organization_id}/workspaces/{workspace_id}/unlink:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+    post:
+      parameters:
+        - name: datasetId
+          in: query
+          description: dataset id to be linked to
+          required: true
+          schema:
+            type: string
+      operationId: unlinkDataset
+      tags:
+        - workspace
+      responses:
+        "200":
+          description: the workspace details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+              examples:
+                BreweryADT:
+                  $ref: '#/components/examples/BreweryWorkspace'
+        "400":
+          description: Bad request
+        "404":
+          description: the Dataset specified is unknown or you don't have access to it
+
   /organizations/{organization_id}/workspaces/{workspace_id}/permissions/{role}:
     parameters:
       - name: organization_id
@@ -716,6 +796,11 @@ components:
         description:
           type: string
           description: the Workspace description
+        linkedDatasetIdList:
+          type: array
+          description: list of dataset linked to this dataset
+          items:
+            type: string
         version:
           type: string
           description: the Workspace version MAJOR.MINOR.PATCH.
@@ -862,6 +947,39 @@ components:
           description: the dedicated event hub shared access key
   examples:
     BreweryWorkspace:
+      summary: Brewery Workspace
+      description: Brewery Workspace example
+      value:
+        id: "w-da345dia76fg"
+        organisationId: "o-daup4fea311"
+        key: brewery
+        name: Brewery Analysis
+        description: Brewery analysis for stock, production, transport and customer satisfaction
+        linkedDatasetIdList:
+          - "d-pe57ai0h34"
+        version: "1.0.0"
+        tags:
+          - Brewery
+        ownerId: "da3518zpo-coizou3154851354dam-izhva38fze1"
+        solution:
+          solutionId: "sol-feo16eua48o"
+          runTemplateFilter:
+            - "run1"
+          defaultRunTemplateDataset:
+            run1: "data1"
+        sendInputToDataWarehouse: null
+        useDedicatekdEventHubNamespace: false
+        dedicatedEventHubSasKeyName: null
+        dedicatedEventHubAuthenticationStrategy: null
+        sendScenarioRunToEventHub: true
+        sendScenarioMetadataToEventHub: false
+        datasetCopy: true
+        security:
+          default: "viewer"
+          accessControlList:
+            - id: "alice.doe@cosmotech.com"
+              role: "admin"
+    BreweryWorkspaceWithLink:
       summary: Brewery Workspace
       description: Brewery Workspace example
       value:
