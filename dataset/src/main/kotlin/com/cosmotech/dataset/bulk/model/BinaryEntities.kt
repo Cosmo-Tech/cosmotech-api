@@ -16,6 +16,7 @@ class BinaryEntities(val type: String, private val header: List<String>) {
       if (it.properties.keys.any { s -> s !in header })
           throw CsmResourceNotFoundException(
               "Header mismatch, one or more properties are not in $header")
+      // TODO: fix match header and properties size
       binaryBlobFormat += it.toBinaryFormat()
       size += it.toBinaryFormat().size
     }
