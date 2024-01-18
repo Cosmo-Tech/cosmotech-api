@@ -65,6 +65,9 @@ import com.cosmotech.workspace.azure.EventHubRole
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.service.getRbac
+import java.time.Instant
+import java.time.ZonedDateTime
+import java.util.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -74,9 +77,6 @@ import org.springframework.context.event.EventListener
 import org.springframework.data.domain.PageRequest
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
-import java.time.Instant
-import java.time.ZonedDateTime
-import java.util.*
 
 private const val MIN_SDK_VERSION_MAJOR = 8
 private const val MIN_SDK_VERSION_MINOR = 5
