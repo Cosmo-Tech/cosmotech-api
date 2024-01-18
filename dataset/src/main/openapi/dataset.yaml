@@ -1348,6 +1348,8 @@ paths:
           schema:
             type: string
       operationId: linkWorkspace
+      tags:
+        - dataset
       responses:
         "200":
           description: the dataset details
@@ -1386,6 +1388,8 @@ paths:
           schema:
             type: string
       operationId: unlinkWorkspace
+      tags:
+        - dataset
       responses:
         "200":
           description: the dataset details
@@ -1477,6 +1481,11 @@ components:
         parentId:
           type: string
           description: the Dataset id which is the parent of this Dataset
+        linkedWorkspaceIdList:
+          type: array
+          description: list of workspace linked to this dataset
+          items:
+            type: string
         twingraphId:
           type: string
           description: the twin graph id

@@ -56,6 +56,7 @@ entity Dataset {
     ownerName: String
     organizationId: String
     parentId: String
+    linkedWorkspaceIdList: List<String>
     twingraphId: String
     main: Boolean
     creationDate: Long
@@ -568,6 +569,7 @@ entity Workspace {
     * key: String
     * name: String
     description: String
+    linkedDatasetIdList: List<String>
     version: String
     tags: List<String>
     ownerId: String

@@ -3,8 +3,12 @@
 package com.cosmotech.dataset.service
 
 import com.cosmotech.api.CsmPhoenixService
+import com.cosmotech.api.events.AddDatasetToWorkspace
+import com.cosmotech.api.events.AddWorkspaceToDataset
 import com.cosmotech.api.events.ConnectorRemoved
 import com.cosmotech.api.events.OrganizationUnregistered
+import com.cosmotech.api.events.RemoveDatasetFromWorkspace
+import com.cosmotech.api.events.RemoveWorkspaceFromDataset
 import com.cosmotech.api.events.TwingraphImportEvent
 import com.cosmotech.api.events.TwingraphImportJobInfoRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
@@ -313,7 +317,7 @@ class DatasetServiceImpl(
     dataset.sourceType.takeIf { it == DatasetSourceType.File }
         ?: throw CsmResourceNotFoundException("SourceType Dataset must be 'File'")
 
-    // TODx: Validated with ressourceScanner PROD-12822
+    // TODO: Validated with ressourceScanner PROD-12822
     val archiverType = ArchiveStreamFactory.detect(body.inputStream.buffered())
     archiverType.takeIf { it == ArchiveStreamFactory.ZIP }
         ?: throw IllegalArgumentException(
@@ -544,6 +548,9 @@ class DatasetServiceImpl(
       if (jedis.exists(dataset.twingraphId!!)) {
         jedis.del(dataset.twingraphId!!)
       }
+    }
+    dataset.linkedWorkspaceIdList?.forEach {
+      removeWorkspaceFromLinkedWorkspaceIdList(organizationId, datasetId, it)
     }
   }
 
@@ -794,6 +801,73 @@ class DatasetServiceImpl(
       else -> throw CsmResourceNotFoundException("Bad Type : $type")
     }
     return result
+  }
+
+  override fun linkWorkspace(
+      organizationId: String,
+      datasetId: String,
+      workspaceId: String
+  ): Dataset {
+    val addDatasetToWorkspace = AddDatasetToWorkspace(this, organizationId, workspaceId, datasetId)
+    this.eventPublisher.publishEvent(addDatasetToWorkspace)
+    addDatasetToWorkspace.response
+
+    return addWorkspaceToLinkedWorkspaceIdList(organizationId, datasetId, workspaceId)
+  }
+
+  @EventListener(AddWorkspaceToDataset::class)
+  fun processEventAddWorkspace(addWorkspaceToDataset: AddWorkspaceToDataset) {
+    val dataset = addWorkspaceToLinkedWorkspaceIdList(
+        addWorkspaceToDataset.organizationId,
+        addWorkspaceToDataset.datasetId,
+        addWorkspaceToDataset.workspaceId)
+
+    addWorkspaceToDataset.response = dataset.linkedWorkspaceIdList
+  }
+  fun addWorkspaceToLinkedWorkspaceIdList(
+      organizationId: String,
+      datasetId: String,
+      workspaceId: String
+  ): Dataset {
+    val dataset = findDatasetById(organizationId, datasetId)
+    dataset.linkedWorkspaceIdList?.add(workspaceId)
+        ?: run { dataset.linkedWorkspaceIdList = mutableListOf(workspaceId) }
+
+    return datasetRepository.save(dataset)
+  }
+
+  override fun unlinkWorkspace(
+      organizationId: String,
+      datasetId: String,
+      workspaceId: String
+  ): Dataset {
+    val removeDatasetFromWorkspace =
+        RemoveDatasetFromWorkspace(this, organizationId, workspaceId, datasetId)
+    this.eventPublisher.publishEvent(removeDatasetFromWorkspace)
+    removeDatasetFromWorkspace.response
+
+    return datasetRepository.save(
+        removeWorkspaceFromLinkedWorkspaceIdList(organizationId, datasetId, workspaceId))
+  }
+
+  @EventListener(RemoveWorkspaceFromDataset::class)
+  fun processEventRemoveWorkspace(removeWorkspacefromDataset: RemoveWorkspaceFromDataset) {
+    var dataset = removeWorkspaceFromLinkedWorkspaceIdList(
+        removeWorkspacefromDataset.organizationId,
+        removeWorkspacefromDataset.datasetId,
+        removeWorkspacefromDataset.workspaceId)
+
+    removeWorkspacefromDataset.response = dataset.linkedWorkspaceIdList
+  }
+  fun removeWorkspaceFromLinkedWorkspaceIdList(
+      organizationId: String,
+      datasetId: String,
+      workspaceId: String
+  ): Dataset {
+    val dataset = findDatasetById(organizationId, datasetId)
+    dataset.linkedWorkspaceIdList?.remove(workspaceId)
+
+    return datasetRepository.save(dataset)
   }
 
   override fun updateTwingraphEntities(

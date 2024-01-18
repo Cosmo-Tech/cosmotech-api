@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 **ownerName** | **String** | the name of the owner | [optional] [default to null]
 **organizationId** | **String** | the Organization Id related to this Dataset | [optional] [default to null]
 **parentId** | **String** | the Dataset id which is the parent of this Dataset | [optional] [default to null]
+**linkedWorkspaceIdList** | **List** | list of workspace linked to this dataset | [optional] [default to null]
 **twingraphId** | **String** | the twin graph id | [optional] [default to null]
 **main** | **Boolean** | is this the main dataset | [optional] [default to null]
 **creationDate** | **Long** | the Dataset creation date | [optional] [default to null]

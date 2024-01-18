@@ -15,6 +15,13 @@ import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.connector.api.ConnectorApiService
+import com.cosmotech.connector.domain.Connector
+import com.cosmotech.dataset.api.DatasetApiService
+import com.cosmotech.dataset.domain.Dataset
+import com.cosmotech.dataset.domain.DatasetAccessControl
+import com.cosmotech.dataset.domain.DatasetConnector
+import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
@@ -35,7 +42,9 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
 import java.util.*
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -69,15 +78,21 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var organizationApiService: OrganizationApiService
   @Autowired lateinit var solutionApiService: SolutionApiService
   @Autowired lateinit var workspaceApiService: WorkspaceApiService
+  @Autowired lateinit var connectorApiService: ConnectorApiService
+  @Autowired lateinit var datasetApiService: DatasetApiService
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   lateinit var organization: Organization
   lateinit var solution: Solution
   lateinit var workspace: Workspace
+  lateinit var connector: Connector
+  lateinit var dataset: Dataset
 
   lateinit var organizationSaved: Organization
   lateinit var solutionSaved: Solution
   lateinit var workspaceSaved: Workspace
+  lateinit var connectorSaved: Connector
+  lateinit var datasetSaved: Dataset
 
   @BeforeEach
   fun setUp() {
@@ -94,15 +109,23 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     rediSearchIndexer.createIndexFor(Organization::class.java)
     rediSearchIndexer.createIndexFor(Solution::class.java)
     rediSearchIndexer.createIndexFor(Workspace::class.java)
+    rediSearchIndexer.createIndexFor(Connector::class.java)
+    rediSearchIndexer.createIndexFor(Dataset::class.java)
 
-    organization = mockOrganization("Organization test")
+    organization = makeOrganization("Organization test")
     organizationSaved = organizationApiService.registerOrganization(organization)
 
-    solution = mockSolution(organizationSaved.id!!)
+    solution = makeSolution(organizationSaved.id!!)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
-    workspace = mockWorkspace(organizationSaved.id!!, solutionSaved.id!!, "Workspace")
+    workspace = makeWorkspace(organizationSaved.id!!, solutionSaved.id!!, "Workspace")
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+
+    connector = makeConnector("Connector")
+    connectorSaved = connectorApiService.registerConnector(connector)
+
+    dataset = makeDataset("dataset")
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
   }
 
   @Test
@@ -112,7 +135,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     every { secretManagerMock.deleteSecret(any(), any()) } returns Unit
 
     logger.info("should create a second new workspace")
-    val workspace2 = mockWorkspace(organizationSaved.id!!, solutionSaved.id!!, "Workspace 2")
+    val workspace2 = makeWorkspace(organizationSaved.id!!, solutionSaved.id!!, "Workspace 2")
     val workspaceRegistered2 =
         workspaceApiService.createWorkspace(organizationSaved.id!!, workspace2)
     val workspaceRetrieved =
@@ -149,7 +172,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAccountIdentifier(any()) } returns "userLambda"
 
     logger.info("should not create a new workspace")
-    val workspace2 = mockWorkspace(organizationSaved.id!!, solutionSaved.id!!, "Workspace 2")
+    val workspace2 = makeWorkspace(organizationSaved.id!!, solutionSaved.id!!, "Workspace 2")
     assertThrows<CsmAccessForbiddenException> {
       workspaceApiService.createWorkspace(organizationSaved.id!!, workspace2)
     }
@@ -185,7 +208,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     val defaultPageSize = csmPlatformProperties.twincache.workspace.defaultPageSize
     val expectedSize = 15
     IntRange(1, workspaceNumber - 1).forEach {
-      val workspace = mockWorkspace(organizationSaved.id!!, solutionSaved.id!!, "w-workspace-$it")
+      val workspace = makeWorkspace(organizationSaved.id!!, solutionSaved.id!!, "w-workspace-$it")
       workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
     }
     logger.info("should find all workspaces and assert there are $workspaceNumber")
@@ -340,8 +363,8 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `access control list shouldn't contain more than one time each user on creation`() {
     organizationSaved =
-        organizationApiService.registerOrganization(mockOrganization("organization"))
-    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, mockSolution())
+        organizationApiService.registerOrganization(makeOrganization("organization"))
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, makeSolution())
     val brokenWorkspace =
         Workspace(
             name = "workspace",
@@ -362,9 +385,9 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `access control list shouldn't contain more than one time each user on ACL addition`() {
     organizationSaved =
-        organizationApiService.registerOrganization(mockOrganization("organization"))
-    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, mockSolution())
-    val workingWorkspace = mockWorkspace()
+        organizationApiService.registerOrganization(makeOrganization("organization"))
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, makeSolution())
+    val workingWorkspace = makeWorkspace()
     workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workingWorkspace)
 
     assertThrows<IllegalArgumentException> {
@@ -375,7 +398,57 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
-  fun mockOrganization(
+  @Test
+  fun `link dataset to workspace`() {
+    workspaceApiService.linkDataset(organizationSaved.id!!, workspaceSaved.id!!, datasetSaved.id!!)
+
+    assertContains(
+        workspaceApiService
+            .findWorkspaceById(organizationSaved.id!!, workspaceSaved.id!!)
+            .linkedDatasetIdList!!
+            .toList(),
+        datasetSaved.id!!)
+    assertContains(
+        datasetApiService
+            .findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+            .linkedWorkspaceIdList!!
+            .toList(),
+        workspaceSaved.id!!)
+  }
+
+  @Test
+  fun `remove dataset from workspace`() {
+    workspaceApiService.linkDataset(organizationSaved.id!!, workspaceSaved.id!!, datasetSaved.id!!)
+
+    assertContains(
+        workspaceApiService
+            .findWorkspaceById(organizationSaved.id!!, workspaceSaved.id!!)
+            .linkedDatasetIdList!!
+            .toList(),
+        datasetSaved.id!!)
+    assertContains(
+        datasetApiService
+            .findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+            .linkedWorkspaceIdList!!
+            .toList(),
+        workspaceSaved.id!!)
+
+    workspaceApiService.unlinkDataset(
+        organizationSaved.id!!, workspaceSaved.id!!, datasetSaved.id!!)
+
+    assertFalse(
+        workspaceApiService
+            .findWorkspaceById(organizationSaved.id!!, workspaceSaved.id!!)
+            .linkedDatasetIdList!!
+            .contains(datasetSaved.id!!))
+    assertFalse(
+        datasetApiService
+            .findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+            .linkedWorkspaceIdList!!
+            .contains(workspaceSaved.id!!))
+  }
+
+  fun makeOrganization(
       id: String,
       userName: String = CONNECTED_ADMIN_USER,
       role: String = ROLE_ADMIN
@@ -393,7 +466,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
                         OrganizationAccessControl("userLambda", "viewer"))))
   }
 
-  fun mockSolution(organizationId: String = organizationSaved.id!!): Solution {
+  fun makeSolution(organizationId: String = organizationSaved.id!!): Solution {
     return Solution(
         id = "solutionId",
         key = UUID.randomUUID().toString(),
@@ -408,7 +481,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
                         SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
   }
 
-  fun mockWorkspace(
+  fun makeWorkspace(
       organizationId: String = organizationSaved.id!!,
       solutionId: String = solutionSaved.id!!,
       name: String = "name",
@@ -432,5 +505,36 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
                     mutableListOf(
                         WorkspaceAccessControl(id = userName, role = role),
                         WorkspaceAccessControl(CONNECTED_DEFAULT_USER, "viewer"))))
+  }
+
+  private fun makeConnector(name: String = "name"): Connector {
+    return Connector(
+        key = UUID.randomUUID().toString(),
+        name = name,
+        repository = "/repository",
+        version = "1.0",
+        ioTypes = listOf(Connector.IoTypes.read))
+  }
+  fun makeDataset(
+      organizationId: String = organizationSaved.id!!,
+      name: String = "name",
+      connector: Connector = connectorSaved
+  ): Dataset {
+    return Dataset(
+        name = name,
+        organizationId = organizationId,
+        ownerId = "ownerId",
+        connector =
+            DatasetConnector(
+                id = connector.id,
+                name = connector.name,
+                version = connector.version,
+            ),
+        security =
+            DatasetSecurity(
+                default = ROLE_NONE,
+                accessControlList =
+                    mutableListOf(
+                        DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
   }
 }
