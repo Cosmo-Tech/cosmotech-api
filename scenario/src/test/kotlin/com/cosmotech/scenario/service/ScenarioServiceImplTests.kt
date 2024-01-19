@@ -644,7 +644,7 @@ class ScenarioServiceImplTests {
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     every { workspace.key } returns "my-workspace-key"
     every { workspace.id } returns "my-workspace-id"
-
+    every { workspace.datasetCopy } returns true
     val workspaceSecurity = mockk<WorkspaceSecurity>()
     every { workspace.security } returns workspaceSecurity
     every { workspace.security?.default } returns String()
@@ -712,6 +712,7 @@ class ScenarioServiceImplTests {
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     every { workspace.key } returns "my-workspace-key"
     every { workspace.id } returns "my-workspace-id"
+    every { workspace.datasetCopy } returns true
     val authentication =
         mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication>()
     every { eventBus.authentication } returns authentication
@@ -771,6 +772,7 @@ class ScenarioServiceImplTests {
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     every { workspace.key } returns "my-workspace-key"
     every { workspace.id } returns "my-workspace-id"
+    every { workspace.datasetCopy } returns true
     val authentication =
         mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication>()
     every { eventBus.authentication } returns authentication
