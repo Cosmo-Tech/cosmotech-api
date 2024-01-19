@@ -1565,7 +1565,10 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                     "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
                     exception.message)
               } else {
-                assertDoesNotThrow {
+                  every { resourceLoader.getResource(any()).inputStream } returns
+                          (this::class.java.getResource("/test_download.zip")?.openStream()!!)
+
+                  assertDoesNotThrow {
                   solutionApiService.downloadRunTemplateHandler(
                       organizationSaved.id!!,
                       solutionSaved.id!!,
