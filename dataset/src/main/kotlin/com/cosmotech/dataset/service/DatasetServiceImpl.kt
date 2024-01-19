@@ -818,10 +818,11 @@ class DatasetServiceImpl(
 
   @EventListener(AddWorkspaceToDataset::class)
   fun processEventAddWorkspace(addWorkspaceToDataset: AddWorkspaceToDataset) {
-    val dataset = addWorkspaceToLinkedWorkspaceIdList(
-        addWorkspaceToDataset.organizationId,
-        addWorkspaceToDataset.datasetId,
-        addWorkspaceToDataset.workspaceId)
+    val dataset =
+        addWorkspaceToLinkedWorkspaceIdList(
+            addWorkspaceToDataset.organizationId,
+            addWorkspaceToDataset.datasetId,
+            addWorkspaceToDataset.workspaceId)
 
     addWorkspaceToDataset.response = dataset.linkedWorkspaceIdList
   }
@@ -853,10 +854,11 @@ class DatasetServiceImpl(
 
   @EventListener(RemoveWorkspaceFromDataset::class)
   fun processEventRemoveWorkspace(removeWorkspacefromDataset: RemoveWorkspaceFromDataset) {
-    var dataset = removeWorkspaceFromLinkedWorkspaceIdList(
-        removeWorkspacefromDataset.organizationId,
-        removeWorkspacefromDataset.datasetId,
-        removeWorkspacefromDataset.workspaceId)
+    var dataset =
+        removeWorkspaceFromLinkedWorkspaceIdList(
+            removeWorkspacefromDataset.organizationId,
+            removeWorkspacefromDataset.datasetId,
+            removeWorkspacefromDataset.workspaceId)
 
     removeWorkspacefromDataset.response = dataset.linkedWorkspaceIdList
   }
