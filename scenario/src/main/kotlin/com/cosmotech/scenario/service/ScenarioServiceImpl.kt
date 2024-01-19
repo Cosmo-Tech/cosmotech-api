@@ -32,6 +32,7 @@ import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_USER
 import com.cosmotech.api.rbac.ROLE_VALIDATOR
+import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.getScenarioRolesDefinition
 import com.cosmotech.api.scenario.ScenarioMetaData
@@ -280,21 +281,23 @@ internal class ScenarioServiceImpl(
     if (scenario.state == ScenarioJobState.Running)
         throw CsmClientException("Can't delete a running scenario : ${scenario.id}")
     scenarioRepository.delete(scenario)
-
-    scenario.datasetList?.forEach {
-      try {
-        // This check that it's a v3 dataset that meant to be deleted with the scenario
-        // TODO remove went retro compat to  v2.x is remove
-        if (datasetService.findDatasetById(organizationId, it).creationDate != null) {
-          datasetService.deleteDataset(organizationId, it)
+    var workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
+    if (workspace.datasetCopy == true) {
+      scenario.datasetList?.forEach {
+        try {
+          // This check that it's a v3 dataset that meant to be deleted with the scenario
+          // TODO remove went retro compat to  v2.x is remove
+          if (datasetService.findDatasetById(organizationId, it).creationDate != null) {
+            datasetService.deleteDataset(organizationId, it)
+          }
+        } catch (e: CsmAccessForbiddenException) {
+          logger.warn("Error while deleting dataset $it", e)
         }
-      } catch (e: CsmAccessForbiddenException) {
-        logger.warn("Error while deleting dataset $it", e)
       }
     }
 
     this.handleScenarioDeletion(organizationId, workspaceId, scenario)
-    val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
+    workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     deleteScenarioMetadata(organizationId, workspace.key, scenarioId)
     eventPublisher.publishEvent(ScenarioDeleted(this, organizationId, workspaceId, scenarioId))
   }
@@ -1008,11 +1011,18 @@ internal class ScenarioServiceImpl(
     val id = scenarioAccessControl.id
     // Scenario and Dataset don't have the same roles
     // This function translates the role set from one to another
+    val workspace = workspaceService.findWorkspaceById(organizationId, scenario.workspaceId!!)
+
+    // The role in the datasets should be only be similar to scenarios if they are a copy
     val role: String =
-        if (scenarioAccessControl.role == ROLE_VALIDATOR) {
-          ROLE_USER
+        if (workspace.datasetCopy == true) {
+          if (scenarioAccessControl.role == ROLE_VALIDATOR) {
+            ROLE_USER
+          } else {
+            scenarioAccessControl.role
+          }
         } else {
-          scenarioAccessControl.role
+          ROLE_VIEWER
         }
     scenario.datasetList!!.forEach {
       val datasetUsers = datasetService.getDatasetSecurityUsers(organizationId, it)

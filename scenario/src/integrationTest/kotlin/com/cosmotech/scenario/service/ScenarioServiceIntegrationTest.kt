@@ -56,6 +56,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
+import java.time.Instant
 import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -259,6 +260,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     val numberOfScenarios = 20
     val defaultPageSize = csmPlatformProperties.twincache.scenario.defaultPageSize
     val expectedSize = 15
+    datasetSaved = materializeTwingraph()
     IntRange(1, numberOfScenarios - 1).forEach {
       val scenario =
           makeScenario(
@@ -800,6 +802,108 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
+  @Test
+  fun `when workspace datasetCopy is true, linked datasets should be deleted`() {
+    workspace =
+        Workspace(
+            key = "key",
+            name = "workspace",
+            solution = WorkspaceSolution(solutionSaved.id!!),
+            id = "id",
+            datasetCopy = true)
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+    scenario = makeScenario(datasetList = mutableListOf(datasetSaved.id!!))
+    scenarioSaved =
+        scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, scenario)
+
+    datasetSaved =
+        datasetApiService.findDatasetById(organizationSaved.id!!, scenarioSaved.datasetList!![0])
+    scenarioApiService.deleteScenario(
+        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+
+    assertThrows<CsmResourceNotFoundException> {
+      datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+    }
+  }
+
+  @Test
+  fun `when workspace datasetCopy is false, linked datasets should not be deleted`() {
+    workspace =
+        Workspace(
+            key = "key",
+            name = "workspace",
+            solution = WorkspaceSolution(solutionSaved.id!!),
+            id = "id",
+            datasetCopy = false)
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+    scenario = makeScenario(datasetList = mutableListOf(datasetSaved.id!!))
+    scenarioSaved =
+        scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, scenario)
+
+    datasetSaved =
+        datasetApiService.findDatasetById(organizationSaved.id!!, scenarioSaved.datasetList!![0])
+    scenarioApiService.deleteScenario(
+        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+
+    assertDoesNotThrow {
+      datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+    }
+  }
+
+  @Test
+  fun `when workspace datasetCopy is true, users added to scenario RBAC should have the same role in dataset`() {
+    workspace =
+        Workspace(
+            key = "key",
+            name = "workspace",
+            solution = WorkspaceSolution(solutionSaved.id!!),
+            id = "id",
+            datasetCopy = true)
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+    scenario = makeScenario(datasetList = mutableListOf(datasetSaved.id!!))
+    scenarioSaved =
+        scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, scenario)
+
+    datasetSaved =
+        datasetApiService.findDatasetById(organizationSaved.id!!, scenarioSaved.datasetList!![0])
+    scenarioApiService.addScenarioAccessControl(
+        organizationSaved.id!!,
+        workspaceSaved.id!!,
+        scenarioSaved.id!!,
+        ScenarioAccessControl(id = "id", role = ROLE_EDITOR))
+
+    val datasetAC =
+        datasetApiService.getDatasetAccessControl(organizationSaved.id!!, datasetSaved.id!!, "id")
+    assertEquals(ROLE_EDITOR, datasetAC.role)
+  }
+
+  @Test
+  fun `when workspace datasetCopy is false, users added to scenario RBAC should not have the same role in dataset`() {
+    workspace =
+        Workspace(
+            key = "key",
+            name = "workspace",
+            solution = WorkspaceSolution(solutionSaved.id!!),
+            id = "id",
+            datasetCopy = false)
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+    scenario = makeScenario(datasetList = mutableListOf(datasetSaved.id!!))
+    scenarioSaved =
+        scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, scenario)
+
+    datasetSaved =
+        datasetApiService.findDatasetById(organizationSaved.id!!, scenarioSaved.datasetList!![0])
+    scenarioApiService.addScenarioAccessControl(
+        organizationSaved.id!!,
+        workspaceSaved.id!!,
+        scenarioSaved.id!!,
+        ScenarioAccessControl(id = "id", role = ROLE_EDITOR))
+
+    val datasetAC =
+        datasetApiService.getDatasetAccessControl(organizationSaved.id!!, datasetSaved.id!!, "id")
+    assertEquals(ROLE_VIEWER, datasetAC.role)
+  }
+
   private fun makeWorkspaceEventHubInfo(eventHubAvailable: Boolean): WorkspaceEventHubInfo {
     return WorkspaceEventHubInfo(
         eventHubNamespace = "eventHubNamespace",
@@ -830,6 +934,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     return Dataset(
         name = name,
         organizationId = organizationId,
+        creationDate = Instant.now().toEpochMilli(),
         ownerId = "ownerId",
         connector =
             DatasetConnector(
@@ -941,6 +1046,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
         RedisGraph(jedisPool).query(this.twingraphId, "MATCH (n:labelrouge) return 1")
       }
       this.ingestionStatus = Dataset.IngestionStatus.SUCCESS
+      this.twincacheStatus = Dataset.TwincacheStatus.FULL
     }
     return datasetRepository.save(dataset)
   }
