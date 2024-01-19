@@ -9,9 +9,13 @@ import com.azure.storage.blob.batch.BlobBatchClient
 import com.azure.storage.blob.models.DeleteSnapshotsOptionType
 import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.azure.sanitizeForAzureStorage
+import com.cosmotech.api.events.AddDatasetToWorkspace
+import com.cosmotech.api.events.AddWorkspaceToDataset
 import com.cosmotech.api.events.DeleteHistoricalDataOrganization
 import com.cosmotech.api.events.DeleteHistoricalDataWorkspace
 import com.cosmotech.api.events.OrganizationUnregistered
+import com.cosmotech.api.events.RemoveDatasetFromWorkspace
+import com.cosmotech.api.events.RemoveWorkspaceFromDataset
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
@@ -107,15 +111,14 @@ internal class WorkspaceServiceImpl(
     return result
   }
 
-  internal fun findWorkspaceByIdNoSecurity(organizationId: String, workspaceId: String): Workspace =
-      workspaceRepository.findBy(organizationId, workspaceId).orElseThrow {
-        CsmResourceNotFoundException("Workspace $workspaceId")
-      }
-
   override fun findWorkspaceById(organizationId: String, workspaceId: String): Workspace {
     // This call verify by itself that we have the read authorization in the organization
     organizationService.findOrganizationById(organizationId)
-    val workspace: Workspace = this.findWorkspaceByIdNoSecurity(organizationId, workspaceId)
+    val workspace =
+        workspaceRepository.findBy(organizationId, workspaceId).orElseThrow {
+          CsmResourceNotFoundException(
+              "Dataset $workspaceId not found in organization $organizationId")
+        }
     csmRbac.verify(workspace.getRbac(), PERMISSION_READ)
     return workspace
   }
@@ -185,7 +188,7 @@ internal class WorkspaceServiceImpl(
   ): Workspace {
     // This call verify by itself that we have the read authorization in the organization
     organizationService.findOrganizationById(organizationId)
-    val existingWorkspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
+    val existingWorkspace = findWorkspaceById(organizationId, workspaceId)
     csmRbac.verify(existingWorkspace.getRbac(), PERMISSION_WRITE)
     // Security cannot be changed by updateWorkspace
     var hasChanged =
@@ -220,6 +223,7 @@ internal class WorkspaceServiceImpl(
       deleteAllWorkspaceFiles(organizationId, workspaceId)
       secretManager.deleteSecret(
           csmPlatformProperties.namespace, getWorkspaceSecretName(organizationId, workspace.key))
+      workspace.linkedDatasetIdList?.forEach { unlinkDataset(organizationId, workspaceId, it) }
     } finally {
       workspaceRepository.delete(workspace)
     }
@@ -356,6 +360,76 @@ internal class WorkspaceServiceImpl(
     }
   }
 
+  override fun linkDataset(
+      organizationId: String,
+      workspaceId: String,
+      datasetId: String
+  ): Workspace {
+    val addWorkspaceToDataset = AddWorkspaceToDataset(this, organizationId, datasetId, workspaceId)
+    this.eventPublisher.publishEvent(addWorkspaceToDataset)
+    addWorkspaceToDataset.response
+
+    return addDatasetToLinkedDatasetIdList(organizationId, workspaceId, datasetId)
+  }
+
+  @EventListener(AddDatasetToWorkspace::class)
+  fun processEventAddDatasetToWorkspace(addDatasetToWorkspace: AddDatasetToWorkspace) {
+    val workspace =
+        addDatasetToLinkedDatasetIdList(
+            addDatasetToWorkspace.organizationId,
+            addDatasetToWorkspace.workspaceId,
+            addDatasetToWorkspace.datasetId)
+
+    addDatasetToWorkspace.response = workspace.linkedDatasetIdList
+  }
+  fun addDatasetToLinkedDatasetIdList(
+      organizationId: String,
+      workspaceId: String,
+      datasetId: String
+  ): Workspace {
+    val workspace = findWorkspaceById(organizationId, workspaceId)
+    workspace.linkedDatasetIdList?.add(datasetId)
+        ?: run { workspace.linkedDatasetIdList = mutableListOf(datasetId) }
+
+    return workspaceRepository.save(workspace)
+  }
+
+  override fun unlinkDataset(
+      organizationId: String,
+      workspaceId: String,
+      datasetId: String
+  ): Workspace {
+    val removeWorkspacefromDataset =
+        RemoveWorkspaceFromDataset(this, organizationId, datasetId, workspaceId)
+    this.eventPublisher.publishEvent(removeWorkspacefromDataset)
+    removeWorkspacefromDataset.response
+
+    return removeDatasetFromLinkedDatasetIdList(organizationId, workspaceId, datasetId)
+  }
+
+  @EventListener(RemoveDatasetFromWorkspace::class)
+  fun processEventRemoveDatasetFromWorkspace(
+      removeDatasetFromWorkspace: RemoveDatasetFromWorkspace
+  ) {
+    val workspace =
+        removeDatasetFromLinkedDatasetIdList(
+            removeDatasetFromWorkspace.organizationId,
+            removeDatasetFromWorkspace.workspaceId,
+            removeDatasetFromWorkspace.datasetId)
+
+    removeDatasetFromWorkspace.response = workspace.linkedDatasetIdList
+  }
+  fun removeDatasetFromLinkedDatasetIdList(
+      organizationId: String,
+      workspaceId: String,
+      datasetId: String
+  ): Workspace {
+    val workspace = findWorkspaceById(organizationId, workspaceId)
+    workspace.linkedDatasetIdList?.remove(datasetId)
+
+    return workspaceRepository.save(workspace)
+  }
+
   private fun getWorkspaceFileResources(
       organizationId: String,
       workspaceId: String
@@ -393,7 +467,7 @@ internal class WorkspaceServiceImpl(
   ): WorkspaceSecurity {
     // This call verify by itself that we have the read authorization in the organization
     organizationService.findOrganizationById(organizationId)
-    val workspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
+    val workspace = findWorkspaceById(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE_SECURITY)
     val rbacSecurity = csmRbac.setDefault(workspace.getRbac(), workspaceRole.role)
     workspace.setRbac(rbacSecurity)
@@ -417,7 +491,7 @@ internal class WorkspaceServiceImpl(
       workspaceId: String,
       workspaceAccessControl: WorkspaceAccessControl
   ): WorkspaceAccessControl {
-    val workspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
+    val workspace = findWorkspaceById(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE_SECURITY)
     // This call verify by itself that we have the read authorization in the organization
     var organization = organizationService.findOrganizationById(organizationId)
@@ -447,7 +521,7 @@ internal class WorkspaceServiceImpl(
   ): WorkspaceAccessControl {
     // This call verify by itself that we have the read authorization in the organization
     organizationService.findOrganizationById(organizationId)
-    val workspace = findWorkspaceByIdNoSecurity(organizationId, workspaceId)
+    val workspace = findWorkspaceById(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE_SECURITY)
     csmRbac.checkUserExists(
         workspace.getRbac(), identityId, "User '$identityId' not found in workspace $workspaceId")

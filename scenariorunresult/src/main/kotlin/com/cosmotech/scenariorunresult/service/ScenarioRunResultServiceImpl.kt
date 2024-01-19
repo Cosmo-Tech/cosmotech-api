@@ -8,22 +8,16 @@ import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.getScenarioRolesDefinition
-import com.cosmotech.organization.api.OrganizationApiService
-import com.cosmotech.organization.service.getRbac
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.service.getRbac
 import com.cosmotech.scenariorunresult.api.ScenariorunresultApiService
 import com.cosmotech.scenariorunresult.domain.ScenarioRunResult
 import com.cosmotech.scenariorunresult.repository.ScenarioRunResultRepository
-import com.cosmotech.workspace.api.WorkspaceApiService
-import com.cosmotech.workspace.service.getRbac
 import org.springframework.stereotype.Service
 
 @Service
 class ScenarioRunResultServiceImpl(
     private val scenarioRunResultRepository: ScenarioRunResultRepository,
-    private val organizationService: OrganizationApiService,
-    private val workspaceService: WorkspaceApiService,
     private val scenarioService: ScenarioApiService,
     private val csmRbac: CsmRbac,
 ) : ScenariorunresultApiService {
@@ -37,10 +31,6 @@ class ScenarioRunResultServiceImpl(
       probeId: String,
       requestBody: Map<String, String>
   ): ScenarioRunResult {
-    val organization = organizationService.findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
-    val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.getRbac(), PERMISSION_READ)
     val scenario = scenarioService.findScenarioById(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE, scenarioPermissions)
 
@@ -64,10 +54,6 @@ class ScenarioRunResultServiceImpl(
       scenariorunId: String,
       probeId: String
   ): ScenarioRunResult {
-    val organization = organizationService.findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
-    val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.getRbac(), PERMISSION_READ)
     val scenario = scenarioService.findScenarioById(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_READ, scenarioPermissions)
 

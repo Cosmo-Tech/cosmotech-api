@@ -3,8 +3,12 @@
 package com.cosmotech.dataset.service
 
 import com.cosmotech.api.CsmPhoenixService
+import com.cosmotech.api.events.AddDatasetToWorkspace
+import com.cosmotech.api.events.AddWorkspaceToDataset
 import com.cosmotech.api.events.ConnectorRemoved
 import com.cosmotech.api.events.OrganizationUnregistered
+import com.cosmotech.api.events.RemoveDatasetFromWorkspace
+import com.cosmotech.api.events.RemoveWorkspaceFromDataset
 import com.cosmotech.api.events.TwingraphImportEvent
 import com.cosmotech.api.events.TwingraphImportJobInfoRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
@@ -122,19 +126,22 @@ class DatasetServiceImpl(
     // This call verify by itself that we have the read authorization in the organization
     organizationService.findOrganizationById(organizationId)
 
+    val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
     val defaultPageSize = csmPlatformProperties.twincache.dataset.defaultPageSize
     val pageable = constructPageRequest(page, size, defaultPageSize)
     if (pageable != null) {
-      return datasetRepository.findByOrganizationId(organizationId, pageable).toList()
+      return datasetRepository.findByOrganizationId(organizationId, currentUser, pageable).toList()
     }
     return findAllPaginated(defaultPageSize) {
-      datasetRepository.findByOrganizationId(organizationId, it).toList()
+      datasetRepository.findByOrganizationId(organizationId, currentUser, it).toList()
     }
   }
 
   override fun findDatasetById(organizationId: String, datasetId: String): Dataset {
+    // This call verify by itself that we have the read authorization in the organization
+    organizationService.findOrganizationById(organizationId)
     val dataset =
-        datasetRepository.findById(datasetId).orElseThrow {
+        datasetRepository.findBy(organizationId, datasetId).orElseThrow {
           CsmResourceNotFoundException(
               "Dataset $datasetId not found in organization $organizationId")
         }
@@ -223,31 +230,11 @@ class DatasetServiceImpl(
     val dataset =
         getDatasetWithStatus(organizationId, datasetId, status = Dataset.IngestionStatus.SUCCESS)
     csmRbac.verify(dataset.getRbac(), PERMISSION_CREATE_CHILDREN)
-    var twincacheStatus = Dataset.TwincacheStatus.EMPTY
     val subTwingraphId = idGenerator.generate("twingraph")
-    trx(dataset) {
-      csmJedisPool.resource.use { jedis ->
-        if (subDatasetGraphQuery.queries.isNullOrEmpty()) {
-          jedis.eval(
-              "local o = redis.call('DUMP', KEYS[1]);redis.call('RENAME', KEYS[1], KEYS[2]);" +
-                  "redis.call('RESTORE', KEYS[1], 0, o)",
-              2,
-              dataset.twingraphId,
-              subTwingraphId)
-        } else {
-          val queryBuffer = QueryBuffer(csmJedisPool.resource, subTwingraphId)
-          subDatasetGraphQuery.queries?.forEach { query ->
-            val resultSet = query(dataset, query)
-            query.takeIf { it.isReadOnlyQuery() }?.apply { bulkQueryResult(queryBuffer, resultSet) }
-          }
-          queryBuffer.send()
-        }
-        twincacheStatus = Dataset.TwincacheStatus.FULL
-      }
-    }
+    val subDatasetId = idGenerator.generate("dataset")
     val subDataset =
         dataset.copy(
-            id = idGenerator.generate("dataset"),
+            id = subDatasetId,
             name = subDatasetGraphQuery.name ?: ("Subdataset " + dataset.name),
             description = subDatasetGraphQuery.description ?: dataset.description,
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
@@ -257,13 +244,43 @@ class DatasetServiceImpl(
             main = subDatasetGraphQuery.main ?: dataset.main,
             creationDate = Instant.now().toEpochMilli(),
             parentId = dataset.id,
-            ingestionStatus = Dataset.IngestionStatus.SUCCESS,
-            twincacheStatus = twincacheStatus,
+            ingestionStatus = Dataset.IngestionStatus.PENDING,
+            twincacheStatus = Dataset.TwincacheStatus.EMPTY,
             connector =
                 dataset.connector?.apply { parametersValues?.set(TWINCACHE_NAME, subTwingraphId) },
             sourceType = DatasetSourceType.Twincache,
             tags = dataset.tags)
-    return datasetRepository.save(subDataset)
+
+    val datasetSaved = datasetRepository.save(subDataset)
+
+    GlobalScope.launch(SecurityCoroutineContext()) {
+      trx(dataset) {
+        if (subDatasetGraphQuery.queries.isNullOrEmpty()) {
+          csmJedisPool.resource.use { jedis ->
+            jedis.eval(
+                "local o = redis.call('DUMP', KEYS[1]);redis.call('RENAME', KEYS[1], KEYS[2]);" +
+                    "redis.call('RESTORE', KEYS[1], 0, o)",
+                2,
+                dataset.twingraphId,
+                subTwingraphId)
+          }
+        } else {
+          val queryBuffer = QueryBuffer(csmJedisPool.resource, subTwingraphId)
+          subDatasetGraphQuery.queries?.forEach { query ->
+            val resultSet = query(dataset, query)
+            query.takeIf { it.isReadOnlyQuery() }?.apply { bulkQueryResult(queryBuffer, resultSet) }
+          }
+          queryBuffer.send()
+        }
+
+        datasetRepository.save(
+            datasetSaved.apply {
+              ingestionStatus = Dataset.IngestionStatus.SUCCESS
+              twincacheStatus = Dataset.TwincacheStatus.FULL
+            })
+      }
+    }
+    return datasetSaved
   }
 
   fun bulkQueryResult(queryBuffer: QueryBuffer, resultSet: ResultSet) {
@@ -300,10 +317,7 @@ class DatasetServiceImpl(
     dataset.sourceType.takeIf { it == DatasetSourceType.File }
         ?: throw CsmResourceNotFoundException("SourceType Dataset must be 'File'")
 
-    dataset.ingestionStatus?.takeUnless { it == Dataset.IngestionStatus.PENDING }
-        ?: throw CsmClientException("Dataset in use, cannot update. Retry later")
-
-    // TODx: Validated with ressourceScanner PROD-12822
+    // TODO: Validated with ressourceScanner PROD-12822
     val archiverType = ArchiveStreamFactory.detect(body.inputStream.buffered())
     archiverType.takeIf { it == ArchiveStreamFactory.ZIP }
         ?: throw IllegalArgumentException(
@@ -345,9 +359,7 @@ class DatasetServiceImpl(
           val queryBuffer = QueryBuffer(csmJedisPool.resource, dataset.twingraphId!!)
           nodes.forEach { file ->
             readCSV(file.content.inputStream()) {
-              val id: String =
-                  it["id"] ?: throw CsmResourceNotFoundException("Node property 'id' not found")
-              queryBuffer.addNode(file.filename, id, it.minus("id"))
+              queryBuffer.addNode(file.filename, it.values.first(), it)
             }
           }
           edges.forEach { file ->
@@ -367,6 +379,7 @@ class DatasetServiceImpl(
             }
           }
         }
+        datasetRepository.save(dataset.apply { twincacheStatus = Dataset.TwincacheStatus.FULL })
       } catch (e: Exception) {
         if (safeReplace) {
           csmJedisPool.resource.use { jedis ->
@@ -377,7 +390,6 @@ class DatasetServiceImpl(
                 "backupGraph-$datasetId")
           }
         }
-        datasetRepository.save(dataset.apply { ingestionStatus = Dataset.IngestionStatus.ERROR })
         throw CsmClientException(e.message ?: "Twingraph upload error", e)
       }
     }
@@ -416,12 +428,10 @@ class DatasetServiceImpl(
             dataset
                 .takeIf { it.ingestionStatus == Dataset.IngestionStatus.PENDING }
                 ?.apply {
-                  datasetRepository.save(
-                      this.apply {
-                        ingestionStatus = Dataset.IngestionStatus.SUCCESS
-                        twincacheStatus = Dataset.TwincacheStatus.FULL
-                      })
+                  ingestionStatus = Dataset.IngestionStatus.SUCCESS
+                  twincacheStatus = Dataset.TwincacheStatus.FULL
                 }
+            datasetRepository.save(dataset)
             Dataset.IngestionStatus.SUCCESS.value
           }
         }
@@ -431,8 +441,8 @@ class DatasetServiceImpl(
       DatasetSourceType.AzureStorage -> {
         if (dataset.ingestionStatus == Dataset.IngestionStatus.PENDING) {
           dataset.source!!.takeIf { !it.jobId.isNullOrEmpty() }
-              ?: throw IllegalStateException(
-                  "Dataset doesn't have a job id to get status from. Refresh dataset first.")
+              ?: return dataset.ingestionStatus!!.value
+
           val twingraphImportJobInfoRequest =
               TwingraphImportJobInfoRequest(this, dataset.source!!.jobId!!, organizationId)
 
@@ -442,10 +452,7 @@ class DatasetServiceImpl(
             when (twingraphImportJobInfoRequest.response) {
               "Succeeded" -> {
                 ingestionStatus = Dataset.IngestionStatus.SUCCESS
-                apply {
-                  datasetRepository.save(
-                      dataset.apply { twincacheStatus = Dataset.TwincacheStatus.FULL })
-                }
+                twincacheStatus = Dataset.TwincacheStatus.FULL
               }
               "Error",
               "Failed" -> ingestionStatus = Dataset.IngestionStatus.ERROR
@@ -506,8 +513,6 @@ class DatasetServiceImpl(
   }
 
   override fun rollbackRefresh(organizationId: String, datasetId: String): String {
-    // This call verify by itself that we have the read authorization in the organization
-    organizationService.findOrganizationById(organizationId)
     var dataset = findDatasetById(organizationId, datasetId)
     csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE)
 
@@ -543,6 +548,9 @@ class DatasetServiceImpl(
       if (jedis.exists(dataset.twingraphId!!)) {
         jedis.del(dataset.twingraphId!!)
       }
+    }
+    dataset.linkedWorkspaceIdList?.forEach {
+      removeWorkspaceFromLinkedWorkspaceIdList(organizationId, datasetId, it)
     }
   }
 
@@ -645,7 +653,6 @@ class DatasetServiceImpl(
       twinGraphQuery: DatasetTwinGraphQuery,
       body: Resource
   ): TwinGraphBatchResult {
-
     val dataset = getDatasetWithStatus(organizationId, datasetId)
     csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE)
     resourceScanner.scanMimeTypes(body, listOf("text/csv", "text/plain"))
@@ -720,9 +727,6 @@ class DatasetServiceImpl(
       datasetId: String,
       status: Dataset.IngestionStatus? = null
   ): Dataset {
-    // This call verify by itself that we have the read authorization in the organization
-    organizationService.findOrganizationById(organizationId)
-
     val dataset = findDatasetById(organizationId, datasetId)
     dataset.takeUnless { it.twingraphId.isNullOrBlank() }
         ?: throw CsmResourceNotFoundException("TwingraphId is not defined for the dataset")
@@ -797,6 +801,75 @@ class DatasetServiceImpl(
       else -> throw CsmResourceNotFoundException("Bad Type : $type")
     }
     return result
+  }
+
+  override fun linkWorkspace(
+      organizationId: String,
+      datasetId: String,
+      workspaceId: String
+  ): Dataset {
+    val addDatasetToWorkspace = AddDatasetToWorkspace(this, organizationId, workspaceId, datasetId)
+    this.eventPublisher.publishEvent(addDatasetToWorkspace)
+    addDatasetToWorkspace.response
+
+    return addWorkspaceToLinkedWorkspaceIdList(organizationId, datasetId, workspaceId)
+  }
+
+  @EventListener(AddWorkspaceToDataset::class)
+  fun processEventAddWorkspace(addWorkspaceToDataset: AddWorkspaceToDataset) {
+    val dataset =
+        addWorkspaceToLinkedWorkspaceIdList(
+            addWorkspaceToDataset.organizationId,
+            addWorkspaceToDataset.datasetId,
+            addWorkspaceToDataset.workspaceId)
+
+    addWorkspaceToDataset.response = dataset.linkedWorkspaceIdList
+  }
+  fun addWorkspaceToLinkedWorkspaceIdList(
+      organizationId: String,
+      datasetId: String,
+      workspaceId: String
+  ): Dataset {
+    val dataset = findDatasetById(organizationId, datasetId)
+    dataset.linkedWorkspaceIdList?.add(workspaceId)
+        ?: run { dataset.linkedWorkspaceIdList = mutableListOf(workspaceId) }
+
+    return datasetRepository.save(dataset)
+  }
+
+  override fun unlinkWorkspace(
+      organizationId: String,
+      datasetId: String,
+      workspaceId: String
+  ): Dataset {
+    val removeDatasetFromWorkspace =
+        RemoveDatasetFromWorkspace(this, organizationId, workspaceId, datasetId)
+    this.eventPublisher.publishEvent(removeDatasetFromWorkspace)
+    removeDatasetFromWorkspace.response
+
+    return datasetRepository.save(
+        removeWorkspaceFromLinkedWorkspaceIdList(organizationId, datasetId, workspaceId))
+  }
+
+  @EventListener(RemoveWorkspaceFromDataset::class)
+  fun processEventRemoveWorkspace(removeWorkspacefromDataset: RemoveWorkspaceFromDataset) {
+    var dataset =
+        removeWorkspaceFromLinkedWorkspaceIdList(
+            removeWorkspacefromDataset.organizationId,
+            removeWorkspacefromDataset.datasetId,
+            removeWorkspacefromDataset.workspaceId)
+
+    removeWorkspacefromDataset.response = dataset.linkedWorkspaceIdList
+  }
+  fun removeWorkspaceFromLinkedWorkspaceIdList(
+      organizationId: String,
+      datasetId: String,
+      workspaceId: String
+  ): Dataset {
+    val dataset = findDatasetById(organizationId, datasetId)
+    dataset.linkedWorkspaceIdList?.remove(workspaceId)
+
+    return datasetRepository.save(dataset)
   }
 
   override fun updateTwingraphEntities(
@@ -897,16 +970,17 @@ class DatasetServiceImpl(
     var pageable = constructPageRequest(page, size, defaultPageSize)
     if (pageable != null) {
       return datasetRepository
-          .findDatasetByTags(datasetSearch.datasetTags.toSet(), pageable)
+          .findDatasetByTags(organizationId, datasetSearch.datasetTags.toSet(), pageable)
           .toList()
     }
     return findAllPaginated(defaultPageSize) {
-      datasetRepository.findDatasetByTags(datasetSearch.datasetTags.toSet(), it).toList()
+      datasetRepository
+          .findDatasetByTags(organizationId, datasetSearch.datasetTags.toSet(), it)
+          .toList()
     }
   }
 
   override fun getDatasetSecurity(organizationId: String, datasetId: String): DatasetSecurity {
-
     val dataset = findDatasetById(organizationId, datasetId)
     csmRbac.verify(dataset.getRbac(), PERMISSION_READ_SECURITY)
     return dataset.security
@@ -918,8 +992,6 @@ class DatasetServiceImpl(
       datasetId: String,
       datasetRole: DatasetRole
   ): DatasetSecurity {
-    // This call verify by itself that we have the read authorization in the organization
-    organizationService.findOrganizationById(organizationId)
     val dataset = findDatasetById(organizationId, datasetId)
     csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE_SECURITY)
     val rbacSecurity = csmRbac.setDefault(dataset.getRbac(), datasetRole.role)
@@ -1003,11 +1075,12 @@ class DatasetServiceImpl(
   @EventListener(OrganizationUnregistered::class)
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
+    val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
     var pageable = PageRequest.ofSize(csmPlatformProperties.twincache.dataset.defaultPageSize)
     do {
       val datasetList =
           datasetRepository
-              .findByOrganizationId(organizationUnregistered.organizationId, pageable)
+              .findByOrganizationIdNoSecurity(organizationUnregistered.organizationId, pageable)
               .toList()
       datasetRepository.deleteAll(datasetList)
       pageable = pageable.next()

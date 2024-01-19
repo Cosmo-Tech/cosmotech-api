@@ -48,8 +48,8 @@ group = "com.cosmotech"
 version = scmVersion.version
 
 val kotlinJvmTarget = 17
-val cosmotechApiCommonVersion = "0.2.1-SNAPSHOT"
-val cosmotechApiAzureVersion = "0.2.1-SNAPSHOT"
+val cosmotechApiCommonVersion = "0.2.1"
+val cosmotechApiAzureVersion = "0.2.1"
 val azureSpringBootBomVersion = "3.14.0"
 val jedisVersion = "3.9.0"
 val springOauthVersion = "5.8.3"
@@ -281,6 +281,7 @@ subprojects {
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("io.mockk:mockk:1.13.2")
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 
     integrationTestImplementation("org.springframework.boot:spring-boot-starter-test") {
       // Drop legacy Junit < 5
@@ -288,6 +289,7 @@ subprojects {
       exclude(module = "mockito-core")
     }
     integrationTestImplementation("com.ninja-squad:springmockk:3.1.1")
+    integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 

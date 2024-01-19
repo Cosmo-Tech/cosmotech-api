@@ -101,7 +101,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
   }
 
   @TestFactory
-  fun `test RBAC findSolutionById`() =
+  fun `test Organization RBAC findSolutionById`() =
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
@@ -110,13 +110,49 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC findSolutionById : $role") {
+            DynamicTest.dynamicTest("Test Organization RBAC findSolutionById : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization =
-                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = role)
               organizationSaved = organizationApiService.registerOrganization(organization)
-              val solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
+              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.findSolutionById(
+                          organizationSaved.id!!, solutionSaved.id!!)
+                    }
+                assertEquals(
+                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  solutionApiService.findSolutionById(organizationSaved.id!!, solutionSaved.id!!)
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test Solution RBAC findSolutionById`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test Solution RBAC findSolutionById : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -152,10 +188,11 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
               organizationSaved =
                   organizationApiService.registerOrganization(
-                      makeOrganizationWithRole(id = "id", userName = TEST_USER_MAIL, role = role))
+                      makeOrganizationWithRole(
+                          organizationId = "id", id = TEST_USER_MAIL, role = role))
               solutionApiService.createSolution(
                   organizationSaved.id!!,
-                  makeSolutionWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN))
+                  makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
@@ -187,9 +224,9 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
             DynamicTest.dynamicTest("Test RBAC createSolution : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              organization = makeOrganizationWithRole(userName = TEST_USER_MAIL, role = role)
+              organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = role)
               organizationSaved = organizationApiService.registerOrganization(organization)
-              solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -216,7 +253,43 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test RBAC deleteSolution`() =
+  fun `test Organization RBAC deleteSolution`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test Organization RBAC deleteSolution : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = role)
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.deleteSolution(organizationSaved.id!!, solutionSaved.id!!)
+                    }
+                assertEquals(
+                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  solutionApiService.deleteSolution(organizationSaved.id!!, solutionSaved.id!!)
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test Solution RBAC deleteSolution`() =
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to true,
@@ -225,13 +298,12 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC deleteSolution : $role") {
+            DynamicTest.dynamicTest("Test Solution RBAC deleteSolution : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization =
-                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
-              val solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
+              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -259,7 +331,47 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test RBAC updateSolution`() =
+  fun `test Organization RBAC updateSolution`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test Organization RBAC updateSolution : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = role)
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+              solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.updateSolution(
+                          organizationSaved.id!!, solutionSaved.id!!, solution)
+                    }
+                assertEquals(
+                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  solutionApiService.updateSolution(
+                      organizationSaved.id!!, solutionSaved.id!!, solution)
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test Solution RBAC updateSolution`() =
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to false,
@@ -268,15 +380,15 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC updateSolution : $role") {
+            DynamicTest.dynamicTest("Test Solution RBAC updateSolution : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              organization = makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
-              solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
+              solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
-              solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
+              solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -305,7 +417,49 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test RBAC addSolutionAccessControl`() =
+  fun `test Organization RBAC addSolutionAccessControl`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test Organization RBAC addSolutionAccessControl : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = role)
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.addSolutionAccessControl(
+                          organizationSaved.id!!,
+                          solutionSaved.id!!,
+                          SolutionAccessControl("user", ROLE_USER))
+                    }
+                assertEquals(
+                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  solutionApiService.addSolutionAccessControl(
+                      organizationSaved.id!!,
+                      solutionSaved.id!!,
+                      SolutionAccessControl("user", ROLE_USER))
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test Solution RBAC addSolutionAccessControl`() =
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to true,
@@ -314,12 +468,12 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC addSolutionAccessControl : $role") {
+            DynamicTest.dynamicTest("Test Solution RBAC addSolutionAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              organization = makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
-              solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
+              solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -353,7 +507,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test RBAC getSolutionAccessControl`() =
+  fun `test Organization RBAC getSolutionAccessControl`() =
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
@@ -362,12 +516,50 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC getSolutionAccessControl : $role") {
+            DynamicTest.dynamicTest("Test Organization RBAC getSolutionAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              organization = makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = role)
               organizationSaved = organizationApiService.registerOrganization(organization)
-              solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
+              solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.getSolutionAccessControl(
+                          organizationSaved.id!!, solutionSaved.id!!, TEST_USER_MAIL)
+                    }
+                assertEquals(
+                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  solutionApiService.getSolutionAccessControl(
+                      organizationSaved.id!!, solutionSaved.id!!, TEST_USER_MAIL)
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test Solution RBAC getSolutionAccessControl`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test Solution RBAC getSolutionAccessControl : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -397,7 +589,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test RBAC getSolutionSecurityUsers`() =
+  fun `test Organization RBAC getSolutionSecurityUsers`() =
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
@@ -406,12 +598,50 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC getSolutionSecurityUsers : $role") {
+            DynamicTest.dynamicTest("Test Organization RBAC getSolutionSecurityUsers : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              organization = makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = role)
               organizationSaved = organizationApiService.registerOrganization(organization)
-              solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
+              solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.getSolutionSecurityUsers(
+                          organizationSaved.id!!, solutionSaved.id!!)
+                    }
+                assertEquals(
+                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  solutionApiService.getSolutionSecurityUsers(
+                      organizationSaved.id!!, solutionSaved.id!!)
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test Solution RBAC getSolutionSecurityUsers`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test Solution RBAC getSolutionSecurityUsers : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -441,7 +671,45 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test RBAC removeSolutionAccessControl`() =
+  fun `test Organization RBAC removeSolutionAccessControl`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test Organization RBAC removeSolutionAccessControl : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = role)
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.removeSolutionAccessControl(
+                          organizationSaved.id!!, solutionSaved.id!!, TEST_USER_MAIL)
+                    }
+                assertEquals(
+                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  solutionApiService.removeSolutionAccessControl(
+                      organizationSaved.id!!, solutionSaved.id!!, TEST_USER_MAIL)
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test Solution RBAC removeSolutionAccessControl`() =
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to true,
@@ -450,12 +718,12 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC removeSolutionAccessControl : $role") {
+            DynamicTest.dynamicTest("Test Solution RBAC removeSolutionAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              organization = makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
-              solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
+              solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -485,7 +753,51 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test RBAC updateSolutionAccessControl`() =
+  fun `test Organization RBAC updateSolutionAccessControl`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test Organization RBAC updateSolutionAccessControl : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = role)
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.updateSolutionAccessControl(
+                          organizationSaved.id!!,
+                          solutionSaved.id!!,
+                          TEST_USER_MAIL,
+                          SolutionRole(ROLE_USER))
+                    }
+                assertEquals(
+                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  solutionApiService.updateSolutionAccessControl(
+                      organizationSaved.id!!,
+                      solutionSaved.id!!,
+                      TEST_USER_MAIL,
+                      SolutionRole(ROLE_USER))
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test Solution RBAC updateSolutionAccessControl`() =
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to true,
@@ -494,15 +806,13 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC updateSolutionAccessControl : $role") {
+            DynamicTest.dynamicTest("Test Solution RBAC updateSolutionAccessControl : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              organization = makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
-              solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
+              solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
-
-              solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -537,7 +847,47 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test RBAC addOrReplaceParameters`() =
+  fun `test Organization RBAC addOrReplaceParameters`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test Organization RBAC addOrReplaceParameters : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = role)
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+              val runTemplateParameter = RunTemplateParameter("id")
+
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.addOrReplaceParameters(
+                          organizationSaved.id!!, solutionSaved.id!!, listOf(runTemplateParameter))
+                    }
+                assertEquals(
+                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  solutionApiService.addOrReplaceParameters(
+                      organizationSaved.id!!, solutionSaved.id!!, listOf(runTemplateParameter))
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test Solution RBAC addOrReplaceParameters`() =
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to false,
@@ -546,13 +896,12 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC addOrReplaceParameters : $role") {
+            DynamicTest.dynamicTest("Test Solution RBAC addOrReplaceParameters : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization =
-                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
-              val solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
+              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
               val runTemplateParameter = RunTemplateParameter("id")
@@ -584,7 +933,45 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test RBAC removeAllSolutionParameters`() =
+  fun `test Organization RBAC removeAllSolutionParameters`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test Organization RBAC removeAllSolutionParameters : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = role)
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.removeAllSolutionParameters(
+                          organizationSaved.id!!, solutionSaved.id!!)
+                    }
+                assertEquals(
+                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  solutionApiService.removeAllSolutionParameters(
+                      organizationSaved.id!!, solutionSaved.id!!)
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test Solution RBAC removeAllSolutionParameters`() =
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to true,
@@ -593,13 +980,12 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC removeAllSolutionParameters : $role") {
+            DynamicTest.dynamicTest("Test Solution RBAC removeAllSolutionParameters : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization =
-                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
-              val solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
+              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -629,7 +1015,49 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test RBAC addOrReplaceParameterGroups`() =
+  fun `test Organization RBAC addOrReplaceParameterGroups`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test Organization RBAC addOrReplaceParameterGroups : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = role)
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+              val runTemplateParameterGroup = RunTemplateParameterGroup("id")
+
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.addOrReplaceParameterGroups(
+                          organizationSaved.id!!,
+                          solutionSaved.id!!,
+                          listOf(runTemplateParameterGroup))
+                    }
+                assertEquals(
+                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  solutionApiService.addOrReplaceParameterGroups(
+                      organizationSaved.id!!, solutionSaved.id!!, listOf(runTemplateParameterGroup))
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test Solution RBAC addOrReplaceParameterGroups`() =
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to false,
@@ -638,13 +1066,12 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC addOrReplaceParameterGroups : $role") {
+            DynamicTest.dynamicTest("Test Solution RBAC addOrReplaceParameterGroups : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization =
-                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
-              val solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
+              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
               val runTemplateParameterGroup = RunTemplateParameterGroup("id")
@@ -678,7 +1105,47 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test RBAC removeAllSolutionParameterGroups`() =
+  fun `test Organization RBAC removeAllSolutionParameterGroups`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest(
+                "Test Organization RBAC removeAllSolutionParameterGroups : $role") {
+                  every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+                  val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = role)
+                  organizationSaved = organizationApiService.registerOrganization(organization)
+                  val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+                  solutionSaved =
+                      solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+                  every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+                  if (shouldThrow) {
+                    val exception =
+                        assertThrows<CsmAccessForbiddenException> {
+                          solutionApiService.removeAllSolutionParameterGroups(
+                              organizationSaved.id!!, solutionSaved.id!!)
+                        }
+                    assertEquals(
+                        "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                        exception.message)
+                  } else {
+                    assertDoesNotThrow {
+                      solutionApiService.removeAllSolutionParameterGroups(
+                          organizationSaved.id!!, solutionSaved.id!!)
+                    }
+                  }
+                }
+          }
+
+  @TestFactory
+  fun `test Solution RBAC removeAllSolutionParameterGroups`() =
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to true,
@@ -687,13 +1154,12 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC removeAllSolutionParameterGroups : $role") {
+            DynamicTest.dynamicTest("Test Solution RBAC removeAllSolutionParameterGroups : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization =
-                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
-              val solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
+              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -723,7 +1189,47 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test RBAC addOrReplaceRunTemplates`() =
+  fun `test Organization RBAC addOrReplaceRunTemplates`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test Organization RBAC addOrReplaceRunTemplates : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = role)
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+              val runTemplate = RunTemplate("id")
+
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.addOrReplaceRunTemplates(
+                          organizationSaved.id!!, solutionSaved.id!!, listOf(runTemplate))
+                    }
+                assertEquals(
+                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  solutionApiService.addOrReplaceRunTemplates(
+                      organizationSaved.id!!, solutionSaved.id!!, listOf(runTemplate))
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test Solution RBAC addOrReplaceRunTemplates`() =
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to false,
@@ -732,13 +1238,12 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC addOrReplaceRunTemplates : $role") {
+            DynamicTest.dynamicTest("Test Solution RBAC addOrReplaceRunTemplates : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization =
-                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
-              val solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
+              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
               val runTemplate = RunTemplate("id")
@@ -770,7 +1275,45 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test RBAC removeAllRunTemplates`() =
+  fun `test Organization RBAC removeAllRunTemplates`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test Organization RBAC addOrReplaceRunTemplates : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = role)
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.removeAllRunTemplates(
+                          organizationSaved.id!!, solutionSaved.id!!)
+                    }
+                assertEquals(
+                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  solutionApiService.removeAllRunTemplates(
+                      organizationSaved.id!!, solutionSaved.id!!)
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test Solution RBAC removeAllRunTemplates`() =
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to true,
@@ -779,13 +1322,12 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC addOrReplaceRunTemplates : $role") {
+            DynamicTest.dynamicTest("Test Solution RBAC addOrReplaceRunTemplates : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization =
-                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
-              val solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
+              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -815,7 +1357,45 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test RBAC deleteSolutionRunTemplate`() =
+  fun `test Organization RBAC deleteSolutionRunTemplate`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test Organization RBAC deleteSolutionRunTemplate : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = role)
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.deleteSolutionRunTemplate(
+                          organizationSaved.id!!, solutionSaved.id!!, "runTemplate")
+                    }
+                assertEquals(
+                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  solutionApiService.deleteSolutionRunTemplate(
+                      organizationSaved.id!!, solutionSaved.id!!, "runTemplate")
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test Solution RBAC deleteSolutionRunTemplate`() =
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to true,
@@ -824,13 +1404,12 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC deleteSolutionRunTemplate : $role") {
+            DynamicTest.dynamicTest("Test Solution RBAC deleteSolutionRunTemplate : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization =
-                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
-              val solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
+              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
@@ -860,7 +1439,47 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test RBAC updateSolutionRunTemplate`() =
+  fun `test Organization RBAC updateSolutionRunTemplate`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test Organization RBAC updateSolutionRunTemplate : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = role)
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+              val runTemplate = RunTemplate("runTemplate", "name")
+
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.updateSolutionRunTemplate(
+                          organizationSaved.id!!, solutionSaved.id!!, "runTemplate", runTemplate)
+                    }
+                assertEquals(
+                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  solutionApiService.updateSolutionRunTemplate(
+                      organizationSaved.id!!, solutionSaved.id!!, "runTemplate", runTemplate)
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test Solution RBAC updateSolutionRunTemplate`() =
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to false,
@@ -869,13 +1488,12 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC updateSolutionRunTemplate : $role") {
+            DynamicTest.dynamicTest("Test Solution RBAC updateSolutionRunTemplate : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization =
-                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
-              val solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
+              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
               val runTemplate = RunTemplate("runTemplate", "name")
@@ -907,7 +1525,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test RBAC downloadRunTemplateHandler`() =
+  fun `test Organization RBAC downloadRunTemplateHandler`() =
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
@@ -916,7 +1534,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC downloadRunTemplateHandler : $role") {
+            DynamicTest.dynamicTest("Test Organization RBAC downloadRunTemplateHandler : $role") {
               ReflectionTestUtils.setField(
                   solutionApiService,
                   "azureStorageBlobServiceClient",
@@ -925,10 +1543,63 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
 
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization =
-                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = role)
               organizationSaved = organizationApiService.registerOrganization(organization)
-              val solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
+              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+              val runTemplateHandlerId = RunTemplateHandlerId.values().first()
+
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.downloadRunTemplateHandler(
+                          organizationSaved.id!!,
+                          solutionSaved.id!!,
+                          "runTemplate",
+                          runTemplateHandlerId)
+                    }
+                assertEquals(
+                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                every { resourceLoader.getResource(any()).inputStream } returns
+                    (this::class.java.getResource("/test_download.zip")?.openStream()!!)
+
+                assertDoesNotThrow {
+                  solutionApiService.downloadRunTemplateHandler(
+                      organizationSaved.id!!,
+                      solutionSaved.id!!,
+                      "runTemplate",
+                      runTemplateHandlerId)
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test Solution RBAC downloadRunTemplateHandler`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test Solution RBAC downloadRunTemplateHandler : $role") {
+              ReflectionTestUtils.setField(
+                  solutionApiService,
+                  "azureStorageBlobServiceClient",
+                  azureStorageBlobServiceClient)
+              ReflectionTestUtils.setField(solutionApiService, "resourceLoader", resourceLoader)
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
               val runTemplateHandlerId = RunTemplateHandlerId.values().first()
@@ -963,7 +1634,76 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test RBAC uploadRunTemplateHandler`() =
+  fun `test Organization RBAC uploadRunTemplateHandler`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test Organization RBAC uploadRunTemplateHandler : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = role)
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+              ReflectionTestUtils.setField(solutionApiService, "resourceScanner", resourceScanner)
+              every { resourceScanner.scanMimeTypes(any(), any()) } returns Unit
+              mockkStatic(ArchiveStreamFactory::class)
+              every { ArchiveStreamFactory.detect(any()) } returns "zip"
+              ReflectionTestUtils.setField(
+                  solutionApiService,
+                  "azureStorageBlobServiceClient",
+                  azureStorageBlobServiceClient)
+              every {
+                azureStorageBlobServiceClient
+                    .getBlobContainerClient(any())
+                    .getBlobClient(any())
+                    .upload(any(), any(), any())
+              } returns Unit
+
+              every { resource.contentLength() } returns 0
+              every { resource.getInputStream() } returns inputStream
+              every { inputStream.read() } returns 0
+
+              val runTemplateHandlerId = RunTemplateHandlerId.values().first()
+
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.uploadRunTemplateHandler(
+                          organizationSaved.id!!,
+                          solutionSaved.id!!,
+                          "runTemplate",
+                          runTemplateHandlerId,
+                          resource,
+                          true)
+                    }
+                assertEquals(
+                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  solutionApiService.uploadRunTemplateHandler(
+                      organizationSaved.id!!,
+                      solutionSaved.id!!,
+                      "runTemplate",
+                      runTemplateHandlerId,
+                      resource,
+                      true)
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test Solution RBAC uploadRunTemplateHandler`() =
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to false,
@@ -972,13 +1712,12 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC uploadRunTemplateHandler : $role") {
+            DynamicTest.dynamicTest("Test Solution RBAC uploadRunTemplateHandler : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization =
-                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
-              val solution = makeSolutionWithRole(userName = TEST_USER_MAIL, role = role)
+              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
               solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
               ReflectionTestUtils.setField(solutionApiService, "resourceScanner", resourceScanner)
@@ -1039,7 +1778,7 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test RBAC getSolutionSecurity`() =
+  fun `test Organization RBAC getSolutionSecurity`() =
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
@@ -1048,11 +1787,48 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC getSolutionSecurity : $role") {
+            DynamicTest.dynamicTest("Test Organization RBAC getSolutionSecurity : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization =
-                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = role)
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              val solution =
+                  makeSolutionWithRole(organizationSaved.id!!, TEST_USER_MAIL, role = ROLE_ADMIN)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.getSolutionSecurity(
+                          organizationSaved.id!!, solutionSaved.id!!)
+                    }
+                assertEquals(
+                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  solutionApiService.getSolutionSecurity(organizationSaved.id!!, solutionSaved.id!!)
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test Solution RBAC getSolutionSecurity`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test Solution RBAC getSolutionSecurity : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
               val solution =
                   makeSolutionWithRole(organizationSaved.id!!, TEST_USER_MAIL, role = role)
@@ -1084,7 +1860,46 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
           }
 
   @TestFactory
-  fun `test RBAC setSolutionDefaultSecurity`() =
+  fun `test Organization RBAC setSolutionDefaultSecurity`() =
+      mapOf(
+              ROLE_VIEWER to false,
+              ROLE_EDITOR to false,
+              ROLE_USER to false,
+              ROLE_NONE to true,
+              ROLE_ADMIN to false,
+          )
+          .map { (role, shouldThrow) ->
+            DynamicTest.dynamicTest("Test Organization RBAC setSolutionDefaultSecurity : $role") {
+              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
+
+              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = role)
+              organizationSaved = organizationApiService.registerOrganization(organization)
+              val solution =
+                  makeSolutionWithRole(organizationSaved.id!!, TEST_USER_MAIL, role = ROLE_ADMIN)
+              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
+
+              if (shouldThrow) {
+                val exception =
+                    assertThrows<CsmAccessForbiddenException> {
+                      solutionApiService.setSolutionDefaultSecurity(
+                          organizationSaved.id!!, solutionSaved.id!!, SolutionRole(ROLE_VIEWER))
+                    }
+                assertEquals(
+                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
+                    exception.message)
+              } else {
+                assertDoesNotThrow {
+                  solutionApiService.setSolutionDefaultSecurity(
+                      organizationSaved.id!!, solutionSaved.id!!, SolutionRole(ROLE_VIEWER))
+                }
+              }
+            }
+          }
+
+  @TestFactory
+  fun `test Solution RBAC setSolutionDefaultSecurity`() =
       mapOf(
               ROLE_VIEWER to true,
               ROLE_EDITOR to true,
@@ -1093,11 +1908,10 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC setSolutionDefaultSecurity : $role") {
+            DynamicTest.dynamicTest("Test Solution RBAC setSolutionDefaultSecurity : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
 
-              val organization =
-                  makeOrganizationWithRole(userName = TEST_USER_MAIL, role = ROLE_ADMIN)
+              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
               organizationSaved = organizationApiService.registerOrganization(organization)
               val solution =
                   makeSolutionWithRole(organizationSaved.id!!, TEST_USER_MAIL, role = role)
@@ -1130,12 +1944,12 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
           }
 
   fun makeOrganizationWithRole(
-      id: String = "organization_id",
-      userName: String,
+      organizationId: String = "organization_id",
+      id: String,
       role: String
   ): Organization {
     return Organization(
-        id = id,
+        id = organizationId,
         name = "Organization Name",
         ownerId = "my.account-tester@cosmotech.com",
         security =
@@ -1144,12 +1958,12 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 accessControlList =
                     mutableListOf(
                         OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
-                        OrganizationAccessControl(id = userName, role = role))))
+                        OrganizationAccessControl(id = id, role = role))))
   }
 
   fun makeSolutionWithRole(
       organizationId: String = organizationSaved.id!!,
-      userName: String,
+      id: String,
       role: String
   ): Solution {
     return Solution(
@@ -1165,6 +1979,6 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 accessControlList =
                     mutableListOf(
                         SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
-                        SolutionAccessControl(id = userName, role = role))))
+                        SolutionAccessControl(id = id, role = role))))
   }
 }

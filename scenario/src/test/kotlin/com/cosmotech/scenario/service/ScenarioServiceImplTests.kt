@@ -26,6 +26,7 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.getCurrentAuthentication
 import com.cosmotech.dataset.api.DatasetApiService
+import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
@@ -34,7 +35,6 @@ import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioAccessControl
 import com.cosmotech.scenario.domain.ScenarioJobState
 import com.cosmotech.scenario.domain.ScenarioLastRun
-import com.cosmotech.scenario.domain.ScenarioRole
 import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
 import com.cosmotech.scenario.domain.ScenarioSecurity
 import com.cosmotech.scenario.repository.ScenarioRepository
@@ -60,8 +60,7 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
 import io.mockk.verify
-import java.util.Optional
-import java.util.UUID
+import java.util.*
 import java.util.stream.Stream
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -81,7 +80,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsProvider
 import org.junit.jupiter.params.provider.ArgumentsSource
-import org.springframework.data.domain.PageImpl
 
 const val ORGANIZATION_ID = "O-AbCdEf123"
 const val WORKSPACE_ID = "W-AbCdEf123"
@@ -144,6 +142,129 @@ class ScenarioServiceImplTests {
   }
 
   @Test
+  fun `do not creates copy of dataset for new scenario when workspace datasetCopy is true`() {
+    justRun { csmRbac.verify(any(), PERMISSION_CREATE_CHILDREN) }
+
+    // mock solution return
+    every { solutionService.findSolutionById(any(), any()) } returns
+        Solution().apply {
+          this.runTemplates =
+              mutableListOf(mockk<RunTemplate>(relaxed = true) { every { id } returns "rt-id" })
+        }
+
+    // mock workspace
+    every { workspaceService.findWorkspaceById(any(), any()) } returns
+        Workspace(
+                key = "key",
+                name = "w",
+                solution = WorkspaceSolution().apply { this.solutionId = "sol-id" })
+            .apply { this.datasetCopy = true }
+
+    // mock scenario save
+    every { scenarioRepository.save(any()) } returns mockk<Scenario>()
+
+    // mock dataset
+    every { datasetService.findDatasetById(any(), any()) } returns
+        Dataset().apply {
+          this.twingraphId = "1"
+          this.ingestionStatus = Dataset.IngestionStatus.SUCCESS
+        }
+    every { datasetService.createSubDataset(any(), any(), any()) } returns mockk(relaxed = true)
+
+    val scenario =
+        Scenario().apply {
+          this.id = "s-id"
+          this.runTemplateId = "rt-id"
+          this.datasetList = mutableListOf("d-1", "d-2")
+        }
+    scenarioServiceImpl.createScenario("o-id", "w-id", scenario)
+
+    verify(exactly = 2) { datasetService.createSubDataset("o-id", any(), any()) }
+  }
+
+  @Test
+  fun `do not creates copy of dataset for new scenario when workspace datasetCopy is false`() {
+    justRun { csmRbac.verify(any(), PERMISSION_CREATE_CHILDREN) }
+
+    // mock solution return
+    every { solutionService.findSolutionById(any(), any()) } returns
+        Solution().apply {
+          this.runTemplates =
+              mutableListOf(mockk<RunTemplate>(relaxed = true) { every { id } returns "rt-id" })
+        }
+
+    // mock workspace
+    every { workspaceService.findWorkspaceById(any(), any()) } returns
+        Workspace(
+                key = "key",
+                name = "w",
+                solution = WorkspaceSolution().apply { this.solutionId = "sol-id" })
+            .apply { this.datasetCopy = false }
+
+    // mock scenario save
+    every { scenarioRepository.save(any()) } returns mockk<Scenario>()
+
+    // mock dataset
+    every { datasetService.findDatasetById(any(), any()) } returns
+        Dataset().apply {
+          this.twingraphId = "1"
+          this.ingestionStatus = Dataset.IngestionStatus.SUCCESS
+        }
+    every { datasetService.createSubDataset(any(), any(), any()) } returns mockk(relaxed = true)
+
+    val scenario =
+        Scenario().apply {
+          this.id = "s-id"
+          this.runTemplateId = "rt-id"
+          this.datasetList = mutableListOf("d-1", "d-2")
+        }
+    scenarioServiceImpl.createScenario("o-id", "w-id", scenario)
+
+    verify(exactly = 0) { datasetService.createSubDataset("o-id", any(), any()) }
+  }
+
+  @Test
+  fun `do not creates copy of dataset for new scenario when workspace datasetCopy is null`() {
+    justRun { csmRbac.verify(any(), PERMISSION_CREATE_CHILDREN) }
+
+    // mock solution return
+    every { solutionService.findSolutionById(any(), any()) } returns
+        Solution().apply {
+          this.runTemplates =
+              mutableListOf(mockk<RunTemplate>(relaxed = true) { every { id } returns "rt-id" })
+        }
+
+    // mock workspace
+    every { workspaceService.findWorkspaceById(any(), any()) } returns
+        Workspace(
+                key = "key",
+                name = "w",
+                solution = WorkspaceSolution().apply { this.solutionId = "sol-id" })
+            .apply { this.datasetCopy = null }
+
+    // mock scenario save
+    every { scenarioRepository.save(any()) } returns mockk<Scenario>()
+
+    // mock dataset
+    every { datasetService.findDatasetById(any(), any()) } returns
+        Dataset().apply {
+          this.twingraphId = "1"
+          this.ingestionStatus = Dataset.IngestionStatus.SUCCESS
+        }
+    every { datasetService.createSubDataset(any(), any(), any()) } returns mockk(relaxed = true)
+
+    val scenario =
+        Scenario().apply {
+          this.id = "s-id"
+          this.runTemplateId = "rt-id"
+          this.datasetList = mutableListOf("d-1", "d-2")
+        }
+    scenarioServiceImpl.createScenario("o-id", "w-id", scenario)
+
+    verify(exactly = 0) { datasetService.createSubDataset("o-id", any(), any()) }
+  }
+
+  @Test
   fun `PROD-7687 - should initialize Child Scenario Parameters values with parent ones`() {
     val workspace = mockk<Workspace>()
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
@@ -155,6 +276,7 @@ class ScenarioServiceImplTests {
     val workspaceSolution = mockk<WorkspaceSolution>()
     every { workspaceSolution.solutionId } returns SOLUTION_ID
     every { workspace.solution } returns workspaceSolution
+    every { workspace.datasetCopy } returns null
 
     val solution = mockk<Solution>()
     every { solution.id } returns SOLUTION_ID
@@ -197,7 +319,7 @@ class ScenarioServiceImplTests {
                 value = "parameter_group_11_parameter1_value"))
 
     every {
-      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, parentScenarioId)
+      scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, parentScenarioId)
     } returns parentScenario
 
     every { idGenerator.generate("scenario") } returns "S-myScenarioId"
@@ -264,6 +386,7 @@ class ScenarioServiceImplTests {
     val workspaceSolution = mockk<WorkspaceSolution>()
     every { workspaceSolution.solutionId } returns SOLUTION_ID
     every { workspace.solution } returns workspaceSolution
+    every { workspace.datasetCopy } returns null
 
     val solution = mockk<Solution>()
     every { solution.id } returns SOLUTION_ID
@@ -343,20 +466,23 @@ class ScenarioServiceImplTests {
   fun `PROD-7687 - Child Scenario Parameters values take precedence over the parent ones`() {
     val workspace = mockk<Workspace>()
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
+
     val workspaceSecurity = mockk<WorkspaceSecurity>()
     every { workspace.security } returns workspaceSecurity
     every { workspace.security?.default } returns String()
     every { workspace.security?.accessControlList } returns mutableListOf()
     justRun { csmRbac.verify(any(), PERMISSION_CREATE_CHILDREN) }
-    val workspaceSolution = mockk<WorkspaceSolution>()
 
+    val workspaceSolution = mockk<WorkspaceSolution>()
     every { workspaceSolution.solutionId } returns SOLUTION_ID
     every { workspace.solution } returns workspaceSolution
+    every { workspace.datasetCopy } returns null
 
     val solution = mockk<Solution>()
     every { solution.id } returns SOLUTION_ID
     every { solution.name } returns "test solution"
     every { solutionService.findSolutionById(ORGANIZATION_ID, SOLUTION_ID) } returns solution
+
     val runTemplate1 = mockk<RunTemplate>()
     every { runTemplate1.id } returns "runTemplate1_id"
     every { runTemplate1.name } returns "runTemplate1 name"
@@ -394,7 +520,7 @@ class ScenarioServiceImplTests {
                 value = "parameter_group_11_parameter1_value_from_parent"))
 
     every {
-      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, parentScenarioId)
+      scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, parentScenarioId)
     } returns parentScenario
 
     every { idGenerator.generate("scenario") } returns "S-myScenarioId"
@@ -518,7 +644,7 @@ class ScenarioServiceImplTests {
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     every { workspace.key } returns "my-workspace-key"
     every { workspace.id } returns "my-workspace-id"
-
+    every { workspace.datasetCopy } returns true
     val workspaceSecurity = mockk<WorkspaceSecurity>()
     every { workspace.security } returns workspaceSecurity
     every { workspace.security?.default } returns String()
@@ -586,6 +712,7 @@ class ScenarioServiceImplTests {
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     every { workspace.key } returns "my-workspace-key"
     every { workspace.id } returns "my-workspace-id"
+    every { workspace.datasetCopy } returns true
     val authentication =
         mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication>()
     every { eventBus.authentication } returns authentication
@@ -645,6 +772,7 @@ class ScenarioServiceImplTests {
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     every { workspace.key } returns "my-workspace-key"
     every { workspace.id } returns "my-workspace-id"
+    every { workspace.datasetCopy } returns true
     val authentication =
         mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication>()
     every { eventBus.authentication } returns authentication
@@ -1017,268 +1145,6 @@ class ScenarioServiceImplTests {
               } catch (e: CsmResourceNotFoundException) {
                 print("Ignoring exception")
               }
-            }
-          }
-
-  @TestFactory
-  fun `test RBAC get scenario tree`() =
-      mapOf(
-              ROLE_VIEWER to false,
-              ROLE_EDITOR to false,
-              ROLE_ADMIN to false,
-              ROLE_VALIDATOR to true,
-              ROLE_USER to false,
-              ROLE_NONE to true)
-          .map { (role, shouldThrow) ->
-            rbacTest("Test RBAC get scenario tree: $role", role, shouldThrow) {
-              every { workspaceService.findWorkspaceById(any(), any()) } returns it.workspace
-              every { csmPlatformProperties.twincache.scenario.defaultPageSize } returns 10
-              scenarioServiceImpl.getScenariosTree(it.organization.id!!, it.workspace.id!!)
-            }
-          }
-
-  @TestFactory
-  fun `test RBAC delete scenario`() =
-      mapOf(
-              ROLE_VIEWER to true,
-              ROLE_EDITOR to true,
-              ROLE_ADMIN to false,
-              ROLE_VALIDATOR to true,
-              ROLE_USER to true,
-              ROLE_NONE to true)
-          .map { (role, shouldThrow) ->
-            rbacTest("Test RBAC delete scenario : $role", role, shouldThrow) {
-              every { scenarioRepository.findBy(any(), any(), any()) } returns
-                  Optional.of(it.scenario)
-              every { scenarioRepository.delete(any()) } returns Unit
-              every { scenarioServiceImpl.findScenarioChildrenById(any(), any(), any()) } returns
-                  emptyList()
-              scenarioServiceImpl.deleteScenario(
-                  it.organization.id!!, it.workspace.id!!, it.scenario.id!!)
-            }
-          }
-
-  @TestFactory
-  fun `test RBAC delete all scenarios`() =
-      mapOf(
-              ROLE_VIEWER to true,
-              ROLE_EDITOR to false,
-              ROLE_ADMIN to false,
-              ROLE_VALIDATOR to true,
-              ROLE_USER to true,
-              ROLE_NONE to true)
-          .map { (role, shouldThrow) ->
-            rbacTest("Test RBAC delete all scenarios : $role", role, shouldThrow) {
-              every { workspaceService.findWorkspaceById(any(), any()) } returns it.workspace
-              every { csmPlatformProperties.twincache.scenario.defaultPageSize } returns 100
-              every { scenarioRepository.delete(any()) } returns Unit
-              every { scenarioRepository.findByWorkspaceIdAndSecurity(any(), any(), any()) } returns
-                  PageImpl(emptyList())
-              scenarioServiceImpl.deleteAllScenarios(it.organization.id!!, it.workspace.id!!)
-            }
-          }
-
-  @TestFactory
-  fun `test RBAC remove Scenario Parameter Values`() =
-      mapOf(
-              ROLE_VIEWER to true,
-              ROLE_EDITOR to false,
-              ROLE_ADMIN to false,
-              ROLE_VALIDATOR to false,
-              ROLE_USER to true,
-              ROLE_NONE to true)
-          .map { (role, shouldThrow) ->
-            rbacTest("Test RBAC remove Scenario Parameter Values: $role", role, shouldThrow) {
-              every { scenarioRepository.findBy(any(), any(), any()) } returns
-                  Optional.of(it.scenario)
-              every { scenarioRepository.save(any()) } returns it.scenario
-              scenarioServiceImpl.removeAllScenarioParameterValues(
-                  it.organization.id!!, it.workspace.id!!, it.scenario.id!!)
-            }
-          }
-
-  @TestFactory
-  fun `test RBAC get scenario access contol`() =
-      mapOf(
-              ROLE_VIEWER to false,
-              ROLE_EDITOR to false,
-              ROLE_ADMIN to false,
-              ROLE_VALIDATOR to false,
-              ROLE_USER to true,
-              ROLE_NONE to true)
-          .map { (role, shouldThrow) ->
-            rbacTest("Test RBAC get scenario access contol: $role", role, shouldThrow) {
-              every { scenarioRepository.findBy(any(), any(), any()) } returns
-                  Optional.of(it.scenario)
-              scenarioServiceImpl.getScenarioAccessControl(
-                  it.organization.id!!, it.workspace.id!!, it.scenario.id!!, CONNECTED_DEFAULT_USER)
-            }
-          }
-
-  @TestFactory
-  fun `test RBAC remove Scenario Access Control`() =
-      mapOf(
-              ROLE_VIEWER to true,
-              ROLE_EDITOR to true,
-              ROLE_ADMIN to false,
-              ROLE_VALIDATOR to true,
-              ROLE_USER to true,
-              ROLE_NONE to true)
-          .map { (role, shouldThrow) ->
-            rbacTest("Test RBAC remove Scenario Access Control: $role", role, shouldThrow) {
-              every { scenarioRepository.findBy(any(), any(), any()) } returns
-                  Optional.of(it.scenario)
-              every { scenarioRepository.save(any()) } returns it.scenario
-              every {
-                scenarioServiceImpl.removeLinkedDatasetsAccessControl(any(), any(), any())
-              } returns Unit
-              scenarioServiceImpl.removeScenarioAccessControl(
-                  it.organization.id!!, it.workspace.id!!, it.scenario.id!!, CONNECTED_DEFAULT_USER)
-            }
-          }
-
-  @TestFactory
-  fun `test RBAC update Scenario Access Control`() =
-      mapOf(
-              ROLE_VIEWER to true,
-              ROLE_EDITOR to true,
-              ROLE_ADMIN to false,
-              ROLE_VALIDATOR to true,
-              ROLE_USER to true,
-              ROLE_NONE to true)
-          .map { (role, shouldThrow) ->
-            rbacTest("Test RBAC update Scenario Access Control: $role", role, shouldThrow) {
-              every { scenarioRepository.findBy(any(), any(), any()) } returns
-                  Optional.of(it.scenario)
-              every { scenarioRepository.save(any()) } returns it.scenario
-              every { organizationService.findOrganizationById(any()) } returns it.organization
-              every { workspaceService.findWorkspaceById(any(), any()) } returns it.workspace
-              every {
-                scenarioServiceImpl.updateLinkedDatasetsAccessControl(any(), any(), any())
-              } returns Unit
-              scenarioServiceImpl.updateScenarioAccessControl(
-                  it.organization.id!!,
-                  it.workspace.id!!,
-                  it.scenario.id!!,
-                  CONNECTED_DEFAULT_USER,
-                  ScenarioRole(role))
-            }
-          }
-
-  @TestFactory
-  fun `test RBAC get scenario security`() =
-      mapOf(
-              ROLE_VIEWER to false,
-              ROLE_EDITOR to false,
-              ROLE_ADMIN to false,
-              ROLE_VALIDATOR to false,
-              ROLE_USER to true,
-              ROLE_NONE to true)
-          .map { (role, shouldThrow) ->
-            rbacTest("Test RBAC get scenario security: $role", role, shouldThrow) {
-              every { scenarioRepository.findBy(any(), any(), any()) } returns
-                  Optional.of(it.scenario)
-              scenarioServiceImpl.getScenarioSecurity(
-                  it.organization.id!!, it.workspace.id!!, it.scenario.id!!)
-            }
-          }
-
-  @TestFactory
-  fun `test RBAC scenario default security`() =
-      mapOf(
-              ROLE_VIEWER to true,
-              ROLE_EDITOR to true,
-              ROLE_ADMIN to false,
-              ROLE_VALIDATOR to true,
-              ROLE_USER to true,
-              ROLE_NONE to true)
-          .map { (role, shouldThrow) ->
-            rbacTest("Test RBAC scenario default security: $role", role, shouldThrow) {
-              every { scenarioRepository.findBy(any(), any(), any()) } returns
-                  Optional.of(it.scenario)
-              every { scenarioRepository.save(any()) } returns it.scenario
-              scenarioServiceImpl.setScenarioDefaultSecurity(
-                  it.organization.id!!, it.workspace.id!!, it.scenario.id!!, ScenarioRole(role))
-            }
-          }
-
-  @TestFactory
-  fun `test RBAC get scenario security users`() =
-      mapOf(
-              ROLE_VIEWER to false,
-              ROLE_EDITOR to false,
-              ROLE_ADMIN to false,
-              ROLE_VALIDATOR to false,
-              ROLE_USER to true,
-              ROLE_NONE to true)
-          .map { (role, shouldThrow) ->
-            rbacTest("Test RBAC get scenario security users: $role", role, shouldThrow) {
-              every { scenarioRepository.findBy(any(), any(), any()) } returns
-                  Optional.of(it.scenario)
-              scenarioServiceImpl.getScenarioSecurityUsers(
-                  it.organization.id!!, it.workspace.id!!, it.scenario.id!!)
-            }
-          }
-
-  @TestFactory
-  fun `test RBAC update scenario`() =
-      mapOf(
-              ROLE_VIEWER to true,
-              ROLE_EDITOR to false,
-              ROLE_ADMIN to false,
-              ROLE_VALIDATOR to false,
-              ROLE_USER to true,
-              ROLE_NONE to true)
-          .map { (role, shouldThrow) ->
-            rbacTest("Test RBAC update scenario: $role", role, shouldThrow) {
-              every { scenarioRepository.findBy(any(), any(), any()) } returns
-                  Optional.of(it.scenario)
-              every { scenarioRepository.save(any()) } returns it.scenario
-              every { organizationService.findOrganizationById(any()) } returns it.organization
-              every { workspaceService.findWorkspaceById(any(), any()) } returns it.workspace
-              scenarioServiceImpl.updateScenario(
-                  it.organization.id!!, it.workspace.id!!, it.scenario.id!!, it.scenario)
-            }
-          }
-
-  @TestFactory
-  fun `test RBAC update Scenario Parameter Values`() =
-      mapOf(
-              ROLE_VIEWER to true,
-              ROLE_EDITOR to false,
-              ROLE_ADMIN to false,
-              ROLE_VALIDATOR to false,
-              ROLE_USER to true,
-              ROLE_NONE to true)
-          .map { (role, shouldThrow) ->
-            rbacTest("Test RBAC update Scenario Parameter Values: $role", role, shouldThrow) {
-              every { scenarioRepository.findBy(any(), any(), any()) } returns
-                  Optional.of(it.scenario)
-              every { scenarioRepository.save(any()) } returns it.scenario
-              scenarioServiceImpl.addOrReplaceScenarioParameterValues(
-                  it.organization.id!!,
-                  it.workspace.id!!,
-                  it.scenario.id!!,
-                  listOf(ScenarioRunTemplateParameterValue("key", "value")))
-            }
-          }
-
-  @TestFactory
-  fun `test RBAC download scenario data`() =
-      mapOf(
-              ROLE_VIEWER to false,
-              ROLE_EDITOR to false,
-              ROLE_ADMIN to false,
-              ROLE_VALIDATOR to false,
-              ROLE_USER to true,
-              ROLE_NONE to true)
-          .map { (role, shouldThrow) ->
-            rbacTest("Test RBAC download scenario data: $role", role, shouldThrow) {
-              every { scenarioRepository.findBy(any(), any(), any()) } returns
-                  Optional.of(it.scenario)
-              every { scenarioRepository.save(any()) } returns it.scenario
-              scenarioServiceImpl.downloadScenarioData(
-                  it.organization.id!!, it.workspace.id!!, it.scenario.id!!)
             }
           }
 

@@ -67,7 +67,7 @@ import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.service.getRbac
 import java.time.Instant
 import java.time.ZonedDateTime
-import java.util.MissingResourceException
+import java.util.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -256,14 +256,8 @@ class ScenarioRunServiceImpl(
         }
   }
 
-  override fun findScenarioRunById(organizationId: String, scenariorunId: String): ScenarioRun {
-    val scenarioRun =
-        findScenarioRunById(organizationId, scenariorunId, withStateInformation = true)
-    // This call verify by itself that we have the read authorization in the scenario
-    scenarioApiService.findScenarioById(
-        organizationId, scenarioRun.workspaceId!!, scenarioRun.scenarioId!!)
-    return scenarioRun
-  }
+  override fun findScenarioRunById(organizationId: String, scenariorunId: String) =
+      findScenarioRunById(organizationId, scenariorunId, withStateInformation = true)
 
   private fun findScenarioRunByIdOptional(
       organizationId: String,
@@ -280,10 +274,16 @@ class ScenarioRunServiceImpl(
       organizationId: String,
       scenariorunId: String,
       withStateInformation: Boolean
-  ) =
-      this.findScenarioRunByIdOptional(organizationId, scenariorunId, withStateInformation)
-          ?: throw java.lang.IllegalArgumentException(
-              "ScenarioRun #$scenariorunId not found in organization #$organizationId")
+  ): ScenarioRun {
+    val scenarioRun =
+        this.findScenarioRunByIdOptional(organizationId, scenariorunId, withStateInformation)
+            ?: throw java.lang.IllegalArgumentException(
+                "ScenarioRun #$scenariorunId not found in organization #$organizationId")
+    // This call verify by itself that we have the read authorization in the scenario
+    scenarioApiService.findScenarioById(
+        organizationId, scenarioRun.workspaceId!!, scenarioRun.scenarioId!!)
+    return scenarioRun
+  }
 
   private fun ScenarioRun?.withStateInformation(organizationId: String): ScenarioRun? {
     if (this == null) {
@@ -303,17 +303,11 @@ class ScenarioRunServiceImpl(
 
   override fun getScenarioRunLogs(organizationId: String, scenariorunId: String): ScenarioRunLogs {
     val scenarioRun = findScenarioRunById(organizationId, scenariorunId)
-    // This call verify by itself that we have the read authorization in the scenario
-    scenarioApiService.findScenarioById(
-        organizationId, scenarioRun.workspaceId!!, scenarioRun.scenarioId!!)
     return workflowService.getScenarioRunLogs(scenarioRun)
   }
 
   override fun getScenarioRunCumulatedLogs(organizationId: String, scenariorunId: String): String {
     val scenarioRun = findScenarioRunById(organizationId, scenariorunId)
-    // This call verify by itself that we have the read authorization in the scenario
-    scenarioApiService.findScenarioById(
-        organizationId, scenarioRun.workspaceId!!, scenarioRun.scenarioId!!)
     val scenarioRunCumulatedLogs = workflowService.getScenarioRunCumulatedLogs(scenarioRun)
     logger.trace(scenarioRunCumulatedLogs)
     return scenarioRunCumulatedLogs
@@ -332,12 +326,15 @@ class ScenarioRunServiceImpl(
     scenarioApiService.findScenarioById(organizationId, workspaceId, scenarioId)
 
     if (pageable != null) {
-      return scenarioRunRepository.findByScenarioId(scenarioId, pageable).toList().map {
-        it.withStateInformation(organizationId).withoutSensitiveData()!!
-      }
+      return scenarioRunRepository
+          .findByScenarioId(organizationId, workspaceId, scenarioId, pageable)
+          .toList()
+          .map { it.withStateInformation(organizationId).withoutSensitiveData()!! }
     }
     return findAllPaginated(defaultPageSize) {
-          scenarioRunRepository.findByScenarioId(scenarioId, it).toList()
+          scenarioRunRepository
+              .findByScenarioId(organizationId, workspaceId, scenarioId, it)
+              .toList()
         }
         .map { it.withStateInformation(organizationId).withoutSensitiveData()!! }
   }
@@ -353,12 +350,13 @@ class ScenarioRunServiceImpl(
     val defaultPageSize = csmPlatformProperties.twincache.scenariorun.defaultPageSize
     var pageable = constructPageRequest(page, size, defaultPageSize)
     if (pageable != null) {
-      return scenarioRunRepository.findByWorkspaceId(workspaceId, pageable).toList().map {
-        it.withStateInformation(organizationId).withoutSensitiveData()!!
-      }
+      return scenarioRunRepository
+          .findByWorkspaceId(organizationId, workspaceId, pageable)
+          .toList()
+          .map { it.withStateInformation(organizationId).withoutSensitiveData()!! }
     }
     return findAllPaginated(defaultPageSize) {
-          scenarioRunRepository.findByWorkspaceId(workspaceId, it).toList()
+          scenarioRunRepository.findByWorkspaceId(organizationId, workspaceId, it).toList()
         }
         .map { it.withStateInformation(organizationId).withoutSensitiveData()!! }
   }
@@ -588,12 +586,14 @@ class ScenarioRunServiceImpl(
     var pageable = constructPageRequest(page, size, defaultPageSize)
     if (pageable != null) {
       return scenarioRunRepository
-          .findByPredicate(scenarioRunSearch.toRedisPredicate(), pageable)
+          .findByPredicate(organizationId, scenarioRunSearch.toRedisPredicate(), pageable)
           .toList()
           .map { it.withStateInformation(organizationId).withoutSensitiveData()!! }
     }
     return findAllPaginated(defaultPageSize) {
-          scenarioRunRepository.findByPredicate(scenarioRunSearch.toRedisPredicate(), it).toList()
+          scenarioRunRepository
+              .findByPredicate(organizationId, scenarioRunSearch.toRedisPredicate(), it)
+              .toList()
         }
         .map { it.withStateInformation(organizationId).withoutSensitiveData()!! }
   }
@@ -682,7 +682,6 @@ class ScenarioRunServiceImpl(
       organizationId: String,
       scenariorunId: String
   ): ScenarioRunStatus {
-
     val scenarioRun =
         this.findScenarioRunById(organizationId, scenariorunId, withStateInformation = false)
     // This call verify by itself that we have the read authorization in the scenario

@@ -32,6 +32,7 @@ import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_USER
 import com.cosmotech.api.rbac.ROLE_VALIDATOR
+import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.getScenarioRolesDefinition
 import com.cosmotech.api.scenario.ScenarioMetaData
@@ -152,7 +153,7 @@ internal class ScenarioServiceImpl(
 
     if (parentId != null) {
       logger.debug("Applying / Overwriting Dataset list from parent $parentId")
-      val parent = this.findScenarioByIdNoState(organizationId, workspaceId, parentId)
+      val parent = this.findScenarioById(organizationId, workspaceId, parentId)
       datasetList = parent.datasetList
       rootId = parent.rootId
       if (rootId == null) {
@@ -177,24 +178,26 @@ internal class ScenarioServiceImpl(
       }
     }
 
-    val datasetCopyList =
-        datasetList
-            ?.map {
-              val dataset = datasetService.findDatasetById(organizationId, it)
-              when {
-                dataset.twingraphId == null -> it
-                dataset.ingestionStatus == Dataset.IngestionStatus.SUCCESS ->
-                    datasetService
-                        .createSubDataset(
-                            organizationId,
-                            it,
-                            SubDatasetGraphQuery(
-                                name = "Scenario - ${scenario.name})", main = false))
-                        .id!!
-                else -> throw CsmClientException("Dataset ${dataset.id} is not ready")
+    if (workspace.datasetCopy == true) {
+      datasetList =
+          datasetList
+              ?.map {
+                val dataset = datasetService.findDatasetById(organizationId, it)
+                when {
+                  dataset.twingraphId == null -> it
+                  dataset.ingestionStatus == Dataset.IngestionStatus.SUCCESS ->
+                      datasetService
+                          .createSubDataset(
+                              organizationId,
+                              it,
+                              SubDatasetGraphQuery(
+                                  name = "Scenario - ${scenario.name})", main = false))
+                          .id!!
+                  else -> throw CsmClientException("Dataset ${dataset.id} is not ready")
+                }
               }
-            }
-            ?.toMutableList()
+              ?.toMutableList()
+    }
 
     val now = Instant.now().toEpochMilli()
     val scenarioToSave =
@@ -209,7 +212,7 @@ internal class ScenarioServiceImpl(
             creationDate = now,
             lastUpdate = now,
             state = ScenarioJobState.Created,
-            datasetList = datasetCopyList,
+            datasetList = datasetList,
             rootId = rootId,
             parametersValues = newParametersValuesList,
             validationStatus = ScenarioValidationStatus.Draft,
@@ -278,21 +281,23 @@ internal class ScenarioServiceImpl(
     if (scenario.state == ScenarioJobState.Running)
         throw CsmClientException("Can't delete a running scenario : ${scenario.id}")
     scenarioRepository.delete(scenario)
-
-    scenario.datasetList?.forEach {
-      try {
-        // This check that it's a v3 dataset that meant to be deleted with the scenario
-        // TODO remove went retro compat to  v2.x is remove
-        if (datasetService.findDatasetById(organizationId, it).creationDate != null) {
-          datasetService.deleteDataset(organizationId, it)
+    var workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
+    if (workspace.datasetCopy == true) {
+      scenario.datasetList?.forEach {
+        try {
+          // This check that it's a v3 dataset that meant to be deleted with the scenario
+          // TODO remove went retro compat to  v2.x is remove
+          if (datasetService.findDatasetById(organizationId, it).creationDate != null) {
+            datasetService.deleteDataset(organizationId, it)
+          }
+        } catch (e: CsmAccessForbiddenException) {
+          logger.warn("Error while deleting dataset $it", e)
         }
-      } catch (e: CsmAccessForbiddenException) {
-        logger.warn("Error while deleting dataset $it", e)
       }
     }
 
     this.handleScenarioDeletion(organizationId, workspaceId, scenario)
-    val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
+    workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     deleteScenarioMetadata(organizationId, workspace.key, scenarioId)
     eventPublisher.publishEvent(ScenarioDeleted(this, organizationId, workspaceId, scenarioId))
   }
@@ -426,10 +431,13 @@ internal class ScenarioServiceImpl(
       if (rbacEnabled) {
         val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
         return scenarioRepository
-            .findByValidationStatusAndSecurity(status, currentUser, pageRequest!!)
+            .findByValidationStatusAndSecurity(
+                organizationId, workspaceId, status, currentUser, pageRequest!!)
             .toList()
       } else {
-        return scenarioRepository.findByValidationStatus(status, pageRequest!!).toList()
+        return scenarioRepository
+            .findByValidationStatus(organizationId, workspaceId, status, pageRequest!!)
+            .toList()
       }
     }
 
@@ -441,10 +449,14 @@ internal class ScenarioServiceImpl(
         val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
         scenarioList =
             scenarioRepository
-                .findByValidationStatusAndSecurity(status, currentUser, pageRequest!!)
+                .findByValidationStatusAndSecurity(
+                    organizationId, workspaceId, status, currentUser, pageRequest!!)
                 .toList()
       } else {
-        scenarioList = scenarioRepository.findByValidationStatus(status, pageRequest!!).toList()
+        scenarioList =
+            scenarioRepository
+                .findByValidationStatus(organizationId, workspaceId, status, pageRequest!!)
+                .toList()
       }
       findAllScenarioByValidationStatus.addAll(scenarioList)
       pageRequest = pageRequest.next()
@@ -464,11 +476,12 @@ internal class ScenarioServiceImpl(
     if (isRbacEnabled(organizationId, workspaceId)) {
       val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
       return scenarioRepository
-          .findByWorkspaceIdAndSecurity(workspaceId, currentUser, pageable)
+          .findByWorkspaceIdAndSecurity(organizationId, workspaceId, currentUser, pageable)
           .toList()
     }
 
-    val scenarios = scenarioRepository.findByWorkspaceId(workspaceId, pageable).toList()
+    val scenarios =
+        scenarioRepository.findByWorkspaceId(organizationId, workspaceId, pageable).toList()
     if (addState) {
       scenarios.forEach { this.addStateToScenario(organizationId, it) }
     }
@@ -489,9 +502,12 @@ internal class ScenarioServiceImpl(
       if (rbacEnabled) {
         val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
         scenarioList =
-            scenarioRepository.findByRootIdAndSecurity(rootId, currentUser, pageable).toList()
+            scenarioRepository
+                .findByRootIdAndSecurity(organizationId, workspaceId, rootId, currentUser, pageable)
+                .toList()
       } else {
-        scenarioList = scenarioRepository.findByRootId(rootId, pageable).toList()
+        scenarioList =
+            scenarioRepository.findByRootId(organizationId, workspaceId, rootId, pageable).toList()
       }
       findAllScenariosByRootId.addAll(scenarioList)
       pageable = pageable.next()
@@ -513,9 +529,15 @@ internal class ScenarioServiceImpl(
       if (rbacEnabled) {
         val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
         scenarioList =
-            scenarioRepository.findByParentIdAndSecurity(parentId, currentUser, pageable).toList()
+            scenarioRepository
+                .findByParentIdAndSecurity(
+                    organizationId, workspaceId, parentId, currentUser, pageable)
+                .toList()
       } else {
-        scenarioList = scenarioRepository.findByParentId(parentId, pageable).toList()
+        scenarioList =
+            scenarioRepository
+                .findByParentId(organizationId, workspaceId, parentId, pageable)
+                .toList()
       }
       findScenarioChildrenById.addAll(scenarioList)
       pageable = pageable.next()
@@ -535,6 +557,7 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       scenarioId: String
   ): Scenario {
+    workspaceService.findWorkspaceById(organizationId, workspaceId)
     val scenario =
         this.findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
             .addLastRunsInfo(this, organizationId, workspaceId)
@@ -634,8 +657,7 @@ internal class ScenarioServiceImpl(
   }
 
   override fun getScenariosTree(organizationId: String, workspaceId: String): List<Scenario> {
-    val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
-    csmRbac.verify(workspace.getRbac(), PERMISSION_READ)
+    workspaceService.findWorkspaceById(organizationId, workspaceId)
 
     var pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenario.defaultPageSize)
     val scenarioTree = mutableListOf<Scenario>()
@@ -927,7 +949,7 @@ internal class ScenarioServiceImpl(
       scenarioId: String,
       scenarioRole: ScenarioRole
   ): ScenarioSecurity {
-    val scenario = findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
+    val scenario = findScenarioById(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
     val rbacSecurity =
         csmRbac.setDefault(scenario.getRbac(), scenarioRole.role, scenarioPermissions)
@@ -954,7 +976,7 @@ internal class ScenarioServiceImpl(
       scenarioId: String,
       scenarioAccessControl: ScenarioAccessControl
   ): ScenarioAccessControl {
-    val scenario = findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
+    val scenario = findScenarioById(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
 
@@ -984,7 +1006,7 @@ internal class ScenarioServiceImpl(
       identityId: String,
       scenarioRole: ScenarioRole
   ): ScenarioAccessControl {
-    val scenario = findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
+    val scenario = findScenarioById(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE_SECURITY, scenarioPermissions)
     csmRbac.checkUserExists(
         scenario.getRbac(), identityId, "User '$identityId' not found in scenario $workspaceId")
@@ -1006,11 +1028,18 @@ internal class ScenarioServiceImpl(
     val id = scenarioAccessControl.id
     // Scenario and Dataset don't have the same roles
     // This function translates the role set from one to another
+    val workspace = workspaceService.findWorkspaceById(organizationId, scenario.workspaceId!!)
+
+    // The role in the datasets should be only be similar to scenarios if they are a copy
     val role: String =
-        if (scenarioAccessControl.role == ROLE_VALIDATOR) {
-          ROLE_USER
+        if (workspace.datasetCopy == true) {
+          if (scenarioAccessControl.role == ROLE_VALIDATOR) {
+            ROLE_USER
+          } else {
+            scenarioAccessControl.role
+          }
         } else {
-          scenarioAccessControl.role
+          ROLE_VIEWER
         }
     scenario.datasetList!!.forEach {
       val datasetUsers = datasetService.getDatasetSecurityUsers(organizationId, it)

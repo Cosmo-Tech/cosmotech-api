@@ -5,7 +5,7 @@ package com.cosmotech.dataset.bulk.model
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.dataset.bulk.getHeaderBinaryBlobFormat
 
-class TypeEntity(val type: String, private val header: List<String>) {
+class BinaryEntities(val type: String, private val header: List<String>) {
 
   private val headerBinaryBlobFormat = getHeaderBinaryBlobFormat(type, header)
   var size: Int = headerBinaryBlobFormat.size
@@ -16,6 +16,7 @@ class TypeEntity(val type: String, private val header: List<String>) {
       if (it.properties.keys.any { s -> s !in header })
           throw CsmResourceNotFoundException(
               "Header mismatch, one or more properties are not in $header")
+      // TODO: fix match header and properties size
       binaryBlobFormat += it.toBinaryFormat()
       size += it.toBinaryFormat().size
     }
