@@ -543,15 +543,20 @@ class DatasetServiceImpl(
       // TODO Only the owner or an admin should be able to perform this operation
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
     }
-    datasetRepository.delete(dataset)
+
     csmJedisPool.resource.use { jedis ->
       if (jedis.exists(dataset.twingraphId!!)) {
         jedis.del(dataset.twingraphId!!)
       }
     }
+
     dataset.linkedWorkspaceIdList?.forEach {
-      removeWorkspaceFromLinkedWorkspaceIdList(organizationId, datasetId, it)
+        this.eventPublisher.publishEvent(
+            RemoveDatasetFromWorkspace(this, organizationId, it, datasetId)
+        )
     }
+
+    datasetRepository.delete(dataset)
   }
 
   override fun updateDataset(organizationId: String, datasetId: String, dataset: Dataset): Dataset {
@@ -808,23 +813,20 @@ class DatasetServiceImpl(
       datasetId: String,
       workspaceId: String
   ): Dataset {
-    val addDatasetToWorkspace = AddDatasetToWorkspace(this, organizationId, workspaceId, datasetId)
-    this.eventPublisher.publishEvent(addDatasetToWorkspace)
-    addDatasetToWorkspace.response
-
+    this.eventPublisher.publishEvent(
+        AddDatasetToWorkspace(this, organizationId, workspaceId, datasetId)
+    )
     return addWorkspaceToLinkedWorkspaceIdList(organizationId, datasetId, workspaceId)
   }
 
   @EventListener(AddWorkspaceToDataset::class)
   fun processEventAddWorkspace(addWorkspaceToDataset: AddWorkspaceToDataset) {
-    val dataset =
-        addWorkspaceToLinkedWorkspaceIdList(
-            addWorkspaceToDataset.organizationId,
-            addWorkspaceToDataset.datasetId,
-            addWorkspaceToDataset.workspaceId)
-
-    addWorkspaceToDataset.response = dataset.linkedWorkspaceIdList
+    addWorkspaceToLinkedWorkspaceIdList(
+        addWorkspaceToDataset.organizationId,
+        addWorkspaceToDataset.datasetId,
+        addWorkspaceToDataset.workspaceId)
   }
+
   fun addWorkspaceToLinkedWorkspaceIdList(
       organizationId: String,
       datasetId: String,
@@ -842,25 +844,25 @@ class DatasetServiceImpl(
       datasetId: String,
       workspaceId: String
   ): Dataset {
-    val removeDatasetFromWorkspace =
-        RemoveDatasetFromWorkspace(this, organizationId, workspaceId, datasetId)
-    this.eventPublisher.publishEvent(removeDatasetFromWorkspace)
-    removeDatasetFromWorkspace.response
 
-    return datasetRepository.save(
-        removeWorkspaceFromLinkedWorkspaceIdList(organizationId, datasetId, workspaceId))
+    this.eventPublisher.publishEvent(
+      RemoveDatasetFromWorkspace(this, organizationId, workspaceId, datasetId)
+    )
+
+    return removeWorkspaceFromLinkedWorkspaceIdList(
+        organizationId,
+        datasetId,
+        workspaceId)
   }
 
   @EventListener(RemoveWorkspaceFromDataset::class)
-  fun processEventRemoveWorkspace(removeWorkspacefromDataset: RemoveWorkspaceFromDataset) {
-    var dataset =
-        removeWorkspaceFromLinkedWorkspaceIdList(
-            removeWorkspacefromDataset.organizationId,
-            removeWorkspacefromDataset.datasetId,
-            removeWorkspacefromDataset.workspaceId)
-
-    removeWorkspacefromDataset.response = dataset.linkedWorkspaceIdList
+  fun processEventRemoveWorkspace(removeWorkspaceFromDataset: RemoveWorkspaceFromDataset) {
+      removeWorkspaceFromLinkedWorkspaceIdList(
+        removeWorkspaceFromDataset.organizationId,
+        removeWorkspaceFromDataset.datasetId,
+        removeWorkspaceFromDataset.workspaceId)
   }
+
   fun removeWorkspaceFromLinkedWorkspaceIdList(
       organizationId: String,
       datasetId: String,
