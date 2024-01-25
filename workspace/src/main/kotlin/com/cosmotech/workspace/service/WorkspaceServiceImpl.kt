@@ -365,22 +365,18 @@ internal class WorkspaceServiceImpl(
       workspaceId: String,
       datasetId: String
   ): Workspace {
-    val addWorkspaceToDataset = AddWorkspaceToDataset(this, organizationId, datasetId, workspaceId)
-    this.eventPublisher.publishEvent(addWorkspaceToDataset)
-    addWorkspaceToDataset.response
+    this.eventPublisher.publishEvent(
+        AddWorkspaceToDataset(this, organizationId, datasetId, workspaceId))
 
     return addDatasetToLinkedDatasetIdList(organizationId, workspaceId, datasetId)
   }
 
   @EventListener(AddDatasetToWorkspace::class)
   fun processEventAddDatasetToWorkspace(addDatasetToWorkspace: AddDatasetToWorkspace) {
-    val workspace =
-        addDatasetToLinkedDatasetIdList(
-            addDatasetToWorkspace.organizationId,
-            addDatasetToWorkspace.workspaceId,
-            addDatasetToWorkspace.datasetId)
-
-    addDatasetToWorkspace.response = workspace.linkedDatasetIdList
+    addDatasetToLinkedDatasetIdList(
+        addDatasetToWorkspace.organizationId,
+        addDatasetToWorkspace.workspaceId,
+        addDatasetToWorkspace.datasetId)
   }
   fun addDatasetToLinkedDatasetIdList(
       organizationId: String,
@@ -399,10 +395,9 @@ internal class WorkspaceServiceImpl(
       workspaceId: String,
       datasetId: String
   ): Workspace {
-    val removeWorkspacefromDataset =
-        RemoveWorkspaceFromDataset(this, organizationId, datasetId, workspaceId)
-    this.eventPublisher.publishEvent(removeWorkspacefromDataset)
-    removeWorkspacefromDataset.response
+
+    this.eventPublisher.publishEvent(
+        RemoveWorkspaceFromDataset(this, organizationId, datasetId, workspaceId))
 
     return removeDatasetFromLinkedDatasetIdList(organizationId, workspaceId, datasetId)
   }
@@ -411,14 +406,12 @@ internal class WorkspaceServiceImpl(
   fun processEventRemoveDatasetFromWorkspace(
       removeDatasetFromWorkspace: RemoveDatasetFromWorkspace
   ) {
-    val workspace =
-        removeDatasetFromLinkedDatasetIdList(
-            removeDatasetFromWorkspace.organizationId,
-            removeDatasetFromWorkspace.workspaceId,
-            removeDatasetFromWorkspace.datasetId)
-
-    removeDatasetFromWorkspace.response = workspace.linkedDatasetIdList
+    removeDatasetFromLinkedDatasetIdList(
+        removeDatasetFromWorkspace.organizationId,
+        removeDatasetFromWorkspace.workspaceId,
+        removeDatasetFromWorkspace.datasetId)
   }
+
   fun removeDatasetFromLinkedDatasetIdList(
       organizationId: String,
       workspaceId: String,

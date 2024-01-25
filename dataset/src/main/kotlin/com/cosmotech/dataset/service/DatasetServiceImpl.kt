@@ -551,9 +551,8 @@ class DatasetServiceImpl(
     }
 
     dataset.linkedWorkspaceIdList?.forEach {
-        this.eventPublisher.publishEvent(
-            RemoveDatasetFromWorkspace(this, organizationId, it, datasetId)
-        )
+      this.eventPublisher.publishEvent(
+          RemoveDatasetFromWorkspace(this, organizationId, it, datasetId))
     }
 
     datasetRepository.delete(dataset)
@@ -814,8 +813,7 @@ class DatasetServiceImpl(
       workspaceId: String
   ): Dataset {
     this.eventPublisher.publishEvent(
-        AddDatasetToWorkspace(this, organizationId, workspaceId, datasetId)
-    )
+        AddDatasetToWorkspace(this, organizationId, workspaceId, datasetId))
     return addWorkspaceToLinkedWorkspaceIdList(organizationId, datasetId, workspaceId)
   }
 
@@ -846,18 +844,14 @@ class DatasetServiceImpl(
   ): Dataset {
 
     this.eventPublisher.publishEvent(
-      RemoveDatasetFromWorkspace(this, organizationId, workspaceId, datasetId)
-    )
+        RemoveDatasetFromWorkspace(this, organizationId, workspaceId, datasetId))
 
-    return removeWorkspaceFromLinkedWorkspaceIdList(
-        organizationId,
-        datasetId,
-        workspaceId)
+    return removeWorkspaceFromLinkedWorkspaceIdList(organizationId, datasetId, workspaceId)
   }
 
   @EventListener(RemoveWorkspaceFromDataset::class)
   fun processEventRemoveWorkspace(removeWorkspaceFromDataset: RemoveWorkspaceFromDataset) {
-      removeWorkspaceFromLinkedWorkspaceIdList(
+    removeWorkspaceFromLinkedWorkspaceIdList(
         removeWorkspaceFromDataset.organizationId,
         removeWorkspaceFromDataset.datasetId,
         removeWorkspaceFromDataset.workspaceId)
