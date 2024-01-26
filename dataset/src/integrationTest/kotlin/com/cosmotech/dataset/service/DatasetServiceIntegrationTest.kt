@@ -61,9 +61,9 @@ import io.mockk.mockkStatic
 import java.io.File
 import java.time.Instant
 import java.util.*
-import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -809,64 +809,82 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `link workspace from dataset`() {
+
+    assertNull(
+        datasetApiService
+            .findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+            .linkedWorkspaceIdList)
+
     datasetApiService.linkWorkspace(organizationSaved.id!!, datasetSaved.id!!, workspaceSaved.id!!)
 
-    assertContains(
+    checkLinkedWorkspaceId()
+
+    datasetApiService.linkWorkspace(organizationSaved.id!!, datasetSaved.id!!, workspaceSaved.id!!)
+
+    checkLinkedWorkspaceId()
+  }
+
+  private fun checkLinkedWorkspaceId() {
+    assertEquals(
         datasetApiService
             .findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
             .linkedWorkspaceIdList!!
-            .toList(),
-        workspaceSaved.id!!)
-    assertContains(
-        workspaceApiService
-            .findWorkspaceById(organizationSaved.id!!, workspaceSaved.id!!)
-            .linkedDatasetIdList!!
-            .toList(),
-        datasetSaved.id!!)
+            .size,
+        1)
+
+    assertEquals(
+        datasetApiService
+            .findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+            .linkedWorkspaceIdList!![0],
+        workspaceSaved.id)
   }
 
   @Test
   fun `unlink workspace from dataset`() {
-    datasetApiService.linkWorkspace(organizationSaved.id!!, datasetSaved.id!!, workspaceSaved.id!!)
 
-    assertContains(
+    assertNull(
         datasetApiService
             .findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
-            .linkedWorkspaceIdList!!
-            .toList(),
-        workspaceSaved.id!!)
-    assertContains(
-        workspaceApiService
-            .findWorkspaceById(organizationSaved.id!!, workspaceSaved.id!!)
-            .linkedDatasetIdList!!
-            .toList(),
-        datasetSaved.id!!)
+            .linkedWorkspaceIdList)
+
+    datasetApiService.linkWorkspace(organizationSaved.id!!, datasetSaved.id!!, workspaceSaved.id!!)
 
     datasetApiService.unlinkWorkspace(
         organizationSaved.id!!, datasetSaved.id!!, workspaceSaved.id!!)
 
-    kotlin.test.assertFalse(
+    assertEquals(
         datasetApiService
             .findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
             .linkedWorkspaceIdList!!
-            .contains(workspaceSaved.id!!))
-    kotlin.test.assertFalse(
+            .size,
+        0)
+  }
+
+  @Test
+  fun `unlink workspace from dataset when there is no link`() {
+
+    assertNull(
+        datasetApiService
+            .findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+            .linkedWorkspaceIdList)
+
+    assertNull(
         workspaceApiService
             .findWorkspaceById(organizationSaved.id!!, workspaceSaved.id!!)
-            .linkedDatasetIdList!!
-            .contains(datasetSaved.id!!))
-  }
-  private fun materializeTwingraph(
-      dataset: Dataset = datasetSaved,
-      createTwingraph: Boolean = true
-  ): Dataset {
-    dataset.apply {
-      if (createTwingraph) {
-        redisGraph.query(this.twingraphId, "CREATE (n:labelrouge)")
-      }
-      this.ingestionStatus = Dataset.IngestionStatus.SUCCESS
-    }
-    return datasetRepository.save(dataset)
+            .linkedDatasetIdList)
+
+    datasetApiService.unlinkWorkspace(
+        organizationSaved.id!!, datasetSaved.id!!, workspaceSaved.id!!)
+
+    assertNull(
+        datasetApiService
+            .findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+            .linkedWorkspaceIdList)
+
+    assertNull(
+        workspaceApiService
+            .findWorkspaceById(organizationSaved.id!!, workspaceSaved.id!!)
+            .linkedDatasetIdList)
   }
 
   fun makeConnector(): Connector {
