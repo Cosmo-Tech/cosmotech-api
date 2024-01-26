@@ -384,9 +384,9 @@ internal class WorkspaceServiceImpl(
       datasetId: String
   ): Workspace {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    val linkedDatasetIdList = workspace.linkedDatasetIdList
-    if (linkedDatasetIdList != null) {
-      if (linkedDatasetIdList.contains(datasetId)) {
+
+    if (workspace.linkedDatasetIdList != null) {
+      if (workspace.linkedDatasetIdList!!.contains(datasetId)) {
         return workspace
       } else {
         workspace.linkedDatasetIdList!!.add(datasetId)
@@ -423,10 +423,9 @@ internal class WorkspaceServiceImpl(
       datasetId: String
   ): Workspace {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    val linkedDatasetIdList = workspace.linkedDatasetIdList
 
-    if (linkedDatasetIdList != null) {
-      if (linkedDatasetIdList.contains(datasetId)) {
+    if (workspace.linkedDatasetIdList != null) {
+      if (workspace.linkedDatasetIdList!!.contains(datasetId)) {
         workspace.linkedDatasetIdList!!.remove(datasetId)
         return workspaceRepository.save(workspace)
       }

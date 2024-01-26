@@ -815,9 +815,9 @@ class DatasetServiceImpl(
       workspaceId: String
   ): Dataset {
     val dataset = findDatasetById(organizationId, datasetId)
-    val linkedWorkspaceIdList = dataset.linkedWorkspaceIdList
-    if (linkedWorkspaceIdList != null) {
-      if (linkedWorkspaceIdList.contains(workspaceId)) {
+
+    if (dataset.linkedWorkspaceIdList != null) {
+      if (dataset.linkedWorkspaceIdList!!.contains(workspaceId)) {
         return dataset
       } else {
         dataset.linkedWorkspaceIdList!!.add(workspaceId)
@@ -853,10 +853,9 @@ class DatasetServiceImpl(
       workspaceId: String
   ): Dataset {
     val dataset = findDatasetById(organizationId, datasetId)
-    val linkedWorkspaceIdList = dataset.linkedWorkspaceIdList
 
-    if (linkedWorkspaceIdList != null) {
-      if (linkedWorkspaceIdList.contains(workspaceId)) {
+    if (dataset.linkedWorkspaceIdList != null) {
+      if (dataset.linkedWorkspaceIdList!!.contains(workspaceId)) {
         dataset.linkedWorkspaceIdList!!.remove(workspaceId)
         return datasetRepository.save(dataset)
       }
