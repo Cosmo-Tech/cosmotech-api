@@ -224,9 +224,7 @@ internal class WorkspaceServiceImpl(
       secretManager.deleteSecret(
           csmPlatformProperties.namespace, getWorkspaceSecretName(organizationId, workspace.key))
 
-      workspace.linkedDatasetIdList?.forEach {
-        sendRemoveWorkspaceFromDatasetEvent(organizationId, it, workspaceId)
-      }
+      workspace.linkedDatasetIdList?.forEach { unlinkDataset(organizationId, workspaceId, it) }
     } finally {
       workspaceRepository.delete(workspace)
     }

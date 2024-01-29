@@ -536,9 +536,7 @@ class DatasetServiceImpl(
       }
     }
 
-    dataset.linkedWorkspaceIdList?.forEach {
-      sendRemoveDatasetFromWorkspaceEvent(organizationId, it, datasetId)
-    }
+    dataset.linkedWorkspaceIdList?.forEach { unlinkWorkspace(organizationId, datasetId, it) }
 
     datasetRepository.delete(dataset)
   }
