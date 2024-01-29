@@ -817,26 +817,27 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     datasetApiService.linkWorkspace(organizationSaved.id!!, datasetSaved.id!!, workspaceSaved.id!!)
 
-    checkLinkedWorkspaceId()
+    val workspaceIds = listOf(workspaceSaved.id!!)
+    checkLinkedWorkspaceId(workspaceIds)
 
     datasetApiService.linkWorkspace(organizationSaved.id!!, datasetSaved.id!!, workspaceSaved.id!!)
 
-    checkLinkedWorkspaceId()
+    checkLinkedWorkspaceId(workspaceIds)
   }
 
-  private fun checkLinkedWorkspaceId() {
+  private fun checkLinkedWorkspaceId(workspaceIds: List<String>) {
     assertEquals(
         datasetApiService
             .findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
             .linkedWorkspaceIdList!!
             .size,
-        1)
+        workspaceIds.size)
 
     assertEquals(
         datasetApiService
             .findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
-            .linkedWorkspaceIdList!![0],
-        workspaceSaved.id)
+            .linkedWorkspaceIdList!!,
+        workspaceIds)
   }
 
   @Test
