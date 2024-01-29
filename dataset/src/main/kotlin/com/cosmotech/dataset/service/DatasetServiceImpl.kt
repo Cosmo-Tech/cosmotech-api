@@ -444,9 +444,7 @@ class DatasetServiceImpl(
               ?: return dataset.ingestionStatus!!.value
 
           val twingraphImportJobInfoRequest =
-              TwingraphImportJobInfoRequest(this, dataset.source!!.jobId!!, organizationId)
-
-          this.eventPublisher.publishEvent(twingraphImportJobInfoRequest)
+              sendTwingraphImportJobInfoRequestEvent(dataset, organizationId)
 
           dataset.apply {
             when (twingraphImportJobInfoRequest.response) {
@@ -492,19 +490,7 @@ class DatasetServiceImpl(
 
     val requestJobId = this.idGenerator.generate(scope = "graphdataimport", prependPrefix = "gdi-")
     val graphImportEvent =
-        TwingraphImportEvent(
-            this,
-            requestJobId,
-            organizationId,
-            dataset.twingraphId
-                ?: throw CsmResourceNotFoundException("TwingraphId is not defined for the dataset"),
-            dataset.source!!.name ?: "",
-            dataSourceLocation ?: "",
-            dataset.source!!.path ?: "",
-            dataset.sourceType!!.value,
-            "",
-            dataset.queries)
-    this.eventPublisher.publishEvent(graphImportEvent)
+        sendTwingraphImportEvent(requestJobId, organizationId, dataset, dataSourceLocation)
 
     datasetRepository.save(dataset.apply { source!!.jobId = requestJobId })
     logger.debug("refreshDataset={}", graphImportEvent.response)
@@ -543,15 +529,16 @@ class DatasetServiceImpl(
       // TODO Only the owner or an admin should be able to perform this operation
       throw CsmAccessForbiddenException("You are not allowed to delete this Resource")
     }
-    datasetRepository.delete(dataset)
+
     csmJedisPool.resource.use { jedis ->
       if (jedis.exists(dataset.twingraphId!!)) {
         jedis.del(dataset.twingraphId!!)
       }
     }
-    dataset.linkedWorkspaceIdList?.forEach {
-      removeWorkspaceFromLinkedWorkspaceIdList(organizationId, datasetId, it)
-    }
+
+    dataset.linkedWorkspaceIdList?.forEach { unlinkWorkspace(organizationId, datasetId, it) }
+
+    datasetRepository.delete(dataset)
   }
 
   override fun updateDataset(organizationId: String, datasetId: String, dataset: Dataset): Dataset {
@@ -808,32 +795,34 @@ class DatasetServiceImpl(
       datasetId: String,
       workspaceId: String
   ): Dataset {
-    val addDatasetToWorkspace = AddDatasetToWorkspace(this, organizationId, workspaceId, datasetId)
-    this.eventPublisher.publishEvent(addDatasetToWorkspace)
-    addDatasetToWorkspace.response
-
+    sendAddDatasetToWorkspaceEvent(organizationId, workspaceId, datasetId)
     return addWorkspaceToLinkedWorkspaceIdList(organizationId, datasetId, workspaceId)
   }
 
   @EventListener(AddWorkspaceToDataset::class)
   fun processEventAddWorkspace(addWorkspaceToDataset: AddWorkspaceToDataset) {
-    val dataset =
-        addWorkspaceToLinkedWorkspaceIdList(
-            addWorkspaceToDataset.organizationId,
-            addWorkspaceToDataset.datasetId,
-            addWorkspaceToDataset.workspaceId)
-
-    addWorkspaceToDataset.response = dataset.linkedWorkspaceIdList
+    addWorkspaceToLinkedWorkspaceIdList(
+        addWorkspaceToDataset.organizationId,
+        addWorkspaceToDataset.datasetId,
+        addWorkspaceToDataset.workspaceId)
   }
+
   fun addWorkspaceToLinkedWorkspaceIdList(
       organizationId: String,
       datasetId: String,
       workspaceId: String
   ): Dataset {
     val dataset = findDatasetById(organizationId, datasetId)
-    dataset.linkedWorkspaceIdList?.add(workspaceId)
-        ?: run { dataset.linkedWorkspaceIdList = mutableListOf(workspaceId) }
 
+    if (dataset.linkedWorkspaceIdList != null) {
+      if (dataset.linkedWorkspaceIdList!!.contains(workspaceId)) {
+        return dataset
+      } else {
+        dataset.linkedWorkspaceIdList!!.add(workspaceId)
+      }
+    } else {
+      dataset.linkedWorkspaceIdList = mutableListOf(workspaceId)
+    }
     return datasetRepository.save(dataset)
   }
 
@@ -842,34 +831,35 @@ class DatasetServiceImpl(
       datasetId: String,
       workspaceId: String
   ): Dataset {
-    val removeDatasetFromWorkspace =
-        RemoveDatasetFromWorkspace(this, organizationId, workspaceId, datasetId)
-    this.eventPublisher.publishEvent(removeDatasetFromWorkspace)
-    removeDatasetFromWorkspace.response
 
-    return datasetRepository.save(
-        removeWorkspaceFromLinkedWorkspaceIdList(organizationId, datasetId, workspaceId))
+    sendRemoveDatasetFromWorkspaceEvent(organizationId, workspaceId, datasetId)
+
+    return removeWorkspaceFromLinkedWorkspaceIdList(organizationId, datasetId, workspaceId)
   }
 
   @EventListener(RemoveWorkspaceFromDataset::class)
-  fun processEventRemoveWorkspace(removeWorkspacefromDataset: RemoveWorkspaceFromDataset) {
-    var dataset =
-        removeWorkspaceFromLinkedWorkspaceIdList(
-            removeWorkspacefromDataset.organizationId,
-            removeWorkspacefromDataset.datasetId,
-            removeWorkspacefromDataset.workspaceId)
-
-    removeWorkspacefromDataset.response = dataset.linkedWorkspaceIdList
+  fun processEventRemoveWorkspace(removeWorkspaceFromDataset: RemoveWorkspaceFromDataset) {
+    removeWorkspaceFromLinkedWorkspaceIdList(
+        removeWorkspaceFromDataset.organizationId,
+        removeWorkspaceFromDataset.datasetId,
+        removeWorkspaceFromDataset.workspaceId)
   }
+
   fun removeWorkspaceFromLinkedWorkspaceIdList(
       organizationId: String,
       datasetId: String,
       workspaceId: String
   ): Dataset {
     val dataset = findDatasetById(organizationId, datasetId)
-    dataset.linkedWorkspaceIdList?.remove(workspaceId)
 
-    return datasetRepository.save(dataset)
+    if (dataset.linkedWorkspaceIdList != null) {
+      if (dataset.linkedWorkspaceIdList!!.contains(workspaceId)) {
+        dataset.linkedWorkspaceIdList!!.remove(workspaceId)
+        return datasetRepository.save(dataset)
+      }
+    }
+
+    return dataset
   }
 
   override fun updateTwingraphEntities(
@@ -1156,6 +1146,58 @@ class DatasetServiceImpl(
         throw exception
       }
     }
+  }
+  private fun sendTwingraphImportJobInfoRequestEvent(
+      dataset: Dataset,
+      organizationId: String
+  ): TwingraphImportJobInfoRequest {
+    val twingraphImportJobInfoRequest =
+        TwingraphImportJobInfoRequest(this, dataset.source!!.jobId!!, organizationId)
+
+    this.eventPublisher.publishEvent(twingraphImportJobInfoRequest)
+    return twingraphImportJobInfoRequest
+  }
+
+  private fun sendTwingraphImportEvent(
+      requestJobId: String,
+      organizationId: String,
+      dataset: Dataset,
+      dataSourceLocation: String?
+  ): TwingraphImportEvent {
+    val graphImportEvent =
+        TwingraphImportEvent(
+            this,
+            requestJobId,
+            organizationId,
+            dataset.twingraphId
+                ?: throw CsmResourceNotFoundException("TwingraphId is not defined for the dataset"),
+            dataset.source!!.name ?: "",
+            dataSourceLocation ?: "",
+            dataset.source!!.path ?: "",
+            dataset.sourceType!!.value,
+            "",
+            dataset.queries)
+
+    this.eventPublisher.publishEvent(graphImportEvent)
+    return graphImportEvent
+  }
+
+  private fun sendRemoveDatasetFromWorkspaceEvent(
+      organizationId: String,
+      workspaceId: String,
+      datasetId: String
+  ) {
+    this.eventPublisher.publishEvent(
+        RemoveDatasetFromWorkspace(this, organizationId, workspaceId, datasetId))
+  }
+
+  private fun sendAddDatasetToWorkspaceEvent(
+      organizationId: String,
+      workspaceId: String,
+      datasetId: String
+  ) {
+    this.eventPublisher.publishEvent(
+        AddDatasetToWorkspace(this, organizationId, workspaceId, datasetId))
   }
 }
 

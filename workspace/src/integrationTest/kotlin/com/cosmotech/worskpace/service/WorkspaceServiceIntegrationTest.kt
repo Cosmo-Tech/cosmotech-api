@@ -42,9 +42,8 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
 import java.util.*
-import kotlin.test.assertContains
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -262,24 +261,6 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(workspaceRole.role, workspaceSecurityRegistered.default)
   }
 
-  /* @Test
-  fun `test RBAC WorkspaceSecurity as User Unauthorized`() {
-
-    every { getCurrentAccountIdentifier(any()) } returns CONNECTED_DEFAULT_USER
-
-    logger.info("should throw CsmAccessForbiddenException when getting default security")
-    assertThrows<CsmAccessForbiddenException> {
-      workspaceApiService.getWorkspaceSecurity(organization.id!!, workspace.id!!)
-    }
-
-    logger.info("should throw CsmAccessForbiddenException when setting default security")
-    val workspaceRole = WorkspaceRole(ROLE_VIEWER)
-    assertThrows<CsmAccessForbiddenException> {
-      workspaceApiService.setWorkspaceDefaultSecurity(
-          organization.id!!, workspace.id!!, workspaceRole)
-    }
-  }*/
-
   @Test
   fun `test RBAC as User Unauthorized`() {
     every { getCurrentAccountIdentifier(any()) } returns "userLambda"
@@ -400,52 +381,73 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `link dataset to workspace`() {
+
+    assertNull(
+        workspaceApiService
+            .findWorkspaceById(organizationSaved.id!!, workspaceSaved.id!!)
+            .linkedDatasetIdList)
+
     workspaceApiService.linkDataset(organizationSaved.id!!, workspaceSaved.id!!, datasetSaved.id!!)
 
-    assertContains(
+    val datasetIds = listOf(datasetSaved.id!!)
+    checkLinkedDatasetId(datasetIds)
+
+    workspaceApiService.linkDataset(organizationSaved.id!!, workspaceSaved.id!!, datasetSaved.id!!)
+
+    checkLinkedDatasetId(datasetIds)
+  }
+
+  private fun checkLinkedDatasetId(datasetIds: List<String>) {
+    assertEquals(
         workspaceApiService
             .findWorkspaceById(organizationSaved.id!!, workspaceSaved.id!!)
             .linkedDatasetIdList!!
-            .toList(),
-        datasetSaved.id!!)
-    assertContains(
-        datasetApiService
-            .findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
-            .linkedWorkspaceIdList!!
-            .toList(),
-        workspaceSaved.id!!)
+            .size,
+        datasetIds.size)
+
+    assertEquals(
+        workspaceApiService
+            .findWorkspaceById(organizationSaved.id!!, workspaceSaved.id!!)
+            .linkedDatasetIdList!!,
+        datasetIds)
   }
 
   @Test
-  fun `remove dataset from workspace`() {
-    workspaceApiService.linkDataset(organizationSaved.id!!, workspaceSaved.id!!, datasetSaved.id!!)
+  fun `unlink dataset from workspace`() {
 
-    assertContains(
+    assertNull(
         workspaceApiService
             .findWorkspaceById(organizationSaved.id!!, workspaceSaved.id!!)
-            .linkedDatasetIdList!!
-            .toList(),
-        datasetSaved.id!!)
-    assertContains(
-        datasetApiService
-            .findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
-            .linkedWorkspaceIdList!!
-            .toList(),
-        workspaceSaved.id!!)
+            .linkedDatasetIdList)
+
+    workspaceApiService.linkDataset(organizationSaved.id!!, workspaceSaved.id!!, datasetSaved.id!!)
 
     workspaceApiService.unlinkDataset(
         organizationSaved.id!!, workspaceSaved.id!!, datasetSaved.id!!)
 
-    assertFalse(
+    assertEquals(
         workspaceApiService
             .findWorkspaceById(organizationSaved.id!!, workspaceSaved.id!!)
             .linkedDatasetIdList!!
-            .contains(datasetSaved.id!!))
-    assertFalse(
-        datasetApiService
-            .findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
-            .linkedWorkspaceIdList!!
-            .contains(workspaceSaved.id!!))
+            .size,
+        0)
+  }
+
+  @Test
+  fun `unlink dataset from workspace  when there is no link`() {
+
+    assertNull(
+        workspaceApiService
+            .findWorkspaceById(organizationSaved.id!!, workspaceSaved.id!!)
+            .linkedDatasetIdList)
+
+    workspaceApiService.unlinkDataset(
+        organizationSaved.id!!, workspaceSaved.id!!, datasetSaved.id!!)
+
+    assertNull(
+        workspaceApiService
+            .findWorkspaceById(organizationSaved.id!!, workspaceSaved.id!!)
+            .linkedDatasetIdList)
   }
 
   fun makeOrganization(

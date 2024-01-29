@@ -223,6 +223,7 @@ internal class WorkspaceServiceImpl(
       deleteAllWorkspaceFiles(organizationId, workspaceId)
       secretManager.deleteSecret(
           csmPlatformProperties.namespace, getWorkspaceSecretName(organizationId, workspace.key))
+
       workspace.linkedDatasetIdList?.forEach { unlinkDataset(organizationId, workspaceId, it) }
     } finally {
       workspaceRepository.delete(workspace)
@@ -340,10 +341,7 @@ internal class WorkspaceServiceImpl(
       pageable = pageable.next()
     } while (workspaces.isNotEmpty())
 
-    workspaceList.forEach {
-      this.eventPublisher.publishEvent(
-          DeleteHistoricalDataWorkspace(this, organizationId, it.id!!, data.deleteUnknown))
-    }
+    workspaceList.forEach { sendDeleteHistoricalDataWorkspaceEvent(organizationId, it, data) }
   }
 
   @EventListener(OrganizationUnregistered::class)
@@ -365,32 +363,35 @@ internal class WorkspaceServiceImpl(
       workspaceId: String,
       datasetId: String
   ): Workspace {
-    val addWorkspaceToDataset = AddWorkspaceToDataset(this, organizationId, datasetId, workspaceId)
-    this.eventPublisher.publishEvent(addWorkspaceToDataset)
-    addWorkspaceToDataset.response
+    sendAddWorkspaceToDatasetEvent(organizationId, datasetId, workspaceId)
 
     return addDatasetToLinkedDatasetIdList(organizationId, workspaceId, datasetId)
   }
 
   @EventListener(AddDatasetToWorkspace::class)
   fun processEventAddDatasetToWorkspace(addDatasetToWorkspace: AddDatasetToWorkspace) {
-    val workspace =
-        addDatasetToLinkedDatasetIdList(
-            addDatasetToWorkspace.organizationId,
-            addDatasetToWorkspace.workspaceId,
-            addDatasetToWorkspace.datasetId)
-
-    addDatasetToWorkspace.response = workspace.linkedDatasetIdList
+    addDatasetToLinkedDatasetIdList(
+        addDatasetToWorkspace.organizationId,
+        addDatasetToWorkspace.workspaceId,
+        addDatasetToWorkspace.datasetId)
   }
+
   fun addDatasetToLinkedDatasetIdList(
       organizationId: String,
       workspaceId: String,
       datasetId: String
   ): Workspace {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    workspace.linkedDatasetIdList?.add(datasetId)
-        ?: run { workspace.linkedDatasetIdList = mutableListOf(datasetId) }
 
+    if (workspace.linkedDatasetIdList != null) {
+      if (workspace.linkedDatasetIdList!!.contains(datasetId)) {
+        return workspace
+      } else {
+        workspace.linkedDatasetIdList!!.add(datasetId)
+      }
+    } else {
+      workspace.linkedDatasetIdList = mutableListOf(datasetId)
+    }
     return workspaceRepository.save(workspace)
   }
 
@@ -399,10 +400,7 @@ internal class WorkspaceServiceImpl(
       workspaceId: String,
       datasetId: String
   ): Workspace {
-    val removeWorkspacefromDataset =
-        RemoveWorkspaceFromDataset(this, organizationId, datasetId, workspaceId)
-    this.eventPublisher.publishEvent(removeWorkspacefromDataset)
-    removeWorkspacefromDataset.response
+    sendRemoveWorkspaceFromDatasetEvent(organizationId, datasetId, workspaceId)
 
     return removeDatasetFromLinkedDatasetIdList(organizationId, workspaceId, datasetId)
   }
@@ -411,23 +409,27 @@ internal class WorkspaceServiceImpl(
   fun processEventRemoveDatasetFromWorkspace(
       removeDatasetFromWorkspace: RemoveDatasetFromWorkspace
   ) {
-    val workspace =
-        removeDatasetFromLinkedDatasetIdList(
-            removeDatasetFromWorkspace.organizationId,
-            removeDatasetFromWorkspace.workspaceId,
-            removeDatasetFromWorkspace.datasetId)
-
-    removeDatasetFromWorkspace.response = workspace.linkedDatasetIdList
+    removeDatasetFromLinkedDatasetIdList(
+        removeDatasetFromWorkspace.organizationId,
+        removeDatasetFromWorkspace.workspaceId,
+        removeDatasetFromWorkspace.datasetId)
   }
+
   fun removeDatasetFromLinkedDatasetIdList(
       organizationId: String,
       workspaceId: String,
       datasetId: String
   ): Workspace {
     val workspace = findWorkspaceById(organizationId, workspaceId)
-    workspace.linkedDatasetIdList?.remove(datasetId)
 
-    return workspaceRepository.save(workspace)
+    if (workspace.linkedDatasetIdList != null) {
+      if (workspace.linkedDatasetIdList!!.contains(datasetId)) {
+        workspace.linkedDatasetIdList!!.remove(datasetId)
+        return workspaceRepository.save(workspace)
+      }
+    }
+
+    return workspace
   }
 
   private fun getWorkspaceFileResources(
@@ -557,6 +559,32 @@ internal class WorkspaceServiceImpl(
     return WorkspaceSecurity(
         default = ROLE_NONE,
         accessControlList = mutableListOf(WorkspaceAccessControl(userId, ROLE_ADMIN)))
+  }
+
+  private fun sendRemoveWorkspaceFromDatasetEvent(
+      organizationId: String,
+      datasetId: String,
+      workspaceId: String
+  ) {
+    this.eventPublisher.publishEvent(
+        RemoveWorkspaceFromDataset(this, organizationId, datasetId, workspaceId))
+  }
+
+  private fun sendAddWorkspaceToDatasetEvent(
+      organizationId: String,
+      datasetId: String,
+      workspaceId: String
+  ) {
+    this.eventPublisher.publishEvent(
+        AddWorkspaceToDataset(this, organizationId, datasetId, workspaceId))
+  }
+  private fun sendDeleteHistoricalDataWorkspaceEvent(
+      organizationId: String,
+      it: Workspace,
+      data: DeleteHistoricalDataOrganization
+  ) {
+    this.eventPublisher.publishEvent(
+        DeleteHistoricalDataWorkspace(this, organizationId, it.id!!, data.deleteUnknown))
   }
 }
 
