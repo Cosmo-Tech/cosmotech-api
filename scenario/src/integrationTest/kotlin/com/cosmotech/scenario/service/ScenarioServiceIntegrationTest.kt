@@ -95,7 +95,6 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   val CONNECTED_READER_USER = "test.reader@cosmotech.com"
   val CONNECTED_VIEWER_USER = "test.user@cosmotech.com"
   val TEST_USER_MAIL = "fake@mail.fr"
-  val REDIS_PORT = 6379
 
   private val logger = LoggerFactory.getLogger(ScenarioServiceIntegrationTest::class.java)
   private val defaultName = "my.account-tester@cosmotech.com"

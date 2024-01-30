@@ -82,8 +82,6 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
-import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.web.context.request.ServletRequestAttributes
 import redis.clients.jedis.HostAndPort
 import redis.clients.jedis.Protocol
 import redis.clients.jedis.UnifiedJedis

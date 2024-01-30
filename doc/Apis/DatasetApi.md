@@ -2,39 +2,39 @@
 
 All URIs are relative to *https://dev.api.cosmotech.com*
 
-Method | HTTP request | Description
-------------- | ------------- | -------------
-[**addDatasetAccessControl**](DatasetApi.md#addDatasetAccessControl) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/security/access | Add a control access to the Dataset
-[**addOrReplaceDatasetCompatibilityElements**](DatasetApi.md#addOrReplaceDatasetCompatibilityElements) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/compatibility | Add Dataset Compatibility elements.
-[**copyDataset**](DatasetApi.md#copyDataset) | **POST** /organizations/{organization_id}/datasets/copy | Copy a Dataset to another Dataset.
-[**createDataset**](DatasetApi.md#createDataset) | **POST** /organizations/{organization_id}/datasets | Create a new Dataset
-[**createSubDataset**](DatasetApi.md#createSubDataset) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/subdataset | Create a sub-dataset from the dataset in parameter
-[**createTwingraphEntities**](DatasetApi.md#createTwingraphEntities) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/twingraph/{type} | Create new entities in a graph instance
-[**deleteDataset**](DatasetApi.md#deleteDataset) | **DELETE** /organizations/{organization_id}/datasets/{dataset_id} | Delete a dataset
-[**deleteTwingraphEntities**](DatasetApi.md#deleteTwingraphEntities) | **DELETE** /organizations/{organization_id}/datasets/{dataset_id}/twingraph/{type} | Delete entities in a graph instance
-[**downloadTwingraph**](DatasetApi.md#downloadTwingraph) | **GET** /organizations/{organization_id}/datasets/twingraph/download/{hash} | Download a graph as a zip file
-[**findAllDatasets**](DatasetApi.md#findAllDatasets) | **GET** /organizations/{organization_id}/datasets | List all Datasets
-[**findDatasetById**](DatasetApi.md#findDatasetById) | **GET** /organizations/{organization_id}/datasets/{dataset_id} | Get the details of a Dataset
-[**getDatasetAccessControl**](DatasetApi.md#getDatasetAccessControl) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/security/access/{identity_id} | Get a control access for the Dataset
-[**getDatasetSecurity**](DatasetApi.md#getDatasetSecurity) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/security | Get the Dataset security information
-[**getDatasetSecurityUsers**](DatasetApi.md#getDatasetSecurityUsers) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/security/users | Get the Dataset security users list
-[**getDatasetTwingraphStatus**](DatasetApi.md#getDatasetTwingraphStatus) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/status | Get the dataset&#39;s refresh job status
-[**getTwingraphEntities**](DatasetApi.md#getTwingraphEntities) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/twingraph/{type} | Get entities in a graph instance
-[**linkWorkspace**](DatasetApi.md#linkWorkspace) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/link | 
-[**refreshDataset**](DatasetApi.md#refreshDataset) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/refresh | Refresh data on dataset from dataset&#39;s source
-[**removeAllDatasetCompatibilityElements**](DatasetApi.md#removeAllDatasetCompatibilityElements) | **DELETE** /organizations/{organization_id}/datasets/{dataset_id}/compatibility | Remove all Dataset Compatibility elements from the Dataset specified
-[**removeDatasetAccessControl**](DatasetApi.md#removeDatasetAccessControl) | **DELETE** /organizations/{organization_id}/datasets/{dataset_id}/security/access/{identity_id} | Remove the specified access from the given Dataset
-[**rollbackRefresh**](DatasetApi.md#rollbackRefresh) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/refresh/rollback | Rollback the dataset after a failed refresh
-[**searchDatasets**](DatasetApi.md#searchDatasets) | **POST** /organizations/{organization_id}/datasets/search | Search Datasets by tags
-[**setDatasetDefaultSecurity**](DatasetApi.md#setDatasetDefaultSecurity) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/security/default | Set the Dataset default security
-[**twingraphBatchQuery**](DatasetApi.md#twingraphBatchQuery) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/batch-query | Run a query on a graph instance and return the result as a zip file in async mode
-[**twingraphBatchUpdate**](DatasetApi.md#twingraphBatchUpdate) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/batch | Async batch update by loading a CSV file on a graph instance 
-[**twingraphQuery**](DatasetApi.md#twingraphQuery) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/twingraph | Return the result of a query made on the graph instance as a json
-[**unlinkWorkspace**](DatasetApi.md#unlinkWorkspace) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/unlink | 
-[**updateDataset**](DatasetApi.md#updateDataset) | **PATCH** /organizations/{organization_id}/datasets/{dataset_id} | Update a dataset
-[**updateDatasetAccessControl**](DatasetApi.md#updateDatasetAccessControl) | **PATCH** /organizations/{organization_id}/datasets/{dataset_id}/security/access/{identity_id} | Update the specified access to User for a Dataset
-[**updateTwingraphEntities**](DatasetApi.md#updateTwingraphEntities) | **PATCH** /organizations/{organization_id}/datasets/{dataset_id}/twingraph/{type} | Update entities in a graph instance
-[**uploadTwingraph**](DatasetApi.md#uploadTwingraph) | **POST** /organizations/{organization_id}/datasets/{dataset_id} | Upload data from zip file to dataset&#39;s twingraph
+| Method | HTTP request | Description |
+|------------- | ------------- | -------------|
+| [**addDatasetAccessControl**](DatasetApi.md#addDatasetAccessControl) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/security/access | Add a control access to the Dataset |
+| [**addOrReplaceDatasetCompatibilityElements**](DatasetApi.md#addOrReplaceDatasetCompatibilityElements) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/compatibility | Add Dataset Compatibility elements. |
+| [**copyDataset**](DatasetApi.md#copyDataset) | **POST** /organizations/{organization_id}/datasets/copy | Copy a Dataset to another Dataset. |
+| [**createDataset**](DatasetApi.md#createDataset) | **POST** /organizations/{organization_id}/datasets | Create a new Dataset |
+| [**createSubDataset**](DatasetApi.md#createSubDataset) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/subdataset | Create a sub-dataset from the dataset in parameter |
+| [**createTwingraphEntities**](DatasetApi.md#createTwingraphEntities) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/twingraph/{type} | Create new entities in a graph instance |
+| [**deleteDataset**](DatasetApi.md#deleteDataset) | **DELETE** /organizations/{organization_id}/datasets/{dataset_id} | Delete a dataset |
+| [**deleteTwingraphEntities**](DatasetApi.md#deleteTwingraphEntities) | **DELETE** /organizations/{organization_id}/datasets/{dataset_id}/twingraph/{type} | Delete entities in a graph instance |
+| [**downloadTwingraph**](DatasetApi.md#downloadTwingraph) | **GET** /organizations/{organization_id}/datasets/twingraph/download/{hash} | Download a graph as a zip file |
+| [**findAllDatasets**](DatasetApi.md#findAllDatasets) | **GET** /organizations/{organization_id}/datasets | List all Datasets |
+| [**findDatasetById**](DatasetApi.md#findDatasetById) | **GET** /organizations/{organization_id}/datasets/{dataset_id} | Get the details of a Dataset |
+| [**getDatasetAccessControl**](DatasetApi.md#getDatasetAccessControl) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/security/access/{identity_id} | Get a control access for the Dataset |
+| [**getDatasetSecurity**](DatasetApi.md#getDatasetSecurity) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/security | Get the Dataset security information |
+| [**getDatasetSecurityUsers**](DatasetApi.md#getDatasetSecurityUsers) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/security/users | Get the Dataset security users list |
+| [**getDatasetTwingraphStatus**](DatasetApi.md#getDatasetTwingraphStatus) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/status | Get the dataset&#39;s refresh job status |
+| [**getTwingraphEntities**](DatasetApi.md#getTwingraphEntities) | **GET** /organizations/{organization_id}/datasets/{dataset_id}/twingraph/{type} | Get entities in a graph instance |
+| [**linkWorkspace**](DatasetApi.md#linkWorkspace) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/link |  |
+| [**refreshDataset**](DatasetApi.md#refreshDataset) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/refresh | Refresh data on dataset from dataset&#39;s source |
+| [**removeAllDatasetCompatibilityElements**](DatasetApi.md#removeAllDatasetCompatibilityElements) | **DELETE** /organizations/{organization_id}/datasets/{dataset_id}/compatibility | Remove all Dataset Compatibility elements from the Dataset specified |
+| [**removeDatasetAccessControl**](DatasetApi.md#removeDatasetAccessControl) | **DELETE** /organizations/{organization_id}/datasets/{dataset_id}/security/access/{identity_id} | Remove the specified access from the given Dataset |
+| [**rollbackRefresh**](DatasetApi.md#rollbackRefresh) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/refresh/rollback | Rollback the dataset after a failed refresh |
+| [**searchDatasets**](DatasetApi.md#searchDatasets) | **POST** /organizations/{organization_id}/datasets/search | Search Datasets by tags |
+| [**setDatasetDefaultSecurity**](DatasetApi.md#setDatasetDefaultSecurity) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/security/default | Set the Dataset default security |
+| [**twingraphBatchQuery**](DatasetApi.md#twingraphBatchQuery) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/batch-query | Run a query on a graph instance and return the result as a zip file in async mode |
+| [**twingraphBatchUpdate**](DatasetApi.md#twingraphBatchUpdate) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/batch | Async batch update by loading a CSV file on a graph instance  |
+| [**twingraphQuery**](DatasetApi.md#twingraphQuery) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/twingraph | Return the result of a query made on the graph instance as a json |
+| [**unlinkWorkspace**](DatasetApi.md#unlinkWorkspace) | **POST** /organizations/{organization_id}/datasets/{dataset_id}/unlink |  |
+| [**updateDataset**](DatasetApi.md#updateDataset) | **PATCH** /organizations/{organization_id}/datasets/{dataset_id} | Update a dataset |
+| [**updateDatasetAccessControl**](DatasetApi.md#updateDatasetAccessControl) | **PATCH** /organizations/{organization_id}/datasets/{dataset_id}/security/access/{identity_id} | Update the specified access to User for a Dataset |
+| [**updateTwingraphEntities**](DatasetApi.md#updateTwingraphEntities) | **PATCH** /organizations/{organization_id}/datasets/{dataset_id}/twingraph/{type} | Update entities in a graph instance |
+| [**uploadTwingraph**](DatasetApi.md#uploadTwingraph) | **POST** /organizations/{organization_id}/datasets/{dataset_id} | Upload data from zip file to dataset&#39;s twingraph |
 
 
 <a name="addDatasetAccessControl"></a>
@@ -45,11 +45,11 @@ Add a control access to the Dataset
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **dataset\_id** | **String**| the Dataset identifier | [default to null]
- **DatasetAccessControl** | [**DatasetAccessControl**](../Models/DatasetAccessControl.md)| the new Dataset security access to add. |
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **dataset\_id** | **String**| the Dataset identifier | [default to null] |
+| **DatasetAccessControl** | [**DatasetAccessControl**](../Models/DatasetAccessControl.md)| the new Dataset security access to add. | |
 
 ### Return type
 
@@ -72,11 +72,11 @@ Add Dataset Compatibility elements.
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **dataset\_id** | **String**| the Dataset identifier | [default to null]
- **DatasetCompatibility** | [**List**](../Models/DatasetCompatibility.md)| the Dataset Compatibility elements |
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **dataset\_id** | **String**| the Dataset identifier | [default to null] |
+| **DatasetCompatibility** | [**List**](../Models/DatasetCompatibility.md)| the Dataset Compatibility elements | |
 
 ### Return type
 
@@ -101,10 +101,10 @@ Copy a Dataset to another Dataset.
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **DatasetCopyParameters** | [**DatasetCopyParameters**](../Models/DatasetCopyParameters.md)| the Dataset copy parameters |
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **DatasetCopyParameters** | [**DatasetCopyParameters**](../Models/DatasetCopyParameters.md)| the Dataset copy parameters | |
 
 ### Return type
 
@@ -127,10 +127,10 @@ Create a new Dataset
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **Dataset** | [**Dataset**](../Models/Dataset.md)| the Dataset to create |
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **Dataset** | [**Dataset**](../Models/Dataset.md)| the Dataset to create | |
 
 ### Return type
 
@@ -155,11 +155,11 @@ Create a sub-dataset from the dataset in parameter
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **dataset\_id** | **String**| the Dataset identifier | [default to null]
- **SubDatasetGraphQuery** | [**SubDatasetGraphQuery**](../Models/SubDatasetGraphQuery.md)| the Cypher query to filter |
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **dataset\_id** | **String**| the Dataset identifier | [default to null] |
+| **SubDatasetGraphQuery** | [**SubDatasetGraphQuery**](../Models/SubDatasetGraphQuery.md)| the Cypher query to filter | |
 
 ### Return type
 
@@ -184,12 +184,12 @@ Create new entities in a graph instance
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **dataset\_id** | **String**| the Dataset Identifier | [default to null]
- **type** | **String**| the entity model type | [default to null] [enum: node, relationship]
- **GraphProperties** | [**List**](../Models/GraphProperties.md)| the entities to create |
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **dataset\_id** | **String**| the Dataset Identifier | [default to null] |
+| **type** | **String**| the entity model type | [default to null] [enum: node, relationship] |
+| **GraphProperties** | [**List**](../Models/GraphProperties.md)| the entities to create | |
 
 ### Return type
 
@@ -212,10 +212,10 @@ Delete a dataset
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **dataset\_id** | **String**| the Dataset identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **dataset\_id** | **String**| the Dataset identifier | [default to null] |
 
 ### Return type
 
@@ -240,12 +240,12 @@ Delete entities in a graph instance
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **dataset\_id** | **String**| the Dataset Identifier | [default to null]
- **type** | **String**| the entity model type | [default to null] [enum: node, relationship]
- **ids** | [**List**](../Models/String.md)| the entities to delete | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **dataset\_id** | **String**| the Dataset Identifier | [default to null] |
+| **type** | **String**| the entity model type | [default to null] [enum: node, relationship] |
+| **ids** | [**List**](../Models/String.md)| the entities to delete | [default to null] |
 
 ### Return type
 
@@ -270,10 +270,10 @@ Download a graph as a zip file
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **hash** | **String**| the Graph download identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **hash** | **String**| the Graph download identifier | [default to null] |
 
 ### Return type
 
@@ -296,11 +296,11 @@ List all Datasets
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **page** | **Integer**| page number to query | [optional] [default to null]
- **size** | **Integer**| amount of result by page | [optional] [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **page** | **Integer**| page number to query | [optional] [default to null] |
+| **size** | **Integer**| amount of result by page | [optional] [default to null] |
 
 ### Return type
 
@@ -323,10 +323,10 @@ Get the details of a Dataset
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **dataset\_id** | **String**| the Dataset identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **dataset\_id** | **String**| the Dataset identifier | [default to null] |
 
 ### Return type
 
@@ -349,11 +349,11 @@ Get a control access for the Dataset
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **dataset\_id** | **String**| the Dataset identifier | [default to null]
- **identity\_id** | **String**| the User identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **dataset\_id** | **String**| the Dataset identifier | [default to null] |
+| **identity\_id** | **String**| the User identifier | [default to null] |
 
 ### Return type
 
@@ -376,10 +376,10 @@ Get the Dataset security information
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **dataset\_id** | **String**| the Dataset identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **dataset\_id** | **String**| the Dataset identifier | [default to null] |
 
 ### Return type
 
@@ -402,10 +402,10 @@ Get the Dataset security users list
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **dataset\_id** | **String**| the Dataset identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **dataset\_id** | **String**| the Dataset identifier | [default to null] |
 
 ### Return type
 
@@ -430,10 +430,10 @@ Get the dataset&#39;s refresh job status
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **dataset\_id** | **String**| the dataset identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **dataset\_id** | **String**| the dataset identifier | [default to null] |
 
 ### Return type
 
@@ -458,12 +458,12 @@ Get entities in a graph instance
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **dataset\_id** | **String**| the Dataset Identifier | [default to null]
- **type** | **String**| the entity model type | [default to null] [enum: node, relationship]
- **ids** | [**List**](../Models/String.md)| the entities to get | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **dataset\_id** | **String**| the Dataset Identifier | [default to null] |
+| **type** | **String**| the entity model type | [default to null] [enum: node, relationship] |
+| **ids** | [**List**](../Models/String.md)| the entities to get | [default to null] |
 
 ### Return type
 
@@ -486,11 +486,11 @@ Name | Type | Description  | Notes
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **dataset\_id** | **String**| the Dataset identifier | [default to null]
- **workspaceId** | **String**| workspace id to be linked to | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **dataset\_id** | **String**| the Dataset identifier | [default to null] |
+| **workspaceId** | **String**| workspace id to be linked to | [default to null] |
 
 ### Return type
 
@@ -515,10 +515,10 @@ Refresh data on dataset from dataset&#39;s source
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **dataset\_id** | **String**| the Dataset identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **dataset\_id** | **String**| the Dataset identifier | [default to null] |
 
 ### Return type
 
@@ -541,10 +541,10 @@ Remove all Dataset Compatibility elements from the Dataset specified
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **dataset\_id** | **String**| the Dataset identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **dataset\_id** | **String**| the Dataset identifier | [default to null] |
 
 ### Return type
 
@@ -567,11 +567,11 @@ Remove the specified access from the given Dataset
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **dataset\_id** | **String**| the Dataset identifier | [default to null]
- **identity\_id** | **String**| the User identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **dataset\_id** | **String**| the Dataset identifier | [default to null] |
+| **identity\_id** | **String**| the User identifier | [default to null] |
 
 ### Return type
 
@@ -596,10 +596,10 @@ Rollback the dataset after a failed refresh
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **dataset\_id** | **String**| the Dataset identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **dataset\_id** | **String**| the Dataset identifier | [default to null] |
 
 ### Return type
 
@@ -622,12 +622,12 @@ Search Datasets by tags
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **DatasetSearch** | [**DatasetSearch**](../Models/DatasetSearch.md)| the Dataset search parameters |
- **page** | **Integer**| page number to query | [optional] [default to null]
- **size** | **Integer**| amount of result by page | [optional] [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **DatasetSearch** | [**DatasetSearch**](../Models/DatasetSearch.md)| the Dataset search parameters | |
+| **page** | **Integer**| page number to query | [optional] [default to null] |
+| **size** | **Integer**| amount of result by page | [optional] [default to null] |
 
 ### Return type
 
@@ -650,11 +650,11 @@ Set the Dataset default security
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **dataset\_id** | **String**| the Dataset identifier | [default to null]
- **DatasetRole** | [**DatasetRole**](../Models/DatasetRole.md)| This change the dataset default security. The default security is the role assigned to any person not on the Access Control List. If the default security is None, then nobody outside of the ACL can access the dataset. |
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **dataset\_id** | **String**| the Dataset identifier | [default to null] |
+| **DatasetRole** | [**DatasetRole**](../Models/DatasetRole.md)| This change the dataset default security. The default security is the role assigned to any person not on the Access Control List. If the default security is None, then nobody outside of the ACL can access the dataset. | |
 
 ### Return type
 
@@ -679,11 +679,11 @@ Run a query on a graph instance and return the result as a zip file in async mod
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **dataset\_id** | **String**| the Graph Identifier | [default to null]
- **DatasetTwinGraphQuery** | [**DatasetTwinGraphQuery**](../Models/DatasetTwinGraphQuery.md)| the query to run |
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **dataset\_id** | **String**| the Graph Identifier | [default to null] |
+| **DatasetTwinGraphQuery** | [**DatasetTwinGraphQuery**](../Models/DatasetTwinGraphQuery.md)| the query to run | |
 
 ### Return type
 
@@ -708,12 +708,12 @@ Async batch update by loading a CSV file on a graph instance
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **dataset\_id** | **String**| the Dataset Identifier | [default to null]
- **twinGraphQuery** | [**DatasetTwinGraphQuery**](../Models/.md)|  | [default to null]
- **body** | **File**|  |
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **dataset\_id** | **String**| the Dataset Identifier | [default to null] |
+| **twinGraphQuery** | [**DatasetTwinGraphQuery**](../Models/.md)|  | [default to null] |
+| **body** | **File**|  | |
 
 ### Return type
 
@@ -738,11 +738,11 @@ Return the result of a query made on the graph instance as a json
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **dataset\_id** | **String**| the Dataset identifier | [default to null]
- **DatasetTwinGraphQuery** | [**DatasetTwinGraphQuery**](../Models/DatasetTwinGraphQuery.md)| the query to run |
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **dataset\_id** | **String**| the Dataset identifier | [default to null] |
+| **DatasetTwinGraphQuery** | [**DatasetTwinGraphQuery**](../Models/DatasetTwinGraphQuery.md)| the query to run | |
 
 ### Return type
 
@@ -765,11 +765,11 @@ Name | Type | Description  | Notes
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **dataset\_id** | **String**| the Dataset identifier | [default to null]
- **workspaceId** | **String**| workspace id to be linked to | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **dataset\_id** | **String**| the Dataset identifier | [default to null] |
+| **workspaceId** | **String**| workspace id to be linked to | [default to null] |
 
 ### Return type
 
@@ -792,11 +792,11 @@ Update a dataset
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **dataset\_id** | **String**| the Dataset identifier | [default to null]
- **Dataset** | [**Dataset**](../Models/Dataset.md)| the new Dataset details. This endpoint can&#39;t be used to update security |
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **dataset\_id** | **String**| the Dataset identifier | [default to null] |
+| **Dataset** | [**Dataset**](../Models/Dataset.md)| the new Dataset details. This endpoint can&#39;t be used to update security | |
 
 ### Return type
 
@@ -819,12 +819,12 @@ Update the specified access to User for a Dataset
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **dataset\_id** | **String**| the Dataset identifier | [default to null]
- **identity\_id** | **String**| the User identifier | [default to null]
- **DatasetRole** | [**DatasetRole**](../Models/DatasetRole.md)| The new Dataset Access Control |
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **dataset\_id** | **String**| the Dataset identifier | [default to null] |
+| **identity\_id** | **String**| the User identifier | [default to null] |
+| **DatasetRole** | [**DatasetRole**](../Models/DatasetRole.md)| The new Dataset Access Control | |
 
 ### Return type
 
@@ -849,12 +849,12 @@ Update entities in a graph instance
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **dataset\_id** | **String**| the Dataset Identifier | [default to null]
- **type** | **String**| the entity model type | [default to null] [enum: node, relationship]
- **GraphProperties** | [**List**](../Models/GraphProperties.md)| the entities to update |
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **dataset\_id** | **String**| the Dataset Identifier | [default to null] |
+| **type** | **String**| the entity model type | [default to null] [enum: node, relationship] |
+| **GraphProperties** | [**List**](../Models/GraphProperties.md)| the entities to update | |
 
 ### Return type
 
@@ -879,11 +879,11 @@ Upload data from zip file to dataset&#39;s twingraph
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **dataset\_id** | **String**| the Dataset identifier | [default to null]
- **body** | **File**|  |
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **dataset\_id** | **String**| the Dataset identifier | [default to null] |
+| **body** | **File**|  | |
 
 ### Return type
 

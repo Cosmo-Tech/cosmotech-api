@@ -56,7 +56,6 @@ import com.ninjasquad.springmockk.MockkBean
 import com.ninjasquad.springmockk.SpykBean
 import com.redis.om.spring.RediSearchIndexer
 import com.redis.testcontainers.RedisStackContainer
-import com.redislabs.redisgraph.impl.api.RedisGraph
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -78,7 +77,9 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
-import redis.clients.jedis.JedisPool
+import redis.clients.jedis.HostAndPort
+import redis.clients.jedis.Protocol
+import redis.clients.jedis.UnifiedJedis
 
 @ActiveProfiles(profiles = ["scenario-test"])
 @ExtendWith(MockKExtension::class)
@@ -105,8 +106,7 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
   @Autowired lateinit var scenarioApiService: ScenarioApiService
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
-  lateinit var jedisPool: JedisPool
-  lateinit var redisGraph: RedisGraph
+  lateinit var unfiedJedis: UnifiedJedis
 
   @BeforeEach
   fun setUp() {
@@ -131,10 +131,8 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
     val context = getContext(redisStackServer)
     val containerIp =
         (context.server as RedisStackContainer).containerInfo.networkSettings.ipAddress
-    jedisPool = JedisPool(containerIp, 6379)
-    redisGraph = RedisGraph(jedisPool)
-    ReflectionTestUtils.setField(datasetApiService, "csmJedisPool", jedisPool)
-    ReflectionTestUtils.setField(datasetApiService, "csmRedisGraph", redisGraph)
+    unfiedJedis = UnifiedJedis(HostAndPort(containerIp, Protocol.DEFAULT_PORT))
+    ReflectionTestUtils.setField(datasetApiService, "unifiedJedis", unfiedJedis)
   }
 
   @TestFactory
@@ -6930,7 +6928,7 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
   private fun materializeTwingraph(dataset: Dataset, createTwingraph: Boolean = true): Dataset {
     dataset.apply {
       if (createTwingraph) {
-        redisGraph.query(this.twingraphId, "CREATE (n:labelrouge)")
+        unfiedJedis.graphQuery(this.twingraphId, "CREATE (n:labelrouge)")
       }
       this.ingestionStatus = Dataset.IngestionStatus.SUCCESS
     }
