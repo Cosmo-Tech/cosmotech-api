@@ -25,7 +25,8 @@ include(
     "twingraph",
     "metrics",
     "scenariorunresult",
-    "runner")
+    "runner",
+    "run")
 
 project(":api").name = "cosmotech-api"
 
@@ -50,3 +51,6 @@ project(":metrics").name = "cosmotech-metrics-service"
 project(":scenariorunresult").name = "cosmotech-scenariorunresult-api"
 
 project(":runner").name = "cosmotech-runner-api"
+
+project(":run").name = "cosmotech-run-api"
+
