@@ -247,13 +247,12 @@ class DatasetServiceImpl(
       trx(dataset) {
         if (subDatasetGraphQuery.queries.isNullOrEmpty()) {
 
-            unifiedJedis.eval(
-                "local o = redis.call('DUMP', KEYS[1]);redis.call('RENAME', KEYS[1], KEYS[2]);" +
-                    "redis.call('RESTORE', KEYS[1], 0, o)",
-                2,
-                dataset.twingraphId,
-                subTwingraphId)
-
+          unifiedJedis.eval(
+              "local o = redis.call('DUMP', KEYS[1]);redis.call('RENAME', KEYS[1], KEYS[2]);" +
+                  "redis.call('RESTORE', KEYS[1], 0, o)",
+              2,
+              dataset.twingraphId,
+              subTwingraphId)
         } else {
           val queryBuffer = QueryBuffer(unifiedJedis, subTwingraphId)
           subDatasetGraphQuery.queries?.forEach { query ->
@@ -389,7 +388,7 @@ class DatasetServiceImpl(
       null -> Dataset.IngestionStatus.NONE.value
       DatasetSourceType.None -> {
         var twincacheStatus = Dataset.TwincacheStatus.EMPTY
-          if (unifiedJedis.exists(dataset.twingraphId!!)) {
+        if (unifiedJedis.exists(dataset.twingraphId!!)) {
           twincacheStatus = Dataset.TwincacheStatus.FULL
         }
         datasetRepository.apply { dataset.twincacheStatus = twincacheStatus }
@@ -402,18 +401,18 @@ class DatasetServiceImpl(
         }
         if (dataset.ingestionStatus == Dataset.IngestionStatus.ERROR) {
           return Dataset.IngestionStatus.ERROR.value
-          } else if (!unifiedJedis.exists(dataset.twingraphId!!)) {
-            Dataset.IngestionStatus.PENDING.value
-          } else {
-            dataset
-                .takeIf { it.ingestionStatus == Dataset.IngestionStatus.PENDING }
-                ?.apply {
-                  ingestionStatus = Dataset.IngestionStatus.SUCCESS
-                  twincacheStatus = Dataset.TwincacheStatus.FULL
-                }
-            datasetRepository.save(dataset)
-            Dataset.IngestionStatus.SUCCESS.value
-          }
+        } else if (!unifiedJedis.exists(dataset.twingraphId!!)) {
+          Dataset.IngestionStatus.PENDING.value
+        } else {
+          dataset
+              .takeIf { it.ingestionStatus == Dataset.IngestionStatus.PENDING }
+              ?.apply {
+                ingestionStatus = Dataset.IngestionStatus.SUCCESS
+                twincacheStatus = Dataset.TwincacheStatus.FULL
+              }
+          datasetRepository.save(dataset)
+          Dataset.IngestionStatus.SUCCESS.value
+        }
       }
       DatasetSourceType.ADT,
       DatasetSourceType.Twincache,

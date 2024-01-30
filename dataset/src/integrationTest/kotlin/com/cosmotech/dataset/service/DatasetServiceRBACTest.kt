@@ -46,7 +46,6 @@ import com.cosmotech.organization.domain.OrganizationSecurity
 import com.ninjasquad.springmockk.SpykBean
 import com.redis.om.spring.RediSearchIndexer
 import com.redis.testcontainers.RedisStackContainer
-import com.redislabs.redisgraph.impl.api.RedisGraph
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -77,7 +76,8 @@ import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
-import redis.clients.jedis.JedisPool
+import redis.clients.jedis.HostAndPort
+import redis.clients.jedis.UnifiedJedis
 
 @ActiveProfiles(profiles = ["dataset-test"])
 @ExtendWith(MockKExtension::class)
@@ -96,7 +96,6 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
   @Autowired lateinit var connectorApiService: ConnectorApiServiceInterface
   @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
   @SpykBean @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
-  @SpykBean @Autowired lateinit var csmRedisGraph: RedisGraph
   @MockK(relaxUnitFun = true) private lateinit var eventPublisher: CsmEventPublisher
 
   lateinit var connectorSaved: Connector
@@ -105,8 +104,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
   lateinit var datasetSaved: Dataset
   lateinit var retrievedDataset1: Dataset
 
-  lateinit var jedisPool: JedisPool
-  lateinit var redisGraph: RedisGraph
+  lateinit var jedis: UnifiedJedis
   lateinit var organization: Organization
   lateinit var organizationSaved: Organization
 
@@ -118,10 +116,8 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
     val context = getContext(redisStackServer)
     val containerIp =
         (context.server as RedisStackContainer).containerInfo.networkSettings.ipAddress
-    jedisPool = JedisPool(containerIp, REDIS_PORT)
-    redisGraph = RedisGraph(jedisPool)
-    ReflectionTestUtils.setField(datasetApiService, "csmJedisPool", jedisPool)
-    ReflectionTestUtils.setField(datasetApiService, "csmRedisGraph", redisGraph)
+    jedis = UnifiedJedis(HostAndPort(containerIp, REDIS_PORT))
+    ReflectionTestUtils.setField(datasetApiService, "unifiedJedis", jedis)
     ReflectionTestUtils.setField(datasetApiService, "eventPublisher", eventPublisher)
   }
 
@@ -811,7 +807,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               every { bulkQueryKey(any()) } returns "hash".toByteArray()
-              jedisPool.resource.use { it.setex("hash", 10.toLong(), "hashValue") }
+              jedis.setex("hash", 10.toLong(), "hashValue")
 
               every {
                 (RequestContextHolder.getRequestAttributes() as ServletRequestAttributes).response
@@ -2300,7 +2296,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
   ): Dataset {
     dataset.apply {
       if (createTwingraph) {
-        redisGraph.query(this.twingraphId, "CREATE (n:labelrouge)")
+        jedis.graphQuery(this.twingraphId, "CREATE (n:labelrouge)")
       }
       this.ingestionStatus = Dataset.IngestionStatus.SUCCESS
     }
