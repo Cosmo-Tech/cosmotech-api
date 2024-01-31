@@ -53,4 +53,3 @@ project(":scenariorunresult").name = "cosmotech-scenariorunresult-api"
 project(":runner").name = "cosmotech-runner-api"
 
 project(":run").name = "cosmotech-run-api"
-
