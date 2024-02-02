@@ -1065,9 +1065,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
+              ROLE_VALIDATOR to false,
               ROLE_USER to false,
-              ROLE_NONE to true,
+              ROLE_NONE to false,
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
@@ -1293,9 +1293,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
+              ROLE_VALIDATOR to false,
               ROLE_USER to false,
-              ROLE_NONE to true,
+              ROLE_NONE to false,
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
@@ -1367,8 +1367,8 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
               ROLE_VALIDATOR to false,
-              ROLE_USER to true,
-              ROLE_NONE to true,
+              ROLE_USER to false,
+              ROLE_NONE to false,
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
@@ -2202,9 +2202,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
+              ROLE_VALIDATOR to false,
               ROLE_USER to false,
-              ROLE_NONE to true,
+              ROLE_NONE to false,
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
@@ -2430,9 +2430,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
+              ROLE_VALIDATOR to false,
               ROLE_USER to false,
-              ROLE_NONE to true,
+              ROLE_NONE to false,
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
@@ -2504,8 +2504,8 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
               ROLE_VALIDATOR to false,
-              ROLE_USER to true,
-              ROLE_NONE to true,
+              ROLE_USER to false,
+              ROLE_NONE to false,
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
@@ -2579,9 +2579,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
+              ROLE_VALIDATOR to false,
               ROLE_USER to false,
-              ROLE_NONE to true,
+              ROLE_NONE to false,
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
@@ -2807,9 +2807,9 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
+              ROLE_VALIDATOR to false,
               ROLE_USER to false,
-              ROLE_NONE to true,
+              ROLE_NONE to false,
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
@@ -2881,8 +2881,8 @@ class ScenarioRunServiceRBACTest : CsmRedisTestBase() {
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
               ROLE_VALIDATOR to false,
-              ROLE_USER to true,
-              ROLE_NONE to true,
+              ROLE_USER to false,
+              ROLE_NONE to false,
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
