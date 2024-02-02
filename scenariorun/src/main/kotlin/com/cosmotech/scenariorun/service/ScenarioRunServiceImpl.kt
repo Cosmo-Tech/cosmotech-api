@@ -279,9 +279,6 @@ class ScenarioRunServiceImpl(
         this.findScenarioRunByIdOptional(organizationId, scenariorunId, withStateInformation)
             ?: throw java.lang.IllegalArgumentException(
                 "ScenarioRun #$scenariorunId not found in organization #$organizationId")
-    // This call verify by itself that we have the read authorization in the scenario
-    scenarioApiService.findScenarioById(
-        organizationId, scenarioRun.workspaceId!!, scenarioRun.scenarioId!!)
     return scenarioRun
   }
 
