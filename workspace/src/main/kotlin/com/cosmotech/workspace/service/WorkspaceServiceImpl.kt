@@ -38,10 +38,10 @@ import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.EnhancedOrganizationApiService
 import com.cosmotech.organization.service.getRbac
 import com.cosmotech.solution.api.SolutionApiService
-import com.cosmotech.workspace.api.WorkspaceApiService
+import com.cosmotech.workspace.EnhancedWorkspaceApiService
 import com.cosmotech.workspace.azure.WORKSPACE_EVENTHUB_ACCESSKEY_SECRET
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
@@ -59,6 +59,7 @@ import org.springframework.context.event.EventListener
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
 import org.springframework.data.domain.Pageable
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
@@ -67,7 +68,7 @@ import org.springframework.stereotype.Service
 @Suppress("TooManyFunctions")
 internal class WorkspaceServiceImpl(
     private val resourceLoader: ResourceLoader,
-    private val organizationService: OrganizationApiService,
+    private val organizationService: EnhancedOrganizationApiService,
     private val solutionService: SolutionApiService,
     private val azureStorageBlobServiceClient: BlobServiceClient,
     private val azureStorageBlobBatchClient: BlobBatchClient,
@@ -75,11 +76,10 @@ internal class WorkspaceServiceImpl(
     private val resourceScanner: ResourceScanner,
     private val secretManager: SecretManager,
     private val workspaceRepository: WorkspaceRepository
-) : CsmPhoenixService(), WorkspaceApiService {
+) : CsmPhoenixService(), EnhancedWorkspaceApiService {
 
   override fun findAllWorkspaces(organizationId: String, page: Int?, size: Int?): List<Workspace> {
-    // This call verify by itself that we have the read authorization in the organization
-    val organization = organizationService.findOrganizationById(organizationId)
+    val organization = organizationService.verifyPermissionsAndReturnOrganization(organizationId,listOf(PERMISSION_READ))
     val isAdmin = csmRbac.isAdmin(organization.getRbac(), getCommonRolesDefinition())
     val defaultPageSize = csmPlatformProperties.twincache.workspace.defaultPageSize
     var result: List<Workspace>
@@ -112,8 +112,7 @@ internal class WorkspaceServiceImpl(
   }
 
   override fun findWorkspaceById(organizationId: String, workspaceId: String): Workspace {
-    // This call verify by itself that we have the read authorization in the organization
-    organizationService.findOrganizationById(organizationId)
+    organizationService.verifyPermissionsAndReturnOrganization(organizationId,listOf(PERMISSION_READ))
     val workspace =
         workspaceRepository.findBy(organizationId, workspaceId).orElseThrow {
           CsmResourceNotFoundException(
@@ -124,10 +123,8 @@ internal class WorkspaceServiceImpl(
   }
 
   override fun createWorkspace(organizationId: String, workspace: Workspace): Workspace {
-    // This call verify by itself that we have the read authorization in the organization
-    val organization = organizationService.findOrganizationById(organizationId)
-    // Needs security on Organization to check RBAC
-    csmRbac.verify(organization.getRbac(), PERMISSION_CREATE_CHILDREN)
+    organizationService.verifyPermissionsAndReturnOrganization(organizationId,
+        listOf(PERMISSION_READ,PERMISSION_CREATE_CHILDREN))
     // Validate Solution ID
     workspace.solution.solutionId?.let { solutionService.findSolutionById(organizationId, it) }
 
@@ -154,8 +151,8 @@ internal class WorkspaceServiceImpl(
   }
 
   override fun deleteAllWorkspaceFiles(organizationId: String, workspaceId: String) {
-    // This call verify by itself that we have the read authorization in the organization
-    organizationService.findOrganizationById(organizationId)
+    organizationService.verifyPermissionsAndReturnOrganization(organizationId,
+      listOf(PERMISSION_READ))
     val workspace = findWorkspaceById(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE)
     logger.debug("Deleting all files for workspace #{} ({})", workspace.id, workspace.name)
@@ -186,8 +183,8 @@ internal class WorkspaceServiceImpl(
       workspaceId: String,
       workspace: Workspace
   ): Workspace {
-    // This call verify by itself that we have the read authorization in the organization
-    organizationService.findOrganizationById(organizationId)
+    organizationService.verifyPermissionsAndReturnOrganization(organizationId,
+          listOf(PERMISSION_READ))
     val existingWorkspace = findWorkspaceById(organizationId, workspaceId)
     csmRbac.verify(existingWorkspace.getRbac(), PERMISSION_WRITE)
     // Security cannot be changed by updateWorkspace
@@ -376,25 +373,6 @@ internal class WorkspaceServiceImpl(
         addDatasetToWorkspace.datasetId)
   }
 
-  fun addDatasetToLinkedDatasetIdList(
-      organizationId: String,
-      workspaceId: String,
-      datasetId: String
-  ): Workspace {
-    val workspace = findWorkspaceById(organizationId, workspaceId)
-
-    if (workspace.linkedDatasetIdList != null) {
-      if (workspace.linkedDatasetIdList!!.contains(datasetId)) {
-        return workspace
-      } else {
-        workspace.linkedDatasetIdList!!.add(datasetId)
-      }
-    } else {
-      workspace.linkedDatasetIdList = mutableListOf(datasetId)
-    }
-    return workspaceRepository.save(workspace)
-  }
-
   override fun unlinkDataset(
       organizationId: String,
       workspaceId: String,
@@ -432,16 +410,6 @@ internal class WorkspaceServiceImpl(
     return workspace
   }
 
-  private fun getWorkspaceFileResources(
-      organizationId: String,
-      workspaceId: String
-  ): List<BlobStorageResource> {
-    findWorkspaceById(organizationId, workspaceId)
-    return AzureStorageResourcePatternResolver(azureStorageBlobServiceClient)
-        .getResources("azure-blob://$organizationId/$workspaceId/**/*".sanitizeForAzureStorage())
-        .map { it as BlobStorageResource }
-  }
-
   override fun getWorkspacePermissions(
       organizationId: String,
       workspaceId: String,
@@ -467,8 +435,8 @@ internal class WorkspaceServiceImpl(
       workspaceId: String,
       workspaceRole: WorkspaceRole
   ): WorkspaceSecurity {
-    // This call verify by itself that we have the read authorization in the organization
-    organizationService.findOrganizationById(organizationId)
+      organizationService.verifyPermissionsAndReturnOrganization(organizationId,
+          listOf(PERMISSION_READ))
     val workspace = findWorkspaceById(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE_SECURITY)
     val rbacSecurity = csmRbac.setDefault(workspace.getRbac(), workspaceRole.role)
@@ -488,15 +456,28 @@ internal class WorkspaceServiceImpl(
     return WorkspaceAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 
-  override fun addWorkspaceAccessControl(
+    override fun verifyPermissionsAndReturnWorkspace(
+        workspaceId: String,
+        requiredPermissions: List<String>
+    ): Workspace {
+        val workspace =
+            workspaceRepository.findByIdOrNull(workspaceId)
+                ?: throw CsmResourceNotFoundException("Workspace $workspaceId does not exist!")
+        requiredPermissions.forEach {
+            csmRbac.verify(workspace.getRbac(), it)
+        }
+        return workspace
+    }
+
+    override fun addWorkspaceAccessControl(
       organizationId: String,
       workspaceId: String,
       workspaceAccessControl: WorkspaceAccessControl
   ): WorkspaceAccessControl {
+    val organization = organizationService.verifyPermissionsAndReturnOrganization(organizationId,
+          listOf(PERMISSION_READ))
     val workspace = findWorkspaceById(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE_SECURITY)
-    // This call verify by itself that we have the read authorization in the organization
-    var organization = organizationService.findOrganizationById(organizationId)
 
     val users = getWorkspaceSecurityUsers(organizationId, workspaceId)
     if (users.contains(workspaceAccessControl.id)) {
@@ -521,8 +502,8 @@ internal class WorkspaceServiceImpl(
       identityId: String,
       workspaceRole: WorkspaceRole
   ): WorkspaceAccessControl {
-    // This call verify by itself that we have the read authorization in the organization
-    organizationService.findOrganizationById(organizationId)
+    organizationService.verifyPermissionsAndReturnOrganization(organizationId,
+          listOf(PERMISSION_READ))
     val workspace = findWorkspaceById(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_WRITE_SECURITY)
     csmRbac.checkUserExists(
@@ -554,6 +535,35 @@ internal class WorkspaceServiceImpl(
     csmRbac.verify(workspace.getRbac(), PERMISSION_READ_SECURITY)
     return csmRbac.getUsers(workspace.getRbac())
   }
+
+    private fun addDatasetToLinkedDatasetIdList(
+        organizationId: String,
+        workspaceId: String,
+        datasetId: String
+    ): Workspace {
+        val workspace = findWorkspaceById(organizationId, workspaceId)
+
+        if (workspace.linkedDatasetIdList != null) {
+            if (workspace.linkedDatasetIdList!!.contains(datasetId)) {
+                return workspace
+            } else {
+                workspace.linkedDatasetIdList!!.add(datasetId)
+            }
+        } else {
+            workspace.linkedDatasetIdList = mutableListOf(datasetId)
+        }
+        return workspaceRepository.save(workspace)
+    }
+
+    private fun getWorkspaceFileResources(
+        organizationId: String,
+        workspaceId: String
+    ): List<BlobStorageResource> {
+        findWorkspaceById(organizationId, workspaceId)
+        return AzureStorageResourcePatternResolver(azureStorageBlobServiceClient)
+            .getResources("azure-blob://$organizationId/$workspaceId/**/*".sanitizeForAzureStorage())
+            .map { it as BlobStorageResource }
+    }
 
   private fun initSecurity(userId: String): WorkspaceSecurity {
     return WorkspaceSecurity(

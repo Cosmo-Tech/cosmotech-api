@@ -22,7 +22,7 @@ import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetConnector
 import com.cosmotech.dataset.domain.DatasetSecurity
-import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.EnhancedOrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
@@ -30,7 +30,7 @@ import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
 import com.cosmotech.solution.domain.SolutionSecurity
-import com.cosmotech.workspace.api.WorkspaceApiService
+import com.cosmotech.workspace.EnhancedWorkspaceApiService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceRole
@@ -74,9 +74,9 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   @MockK private lateinit var secretManagerMock: SecretManager
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
-  @Autowired lateinit var organizationApiService: OrganizationApiService
+  @Autowired lateinit var organizationApiService: EnhancedOrganizationApiService
   @Autowired lateinit var solutionApiService: SolutionApiService
-  @Autowired lateinit var workspaceApiService: WorkspaceApiService
+  @Autowired lateinit var workspaceApiService: EnhancedWorkspaceApiService
   @Autowired lateinit var connectorApiService: ConnectorApiService
   @Autowired lateinit var datasetApiService: DatasetApiService
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
