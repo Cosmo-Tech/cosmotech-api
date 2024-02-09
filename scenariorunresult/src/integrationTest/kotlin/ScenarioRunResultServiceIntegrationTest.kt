@@ -12,18 +12,18 @@ import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.connector.api.ConnectorApiService
-import com.cosmotech.dataset.api.DatasetApiService
+import com.cosmotech.connector.ConnectorApiServiceInterface
+import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
-import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
-import com.cosmotech.scenario.api.ScenarioApiService
+import com.cosmotech.scenario.ScenarioApiServiceInterface
 import com.cosmotech.scenario.domain.Scenario
-import com.cosmotech.scenariorunresult.api.ScenariorunresultApiService
+import com.cosmotech.scenariorunresult.ScenarioRunResultApiServiceInterface
 import com.cosmotech.scenariorunresult.domain.ScenarioRunResult
-import com.cosmotech.solution.api.SolutionApiService
+import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.Solution
-import com.cosmotech.workspace.api.WorkspaceApiService
+import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.azure.WorkspaceEventHubInfo
 import com.cosmotech.workspace.domain.Workspace
@@ -70,13 +70,13 @@ class ScenarioRunResultServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
 
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
-  @Autowired lateinit var organizationApiService: OrganizationApiService
-  @Autowired lateinit var solutionApiService: SolutionApiService
-  @Autowired lateinit var workspaceApiService: WorkspaceApiService
-  @Autowired lateinit var scenarioApiService: ScenarioApiService
-  @Autowired lateinit var connectorApiService: ConnectorApiService
-  @SpykBean @Autowired lateinit var datasetApiService: DatasetApiService
-  @Autowired lateinit var scenarioRunResultApiService: ScenariorunresultApiService
+  @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
+  @Autowired lateinit var solutionApiService: SolutionApiServiceInterface
+  @Autowired lateinit var workspaceApiService: WorkspaceApiServiceInterface
+  @Autowired lateinit var scenarioApiService: ScenarioApiServiceInterface
+  @Autowired lateinit var connectorApiService: ConnectorApiServiceInterface
+  @SpykBean @Autowired lateinit var datasetApiService: DatasetApiServiceInterface
+  @Autowired lateinit var scenarioRunResultApiService: ScenarioRunResultApiServiceInterface
 
   lateinit var cosmoArbo: CosmoArbo
 

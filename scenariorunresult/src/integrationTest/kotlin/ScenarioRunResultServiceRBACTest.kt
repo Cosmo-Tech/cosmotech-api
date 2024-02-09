@@ -5,31 +5,24 @@ package com.cosmotech.scenariorunresult.service
 import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
-import com.cosmotech.api.rbac.PERMISSION_READ
-import com.cosmotech.api.rbac.PERMISSION_WRITE
-import com.cosmotech.api.rbac.ROLE_ADMIN
-import com.cosmotech.api.rbac.ROLE_EDITOR
-import com.cosmotech.api.rbac.ROLE_NONE
-import com.cosmotech.api.rbac.ROLE_USER
-import com.cosmotech.api.rbac.ROLE_VALIDATOR
-import com.cosmotech.api.rbac.ROLE_VIEWER
+import com.cosmotech.api.rbac.*
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.connector.api.ConnectorApiService
-import com.cosmotech.dataset.api.DatasetApiService
+import com.cosmotech.connector.ConnectorApiServiceInterface
+import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
-import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
-import com.cosmotech.scenario.api.ScenarioApiService
+import com.cosmotech.scenario.ScenarioApiServiceInterface
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioAccessControl
-import com.cosmotech.scenariorunresult.api.ScenariorunresultApiService
-import com.cosmotech.solution.api.SolutionApiService
+import com.cosmotech.scenariorunresult.ScenarioRunResultApiServiceInterface
+import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.Solution
-import com.cosmotech.workspace.api.WorkspaceApiService
+import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.azure.WorkspaceEventHubInfo
 import com.cosmotech.workspace.domain.Workspace
@@ -76,13 +69,13 @@ class ScenarioRunResultServiceRBACTest : CsmRedisTestBase() {
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
 
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
-  @Autowired lateinit var organizationApiService: OrganizationApiService
-  @Autowired lateinit var solutionApiService: SolutionApiService
-  @Autowired lateinit var workspaceApiService: WorkspaceApiService
-  @Autowired lateinit var scenarioApiService: ScenarioApiService
-  @Autowired lateinit var connectorApiService: ConnectorApiService
-  @SpykBean @Autowired lateinit var datasetApiService: DatasetApiService
-  @Autowired lateinit var scenarioRunResultApiService: ScenariorunresultApiService
+  @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
+  @Autowired lateinit var solutionApiService: SolutionApiServiceInterface
+  @Autowired lateinit var workspaceApiService: WorkspaceApiServiceInterface
+  @Autowired lateinit var scenarioApiService: ScenarioApiServiceInterface
+  @Autowired lateinit var connectorApiService: ConnectorApiServiceInterface
+  @SpykBean @Autowired lateinit var datasetApiService: DatasetApiServiceInterface
+  @Autowired lateinit var scenarioRunResultApiService: ScenarioRunResultApiServiceInterface
 
   lateinit var cosmoArbo: CosmoArbo
 
@@ -106,6 +99,7 @@ class ScenarioRunResultServiceRBACTest : CsmRedisTestBase() {
     rediSearchIndexer.createIndexFor(Solution::class.java)
     rediSearchIndexer.createIndexFor(Workspace::class.java)
     rediSearchIndexer.createIndexFor(Scenario::class.java)
+    rediSearchIndexer.createIndexFor(Dataset::class.java)
 
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     cosmoArbo = createCosmoArbo()
@@ -247,6 +241,9 @@ class ScenarioRunResultServiceRBACTest : CsmRedisTestBase() {
         )
         .map { (role, shouldPass) ->
           DynamicTest.dynamicTest("Access with role $role on organization") {
+            every {
+              datasetApiService.getVerifiedDataset(any(), any(), PERMISSION_READ_SECURITY)
+            } returns makeDataset(cosmoArbo.organizationId, makeConnector())
             every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
             scenarioApiService.addScenarioAccessControl(
                 cosmoArbo.organizationId,

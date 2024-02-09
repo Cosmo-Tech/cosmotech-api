@@ -19,7 +19,7 @@ import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationRole
@@ -58,7 +58,7 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
   // NEEDED: recreate indexes in redis
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
-  @Autowired lateinit var organizationApiService: OrganizationApiService
+  @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
 
   @BeforeAll
   fun globalSetup() {

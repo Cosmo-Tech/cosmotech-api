@@ -39,7 +39,12 @@ internal fun List<Scenario>.addLastRunsInfo(
           val parentLastRun =
               try {
                 scenarioServiceImpl
-                    .findScenarioByIdNoState(organizationId, workspaceId, parentId)
+                    .findScenarioById(
+                        organizationId,
+                        workspaceId,
+                        parentId,
+                        withLastRun = false,
+                        withState = false)
                     .lastRun
               } catch (iae: CsmResourceNotFoundException) {
                 // There might be cases where the parent no longer exists
@@ -63,7 +68,8 @@ internal fun List<Scenario>.addLastRunsInfo(
           val rootLastRun =
               try {
                 scenarioServiceImpl
-                    .findScenarioByIdNoState(organizationId, workspaceId, rootId)
+                    .findScenarioById(
+                        organizationId, workspaceId, rootId, withLastRun = false, withState = false)
                     .lastRun
               } catch (iae: CsmResourceNotFoundException) {
                 // There might be cases where the root scenario no longer exists

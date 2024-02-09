@@ -7,9 +7,7 @@ import com.cosmotech.api.events.TwingraphImportJobInfoRequest
 import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.exceptions.CsmServerException
-import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_DELETE
-import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.api.security.coroutine.SecurityCoroutineContext
 import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.bulkQueryKey
@@ -19,8 +17,8 @@ import com.cosmotech.api.utils.redisGraphKey
 import com.cosmotech.api.utils.toRedisMetaDataKey
 import com.cosmotech.api.utils.unzip
 import com.cosmotech.api.utils.zipBytesWithFileNames
-import com.cosmotech.organization.api.OrganizationApiService
-import com.cosmotech.organization.service.getRbac
+import com.cosmotech.organization.OrganizationApiServiceInterface
+import com.cosmotech.twingraph.TwingraphApiServiceInterface
 import com.cosmotech.twingraph.bulk.QueryBuffer
 import com.cosmotech.twingraph.domain.GraphProperties
 import com.cosmotech.twingraph.domain.TwinGraphBatchResult
@@ -61,12 +59,11 @@ const val DEFAULT_GRAPH_ROTATION = "3"
 @Suppress("TooManyFunctions")
 @Deprecated("Use dataset service instead")
 class TwingraphServiceImpl(
-    private val organizationService: OrganizationApiService,
+    private val organizationService: OrganizationApiServiceInterface,
     private val csmJedisPool: JedisPool,
     private val csmRedisGraph: RedisGraph,
-    private val csmRbac: CsmRbac,
     private val resourceScanner: ResourceScanner
-) : CsmPhoenixService(), TwingraphApiService {
+) : CsmPhoenixService(), TwingraphApiServiceInterface {
 
   override fun createGraph(organizationId: String, graphId: String, body: Resource?) {
     val graphList = mutableListOf<String>()
@@ -119,15 +116,13 @@ class TwingraphServiceImpl(
 
   @Suppress("SpreadOperator")
   override fun delete(organizationId: String, graphId: String) {
-    val organization = organizationService.findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_DELETE)
+    organizationService.getVerifiedOrganization(organizationId, PERMISSION_DELETE)
     val versions = getRedisKeyList("$graphId:*")
     versions.forEach { csmRedisGraph.deleteGraph(it) }
   }
 
   override fun findAllTwingraphs(organizationId: String): List<String> {
-    val organization = organizationService.findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
+    organizationService.getVerifiedOrganization(organizationId)
     return getRedisKeyList("*")
   }
 
@@ -159,8 +154,7 @@ class TwingraphServiceImpl(
       twinGraphQuery: TwinGraphQuery,
       toCheckReadOnlyQuery: Boolean
   ) {
-    val organization = organizationService.findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
+    organizationService.getVerifiedOrganization(organizationId)
     if (toCheckReadOnlyQuery && !TwingraphUtils.isReadOnlyQuery(twinGraphQuery.query)) {
       throw CsmClientException("Read Only queries authorized only")
     }
@@ -202,8 +196,7 @@ class TwingraphServiceImpl(
       graphId: String,
       requestBody: Map<String, String>
   ): Any {
-    val organization = organizationService.findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
+    organizationService.getVerifiedOrganization(organizationId)
 
     val graphRotation = requestBody[GRAPH_ROTATION]?.toInt()
     if (graphRotation != null && graphRotation < 1) {
@@ -295,8 +288,7 @@ class TwingraphServiceImpl(
   ) = readCSV(inputStream, result) { actionLambda(twinGraphQuery.query.formatQuery(it)) }
 
   override fun downloadGraph(organizationId: String, hash: String): Resource {
-    val organization = organizationService.findOrganizationById(organizationId)
-    csmRbac.verify(organization.getRbac(), PERMISSION_READ)
+    organizationService.getVerifiedOrganization(organizationId)
 
     val bulkQueryId = bulkQueryKey(hash)
     csmJedisPool.resource.use { jedis ->

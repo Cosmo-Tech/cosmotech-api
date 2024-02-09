@@ -11,10 +11,9 @@ import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.getCurrentAuthentication
-import com.cosmotech.api.utils.objectMapper
-import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
-import com.cosmotech.scenario.api.ScenarioApiService
+import com.cosmotech.scenario.ScenarioApiServiceInterface
 import com.cosmotech.scenariorun.ContainerFactory
 import com.cosmotech.scenariorun.domain.ScenarioRun
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
@@ -22,9 +21,9 @@ import com.cosmotech.scenariorun.domain.ScenarioRunSearch
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
 import com.cosmotech.scenariorun.repository.ScenarioRunRepository
 import com.cosmotech.scenariorun.workflow.WorkflowService
-import com.cosmotech.solution.api.SolutionApiService
+import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.Solution
-import com.cosmotech.workspace.api.WorkspaceApiService
+import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
@@ -52,15 +51,13 @@ private const val WORKSPACE_ID = "W-AbCdEf123"
 private const val SOLUTION_ID = "SOL-AbCdEf123"
 private const val AUTHENTICATED_USERNAME = "authenticated-user"
 
-private val objectMapper = objectMapper()
-
 @ExtendWith(MockKExtension::class)
 class ScenarioRunServiceImplTests {
 
-  @MockK private lateinit var organizationService: OrganizationApiService
+  @MockK private lateinit var organizationService: OrganizationApiServiceInterface
   @MockK(relaxed = true) private lateinit var containerFactory: ContainerFactory
-  @MockK private lateinit var solutionService: SolutionApiService
-  @MockK private lateinit var workspaceService: WorkspaceApiService
+  @MockK private lateinit var solutionService: SolutionApiServiceInterface
+  @MockK private lateinit var workspaceService: WorkspaceApiServiceInterface
   @MockK private lateinit var idGenerator: CsmIdGenerator
   @Suppress("unused") @MockK private lateinit var csmPlatformProperties: CsmPlatformProperties
 
@@ -70,7 +67,7 @@ class ScenarioRunServiceImplTests {
 
   @MockK(relaxed = true) private lateinit var workflowService: WorkflowService
 
-  @MockK(relaxed = true) private lateinit var scenarioApiService: ScenarioApiService
+  @MockK(relaxed = true) private lateinit var scenarioApiService: ScenarioApiServiceInterface
   @MockK private lateinit var csmRbac: CsmRbac
 
   @MockK(relaxed = true) private lateinit var azureDataExplorerClient: AzureDataExplorerClient
