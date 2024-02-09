@@ -15,11 +15,11 @@ import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
-import com.cosmotech.solution.api.SolutionApiService
+import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateParameter
 import com.cosmotech.solution.domain.RunTemplateParameterGroup
@@ -63,8 +63,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   @MockK(relaxed = true) private lateinit var azureStorageBlobServiceClient: BlobServiceClient
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
-  @Autowired lateinit var organizationApiService: OrganizationApiService
-  @Autowired lateinit var solutionApiService: SolutionApiService
+  @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
+  @Autowired lateinit var solutionApiService: SolutionApiServiceInterface
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   lateinit var organization: Organization

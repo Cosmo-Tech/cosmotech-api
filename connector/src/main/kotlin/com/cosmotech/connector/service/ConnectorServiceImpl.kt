@@ -11,18 +11,18 @@ import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.connector.api.ConnectorApiService
+import com.cosmotech.connector.ConnectorApiServiceInterface
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.connector.repository.ConnectorRepository
 import org.springframework.stereotype.Service
 
 @Service
 internal class ConnectorServiceImpl(var connectorRepository: ConnectorRepository) :
-    CsmPhoenixService(), ConnectorApiService {
+    CsmPhoenixService(), ConnectorApiServiceInterface {
 
   override fun findAllConnectors(page: Int?, size: Int?): List<Connector> {
     val defaultPageSize = csmPlatformProperties.twincache.connector.defaultPageSize
-    var pageRequest = constructPageRequest(page, size, defaultPageSize)
+    val pageRequest = constructPageRequest(page, size, defaultPageSize)
     if (pageRequest != null) {
       return connectorRepository.findAll(pageRequest).toList()
     }

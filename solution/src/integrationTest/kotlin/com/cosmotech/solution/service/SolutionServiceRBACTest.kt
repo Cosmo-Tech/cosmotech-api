@@ -235,15 +235,10 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.createSolution(organizationSaved.id!!, solution)
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_CREATE_CHILDREN",
-                      exception.message)
-                }
+
+                assertEquals(
+                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_CREATE_CHILDREN",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -313,15 +308,10 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                     assertThrows<CsmAccessForbiddenException> {
                       solutionApiService.deleteSolution(organizationSaved.id!!, solutionSaved.id!!)
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_DELETE",
-                      exception.message)
-                }
+
+                assertEquals(
+                    "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_DELETE",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.deleteSolution(organizationSaved.id!!, solutionSaved.id!!)
@@ -398,15 +388,10 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                       solutionApiService.updateSolution(
                           organizationSaved.id!!, solutionSaved.id!!, solution)
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE",
-                      exception.message)
-                }
+
+                assertEquals(
+                    "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.updateSolution(
@@ -486,15 +471,10 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                           solutionSaved.id!!,
                           SolutionAccessControl("user", ROLE_USER))
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
-                      exception.message)
-                }
+
+                assertEquals(
+                    "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.addSolutionAccessControl(
@@ -570,15 +550,10 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                       solutionApiService.getSolutionAccessControl(
                           organizationSaved.id!!, solutionSaved.id!!, TEST_USER_MAIL)
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
-                      exception.message)
-                }
+
+                assertEquals(
+                    "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.getSolutionAccessControl(
@@ -652,15 +627,10 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                       solutionApiService.getSolutionSecurityUsers(
                           organizationSaved.id!!, solutionSaved.id!!)
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
-                      exception.message)
-                }
+
+                assertEquals(
+                    "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.getSolutionSecurityUsers(
@@ -734,15 +704,10 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                       solutionApiService.removeSolutionAccessControl(
                           organizationSaved.id!!, solutionSaved.id!!, TEST_USER_MAIL)
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
-                      exception.message)
-                }
+
+                assertEquals(
+                    "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.removeSolutionAccessControl(
@@ -825,15 +790,9 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                           TEST_USER_MAIL,
                           SolutionRole(ROLE_USER))
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.updateSolutionAccessControl(
@@ -914,15 +873,10 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                       solutionApiService.addOrReplaceParameters(
                           organizationSaved.id!!, solutionSaved.id!!, listOf(runTemplateParameter))
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE",
-                      exception.message)
-                }
+
+                assertEquals(
+                    "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.addOrReplaceParameters(
@@ -996,15 +950,10 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                       solutionApiService.removeAllSolutionParameters(
                           organizationSaved.id!!, solutionSaved.id!!)
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_DELETE",
-                      exception.message)
-                }
+
+                assertEquals(
+                    "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_DELETE",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.removeAllSolutionParameters(
@@ -1086,15 +1035,10 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                           solutionSaved.id!!,
                           listOf(runTemplateParameterGroup))
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE",
-                      exception.message)
-                }
+
+                assertEquals(
+                    "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.addOrReplaceParameterGroups(
@@ -1170,15 +1114,9 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                       solutionApiService.removeAllSolutionParameterGroups(
                           organizationSaved.id!!, solutionSaved.id!!)
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_DELETE",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_DELETE",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.removeAllSolutionParameterGroups(
@@ -1256,15 +1194,10 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                       solutionApiService.addOrReplaceRunTemplates(
                           organizationSaved.id!!, solutionSaved.id!!, listOf(runTemplate))
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE",
-                      exception.message)
-                }
+
+                assertEquals(
+                    "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.addOrReplaceRunTemplates(
@@ -1338,15 +1271,10 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                       solutionApiService.removeAllRunTemplates(
                           organizationSaved.id!!, solutionSaved.id!!)
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_DELETE",
-                      exception.message)
-                }
+
+                assertEquals(
+                    "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_DELETE",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.removeAllRunTemplates(
@@ -1420,15 +1348,9 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                       solutionApiService.deleteSolutionRunTemplate(
                           organizationSaved.id!!, solutionSaved.id!!, "runTemplate")
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_DELETE",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_DELETE",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.deleteSolutionRunTemplate(
@@ -1506,15 +1428,9 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                       solutionApiService.updateSolutionRunTemplate(
                           organizationSaved.id!!, solutionSaved.id!!, "runTemplate", runTemplate)
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.updateSolutionRunTemplate(
@@ -1754,15 +1670,10 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                           resource,
                           true)
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE",
-                      exception.message)
-                }
+
+                assertEquals(
+                    "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.uploadRunTemplateHandler(
@@ -1842,15 +1753,10 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                       solutionApiService.getSolutionSecurity(
                           organizationSaved.id!!, solutionSaved.id!!)
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
-                      exception.message)
-                }
+
+                assertEquals(
+                    "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.getSolutionSecurity(organizationSaved.id!!, solutionSaved.id!!)
@@ -1925,15 +1831,10 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                       solutionApiService.setSolutionDefaultSecurity(
                           organizationSaved.id!!, solutionSaved.id!!, SolutionRole(ROLE_VIEWER))
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
-                      exception.message)
-                }
+
+                assertEquals(
+                    "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   solutionApiService.setSolutionDefaultSecurity(

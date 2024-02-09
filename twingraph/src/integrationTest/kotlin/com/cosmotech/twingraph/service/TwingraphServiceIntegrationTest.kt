@@ -8,11 +8,11 @@ import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
-import com.cosmotech.twingraph.api.TwingraphApiService
+import com.cosmotech.twingraph.TwingraphApiServiceInterface
 import com.cosmotech.twingraph.domain.GraphProperties
 import com.cosmotech.twingraph.domain.TwinGraphBatchResult
 import com.cosmotech.twingraph.domain.TwinGraphQuery
@@ -53,8 +53,8 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
 
   private val logger = LoggerFactory.getLogger(TwingraphServiceIntegrationTest::class.java)
 
-  @Autowired lateinit var twingraphApiService: TwingraphApiService
-  @Autowired lateinit var organizationApiService: OrganizationApiService
+  @Autowired lateinit var twingraphApiService: TwingraphApiServiceInterface
+  @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   lateinit var jedisPool: JedisPool

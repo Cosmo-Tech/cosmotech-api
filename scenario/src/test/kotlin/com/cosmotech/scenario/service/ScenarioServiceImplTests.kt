@@ -12,22 +12,13 @@ import com.cosmotech.api.events.WorkflowStatusRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.id.CsmIdGenerator
-import com.cosmotech.api.rbac.CsmAdmin
-import com.cosmotech.api.rbac.CsmRbac
-import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
-import com.cosmotech.api.rbac.ROLE_ADMIN
-import com.cosmotech.api.rbac.ROLE_EDITOR
-import com.cosmotech.api.rbac.ROLE_NONE
-import com.cosmotech.api.rbac.ROLE_USER
-import com.cosmotech.api.rbac.ROLE_VALIDATOR
-import com.cosmotech.api.rbac.ROLE_VIEWER
+import com.cosmotech.api.rbac.*
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.getCurrentAuthentication
-import com.cosmotech.dataset.api.DatasetApiService
+import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
-import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
@@ -38,21 +29,21 @@ import com.cosmotech.scenario.domain.ScenarioLastRun
 import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
 import com.cosmotech.scenario.domain.ScenarioSecurity
 import com.cosmotech.scenario.repository.ScenarioRepository
-import com.cosmotech.solution.api.SolutionApiService
+import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.Solution
-import com.cosmotech.workspace.api.WorkspaceApiService
+import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
+import com.cosmotech.workspace.service.getRbac
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
-import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.impl.annotations.SpyK
 import io.mockk.junit5.MockKExtension
 import io.mockk.justRun
@@ -92,10 +83,9 @@ const val CONNECTED_DEFAULT_USER = "test.user@cosmotech.com"
 @Suppress("LongMethod", "LargeClass")
 class ScenarioServiceImplTests {
 
-  @MockK private lateinit var organizationService: OrganizationApiService
-  @Suppress("unused") @MockK private lateinit var datasetService: DatasetApiService
-  @MockK private lateinit var solutionService: SolutionApiService
-  @RelaxedMockK private lateinit var workspaceService: WorkspaceApiService
+  @Suppress("unused") @MockK private lateinit var datasetService: DatasetApiServiceInterface
+  @MockK private lateinit var solutionService: SolutionApiServiceInterface
+  @MockK private lateinit var workspaceService: WorkspaceApiServiceInterface
 
   @Suppress("unused")
   @MockK(relaxed = true)
@@ -143,17 +133,18 @@ class ScenarioServiceImplTests {
 
   @Test
   fun `do not creates copy of dataset for new scenario when workspace datasetCopy is true`() {
-    justRun { csmRbac.verify(any(), PERMISSION_CREATE_CHILDREN) }
 
     // mock solution return
-    every { solutionService.findSolutionById(any(), any()) } returns
+    every { solutionService.getVerifiedSolution(any(), any()) } returns
         Solution().apply {
           this.runTemplates =
               mutableListOf(mockk<RunTemplate>(relaxed = true) { every { id } returns "rt-id" })
         }
 
     // mock workspace
-    every { workspaceService.findWorkspaceById(any(), any()) } returns
+    every {
+      workspaceService.getVerifiedWorkspace(any(), any(), PERMISSION_CREATE_CHILDREN)
+    } returns
         Workspace(
                 key = "key",
                 name = "w",
@@ -184,17 +175,18 @@ class ScenarioServiceImplTests {
 
   @Test
   fun `do not creates copy of dataset for new scenario when workspace datasetCopy is false`() {
-    justRun { csmRbac.verify(any(), PERMISSION_CREATE_CHILDREN) }
 
     // mock solution return
-    every { solutionService.findSolutionById(any(), any()) } returns
+    every { solutionService.getVerifiedSolution(any(), any()) } returns
         Solution().apply {
           this.runTemplates =
               mutableListOf(mockk<RunTemplate>(relaxed = true) { every { id } returns "rt-id" })
         }
 
     // mock workspace
-    every { workspaceService.findWorkspaceById(any(), any()) } returns
+    every {
+      workspaceService.getVerifiedWorkspace(any(), any(), PERMISSION_CREATE_CHILDREN)
+    } returns
         Workspace(
                 key = "key",
                 name = "w",
@@ -225,17 +217,18 @@ class ScenarioServiceImplTests {
 
   @Test
   fun `do not creates copy of dataset for new scenario when workspace datasetCopy is null`() {
-    justRun { csmRbac.verify(any(), PERMISSION_CREATE_CHILDREN) }
 
     // mock solution return
-    every { solutionService.findSolutionById(any(), any()) } returns
+    every { solutionService.getVerifiedSolution(any(), any()) } returns
         Solution().apply {
           this.runTemplates =
               mutableListOf(mockk<RunTemplate>(relaxed = true) { every { id } returns "rt-id" })
         }
 
     // mock workspace
-    every { workspaceService.findWorkspaceById(any(), any()) } returns
+    every {
+      workspaceService.getVerifiedWorkspace(any(), any(), PERMISSION_CREATE_CHILDREN)
+    } returns
         Workspace(
                 key = "key",
                 name = "w",
@@ -267,7 +260,10 @@ class ScenarioServiceImplTests {
   @Test
   fun `PROD-7687 - should initialize Child Scenario Parameters values with parent ones`() {
     val workspace = mockk<Workspace>()
-    every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
+    every {
+      workspaceService.getVerifiedWorkspace(
+          ORGANIZATION_ID, WORKSPACE_ID, PERMISSION_CREATE_CHILDREN)
+    } returns workspace
     val workspaceSecurity = mockk<WorkspaceSecurity>()
     every { workspace.security } returns workspaceSecurity
     every { workspace.security?.default } returns String()
@@ -281,7 +277,7 @@ class ScenarioServiceImplTests {
     val solution = mockk<Solution>()
     every { solution.id } returns SOLUTION_ID
     every { solution.name } returns "test solution"
-    every { solutionService.findSolutionById(ORGANIZATION_ID, SOLUTION_ID) } returns solution
+    every { solutionService.getVerifiedSolution(ORGANIZATION_ID, SOLUTION_ID) } returns solution
     val runTemplate1 = mockk<RunTemplate>()
     every { runTemplate1.id } returns "runTemplate1_id"
     every { runTemplate1.name } returns "runTemplate1 name"
@@ -319,7 +315,7 @@ class ScenarioServiceImplTests {
                 value = "parameter_group_11_parameter1_value"))
 
     every {
-      scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, parentScenarioId)
+      scenarioServiceImpl.getVerifiedScenario(ORGANIZATION_ID, WORKSPACE_ID, parentScenarioId)
     } returns parentScenario
 
     every { idGenerator.generate("scenario") } returns "S-myScenarioId"
@@ -376,12 +372,14 @@ class ScenarioServiceImplTests {
   @Test
   fun `PROD-7687 - No Parameters Values inherited if no parentId defined`() {
     val workspace = mockk<Workspace>()
-    every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
+    every {
+      workspaceService.getVerifiedWorkspace(
+          ORGANIZATION_ID, WORKSPACE_ID, PERMISSION_CREATE_CHILDREN)
+    } returns workspace
     val workspaceSecurity = mockk<WorkspaceSecurity>()
     every { workspace.security } returns workspaceSecurity
     every { workspace.security?.default } returns String()
     every { workspace.security?.accessControlList } returns mutableListOf()
-    justRun { csmRbac.verify(any(), PERMISSION_CREATE_CHILDREN) }
 
     val workspaceSolution = mockk<WorkspaceSolution>()
     every { workspaceSolution.solutionId } returns SOLUTION_ID
@@ -391,7 +389,7 @@ class ScenarioServiceImplTests {
     val solution = mockk<Solution>()
     every { solution.id } returns SOLUTION_ID
     every { solution.name } returns "test solution"
-    every { solutionService.findSolutionById(ORGANIZATION_ID, SOLUTION_ID) } returns solution
+    every { solutionService.getVerifiedSolution(ORGANIZATION_ID, SOLUTION_ID) } returns solution
     val runTemplate1 = mockk<RunTemplate>()
     every { runTemplate1.id } returns "runTemplate1_id"
     every { runTemplate1.name } returns "runTemplate1 name"
@@ -465,7 +463,10 @@ class ScenarioServiceImplTests {
   @Test
   fun `PROD-7687 - Child Scenario Parameters values take precedence over the parent ones`() {
     val workspace = mockk<Workspace>()
-    every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
+    every {
+      workspaceService.getVerifiedWorkspace(
+          ORGANIZATION_ID, WORKSPACE_ID, PERMISSION_CREATE_CHILDREN)
+    } returns workspace
 
     val workspaceSecurity = mockk<WorkspaceSecurity>()
     every { workspace.security } returns workspaceSecurity
@@ -481,7 +482,7 @@ class ScenarioServiceImplTests {
     val solution = mockk<Solution>()
     every { solution.id } returns SOLUTION_ID
     every { solution.name } returns "test solution"
-    every { solutionService.findSolutionById(ORGANIZATION_ID, SOLUTION_ID) } returns solution
+    every { solutionService.getVerifiedSolution(ORGANIZATION_ID, SOLUTION_ID) } returns solution
 
     val runTemplate1 = mockk<RunTemplate>()
     every { runTemplate1.id } returns "runTemplate1_id"
@@ -520,7 +521,7 @@ class ScenarioServiceImplTests {
                 value = "parameter_group_11_parameter1_value_from_parent"))
 
     every {
-      scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, parentScenarioId)
+      scenarioServiceImpl.getVerifiedScenario(ORGANIZATION_ID, WORKSPACE_ID, parentScenarioId)
     } returns parentScenario
 
     every { idGenerator.generate("scenario") } returns "S-myScenarioId"
@@ -577,7 +578,8 @@ class ScenarioServiceImplTests {
                 ScenarioLastRun(
                     scenarioRunId = "SR-myScenarioRunId", workflowId = null, workflowName = null))
     every {
-      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
+      scenarioServiceImpl.findScenarioById(
+          ORGANIZATION_ID, WORKSPACE_ID, scenarioId, withLastRun = false, withState = false)
     } returns scenario
 
     assertThrows<IllegalStateException> {
@@ -589,19 +591,9 @@ class ScenarioServiceImplTests {
   fun `scenario state should be null if scenario has no last run`() {
     val scenarioId = "S-myScenarioId"
     val scenario = Scenario(id = scenarioId, lastRun = null)
-    val organization = Organization(id = ORGANIZATION_ID, security = null)
-    val workspace =
-        Workspace(
-            id = WORKSPACE_ID,
-            security = null,
-            key = "w-myWorkspaceKey",
-            name = "wonderful_workspace",
-            solution = WorkspaceSolution(solutionId = "w-sol-id"))
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
-    every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     every {
-      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
+      scenarioServiceImpl.getVerifiedScenario(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
     } returns scenario
 
     scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
@@ -635,13 +627,15 @@ class ScenarioServiceImplTests {
       scenarioServiceImpl.findScenarioChildrenById(ORGANIZATION_ID, WORKSPACE_ID, m2.id!!)
     } returns listOf(c21)
     sequenceOf(m1, p11, p12, c111, c112, p12, c121, m2, c21).forEach {
-      every { scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, it.id!!) } returns
-          it
+      every {
+        scenarioServiceImpl.getVerifiedScenario(
+            ORGANIZATION_ID, WORKSPACE_ID, it.id!!, PERMISSION_DELETE)
+      } returns it
     }
     val eventBus = mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus>()
     every { csmPlatformProperties.azure?.eventBus!! } returns eventBus
     val workspace = mockk<Workspace>()
-    every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
+    every { workspaceService.getVerifiedWorkspace(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     every { workspace.key } returns "my-workspace-key"
     every { workspace.id } returns "my-workspace-id"
     every { workspace.datasetCopy } returns true
@@ -660,7 +654,7 @@ class ScenarioServiceImplTests {
     every { workspace.sendScenarioMetadataToEventHub } returns false
     every { csmPlatformProperties.twincache.scenario.defaultPageSize } returns 5
 
-    this.scenarioServiceImpl.deleteScenario(ORGANIZATION_ID, WORKSPACE_ID, c111.id!!)
+    scenarioServiceImpl.deleteScenario(ORGANIZATION_ID, WORKSPACE_ID, c111.id!!)
 
     assertNull(m1.parentId)
     assertNotNull(m1.id)
@@ -703,13 +697,15 @@ class ScenarioServiceImplTests {
       scenarioServiceImpl.findScenarioChildrenById(ORGANIZATION_ID, WORKSPACE_ID, m2.id!!)
     } returns listOf(c21)
     sequenceOf(m1, p11, p12, c111, c112, p12, c121, m2, c21).forEach {
-      every { scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, it.id!!) } returns
-          it
+      every {
+        scenarioServiceImpl.getVerifiedScenario(
+            ORGANIZATION_ID, WORKSPACE_ID, it.id!!, PERMISSION_DELETE)
+      } returns it
     }
     val eventBus = mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus>()
     every { csmPlatformProperties.azure?.eventBus!! } returns eventBus
     val workspace = mockk<Workspace>()
-    every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
+    every { workspaceService.getVerifiedWorkspace(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     every { workspace.key } returns "my-workspace-key"
     every { workspace.id } returns "my-workspace-id"
     every { workspace.datasetCopy } returns true
@@ -723,7 +719,7 @@ class ScenarioServiceImplTests {
     every { csmPlatformProperties.twincache.scenario.defaultPageSize } returns 100
     every { scenarioServiceImpl.isRbacEnabled(ORGANIZATION_ID, WORKSPACE_ID) } returns false
 
-    this.scenarioServiceImpl.deleteScenario(ORGANIZATION_ID, WORKSPACE_ID, m1.id!!)
+    scenarioServiceImpl.deleteScenario(ORGANIZATION_ID, WORKSPACE_ID, m1.id!!)
 
     assertNull(p11.parentId)
     assertNull(p12.parentId)
@@ -763,13 +759,15 @@ class ScenarioServiceImplTests {
       scenarioServiceImpl.findScenarioChildrenById(ORGANIZATION_ID, WORKSPACE_ID, m2.id!!)
     } returns listOf(c21)
     sequenceOf(m1, p11, p12, c111, c112, p12, c121, m2, c21).forEach {
-      every { scenarioServiceImpl.findScenarioById(ORGANIZATION_ID, WORKSPACE_ID, it.id!!) } returns
-          it
+      every {
+        scenarioServiceImpl.getVerifiedScenario(
+            ORGANIZATION_ID, WORKSPACE_ID, it.id!!, PERMISSION_DELETE)
+      } returns it
     }
     val eventBus = mockk<CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus>()
     every { csmPlatformProperties.azure?.eventBus!! } returns eventBus
     val workspace = mockk<Workspace>()
-    every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
+    every { workspaceService.getVerifiedWorkspace(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     every { workspace.key } returns "my-workspace-key"
     every { workspace.id } returns "my-workspace-id"
     every { workspace.datasetCopy } returns true
@@ -785,7 +783,7 @@ class ScenarioServiceImplTests {
     every { csmPlatformProperties.twincache.scenario.defaultPageSize } returns 100
     every { scenarioServiceImpl.isRbacEnabled(ORGANIZATION_ID, WORKSPACE_ID) } returns false
 
-    this.scenarioServiceImpl.deleteScenario(ORGANIZATION_ID, WORKSPACE_ID, p11.id!!)
+    scenarioServiceImpl.deleteScenario(ORGANIZATION_ID, WORKSPACE_ID, p11.id!!)
 
     sequenceOf(c111, c112).forEach {
       verify(exactly = 1) { scenarioServiceImpl.upsertScenarioData(it) }
@@ -840,7 +838,6 @@ class ScenarioServiceImplTests {
                           scenarioRunId = "SR-myScenarioRunId",
                           workflowId = "workflowId",
                           workflowName = "workflowName"))
-          val organization = Organization(id = ORGANIZATION_ID, security = null)
           val workspace =
               Workspace(
                   id = WORKSPACE_ID,
@@ -849,10 +846,9 @@ class ScenarioServiceImplTests {
                   name = "wonderful_workspace",
                   solution = WorkspaceSolution(solutionId = "w-sol-id"))
           every {
-            scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
+            scenarioServiceImpl.getVerifiedScenario(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
           } returns scenario
-          every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
-          every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns
+          every { workspaceService.getVerifiedWorkspace(ORGANIZATION_ID, WORKSPACE_ID) } returns
               workspace
 
           every { scenarioServiceImpl getProperty "eventPublisher" } returns
@@ -913,19 +909,20 @@ class ScenarioServiceImplTests {
                     workflowName = "c111-workflowName",
                     workflowId = "c111-workflowId",
                     csmSimulationRun = "c111-csmSimulationRun"))
-    val organization = Organization(id = ORGANIZATION_ID, security = null)
     val workspace = mockWorkspace(ORGANIZATION_ID, SOLUTION_ID, "WorkspaceName")
     every { csmPlatformProperties.twincache.scenario.defaultPageSize } returns 100
-    every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
-    every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
+    every { workspaceService.getVerifiedWorkspace(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     every {
-      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, m1.id!!)
+      scenarioServiceImpl.findScenarioById(
+          ORGANIZATION_ID, WORKSPACE_ID, m1.id!!, withLastRun = false, withState = false)
     } returns m1
     every {
-      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, p11.id!!)
+      scenarioServiceImpl.findScenarioById(
+          ORGANIZATION_ID, WORKSPACE_ID, p11.id!!, withLastRun = false, withState = false)
     } returns p11
     every {
-      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, c111.id!!)
+      scenarioServiceImpl.findScenarioById(
+          ORGANIZATION_ID, WORKSPACE_ID, c111.id!!, withLastRun = false, withState = false)
     } returns c111
     every {
       scenarioServiceImpl.findPaginatedScenariosStateOption(
@@ -958,7 +955,6 @@ class ScenarioServiceImplTests {
   fun `PROD-8051 - findScenarioById adds null parent and master lastRuns if they don't exist`() {
     val parentId = "s-no-longer-existing-parent"
     val rootId = "s-no-longer-existing-root"
-    val organization = Organization(id = ORGANIZATION_ID, security = null)
     val workspace =
         Workspace(
             id = WORKSPACE_ID,
@@ -967,20 +963,18 @@ class ScenarioServiceImplTests {
             name = "wonderful_workspace",
             solution = WorkspaceSolution(solutionId = "w-sol-id"))
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
-    every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
+    every { workspaceService.getVerifiedWorkspace(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     every {
-      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, parentId)
+      scenarioServiceImpl.getVerifiedScenario(ORGANIZATION_ID, WORKSPACE_ID, parentId)
     } throws CsmResourceNotFoundException("Scenario not found")
-    every {
-      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, rootId)
-    } throws CsmResourceNotFoundException("Scenario not found")
+    every { scenarioServiceImpl.getVerifiedScenario(ORGANIZATION_ID, WORKSPACE_ID, rootId) } throws
+        CsmResourceNotFoundException("Scenario not found")
 
     val scenarioId = "s-c1"
     Scenario(id = scenarioId, parentId = parentId, rootId = rootId)
     val scenario = Scenario(id = scenarioId, parentId = parentId, rootId = rootId)
     every {
-      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
+      scenarioServiceImpl.getVerifiedScenario(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
     } returns scenario
 
     val scenarioReturned =
@@ -1006,7 +1000,7 @@ class ScenarioServiceImplTests {
               csmSimulationRun = "parent-csmSimulationRun")
       val parent = Scenario(id = parentScenarioId, lastRun = parentLastRun)
       every {
-        scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, parentScenarioId)
+        scenarioServiceImpl.getVerifiedScenario(ORGANIZATION_ID, WORKSPACE_ID, parentScenarioId)
       } returns parent
     } else {
       parentLastRun = null
@@ -1022,7 +1016,7 @@ class ScenarioServiceImplTests {
               csmSimulationRun = "root-csmSimulationRun")
       val root = Scenario(id = rootScenarioId, lastRun = rootLastRun)
       every {
-        scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, rootScenarioId)
+        scenarioServiceImpl.getVerifiedScenario(ORGANIZATION_ID, WORKSPACE_ID, rootScenarioId)
       } returns root
     } else {
       rootLastRun = null
@@ -1030,7 +1024,6 @@ class ScenarioServiceImplTests {
 
     val scenarioId = "S-myScenarioId"
     val scenario = Scenario(id = scenarioId, parentId = parentScenarioId, rootId = rootScenarioId)
-    val organization = Organization(id = ORGANIZATION_ID, security = null)
     val workspace =
         Workspace(
             id = WORKSPACE_ID,
@@ -1039,10 +1032,9 @@ class ScenarioServiceImplTests {
             name = "wonderful_workspace",
             solution = WorkspaceSolution(solutionId = "w-sol-id"))
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns organization
     every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns workspace
     every {
-      scenarioServiceImpl.findScenarioByIdNoState(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
+      scenarioServiceImpl.getVerifiedScenario(ORGANIZATION_ID, WORKSPACE_ID, scenarioId)
     } returns scenario
 
     val scenarioReturned =
@@ -1063,8 +1055,14 @@ class ScenarioServiceImplTests {
               ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC create Scenario: $role", role, shouldThrow) {
-              every { workspaceService.findWorkspaceById(any(), any()) } returns it.workspace
-              every { solutionService.findSolutionById(any(), any()) } returns it.solution
+              every {
+                workspaceService.getVerifiedWorkspace(
+                    it.organization.id!!, it.workspace.id!!, PERMISSION_CREATE_CHILDREN)
+              } returns it.workspace
+              // Just here to really check PERMISSION_CREATE_CHILDREN and avoid several useless if
+              // in this function...
+              csmRbac.verify(it.workspace.getRbac(), PERMISSION_CREATE_CHILDREN)
+              every { solutionService.getVerifiedSolution(any(), any()) } returns it.solution
               every { scenarioRepository.save(any()) } returns it.scenario
               scenarioServiceImpl.createScenario(
                   it.organization.id!!, it.workspace.id!!, it.scenario)
@@ -1082,6 +1080,9 @@ class ScenarioServiceImplTests {
               ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC read scenario: $role", role, shouldThrow) {
+              every {
+                workspaceService.getVerifiedWorkspace(it.organization.id!!, it.workspace.id!!)
+              } returns it.workspace
               every { scenarioRepository.findBy(any(), any(), any()) } returns
                   Optional.of(it.scenario)
               scenarioServiceImpl.findScenarioById(
@@ -1100,7 +1101,9 @@ class ScenarioServiceImplTests {
               ROLE_NONE to false)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC find all scenarios: $role", role, shouldThrow) {
-              every { workspaceService.findWorkspaceById(any(), any()) } returns it.workspace
+              every {
+                workspaceService.getVerifiedWorkspace(it.organization.id!!, it.workspace.id!!)
+              } returns it.workspace
               every { csmPlatformProperties.twincache.scenario.defaultPageSize } returns 10
               scenarioServiceImpl.findAllScenarios(
                   it.organization.id!!, it.workspace.id!!, null, 100)
@@ -1118,6 +1121,9 @@ class ScenarioServiceImplTests {
               ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC get scenario validation status: $role", role, shouldThrow) {
+              every {
+                workspaceService.getVerifiedWorkspace(it.organization.id!!, it.workspace.id!!)
+              } returns it.workspace
               every { scenarioRepository.findBy(any(), any(), any()) } returns
                   Optional.of(it.scenario)
               scenarioServiceImpl.getScenarioValidationStatusById(
@@ -1136,6 +1142,9 @@ class ScenarioServiceImplTests {
               ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC get scenario data job info: $role", role, shouldThrow) {
+              every {
+                workspaceService.getVerifiedWorkspace(it.organization.id!!, it.workspace.id!!)
+              } returns it.workspace
               every { scenarioRepository.findBy(any(), any(), any()) } returns
                   Optional.of(it.scenario)
               @Suppress("SwallowedException")

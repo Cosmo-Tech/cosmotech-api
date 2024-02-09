@@ -18,8 +18,9 @@ import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.connector.api.ConnectorApiService
+import com.cosmotech.connector.ConnectorApiServiceInterface
 import com.cosmotech.connector.domain.Connector
+import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetCompatibility
@@ -35,15 +36,15 @@ import com.cosmotech.dataset.domain.GraphProperties
 import com.cosmotech.dataset.domain.SourceInfo
 import com.cosmotech.dataset.domain.SubDatasetGraphQuery
 import com.cosmotech.dataset.repository.DatasetRepository
-import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
-import com.cosmotech.solution.api.SolutionApiService
+import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
 import com.cosmotech.solution.domain.SolutionSecurity
-import com.cosmotech.workspace.api.WorkspaceApiService
+import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceSecurity
@@ -103,12 +104,12 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @SpykBean @Autowired lateinit var resourceScanner: ResourceScanner
-  @SpykBean @Autowired lateinit var datasetApiService: DatasetServiceImpl
+  @SpykBean @Autowired lateinit var datasetApiService: DatasetApiServiceInterface
   @Autowired lateinit var datasetRepository: DatasetRepository
-  @Autowired lateinit var connectorApiService: ConnectorApiService
-  @Autowired lateinit var organizationApiService: OrganizationApiService
-  @Autowired lateinit var solutionApiService: SolutionApiService
-  @Autowired lateinit var workspaceApiService: WorkspaceApiService
+  @Autowired lateinit var connectorApiService: ConnectorApiServiceInterface
+  @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
+  @Autowired lateinit var solutionApiService: SolutionApiServiceInterface
+  @Autowired lateinit var workspaceApiService: WorkspaceApiServiceInterface
   @SpykBean @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
   @SpykBean @Autowired lateinit var csmRedisGraph: RedisGraph
   @MockK(relaxUnitFun = true) private lateinit var eventPublisher: CsmEventPublisher

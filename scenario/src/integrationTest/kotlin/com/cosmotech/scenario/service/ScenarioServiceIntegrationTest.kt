@@ -16,19 +16,19 @@ import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.connector.api.ConnectorApiService
+import com.cosmotech.connector.ConnectorApiServiceInterface
 import com.cosmotech.connector.domain.Connector
-import com.cosmotech.dataset.api.DatasetApiService
+import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetConnector
 import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.dataset.repository.DatasetRepository
-import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
-import com.cosmotech.scenario.api.ScenarioApiService
+import com.cosmotech.scenario.ScenarioApiServiceInterface
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioAccessControl
 import com.cosmotech.scenario.domain.ScenarioJobState
@@ -36,11 +36,11 @@ import com.cosmotech.scenario.domain.ScenarioRole
 import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
 import com.cosmotech.scenario.domain.ScenarioSecurity
 import com.cosmotech.scenario.domain.ScenarioValidationStatus
-import com.cosmotech.solution.api.SolutionApiService
+import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
 import com.cosmotech.solution.domain.SolutionSecurity
-import com.cosmotech.workspace.api.WorkspaceApiService
+import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.azure.WorkspaceEventHubInfo
 import com.cosmotech.workspace.domain.Workspace
@@ -103,13 +103,13 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   @MockK private lateinit var scenarioDataDownloadJobInfoRequest: ScenarioDataDownloadJobInfoRequest
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
-  @Autowired lateinit var connectorApiService: ConnectorApiService
-  @Autowired lateinit var organizationApiService: OrganizationApiService
-  @SpykBean @Autowired lateinit var datasetApiService: DatasetApiService
+  @Autowired lateinit var connectorApiService: ConnectorApiServiceInterface
+  @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
+  @SpykBean @Autowired lateinit var datasetApiService: DatasetApiServiceInterface
   @Autowired lateinit var datasetRepository: DatasetRepository
-  @Autowired lateinit var solutionApiService: SolutionApiService
-  @Autowired lateinit var workspaceApiService: WorkspaceApiService
-  @Autowired lateinit var scenarioApiService: ScenarioApiService
+  @Autowired lateinit var solutionApiService: SolutionApiServiceInterface
+  @Autowired lateinit var workspaceApiService: WorkspaceApiServiceInterface
+  @Autowired lateinit var scenarioApiService: ScenarioApiServiceInterface
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   lateinit var connector: Connector

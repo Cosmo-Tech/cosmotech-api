@@ -35,16 +35,16 @@ import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.service.getRbac
-import com.cosmotech.scenario.api.ScenarioApiService
+import com.cosmotech.scenario.ScenarioApiServiceInterface
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioJobState
 import com.cosmotech.scenario.service.getRbac
 import com.cosmotech.scenariorun.CSM_JOB_ID_LABEL_KEY
 import com.cosmotech.scenariorun.ContainerFactory
 import com.cosmotech.scenariorun.SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME
-import com.cosmotech.scenariorun.api.ScenariorunApiService
+import com.cosmotech.scenariorun.ScenarioRunApiServiceInterface
 import com.cosmotech.scenariorun.domain.RunTemplateParameterValue
 import com.cosmotech.scenariorun.domain.ScenarioRun
 import com.cosmotech.scenariorun.domain.ScenarioRunLogs
@@ -60,7 +60,7 @@ import com.cosmotech.scenariorun.workflow.WorkflowService
 import com.cosmotech.solution.domain.DeleteHistoricalData
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
-import com.cosmotech.workspace.api.WorkspaceApiService
+import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.azure.EventHubRole
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.domain.Workspace
@@ -91,15 +91,15 @@ internal const val WORKFLOW_TYPE_TWIN_GRAPH_IMPORT = "twin-graph-import"
 class ScenarioRunServiceImpl(
     private val containerFactory: ContainerFactory,
     private val workflowService: WorkflowService,
-    private val organizationService: OrganizationApiService,
-    private val workspaceService: WorkspaceApiService,
-    private val scenarioApiService: ScenarioApiService,
+    private val organizationService: OrganizationApiServiceInterface,
+    private val workspaceService: WorkspaceApiServiceInterface,
+    private val scenarioApiService: ScenarioApiServiceInterface,
     private val azureDataExplorerClient: AzureDataExplorerClient,
     private val azureEventHubsClient: AzureEventHubsClient,
     private val workspaceEventHubService: IWorkspaceEventHubService,
     private val scenarioRunRepository: ScenarioRunRepository,
     private val csmRbac: CsmRbac
-) : CsmPhoenixService(), ScenariorunApiService {
+) : CsmPhoenixService(), ScenarioRunApiServiceInterface {
 
   val scenarioPermissions = getScenarioRolesDefinition()
 
@@ -896,6 +896,15 @@ class ScenarioRunServiceImpl(
     val sr = scenarioRun.copy(state = ScenarioRunState.Failed)
     scenarioRunRepository.save(sr)
     return workflowService.stopWorkflow(findScenarioRunById(organizationId, scenariorunId))
+  }
+
+  override fun getVerifiedScenarioRun(
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String,
+      requiredPermission: String
+  ): ScenarioRun {
+    TODO("Not yet implemented")
   }
 
   private fun sendScenarioRunMetaData(

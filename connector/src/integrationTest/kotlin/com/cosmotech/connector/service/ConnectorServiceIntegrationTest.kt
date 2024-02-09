@@ -12,7 +12,7 @@ import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.getCurrentAuthentication
-import com.cosmotech.connector.api.ConnectorApiService
+import com.cosmotech.connector.ConnectorApiServiceInterface
 import com.cosmotech.connector.domain.Connector
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
@@ -42,7 +42,7 @@ class ConnectorServiceIntegrationTest : CsmRedisTestBase() {
   private val logger = LoggerFactory.getLogger(ConnectorServiceIntegrationTest::class.java)
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
-  @Autowired lateinit var connectorApiService: ConnectorApiService
+  @Autowired lateinit var connectorApiService: ConnectorApiServiceInterface
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   /**

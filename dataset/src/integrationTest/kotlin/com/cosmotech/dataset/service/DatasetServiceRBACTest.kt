@@ -23,8 +23,9 @@ import com.cosmotech.api.utils.bulkQueryKey
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.connector.api.ConnectorApiService
+import com.cosmotech.connector.ConnectorApiServiceInterface
 import com.cosmotech.connector.domain.Connector
+import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetCompatibility
@@ -38,7 +39,7 @@ import com.cosmotech.dataset.domain.GraphProperties
 import com.cosmotech.dataset.domain.SourceInfo
 import com.cosmotech.dataset.domain.SubDatasetGraphQuery
 import com.cosmotech.dataset.repository.DatasetRepository
-import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
@@ -90,10 +91,10 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @SpykBean @Autowired lateinit var resourceScanner: ResourceScanner
-  @SpykBean @Autowired lateinit var datasetApiService: DatasetServiceImpl
+  @SpykBean @Autowired lateinit var datasetApiService: DatasetApiServiceInterface
   @Autowired lateinit var datasetRepository: DatasetRepository
-  @Autowired lateinit var connectorApiService: ConnectorApiService
-  @Autowired lateinit var organizationApiService: OrganizationApiService
+  @Autowired lateinit var connectorApiService: ConnectorApiServiceInterface
+  @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
   @SpykBean @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
   @SpykBean @Autowired lateinit var csmRedisGraph: RedisGraph
   @MockK(relaxUnitFun = true) private lateinit var eventPublisher: CsmEventPublisher
@@ -216,15 +217,9 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.rollbackRefresh(organizationSaved.id!!, datasetSaved.id!!)
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   datasetApiService.rollbackRefresh(organizationSaved.id!!, datasetSaved.id!!)
@@ -405,15 +400,9 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                               datasetSaved.id!!,
                               listOf(datasetCompatibility))
                         }
-                    if (role == ROLE_NONE) {
-                      assertEquals(
-                          "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
-                          exception.message)
-                    } else {
-                      assertEquals(
-                          "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE",
-                          exception.message)
-                    }
+                    assertEquals(
+                        "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                        exception.message)
                   } else {
                     assertDoesNotThrow {
                       datasetApiService.addOrReplaceDatasetCompatibilityElements(
@@ -447,15 +436,9 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.createDataset(organizationSaved.id!!, dataset)
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_CREATE_CHILDREN",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_CREATE_CHILDREN",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   datasetApiService.createDataset(organizationSaved.id!!, dataset)
@@ -711,15 +694,9 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                     assertThrows<CsmAccessForbiddenException> {
                       datasetApiService.deleteDataset(organizationSaved.id!!, datasetSaved.id!!)
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_DELETE",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_DELETE",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   datasetApiService.deleteDataset(organizationSaved.id!!, datasetSaved.id!!)
@@ -1294,15 +1271,9 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                           datasetApiService.removeAllDatasetCompatibilityElements(
                               organizationSaved.id!!, datasetSaved.id!!)
                         }
-                    if (role == ROLE_NONE) {
-                      assertEquals(
-                          "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
-                          exception.message)
-                    } else {
-                      assertEquals(
-                          "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE",
-                          exception.message)
-                    }
+                    assertEquals(
+                        "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                        exception.message)
                   } else {
                     assertDoesNotThrow {
                       datasetApiService.removeAllDatasetCompatibilityElements(
@@ -1583,15 +1554,9 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                       datasetApiService.updateDataset(
                           organizationSaved.id!!, datasetSaved.id!!, dataset)
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   datasetApiService.updateDataset(
@@ -1843,15 +1808,9 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                       datasetApiService.addDatasetAccessControl(
                           organizationSaved.id!!, datasetSaved.id!!, datasetAccessControl)
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   datasetApiService.addDatasetAccessControl(
@@ -1927,15 +1886,9 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                       datasetApiService.getDatasetAccessControl(
                           organizationSaved.id!!, datasetSaved.id!!, TEST_USER_MAIL)
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   datasetApiService.getDatasetAccessControl(
@@ -2020,15 +1973,9 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                           TEST_USER_MAIL,
                           DatasetRole(ROLE_USER))
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   datasetApiService.updateDatasetAccessControl(
@@ -2107,15 +2054,9 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                       datasetApiService.removeDatasetAccessControl(
                           organizationSaved.id!!, datasetSaved.id!!, TEST_USER_MAIL)
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   datasetApiService.removeDatasetAccessControl(
@@ -2191,15 +2132,9 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                       datasetApiService.getDatasetSecurityUsers(
                           organizationSaved.id!!, datasetSaved.id!!)
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   datasetApiService.getDatasetSecurityUsers(
@@ -2272,15 +2207,9 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                       datasetApiService.getDatasetSecurity(
                           organizationSaved.id!!, datasetSaved.id!!)
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   datasetApiService.getDatasetSecurity(organizationSaved.id!!, datasetSaved.id!!)
@@ -2353,15 +2282,9 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
                       datasetApiService.setDatasetDefaultSecurity(
                           organizationSaved.id!!, datasetSaved.id!!, DatasetRole(ROLE_VIEWER))
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   datasetApiService.setDatasetDefaultSecurity(
