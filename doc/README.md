@@ -60,6 +60,11 @@ Class | Method | HTTP request | Description
 *OrganizationApi* | [**updateSolutionsContainerRegistryByOrganizationId**](Apis/OrganizationApi.md#updatesolutionscontainerregistrybyorganizationid) | **PATCH** /organizations/{organization_id}/services/solutionsContainerRegistry | Update the solutions container registry configuration for the Organization specified
 *OrganizationApi* | [**updateStorageByOrganizationId**](Apis/OrganizationApi.md#updatestoragebyorganizationid) | **PATCH** /organizations/{organization_id}/services/storage | Update storage configuration for the Organization specified
 *OrganizationApi* | [**updateTenantCredentialsByOrganizationId**](Apis/OrganizationApi.md#updatetenantcredentialsbyorganizationid) | **PATCH** /organizations/{organization_id}/services/tenantCredentials | Update tenant credentials for the Organization specified
+*RunApi* | [**deleteRun**](Apis/RunApi.md#deleterun) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id} | Delete a run
+*RunApi* | [**findRunById**](Apis/RunApi.md#findrunbyid) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id} | Get the details of a run
+*RunApi* | [**getRunLogs**](Apis/RunApi.md#getrunlogs) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/logs | get the logs for the Run
+*RunApi* | [**getRunStatus**](Apis/RunApi.md#getrunstatus) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/status | get the status for the Run
+*RunApi* | [**getRuns**](Apis/RunApi.md#getruns) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs | get the list of Runs for the Runner
 *ScenarioApi* | [**addOrReplaceScenarioParameterValues**](Apis/ScenarioApi.md#addorreplacescenarioparametervalues) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/parameterValues | Add (or replace) Parameter Values for the Scenario specified
 *ScenarioApi* | [**addScenarioAccessControl**](Apis/ScenarioApi.md#addscenarioaccesscontrol) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/access | Add a control access to the Scenario
 *ScenarioApi* | [**compareScenarios**](Apis/ScenarioApi.md#comparescenarios) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/compare/{compared_scenario_id} | Compare the Scenario with another one and returns the difference for parameters values
@@ -198,6 +203,16 @@ Class | Method | HTTP request | Description
  - [OrganizationService](./Models/OrganizationService.md)
  - [OrganizationServices](./Models/OrganizationServices.md)
  - [ResourceSizeInfo](./Models/ResourceSizeInfo.md)
+ - [Run](./Models/Run.md)
+ - [RunContainer](./Models/RunContainer.md)
+ - [RunContainerArtifact](./Models/RunContainerArtifact.md)
+ - [RunContainerLogs](./Models/RunContainerLogs.md)
+ - [RunLogs](./Models/RunLogs.md)
+ - [RunResourceRequested](./Models/RunResourceRequested.md)
+ - [RunStartContainers](./Models/RunStartContainers.md)
+ - [RunState](./Models/RunState.md)
+ - [RunStatus](./Models/RunStatus.md)
+ - [RunStatusNode](./Models/RunStatusNode.md)
  - [RunTemplate](./Models/RunTemplate.md)
  - [RunTemplateHandlerId](./Models/RunTemplateHandlerId.md)
  - [RunTemplateOrchestrator](./Models/RunTemplateOrchestrator.md)

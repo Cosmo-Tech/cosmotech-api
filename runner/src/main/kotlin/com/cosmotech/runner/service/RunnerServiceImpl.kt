@@ -32,20 +32,7 @@ internal class RunnerServiceImpl(private val runnerRepository: RunnerRepository)
     TODO("Not yet implemented")
   }
 
-  override fun findAllRunners(
-      organizationId: String,
-      workspaceId: String,
-      page: Int?,
-      size: Int?
-  ): List<Runner> {
-    TODO("Not yet implemented")
-  }
-
-  override fun findRunnerById(
-      organizationId: String,
-      workspaceId: String,
-      runnerId: String
-  ): Runner {
+  override fun findRunner(organizationId: String, workspaceId: String, runnerId: String): Runner {
     TODO("Not yet implemented")
   }
 
@@ -83,6 +70,15 @@ internal class RunnerServiceImpl(private val runnerRepository: RunnerRepository)
     TODO("Not yet implemented")
   }
 
+  override fun listRunners(
+      organizationId: String,
+      workspaceId: String,
+      page: Int?,
+      size: Int?
+  ): List<Runner> {
+    TODO("Not yet implemented")
+  }
+
   override fun removeRunnerAccessControl(
       organizationId: String,
       workspaceId: String,
@@ -98,6 +94,14 @@ internal class RunnerServiceImpl(private val runnerRepository: RunnerRepository)
       runnerId: String,
       runnerRole: RunnerRole
   ): RunnerSecurity {
+    TODO("Not yet implemented")
+  }
+
+  override fun startRun(organizationId: String, workspaceId: String, runnerId: String): String {
+    TODO("Not yet implemented")
+  }
+
+  override fun stopRun(organizationId: String, workspaceId: String, runnerId: String): String {
     TODO("Not yet implemented")
   }
 
