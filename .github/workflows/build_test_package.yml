@@ -478,7 +478,7 @@ jobs:
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: :cosmotech-run-api:integrationTest -x spotlessCheck -x openApiValidate
-          
+
   homecontroller_it:
     runs-on: ubuntu-latest
     needs:
@@ -730,6 +730,8 @@ jobs:
       - solution_it
       - twingraph_it
       - workspace_it
+      - runner_it
+      - run_it
       - homecontroller_it
       - test_helm
     permissions:
@@ -851,6 +853,8 @@ jobs:
       - solution_it
       - twingraph_it
       - workspace_it
+      - runner_it
+      - run_it
       - homecontroller_it
       - test_helm
     permissions:
