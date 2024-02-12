@@ -1015,7 +1015,7 @@ internal class ScenarioServiceImpl(
     val id = scenarioAccessControl.id
     // Scenario and Dataset don't have the same roles
     // This function translates the role set from one to another
-    val workspace = workspaceService.findWorkspaceById(organizationId, scenario.workspaceId!!)
+    val workspace = workspaceService.getVerifiedWorkspace(organizationId, scenario.workspaceId!!)
 
     // The role in the datasets should be only be similar to scenarios if they are a copy
     val role: String =

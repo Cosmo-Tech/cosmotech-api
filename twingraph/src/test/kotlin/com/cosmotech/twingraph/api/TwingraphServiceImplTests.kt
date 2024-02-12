@@ -6,13 +6,14 @@ import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmAdmin
 import com.cosmotech.api.rbac.CsmRbac
+import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.getCurrentAuthentication
 import com.cosmotech.api.utils.shaHash
-import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.twingraph.domain.TwinGraphBatchResult
 import com.cosmotech.twingraph.domain.TwinGraphQuery
 import com.cosmotech.twingraph.extension.toJsonString
@@ -57,7 +58,7 @@ class TwingraphServiceImplTests {
   @MockK private lateinit var csmJedisPool: JedisPool
   @MockK private lateinit var csmRedisGraph: RedisGraph
   @Suppress("unused") @MockK private lateinit var resourceScanner: ResourceScanner
-  @MockK private lateinit var organizationService: OrganizationApiService
+  @MockK private lateinit var organizationService: OrganizationApiServiceInterface
 
   @SpyK @InjectMockKs private lateinit var twingraphServiceImpl: TwingraphServiceImpl
 
@@ -84,7 +85,8 @@ class TwingraphServiceImplTests {
   @Test
   fun `test delete graph as Admin - should call delete`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
+    every { organizationService.getVerifiedOrganization(any(), PERMISSION_DELETE) } returns
+        mockk(relaxed = true)
 
     every { csmJedisPool.resource.scan(any<String>(), any(), any()) } returns
         mockk {
@@ -102,7 +104,7 @@ class TwingraphServiceImplTests {
   @Test
   fun `test findAllTwingraphs as Admin - should return all graphs`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
+    every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
 
     every { csmJedisPool.resource.scan(any<String>(), any(), any()) } returns
         mockk {
@@ -117,7 +119,7 @@ class TwingraphServiceImplTests {
   @Test
   fun `test getGraphMetadata as Admin - should return metadata`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
+    every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
 
     every { csmJedisPool.resource.exists(any<String>()) } returns true
     every { csmJedisPool.resource.hgetAll(any<String>()) } returns
@@ -130,7 +132,7 @@ class TwingraphServiceImplTests {
   @Test
   fun `test getGraphMetadata as Admin - should throw exception if graph does not exist`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
+    every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
 
     every { csmJedisPool.resource.exists(any<String>()) } returns false
     assertThrows<CsmResourceNotFoundException> {
@@ -141,7 +143,7 @@ class TwingraphServiceImplTests {
   @Test
   fun `test bulkQueryGraphs as Admin - should call query and set data to Redis`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
+    every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
     every { csmPlatformProperties.twincache.queryBulkTTL } returns 1000L
 
     every { csmJedisPool.resource.keys(any<String>()) } returns setOf("graphId")
@@ -160,7 +162,7 @@ class TwingraphServiceImplTests {
   @Test
   fun `test bulkQueryGraphs as Admin - should return existing Hash when data found`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
+    every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
 
     every { csmJedisPool.resource.keys(any<String>()) } returns setOf("graphId")
     every { csmJedisPool.resource.exists(any<ByteArray>()) } returns true
@@ -173,7 +175,7 @@ class TwingraphServiceImplTests {
   @Test
   fun `test downloadGraph as Admin - should get graph data`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
+    every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
 
     every { csmJedisPool.resource.exists(any<ByteArray>()) } returns true
     every { csmJedisPool.resource.ttl(any<ByteArray>()) } returns 1000L
@@ -193,7 +195,7 @@ class TwingraphServiceImplTests {
   @Test
   fun `test downloadGraph as Admin - should throw exception if data not found`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
+    every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
 
     every { csmJedisPool.resource.exists(any<ByteArray>()) } returns false
 
@@ -205,7 +207,7 @@ class TwingraphServiceImplTests {
   @Test
   fun `test downloadGraph as Admin - should throw exception if data expired`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
+    every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
 
     every { csmJedisPool.resource.exists(any<ByteArray>()) } returns true
     every { csmJedisPool.resource.ttl(any<ByteArray>()) } returns -1L
@@ -218,7 +220,7 @@ class TwingraphServiceImplTests {
   @Test
   fun `test updateGraphMetaData as Admin should modify graphName & graphVersion`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
+    every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
 
     every { csmJedisPool.resource.exists(any<String>()) } returns true
     every { csmJedisPool.resource.hset(any<String>(), any<String>(), any<String>()) } returns 1L
@@ -244,7 +246,7 @@ class TwingraphServiceImplTests {
   @Test
   fun `test updateGraphMetaData as Admin should not modify graphName & graphVersion if not present`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
-    every { organizationService.findOrganizationById(any()) } returns mockk(relaxed = true)
+    every { organizationService.getVerifiedOrganization(any()) } returns mockk(relaxed = true)
 
     every { csmJedisPool.resource.exists(any<String>()) } returns true
     every { csmJedisPool.resource.hset(any<String>(), any<String>(), any<String>()) } returns 1L

@@ -16,7 +16,7 @@ import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.shaHash
-import com.cosmotech.connector.api.ConnectorApiService
+import com.cosmotech.connector.ConnectorApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetConnector
 import com.cosmotech.dataset.domain.DatasetSourceType
@@ -28,7 +28,7 @@ import com.cosmotech.dataset.domain.SubDatasetGraphQuery
 import com.cosmotech.dataset.domain.TwinGraphBatchResult
 import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.dataset.utils.toJsonString
-import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.redislabs.redisgraph.RedisGraph
 import com.redislabs.redisgraph.ResultSet
 import io.mockk.every
@@ -74,8 +74,8 @@ fun baseDataset() =
 class DatasetServiceImplTests {
   @Suppress("unused") @MockK var idGenerator: CsmIdGenerator = mockk(relaxed = true)
   @MockK var eventPublisher: CsmEventPublisher = mockk(relaxed = true)
-  @MockK val connectorService: ConnectorApiService = mockk(relaxed = true)
-  @MockK val organizationService: OrganizationApiService = mockk(relaxed = true)
+  @MockK val connectorService: ConnectorApiServiceInterface = mockk(relaxed = true)
+  @MockK val organizationService: OrganizationApiServiceInterface = mockk(relaxed = true)
   @MockK val datasetRepository: DatasetRepository = mockk(relaxed = true)
   @MockK val csmJedisPool: JedisPool = mockk(relaxed = true)
   @MockK val csmRedisGraph: RedisGraph = mockk(relaxed = true)
