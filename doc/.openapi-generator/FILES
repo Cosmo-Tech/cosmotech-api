@@ -1,6 +1,7 @@
 Apis/ConnectorApi.md
 Apis/DatasetApi.md
 Apis/OrganizationApi.md
+Apis/RunApi.md
 Apis/ScenarioApi.md
 Apis/ScenariorunApi.md
 Apis/ScenariorunresultApi.md
@@ -37,6 +38,16 @@ Models/OrganizationSecurity.md
 Models/OrganizationService.md
 Models/OrganizationServices.md
 Models/ResourceSizeInfo.md
+Models/Run.md
+Models/RunContainer.md
+Models/RunContainerArtifact.md
+Models/RunContainerLogs.md
+Models/RunLogs.md
+Models/RunResourceRequested.md
+Models/RunStartContainers.md
+Models/RunState.md
+Models/RunStatus.md
+Models/RunStatusNode.md
 Models/RunTemplate.md
 Models/RunTemplateHandlerId.md
 Models/RunTemplateOrchestrator.md
