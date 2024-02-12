@@ -33,7 +33,6 @@ import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.mockk
 import io.mockk.mockkStatic
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeAll
@@ -501,9 +500,8 @@ class ScenarioRunResultServiceRBACTest : CsmRedisTestBase() {
 
     val dataset = makeDataset(organizationSavedId, connectorSavedId)
     val datasetSaved = datasetApiService.createDataset(organizationSavedId, dataset)
-    every { datasetApiService.findDatasetById(any(), any()) } returns
+    every { datasetApiService.getVerifiedDataset(any(), any()) } returns
         datasetSaved.apply { ingestionStatus = Dataset.IngestionStatus.SUCCESS }
-    every { datasetApiService.createSubDataset(any(), any(), any()) } returns mockk(relaxed = true)
 
     val scenario =
         makeScenario(

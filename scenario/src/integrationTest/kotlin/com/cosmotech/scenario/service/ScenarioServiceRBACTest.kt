@@ -641,15 +641,9 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
                       scenarioApiService.createScenario(
                           organizationSaved.id!!, workspaceSaved.id!!, scenario)
                     }
-                if (role == ROLE_VALIDATOR || role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_CREATE_CHILDREN",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_CREATE_CHILDREN",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   scenarioApiService.createScenario(
@@ -897,15 +891,9 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
                       scenarioApiService.deleteAllScenarios(
                           organizationSaved.id!!, workspaceSaved.id!!)
                     }
-                if (role == ROLE_VALIDATOR || role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_WRITE",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   scenarioApiService.deleteAllScenarios(organizationSaved.id!!, workspaceSaved.id!!)
@@ -2062,15 +2050,9 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
                       scenarioApiService.deleteScenario(
                           organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_DELETE",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_DELETE",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   scenarioApiService.deleteScenario(
@@ -2470,15 +2452,9 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
                               id = TEST_USER_MAIL,
                               role = role))
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_WRITE",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   scenarioApiService.updateScenario(
@@ -3155,15 +3131,9 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
                           scenarioSaved.id!!,
                           listOf(ScenarioRunTemplateParameterValue("id", "0")))
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_WRITE",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   scenarioApiService.addOrReplaceScenarioParameterValues(
@@ -3486,15 +3456,9 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
                       scenarioApiService.removeAllScenarioParameterValues(
                           organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_WRITE",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_WRITE",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   scenarioApiService.removeAllScenarioParameterValues(
@@ -4490,15 +4454,9 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
                       scenarioApiService.getScenarioPermissions(
                           organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, role)
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   scenarioApiService.getScenarioPermissions(
@@ -4817,15 +4775,9 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
                       scenarioApiService.getScenarioSecurity(
                           organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   scenarioApiService.getScenarioSecurity(
@@ -5174,15 +5126,9 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
                           scenarioSaved.id!!,
                           ScenarioRole(ROLE_ADMIN))
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   scenarioApiService.setScenarioDefaultSecurity(
@@ -5324,15 +5270,9 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
                           scenarioSaved.id!!,
                           ScenarioAccessControl("id", ROLE_ADMIN))
                     }
-                if (role == ROLE_NONE || role == ROLE_VALIDATOR) {
-                  assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   scenarioApiService.addScenarioAccessControl(
@@ -5542,15 +5482,9 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
                           scenarioSaved.id!!,
                           ScenarioAccessControl("id", ROLE_ADMIN))
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   scenarioApiService.addScenarioAccessControl(
@@ -5899,15 +5833,9 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
                           scenarioSaved.id!!,
                           TEST_USER_MAIL)
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   scenarioApiService.getScenarioAccessControl(
@@ -6267,15 +6195,9 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
                           scenarioSaved.id!!,
                           TEST_USER_MAIL)
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   scenarioApiService.removeScenarioAccessControl(
@@ -6663,15 +6585,9 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
                           TEST_USER_MAIL,
                           ScenarioRole(ROLE_VIEWER))
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   scenarioApiService.updateScenarioAccessControl(
@@ -6999,15 +6915,9 @@ class ScenarioServiceRBACTest : CsmRedisTestBase() {
                       scenarioApiService.getScenarioSecurityUsers(
                           organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
                     }
-                if (role == ROLE_NONE) {
-                  assertEquals(
-                      "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${scenarioSaved.id!!} - User does not have permission $PERMISSION_READ_SECURITY",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   scenarioApiService.getScenarioSecurityUsers(

@@ -455,7 +455,7 @@ internal class WorkspaceServiceImpl(
   ): WorkspaceAccessControl {
     val organization = organizationService.getVerifiedOrganization(organizationId)
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE_SECURITY)
-    val users = getWorkspaceSecurityUsers(organizationId, workspaceId)
+    val users = csmRbac.getUsers(workspace.getRbac())
     if (users.contains(workspaceAccessControl.id)) {
       throw IllegalArgumentException("User is already in this Workspace security")
     }
@@ -468,7 +468,7 @@ internal class WorkspaceServiceImpl(
             workspaceAccessControl.role)
     workspace.setRbac(rbacSecurity)
     workspaceRepository.save(workspace)
-    var rbacAccessControl = csmRbac.getAccessControl(workspace.getRbac(), workspaceAccessControl.id)
+    val rbacAccessControl = csmRbac.getAccessControl(workspace.getRbac(), workspaceAccessControl.id)
     return WorkspaceAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 

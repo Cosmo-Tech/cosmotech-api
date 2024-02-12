@@ -12,25 +12,19 @@ import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.id.CsmIdGenerator
-import com.cosmotech.api.rbac.CsmAdmin
-import com.cosmotech.api.rbac.CsmRbac
-import com.cosmotech.api.rbac.ROLE_ADMIN
-import com.cosmotech.api.rbac.ROLE_EDITOR
-import com.cosmotech.api.rbac.ROLE_NONE
-import com.cosmotech.api.rbac.ROLE_USER
-import com.cosmotech.api.rbac.ROLE_VALIDATOR
-import com.cosmotech.api.rbac.ROLE_VIEWER
+import com.cosmotech.api.rbac.*
 import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.organization.repository.OrganizationRepository
-import com.cosmotech.solution.api.SolutionApiService
+import com.cosmotech.organization.service.getRbac
+import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
@@ -63,6 +57,7 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
+import org.springframework.data.repository.findByIdOrNull
 
 const val ORGANIZATION_ID = "O-AbCdEf123"
 const val WORKSPACE_ID = "W-BcDeFg123"
@@ -74,10 +69,10 @@ const val CONNECTED_DEFAULT_USER = "test.user@cosmotech.com"
 class WorkspaceServiceImplTests {
 
   @MockK private lateinit var resourceLoader: ResourceLoader
-  @MockK private lateinit var solutionService: SolutionApiService
+  @MockK private lateinit var solutionService: SolutionApiServiceInterface
   @MockK private lateinit var resource: Resource
   @MockK private lateinit var inputStream: InputStream
-  @RelaxedMockK private lateinit var organizationService: OrganizationApiService
+  @RelaxedMockK private lateinit var organizationService: OrganizationApiServiceInterface
   @MockK private lateinit var azureStorageBlobServiceClient: BlobServiceClient
   @Suppress("unused") @MockK private lateinit var secretManager: SecretManager
 
@@ -102,7 +97,7 @@ class WorkspaceServiceImplTests {
   @MockK
   private var workspaceRepository: WorkspaceRepository = mockk(relaxed = true)
 
-  @SpyK @InjectMockKs private lateinit var workspaceServiceImpl: WorkspaceServiceImpl
+  @InjectMockKs private lateinit var workspaceServiceImpl: WorkspaceServiceImpl
 
   @BeforeEach
   fun setUp() {
@@ -139,9 +134,7 @@ class WorkspaceServiceImplTests {
     every { workspace.id } returns WORKSPACE_ID
     every { workspace.name } returns "test workspace"
     every { workspace.security } returns WorkspaceSecurity(ROLE_ADMIN, mutableListOf())
-    every { workspaceRepository.findBy(any(), any()).orElseThrow { any() } } returns workspace
-    every { workspaceServiceImpl.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns
-        workspace
+    every { workspaceRepository.findByIdOrNull(any()) } returns workspace
 
     val file = mockk<Resource>(relaxed = true)
     every { file.filename } returns "my_file.txt"
@@ -171,8 +164,9 @@ class WorkspaceServiceImplTests {
     every { workspace.id } returns WORKSPACE_ID
     every { workspace.name } returns "test workspace"
     every { workspace.security } returns WorkspaceSecurity(ROLE_ADMIN, mutableListOf())
-    every { workspaceServiceImpl.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns
-        workspace
+    every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns
+        mockk<Organization>()
+    every { workspaceRepository.findByIdOrNull(any()) } returns workspace
 
     val file = mockk<Resource>(relaxed = true)
     every { file.filename } returns "my_file.txt"
@@ -202,8 +196,7 @@ class WorkspaceServiceImplTests {
     every { workspace.id } returns WORKSPACE_ID
     every { workspace.name } returns "test workspace"
     every { workspace.security } returns WorkspaceSecurity(ROLE_ADMIN, mutableListOf())
-    every { workspaceServiceImpl.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns
-        workspace
+    every { workspaceRepository.findByIdOrNull(any()) } returns workspace
 
     val file = mockk<Resource>(relaxed = true)
     every { file.filename } returns "my_file.txt"
@@ -235,8 +228,7 @@ class WorkspaceServiceImplTests {
     every { workspace.id } returns WORKSPACE_ID
     every { workspace.name } returns "test workspace"
     every { workspace.security } returns WorkspaceSecurity(ROLE_ADMIN, mutableListOf())
-    every { workspaceServiceImpl.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns
-        workspace
+    every { workspaceRepository.findByIdOrNull(any()) } returns workspace
 
     val file = mockk<Resource>(relaxed = true)
     every { file.filename } returns "my_file.txt"
@@ -268,8 +260,7 @@ class WorkspaceServiceImplTests {
     every { workspace.id } returns WORKSPACE_ID
     every { workspace.name } returns "test workspace"
     every { workspace.security } returns WorkspaceSecurity(ROLE_ADMIN, mutableListOf())
-    every { workspaceServiceImpl.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns
-        workspace
+    every { workspaceRepository.findByIdOrNull(any()) } returns workspace
 
     val file = mockk<Resource>(relaxed = true)
     every { file.filename } returns "my_file.txt"
@@ -358,8 +349,9 @@ class WorkspaceServiceImplTests {
             name = "my workspace name",
             solution = WorkspaceSolution(solutionId = "SOL-my-solution-id"))
     workspace.security = WorkspaceSecurity(ROLE_ADMIN, mutableListOf())
-    every { workspaceServiceImpl.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns
-        workspace
+    every {
+      workspaceServiceImpl.getVerifiedWorkspace(ORGANIZATION_ID, WORKSPACE_ID, PERMISSION_WRITE)
+    } returns workspace
     every { solutionService.findSolutionById(ORGANIZATION_ID, any()) } throws
         CsmResourceNotFoundException("Solution not found")
     assertThrows<CsmResourceNotFoundException> {
@@ -373,7 +365,6 @@ class WorkspaceServiceImplTests {
     }
 
     verify(exactly = 0) { workspaceRepository.save(ofType(Workspace::class)) }
-    confirmVerified(workspaceRepository)
   }
 
   @TestFactory
@@ -387,8 +378,8 @@ class WorkspaceServiceImplTests {
               ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC read workspace: $role", role, shouldThrow) {
-              every { workspaceRepository.findBy(any(), any()) } returns Optional.of(it.workspace)
-              workspaceServiceImpl.findWorkspaceById(it.organization.id!!, it.workspace.id!!)
+              every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
+              workspaceServiceImpl.getVerifiedWorkspace(it.organization.id!!, it.workspace.id!!)
             }
           }
 
@@ -403,10 +394,12 @@ class WorkspaceServiceImplTests {
               ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC create workspace: $role", role, shouldThrow) {
-              every { organizationService.findOrganizationById(any()) } returns it.organization
-              every { solutionService.findSolutionById(any(), any()) } returns it.solution
-              every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
+              every { organizationRepository.findByIdOrNull(any()) } returns it.organization
+              listOf(PERMISSION_READ, PERMISSION_CREATE_CHILDREN).forEach { permission ->
+                csmRbac.verify(it.organization.getRbac(), permission)
+              }
               every { workspaceRepository.save(any()) } returns it.workspace
+              every { solutionService.findSolutionById(any(), any()) } returns it.solution
               workspaceServiceImpl.createWorkspace(it.organization.id!!, it.workspace)
             }
           }
@@ -422,9 +415,7 @@ class WorkspaceServiceImplTests {
               ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC delete all workspace files: $role", role, shouldThrow) {
-              every { organizationService.findOrganizationById(any()) } returns it.organization
-              every { solutionService.findSolutionById(any(), any()) } returns it.solution
-              every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
+              every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
               workspaceServiceImpl.deleteAllWorkspaceFiles(it.organization.id!!, it.workspace.id!!)
             }
           }
@@ -440,9 +431,8 @@ class WorkspaceServiceImplTests {
               ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("test RBAC update workspace: $role", role, shouldThrow) {
-              every { organizationService.findOrganizationById(any()) } returns it.organization
               every { solutionService.findSolutionById(any(), any()) } returns it.solution
-              every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
+              every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
               every { workspaceRepository.save(any()) } returns it.workspace
               workspaceServiceImpl.updateWorkspace(
                   it.organization.id!!, it.workspace.id!!, it.workspace)
@@ -460,9 +450,7 @@ class WorkspaceServiceImplTests {
               ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC delete workspace: $role", role, shouldThrow) {
-              every { organizationService.findOrganizationById(any()) } returns it.organization
-              every { solutionService.findSolutionById(any(), any()) } returns it.solution
-              every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
+              every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
               every { secretManager.deleteSecret(any(), any()) } returns Unit
               workspaceServiceImpl.deleteWorkspace(it.organization.id!!, it.workspace.id!!)
             }
@@ -479,7 +467,7 @@ class WorkspaceServiceImplTests {
               ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC delete workspace file: $role", role, shouldThrow) {
-              every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
+              every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
               every {
                 azureStorageBlobServiceClient
                     .getBlobContainerClient(any())
@@ -501,7 +489,7 @@ class WorkspaceServiceImplTests {
               ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC download workspace file: $role", role, shouldThrow) {
-              every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
+              every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
               every { resourceLoader.getResource(any()) } returns mockk()
               workspaceServiceImpl.downloadWorkspaceFile(
                   it.organization.id!!, it.workspace.id!!, "")
@@ -519,7 +507,7 @@ class WorkspaceServiceImplTests {
               ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC upload workspace file: $role", role, shouldThrow) {
-              every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
+              every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
               every { resource.filename } returns "name"
               every {
                 azureStorageBlobServiceClient
@@ -534,27 +522,6 @@ class WorkspaceServiceImplTests {
             }
           }
 
-  //    @TestFactory
-  //    fun `test RBAC findAll workspace files`() =
-  //        mapOf(
-  //            ROLE_VIEWER to false,
-  //            ROLE_EDITOR to false,
-  //            ROLE_ADMIN to false,
-  //            ROLE_VALIDATOR to true,
-  //            ROLE_USER to false,
-  //            ROLE_NONE to true)
-  //            .map { (role, shouldThrow) ->
-  //                rbacTest("Test RBAC findAll workspace files: $role", role, shouldThrow) {
-  //                    every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns
-  // it.workspace
-  //                    every { azureStorageResourcePatternResolver.getResources(any()).map { any()
-  // as BlobStorageResource } } returns listOf(blobStorageResource)
-  //                    every { azureStorageBlobServiceClient.listBlobContainers() } returns
-  // pagedIterable
-  //                    workspaceServiceImpl.findAllWorkspaceFiles(it.organization.id!!,
-  // it.workspace.id!!)
-  //                }
-  //            }
   @TestFactory
   fun `test RBAC findAllWorkspaceFiles`() =
       mapOf(
@@ -566,7 +533,7 @@ class WorkspaceServiceImplTests {
               ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC findAllWorkspaceFiles: $role", role, shouldThrow) {
-              every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
+              every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
               every { azureStorageBlobServiceClient.getBlobContainerClient(any()) } returns mockk()
               mockkConstructor(AzureStorageResourcePatternResolver::class)
               every {
@@ -587,9 +554,7 @@ class WorkspaceServiceImplTests {
               ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC get workspace security: $role", role, shouldThrow) {
-              every { organizationService.findOrganizationById(any()) } returns it.organization
-              every { solutionService.findSolutionById(any(), any()) } returns it.solution
-              every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
+              every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
               workspaceServiceImpl.getWorkspaceSecurity(it.organization.id!!, it.workspace.id!!)
             }
           }
@@ -605,9 +570,7 @@ class WorkspaceServiceImplTests {
               ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC set workspace default security: $role", role, shouldThrow) {
-              every { organizationService.findOrganizationById(any()) } returns it.organization
-              every { solutionService.findSolutionById(any(), any()) } returns it.solution
-              every { workspaceRepository.findBy(any(), any()) } returns Optional.of(it.workspace)
+              every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
               every { workspaceRepository.save(any()) } returns it.workspace
               workspaceServiceImpl.setWorkspaceDefaultSecurity(
                   it.organization.id!!, it.workspace.id!!, WorkspaceRole(ROLE_NONE))
@@ -625,9 +588,7 @@ class WorkspaceServiceImplTests {
               ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("test RBAC get workspace access control: $role", role, shouldThrow) {
-              every { organizationService.findOrganizationById(any()) } returns it.organization
-              every { solutionService.findSolutionById(any(), any()) } returns it.solution
-              every { workspaceRepository.findBy(any(), any()) } returns Optional.of(it.workspace)
+              every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
               workspaceServiceImpl.getWorkspaceAccessControl(
                   it.organization.id!!, it.workspace.id!!, CONNECTED_DEFAULT_USER)
             }
@@ -644,9 +605,8 @@ class WorkspaceServiceImplTests {
               ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("test RBAC add workspace access control: $role", role, shouldThrow) {
-              every { organizationService.findOrganizationById(any()) } returns it.organization
-              every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
               every { workspaceRepository.save(any()) } returns it.workspace
+              every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
               workspaceServiceImpl.addWorkspaceAccessControl(
                   it.organization.id!!,
                   it.workspace.id!!,
@@ -665,8 +625,7 @@ class WorkspaceServiceImplTests {
               ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("test RBAC update workspace access control: $role", role, shouldThrow) {
-              every { organizationService.findOrganizationById(any()) } returns it.organization
-              every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
+              every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
               every { workspaceRepository.save(any()) } returns it.workspace
               workspaceServiceImpl.updateWorkspaceAccessControl(
                   it.organization.id!!,
@@ -687,8 +646,7 @@ class WorkspaceServiceImplTests {
               ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("test RBAC remove workspace access control: $role", role, shouldThrow) {
-              every { organizationService.findOrganizationById(any()) } returns it.organization
-              every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
+              every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
               every { workspaceRepository.save(any()) } returns it.workspace
               workspaceServiceImpl.removeWorkspaceAccessControl(
                   it.organization.id!!, it.workspace.id!!, "2$CONNECTED_DEFAULT_USER")
@@ -705,29 +663,12 @@ class WorkspaceServiceImplTests {
               ROLE_NONE to true)
           .map { (role, shouldThrow) ->
             rbacTest("test RBAC get workspace security users: $role", role, shouldThrow) {
-              every { organizationService.findOrganizationById(any()) } returns it.organization
-              every { workspaceServiceImpl.findWorkspaceById(any(), any()) } returns it.workspace
+              every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
               every { workspaceRepository.save(any()) } returns it.workspace
               workspaceServiceImpl.getWorkspaceSecurityUsers(
                   it.organization.id!!, it.workspace.id!!)
             }
           }
-
-  /*@TestFactory
-  fun `test RBAC find all workspaces`() =
-      mapOf(
-          ROLE_VIEWER to false,
-          ROLE_EDITOR to false,
-          ROLE_ADMIN to false,
-          ROLE_VALIDATOR to false,
-          ROLE_USER to false,
-          ROLE_NONE to false)
-          .map { (role, shouldThrow) ->
-              rbacTest("Test RBAC find all workspaces: $role", role, shouldThrow) {
-                  every { organizationRepository.findById(any()) } returns Optional.of(it.organization)
-                  workspaceServiceImpl.findAllWorkspaces(it.organization.id!!, null, 100)
-              }
-          }*/
 
   private fun rbacTest(
       testName: String,
