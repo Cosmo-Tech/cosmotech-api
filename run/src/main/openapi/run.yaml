@@ -17,7 +17,7 @@ tags:
     description: Run Management
 
 paths:
-  /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}:
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/runs/{run_id}:
     parameters:
       - name: organization_id
         in: path
@@ -31,9 +31,9 @@ paths:
         required: true
         schema:
           type: string
-      - name: runner_id
+      - name: scenario_id
         in: path
-        description: the Runner identifier
+        description: the Scenario identifier
         required: true
         schema:
           type: string
@@ -72,7 +72,7 @@ paths:
           description: Bad request
         "404":
           description: the Run specified is unknown or you don't have access to it
-  /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/status:
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/runs/{run_id}/status:
     parameters:
       - name: organization_id
         in: path
@@ -86,9 +86,9 @@ paths:
         required: true
         schema:
           type: string
-      - name: runner_id
+      - name: scenario_id
         in: path
-        description: the Runner identifier
+        description: the Scenario identifier
         required: true
         schema:
           type: string
@@ -113,7 +113,7 @@ paths:
               examples:
                 Run:
                   $ref: '#/components/examples/BreweryRunStatus'
-  /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/logs:
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/runs/{run_id}/logs:
     parameters:
       - name: organization_id
         in: path
@@ -127,9 +127,9 @@ paths:
         required: true
         schema:
           type: string
-      - name: runner_id
+      - name: scenario_id
         in: path
-        description: the Runner identifier
+        description: the Scenario identifier
         required: true
         schema:
           type: string
@@ -154,7 +154,7 @@ paths:
               examples:
                 Run:
                   $ref: '#/components/examples/BreweryRunLogs'
-  /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs:
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/runs/{run_id}/cumulatedlogs:
     parameters:
       - name: organization_id
         in: path
@@ -168,9 +168,51 @@ paths:
         required: true
         schema:
           type: string
-      - name: runner_id
+      - name: scenario_id
         in: path
-        description: the Runner identifier
+        description: the Scenario identifier
+        required: true
+        schema:
+          type: string
+      - name: run_id
+        in: path
+        description: the Run identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getRunCumulatedLogs
+      tags:
+        - run
+      summary: Get the cumulated logs of a run
+      responses:
+        "200":
+          description: the Run cumulated logs
+          content:
+            text/plain:
+              schema:
+                type: string
+        "400":
+          description: Bad request
+        "404":
+          description: the Run specified is unknown or you don't have access to it
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/runs:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: scenario_id
+        in: path
+        description: the Scenario identifier
         required: true
         schema:
           type: string
@@ -190,7 +232,7 @@ paths:
       operationId: getRuns
       tags:
         - run
-      summary: get the list of Runs for the Runner
+      summary: get the list of Runs for the Scenario
       responses:
         "200":
           description: the run details list
@@ -215,6 +257,61 @@ components:
           scopes:
             http://dev.api.cosmotech.com/platform: Platform scope
   schemas:
+    RunSearch:
+      type: object
+      description: the search options
+      properties:
+        solutionId:
+          type: string
+          description: the Solution Id to search
+        runTemplateId:
+          type: string
+          description: the Solution Analysis Id to search
+        workspaceId:
+          type: string
+          description: the Workspace Id to search
+        scenarioId:
+          type: string
+          description: the Scenario Id to search
+        state:
+          type: string
+          description: the state to search
+          enum: ["FetchingDatasets","FetchingScenarioParameters","ApplyingScenarioParameters","ValidatingScenarioData","SendingScenarioDataToDataWarehouse","PreRun","Running","PostRun","Success","Failed"]
+        workflowId:
+          type: string
+          description: the Cosmo Tech compute cluster Argo Workflow Id to search
+        workflowName:
+          type: string
+          description: the Cosmo Tech compute cluster Argo Workflow Name
+        ownerId:
+          type: string
+          description: the owner Id to search
+    RunStartContainers:
+      type: object
+      description: the parameters to run directly containers
+      properties:
+        generateName:
+          type: string
+          description: the base name for workflow name generation
+        csmSimulationId:
+          type: string
+          description: Cosmo Tech Simulation Run Id
+        nodeLabel:
+          type: string
+          description: the node label request
+        labels:
+          type: object
+          description: the workflow labels
+          additionalProperties:
+            type: string
+        containers:
+          type: array
+          description: the containerslist
+          items:
+            $ref: '#/components/schemas/RunContainer'
+      required:
+        - csmSimulationId
+        - containers
     RunStatus:
       type: object
       description: a Run status
@@ -369,11 +466,11 @@ components:
           type: string
           readOnly: true
           description: technical key for resource name convention and version grouping. Must be unique
-        runnerId:
+        scenarioId:
           type: string
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
           readOnly: true
-          description: the Runner Id
+          description: the Scenario Id
         solutionId:
           type: string
           x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
@@ -429,7 +526,7 @@ components:
             $ref: '#/components/schemas/RunContainer'
     RunTemplateParameterValue:
       type: object
-      description: the value of Analysis parameter for a Runner for this Run
+      description: the value of Analysis parameter for a Scenario for this Run
       properties:
         parameterId:
           type: string
@@ -524,7 +621,7 @@ components:
         - memory
     RunContainerArtifact:
       type: object
-      description: a runner run container artifact
+      description: a scenario run container artifact
       properties:
         name:
           type: string
@@ -568,33 +665,6 @@ components:
           type: string
           readOnly: true
           description: the node logs in plain text
-    RunStartContainers:
-      type: object
-      description: the parameters to run directly containers
-      properties:
-        generateName:
-          type: string
-          description: the base name for workflow name generation
-        csmSimulationId:
-          type: string
-          description: Cosmo Tech Simulation Run Id
-        nodeLabel:
-          type: string
-          description: the node label request
-        labels:
-          type: object
-          description: the workflow labels
-          additionalProperties:
-            type: string
-        containers:
-          type: array
-          description: the containerslist
-          items:
-            $ref: '#/components/schemas/RunContainer'
-      required:
-        - csmSimulationId
-        - containers
-
   examples:
     BreweryRun:
       summary: Brewery Run example
@@ -609,7 +679,7 @@ components:
         ownerId: null
         workspaceId: W-OGNQqJ7wP0
         workspaceKey: Brewery
-        runnerId: R-EEYpWeM0kW
+        scenarioId: S-EEYpWeM0kW
         solutionId: SOL-w4Kn79JXKz
         runTemplateId: hundred
         computeSize: '%NONE%'
@@ -618,11 +688,22 @@ components:
         sendDatasetsToDataWarehouse: false
         sendInputParametersToDataWarehouse: false
         nodeLabel: null
+    BreweryRunContainer:
+      summary: Brewery Run Containers example
+      description: Brewery Run ran with containers information example
+      value:
+        id: "1"
+        workflowId: "1"
+        workflowName: "w1"
+        ownerId: "1"
+        state: Running
+        startTime: 4/15/2021, 10:52:18.593 AM
+        nodeLabel: highcpupool
     OneRun:
       summary: Brewery Run list example
       description: Brewery Run list example
       value:
-        - id: RR-bDMr5lM9Vp
+        - id: SR-bDMr5lM9Vp
           organizationId: O-x2QOMVXpjX
           workflowId: 07193ced-9895-444f-b2be-31e8bfc3e768
           csmSimulationRun: a2880d46-a60d-4215-a593-783452e0df8f
@@ -631,7 +712,7 @@ components:
           ownerId: null
           workspaceId: W-OGNQqJ7wP0
           workspaceKey: Brewery
-          runnerId: R-EEYpWeM0kW
+          scenarioId: S-EEYpWeM0kW
           solutionId: SOL-w4Kn79JXKz
           runTemplateId: hundred
           computeSize: '%NONE%'
@@ -640,6 +721,18 @@ components:
           sendDatasetsToDataWarehouse: false
           sendInputParametersToDataWarehouse: false
           nodeLabel: null
+    BrewerySearch:
+      summary: Brewery search Run example
+      description: Brewery search Run of Workspace 1 in Running state example
+      value:
+        workspaceId: "1"
+        state: "Running"
+    BreweryRunStartContainers:
+      summary: Brewery start Run directly with containers example
+      description: Brewery start Run directly with containers example
+      value:
+        generateName: workflow-
+        nodeLabel: highcpupool
     BreweryRunLogs:
       summary: Brewery Run logs  example
       description: Brewery Run logs with plain text example
@@ -658,9 +751,9 @@ components:
             logs: cannot run solution
     BreweryRunStatus:
       summary: Brewery status example
-      description: Brewery Runner Run status example
+      description: Brewery Scenario Run status example
       value:
-        id: RR-bDMr5lM9Vp
+        id: SR-bDMr5lM9Vp
         organizationId: O-x2QOMVXpjX
         workflowId: 07193ced-9895-444f-b2be-31e8bfc3e768
         workflowName: workflow-s-eeypwem0kw-lsczk

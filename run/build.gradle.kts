@@ -23,7 +23,6 @@ dependencies {
   implementation(projects.cosmotechScenarioApi)
   implementation(projects.cosmotechSolutionApi)
   implementation(projects.cosmotechWorkspaceApi)
-  implementation(projects.cosmotechRunnerApi)
 
   testImplementation("org.testng:testng:7.1.0")
   testImplementation("com.redis.testcontainers:testcontainers-redis-junit:1.6.2")

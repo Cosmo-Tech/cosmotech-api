@@ -13,7 +13,7 @@ Name | Type | Description | Notes
 **ownerId** | **String** | the user id which own this run | [optional] [default to null]
 **workspaceId** | **String** | the Workspace Id | [optional] [default to null]
 **workspaceKey** | **String** | technical key for resource name convention and version grouping. Must be unique | [optional] [default to null]
-**runnerId** | **String** | the Runner Id | [optional] [default to null]
+**scenarioId** | **String** | the Scenario Id | [optional] [default to null]
 **solutionId** | **String** | the Solution Id | [optional] [default to null]
 **runTemplateId** | **String** | the Solution Run Template id | [optional] [default to null]
 **computeSize** | **String** | the compute size needed for this Analysis. Standard sizes are basic and highcpu. Default is basic | [optional] [default to null]

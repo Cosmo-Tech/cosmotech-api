@@ -129,6 +129,17 @@ class SolutionServiceImpl(
     }
   }
 
+  override fun isRunTemplateExist(
+      organizationId: String,
+      workspaceId: String,
+      solutionId: String,
+      runTemplateId: String
+  ): Boolean {
+    val solution = findSolutionById(organizationId, solutionId)
+
+    return solution.runTemplates?.any { runTemplateId == it.id } ?: false
+  }
+
   override fun addOrReplaceParameterGroups(
       organizationId: String,
       solutionId: String,

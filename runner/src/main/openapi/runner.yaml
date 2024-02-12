@@ -121,7 +121,7 @@ paths:
         schema:
           type: string
     get:
-      operationId: findRunner
+      operationId: getRunner
       tags:
         - runner
       summary: Get the details of an runner
