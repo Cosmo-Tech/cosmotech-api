@@ -224,7 +224,13 @@ components:
           description: the Run id
         organizationId:
           type: string
-          description: the Run id
+          description: the Organization id
+        workspaceId:
+          type: string
+          description: the Workspace id
+        runnerId:
+          type: string
+          description: the Runner id
         workflowId:
           type: string
           description: the Cosmo Tech compute cluster Argo Workflow Id to search
@@ -265,9 +271,6 @@ components:
         - Successful
         - Failed
         - Unknown
-        # PROD-7420 : return data ingestion status
-        - DataIngestionInProgress
-        - DataIngestionFailure
     RunStatusNode:
       type: object
       description: status of a Run Node
@@ -388,20 +391,14 @@ components:
           type: string
           readOnly: true
           description: the compute size needed for this Analysis. Standard sizes are basic and highcpu. Default is basic
-        sdkVersion:
-          type: string
-          description: the MAJOR.MINOR version used to build the solution solution
         createdAt:
           type: string
           readOnly: true
           description: the Run creation date
-        noDataIngestionState:
-          type: boolean
-          description: set to true if the run template does not use any Datawarehouse consumers (AMQP consumers for Azure)
         datasetList:
           type: array
           readOnly: true
-          description: the list of Dataset Id associated to this Analysis
+          description: the list of Dataset Id associated to this Run
           items:
             type: string
         parametersValues:
@@ -410,14 +407,6 @@ components:
           description: the list of Run Template parameters values
           items:
             $ref: '#/components/schemas/RunTemplateParameterValue'
-        sendDatasetsToDataWarehouse:
-          type: boolean
-          readOnly: true
-          description: whether or not the Datasets values are send to the DataWarehouse prior to Simulation Run. If not set follow the Workspace setting
-        sendInputParametersToDataWarehouse:
-          type: boolean
-          readOnly: true
-          description: whether or not the input parameters values are send to the DataWarehouse prior to Simulation Run. If not set follow the Workspace setting
         nodeLabel:
           type: string
           readOnly: true
@@ -660,8 +649,10 @@ components:
       summary: Brewery status example
       description: Brewery Runner Run status example
       value:
-        id: RR-bDMr5lM9Vp
+        id: run-bDMr5lM9Vp
         organizationId: O-x2QOMVXpjX
+        workspaceId: W-x2QOMVXpjX
+        runnerId: r-x2QOMVXpjX
         workflowId: 07193ced-9895-444f-b2be-31e8bfc3e768
         workflowName: workflow-s-eeypwem0kw-lsczk
         startTime: "2021-05-18T16:15:29.000Z"
