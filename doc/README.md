@@ -65,21 +65,6 @@ Class | Method | HTTP request | Description
 *RunApi* | [**getRunLogs**](Apis/RunApi.md#getrunlogs) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/logs | get the logs for the Run
 *RunApi* | [**getRunStatus**](Apis/RunApi.md#getrunstatus) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/status | get the status for the Run
 *RunApi* | [**getRuns**](Apis/RunApi.md#getruns) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs | get the list of Runs for the Runner
-*RunnerApi* | [**addRunnerAccessControl**](Apis/RunnerApi.md#addrunneraccesscontrol) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/access | Add a control access to the Runner
-*RunnerApi* | [**createRunner**](Apis/RunnerApi.md#createrunner) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners | Create a new Runner
-*RunnerApi* | [**deleteRunner**](Apis/RunnerApi.md#deleterunner) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id} | Delete a runner
-*RunnerApi* | [**getRunner**](Apis/RunnerApi.md#getrunner) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id} | Get the details of an runner
-*RunnerApi* | [**getRunnerAccessControl**](Apis/RunnerApi.md#getrunneraccesscontrol) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/access/{identity_id} | Get a control access for the Runner
-*RunnerApi* | [**getRunnerPermissions**](Apis/RunnerApi.md#getrunnerpermissions) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/permissions/{role} | Get the Runner permission by given role
-*RunnerApi* | [**getRunnerSecurity**](Apis/RunnerApi.md#getrunnersecurity) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security | Get the Runner security information
-*RunnerApi* | [**getRunnerSecurityUsers**](Apis/RunnerApi.md#getrunnersecurityusers) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/users | Get the Runner security users list
-*RunnerApi* | [**listRunners**](Apis/RunnerApi.md#listrunners) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners | List all Runners
-*RunnerApi* | [**removeRunnerAccessControl**](Apis/RunnerApi.md#removerunneraccesscontrol) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/access/{identity_id} | Remove the specified access from the given Organization Runner
-*RunnerApi* | [**setRunnerDefaultSecurity**](Apis/RunnerApi.md#setrunnerdefaultsecurity) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/default | Set the Runner default security
-*RunnerApi* | [**startRun**](Apis/RunnerApi.md#startrun) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/start | Start a run with runner parameters
-*RunnerApi* | [**stopRun**](Apis/RunnerApi.md#stoprun) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/stop | Stop the last run
-*RunnerApi* | [**updateRunner**](Apis/RunnerApi.md#updaterunner) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id} | Update a runner
-*RunnerApi* | [**updateRunnerAccessControl**](Apis/RunnerApi.md#updaterunneraccesscontrol) | **PATCH** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/access/{identity_id} | Update the specified access to User for a Runner
 *ScenarioApi* | [**addOrReplaceScenarioParameterValues**](Apis/ScenarioApi.md#addorreplacescenarioparametervalues) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/parameterValues | Add (or replace) Parameter Values for the Scenario specified
 *ScenarioApi* | [**addScenarioAccessControl**](Apis/ScenarioApi.md#addscenarioaccesscontrol) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/security/access | Add a control access to the Scenario
 *ScenarioApi* | [**compareScenarios**](Apis/ScenarioApi.md#comparescenarios) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/compare/{compared_scenario_id} | Compare the Scenario with another one and returns the difference for parameters values
@@ -236,19 +221,6 @@ Class | Method | HTTP request | Description
  - [RunTemplateParameterValue](./Models/RunTemplateParameterValue.md)
  - [RunTemplateResourceSizing](./Models/RunTemplateResourceSizing.md)
  - [RunTemplateStepSource](./Models/RunTemplateStepSource.md)
- - [Runner](./Models/Runner.md)
- - [RunnerAccessControl](./Models/RunnerAccessControl.md)
- - [RunnerChangedParameterValue](./Models/RunnerChangedParameterValue.md)
- - [RunnerComparisonResult](./Models/RunnerComparisonResult.md)
- - [RunnerDataDownloadInfo](./Models/RunnerDataDownloadInfo.md)
- - [RunnerDataDownloadJob](./Models/RunnerDataDownloadJob.md)
- - [RunnerJobState](./Models/RunnerJobState.md)
- - [RunnerLastRun](./Models/RunnerLastRun.md)
- - [RunnerResourceSizing](./Models/RunnerResourceSizing.md)
- - [RunnerRole](./Models/RunnerRole.md)
- - [RunnerRunTemplateParameterValue](./Models/RunnerRunTemplateParameterValue.md)
- - [RunnerSecurity](./Models/RunnerSecurity.md)
- - [RunnerValidationStatus](./Models/RunnerValidationStatus.md)
  - [Scenario](./Models/Scenario.md)
  - [ScenarioAccessControl](./Models/ScenarioAccessControl.md)
  - [ScenarioChangedParameterValue](./Models/ScenarioChangedParameterValue.md)

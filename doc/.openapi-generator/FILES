@@ -2,7 +2,6 @@ Apis/ConnectorApi.md
 Apis/DatasetApi.md
 Apis/OrganizationApi.md
 Apis/RunApi.md
-Apis/RunnerApi.md
 Apis/ScenarioApi.md
 Apis/ScenariorunApi.md
 Apis/ScenariorunresultApi.md
@@ -57,19 +56,6 @@ Models/RunTemplateParameterGroup.md
 Models/RunTemplateParameterValue.md
 Models/RunTemplateResourceSizing.md
 Models/RunTemplateStepSource.md
-Models/Runner.md
-Models/RunnerAccessControl.md
-Models/RunnerChangedParameterValue.md
-Models/RunnerComparisonResult.md
-Models/RunnerDataDownloadInfo.md
-Models/RunnerDataDownloadJob.md
-Models/RunnerJobState.md
-Models/RunnerLastRun.md
-Models/RunnerResourceSizing.md
-Models/RunnerRole.md
-Models/RunnerRunTemplateParameterValue.md
-Models/RunnerSecurity.md
-Models/RunnerValidationStatus.md
 Models/Scenario.md
 Models/ScenarioAccessControl.md
 Models/ScenarioChangedParameterValue.md
