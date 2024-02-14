@@ -31,7 +31,8 @@ internal class RunnerApiServiceImpl(
             .inOrganization(organizationId)
             .inWorkspace(workspaceId)
             .userHasPermissionOnWorkspace(PERMISSION_CREATE_CHILDREN)
-    val runnerInstance = runnerService.getNewInstance().setValueFrom(runner).setSecurityFrom(runner)
+    val runnerInstance =
+        runnerService.getNewInstance().setValueFrom(runner).initSecurity().setSecurityFrom(runner)
 
     return runnerService.saveInstance(runnerInstance)
   }
@@ -96,8 +97,6 @@ internal class RunnerApiServiceImpl(
         runnerService.getInstance(runnerId).userHasPermission(PERMISSION_WRITE_SECURITY)
 
     runnerInstance.setAccessControl(runnerAccessControl)
-    runnerInstance.propagateAccessControlToDatasets(runnerAccessControl.id, runnerAccessControl.role)
-
     runnerService.saveInstance(runnerInstance)
 
     return runnerInstance.getAccessControlFor(runnerAccessControl.id)
@@ -129,7 +128,6 @@ internal class RunnerApiServiceImpl(
 
     val runnerAccessControl = RunnerAccessControl(identityId, runnerRole.role)
     runnerInstance.setAccessControl(runnerAccessControl)
-    runnerInstance.propagateAccessControlToDatasets(identityId, runnerRole.role)
 
     runnerService.saveInstance(runnerInstance)
 
@@ -146,7 +144,6 @@ internal class RunnerApiServiceImpl(
     val runnerInstance =
         runnerService.getInstance(runnerId).userHasPermission(PERMISSION_WRITE_SECURITY)
 
-    runnerInstance.removeAccessControlToDatasets(identityId)
     runnerInstance.deleteAccessControlFor(identityId)
 
     runnerService.saveInstance(runnerInstance)

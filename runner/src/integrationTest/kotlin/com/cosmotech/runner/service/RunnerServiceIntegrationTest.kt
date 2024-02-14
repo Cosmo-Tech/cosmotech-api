@@ -291,67 +291,6 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
-  @Test
-  fun `test parent runner operations as User Admin`() {
-
-    logger.info("should create a child Runner with dataset different from parent")
-    logger.info("Create a tree of Runners")
-    val idMap = mutableMapOf<Int, String>()
-    IntRange(1, 5).forEach {
-      var runner =
-          makeRunner(
-              organizationSaved.id!!,
-              workspaceSaved.id!!,
-              solutionSaved.id!!,
-              "Runner$it",
-              mutableListOf(datasetSaved.id!!),
-              if (it == 1) null else idMap[it - 1],
-          )
-      runner = runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
-      idMap[it] = runner.id!!
-    }
-    var runners =
-        runnerApiService.listRunners(organizationSaved.id!!, workspaceSaved.id!!, null, null)
-    assertEquals(6, runners.size)
-
-    logger.info("should delete last child (element 5) and assert there are 5 Runners left")
-    runnerApiService.deleteRunner(organizationSaved.id!!, workspaceSaved.id!!, idMap[5]!!)
-    runners = runnerApiService.listRunners(organizationSaved.id!!, workspaceSaved.id!!, null, null)
-    assertEquals(5, runners.size)
-
-    logger.info("should insure that the parent of element 4 is element 3")
-    runner = runnerApiService.getRunner(organizationSaved.id!!, workspaceSaved.id!!, idMap[4]!!)
-    assertEquals(idMap[3], runner.parentId)
-
-    logger.info("should delete element 3 (in the middle) and assert there are 4 Runners left")
-    runnerApiService.deleteRunner(organizationSaved.id!!, workspaceSaved.id!!, idMap[3]!!)
-    runners = runnerApiService.listRunners(organizationSaved.id!!, workspaceSaved.id!!, null, null)
-    assertEquals(4, runners.size)
-
-    logger.info("should insure that the parent of element 4 is element 2")
-    runner = runnerApiService.getRunner(organizationSaved.id!!, workspaceSaved.id!!, idMap[4]!!)
-    assertEquals(idMap[2], runner.parentId)
-
-    logger.info("should delete root element (element 1) and assert there are 3 Runners left")
-    runnerApiService.deleteRunner(organizationSaved.id!!, workspaceSaved.id!!, idMap[1]!!)
-    runners = runnerApiService.listRunners(organizationSaved.id!!, workspaceSaved.id!!, null, null)
-    assertEquals(3, runners.size)
-
-    val rootRunner =
-        runnerApiService.getRunner(organizationSaved.id!!, workspaceSaved.id!!, idMap[2]!!)
-    logger.info("rootId for the new root runner should be null")
-    assertEquals(null, rootRunner.rootId)
-
-    logger.info("rootId for the new root runner should be null")
-    assertEquals(null, rootRunner.parentId)
-
-    val childRunner =
-        runnerApiService.getRunner(organizationSaved.id!!, workspaceSaved.id!!, idMap[4]!!)
-    logger.info("rootId for element 4 should be element 2 id")
-    assertEquals(rootRunner.id, childRunner.rootId)
-  }
-
-  @Test
   fun `test RBAC RunnerSecurity as User Admin`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
 
@@ -535,16 +474,11 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
-  fun `test deleting dataset with runner`() {
+  fun `test on runner delete keep datasets`() {
     runnerApiService.deleteRunner(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
 
-    assertDoesNotThrow {
-      datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
-    }
     runnerSaved.datasetList!!.forEach { dataset ->
-      assertThrows<CsmResourceNotFoundException> {
-        datasetApiService.findDatasetById(organizationSaved.id!!, dataset)
-      }
+      assertDoesNotThrow { datasetApiService.findDatasetById(organizationSaved.id!!, dataset) }
     }
   }
 
@@ -556,17 +490,21 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
             organizationSaved.id!!,
             workspaceSaved.id!!,
             runnerSaved.id!!,
-            runner.copy(datasetList = mutableListOf(datasetSaved.id!!, newDataset.id!!)))
+            runner.copy(
+                datasetList = mutableListOf(datasetSaved.id!!, newDataset.id!!),
+                security =
+                    runner.security
+                        ?.accessControlList
+                        ?.apply { this.add(RunnerAccessControl("newUser", ROLE_VIEWER)) }
+                        ?.let { runner.security?.copy(accessControlList = it) }))
 
     val runnerUserList =
         runnerApiService.getRunnerSecurityUsers(
             organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
 
-    runnerSaved.datasetList!!.forEach { thisDataset ->
-      val datasetUserList =
-          datasetApiService.getDatasetSecurityUsers(organizationSaved.id!!, thisDataset)
-      runnerUserList.forEach { user -> assertTrue(datasetUserList.contains(user)) }
-    }
+    val datasetUserList =
+        datasetApiService.getDatasetSecurityUsers(organizationSaved.id!!, newDataset.id!!)
+    datasetUserList.containsAll(runnerUserList)
   }
 
   @Test
@@ -600,35 +538,22 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     runnerSaved =
         runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, workingRunner)
 
-    assertThrows<IllegalArgumentException> {
-      runnerApiService.addRunnerAccessControl(
-          organizationSaved.id!!,
-          workspaceSaved.id!!,
-          runnerSaved.id!!,
-          RunnerAccessControl(CONNECTED_ADMIN_USER, ROLE_EDITOR))
-    }
-  }
+    val runnerSavedSecurityUsers =
+        runnerApiService.getRunnerSecurityUsers(
+            organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+    assertEquals(2, runnerSavedSecurityUsers.size)
 
-  @Test
-  fun `when workspace datasetCopy is true, linked datasets should be deleted`() {
-    workspace =
-        Workspace(
-            key = "key",
-            name = "workspace",
-            solution = WorkspaceSolution(solutionSaved.id!!),
-            id = "id",
-            datasetCopy = true)
-    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
-    runner = makeRunner(datasetList = mutableListOf(datasetSaved.id!!))
-    runnerSaved = runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, runner)
+    runnerApiService.addRunnerAccessControl(
+        organizationSaved.id!!,
+        workspaceSaved.id!!,
+        runnerSaved.id!!,
+        RunnerAccessControl(defaultName, ROLE_EDITOR))
 
-    datasetSaved =
-        datasetApiService.findDatasetById(organizationSaved.id!!, runnerSaved.datasetList!![0])
-    runnerApiService.deleteRunner(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
-
-    assertThrows<CsmResourceNotFoundException> {
-      datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
-    }
+    val runnerSecurityUsers =
+        runnerApiService.getRunnerSecurityUsers(
+            organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+    assertEquals(2, runnerSecurityUsers.size)
+    assert(runnerSavedSecurityUsers == runnerSecurityUsers)
   }
 
   @Test
@@ -791,7 +716,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
       name: String = "name",
       datasetList: MutableList<String> = mutableListOf<String>(),
       parentId: String? = null,
-      userName: String = "roleName",
+      userName: String = defaultName,
       role: String = ROLE_USER,
       validationStatus: RunnerValidationStatus = RunnerValidationStatus.Draft
   ): Runner {

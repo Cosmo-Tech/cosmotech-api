@@ -86,9 +86,7 @@ class RunnerService(
 
   fun getNewInstance(): RunnerInstance {
     val runnerInstance = RunnerInstance()
-    runnerInstance.initialize()
-
-    return runnerInstance
+    return runnerInstance.initialize()
   }
 
   fun getInstance(runnerId: String): RunnerInstance {
@@ -125,7 +123,6 @@ class RunnerService(
     }
 
     fun setValueFrom(runner: Runner): RunnerInstance = apply {
-      // Validate data coherence
       if (runner.runTemplateId.isNullOrEmpty())
           throw IllegalArgumentException("runner does not have a runTemplateId define")
       if (!solutionApiService.isRunTemplateExist(
@@ -135,15 +132,24 @@ class RunnerService(
           runner.runTemplateId!!))
           throw IllegalArgumentException("Run Template not found: ${runner.runTemplateId}")
 
-      val excludeFields = arrayOf("id", "ownerId", "organizationId", "workspaceId", "creationDate")
+      val beforeMutateDatasetList = this.runner.datasetList
+
+      val excludeFields =
+          arrayOf("id", "ownerId", "organizationId", "workspaceId", "creationDate", "security")
       this.runner.compareToAndMutateIfNeeded(runner, excludedFields = excludeFields)
+
+      // take newly added datasets and propagate existing ACL on it
+      this.runner.datasetList
+          ?.filterNot { beforeMutateDatasetList?.contains(it) ?: false }
+          ?.forEach { newDatasetId ->
+            this.runner.security?.accessControlList?.forEach {
+              this.propagateAccessControlToDataset(newDatasetId, it.id, it.role)
+            }
+          }
     }
 
     fun setSecurityFrom(runner: Runner): RunnerInstance = apply {
-      var rbacSecurity = extractRbacSecurity(runner)
-      if (rbacSecurity == null)
-          rbacSecurity = initSecurity(getCurrentAccountIdentifier(csmPlatformProperties))
-
+      val rbacSecurity = extractRbacSecurity(runner) ?: return@apply
       this.setRbacSecurity(rbacSecurity)
     }
 
@@ -157,6 +163,8 @@ class RunnerService(
               runnerAccessControl.role,
               this.roleDefinition)
       this.setRbacSecurity(rbacSecurity)
+
+      this.propagateAccessControlToDatasets(runnerAccessControl.id, runnerAccessControl.role)
     }
 
     fun getAccessControlFor(userId: String): RunnerAccessControl {
@@ -168,6 +176,8 @@ class RunnerService(
       // create a rbacSecurity object from runner Rbac by removing user
       val rbacSecurity = csmRbac.removeUser(this.getRbacSecurity(), userId, this.roleDefinition)
       this.setRbacSecurity(rbacSecurity)
+
+      this.removeAccessControlToDatasets(userId)
     }
 
     private fun getRbacSecurity(): RbacSecurity {
@@ -198,23 +208,27 @@ class RunnerService(
               ?: mutableListOf())
     }
 
-    fun propagateAccessControlToDatasets(userId: String, role: String) {
-      val datasetRole = role.takeUnless { it == ROLE_VALIDATOR } ?: ROLE_USER
-
-      val organizationId = this.runner.organizationId!!
+    private fun propagateAccessControlToDatasets(userId: String, role: String) {
       this.runner.datasetList!!.forEach { datasetId ->
-        val datasetUsers = datasetApiService.getDatasetSecurityUsers(organizationId, datasetId)
-        if (datasetUsers.contains(userId)) {
-          datasetApiService.updateDatasetAccessControl(
-              organizationId, datasetId, userId, DatasetRole(datasetRole))
-        } else {
-          datasetApiService.addDatasetAccessControl(
-              organizationId, datasetId, DatasetAccessControl(userId, datasetRole))
-        }
+        propagateAccessControlToDataset(datasetId, userId, role)
       }
     }
 
-    fun removeAccessControlToDatasets(userId: String) {
+    private fun propagateAccessControlToDataset(datasetId: String, userId: String, role: String) {
+      val datasetRole = role.takeUnless { it == ROLE_VALIDATOR } ?: ROLE_USER
+      val organizationId = this.runner.organizationId!!
+
+      val datasetUsers = datasetApiService.getDatasetSecurityUsers(organizationId, datasetId)
+      if (datasetUsers.contains(userId)) {
+        datasetApiService.updateDatasetAccessControl(
+            organizationId, datasetId, userId, DatasetRole(datasetRole))
+      } else {
+        datasetApiService.addDatasetAccessControl(
+            organizationId, datasetId, DatasetAccessControl(userId, datasetRole))
+      }
+    }
+
+    private fun removeAccessControlToDatasets(userId: String) {
       val organizationId = this.runner.organizationId!!
       this.runner.datasetList!!.forEach { datasetId ->
         val datasetACL =
@@ -235,14 +249,15 @@ class RunnerService(
       this.setRbacSecurity(rbacSecurity)
     }
 
-    fun initSecurity(userId: String): RbacSecurity {
-      return RbacSecurity(
-          id = this.runner.id,
-          default = ROLE_NONE,
-          accessControlList = mutableListOf(RbacAccessControl(userId, ROLE_ADMIN)))
+    fun initSecurity(): RunnerInstance = apply {
+      val userId = getCurrentAccountIdentifier(csmPlatformProperties)
+      this.runner.security =
+          RunnerSecurity(
+              default = ROLE_NONE,
+              accessControlList = mutableListOf(RunnerAccessControl(userId, ROLE_ADMIN)))
     }
 
-    fun initialize() {
+    fun initialize(): RunnerInstance = apply {
       val now = Instant.now().toEpochMilli()
       this.runner =
           Runner(
