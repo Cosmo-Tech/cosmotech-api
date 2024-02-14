@@ -125,6 +125,16 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Run RBAC Dataset integration tests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: gradle/gradle-build-action@v2
+        with:
+          cache-disabled: false
+          # Cache storage space is limited for GitHub actions
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          arguments: :cosmotech-dataset-api:integrationTest --tests "com.cosmotech.dataset.service.DatasetServiceRBACTest" -x spotlessCheck -x openApiValidate
+
       - name: Run Dataset integration tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -133,7 +143,7 @@ jobs:
           cache-disabled: false
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: :cosmotech-dataset-api:integrationTest -x spotlessCheck -x openApiValidate
+          arguments: :cosmotech-dataset-api:integrationTest --tests "com.cosmotech.dataset.service.DatasetServiceIntegrationTest" -x spotlessCheck -x openApiValidate
 
   organization_it:
     runs-on: ubuntu-latest
@@ -163,7 +173,17 @@ jobs:
           cache-disabled: false
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: :cosmotech-organization-api:integrationTest -x spotlessCheck -x openApiValidate
+          arguments: :cosmotech-organization-api:integrationTest --tests "com.cosmotech.organization.service.OrganizationServiceIntegrationTest" -x spotlessCheck -x openApiValidate
+
+      - name: Run RBAC Organization integration tests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: gradle/gradle-build-action@v2
+        with:
+          cache-disabled: false
+          # Cache storage space is limited for GitHub actions
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          arguments: :cosmotech-organization-api:integrationTest --tests "com.cosmotech.organization.service.OrganizationServiceRBACTest" -x spotlessCheck -x openApiValidate
 
   scenario_it:
     runs-on: ubuntu-latest
@@ -185,6 +205,16 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Run RBAC integration tests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: gradle/gradle-build-action@v2
+        with:
+          cache-disabled: false
+          # Cache storage space is limited for GitHub actions
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          arguments: :cosmotech-scenario-api:integrationTest --tests "com.cosmotech.scenario.service.ScenarioServiceRBACTest" -x spotlessCheck -x openApiValidate
+
       - name: Run Scenario integration tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -193,7 +223,7 @@ jobs:
           cache-disabled: false
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: :cosmotech-scenario-api:integrationTest -x spotlessCheck -x openApiValidate
+          arguments: :cosmotech-scenario-api:integrationTest --tests "com.cosmotech.scenario.service.ScenarioServiceIntegrationTest" -x spotlessCheck -x openApiValidate
 
   scenariorun_it:
     runs-on: ubuntu-latest
@@ -223,7 +253,17 @@ jobs:
           cache-disabled: false
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: :cosmotech-scenariorun-api:integrationTest -x spotlessCheck -x openApiValidate
+          arguments: :cosmotech-scenariorun-api:integrationTest --tests "com.cosmotech.scenariorun.service.ScenarioRunServiceIntegrationTest" -x spotlessCheck -x openApiValidate
+
+      - name: Run RBAC Scenario Run integration tests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: gradle/gradle-build-action@v2
+        with:
+          cache-disabled: false
+          # Cache storage space is limited for GitHub actions
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          arguments: :cosmotech-scenariorun-api:integrationTest --tests "com.cosmotech.scenariorun.service.ScenarioRunServiceRBACTest" -x spotlessCheck -x openApiValidate
 
   scenariorunresult_it:
     runs-on: ubuntu-latest
@@ -253,7 +293,18 @@ jobs:
           cache-disabled: false
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: :cosmotech-scenariorunresult-api:integrationTest -x spotlessCheck -x openApiValidate
+          arguments: :cosmotech-scenariorunresult-api:integrationTest  --tests "com.cosmotech.scenariorunresult.service.ScenarioRunResultServiceIntegrationTest" -x spotlessCheck -x openApiValidate
+
+
+      - name: Run RBAC Scenario Run Results integration tests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: gradle/gradle-build-action@v2
+        with:
+          cache-disabled: false
+          # Cache storage space is limited for GitHub actions
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          arguments: :cosmotech-scenariorunresult-api:integrationTest  --tests "com.cosmotech.scenariorunresult.service.ScenarioRunResultServiceRBACTest" -x spotlessCheck -x openApiValidate
 
   solution_it:
     runs-on: ubuntu-latest
@@ -283,7 +334,18 @@ jobs:
           cache-disabled: false
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: :cosmotech-solution-api:integrationTest -x spotlessCheck -x openApiValidate
+          arguments: :cosmotech-solution-api:integrationTest --tests "com.cosmotech.solution.service.SolutionServiceIntegrationTest" -x spotlessCheck -x openApiValidate
+
+
+      - name: Run RBAC Solution integration tests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: gradle/gradle-build-action@v2
+        with:
+          cache-disabled: false
+          # Cache storage space is limited for GitHub actions
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          arguments: :cosmotech-solution-api:integrationTest --tests "com.cosmotech.solution.service.SolutionServiceRBACTest" -x spotlessCheck -x openApiValidate
 
   twingraph_it:
     runs-on: ubuntu-latest
@@ -343,7 +405,18 @@ jobs:
           cache-disabled: false
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: :cosmotech-workspace-api:integrationTest -x spotlessCheck -x openApiValidate
+          arguments: :cosmotech-workspace-api:integrationTest --tests "com.cosmotech.worskpace.service.WorkspaceServiceIntegrationTest" -x spotlessCheck -x openApiValidate
+
+
+      - name: Run RBAC Workspace integration tests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: gradle/gradle-build-action@v2
+        with:
+          cache-disabled: false
+          # Cache storage space is limited for GitHub actions
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          arguments: :cosmotech-workspace-api:integrationTest --tests "com.cosmotech.worskpace.service.WorkspaceServiceRBACTest" -x spotlessCheck -x openApiValidate
 
   homecontroller_it:
     runs-on: ubuntu-latest
