@@ -121,7 +121,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     @Test
     fun `findAllOrganizations with correct values and RBAC for current user`() {
 
-      val numberOfOrganizationCreated = batchOrganizationCreationWithRBAC(TEST_USER_ID)
+      val numberOfOrganizationCreated = createOrganizationsWithAllCombinationOfRole(TEST_USER_ID)
       // This number represents the amount of Organization that test.user can read regarding RBAC
       // This is typically all simple combinations except "securityRole to none"
       // We have 36 combinations per user in batchOrganizationCreationWithRBAC
@@ -132,7 +132,8 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     @Test
     fun `findAllOrganizations with correct values and no RBAC for current user`() {
 
-      val numberOfOrganizationCreated = batchOrganizationCreationWithRBAC(OTHER_TEST_USER_ID)
+      val numberOfOrganizationCreated =
+          createOrganizationsWithAllCombinationOfRole(OTHER_TEST_USER_ID)
       // This number represents the amount of Organization that test.user can read regarding RBAC
       // We have 36 combinations per user in batchOrganizationCreationWithRBAC
       // securityRole does not refer to test.user
@@ -148,33 +149,33 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `findOrganizationById as owner`() {
+    fun `findOrganizationById as resource admin`() {
       val organizationRegistered =
           organizationApiService.registerOrganization(createTestOrganization("o-connector-test-1"))
       assertNotNull(organizationApiService.findOrganizationById(organizationRegistered.id!!))
     }
 
     @Test
-    fun `findOrganizationById as not owner`() {
+    fun `findOrganizationById as not resource admin`() {
       testFindOrganizationByIdAsNotOwner(false, null, null, null, true) { runAsOrganizationUser() }
     }
 
     @Test
-    fun `findOrganizationById as not owner but with READ role`() {
+    fun `findOrganizationById as not resource admin but with READ role`() {
       testFindOrganizationByIdAsNotOwner(true, TEST_USER_ID, ROLE_NONE, ROLE_USER, false) {
         runAsOrganizationUser()
       }
     }
 
     @Test
-    fun `findOrganizationById as not owner but with WRITE role`() {
+    fun `findOrganizationById as not resource admin but with WRITE role`() {
       testFindOrganizationByIdAsNotOwner(true, TEST_USER_ID, ROLE_NONE, ROLE_EDITOR, false) {
         runAsOrganizationUser()
       }
     }
 
     @Test
-    fun `findOrganizationById as not owner but with NONE role`() {
+    fun `findOrganizationById as not resource admin but with NONE role`() {
       testFindOrganizationByIdAsNotOwner(true, TEST_USER_ID, ROLE_NONE, ROLE_NONE, true) {
         runAsOrganizationUser()
       }
@@ -231,7 +232,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `unregisterOrganization owned organization `() {
+    fun `unregisterOrganization as resource admin`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         val organizationToRegister = createTestOrganization(name)
@@ -261,7 +262,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `unregisterOrganization not owned but DELETE permission `() {
+    fun `unregisterOrganization not as resource admin but DELETE permission `() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -275,7 +276,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateOrganization owned organization name and services`() {
+    fun `updateOrganization as resource admin, organization name and services`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -309,7 +310,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateOrganization owned organization security`() {
+    fun `updateOrganization as resource admin, organization security`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -334,7 +335,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateOrganization not owned organization with WRITE permission`() {
+    fun `updateOrganization not as resource admin with WRITE permission`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -374,7 +375,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateOrganization not owned organization with no WRITE permission`() {
+    fun `updateOrganization not as resource admin with no WRITE permission`() {
       assertThrows<CsmAccessForbiddenException> {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -387,7 +388,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateSolutionsContainerRegistryByOrganizationId with owned organization`() {
+    fun `updateSolutionsContainerRegistryByOrganizationId as resource admin`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -414,7 +415,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateSolutionsContainerRegistryByOrganizationId with not owned organization and WRITE permission`() {
+    fun `updateSolutionsContainerRegistryByOrganizationId as not resource admin and WRITE permission`() {
       assertDoesNotThrow {
         runAsDifferentOrganizationUser()
         val name = "o-connector-test-1"
@@ -445,7 +446,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateSolutionsContainerRegistryByOrganizationId with not owned organization and READ permission`() {
+    fun `updateSolutionsContainerRegistryByOrganizationId as not resource admin and READ permission`() {
       assertThrows<CsmAccessForbiddenException> {
         runAsDifferentOrganizationUser()
         val name = "o-connector-test-1"
@@ -468,7 +469,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateStorageByOrganizationId with owned organization`() {
+    fun `updateStorageByOrganizationId as resource admin`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -495,7 +496,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateStorageByOrganizationId with not owned organization and WRITE permission`() {
+    fun `updateStorageByOrganizationId as not resource admin and WRITE permission`() {
       assertDoesNotThrow {
         runAsDifferentOrganizationUser()
         val name = "o-connector-test-1"
@@ -526,7 +527,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateStorageByOrganizationId with not owned organization and READ permission`() {
+    fun `updateStorageByOrganizationId as not resource admin and READ permission`() {
       assertThrows<CsmAccessForbiddenException> {
         runAsDifferentOrganizationUser()
         val name = "o-connector-test-1"
@@ -549,7 +550,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateTenantCredentialsByOrganizationId with owned organization and empty body`() {
+    fun `updateTenantCredentialsByOrganizationId as resource admin and empty body`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -562,7 +563,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateTenantCredentialsByOrganizationId with owned organization and correct body`() {
+    fun `updateTenantCredentialsByOrganizationId as resource admin and correct body`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -576,7 +577,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateTenantCredentialsByOrganizationId with not owned organization, empty body and no WRITE permission`() {
+    fun `updateTenantCredentialsByOrganizationId as not resource admin, empty body and no WRITE permission`() {
       assertThrows<CsmAccessForbiddenException> {
         runAsDifferentOrganizationUser()
         val name = "o-connector-test-1"
@@ -589,7 +590,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateTenantCredentialsByOrganizationId with not owned organization, empty body and WRITE permission`() {
+    fun `updateTenantCredentialsByOrganizationId as not resource admin, empty body and WRITE permission`() {
       assertDoesNotThrow {
         runAsDifferentOrganizationUser()
         val name = "o-connector-test-1"
@@ -692,7 +693,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationPermissions with owned organization`() {
+    fun `getOrganizationPermissions as resource admin`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -738,7 +739,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationPermissions with not owned organization and READ_SECURITY permission`() {
+    fun `getOrganizationPermissions as not resource admin and READ_SECURITY permission`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -788,7 +789,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationPermissions with not owned organization and no permission`() {
+    fun `getOrganizationPermissions as not resource admin and no permission`() {
       assertThrows<CsmAccessForbiddenException> {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -800,7 +801,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationSecurity with owned organization`() {
+    fun `getOrganizationSecurity as resource admin`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -817,7 +818,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationSecurity with not owned organization with READ_SECURITY permission`() {
+    fun `getOrganizationSecurity as not resource admin with READ_SECURITY permission`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -831,7 +832,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationSecurity with not owned organization with no READ_SECURITY permission`() {
+    fun `getOrganizationSecurity as not resource admin with no READ_SECURITY permission`() {
       assertThrows<CsmAccessForbiddenException> {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -844,7 +845,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `setOrganizationDefaultSecurity with owned organization and existing role`() {
+    fun `setOrganizationDefaultSecurity as resource admin and existing role`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -860,7 +861,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `setOrganizationDefaultSecurity with owned organization and non-existing role`() {
+    fun `setOrganizationDefaultSecurity as resource admin and non-existing role`() {
       assertThrows<CsmClientException> {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -871,7 +872,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `setOrganizationDefaultSecurity with not owned organization and WRITE_SECURITY_PERMISSION`() {
+    fun `setOrganizationDefaultSecurity as not resource admin and WRITE_SECURITY_PERMISSION`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -890,7 +891,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `setOrganizationDefaultSecurity with not owned organization and no WRITE_SECURITY_PERMISSION`() {
+    fun `setOrganizationDefaultSecurity as not resource admin and no WRITE_SECURITY_PERMISSION`() {
       assertThrows<CsmAccessForbiddenException> {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -904,7 +905,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationAccessControl with owned organization and current user`() {
+    fun `getOrganizationAccessControl as resource admin and current user`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -919,7 +920,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationAccessControl with owned organization and non-existing user`() {
+    fun `getOrganizationAccessControl as resource admin and non-existing user`() {
       assertThrows<CsmResourceNotFoundException> {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -929,7 +930,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationAccessControl with not owned organization, READ_SECURITY permission and existing user`() {
+    fun `getOrganizationAccessControl as not resource admin, READ_SECURITY permission and existing user`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -948,7 +949,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationAccessControl with not owned organization, READ_SECURITY permission and non existing user`() {
+    fun `getOrganizationAccessControl as not resource admin, READ_SECURITY permission and non existing user`() {
       assertThrows<CsmResourceNotFoundException> {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -963,7 +964,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationAccessControl with not owned organization, no READ_SECURITY permission`() {
+    fun `getOrganizationAccessControl as not resource admin, no READ_SECURITY permission`() {
       assertThrows<CsmAccessForbiddenException> {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -977,7 +978,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `addOrganizationAccessControl with owned organization`() {
+    fun `addOrganizationAccessControl as resource admin`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -999,7 +1000,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `addOrganizationAccessControl with owned organization (ROLE_NONE)`() {
+    fun `addOrganizationAccessControl as resource admin (ROLE_NONE)`() {
       assertThrows<CsmClientException> {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -1012,7 +1013,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `addOrganizationAccessControl with not owned organization and PERMISSION_WRITE_SECURITY`() {
+    fun `addOrganizationAccessControl as not resource admin and PERMISSION_WRITE_SECURITY`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -1037,7 +1038,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `addOrganizationAccessControl with not owned organization and no PERMISSION_WRITE_SECURITY`() {
+    fun `addOrganizationAccessControl as not resource admin and no PERMISSION_WRITE_SECURITY`() {
       assertThrows<CsmAccessForbiddenException> {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -1057,7 +1058,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateOrganizationAccessControl with owned organization cannot update last admin`() {
+    fun `updateOrganizationAccessControl as resource admin cannot update last admin`() {
       assertThrows<CsmAccessForbiddenException> {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -1068,7 +1069,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateOrganizationAccessControl with owned organization can update user (!= ROLE_NONE)`() {
+    fun `updateOrganizationAccessControl as resource admin can update user (!= ROLE_NONE)`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -1093,7 +1094,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateOrganizationAccessControl with owned organization cannot update user (= ROLE_NONE)`() {
+    fun `updateOrganizationAccessControl as resource admin cannot update user (= ROLE_NONE)`() {
       assertThrows<CsmClientException> {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -1105,7 +1106,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateOrganizationAccessControl with owned organization and unknown ACL user`() {
+    fun `updateOrganizationAccessControl as resource admin and unknown ACL user`() {
       assertThrows<CsmResourceNotFoundException> {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -1117,7 +1118,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateOrganizationAccessControl with owned organization and wrong role`() {
+    fun `updateOrganizationAccessControl as resource admin and wrong role`() {
       assertThrows<CsmClientException> {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -1129,7 +1130,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateOrganizationAccessControl with not owned organization, WRITE_SECURITY permission, can update user (!= ROLE_NONE)`() {
+    fun `updateOrganizationAccessControl as not resource admin, WRITE_SECURITY permission, can update user (!= ROLE_NONE)`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -1156,7 +1157,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateOrganizationAccessControl with not owned organization, no WRITE_SECURITY permission`() {
+    fun `updateOrganizationAccessControl as not resource admin, no WRITE_SECURITY permission`() {
       assertThrows<CsmAccessForbiddenException> {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -1175,7 +1176,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateOrganizationAccessControl with not owned organization, no WRITE_SECURITY permission, ROLE_NONE`() {
+    fun `updateOrganizationAccessControl as not resource admin, no WRITE_SECURITY permission, ROLE_NONE`() {
       assertThrows<CsmClientException> {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -1194,7 +1195,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `removeOrganizationAccessControl with owned organization`() {
+    fun `removeOrganizationAccessControl as resource admin`() {
       val name = "o-connector-test-1"
       val organizationRegistered =
           organizationApiService.registerOrganization(createTestOrganization(name))
@@ -1211,7 +1212,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `removeOrganizationAccessControl with not owned organization, WRITE_SECURITY permission`() {
+    fun `removeOrganizationAccessControl as not resource admin, WRITE_SECURITY permission`() {
       val name = "o-connector-test-1"
       runAsDifferentOrganizationUser()
       val organizationRegistered =
@@ -1230,7 +1231,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `removeOrganizationAccessControl with not owned organization, no WRITE_SECURITY permission`() {
+    fun `removeOrganizationAccessControl as not resource admin, no WRITE_SECURITY permission`() {
       val name = "o-connector-test-1"
       runAsDifferentOrganizationUser()
       val organizationRegistered =
@@ -1247,7 +1248,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationSecurityUsers with owned organization`() {
+    fun `getOrganizationSecurityUsers as resource admin`() {
       val name = "o-connector-test-1"
       val organizationRegistered =
           organizationApiService.registerOrganization(createTestOrganization(name))
@@ -1258,7 +1259,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationSecurityUsers with not owned organization, READ_SECURITY permission`() {
+    fun `getOrganizationSecurityUsers as not resource admin, READ_SECURITY permission`() {
       val name = "o-connector-test-1"
       runAsDifferentOrganizationUser()
       val organizationRegistered =
@@ -1271,7 +1272,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationSecurityUsers with not owned organization, no READ_SECURITY permission`() {
+    fun `getOrganizationSecurityUsers as not resource admin, no READ_SECURITY permission`() {
       val name = "o-connector-test-1"
       runAsDifferentOrganizationUser()
       val organizationRegistered =
@@ -1339,7 +1340,8 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     @Test
     fun `find All Organizations with correct values and RBAC for current user`() {
 
-      val numberOfOrganizationCreated = batchOrganizationCreationWithRBAC(TEST_ADMIN_USER_ID)
+      val numberOfOrganizationCreated =
+          createOrganizationsWithAllCombinationOfRole(TEST_ADMIN_USER_ID)
       // This number represents the amount of Organization that test.user can read regarding RBAC
       // We have 36 combinations per user in batchOrganizationCreationWithRBAC
       testFindAllWithRBAC(numberOfOrganizationCreated, 36)
@@ -1348,7 +1350,8 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     @Test
     fun `find All Organizations with correct values and no RBAC for current user`() {
 
-      val numberOfOrganizationCreated = batchOrganizationCreationWithRBAC(OTHER_TEST_USER_ID)
+      val numberOfOrganizationCreated =
+          createOrganizationsWithAllCombinationOfRole(OTHER_TEST_USER_ID)
       // This number represents the amount of Organization that test.user can read regarding RBAC
       // We have 36 combinations per user in batchOrganizationCreationWithRBAC
       testFindAllWithRBAC(numberOfOrganizationCreated, 36)
@@ -1360,14 +1363,14 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `findOrganizationById as owner`() {
+    fun `findOrganizationById as resource admin`() {
       val organizationRegistered =
           organizationApiService.registerOrganization(createTestOrganization("o-connector-test-1"))
       assertNotNull(organizationApiService.findOrganizationById(organizationRegistered.id!!))
     }
 
     @Test
-    fun `findOrganizationById as not owner`() {
+    fun `findOrganizationById as not resource admin`() {
       testFindOrganizationByIdAsNotOwner(false, null, null, null, false) { runAsPlatformAdmin() }
     }
 
@@ -1423,7 +1426,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `unregisterOrganization owned organization `() {
+    fun `unregisterOrganization as resource admin`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         val organizationToRegister = createTestOrganization(name)
@@ -1441,7 +1444,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `unregisterOrganization not owned organization `() {
+    fun `unregisterOrganization as not resource admin `() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -1455,7 +1458,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateOrganization owned organization name and services`() {
+    fun `updateOrganization as resource admin organization name and services`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -1489,7 +1492,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateOrganization owned organization security`() {
+    fun `updateOrganization as resource admin organization security`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -1514,7 +1517,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateOrganization not owned organization with WRITE permission`() {
+    fun `updateOrganization as not resource admin with WRITE permission`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -1554,7 +1557,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateOrganization not owned organization with no WRITE permission`() {
+    fun `updateOrganization as not resource admin  with no WRITE permission`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -1567,7 +1570,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateSolutionsContainerRegistryByOrganizationId with owned organization`() {
+    fun `updateSolutionsContainerRegistryByOrganizationId as resource admin `() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -1594,7 +1597,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateSolutionsContainerRegistryByOrganizationId with not owned organization and WRITE permission`() {
+    fun `updateSolutionsContainerRegistryByOrganizationId as not resource admin and WRITE permission`() {
       assertDoesNotThrow {
         runAsDifferentOrganizationUser()
         val name = "o-connector-test-1"
@@ -1625,7 +1628,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateSolutionsContainerRegistryByOrganizationId with not owned organization and READ permission`() {
+    fun `updateSolutionsContainerRegistryByOrganizationId as not resource admin and READ permission`() {
       assertDoesNotThrow {
         runAsDifferentOrganizationUser()
         val name = "o-connector-test-1"
@@ -1656,7 +1659,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateStorageByOrganizationId with owned organization`() {
+    fun `updateStorageByOrganizationId as resource admin`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -1683,7 +1686,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateStorageByOrganizationId with not owned organization and WRITE permission`() {
+    fun `updateStorageByOrganizationId as not resource admin and WRITE permission`() {
       assertDoesNotThrow {
         runAsDifferentOrganizationUser()
         val name = "o-connector-test-1"
@@ -1714,7 +1717,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateStorageByOrganizationId with not owned organization and READ permission`() {
+    fun `updateStorageByOrganizationId as not resource admin and READ permission`() {
       assertDoesNotThrow {
         runAsDifferentOrganizationUser()
         val name = "o-connector-test-1"
@@ -1745,7 +1748,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateTenantCredentialsByOrganizationId with owned organization and empty body`() {
+    fun `updateTenantCredentialsByOrganizationId as resource admin and empty body`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -1758,7 +1761,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateTenantCredentialsByOrganizationId with owned organization and correct body`() {
+    fun `updateTenantCredentialsByOrganizationId as resource admin and correct body`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -1772,7 +1775,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateTenantCredentialsByOrganizationId with not owned organization, empty body and no WRITE permission`() {
+    fun `updateTenantCredentialsByOrganizationId as not resource admin, empty body and no WRITE permission`() {
       assertDoesNotThrow {
         runAsDifferentOrganizationUser()
         val name = "o-connector-test-1"
@@ -1787,7 +1790,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateTenantCredentialsByOrganizationId with not owned organization, empty body and WRITE permission`() {
+    fun `updateTenantCredentialsByOrganizationId as not resource admin, empty body and WRITE permission`() {
       assertDoesNotThrow {
         runAsDifferentOrganizationUser()
         val name = "o-connector-test-1"
@@ -1890,7 +1893,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationPermissions with owned organization`() {
+    fun `getOrganizationPermissions as resource admin`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -1936,7 +1939,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationPermissions with not owned organization and READ_SECURITY permission`() {
+    fun `getOrganizationPermissions as not resource admin and READ_SECURITY permission`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -1986,7 +1989,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationPermissions with not owned organization and no permission`() {
+    fun `getOrganizationPermissions as not resource admin and no permission`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -2036,7 +2039,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationSecurity with owned organization`() {
+    fun `getOrganizationSecurity as resource admin`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -2061,7 +2064,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationSecurity with not owned organization with READ_SECURITY permission`() {
+    fun `getOrganizationSecurity as not resource admin with READ_SECURITY permission`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -2075,7 +2078,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationSecurity with not owned organization with no READ_SECURITY permission`() {
+    fun `getOrganizationSecurity as not resource admin with no READ_SECURITY permission`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -2089,7 +2092,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `setOrganizationDefaultSecurity with owned organization and existing role`() {
+    fun `setOrganizationDefaultSecurity as resource admin and existing role`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -2105,7 +2108,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `setOrganizationDefaultSecurity with owned organization and non-existing role`() {
+    fun `setOrganizationDefaultSecurity as resource admin and non-existing role`() {
       assertThrows<CsmClientException> {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -2116,7 +2119,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `setOrganizationDefaultSecurity with not owned organization`() {
+    fun `setOrganizationDefaultSecurity as not resource admin`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -2134,7 +2137,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `setOrganizationDefaultSecurity with not owned organization and no WRITE_SECURITY_PERMISSION`() {
+    fun `setOrganizationDefaultSecurity as not resource admin and no WRITE_SECURITY_PERMISSION`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -2154,7 +2157,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationAccessControl with owned organization and current user`() {
+    fun `getOrganizationAccessControl as not resource admin and current user`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -2169,7 +2172,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationAccessControl with owned organization and non-existing user`() {
+    fun `getOrganizationAccessControl as resource admin and non-existing user`() {
       assertThrows<CsmResourceNotFoundException> {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -2179,7 +2182,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationAccessControl with not owned organization, READ_SECURITY permission and existing user`() {
+    fun `getOrganizationAccessControl as not resource admin, READ_SECURITY permission and existing user`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -2198,7 +2201,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationAccessControl with not owned organization, READ_SECURITY permission and non existing user`() {
+    fun `getOrganizationAccessControl as not resource admin, READ_SECURITY permission and non existing user`() {
       assertThrows<CsmResourceNotFoundException> {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -2213,7 +2216,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationAccessControl with not owned organization, no READ_SECURITY permission, non-existing user`() {
+    fun `getOrganizationAccessControl as not resource admin, no READ_SECURITY permission, non-existing user`() {
       assertThrows<CsmResourceNotFoundException> {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -2228,7 +2231,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationAccessControl with not owned organization, no READ_SECURITY permission, existing user`() {
+    fun `getOrganizationAccessControl as not resource admin, no READ_SECURITY permission, existing user`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -2247,7 +2250,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `addOrganizationAccessControl with owned organization`() {
+    fun `addOrganizationAccessControl as resource admin`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -2269,7 +2272,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `addOrganizationAccessControl with owned organization (ROLE_NONE)`() {
+    fun `addOrganizationAccessControl as resource admin (ROLE_NONE)`() {
       assertThrows<CsmClientException> {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -2282,7 +2285,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `addOrganizationAccessControl with not owned organization and PERMISSION_WRITE_SECURITY`() {
+    fun `addOrganizationAccessControl as not resource admin and PERMISSION_WRITE_SECURITY`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -2308,7 +2311,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `addOrganizationAccessControl with not owned organization and no PERMISSION_WRITE_SECURITY`() {
+    fun `addOrganizationAccessControl as not resource admin and no PERMISSION_WRITE_SECURITY`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -2334,7 +2337,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateOrganizationAccessControl with owned organization cannot update last admin`() {
+    fun `updateOrganizationAccessControl as resource admin cannot update last admin`() {
       assertThrows<CsmAccessForbiddenException> {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -2345,7 +2348,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateOrganizationAccessControl with owned organization can update user (!= ROLE_NONE)`() {
+    fun `updateOrganizationAccessControl as resource admin can update user (!= ROLE_NONE)`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -2370,7 +2373,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateOrganizationAccessControl with owned organization cannot update user (= ROLE_NONE)`() {
+    fun `updateOrganizationAccessControl as resource admin cannot update user (= ROLE_NONE)`() {
       assertThrows<CsmClientException> {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -2382,7 +2385,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateOrganizationAccessControl with owned organization and unknown ACL user`() {
+    fun `updateOrganizationAccessControl as resource admin and unknown ACL user`() {
       assertThrows<CsmResourceNotFoundException> {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -2394,7 +2397,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateOrganizationAccessControl with owned organization and wrong role`() {
+    fun `updateOrganizationAccessControl as resource admin and wrong role`() {
       assertThrows<CsmClientException> {
         val name = "o-connector-test-1"
         val organizationRegistered =
@@ -2406,7 +2409,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateOrganizationAccessControl with not owned organization, WRITE_SECURITY permission, can update user (!= ROLE_NONE)`() {
+    fun `updateOrganizationAccessControl as not resource admin, WRITE_SECURITY permission, can update user (!= ROLE_NONE)`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -2433,7 +2436,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateOrganizationAccessControl with not owned organization, no WRITE_SECURITY permission`() {
+    fun `updateOrganizationAccessControl as not resource admin, no WRITE_SECURITY permission`() {
       assertDoesNotThrow {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -2460,7 +2463,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `updateOrganizationAccessControl with not owned organization, no WRITE_SECURITY permission, ROLE_NONE`() {
+    fun `updateOrganizationAccessControl as not resource admin, no WRITE_SECURITY permission, ROLE_NONE`() {
       assertThrows<CsmClientException> {
         val name = "o-connector-test-1"
         runAsDifferentOrganizationUser()
@@ -2479,7 +2482,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `removeOrganizationAccessControl with owned organization`() {
+    fun `removeOrganizationAccessControl as resource admin`() {
       val name = "o-connector-test-1"
       val organizationRegistered =
           organizationApiService.registerOrganization(createTestOrganization(name))
@@ -2496,7 +2499,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `removeOrganizationAccessControl with not owned organization, WRITE_SECURITY permission`() {
+    fun `removeOrganizationAccessControl as not resource admin, WRITE_SECURITY permission`() {
       val name = "o-connector-test-1"
       runAsDifferentOrganizationUser()
       val organizationRegistered =
@@ -2515,7 +2518,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `removeOrganizationAccessControl with not owned organization, no WRITE_SECURITY permission`() {
+    fun `removeOrganizationAccessControl as not resource admin, no WRITE_SECURITY permission`() {
       val name = "o-connector-test-1"
       runAsDifferentOrganizationUser()
       val organizationRegistered =
@@ -2534,7 +2537,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationSecurityUsers with owned organization`() {
+    fun `getOrganizationSecurityUsers as resource admin`() {
       val name = "o-connector-test-1"
       val organizationRegistered =
           organizationApiService.registerOrganization(createTestOrganization(name))
@@ -2545,7 +2548,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationSecurityUsers with not owned organization, READ_SECURITY permission`() {
+    fun `getOrganizationSecurityUsers as not resource admin, READ_SECURITY permission`() {
       val name = "o-connector-test-1"
       runAsDifferentOrganizationUser()
       val organizationRegistered =
@@ -2558,7 +2561,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
     }
 
     @Test
-    fun `getOrganizationSecurityUsers with not owned organization, no READ_SECURITY permission`() {
+    fun `getOrganizationSecurityUsers as not resource admin, no READ_SECURITY permission`() {
       val name = "o-connector-test-1"
       runAsDifferentOrganizationUser()
       val organizationRegistered =
@@ -2729,7 +2732,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   /** Organization batch creation with RBAC */
-  internal fun batchOrganizationCreationWithRBAC(userId: String): Int {
+  internal fun createOrganizationsWithAllCombinationOfRole(userId: String): Int {
     val roleList =
         listOf(
             ROLE_VIEWER,
