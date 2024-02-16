@@ -1418,7 +1418,6 @@ class ContainerFactory(
             workspace.key,
         )
     envVars[RUN_TEMPLATE_ID_VAR] = runTemplateId
-    envVars[RUN_TEMPLATE_ID_VAR] = runTemplateId
     envVars[CONTAINER_MODE_VAR] = step.mode
     envVars[CONTAINER_ORCHESTRATOR_LEGACY_VAR] = "true"
 
