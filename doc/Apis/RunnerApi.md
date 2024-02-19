@@ -326,7 +326,7 @@ Name | Type | Description  | Notes
 
 <a name="startRun"></a>
 # **startRun**
-> String startRun(organization\_id, workspace\_id, runner\_id)
+> RunnerLastRun startRun(organization\_id, workspace\_id, runner\_id)
 
 Start a run with runner parameters
 
@@ -340,7 +340,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-**String**
+[**RunnerLastRun**](../Models/RunnerLastRun.md)
 
 ### Authorization
 
@@ -353,7 +353,7 @@ Name | Type | Description  | Notes
 
 <a name="stopRun"></a>
 # **stopRun**
-> String stopRun(organization\_id, workspace\_id, runner\_id)
+> stopRun(organization\_id, workspace\_id, runner\_id)
 
 Stop the last run
 
@@ -367,7 +367,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-**String**
+null (empty response body)
 
 ### Authorization
 
@@ -376,7 +376,7 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: Not defined
 
 <a name="updateRunner"></a>
 # **updateRunner**

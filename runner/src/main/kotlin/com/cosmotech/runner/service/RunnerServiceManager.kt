@@ -13,10 +13,4 @@ abstract class RunnerServiceManager {
   fun getRunnerService(): RunnerService {
     return createRunnerService()
   }
-
-  companion object {
-    fun getRunnerService(): RunnerService {
-      return this.getRunnerService()
-    }
-  }
 }

@@ -5,6 +5,7 @@ package com.cosmotech.runner.service
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
 import com.cosmotech.api.rbac.PERMISSION_DELETE
+import com.cosmotech.api.rbac.PERMISSION_LAUNCH
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
@@ -12,6 +13,7 @@ import com.cosmotech.api.rbac.getScenarioRolesDefinition
 import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
+import com.cosmotech.runner.domain.RunnerLastRun
 import com.cosmotech.runner.domain.RunnerRole
 import com.cosmotech.runner.domain.RunnerSecurity
 import org.springframework.data.domain.PageRequest
@@ -78,12 +80,24 @@ internal class RunnerApiServiceImpl(
     return runnerService.listInstances(pageRequest)
   }
 
-  override fun startRun(organizationId: String, workspaceId: String, runnerId: String): String {
-    TODO("Not yet implemented")
+  override fun startRun(
+      organizationId: String,
+      workspaceId: String,
+      runnerId: String
+  ): RunnerLastRun {
+    val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
+
+    val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_LAUNCH)
+
+    return runnerService.startRunWith(runnerInstance)
   }
 
-  override fun stopRun(organizationId: String, workspaceId: String, runnerId: String): String {
-    TODO("Not yet implemented")
+  override fun stopRun(organizationId: String, workspaceId: String, runnerId: String) {
+    val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
+
+    val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_WRITE)
+
+    runnerService.stopLastRunOf(runnerInstance)
   }
 
   override fun addRunnerAccessControl(

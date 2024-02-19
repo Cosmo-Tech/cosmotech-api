@@ -8,6 +8,7 @@ dependencies {
   implementation(projects.cosmotechOrganizationApi)
   implementation(projects.cosmotechSolutionApi)
   implementation(projects.cosmotechWorkspaceApi)
+  implementation(projects.cosmotechRunApi)
   implementation("com.redislabs:jredisgraph:2.5.1") {
     constraints { implementation("org.apache.commons:commons-text:1.10.0") }
   }

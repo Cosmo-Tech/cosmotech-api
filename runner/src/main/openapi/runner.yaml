@@ -210,12 +210,12 @@ paths:
         - runner
       summary: Start a run with runner parameters
       responses:
-        "201":
+        "202":
           description: the Run id started
           content:
             application/json:
               schema:
-                type: string
+                $ref: '#/components/schemas/RunnerLastRun'
         "404":
           description: the Runner specified is unknown or you don't have access to it
 
@@ -245,12 +245,8 @@ paths:
         - runner
       summary: Stop the last run
       responses:
-        "201":
-          description: the Run details
-          content:
-            application/json:
-              schema:
-                type: string
+        "202":
+          description: the last Run has been stopped
         "404":
           description: the Runner specified is unknown or you don't have access to it
 

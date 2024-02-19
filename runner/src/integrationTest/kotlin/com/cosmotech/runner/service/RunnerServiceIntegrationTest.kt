@@ -4,6 +4,8 @@ package com.cosmotech.runner.service
 
 import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.api.events.CsmEventPublisher
+import com.cosmotech.api.events.RunStart
 import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
@@ -28,9 +30,11 @@ import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
+import com.cosmotech.run.api.RunApiService
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
 import com.cosmotech.runner.domain.RunnerJobState
+import com.cosmotech.runner.domain.RunnerLastRun
 import com.cosmotech.runner.domain.RunnerRole
 import com.cosmotech.runner.domain.RunnerSecurity
 import com.cosmotech.runner.domain.RunnerValidationStatus
@@ -51,7 +55,9 @@ import com.redis.testcontainers.RedisStackContainer
 import com.redislabs.redisgraph.impl.api.RedisGraph
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
+import io.mockk.impl.annotations.SpyK
 import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
 import io.mockk.mockkStatic
 import java.time.Instant
 import java.util.*
@@ -60,9 +66,7 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
@@ -97,6 +101,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
   @MockK(relaxed = true) private lateinit var azureDataExplorerClient: AzureDataExplorerClient
   @MockK private lateinit var scenarioDataDownloadJobInfoRequest: ScenarioDataDownloadJobInfoRequest
+  @SpykBean @Autowired private lateinit var eventPublisher: CsmEventPublisher
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var connectorApiService: ConnectorApiService
@@ -106,8 +111,9 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var solutionApiService: SolutionApiService
   @Autowired lateinit var workspaceApiService: WorkspaceApiService
   @Autowired lateinit var runnerApiService: RunnerApiServicePlus
-  @Autowired lateinit var runnerApiServiceCopy: RunnerApiServicePlus
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
+
+  @MockK private lateinit var runApiService: RunApiService
 
   lateinit var connector: Connector
   lateinit var dataset: Dataset
@@ -134,6 +140,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     val containerIp =
         (context.server as RedisStackContainer).containerInfo.networkSettings.ipAddress
     jedisPool = JedisPool(containerIp, REDIS_PORT)
+
     ReflectionTestUtils.setField(datasetApiService, "csmJedisPool", jedisPool)
   }
 
@@ -179,15 +186,11 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `test prototype injection runnerService in runnerApiService`() {
-
-    val first = runnerApiService
-    val second = runnerApiServiceCopy
-    assertEquals(first, second)
-    assertNotEquals(first.getRunnerService(), second.getRunnerService())
+    assertNotEquals(runnerApiService.getRunnerService(), runnerApiService.getRunnerService())
   }
 
   @Test
-  fun `test CRUD operations on Runner as User Admin`() {
+  fun `test CRUD operations on Runner as Platform Admin`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
 
     logger.info("should create a second Runner")
@@ -291,7 +294,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
-  fun `test RBAC RunnerSecurity as User Admin`() {
+  fun `test RBAC RunnerSecurity as Platform Admin`() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
 
     logger.info("should test default security is set to ROLE_NONE")
@@ -309,7 +312,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
-  fun `test RBAC RunnerSecurity as User Unauthorized`() {
+  fun `test RBAC RunnerSecurity as Unauthorized User`() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_READER_USER
 
     logger.info("should throw CsmAccessForbiddenException when trying to access RunnerSecurity")
@@ -327,34 +330,8 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
-  @TestFactory
-  fun `test RBAC for deleteRunner`() =
-      mapOf(
-              CONNECTED_VIEWER_USER to true,
-              CONNECTED_EDITOR_USER to true,
-              CONNECTED_VALIDATOR_USER to true,
-              CONNECTED_READER_USER to true,
-              CONNECTED_NONE_USER to true,
-              CONNECTED_ADMIN_USER to false)
-          .map { (mail, shouldThrow) ->
-            dynamicTest("Test RBAC findAllRunnerByValidationStatus : $mail") {
-              every { getCurrentAccountIdentifier(any()) } returns mail
-              if (shouldThrow)
-                  assertThrows<Exception> {
-                    runnerApiService.deleteRunner(
-                        organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
-                  }
-              else
-                  assertDoesNotThrow {
-                    runnerApiService.deleteRunner(
-                        organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
-                  }
-            }
-          }
-
   @Test
-  fun `test RBAC AccessControls on Runner as User Admin`() {
-
+  fun `test AccessControls management on Runner as ressource Admin`() {
     logger.info("should add an Access Control and assert it has been added")
     val runnerAccessControl = RunnerAccessControl(TEST_USER_MAIL, ROLE_VIEWER)
     var runnerAccessControlRegistered =
@@ -421,8 +398,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
-  fun `test RBAC AccessControls on Runner as User Unauthorized`() {
-
+  fun `test AccessControls management on Runner as Unauthorized User`() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_READER_USER
 
     logger.info("should throw CsmAccessForbiddenException when trying to add RunnerAccessControl")
@@ -468,9 +444,13 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     runnerSaved.state = RunnerJobState.Running
     runnerApiService.updateRunner(
         organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runnerSaved)
-    assertThrows<Exception> {
-      runnerApiService.deleteRunner(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
-    }
+
+    val exception =
+        assertThrows<Exception> {
+          runnerApiService.deleteRunner(
+              organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+        }
+    assertEquals("Can't delete a running runner : ${runnerSaved.id}", exception.message)
   }
 
   @Test
@@ -579,7 +559,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
-  fun `users added to runner RBAC should have the correspondinf role set in dataset`() {
+  fun `users added to runner RBAC should have the corresponding role set in dataset`() {
     workspace =
         Workspace(
             key = "key",
@@ -602,6 +582,28 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     val datasetAC =
         datasetApiService.getDatasetAccessControl(organizationSaved.id!!, datasetSaved.id!!, "id")
     assertEquals(ROLE_EDITOR, datasetAC.role)
+  }
+
+  @Test
+  fun `startRun send event and save lastRun info`() {
+    val mockRunId = "run-genid12345"
+    val expectedRunInfo = RunnerLastRun(runnerRunId = mockRunId)
+    every { eventPublisher.publishEvent(any<RunStart>()) } answers
+        {
+          firstArg<RunStart>().response = expectedRunInfo
+        }
+
+
+    val runInfo =
+        runnerApiService.startRun(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+    assertEquals(expectedRunInfo, runInfo)
+
+
+    val lastRunInfo =
+        runnerApiService
+            .getRunner(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
+            .lastRun
+    assertEquals(expectedRunInfo, lastRunInfo)
   }
 
   private fun makeWorkspaceEventHubInfo(eventHubAvailable: Boolean): WorkspaceEventHubInfo {

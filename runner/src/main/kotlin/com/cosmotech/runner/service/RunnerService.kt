@@ -3,6 +3,9 @@
 package com.cosmotech.runner.service
 
 import com.cosmotech.api.CsmPhoenixService
+import com.cosmotech.api.events.CsmEventPublisher
+import com.cosmotech.api.events.RunStart
+import com.cosmotech.api.events.RunStop
 import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
@@ -27,6 +30,7 @@ import com.cosmotech.organization.domain.Organization
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
 import com.cosmotech.runner.domain.RunnerJobState
+import com.cosmotech.runner.domain.RunnerLastRun
 import com.cosmotech.runner.domain.RunnerSecurity
 import com.cosmotech.runner.repository.RunnerRepository
 import com.cosmotech.solution.SolutionApiServiceInterface
@@ -76,7 +80,7 @@ class RunnerService(
   fun deleteInstance(runnerInstance: RunnerInstance) {
     if (runnerInstance.isRunning())
         throw CsmClientException(
-            "Can't delete a running scenario : ${runnerInstance.getRunnerDataObjet().id}")
+            "Can't delete a running runner : ${runnerInstance.getRunnerDataObjet().id}")
     return runnerRepository.delete(runnerInstance.getRunnerDataObjet())
   }
 
@@ -108,12 +112,46 @@ class RunnerService(
         .toList()
   }
 
+  fun startRunWith(runnerInstance: RunnerInstance): RunnerLastRun {
+    val startEvent = RunStart(this, runnerInstance.getRunnerDataObjet())
+    this.eventPublisher.publishEvent(startEvent)
+
+    var runInfo = startEvent.response ?: throw IllegalStateException("Run Service did not respond")
+    runInfo = runInfo as RunnerLastRun
+
+    runnerInstance.setLastRun(runInfo)
+    runnerRepository.save(runnerInstance.getRunnerDataObjet())
+
+    return runInfo
+  }
+
+  fun stopLastRunOf(runnerInstance: RunnerInstance) {
+    val runner = runnerInstance.getRunnerDataObjet()
+    val runId =
+        runner.lastRun?.runnerRunId
+            ?: throw IllegalArgumentException("Runner ${runner.id} doesn't have a last run")
+
+    this.eventPublisher.publishEvent(RunStop(this, runId))
+  }
+
   @Suppress("TooManyFunctions")
   inner class RunnerInstance(var runner: Runner = Runner()) {
     private val roleDefinition: RolesDefinition = getScenarioRolesDefinition()
 
     fun isRunning(): Boolean {
       return this.runner.state == RunnerJobState.Running
+    }
+
+    fun initialize(): RunnerInstance = apply {
+      val now = Instant.now().toEpochMilli()
+      this.runner =
+          Runner(
+              id = idGenerator.generate("runner"),
+              ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
+              organizationId = organization!!.id,
+              workspaceId = workspace!!.id,
+              creationDate = now,
+              lastUpdate = now)
     }
 
     fun getRunnerDataObjet(): Runner = this.runner
@@ -151,6 +189,18 @@ class RunnerService(
     fun setSecurityFrom(runner: Runner): RunnerInstance = apply {
       val rbacSecurity = extractRbacSecurity(runner) ?: return@apply
       this.setRbacSecurity(rbacSecurity)
+    }
+
+    fun setLastRun(runInfo: RunnerLastRun) {
+      this.runner.lastRun = runInfo
+    }
+
+    fun initSecurity(): RunnerInstance = apply {
+      val userId = getCurrentAccountIdentifier(csmPlatformProperties)
+      this.runner.security =
+          RunnerSecurity(
+              default = ROLE_NONE,
+              accessControlList = mutableListOf(RunnerAccessControl(userId, ROLE_ADMIN)))
     }
 
     fun setAccessControl(runnerAccessControl: RunnerAccessControl) {
@@ -247,26 +297,6 @@ class RunnerService(
       // create a rbacSecurity object from runner Rbac by changing default value
       val rbacSecurity = csmRbac.setDefault(this.getRbacSecurity(), role, this.roleDefinition)
       this.setRbacSecurity(rbacSecurity)
-    }
-
-    fun initSecurity(): RunnerInstance = apply {
-      val userId = getCurrentAccountIdentifier(csmPlatformProperties)
-      this.runner.security =
-          RunnerSecurity(
-              default = ROLE_NONE,
-              accessControlList = mutableListOf(RunnerAccessControl(userId, ROLE_ADMIN)))
-    }
-
-    fun initialize(): RunnerInstance = apply {
-      val now = Instant.now().toEpochMilli()
-      this.runner =
-          Runner(
-              id = idGenerator.generate("scenario"),
-              ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
-              organizationId = organization!!.id,
-              workspaceId = workspace!!.id,
-              creationDate = now,
-              lastUpdate = now)
     }
   }
 }
