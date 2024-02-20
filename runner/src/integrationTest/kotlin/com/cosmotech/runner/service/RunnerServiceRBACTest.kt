@@ -1457,9 +1457,9 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
       mapOf(
               ROLE_VIEWER to false,
               ROLE_EDITOR to false,
-              ROLE_VALIDATOR to false,
+              ROLE_VALIDATOR to true,
               ROLE_USER to false,
-              ROLE_NONE to false,
+              ROLE_NONE to true,
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
@@ -2778,11 +2778,11 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
   @TestFactory
   fun `test Dataset RBAC addRunnerAccessControl`() =
       mapOf(
-              ROLE_VIEWER to false,
-              ROLE_EDITOR to false,
-              ROLE_VALIDATOR to false,
-              ROLE_USER to false,
-              ROLE_NONE to false,
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to true,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true,
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
@@ -2831,15 +2831,9 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
                           runnerSaved.id!!,
                           RunnerAccessControl("id", ROLE_ADMIN))
                     }
-                if (role == ROLE_NONE || role == ROLE_VALIDATOR) {
-                  assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_READ",
-                      exception.message)
-                } else {
-                  assertEquals(
-                      "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
-                      exception.message)
-                }
+                assertEquals(
+                    "RBAC ${datasetSaved.id!!} - User does not have permission $PERMISSION_WRITE_SECURITY",
+                    exception.message)
               } else {
                 assertDoesNotThrow {
                   runnerApiService.addRunnerAccessControl(
@@ -3475,11 +3469,11 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
   @TestFactory
   fun `test Dataset RBAC removeRunnerAccessControl`() =
       mapOf(
-              ROLE_VIEWER to false,
-              ROLE_EDITOR to false,
-              ROLE_VALIDATOR to false,
-              ROLE_USER to false,
-              ROLE_NONE to false,
+              ROLE_VIEWER to true,
+              ROLE_EDITOR to true,
+              ROLE_VALIDATOR to true,
+              ROLE_USER to true,
+              ROLE_NONE to true,
               ROLE_ADMIN to false,
           )
           .map { (role, shouldThrow) ->
