@@ -28,6 +28,15 @@ class RunServiceImpl : RunApiService {
     TODO("Not yet implemented")
   }
 
+  override fun getRunCumulatedLogs(
+    organizationId: String,
+    workspaceId: String,
+    scenarioId: String,
+    runId: String
+  ): String {
+    TODO("Not yet implemented")
+  }
+
   override fun getRunLogs(
       organizationId: String,
       workspaceId: String,
