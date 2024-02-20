@@ -57,7 +57,7 @@ class ContainerFactoryTests {
   @MockK private lateinit var containerRegistryService: ContainerRegistryService
   private lateinit var workspaceEventHubService: IWorkspaceEventHubService
 
-  private lateinit var factory: ContainerFactory
+  private lateinit var factory: RunContainerFactory
 
   @Suppress("LongMethod")
   @BeforeTest
@@ -136,7 +136,7 @@ class ContainerFactoryTests {
             mapOf("Dedicated" to dedicatedStrategy, "Shared" to sharedStrategy))
 
     factory =
-        ContainerFactory(
+        RunContainerFactory(
             csmPlatformProperties,
             runnerService,
             workspaceService,

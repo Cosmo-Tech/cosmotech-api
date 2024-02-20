@@ -586,7 +586,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     val expectedRunInfo = RunnerLastRun(runnerRunId = mockRunId)
     every { eventPublisher.publishEvent(any<RunStart>()) } answers
         {
-          firstArg<RunStart>().response = expectedRunInfo
+          firstArg<RunStart>().response = mockRunId
         }
 
     val runInfo =

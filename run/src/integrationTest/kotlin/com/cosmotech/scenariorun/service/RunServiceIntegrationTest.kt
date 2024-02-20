@@ -19,7 +19,7 @@ import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
-import com.cosmotech.run.ContainerFactory
+import com.cosmotech.run.RunContainerFactory
 import com.cosmotech.run.domain.Run
 import com.cosmotech.run.workflow.WorkflowService
 import com.cosmotech.runner.api.RunnerApiService
@@ -73,7 +73,7 @@ class RunServiceIntegrationTest : CsmRedisTestBase() {
   private val logger = LoggerFactory.getLogger(RunServiceIntegrationTest::class.java)
   private val defaultName = "my.account-tester@cosmotech.com"
 
-  @MockK(relaxed = true) private lateinit var containerFactory: ContainerFactory
+  @MockK(relaxed = true) private lateinit var containerFactory: RunContainerFactory
   @MockK(relaxed = true) private lateinit var workflowService: WorkflowService
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer

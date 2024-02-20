@@ -11,8 +11,8 @@ import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.getScenarioRolesDefinition
 import com.cosmotech.api.utils.constructPageRequest
-import com.cosmotech.run.ContainerFactory
 import com.cosmotech.run.RunApiServiceInterface
+import com.cosmotech.run.RunContainerFactory
 import com.cosmotech.run.container.StartInfo
 import com.cosmotech.run.domain.Run
 import com.cosmotech.run.domain.RunLogs
@@ -36,7 +36,7 @@ internal const val WORKFLOW_TYPE_RUN = "container-run"
 @Service
 @Suppress("TooManyFunctions")
 class RunServiceImpl(
-    private val containerFactory: ContainerFactory,
+    private val containerFactory: RunContainerFactory,
     private val workflowService: WorkflowService,
     private val runnerApiService: RunnerApiServiceInterface,
     private val runRepository: RunRepository,

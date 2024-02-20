@@ -45,16 +45,16 @@ import org.springframework.stereotype.Service
 import retrofit2.Retrofit
 import retrofit2.converter.scalars.ScalarsConverterFactory
 
-@Service("argo")
+@Service("runArgo")
 @ConditionalOnExpression("#{! '\${csm.platform.argo.base-uri}'.trim().isEmpty()}")
 @Suppress("TooManyFunctions")
-internal class ArgoWorkflowService(
+internal class RunArgoWorkflowService(
     @Value("\${api.version:?}") private val apiVersion: String,
     private val csmPlatformProperties: CsmPlatformProperties,
     private val lokiService: LokiService,
 ) : WorkflowService {
 
-  private val logger = LoggerFactory.getLogger(ArgoWorkflowService::class.java)
+  private val logger = LoggerFactory.getLogger(RunArgoWorkflowService::class.java)
 
   private val unsafeOkHttpClient: OkHttpClient by lazy {
     // Create a trust manager that does not validate certificate chains

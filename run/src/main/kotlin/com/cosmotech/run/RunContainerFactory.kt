@@ -102,7 +102,7 @@ private val CSM_ORC_ORCHESTRATOR_VALUE = RunTemplateOrchestrator.csmOrc.value
 
 @Component
 @Suppress("LargeClass", "TooManyFunctions")
-class ContainerFactory(
+class RunContainerFactory(
     private val csmPlatformProperties: CsmPlatformProperties,
     private val runnerApiService: RunnerApiService,
     private val workspaceService: WorkspaceApiService,
@@ -112,7 +112,7 @@ class ContainerFactory(
     private val containerRegistryService: ContainerRegistryService
 ) {
 
-  private val logger = LoggerFactory.getLogger(ContainerFactory::class.java)
+  private val logger = LoggerFactory.getLogger(RunContainerFactory::class.java)
 
   fun getStartInfo(
       organizationId: String,
