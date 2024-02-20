@@ -43,7 +43,7 @@ class RunServiceImpl(
     private val csmRbac: CsmRbac
 ) : CsmPhoenixService(), RunApiServiceInterface {
 
-  override fun getRuns(
+  override fun listRuns(
       organizationId: String,
       workspaceId: String,
       runnerId: String,
@@ -101,7 +101,7 @@ class RunServiceImpl(
     }
   }
 
-  override fun findRunById(
+  override fun getRun(
       organizationId: String,
       workspaceId: String,
       runnerId: String,
@@ -124,7 +124,7 @@ class RunServiceImpl(
       runnerId: String,
       runId: String
   ) {
-    val run = this.findRunById(organizationId, workspaceId, runnerId, runId)
+    val run = this.getRun(organizationId, workspaceId, runnerId, runId)
     run.hasPermission(PERMISSION_DELETE)
     try {
       runRepository.delete(run)
@@ -140,7 +140,7 @@ class RunServiceImpl(
       runnerId: String,
       runId: String
   ): RunLogs {
-    return workflowService.getRunLogs(findRunById(organizationId, workspaceId, runnerId, runId))
+    return workflowService.getRunLogs(getRun(organizationId, workspaceId, runnerId, runId))
   }
 
   override fun getRunStatus(
@@ -149,7 +149,7 @@ class RunServiceImpl(
       runnerId: String,
       runId: String
   ): RunStatus {
-    return getRunStatus(this.findRunById(organizationId, workspaceId, runnerId, runId))
+    return getRunStatus(this.getRun(organizationId, workspaceId, runnerId, runId))
   }
 
   @EventListener(RunStart::class)

@@ -44,7 +44,7 @@ paths:
         schema:
           type: string
     get:
-      operationId: findRunById
+      operationId: getRun
       tags:
         - run
       summary: Get the details of a run
@@ -187,7 +187,7 @@ paths:
         schema:
           type: integer
     get:
-      operationId: getRuns
+      operationId: ListRuns
       tags:
         - run
       summary: get the list of Runs for the Runner

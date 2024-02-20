@@ -5,10 +5,10 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**deleteRun**](RunApi.md#deleteRun) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id} | Delete a run
-[**findRunById**](RunApi.md#findRunById) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id} | Get the details of a run
+[**getRun**](RunApi.md#getRun) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id} | Get the details of a run
 [**getRunLogs**](RunApi.md#getRunLogs) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/logs | get the logs for the Run
 [**getRunStatus**](RunApi.md#getRunStatus) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/status | get the status for the Run
-[**getRuns**](RunApi.md#getRuns) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs | get the list of Runs for the Runner
+[**listRuns**](RunApi.md#listRuns) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs | get the list of Runs for the Runner
 
 
 <a name="deleteRun"></a>
@@ -39,9 +39,9 @@ null (empty response body)
 - **Content-Type**: Not defined
 - **Accept**: Not defined
 
-<a name="findRunById"></a>
-# **findRunById**
-> Run findRunById(organization\_id, workspace\_id, runner\_id, run\_id)
+<a name="getRun"></a>
+# **getRun**
+> Run getRun(organization\_id, workspace\_id, runner\_id, run\_id)
 
 Get the details of a run
 
@@ -123,9 +123,9 @@ Name | Type | Description  | Notes
 - **Content-Type**: Not defined
 - **Accept**: application/json
 
-<a name="getRuns"></a>
-# **getRuns**
-> List getRuns(organization\_id, workspace\_id, runner\_id, page, size)
+<a name="listRuns"></a>
+# **listRuns**
+> List listRuns(organization\_id, workspace\_id, runner\_id, page, size)
 
 get the list of Runs for the Runner
 
