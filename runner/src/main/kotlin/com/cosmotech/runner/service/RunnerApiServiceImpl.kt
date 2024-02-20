@@ -11,6 +11,7 @@ import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
 import com.cosmotech.api.rbac.getScenarioRolesDefinition
 import com.cosmotech.api.utils.constructPageRequest
+import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
 import com.cosmotech.runner.domain.RunnerLastRun
@@ -24,7 +25,7 @@ import org.springframework.stereotype.Service
 internal class RunnerApiServiceImpl(
     private val csmPlatformProperties: CsmPlatformProperties,
     private val runnerServiceManager: RunnerServiceManager
-) : RunnerApiServicePlus {
+) : RunnerApiServiceInterface {
   override fun getRunnerService(): RunnerService = runnerServiceManager.getRunnerService()
 
   override fun createRunner(organizationId: String, workspaceId: String, runner: Runner): Runner {

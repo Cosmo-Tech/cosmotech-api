@@ -31,6 +31,7 @@ import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.run.api.RunApiService
+import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
 import com.cosmotech.runner.domain.RunnerJobState
@@ -55,9 +56,7 @@ import com.redis.testcontainers.RedisStackContainer
 import com.redislabs.redisgraph.impl.api.RedisGraph
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
-import io.mockk.impl.annotations.SpyK
 import io.mockk.junit5.MockKExtension
-import io.mockk.mockk
 import io.mockk.mockkStatic
 import java.time.Instant
 import java.util.*
@@ -110,7 +109,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var datasetRepository: DatasetRepository
   @Autowired lateinit var solutionApiService: SolutionApiService
   @Autowired lateinit var workspaceApiService: WorkspaceApiService
-  @Autowired lateinit var runnerApiService: RunnerApiServicePlus
+  @Autowired lateinit var runnerApiService: RunnerApiServiceInterface
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   @MockK private lateinit var runApiService: RunApiService
@@ -593,11 +592,9 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
           firstArg<RunStart>().response = expectedRunInfo
         }
 
-
     val runInfo =
         runnerApiService.startRun(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
     assertEquals(expectedRunInfo, runInfo)
-
 
     val lastRunInfo =
         runnerApiService

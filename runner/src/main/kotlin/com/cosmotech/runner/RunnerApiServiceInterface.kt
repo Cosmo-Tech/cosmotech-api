@@ -1,9 +1,10 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
-package com.cosmotech.runner.service
+package com.cosmotech.runner
 
 import com.cosmotech.runner.api.RunnerApiService
+import com.cosmotech.runner.service.RunnerService
 
-interface RunnerApiServicePlus : RunnerApiService {
+interface RunnerApiServiceInterface : RunnerApiService {
   fun getRunnerService(): RunnerService
 }

@@ -3,7 +3,6 @@
 package com.cosmotech.runner.service
 
 import com.cosmotech.api.CsmPhoenixService
-import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.events.RunStart
 import com.cosmotech.api.events.RunStop
 import com.cosmotech.api.exceptions.CsmClientException
@@ -21,11 +20,11 @@ import com.cosmotech.api.rbac.model.RbacSecurity
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.dataset.api.DatasetApiService
+import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetRole
 import com.cosmotech.dataset.service.getRbac
-import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
@@ -34,7 +33,7 @@ import com.cosmotech.runner.domain.RunnerLastRun
 import com.cosmotech.runner.domain.RunnerSecurity
 import com.cosmotech.runner.repository.RunnerRepository
 import com.cosmotech.solution.SolutionApiServiceInterface
-import com.cosmotech.workspace.api.WorkspaceApiService
+import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.service.getRbac
 import java.time.Instant
@@ -46,10 +45,10 @@ import org.springframework.stereotype.Component
 @Scope("prototype")
 class RunnerService(
     private val runnerRepository: RunnerRepository,
-    private val organizationApiService: OrganizationApiService,
-    private val workspaceApiService: WorkspaceApiService,
+    private val organizationApiService: OrganizationApiServiceInterface,
+    private val workspaceApiService: WorkspaceApiServiceInterface,
     private val solutionApiService: SolutionApiServiceInterface,
-    private val datasetApiService: DatasetApiService,
+    private val datasetApiService: DatasetApiServiceInterface,
     private val csmRbac: CsmRbac,
     private var organization: Organization? = null,
     private var workspace: Workspace? = null,

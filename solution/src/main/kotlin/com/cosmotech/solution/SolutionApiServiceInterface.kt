@@ -15,9 +15,9 @@ interface SolutionApiServiceInterface : SolutionApiService {
   ): Solution
 
   fun isRunTemplateExist(
-    organizationId: String,
-    workspaceId: String,
-    solutionId: String,
-    runTemplateId: String
+      organizationId: String,
+      workspaceId: String,
+      solutionId: String,
+      runTemplateId: String
   ): Boolean
 }
