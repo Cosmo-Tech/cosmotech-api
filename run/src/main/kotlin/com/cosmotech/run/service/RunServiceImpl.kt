@@ -204,7 +204,12 @@ class RunServiceImpl(
   @EventListener(RunStop::class)
   fun onRunStop(runStopRequest: RunStop) {
     val runner = runStopRequest.runnerData as Runner
-    val run = getRun(runner.organizationId!!, runner.workspaceId!!, runner.id!!, runner.lastRun!!.runnerRunId!!)
+    val run =
+        getRun(
+            runner.organizationId!!,
+            runner.workspaceId!!,
+            runner.id!!,
+            runner.lastRun!!.runnerRunId!!)
     run.hasPermission(PERMISSION_WRITE)
     workflowService.stopWorkflow(run)
     val stoppedRun = run.copy(state = RunState.Failed)

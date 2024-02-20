@@ -30,7 +30,6 @@ import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
-import com.cosmotech.run.api.RunApiService
 import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
@@ -111,8 +110,6 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var workspaceApiService: WorkspaceApiService
   @Autowired lateinit var runnerApiService: RunnerApiServiceInterface
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
-
-  @MockK private lateinit var runApiService: RunApiService
 
   lateinit var connector: Connector
   lateinit var dataset: Dataset
