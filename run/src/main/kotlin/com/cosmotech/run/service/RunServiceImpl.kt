@@ -12,7 +12,7 @@ import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.getScenarioRolesDefinition
 import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.run.ContainerFactory
-import com.cosmotech.run.api.RunApiService
+import com.cosmotech.run.RunApiServiceInterface
 import com.cosmotech.run.container.StartInfo
 import com.cosmotech.run.domain.Run
 import com.cosmotech.run.domain.RunLogs
@@ -40,7 +40,7 @@ class RunServiceImpl(
     private val runnerApiService: RunnerApiService,
     private val runRepository: RunRepository,
     private val csmRbac: CsmRbac
-) : CsmPhoenixService(), RunApiService {
+) : CsmPhoenixService(), RunApiServiceInterface {
 
   override fun getRuns(
       organizationId: String,
