@@ -4,7 +4,9 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **String** | the Run id | [optional] [default to null]
-**organizationId** | **String** | the Run id | [optional] [default to null]
+**organizationId** | **String** | the Organization id | [optional] [default to null]
+**workspaceId** | **String** | the Workspace id | [optional] [default to null]
+**runnerId** | **String** | the Runner id | [optional] [default to null]
 **workflowId** | **String** | the Cosmo Tech compute cluster Argo Workflow Id to search | [optional] [default to null]
 **workflowName** | **String** | the Cosmo Tech compute cluster Argo Workflow Name | [optional] [default to null]
 **startTime** | **String** | the Run start Date Time | [optional] [default to null]

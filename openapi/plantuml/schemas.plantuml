@@ -204,17 +204,13 @@ entity Run {
     ownerId: String
     workspaceId: String
     workspaceKey: String
-    scenarioId: String
+    runnerId: String
     solutionId: String
     runTemplateId: String
     computeSize: String
-    sdkVersion: String
     createdAt: String
-    noDataIngestionState: Boolean
     datasetList: List<String>
     parametersValues: List<RunTemplateParameterValue>
-    sendDatasetsToDataWarehouse: Boolean
-    sendInputParametersToDataWarehouse: Boolean
     nodeLabel: String
     containers: List<RunContainer>
 }
@@ -260,7 +256,7 @@ entity RunSearch {
     solutionId: String
     runTemplateId: String
     workspaceId: String
-    scenarioId: String
+    runnerId: String
     state: String
     workflowId: String
     workflowName: String
@@ -281,6 +277,8 @@ entity RunState {
 entity RunStatus {
     id: String
     organizationId: String
+    workspaceId: String
+    runnerId: String
     workflowId: String
     workflowName: String
     startTime: String
