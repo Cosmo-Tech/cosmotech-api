@@ -146,7 +146,7 @@ class RunServiceIntegrationTest : CsmRedisTestBase() {
         datasetSaved.apply { ingestionStatus = Dataset.IngestionStatus.SUCCESS }
     every { datasetApiService.createSubDataset(any(), any(), any()) } returns mockk(relaxed = true)
 
-    every { runnerApiService.findRunner(any(), any(), any()) } returns runnerSaved
+    every { runnerApiService.getRunner(any(), any(), any()) } returns runnerSaved
   }
 
   @Test
@@ -163,13 +163,13 @@ class RunServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("should find 1 Run")
     var runs =
-        runApiService.getRuns(
+        runApiService.listRuns(
             organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, null, null)
     assertEquals(1, runs.size)
 
     logger.info("should find Run by id")
     val foundRun =
-        runApiService.findRunById(
+        runApiService.getRun(
             organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runSavedId)
     assertEquals(runSavedId, foundRun.id)
     assertEquals(organizationSaved.id!!, foundRun.organizationId)
@@ -183,15 +183,15 @@ class RunServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("should find all Runs by Runner id and assert size is 2")
     runs =
-        runApiService.getRuns(
+        runApiService.listRuns(
             organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, null, null)
     assertEquals(2, runs.size)
 
     logger.info("should delete second Run and assert size is 1")
     runApiService.deleteRun(
-        organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runSaved2id)
+        organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runSavedId)
     runs =
-        runApiService.getRuns(
+        runApiService.listRuns(
             organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, null, null)
     assertEquals(1, runs.size)
   }
@@ -209,25 +209,25 @@ class RunServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("should find all Runs and assert there are $numberOfRuns")
     var runs =
-        runApiService.getRuns(
+        runApiService.listRuns(
             organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, null, numberOfRuns * 2)
     assertEquals(numberOfRuns, runs.size)
 
     logger.info("should find all Runs and assert it equals defaultPageSize: $defaultPageSize")
     runs =
-        runApiService.getRuns(
+        runApiService.listRuns(
             organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, 0, null)
     assertEquals(defaultPageSize, runs.size)
 
     logger.info("should find all Runs and assert there are expected size: $expectedSize")
     runs =
-        runApiService.getRuns(
+        runApiService.listRuns(
             organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, 0, expectedSize)
     assertEquals(expectedSize, runs.size)
 
     logger.info("should find all Runs and assert it returns the second / last page")
     runs =
-        runApiService.getRuns(
+        runApiService.listRuns(
             organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, 1, expectedSize)
     assertEquals(numberOfRuns - expectedSize, runs.size)
   }
@@ -236,17 +236,17 @@ class RunServiceIntegrationTest : CsmRedisTestBase() {
   fun `test find All Runs with wrong pagination params`() {
     logger.info("Should throw IllegalArgumentException when page and size are zeros")
     assertThrows<IllegalArgumentException> {
-      runApiService.getRuns(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, 0, 0)
+      runApiService.listRuns(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, 0, 0)
     }
 
     logger.info("Should throw IllegalArgumentException when page is negative")
     assertThrows<IllegalArgumentException> {
-      runApiService.getRuns(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, -1, 10)
+      runApiService.listRuns(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, -1, 10)
     }
 
     logger.info("Should throw IllegalArgumentException when size is negative")
     assertThrows<IllegalArgumentException> {
-      runApiService.getRuns(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, 0, -1)
+      runApiService.listRuns(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, 0, -1)
     }
   }
 

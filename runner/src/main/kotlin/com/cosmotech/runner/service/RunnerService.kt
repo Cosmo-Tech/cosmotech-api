@@ -115,10 +115,10 @@ class RunnerService(
     val startEvent = RunStart(this, runnerInstance.getRunnerDataObjet())
     this.eventPublisher.publishEvent(startEvent)
 
-    var runInfo = startEvent.response ?: throw IllegalStateException("Run Service did not respond")
-    runInfo = runInfo as RunnerLastRun
-
+    val runId = startEvent.response ?: throw IllegalStateException("Run Service did not respond")
+    val runInfo = RunnerLastRun(runnerRunId = runId)
     runnerInstance.setLastRun(runInfo)
+
     runnerRepository.save(runnerInstance.getRunnerDataObjet())
 
     return runInfo
