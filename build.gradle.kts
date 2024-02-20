@@ -30,13 +30,13 @@ plugins {
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.15.5"
   id("com.diffplug.spotless") version "6.22.0"
-  id("org.springframework.boot") version "3.1.5" apply false
+  id("org.springframework.boot") version "3.2.2" apply false
   id("project-report")
   id("org.owasp.dependencycheck") version "9.0.2"
   id("com.github.jk1.dependency-license-report") version "2.5"
   id("org.jetbrains.kotlinx.kover") version "0.7.4"
   id("io.gitlab.arturbosch.detekt") version "1.23.1"
-  id("org.openapi.generator") version "7.1.0" apply false
+  id("org.openapi.generator") version "7.3.0" apply false
   id("com.google.cloud.tools.jib") version "3.4.0" apply false
 }
 
@@ -50,16 +50,15 @@ version = scmVersion.version
 
 // Required versions
 val jacksonVersion = "2.15.3"
-val springWebVersion = "6.0.13"
-val springBootVersion = "3.1.5"
+val springWebVersion = "6.1.4"
 
 // Implementation
 val kotlinJvmTarget = 19
 val cosmotechApiCommonVersion = "1.0.0-SNAPSHOT"
 val cosmotechApiAzureVersion = "1.0.0-SNAPSHOT"
 val jedisVersion = "4.4.6"
-val springOauthVersion = "6.1.5"
-val redisOmSpringVersion = "0.8.7"
+val springOauthVersion = "6.2.2"
+val redisOmSpringVersion = "0.8.8"
 val kotlinCoroutinesCoreVersion = "1.7.3"
 val oktaSpringBootVersion = "3.0.5"
 val springDocVersion = "2.2.0"
@@ -129,7 +128,7 @@ allprojects {
     sourceCompatibility = JavaVersion.VERSION_19
     toolchain { languageVersion.set(JavaLanguageVersion.of(kotlinJvmTarget)) }
   }
-  configurations { all { resolutionStrategy { force("com.redis.om:redis-om-spring:0.8.7") } } }
+  configurations { all { resolutionStrategy { force("com.redis.om:redis-om-spring:0.8.8") } } }
 
   repositories {
     maven {
@@ -278,7 +277,7 @@ subprojects {
     implementation("org.springframework.boot:spring-boot-starter-web") {
       exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
     }
-    implementation("org.springframework.boot:spring-boot-starter-jetty")
+    implementation("org.springframework.boot:spring-boot-starter-undertow")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     // https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api
     implementation("jakarta.validation:jakarta.validation-api:$apiValidationVersion")
@@ -323,13 +322,6 @@ subprojects {
     implementation("com.azure.spring:spring-cloud-azure-starter-actuator:5.7.0")
     // https://mvnrepository.com/artifact/com.azure/azure-storage-blob-batch
     implementation("com.azure:azure-storage-blob-batch:12.20.1")
-
-    api("jakarta.servlet:jakarta.servlet-api") {
-      version {
-        strictly("5.0.0")
-        because("Jetty 11 does not support Servlet 6 yet")
-      }
-    }
   }
 
   tasks.withType<KotlinCompile> {

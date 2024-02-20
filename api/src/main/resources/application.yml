@@ -44,13 +44,9 @@ management:
     port: 8081
 
 server:
-  jetty:
+  undertow:
     accesslog:
       enabled: true
-      format: extended_ncsa
-  servlet:
-    context-path:
-  forward-headers-strategy: native
 
 csm:
   platform:
