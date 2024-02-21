@@ -447,7 +447,17 @@ jobs:
           cache-disabled: false
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: :cosmotech-runner-api:integrationTest -x spotlessCheck -x openApiValidate
+          arguments: :cosmotech-runner-api:integrationTest --tests "com.cosmotech.runner.service.RunnerServiceIntegrationTest" -x spotlessCheck -x openApiValidate
+
+      - name: Run RBAC Runner integration tests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: gradle/gradle-build-action@v2
+        with:
+          cache-disabled: false
+          # Cache storage space is limited for GitHub actions
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          arguments: :cosmotech-runner-api:integrationTest --tests "com.cosmotech.runner.service.RunnerServiceRBACTest" -x spotlessCheck -x openApiValidate
 
   run_it:
     runs-on: ubuntu-latest
