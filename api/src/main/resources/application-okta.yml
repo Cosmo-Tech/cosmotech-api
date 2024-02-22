@@ -20,7 +20,7 @@ spring:
 csm:
   platform:
     authorization:
-      principal-jwt-claim: "email"
+      principal-jwt-claim: "sub"
       application-id-jwt-claim: "cid"
       mail-jwt-claim: "sub"
       roles-jwt-claim: "groups"
