@@ -23,7 +23,7 @@ dependencies {
 
   testImplementation("org.testng:testng:7.8.0")
   testImplementation("com.redis.testcontainers:testcontainers-redis-junit:1.6.4")
-  testImplementation("org.springframework.boot:spring-boot-starter-test:3.1.5")
+  testImplementation("org.springframework.boot:spring-boot-starter-test:3.2.2")
 }
 
 tasks.withType<GenerateTask> { additionalProperties.put("modelMutable", false) }
