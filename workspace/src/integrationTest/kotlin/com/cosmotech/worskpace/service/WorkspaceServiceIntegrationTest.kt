@@ -135,8 +135,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
 
     logger.info("should create a second new workspace")
     val workspace2 = makeWorkspace(organizationSaved.id!!, solutionSaved.id!!, "Workspace 2")
-    val workspaceRegistered2 =
-        workspaceApiService.createWorkspace(organizationSaved.id!!, workspace2)
+    workspaceApiService.createWorkspace(organizationSaved.id!!, workspace2)
     val workspaceRetrieved =
         workspaceApiService.findWorkspaceById(organizationSaved.id!!, workspaceSaved.id!!)
     assertEquals(workspaceSaved, workspaceRetrieved)

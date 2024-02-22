@@ -1,5 +1,7 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
+@file:Suppress("DEPRECATION")
+
 package com.cosmotech.twingraph.metrics
 
 import com.cosmotech.api.config.CsmPlatformProperties
