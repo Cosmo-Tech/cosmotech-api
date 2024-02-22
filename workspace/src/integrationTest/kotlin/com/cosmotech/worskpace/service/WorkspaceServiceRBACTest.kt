@@ -122,14 +122,13 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val solutionSaved =
                   solutionApiService.createSolution(
                       organizationSaved.id!!, makeSolution(organizationSaved.id!!))
-              val workspaceSaved =
-                  workspaceApiService.createWorkspace(
+              workspaceApiService.createWorkspace(
+                  organizationSaved.id!!,
+                  makeWorkspaceWithRole(
                       organizationSaved.id!!,
-                      makeWorkspaceWithRole(
-                          organizationSaved.id!!,
-                          solutionSaved.id!!,
-                          id = TEST_USER_MAIL,
-                          role = ROLE_ADMIN))
+                      solutionSaved.id!!,
+                      id = TEST_USER_MAIL,
+                      role = ROLE_ADMIN))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {
@@ -166,14 +165,13 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               val solutionSaved =
                   solutionApiService.createSolution(
                       organizationSaved.id!!, makeSolution(organizationSaved.id!!))
-              val workspaceSaved =
-                  workspaceApiService.createWorkspace(
+              workspaceApiService.createWorkspace(
+                  organizationSaved.id!!,
+                  makeWorkspaceWithRole(
                       organizationSaved.id!!,
-                      makeWorkspaceWithRole(
-                          organizationSaved.id!!,
-                          solutionSaved.id!!,
-                          id = TEST_USER_MAIL,
-                          role = ROLE_ADMIN))
+                      solutionSaved.id!!,
+                      id = TEST_USER_MAIL,
+                      role = ROLE_ADMIN))
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
               if (shouldThrow) {

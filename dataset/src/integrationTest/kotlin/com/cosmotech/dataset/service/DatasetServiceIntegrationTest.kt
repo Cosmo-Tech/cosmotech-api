@@ -667,7 +667,6 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     val file = File(fileName!!)
     val resource = ByteArrayResource(file.readBytes())
     datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
-    var datasetStatus: String
     do {
       Thread.sleep(50L)
     } while (datasetApiService.getDatasetTwingraphStatus(

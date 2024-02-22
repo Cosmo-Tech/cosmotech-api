@@ -1062,7 +1062,6 @@ class DatasetServiceImpl(
   @EventListener(OrganizationUnregistered::class)
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
-    val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
     var pageable = PageRequest.ofSize(csmPlatformProperties.twincache.dataset.defaultPageSize)
     do {
       val datasetList =

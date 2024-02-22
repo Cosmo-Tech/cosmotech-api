@@ -426,11 +426,11 @@ internal class ScenarioServiceImpl(
         val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
         return scenarioRepository
             .findByValidationStatusAndSecurity(
-                organizationId, workspaceId, status, currentUser, pageRequest!!)
+                organizationId, workspaceId, status, currentUser, pageRequest)
             .toList()
       } else {
         return scenarioRepository
-            .findByValidationStatus(organizationId, workspaceId, status, pageRequest!!)
+            .findByValidationStatus(organizationId, workspaceId, status, pageRequest)
             .toList()
       }
     }
