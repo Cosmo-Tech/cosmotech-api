@@ -42,7 +42,6 @@ import org.junit.jupiter.api.extension.ExtendWith
 private const val CSM_SIMULATION_ID = "simulationrunid"
 private const val CSM_RUN_TEMPLATE_ID = "testruntemplate"
 
-@Suppress("TooManyFunctions", "LargeClass")
 @ExtendWith(MockKExtension::class)
 class ContainerFactoryTests {
 

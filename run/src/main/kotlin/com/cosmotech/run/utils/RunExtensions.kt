@@ -7,7 +7,7 @@ import com.cosmotech.run.domain.Run
 import com.cosmotech.run.domain.RunContainer
 import com.cosmotech.run.domain.RunState
 
-internal fun Run?.withoutSensitiveData(): Run? = this?.copy(containers = null)
+internal fun Run.withoutSensitiveData(): Run = this.copy(containers = null)
 
 internal fun RunState.isTerminal() =
     when (this) {

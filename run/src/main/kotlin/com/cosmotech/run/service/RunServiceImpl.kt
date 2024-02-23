@@ -50,23 +50,21 @@ class RunServiceImpl(
       page: Int?,
       size: Int?
   ): List<Run> {
-    // This call verify by itself that we have the read authorization in the scenario
-    val runner = runnerApiService.getRunner(organizationId, workspaceId, runnerId)
-    csmRbac.verify(runner.getRbac(), PERMISSION_READ, getScenarioRolesDefinition())
+    // This call verify the user read authorization in the Runner
+    runnerApiService.getRunner(organizationId, workspaceId, runnerId)
 
     val defaultPageSize = csmPlatformProperties.twincache.scenariorun.defaultPageSize
     val pageable =
         constructPageRequest(page, size, defaultPageSize) ?: PageRequest.of(0, defaultPageSize)
 
-    // We know which page to return
     return runRepository
         .findByRunnerId(organizationId, workspaceId, runnerId, pageable)
         .toList()
-        .map { it.withStateInformation().withoutSensitiveData()!! }
+        .map { it.withStateInformation().withoutSensitiveData() }
   }
 
-  private fun Run?.withStateInformation(): Run? {
-    if (this?.state?.isTerminal() == true || this == null) {
+  private fun Run.withStateInformation(): Run {
+    if (this.state?.isTerminal() == true) {
       return this
     }
 
@@ -110,10 +108,10 @@ class RunServiceImpl(
     val run =
         runRepository
             .findBy(organizationId, workspaceId, runnerId, runId)
-            .orElseGet { null }
+            .orElseThrow { throw IllegalArgumentException("Run #$runId not found in #$runnerId") }
             .withStateInformation()
             .withoutSensitiveData()
-            ?: throw java.lang.IllegalArgumentException("Run #$runId not found in #$runnerId")
+
     run.hasPermission(PERMISSION_READ)
     return run
   }
@@ -216,7 +214,7 @@ class RunServiceImpl(
     runRepository.save(stoppedRun)
   }
 
-  private fun Run.hasPermission(permission: String) {
+  private fun Run.hasPermission(permission: String) = apply {
     val runner =
         runnerApiService.getRunner(this.organizationId!!, this.workspaceId!!, this.runnerId!!)
     csmRbac.verify(runner.getRbac(), permission, getScenarioRolesDefinition())

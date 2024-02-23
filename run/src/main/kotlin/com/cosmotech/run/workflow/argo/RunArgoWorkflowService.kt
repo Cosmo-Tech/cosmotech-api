@@ -362,10 +362,10 @@ internal class RunArgoWorkflowService(
                   run.workflowName,
                   IoArgoprojWorkflowV1alpha1WorkflowStopRequest())
     } catch (e: ApiException) {
-      System.err.println("Exception when calling WorkflowServiceApi#workflowServiceStopWorkflow")
-      System.err.println("Status code: " + e.code)
-      System.err.println("Reason: " + e.responseBody)
-      System.err.println("Response headers: " + e.responseHeaders)
+      logger.error("Exception when calling WorkflowServiceApi#workflowServiceStopWorkflow")
+      logger.error("Status code: " + e.code)
+      logger.error("Reason: " + e.responseBody)
+      logger.error("Response headers: " + e.responseHeaders)
     }
 
     return buildRunStatusFromWorkflowStatus(run, workflow.status)
