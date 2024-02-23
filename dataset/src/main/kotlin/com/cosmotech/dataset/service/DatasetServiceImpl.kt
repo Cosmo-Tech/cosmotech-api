@@ -447,6 +447,9 @@ class DatasetServiceImpl(
         }
         return dataset.ingestionStatus!!.value
       }
+      DatasetSourceType.ETL -> {
+        "ok"
+      }
     }
   }
 
@@ -474,12 +477,21 @@ class DatasetServiceImpl(
           dataset.source!!.location
         }
 
-    val requestJobId = this.idGenerator.generate(scope = "graphdataimport", prependPrefix = "gdi-")
-    val graphImportEvent =
-        sendTwingraphImportEvent(requestJobId, organizationId, dataset, dataSourceLocation)
-
+    val requestJobId =
+        if (dataset.sourceType == DatasetSourceType.ETL) {
+          val runInfo =
+              runnerApiService.startRun(
+                  organizationId, dataset.source!!.location, dataset.source!!.name!!)
+          runInfo.runnerRunId
+        } else {
+          val requestJobId =
+              this.idGenerator.generate(scope = "graphdataimport", prependPrefix = "gdi-")
+          val graphImportEvent =
+              sendTwingraphImportEvent(requestJobId, organizationId, dataset, dataSourceLocation)
+          logger.debug("refreshDataset={}", graphImportEvent.response)
+          requestJobId
+        }
     datasetRepository.save(dataset.apply { source!!.jobId = requestJobId })
-    logger.debug("refreshDataset={}", graphImportEvent.response)
     return DatasetTwinGraphInfo(
         jobId = requestJobId, datasetId = dataset.id, status = dataset.ingestionStatus?.value)
   }

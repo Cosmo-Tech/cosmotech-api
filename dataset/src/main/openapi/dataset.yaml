@@ -1622,6 +1622,7 @@ components:
         - File
         - None
         - Twincache
+        - ETL
     DatasetTwinGraphInfo:
       type: object
       description: a twin graph query in cypher language
