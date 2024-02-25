@@ -5,10 +5,12 @@ package com.cosmotech.dataset.service
 import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.events.AddDatasetToWorkspace
 import com.cosmotech.api.events.AddWorkspaceToDataset
+import com.cosmotech.api.events.AskRunStatusEvent
 import com.cosmotech.api.events.ConnectorRemoved
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.events.RemoveDatasetFromWorkspace
 import com.cosmotech.api.events.RemoveWorkspaceFromDataset
+import com.cosmotech.api.events.TriggerRunnerEvent
 import com.cosmotech.api.events.TwingraphImportEvent
 import com.cosmotech.api.events.TwingraphImportJobInfoRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
@@ -448,7 +450,32 @@ class DatasetServiceImpl(
         return dataset.ingestionStatus!!.value
       }
       DatasetSourceType.ETL -> {
-        "ok"
+        if (dataset.ingestionStatus == Dataset.IngestionStatus.PENDING) {
+          dataset.source!!.takeIf { !it.jobId.isNullOrEmpty() }
+              ?: return dataset.ingestionStatus!!.value
+
+          val askRunStatusEvent =
+              AskRunStatusEvent(
+                  this,
+                  organizationId,
+                  dataset.source!!.location,
+                  dataset.source!!.name!!,
+                  dataset.source!!.jobId!!)
+          this.eventPublisher.publishEvent(askRunStatusEvent)
+
+          dataset.apply {
+            when (askRunStatusEvent.response) {
+              "Succeeded" -> {
+                ingestionStatus = Dataset.IngestionStatus.SUCCESS
+                twincacheStatus = Dataset.TwincacheStatus.FULL
+              }
+              "Error",
+              "Failed" -> ingestionStatus = Dataset.IngestionStatus.ERROR
+            }
+            datasetRepository.save(this)
+          }
+        }
+        return dataset.ingestionStatus!!.value
       }
     }
   }
@@ -479,10 +506,11 @@ class DatasetServiceImpl(
 
     val requestJobId =
         if (dataset.sourceType == DatasetSourceType.ETL) {
-          val runInfo =
-              runnerApiService.startRun(
-                  organizationId, dataset.source!!.location, dataset.source!!.name!!)
-          runInfo.runnerRunId
+          val triggerRunnerEvent =
+              TriggerRunnerEvent(
+                  this, organizationId, dataset.source!!.location, dataset.source!!.name!!)
+          this.eventPublisher.publishEvent(triggerRunnerEvent)
+          triggerRunnerEvent.response
         } else {
           val requestJobId =
               this.idGenerator.generate(scope = "graphdataimport", prependPrefix = "gdi-")
