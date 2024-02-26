@@ -13,4 +13,11 @@ interface SolutionApiServiceInterface : SolutionApiService {
       solutionId: String,
       requiredPermission: String = PERMISSION_READ
   ): Solution
+
+  fun isRunTemplateExist(
+      organizationId: String,
+      workspaceId: String,
+      solutionId: String,
+      runTemplateId: String
+  ): Boolean
 }
