@@ -53,8 +53,8 @@ private const val PARAMETERS_PATH_VAR = "CSM_PARAMETERS_ABSOLUTE_PATH"
 private const val PARAMETERS_PATH = "/mnt/scenariorun-parameters"
 private const val PARAMETERS_ORGANIZATION_VAR = "CSM_ORGANIZATION_ID"
 private const val PARAMETERS_WORKSPACE_VAR = "CSM_WORKSPACE_ID"
-private const val PARAMETERS_SCENARIO_VAR = "CSM_SCENARIO_ID"
-private const val PARAMETERS_SCENARIO_RUN_VAR = "CSM_SCENARIO_RUN_ID"
+private const val PARAMETERS_RUNNER_VAR = "CSM_RUNNER_ID"
+private const val PARAMETERS_RUNNER_RUN_VAR = "CSM_RUNNER_RUN_ID"
 
 private const val AZURE_DATA_EXPLORER_RESOURCE_URI_VAR = "AZURE_DATA_EXPLORER_RESOURCE_URI"
 private const val AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI_VAR =
@@ -416,7 +416,7 @@ internal fun getCommonEnvVars(
           AZURE_DATA_EXPLORER_DATABASE_NAME to "$organizationId-$workspaceKey".lowercase(),
           PARAMETERS_ORGANIZATION_VAR to organizationId,
           PARAMETERS_WORKSPACE_VAR to workspaceId,
-          PARAMETERS_SCENARIO_VAR to runnerId,
-          PARAMETERS_SCENARIO_RUN_VAR to runId)
+          PARAMETERS_RUNNER_VAR to runnerId,
+          PARAMETERS_RUNNER_RUN_VAR to runId)
   return (minimalEnvVars + commonEnvVars).toMutableMap()
 }
