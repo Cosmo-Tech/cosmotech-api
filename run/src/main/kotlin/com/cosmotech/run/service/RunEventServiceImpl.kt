@@ -5,7 +5,9 @@ package com.cosmotech.run.service
 import com.cosmotech.api.events.AskRunStatusEvent
 import com.cosmotech.run.RunApiServiceInterface
 import com.cosmotech.run.RunEventServiceInterface
+import org.springframework.stereotype.Service
 
+@Service
 class RunEventServiceImpl(private val runApiService: RunApiServiceInterface) :
     RunEventServiceInterface {
   override fun getRunStatus(askRunStatusEvent: AskRunStatusEvent) {
