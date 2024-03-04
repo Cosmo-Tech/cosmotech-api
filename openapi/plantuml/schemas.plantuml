@@ -405,8 +405,8 @@ entity Runner {
     runSizing: RunnerResourceSizing
     parametersValues: List<RunnerRunTemplateParameterValue>
     lastRun: RunnerLastRun
-    parentLastRun: RunnerLastRun
-    rootLastRun: RunnerLastRun
+    parentLastRun: RunnerParentLastRun
+    rootLastRun: RunnerRootLastRun
     validationStatus: RunnerValidationStatus
     security: RunnerSecurity
 }
@@ -442,10 +442,9 @@ entity RunnerJobState {
 }
 
 entity RunnerLastRun {
-    runnerRunId: String
-    csmSimulationRun: String
-    workflowId: String
-    workflowName: String
+}
+
+entity RunnerParentLastRun {
 }
 
 entity RunnerResourceSizing {
@@ -455,6 +454,9 @@ entity RunnerResourceSizing {
 
 entity RunnerRole {
     * role: String
+}
+
+entity RunnerRootLastRun {
 }
 
 entity RunnerRunTemplateParameterValue {
@@ -822,6 +824,9 @@ entity WorkspaceWebApp {
     options: Map
 }
 
+RunnerLastRun <|--- RunnerLastRun
+RunnerLastRun <|--- RunnerParentLastRun
+RunnerLastRun <|--- RunnerRootLastRun
 
 ContainerResourceSizing -- ContainerResourceSizeInfo : requests
 ContainerResourceSizing -- ContainerResourceSizeInfo : limits
@@ -831,7 +836,6 @@ Scenario -- "0..*" ScenarioRunTemplateParameterValue : parametersValues
 Scenario -- ScenarioLastRun : lastRun
 Scenario -- ScenarioLastRun : parentLastRun
 Scenario -- ScenarioLastRun : rootLastRun
-Scenario -- ScenarioValidationStatus : validationStatus
 Scenario -- ScenarioSecurity : security
 ScenarioRunStatus -- "0..*" ScenarioRunStatusNode : nodes
 ScenarioResourceSizing -- ResourceSizeInfo : requests
@@ -852,7 +856,6 @@ Dataset -- SourceInfo : source
 Dataset -- DatasetConnector : connector
 Dataset -- "0..*" DatasetCompatibility : compatibility
 Dataset -- DatasetSecurity : security
-Run -- RunState : state
 Run -- "0..*" RunTemplateParameterValue : parametersValues
 Run -- "0..*" RunContainer : containers
 OrganizationSecurity -- "0..*" OrganizationAccessControl : accessControlList
@@ -869,7 +872,6 @@ WorkspaceSecurity -- "0..*" WorkspaceAccessControl : accessControlList
 ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
 OrganizationServices -- OrganizationService : storage
 OrganizationServices -- OrganizationService : solutionsContainerRegistry
-ScenarioRun -- ScenarioRunState : state
 ScenarioRun -- "0..*" RunTemplateParameterValue : parametersValues
 ScenarioRun -- "0..*" ScenarioRunContainer : containers
 RunContainer -- ContainerResourceSizing : runSizing
@@ -879,9 +881,8 @@ Connector -- "0..*" ConnectorParameterGroup : parameterGroups
 Runner -- RunnerResourceSizing : runSizing
 Runner -- "0..*" RunnerRunTemplateParameterValue : parametersValues
 Runner -- RunnerLastRun : lastRun
-Runner -- RunnerLastRun : parentLastRun
-Runner -- RunnerLastRun : rootLastRun
-Runner -- RunnerValidationStatus : validationStatus
+Runner -- RunnerParentLastRun : parentLastRun
+Runner -- RunnerRootLastRun : rootLastRun
 Runner -- RunnerSecurity : security
 RunStatus -- "0..*" RunStatusNode : nodes
 RunnerSecurity -- "0..*" RunnerAccessControl : accessControlList

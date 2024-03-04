@@ -96,7 +96,7 @@ class RunnerService(
     val runner =
         runnerRepository.findBy(organization!!.id!!, workspace!!.id!!, runnerId).orElseThrow {
           CsmResourceNotFoundException(
-              "Runner ${runnerId} not found in workspace ${workspace!!.id} and organization ${organization!!.id}")
+              "Runner $runnerId not found in workspace ${workspace!!.id} and organization ${organization!!.id}")
         }
 
     return RunnerInstance(runner).userHasPermission(PERMISSION_READ)

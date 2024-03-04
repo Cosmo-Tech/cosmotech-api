@@ -12,7 +12,7 @@ import com.cosmotech.runner.domain.Runner
 fun Runner.getRbac(): RbacSecurity {
   return RbacSecurity(
       this.id,
-      this.security?.default ?: com.cosmotech.api.rbac.ROLE_NONE,
+      this.security?.default ?: ROLE_NONE,
       this.security?.accessControlList?.map { RbacAccessControl(it.id, it.role) }?.toMutableList()
           ?: mutableListOf())
 }

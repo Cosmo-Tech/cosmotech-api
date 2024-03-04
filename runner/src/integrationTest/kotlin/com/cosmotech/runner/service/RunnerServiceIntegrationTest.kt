@@ -1,12 +1,12 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
+@file:Suppress("DEPRECATION")
+
 package com.cosmotech.runner.service
 
-import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.events.RunStart
-import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.ROLE_ADMIN
@@ -52,9 +52,7 @@ import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.ninjasquad.springmockk.SpykBean
 import com.redis.om.spring.RediSearchIndexer
 import com.redis.testcontainers.RedisStackContainer
-import com.redislabs.redisgraph.impl.api.RedisGraph
 import io.mockk.every
-import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
 import java.time.Instant
@@ -76,7 +74,9 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
-import redis.clients.jedis.JedisPool
+import redis.clients.jedis.HostAndPort
+import redis.clients.jedis.Protocol
+import redis.clients.jedis.UnifiedJedis
 
 @ActiveProfiles(profiles = ["runner-test"])
 @ExtendWith(MockKExtension::class)
@@ -86,19 +86,12 @@ import redis.clients.jedis.JedisPool
 class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
-  val CONNECTED_NONE_USER = "test.none@cosmotech.com"
-  val CONNECTED_EDITOR_USER = "test.editor@cosmotech.com"
-  val CONNECTED_VALIDATOR_USER = "test.validator@cosmotech.com"
   val CONNECTED_READER_USER = "test.reader@cosmotech.com"
-  val CONNECTED_VIEWER_USER = "test.user@cosmotech.com"
   val TEST_USER_MAIL = "fake@mail.fr"
-  val REDIS_PORT = 6379
 
   private val logger = LoggerFactory.getLogger(RunnerServiceIntegrationTest::class.java)
   private val defaultName = "my.account-tester@cosmotech.com"
 
-  @MockK(relaxed = true) private lateinit var azureDataExplorerClient: AzureDataExplorerClient
-  @MockK private lateinit var scenarioDataDownloadJobInfoRequest: ScenarioDataDownloadJobInfoRequest
   @SpykBean @Autowired private lateinit var eventPublisher: CsmEventPublisher
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
@@ -125,7 +118,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   lateinit var workspaceSaved: Workspace
   lateinit var runnerSaved: Runner
 
-  lateinit var jedisPool: JedisPool
+  lateinit var jedis: UnifiedJedis
 
   @BeforeAll
   fun beforeAll() {
@@ -135,9 +128,9 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
     val context = getContext(redisStackServer)
     val containerIp =
         (context.server as RedisStackContainer).containerInfo.networkSettings.ipAddress
-    jedisPool = JedisPool(containerIp, REDIS_PORT)
+    jedis = UnifiedJedis(HostAndPort(containerIp, Protocol.DEFAULT_PORT))
 
-    ReflectionTestUtils.setField(datasetApiService, "csmJedisPool", jedisPool)
+    ReflectionTestUtils.setField(datasetApiService, "unifiedJedis", jedis)
   }
 
   @BeforeEach
@@ -741,7 +734,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   ): Dataset {
     dataset.apply {
       if (createTwingraph) {
-        RedisGraph(jedisPool).query(this.twingraphId, "MATCH (n:labelrouge) return 1")
+        jedis.graphQuery(this.twingraphId, "MATCH (n:labelrouge) return 1")
       }
       this.ingestionStatus = Dataset.IngestionStatus.SUCCESS
       this.twincacheStatus = Dataset.TwincacheStatus.FULL

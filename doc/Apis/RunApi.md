@@ -2,13 +2,13 @@
 
 All URIs are relative to *https://dev.api.cosmotech.com*
 
-Method | HTTP request | Description
-------------- | ------------- | -------------
-[**deleteRun**](RunApi.md#deleteRun) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id} | Delete a run
-[**getRun**](RunApi.md#getRun) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id} | Get the details of a run
-[**getRunLogs**](RunApi.md#getRunLogs) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/logs | get the logs for the Run
-[**getRunStatus**](RunApi.md#getRunStatus) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/status | get the status for the Run
-[**listRuns**](RunApi.md#listRuns) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs | get the list of Runs for the Runner
+| Method | HTTP request | Description |
+|------------- | ------------- | -------------|
+| [**deleteRun**](RunApi.md#deleteRun) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id} | Delete a run |
+| [**getRun**](RunApi.md#getRun) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id} | Get the details of a run |
+| [**getRunLogs**](RunApi.md#getRunLogs) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/logs | get the logs for the Run |
+| [**getRunStatus**](RunApi.md#getRunStatus) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/status | get the status for the Run |
+| [**listRuns**](RunApi.md#listRuns) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs | get the list of Runs for the Runner |
 
 
 <a name="deleteRun"></a>
@@ -19,12 +19,12 @@ Delete a run
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **workspace\_id** | **String**| the Workspace identifier | [default to null]
- **runner\_id** | **String**| the Runner identifier | [default to null]
- **run\_id** | **String**| the Run identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **runner\_id** | **String**| the Runner identifier | [default to null] |
+| **run\_id** | **String**| the Run identifier | [default to null] |
 
 ### Return type
 
@@ -47,12 +47,12 @@ Get the details of a run
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **workspace\_id** | **String**| the Workspace identifier | [default to null]
- **runner\_id** | **String**| the Runner identifier | [default to null]
- **run\_id** | **String**| the Run identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **runner\_id** | **String**| the Runner identifier | [default to null] |
+| **run\_id** | **String**| the Run identifier | [default to null] |
 
 ### Return type
 
@@ -75,12 +75,12 @@ get the logs for the Run
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **workspace\_id** | **String**| the Workspace identifier | [default to null]
- **runner\_id** | **String**| the Runner identifier | [default to null]
- **run\_id** | **String**| the Run identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **runner\_id** | **String**| the Runner identifier | [default to null] |
+| **run\_id** | **String**| the Run identifier | [default to null] |
 
 ### Return type
 
@@ -103,12 +103,12 @@ get the status for the Run
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **workspace\_id** | **String**| the Workspace identifier | [default to null]
- **runner\_id** | **String**| the Runner identifier | [default to null]
- **run\_id** | **String**| the Run identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **runner\_id** | **String**| the Runner identifier | [default to null] |
+| **run\_id** | **String**| the Run identifier | [default to null] |
 
 ### Return type
 
@@ -131,13 +131,13 @@ get the list of Runs for the Runner
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **workspace\_id** | **String**| the Workspace identifier | [default to null]
- **runner\_id** | **String**| the Runner identifier | [default to null]
- **page** | **Integer**| page number to query | [optional] [default to null]
- **size** | **Integer**| amount of result by page | [optional] [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **runner\_id** | **String**| the Runner identifier | [default to null] |
+| **page** | **Integer**| page number to query | [optional] [default to null] |
+| **size** | **Integer**| amount of result by page | [optional] [default to null] |
 
 ### Return type
 

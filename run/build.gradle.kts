@@ -13,21 +13,17 @@ dependencies {
   implementation(platform("com.squareup.okhttp3:okhttp-bom:4.10.0"))
   implementation("com.squareup.okhttp3:okhttp")
   implementation("com.squareup.okhttp3:logging-interceptor")
-  implementation("com.redislabs:jredisgraph:2.5.1") {
-    constraints { implementation("org.apache.commons:commons-text:1.10.0") }
-  }
 
   implementation(projects.cosmotechConnectorApi)
   implementation(projects.cosmotechDatasetApi)
   implementation(projects.cosmotechOrganizationApi)
-  implementation(projects.cosmotechScenarioApi)
   implementation(projects.cosmotechSolutionApi)
   implementation(projects.cosmotechWorkspaceApi)
   implementation(projects.cosmotechRunnerApi)
 
-  testImplementation("org.testng:testng:7.1.0")
-  testImplementation("com.redis.testcontainers:testcontainers-redis-junit:1.6.2")
-  testImplementation("org.springframework.boot:spring-boot-starter-test:2.7.3")
+  testImplementation("org.testng:testng:7.8.0")
+  testImplementation("com.redis.testcontainers:testcontainers-redis-junit:1.6.4")
+  testImplementation("org.springframework.boot:spring-boot-starter-test:3.2.2")
 }
 
 tasks.withType<GenerateTask> { additionalProperties.put("modelMutable", false) }
