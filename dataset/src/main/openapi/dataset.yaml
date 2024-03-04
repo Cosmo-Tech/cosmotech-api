@@ -1509,6 +1509,7 @@ components:
         ingestionStatus:
           type: string
           description: the Dataset ingestion status
+          nullable: true
           enum:
             - NONE
             - PENDING
@@ -1517,6 +1518,7 @@ components:
         twincacheStatus:
           type: string
           description: the twincache data status
+          nullable: true
           enum:
             - EMPTY
             - FULL
