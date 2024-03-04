@@ -1,11 +1,35 @@
 spring:
-  redis:
-    host: ${csm.platform.twincache.host}
-    username: ${csm.platform.twincache.username}
-    password: ${csm.platform.twincache.password}
-    client-type: jedis
-  main:
-    lazy-initialization: true
+  data:
+    redis:
+      host: "localhost"
+      username: "default"
+      # Leave it as blank as there's no auth with test container
+      password:
+      client-type: jedis
+  cloud:
+    azure:
+      # Required to auto-configure the beans provided by the Azure Spring Boot AutoConfigurations
+      active-directory:
+        profile:
+          # tenantId is 'common' to use the login process of multi-tenant access
+          # See https://github.com/Azure/azure-sdk-for-java/blob/master/sdk/spring/azure-spring-boot-starter-active-directory/ACCESS_TO_MULTI_TENANT_APP.md
+          tenant-id: "fake_tenant_id"
+        credential:
+          client-id: "fake_client_id"
+          client-secret: "fake_client_secret"
+        session-stateless: true
+        app-id-uri: "fake_app_id_uri"
+        enabled: true
+      storage:
+        blob:
+          # Storage account name length should be between 3 and 24 and use numbers and lower-case letters only
+          account-name: "fakeaccountname"
+          # Fill storage account access key copied from portal
+          account-key: "fakeaccountkey"
+          # Fill storage endpoint URL copied from portal
+          endpoint: "https://fakeaccountname.blob.core.windows.net"
+          enabled: true
+
 
 management:
   endpoints:
@@ -68,7 +92,7 @@ csm:
       # Note that the way @Value works in Spring does not make it possible to inject this sole YAML list.
       # Use CsmPlatformProperties instead !
       allowed-tenants: ["test"]
-    vendor: azure
+    vendor: on_premise
     argo:
       base-uri: "https://argo-server.argo.svc.cluster.local:2746"
       workflows:

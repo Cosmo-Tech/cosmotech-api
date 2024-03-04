@@ -19,6 +19,7 @@ import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
+import com.cosmotech.run.RunApiServiceInterface
 import com.cosmotech.run.RunContainerFactory
 import com.cosmotech.run.domain.Run
 import com.cosmotech.run.workflow.WorkflowService
@@ -83,7 +84,7 @@ class RunServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var solutionApiService: SolutionApiServiceInterface
   @Autowired lateinit var workspaceApiService: WorkspaceApiServiceInterface
   @SpykBean @Autowired lateinit var runnerApiService: RunnerApiServiceInterface
-  @Autowired lateinit var runApiService: RunServiceImpl
+  @Autowired lateinit var runApiService: RunApiServiceInterface
   @Autowired lateinit var eventPublisher: com.cosmotech.api.events.CsmEventPublisher
 
   lateinit var connector: Connector

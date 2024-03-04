@@ -1,8 +1,9 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
+@file:Suppress("DEPRECATION")
+
 package com.cosmotech.runner.service
 
-import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
@@ -45,19 +46,15 @@ import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
 import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.workspace.api.WorkspaceApiService
-import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.azure.WorkspaceEventHubInfo
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
-import com.ninjasquad.springmockk.MockkBean
 import com.ninjasquad.springmockk.SpykBean
 import com.redis.om.spring.RediSearchIndexer
 import com.redis.testcontainers.RedisStackContainer
-import com.redislabs.redisgraph.impl.api.RedisGraph
 import io.mockk.every
-import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -76,7 +73,9 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
-import redis.clients.jedis.JedisPool
+import redis.clients.jedis.HostAndPort
+import redis.clients.jedis.Protocol
+import redis.clients.jedis.UnifiedJedis
 
 @ActiveProfiles(profiles = ["runner-test"])
 @ExtendWith(MockKExtension::class)
@@ -89,10 +88,6 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
   val TEST_USER_MAIL = "testuser@mail.fr"
 
-  @MockkBean lateinit var csmADX: AzureDataExplorerClient
-  @MockK(relaxed = true) private lateinit var workspaceEventHubService: IWorkspaceEventHubService
-  @MockK(relaxed = true) private lateinit var azureDataExplorerClient: AzureDataExplorerClient
-
   @Autowired lateinit var datasetRepository: DatasetRepository
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var connectorApiService: ConnectorApiService
@@ -103,8 +98,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
   @Autowired lateinit var runnerApiService: RunnerApiService
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
-  lateinit var jedisPool: JedisPool
-  lateinit var redisGraph: RedisGraph
+  lateinit var jedis: UnifiedJedis
 
   @BeforeEach
   fun setUp() {
@@ -122,10 +116,8 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
     val context = getContext(redisStackServer)
     val containerIp =
         (context.server as RedisStackContainer).containerInfo.networkSettings.ipAddress
-    jedisPool = JedisPool(containerIp, 6379)
-    redisGraph = RedisGraph(jedisPool)
-    ReflectionTestUtils.setField(datasetApiService, "csmJedisPool", jedisPool)
-    ReflectionTestUtils.setField(datasetApiService, "csmRedisGraph", redisGraph)
+    jedis = UnifiedJedis(HostAndPort(containerIp, Protocol.DEFAULT_PORT))
+    ReflectionTestUtils.setField(datasetApiService, "unifiedJedis", jedis)
   }
 
   @TestFactory
@@ -4468,7 +4460,7 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
   private fun materializeTwingraph(dataset: Dataset, createTwingraph: Boolean = true): Dataset {
     dataset.apply {
       if (createTwingraph) {
-        redisGraph.query(this.twingraphId, "CREATE (n:labelrouge)")
+        jedis.graphQuery(this.twingraphId, "CREATE (n:labelrouge)")
       }
       this.ingestionStatus = Dataset.IngestionStatus.SUCCESS
     }
