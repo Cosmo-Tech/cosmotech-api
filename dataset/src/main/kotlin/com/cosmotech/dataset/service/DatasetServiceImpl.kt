@@ -465,11 +465,12 @@ class DatasetServiceImpl(
 
           dataset.apply {
             when (askRunStatusEvent.response) {
-              "Succeeded" -> {
+              "Successful" -> {
                 ingestionStatus = Dataset.IngestionStatus.SUCCESS
                 twincacheStatus = Dataset.TwincacheStatus.FULL
               }
               "Error",
+              "Unknown",
               "Failed" -> ingestionStatus = Dataset.IngestionStatus.ERROR
             }
             datasetRepository.save(this)
