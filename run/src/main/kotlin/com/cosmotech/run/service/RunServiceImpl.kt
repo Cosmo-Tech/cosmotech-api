@@ -108,7 +108,7 @@ class RunServiceImpl(
     val run =
         runRepository
             .findBy(organizationId, workspaceId, runnerId, runId)
-            .orElseThrow { throw IllegalArgumentException("Run #$runId not found in #$runnerId") }
+            .orElseThrow { throw IllegalArgumentException("Run #$runId not found in #$runnerId. In #$workspaceId, #$organizationId.") }
             .withStateInformation()
             .withoutSensitiveData()
 
