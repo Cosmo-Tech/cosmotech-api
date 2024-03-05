@@ -37,18 +37,8 @@ class MetricsServiceImpl(
 
     val timestamp =
         when (metric.incrementBy) {
-          0 ->
-              timeSeries.add(
-                  key,
-                  metric.timestamp,
-                  metric.value,
-              )
-          else ->
-              timeSeries.incrBy(
-                  key,
-                  metric.incrementBy,
-                  metric.timestamp,
-              )
+          0 -> timeSeries.add(key, metric.value)
+          else -> timeSeries.incrBy(key, metric.incrementBy)
         }
 
     logger.debug("METRICS: addMetricToTimeSeries done for $key at $timestamp")
