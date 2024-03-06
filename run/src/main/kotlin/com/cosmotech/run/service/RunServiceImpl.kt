@@ -105,6 +105,7 @@ class RunServiceImpl(
       runnerId: String,
       runId: String
   ): Run {
+    runnerApiService.getRunner(organizationId, workspaceId, runnerId)
     val run =
         runRepository
             .findBy(organizationId, workspaceId, runnerId, runId)
