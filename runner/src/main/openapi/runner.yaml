@@ -205,7 +205,7 @@ paths:
         schema:
           type: string
     post:
-      operationId: StartRun
+      operationId: startRun
       tags:
         - runner
       summary: Start a run with runner parameters
@@ -240,7 +240,7 @@ paths:
         schema:
           type: string
     post:
-      operationId: StopRun
+      operationId: stopRun
       tags:
         - runner
       summary: Stop the last run
