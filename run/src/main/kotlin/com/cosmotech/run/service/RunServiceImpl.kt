@@ -108,7 +108,10 @@ class RunServiceImpl(
     val run =
         runRepository
             .findBy(organizationId, workspaceId, runnerId, runId)
-            .orElseThrow { throw IllegalArgumentException("Run #$runId not found in #$runnerId. In #$workspaceId, #$organizationId.") }
+            .orElseThrow {
+              throw IllegalArgumentException(
+                  "Run #$runId not found in #$runnerId. In #$workspaceId, #$organizationId.")
+            }
             .withStateInformation()
             .withoutSensitiveData()
 
@@ -209,6 +212,10 @@ class RunServiceImpl(
             runner.id!!,
             runner.lastRun!!.runnerRunId!!)
     run.hasPermission(PERMISSION_WRITE)
+    if (run.state!!.isTerminal()) {
+      throw IllegalStateException(
+          "Run ${run.id} is already in a terminal state (${run.state}). It can't be stopped.")
+    }
     workflowService.stopWorkflow(run)
     val stoppedRun = run.copy(state = RunState.Failed)
     runRepository.save(stoppedRun)
