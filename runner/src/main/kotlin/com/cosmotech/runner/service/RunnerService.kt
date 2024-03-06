@@ -130,7 +130,7 @@ class RunnerService(
         runner.lastRun?.runnerRunId
             ?: throw IllegalArgumentException("Runner ${runner.id} doesn't have a last run")
 
-    this.eventPublisher.publishEvent(RunStop(this, runId))
+    this.eventPublisher.publishEvent(RunStop(this, runner))
   }
 
   @Suppress("TooManyFunctions")
