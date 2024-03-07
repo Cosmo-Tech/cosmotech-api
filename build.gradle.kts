@@ -275,8 +275,10 @@ subprojects {
     implementation("com.redis.om:redis-om-spring:${redisOmSpringVersion}") {
       constraints { implementation("org.json:json:20230227") }
     }
+    implementation("org.springframework.boot:spring-boot-starter-amqp")
 
     testImplementation(kotlin("test"))
+    testImplementation("org.springframework.amqp:spring-rabbit-test")
     testImplementation(platform("org.junit:junit-bom:5.9.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("io.mockk:mockk:1.13.2")
