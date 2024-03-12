@@ -304,8 +304,8 @@ class DatasetServiceImpl(
     val dataset = getDatasetWithStatus(organizationId, datasetId)
     csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE)
 
-    dataset.sourceType.takeIf { it == DatasetSourceType.File }
-        ?: throw CsmResourceNotFoundException("SourceType Dataset must be 'File'")
+    dataset.sourceType.takeIf { it == DatasetSourceType.File || it == DatasetSourceType.ETL }
+        ?: throw CsmResourceNotFoundException("SourceType Dataset must be 'File' or 'ETL'")
 
     // TODO: Validated with ressourceScanner PROD-12822
     val archiverType = ArchiveStreamFactory.detect(body.inputStream.buffered())
@@ -345,31 +345,34 @@ class DatasetServiceImpl(
         }
       }
       try {
-        trx(dataset) {
-          val queryBuffer = QueryBuffer(csmJedisPool.resource, dataset.twingraphId!!)
-          nodes.forEach { file ->
-            readCSV(file.content.inputStream()) {
-              queryBuffer.addNode(file.filename, it.values.first(), it)
-            }
-          }
-          edges.forEach { file ->
-            readCSV(file.content.inputStream()) {
-              val sourceKey = it.keys.elementAt(0)
-              val targetKey = it.keys.elementAt(1)
-              val source = it[sourceKey].toString().trim()
-              val target = it[targetKey].toString().trim()
-              val properties = it.minus(sourceKey).minus(targetKey)
-              queryBuffer.addEdge(file.filename, source, target, properties)
-            }
-          }
-          queryBuffer.send()
-          if (safeReplace) {
-            csmJedisPool.resource.use { jedis ->
-              jedis.eval("redis.call('DEL', KEYS[1]);", 1, "backupGraph-$datasetId")
-            }
+        datasetRepository.save(dataset.apply { ingestionStatus = Dataset.IngestionStatus.PENDING })
+        val queryBuffer = QueryBuffer(csmJedisPool.resource, dataset.twingraphId!!)
+        nodes.forEach { file ->
+          readCSV(file.content.inputStream()) {
+            queryBuffer.addNode(file.filename, it.values.first(), it)
           }
         }
-        datasetRepository.save(dataset.apply { twincacheStatus = Dataset.TwincacheStatus.FULL })
+        edges.forEach { file ->
+          readCSV(file.content.inputStream()) {
+            val sourceKey = it.keys.elementAt(0)
+            val targetKey = it.keys.elementAt(1)
+            val source = it[sourceKey].toString().trim()
+            val target = it[targetKey].toString().trim()
+            val properties = it.minus(sourceKey).minus(targetKey)
+            queryBuffer.addEdge(file.filename, source, target, properties)
+          }
+        }
+        queryBuffer.send()
+        if (safeReplace) {
+          csmJedisPool.resource.use { jedis ->
+            jedis.eval("redis.call('DEL', KEYS[1]);", 1, "backupGraph-$datasetId")
+          }
+        }
+        datasetRepository.save(
+            dataset.apply {
+              twincacheStatus = Dataset.TwincacheStatus.FULL
+              ingestionStatus = Dataset.IngestionStatus.SUCCESS
+            })
       } catch (e: Exception) {
         if (safeReplace) {
           csmJedisPool.resource.use { jedis ->
@@ -380,6 +383,7 @@ class DatasetServiceImpl(
                 "backupGraph-$datasetId")
           }
         }
+        datasetRepository.save(dataset.apply { ingestionStatus = Dataset.IngestionStatus.ERROR })
         throw CsmClientException(e.message ?: "Twingraph upload error", e)
       }
     }
@@ -527,6 +531,9 @@ class DatasetServiceImpl(
 
   override fun rollbackRefresh(organizationId: String, datasetId: String): String {
     var dataset = getVerifiedDataset(organizationId, datasetId, PERMISSION_WRITE)
+
+    if (dataset.sourceType == DatasetSourceType.ETL)
+        throw IllegalArgumentException("ETL source type can't be rollback")
 
     val status = getDatasetTwingraphStatus(organizationId, datasetId)
     if (status != Dataset.IngestionStatus.ERROR.value) {
@@ -762,27 +769,23 @@ class DatasetServiceImpl(
     val dataset = getDatasetWithStatus(organizationId, datasetId)
     csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE)
     var result = ""
-    trx(dataset) { localDataset ->
-      when (type) {
-        TYPE_NODE ->
-            graphProperties.forEach {
-              result +=
-                  query(
-                          localDataset,
-                          "CREATE (a:${it.type} {id:'${it.name}',${it.params}}) RETURN a")
-                      .toJsonString()
-            }
-        TYPE_RELATIONSHIP ->
-            graphProperties.forEach {
-              result +=
-                  query(
-                          localDataset,
-                          "MATCH (a),(b) WHERE a.id='${it.source}' AND b.id='${it.target}'" +
-                              "CREATE (a)-[r:${it.type} {id:'${it.name}', ${it.params}}]->(b) RETURN r")
-                      .toJsonString()
-            }
-        else -> throw CsmResourceNotFoundException("Bad Type : $type")
-      }
+    when (type) {
+      TYPE_NODE ->
+          graphProperties.forEach {
+            result +=
+                query(dataset, "CREATE (a:${it.type} {id:'${it.name}',${it.params}}) RETURN a")
+                    .toJsonString()
+          }
+      TYPE_RELATIONSHIP ->
+          graphProperties.forEach {
+            result +=
+                query(
+                        dataset,
+                        "MATCH (a),(b) WHERE a.id='${it.source}' AND b.id='${it.target}'" +
+                            "CREATE (a)-[r:${it.type} {id:'${it.name}', ${it.params}}]->(b) RETURN r")
+                    .toJsonString()
+          }
+      else -> throw CsmResourceNotFoundException("Bad Type : $type")
     }
     return result
   }
@@ -891,27 +894,25 @@ class DatasetServiceImpl(
     val dataset = getDatasetWithStatus(organizationId, datasetId)
     csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE)
     var result = ""
-    trx(dataset) { localDataset ->
-      when (type) {
-        TYPE_NODE ->
-            graphProperties.forEach {
-              result +=
-                  query(
-                          localDataset,
-                          "MATCH (a {id:'${it.name}'}) SET a = {id:'${it.name}',${it.params}} RETURN a")
-                      .toJsonString()
-            }
-        TYPE_RELATIONSHIP ->
-            graphProperties.forEach {
-              result +=
-                  query(
-                          dataset,
-                          "MATCH ()-[r {id:'${it.name}'}]-() SET r = {id:'${it.name}', " +
-                              "${it.params}} RETURN r")
-                      .toJsonString()
-            }
-        else -> throw CsmResourceNotFoundException("Bad Type : $type")
-      }
+    when (type) {
+      TYPE_NODE ->
+          graphProperties.forEach {
+            result +=
+                query(
+                        dataset,
+                        "MATCH (a {id:'${it.name}'}) SET a = {id:'${it.name}',${it.params}} RETURN a")
+                    .toJsonString()
+          }
+      TYPE_RELATIONSHIP ->
+          graphProperties.forEach {
+            result +=
+                query(
+                        dataset,
+                        "MATCH ()-[r {id:'${it.name}'}]-() SET r = {id:'${it.name}', " +
+                            "${it.params}} RETURN r")
+                    .toJsonString()
+          }
+      else -> throw CsmResourceNotFoundException("Bad Type : $type")
     }
     return result
   }
@@ -924,13 +925,11 @@ class DatasetServiceImpl(
   ) {
     val dataset = getDatasetWithStatus(organizationId, datasetId)
     csmRbac.verify(dataset.getRbac(), PERMISSION_WRITE)
-    return trx(dataset) { localDataset ->
-      when (type) {
-        TYPE_NODE -> ids.forEach { query(localDataset, "MATCH (a) WHERE a.id='$it' DELETE a") }
-        TYPE_RELATIONSHIP ->
-            ids.forEach { query(localDataset, "MATCH ()-[r]-() WHERE r.id='$it' DELETE r") }
-        else -> throw CsmResourceNotFoundException("Bad Type : $type")
-      }
+    return when (type) {
+      TYPE_NODE -> ids.forEach { query(dataset, "MATCH (a) WHERE a.id='$it' DELETE a") }
+      TYPE_RELATIONSHIP ->
+          ids.forEach { query(dataset, "MATCH ()-[r]-() WHERE r.id='$it' DELETE r") }
+      else -> throw CsmResourceNotFoundException("Bad Type : $type")
     }
   }
 

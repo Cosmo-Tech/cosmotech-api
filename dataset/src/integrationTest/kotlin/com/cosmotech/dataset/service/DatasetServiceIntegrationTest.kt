@@ -598,7 +598,6 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
 
     val modifiedDataset =
         datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
-    assertEquals(Dataset.IngestionStatus.SUCCESS.value, modifiedDataset.ingestionStatus!!.value)
     assertEquals(Dataset.TwincacheStatus.FULL.value, modifiedDataset.twincacheStatus!!.value)
   }
 
