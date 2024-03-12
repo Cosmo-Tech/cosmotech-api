@@ -37,16 +37,8 @@ class MetricsServiceImpl(
 
     val timestamp =
         when (metric.incrementBy) {
-          0 ->
-              unifiedJedis.tsAdd(
-                  key,
-                  metric.value
-              )
-          else ->
-              unifiedJedis.tsIncrBy(
-                  key,
-                  metric.incrementBy.toDouble()
-              )
+          0 -> unifiedJedis.tsAdd(key, metric.value)
+          else -> unifiedJedis.tsIncrBy(key, metric.incrementBy.toDouble())
         }
 
     logger.debug("METRICS: addMetricToTimeSeries done for $key at $timestamp")
