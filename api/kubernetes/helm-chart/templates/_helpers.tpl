@@ -115,29 +115,19 @@ api:
 server:
   servlet:
     context-path: {{ include "cosmotech-api.contextPath" . }}
-  jetty:
+  undertow:
     accesslog:
-      ignore-paths:
-        - /actuator/health/liveness
-        - /actuator/health/readiness
+      enabled: false
 
 management:
   endpoint:
     health:
       group:
         readiness:
-          {{- if eq .Values.config.csm.platform.vendor "azure" }}
-          {{- if index .Values.config.csm.platform.argo "base-uri" }}
-          include: "readinessState,argo,blobStorage,csmAdx"
-          {{- else }}
-          include: "readinessState,blobStorage,csmAdx"
-          {{- end }}
-          {{- else }}
           {{- if index .Values.config.csm.platform.argo "base-uri" }}
           include: "readinessState,argo"
           {{- else }}
           include: "readinessState"
-          {{- end }}
           {{- end }}
 
 csm:
