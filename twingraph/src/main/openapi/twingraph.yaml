@@ -430,20 +430,6 @@ paths:
                 type: object
               example:
                 $ref: "#/components/examples/MetaDataResponse"
-  /organizations/{organization_id}/twingraph/{graph_id}/graph:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: graph_id
-        in: path
-        description: the Graph Identifier
-        required: true
-        schema:
-          type: string
   /organizations/{organization_id}/twingraph/{graph_id}/batch:
     parameters:
       - name: organization_id
