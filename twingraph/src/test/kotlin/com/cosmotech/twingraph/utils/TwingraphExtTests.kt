@@ -1,21 +1,29 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
+@file:Suppress("DEPRECATION")
+
 package com.cosmotech.twingraph.utils
 
 import com.cosmotech.twingraph.extension.toJsonString
-import com.redislabs.redisgraph.ResultSet
-import com.redislabs.redisgraph.impl.resultset.RecordImpl
 import io.mockk.every
-import io.mockk.spyk
+import io.mockk.mockk
 import kotlin.test.Test
+import redis.clients.jedis.graph.ResultSet
 
 class TwingraphExtTests {
+
   @Test
   fun `ResultSet to json on null values`() {
-    val resultSet = spyk<ResultSet>()
-    val rec1 = RecordImpl(listOf("name", "value1", "value2"), listOf("a", "b", null))
-    val rec2 = RecordImpl(listOf("name", "value1", "value2"), listOf("c", null, "d"))
-    every { resultSet.iterator() } returns mutableListOf(rec1, rec2).iterator()
+    val resultSet = mockk<ResultSet>()
+    val record1 = mockk<redis.clients.jedis.graph.Record>()
+    val record2 = mockk<redis.clients.jedis.graph.Record>()
+
+    every { resultSet.iterator() } returns arrayListOf(record1, record2).listIterator()
+    every { record1.keys() } returns listOf("name", "value1", "value2")
+    every { record1.values() } returns listOf("a", "b", null)
+
+    every { record2.keys() } returns listOf("name", "value1", "value2")
+    every { record2.values() } returns listOf("c", null, "d")
 
     val jsonResult = resultSet.toJsonString()
 

@@ -12,7 +12,7 @@ import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.getCurrentAuthentication
-import com.cosmotech.connector.api.ConnectorApiService
+import com.cosmotech.connector.ConnectorApiServiceInterface
 import com.cosmotech.connector.domain.Connector
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
@@ -42,7 +42,7 @@ class ConnectorServiceIntegrationTest : CsmRedisTestBase() {
   private val logger = LoggerFactory.getLogger(ConnectorServiceIntegrationTest::class.java)
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
-  @Autowired lateinit var connectorApiService: ConnectorApiService
+  @Autowired lateinit var connectorApiService: ConnectorApiServiceInterface
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   /**
@@ -118,23 +118,6 @@ class ConnectorServiceIntegrationTest : CsmRedisTestBase() {
       testFindAllConnectorsWithWrongValues()
     }
 
-    @Test
-    fun `import connector`() {
-      testImportConnector()
-    }
-
-    @Test
-    fun `import connector with id null`() {
-      val connector =
-          Connector(
-              key = "key",
-              name = "connectorTest",
-              repository = "repository",
-              version = "version",
-              ioTypes = listOf())
-      assertThrows<CsmResourceNotFoundException> { connectorApiService.importConnector(connector) }
-    }
-
     /** Run a test with current user as Organization.User */
     private fun runAsOrganizationUser() {
       mockkStatic(::getCurrentAuthentication)
@@ -201,23 +184,6 @@ class ConnectorServiceIntegrationTest : CsmRedisTestBase() {
       testFindAllConnectorsWithWrongValues()
     }
 
-    @Test
-    fun `import connector`() {
-      testImportConnector()
-    }
-
-    @Test
-    fun `import connector with id null`() {
-      val connector =
-          Connector(
-              key = "key",
-              name = "connectorTest",
-              repository = "repository",
-              version = "version",
-              ioTypes = listOf())
-      assertThrows<CsmResourceNotFoundException> { connectorApiService.importConnector(connector) }
-    }
-
     /** Run a test with current user as Platform.Admin */
     private fun runAsPlatformAdmin() {
       mockkStatic(::getCurrentAuthentication)
@@ -276,16 +242,6 @@ class ConnectorServiceIntegrationTest : CsmRedisTestBase() {
       assertThrows<CsmResourceNotFoundException> {
         connectorApiService.findConnectorById(savedConnector.id!!)
       }
-    }
-  }
-
-  internal fun testImportConnector() {
-    val connectorName = "connectorTest"
-    val connector = createTestConnector(connectorName)
-    val importedConnector = connectorApiService.importConnector(connector)
-    assertDoesNotThrow {
-      connectorApiService.findConnectorById(connector.id!!)
-      assertEquals(connector, importedConnector)
     }
   }
 

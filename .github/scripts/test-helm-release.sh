@@ -2,7 +2,7 @@
 
 API_VERSION=${1:-latest}
 
-helm -n "${CHART_RELEASE_TEST_NAMESPACE}" test "cosmotech-api-${API_VERSION}"
+helm -n "${CHART_RELEASE_TEST_NAMESPACE}" test "cosmotech-api-${CHART_RELEASE_TEST_NAMESPACE}-${API_VERSION}"
 
 retVal=$?
 echo "retVal=$retVal"
@@ -20,14 +20,14 @@ kubectl describe all --all-namespaces
 echo "=== ==="
 
 for test in openapi swaggerui; do
-  echo ">>> Logs for cosmotech-api-${API_VERSION}-test-connection-${test} <<<"
-  kubectl -n "${CHART_RELEASE_TEST_NAMESPACE}" logs "cosmotech-api-${API_VERSION}-test-connection-${test}"
+  echo ">>> Logs for cosmotech-api-${CHART_RELEASE_TEST_NAMESPACE}-${API_VERSION}-test-connection-${test} <<<"
+  kubectl -n "${CHART_RELEASE_TEST_NAMESPACE}" logs "cosmotech-api-${CHART_RELEASE_TEST_NAMESPACE}-${API_VERSION}-test-connection-${test}"
   echo "-"
 done
 
 if [[ "${retVal}" != "0" ]]; then
   echo "Helm Release testing did not complete successfully: $retVal."
-  echo "  Command: helm -n ${CHART_RELEASE_TEST_NAMESPACE} test cosmotech-api-${API_VERSION}"
+  echo "  Command: helm -n ${CHART_RELEASE_TEST_NAMESPACE} test cosmotech-api-${CHART_RELEASE_TEST_NAMESPACE}-${API_VERSION}"
   exit $retVal
 fi
 
@@ -37,11 +37,11 @@ if [[ "${API_VERSION}" == "latest" ]]; then
 else
   base_path="/${API_VERSION}"
 fi
-for route in "/" "/openapi" "/openapi.json" "/openapi.yaml" ; do
-  echo "==> Testing the access (${base_path}${route}) via the Ingress Resource (controlled by an Ingress Controller)"
+for route in "/openapi" "/openapi.yaml" ; do
+  echo "==> Testing the access (/cosmotech-api/${CHART_RELEASE_TEST_NAMESPACE}${base_path}${route}) via the Ingress Resource (controlled by an Ingress Controller)"
   wget --no-check-certificate \
     --tries 10 \
     -S \
     -O - \
-    "https://localhost/cosmotech-api${base_path}${route}" || exit 1
+    "https://localhost/cosmotech-api/${CHART_RELEASE_TEST_NAMESPACE}${base_path}${route}" || exit 1
 done

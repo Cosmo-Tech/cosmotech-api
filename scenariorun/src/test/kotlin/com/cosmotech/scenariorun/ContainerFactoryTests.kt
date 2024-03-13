@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.scenariorun
 
-import com.cosmotech.api.azure.containerregistry.AzureContainerRegistryClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCredentials
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCredentials.CsmPlatformAzureCredentialsCore
@@ -12,6 +11,7 @@ import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatfo
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.SharedAccessPolicyDetails
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
+import com.cosmotech.api.containerregistry.ContainerRegistryService
 import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.connector.api.ConnectorApiService
@@ -32,6 +32,7 @@ import com.cosmotech.scenariorun.container.StartInfo
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
+import com.cosmotech.solution.domain.RunTemplateOrchestrator
 import com.cosmotech.solution.domain.RunTemplateParameter
 import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.RunTemplateStepSource
@@ -78,7 +79,7 @@ class ContainerFactoryTests {
   @MockK private lateinit var connectorService: ConnectorApiService
   @MockK private lateinit var datasetService: DatasetApiService
   @MockK private lateinit var secretManager: SecretManager
-  @MockK private lateinit var azureContainerRegistryClient: AzureContainerRegistryClient
+  @MockK private lateinit var containerRegistryService: ContainerRegistryService
   private lateinit var workspaceEventHubService: IWorkspaceEventHubService
 
   private lateinit var factory: ContainerFactory
@@ -169,7 +170,7 @@ class ContainerFactoryTests {
             connectorService,
             datasetService,
             workspaceEventHubService,
-            azureContainerRegistryClient)
+            containerRegistryService)
   }
 
   @Test
@@ -184,6 +185,7 @@ class ContainerFactoryTests {
             "Organizationid",
             "Workspaceid",
             "Scenarioid",
+            "ScenarioRunId",
             "Test",
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -203,6 +205,7 @@ class ContainerFactoryTests {
             "Organizationid",
             "Workspaceid",
             "Scenarioid",
+            "ScenarioRunId",
             "Test",
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -222,6 +225,7 @@ class ContainerFactoryTests {
             "Organizationid",
             "Workspaceid",
             "Scenarioid",
+            "ScenarioRunId",
             "Test",
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -241,6 +245,7 @@ class ContainerFactoryTests {
           "Organizationid",
           "Workspaceid",
           "Scenarioid",
+          "ScenarioRunId",
           "Test",
           CSM_SIMULATION_ID,
           nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -260,6 +265,7 @@ class ContainerFactoryTests {
             "Organizationid",
             "Workspaceid",
             "Scenarioid",
+            "Scenariorunid",
             "Test",
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -282,6 +288,7 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
+            "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "ENV_PARAM_1" to "env_param1_value",
             "ENV_PARAM_2" to "env_param2_value",
@@ -305,6 +312,7 @@ class ContainerFactoryTests {
             "Organizationid",
             "Workspaceid",
             "Scenarioid",
+            "Scenariorunid",
             "Test",
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -327,6 +335,7 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
+            "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "ENV_PARAM_1" to "organizationid/workspaceid/workspace.env",
             "TWIN_CACHE_HOST" to "this_is_a_host",
@@ -348,6 +357,7 @@ class ContainerFactoryTests {
             "Organizationid",
             "Workspaceid",
             "Scenarioid",
+            "Scenariorunid",
             "Test",
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -370,6 +380,7 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
+            "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "AZURE_STORAGE_CONNECTION_STRING" to "csmphoenix_storage_connection_string",
             "TWIN_CACHE_HOST" to "this_is_a_host",
@@ -391,6 +402,7 @@ class ContainerFactoryTests {
             "Organizationid",
             "Workspaceid",
             "Scenarioid",
+            "Scenariorunid",
             "Test",
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -413,6 +425,7 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
+            "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
@@ -433,6 +446,7 @@ class ContainerFactoryTests {
             "Organizationid",
             "Workspaceid",
             "Scenarioid",
+            "Scenariorunid",
             "Test",
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -453,6 +467,7 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
+            "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
@@ -473,6 +488,7 @@ class ContainerFactoryTests {
             "Organizationid",
             "Workspaceid",
             "Scenarioid",
+            "ScenarioRunId",
             "Test",
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -493,6 +509,7 @@ class ContainerFactoryTests {
             "Organizationid",
             "Workspaceid",
             "Scenarioid",
+            "ScenarioRunId",
             "Test",
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -513,6 +530,7 @@ class ContainerFactoryTests {
             "Organizationid",
             "Workspaceid",
             "Scenarioid",
+            "ScenarioRunId",
             "Test",
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -528,6 +546,7 @@ class ContainerFactoryTests {
             "1",
             "2",
             "3",
+            "4",
             "Test",
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -542,6 +561,7 @@ class ContainerFactoryTests {
             "1",
             "2",
             "3",
+            "4",
             "Test",
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -556,6 +576,7 @@ class ContainerFactoryTests {
             "1",
             "2",
             "3",
+            "4",
             "Test",
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -570,6 +591,7 @@ class ContainerFactoryTests {
             "1",
             "2",
             "3",
+            "4",
             "Test",
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -592,6 +614,7 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "1",
             "CSM_WORKSPACE_ID" to "2",
             "CSM_SCENARIO_ID" to "3",
+            "CSM_SCENARIO_RUN_ID" to "4",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
@@ -618,6 +641,7 @@ class ContainerFactoryTests {
             "1",
             "2",
             "3",
+            "4",
             "Test",
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -630,7 +654,7 @@ class ContainerFactoryTests {
             "AZURE_CLIENT_SECRET" to "azertyuiop",
             "CSM_SIMULATION_ID" to "simulationrunid",
             "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "scope1,scope2",
+            "CSM_API_SCOPE" to "scope1 scope2",
             "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
@@ -640,6 +664,7 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "1",
             "CSM_WORKSPACE_ID" to "2",
             "CSM_SCENARIO_ID" to "3",
+            "CSM_SCENARIO_RUN_ID" to "4",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
@@ -655,6 +680,7 @@ class ContainerFactoryTests {
             "1",
             "2",
             "3",
+            "4",
             "Test",
             CSM_SIMULATION_ID,
             true,
@@ -678,6 +704,7 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "1",
             "CSM_WORKSPACE_ID" to "2",
             "CSM_SCENARIO_ID" to "3",
+            "CSM_SCENARIO_RUN_ID" to "4",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
             "WRITE_CSV" to "false",
             "WRITE_JSON" to "true",
@@ -695,6 +722,7 @@ class ContainerFactoryTests {
             "Organizationid",
             getWorkspace(),
             "Scenarioid",
+            "Scenariorunid",
             getRunTemplate(),
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -709,6 +737,7 @@ class ContainerFactoryTests {
             "Organizationid",
             getWorkspace(),
             "Scenarioid",
+            "Scenariorunid",
             getRunTemplate(),
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -723,6 +752,7 @@ class ContainerFactoryTests {
             "Organizationid",
             getWorkspace(),
             "Scenarioid",
+            "Scenariorunid",
             getRunTemplate(),
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -737,6 +767,7 @@ class ContainerFactoryTests {
             "Organizationid",
             getWorkspace(),
             "Scenarioid",
+            "Scenariorunid",
             getRunTemplate(),
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -759,6 +790,7 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
+            "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "true",
             "CSM_SEND_DATAWAREHOUSE_DATASETS" to "true",
             "TWIN_CACHE_HOST" to "this_is_a_host",
@@ -775,6 +807,7 @@ class ContainerFactoryTests {
             "Organizationid",
             getWorkspaceNoSend(),
             "Scenarioid",
+            "Scenariorunid",
             getRunTemplate(),
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -797,8 +830,9 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
-            "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "false",
-            "CSM_SEND_DATAWAREHOUSE_DATASETS" to "false",
+            "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
+            "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "true",
+            "CSM_SEND_DATAWAREHOUSE_DATASETS" to "true",
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
@@ -813,6 +847,7 @@ class ContainerFactoryTests {
             "Organizationid",
             getWorkspace(),
             "Scenarioid",
+            "Scenariorunid",
             getRunTemplateNoDatasetsSend(),
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -835,6 +870,7 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
+            "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "true",
             "CSM_SEND_DATAWAREHOUSE_DATASETS" to "false",
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
@@ -855,6 +891,7 @@ class ContainerFactoryTests {
             "Organizationid",
             getWorkspace(),
             "Scenarioid",
+            "Scenariorunid",
             getRunTemplateNoParametersSend(),
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -877,6 +914,7 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
+            "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
             "CSM_SEND_DATAWAREHOUSE_PARAMETERS" to "false",
             "CSM_SEND_DATAWAREHOUSE_DATASETS" to "true",
             "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
@@ -922,6 +960,7 @@ class ContainerFactoryTests {
           getWorkspace(),
           getScenario(),
           getSolution(),
+          "Scenariorunid",
           "badTemplate",
           CSM_SIMULATION_ID,
           nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -943,6 +982,7 @@ class ContainerFactoryTests {
             getWorkspace(),
             getScenario(),
             getSolutionLocalSources(),
+            "Scenariorunid",
             "testruntemplate",
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -958,6 +998,7 @@ class ContainerFactoryTests {
             getWorkspace(),
             getScenario(),
             getSolutionCloudSources(),
+            "Scenariorunid",
             "testruntemplate",
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -979,6 +1020,7 @@ class ContainerFactoryTests {
             getWorkspace(),
             getScenario(),
             getSolutionCloudSources(),
+            "Scenariorunid",
             "testruntemplate",
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -1000,6 +1042,7 @@ class ContainerFactoryTests {
             getWorkspace(),
             getScenario(),
             getSolutionCloudSources(),
+            "Scenariorunid",
             "testruntemplate",
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -1016,6 +1059,7 @@ class ContainerFactoryTests {
             getWorkspace(),
             getScenario(),
             getSolutionCloudSources(),
+            "Scenariorunid",
             "testruntemplate",
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -1032,6 +1076,7 @@ class ContainerFactoryTests {
             getWorkspace(),
             getScenario(),
             getSolutionCloudSources(),
+            "Scenariorunid",
             "testruntemplate",
             CSM_SIMULATION_ID,
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -1071,6 +1116,7 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
+            "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to mode,
             "CSM_PROBES_MEASURES_TOPIC" to
@@ -1084,7 +1130,8 @@ class ContainerFactoryTests {
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default")
+            "TWIN_CACHE_USERNAME" to "default",
+            "CSM_ENTRYPOINT_LEGACY" to "true")
     assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
   }
 
@@ -1111,6 +1158,7 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
+            "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to mode,
             "CSM_PROBES_MEASURES_TOPIC" to
@@ -1123,10 +1171,10 @@ class ContainerFactoryTests {
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default")
+            "TWIN_CACHE_USERNAME" to "default",
+            "CSM_ENTRYPOINT_LEGACY" to "true")
     assertEquals(expected.toSortedMap(), container.envVars?.toSortedMap())
   }
-
   @Test
   fun `Validate Container is not null`() {
     val container = this.buildValidateDataContainer()
@@ -1214,6 +1262,7 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
+            "Scenariorunid",
             CSM_SIMULATION_ID,
             scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = BASIC_SIZING)
@@ -1235,6 +1284,7 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
+            "Scenariorunid",
             CSM_SIMULATION_ID,
             scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = BASIC_SIZING)
@@ -1262,6 +1312,7 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
+            "Scenariorunid",
             CSM_SIMULATION_ID,
             scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = BASIC_SIZING)
@@ -1285,6 +1336,7 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
+            "Scenariorunid",
             CSM_SIMULATION_ID,
             scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = BASIC_SIZING)
@@ -1314,6 +1366,7 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
+            "Scenariorunid",
             CSM_SIMULATION_ID,
             scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = BASIC_SIZING)
@@ -1336,6 +1389,7 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
+            "Scenariorunid",
             CSM_SIMULATION_ID,
             scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = BASIC_SIZING)
@@ -1358,6 +1412,7 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
+            "Scenariorunid",
             CSM_SIMULATION_ID,
             scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = BASIC_SIZING)
@@ -1390,6 +1445,7 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
+            "Scenariorunid",
             CSM_SIMULATION_ID,
             scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = BASIC_SIZING)
@@ -1411,6 +1467,7 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
+            "Scenariorunid",
             CSM_SIMULATION_ID,
             scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = BASIC_SIZING)
@@ -1432,6 +1489,7 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
+            "Scenariorunid",
             CSM_SIMULATION_ID,
             scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = BASIC_SIZING)
@@ -1466,6 +1524,7 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
+            "Scenariorunid",
             CSM_SIMULATION_ID,
             scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = BASIC_SIZING)
@@ -1504,6 +1563,7 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
+            "Scenariorunid",
             CSM_SIMULATION_ID,
             scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = BASIC_SIZING)
@@ -1538,6 +1598,7 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
+            "Scenariorunid",
             CSM_SIMULATION_ID,
             scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = BASIC_SIZING)
@@ -1560,6 +1621,7 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
+            "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
             "ENV_PARAM_1" to "env_param1_value",
             "ENV_PARAM_2" to "env_param2_value",
@@ -1586,6 +1648,7 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
+            "Scenariorunid",
             CSM_SIMULATION_ID,
             scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = BASIC_SIZING)
@@ -1612,6 +1675,7 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
+            "Scenariorunid",
             CSM_SIMULATION_ID,
             DEFAULT_WORKFLOW_TYPE,
         )
@@ -1634,6 +1698,7 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
+            "Scenariorunid",
             CSM_SIMULATION_ID,
             DEFAULT_WORKFLOW_TYPE,
         )
@@ -1656,6 +1721,7 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
+            "Scenariorunid",
             CSM_SIMULATION_ID,
             DEFAULT_WORKFLOW_TYPE,
         )
@@ -1678,6 +1744,7 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
+            "Scenariorunid",
             CSM_SIMULATION_ID,
             DEFAULT_WORKFLOW_TYPE,
         )
@@ -1699,6 +1766,7 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
+            "Scenariorunid",
             CSM_SIMULATION_ID,
             scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = BASIC_SIZING)
@@ -1734,6 +1802,7 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
+            "Scenariorunid",
             CSM_SIMULATION_ID,
             scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = BASIC_SIZING)
@@ -1779,6 +1848,7 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
+            "Scenariorunid",
             CSM_SIMULATION_ID,
             scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = BASIC_SIZING)
@@ -1815,6 +1885,7 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
+            "Scenariorunid",
             CSM_SIMULATION_ID,
             scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = BASIC_SIZING)
@@ -1866,6 +1937,7 @@ class ContainerFactoryTests {
           workspace,
           getOrganization(),
           solution,
+          "Scenariorunid",
           CSM_SIMULATION_ID,
           scenarioRunLabel = NODE_LABEL_DEFAULT,
           scenarioRunSizing = BASIC_SIZING)
@@ -1947,6 +2019,7 @@ class ContainerFactoryTests {
           "O-id",
           "W-id",
           "S-id",
+          "Sr-id",
           "W-key",
           "csmSimulationId",
           nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -1996,6 +2069,7 @@ class ContainerFactoryTests {
             "O-id",
             "W-id",
             "S-id",
+            "Sr-id",
             "W-key",
             "csmSimulationId",
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -2022,6 +2096,7 @@ class ContainerFactoryTests {
                 "CSM_ORGANIZATION_ID" to "O-id",
                 "CSM_WORKSPACE_ID" to "W-id",
                 "CSM_SCENARIO_ID" to "S-id",
+                "CSM_SCENARIO_RUN_ID" to "Sr-id",
                 "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
                 "TWIN_CACHE_HOST" to "this_is_a_host",
                 "TWIN_CACHE_PORT" to "6973",
@@ -2051,6 +2126,7 @@ class ContainerFactoryTests {
             "O-id",
             "W-id",
             "S-id",
+            "Sr-id",
             "W-key",
             "csmSimulationId",
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -2077,6 +2153,7 @@ class ContainerFactoryTests {
                 "CSM_ORGANIZATION_ID" to "O-id",
                 "CSM_WORKSPACE_ID" to "W-id",
                 "CSM_SCENARIO_ID" to "S-id",
+                "CSM_SCENARIO_RUN_ID" to "Sr-id",
                 "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
                 "TWIN_CACHE_HOST" to "this_is_a_host",
                 "TWIN_CACHE_PORT" to "6973",
@@ -2106,6 +2183,7 @@ class ContainerFactoryTests {
             "O-id",
             "W-id",
             "S-id",
+            "Sr-id",
             "W-key",
             "csmSimulationId",
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -2132,6 +2210,7 @@ class ContainerFactoryTests {
                 "CSM_ORGANIZATION_ID" to "O-id",
                 "CSM_WORKSPACE_ID" to "W-id",
                 "CSM_SCENARIO_ID" to "S-id",
+                "CSM_SCENARIO_RUN_ID" to "Sr-id",
                 "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
                 "TWIN_CACHE_HOST" to "this_is_a_host",
                 "TWIN_CACHE_PORT" to "6973",
@@ -2161,6 +2240,7 @@ class ContainerFactoryTests {
             "O-id",
             "W-id",
             "S-id",
+            "Sr-id",
             "W-key",
             "csmSimulationId",
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -2187,6 +2267,7 @@ class ContainerFactoryTests {
                 "CSM_ORGANIZATION_ID" to "O-id",
                 "CSM_WORKSPACE_ID" to "W-id",
                 "CSM_SCENARIO_ID" to "S-id",
+                "CSM_SCENARIO_RUN_ID" to "Sr-id",
                 "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
                 "TWIN_CACHE_HOST" to "this_is_a_host",
                 "TWIN_CACHE_PORT" to "6973",
@@ -2216,6 +2297,7 @@ class ContainerFactoryTests {
             "O-id",
             "W-id",
             "S-id",
+            "Sr-id",
             "W-key",
             "csmSimulationId",
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -2242,6 +2324,7 @@ class ContainerFactoryTests {
                 "CSM_ORGANIZATION_ID" to "O-id",
                 "CSM_WORKSPACE_ID" to "W-id",
                 "CSM_SCENARIO_ID" to "S-id",
+                "CSM_SCENARIO_RUN_ID" to "Sr-id",
                 "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
                 "TWIN_CACHE_HOST" to "this_is_a_host",
                 "TWIN_CACHE_PORT" to "6973",
@@ -2271,6 +2354,7 @@ class ContainerFactoryTests {
             "O-id",
             "W-id",
             "S-id",
+            "Sr-id",
             "W-key",
             "csmSimulationId",
             nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -2297,6 +2381,7 @@ class ContainerFactoryTests {
                 "CSM_ORGANIZATION_ID" to "O-id",
                 "CSM_WORKSPACE_ID" to "W-id",
                 "CSM_SCENARIO_ID" to "S-id",
+                "CSM_SCENARIO_RUN_ID" to "Sr-id",
                 "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/fetchId",
                 "TWIN_CACHE_HOST" to "this_is_a_host",
                 "TWIN_CACHE_PORT" to "6973",
@@ -2337,6 +2422,7 @@ class ContainerFactoryTests {
                 "CSM_ORGANIZATION_ID" to "Organizationid",
                 "CSM_WORKSPACE_ID" to "Workspaceid",
                 "CSM_SCENARIO_ID" to "Scenarioid",
+                "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
                 "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
                 "CSM_CONTAINER_MODE" to "handle-parameters",
                 "CSM_PROBES_MEASURES_TOPIC" to
@@ -2347,7 +2433,8 @@ class ContainerFactoryTests {
                 "TWIN_CACHE_HOST" to "this_is_a_host",
                 "TWIN_CACHE_PORT" to "6973",
                 "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-                "TWIN_CACHE_USERNAME" to "default")
+                "TWIN_CACHE_USERNAME" to "default",
+                "CSM_ENTRYPOINT_LEGACY" to "true")
             .toSortedMap(),
         container.envVars?.toSortedMap())
   }
@@ -2384,6 +2471,7 @@ class ContainerFactoryTests {
                 "CSM_ORGANIZATION_ID" to "Organizationid",
                 "CSM_WORKSPACE_ID" to "Workspaceid",
                 "CSM_SCENARIO_ID" to "Scenarioid",
+                "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
                 "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
                 "CSM_CONTAINER_MODE" to "prerun",
                 "CSM_PROBES_MEASURES_TOPIC" to
@@ -2394,7 +2482,8 @@ class ContainerFactoryTests {
                 "TWIN_CACHE_HOST" to "this_is_a_host",
                 "TWIN_CACHE_PORT" to "6973",
                 "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-                "TWIN_CACHE_USERNAME" to "default")
+                "TWIN_CACHE_USERNAME" to "default",
+                "CSM_ENTRYPOINT_LEGACY" to "true")
             .toSortedMap(),
         container.envVars?.toSortedMap())
   }
@@ -2429,6 +2518,7 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
+            "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to "engine",
             "CSM_PROBES_MEASURES_TOPIC" to
@@ -2437,7 +2527,8 @@ class ContainerFactoryTests {
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default"),
+            "TWIN_CACHE_USERNAME" to "default",
+            "CSM_ENTRYPOINT_LEGACY" to "true"),
         container.envVars)
   }
 
@@ -2478,6 +2569,7 @@ class ContainerFactoryTests {
                 "CSM_ORGANIZATION_ID" to "Organizationid",
                 "CSM_WORKSPACE_ID" to "Workspaceid",
                 "CSM_SCENARIO_ID" to "Scenarioid",
+                "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
                 "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
                 "CSM_CONTAINER_MODE" to "engine",
                 "CSM_PROBES_MEASURES_TOPIC" to
@@ -2494,7 +2586,8 @@ class ContainerFactoryTests {
                 "TWIN_CACHE_HOST" to "this_is_a_host",
                 "TWIN_CACHE_PORT" to "6973",
                 "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-                "TWIN_CACHE_USERNAME" to "default")
+                "TWIN_CACHE_USERNAME" to "default",
+                "CSM_ENTRYPOINT_LEGACY" to "true")
             .toSortedMap(),
         container.envVars?.toSortedMap())
   }
@@ -2519,36 +2612,40 @@ class ContainerFactoryTests {
 
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
-            "CSM_ORGANIZATION_ID" to "Organizationid",
-            "CSM_WORKSPACE_ID" to "Workspaceid",
-            "CSM_SCENARIO_ID" to "Scenarioid",
-            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
-            "CSM_CONTAINER_MODE" to "engine",
-            "CSM_PROBES_MEASURES_TOPIC" to
-                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
-            "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to "my-eventhub-access-policy",
-            "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to "a1b2c3d4e5==",
-            "CSM_AMQPCONSUMER_USER" to "my-eventhub-access-policy",
-            "CSM_AMQPCONSUMER_PASSWORD" to "a1b2c3d4e5==",
-            "CSM_SIMULATION" to "TestSimulation",
-            "TWIN_CACHE_HOST" to "this_is_a_host",
-            "TWIN_CACHE_PORT" to "6973",
-            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default"),
-        container.envVars)
+                "IDENTITY_PROVIDER" to "azure",
+                "AZURE_TENANT_ID" to "12345678",
+                "AZURE_CLIENT_ID" to "98765432",
+                "AZURE_CLIENT_SECRET" to "azertyuiop",
+                "CSM_SIMULATION_ID" to "simulationrunid",
+                "CSM_API_URL" to "https://api.cosmotech.com",
+                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
+                    "https://phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                    "https://ingest-phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
+                "CSM_ORGANIZATION_ID" to "Organizationid",
+                "CSM_WORKSPACE_ID" to "Workspaceid",
+                "CSM_SCENARIO_ID" to "Scenarioid",
+                "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
+                "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
+                "CSM_CONTAINER_MODE" to "engine",
+                "CSM_PROBES_MEASURES_TOPIC" to
+                    "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
+                "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to "my-eventhub-access-policy",
+                "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to "a1b2c3d4e5==",
+                "CSM_AMQPCONSUMER_USER" to "my-eventhub-access-policy",
+                "CSM_AMQPCONSUMER_PASSWORD" to "a1b2c3d4e5==",
+                "CSM_SIMULATION" to "TestSimulation",
+                "TWIN_CACHE_HOST" to "this_is_a_host",
+                "TWIN_CACHE_PORT" to "6973",
+                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+                "TWIN_CACHE_USERNAME" to "default",
+                "CSM_ENTRYPOINT_LEGACY" to "true")
+            .toSortedMap(),
+        container.envVars?.toSortedMap())
   }
 
   @Test
@@ -2565,6 +2662,7 @@ class ContainerFactoryTests {
     val organizationId = "Organizationid"
     val workspaceId = "Workspaceid"
     val scenarioId = "Scenarioid"
+    val scenarioRunId = "Scenariorunid"
 
     every { organizationService.findOrganizationById(organizationId) } returns getOrganization()
     every { workspaceService.findWorkspaceById(organizationId, workspaceId) } returns getWorkspace()
@@ -2577,13 +2675,14 @@ class ContainerFactoryTests {
     every { connectorService.findConnectorById("AzErTyUiOp") } returns getConnector()
     every { connectorService.findConnectorById("AzErTyUiOp2") } returns getConnector2()
     every { connectorService.findConnectorById("AzErTyUiOp3") } returns getConnector3()
-    every { azureContainerRegistryClient.checkSolutionImage(any(), any()) } returns Unit
+    every { containerRegistryService.checkSolutionImage(any(), any()) } returns Unit
 
     return factory.getStartInfo(
         organizationId,
         workspaceId,
         scenarioId,
         DEFAULT_WORKFLOW_TYPE,
+        scenarioRunId,
     )
   }
 
@@ -2600,6 +2699,7 @@ class ContainerFactoryTests {
             workspace,
             getOrganization(),
             solution,
+            "Scenariorunid",
             CSM_SIMULATION_ID,
             scenarioRunLabel = NODE_LABEL_DEFAULT,
             scenarioRunSizing = BASIC_SIZING)
@@ -2625,6 +2725,7 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
+            "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
             "CSM_FETCH_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters/$param",
             "ENV_PARAM_1" to "env_param1_value",
             "ENV_PARAM_2" to "env_param2_value",
@@ -2660,6 +2761,7 @@ class ContainerFactoryTests {
                 "CSM_ORGANIZATION_ID" to "Organizationid",
                 "CSM_WORKSPACE_ID" to "Workspaceid",
                 "CSM_SCENARIO_ID" to "Scenarioid",
+                "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
                 "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
                 "CSM_CONTAINER_MODE" to "engine",
                 "CSM_PROBES_MEASURES_TOPIC" to
@@ -2670,7 +2772,8 @@ class ContainerFactoryTests {
                 "TWIN_CACHE_HOST" to "this_is_a_host",
                 "TWIN_CACHE_PORT" to "6973",
                 "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-                "TWIN_CACHE_USERNAME" to "default")
+                "TWIN_CACHE_USERNAME" to "default",
+                "CSM_ENTRYPOINT_LEGACY" to "true")
             .toSortedMap(),
         container.envVars?.toSortedMap())
   }
@@ -2699,6 +2802,7 @@ class ContainerFactoryTests {
                 "CSM_ORGANIZATION_ID" to "Organizationid",
                 "CSM_WORKSPACE_ID" to "Workspaceid",
                 "CSM_SCENARIO_ID" to "Scenarioid",
+                "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
                 "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
                 "CSM_CONTAINER_MODE" to "engine",
                 "CSM_PROBES_MEASURES_TOPIC" to
@@ -2707,7 +2811,8 @@ class ContainerFactoryTests {
                 "TWIN_CACHE_HOST" to "this_is_a_host",
                 "TWIN_CACHE_PORT" to "6973",
                 "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-                "TWIN_CACHE_USERNAME" to "default")
+                "TWIN_CACHE_USERNAME" to "default",
+                "CSM_ENTRYPOINT_LEGACY" to "true")
             .toSortedMap(),
         container.envVars?.toSortedMap())
   }
@@ -2736,6 +2841,7 @@ class ContainerFactoryTests {
                 "CSM_ORGANIZATION_ID" to "Organizationid",
                 "CSM_WORKSPACE_ID" to "Workspaceid",
                 "CSM_SCENARIO_ID" to "Scenarioid",
+                "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
                 "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
                 "CSM_CONTAINER_MODE" to "engine",
                 "CSM_PROBES_MEASURES_TOPIC" to
@@ -2746,7 +2852,8 @@ class ContainerFactoryTests {
                 "TWIN_CACHE_HOST" to "this_is_a_host",
                 "TWIN_CACHE_PORT" to "6973",
                 "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-                "TWIN_CACHE_USERNAME" to "default")
+                "TWIN_CACHE_USERNAME" to "default",
+                "CSM_ENTRYPOINT_LEGACY" to "true")
             .toSortedMap(),
         container.envVars?.toSortedMap())
   }
@@ -2766,40 +2873,44 @@ class ContainerFactoryTests {
     assertNotNull(container.envVars)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
-            "CSM_ORGANIZATION_ID" to "Organizationid",
-            "CSM_WORKSPACE_ID" to "Workspaceid",
-            "CSM_SCENARIO_ID" to "Scenarioid",
-            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
-            "CSM_CONTAINER_MODE" to "engine",
-            "CSM_PROBES_MEASURES_TOPIC" to
-                "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
-            "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to name,
-            "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to key,
-            "CSM_AMQPCONSUMER_USER" to name,
-            "CSM_AMQPCONSUMER_PASSWORD" to key,
-            "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://organizationid-test.servicebus.windows.net/scenariorun",
-            "CSM_CONTROL_PLANE_USER" to name,
-            "CSM_CONTROL_PLANE_PASSWORD" to key,
-            "CSM_SIMULATION" to "TestSimulation",
-            "TWIN_CACHE_HOST" to "this_is_a_host",
-            "TWIN_CACHE_PORT" to "6973",
-            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default"),
-        container.envVars)
+                "IDENTITY_PROVIDER" to "azure",
+                "AZURE_TENANT_ID" to "12345678",
+                "AZURE_CLIENT_ID" to "98765432",
+                "AZURE_CLIENT_SECRET" to "azertyuiop",
+                "CSM_SIMULATION_ID" to "simulationrunid",
+                "CSM_API_URL" to "https://api.cosmotech.com",
+                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
+                    "https://phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                    "https://ingest-phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
+                "CSM_ORGANIZATION_ID" to "Organizationid",
+                "CSM_WORKSPACE_ID" to "Workspaceid",
+                "CSM_SCENARIO_ID" to "Scenarioid",
+                "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
+                "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
+                "CSM_CONTAINER_MODE" to "engine",
+                "CSM_PROBES_MEASURES_TOPIC" to
+                    "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
+                "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to name,
+                "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to key,
+                "CSM_AMQPCONSUMER_USER" to name,
+                "CSM_AMQPCONSUMER_PASSWORD" to key,
+                "CSM_CONTROL_PLANE_TOPIC" to
+                    "amqps://organizationid-test.servicebus.windows.net/scenariorun",
+                "CSM_CONTROL_PLANE_USER" to name,
+                "CSM_CONTROL_PLANE_PASSWORD" to key,
+                "CSM_SIMULATION" to "TestSimulation",
+                "TWIN_CACHE_HOST" to "this_is_a_host",
+                "TWIN_CACHE_PORT" to "6973",
+                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+                "TWIN_CACHE_USERNAME" to "default",
+                "CSM_ENTRYPOINT_LEGACY" to "true")
+            .toSortedMap(),
+        container.envVars?.toSortedMap())
   }
 
   @Test
@@ -2813,40 +2924,44 @@ class ContainerFactoryTests {
     assertNotNull(container.envVars)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
-            "CSM_ORGANIZATION_ID" to "Organizationid",
-            "CSM_WORKSPACE_ID" to "Workspaceid",
-            "CSM_SCENARIO_ID" to "Scenarioid",
-            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
-            "CSM_CONTAINER_MODE" to "engine",
-            "CSM_PROBES_MEASURES_TOPIC" to
-                "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
-            "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to name,
-            "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to key,
-            "CSM_AMQPCONSUMER_USER" to name,
-            "CSM_AMQPCONSUMER_PASSWORD" to key,
-            "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://organizationid-test.servicebus.windows.net/scenariorun",
-            "CSM_CONTROL_PLANE_USER" to name,
-            "CSM_CONTROL_PLANE_PASSWORD" to key,
-            "CSM_SIMULATION" to "TestSimulation",
-            "TWIN_CACHE_HOST" to "this_is_a_host",
-            "TWIN_CACHE_PORT" to "6973",
-            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default"),
-        container.envVars)
+                "IDENTITY_PROVIDER" to "azure",
+                "AZURE_TENANT_ID" to "12345678",
+                "AZURE_CLIENT_ID" to "98765432",
+                "AZURE_CLIENT_SECRET" to "azertyuiop",
+                "CSM_SIMULATION_ID" to "simulationrunid",
+                "CSM_API_URL" to "https://api.cosmotech.com",
+                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
+                    "https://phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                    "https://ingest-phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
+                "CSM_ORGANIZATION_ID" to "Organizationid",
+                "CSM_WORKSPACE_ID" to "Workspaceid",
+                "CSM_SCENARIO_ID" to "Scenarioid",
+                "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
+                "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
+                "CSM_CONTAINER_MODE" to "engine",
+                "CSM_PROBES_MEASURES_TOPIC" to
+                    "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
+                "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to name,
+                "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to key,
+                "CSM_AMQPCONSUMER_USER" to name,
+                "CSM_AMQPCONSUMER_PASSWORD" to key,
+                "CSM_CONTROL_PLANE_TOPIC" to
+                    "amqps://organizationid-test.servicebus.windows.net/scenariorun",
+                "CSM_CONTROL_PLANE_USER" to name,
+                "CSM_CONTROL_PLANE_PASSWORD" to key,
+                "CSM_SIMULATION" to "TestSimulation",
+                "TWIN_CACHE_HOST" to "this_is_a_host",
+                "TWIN_CACHE_PORT" to "6973",
+                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+                "TWIN_CACHE_USERNAME" to "default",
+                "CSM_ENTRYPOINT_LEGACY" to "true")
+            .toSortedMap(),
+        container.envVars?.toSortedMap())
   }
 
   @Test
@@ -2860,34 +2975,38 @@ class ContainerFactoryTests {
     assertNotNull(container.envVars)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
-            "CSM_ORGANIZATION_ID" to "Organizationid",
-            "CSM_WORKSPACE_ID" to "Workspaceid",
-            "CSM_SCENARIO_ID" to "Scenarioid",
-            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
-            "CSM_CONTAINER_MODE" to "engine",
-            "CSM_PROBES_MEASURES_TOPIC" to
-                "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
-            "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://organizationid-test.servicebus.windows.net/scenariorun",
-            "CSM_SIMULATION" to "TestSimulation",
-            "TWIN_CACHE_HOST" to "this_is_a_host",
-            "TWIN_CACHE_PORT" to "6973",
-            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default"),
-        container.envVars)
+                "IDENTITY_PROVIDER" to "azure",
+                "AZURE_TENANT_ID" to "12345678",
+                "AZURE_CLIENT_ID" to "98765432",
+                "AZURE_CLIENT_SECRET" to "azertyuiop",
+                "CSM_SIMULATION_ID" to "simulationrunid",
+                "CSM_API_URL" to "https://api.cosmotech.com",
+                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
+                    "https://phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                    "https://ingest-phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
+                "CSM_ORGANIZATION_ID" to "Organizationid",
+                "CSM_WORKSPACE_ID" to "Workspaceid",
+                "CSM_SCENARIO_ID" to "Scenarioid",
+                "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
+                "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
+                "CSM_CONTAINER_MODE" to "engine",
+                "CSM_PROBES_MEASURES_TOPIC" to
+                    "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
+                "CSM_CONTROL_PLANE_TOPIC" to
+                    "amqps://organizationid-test.servicebus.windows.net/scenariorun",
+                "CSM_SIMULATION" to "TestSimulation",
+                "TWIN_CACHE_HOST" to "this_is_a_host",
+                "TWIN_CACHE_PORT" to "6973",
+                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+                "TWIN_CACHE_USERNAME" to "default",
+                "CSM_ENTRYPOINT_LEGACY" to "true")
+            .toSortedMap(),
+        container.envVars?.toSortedMap())
   }
 
   @Test
@@ -2901,40 +3020,44 @@ class ContainerFactoryTests {
     assertNotNull(container.envVars)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
-            "CSM_ORGANIZATION_ID" to "Organizationid",
-            "CSM_WORKSPACE_ID" to "Workspaceid",
-            "CSM_SCENARIO_ID" to "Scenarioid",
-            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
-            "CSM_CONTAINER_MODE" to "engine",
-            "CSM_PROBES_MEASURES_TOPIC" to
-                "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
-            "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to name,
-            "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to key,
-            "CSM_AMQPCONSUMER_USER" to name,
-            "CSM_AMQPCONSUMER_PASSWORD" to key,
-            "CSM_CONTROL_PLANE_TOPIC" to
-                "amqps://organizationid-test.servicebus.windows.net/scenariorun",
-            "CSM_CONTROL_PLANE_USER" to name,
-            "CSM_CONTROL_PLANE_PASSWORD" to key,
-            "CSM_SIMULATION" to "TestSimulation",
-            "TWIN_CACHE_HOST" to "this_is_a_host",
-            "TWIN_CACHE_PORT" to "6973",
-            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default"),
-        container.envVars)
+                "IDENTITY_PROVIDER" to "azure",
+                "AZURE_TENANT_ID" to "12345678",
+                "AZURE_CLIENT_ID" to "98765432",
+                "AZURE_CLIENT_SECRET" to "azertyuiop",
+                "CSM_SIMULATION_ID" to "simulationrunid",
+                "CSM_API_URL" to "https://api.cosmotech.com",
+                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
+                    "https://phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                    "https://ingest-phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
+                "CSM_ORGANIZATION_ID" to "Organizationid",
+                "CSM_WORKSPACE_ID" to "Workspaceid",
+                "CSM_SCENARIO_ID" to "Scenarioid",
+                "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
+                "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
+                "CSM_CONTAINER_MODE" to "engine",
+                "CSM_PROBES_MEASURES_TOPIC" to
+                    "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
+                "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to name,
+                "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to key,
+                "CSM_AMQPCONSUMER_USER" to name,
+                "CSM_AMQPCONSUMER_PASSWORD" to key,
+                "CSM_CONTROL_PLANE_TOPIC" to
+                    "amqps://organizationid-test.servicebus.windows.net/scenariorun",
+                "CSM_CONTROL_PLANE_USER" to name,
+                "CSM_CONTROL_PLANE_PASSWORD" to key,
+                "CSM_SIMULATION" to "TestSimulation",
+                "TWIN_CACHE_HOST" to "this_is_a_host",
+                "TWIN_CACHE_PORT" to "6973",
+                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+                "TWIN_CACHE_USERNAME" to "default",
+                "CSM_ENTRYPOINT_LEGACY" to "true")
+            .toSortedMap(),
+        container.envVars?.toSortedMap())
   }
 
   @Test
@@ -2963,36 +3086,40 @@ class ContainerFactoryTests {
     assertNotNull(container.envVars)
     assertEquals(
         mapOf(
-            "IDENTITY_PROVIDER" to "azure",
-            "AZURE_TENANT_ID" to "12345678",
-            "AZURE_CLIENT_ID" to "98765432",
-            "AZURE_CLIENT_SECRET" to "azertyuiop",
-            "CSM_SIMULATION_ID" to "simulationrunid",
-            "CSM_API_URL" to "https://api.cosmotech.com",
-            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
-            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
-            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
-            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                "https://ingest-phoenix.westeurope.kusto.windows.net",
-            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
-            "CSM_ORGANIZATION_ID" to "Organizationid",
-            "CSM_WORKSPACE_ID" to "Workspaceid",
-            "CSM_SCENARIO_ID" to "Scenarioid",
-            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
-            "CSM_CONTAINER_MODE" to "engine",
-            "CSM_PROBES_MEASURES_TOPIC" to
-                "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
-            "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to name,
-            "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to key,
-            "CSM_AMQPCONSUMER_USER" to name,
-            "CSM_AMQPCONSUMER_PASSWORD" to key,
-            "CSM_SIMULATION" to "TestSimulation",
-            "TWIN_CACHE_HOST" to "this_is_a_host",
-            "TWIN_CACHE_PORT" to "6973",
-            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default"),
-        container.envVars)
+                "IDENTITY_PROVIDER" to "azure",
+                "AZURE_TENANT_ID" to "12345678",
+                "AZURE_CLIENT_ID" to "98765432",
+                "AZURE_CLIENT_SECRET" to "azertyuiop",
+                "CSM_SIMULATION_ID" to "simulationrunid",
+                "CSM_API_URL" to "https://api.cosmotech.com",
+                "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+                "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+                "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+                "AZURE_DATA_EXPLORER_RESOURCE_URI" to
+                    "https://phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                    "https://ingest-phoenix.westeurope.kusto.windows.net",
+                "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
+                "CSM_ORGANIZATION_ID" to "Organizationid",
+                "CSM_WORKSPACE_ID" to "Workspaceid",
+                "CSM_SCENARIO_ID" to "Scenarioid",
+                "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
+                "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
+                "CSM_CONTAINER_MODE" to "engine",
+                "CSM_PROBES_MEASURES_TOPIC" to
+                    "amqps://organizationid-test.servicebus.windows.net/probesmeasures",
+                "AZURE_EVENT_HUB_SHARED_ACCESS_POLICY" to name,
+                "AZURE_EVENT_HUB_SHARED_ACCESS_KEY" to key,
+                "CSM_AMQPCONSUMER_USER" to name,
+                "CSM_AMQPCONSUMER_PASSWORD" to key,
+                "CSM_SIMULATION" to "TestSimulation",
+                "TWIN_CACHE_HOST" to "this_is_a_host",
+                "TWIN_CACHE_PORT" to "6973",
+                "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+                "TWIN_CACHE_USERNAME" to "default",
+                "CSM_ENTRYPOINT_LEGACY" to "true")
+            .toSortedMap(),
+        container.envVars?.toSortedMap())
   }
 
   @Test
@@ -3024,6 +3151,7 @@ class ContainerFactoryTests {
                 "CSM_ORGANIZATION_ID" to "Organizationid",
                 "CSM_WORKSPACE_ID" to "Workspaceid",
                 "CSM_SCENARIO_ID" to "Scenarioid",
+                "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
                 "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
                 "CSM_CONTAINER_MODE" to "engine",
                 "CSM_PROBES_MEASURES_TOPIC" to
@@ -3034,17 +3162,82 @@ class ContainerFactoryTests {
                 "TWIN_CACHE_HOST" to "this_is_a_host",
                 "TWIN_CACHE_PORT" to "6973",
                 "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-                "TWIN_CACHE_USERNAME" to "default")
+                "TWIN_CACHE_USERNAME" to "default",
+                "CSM_ENTRYPOINT_LEGACY" to "true")
             .toSortedMap(),
         container.envVars?.toSortedMap())
   }
+  @Test
+  fun `CSMOrchestrator Container is not null`() {
+    val container = this.buildCSMOrchestratorContainer()
+    assertNotNull(container)
+  }
 
+  @Test
+  fun `CSMOrchestrator Container name valid`() {
+    val container = this.buildCSMOrchestratorContainer()
+    assertEquals("CSMOrchestrator", container.name)
+  }
+
+  @Test
+  fun `CSMOrchestrator Container env vars valid`() {
+    val container = this.buildCSMOrchestratorContainer()
+    this.validateCSMOrchestratorContainer(container)
+  }
+
+  @Test
+  fun `Build all containers for a Scenario with csm-orc count`() {
+    val scenario = getScenario()
+    val datasets = listOf(getDataset())
+    val connectors = listOf(getConnector())
+    val workspace = getWorkspace()
+    val solution = getCSMOrcSolution()
+    val containers =
+        factory.buildContainersPipeline(
+            scenario,
+            datasets,
+            connectors,
+            workspace,
+            getOrganization(),
+            solution,
+            "Scenariorunid",
+            CSM_SIMULATION_ID,
+            scenarioRunLabel = NODE_LABEL_DEFAULT,
+            scenarioRunSizing = BASIC_SIZING)
+    assertEquals(containers.size, 1)
+  }
+  @Test
+  fun `Build all containers for a Scenario with csm-orc list`() {
+    val scenario = getScenario()
+    val datasets = listOf(getDataset())
+    val connectors = listOf(getConnector())
+    val workspace = getWorkspace()
+    val solution = getCSMOrcSolution()
+    val containers =
+        factory.buildContainersPipeline(
+            scenario,
+            datasets,
+            connectors,
+            workspace,
+            getOrganization(),
+            solution,
+            "Scenariorunid",
+            CSM_SIMULATION_ID,
+            scenarioRunLabel = NODE_LABEL_DEFAULT,
+            scenarioRunSizing = BASIC_SIZING)
+    val expected =
+        listOf(
+            "CSMOrchestrator",
+        )
+    assertEquals(expected, containers.map { container -> container.name })
+  }
   private fun buildApplyParametersContainer(): ScenarioRunContainer {
     return factory.buildApplyParametersContainer(
         getOrganization(),
         getWorkspace(),
         getScenario(),
         getSolution(),
+        "Scenariorunid",
         "testruntemplate",
         CSM_SIMULATION_ID,
         nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -3057,6 +3250,7 @@ class ContainerFactoryTests {
         getWorkspace(),
         getScenario(),
         getSolution(),
+        "Scenariorunid",
         "testruntemplate",
         CSM_SIMULATION_ID,
         nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -3069,6 +3263,7 @@ class ContainerFactoryTests {
         getWorkspace(),
         getScenario(),
         getSolution(),
+        "Scenariorunid",
         "testruntemplate",
         CSM_SIMULATION_ID,
         nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -3086,6 +3281,7 @@ class ContainerFactoryTests {
         getWorkspace(dedicatedEventHubNamespace, sendToScenarioRun, sasAuthentication, sasName),
         getScenario(),
         getSolution(),
+        "Scenariorunid",
         "testruntemplate",
         CSM_SIMULATION_ID,
         nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -3098,6 +3294,20 @@ class ContainerFactoryTests {
         getWorkspace(),
         getScenario(),
         getSolution(),
+        "Scenariorunid",
+        "testruntemplate",
+        CSM_SIMULATION_ID,
+        nodeSizingLabel = NODE_LABEL_DEFAULT,
+        customSizing = BASIC_SIZING)
+  }
+
+  private fun buildCSMOrchestratorContainer(): ScenarioRunContainer {
+    return factory.buildCSMOrchestratorContainer(
+        getOrganization(),
+        getWorkspace(),
+        getScenario(),
+        getSolution(),
+        "Scenariorunid",
         "testruntemplate",
         CSM_SIMULATION_ID,
         nodeSizingLabel = NODE_LABEL_DEFAULT,
@@ -3123,6 +3333,7 @@ class ContainerFactoryTests {
             "CSM_ORGANIZATION_ID" to "Organizationid",
             "CSM_WORKSPACE_ID" to "Workspaceid",
             "CSM_SCENARIO_ID" to "Scenarioid",
+            "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
             "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
             "CSM_CONTAINER_MODE" to mode,
             "CSM_PROBES_MEASURES_TOPIC" to
@@ -3133,7 +3344,42 @@ class ContainerFactoryTests {
             "TWIN_CACHE_HOST" to "this_is_a_host",
             "TWIN_CACHE_PORT" to "6973",
             "TWIN_CACHE_PASSWORD" to "this_is_a_password",
-            "TWIN_CACHE_USERNAME" to "default")
+            "TWIN_CACHE_USERNAME" to "default",
+            "CSM_ENTRYPOINT_LEGACY" to "true")
+    assertEquals(expected.toSortedMap(), container?.envVars?.toSortedMap())
+  }
+  private fun validateCSMOrchestratorContainer(container: ScenarioRunContainer?) {
+    val expected =
+        mapOf(
+            "IDENTITY_PROVIDER" to "azure",
+            "AZURE_TENANT_ID" to "12345678",
+            "AZURE_CLIENT_ID" to "98765432",
+            "AZURE_CLIENT_SECRET" to "azertyuiop",
+            "CSM_SIMULATION_ID" to "simulationrunid",
+            "CSM_API_URL" to "https://api.cosmotech.com",
+            "CSM_API_SCOPE" to "http://dev.api.cosmotech.com/.default",
+            "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
+            "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
+            "AZURE_DATA_EXPLORER_RESOURCE_URI" to "https://phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
+                "https://ingest-phoenix.westeurope.kusto.windows.net",
+            "AZURE_DATA_EXPLORER_DATABASE_NAME" to "organizationid-test",
+            "CSM_ORGANIZATION_ID" to "Organizationid",
+            "CSM_WORKSPACE_ID" to "Workspaceid",
+            "CSM_SCENARIO_ID" to "Scenarioid",
+            "CSM_SCENARIO_RUN_ID" to "Scenariorunid",
+            "CSM_RUN_TEMPLATE_ID" to "testruntemplate",
+            "CSM_CONTAINER_MODE" to "csmOrc",
+            "CSM_PROBES_MEASURES_TOPIC" to
+                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test",
+            "CSM_CONTROL_PLANE_TOPIC" to
+                "amqps://csm-phoenix.servicebus.windows.net/organizationid-test-scenariorun",
+            "CSM_SIMULATION" to "TestSimulation",
+            "TWIN_CACHE_HOST" to "this_is_a_host",
+            "TWIN_CACHE_PORT" to "6973",
+            "TWIN_CACHE_PASSWORD" to "this_is_a_password",
+            "TWIN_CACHE_USERNAME" to "default",
+            "CSM_ENTRYPOINT_LEGACY" to "false")
     assertEquals(expected.toSortedMap(), container?.envVars?.toSortedMap())
   }
 
@@ -3374,7 +3620,6 @@ class ContainerFactoryTests {
         sendInputToDataWarehouse = false,
     )
   }
-
   private fun getSolution(): Solution {
     return Solution(
         id = "1",
@@ -3510,13 +3755,32 @@ class ContainerFactoryTests {
         runTemplates = mutableListOf(getRunTemplateLocalSources()),
     )
   }
-
+  private fun getCSMOrcSolution(): Solution {
+    return Solution(
+        id = "1",
+        key = "TestSolution",
+        name = "Test Solution",
+        repository = "cosmotech/testsolution_simulator",
+        version = "1.0.0",
+        runTemplates = mutableListOf(getCSMOrcRunTemplate()),
+    )
+  }
   private fun getRunTemplate(): RunTemplate {
     return RunTemplate(
         id = "testruntemplate",
         name = "Test Run",
         csmSimulation = "TestSimulation",
         computeSize = "highcpupool",
+        fetchDatasets = true,
+        fetchScenarioParameters = true,
+        applyParameters = true,
+        validateData = true,
+        run = true,
+        sendDatasetsToDataWarehouse = true,
+        sendInputParametersToDataWarehouse = true,
+        preRun = true,
+        postRun = true,
+        orchestratorType = RunTemplateOrchestrator.argoWorkflow,
     )
   }
 
@@ -3527,6 +3791,16 @@ class ContainerFactoryTests {
         csmSimulation = "TestSimulation",
         computeSize = "highcpu",
         stackSteps = true,
+        fetchDatasets = true,
+        fetchScenarioParameters = true,
+        applyParameters = true,
+        validateData = true,
+        run = true,
+        sendDatasetsToDataWarehouse = true,
+        sendInputParametersToDataWarehouse = true,
+        preRun = true,
+        postRun = true,
+        orchestratorType = RunTemplateOrchestrator.argoWorkflow,
     )
   }
 
@@ -3539,6 +3813,14 @@ class ContainerFactoryTests {
         stackSteps = true,
         sendDatasetsToDataWarehouse = false,
         sendInputParametersToDataWarehouse = false,
+        fetchDatasets = true,
+        fetchScenarioParameters = true,
+        applyParameters = true,
+        validateData = true,
+        run = true,
+        preRun = true,
+        postRun = true,
+        orchestratorType = RunTemplateOrchestrator.argoWorkflow,
     )
   }
 
@@ -3549,6 +3831,16 @@ class ContainerFactoryTests {
         csmSimulation = "TestSimulation",
         computeSize = "highcpu",
         parameterGroups = mutableListOf("group1"),
+        fetchDatasets = true,
+        fetchScenarioParameters = true,
+        applyParameters = true,
+        validateData = true,
+        run = true,
+        sendDatasetsToDataWarehouse = true,
+        sendInputParametersToDataWarehouse = true,
+        preRun = true,
+        postRun = true,
+        orchestratorType = RunTemplateOrchestrator.argoWorkflow,
     )
   }
 
@@ -3557,6 +3849,16 @@ class ContainerFactoryTests {
         id = "testruntemplate",
         name = "Test Run",
         csmSimulation = "TestSimulation",
+        fetchDatasets = true,
+        fetchScenarioParameters = true,
+        applyParameters = true,
+        validateData = true,
+        run = true,
+        sendDatasetsToDataWarehouse = true,
+        sendInputParametersToDataWarehouse = true,
+        preRun = true,
+        postRun = true,
+        orchestratorType = RunTemplateOrchestrator.argoWorkflow,
     )
   }
 
@@ -3566,6 +3868,16 @@ class ContainerFactoryTests {
         name = "Test Run",
         csmSimulation = "TestSimulation",
         computeSize = "%NONE%",
+        fetchDatasets = true,
+        fetchScenarioParameters = true,
+        applyParameters = true,
+        validateData = true,
+        run = true,
+        sendDatasetsToDataWarehouse = true,
+        sendInputParametersToDataWarehouse = true,
+        preRun = true,
+        postRun = true,
+        orchestratorType = RunTemplateOrchestrator.argoWorkflow,
     )
   }
 
@@ -3575,7 +3887,17 @@ class ContainerFactoryTests {
         id = "testruntemplate",
         name = "Test Run",
         csmSimulation = "TestSimulation",
-        sendDatasetsToDataWarehouse = false)
+        sendDatasetsToDataWarehouse = false,
+        fetchDatasets = true,
+        fetchScenarioParameters = true,
+        applyParameters = true,
+        validateData = true,
+        run = true,
+        sendInputParametersToDataWarehouse = true,
+        preRun = true,
+        postRun = true,
+        orchestratorType = RunTemplateOrchestrator.argoWorkflow,
+    )
   }
 
   private fun getRunTemplateNoParametersSend(): RunTemplate {
@@ -3584,7 +3906,17 @@ class ContainerFactoryTests {
         id = "testruntemplate",
         name = "Test Run",
         csmSimulation = "TestSimulation",
-        sendInputParametersToDataWarehouse = false)
+        sendInputParametersToDataWarehouse = false,
+        fetchDatasets = true,
+        fetchScenarioParameters = true,
+        applyParameters = true,
+        validateData = true,
+        run = true,
+        sendDatasetsToDataWarehouse = true,
+        preRun = true,
+        postRun = true,
+        orchestratorType = RunTemplateOrchestrator.argoWorkflow,
+    )
   }
 
   private fun getRunTemplateOnlyRun(): RunTemplate {
@@ -3597,10 +3929,12 @@ class ContainerFactoryTests {
         fetchScenarioParameters = false,
         applyParameters = false,
         validateData = false,
+        run = true,
         sendDatasetsToDataWarehouse = false,
         sendInputParametersToDataWarehouse = false,
         preRun = false,
         postRun = false,
+        orchestratorType = RunTemplateOrchestrator.argoWorkflow,
     )
   }
 
@@ -3615,6 +3949,16 @@ class ContainerFactoryTests {
         preRunSource = RunTemplateStepSource.cloud,
         runSource = RunTemplateStepSource.cloud,
         postRunSource = RunTemplateStepSource.cloud,
+        fetchDatasets = true,
+        fetchScenarioParameters = true,
+        applyParameters = true,
+        validateData = true,
+        run = true,
+        sendDatasetsToDataWarehouse = true,
+        sendInputParametersToDataWarehouse = true,
+        preRun = true,
+        postRun = true,
+        orchestratorType = RunTemplateOrchestrator.argoWorkflow,
     )
   }
 
@@ -3629,6 +3973,25 @@ class ContainerFactoryTests {
         preRunSource = RunTemplateStepSource.local,
         runSource = RunTemplateStepSource.local,
         postRunSource = RunTemplateStepSource.local,
+        fetchDatasets = true,
+        fetchScenarioParameters = true,
+        applyParameters = true,
+        validateData = true,
+        run = true,
+        sendDatasetsToDataWarehouse = true,
+        sendInputParametersToDataWarehouse = true,
+        preRun = true,
+        postRun = true,
+        orchestratorType = RunTemplateOrchestrator.argoWorkflow,
+    )
+  }
+  private fun getCSMOrcRunTemplate(): RunTemplate {
+    return RunTemplate(
+        id = "testruntemplate",
+        name = "Test Run",
+        csmSimulation = "TestSimulation",
+        computeSize = "highcpupool",
+        orchestratorType = RunTemplateOrchestrator.csmOrc,
     )
   }
 

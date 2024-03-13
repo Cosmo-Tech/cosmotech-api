@@ -1,0 +1,146 @@
+openapi: 3.0.3
+
+info:
+  title: Cosmo Tech ScenarioRunResult Manager API
+  description: Cosmo Tech ScenarioRunResult Manager API
+  version: 0.0.8-SNAPSHOT
+
+servers:
+  - url: 'https://api.azure.cosmo-platform.com'
+  - url: 'http://localhost:4010'
+
+security:
+  - oAuth2AuthCode: [ ]
+
+tags:
+  - name: scenariorunresult
+    description: ScenarioRunResult Management
+
+paths:
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/scenarioruns/{scenariorun_id}/probes/{probe_id}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: scenario_id
+        in: path
+        description: the Scenario identifier
+        required: true
+        schema:
+          type: string
+      - name: scenariorun_id
+        in: path
+        description: the ScenarioRun identifier
+        required: true
+        schema:
+          type: string
+      - name: probe_id
+        in: path
+        description: the Probe identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: sendScenarioRunResult
+      tags:
+        - scenariorunresult
+      summary: Create a new ScenarioRunResult in the Organization
+      requestBody:
+        description: the ScenarioRunResult to register
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: string
+            examples:
+              ScenarioRunResult:
+                $ref: '#/components/examples/ScenarioRunProbeResultExample'
+      responses:
+        "200":
+          description: the Organization details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioRunResult'
+              examples:
+                ScenarioRunResult:
+                  $ref: '#/components/examples/ScenarioRunResultExample'
+        "400":
+          description: the ScenarioRunResult specified is unknown or you don't have access to it
+    get:
+      operationId: getScenarioRunResult
+      tags:
+        - scenariorunresult
+      summary: Get a ScenarioRunResult in the Organization
+      responses:
+        "200":
+          description: the Organization details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioRunResult'
+              examples:
+                ScenarioRunResult:
+                  $ref: '#/components/examples/ScenarioRunResultExample'
+        "404":
+          description: the ScenarioRunResult specified is unknown or you don't have access to it
+components:
+  securitySchemes:
+    oAuth2AuthCode:
+      type: oauth2
+      description: OAuth2 authentication
+      flows:
+        implicit:
+          authorizationUrl: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
+          scopes:
+            http://dev.api.cosmotech.com/platform: Platform scope
+
+  schemas:
+    ScenarioRunResult:
+      type: object
+      x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
+      description: a ScenarioRunProbeResult with all ScenarioRunResult
+      properties:
+        id:
+          x-field-extra-annotation: "@org.springframework.data.annotation.Id"
+          type: string
+        results:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: string
+  examples:
+    ScenarioRunProbeResultExample:
+      summary:
+      description:
+      value:
+        name: StockProbe
+        run: 0
+        stockMeasure: 50
+    ScenarioRunResultExample:
+      summary:
+      description:
+      value:
+        id: sr-mysrId_StockProbe
+        results:
+          - name: StockProbe
+            run: 0
+            stockMeasure: 50
+          -  name: StockProbe
+             run: 1
+             stockMeasure: 100
+          -  name: StockProbe
+             run: 2
+             stockMeasure: 150

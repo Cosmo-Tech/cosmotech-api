@@ -2,13 +2,13 @@
 
 All URIs are relative to *https://dev.api.cosmotech.com*
 
-Method | HTTP request | Description
-------------- | ------------- | -------------
-[**findAllConnectors**](ConnectorApi.md#findAllConnectors) | **GET** /connectors | List all Connectors
-[**findConnectorById**](ConnectorApi.md#findConnectorById) | **GET** /connectors/{connector_id} | Get the details of a connector
-[**importConnector**](ConnectorApi.md#importConnector) | **POST** /connectors/import | Import existing connector
-[**registerConnector**](ConnectorApi.md#registerConnector) | **POST** /connectors | Register a new connector
-[**unregisterConnector**](ConnectorApi.md#unregisterConnector) | **DELETE** /connectors/{connector_id} | Unregister a connector
+| Method | HTTP request | Description |
+|------------- | ------------- | -------------|
+| [**findAllConnectors**](ConnectorApi.md#findAllConnectors) | **GET** /connectors | List all Connectors |
+| [**findConnectorById**](ConnectorApi.md#findConnectorById) | **GET** /connectors/{connector_id} | Get the details of a connector |
+| [**findConnectorByName**](ConnectorApi.md#findConnectorByName) | **GET** /connectors/name/{connector_name} | Get the details of a connector |
+| [**registerConnector**](ConnectorApi.md#registerConnector) | **POST** /connectors | Register a new connector |
+| [**unregisterConnector**](ConnectorApi.md#unregisterConnector) | **DELETE** /connectors/{connector_id} | Unregister a connector |
 
 
 <a name="findAllConnectors"></a>
@@ -19,10 +19,10 @@ List all Connectors
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **page** | **Integer**| page number to query | [optional] [default to null]
- **size** | **Integer**| amount of result by page | [optional] [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **page** | **Integer**| page number to query | [optional] [default to null] |
+| **size** | **Integer**| amount of result by page | [optional] [default to null] |
 
 ### Return type
 
@@ -45,9 +45,9 @@ Get the details of a connector
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **connector\_id** | **String**| the Connector identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **connector\_id** | **String**| the Connector identifier | [default to null] |
 
 ### Return type
 
@@ -62,17 +62,17 @@ Name | Type | Description  | Notes
 - **Content-Type**: Not defined
 - **Accept**: application/json
 
-<a name="importConnector"></a>
-# **importConnector**
-> Connector importConnector(Connector)
+<a name="findConnectorByName"></a>
+# **findConnectorByName**
+> Connector findConnectorByName(connector\_name)
 
-Import existing connector
+Get the details of a connector
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **Connector** | [**Connector**](../Models/Connector.md)| the Connector to import |
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **connector\_name** | **String**| the Connector name | [default to null] |
 
 ### Return type
 
@@ -84,7 +84,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: Not defined
 - **Accept**: application/json
 
 <a name="registerConnector"></a>
@@ -95,9 +95,9 @@ Register a new connector
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **Connector** | [**Connector**](../Models/Connector.md)| the Connector to register |
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **Connector** | [**Connector**](../Models/Connector.md)| the Connector to register | |
 
 ### Return type
 
@@ -120,9 +120,9 @@ Unregister a connector
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **connector\_id** | **String**| the Connector identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **connector\_id** | **String**| the Connector identifier | [default to null] |
 
 ### Return type
 

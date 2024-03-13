@@ -84,6 +84,8 @@ api:
   servletContextPath: /
   # Examples: latest, v1, v2
   version: latest
+  # Whether or not the API is multi-tenant and should expose the tenant in the URL
+  multiTenant: true
   # Configure probes failure thresholds to higher values if you are in debug mode to avoid pod restart
   probes:
     startup:
@@ -97,7 +99,7 @@ api:
       failureThreshold: 5
   serviceMonitor:
     enabled: true
-    namespace: "phoenix-monitoring"
+    namespace: "cosmotech-monitoring"
     additionalLabels: {}
 
 ingress:

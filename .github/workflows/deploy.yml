@@ -70,7 +70,7 @@ jobs:
 
       - name: Prepare values.yaml
         env:
-          VALUES_YAML: "${{ secrets.DEV_ENV_VALUES_YAML_062023 }}"
+          VALUES_YAML: "${{ secrets.DEV_ENV_VALUES_YAML_112023 }}"
         run: |
           echo "${VALUES_YAML}" > /tmp/values_for_environment.yaml
 
@@ -122,7 +122,7 @@ jobs:
           ARGO_MINIO_ACCESS_KEY: ${{ secrets.DEV_ENV_ARGO_MINIO_ACCESS_KEY }}
           ARGO_MINIO_SECRET_KEY: ${{ secrets.DEV_ENV_ARGO_MINIO_SECRET_KEY }}
           ARGO_POSTGRESQL_PASSSORD: ${{ secrets.DEV_ENV_ARGO_POSTGRESQL_PASSSORD }}
-          DEPLOY_PROMETHEUS_STACK: 'true'
+          DEPLOY_PROMETHEUS_STACK: 'false'
           NGINX_INGRESS_CONTROLLER_ENABLED: 'true'
           NGINX_INGRESS_CONTROLLER_LOADBALANCER_IP: ${{ secrets.DEV_ENV_NGINX_INGRESS_CONTROLLER_LOADBALANCER_IP }}
           CERT_MANAGER_USE_ACME_PROD: 'true'
@@ -131,6 +131,10 @@ jobs:
           TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL: ${{ secrets.DEV_ENV_TLS_CERTIFICATE_LET_S_ENCRYPT_CONTACT_EMAIL }}
           REDIS_DISK_SIZE: 128
           REDIS_DISK_RESOURCE: "/subscriptions/a24b131f-bd0b-42e8-872a-bded9b91ab74/resourceGroups/phoenixdev/providers/Microsoft.Compute/disks/cosmotech-database-disk"
+          REDIS_RESOURCES_LIMITS_MEMORY: 8Gi
+          REDIS_RESOURCES_REQUESTS_MEMORY: 8Gi
+          REDIS_RESOURCES_LIMITS_CPU: 2000m
+          REDIS_RESOURCES_REQUESTS_CPU: 1000m
         run: |
           curl -o- -sSL https://raw.githubusercontent.com/Cosmo-Tech/azure-platform-deployment-tools/main/deployment_scripts/${{ steps.apiVersionVar.outputs.apiScriptVersion }}/deploy_via_helm.sh | bash -s -- \
             "${GH_SHA}" \

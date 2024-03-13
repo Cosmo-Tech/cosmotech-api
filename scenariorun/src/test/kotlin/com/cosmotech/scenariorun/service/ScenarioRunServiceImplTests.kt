@@ -7,9 +7,13 @@ import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.id.CsmIdGenerator
-import com.cosmotech.api.utils.*
-import com.cosmotech.organization.api.OrganizationApiService
-import com.cosmotech.scenario.api.ScenarioApiService
+import com.cosmotech.api.rbac.CsmRbac
+import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
+import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.api.utils.getCurrentAuthentication
+import com.cosmotech.organization.OrganizationApiServiceInterface
+import com.cosmotech.organization.domain.Organization
+import com.cosmotech.scenario.ScenarioApiServiceInterface
 import com.cosmotech.scenariorun.ContainerFactory
 import com.cosmotech.scenariorun.domain.ScenarioRun
 import com.cosmotech.scenariorun.domain.ScenarioRunContainer
@@ -17,9 +21,9 @@ import com.cosmotech.scenariorun.domain.ScenarioRunSearch
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
 import com.cosmotech.scenariorun.repository.ScenarioRunRepository
 import com.cosmotech.scenariorun.workflow.WorkflowService
-import com.cosmotech.solution.api.SolutionApiService
+import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.Solution
-import com.cosmotech.workspace.api.WorkspaceApiService
+import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
@@ -32,7 +36,7 @@ import io.mockk.mockkStatic
 import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
-import java.util.Optional
+import java.util.*
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -40,7 +44,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthentication
 
 private const val ORGANIZATION_ID = "O-AbCdEf123"
@@ -48,15 +51,13 @@ private const val WORKSPACE_ID = "W-AbCdEf123"
 private const val SOLUTION_ID = "SOL-AbCdEf123"
 private const val AUTHENTICATED_USERNAME = "authenticated-user"
 
-private val objectMapper = objectMapper()
-
 @ExtendWith(MockKExtension::class)
 class ScenarioRunServiceImplTests {
 
-  @MockK private lateinit var organizationService: OrganizationApiService
+  @MockK private lateinit var organizationService: OrganizationApiServiceInterface
   @MockK(relaxed = true) private lateinit var containerFactory: ContainerFactory
-  @MockK private lateinit var solutionService: SolutionApiService
-  @MockK private lateinit var workspaceService: WorkspaceApiService
+  @MockK private lateinit var solutionService: SolutionApiServiceInterface
+  @MockK private lateinit var workspaceService: WorkspaceApiServiceInterface
   @MockK private lateinit var idGenerator: CsmIdGenerator
   @Suppress("unused") @MockK private lateinit var csmPlatformProperties: CsmPlatformProperties
 
@@ -66,7 +67,8 @@ class ScenarioRunServiceImplTests {
 
   @MockK(relaxed = true) private lateinit var workflowService: WorkflowService
 
-  @MockK(relaxed = true) private lateinit var scenarioApiService: ScenarioApiService
+  @MockK(relaxed = true) private lateinit var scenarioApiService: ScenarioApiServiceInterface
+  @MockK private lateinit var csmRbac: CsmRbac
 
   @MockK(relaxed = true) private lateinit var azureDataExplorerClient: AzureDataExplorerClient
   @MockK(relaxed = true) private lateinit var azureEventHubsClient: AzureEventHubsClient
@@ -83,12 +85,14 @@ class ScenarioRunServiceImplTests {
             ScenarioRunServiceImpl(
                 containerFactory,
                 workflowService,
+                organizationService,
                 workspaceService,
                 scenarioApiService,
                 azureDataExplorerClient,
                 azureEventHubsClient,
                 workspaceEventHubService,
-                scenarioRunRepository))
+                scenarioRunRepository,
+                csmRbac))
 
     every { scenarioRunServiceImpl getProperty "idGenerator" } returns idGenerator
     every { scenarioRunServiceImpl getProperty "eventPublisher" } returns eventPublisher
@@ -119,6 +123,9 @@ class ScenarioRunServiceImplTests {
     val myScenarioRun =
         ScenarioRun(
             id = "sr-myscenariorun1",
+            organizationId = ORGANIZATION_ID,
+            workspaceId = WORKSPACE_ID,
+            scenarioId = "scenario",
             workspaceKey = "my-workspaceKey",
             containers =
                 listOf(
@@ -131,7 +138,6 @@ class ScenarioRunServiceImplTests {
 
     val scenarioRunById =
         this.scenarioRunServiceImpl.findScenarioRunById(ORGANIZATION_ID, myScenarioRun.id!!)
-
     assertNotNull(scenarioRunById)
     assertNotNull(scenarioRunById.id)
     assertEquals(myScenarioRun.id, scenarioRunById.id)
@@ -167,7 +173,7 @@ class ScenarioRunServiceImplTests {
                         envVars = mapOf("KEY" to "value"),
                         image = "rhel:7")))
 
-    every { scenarioRunRepository.findByScenarioId(any(), any()).toList() } returns
+    every { scenarioRunRepository.findByScenarioId(any(), any(), any(), any()).toList() } returns
         listOf(myScenarioRun1, myScenarioRun2).toMutableList()
     every { csmPlatformProperties.twincache.scenariorun.defaultPageSize } returns 5
 
@@ -210,10 +216,11 @@ class ScenarioRunServiceImplTests {
                         envVars = mapOf("KEY" to "value"),
                         image = "rhel:7")))
 
-    every { scenarioRunRepository.findByWorkspaceId(any(), any()).toList() } returns
+    every { scenarioRunRepository.findByWorkspaceId(any(), any(), any()).toList() } returns
         listOf(myScenarioRun1, myScenarioRun2).toMutableList()
     every { csmPlatformProperties.twincache.scenariorun.defaultPageSize } returns 5
-
+    every { workspaceService.findWorkspaceById(ORGANIZATION_ID, WORKSPACE_ID) } returns mockk()
+    every { csmRbac.verify(any(), any(), any()) } returns Unit
     val scenarioRuns =
         this.scenarioRunServiceImpl.getWorkspaceScenarioRuns(ORGANIZATION_ID, WORKSPACE_ID, 0, 10)
 
@@ -251,9 +258,10 @@ class ScenarioRunServiceImplTests {
                         name = "my-container22",
                         envVars = mapOf("KEY" to "value"),
                         image = "rhel:7")))
-
+    every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns
+        Organization(id = ORGANIZATION_ID)
     every { csmPlatformProperties.twincache.scenariorun.defaultPageSize } returns 5
-    every { scenarioRunRepository.findByPredicate(any(), any()).toList() } returns
+    every { scenarioRunRepository.findByPredicate(any(), any(), any()).toList() } returns
         listOf(myScenarioRun1, myScenarioRun2)
 
     var scenarioRunSearch = ScenarioRunSearch(ownerId = AUTHENTICATED_USERNAME)
@@ -290,7 +298,9 @@ class ScenarioRunServiceImplTests {
             containers = containers)
     every { workflowService.launchScenarioRun(any(), null) } returns myScenarioRun
     every { idGenerator.generate("scenariorun", "sr-") } returns myScenarioRun.id!!
-
+    every { organizationService.findOrganizationById(ORGANIZATION_ID) } returns
+        Organization(id = ORGANIZATION_ID)
+    every { csmRbac.verify(any(), any(), any()) } returns Unit
     every { scenarioRunRepository.save(any()) } returns myScenarioRun
 
     val scenarioRun =
@@ -319,7 +329,7 @@ class ScenarioRunServiceImplTests {
     every { solution.id } returns SOLUTION_ID
     every { solution.name } returns "test solution"
     every { solutionService.findSolutionById(ORGANIZATION_ID, SOLUTION_ID) } returns solution
-
+    every { csmRbac.verify(any(), any(), any()) } returns Unit
     val myScenarioRun =
         ScenarioRun(
             id = "sr-myscenariorun1",
@@ -377,6 +387,7 @@ class ScenarioRunServiceImplTests {
     every { scenarioRun.csmSimulationRun } returns simulationRunId
     every { scenarioRun.scenarioId } returns "scenarioId"
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "ownerId"
+    every { csmRbac.verify(any(), any(), any()) } returns Unit
     scenarioRunServiceImpl.deleteScenarioRun("orgId", "scenariorunId")
     verify(exactly = 1) {
       azureDataExplorerClient.deleteDataFromADXbyExtentShard(

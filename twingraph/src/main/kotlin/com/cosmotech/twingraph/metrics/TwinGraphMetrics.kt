@@ -1,5 +1,7 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
+@file:Suppress("DEPRECATION")
+
 package com.cosmotech.twingraph.metrics
 
 import com.cosmotech.api.config.CsmPlatformProperties
@@ -9,21 +11,19 @@ import com.cosmotech.api.metrics.PersistentMetric
 import com.cosmotech.api.metrics.PersitentMetricType
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
-import redis.clients.jedis.JedisPool
+import redis.clients.jedis.UnifiedJedis
 
 private const val SERVICE_NAME = "twingraph"
 private const val MILLISECONDS_IN_DAY = 86400000
 
 @Service
 internal class TwinGraphMetrics(
-    private val jedisPool: JedisPool,
+    private val unifiedJedis: UnifiedJedis,
     private val eventPublisher: CsmEventPublisher,
     private val csmPlatformProperties: CsmPlatformProperties,
 ) {
   private fun getTwinGraphList(): List<String> {
-    jedisPool.resource.use { jedis ->
-      return jedis.sendCommand { "GRAPH.LIST".toByteArray() } as List<String>
-    }
+    return unifiedJedis.graphList()
   }
 
   // Every 30mn

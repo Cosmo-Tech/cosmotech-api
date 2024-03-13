@@ -6,27 +6,33 @@ import com.azure.storage.blob.BlobServiceClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.rbac.ROLE_ADMIN
+import com.cosmotech.api.rbac.ROLE_EDITOR
 import com.cosmotech.api.rbac.ROLE_NONE
+import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
-import com.cosmotech.solution.api.SolutionApiService
+import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateParameter
 import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.Solution
+import com.cosmotech.solution.domain.SolutionAccessControl
+import com.cosmotech.solution.domain.SolutionRole
+import com.cosmotech.solution.domain.SolutionSecurity
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
-import java.util.UUID
+import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -57,15 +63,15 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   @MockK(relaxed = true) private lateinit var azureStorageBlobServiceClient: BlobServiceClient
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
-  @Autowired lateinit var organizationApiService: OrganizationApiService
-  @Autowired lateinit var solutionApiService: SolutionApiService
+  @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
+  @Autowired lateinit var solutionApiService: SolutionApiServiceInterface
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   lateinit var organization: Organization
   lateinit var solution: Solution
 
-  lateinit var organizationRegistered: Organization
-  lateinit var solutionRegistered: Solution
+  lateinit var organizationSaved: Organization
+  lateinit var solutionSaved: Solution
 
   @BeforeEach
   fun setUp() {
@@ -80,84 +86,117 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     rediSearchIndexer.createIndexFor(Organization::class.java)
     rediSearchIndexer.createIndexFor(Solution::class.java)
 
-    organization = mockOrganization("Organization test")
-    organizationRegistered = organizationApiService.registerOrganization(organization)
+    organization = makeOrganization("Organization test")
+    organizationSaved = organizationApiService.registerOrganization(organization)
 
-    solution = mockSolution(organizationRegistered.id!!)
-    solutionRegistered = solutionApiService.createSolution(organizationRegistered.id!!, solution)
+    solution = makeSolution(organizationSaved.id!!)
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+  }
+
+  @Test
+  fun `test verify updateRunTemplate works as intended`() {
+
+    val solution =
+        Solution(
+            "id",
+            organizationSaved.id!!,
+            "key",
+            "name",
+            runTemplates = mutableListOf(RunTemplate(id = "one"), RunTemplate(id = "two")),
+            security =
+                SolutionSecurity(
+                    ROLE_NONE,
+                    mutableListOf(SolutionAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
+
+    val endTemplates =
+        solutionApiService.updateSolutionRunTemplate(
+            organizationSaved.id!!,
+            solutionSaved.id!!,
+            "one",
+            RunTemplate(id = "one", name = "name_one"))
+
+    val expectedSolution =
+        Solution(
+            "id",
+            organizationSaved.id!!,
+            "key",
+            "name",
+            runTemplates =
+                mutableListOf(RunTemplate(id = "one", name = "name_one"), RunTemplate(id = "two")))
+    // Assert that no runTemplate were deleted
+    assertEquals(expectedSolution.runTemplates!!.size, endTemplates.size)
+    assertEquals(expectedSolution.runTemplates!!, endTemplates)
   }
 
   @Test
   fun `test CRUD operations on Solution`() {
 
     logger.info("should add a new solution")
-    val solution2 = mockSolution(organizationRegistered.id!!)
-    val solutionCreated = solutionApiService.createSolution(organizationRegistered.id!!, solution2)
+    val solution2 = makeSolution(organizationSaved.id!!)
+    val solutionCreated = solutionApiService.createSolution(organizationSaved.id!!, solution2)
 
     logger.info("should find the new solution by id and assert it is the same as the one created")
     val solutionFound =
-        solutionApiService.findSolutionById(organizationRegistered.id!!, solutionCreated.id!!)
+        solutionApiService.findSolutionById(organizationSaved.id!!, solutionCreated.id!!)
     assertEquals(solutionCreated, solutionFound)
 
     logger.info(
         "should find all solutions for the organization and assert the list contains 2 elements")
-    val solutionsFound =
-        solutionApiService.findAllSolutions(organizationRegistered.id!!, null, null)
+    val solutionsFound = solutionApiService.findAllSolutions(organizationSaved.id!!, null, null)
     assertTrue(solutionsFound.size == 2)
 
     logger.info("should update the solution and assert that the name has been updated")
     solutionCreated.name = "My solution updated"
     val solutionUpdated =
         solutionApiService.updateSolution(
-            organizationRegistered.id!!, solutionCreated.id!!, solutionCreated)
+            organizationSaved.id!!, solutionCreated.id!!, solutionCreated)
     assertEquals(solutionCreated.name, solutionUpdated.name)
 
     logger.info(
         "should delete the solution and assert that the list of solutions contains only 1 element")
-    solutionApiService.deleteSolution(organizationRegistered.id!!, solutionCreated.id!!)
+    solutionApiService.deleteSolution(organizationSaved.id!!, solutionCreated.id!!)
     val solutionsFoundAfterDelete =
-        solutionApiService.findAllSolutions(organizationRegistered.id!!, null, null)
+        solutionApiService.findAllSolutions(organizationSaved.id!!, null, null)
     assertTrue(solutionsFoundAfterDelete.size == 1)
   }
 
   @Test
   fun `can delete solution when user is not the owner and is Platform Admin`() {
     logger.info("Register new solution...")
-    val solution = mockSolution(organizationRegistered.id!!)
-    val solutionCreated = solutionApiService.createSolution(organizationRegistered.id!!, solution)
+    val solution = makeSolution(organizationSaved.id!!)
+    val solutionCreated = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.admin"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf(ROLE_PLATFORM_ADMIN)
 
-    solutionApiService.deleteSolution(organizationRegistered.id!!, solutionCreated.id!!)
+    solutionApiService.deleteSolution(organizationSaved.id!!, solutionCreated.id!!)
 
     assertThrows<CsmResourceNotFoundException> {
-      solutionCreated.id?.let {
-        solutionApiService.findSolutionById(organizationRegistered.id!!, it)
-      }
+      solutionCreated.id?.let { solutionApiService.findSolutionById(organizationSaved.id!!, it) }
     }
   }
 
   @Test
   fun `cannot delete solution when user is not the owner and is not Platform Admin`() {
     logger.info("Register new solution...")
-    val solution = mockSolution(organizationRegistered.id!!)
-    val solutionCreated = solutionApiService.createSolution(organizationRegistered.id!!, solution)
+    val solution = makeSolution(organizationSaved.id!!)
+    val solutionCreated = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_READER_USER
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.other.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
     assertThrows<CsmAccessForbiddenException> {
-      solutionApiService.deleteSolution(organizationRegistered.id!!, solutionCreated.id!!)
+      solutionApiService.deleteSolution(organizationSaved.id!!, solutionCreated.id!!)
     }
   }
 
   @Test
   fun `can update solution when user is not the owner and is Platform Admin`() {
     logger.info("Register new solution...")
-    val solution = mockSolution(organizationRegistered.id!!)
-    val solutionCreated = solutionApiService.createSolution(organizationRegistered.id!!, solution)
+    val solution = makeSolution(organizationSaved.id!!)
+    val solutionCreated = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.other.user"
@@ -166,9 +205,9 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
 
     val updateSolution =
         solutionApiService.updateSolution(
-            organizationRegistered.id!!, solutionCreated.id!!, solutionCreated)
+            organizationSaved.id!!, solutionCreated.id!!, solutionCreated)
 
-    updateSolution.id?.let { solutionApiService.findSolutionById(organizationRegistered.id!!, it) }
+    updateSolution.id?.let { solutionApiService.findSolutionById(organizationSaved.id!!, it) }
 
     assertEquals("new_owner_id", updateSolution.ownerId)
   }
@@ -176,8 +215,8 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `cannot update solution when user is not the owner and is not Platform Admin`() {
     logger.info("Register new solution...")
-    val solution = mockSolution(organizationRegistered.id!!)
-    val solutionCreated = solutionApiService.createSolution(organizationRegistered.id!!, solution)
+    val solution = makeSolution(organizationSaved.id!!)
+    val solutionCreated = solutionApiService.createSolution(organizationSaved.id!!, solution)
 
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_READER_USER
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.other.user"
@@ -186,7 +225,7 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
 
     assertThrows<CsmAccessForbiddenException> {
       solutionApiService.updateSolution(
-          organizationRegistered.id!!, solutionCreated.id!!, solutionCreated)
+          organizationSaved.id!!, solutionCreated.id!!, solutionCreated)
     }
   }
 
@@ -198,12 +237,11 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val parameterGroup1 = RunTemplateParameterGroup(id = "parameterGroupId1")
     val parameterGroup2 = RunTemplateParameterGroup(id = "parameterGroupId2")
     solutionApiService.addOrReplaceParameterGroups(
-        solutionRegistered.organizationId!!,
-        solutionRegistered.id!!,
+        solutionSaved.organizationId!!,
+        solutionSaved.id!!,
         listOf(parameterGroup1, parameterGroup2))
     val foundSolution =
-        solutionApiService.findSolutionById(
-            solutionRegistered.organizationId!!, solutionRegistered.id!!)
+        solutionApiService.findSolutionById(solutionSaved.organizationId!!, solutionSaved.id!!)
     assertTrue(foundSolution.parameterGroups!!.size == 2)
 
     logger.info(
@@ -212,19 +250,17 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
         RunTemplateParameterGroup(
             id = "parameterGroupId1", labels = mutableMapOf("pkey" to "value"))
     solutionApiService.addOrReplaceParameterGroups(
-        solutionRegistered.organizationId!!, solutionRegistered.id!!, listOf(parameterGroup3))
+        solutionSaved.organizationId!!, solutionSaved.id!!, listOf(parameterGroup3))
     val foundSolutionAfterReplace =
-        solutionApiService.findSolutionById(
-            solutionRegistered.organizationId!!, solutionRegistered.id!!)
+        solutionApiService.findSolutionById(solutionSaved.organizationId!!, solutionSaved.id!!)
     assertTrue(foundSolutionAfterReplace.parameterGroups!!.size == 2)
     assertTrue(foundSolutionAfterReplace.parameterGroups!!.first().labels!!.containsKey("pkey"))
 
     logger.info("should remove all parameter groups and assert that the list is empty")
     solutionApiService.removeAllSolutionParameterGroups(
-        solutionRegistered.organizationId!!, solutionRegistered.id!!)
+        solutionSaved.organizationId!!, solutionSaved.id!!)
     val foundSolutionAfterRemove =
-        solutionApiService.findSolutionById(
-            solutionRegistered.organizationId!!, solutionRegistered.id!!)
+        solutionApiService.findSolutionById(solutionSaved.organizationId!!, solutionSaved.id!!)
     assertTrue(foundSolutionAfterRemove.parameterGroups!!.isEmpty())
   }
 
@@ -236,31 +272,26 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val parameter1 = RunTemplateParameter(id = "parameterId1")
     val parameter2 = RunTemplateParameter(id = "parameterId2")
     solutionApiService.addOrReplaceParameters(
-        solutionRegistered.organizationId!!,
-        solutionRegistered.id!!,
-        listOf(parameter1, parameter2))
+        solutionSaved.organizationId!!, solutionSaved.id!!, listOf(parameter1, parameter2))
     val foundSolution =
-        solutionApiService.findSolutionById(
-            solutionRegistered.organizationId!!, solutionRegistered.id!!)
+        solutionApiService.findSolutionById(solutionSaved.organizationId!!, solutionSaved.id!!)
     assertTrue(foundSolution.parameters!!.size == 2)
 
     logger.info("should replace the parameters and assert that the list contains only 1 element")
     val parameter3 =
         RunTemplateParameter(id = "parameterId1", labels = mutableMapOf("pkey" to "value"))
     solutionApiService.addOrReplaceParameters(
-        solutionRegistered.organizationId!!, solutionRegistered.id!!, listOf(parameter3))
+        solutionSaved.organizationId!!, solutionSaved.id!!, listOf(parameter3))
     val foundSolutionAfterReplace =
-        solutionApiService.findSolutionById(
-            solutionRegistered.organizationId!!, solutionRegistered.id!!)
+        solutionApiService.findSolutionById(solutionSaved.organizationId!!, solutionSaved.id!!)
     assertTrue(foundSolutionAfterReplace.parameters!!.size == 2)
     assertTrue(foundSolutionAfterReplace.parameters!!.first().labels!!.containsKey("pkey"))
 
     logger.info("should remove all parameters and assert that the list is empty")
     solutionApiService.removeAllSolutionParameters(
-        solutionRegistered.organizationId!!, solutionRegistered.id!!)
+        solutionSaved.organizationId!!, solutionSaved.id!!)
     val foundSolutionAfterRemove =
-        solutionApiService.findSolutionById(
-            solutionRegistered.organizationId!!, solutionRegistered.id!!)
+        solutionApiService.findSolutionById(solutionSaved.organizationId!!, solutionSaved.id!!)
     assertTrue(foundSolutionAfterRemove.parameters!!.isEmpty())
   }
 
@@ -272,40 +303,37 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val runTemplate1 = RunTemplate(id = "runTemplateId1")
     val runTemplate2 = RunTemplate(id = "runTemplateId2")
     solutionApiService.addOrReplaceRunTemplates(
-        solutionRegistered.organizationId!!,
-        solutionRegistered.id!!,
-        listOf(runTemplate1, runTemplate2))
+        solutionSaved.organizationId!!, solutionSaved.id!!, listOf(runTemplate1, runTemplate2))
     val foundSolution =
-        solutionApiService.findSolutionById(
-            solutionRegistered.organizationId!!, solutionRegistered.id!!)
-    assertTrue(foundSolution.runTemplates!!.size == 2)
+        solutionApiService.findSolutionById(solutionSaved.organizationId!!, solutionSaved.id!!)
+    assertEquals(2, foundSolution.runTemplates!!.size)
 
     logger.info(
         "should replace the first run template and assert that the list contains 2 elements")
-    val runTemplate3 = RunTemplate(id = "runTemplateId1", name = "runTemplateName")
+    val labels: MutableMap<String, String>? = mutableMapOf("fr" to "runTemplateName")
+    val runTemplate3 = RunTemplate(id = "runTemplateId1", labels = labels)
     solutionApiService.addOrReplaceRunTemplates(
-        solutionRegistered.organizationId!!, solutionRegistered.id!!, listOf(runTemplate3))
+        solutionSaved.organizationId!!, solutionSaved.id!!, listOf(runTemplate3))
     val foundSolutionAfterReplace =
-        solutionApiService.findSolutionById(
-            solutionRegistered.organizationId!!, solutionRegistered.id!!)
-    assertTrue(foundSolutionAfterReplace.runTemplates!!.size == 2)
-    assertTrue(foundSolutionAfterReplace.runTemplates!!.first().name == "runTemplateName")
+        solutionApiService.findSolutionById(solutionSaved.organizationId!!, solutionSaved.id!!)
+    assertEquals(2, foundSolutionAfterReplace.runTemplates!!.size)
+    assertEquals(
+        "runTemplateName", foundSolutionAfterReplace.runTemplates!!.first().labels?.get("fr"))
 
     logger.info("should update the run template and assert that the name has been updated")
-    val runTemplate4 = RunTemplate(id = "runTemplateId1", name = "runTemplateNameNew")
+    labels?.set("fr", "runTemplateNameNew")
+    val runTemplate4 = RunTemplate(id = "runTemplateId1", labels = labels)
     solutionApiService.updateSolutionRunTemplate(
-        solutionRegistered.organizationId!!, solutionRegistered.id!!, runTemplate4.id, runTemplate4)
+        solutionSaved.organizationId!!, solutionSaved.id!!, runTemplate4.id, runTemplate4)
     val foundSolutionAfterUpdate =
-        solutionApiService.findSolutionById(
-            solutionRegistered.organizationId!!, solutionRegistered.id!!)
-    assertTrue(foundSolutionAfterUpdate.runTemplates!!.first().name == "runTemplateNameNew")
+        solutionApiService.findSolutionById(solutionSaved.organizationId!!, solutionSaved.id!!)
+    assertEquals(
+        "runTemplateNameNew", foundSolutionAfterUpdate.runTemplates!!.first().labels?.get("fr"))
 
     logger.info("should remove all run templates and assert that the list is empty")
-    solutionApiService.removeAllRunTemplates(
-        solutionRegistered.organizationId!!, solutionRegistered.id!!)
+    solutionApiService.removeAllRunTemplates(solutionSaved.organizationId!!, solutionSaved.id!!)
     val foundSolutionAfterRemove =
-        solutionApiService.findSolutionById(
-            solutionRegistered.organizationId!!, solutionRegistered.id!!)
+        solutionApiService.findSolutionById(solutionSaved.organizationId!!, solutionSaved.id!!)
     assertTrue(foundSolutionAfterRemove.runTemplates!!.isEmpty())
   }
 
@@ -316,23 +344,22 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     val expectedSize = 15
     IntRange(1, numberOfSolutions - 1).forEach {
       solutionApiService.createSolution(
-          organizationId = organizationRegistered.id!!,
-          solution = mockSolution(organizationRegistered.id!!))
+          organizationId = organizationSaved.id!!, solution = makeSolution(organizationSaved.id!!))
     }
     logger.info("should find all solutions and assert there are $numberOfSolutions")
-    var solutions = solutionApiService.findAllSolutions(organizationRegistered.id!!, null, null)
+    var solutions = solutionApiService.findAllSolutions(organizationSaved.id!!, null, null)
     assertEquals(numberOfSolutions, solutions.size)
 
     logger.info("should find all solutions and assert it equals defaultPageSize: $defaultPageSize")
-    solutions = solutionApiService.findAllSolutions(organizationRegistered.id!!, 0, null)
+    solutions = solutionApiService.findAllSolutions(organizationSaved.id!!, 0, null)
     assertEquals(defaultPageSize, solutions.size)
 
     logger.info("should find all solutions and assert there are expected size: $expectedSize")
-    solutions = solutionApiService.findAllSolutions(organizationRegistered.id!!, 0, expectedSize)
+    solutions = solutionApiService.findAllSolutions(organizationSaved.id!!, 0, expectedSize)
     assertEquals(expectedSize, solutions.size)
 
     logger.info("should find all solutions and assert it returns the second / last page")
-    solutions = solutionApiService.findAllSolutions(organizationRegistered.id!!, 1, expectedSize)
+    solutions = solutionApiService.findAllSolutions(organizationSaved.id!!, 1, expectedSize)
     assertEquals(numberOfSolutions - expectedSize, solutions.size)
   }
 
@@ -340,19 +367,71 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
   fun `test find All Solutions with wrong pagination params`() {
     logger.info("should throw IllegalArgumentException when page and size are zero")
     assertThrows<IllegalArgumentException> {
-      solutionApiService.findAllSolutions(organizationRegistered.id!!, null, 0)
+      solutionApiService.findAllSolutions(organizationSaved.id!!, null, 0)
     }
     logger.info("should throw IllegalArgumentException when page is negative")
     assertThrows<IllegalArgumentException> {
-      solutionApiService.findAllSolutions(organizationRegistered.id!!, -1, 1)
+      solutionApiService.findAllSolutions(organizationSaved.id!!, -1, 1)
     }
     logger.info("should throw IllegalArgumentException when size is negative")
     assertThrows<IllegalArgumentException> {
-      solutionApiService.findAllSolutions(organizationRegistered.id!!, 0, -1)
+      solutionApiService.findAllSolutions(organizationSaved.id!!, 0, -1)
     }
   }
 
-  fun mockOrganization(id: String): Organization {
+  @Test
+  fun `test get security endpoint`() {
+    // should return the current security
+    val solutionSecurity =
+        solutionApiService.getSolutionSecurity(organizationSaved.id!!, solutionSaved.id!!)
+    assertEquals(solutionSaved.security, solutionSecurity)
+  }
+
+  @Test
+  fun `test set default security endpoint`() {
+    // should update the default security and assert it worked
+    val solutionDefaultSecurity =
+        solutionApiService.setSolutionDefaultSecurity(
+            organizationSaved.id!!, solutionSaved.id!!, SolutionRole(ROLE_VIEWER))
+    solutionSaved = solutionApiService.findSolutionById(organizationSaved.id!!, solutionSaved.id!!)
+    assertEquals(solutionSaved.security!!, solutionDefaultSecurity)
+  }
+
+  @Test
+  fun `access control list shouldn't contain more than one time each user on creation`() {
+    organizationSaved =
+        organizationApiService.registerOrganization(makeOrganization("organization"))
+    val brokenSolution =
+        Solution(
+            name = "solution",
+            security =
+                SolutionSecurity(
+                    default = ROLE_NONE,
+                    accessControlList =
+                        mutableListOf(
+                            SolutionAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                            SolutionAccessControl(CONNECTED_ADMIN_USER, ROLE_EDITOR))))
+    assertThrows<IllegalArgumentException> {
+      solutionApiService.createSolution(organizationSaved.id!!, brokenSolution)
+    }
+  }
+
+  @Test
+  fun `access control list shouldn't contain more than one time each user on ACL addition`() {
+    organizationSaved =
+        organizationApiService.registerOrganization(makeOrganization("organization"))
+    val workingSolution = makeSolution()
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, workingSolution)
+
+    assertThrows<IllegalArgumentException> {
+      solutionApiService.addSolutionAccessControl(
+          organizationSaved.id!!,
+          solutionSaved.id!!,
+          SolutionAccessControl(CONNECTED_ADMIN_USER, ROLE_EDITOR))
+    }
+  }
+
+  fun makeOrganization(id: String = "organization_id"): Organization {
     return Organization(
         id = id,
         name = "Organization Name",
@@ -366,12 +445,21 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
                         OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"))))
   }
 
-  fun mockSolution(organizationId: String): Solution {
+  fun makeSolution(
+      organizationId: String = organizationSaved.id!!,
+  ): Solution {
     return Solution(
         id = "solutionId",
         key = UUID.randomUUID().toString(),
         name = "My solution",
         organizationId = organizationId,
-        ownerId = "ownerId")
+        ownerId = "ownerId",
+        security =
+            SolutionSecurity(
+                default = ROLE_NONE,
+                accessControlList =
+                    mutableListOf(
+                        SolutionAccessControl(id = CONNECTED_READER_USER, role = "reader"),
+                        SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"))))
   }
 }

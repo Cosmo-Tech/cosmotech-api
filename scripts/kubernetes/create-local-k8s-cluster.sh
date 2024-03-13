@@ -165,4 +165,4 @@ helm repo add projectcalico https://docs.tigera.io/calico/charts
 helm --kube-context="${kubectl_ctx}" \
   install calico \
   projectcalico/tigera-operator \
-  --version v3.21.2
+  --version v3.24.3

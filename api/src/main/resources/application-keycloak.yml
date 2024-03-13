@@ -8,7 +8,7 @@ management:
       show-details: always
       group:
         readiness:
-          include: "readinessState"
+          include: "readinessState,argo"
 
 spring:
   security:
@@ -23,10 +23,10 @@ spring:
 csm:
   platform:
     authorization:
-      mailJwtClaim: "email"
-      rolesJwtClaim: "customRoles"
-      principalJwtClaim: "sub"
-      tenantIdJwtClaim: "iss"
+      mail-jwt-claim: "email"
+      roles-jwt-claim: "customRoles"
+      principal-jwt-claim: "sub"
+      tenant-id-jwt-claim: "iss"
       allowed-tenants: ["cosmotech"]
 
 

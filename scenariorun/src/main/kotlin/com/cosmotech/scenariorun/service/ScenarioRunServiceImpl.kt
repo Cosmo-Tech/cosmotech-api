@@ -20,7 +20,12 @@ import com.cosmotech.api.events.TwingraphImportEvent
 import com.cosmotech.api.events.TwingraphImportJobInfoRequest
 import com.cosmotech.api.events.WorkflowPhaseToStateRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
-import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.rbac.CsmRbac
+import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
+import com.cosmotech.api.rbac.PERMISSION_DELETE
+import com.cosmotech.api.rbac.PERMISSION_LAUNCH
+import com.cosmotech.api.rbac.PERMISSION_WRITE
+import com.cosmotech.api.rbac.getScenarioRolesDefinition
 import com.cosmotech.api.scenario.ScenarioRunMetaData
 import com.cosmotech.api.scenariorun.DataIngestionState
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
@@ -30,13 +35,16 @@ import com.cosmotech.api.utils.convertToMap
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.scenario.api.ScenarioApiService
+import com.cosmotech.organization.OrganizationApiServiceInterface
+import com.cosmotech.organization.service.getRbac
+import com.cosmotech.scenario.ScenarioApiServiceInterface
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioJobState
+import com.cosmotech.scenario.service.getRbac
 import com.cosmotech.scenariorun.CSM_JOB_ID_LABEL_KEY
 import com.cosmotech.scenariorun.ContainerFactory
 import com.cosmotech.scenariorun.SCENARIO_DATA_DOWNLOAD_ARTIFACT_NAME
-import com.cosmotech.scenariorun.api.ScenariorunApiService
+import com.cosmotech.scenariorun.ScenarioRunApiServiceInterface
 import com.cosmotech.scenariorun.domain.RunTemplateParameterValue
 import com.cosmotech.scenariorun.domain.ScenarioRun
 import com.cosmotech.scenariorun.domain.ScenarioRunLogs
@@ -52,13 +60,14 @@ import com.cosmotech.scenariorun.workflow.WorkflowService
 import com.cosmotech.solution.domain.DeleteHistoricalData
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
-import com.cosmotech.workspace.api.WorkspaceApiService
+import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.azure.EventHubRole
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.domain.Workspace
+import com.cosmotech.workspace.service.getRbac
 import java.time.Instant
 import java.time.ZonedDateTime
-import java.util.MissingResourceException
+import java.util.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -82,16 +91,24 @@ internal const val WORKFLOW_TYPE_TWIN_GRAPH_IMPORT = "twin-graph-import"
 class ScenarioRunServiceImpl(
     private val containerFactory: ContainerFactory,
     private val workflowService: WorkflowService,
-    private val workspaceService: WorkspaceApiService,
-    private val scenarioApiService: ScenarioApiService,
+    private val organizationService: OrganizationApiServiceInterface,
+    private val workspaceService: WorkspaceApiServiceInterface,
+    private val scenarioApiService: ScenarioApiServiceInterface,
     private val azureDataExplorerClient: AzureDataExplorerClient,
     private val azureEventHubsClient: AzureEventHubsClient,
     private val workspaceEventHubService: IWorkspaceEventHubService,
-    private val scenarioRunRepository: ScenarioRunRepository
-) : CsmPhoenixService(), ScenariorunApiService {
+    private val scenarioRunRepository: ScenarioRunRepository,
+    private val csmRbac: CsmRbac
+) : CsmPhoenixService(), ScenarioRunApiServiceInterface {
+
+  val scenarioPermissions = getScenarioRolesDefinition()
 
   override fun deleteScenarioRun(organizationId: String, scenariorunId: String) {
     val scenarioRun = this.findScenarioRunById(organizationId, scenariorunId)
+    val scenario =
+        scenarioApiService.findScenarioById(
+            organizationId, scenarioRun.workspaceId!!, scenarioRun.scenarioId!!)
+    csmRbac.verify(scenario.getRbac(), PERMISSION_DELETE, scenarioPermissions)
     val isPlatformAdmin =
         getCurrentAuthenticatedRoles(csmPlatformProperties).contains(ROLE_PLATFORM_ADMIN)
     if (scenarioRun.ownerId != getCurrentAuthenticatedUserName(csmPlatformProperties) &&
@@ -146,6 +163,8 @@ class ScenarioRunServiceImpl(
   }
 
   override fun deleteHistoricalDataOrganization(organizationId: String, deleteUnknown: Boolean) {
+    val organization = organizationService.findOrganizationById(organizationId)
+    csmRbac.verify(organization.getRbac(), PERMISSION_DELETE)
     this.eventPublisher.publishEvent(
         DeleteHistoricalDataOrganization(this, organizationId = organizationId, deleteUnknown))
   }
@@ -155,6 +174,8 @@ class ScenarioRunServiceImpl(
       workspaceId: String,
       deleteUnknown: Boolean
   ) {
+    val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
+    csmRbac.verify(workspace.getRbac(), PERMISSION_DELETE)
     this.eventPublisher.publishEvent(
         DeleteHistoricalDataWorkspace(
             this, organizationId = organizationId, workspaceId = workspaceId, deleteUnknown))
@@ -166,6 +187,8 @@ class ScenarioRunServiceImpl(
       scenarioId: String,
       deleteUnknown: Boolean
   ) {
+    val scenario = scenarioApiService.findScenarioById(organizationId, workspaceId, scenarioId)
+    csmRbac.verify(scenario.getRbac(), PERMISSION_DELETE)
     GlobalScope.launch {
       this@ScenarioRunServiceImpl.deleteScenarioRunsByScenarioWithoutAccessEnforcement(
           organizationId, workspaceId, scenarioId, deleteUnknown)
@@ -251,10 +274,13 @@ class ScenarioRunServiceImpl(
       organizationId: String,
       scenariorunId: String,
       withStateInformation: Boolean
-  ) =
-      this.findScenarioRunByIdOptional(organizationId, scenariorunId, withStateInformation)
-          ?: throw java.lang.IllegalArgumentException(
-              "ScenarioRun #$scenariorunId not found in organization #$organizationId")
+  ): ScenarioRun {
+    val scenarioRun =
+        this.findScenarioRunByIdOptional(organizationId, scenariorunId, withStateInformation)
+            ?: throw java.lang.IllegalArgumentException(
+                "ScenarioRun #$scenariorunId not found in organization #$organizationId")
+    return scenarioRun
+  }
 
   private fun ScenarioRun?.withStateInformation(organizationId: String): ScenarioRun? {
     if (this == null) {
@@ -293,13 +319,19 @@ class ScenarioRunServiceImpl(
   ): List<ScenarioRun> {
     val defaultPageSize = csmPlatformProperties.twincache.scenariorun.defaultPageSize
     var pageable = constructPageRequest(page, size, defaultPageSize)
+    // This call verify by itself that we have the read authorization in the scenario
+    scenarioApiService.findScenarioById(organizationId, workspaceId, scenarioId)
+
     if (pageable != null) {
-      return scenarioRunRepository.findByScenarioId(scenarioId, pageable).toList().map {
-        it.withStateInformation(organizationId).withoutSensitiveData()!!
-      }
+      return scenarioRunRepository
+          .findByScenarioId(organizationId, workspaceId, scenarioId, pageable)
+          .toList()
+          .map { it.withStateInformation(organizationId).withoutSensitiveData()!! }
     }
     return findAllPaginated(defaultPageSize) {
-          scenarioRunRepository.findByScenarioId(scenarioId, it).toList()
+          scenarioRunRepository
+              .findByScenarioId(organizationId, workspaceId, scenarioId, it)
+              .toList()
         }
         .map { it.withStateInformation(organizationId).withoutSensitiveData()!! }
   }
@@ -310,15 +342,18 @@ class ScenarioRunServiceImpl(
       page: Int?,
       size: Int?
   ): List<ScenarioRun> {
+    // This call verify by itself that we have the read authorization in the workspace
+    workspaceService.findWorkspaceById(organizationId, workspaceId)
     val defaultPageSize = csmPlatformProperties.twincache.scenariorun.defaultPageSize
     var pageable = constructPageRequest(page, size, defaultPageSize)
     if (pageable != null) {
-      return scenarioRunRepository.findByWorkspaceId(workspaceId, pageable).toList().map {
-        it.withStateInformation(organizationId).withoutSensitiveData()!!
-      }
+      return scenarioRunRepository
+          .findByWorkspaceId(organizationId, workspaceId, pageable)
+          .toList()
+          .map { it.withStateInformation(organizationId).withoutSensitiveData()!! }
     }
     return findAllPaginated(defaultPageSize) {
-          scenarioRunRepository.findByWorkspaceId(workspaceId, it).toList()
+          scenarioRunRepository.findByWorkspaceId(organizationId, workspaceId, it).toList()
         }
         .map { it.withStateInformation(organizationId).withoutSensitiveData()!! }
   }
@@ -383,21 +418,30 @@ class ScenarioRunServiceImpl(
   internal fun getEnvVarsForJobImportInfo(
       jobImportInfo: TwingraphImportEvent
   ): MutableMap<String, String> {
-
+    val queries = jobImportInfo.queries?.joinToString(";") ?: ""
     return when (jobImportInfo.sourceType) {
       "ADT" -> {
         mutableMapOf(
-            "TWIN_CACHE_NAME" to jobImportInfo.graphId,
+            "TWIN_CACHE_NAME" to jobImportInfo.twingraphId,
             "LOG_LEVEL" to "DEBUG",
-            "AZURE_DIGITAL_TWINS_URL" to jobImportInfo.sourceLocation)
+            "AZURE_DIGITAL_TWINS_URL" to jobImportInfo.sourceLocation,
+            "QUERIES" to queries)
       }
-      "Storage" -> {
+      "AzureStorage" -> {
         mutableMapOf(
-            "TWIN_CACHE_NAME" to jobImportInfo.graphId,
+            "TWIN_CACHE_NAME" to jobImportInfo.twingraphId,
             "LOG_LEVEL" to "DEBUG",
             "ACCOUNT_NAME" to jobImportInfo.sourceName,
             "CONTAINER_NAME" to jobImportInfo.sourceLocation,
-            "STORAGE_PATH" to jobImportInfo.sourcePath)
+            "STORAGE_PATH" to jobImportInfo.sourcePath,
+            "QUERIES" to queries)
+      }
+      "Twincache" -> {
+        mutableMapOf(
+            "TWIN_CACHE_NAME" to jobImportInfo.twingraphId,
+            "TWIN_CACHE_SOURCE" to jobImportInfo.sourceLocation,
+            "LOG_LEVEL" to "DEBUG",
+            "QUERIES" to queries)
       }
       else -> {
         throw IllegalArgumentException(
@@ -438,16 +482,22 @@ class ScenarioRunServiceImpl(
       workspaceId: String,
       scenarioId: String
   ): ScenarioRun {
+    val scenario = scenarioApiService.findScenarioById(organizationId, workspaceId, scenarioId)
+    csmRbac.verify(scenario.getRbac(), PERMISSION_LAUNCH, scenarioPermissions)
 
+    val scenarioRunId = idGenerator.generate("scenariorun", prependPrefix = "sr-")
     val startInfo =
         containerFactory.getStartInfo(
-            organizationId, workspaceId, scenarioId, WORKFLOW_TYPE_SCENARIO_RUN)
+            organizationId, workspaceId, scenarioId, WORKFLOW_TYPE_SCENARIO_RUN, scenarioRunId)
     logger.debug(startInfo.toString())
     val scenarioRunRequest =
         workflowService.launchScenarioRun(
-            startInfo.startContainers, startInfo.runTemplate.executionTimeout)
+            startInfo.startContainers,
+            startInfo.runTemplate.executionTimeout,
+            startInfo.solution.alwaysPull!!)
     val scenarioRun =
         this.dbCreateScenarioRun(
+            scenarioRunId,
             scenarioRunRequest,
             organizationId,
             workspaceId,
@@ -492,6 +542,7 @@ class ScenarioRunServiceImpl(
     }
     return scenarioRun.withoutSensitiveData()!!
   }
+
   private fun deletePreviousSimulationDataIfCurrentSimulationIsSuccessful(
       currentRun: ScenarioRun,
       purgeHistoricalDataConfiguration: DeleteHistoricalData
@@ -526,16 +577,20 @@ class ScenarioRunServiceImpl(
       page: Int?,
       size: Int?
   ): List<ScenarioRun> {
+    // This call verify by itself that we have the read authorization in the organization
+    organizationService.findOrganizationById(organizationId)
     val defaultPageSize = csmPlatformProperties.twincache.scenariorun.defaultPageSize
     var pageable = constructPageRequest(page, size, defaultPageSize)
     if (pageable != null) {
       return scenarioRunRepository
-          .findByPredicate(scenarioRunSearch.toRedisPredicate(), pageable)
+          .findByPredicate(organizationId, scenarioRunSearch.toRedisPredicate(), pageable)
           .toList()
           .map { it.withStateInformation(organizationId).withoutSensitiveData()!! }
     }
     return findAllPaginated(defaultPageSize) {
-          scenarioRunRepository.findByPredicate(scenarioRunSearch.toRedisPredicate(), it).toList()
+          scenarioRunRepository
+              .findByPredicate(organizationId, scenarioRunSearch.toRedisPredicate(), it)
+              .toList()
         }
         .map { it.withStateInformation(organizationId).withoutSensitiveData()!! }
   }
@@ -544,8 +599,11 @@ class ScenarioRunServiceImpl(
       organizationId: String,
       scenarioRunStartContainers: ScenarioRunStartContainers
   ): ScenarioRun {
+    val organization = organizationService.findOrganizationById(organizationId)
+    csmRbac.verify(organization.getRbac(), PERMISSION_CREATE_CHILDREN)
     val scenarioRunRequest = workflowService.launchScenarioRun(scenarioRunStartContainers, null)
     return this.dbCreateScenarioRun(
+            scenarioRunId = null,
             scenarioRunRequest,
             organizationId,
             "None",
@@ -560,7 +618,9 @@ class ScenarioRunServiceImpl(
         .withoutSensitiveData()!!
   }
 
+  @SuppressWarnings("LongParameterList")
   private fun dbCreateScenarioRun(
+      scenarioRunId: String?,
       scenarioRunRequest: ScenarioRun,
       organizationId: String,
       workspaceId: String,
@@ -581,9 +641,10 @@ class ScenarioRunServiceImpl(
             workspace?.sendInputToDataWarehouse, runTemplate?.sendDatasetsToDataWarehouse)
     // Only send containers if admin or special route
     val now = Instant.now().toString()
+
     val scenarioRun =
         scenarioRunRequest.copy(
-            id = idGenerator.generate("scenariorun", prependPrefix = "sr-"),
+            id = scenarioRunId ?: idGenerator.generate("scenariorun", prependPrefix = "sr-"),
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
             csmSimulationRun = csmSimulationId,
             organizationId = organizationId,
@@ -614,10 +675,37 @@ class ScenarioRunServiceImpl(
     return scenarioRunRepository.save(scenarioRun)
   }
 
-  override fun getScenarioRunStatus(organizationId: String, scenariorunId: String) =
-      getScenarioRunStatus(
-          organizationId,
-          this.findScenarioRunById(organizationId, scenariorunId, withStateInformation = false))
+  override fun getScenarioRunStatus(
+      organizationId: String,
+      scenariorunId: String
+  ): ScenarioRunStatus {
+    val scenarioRun =
+        this.findScenarioRunById(organizationId, scenariorunId, withStateInformation = false)
+    // This call verify by itself that we have the read authorization in the scenario
+    val scenario =
+        scenarioApiService.findScenarioById(
+            organizationId, scenarioRun.workspaceId!!, scenarioRun.scenarioId!!)
+
+    // PROD-12524
+    // due to the hack do not check the status as usual as we forced the scenario's status to failed
+    val scenariorRunStatus = getScenarioRunStatus(organizationId, scenarioRun)
+    if (scenario.state == ScenarioJobState.Failed) {
+      return ScenarioRunStatus(
+          id = scenariorRunStatus.id,
+          organizationId = scenariorRunStatus.organizationId,
+          workflowId = scenariorRunStatus.workflowId,
+          workflowName = scenariorRunStatus.workflowName,
+          startTime = scenariorRunStatus.startTime,
+          endTime = scenariorRunStatus.endTime,
+          phase = scenariorRunStatus.state.toString(),
+          progress = scenariorRunStatus.progress,
+          message = scenariorRunStatus.message,
+          estimatedDuration = scenariorRunStatus.estimatedDuration,
+          nodes = scenariorRunStatus.nodes)
+    }
+
+    return scenariorRunStatus
+  }
 
   private fun getScenarioRunStatus(
       organizationId: String,
@@ -629,7 +717,7 @@ class ScenarioRunServiceImpl(
     var versionWithDataIngestionState = true
     if (scenarioRun.sdkVersion != null) {
       logger.debug("SDK version for scenario run status detected: {}", scenarioRun.sdkVersion)
-      val splitVersion = scenarioRun.sdkVersion.split(".") ?: listOf()
+      val splitVersion = scenarioRun.sdkVersion.split(".")
       if (splitVersion.size < 2) {
         logger.error("Malformed SDK version for scenario run status data ingestion check")
       } else {
@@ -749,7 +837,6 @@ class ScenarioRunServiceImpl(
               "Data Ingestion status for ScenarioRun $scenarioRunId " +
                   "(csmSimulationRun=$csmSimulationRun): $postProcessingState")
           when (postProcessingState) {
-            null,
             DataIngestionState.Unknown -> ScenarioRunState.Unknown
             DataIngestionState.InProgress -> ScenarioRunState.DataIngestionInProgress
             DataIngestionState.Successful -> ScenarioRunState.Successful
@@ -793,7 +880,30 @@ class ScenarioRunServiceImpl(
   }
 
   override fun stopScenarioRun(organizationId: String, scenariorunId: String): ScenarioRunStatus {
+    val scenarioRun = findScenarioRunById(organizationId, scenariorunId)
+    var scenario =
+        scenarioApiService.findScenarioById(
+            organizationId, scenarioRun.workspaceId!!, scenarioRun.scenarioId!!)
+    csmRbac.verify(scenario.getRbac(), PERMISSION_WRITE, scenarioPermissions)
+    // PROD-12524
+    // As the workflow is not stopping when trying to stop it(argo version 0.16.6)
+    // the workaround is to set the scenario's state to failed
+    scenario.state = ScenarioJobState.Failed
+    eventPublisher.publishEvent(
+        ScenarioLastRunChanged(this, organizationId, scenarioRun.workspaceId, scenario))
+
+    val sr = scenarioRun.copy(state = ScenarioRunState.Failed)
+    scenarioRunRepository.save(sr)
     return workflowService.stopWorkflow(findScenarioRunById(organizationId, scenariorunId))
+  }
+
+  override fun getVerifiedScenarioRun(
+      organizationId: String,
+      workspaceId: String,
+      scenarioId: String,
+      requiredPermission: String
+  ): ScenarioRun {
+    TODO("Not yet implemented")
   }
 
   private fun sendScenarioRunMetaData(
@@ -831,17 +941,5 @@ class ScenarioRunServiceImpl(
             eventHubInfo.eventHubNamespace, eventHubInfo.eventHubName, scenarioMetaData)
       }
     }
-  }
-
-  override fun importScenarioRun(
-      organizationId: String,
-      workspaceId: String,
-      scenarioId: String,
-      scenarioRun: ScenarioRun
-  ): ScenarioRun {
-    if (scenarioRun.id == null) {
-      throw CsmResourceNotFoundException("ScenarioRun id is null")
-    }
-    return scenarioRunRepository.save(scenarioRun)
   }
 }

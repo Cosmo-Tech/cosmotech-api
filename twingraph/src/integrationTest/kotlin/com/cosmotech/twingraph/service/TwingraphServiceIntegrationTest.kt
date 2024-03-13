@@ -1,5 +1,7 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
+@file:Suppress("DEPRECATION")
+
 package com.cosmotech.twingraph.service
 
 import com.cosmotech.api.config.CsmPlatformProperties
@@ -8,16 +10,15 @@ import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
-import com.cosmotech.twingraph.api.TwingraphApiService
+import com.cosmotech.twingraph.TwingraphApiServiceInterface
 import com.cosmotech.twingraph.domain.GraphProperties
 import com.cosmotech.twingraph.domain.TwinGraphBatchResult
 import com.cosmotech.twingraph.domain.TwinGraphQuery
 import com.redis.testcontainers.RedisStackContainer
-import com.redislabs.redisgraph.impl.api.RedisGraph
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
@@ -25,6 +26,7 @@ import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
@@ -39,7 +41,10 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
+import redis.clients.jedis.HostAndPort
 import redis.clients.jedis.JedisPool
+import redis.clients.jedis.Protocol
+import redis.clients.jedis.UnifiedJedis
 
 const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
 
@@ -52,23 +57,34 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
 
   private val logger = LoggerFactory.getLogger(TwingraphServiceIntegrationTest::class.java)
 
-  @Autowired lateinit var twingraphApiService: TwingraphApiService
-  @Autowired lateinit var organizationApiService: OrganizationApiService
+  @Autowired lateinit var twingraphApiService: TwingraphApiServiceInterface
+  @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   lateinit var jedisPool: JedisPool
-  lateinit var redisGraph: RedisGraph
+  lateinit var unifiedJedis: UnifiedJedis
   lateinit var organization: Organization
 
   val graphId = "graph"
 
-  @BeforeEach
-  fun init() {
+  @BeforeAll
+  fun beforeAll() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
+    val context = getContext(redisStackServer)
+    val containerIp =
+        (context.server as RedisStackContainer).containerInfo.networkSettings.ipAddress
+    jedisPool = JedisPool(containerIp, 6379)
+    unifiedJedis = UnifiedJedis(HostAndPort(containerIp, Protocol.DEFAULT_PORT))
+    ReflectionTestUtils.setField(twingraphApiService, "unifiedJedis", unifiedJedis)
+
+    context.sync().hset("${graphId}MetaData", mapOf("lastVersion" to "1"))
+  }
+
+  @BeforeEach
+  fun beforeEach() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("admin")
-
     organization =
         organizationApiService.registerOrganization(
             Organization(
@@ -81,16 +97,6 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
                             mutableListOf(
                                 OrganizationAccessControl(
                                     id = CONNECTED_ADMIN_USER, role = "admin")))))
-
-    val context = getContext(redisStackServer)
-    val containerIp =
-        (context.server as RedisStackContainer).containerInfo.networkSettings.ipAddress
-    jedisPool = JedisPool(containerIp, 6379)
-    redisGraph = RedisGraph(jedisPool)
-    ReflectionTestUtils.setField(twingraphApiService, "csmJedisPool", jedisPool)
-    ReflectionTestUtils.setField(twingraphApiService, "csmRedisGraph", redisGraph)
-
-    context.sync().hset("${graphId}MetaData", mapOf("lastVersion" to "1"))
   }
 
   @Test
@@ -209,7 +215,7 @@ class TwingraphServiceIntegrationTest : CsmRedisTestBase() {
     val fileRelationshipName = this::class.java.getResource("/Follows.csv")?.file
     val fileRelationship: Resource = ByteArrayResource(File(fileRelationshipName!!).readBytes())
 
-    redisGraph.query("$graphId:1", "CREATE (n)")
+    unifiedJedis.graphQuery("$graphId:1", "CREATE (n)")
 
     listOf(
             listOf(

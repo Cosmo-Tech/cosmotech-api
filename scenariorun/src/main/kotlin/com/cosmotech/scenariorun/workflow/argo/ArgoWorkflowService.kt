@@ -13,6 +13,7 @@ import com.cosmotech.scenariorun.domain.ScenarioRunContainerLogs
 import com.cosmotech.scenariorun.domain.ScenarioRunLogs
 import com.cosmotech.scenariorun.domain.ScenarioRunResourceRequested
 import com.cosmotech.scenariorun.domain.ScenarioRunStartContainers
+import com.cosmotech.scenariorun.domain.ScenarioRunState
 import com.cosmotech.scenariorun.domain.ScenarioRunStatus
 import com.cosmotech.scenariorun.domain.ScenarioRunStatusNode
 import com.cosmotech.scenariorun.workflow.WorkflowContextData
@@ -163,7 +164,7 @@ internal class ArgoWorkflowService(
     if (workflowId != null) {
       workflow.status?.nodes?.forEach { (nodeKey, nodeValue) ->
         nodeValue.outputs?.artifacts?.forEach {
-          val artifactName = it.name ?: ""
+          val artifactName = it.name
           it.s3.let {
             val artifactLogs =
                 artifactsByUidService
@@ -200,12 +201,17 @@ internal class ArgoWorkflowService(
 
   override fun launchScenarioRun(
       scenarioRunStartContainers: ScenarioRunStartContainers,
-      executionTimeout: Int?
+      executionTimeout: Int?,
+      alwaysPull: Boolean
   ): ScenarioRun {
     val body =
         IoArgoprojWorkflowV1alpha1WorkflowCreateRequest()
             .workflow(
-                buildWorkflow(csmPlatformProperties, scenarioRunStartContainers, executionTimeout))
+                buildWorkflow(
+                    csmPlatformProperties,
+                    scenarioRunStartContainers,
+                    executionTimeout,
+                    alwaysPull))
 
     logger.trace("Workflow: {}", body.workflow)
 
@@ -286,9 +292,9 @@ internal class ArgoWorkflowService(
     return workflowList?.items?.map { workflow ->
       val workflowId = workflow.metadata.uid!!
       val status = workflow.status?.phase
-      val organizationId = workflow.metadata.labels!!.getOrDefault(ORGANIZATION_ID_LABEL, "none")
-      val workspaceId = workflow.metadata.labels!!.getOrDefault(WORKSPACE_ID_LABEL, "none")
-      val scenarioId = workflow.metadata.labels!!.getOrDefault(SCENARIO_ID_LABEL, "none")
+      val organizationId = workflow.metadata.labels?.getOrDefault(ORGANIZATION_ID_LABEL, "none")
+      val workspaceId = workflow.metadata.labels?.getOrDefault(WORKSPACE_ID_LABEL, "none")
+      val scenarioId = workflow.metadata.labels?.getOrDefault(SCENARIO_ID_LABEL, "none")
       com.cosmotech.scenariorun.workflow.WorkflowStatus(
           workflowId = workflowId,
           status = status,
@@ -355,21 +361,6 @@ internal class ArgoWorkflowService(
     return buildScenarioRunStatusFromWorkflowStatus(scenarioRun, workflowStatus)
   }
 
-  internal fun getPodName(
-      workflow: IoArgoprojWorkflowV1alpha1Workflow,
-      nodeValue: IoArgoprojWorkflowV1alpha1NodeStatus
-  ): String {
-    var podName = ""
-    if (workflow.spec.templates?.get(0)?.containerSet != null) {
-      podName = nodeValue.name
-    } else {
-      var name = StringBuilder(nodeValue.id)
-      var toInsert = nodeValue.displayName + "-"
-      name.insert(nodeValue.id.lastIndexOf('-') + 1, toInsert)
-      podName = name.toString()
-    }
-    return podName
-  }
   override fun getScenarioRunLogs(scenarioRun: ScenarioRun): ScenarioRunLogs {
     val workflowId = scenarioRun.workflowId
     val workflowName = scenarioRun.workflowName
@@ -383,9 +374,7 @@ internal class ArgoWorkflowService(
                 containerName = nodeValue.displayName,
                 children = nodeValue.children,
                 logs =
-                    lokiService.getPodLogs(
-                        csmPlatformProperties.argo.workflows.namespace,
-                        getPodName(workflow, nodeValue)))
+                    lokiService.getPodLogs(csmPlatformProperties.argo.workflows.namespace, nodeKey))
       }
     }
     return ScenarioRunLogs(scenariorunId = scenarioRun.id, containers = containersLogs)
@@ -452,7 +441,9 @@ internal class ArgoWorkflowService(
         workflowName = scenarioRun.workflowName,
         startTime = workflowStatus?.startedAt?.toString(),
         endTime = workflowStatus?.finishedAt?.toString(),
-        phase = workflowStatus?.phase,
+        phase =
+            if (scenarioRun.state == ScenarioRunState.Failed) ScenarioRunState.Failed.toString()
+            else workflowStatus?.phase,
         progress = workflowStatus?.progress,
         message = workflowStatus?.message,
         estimatedDuration = workflowStatus?.estimatedDuration,

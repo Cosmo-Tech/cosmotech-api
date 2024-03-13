@@ -66,6 +66,14 @@ class WorkflowBuildersTests {
   }
 
   @Test
+  fun `Solution has alwaysPull set to true`() {
+    val src = getScenarioRunContainer()
+    val template = buildTemplate(src, csmPlatformProperties, true)
+    assertNotNull(template.container)
+    assertEquals("Always", template.container!!.imagePullPolicy)
+  }
+
+  @Test
   fun `Template has name`() {
     val name = "template name"
     val src = getScenarioRunContainer(name)

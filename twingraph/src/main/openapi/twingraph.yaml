@@ -14,50 +14,9 @@ security:
 
 tags:
   - name: twingraph
-    description: Twin Graph Management
+    description: Twin Graph Management | This service is deprecated, use Dataset Service instead
 
 paths:
-  /organizations/{organization_id}/twingraph/import:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-    post:
-      operationId: importGraph
-      tags:
-        - twingraph
-      summary: Import a new version of a twin graph
-      description: Import a new version of a twin graph
-      requestBody:
-        description: the graph to import
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TwinGraphImport'
-            examples:
-              RunJobImportWithADT:
-                $ref: '#/components/examples/RunJobImportWithADT'
-              RunJobImportWithStorage:
-                $ref: '#/components/examples/RunJobImportWithStorage'
-          application/yaml:
-            schema:
-              $ref: '#/components/schemas/TwinGraphImport'
-            examples:
-              RunJobImportWithADT:
-                $ref: '#/components/examples/RunJobImportWithADT'
-              RunJobImportWithStorage:
-                $ref: '#/components/examples/RunJobImportWithStorage'
-      responses:
-        '202':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TwinGraphImportInfo'
   /organizations/{organization_id}/twingraph/{graph_id}:
     parameters:
       - name: organization_id
@@ -73,6 +32,7 @@ paths:
         schema:
           type: string
     post:
+      deprecated: true
       operationId: createGraph
       tags:
         - twingraph
@@ -120,6 +80,7 @@ paths:
         '204':
           description: Successful response
     delete:
+      deprecated: true
       operationId: delete
       tags:
         - twingraph
@@ -137,6 +98,7 @@ paths:
         schema:
           type: string
     get:
+      deprecated: true
       operationId: findAllTwingraphs
       tags:
         - twingraph
@@ -166,6 +128,7 @@ paths:
         schema:
           type: string
     get:
+      deprecated: true
       operationId: jobStatus
       tags:
         - twingraph
@@ -196,6 +159,7 @@ paths:
         schema:
           type: string
     post:
+      deprecated: true
       operationId: query
       tags:
         - twingraph
@@ -239,6 +203,7 @@ paths:
         schema:
           type: string
     post:
+      deprecated: true
       operationId: batchQuery
       tags:
         - twingraph
@@ -276,6 +241,7 @@ paths:
         schema:
           type: string
     get:
+      deprecated: true
       operationId: downloadGraph
       tags:
         - twingraph
@@ -313,6 +279,7 @@ paths:
             - node
             - relationship
     post:
+      deprecated: true
       operationId: createEntities
       tags:
         - twingraph
@@ -338,6 +305,7 @@ paths:
               schema:
                 type: string
     get:
+      deprecated: true
       operationId: getEntities
       tags:
         - twingraph
@@ -360,6 +328,7 @@ paths:
               schema:
                 type: string
     patch:
+      deprecated: true
       operationId: updateEntities
       tags:
         - twingraph
@@ -385,6 +354,7 @@ paths:
               schema:
                 type: string
     delete:
+      deprecated: true
       operationId: deleteEntities
       tags:
         - twingraph
@@ -417,6 +387,7 @@ paths:
         schema:
           type: string
     get:
+      deprecated: true
       operationId: getGraphMetaData
       tags:
         - twingraph
@@ -432,6 +403,7 @@ paths:
               example:
                 $ref: "#/components/examples/MetaDataResponse"
     patch:
+      deprecated: true
       operationId: updateGraphMetaData
       tags:
         - twingraph
@@ -458,20 +430,6 @@ paths:
                 type: object
               example:
                 $ref: "#/components/examples/MetaDataResponse"
-  /organizations/{organization_id}/twingraph/{graph_id}/graph:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: graph_id
-        in: path
-        description: the Graph Identifier
-        required: true
-        schema:
-          type: string
   /organizations/{organization_id}/twingraph/{graph_id}/batch:
     parameters:
       - name: organization_id
@@ -520,6 +478,7 @@ paths:
             value:
               query: "MATCH (p:Person {id: toInteger($id)}) DELETE p"
     post:
+      deprecated: true
       operationId: batchUploadUpdate
       tags:
         - twingraph
@@ -603,24 +562,6 @@ components:
         hash:
           type: string
           description: the hash of the graph
-    TwinGraphImport:
-      type: object
-      description: a twin graph import info
-      properties:
-        source:
-          $ref: '#/components/schemas/SourceInfo'
-        graphId:
-          type: string
-          description: the graph id to import to
-        version:
-          type: string
-          description: |
-            The version of the graph to import to. 
-            When not set, the last version before import is upgraded by 1.
-            When set, the targeted graph is replaced
-      required:
-        - source
-        - graphId
     GraphProperties:
       type: object
       properties:
@@ -639,57 +580,7 @@ components:
         params:
           type: string
           description: the parameters of the graph data object
-    SourceInfo:
-      type: object
-      description: Source job import information
-      properties:
-        name:
-          type: string
-          description: the source name containing the files to import
-        location:
-          type: string
-          description: the source location containing the files to import
-        path:
-          type: string
-          description: the source location containing the files to import
-        type:
-          type: string
-          description: the source type containing the files to import
-          enum:
-            - ADT
-            - Storage
-      required:
-        - location
-        - type
-    TwinGraphImportInfo:
-      type: object
-      description: a twin graph query in cypher language
-      properties:
-        jobId:
-          type: string
-          description: the import job id
-        graphName:
-          type: string
-          description: the twin graph name
   examples:
-    RunJobImportWithADT:
-      summary: Run import job with ADT as source
-      description: Run import job with ADT as source
-      value:
-        source:
-          location: "https://my-adt-name-instance.api.weu.digitaltwins.azure.net"
-          type: "ADT"
-        graphId: "my-graph-id"
-    RunJobImportWithStorage:
-      summary: Run import job with Storage as source
-      description: Run import job with Storage as source
-      value:
-        source:
-          name: "my-storage-account-name"
-          location: "my-container-name"
-          path: "my-data-folder"
-          type: "Storage"
-        graphId: "my-graph-id"
     GetAllNodes:
       summary: Get all nodes query
       description: Get all nodes query (be careful if you want to query large graph)

@@ -1,33 +1,77 @@
-spring:
-  redis:
-    host: ${csm.platform.twincache.host}
-    username: ${csm.platform.twincache.username}
-    password: ${csm.platform.twincache.password}
-    client-type: jedis
-  main:
-    lazy-initialization: true
-
 management:
   endpoints:
     enabled-by-default: false
 
+azure:
+  storage:
+    account-name: "fake_test_account_name"
+    account-key: "this_is_a_key_base64_encoded"
+    blob-endpoint: "https://faketestaccountname.blob.core.windows.net"
+
+
+spring:
+  data:
+    redis:
+      host: "localhost"
+      username: "default"
+      # Leave it as blank as there's no auth with test container
+      password:
+      client-type: jedis
+  cloud:
+    azure:
+      # Required to auto-configure the beans provided by the Azure Spring Boot AutoConfigurations
+      active-directory:
+        profile:
+          # tenantId is 'common' to use the login process of multi-tenant access
+          # See https://github.com/Azure/azure-sdk-for-java/blob/master/sdk/spring/azure-spring-boot-starter-active-directory/ACCESS_TO_MULTI_TENANT_APP.md
+          tenant-id: "fake_tenant_id"
+        credential:
+          client-id: "fake_client_id"
+          client-secret: "fake_client_secret"
+        session-stateless: true
+        app-id-uri: "fake_app_id_uri"
+        enabled: true
+      storage:
+        blob:
+          # Storage account name length should be between 3 and 24 and use numbers and lower-case letters only
+          account-name: "fakeaccountname"
+          # Fill storage account access key copied from portal
+          account-key: "fakeaccountkey"
+          # Fill storage endpoint URL copied from portal
+          endpoint: "https://fakeaccountname.blob.core.windows.net"
+          enabled: true
+
 csm:
   platform:
-    data-ingestion:
-      # Number of seconds to wait after a scenario run workflow end time, before
-      # starting to check ADX for data ingestion state.
-      # See https://bit.ly/3FXshzE for the rationale
-      waiting-time-before-ingestion-seconds: 15
-      # number of minutes after a scenario run workflow end time during which an ingestion failure
-      # detected is considered linked to the current scenario run
-      ingestion-observation-window-to-be-considered-a-failure-minutes: 5
-      # number of seconds to wait after the checking the scenario validation ingestion status
-      sleeping-time-before-querying-scenario-validation-status-seconds: 5
-      # number of retry to query the scenario validation status
-      max-retry-authorized: 5
-      state:
-        # the timeout in second before considering no data in probes measures and control plane is an issue
-        no-data-time-out-seconds: 60
+    azure:
+      appIdUri: "api://fake_app_id_uri"
+      credentials:
+        core:
+          tenantId: "fake_tenant_id"
+          clientId: "fake_client_id"
+          clientSecret: "fake_client_secret"
+      dataWarehouseCluster:
+        baseUri: "https://fake_uri.kusto.windows.net"
+        options:
+          ingestionUri: "https://ingest-fake_uri.kusto.windows.net"
+      eventBus:
+        baseUri: "amqps://fake_uri.servicebus.windows.net"
+      storage:
+        baseUri: "fake_base_uri"
+        resourceUri: "fake_resource_uri"
+        account-name: "fake_account_name"
+        account-key: "fake_account_key"
+        blob-endpoint: "https://fake_uri.blob.core.windows.net"
+        connectionString: "fake_connection_string"
+      containerRegistries:
+        core: ghcr.io
+        solutions: "localhost:5000"
+      keyVault: "changeme"
+      analytics:
+        resourceUri: ""
+        instrumentationKey: ""
+        connectionString: "changeme"
+    runOutsideKubernetes: true
     metrics:
       enabled: false
     api:
@@ -93,4 +137,11 @@ csm:
       host: "localhost"
       port: "6379"
       username: "default"
-      password: "my-wonderful-password"
+      # Leave it as blank as there's no auth with test container
+      password:
+      connector:
+        default-page-size: 5
+    rbac:
+      enabled: true
+
+

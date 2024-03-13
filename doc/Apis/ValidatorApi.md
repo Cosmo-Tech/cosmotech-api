@@ -2,17 +2,17 @@
 
 All URIs are relative to *https://dev.api.cosmotech.com*
 
-Method | HTTP request | Description
-------------- | ------------- | -------------
-[**createValidator**](ValidatorApi.md#createValidator) | **POST** /organizations/{organization_id}/datasets/validators | Register a new validator
-[**createValidatorRun**](ValidatorApi.md#createValidatorRun) | **POST** /organizations/{organization_id}/datasets/validators/{validator_id}/history | Register a new validator run
-[**deleteValidator**](ValidatorApi.md#deleteValidator) | **DELETE** /organizations/{organization_id}/datasets/validators/{validator_id} | Delete a validator
-[**deleteValidatorRun**](ValidatorApi.md#deleteValidatorRun) | **DELETE** /organizations/{organization_id}/datasets/validators/{validator_id}/history/{validatorrun_id} | Delete a validator run
-[**findAllValidatorRuns**](ValidatorApi.md#findAllValidatorRuns) | **GET** /organizations/{organization_id}/datasets/validators/{validator_id}/history | List all Validator Runs
-[**findAllValidators**](ValidatorApi.md#findAllValidators) | **GET** /organizations/{organization_id}/datasets/validators | List all Validators
-[**findValidatorById**](ValidatorApi.md#findValidatorById) | **GET** /organizations/{organization_id}/datasets/validators/{validator_id} | Get the details of a validator
-[**findValidatorRunById**](ValidatorApi.md#findValidatorRunById) | **GET** /organizations/{organization_id}/datasets/validators/{validator_id}/history/{validatorrun_id} | Get the details of a validator run
-[**runValidator**](ValidatorApi.md#runValidator) | **POST** /organizations/{organization_id}/datasets/validators/{validator_id}/run | Run a Validator
+| Method | HTTP request | Description |
+|------------- | ------------- | -------------|
+| [**createValidator**](ValidatorApi.md#createValidator) | **POST** /organizations/{organization_id}/datasets/validators | Register a new validator |
+| [**createValidatorRun**](ValidatorApi.md#createValidatorRun) | **POST** /organizations/{organization_id}/datasets/validators/{validator_id}/history | Register a new validator run |
+| [**deleteValidator**](ValidatorApi.md#deleteValidator) | **DELETE** /organizations/{organization_id}/datasets/validators/{validator_id} | Delete a validator |
+| [**deleteValidatorRun**](ValidatorApi.md#deleteValidatorRun) | **DELETE** /organizations/{organization_id}/datasets/validators/{validator_id}/history/{validatorrun_id} | Delete a validator run |
+| [**findAllValidatorRuns**](ValidatorApi.md#findAllValidatorRuns) | **GET** /organizations/{organization_id}/datasets/validators/{validator_id}/history | List all Validator Runs |
+| [**findAllValidators**](ValidatorApi.md#findAllValidators) | **GET** /organizations/{organization_id}/datasets/validators | List all Validators |
+| [**findValidatorById**](ValidatorApi.md#findValidatorById) | **GET** /organizations/{organization_id}/datasets/validators/{validator_id} | Get the details of a validator |
+| [**findValidatorRunById**](ValidatorApi.md#findValidatorRunById) | **GET** /organizations/{organization_id}/datasets/validators/{validator_id}/history/{validatorrun_id} | Get the details of a validator run |
+| [**runValidator**](ValidatorApi.md#runValidator) | **POST** /organizations/{organization_id}/datasets/validators/{validator_id}/run | Run a Validator |
 
 
 <a name="createValidator"></a>
@@ -23,10 +23,10 @@ Register a new validator
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **Validator** | [**Validator**](../Models/Validator.md)| the Validator to create |
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **Validator** | [**Validator**](../Models/Validator.md)| the Validator to create | |
 
 ### Return type
 
@@ -49,11 +49,11 @@ Register a new validator run
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **validator\_id** | **String**| the ValidatorRun identifier | [default to null]
- **ValidatorRun** | [**ValidatorRun**](../Models/ValidatorRun.md)| the Validator Run to create |
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **validator\_id** | **String**| the ValidatorRun identifier | [default to null] |
+| **ValidatorRun** | [**ValidatorRun**](../Models/ValidatorRun.md)| the Validator Run to create | |
 
 ### Return type
 
@@ -76,10 +76,10 @@ Delete a validator
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **validator\_id** | **String**| the Validator identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **validator\_id** | **String**| the Validator identifier | [default to null] |
 
 ### Return type
 
@@ -102,11 +102,11 @@ Delete a validator run
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **validator\_id** | **String**| the Validator identifier | [default to null]
- **validatorrun\_id** | **String**| the Validator Run identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **validator\_id** | **String**| the Validator identifier | [default to null] |
+| **validatorrun\_id** | **String**| the Validator Run identifier | [default to null] |
 
 ### Return type
 
@@ -129,10 +129,10 @@ List all Validator Runs
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **validator\_id** | **String**| the ValidatorRun identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **validator\_id** | **String**| the ValidatorRun identifier | [default to null] |
 
 ### Return type
 
@@ -155,9 +155,9 @@ List all Validators
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
 
 ### Return type
 
@@ -180,10 +180,10 @@ Get the details of a validator
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **validator\_id** | **String**| the Validator identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **validator\_id** | **String**| the Validator identifier | [default to null] |
 
 ### Return type
 
@@ -206,11 +206,11 @@ Get the details of a validator run
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **validator\_id** | **String**| the Validator identifier | [default to null]
- **validatorrun\_id** | **String**| the Validator Run identifier | [default to null]
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **validator\_id** | **String**| the Validator identifier | [default to null] |
+| **validatorrun\_id** | **String**| the Validator Run identifier | [default to null] |
 
 ### Return type
 
@@ -233,11 +233,11 @@ Run a Validator
 
 ### Parameters
 
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **organization\_id** | **String**| the Organization identifier | [default to null]
- **validator\_id** | **String**| the ValidatorRun identifier | [default to null]
- **ValidatorRun** | [**ValidatorRun**](../Models/ValidatorRun.md)| the Validator to run |
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **validator\_id** | **String**| the ValidatorRun identifier | [default to null] |
+| **ValidatorRun** | [**ValidatorRun**](../Models/ValidatorRun.md)| the Validator to run | |
 
 ### Return type
 

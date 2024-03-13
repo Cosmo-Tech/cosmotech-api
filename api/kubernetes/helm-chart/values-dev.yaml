@@ -72,3 +72,7 @@ config:
           account-key: "changeme"
         containerRegistries:
           solutions: "localhost:5000"
+      containerRegistry:
+        registryUrl: "https://csmenginesdev.azurecr.io"
+        registryUserName: "user-name"
+        registryPassword: "a-super-secret-password"

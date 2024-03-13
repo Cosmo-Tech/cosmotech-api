@@ -57,10 +57,10 @@ internal fun getPropertyBinaryBlobFormat(type: PropertyType, property: Any?): By
     }
     PropertyType.BI_ARRAY -> {
       // TODO spec not clear
-      val p = property as List<String>
-      val size = p.size as Long
+      val p = property as List<*>
+      val size = p.size.toLong()
       binary += size.to8ByteArrayInLittleEndian()
-      for (a in p) binary += a.toByteArray()
+      for (a in p) binary += (a as String).toByteArray()
     }
   }
   return binary

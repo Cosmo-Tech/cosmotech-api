@@ -77,13 +77,25 @@ Create Docker secrets so Argo Workflows can pull images from a private container
 {{- end }}
 
 {{/*
-Default Ingress path
+Context path:
+This path will follow the pattern /{rootName}/{namespace|tenantId}/{apiVersion}
+E.g:
+- /cosmotech-api/myTenant/v1
+- /cosmotech-api/myTenant/ if apiVersion is set to "latest"
 */}}
-{{- define "cosmotech-api.apiBasePath" -}}
+{{- define "cosmotech-api.contextPath" -}}
 {{- if eq .Values.api.version "latest" }}
+{{- if .Values.api.multiTenant }}
+{{- printf "%s/%s/" (printf "%s" .Values.api.servletContextPath | trimSuffix "/" ) .Release.Namespace }}
+{{- else }}
 {{- printf "%s/" (printf "%s" .Values.api.servletContextPath | trimSuffix "/" ) }}
+{{- end }}
+{{- else }}
+{{- if .Values.api.multiTenant }}
+{{- printf "%s/%s/%s/" (printf "%s" .Values.api.servletContextPath | trimSuffix "/" ) .Release.Namespace (printf "%s" .Values.api.version | trimSuffix "/" ) }}
 {{- else }}
 {{- printf "%s/%s/" (printf "%s" .Values.api.servletContextPath | trimSuffix "/" ) (printf "%s" .Values.api.version | trimSuffix "/" ) }}
+{{- end }}
 {{- end }}
 {{- end }}
 
@@ -97,39 +109,31 @@ spring:
 
 api:
   version: "{{ .Values.api.version }}"
+  multiTenant: {{ default true .Values.api.multiTenant }}
+  servletContextPath: {{ include "cosmotech-api.contextPath" . }}
 
 server:
   servlet:
-    context-path: {{ include "cosmotech-api.apiBasePath" . }}
-  jetty:
+    context-path: {{ include "cosmotech-api.contextPath" . }}
+  undertow:
     accesslog:
-      ignore-paths:
-        - /actuator/health/liveness
-        - /actuator/health/readiness
+      enabled: false
 
 management:
   endpoint:
     health:
       group:
         readiness:
-          {{- if eq .Values.config.csm.platform.vendor "azure" }}
-          {{- if index .Values.config.csm.platform.argo "base-uri" }}
-          include: "readinessState,argo,blobStorage,csmAdx"
-          {{- else }}
-          include: "readinessState,blobStorage,csmAdx"
-          {{- end }}
-          {{- else }}
           {{- if index .Values.config.csm.platform.argo "base-uri" }}
           include: "readinessState,argo"
           {{- else }}
           include: "readinessState"
           {{- end }}
-          {{- end }}
 
 csm:
   platform:
     api:
-      base-url: "http://{{ include "cosmotech-api.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}{{ include "cosmotech-api.apiBasePath" . | trimSuffix "/" }}"
+      base-url: "http://{{ include "cosmotech-api.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}{{ include "cosmotech-api.contextPath" . | trimSuffix "/" }}"
       # API Base Path for OpenAPI-generated controllers.
       # Might conflict with the SpringBoot context path, hence leaving it at the root
       base-path: /

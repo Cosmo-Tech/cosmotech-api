@@ -127,7 +127,7 @@ paths:
         - solution
       summary: Update a solution
       requestBody:
-        description: the new Solution details.
+        description: the new Solution details. This endpoint can't be used to update security
         required: true
         content:
           application/json:
@@ -419,11 +419,18 @@ paths:
       responses:
         "200":
           description: the run template handle file as a resource
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+                format: byte
+              description: Run Template step handler zip file
+              example: attachment; filename="name.zip"
           content:
             application/octet-stream:
               schema:
                 type: string
-                format: binary
+                format: byte
         "404":
           description: the Run Template Handler file specified is unknown or you don't have access to it
   /organizations/{organization_id}/solutions/{solution_id}/runtemplates/{run_template_id}/handlers/{handler_id}/upload:
@@ -478,7 +485,7 @@ paths:
           description: zip file uploaded
         "400":
           description: Bad request
-  /organizations/{organization_id}/solutions/import:
+  /organizations/{organization_id}/solutions/{solution_id}/security:
     parameters:
       - name: organization_id
         in: path
@@ -486,40 +493,230 @@ paths:
         required: true
         schema:
           type: string
-    post:
-      operationId: importSolution
+      - name: solution_id
+        in: path
+        description: the Solution identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getSolutionSecurity
       tags:
         - solution
-      summary: Import a solution
+      summary: Get the Solution security information
+      responses:
+        "200":
+          description: The Solution security
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SolutionSecurity'
+        "404":
+          description: the Solution specified is unknown or you don't have access to it
+  /organizations/{organization_id}/solutions/{solution_id}/security/default:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: solution_id
+        in: path
+        description: the Solution identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: setSolutionDefaultSecurity
+      tags:
+        - solution
+      summary: Set the Solution default security
       requestBody:
-        description: the Solution to import
+        description: This change the solution default security.
+          The default security is the role assigned to any person not on the Access Control List.
+          If the default security is None, then nobody outside of the ACL can access the solution.
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Solution'
+              $ref: '#/components/schemas/SolutionRole'
             examples:
-              Brewery:
-                $ref: '#/components/examples/Brewery'
+              BrewerySolutionRole:
+                $ref: '#/components/examples/BrewerySolutionRole'
           application/yaml:
             schema:
               type: string
               format: binary
             examples:
-              ADTConnector:
-                $ref: '#/components/examples/Brewery'
+              BrewerySolutionRole:
+                $ref: '#/components/examples/BrewerySolutionRole'
       responses:
         "201":
-          description: the solution details
+          description: The Solution default visibility
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Solution'
+                $ref: '#/components/schemas/SolutionSecurity'
+        "404":
+          description: the Solution specified is unknown or you don't have access to it
+  /organizations/{organization_id}/solutions/{solution_id}/security/users:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: solution_id
+        in: path
+        description: the Solution identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getSolutionSecurityUsers
+      tags:
+        - solution
+      summary: Get the Solution security users list
+      responses:
+        "200":
+          description: The Solution security users list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                example:
+                  - alice@mycompany.com
+                  - bob@mycompany.com
+        "404":
+          description: the Solution or the User specified is unknown or you don't have access to them
+  /organizations/{organization_id}/solutions/{solution_id}/security/access:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: solution_id
+        in: path
+        description: the Solution identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: addSolutionAccessControl
+      tags:
+        - solution
+      summary: Add a control access to the Solution
+      requestBody:
+        description: the new Solution security access to add.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SolutionAccessControl'
+            examples:
+              SolutionAccess:
+                $ref: '#/components/examples/BrewerySolutionAccessControl'
+          application/yaml:
+            schema:
+              type: string
+              format: binary
+            examples:
+              SolutionAccess:
+                $ref: '#/components/examples/BrewerySolutionAccessControl'
+      responses:
+        "201":
+          description: The Solution access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SolutionAccessControl'
               examples:
-                Brewery:
-                  $ref: '#/components/examples/Brewery'
-        "400":
-          description: Bad request
+                SolutionAccessControl:
+                  $ref: '#/components/examples/BrewerySolutionAccessControl'
+        "404":
+          description: the Solution specified is unknown or you don't have access to it
+
+  /organizations/{organization_id}/solutions/{solution_id}/security/access/{identity_id}:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: solution_id
+        in: path
+        description: the Solution identifier
+        required: true
+        schema:
+          type: string
+      - name: identity_id
+        in: path
+        description: the User identifier
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getSolutionAccessControl
+      tags:
+        - solution
+      summary: Get a control access for the Solution
+      responses:
+        "200":
+          description: The Solution access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SolutionAccessControl'
+              examples:
+                SolutionAccessControl:
+                  $ref: '#/components/examples/BrewerySolutionAccessControl'
+        "404":
+          description: The Solution or user specified is unknown or you don't have access to it
+    patch:
+      operationId: updateSolutionAccessControl
+      tags:
+        - solution
+      summary: Update the specified access to User for a Solution
+      requestBody:
+        description: The new Solution Access Control
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SolutionRole'
+            examples:
+              BrewerySolutionRole:
+                $ref: '#/components/examples/BrewerySolutionRole'
+      responses:
+        "200":
+          description: The Solution access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SolutionAccessControl'
+              examples:
+                SolutionAccessControl:
+                  $ref: '#/components/examples/BrewerySolutionAccessControl'
+        "404":
+          description: The Solution specified is unknown or you don't have access to it
+    delete:
+      operationId: removeSolutionAccessControl
+      tags:
+        - solution
+      summary: Remove the specified access from the given Organization Solution
+      responses:
+        "204":
+          description: Request succeeded
+        "404":
+          description: The Solution or the user specified is unknown or you don't have access to them
+
 components:
   securitySchemes:
     oAuth2AuthCode:
@@ -559,6 +756,10 @@ components:
         repository:
           type: string
           description: the registry repository containing the image
+        alwaysPull:
+          type: boolean
+          description: set to true if the runtemplate wants to always pull the image
+          default: false
         csmSimulator:
           type: string
           description: the main Cosmo Tech simulator name used in standard Run Template
@@ -595,12 +796,56 @@ components:
           description: list of Run Template
           items:
             $ref: '#/components/schemas/RunTemplate'
+        security:
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
+          allOf:
+            - $ref: '#/components/schemas/SolutionSecurity'
   #       required:
   #         - key
   #         - name
   #         - repository
   #         - version
   #         - runTemplates
+    SolutionSecurity:
+      type: object
+      description: the Solution security information
+      properties:
+        default:
+          type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
+          description: the role by default
+        accessControlList:
+          type: array
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
+          description: the list which can access this Solution with detailed access control information
+          items:
+            $ref: '#/components/schemas/SolutionAccessControl'
+      required:
+        - default
+        - accessControlList
+    SolutionAccessControl:
+      type: object
+      description: a Solution access control item
+      properties:
+        id:
+          type: string
+          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
+          description: the identity id
+        role:
+          type: string
+          description: a role
+      required:
+        - id
+        - role
+    SolutionRole:
+      type: object
+      description: the Solution Role
+      properties:
+        role:
+          type: string
+          description: the Solution Role
+      required:
+        - role
     RunTemplate:
       type: object
       description: a Solution Run Template
@@ -611,6 +856,9 @@ components:
         name:
           type: string
           description: the Run Template name
+          deprecated: true
+        labels:
+          $ref: '#/components/schemas/TranslatedLabels'
         description:
           type: string
           description: the Run Template description
@@ -694,6 +942,8 @@ components:
         runTemplateSourceDir:
           type: string
           description: an optional directory where to find the run template source
+        orchestratorType:
+          $ref: "#/components/schemas/RunTemplateOrchestrator"
         executionTimeout:
           type: integer
           description: an optional duration in seconds in which a workflow is allowed to run
@@ -721,6 +971,12 @@ components:
       required:
         - enable
 
+    RunTemplateOrchestrator:
+      type: string
+      description: the Orchestrator to use for the Run Template
+      enum:
+        - argoWorkflow
+        - csmOrc
     RunTemplateHandlerId:
       type: string
       description: the Run Template step handler identifier
@@ -861,6 +1117,13 @@ components:
             deleteHistoricalData:
               enable: true
               pollFrequency: 10000
+        security:
+          default: none
+          accessControlList:
+            - id: "jane.doe@cosmotech.com"
+              role: "editor"
+            - id: "john.doe@cosmotech.com"
+              role: "viewer"
     BreweryUpdate:
       summary: Brewery Solution update
       description: Brewery Solution update example
@@ -904,6 +1167,17 @@ components:
             computeSize: highcpu
             parameterGroups:
               - consumers
+    BrewerySolutionAccessControl:
+      summary: Set an access control.
+      description: Set an access control for a user to a solution.
+      value:
+        id: "bob.doe@cosmotech.com"
+        role: "editor"
+    BrewerySolutionRole:
+      summary: Set a Solution Role.
+      description: Set a Role for a user to a solution.
+      value:
+        role: "editor"
     OneSolution:
       summary: Brewery Solution
       description: Brewery Solution example

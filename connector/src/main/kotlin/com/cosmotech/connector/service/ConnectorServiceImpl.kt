@@ -11,18 +11,20 @@ import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.connector.api.ConnectorApiService
+import com.cosmotech.connector.ConnectorApiServiceInterface
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.connector.repository.ConnectorRepository
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 @Service
-internal class ConnectorServiceImpl(var connectorRepository: ConnectorRepository) :
-    CsmPhoenixService(), ConnectorApiService {
+class ConnectorServiceImpl(
+    @Autowired(required = true) var connectorRepository: ConnectorRepository
+) : CsmPhoenixService(), ConnectorApiServiceInterface {
 
   override fun findAllConnectors(page: Int?, size: Int?): List<Connector> {
     val defaultPageSize = csmPlatformProperties.twincache.connector.defaultPageSize
-    var pageRequest = constructPageRequest(page, size, defaultPageSize)
+    val pageRequest = constructPageRequest(page, size, defaultPageSize)
     if (pageRequest != null) {
       return connectorRepository.findAll(pageRequest).toList()
     }
@@ -32,8 +34,14 @@ internal class ConnectorServiceImpl(var connectorRepository: ConnectorRepository
   override fun findConnectorById(connectorId: String): Connector {
     return connectorRepository.findById(connectorId).orElseThrow {
       CsmResourceNotFoundException(
-          "Resource of type '${Connector::class.java.simpleName}' and identifier '$connectorRepository' not found")
+          "Resource of type '${Connector::class.java.simpleName}' and identifier '$connectorId' not found")
     }
+  }
+
+  override fun findConnectorByName(connectorName: String): Connector {
+    return connectorRepository.findFirstByName(connectorName)
+        ?: throw CsmResourceNotFoundException(
+            "Resource of type '${Connector::class.java.simpleName}' and identifier '$connectorName' not found")
   }
 
   override fun registerConnector(connector: Connector): Connector {
@@ -56,12 +64,5 @@ internal class ConnectorServiceImpl(var connectorRepository: ConnectorRepository
 
     connectorRepository.delete(connector)
     this.eventPublisher.publishEvent(ConnectorRemoved(this, connectorId))
-  }
-
-  override fun importConnector(connector: Connector): Connector {
-    if (connector.id == null) {
-      throw CsmResourceNotFoundException("Connector id is null")
-    }
-    return connectorRepository.save(connector)
   }
 }

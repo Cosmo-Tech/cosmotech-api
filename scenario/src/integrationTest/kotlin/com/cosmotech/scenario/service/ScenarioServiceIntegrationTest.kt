@@ -1,50 +1,67 @@
 // Copyright (c) Cosmo Tech.
 // Licensed under the MIT license.
+@file:Suppress("DEPRECATION")
+
 package com.cosmotech.scenario.service
 
 import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.api.events.ScenarioDataDownloadJobInfoRequest
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
+import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_EDITOR
 import com.cosmotech.api.rbac.ROLE_NONE
+import com.cosmotech.api.rbac.ROLE_USER
 import com.cosmotech.api.rbac.ROLE_VIEWER
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.connector.api.ConnectorApiService
+import com.cosmotech.connector.ConnectorApiServiceInterface
 import com.cosmotech.connector.domain.Connector
-import com.cosmotech.dataset.api.DatasetApiService
+import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
+import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetConnector
-import com.cosmotech.organization.api.OrganizationApiService
+import com.cosmotech.dataset.domain.DatasetSecurity
+import com.cosmotech.dataset.repository.DatasetRepository
+import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
-import com.cosmotech.scenario.api.ScenarioApiService
+import com.cosmotech.scenario.ScenarioApiServiceInterface
 import com.cosmotech.scenario.domain.Scenario
 import com.cosmotech.scenario.domain.ScenarioAccessControl
 import com.cosmotech.scenario.domain.ScenarioJobState
 import com.cosmotech.scenario.domain.ScenarioRole
 import com.cosmotech.scenario.domain.ScenarioRunTemplateParameterValue
+import com.cosmotech.scenario.domain.ScenarioSecurity
 import com.cosmotech.scenario.domain.ScenarioValidationStatus
-import com.cosmotech.solution.api.SolutionApiService
+import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.Solution
-import com.cosmotech.workspace.api.WorkspaceApiService
+import com.cosmotech.solution.domain.SolutionAccessControl
+import com.cosmotech.solution.domain.SolutionSecurity
+import com.cosmotech.workspace.WorkspaceApiServiceInterface
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.azure.WorkspaceEventHubInfo
 import com.cosmotech.workspace.domain.Workspace
+import com.cosmotech.workspace.domain.WorkspaceAccessControl
+import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.ninjasquad.springmockk.MockkBean
+import com.ninjasquad.springmockk.SpykBean
 import com.redis.om.spring.RediSearchIndexer
+import com.redis.testcontainers.RedisStackContainer
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
-import java.util.UUID
+import java.time.Instant
+import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.Test
@@ -60,14 +77,9 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
-
-const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
-const val CONNECTED_NONE_USER = "test.none@cosmotech.com"
-const val CONNECTED_EDITOR_USER = "test.editor@cosmotech.com"
-const val CONNECTED_VALIDATOR_USER = "test.validator@cosmotech.com"
-const val CONNECTED_READER_USER = "test.reader@cosmotech.com"
-const val CONNECTED_VIEWER_USER = "test.user@cosmotech.com"
-const val FAKE_MAIL = "fake@mail.fr"
+import redis.clients.jedis.HostAndPort
+import redis.clients.jedis.Protocol
+import redis.clients.jedis.UnifiedJedis
 
 @ActiveProfiles(profiles = ["scenario-test"])
 @ExtendWith(MockKExtension::class)
@@ -76,19 +88,30 @@ const val FAKE_MAIL = "fake@mail.fr"
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
 
+  val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
+  val CONNECTED_NONE_USER = "test.none@cosmotech.com"
+  val CONNECTED_EDITOR_USER = "test.editor@cosmotech.com"
+  val CONNECTED_VALIDATOR_USER = "test.validator@cosmotech.com"
+  val CONNECTED_READER_USER = "test.reader@cosmotech.com"
+  val CONNECTED_VIEWER_USER = "test.user@cosmotech.com"
+  val TEST_USER_MAIL = "fake@mail.fr"
+
   private val logger = LoggerFactory.getLogger(ScenarioServiceIntegrationTest::class.java)
+  private val defaultName = "my.account-tester@cosmotech.com"
 
   @MockkBean lateinit var csmADX: AzureDataExplorerClient
   @MockK(relaxed = true) private lateinit var workspaceEventHubService: IWorkspaceEventHubService
   @MockK(relaxed = true) private lateinit var azureDataExplorerClient: AzureDataExplorerClient
+  @MockK private lateinit var scenarioDataDownloadJobInfoRequest: ScenarioDataDownloadJobInfoRequest
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
-  @Autowired lateinit var connectorApiService: ConnectorApiService
-  @Autowired lateinit var organizationApiService: OrganizationApiService
-  @Autowired lateinit var datasetApiService: DatasetApiService
-  @Autowired lateinit var solutionApiService: SolutionApiService
-  @Autowired lateinit var workspaceApiService: WorkspaceApiService
-  @Autowired lateinit var scenarioApiService: ScenarioApiService
+  @Autowired lateinit var connectorApiService: ConnectorApiServiceInterface
+  @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
+  @SpykBean @Autowired lateinit var datasetApiService: DatasetApiServiceInterface
+  @Autowired lateinit var datasetRepository: DatasetRepository
+  @Autowired lateinit var solutionApiService: SolutionApiServiceInterface
+  @Autowired lateinit var workspaceApiService: WorkspaceApiServiceInterface
+  @Autowired lateinit var scenarioApiService: ScenarioApiServiceInterface
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   lateinit var connector: Connector
@@ -105,6 +128,20 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   lateinit var workspaceSaved: Workspace
   lateinit var scenarioSaved: Scenario
 
+  lateinit var unifiedJedis: UnifiedJedis
+
+  @BeforeAll
+  fun beforeAll() {
+    mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
+    mockkStatic("com.cosmotech.api.utils.RedisUtilsKt")
+    mockkStatic("org.springframework.web.context.request.RequestContextHolder")
+    val context = getContext(redisStackServer)
+    val containerIp =
+        (context.server as RedisStackContainer).containerInfo.networkSettings.ipAddress
+    unifiedJedis = UnifiedJedis(HostAndPort(containerIp, Protocol.DEFAULT_PORT))
+    ReflectionTestUtils.setField(datasetApiService, "unifiedJedis", unifiedJedis)
+  }
+
   @BeforeEach
   fun setUp() {
     mockkStatic("com.cosmotech.api.utils.SecurityUtilsKt")
@@ -120,6 +157,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
         makeWorkspaceEventHubInfo(false)
 
     rediSearchIndexer.createIndexFor(Organization::class.java)
+    rediSearchIndexer.createIndexFor(Dataset::class.java)
     rediSearchIndexer.createIndexFor(Solution::class.java)
     rediSearchIndexer.createIndexFor(Workspace::class.java)
     rediSearchIndexer.createIndexFor(Scenario::class.java)
@@ -132,6 +170,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
 
     dataset = makeDataset(organizationSaved.id!!, "Dataset", connectorSaved)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    materializeTwingraph()
 
     solution = makeSolution(organizationSaved.id!!)
     solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
@@ -205,6 +244,12 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
         scenarioApiService.findAllScenarios(organizationSaved.id!!, workspaceSaved.id!!, null, null)
     assertTrue(scenarioListAfterDelete.size == 1)
 
+    // We create more scenario than there can be on one page of default size to assert
+    // deleteAllScenarios still works with high quantities of scenarios
+    repeat(csmPlatformProperties.twincache.scenario.defaultPageSize + 1) {
+      scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, makeScenario())
+    }
+
     logger.info("should delete all Scenarios and assert there is no Scenario left")
     scenarioApiService.deleteAllScenarios(organizationSaved.id!!, workspaceSaved.id!!)
     val scenarioListAfterDeleteAll =
@@ -217,6 +262,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     val numberOfScenarios = 20
     val defaultPageSize = csmPlatformProperties.twincache.scenario.defaultPageSize
     val expectedSize = 15
+    datasetSaved = materializeTwingraph()
     IntRange(1, numberOfScenarios - 1).forEach {
       val scenario =
           makeScenario(
@@ -272,13 +318,8 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `test parent scenario operations as User Admin`() {
 
-    logger.info(
-        "should create a child Scenario with dataset different from parent and " +
-            "assert the dataset list is the same as parent")
-    val dataset = makeDataset(organizationSaved.id!!, "Dataset", connectorSaved)
-    val datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
-
-    logger.info("should create a tree of Scenarios")
+    logger.info("should create a child Scenario with dataset different from parent")
+    logger.info("Create a tree of Scenarios")
     val idMap = mutableMapOf<Int, String>()
     IntRange(1, 5).forEach {
       var scenario =
@@ -492,7 +533,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
   fun `test RBAC AccessControls on Scenario as User Admin`() {
 
     logger.info("should add an Access Control and assert it has been added")
-    val scenarioAccessControl = ScenarioAccessControl(FAKE_MAIL, ROLE_VIEWER)
+    val scenarioAccessControl = ScenarioAccessControl(TEST_USER_MAIL, ROLE_VIEWER)
     var scenarioAccessControlRegistered =
         scenarioApiService.addScenarioAccessControl(
             organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, scenarioAccessControl)
@@ -501,8 +542,16 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("should get the Access Control and assert it is the one created")
     scenarioAccessControlRegistered =
         scenarioApiService.getScenarioAccessControl(
-            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, FAKE_MAIL)
+            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, TEST_USER_MAIL)
     assertEquals(scenarioAccessControl, scenarioAccessControlRegistered)
+
+    logger.info(
+        "should add an Access Control and assert it is the one created in the linked datasets")
+    scenarioSaved.datasetList!!.forEach {
+      assertDoesNotThrow {
+        datasetApiService.getDatasetAccessControl(organizationSaved.id!!, it, TEST_USER_MAIL)
+      }
+    }
 
     logger.info("should update the Access Control and assert it has been updated")
     scenarioAccessControlRegistered =
@@ -510,23 +559,41 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
             organizationSaved.id!!,
             workspaceSaved.id!!,
             scenarioSaved.id!!,
-            FAKE_MAIL,
+            TEST_USER_MAIL,
             ScenarioRole(ROLE_EDITOR))
     assertEquals(ROLE_EDITOR, scenarioAccessControlRegistered.role)
+
+    logger.info(
+        "should update the Access Control and assert it has been updated in the linked datasets")
+    scenarioSaved.datasetList!!.forEach {
+      assertEquals(
+          ROLE_EDITOR,
+          datasetApiService
+              .getDatasetAccessControl(organizationSaved.id!!, it, TEST_USER_MAIL)
+              .role)
+    }
 
     logger.info("should get the list of users and assert there are 2")
     var userList =
         scenarioApiService.getScenarioSecurityUsers(
             organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
-    assertTrue(userList.size == 2)
+    assertEquals(3, userList.size)
 
     logger.info("should remove the Access Control and assert it has been removed")
     scenarioApiService.removeScenarioAccessControl(
-        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, FAKE_MAIL)
+        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, TEST_USER_MAIL)
     assertThrows<CsmResourceNotFoundException> {
       scenarioAccessControlRegistered =
           scenarioApiService.getScenarioAccessControl(
-              organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, FAKE_MAIL)
+              organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, TEST_USER_MAIL)
+    }
+
+    logger.info(
+        "should remove the Access Control and assert it has been removed in the linked datasets")
+    scenarioSaved.datasetList!!.forEach {
+      assertThrows<CsmResourceNotFoundException> {
+        datasetApiService.getDatasetAccessControl(organizationSaved.id!!, it, TEST_USER_MAIL)
+      }
     }
   }
 
@@ -536,7 +603,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_READER_USER
 
     logger.info("should throw CsmAccessForbiddenException when trying to add ScenarioAccessControl")
-    val scenarioAccessControl = ScenarioAccessControl(FAKE_MAIL, ROLE_VIEWER)
+    val scenarioAccessControl = ScenarioAccessControl(TEST_USER_MAIL, ROLE_VIEWER)
     assertThrows<CsmAccessForbiddenException> {
       scenarioApiService.addScenarioAccessControl(
           organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, scenarioAccessControl)
@@ -545,7 +612,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     logger.info("should throw CsmAccessForbiddenException when trying to get ScenarioAccessControl")
     assertThrows<CsmAccessForbiddenException> {
       scenarioApiService.getScenarioAccessControl(
-          organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, FAKE_MAIL)
+          organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, TEST_USER_MAIL)
     }
 
     logger.info(
@@ -555,7 +622,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
           organizationSaved.id!!,
           workspaceSaved.id!!,
           scenarioSaved.id!!,
-          FAKE_MAIL,
+          TEST_USER_MAIL,
           ScenarioRole(ROLE_VIEWER))
     }
 
@@ -569,7 +636,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
         "should throw CsmAccessForbiddenException when trying to remove ScenarioAccessControl")
     assertThrows<CsmAccessForbiddenException> {
       scenarioApiService.removeScenarioAccessControl(
-          organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, FAKE_MAIL)
+          organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!, TEST_USER_MAIL)
     }
   }
 
@@ -640,6 +707,205 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
     }
   }
 
+  @Test
+  fun `test deleting dataset with scenario`() {
+    scenarioApiService.deleteScenario(
+        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+
+    assertDoesNotThrow {
+      datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+    }
+    scenarioSaved.datasetList!!.forEach { dataset ->
+      assertThrows<CsmResourceNotFoundException> {
+        datasetApiService.findDatasetById(organizationSaved.id!!, dataset)
+      }
+    }
+  }
+
+  @Test
+  fun `test do not delete old style dataset with scenario`() {
+    // old style dataset doesn't have the creationDate property set
+    // set all dataset in scenario datasetList to old style
+    scenarioSaved.datasetList!!.forEach { datasetId ->
+      val scenarioDataset = datasetApiService.findDatasetById(organizationSaved.id!!, datasetId)
+      datasetRepository.save(scenarioDataset.apply { creationDate = null })
+    }
+
+    scenarioApiService.deleteScenario(
+        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+
+    assertDoesNotThrow {
+      datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+    }
+    scenarioSaved.datasetList!!.forEach { dataset ->
+      assertDoesNotThrow { datasetApiService.findDatasetById(organizationSaved.id!!, dataset) }
+    }
+  }
+
+  @Test
+  fun `test updating datasetList and assert the accessControlList has the correct users`() {
+    val newDataset = datasetApiService.createDataset(organizationSaved.id!!, makeDataset())
+    scenarioSaved =
+        scenarioApiService.updateScenario(
+            organizationSaved.id!!,
+            workspaceSaved.id!!,
+            scenarioSaved.id!!,
+            scenario.copy(datasetList = mutableListOf(datasetSaved.id!!, newDataset.id!!)))
+
+    val scenarioUserList =
+        scenarioApiService.getScenarioSecurityUsers(
+            organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+
+    scenarioSaved.datasetList!!.forEach { thisDataset ->
+      val datasetUserList =
+          datasetApiService.getDatasetSecurityUsers(organizationSaved.id!!, thisDataset)
+      scenarioUserList.forEach { user -> assertTrue(datasetUserList.contains(user)) }
+    }
+  }
+
+  @Test
+  fun `access control list shouldn't contain more than one time each user on creation`() {
+    organizationSaved =
+        organizationApiService.registerOrganization(makeOrganization("organization"))
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, makeSolution())
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, makeWorkspace())
+    val brokenScenario =
+        Scenario(
+            name = "scenario",
+            security =
+                ScenarioSecurity(
+                    default = ROLE_NONE,
+                    accessControlList =
+                        mutableListOf(
+                            ScenarioAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                            ScenarioAccessControl(CONNECTED_ADMIN_USER, ROLE_EDITOR))))
+    assertThrows<IllegalArgumentException> {
+      scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, brokenScenario)
+    }
+  }
+
+  @Test
+  fun `access control list shouldn't contain more than one time each user on ACL addition`() {
+    organizationSaved =
+        organizationApiService.registerOrganization(makeOrganization("organization"))
+    solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, makeSolution())
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, makeWorkspace())
+    val workingScenario = makeScenario()
+    scenarioSaved =
+        scenarioApiService.createScenario(
+            organizationSaved.id!!, workspaceSaved.id!!, workingScenario)
+
+    assertThrows<IllegalArgumentException> {
+      scenarioApiService.addScenarioAccessControl(
+          organizationSaved.id!!,
+          workspaceSaved.id!!,
+          scenarioSaved.id!!,
+          ScenarioAccessControl(CONNECTED_ADMIN_USER, ROLE_EDITOR))
+    }
+  }
+
+  @Test
+  fun `when workspace datasetCopy is true, linked datasets should be deleted`() {
+    workspace =
+        Workspace(
+            key = "key",
+            name = "workspace",
+            solution = WorkspaceSolution(solutionSaved.id!!),
+            id = "id",
+            datasetCopy = true)
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+    scenario = makeScenario(datasetList = mutableListOf(datasetSaved.id!!))
+    scenarioSaved =
+        scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, scenario)
+
+    datasetSaved =
+        datasetApiService.findDatasetById(organizationSaved.id!!, scenarioSaved.datasetList!![0])
+    scenarioApiService.deleteScenario(
+        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+
+    assertThrows<CsmResourceNotFoundException> {
+      datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+    }
+  }
+
+  @Test
+  fun `when workspace datasetCopy is false, linked datasets should not be deleted`() {
+    workspace =
+        Workspace(
+            key = "key",
+            name = "workspace",
+            solution = WorkspaceSolution(solutionSaved.id!!),
+            id = "id",
+            datasetCopy = false)
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+    scenario = makeScenario(datasetList = mutableListOf(datasetSaved.id!!))
+    scenarioSaved =
+        scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, scenario)
+
+    datasetSaved =
+        datasetApiService.findDatasetById(organizationSaved.id!!, scenarioSaved.datasetList!![0])
+    scenarioApiService.deleteScenario(
+        organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
+
+    assertDoesNotThrow {
+      datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+    }
+  }
+
+  @Test
+  fun `when workspace datasetCopy is true, users added to scenario RBAC should have the same role in dataset`() {
+    workspace =
+        Workspace(
+            key = "key",
+            name = "workspace",
+            solution = WorkspaceSolution(solutionSaved.id!!),
+            id = "id",
+            datasetCopy = true)
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+    scenario = makeScenario(datasetList = mutableListOf(datasetSaved.id!!))
+    scenarioSaved =
+        scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, scenario)
+
+    datasetSaved =
+        datasetApiService.findDatasetById(organizationSaved.id!!, scenarioSaved.datasetList!![0])
+    scenarioApiService.addScenarioAccessControl(
+        organizationSaved.id!!,
+        workspaceSaved.id!!,
+        scenarioSaved.id!!,
+        ScenarioAccessControl(id = "id", role = ROLE_EDITOR))
+
+    val datasetAC =
+        datasetApiService.getDatasetAccessControl(organizationSaved.id!!, datasetSaved.id!!, "id")
+    assertEquals(ROLE_EDITOR, datasetAC.role)
+  }
+
+  @Test
+  fun `when workspace datasetCopy is false, users added to scenario RBAC should not have the same role in dataset`() {
+    workspace =
+        Workspace(
+            key = "key",
+            name = "workspace",
+            solution = WorkspaceSolution(solutionSaved.id!!),
+            id = "id",
+            datasetCopy = false)
+    workspaceSaved = workspaceApiService.createWorkspace(organizationSaved.id!!, workspace)
+    scenario = makeScenario(datasetList = mutableListOf(datasetSaved.id!!))
+    scenarioSaved =
+        scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, scenario)
+
+    datasetSaved =
+        datasetApiService.findDatasetById(organizationSaved.id!!, scenarioSaved.datasetList!![0])
+    scenarioApiService.addScenarioAccessControl(
+        organizationSaved.id!!,
+        workspaceSaved.id!!,
+        scenarioSaved.id!!,
+        ScenarioAccessControl(id = "id", role = ROLE_EDITOR))
+
+    val datasetAC =
+        datasetApiService.getDatasetAccessControl(organizationSaved.id!!, datasetSaved.id!!, "id")
+    assertEquals(ROLE_VIEWER, datasetAC.role)
+  }
+
   private fun makeWorkspaceEventHubInfo(eventHubAvailable: Boolean): WorkspaceEventHubInfo {
     return WorkspaceEventHubInfo(
         eventHubNamespace = "eventHubNamespace",
@@ -653,7 +919,7 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                 .SHARED_ACCESS_POLICY)
   }
 
-  private fun makeConnector(name: String): Connector {
+  private fun makeConnector(name: String = "name"): Connector {
     return Connector(
         key = UUID.randomUUID().toString(),
         name = name,
@@ -662,10 +928,15 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
         ioTypes = listOf(Connector.IoTypes.read))
   }
 
-  fun makeDataset(organizationId: String, name: String, connector: Connector): Dataset {
+  fun makeDataset(
+      organizationId: String = organizationSaved.id!!,
+      name: String = "name",
+      connector: Connector = connectorSaved
+  ): Dataset {
     return Dataset(
         name = name,
         organizationId = organizationId,
+        creationDate = Instant.now().toEpochMilli(),
         ownerId = "ownerId",
         connector =
             DatasetConnector(
@@ -673,19 +944,34 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                 name = connector.name,
                 version = connector.version,
             ),
-    )
+        security =
+            DatasetSecurity(
+                default = ROLE_NONE,
+                accessControlList =
+                    mutableListOf(
+                        DatasetAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
   }
 
-  fun makeSolution(organizationId: String): Solution {
+  fun makeSolution(organizationId: String = organizationSaved.id!!): Solution {
     return Solution(
         id = "solutionId",
         key = UUID.randomUUID().toString(),
         name = "My solution",
         organizationId = organizationId,
-        ownerId = "ownerId")
+        ownerId = "ownerId",
+        security =
+            SolutionSecurity(
+                default = ROLE_NONE,
+                accessControlList =
+                    mutableListOf(
+                        SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN))))
   }
 
-  fun makeOrganization(id: String): Organization {
+  fun makeOrganization(
+      id: String = "id",
+      userName: String = defaultName,
+      role: String = ROLE_ADMIN
+  ): Organization {
     return Organization(
         id = id,
         name = "Organization Name",
@@ -697,14 +983,16 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
                     mutableListOf(
                         OrganizationAccessControl(id = CONNECTED_READER_USER, role = "reader"),
                         OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"),
-                        OrganizationAccessControl(id = CONNECTED_VIEWER_USER, role = "user"),
-                        OrganizationAccessControl(id = CONNECTED_EDITOR_USER, role = "editor"),
-                        OrganizationAccessControl(
-                            id = CONNECTED_VALIDATOR_USER, role = "validator"),
-                        OrganizationAccessControl(id = CONNECTED_NONE_USER, role = "none"))))
+                        OrganizationAccessControl(id = userName, role = role))))
   }
 
-  fun makeWorkspace(organizationId: String, solutionId: String, name: String): Workspace {
+  fun makeWorkspace(
+      organizationId: String = organizationSaved.id!!,
+      solutionId: String = solutionSaved.id!!,
+      name: String = "name",
+      userName: String = defaultName,
+      role: String = ROLE_ADMIN
+  ): Workspace {
     return Workspace(
         key = UUID.randomUUID().toString(),
         name = name,
@@ -714,18 +1002,27 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
             ),
         organizationId = organizationId,
         ownerId = "ownerId",
-    )
+        security =
+            WorkspaceSecurity(
+                default = ROLE_NONE,
+                mutableListOf(
+                    WorkspaceAccessControl(id = userName, role = role),
+                    WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
   }
 
   fun makeScenario(
-      organizationId: String,
-      workspaceId: String,
-      solutionId: String,
-      name: String,
-      datasetList: MutableList<String>,
-      parentId: String? = null
+      organizationId: String = organizationSaved.id!!,
+      workspaceId: String = workspaceSaved.id!!,
+      solutionId: String = solutionSaved.id!!,
+      name: String = "name",
+      datasetList: MutableList<String> = mutableListOf<String>(),
+      parentId: String? = null,
+      userName: String = "roleName",
+      role: String = ROLE_USER,
+      validationStatus: ScenarioValidationStatus = ScenarioValidationStatus.Draft
   ): Scenario {
     return Scenario(
+        id = UUID.randomUUID().toString(),
         name = name,
         organizationId = organizationId,
         workspaceId = workspaceId,
@@ -733,6 +1030,26 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
         ownerId = "ownerId",
         datasetList = datasetList,
         parentId = parentId,
-    )
+        validationStatus = validationStatus,
+        security =
+            ScenarioSecurity(
+                ROLE_NONE,
+                mutableListOf(
+                    ScenarioAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN),
+                    ScenarioAccessControl(userName, role))))
+  }
+
+  private fun materializeTwingraph(
+      dataset: Dataset = datasetSaved,
+      createTwingraph: Boolean = true
+  ): Dataset {
+    dataset.apply {
+      if (createTwingraph) {
+        unifiedJedis.graphQuery(this.twingraphId, "MATCH (n:labelrouge) return 1")
+      }
+      this.ingestionStatus = Dataset.IngestionStatus.SUCCESS
+      this.twincacheStatus = Dataset.TwincacheStatus.FULL
+    }
+    return datasetRepository.save(dataset)
   }
 }

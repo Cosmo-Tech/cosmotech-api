@@ -12,12 +12,32 @@ PASSWORD_FOR_ARGO_PASSWORD="a-super-secure-password-we-dont-care-about"
 cat <<EOF > values-ci.yaml
 replicaCount: 1
 
+api:
+  version: "${API_VERSION}"
+  multiTenant: true
+  servletContextPath: /cosmotech-api
+
+server:
+  error:
+    include-stacktrace: always
+
 image:
   repository: localhost:5000/cosmotech-api
   tag: ${IMAGE_TAG}
 config:
+  spring:
+    main:
+      allow-bean-definition-overriding: true
   csm:
     platform:
+      authorization:
+        mailJwtClaim: "email"
+        rolesJwtClaim: "customRoles"
+        principalJwtClaim: "email"
+        tenantIdJwtClaim: "iss"
+        allowed-tenants:
+          - "${CHART_RELEASE_TEST_NAMESPACE}"
+          - "cosmotech"
       azure:
         credentials:
           core:

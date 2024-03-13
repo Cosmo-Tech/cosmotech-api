@@ -4,6 +4,7 @@ package com.cosmotech.scenariorun.service
 
 import com.cosmotech.api.azure.adx.AzureDataExplorerClient
 import com.cosmotech.api.config.CsmPlatformProperties
+import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.tests.CsmRedisTestBase
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
@@ -20,6 +21,8 @@ import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.scenario.api.ScenarioApiService
 import com.cosmotech.scenario.domain.Scenario
+import com.cosmotech.scenario.domain.ScenarioAccessControl
+import com.cosmotech.scenario.domain.ScenarioSecurity
 import com.cosmotech.scenariorun.ContainerFactory
 import com.cosmotech.scenariorun.api.ScenariorunApiService
 import com.cosmotech.scenariorun.domain.ScenarioRun
@@ -28,18 +31,24 @@ import com.cosmotech.scenariorun.workflow.WorkflowService
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.Solution
+import com.cosmotech.solution.domain.SolutionAccessControl
+import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.workspace.api.WorkspaceApiService
 import com.cosmotech.workspace.azure.IWorkspaceEventHubService
 import com.cosmotech.workspace.azure.WorkspaceEventHubInfo
 import com.cosmotech.workspace.domain.Workspace
+import com.cosmotech.workspace.domain.WorkspaceAccessControl
+import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.ninjasquad.springmockk.MockkBean
+import com.ninjasquad.springmockk.SpykBean
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
 import io.mockk.mockkStatic
-import java.util.UUID
+import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -55,9 +64,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
 
-const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
-const val CONNECTED_READER_USER = "test.user@cosmotech.com"
-
 @ActiveProfiles(profiles = ["scenariorun-test"])
 @ExtendWith(MockKExtension::class)
 @ExtendWith(SpringExtension::class)
@@ -65,7 +71,12 @@ const val CONNECTED_READER_USER = "test.user@cosmotech.com"
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
 
+  @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
+
+  val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
+  val CONNECTED_READER_USER = "test.user@cosmotech.com"
   private val logger = LoggerFactory.getLogger(ScenarioRunServiceIntegrationTest::class.java)
+  private val defaultName = "my.account-tester@cosmotech.com"
 
   @MockkBean lateinit var csmADX: AzureDataExplorerClient
   @MockK private lateinit var workspaceEventHubService: IWorkspaceEventHubService
@@ -76,12 +87,11 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var connectorApiService: ConnectorApiService
   @Autowired lateinit var organizationApiService: OrganizationApiService
-  @Autowired lateinit var datasetApiService: DatasetApiService
+  @SpykBean @Autowired lateinit var datasetApiService: DatasetApiService
   @Autowired lateinit var solutionApiService: SolutionApiService
   @Autowired lateinit var workspaceApiService: WorkspaceApiService
   @Autowired lateinit var scenarioApiService: ScenarioApiService
   @Autowired lateinit var scenariorunApiService: ScenariorunApiService
-  @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
   lateinit var connector: Connector
   lateinit var dataset: Dataset
@@ -147,7 +157,9 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
             solutionSaved.runTemplates?.get(0)?.id!!,
             "Scenario",
             mutableListOf(datasetSaved.id!!))
-
+    every { datasetApiService.findDatasetById(any(), any()) } returns
+        datasetSaved.apply { ingestionStatus = Dataset.IngestionStatus.SUCCESS }
+    every { datasetApiService.createSubDataset(any(), any(), any()) } returns mockk(relaxed = true)
     scenarioSaved =
         scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, scenario)
 
@@ -273,7 +285,7 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
                 .SHARED_ACCESS_POLICY)
   }
 
-  private fun mockConnector(name: String): Connector {
+  private fun mockConnector(name: String = "connector"): Connector {
     return Connector(
         key = UUID.randomUUID().toString(),
         name = name,
@@ -282,7 +294,13 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
         ioTypes = listOf(Connector.IoTypes.read))
   }
 
-  fun mockDataset(organizationId: String, name: String, connector: Connector): Dataset {
+  fun mockDataset(
+      organizationId: String = organizationSaved.id!!,
+      name: String = "Dataset",
+      connector: Connector = connectorSaved,
+      roleName: String = defaultName,
+      role: String = ROLE_ADMIN
+  ): Dataset {
     return Dataset(
         name = name,
         organizationId = organizationId,
@@ -296,7 +314,7 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
     )
   }
 
-  fun mockSolution(organizationId: String): Solution {
+  fun mockSolution(organizationId: String = organizationSaved.id!!): Solution {
     return Solution(
         id = "solutionId",
         key = UUID.randomUUID().toString(),
@@ -308,10 +326,17 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
                 RunTemplate(
                     id = UUID.randomUUID().toString(),
                     name = "RunTemplate1",
-                    description = "RunTemplate1 description")))
+                    description = "RunTemplate1 description")),
+        security =
+            SolutionSecurity(
+                default = ROLE_NONE,
+                accessControlList =
+                    mutableListOf(
+                        SolutionAccessControl(id = CONNECTED_ADMIN_USER, role = ROLE_ADMIN),
+                        SolutionAccessControl(id = CONNECTED_READER_USER, role = ROLE_ADMIN))))
   }
 
-  fun mockOrganization(id: String): Organization {
+  fun mockOrganization(id: String = "organizationId"): Organization {
     return Organization(
         id = id,
         name = "Organization Name",
@@ -325,7 +350,11 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
                         OrganizationAccessControl(id = CONNECTED_ADMIN_USER, role = "admin"))))
   }
 
-  fun mockWorkspace(organizationId: String, solutionId: String, name: String): Workspace {
+  fun mockWorkspace(
+      organizationId: String = organizationSaved.id!!,
+      solutionId: String = solutionSaved.id!!,
+      name: String = "workspace"
+  ): Workspace {
     return Workspace(
         key = UUID.randomUUID().toString(),
         name = name,
@@ -335,16 +364,18 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
             ),
         organizationId = organizationId,
         ownerId = "ownerId",
-    )
+        security =
+            WorkspaceSecurity(
+                ROLE_NONE, mutableListOf(WorkspaceAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
   }
 
   fun mockScenario(
-      organizationId: String,
-      workspaceId: String,
-      solutionId: String,
-      runTemplateId: String,
-      name: String,
-      datasetList: MutableList<String>
+      organizationId: String = organizationSaved.id!!,
+      workspaceId: String = workspaceSaved.id!!,
+      solutionId: String = solutionSaved.id!!,
+      runTemplateId: String = solutionSaved.runTemplates?.get(0)?.id!!,
+      name: String = "scenario",
+      datasetList: MutableList<String> = mutableListOf(datasetSaved.id!!)
   ): Scenario {
     return Scenario(
         name = name,
@@ -353,7 +384,10 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
         solutionId = solutionId,
         runTemplateId = runTemplateId,
         ownerId = "ownerId",
-        datasetList = datasetList)
+        datasetList = datasetList,
+        security =
+            ScenarioSecurity(
+                ROLE_NONE, mutableListOf(ScenarioAccessControl(CONNECTED_ADMIN_USER, ROLE_ADMIN))))
   }
 
   fun mockScenarioRun(

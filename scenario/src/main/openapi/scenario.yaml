@@ -233,7 +233,7 @@ paths:
         - scenario
       summary: Update a scenario
       requestBody:
-        description: the new Scenario details.
+        description: the new Scenario details. This endpoint can't be used to update security
         required: true
         content:
           application/json:
@@ -499,7 +499,7 @@ paths:
         "404":
           description: the Scenario specified is unknown or you don't have access to it
 
-  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/permissions/{role}:
+  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/permissions/{role}:
     parameters:
       - name: organization_id
         in: path
@@ -510,6 +510,12 @@ paths:
       - name: workspace_id
         in: path
         description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: scenario_id
+        in: path
+        description: the Scenario identifier
         required: true
         schema:
           type: string
@@ -602,7 +608,9 @@ paths:
         - scenario
       summary: Set the Scenario default security
       requestBody:
-        description: the new Scenario default security.
+        description: This change the scenario default security.
+          The default security is the role assigned to any person not on the Access Control List.
+          If the default security is None, then nobody outside of the ACL can access the scenario.
         required: true
         content:
           application/json:
@@ -808,49 +816,6 @@ paths:
                   - bob@mycompany.com
         "404":
           description: the Scenario specified is unknown or you don't have access to it
-  /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/import:
-    parameters:
-      - name: organization_id
-        in: path
-        description: the Organization identifier
-        required: true
-        schema:
-          type: string
-      - name: workspace_id
-        in: path
-        description: the Workspace identifier
-        required: true
-        schema:
-          type: string
-    post:
-      operationId: importScenario
-      tags:
-        - scenario
-      summary: Import Scenario
-      requestBody:
-        description: the Scenario to import
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Scenario'
-            examples:
-              MasterScenario:
-                $ref: '#/components/examples/BreweryScenarioIn'
-              ChildScenario:
-                $ref: '#/components/examples/BreweryChildScenarioIn'
-      responses:
-        "201":
-          description: the scenario details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Scenario'
-              examples:
-                Scenario:
-                  $ref: '#/components/examples/BreweryScenario'
-        "400":
-          description: Bad request
 
 
 components:
@@ -947,7 +912,6 @@ components:
           items:
             type: string
         runSizing:
-          description: definition of resources needed for the scenario run
           $ref: "#/components/schemas/ScenarioResourceSizing"
         parametersValues:
           type: array
@@ -955,33 +919,18 @@ components:
           items:
             $ref: '#/components/schemas/ScenarioRunTemplateParameterValue'
         lastRun:
-          allOf:
-            - $ref: '#/components/schemas/ScenarioLastRun'
-            - type: object
-              description: the last Scenario Run for this Scenario
+          $ref: '#/components/schemas/ScenarioLastRun'
         parentLastRun:
-          allOf:
-            - $ref: '#/components/schemas/ScenarioLastRun'
-            - type: object
-              description: the last Scenario Run for the parent of this Scenario
+          $ref: '#/components/schemas/ScenarioLastRun'
         rootLastRun:
-          allOf:
-            - $ref: '#/components/schemas/ScenarioLastRun'
-            - type: object
-              description: the last Scenario Run for the root (master) of Scenario
+          $ref: '#/components/schemas/ScenarioLastRun'
         validationStatus:
-          x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
-          allOf:
-            - $ref: '#/components/schemas/ScenarioValidationStatus'
+          $ref: '#/components/schemas/ScenarioValidationStatus'
         security:
-          x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
-          allOf:
-            - $ref: '#/components/schemas/ScenarioSecurity'
-#      required:
-#        - name
-#        - runTemplateId
+          $ref: '#/components/schemas/ScenarioSecurity'
     ScenarioSecurity:
       type: object
+      x-field-extra-annotation: "@com.redis.om.spring.annotations.Indexed"
       description: the Scenario security information
       properties:
         default:
@@ -1154,6 +1103,7 @@ components:
         # PROD-7420 : return data ingestion status
         - DataIngestionInProgress
     ScenarioValidationStatus:
+      x-field-extra-annotation: "@com.redis.om.spring.annotations.Searchable"
       type: string
       description: the validation status of the scenario
       enum:
