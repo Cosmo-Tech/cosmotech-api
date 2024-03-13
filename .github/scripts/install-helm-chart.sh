@@ -21,21 +21,13 @@ server:
   error:
     include-stacktrace: always
 
-config:
-  spring:
-    security:
-      oauth2:
-        resource-server:
-          jwt:
-            issuer-uri: "https://localhost/${CHART_RELEASE_TEST_NAMESPACE}/auth/realms/cosmotech"
-            jwk-set-uri: "http://${CHART_RELEASE_TEST_NAMESPACE}-keycloak.${CHART_RELEASE_TEST_NAMESPACE}.svc.cluster.local/${CHART_RELEASE_TEST_NAMESPACE}/auth/realms/cosmotech/protocol/openid-connect/certs"
-            audiences:
-              - "account"
-
 image:
   repository: localhost:5000/cosmotech-api
   tag: ${IMAGE_TAG}
 config:
+  spring:
+    main:
+      allow-bean-definition-overriding: true
   csm:
     platform:
       authorization:
@@ -46,13 +38,6 @@ config:
         allowed-tenants:
           - "${CHART_RELEASE_TEST_NAMESPACE}"
           - "cosmotech"
-      identityProvider:
-        code: keycloak
-        authorizationUrl: "https://localhost/${CHART_RELEASE_TEST_NAMESPACE}/auth/realms/cosmotech/protocol/openid-connect/auth"
-        tokenUrl: "https://localhost/${CHART_RELEASE_TEST_NAMESPACE}/auth/realms/cosmotech/protocol/openid-connect/token"
-        defaultScopes:
-          openid: "OpenId Scope"
-          email: "Email Scope"
       azure:
         credentials:
           core:
