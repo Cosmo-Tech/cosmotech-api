@@ -293,7 +293,8 @@ subprojects {
     implementation("org.apache.commons:commons-csv:$commonsCsvVersion")
     implementation("com.redis.om:redis-om-spring:${redisOmSpringVersion}")
     implementation("org.springframework.data:spring-data-redis")
-    implementation("redis.clients:jedis:${jedisVersion}")
+
+    implementation("org.json:json:20240303")
 
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:$jUnitBomVersion"))

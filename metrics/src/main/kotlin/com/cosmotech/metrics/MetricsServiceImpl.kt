@@ -14,7 +14,7 @@ import redis.clients.jedis.timeseries.TSAlterParams
 import redis.clients.jedis.timeseries.TSCreateParams
 
 private const val MILLISECONDS_IN_DAY = 86400000
-private const val KEY_PREFIX = "ts"
+private const val KEY_PREFIX = "ts2"
 
 @Service
 class MetricsServiceImpl(
@@ -77,7 +77,8 @@ class MetricsServiceImpl(
             key,
             downSamplingKey,
             metric.downSamplingAggregation.toRedisAggregation(),
-            downSamplingBucketDuration)
+            downSamplingBucketDuration,
+            0)
       } else {}
     } else {
       val timeSeriesRetention = unifiedJedis.tsInfo(key).getProperty("retentionTime")
