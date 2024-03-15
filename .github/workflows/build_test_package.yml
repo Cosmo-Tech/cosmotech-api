@@ -27,7 +27,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '19'
+          java-version: '21'
 
       - name: Build with Gradle
         env:
@@ -64,7 +64,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '19'
+          java-version: '21'
 
       - name: Run unit tests
         env:
@@ -94,7 +94,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '19'
+          java-version: '21'
 
       - name: Run Connector integration tests
         env:
@@ -124,7 +124,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '19'
+          java-version: '21'
 
       - name: Run RBAC Dataset integration tests
         env:
@@ -164,7 +164,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '19'
+          java-version: '21'
 
       - name: Run Organization integration tests
         env:
@@ -204,7 +204,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '19'
+          java-version: '21'
 
       - name: Run RBAC integration tests
         env:
@@ -244,7 +244,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '19'
+          java-version: '21'
 
       - name: Run Scenario Run integration tests
         env:
@@ -284,7 +284,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '19'
+          java-version: '21'
 
       - name: Run Scenario Run Results integration tests
         env:
@@ -325,7 +325,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '19'
+          java-version: '21'
 
       - name: Run Solution integration tests
         env:
@@ -366,7 +366,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '19'
+          java-version: '21'
 
       - name: Run Twin Graph integration tests
         env:
@@ -396,7 +396,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '19'
+          java-version: '21'
 
       - name: Run Workspace integration tests
         env:
@@ -437,7 +437,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '19'
+          java-version: '21'
 
       - name: Run Runner integration tests
         env:
@@ -477,7 +477,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '19'
+          java-version: '21'
 
       - name: Launch Run integration tests
         env:
@@ -507,7 +507,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '19'
+          java-version: '21'
 
       - name: Run HomeController integration tests
         env:
@@ -555,7 +555,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '19'
+          java-version: '21'
 
       - name: Set up api version to deploy
         run: |
@@ -762,7 +762,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '19'
+          java-version: '21'
 
       - name: Retrieve branch or tag name
         id: refvar

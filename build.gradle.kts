@@ -25,7 +25,7 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 // See https://docs.gradle.org/current/userguide/organizing_gradle_projects.html#sec:build_sources
 
 plugins {
-  val kotlinVersion = "1.9.10"
+  val kotlinVersion = "1.9.23"
   kotlin("jvm") version kotlinVersion
   kotlin("plugin.spring") version kotlinVersion apply false
   id("pl.allegro.tech.build.axion-release") version "1.15.5"
@@ -35,7 +35,7 @@ plugins {
   id("org.owasp.dependencycheck") version "9.0.2"
   id("com.github.jk1.dependency-license-report") version "2.5"
   id("org.jetbrains.kotlinx.kover") version "0.7.4"
-  id("io.gitlab.arturbosch.detekt") version "1.23.1"
+  id("io.gitlab.arturbosch.detekt") version "1.23.5"
   id("org.openapi.generator") version "7.3.0" apply false
   id("com.google.cloud.tools.jib") version "3.4.0" apply false
 }
@@ -53,7 +53,7 @@ val jacksonVersion = "2.15.3"
 val springWebVersion = "6.1.4"
 
 // Implementation
-val kotlinJvmTarget = 19
+val kotlinJvmTarget = 21
 val cosmotechApiCommonVersion = "1.0.0-SNAPSHOT"
 val cosmotechApiAzureVersion = "1.0.0-SNAPSHOT"
 val jedisVersion = "4.4.6"
@@ -67,7 +67,7 @@ val commonsCsvVersion = "1.10.0"
 val apiValidationVersion = "3.0.2"
 
 // Checks
-val detektVersion = "1.23.1"
+val detektVersion = "1.23.5"
 
 // Tests
 val jUnitBomVersion = "5.10.0"
@@ -124,8 +124,8 @@ allprojects {
   apply(plugin = "org.owasp.dependencycheck")
 
   java {
-    targetCompatibility = JavaVersion.VERSION_19
-    sourceCompatibility = JavaVersion.VERSION_19
+    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_21
     toolchain { languageVersion.set(JavaLanguageVersion.of(kotlinJvmTarget)) }
   }
   configurations { all { resolutionStrategy { force("com.redis.om:redis-om-spring:0.8.8") } } }
@@ -342,8 +342,8 @@ subprojects {
       freeCompilerArgs = listOf("-Xjsr305=strict")
       jvmTarget = kotlinJvmTarget.toString()
       java {
-        targetCompatibility = JavaVersion.VERSION_19
-        sourceCompatibility = JavaVersion.VERSION_19
+        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_21
         toolchain { languageVersion.set(JavaLanguageVersion.of(kotlinJvmTarget)) }
       }
     }
@@ -496,7 +496,7 @@ subprojects {
   }
 
   configure<JibExtension> {
-    from { image = "eclipse-temurin:19-alpine" }
+    from { image = "eclipse-temurin:21-alpine" }
     to { image = "${project.group}/${project.name}:${project.version}" }
     container {
       format = OCI
