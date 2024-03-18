@@ -4,7 +4,7 @@ plugins { id("org.jetbrains.kotlinx.kover") }
 
 dependencies {
   implementation(projects.cosmotechOrganizationApi)
-  implementation("org.apache.commons:commons-compress:1.24.0")
+  implementation("org.apache.commons:commons-compress:1.26.1")
 
   implementation("org.json:json:20231013")
 
