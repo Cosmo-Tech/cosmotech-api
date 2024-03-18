@@ -54,8 +54,8 @@ config/application-*.yml
 api/kubernetes/helm-chart/values-vcr.yaml
 /api/kubernetes/helm-chart/values-JREY*.yaml
 
-### Personal directory ###
-**/logs/access_log.log
+### Logs ###
+logs/access_log*.log
 
 ### Helm ###
 # Chart dependencies
