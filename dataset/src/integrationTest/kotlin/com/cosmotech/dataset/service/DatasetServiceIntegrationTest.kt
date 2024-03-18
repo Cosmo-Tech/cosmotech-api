@@ -883,6 +883,15 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
             .linkedDatasetIdList)
   }
 
+  @Test
+  fun `getConnector return same connector`() {
+    val dataset = makeDatasetWithRole()
+    val dataset1 = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    val dataset2 = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+
+    assertEquals(dataset1.connector!!.id, dataset2.connector!!.id)
+  }
+
   fun makeConnector(): Connector {
     return Connector(
         key = "connector",
