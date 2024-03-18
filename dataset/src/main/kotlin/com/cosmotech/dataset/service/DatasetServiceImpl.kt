@@ -1116,8 +1116,7 @@ class DatasetServiceImpl(
         csmPlatformProperties.containers.find { it.name == TWINCACHE_CONNECTOR }
             ?: throw CsmResourceNotFoundException(
                 "Connector $TWINCACHE_CONNECTOR not found in application.yml")
-    val connectorName =
-        twinCacheConnectorProperties.name + " " + twinCacheConnectorProperties.imageVersion
+    val connectorName = "PlatformGenerated" + twinCacheConnectorProperties.name
     try {
       return connectorService.findConnectorByName(connectorName)
     } catch (exception: CsmClientException) {
