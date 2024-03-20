@@ -86,7 +86,7 @@ Note that the repositories for all these client libraries are automatically upda
 
 #### JDK
 
-As this project uses both Gradle and Kotlin, a [Java JDK](https://adoptium.net/?variant=openjdk17&jvmVariant=hotspot) (version 11 or higher) is required.
+As this project uses both Gradle and Kotlin, a [Java JDK](https://adoptium.net/temurin/releases/?variant=openjdk21&jvmVariant=hotspot) (version 21 or higher) is required.
 
 We recommend installing your JDK with [SDKMAN!](https://sdkman.io/), a tool for managing parallel versions of multiple Software Development Kits on most Unix-based systems.
 
@@ -94,9 +94,9 @@ To check your JDK version, run `java -version` :
 
 ```shell
 ❯ java -version
-openjdk version "17" 2021-09-14
-OpenJDK Runtime Environment Temurin-17+35 (build 17+35)
-OpenJDK 64-Bit Server VM Temurin-17+35 (build 17+35, mixed mode, sharing)
+openjdk 21.0.1 2023-10-17 LTS
+OpenJDK Runtime Environment Temurin-21.0.1+12 (build 21.0.1+12-LTS)
+OpenJDK 64-Bit Server VM Temurin-21.0.1+12 (build 21.0.1+12-LTS, mixed mode, sharing)
 ```
 
 #### GitHub Packages
