@@ -5,7 +5,6 @@ Apis/RunApi.md
 Apis/RunnerApi.md
 Apis/ScenarioApi.md
 Apis/ScenariorunApi.md
-Apis/ScenariorunresultApi.md
 Apis/SolutionApi.md
 Apis/TwingraphApi.md
 Apis/ValidatorApi.md
@@ -39,6 +38,8 @@ Models/OrganizationSecurity.md
 Models/OrganizationService.md
 Models/OrganizationServices.md
 Models/ResourceSizeInfo.md
+Models/ResultData.md
+Models/ResultDataQuery.md
 Models/Run.md
 Models/RunContainer.md
 Models/RunContainerArtifact.md
@@ -90,7 +91,6 @@ Models/ScenarioRunContainerArtifact.md
 Models/ScenarioRunContainerLogs.md
 Models/ScenarioRunLogs.md
 Models/ScenarioRunResourceRequested.md
-Models/ScenarioRunResult.md
 Models/ScenarioRunSearch.md
 Models/ScenarioRunStartContainers.md
 Models/ScenarioRunState.md

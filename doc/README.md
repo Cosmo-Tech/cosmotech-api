@@ -65,6 +65,8 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 *RunApi* | [**getRunLogs**](Apis/RunApi.md#getrunlogs) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/logs | get the logs for the Run |
 *RunApi* | [**getRunStatus**](Apis/RunApi.md#getrunstatus) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/status | get the status for the Run |
 *RunApi* | [**listRuns**](Apis/RunApi.md#listruns) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs | get the list of Runs for the Runner |
+*RunApi* | [**queryResultDatas**](Apis/RunApi.md#queryresultdatas) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/results/query | query the resultDatas in the run |
+*RunApi* | [**upsertResultData**](Apis/RunApi.md#upsertresultdata) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/results/send | create or update the ResultDatas |
 | *RunnerApi* | [**addRunnerAccessControl**](Apis/RunnerApi.md#addrunneraccesscontrol) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/access | Add a control access to the Runner |
 *RunnerApi* | [**createRunner**](Apis/RunnerApi.md#createrunner) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners | Create a new Runner |
 *RunnerApi* | [**deleteRunner**](Apis/RunnerApi.md#deleterunner) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id} | Delete a runner |
@@ -116,8 +118,6 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 *ScenariorunApi* | [**searchScenarioRuns**](Apis/ScenariorunApi.md#searchscenarioruns) | **POST** /organizations/{organization_id}/scenarioruns/search | Search ScenarioRuns |
 *ScenariorunApi* | [**startScenarioRunContainers**](Apis/ScenariorunApi.md#startscenarioruncontainers) | **POST** /organizations/{organization_id}/scenarioruns/startcontainers | Start a new scenariorun with raw containers definition |
 *ScenariorunApi* | [**stopScenarioRun**](Apis/ScenariorunApi.md#stopscenariorun) | **POST** /organizations/{organization_id}/scenarioruns/{scenariorun_id}/stop | stop a ScenarioRun for the Scenario |
-| *ScenariorunresultApi* | [**getScenarioRunResult**](Apis/ScenariorunresultApi.md#getscenariorunresult) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/scenarioruns/{scenariorun_id}/probes/{probe_id} | Get a ScenarioRunResult in the Organization |
-*ScenariorunresultApi* | [**sendScenarioRunResult**](Apis/ScenariorunresultApi.md#sendscenariorunresult) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/scenarios/{scenario_id}/scenarioruns/{scenariorun_id}/probes/{probe_id} | Create a new ScenarioRunResult in the Organization |
 | *SolutionApi* | [**addOrReplaceParameterGroups**](Apis/SolutionApi.md#addorreplaceparametergroups) | **POST** /organizations/{organization_id}/solutions/{solution_id}/parameterGroups | Add Parameter Groups. Any item with the same ID will be overwritten |
 *SolutionApi* | [**addOrReplaceParameters**](Apis/SolutionApi.md#addorreplaceparameters) | **POST** /organizations/{organization_id}/solutions/{solution_id}/parameters | Add Parameters. Any item with the same ID will be overwritten |
 *SolutionApi* | [**addOrReplaceRunTemplates**](Apis/SolutionApi.md#addorreplaceruntemplates) | **POST** /organizations/{organization_id}/solutions/{solution_id}/runTemplates | Add Run Templates. Any item with the same ID will be overwritten |
@@ -218,6 +218,8 @@ All URIs are relative to *https://dev.api.cosmotech.com*
  - [OrganizationService](./Models/OrganizationService.md)
  - [OrganizationServices](./Models/OrganizationServices.md)
  - [ResourceSizeInfo](./Models/ResourceSizeInfo.md)
+ - [ResultData](./Models/ResultData.md)
+ - [ResultDataQuery](./Models/ResultDataQuery.md)
  - [Run](./Models/Run.md)
  - [RunContainer](./Models/RunContainer.md)
  - [RunContainerArtifact](./Models/RunContainerArtifact.md)
@@ -269,7 +271,6 @@ All URIs are relative to *https://dev.api.cosmotech.com*
  - [ScenarioRunContainerLogs](./Models/ScenarioRunContainerLogs.md)
  - [ScenarioRunLogs](./Models/ScenarioRunLogs.md)
  - [ScenarioRunResourceRequested](./Models/ScenarioRunResourceRequested.md)
- - [ScenarioRunResult](./Models/ScenarioRunResult.md)
  - [ScenarioRunSearch](./Models/ScenarioRunSearch.md)
  - [ScenarioRunStartContainers](./Models/ScenarioRunStartContainers.md)
  - [ScenarioRunState](./Models/ScenarioRunState.md)

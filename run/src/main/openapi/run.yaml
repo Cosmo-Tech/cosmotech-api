@@ -203,6 +203,132 @@ paths:
               examples:
                 OneRun:
                   $ref: '#/components/examples/OneRun'
+  /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/results/send:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: runner_id
+        in: path
+        description: the Runner identifier
+        required: true
+        schema:
+          type: string
+      - name: run_id
+        in: path
+        description: the Run identifier
+        required: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: page number to query
+        required: false
+        schema:
+          type: integer
+      - name: size
+        in: query
+        description: amount of result by page
+        required: false
+        schema:
+          type: integer
+    post:
+      operationId: upsertResultData
+      tags:
+        - run
+      summary: create or update the ResultDatas
+      requestBody:
+        description: the ResultDatas to register
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResultData'
+            examples:
+              MultipleResults:
+                $ref: '#/components/examples/ResultDataExample'
+      responses:
+        "200":
+          description: the resultDatas details list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultData'
+              examples:
+                MultipleResults:
+                  $ref: '#/components/examples/ResultDataExample'
+  /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/results/query:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: runner_id
+        in: path
+        description: the Runner identifier
+        required: true
+        schema:
+          type: string
+      - name: run_id
+        in: path
+        description: the Run identifier
+        required: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: page number to query
+        required: false
+        schema:
+          type: integer
+      - name: size
+        in: query
+        description: amount of result by page
+        required: false
+        schema:
+          type: integer
+    post:
+      operationId: queryResultDatas
+      tags:
+        - run
+      summary: query the resultDatas in the run
+      requestBody:
+        description: the query to run
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResultDataQuery'
+            examples:
+              GetAllResultDataInTable:
+                $ref: '#/components/examples/ResultDataQueryExample'
+      responses:
+        "200":
+          description: the query response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultData'
+              examples:
+                MultipleResults:
+                  $ref: '#/components/examples/ResultDataExample'
 
 components:
   securitySchemes:
@@ -612,6 +738,28 @@ components:
           type: string
           readOnly: true
           description: the node logs in plain text
+    ResultData:
+      type: object
+      x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
+      description: a ResultData from a probe
+      properties:
+        id:
+          type: string
+          description: the run Id giving the resultData
+        data:
+          type: array
+          description: the resultData list
+          items:
+            type: object
+    ResultDataQuery:
+      type: object
+      description: a data result query in SQL
+      properties:
+        query:
+          type: string
+          description: the query in SQL
+      required:
+        - query
   examples:
     BreweryRun:
       summary: Brewery Run example
@@ -773,3 +921,14 @@ components:
             progress: 1/1
             startTime: "2021-05-18T16:15:53.000Z"
             endTime: "2021-05-18T16:16:03.000Z"
+    ResultDataExample:
+      summary: ResultData example
+      description: ResultData with related run_id example
+      value:
+        customDataId: myData
+        data: []
+    ResultDataQueryExample:
+      summary: Get all resultData in a table
+      description: Get all resultData in a table
+      value:
+        query: "SELECT * FROM 't-myCustomData'"

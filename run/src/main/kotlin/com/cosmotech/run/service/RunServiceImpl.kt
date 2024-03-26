@@ -14,6 +14,8 @@ import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.run.RunApiServiceInterface
 import com.cosmotech.run.RunContainerFactory
 import com.cosmotech.run.container.StartInfo
+import com.cosmotech.run.domain.ResultData
+import com.cosmotech.run.domain.ResultDataQuery
 import com.cosmotech.run.domain.Run
 import com.cosmotech.run.domain.RunLogs
 import com.cosmotech.run.domain.RunState
@@ -26,10 +28,10 @@ import com.cosmotech.run.workflow.WorkflowService
 import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.service.getRbac
-import java.time.Instant
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
+import java.time.Instant
 
 internal const val WORKFLOW_TYPE_RUN = "container-run"
 
@@ -152,6 +154,30 @@ class RunServiceImpl(
       runId: String
   ): RunStatus {
     return getRunStatus(this.getRun(organizationId, workspaceId, runnerId, runId))
+  }
+
+  override fun upsertResultData(
+      organizationId: String,
+      workspaceId: String,
+      runnerId: String,
+      runId: String,
+      resultData: ResultData,
+      page: Int?,
+      size: Int?
+  ): ResultData {
+    TODO("Not yet implemented")
+  }
+
+  override fun queryResultDatas(
+      organizationId: String,
+      workspaceId: String,
+      runnerId: String,
+      runId: String,
+      resultDataQuery: ResultDataQuery,
+      page: Int?,
+      size: Int?
+  ): ResultData {
+    TODO("Not yet implemented")
   }
 
   @EventListener(RunStart::class)

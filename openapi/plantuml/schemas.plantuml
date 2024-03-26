@@ -193,6 +193,15 @@ entity ResourceSizeInfo {
     * memory: String
 }
 
+entity ResultData {
+    id: String
+    data: List<Object>
+}
+
+entity ResultDataQuery {
+    * query: String
+}
+
 entity Run {
     id: String
     state: RunState
@@ -609,11 +618,6 @@ entity ScenarioRunLogs {
 entity ScenarioRunResourceRequested {
     cpu: Long
     memory: Long
-}
-
-entity ScenarioRunResult {
-    id: String
-    results: List<Map>
 }
 
 entity ScenarioRunSearch {
