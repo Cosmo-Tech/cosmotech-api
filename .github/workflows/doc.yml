@@ -30,7 +30,7 @@ jobs:
       - name: Generate Markdown documentation
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
         with:
           cache-disabled: false
           # Cache storage space is limited for GitHub actions
@@ -40,7 +40,7 @@ jobs:
       - name: Generate UML documentation
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
         with:
           cache-disabled: false
           # Cache storage space is limited for GitHub actions
