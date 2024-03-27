@@ -9,10 +9,14 @@ import com.cosmotech.api.events.ScenarioRunStartedForScenario
 import com.cosmotech.api.metrics.DownSamplingAggregationType
 import com.cosmotech.api.metrics.PersistentMetric
 import com.cosmotech.api.metrics.PersitentMetricType
+import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
+import com.cosmotech.api.utils.getLocalDateNow
 import com.cosmotech.scenariorun.WORKFLOW_TYPE_LABEL
 import com.cosmotech.scenariorun.service.WORKFLOW_TYPE_SCENARIO_RUN
 import com.cosmotech.scenariorun.workflow.WorkflowContextData
 import com.cosmotech.scenariorun.workflow.WorkflowService
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
@@ -24,6 +28,8 @@ private const val SERVICE_NAME = "scenariorun"
 private const val ORGANIZATION_ID_LABEL = "organizationId"
 private const val WORKSPACE_ID_LABEL = "workspaceId"
 private const val SCENARIO_ID_LABEL = "scenarioId"
+private const val DATE_LABEL = "date"
+private const val USER_ID_LABEL = "userId"
 
 private const val DEFAULT_EMPTY_WORKFLOW_LABEL = "none"
 private const val TOTAL_QUALIFIER = "total"
@@ -86,6 +92,20 @@ internal class ScenarioRunMetrics(
     val scenarioId = event.scenarioId
     labels[SCENARIO_ID_LABEL] = scenarioId
     name += ":$scenarioId"
+    publishRunStartLabeledMetric(name, labels)
+
+    // By Date
+    val pattern = "yyyy/MM/dd"
+    LocalDate.now().format(DateTimeFormatter.ofPattern(pattern))
+    val date = getLocalDateNow(pattern)
+    name += ":$date"
+    labels[DATE_LABEL] = date
+    publishRunStartLabeledMetric(name, labels)
+
+    // By user Id
+    val userId = getCurrentAuthenticatedUserName(csmPlatformProperties)
+    name += ":$userId"
+    labels[USER_ID_LABEL] = userId
     publishRunStartLabeledMetric(name, labels)
   }
 
