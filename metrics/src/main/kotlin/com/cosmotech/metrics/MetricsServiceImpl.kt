@@ -25,10 +25,10 @@ class MetricsServiceImpl(
   private val logger = LoggerFactory.getLogger(MetricsServiceImpl::class.java)
 
   override fun storeMetric(metric: PersistentMetric) {
-    createOrAlterTimeSeries(metric)
-    addMetricToTimeSeries(metric)
+    // createOrAlterTimeSeries(metric)
+    // addMetricToTimeSeries(metric)
   }
-
+  @Suppress("UnusedPrivateMember")
   private fun addMetricToTimeSeries(metric: PersistentMetric) {
     val key = getMetricKey(metric)
     if (metric.incrementBy > 0 && metric.value > 0) {
@@ -44,7 +44,7 @@ class MetricsServiceImpl(
     logger.debug("METRICS: addMetricToTimeSeries done for $key at $timestamp")
   }
 
-  @Suppress("EmptyElseBlock")
+  @Suppress("EmptyElseBlock", "UnusedPrivateMember")
   private fun createOrAlterTimeSeries(metric: PersistentMetric) {
     val key = getMetricKey(metric)
     logger.debug("Testing Redis TS exist: $key")
