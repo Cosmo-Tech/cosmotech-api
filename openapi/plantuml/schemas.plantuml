@@ -195,7 +195,7 @@ entity ResourceSizeInfo {
 
 entity ResultData {
     id: String
-    data: List<Object>
+    data: List<String>
 }
 
 entity ResultDataQuery {

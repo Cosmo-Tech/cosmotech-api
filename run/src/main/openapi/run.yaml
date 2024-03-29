@@ -740,7 +740,6 @@ components:
           description: the node logs in plain text
     ResultData:
       type: object
-      x-class-extra-annotation: "@com.redis.om.spring.annotations.Document"
       description: a ResultData from a probe
       properties:
         id:
@@ -748,9 +747,8 @@ components:
           description: the run Id giving the resultData
         data:
           type: array
-          description: the resultData list
           items:
-            type: object
+            type: string
     ResultDataQuery:
       type: object
       description: a data result query in SQL

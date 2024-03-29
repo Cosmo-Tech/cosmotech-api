@@ -21,6 +21,7 @@ import com.cosmotech.run.domain.RunLogs
 import com.cosmotech.run.domain.RunState
 import com.cosmotech.run.domain.RunStatus
 import com.cosmotech.run.domain.RunTemplateParameterValue
+import com.cosmotech.run.repository.ResultDataRepository
 import com.cosmotech.run.repository.RunRepository
 import com.cosmotech.run.utils.isTerminal
 import com.cosmotech.run.utils.withoutSensitiveData
@@ -31,7 +32,10 @@ import com.cosmotech.runner.service.getRbac
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
+import java.sql.DriverManager
+import java.sql.ResultSet
 import java.time.Instant
+
 
 internal const val WORKFLOW_TYPE_RUN = "container-run"
 
@@ -42,6 +46,7 @@ class RunServiceImpl(
     private val workflowService: WorkflowService,
     private val runnerApiService: RunnerApiServiceInterface,
     private val runRepository: RunRepository,
+    private val resultDataRepository: ResultDataRepository,
     private val csmRbac: CsmRbac
 ) : CsmPhoenixService(), RunApiServiceInterface {
 
@@ -165,6 +170,17 @@ class RunServiceImpl(
       page: Int?,
       size: Int?
   ): ResultData {
+    //C KE DLA MERDE
+    val tableExist = resultDataRepository.checkIfTableExist(resultData.id!!)
+    if(tableExist.next()){
+      val currentTable = resultDataRepository.getDataFromTable(resultData.id)
+      currentTable.next()
+      var data = currentTable.getArray("data")
+      val newData: Array<String> = resultData.data!!.toTypedArray()
+
+    }else{
+      resultDataRepository.createTable(resultData.id, "data")
+    }
     TODO("Not yet implemented")
   }
 
@@ -178,6 +194,15 @@ class RunServiceImpl(
       size: Int?
   ): ResultData {
     TODO("Not yet implemented")
+  }
+
+  fun sendQuery(rawQuery: String): ResultSet {
+    val jdbcUrl = "jdbc:postgresql://localhost:5432/example"
+    val connection = DriverManager.getConnection(jdbcUrl, "user", "password")
+    val query = connection.prepareStatement(rawQuery)
+    val result = query.executeQuery()
+    result.next()
+    return result
   }
 
   @EventListener(RunStart::class)
