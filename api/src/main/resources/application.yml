@@ -5,6 +5,13 @@ logging:
       OkHttpClient: WARN
 
 spring:
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  datasource:
+    url: "jdbc:postgresql://localhost:5435/YYYY"
+    username: "XXXX"
+    password: "XXXX"
+    driver-class-name: org.postgresql.Driver
   data:
     redis:
       host: ${csm.platform.twincache.host}
