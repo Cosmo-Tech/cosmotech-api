@@ -242,6 +242,11 @@ entity RunContainerLogs {
     logs: String
 }
 
+entity RunData {
+    id: String
+    name: String
+}
+
 entity RunLogs {
     runId: String
     containers: Map

@@ -65,6 +65,7 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 *RunApi* | [**getRunLogs**](Apis/RunApi.md#getrunlogs) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/logs | get the logs for the Run |
 *RunApi* | [**getRunStatus**](Apis/RunApi.md#getrunstatus) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/status | get the status for the Run |
 *RunApi* | [**listRuns**](Apis/RunApi.md#listruns) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs | get the list of Runs for the Runner |
+*RunApi* | [**sendRunData**](Apis/RunApi.md#sendrundata) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/data/send | Send data associated to a run |
 | *RunnerApi* | [**addRunnerAccessControl**](Apis/RunnerApi.md#addrunneraccesscontrol) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/security/access | Add a control access to the Runner |
 *RunnerApi* | [**createRunner**](Apis/RunnerApi.md#createrunner) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners | Create a new Runner |
 *RunnerApi* | [**deleteRunner**](Apis/RunnerApi.md#deleterunner) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id} | Delete a runner |
@@ -222,6 +223,7 @@ All URIs are relative to *https://dev.api.cosmotech.com*
  - [RunContainer](./Models/RunContainer.md)
  - [RunContainerArtifact](./Models/RunContainerArtifact.md)
  - [RunContainerLogs](./Models/RunContainerLogs.md)
+ - [RunData](./Models/RunData.md)
  - [RunLogs](./Models/RunLogs.md)
  - [RunResourceRequested](./Models/RunResourceRequested.md)
  - [RunSearch](./Models/RunSearch.md)
