@@ -43,6 +43,7 @@ Models/Run.md
 Models/RunContainer.md
 Models/RunContainerArtifact.md
 Models/RunContainerLogs.md
+Models/RunData.md
 Models/RunLogs.md
 Models/RunResourceRequested.md
 Models/RunSearch.md

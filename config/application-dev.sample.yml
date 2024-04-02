@@ -46,6 +46,18 @@ csm:
       # adminGroup : "myCustomAdminGroup"
       # userGroup : "myCustomUserGroup"
       # userGroup : "myCustomViewerGroup"
+    storage:
+      host: "localhost"
+      reader:
+        username: "storage_reader_username"
+        password: "storage_reader_password"
+      admin:
+        username: "storage_admin_username"
+        password: "storage_admin_password"
+    eventbus:
+      host: "localhost"
+      username: "eventbus_admin_username"
+      password: "eventbus_admin_password"
     argo:
       base-uri: "http://localhost:2746"
     azure:
