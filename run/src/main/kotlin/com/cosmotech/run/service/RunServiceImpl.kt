@@ -15,6 +15,7 @@ import com.cosmotech.run.RunApiServiceInterface
 import com.cosmotech.run.RunContainerFactory
 import com.cosmotech.run.container.StartInfo
 import com.cosmotech.run.domain.Run
+import com.cosmotech.run.domain.RunData
 import com.cosmotech.run.domain.RunLogs
 import com.cosmotech.run.domain.RunState
 import com.cosmotech.run.domain.RunStatus
@@ -29,6 +30,7 @@ import com.cosmotech.runner.service.getRbac
 import java.time.Instant
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.PageRequest
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 
 internal const val WORKFLOW_TYPE_RUN = "container-run"
@@ -40,7 +42,8 @@ class RunServiceImpl(
     private val workflowService: WorkflowService,
     private val runnerApiService: RunnerApiServiceInterface,
     private val runRepository: RunRepository,
-    private val csmRbac: CsmRbac
+    private val csmRbac: CsmRbac,
+    private val adminRunStorageTemplate: JdbcTemplate
 ) : CsmPhoenixService(), RunApiServiceInterface {
 
   override fun listRuns(
@@ -61,6 +64,16 @@ class RunServiceImpl(
         .findByRunnerId(organizationId, workspaceId, runnerId, pageable)
         .toList()
         .map { it.withStateInformation().withoutSensitiveData() }
+  }
+
+  override fun sendRunData(
+      organizationId: String,
+      workspaceId: String,
+      runnerId: String,
+      runId: String
+  ): RunData {
+      adminRunStorageTemplate.execute("CREATE DATABASE $runId")
+      return RunData(name = runId)
   }
 
   private fun Run.withStateInformation(): Run {
