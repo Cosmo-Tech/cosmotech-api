@@ -294,6 +294,8 @@ subprojects {
     implementation("org.apache.commons:commons-csv:$commonsCsvVersion")
     implementation("com.redis.om:redis-om-spring:${redisOmSpringVersion}")
     implementation("org.springframework.data:spring-data-redis")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.postgresql:postgresql")
 
     implementation("org.json:json:20240303")
 

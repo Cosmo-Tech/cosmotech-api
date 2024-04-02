@@ -14,11 +14,8 @@ import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.run.RunApiServiceInterface
 import com.cosmotech.run.RunContainerFactory
 import com.cosmotech.run.container.StartInfo
-import com.cosmotech.run.domain.Run
-import com.cosmotech.run.domain.RunLogs
-import com.cosmotech.run.domain.RunState
-import com.cosmotech.run.domain.RunStatus
-import com.cosmotech.run.domain.RunTemplateParameterValue
+import com.cosmotech.run.domain.*
+import com.cosmotech.run.repository.RunDataRepository
 import com.cosmotech.run.repository.RunRepository
 import com.cosmotech.run.utils.isTerminal
 import com.cosmotech.run.utils.withoutSensitiveData
@@ -29,6 +26,7 @@ import com.cosmotech.runner.service.getRbac
 import java.time.Instant
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.PageRequest
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 
 internal const val WORKFLOW_TYPE_RUN = "container-run"
@@ -40,10 +38,12 @@ class RunServiceImpl(
     private val workflowService: WorkflowService,
     private val runnerApiService: RunnerApiServiceInterface,
     private val runRepository: RunRepository,
-    private val csmRbac: CsmRbac
+    private val runDataRepository: RunDataRepository,
+    private val csmRbac: CsmRbac,
+    private val runJdbcTemplate: JdbcTemplate
 ) : CsmPhoenixService(), RunApiServiceInterface {
 
-  override fun listRuns(
+    override fun listRuns(
       organizationId: String,
       workspaceId: String,
       runnerId: String,
@@ -63,7 +63,12 @@ class RunServiceImpl(
         .map { it.withStateInformation().withoutSensitiveData() }
   }
 
-  private fun Run.withStateInformation(): Run {
+    override fun sendRunData(organizationId: String, workspaceId: String, runnerId: String, runId: String): RunData {
+        runJdbcTemplate.execute("CREATE DATABASE $runId")
+        return RunData(name = "runId")
+    }
+
+    private fun Run.withStateInformation(): Run {
     if (this.state?.isTerminal() == true) {
       return this
     }
