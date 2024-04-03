@@ -21,6 +21,8 @@ fun Any?.toPropertyType(): PropertyType {
   when (this) {
     is Int -> type = PropertyType.BI_LONG
     is Double -> type = PropertyType.BI_DOUBLE
+    is Long -> type = PropertyType.BI_LONG
+    is Boolean -> type = PropertyType.BI_BOOL
     is String -> {
       this.toIntOrNull()?.let {
         return PropertyType.BI_LONG
