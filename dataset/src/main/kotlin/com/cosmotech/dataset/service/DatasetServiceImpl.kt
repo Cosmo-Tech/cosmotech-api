@@ -279,9 +279,8 @@ class DatasetServiceImpl(
       record?.values()?.forEach { element ->
         when (element) {
           is Node -> {
-            val properties =
-                element.entityPropertyNames.associateWith { it -> element.getProperty(it).value }
-            queryBuffer.addNode(element.getLabel(0), element.id.toString(), properties)
+            val csmGraphEntity = element.toCsmGraphEntity(CsmGraphEntityType.NODE)
+            queryBuffer.addNode(csmGraphEntity.label, csmGraphEntity.id, csmGraphEntity.properties)
           }
           is Edge -> {
             val csmGraphEntity = element.toCsmGraphEntity(CsmGraphEntityType.RELATION)
