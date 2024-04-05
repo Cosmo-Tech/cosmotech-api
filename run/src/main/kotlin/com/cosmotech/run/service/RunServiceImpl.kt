@@ -13,6 +13,12 @@ import com.cosmotech.api.rbac.getScenarioRolesDefinition
 import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.run.RunApiServiceInterface
 import com.cosmotech.run.RunContainerFactory
+import com.cosmotech.run.config.createCustomDataTable
+import com.cosmotech.run.config.createDB
+import com.cosmotech.run.config.existDB
+import com.cosmotech.run.config.existTable
+import com.cosmotech.run.config.insertCustomData
+import com.cosmotech.run.config.toCustomDataTableName
 import com.cosmotech.run.container.StartInfo
 import com.cosmotech.run.domain.Run
 import com.cosmotech.run.domain.RunData
@@ -20,6 +26,7 @@ import com.cosmotech.run.domain.RunLogs
 import com.cosmotech.run.domain.RunState
 import com.cosmotech.run.domain.RunStatus
 import com.cosmotech.run.domain.RunTemplateParameterValue
+import com.cosmotech.run.domain.SendRunDataRequest
 import com.cosmotech.run.repository.RunRepository
 import com.cosmotech.run.utils.isTerminal
 import com.cosmotech.run.utils.withoutSensitiveData
@@ -28,9 +35,11 @@ import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.service.getRbac
 import java.time.Instant
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.PageRequest
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.stereotype.Service
 
 internal const val WORKFLOW_TYPE_RUN = "container-run"
@@ -45,6 +54,14 @@ class RunServiceImpl(
     private val csmRbac: CsmRbac,
     private val adminRunStorageTemplate: JdbcTemplate
 ) : CsmPhoenixService(), RunApiServiceInterface {
+
+  @Value("\${csm.platform.storage.admin.username}")
+  private lateinit var adminStorageUsername: String
+
+  @Value("\${csm.platform.storage.admin.password}")
+  private lateinit var adminStoragePassword: String
+
+  @Value("\${csm.platform.storage.port}") private lateinit var port: String
 
   override fun listRuns(
       organizationId: String,
@@ -70,10 +87,31 @@ class RunServiceImpl(
       organizationId: String,
       workspaceId: String,
       runnerId: String,
-      runId: String
+      runId: String,
+      sendRunDataRequest: SendRunDataRequest
   ): RunData {
-    adminRunStorageTemplate.execute("CREATE DATABASE $runId")
-    return RunData(name = runId)
+    val tableName = sendRunDataRequest.id!!
+
+    if (!adminRunStorageTemplate.existDB(runId)) {
+      adminRunStorageTemplate.createDB(runId)
+    }
+
+    val runtimeDS =
+        DriverManagerDataSource(
+            "jdbc:postgresql://localhost:$port/$runId", adminStorageUsername, adminStoragePassword)
+    runtimeDS.setDriverClassName("org.postgresql.Driver")
+
+    val runDBJdbcTemplate = JdbcTemplate(runtimeDS)
+
+    if (!runDBJdbcTemplate.existTable(tableName)) {
+      runDBJdbcTemplate.createCustomDataTable(tableName)
+    }
+
+    val dataInserted =
+        runDBJdbcTemplate.insertCustomData(sendRunDataRequest.id, sendRunDataRequest.data!!)
+
+    return RunData(
+        databaseName = runId, tableName = tableName.toCustomDataTableName(), data = dataInserted)
   }
 
   private fun Run.withStateInformation(): Run {

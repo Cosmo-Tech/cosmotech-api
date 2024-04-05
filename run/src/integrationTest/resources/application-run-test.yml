@@ -115,6 +115,7 @@ csm:
         default-page-size: 5
     storage:
       host: "localhost"
+      port: "5432"
       reader:
         username: "user1"
         password: "pwd1"

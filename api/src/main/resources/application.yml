@@ -90,6 +90,7 @@ csm:
         maxResult: 200
     storage:
       host: "localhost"
+      port: "5432"
       reader:
         username: "storage_reader_username"
         password: "storage_reader_password"

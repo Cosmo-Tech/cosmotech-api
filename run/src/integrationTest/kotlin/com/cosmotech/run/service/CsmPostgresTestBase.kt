@@ -8,6 +8,7 @@ import org.junit.jupiter.api.TestInstance
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.containers.PostgreSQLContainer.POSTGRESQL_PORT
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.MountableFile
 
@@ -22,8 +23,7 @@ open class CsmPostgresTestBase {
     var postgres: PostgreSQLContainer<*> =
         PostgreSQLContainer("postgres:alpine3.19")
             .withCopyFileToContainer(
-                MountableFile.forClasspathResource("init-db.sql"),
-                "/docker-entrypoint-initdb.d/")
+                MountableFile.forClasspathResource("init-db.sql"), "/docker-entrypoint-initdb.d/")
 
     init {
       postgres.start()
@@ -33,6 +33,7 @@ open class CsmPostgresTestBase {
     @DynamicPropertySource
     fun connectionProperties(registry: DynamicPropertyRegistry) {
       registry.add("csm.platform.storage.host") { postgres.jdbcUrl }
+      registry.add("csm.platform.storage.port") { postgres.getMappedPort(POSTGRESQL_PORT) }
       registry.add("csm.platform.storage.admin.username") { ADMIN_USER_CREDENTIALS }
       registry.add("csm.platform.storage.admin.password") { ADMIN_USER_CREDENTIALS }
       registry.add("csm.platform.storage.reader.username") { READER_USER_CREDENTIALS }

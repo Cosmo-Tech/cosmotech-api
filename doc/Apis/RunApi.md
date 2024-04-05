@@ -155,7 +155,7 @@ get the list of Runs for the Runner
 
 <a name="sendRunData"></a>
 # **sendRunData**
-> RunData sendRunData(organization\_id, workspace\_id, runner\_id, run\_id)
+> RunData sendRunData(organization\_id, workspace\_id, runner\_id, run\_id, sendRunData\_request)
 
 Send data associated to a run
 
@@ -167,6 +167,7 @@ Send data associated to a run
 | **workspace\_id** | **String**| the Workspace identifier | [default to null] |
 | **runner\_id** | **String**| the Runner identifier | [default to null] |
 | **run\_id** | **String**| the Run identifier | [default to null] |
+| **sendRunData\_request** | [**sendRunData_request**](../Models/sendRunData_request.md)| Custom data to register | |
 
 ### Return type
 
@@ -178,6 +179,6 @@ Send data associated to a run
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
+- **Content-Type**: application/json
 - **Accept**: application/json
 
