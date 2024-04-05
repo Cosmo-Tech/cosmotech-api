@@ -37,6 +37,7 @@ import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
+import com.ninjasquad.springmockk.MockkBean
 import com.ninjasquad.springmockk.SpykBean
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
@@ -55,6 +56,7 @@ import org.junit.runner.RunWith
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
@@ -84,6 +86,7 @@ class RunServiceIntegrationTest : CsmRedisTestBase() {
   @Autowired lateinit var solutionApiService: SolutionApiServiceInterface
   @Autowired lateinit var workspaceApiService: WorkspaceApiServiceInterface
   @SpykBean @Autowired lateinit var runnerApiService: RunnerApiServiceInterface
+  @MockkBean(name = "adminRunStorageTemplate") lateinit var jdbcTemplate: JdbcTemplate
   @Autowired lateinit var runApiService: RunApiServiceInterface
   @Autowired lateinit var eventPublisher: com.cosmotech.api.events.CsmEventPublisher
 
