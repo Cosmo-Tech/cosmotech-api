@@ -299,6 +299,7 @@ All URIs are relative to *https://dev.api.cosmotech.com*
  - [WorkspaceSecurity](./Models/WorkspaceSecurity.md)
  - [WorkspaceSolution](./Models/WorkspaceSolution.md)
  - [WorkspaceWebApp](./Models/WorkspaceWebApp.md)
+ - [sendRunData_request](./Models/sendRunData_request.md)
 
 
 <a name="documentation-for-authorization"></a>

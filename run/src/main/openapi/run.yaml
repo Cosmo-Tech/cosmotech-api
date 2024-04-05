@@ -185,6 +185,21 @@ paths:
       tags:
         - run
       summary: Send data associated to a run
+      requestBody:
+        description: Custom data to register
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                id:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    type: object
+                    additionalProperties:
+                      type: string
       responses:
         "201":
           description: Data stored
@@ -259,17 +274,22 @@ components:
             http://dev.api.cosmotech.com/platform: Platform scope
   schemas:
     RunData:
-      x-class-extra-annotation: "@jakarta.persistence.Entity"
       type: object
       description: Run Data to send
       properties:
-        id:
-          x-field-extra-annotation: "@jakarta.persistence.Id"
+        database_name:
           type: string
-          description: Generated Id
-        name:
+          description: Database name
+        table_name:
           type: string
-          description: Data name
+          description: Table name
+        data:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: string
+
     RunSearch:
       type: object
       description: the search options

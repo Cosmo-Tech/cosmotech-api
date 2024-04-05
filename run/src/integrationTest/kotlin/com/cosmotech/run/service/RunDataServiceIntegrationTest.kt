@@ -3,14 +3,20 @@
 package com.cosmotech.run.service
 
 import com.cosmotech.run.RunApiServiceInterface
+import com.cosmotech.run.config.existDB
+import com.cosmotech.run.config.toCustomDataTableName
+import com.cosmotech.run.domain.SendRunDataRequest
 import com.redis.om.spring.annotations.EnableRedisDocumentRepositories
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
+import org.json.JSONObject
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.jdbc.core.queryForObject
 import org.springframework.test.context.ActiveProfiles
-import kotlin.test.assertEquals
 
 @ActiveProfiles(profiles = ["run-test"])
 @EnableRedisDocumentRepositories(basePackages = ["com.cosmotech"])
@@ -21,12 +27,22 @@ class RunDataServiceIntegrationTest : CsmPostgresTestBase() {
   @Autowired lateinit var readerRunStorageTemplate: JdbcTemplate
 
   @Test
-  fun shouldCreateTable() {
-    val runId = "runTable_123564"
-    val runData = runApiService.sendRunData("orgId","workId","runnerId", runId)
-    val createdDBName = readerRunStorageTemplate
-      .queryForObject<String>("select datname FROM pg_catalog.pg_database where datname= ?",
-        arrayOf(runId.lowercase()))
-    assertEquals(runData.name!!.lowercase(), createdDBName)
+  fun shouldCreateDatabase() {
+    val databaseName = "runTable_123564"
+    val tableName = "MyCustomData"
+    val data =
+        listOf(
+            mapOf("param1" to "value1"),
+            mapOf("param2" to "2"),
+            mapOf("param3" to JSONObject(mapOf("param4" to "value4")).toString()))
+    val requestBody = SendRunDataRequest(id = tableName, data = data)
+    assertFalse(readerRunStorageTemplate.existDB(databaseName))
+    val runDataResult =
+        runApiService.sendRunData("orgId", "workId", "runnerId", databaseName, requestBody)
+    assertNotNull(runDataResult.databaseName)
+    assertEquals(databaseName, runDataResult.databaseName)
+    assertTrue(readerRunStorageTemplate.existDB(runDataResult.databaseName!!))
+    assertEquals(tableName.toCustomDataTableName(), runDataResult.tableName)
+    assertEquals(data, runDataResult.data)
   }
 }
