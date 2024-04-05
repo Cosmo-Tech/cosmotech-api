@@ -72,8 +72,8 @@ class RunServiceImpl(
       runnerId: String,
       runId: String
   ): RunData {
-      adminRunStorageTemplate.execute("CREATE DATABASE $runId")
-      return RunData(name = runId)
+    adminRunStorageTemplate.execute("CREATE DATABASE $runId")
+    return RunData(name = runId)
   }
 
   private fun Run.withStateInformation(): Run {

@@ -3,6 +3,7 @@ spring:
     redis:
       host: "localhost"
       username: "default"
+      port: 6379
       # Leave it as blank as there's no auth with test container
       password:
       client-type: jedis
@@ -112,6 +113,18 @@ csm:
       password: "my-wonderful-password"
       scenariorun:
         default-page-size: 5
+    storage:
+      host: "localhost"
+      reader:
+        username: "user1"
+        password: "pwd1"
+      admin:
+        username: "user2"
+        password: "pwd2"
+    eventbus:
+      host: "localhost"
+      username: "user3"
+      password: "pwd3"
     rbac:
       enabled: true
     containerRegistry:

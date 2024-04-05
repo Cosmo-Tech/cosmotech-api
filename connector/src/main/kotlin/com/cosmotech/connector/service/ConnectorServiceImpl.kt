@@ -14,13 +14,11 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.connector.ConnectorApiServiceInterface
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.connector.repository.ConnectorRepository
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 @Service
-class ConnectorServiceImpl(
-    @Autowired(required = true) var connectorRepository: ConnectorRepository
-) : CsmPhoenixService(), ConnectorApiServiceInterface {
+class ConnectorServiceImpl(var connectorRepository: ConnectorRepository) :
+    CsmPhoenixService(), ConnectorApiServiceInterface {
 
   override fun findAllConnectors(page: Int?, size: Int?): List<Connector> {
     val defaultPageSize = csmPlatformProperties.twincache.connector.defaultPageSize
