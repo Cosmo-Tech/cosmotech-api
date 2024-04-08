@@ -88,6 +88,19 @@ csm:
         maxResult: 200
       scenario:
         maxResult: 200
+    storage:
+      host: "localhost"
+      port: "5432"
+      reader:
+        username: "storage_reader_username"
+        password: "storage_reader_password"
+      admin:
+        username: "storage_admin_username"
+        password: "storage_admin_password"
+    eventbus:
+      host: "localhost"
+      username: "eventbus_admin_username"
+      password: "eventbus_admin_password"
     argo:
       base-uri: "https://localhost:2746"
       image-pull-secrets: []

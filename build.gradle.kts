@@ -54,7 +54,7 @@ val springWebVersion = "6.1.4"
 
 // Implementation
 val kotlinJvmTarget = 21
-val cosmotechApiCommonVersion = "1.0.0-SNAPSHOT"
+val cosmotechApiCommonVersion = "1.0.1-SNAPSHOT"
 val cosmotechApiAzureVersion = "1.0.0-SNAPSHOT"
 val jedisVersion = "4.4.6"
 val springOauthVersion = "6.2.2"
@@ -131,6 +131,7 @@ allprojects {
   configurations { all { resolutionStrategy { force("com.redis.om:redis-om-spring:0.8.8") } } }
 
   repositories {
+    mavenLocal()
     maven {
       name = "GitHubPackages"
       url = uri("https://maven.pkg.github.com/Cosmo-Tech/cosmotech-api-common")
@@ -293,6 +294,8 @@ subprojects {
     implementation("org.apache.commons:commons-csv:$commonsCsvVersion")
     implementation("com.redis.om:redis-om-spring:${redisOmSpringVersion}")
     implementation("org.springframework.data:spring-data-redis")
+    implementation("org.springframework:spring-jdbc")
+    implementation("org.postgresql:postgresql")
 
     implementation("org.json:json:20240303")
 

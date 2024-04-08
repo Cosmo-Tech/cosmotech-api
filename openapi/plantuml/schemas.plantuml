@@ -242,6 +242,12 @@ entity RunContainerLogs {
     logs: String
 }
 
+entity RunData {
+    database_name: String
+    table_name: String
+    data: List<Map>
+}
+
 entity RunLogs {
     runId: String
     containers: Map
@@ -681,6 +687,11 @@ entity ScenarioSecurity {
 }
 
 entity ScenarioValidationStatus {
+}
+
+entity SendRunDataRequest {
+    id: String
+    data: List<Map>
 }
 
 entity Solution {

@@ -154,6 +154,64 @@ paths:
               examples:
                 Run:
                   $ref: '#/components/examples/BreweryRunLogs'
+  /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/data/send:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: runner_id
+        in: path
+        description: the Runner identifier
+        required: true
+        schema:
+          type: string
+      - name: run_id
+        in: path
+        description: the Run identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: sendRunData
+      tags:
+        - run
+      summary: Send data associated to a run
+      requestBody:
+        description: Custom data to register
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                id:
+                  type: string
+                data:
+                  type: array
+                  items:
+                    type: object
+                    additionalProperties:
+                      type: string
+      responses:
+        "201":
+          description: Data stored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunData'
+              examples:
+                Run:
+                  $ref: '#/components/examples/DefaultRunData'
+        "400":
+          description: Data sent format is malformed
   /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs:
     parameters:
       - name: organization_id
@@ -215,6 +273,23 @@ components:
           scopes:
             http://dev.api.cosmotech.com/platform: Platform scope
   schemas:
+    RunData:
+      type: object
+      description: Run Data to send
+      properties:
+        database_name:
+          type: string
+          description: Database name
+        table_name:
+          type: string
+          description: Table name
+        data:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: string
+
     RunSearch:
       type: object
       description: the search options
@@ -613,6 +688,11 @@ components:
           readOnly: true
           description: the node logs in plain text
   examples:
+    DefaultRunData:
+      summary: Run Data exemple
+      description: Run Data exemple
+      value:
+        name: test
     BreweryRun:
       summary: Brewery Run example
       description: Brewery Run example

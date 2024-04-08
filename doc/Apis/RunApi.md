@@ -9,6 +9,7 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 | [**getRunLogs**](RunApi.md#getRunLogs) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/logs | get the logs for the Run |
 | [**getRunStatus**](RunApi.md#getRunStatus) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/status | get the status for the Run |
 | [**listRuns**](RunApi.md#listRuns) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs | get the list of Runs for the Runner |
+| [**sendRunData**](RunApi.md#sendRunData) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/data/send | Send data associated to a run |
 
 
 <a name="deleteRun"></a>
@@ -150,5 +151,34 @@ get the list of Runs for the Runner
 ### HTTP request headers
 
 - **Content-Type**: Not defined
+- **Accept**: application/json
+
+<a name="sendRunData"></a>
+# **sendRunData**
+> RunData sendRunData(organization\_id, workspace\_id, runner\_id, run\_id, sendRunData\_request)
+
+Send data associated to a run
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organization\_id** | **String**| the Organization identifier | [default to null] |
+| **workspace\_id** | **String**| the Workspace identifier | [default to null] |
+| **runner\_id** | **String**| the Runner identifier | [default to null] |
+| **run\_id** | **String**| the Run identifier | [default to null] |
+| **sendRunData\_request** | [**sendRunData_request**](../Models/sendRunData_request.md)| Custom data to register | |
+
+### Return type
+
+[**RunData**](../Models/RunData.md)
+
+### Authorization
+
+[oAuth2AuthCode](../README.md#oAuth2AuthCode)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
 - **Accept**: application/json
 
