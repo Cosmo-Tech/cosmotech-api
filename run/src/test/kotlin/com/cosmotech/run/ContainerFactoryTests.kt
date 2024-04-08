@@ -152,7 +152,6 @@ class ContainerFactoryTests {
     val workspace = getWorkspace()
     val solution = getSolution()
     val runTemplate = getRunTemplate()
-    val runId = "runId"
 
     val containerStart =
         factory.buildContainersStart(
@@ -160,12 +159,12 @@ class ContainerFactoryTests {
             workspace = workspace,
             organization = organization,
             solution = getSolution(),
-            runId = runId,
+            runId = CSM_SIMULATION_ID,
             csmSimulationId = CSM_SIMULATION_ID,
             workflowType = WORKFLOW_TYPE_RUN)
 
     val run_container =
-        getRunContainer(solution, organization, workspace, runner, runTemplate, runId)
+        getRunContainer(solution, organization, workspace, runner, runTemplate, CSM_SIMULATION_ID)
 
     assertNotNull(containerStart)
     assertEquals(1, containerStart.containers.size)
