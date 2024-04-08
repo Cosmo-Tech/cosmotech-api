@@ -212,6 +212,57 @@ paths:
                   $ref: '#/components/examples/DefaultRunData'
         "400":
           description: Data sent format is malformed
+  /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/results/query:
+    parameters:
+      - name: organization_id
+        in: path
+        description: the Organization identifier
+        required: true
+        schema:
+          type: string
+      - name: workspace_id
+        in: path
+        description: the Workspace identifier
+        required: true
+        schema:
+          type: string
+      - name: runner_id
+        in: path
+        description: the Runner identifier
+        required: true
+        schema:
+          type: string
+      - name: run_id
+        in: path
+        description: the Run identifier
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: queryRunData
+      tags:
+        - run
+      summary: query the runDatas
+      requestBody:
+        description: the query to run
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RunDataQuery'
+            examples:
+              GetAllRunDataInTable:
+                $ref: '#/components/examples/RunDataQueryExample'
+      responses:
+        "200":
+          description: the query response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResult'
+              examples:
+                MultipleResults:
+                  $ref: '#/components/examples/QueryResultExample'
   /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs:
     parameters:
       - name: organization_id
@@ -289,7 +340,6 @@ components:
             type: object
             additionalProperties:
               type: string
-
     RunSearch:
       type: object
       description: the search options
@@ -687,6 +737,24 @@ components:
           type: string
           readOnly: true
           description: the node logs in plain text
+    RunDataQuery:
+      type: object
+      description: a data result query in SQL
+      properties:
+        query:
+          type: string
+          description: the query in SQL
+      required:
+        - query
+    QueryResult:
+      type: object
+      description: the result of a SQL Query
+      properties:
+        result:
+          type: array
+          description: the list of results
+          items:
+            type: string
   examples:
     DefaultRunData:
       summary: Run Data exemple
@@ -853,3 +921,15 @@ components:
             progress: 1/1
             startTime: "2021-05-18T16:15:53.000Z"
             endTime: "2021-05-18T16:16:03.000Z"
+    RunDataQueryExample:
+      summary: Get all runData in a table
+      description: Get all runData in a table
+      value:
+        query: "SELECT * FROM 'CD-myCustomData'"
+    QueryResultExample:
+      summary: Result of SQL Query
+      description: Result of SQL Query
+      value:
+        result:
+          - "key1: value1, key2: value2"
+          - "key1: value3, key2: value4"

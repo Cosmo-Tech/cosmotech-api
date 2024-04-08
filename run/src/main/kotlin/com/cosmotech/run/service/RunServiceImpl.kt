@@ -20,8 +20,10 @@ import com.cosmotech.run.config.existTable
 import com.cosmotech.run.config.insertCustomData
 import com.cosmotech.run.config.toCustomDataTableName
 import com.cosmotech.run.container.StartInfo
+import com.cosmotech.run.domain.QueryResult
 import com.cosmotech.run.domain.Run
 import com.cosmotech.run.domain.RunData
+import com.cosmotech.run.domain.RunDataQuery
 import com.cosmotech.run.domain.RunLogs
 import com.cosmotech.run.domain.RunState
 import com.cosmotech.run.domain.RunStatus
@@ -34,13 +36,13 @@ import com.cosmotech.run.workflow.WorkflowService
 import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.service.getRbac
-import java.time.Instant
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.PageRequest
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.stereotype.Service
+import java.time.Instant
 
 internal const val WORKFLOW_TYPE_RUN = "container-run"
 
@@ -52,7 +54,8 @@ class RunServiceImpl(
     private val runnerApiService: RunnerApiServiceInterface,
     private val runRepository: RunRepository,
     private val csmRbac: CsmRbac,
-    private val adminRunStorageTemplate: JdbcTemplate
+    private val adminRunStorageTemplate: JdbcTemplate,
+    private val readerRunStorageTemplate: JdbcTemplate
 ) : CsmPhoenixService(), RunApiServiceInterface {
 
   @Value("\${csm.platform.storage.admin.username}")
@@ -60,6 +63,12 @@ class RunServiceImpl(
 
   @Value("\${csm.platform.storage.admin.password}")
   private lateinit var adminStoragePassword: String
+
+  @Value("\${csm.platform.storage.reader.username}")
+  private lateinit var readerStorageUsername: String
+
+  @Value("\${csm.platform.storage.reader.password}")
+  private lateinit var readerStoragePassword: String
 
   @Value("\${csm.platform.storage.port}") private lateinit var port: String
 
@@ -112,6 +121,29 @@ class RunServiceImpl(
 
     return RunData(
         databaseName = runId, tableName = tableName.toCustomDataTableName(), data = dataInserted)
+  }
+
+  override fun queryRunData(
+    organizationId: String,
+    workspaceId: String,
+    runnerId: String,
+    runId: String,
+    runDataQuery: RunDataQuery
+  ): QueryResult {
+    val runtimeDS =
+      DriverManagerDataSource(
+        "jdbc:postgresql://localhost:$port/$runId", readerStorageUsername, readerStoragePassword)
+    runtimeDS.setDriverClassName("org.postgresql.Driver")
+
+    val runDBJdbcTemplate = JdbcTemplate(runtimeDS)
+
+    val result = runDBJdbcTemplate.queryForList(runDataQuery.query)
+    val resultList = mutableListOf(String())
+    result.forEach{
+      resultList.add(it.toString())
+    }
+
+    return QueryResult(resultList)
   }
 
   private fun Run.withStateInformation(): Run {
