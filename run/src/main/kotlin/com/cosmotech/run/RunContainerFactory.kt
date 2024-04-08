@@ -72,7 +72,6 @@ const val NODE_LABEL_DEFAULT = "basic"
 private const val NODE_LABEL_HIGH_CPU = "highcpu"
 private const val NODE_LABEL_HIGH_MEMORY = "highmemory"
 const val NODE_LABEL_SUFFIX = "pool"
-private const val GENERATE_NAME_PREFIX = "workflow-"
 private const val GENERATE_NAME_SUFFIX = "-"
 
 internal const val AZURE_EVENT_HUB_SHARED_ACCESS_POLICY_ENV_VAR =
@@ -133,7 +132,6 @@ class RunContainerFactory(
 
     val runner = runnerApiService.getRunner(organizationId, workspaceId, runnerId)
     val runTemplate = this.getRunTemplate(solution, (runner.runTemplateId ?: ""))
-    val csmSimulationId = UUID.randomUUID().toString()
 
     return StartInfo(
         startContainers =
@@ -143,14 +141,14 @@ class RunContainerFactory(
                 organization,
                 solution,
                 runId,
-                csmSimulationId,
+                runId,
                 workflowType,
             ),
         runner = runner,
         workspace = workspace,
         solution = solution,
         runTemplate = runTemplate,
-        csmSimulationId = csmSimulationId,
+        csmSimulationId = runId,
     )
   }
 
@@ -232,7 +230,7 @@ class RunContainerFactory(
             runSizing = customSizing.toContainerResourceSizing()))
 
     val generateName =
-        "$GENERATE_NAME_PREFIX${runner.id}$GENERATE_NAME_SUFFIX".sanitizeForKubernetes()
+        "${runId}$GENERATE_NAME_SUFFIX".sanitizeForKubernetes()
 
     return RunStartContainers(
         generateName = generateName,
@@ -241,7 +239,7 @@ class RunContainerFactory(
         csmSimulationId = csmSimulationId,
         labels =
             mapOf(
-                CSM_JOB_ID_LABEL_KEY to (runner.id ?: ""),
+                CSM_JOB_ID_LABEL_KEY to runId,
                 WORKFLOW_TYPE_LABEL to workflowType,
                 ORGANIZATION_ID_LABEL to organization.id!!,
                 WORKSPACE_ID_LABEL to workspace.id!!,

@@ -270,7 +270,6 @@ class ContainerFactory(
                 organization,
                 solution,
                 scenarioRunId!!,
-                csmSimulationId,
                 workflowType,
                 scenarioDataDownload,
                 scenarioDataDownloadJobId),
@@ -312,7 +311,7 @@ class ContainerFactory(
             nodeLabel)
 
     val generateName =
-        "${GENERATE_NAME_PREFIX}${jobId}$GENERATE_NAME_SUFFIX".sanitizeForKubernetes()
+        "${jobId}$GENERATE_NAME_SUFFIX".sanitizeForKubernetes()
 
     return ScenarioRunStartContainers(
         generateName = generateName,
@@ -362,7 +361,6 @@ class ContainerFactory(
       organization: Organization,
       solution: Solution,
       scenarioRunId: String,
-      csmSimulationId: String,
       workflowType: String,
       scenarioDataDownload: Boolean = false,
       scenarioDataDownloadJobId: String? = null,
@@ -399,22 +397,22 @@ class ContainerFactory(
             organization,
             solution,
             scenarioRunId,
-            csmSimulationId,
+            scenarioRunId,
             scenarioDataDownload,
             scenarioDataDownloadJobId,
             scenarioRunLabel = nodeLabel ?: NODE_LABEL_DEFAULT,
             scenarioSizing ?: (runTemplateSizing ?: defaultSizing))
     val generateName =
-        "${GENERATE_NAME_PREFIX}${scenario.id}$GENERATE_NAME_SUFFIX".sanitizeForKubernetes()
+        "${GENERATE_NAME_PREFIX}${scenarioRunId}$GENERATE_NAME_SUFFIX".sanitizeForKubernetes()
 
     return ScenarioRunStartContainers(
         generateName = generateName,
         nodeLabel = nodeLabel?.plus(NODE_LABEL_SUFFIX),
         containers = containers,
-        csmSimulationId = csmSimulationId,
+        csmSimulationId = scenarioRunId,
         labels =
             mapOf(
-                CSM_JOB_ID_LABEL_KEY to (scenarioDataDownloadJobId ?: (scenario.id ?: "")),
+                CSM_JOB_ID_LABEL_KEY to (scenarioDataDownloadJobId ?: scenarioRunId),
                 WORKFLOW_TYPE_LABEL to workflowType,
                 ORGANIZATION_ID_LABEL to organization.id!!,
                 WORKSPACE_ID_LABEL to workspace.id!!,
