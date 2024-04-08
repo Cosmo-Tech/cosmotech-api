@@ -188,6 +188,10 @@ entity OrganizationServices {
     solutionsContainerRegistry: OrganizationService
 }
 
+entity QueryResult {
+    result: List<String>
+}
+
 entity ResourceSizeInfo {
     * cpu: String
     * memory: String
@@ -246,6 +250,10 @@ entity RunData {
     database_name: String
     table_name: String
     data: List<Map>
+}
+
+entity RunDataQuery {
+    * query: String
 }
 
 entity RunLogs {
