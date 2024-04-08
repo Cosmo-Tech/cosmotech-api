@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.run.config
 
-import javax.sql.DataSource
 import org.json.JSONObject
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
@@ -10,6 +9,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.datasource.DriverManagerDataSource
+import javax.sql.DataSource
 
 @Configuration
 class RunStorageConfig {
