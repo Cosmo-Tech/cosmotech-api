@@ -54,8 +54,7 @@ class RunServiceImpl(
     private val runnerApiService: RunnerApiServiceInterface,
     private val runRepository: RunRepository,
     private val csmRbac: CsmRbac,
-    private val adminRunStorageTemplate: JdbcTemplate,
-    private val readerRunStorageTemplate: JdbcTemplate
+    private val adminRunStorageTemplate: JdbcTemplate
 ) : CsmPhoenixService(), RunApiServiceInterface {
 
   @Value("\${csm.platform.storage.admin.username}")
@@ -124,24 +123,24 @@ class RunServiceImpl(
   }
 
   override fun queryRunData(
-    organizationId: String,
-    workspaceId: String,
-    runnerId: String,
-    runId: String,
-    runDataQuery: RunDataQuery
+      organizationId: String,
+      workspaceId: String,
+      runnerId: String,
+      runId: String,
+      runDataQuery: RunDataQuery
   ): QueryResult {
     val runtimeDS =
-      DriverManagerDataSource(
-        "jdbc:postgresql://localhost:$port/$runId", readerStorageUsername, readerStoragePassword)
+        DriverManagerDataSource(
+            "jdbc:postgresql://localhost:$port/$runId",
+            readerStorageUsername,
+            readerStoragePassword)
     runtimeDS.setDriverClassName("org.postgresql.Driver")
 
     val runDBJdbcTemplate = JdbcTemplate(runtimeDS)
 
     val result = runDBJdbcTemplate.queryForList(runDataQuery.query)
     val resultList = mutableListOf(String())
-    result.forEach{
-      resultList.add(it.toString())
-    }
+    result.forEach { resultList.add(it.toString()) }
 
     return QueryResult(resultList)
   }
