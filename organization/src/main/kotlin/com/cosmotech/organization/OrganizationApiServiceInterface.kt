@@ -17,4 +17,6 @@ interface OrganizationApiServiceInterface : OrganizationApiService {
       organizationId: String,
       requiredPermissions: List<String>
   ): Organization
+
+  fun getAllOrganizationIds(): List<String>
 }
