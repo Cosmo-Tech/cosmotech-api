@@ -456,6 +456,14 @@ internal class WorkspaceServiceImpl(
     return workspace
   }
 
+  @Suppress("MagicNumber")
+  override fun getWorkspaceIds(organizationId: String): List<String> {
+    return workspaceRepository
+        .findByOrganizationId(organizationId, Pageable.ofSize(150))
+        .toList()
+        .map { it.id!! }
+  }
+
   override fun addWorkspaceAccessControl(
       organizationId: String,
       workspaceId: String,

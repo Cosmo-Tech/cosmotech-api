@@ -283,6 +283,10 @@ class OrganizationServiceImpl(
     return organization
   }
 
+  override fun getAllOrganizationIds(): List<String> {
+    return organizationRepository.findAll().map { it.id!! }
+  }
+
   private fun updateOrganizationServiceByOrganizationId(
       organizationId: String,
       organizationService: OrganizationService,
