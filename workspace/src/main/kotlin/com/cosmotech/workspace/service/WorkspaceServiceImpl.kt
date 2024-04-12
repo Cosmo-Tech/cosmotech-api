@@ -15,6 +15,8 @@ import com.cosmotech.api.events.DeleteHistoricalDataWorkspace
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.events.RemoveDatasetFromWorkspace
 import com.cosmotech.api.events.RemoveWorkspaceFromDataset
+import com.cosmotech.api.events.WorkspaceCreated
+import com.cosmotech.api.events.WorkspaceDeleted
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
@@ -132,13 +134,17 @@ internal class WorkspaceServiceImpl(
         }
       }
     }
+    val workspaceSaved =
+        workspaceRepository.save(
+            workspace.copy(
+                id = idGenerator.generate("workspace"),
+                organizationId = organizationId,
+                ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
+                security = workspaceSecurity))
 
-    return workspaceRepository.save(
-        workspace.copy(
-            id = idGenerator.generate("workspace"),
-            organizationId = organizationId,
-            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
-            security = workspaceSecurity))
+    this.eventPublisher.publishEvent(WorkspaceCreated(this, organizationId, workspaceSaved.id!!))
+
+    return workspaceSaved
   }
 
   override fun deleteAllWorkspaceFiles(organizationId: String, workspaceId: String) {
@@ -210,7 +216,9 @@ internal class WorkspaceServiceImpl(
       workspace.linkedDatasetIdList?.forEach { unlinkDataset(organizationId, workspaceId, it) }
     } finally {
       workspaceRepository.delete(workspace)
+      this.eventPublisher.publishEvent(WorkspaceDeleted(this, organizationId, workspaceId))
     }
+
     return workspace
   }
 
@@ -335,7 +343,10 @@ internal class WorkspaceServiceImpl(
       val pageable: Pageable =
           Pageable.ofSize(csmPlatformProperties.twincache.workspace.defaultPageSize)
       val workspaces = workspaceRepository.findByOrganizationId(organizationId, pageable).toList()
-      workspaceRepository.deleteAll(workspaces)
+      workspaces.forEach {
+        workspaceRepository.delete(it)
+        this.eventPublisher.publishEvent(WorkspaceDeleted(this, organizationId, it.id!!))
+      }
     }
   }
 
@@ -454,14 +465,6 @@ internal class WorkspaceServiceImpl(
             ?: throw CsmResourceNotFoundException("Workspace $workspaceId does not exist!")
     csmRbac.verify(workspace.getRbac(), requiredPermission)
     return workspace
-  }
-
-  @Suppress("MagicNumber")
-  override fun getWorkspaceIds(organizationId: String): List<String> {
-    return workspaceRepository
-        .findByOrganizationId(organizationId, Pageable.ofSize(150))
-        .toList()
-        .map { it.id!! }
   }
 
   override fun addWorkspaceAccessControl(

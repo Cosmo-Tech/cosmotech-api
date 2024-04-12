@@ -13,6 +13,4 @@ interface WorkspaceApiServiceInterface : WorkspaceApiService {
       workspaceId: String,
       requiredPermission: String = PERMISSION_READ
   ): Workspace
-
-  fun getWorkspaceIds(organizationId: String): List<String>
 }
