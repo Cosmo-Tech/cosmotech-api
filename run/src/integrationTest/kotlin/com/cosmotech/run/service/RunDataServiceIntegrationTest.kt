@@ -4,7 +4,7 @@ package com.cosmotech.run.service
 
 import com.cosmotech.run.RunApiServiceInterface
 import com.cosmotech.run.config.existDB
-import com.cosmotech.run.config.toCustomDataTableName
+import com.cosmotech.run.config.toDataTableName
 import com.cosmotech.run.domain.SendRunDataRequest
 import com.redis.om.spring.annotations.EnableRedisDocumentRepositories
 import kotlin.test.assertEquals
@@ -42,7 +42,7 @@ class RunDataServiceIntegrationTest : CsmPostgresTestBase() {
     assertNotNull(runDataResult.databaseName)
     assertEquals(databaseName, runDataResult.databaseName)
     assertTrue(readerRunStorageTemplate.existDB(runDataResult.databaseName!!))
-    assertEquals(tableName.toCustomDataTableName(), runDataResult.tableName)
+    assertEquals(tableName.toDataTableName(false), runDataResult.tableName)
     assertEquals(data, runDataResult.data)
   }
 }
