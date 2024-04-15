@@ -3,7 +3,6 @@
 package com.cosmotech.run.config
 
 import javax.sql.DataSource
-import org.json.JSONObject
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -65,30 +64,19 @@ fun JdbcTemplate.existDB(name: String): Boolean {
   return this.queryForList("SELECT * FROM pg_catalog.pg_database WHERE datname='$name'").size == 1
 }
 
-fun JdbcTemplate.createDB(name: String): String {
+fun JdbcTemplate.existTable(name: String, isProbeData: Boolean): Boolean {
+  val query = "select count(*) from information_schema.tables where table_name = ?"
+  return this.queryForObject(query, Int::class.java, name.toDataTableName(isProbeData)) == 1
+}
+
+fun String.toDataTableName(isProbeData:Boolean): String = if(isProbeData) "P_$this" else "CD_$this"
+
+fun JdbcTemplate.createDB(name: String, readerStorageUsername: String): String {
   this.execute("CREATE DATABASE \"$name\"")
+  this.execute("GRANT CONNECT ON DATABASE \"$name\" to $readerStorageUsername")
   return name
 }
 
-fun JdbcTemplate.createCustomDataTable(tableName: String): String {
-  this.execute("CREATE TABLE \"${tableName.toCustomDataTableName()}\" (custom_data jsonb)")
-  return tableName.toCustomDataTableName()
+fun JdbcTemplate.dropDB(name: String) {
+  if (this.existDB(name)) this.execute("DROP DATABASE \"$name\"")
 }
-
-fun JdbcTemplate.insertCustomData(
-    tableName: String,
-    data: List<Map<String, String>>
-): List<Map<String, String>> {
-  data.forEach { dataLine ->
-    this.execute(
-        "INSERT INTO \"${tableName.toCustomDataTableName()}\" (custom_data) VALUES ('${JSONObject(dataLine)}')")
-  }
-  return data
-}
-
-fun JdbcTemplate.existTable(name: String): Boolean {
-  val query = "select count(*) from information_schema.tables where table_name = ?"
-  return this.queryForObject(query, Int::class.java, name.toCustomDataTableName()) == 1
-}
-
-fun String.toCustomDataTableName(): String = "CD_$this"
