@@ -198,8 +198,7 @@ paths:
                   type: array
                   items:
                     type: object
-                    additionalProperties:
-                      type: string
+                    additionalProperties: true
       responses:
         "201":
           description: Data stored
@@ -338,8 +337,7 @@ components:
           type: array
           items:
             type: object
-            additionalProperties:
-              type: string
+            additionalProperties: true
     RunSearch:
       type: object
       description: the search options
