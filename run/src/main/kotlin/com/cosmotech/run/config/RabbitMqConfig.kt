@@ -13,11 +13,13 @@ import org.springframework.amqp.rabbit.core.RabbitAdmin
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.amqp.rabbit.listener.RabbitListenerEndpointRegistrar
 import org.springframework.amqp.rabbit.listener.RabbitListenerEndpointRegistry
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.messaging.handler.annotation.support.DefaultMessageHandlerMethodFactory
 
 @Configuration
+@ConditionalOnExpression("'\${csm.platform.use_internal_result_services}' == 'true'")
 class RabbitMqConfig(
     val connectionFactory: ConnectionFactory,
     val rabbitMqConfigModel: RabbitMqConfigModel
