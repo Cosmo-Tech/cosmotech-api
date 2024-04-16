@@ -74,6 +74,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.apache.commons.lang3.NotImplementedException
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -95,12 +96,18 @@ internal class ScenarioServiceImpl(
 
   val scenarioPermissions = getScenarioRolesDefinition()
 
+  private val notImplementedExceptionMessage =
+      "The API is configured to use the internal result data service. " +
+          "This endpoint is deactivated so, use run/runner endpoints instead. " +
+          "To change that, set the API configuration entry 'csm.platform.use-internal-result-services' to false"
+
   override fun addOrReplaceScenarioParameterValues(
       organizationId: String,
       workspaceId: String,
       scenarioId: String,
       scenarioRunTemplateParameterValue: List<ScenarioRunTemplateParameterValue>
   ): List<ScenarioRunTemplateParameterValue> {
+    checkInternalResultDataServiceConfiguration()
     if (scenarioRunTemplateParameterValue.isNotEmpty()) {
       val scenario = getVerifiedScenario(organizationId, workspaceId, scenarioId, PERMISSION_WRITE)
       val parametersValuesMap =
@@ -123,6 +130,7 @@ internal class ScenarioServiceImpl(
       scenarioId: String,
       comparedScenarioId: String
   ): ScenarioComparisonResult {
+    checkInternalResultDataServiceConfiguration()
     TODO("Not yet implemented")
   }
 
@@ -132,6 +140,7 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       scenario: Scenario
   ): Scenario {
+    checkInternalResultDataServiceConfiguration()
     val workspace =
         workspaceService.getVerifiedWorkspace(
             organizationId, workspaceId, PERMISSION_CREATE_CHILDREN)
@@ -274,6 +283,7 @@ internal class ScenarioServiceImpl(
   }
 
   override fun deleteScenario(organizationId: String, workspaceId: String, scenarioId: String) {
+    checkInternalResultDataServiceConfiguration()
     val scenario = getVerifiedScenario(organizationId, workspaceId, scenarioId, PERMISSION_DELETE)
     this.addStateToScenario(organizationId, scenario)
 
@@ -321,6 +331,7 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       scenarioId: String
   ): ScenarioDataDownloadJob {
+    checkInternalResultDataServiceConfiguration()
     val scenario = getVerifiedScenario(organizationId, workspaceId, scenarioId)
     val resourceId =
         this.idGenerator.generate(scope = "scenariodatadownload", prependPrefix = "sdl-")
@@ -333,6 +344,7 @@ internal class ScenarioServiceImpl(
   }
 
   override fun deleteAllScenarios(organizationId: String, workspaceId: String) {
+    checkInternalResultDataServiceConfiguration()
     workspaceService.getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
     val pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenario.defaultPageSize)
 
@@ -392,6 +404,7 @@ internal class ScenarioServiceImpl(
       page: Int?,
       size: Int?
   ): List<Scenario> {
+    checkInternalResultDataServiceConfiguration()
     workspaceService.getVerifiedWorkspace(organizationId, workspaceId)
     val defaultPageSize = csmPlatformProperties.twincache.scenario.defaultPageSize
     val pageable = constructPageRequest(page, size, defaultPageSize)
@@ -415,6 +428,7 @@ internal class ScenarioServiceImpl(
       page: Int?,
       size: Int?
   ): List<Scenario> {
+    checkInternalResultDataServiceConfiguration()
     workspaceService.getVerifiedWorkspace(organizationId, workspaceId)
     val status = validationStatus.toString()
     val defaultPageSize = csmPlatformProperties.twincache.scenario.defaultPageSize
@@ -515,6 +529,7 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       parentId: String
   ): List<Scenario> {
+    checkInternalResultDataServiceConfiguration()
     var pageable = PageRequest.ofSize(csmPlatformProperties.twincache.scenario.defaultPageSize)
     val findScenarioChildrenById = mutableListOf<Scenario>()
     val rbacEnabled = isRbacEnabled(organizationId, workspaceId)
@@ -551,6 +566,7 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       scenarioId: String
   ): Scenario {
+    checkInternalResultDataServiceConfiguration()
     return findScenarioById(
         organizationId, workspaceId, scenarioId, withLastRun = true, withState = true)
   }
@@ -562,6 +578,7 @@ internal class ScenarioServiceImpl(
       withLastRun: Boolean,
       withState: Boolean
   ): Scenario {
+    checkInternalResultDataServiceConfiguration()
     val scenario = getVerifiedScenario(organizationId, workspaceId, scenarioId)
     if (withLastRun) scenario.addLastRunsInfo(this, organizationId, workspaceId)
     if (withState) addStateToScenario(organizationId, scenario)
@@ -574,6 +591,7 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       scenarioId: String
   ): ScenarioValidationStatus {
+    checkInternalResultDataServiceConfiguration()
     val scenario = getVerifiedScenario(organizationId, workspaceId, scenarioId)
     return scenario.validationStatus ?: ScenarioValidationStatus.Unknown
   }
@@ -584,6 +602,7 @@ internal class ScenarioServiceImpl(
       scenarioId: String,
       downloadId: String
   ): ScenarioDataDownloadInfo {
+    checkInternalResultDataServiceConfiguration()
     val scenario = getVerifiedScenario(organizationId, workspaceId, scenarioId)
     val scenarioDataDownloadJobInfoRequest =
         ScenarioDataDownloadJobInfoRequest(this, downloadId, organizationId)
@@ -648,6 +667,7 @@ internal class ScenarioServiceImpl(
   }
 
   override fun getScenariosTree(organizationId: String, workspaceId: String): List<Scenario> {
+    checkInternalResultDataServiceConfiguration()
     workspaceService.getVerifiedWorkspace(organizationId, workspaceId)
 
     var pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenario.defaultPageSize)
@@ -670,6 +690,7 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       scenarioId: String
   ) {
+    checkInternalResultDataServiceConfiguration()
     val scenario = getVerifiedScenario(organizationId, workspaceId, scenarioId, PERMISSION_WRITE)
     if (!scenario.parametersValues.isNullOrEmpty()) {
       scenario.parametersValues = mutableListOf()
@@ -685,6 +706,7 @@ internal class ScenarioServiceImpl(
       scenarioId: String,
       scenario: Scenario
   ): Scenario {
+    checkInternalResultDataServiceConfiguration()
     val existingScenario =
         getVerifiedScenario(organizationId, workspaceId, scenarioId, PERMISSION_WRITE)
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
@@ -914,6 +936,7 @@ internal class ScenarioServiceImpl(
       scenarioId: String,
       role: String
   ): List<String> {
+    checkInternalResultDataServiceConfiguration()
     getVerifiedScenario(organizationId, workspaceId, scenarioId, PERMISSION_READ_SECURITY)
     return com.cosmotech.api.rbac.getPermissions(role, getScenarioRolesDefinition())
   }
@@ -923,6 +946,7 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       scenarioId: String
   ): ScenarioSecurity {
+    checkInternalResultDataServiceConfiguration()
     val scenario =
         getVerifiedScenario(organizationId, workspaceId, scenarioId, PERMISSION_READ_SECURITY)
     return scenario.security
@@ -935,6 +959,7 @@ internal class ScenarioServiceImpl(
       scenarioId: String,
       scenarioRole: ScenarioRole
   ): ScenarioSecurity {
+    checkInternalResultDataServiceConfiguration()
     val scenario =
         getVerifiedScenario(organizationId, workspaceId, scenarioId, PERMISSION_WRITE_SECURITY)
     val rbacSecurity =
@@ -950,6 +975,7 @@ internal class ScenarioServiceImpl(
       scenarioId: String,
       identityId: String
   ): ScenarioAccessControl {
+    checkInternalResultDataServiceConfiguration()
     val scenario =
         getVerifiedScenario(organizationId, workspaceId, scenarioId, PERMISSION_READ_SECURITY)
     val rbacAccessControl = csmRbac.getAccessControl(scenario.getRbac(), identityId)
@@ -962,6 +988,7 @@ internal class ScenarioServiceImpl(
       scenarioId: String,
       scenarioAccessControl: ScenarioAccessControl
   ): ScenarioAccessControl {
+    checkInternalResultDataServiceConfiguration()
     val scenario =
         getVerifiedScenario(organizationId, workspaceId, scenarioId, PERMISSION_WRITE_SECURITY)
 
@@ -993,6 +1020,7 @@ internal class ScenarioServiceImpl(
       identityId: String,
       scenarioRole: ScenarioRole
   ): ScenarioAccessControl {
+    checkInternalResultDataServiceConfiguration()
     val scenario =
         getVerifiedScenario(organizationId, workspaceId, scenarioId, PERMISSION_WRITE_SECURITY)
     csmRbac.checkUserExists(
@@ -1044,6 +1072,7 @@ internal class ScenarioServiceImpl(
       scenarioId: String,
       identityId: String
   ) {
+    checkInternalResultDataServiceConfiguration()
     val scenario =
         getVerifiedScenario(organizationId, workspaceId, scenarioId, PERMISSION_WRITE_SECURITY)
     val rbacSecurity = csmRbac.removeUser(scenario.getRbac(), identityId, scenarioPermissions)
@@ -1073,6 +1102,7 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       scenarioId: String
   ): List<String> {
+    checkInternalResultDataServiceConfiguration()
     val scenario =
         getVerifiedScenario(organizationId, workspaceId, scenarioId, PERMISSION_READ_SECURITY)
     return csmRbac.getUsers(scenario.getRbac())
@@ -1084,6 +1114,7 @@ internal class ScenarioServiceImpl(
       scenarioId: String,
       requiredPermission: String
   ): Scenario {
+    checkInternalResultDataServiceConfiguration()
     workspaceService.getVerifiedWorkspace(organizationId, workspaceId)
     val scenario =
         scenarioRepository.findBy(organizationId, workspaceId, scenarioId).orElseThrow {
@@ -1100,5 +1131,11 @@ internal class ScenarioServiceImpl(
     return ScenarioSecurity(
         default = ROLE_NONE,
         accessControlList = mutableListOf(ScenarioAccessControl(userId, ROLE_ADMIN)))
+  }
+
+  internal fun checkInternalResultDataServiceConfiguration() {
+    if (csmPlatformProperties.useInternalResultServices) {
+      throw NotImplementedException(notImplementedExceptionMessage)
+    }
   }
 }
