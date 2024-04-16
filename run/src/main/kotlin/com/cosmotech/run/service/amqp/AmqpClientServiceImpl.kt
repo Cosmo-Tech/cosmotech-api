@@ -19,10 +19,12 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.amqp.rabbit.core.RabbitAdmin
 import org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer
 import org.springframework.amqp.rabbit.listener.RabbitListenerEndpointRegistry
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
 
 @Service
+@ConditionalOnExpression("'\${csm.platform.use-internal-result-services}' == 'true'")
 class AmqpClientServiceImpl(
     private val rabbitAdmin: RabbitAdmin,
     private val rabbitListenerEndpointRegistry: RabbitListenerEndpointRegistry,
