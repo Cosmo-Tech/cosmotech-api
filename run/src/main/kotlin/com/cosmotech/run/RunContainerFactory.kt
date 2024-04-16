@@ -210,7 +210,7 @@ class RunContainerFactory(
     envVars[CONTAINER_MODE_VAR] = CSM_ORC_ORCHESTRATOR_VALUE
     envVars[CONTAINER_ORCHESTRATOR_LEGACY_VAR] = "false"
 
-    envVars.putAll(getEventHubEnvVars(organization, workspace))
+    envVars.putAll(getEventBusEnvVars(organization, workspace))
 
     val csmSimulation = template.csmSimulation
     if (csmSimulation != null) {
@@ -253,51 +253,66 @@ class RunContainerFactory(
             "runTemplateId $runTemplateId not found in Solution ${solution.id}")
   }
 
-  private fun getEventHubEnvVars(
+  private fun getEventBusEnvVars(
       organization: Organization,
       workspace: Workspace
   ): Map<String, String> {
-    logger.debug(
-        "Get Event Hub env vars for workspace {} with dedicated namespace: {}",
-        workspace.id,
-        workspace.useDedicatedEventHubNamespace ?: "null")
+
     val envVars: MutableMap<String, String> = mutableMapOf()
-    val eventHubProbesMeasures =
-        workspaceEventHubService.getWorkspaceEventHubInfo(
-            organization.id ?: "", workspace, EventHubRole.PROBES_MEASURES)
-    envVars[EVENT_HUB_MEASURES_VAR] = eventHubProbesMeasures.eventHubUri
-    if (eventHubProbesMeasures.eventHubCredentialType == SHARED_ACCESS_POLICY) {
-      logger.debug("Adding event Hub Shared Access key information in env vars")
+
+    if (csmPlatformProperties.useInternalResultServices) {
       envVars.putAll(
           mapOf(
-              AZURE_EVENT_HUB_SHARED_ACCESS_POLICY_ENV_VAR to
-                  eventHubProbesMeasures.eventHubSasKeyName,
-              AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR to eventHubProbesMeasures.eventHubSasKey,
-              CSM_AMQPCONSUMER_USER_ENV_VAR to eventHubProbesMeasures.eventHubSasKeyName,
-              CSM_AMQPCONSUMER_PASSWORD_ENV_VAR to eventHubProbesMeasures.eventHubSasKey,
-          ))
-    } else {
-      logger.debug("Event hub in tenant credential mode")
-    }
+              CSM_AMQPCONSUMER_USER_ENV_VAR to csmPlatformProperties.eventbus.sender.username,
+              CSM_AMQPCONSUMER_PASSWORD_ENV_VAR to csmPlatformProperties.eventbus.sender.password,
+              EVENT_HUB_MEASURES_VAR to constructEventBusUri(workspace.id!!)))
 
-    val eventHubControlPlane =
-        workspaceEventHubService.getWorkspaceEventHubInfo(
-            organization.id ?: "", workspace, EventHubRole.CONTROL_PLANE)
-    if (eventHubControlPlane.eventHubAvailable) {
-      logger.debug("Adding control plane event hub information in env vars")
-      envVars[EVENT_HUB_CONTROL_PLANE_VAR] = eventHubControlPlane.eventHubUri
+    } else {
+      logger.debug(
+          "Get Event Hub env vars for workspace {} with dedicated namespace: {}",
+          workspace.id,
+          workspace.useDedicatedEventHubNamespace ?: "null")
+      val eventHubProbesMeasures =
+          workspaceEventHubService.getWorkspaceEventHubInfo(
+              organization.id ?: "", workspace, EventHubRole.PROBES_MEASURES)
+      envVars[EVENT_HUB_MEASURES_VAR] = eventHubProbesMeasures.eventHubUri
       if (eventHubProbesMeasures.eventHubCredentialType == SHARED_ACCESS_POLICY) {
+        logger.debug("Adding event Hub Shared Access key information in env vars")
         envVars.putAll(
             mapOf(
-                CSM_CONTROL_PLANE_USER_ENV_VAR to eventHubProbesMeasures.eventHubSasKeyName,
-                CSM_CONTROL_PLANE_PASSWORD_ENV_VAR to eventHubProbesMeasures.eventHubSasKey,
+                AZURE_EVENT_HUB_SHARED_ACCESS_POLICY_ENV_VAR to
+                    eventHubProbesMeasures.eventHubSasKeyName,
+                AZURE_EVENT_HUB_SHARED_ACCESS_KEY_ENV_VAR to eventHubProbesMeasures.eventHubSasKey,
+                CSM_AMQPCONSUMER_USER_ENV_VAR to eventHubProbesMeasures.eventHubSasKeyName,
+                CSM_AMQPCONSUMER_PASSWORD_ENV_VAR to eventHubProbesMeasures.eventHubSasKey,
             ))
+      } else {
+        logger.debug("Event hub in tenant credential mode")
       }
-    } else {
-      logger.warn("Control plane event hub is not available")
+
+      val eventHubControlPlane =
+          workspaceEventHubService.getWorkspaceEventHubInfo(
+              organization.id ?: "", workspace, EventHubRole.CONTROL_PLANE)
+      if (eventHubControlPlane.eventHubAvailable) {
+        logger.debug("Adding control plane event hub information in env vars")
+        envVars[EVENT_HUB_CONTROL_PLANE_VAR] = eventHubControlPlane.eventHubUri
+        if (eventHubProbesMeasures.eventHubCredentialType == SHARED_ACCESS_POLICY) {
+          envVars.putAll(
+              mapOf(
+                  CSM_CONTROL_PLANE_USER_ENV_VAR to eventHubProbesMeasures.eventHubSasKeyName,
+                  CSM_CONTROL_PLANE_PASSWORD_ENV_VAR to eventHubProbesMeasures.eventHubSasKey,
+              ))
+        }
+      } else {
+        logger.warn("Control plane event hub is not available")
+      }
     }
 
     return envVars.toMap()
+  }
+
+  private fun constructEventBusUri(workspaceId: String): String {
+    return "amqp://${csmPlatformProperties.eventbus.host}:${csmPlatformProperties.eventbus.port}/$workspaceId"
   }
 
   private fun getImageName(registry: String, repository: String?, version: String? = null): String {
