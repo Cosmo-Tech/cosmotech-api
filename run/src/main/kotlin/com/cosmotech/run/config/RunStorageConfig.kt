@@ -19,6 +19,12 @@ class RunStorageConfig {
   @Value("\${csm.platform.storage.admin.password}")
   private lateinit var adminStoragePassword: String
 
+  @Value("\${csm.platform.storage.writer.username}")
+  private lateinit var writerStorageUsername: String
+
+  @Value("\${csm.platform.storage.writer.password}")
+  private lateinit var writerStoragePassword: String
+
   @Value("\${csm.platform.storage.reader.username}")
   private lateinit var readerStorageUsername: String
 
@@ -40,6 +46,21 @@ class RunStorageConfig {
   @Bean
   fun adminRunStorageTemplate(
       @Qualifier("adminRunStorageDatasource") dataSource: DataSource
+  ): JdbcTemplate {
+    return JdbcTemplate(dataSource)
+  }
+
+  @Bean
+  fun writerRunStorageDatasource(): DriverManagerDataSource {
+    val dataSource =
+      DriverManagerDataSource(storageHost, writerStorageUsername, writerStoragePassword)
+    dataSource.setDriverClassName(jdbcdriverClass)
+    return dataSource
+  }
+
+  @Bean
+  fun writerRunStorageTemplate(
+    @Qualifier("writerRunStorageDatasource") dataSource: DataSource
   ): JdbcTemplate {
     return JdbcTemplate(dataSource)
   }
@@ -71,9 +92,8 @@ fun JdbcTemplate.existTable(name: String, isProbeData: Boolean): Boolean {
 
 fun String.toDataTableName(isProbeData:Boolean): String = if(isProbeData) "P_$this" else "CD_$this"
 
-fun JdbcTemplate.createDB(name: String, readerStorageUsername: String): String {
+fun JdbcTemplate.createDB(name: String): String {
   this.execute("CREATE DATABASE \"$name\"")
-  this.execute("GRANT CONNECT ON DATABASE \"$name\" to $readerStorageUsername")
   return name
 }
 
