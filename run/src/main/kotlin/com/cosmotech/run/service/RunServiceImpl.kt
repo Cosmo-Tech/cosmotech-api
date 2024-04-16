@@ -47,6 +47,39 @@ import org.springframework.stereotype.Service
 
 internal const val WORKFLOW_TYPE_RUN = "container-run"
 
+internal const val BOOLEAN_KEY_WEIGHT = 0
+internal const val BOOLEAN_POSTGRESQL_TYPE = "BOOLEAN"
+internal const val NUMERIC_KEY_WEIGHT = 1
+internal const val NUMERIC_POSTGRESQL_TYPE = "NUMERIC"
+internal const val TEXT_KEY_WEIGHT = 2
+internal const val TEXT_POSTGRESQL_TYPE = "TEXT"
+internal const val JSON_KEY_WEIGHT = 3
+internal const val JSON_POSTGRESQL_TYPE = "JSONB"
+internal const val CONFLICT_KEY_WEIGHT = JSON_KEY_WEIGHT
+
+internal val jsonTypeMapWeight =
+    mapOf(
+        Boolean::class.simpleName to BOOLEAN_KEY_WEIGHT,
+        Int::class.simpleName to NUMERIC_KEY_WEIGHT,
+        Double::class.simpleName to NUMERIC_KEY_WEIGHT,
+        String::class.simpleName to TEXT_KEY_WEIGHT,
+        ArrayList::class.simpleName to JSON_KEY_WEIGHT,
+        LinkedHashMap::class.simpleName to JSON_KEY_WEIGHT)
+
+internal val postgresTypeFromWeight =
+    mapOf(
+        BOOLEAN_KEY_WEIGHT to BOOLEAN_POSTGRESQL_TYPE,
+        NUMERIC_KEY_WEIGHT to NUMERIC_POSTGRESQL_TYPE,
+        TEXT_KEY_WEIGHT to TEXT_POSTGRESQL_TYPE,
+        JSON_KEY_WEIGHT to JSON_POSTGRESQL_TYPE)
+
+internal val postgresTypeToWeight =
+    mapOf(
+        BOOLEAN_POSTGRESQL_TYPE to BOOLEAN_KEY_WEIGHT,
+        NUMERIC_POSTGRESQL_TYPE to NUMERIC_KEY_WEIGHT,
+        TEXT_POSTGRESQL_TYPE to TEXT_KEY_WEIGHT,
+        JSON_POSTGRESQL_TYPE to JSON_KEY_WEIGHT)
+
 @Service
 @Suppress("TooManyFunctions")
 class RunServiceImpl(
@@ -63,6 +96,12 @@ class RunServiceImpl(
 
   @Value("\${csm.platform.storage.admin.password}")
   private lateinit var adminStoragePassword: String
+
+  @Value("\${csm.platform.storage.writer.username}")
+  private lateinit var writerStorageUsername: String
+
+  @Value("\${csm.platform.storage.writer.password}")
+  private lateinit var writerStoragePassword: String
 
   @Value("\${csm.platform.storage.reader.username}")
   private lateinit var readerStorageUsername: String
@@ -97,116 +136,105 @@ class RunServiceImpl(
         .map { it.withStateInformation().withoutSensitiveData() }
   }
 
-  @Suppress("MagicNumber", "LongMethod")
+  @Suppress("LongMethod")
   private fun sendDataToStorage(
       runId: String,
       tableName: String,
       data: List<Map<String, Any>>,
       isProbeData: Boolean = false
   ): RunData {
-    val runtimeDS =
-        DriverManagerDataSource(
-            "jdbc:postgresql://localhost:$port/$runId", adminStorageUsername, adminStoragePassword)
-    runtimeDS.setDriverClassName("org.postgresql.Driver")
+    val dataTableName = tableName.toDataTableName(isProbeData)
 
-    val runDBJdbcTemplate = JdbcTemplate(runtimeDS)
-
-    var keys: Set<String> = setOf()
-    val keyTypeMap = mutableMapOf<String, String>()
-    val keyTypeWeight = mutableMapOf<String, Int>()
-
-    val jsonTypeMapWeight =
-        mapOf(
-            "Boolean" to 0,
-            "Int" to 1,
-            "Double" to 1,
-            "String" to 2,
-            "ArrayList" to 3,
-            "LinkedHashMap" to 3)
-    val conflictKeyWeight = 3
+    // Start by looking through the data for postgresql column type inference
+    // Make use of a "weight" system for each data type to ensure most specific type when executed
+    val dataKeyWeight = mutableMapOf<String, Int>()
 
     data.forEach { dataLine ->
-      keys = keys union dataLine.keys
       dataLine.keys.forEach { key ->
         // Get weight for a given column
         val keyWeight = jsonTypeMapWeight[dataLine[key]!!::class.simpleName]
-        if (!keyTypeWeight.containsKey(key)) keyTypeWeight[key] = keyWeight!!
+        if (!dataKeyWeight.containsKey(key)) dataKeyWeight[key] = keyWeight!!
         // If a conflict exists between 2 values in a same column use default value instead
-        else if (keyTypeWeight[key] != keyWeight) keyTypeWeight[key] = conflictKeyWeight
+        else if (dataKeyWeight[key] != keyWeight) dataKeyWeight[key] = CONFLICT_KEY_WEIGHT
       }
     }
 
-    val postgresTypeFromWeight = mapOf(0 to "BOOLEAN", 1 to "NUMERIC", 2 to "TEXT", 3 to "JSONB")
-    val postgresTypeToWeight = mapOf("BOOLEAN" to 0, "NUMERIC" to 1, "TEXT" to 2, "JSONB" to 3)
-    // Convert all weight from columns to actual postgresql types
-    keyTypeWeight.forEach { (key, weight) -> keyTypeMap[key] = postgresTypeFromWeight[weight]!! }
+    val dataKeyType = dataKeyWeight.mapValues { postgresTypeFromWeight[it.value]!! }
+    val dataKeys = dataKeyType.keys
 
     val gson = Gson()
 
+    val runtimeDS =
+        DriverManagerDataSource(
+            "jdbc:postgresql://localhost:$port/$runId",
+            writerStorageUsername,
+            writerStoragePassword)
+    runtimeDS.setDriverClassName("org.postgresql.Driver")
+    val runDBJdbcTemplate = JdbcTemplate(runtimeDS)
     val connection = runDBJdbcTemplate.dataSource!!.connection
 
-    val dataTableName = tableName.toDataTableName(isProbeData)
-
     try {
+      // Start revert-able code
       connection.autoCommit = false
       if (!runDBJdbcTemplate.existTable(tableName, isProbeData)) {
+        // Table does not exist
+        connection
+            .prepareStatement(
+                "CREATE TABLE \"$dataTableName\" " +
+                    "( ${dataKeys.joinToString(separator = ", ") { "\"$it\" ${dataKeyType[it]!!}" }} ) ")
+            .executeUpdate()
 
-        // Create list of typed columns
-        val keyTypeList = keys.joinToString(separator = ", ") { "\"$it\" ${keyTypeMap[it]!!}" }
-
-        // Make use of a prepared statement to send the create table query
-        val createTablePreparedStatement =
-            connection.prepareStatement("CREATE TABLE \"$dataTableName\" ( $keyTypeList ) ")
         logger.debug("Creating new table $dataTableName for run $runId")
 
-        createTablePreparedStatement.executeUpdate()
-
         // Grant select rights to the reader account
-        val grantSelectPreparedStatement =
-            connection.prepareStatement(
-                "GRANT SELECT ON TABLE \"$dataTableName\" TO $readerStorageUsername ")
+        connection
+            .prepareStatement("GRANT SELECT ON TABLE \"$dataTableName\" TO $readerStorageUsername ")
+            .executeUpdate()
+
         logger.debug(
             "Granted SELECT to user $readerStorageUsername on table $dataTableName for run $runId")
-        grantSelectPreparedStatement.executeUpdate()
       } else {
-        // The table exist already, first get existing columns with their type
+        // The table exist already
+
+        // Start by getting the table schema (column name + type)
         val listColumnsPreparedStatement =
             connection.prepareStatement(
                 "SELECT column_name, upper(data_type::text) as column_type " +
                     "FROM information_schema.columns WHERE table_name = ?")
         listColumnsPreparedStatement.setString(1, dataTableName)
-        val listKeyResultSet = listColumnsPreparedStatement.executeQuery()
-        var existingKeys: Set<String> = setOf()
-        val existingKeysWeight = mutableMapOf<String, Int>()
-        val existingKeysType = mutableMapOf<String, String>()
-        // Loop through the results to get effective types of each column mapped to a weight as done on the data
-        while (listKeyResultSet.next()) {
-          val key = listKeyResultSet.getString("column_name")
-          val keyType = listKeyResultSet.getString("column_type")
-          val keyWeight = postgresTypeToWeight[keyType]!!
-          existingKeysWeight[key] = keyWeight
-          existingKeysType[key] = keyType
-          existingKeys = existingKeys union setOf(key)
-        }
+        val postgresTableKeyResultSet = listColumnsPreparedStatement.executeQuery()
 
-        val missingKeys = keys - existingKeys
-        val commonKeys = keys - missingKeys
+        val postgresTableKeysType = mutableMapOf<String, String>()
+
+        // Each line contains "column_name" and "column_type"
+        while (postgresTableKeyResultSet.next()) postgresTableKeysType[
+            postgresTableKeyResultSet.getString("column_name")] =
+            postgresTableKeyResultSet.getString("column_type")
+
+        val postgresTableKeys: Set<String> = postgresTableKeysType.keys
+        val postgresTableKeyWeight =
+            postgresTableKeysType.mapValues { postgresTypeToWeight[it.value]!! }
+
+        val missingKeys = dataKeys - postgresTableKeys
+        val commonKeys = dataKeys - missingKeys
+
         // For each column both in data and existing table make a type check
         commonKeys.forEach { commonKey ->
-          val toSendKeyWeight = keyTypeWeight[commonKey]!!
-          val effectiveKeyWeight = existingKeysWeight[commonKey]!!
-          // If the existing type in the database is not compatible with the type of the data throw an error
-          if (effectiveKeyWeight != conflictKeyWeight && toSendKeyWeight != effectiveKeyWeight)
+          val columnKeyWeight = postgresTableKeyWeight[commonKey]!!
+          // If the existing type in the database is not compatible with the type of the data throw
+          // an error
+          if (columnKeyWeight != CONFLICT_KEY_WEIGHT &&
+              dataKeyWeight[commonKey]!! != columnKeyWeight)
               throw SQLException(
-                  "Column $commonKey can not be converted to ${existingKeysType[commonKey]!!}")
+                  "Column $commonKey can not be converted to ${postgresTableKeysType[commonKey]!!}")
         }
         missingKeys.forEach { missingKey ->
           // Alter the table for each missing key to add the column missing
-          val alterTablePreparedStatement =
-              connection.prepareStatement(
-                  "ALTER TABLE \"$dataTableName\" ADD COLUMN \"$missingKey\" ${keyTypeMap[missingKey]!!}")
+          connection
+              .prepareStatement(
+                  "ALTER TABLE \"$dataTableName\" ADD COLUMN \"$missingKey\" ${dataKeyType[missingKey]!!}")
+              .executeUpdate()
           logger.debug("Adding COLUMN $missingKey on table $dataTableName for run $runId")
-          alterTablePreparedStatement.executeUpdate()
         }
       }
       data.forEach { dataLine ->
@@ -214,19 +242,14 @@ class RunServiceImpl(
         // for each key a parameter is created in the SQL query
         // that is then replaced by a string representation of the data that is then cast to the
         // correct type
-        val lineKeys = dataLine.keys.joinToString(separator = ", ") { "\"$it\"" }
-        // Make use of the key map to cast each value to the correct data type
-        val lineData = dataLine.keys.joinToString(separator = ", ") { "?::${keyTypeMap[it]!!}" }
-
         val insertPreparedStatement =
             connection.prepareStatement(
-                "INSERT INTO \"$dataTableName\" ( $lineKeys ) VALUES ( $lineData ) ")
-        var position = 0
-
-        for (key in dataLine.keys) {
-          // insert all values as pure data into the statement ensuring no SQL can be executed inside the query
-          position += 1
-          insertPreparedStatement.setString(position, gson.toJson(dataLine[key]))
+                "INSERT INTO \"$dataTableName\" ( ${dataLine.keys.joinToString(separator = ", ") {"\"$it\""}} ) " +
+                    "VALUES ( ${dataLine.keys.joinToString(separator = ", ") { "?::${dataKeyType[it]!!}" }} )")
+        // insert all values as pure data into the statement ensuring no SQL can be executed
+        // inside the query
+        dataLine.keys.forEachIndexed { index, key ->
+          insertPreparedStatement.setString(index + 1, gson.toJson(dataLine[key]))
         }
         insertPreparedStatement.executeUpdate()
       }
@@ -386,8 +409,25 @@ class RunServiceImpl(
             startInfo.solution.alwaysPull ?: false)
     val run = this.dbCreateRun(runId, runner, startInfo, runRequest)
 
-    adminRunStorageTemplate.createDB(runId, readerStorageUsername)
+    adminRunStorageTemplate.createDB(runId)
 
+    val runtimeDS =
+        DriverManagerDataSource(
+            "jdbc:postgresql://localhost:$port/$runId", adminStorageUsername, adminStoragePassword)
+    runtimeDS.setDriverClassName("org.postgresql.Driver")
+    val runDBJdbcTemplate = JdbcTemplate(runtimeDS)
+    val connection = runDBJdbcTemplate.dataSource!!.connection
+    connection
+        .prepareStatement("GRANT CONNECT ON DATABASE \"$runId\" TO $readerStorageUsername")
+        .executeUpdate()
+    connection
+        .prepareStatement("GRANT CONNECT ON DATABASE \"$runId\" TO $writerStorageUsername")
+        .executeUpdate()
+
+    connection
+        .prepareStatement("GRANT CREATE ON SCHEMA public to $writerStorageUsername")
+        .executeUpdate()
+    connection.commit()
     runStartRequest.response = run.id
   }
 
@@ -398,7 +438,7 @@ class RunServiceImpl(
       runRequest: Run
   ): Run {
     val now = Instant.now().toString()
-    var run =
+    val run =
         runRequest.copy(
             id = runId,
             ownerId = runner.ownerId,
