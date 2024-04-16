@@ -32,6 +32,7 @@ paths:
         schema:
           type: string
     post:
+      deprecated: true
       operationId: createScenario
       tags:
         - scenario
@@ -70,6 +71,7 @@ paths:
         "400":
           description: Bad request
     get:
+      deprecated: true
       operationId: findAllScenarios
       parameters:
         - name: page
@@ -100,6 +102,7 @@ paths:
                 ThreeScenario:
                   $ref: '#/components/examples/ThreeScenarios'
     delete:
+      deprecated: true
       operationId: deleteAllScenarios
       tags:
         - scenario
@@ -130,6 +133,7 @@ paths:
         schema:
           $ref: '#/components/schemas/ScenarioValidationStatus'
     get:
+      deprecated: true
       operationId: findAllScenariosByValidationStatus
       tags:
         - scenario
@@ -174,6 +178,7 @@ paths:
         schema:
           type: string
     get:
+      deprecated: true
       operationId: getScenariosTree
       tags:
         - scenario
@@ -211,6 +216,7 @@ paths:
         schema:
           type: string
     get:
+      deprecated: true
       operationId: findScenarioById
       tags:
         - scenario
@@ -228,6 +234,7 @@ paths:
         "404":
           description: the Scenario specified is unknown or you don't have access to it
     patch:
+      deprecated: true
       operationId: updateScenario
       tags:
         - scenario
@@ -264,6 +271,7 @@ paths:
         "404":
           description: the Scenario specified is unknown or you don't have access to it
     delete:
+      deprecated: true
       operationId: deleteScenario
       tags:
         - scenario
@@ -295,6 +303,7 @@ paths:
         schema:
           type: string
     get:
+      deprecated: true
       operationId: getScenarioValidationStatusById
       tags:
         - scenario
@@ -334,6 +343,7 @@ paths:
         schema:
           type: string
     get:
+      deprecated: true
       operationId: compareScenarios
       tags:
         - scenario
@@ -372,6 +382,7 @@ paths:
         schema:
           type: string
     post:
+      deprecated: true
       operationId: addOrReplaceScenarioParameterValues
       tags:
         - scenario
@@ -405,6 +416,7 @@ paths:
         "404":
           description: the Scenario specified is unknown or you don't have access to it
     delete:
+      deprecated: true
       operationId: removeAllScenarioParameterValues
       tags:
         - scenario
@@ -436,6 +448,7 @@ paths:
         schema:
           type: string
     post:
+      deprecated: true
       operationId: downloadScenarioData
       tags:
         - scenario
@@ -480,6 +493,7 @@ paths:
         schema:
           type: string
     get:
+      deprecated: true
       operationId: getScenarioDataDownloadJobInfo
       tags:
         - scenario
@@ -526,6 +540,7 @@ paths:
         schema:
           type: string
     get:
+      deprecated: true
       operationId: getScenarioPermissions
       tags:
         - scenario
@@ -565,6 +580,7 @@ paths:
         schema:
           type: string
     get:
+      deprecated: true
       operationId: getScenarioSecurity
       tags:
         - scenario
@@ -603,6 +619,7 @@ paths:
         schema:
           type: string
     post:
+      deprecated: true
       operationId: setScenarioDefaultSecurity
       tags:
         - scenario
@@ -662,6 +679,7 @@ paths:
         schema:
           type: string
     post:
+      deprecated: true
       operationId: addScenarioAccessControl
       tags:
         - scenario
@@ -723,6 +741,7 @@ paths:
         schema:
           type: string
     get:
+      deprecated: true
       operationId: getScenarioAccessControl
       tags:
         - scenario
@@ -740,6 +759,7 @@ paths:
         "404":
           description: the Scenario or user specified is unknown or you don't have access to it
     patch:
+      deprecated: true
       operationId: updateScenarioAccessControl
       tags:
         - scenario
@@ -767,6 +787,7 @@ paths:
         "404":
           description: The Organization specified is unknown or you don't have access to it
     delete:
+      deprecated: true
       operationId: removeScenarioAccessControl
       tags:
         - scenario
@@ -798,6 +819,7 @@ paths:
         schema:
           type: string
     get:
+      deprecated: true
       operationId: getScenarioSecurityUsers
       tags:
         - scenario
