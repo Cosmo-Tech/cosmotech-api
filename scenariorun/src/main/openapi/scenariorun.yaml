@@ -33,6 +33,7 @@ paths:
           type: boolean
           default: false
     delete:
+      deprecated: true
       operationId: deleteHistoricalDataOrganization
       tags:
         - scenariorun
@@ -66,6 +67,7 @@ paths:
           type: boolean
           default: false
     delete:
+      deprecated: true
       operationId: deleteHistoricalDataWorkspace
       tags:
         - scenariorun
@@ -105,6 +107,7 @@ paths:
           type: boolean
           default: false
     delete:
+      deprecated: true
       operationId: deleteHistoricalDataScenario
       tags:
         - scenariorun
@@ -137,6 +140,7 @@ paths:
         schema:
           type: integer
     post:
+      deprecated: true
       operationId: searchScenarioRuns
       tags:
         - scenariorun
@@ -179,6 +183,7 @@ paths:
         schema:
           type: string
     post:
+      deprecated: true
       operationId: startScenarioRunContainers
       tags:
         - scenariorun
@@ -229,6 +234,7 @@ paths:
         schema:
           type: string
     get:
+      deprecated: true
       operationId: findScenarioRunById
       tags:
         - scenariorun
@@ -246,6 +252,7 @@ paths:
         "404":
           description: the ScenarioRun specified is unknown or you don't have access to it
     delete:
+      deprecated: true
       operationId: deleteScenarioRun
       tags:
         - scenariorun
@@ -272,6 +279,7 @@ paths:
         schema:
           type: string
     get:
+      deprecated: true
       operationId: getScenarioRunStatus
       tags:
         - scenariorun
@@ -301,6 +309,7 @@ paths:
         schema:
           type: string
     get:
+      deprecated: true
       operationId: getScenarioRunLogs
       tags:
         - scenariorun
@@ -330,6 +339,7 @@ paths:
         schema:
           type: string
     get:
+      deprecated: true
       operationId: getScenarioRunCumulatedLogs
       tags:
         - scenariorun
@@ -372,6 +382,7 @@ paths:
         schema:
           type: integer
     get:
+      deprecated: true
       operationId: getWorkspaceScenarioRuns
       tags:
         - scenariorun
@@ -421,6 +432,7 @@ paths:
         schema:
           type: integer
     get:
+      deprecated: true
       operationId: getScenarioRuns
       tags:
         - scenariorun
@@ -458,6 +470,7 @@ paths:
         schema:
           type: string
     post:
+      deprecated: true
       operationId: runScenario
       tags:
         - scenariorun
@@ -487,6 +500,7 @@ paths:
         schema:
           type: string
     post:
+      deprecated: true
       operationId: stopScenarioRun
       tags:
         - scenariorun
