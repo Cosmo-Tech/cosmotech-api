@@ -2,14 +2,6 @@ logging:
   level:
     org.keycloak: WARN
 
-management:
-  endpoint:
-    health:
-      show-details: always
-      group:
-        readiness:
-          include: "readinessState,argo"
-
 spring:
   security:
     oauth2:
