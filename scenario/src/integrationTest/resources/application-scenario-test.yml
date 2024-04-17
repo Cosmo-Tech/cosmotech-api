@@ -145,6 +145,26 @@ csm:
       password:
       scenario:
         default-page-size: 20
+    storage:
+      host: "localhost"
+      port: "5432"
+      reader:
+        username: "user1"
+        password: "pwd1"
+      writer:
+        username: "user2"
+        password: "pwd2"
+      admin:
+        username: "user3"
+        password: "pwd3"
+    eventbus:
+      host: "localhost"
+      listener:
+        username: "user3"
+        password: "pwd3"
+      sender:
+        username: "user4"
+        password: "pwd4"
     rbac:
       enabled: true
 
