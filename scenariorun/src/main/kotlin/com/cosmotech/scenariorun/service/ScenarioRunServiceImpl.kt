@@ -3,8 +3,8 @@
 package com.cosmotech.scenariorun.service
 
 import com.cosmotech.api.CsmPhoenixService
-import com.cosmotech.api.azure.adx.AzureDataExplorerClient
-import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
+import com.cosmotech.api.clients.EventBusClient
+import com.cosmotech.api.clients.ResultDataClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.DeleteHistoricalDataOrganization
 import com.cosmotech.api.events.DeleteHistoricalDataScenario
@@ -95,8 +95,8 @@ class ScenarioRunServiceImpl(
     private val organizationService: OrganizationApiServiceInterface,
     private val workspaceService: WorkspaceApiServiceInterface,
     private val scenarioApiService: ScenarioApiServiceInterface,
-    private val azureDataExplorerClient: AzureDataExplorerClient,
-    private val azureEventHubsClient: AzureEventHubsClient,
+    private val azureDataExplorerClient: ResultDataClient,
+    private val azureEventHubsClient: EventBusClient,
     private val workspaceEventHubService: IWorkspaceEventHubService,
     private val scenarioRunRepository: ScenarioRunRepository,
     private val csmRbac: CsmRbac
