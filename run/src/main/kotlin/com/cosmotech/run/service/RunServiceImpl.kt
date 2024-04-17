@@ -36,6 +36,7 @@ import com.cosmotech.run.workflow.WorkflowService
 import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.service.getRbac
+import org.apache.commons.lang3.NotImplementedException
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.PageRequest
@@ -71,6 +72,11 @@ class RunServiceImpl(
 
   @Value("\${csm.platform.storage.port}") private lateinit var port: String
 
+  private val notImplementedExceptionMessage =
+      "The API is configured to use the external result data service. " +
+          "This endpoint is deactivated so, use scenario/scenariorun endpoints instead. " +
+          "To change that, set the API configuration entry 'csm.platform.use-internal-result-services' to true"
+
   override fun listRuns(
       organizationId: String,
       workspaceId: String,
@@ -98,6 +104,7 @@ class RunServiceImpl(
       runId: String,
       sendRunDataRequest: SendRunDataRequest
   ): RunData {
+    checkInternalResultDataServiceConfiguration()
     val tableName = sendRunDataRequest.id!!
 
     if (!adminRunStorageTemplate.existDB(runId)) {
@@ -308,5 +315,11 @@ class RunServiceImpl(
     val runner =
         runnerApiService.getRunner(this.organizationId!!, this.workspaceId!!, this.runnerId!!)
     csmRbac.verify(runner.getRbac(), permission, getScenarioRolesDefinition())
+  }
+
+  internal fun checkInternalResultDataServiceConfiguration() {
+    if (!csmPlatformProperties.useInternalResultServices) {
+      throw NotImplementedException(notImplementedExceptionMessage)
+    }
   }
 }
