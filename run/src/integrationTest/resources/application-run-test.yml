@@ -119,13 +119,20 @@ csm:
       reader:
         username: "user1"
         password: "pwd1"
-      admin:
+      writer:
         username: "user2"
         password: "pwd2"
+      admin:
+        username: "user3"
+        password: "pwd3"
     eventbus:
       host: "localhost"
-      username: "user3"
-      password: "pwd3"
+      listener:
+        username: "user3"
+        password: "pwd3"
+      sender:
+        username: "user4"
+        password: "pwd4"
     rbac:
       enabled: true
     containerRegistry:
