@@ -122,12 +122,16 @@ server:
 management:
   endpoint:
     health:
+      show-details: always
+      probes:
+        # This exposes the following endpoints for Kubernetes: /actuator/health/{live,readi}ness
+        enabled: true
       group:
         readiness:
-          {{- if index .Values.config.csm.platform.argo "base-uri" }}
+          {{- if .Values.config.csm.platform.use_internal_result_services }}
           include: "readinessState,argo"
           {{- else }}
-          include: "readinessState"
+          include: "readinessState,argo,csmADX"
           {{- end }}
 
 csm:
