@@ -266,7 +266,6 @@ class RunContainerFactory(
               CSM_AMQPCONSUMER_USER_ENV_VAR to csmPlatformProperties.eventbus.sender.username,
               CSM_AMQPCONSUMER_PASSWORD_ENV_VAR to csmPlatformProperties.eventbus.sender.password,
               EVENT_HUB_MEASURES_VAR to constructEventBusUri(workspace.id!!)))
-
     } else {
       logger.debug(
           "Get Event Hub env vars for workspace {} with dedicated namespace: {}",
