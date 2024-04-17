@@ -142,9 +142,9 @@ internal class WorkspaceServiceImpl(
                 ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
                 security = workspaceSecurity))
 
-      if(csmPlatformProperties.useInternalResultServices) {
-          this.eventPublisher.publishEvent(WorkspaceCreated(this, organizationId, workspaceSaved.id!!))
-      }
+    if (csmPlatformProperties.useInternalResultServices) {
+      this.eventPublisher.publishEvent(WorkspaceCreated(this, organizationId, workspaceSaved.id!!))
+    }
 
     return workspaceSaved
   }
@@ -218,9 +218,9 @@ internal class WorkspaceServiceImpl(
       workspace.linkedDatasetIdList?.forEach { unlinkDataset(organizationId, workspaceId, it) }
     } finally {
       workspaceRepository.delete(workspace)
-        if(csmPlatformProperties.useInternalResultServices) {
-          this.eventPublisher.publishEvent(WorkspaceDeleted(this, organizationId, workspaceId))
-        }
+      if (csmPlatformProperties.useInternalResultServices) {
+        this.eventPublisher.publishEvent(WorkspaceDeleted(this, organizationId, workspaceId))
+      }
     }
 
     return workspace
@@ -349,9 +349,9 @@ internal class WorkspaceServiceImpl(
       val workspaces = workspaceRepository.findByOrganizationId(organizationId, pageable).toList()
       workspaces.forEach {
         workspaceRepository.delete(it)
-          if(csmPlatformProperties.useInternalResultServices){
-              this.eventPublisher.publishEvent(WorkspaceDeleted(this, organizationId, it.id!!))
-          }
+        if (csmPlatformProperties.useInternalResultServices) {
+          this.eventPublisher.publishEvent(WorkspaceDeleted(this, organizationId, it.id!!))
+        }
       }
     }
   }

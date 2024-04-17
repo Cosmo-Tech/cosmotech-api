@@ -3,8 +3,8 @@
 package com.cosmotech.scenario.service
 
 import com.cosmotech.api.CsmPhoenixService
-import com.cosmotech.api.azure.adx.AzureDataExplorerClient
-import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
+import com.cosmotech.api.clients.EventBusClient
+import com.cosmotech.api.clients.ResultDataClient
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.SHARED_ACCESS_POLICY
 import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy.TENANT_CLIENT_CREDENTIALS
 import com.cosmotech.api.events.DeleteHistoricalDataScenario
@@ -87,8 +87,8 @@ internal class ScenarioServiceImpl(
     private val datasetService: DatasetApiService,
     private val solutionService: SolutionApiServiceInterface,
     private val workspaceService: WorkspaceApiServiceInterface,
-    private val azureDataExplorerClient: AzureDataExplorerClient,
-    private val azureEventHubsClient: AzureEventHubsClient,
+    private val azureDataExplorerClient: ResultDataClient,
+    private val azureEventHubsClient: EventBusClient,
     private val csmRbac: CsmRbac,
     private val workspaceEventHubService: IWorkspaceEventHubService,
     private val scenarioRepository: ScenarioRepository
