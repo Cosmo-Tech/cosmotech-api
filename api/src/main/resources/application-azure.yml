@@ -2,17 +2,6 @@ logging:
   level:
     com.azure: WARN
 
-management:
-  health:
-    azure-storage-blob:
-      enabled: true
-  endpoint:
-    health:
-      show-details: always
-      group:
-        readiness:
-          include: "readinessState,argo,csmADX" # TODO find how to add readiness blobStorage
-
 security:
   oauth2:
     resource:
