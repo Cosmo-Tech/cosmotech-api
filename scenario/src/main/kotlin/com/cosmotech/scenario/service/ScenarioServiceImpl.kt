@@ -397,13 +397,11 @@ internal class ScenarioServiceImpl(
     val pageable = constructPageRequest(page, size, defaultPageSize)
     if (pageable != null) {
       return this.findPaginatedScenariosStateOption(
-              organizationId, workspaceId, pageable.pageNumber, pageable.pageSize, true)
-          .addLastRunsInfo(this, organizationId, workspaceId)
+          organizationId, workspaceId, pageable.pageNumber, pageable.pageSize, true)
     }
     return findAllPaginated(defaultPageSize) {
       this.findPaginatedScenariosStateOption(
               organizationId, workspaceId, it.pageNumber, it.pageSize, true)
-          .addLastRunsInfo(this, organizationId, workspaceId)
           .toMutableList()
     }
   }
@@ -467,15 +465,16 @@ internal class ScenarioServiceImpl(
       addState: Boolean
   ): List<Scenario> {
     val pageable = PageRequest.of(page, size)
-    if (isRbacEnabled(organizationId, workspaceId)) {
-      val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
-      return scenarioRepository
-          .findByWorkspaceIdAndSecurity(organizationId, workspaceId, currentUser, pageable)
-          .toList()
-    }
-
     val scenarios =
-        scenarioRepository.findByWorkspaceId(organizationId, workspaceId, pageable).toList()
+        if (isRbacEnabled(organizationId, workspaceId)) {
+          val currentUser = getCurrentAccountIdentifier(this.csmPlatformProperties)
+          scenarioRepository
+              .findByWorkspaceIdAndSecurity(organizationId, workspaceId, currentUser, pageable)
+              .toList()
+        } else {
+          scenarioRepository.findByWorkspaceId(organizationId, workspaceId, pageable).toList()
+        }
+
     if (addState) {
       scenarios.forEach { this.addStateToScenario(organizationId, it) }
     }
@@ -551,19 +550,16 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       scenarioId: String
   ): Scenario {
-    return findScenarioById(
-        organizationId, workspaceId, scenarioId, withLastRun = true, withState = true)
+    return findScenarioById(organizationId, workspaceId, scenarioId, withState = true)
   }
 
   override fun findScenarioById(
       organizationId: String,
       workspaceId: String,
       scenarioId: String,
-      withLastRun: Boolean,
       withState: Boolean
   ): Scenario {
     val scenario = getVerifiedScenario(organizationId, workspaceId, scenarioId)
-    if (withLastRun) scenario.addLastRunsInfo(this, organizationId, workspaceId)
     if (withState) addStateToScenario(organizationId, scenario)
 
     return scenario
@@ -648,21 +644,8 @@ internal class ScenarioServiceImpl(
   }
 
   override fun getScenariosTree(organizationId: String, workspaceId: String): List<Scenario> {
-    workspaceService.getVerifiedWorkspace(organizationId, workspaceId)
-
-    var pageable = Pageable.ofSize(csmPlatformProperties.twincache.scenario.defaultPageSize)
-    val scenarioTree = mutableListOf<Scenario>()
-
-    do {
-      val scenarioList =
-          this.findPaginatedScenariosStateOption(
-                  organizationId, workspaceId, pageable.pageNumber, pageable.pageSize, true)
-              .addLastRunsInfo(this, organizationId, workspaceId)
-      scenarioTree.addAll(scenarioList)
-      pageable = pageable.next()
-    } while (scenarioList.isNotEmpty())
-
-    return scenarioTree
+    // TODO: remove this endpoint
+    return findAllScenarios(organizationId, workspaceId, null, null)
   }
 
   override fun removeAllScenarioParameterValues(
