@@ -152,7 +152,7 @@ class RunServiceImpl(
     data.forEach { dataLine ->
       dataLine.keys.forEach { key ->
         // Get weight for a given column
-        val keyWeight = jsonTypeMapWeight[dataLine[key]!!::class.simpleName]
+        val keyWeight = jsonTypeMapWeight.getOrDefault(dataLine[key]!!::class.simpleName, CONFLICT_KEY_WEIGHT)
         if (!dataKeyWeight.containsKey(key)) dataKeyWeight[key] = keyWeight!!
         // If a conflict exists between 2 values in a same column use default value instead
         else if (dataKeyWeight[key] != keyWeight) dataKeyWeight[key] = CONFLICT_KEY_WEIGHT
@@ -176,7 +176,7 @@ class RunServiceImpl(
     try {
       // Start revert-able code
       connection.autoCommit = false
-      if (!runDBJdbcTemplate.existTable(tableName, isProbeData)) {
+      if (!runDBJdbcTemplate.existTable(dataTableName)) {
         // Table does not exist
         connection
             .prepareStatement(
@@ -256,8 +256,10 @@ class RunServiceImpl(
 
       logger.debug("Inserted ${data.size} rows in table $dataTableName for run $runId")
       connection.commit()
+      connection.close()
     } catch (e: SQLException) {
       connection.rollback()
+      connection.close()
       throw e
     }
     return RunData(
@@ -417,6 +419,7 @@ class RunServiceImpl(
     runtimeDS.setDriverClassName("org.postgresql.Driver")
     val runDBJdbcTemplate = JdbcTemplate(runtimeDS)
     val connection = runDBJdbcTemplate.dataSource!!.connection
+    connection.autoCommit = false
     connection
         .prepareStatement("GRANT CONNECT ON DATABASE \"$runId\" TO $readerStorageUsername")
         .executeUpdate()
@@ -428,6 +431,7 @@ class RunServiceImpl(
         .prepareStatement("GRANT CREATE ON SCHEMA public to $writerStorageUsername")
         .executeUpdate()
     connection.commit()
+    connection.close()
     runStartRequest.response = run.id
   }
 
