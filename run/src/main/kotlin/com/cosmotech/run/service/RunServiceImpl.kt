@@ -278,7 +278,9 @@ class RunServiceImpl(
     val run = getRun(organizationId, workspaceId, runnerId, runId)
     run.hasPermission(PERMISSION_WRITE)
 
-    return this.sendDataToStorage(runId, sendRunDataRequest.id!!, sendRunDataRequest.data!!)
+    if (sendRunDataRequest.data!!.isEmpty()) throw IllegalArgumentException("Data field cannot be empty")
+
+    return this.sendDataToStorage(runId, sendRunDataRequest.id!!, sendRunDataRequest.data)
   }
 
   override fun queryRunData(
