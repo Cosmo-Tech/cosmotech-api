@@ -53,14 +53,14 @@ class RunStorageConfig {
   @Bean
   fun writerRunStorageDatasource(): DriverManagerDataSource {
     val dataSource =
-      DriverManagerDataSource(storageHost, writerStorageUsername, writerStoragePassword)
+        DriverManagerDataSource(storageHost, writerStorageUsername, writerStoragePassword)
     dataSource.setDriverClassName(jdbcdriverClass)
     return dataSource
   }
 
   @Bean
   fun writerRunStorageTemplate(
-    @Qualifier("writerRunStorageDatasource") dataSource: DataSource
+      @Qualifier("writerRunStorageDatasource") dataSource: DataSource
   ): JdbcTemplate {
     return JdbcTemplate(dataSource)
   }
@@ -85,12 +85,15 @@ fun JdbcTemplate.existDB(name: String): Boolean {
   return this.queryForList("SELECT * FROM pg_catalog.pg_database WHERE datname='$name'").size == 1
 }
 
-fun JdbcTemplate.existTable(name: String, isProbeData: Boolean): Boolean {
-  val query = "select count(*) from information_schema.tables where table_name = ?"
-  return this.queryForObject(query, Int::class.java, name.toDataTableName(isProbeData)) == 1
+fun JdbcTemplate.existTable(name: String): Boolean {
+  return this.queryForList(
+          "SELECT * FROM information_schema.tables " +
+              "WHERE table_name='${name}'")
+      .size == 1
 }
 
-fun String.toDataTableName(isProbeData:Boolean): String = if(isProbeData) "P_$this" else "CD_$this"
+fun String.toDataTableName(isProbeData: Boolean): String =
+    if (isProbeData) "P_$this" else "CD_$this"
 
 fun JdbcTemplate.createDB(name: String): String {
   this.execute("CREATE DATABASE \"$name\"")
