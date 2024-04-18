@@ -47,13 +47,17 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import java.sql.SQLException
 import java.util.*
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
-import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import org.json.JSONObject
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
@@ -388,39 +392,153 @@ class RunServiceIntegrationTest : CsmPostgresTestBase() {
     }
   }
 
-  @Test
-  fun `test sendRunData should create a table and make it available to reader postgresql user`() {
-    runSavedId =
-        mockStartRun(
-            organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, solutionSaved.id!!)
-    assertTrue(adminRunStorageTemplate.existDB(runSavedId))
-    val tableName = "MyCustomData"
-    val data =
-        listOf(
-            mapOf("param1" to "value1"),
-            mapOf("param2" to 2),
-            mapOf("param3" to JSONObject(mapOf("param4" to "value4"))))
-    val requestBody = SendRunDataRequest(id = tableName, data = data)
-    val runDataResult =
+  @Nested
+  inner class RunServicePostgresIntegrationTest {
+
+    lateinit var readerRunStorageTemplate: JdbcTemplate
+
+    @BeforeEach
+    fun setUp() {
+      runSavedId =
+          mockStartRun(
+              organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, solutionSaved.id!!)
+      assertTrue(adminRunStorageTemplate.existDB(runSavedId))
+
+      val uri =
+          csmPlatformProperties.storage.host.replaceAfter(
+              "${csmPlatformProperties.storage.port}", "")
+      val runtimeDS =
+          DriverManagerDataSource(
+              "$uri/$runSavedId",
+              csmPlatformProperties.storage.reader.username,
+              csmPlatformProperties.storage.reader.password)
+      runtimeDS.setDriverClassName("org.postgresql.Driver")
+      readerRunStorageTemplate = JdbcTemplate(runtimeDS)
+    }
+
+    @AfterEach
+    fun tearDown() {
+      runApiService.deleteRun(
+          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runSavedId)
+      assertFalse(adminRunStorageTemplate.existDB(runSavedId))
+    }
+
+    @Test
+    fun `test sendRunData must create table available to reader user`() {
+      val tableName = "MyCustomData"
+      val data =
+          listOf(
+              mapOf("param1" to "value1"),
+              mapOf("param2" to 2),
+              mapOf("param3" to JSONObject(mapOf("param4" to "value4"))))
+      val requestBody = SendRunDataRequest(id = tableName, data = data)
+      val runDataResult =
+          runApiService.sendRunData(
+              organizationSaved.id!!,
+              workspaceSaved.id!!,
+              runnerSaved.id!!,
+              runSavedId,
+              requestBody)
+
+      assertEquals(tableName.toDataTableName(false), runDataResult.tableName)
+
+      assertTrue(readerRunStorageTemplate.existTable(tableName.toDataTableName(false)))
+
+      val rows =
+          readerRunStorageTemplate.queryForList(
+              "SELECT * FROM \"${tableName.toDataTableName(false)}\"")
+
+      assertEquals(data.size, rows.size)
+    }
+
+    @Test
+    fun `test sendRunData must create different tables when id change`() {
+      val tableName = "MyCustomData"
+      val data =
+          listOf(
+              mapOf("param1" to "value1"),
+              mapOf("param2" to 2),
+              mapOf("param3" to JSONObject(mapOf("param4" to "value4"))))
+      val requestBody = SendRunDataRequest(id = tableName, data = data)
+      runApiService.sendRunData(
+          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
+
+      assertTrue(readerRunStorageTemplate.existTable(tableName.toDataTableName(false)))
+
+      val rows =
+          readerRunStorageTemplate.queryForList(
+              "SELECT * FROM \"${tableName.toDataTableName(false)}\"")
+
+      assertEquals(data.size, rows.size)
+
+      val tableName2 = "MyCustomData2"
+      val data2 = listOf(mapOf("param1" to "value1"), mapOf("param2" to 2))
+      val requestBody2 = SendRunDataRequest(id = tableName2, data = data2)
+      runApiService.sendRunData(
+          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody2)
+
+      assertTrue(readerRunStorageTemplate.existTable(tableName2.toDataTableName(false)))
+
+      val rows2 =
+          readerRunStorageTemplate.queryForList(
+              "SELECT * FROM \"${tableName2.toDataTableName(false)}\"")
+
+      assertEquals(data2.size, rows2.size)
+    }
+
+    @Test
+    fun `test multiple sendRunData with incompatible schema does not work`() {
+      val tableName = "MyCustomData"
+      val data = listOf(mapOf("parameter" to "stringValue"))
+      val data2 = listOf(mapOf("parameter" to JSONObject(mapOf("key" to "value"))))
+      val requestBody = SendRunDataRequest(id = tableName, data = data)
+      val requestBody2 = SendRunDataRequest(id = tableName, data = data2)
+      runApiService.sendRunData(
+          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
+
+      assertFailsWith(SQLException::class, "Schema should have been rejected") {
         runApiService.sendRunData(
-            organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
+            organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody2)
+      }
+    }
 
-    assertNotNull(runDataResult.databaseName)
-    assertEquals(runSavedId, runDataResult.databaseName)
+    @Test
+    fun `test multiple sendRunData with new columns works`() {
+      val tableName = "MyCustomData"
+      val data = listOf(mapOf("parameter" to "stringValue"))
+      val data2 = listOf(mapOf("parameter2" to JSONObject(mapOf("key" to "value"))))
+      val requestBody = SendRunDataRequest(id = tableName, data = data)
+      val requestBody2 = SendRunDataRequest(id = tableName, data = data2)
+      runApiService.sendRunData(
+          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
 
-    assertTrue(adminRunStorageTemplate.existDB(runDataResult.databaseName!!))
+      runApiService.sendRunData(
+          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody2)
 
-    assertEquals(tableName.toDataTableName(false), runDataResult.tableName)
-    val uri =
-        csmPlatformProperties.storage.host.replaceAfter("${csmPlatformProperties.storage.port}", "")
-    val runtimeDS =
-        DriverManagerDataSource(
-            "$uri/$runSavedId",
-            csmPlatformProperties.storage.reader.username,
-            csmPlatformProperties.storage.reader.password)
-    runtimeDS.setDriverClassName("org.postgresql.Driver")
-    val runDBJdbcTemplate = JdbcTemplate(runtimeDS)
-    assertTrue(runDBJdbcTemplate.existTable(tableName.toDataTableName(false)))
-    assertEquals(data, runDataResult.data)
+      val rows =
+          readerRunStorageTemplate.queryForList(
+              "SELECT * FROM \"${tableName.toDataTableName(false)}\"")
+
+      assertEquals(
+          data.size + data2.size,
+          rows.size,
+          "Multiple send of data with new columns should add new rows in table")
+    }
+
+    @Test
+    fun `test sendRunData with no data fails`() {
+      val tableName = "MyCustomData"
+      val data = listOf<Map<String, Any>>()
+      val requestBody = SendRunDataRequest(id = tableName, data = data)
+      assertFailsWith(
+          IllegalArgumentException::class, "sendRunData must fail if data is an empty list") {
+            runApiService.sendRunData(
+                organizationSaved.id!!,
+                workspaceSaved.id!!,
+                runnerSaved.id!!,
+                runSavedId,
+                requestBody)
+          }
+    }
   }
 }
