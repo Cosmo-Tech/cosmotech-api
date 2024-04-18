@@ -31,6 +31,13 @@ spring:
           endpoint: "https://fakeaccountname.blob.core.windows.net"
           enabled: true
 
+logging:
+  level:
+    com.cosmotech: DEBUG
+    azure.cosmos: INFO
+    web: INFO
+    org.springframework: INFO
+    com.redis: DEBUG
 
 management:
   endpoints:
@@ -127,10 +134,10 @@ csm:
         password: "pwd3"
     eventbus:
       host: "localhost"
-      listener:
+      sender:
         username: "user3"
         password: "pwd3"
-      sender:
+      listener:
         username: "user4"
         password: "pwd4"
     rbac:
