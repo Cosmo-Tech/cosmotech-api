@@ -229,8 +229,7 @@ class RunContainerFactory(
             nodeLabel = nodeLabel ?: NODE_LABEL_DEFAULT,
             runSizing = customSizing.toContainerResourceSizing()))
 
-    val generateName =
-        "${runId}$GENERATE_NAME_SUFFIX".sanitizeForKubernetes()
+    val generateName = "${runId}$GENERATE_NAME_SUFFIX".sanitizeForKubernetes()
 
     return RunStartContainers(
         generateName = generateName,
