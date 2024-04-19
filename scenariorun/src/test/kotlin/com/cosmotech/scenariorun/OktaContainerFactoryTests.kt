@@ -2632,7 +2632,7 @@ class OktaContainerFactoryTests {
     assertEquals(expected, containers.map { container -> container.name })
   }
 
-  private fun    getStartInfoFromIds(): StartInfo {
+  private fun getStartInfoFromIds(): StartInfo {
     val organizationId = "Organizationid"
     val workspaceId = "Workspaceid"
     val scenarioId = "Scenarioid"
