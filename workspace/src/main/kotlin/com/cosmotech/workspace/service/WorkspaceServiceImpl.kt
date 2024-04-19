@@ -15,7 +15,6 @@ import com.cosmotech.api.events.DeleteHistoricalDataWorkspace
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.events.RemoveDatasetFromWorkspace
 import com.cosmotech.api.events.RemoveWorkspaceFromDataset
-import com.cosmotech.api.events.WorkspaceCreated
 import com.cosmotech.api.events.WorkspaceDeleted
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
@@ -134,19 +133,13 @@ internal class WorkspaceServiceImpl(
         }
       }
     }
-    val workspaceSaved =
-        workspaceRepository.save(
-            workspace.copy(
-                id = idGenerator.generate("workspace"),
-                organizationId = organizationId,
-                ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
-                security = workspaceSecurity))
 
-    if (csmPlatformProperties.useInternalResultServices) {
-      this.eventPublisher.publishEvent(WorkspaceCreated(this, organizationId, workspaceSaved.id!!))
-    }
-
-    return workspaceSaved
+    return workspaceRepository.save(
+        workspace.copy(
+            id = idGenerator.generate("workspace"),
+            organizationId = organizationId,
+            ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
+            security = workspaceSecurity))
   }
 
   override fun deleteAllWorkspaceFiles(organizationId: String, workspaceId: String) {
