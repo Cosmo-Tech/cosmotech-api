@@ -55,7 +55,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 import org.json.JSONObject
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -416,8 +415,8 @@ class RunServiceIntegrationTest : CsmPostgresTestBase() {
       readerRunStorageTemplate = JdbcTemplate(runtimeDS)
     }
 
-    @AfterEach
-    fun tearDown() {
+    @Test
+    fun `test deleteRun should remove the database`() {
       runApiService.deleteRun(
           organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runSavedId)
       assertFalse(adminRunStorageTemplate.existDB(runSavedId))
