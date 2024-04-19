@@ -36,6 +36,7 @@ import com.cosmotech.run.workflow.WorkflowService
 import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.service.getRbac
+import java.time.Instant
 import org.apache.commons.lang3.NotImplementedException
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.event.EventListener
@@ -43,7 +44,6 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.stereotype.Service
-import java.time.Instant
 
 internal const val WORKFLOW_TYPE_RUN = "container-run"
 

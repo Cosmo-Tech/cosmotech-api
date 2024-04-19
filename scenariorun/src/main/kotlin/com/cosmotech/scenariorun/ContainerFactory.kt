@@ -310,8 +310,7 @@ class ContainerFactory(
             artifacts,
             nodeLabel)
 
-    val generateName =
-        "${jobId}$GENERATE_NAME_SUFFIX".sanitizeForKubernetes()
+    val generateName = "${jobId}$GENERATE_NAME_SUFFIX".sanitizeForKubernetes()
 
     return ScenarioRunStartContainers(
         generateName = generateName,
