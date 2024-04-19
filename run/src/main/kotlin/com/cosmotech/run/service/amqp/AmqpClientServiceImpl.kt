@@ -3,7 +3,6 @@
 package com.cosmotech.run.service.amqp
 
 import com.cosmotech.api.events.RunStart
-import com.cosmotech.api.events.WorkspaceCreated
 import com.cosmotech.api.events.WorkspaceDeleted
 import com.cosmotech.run.config.RabbitMqConfigModel
 import com.cosmotech.runner.domain.Runner
@@ -37,12 +36,6 @@ class AmqpClientServiceImpl(
   fun awakeListener(event: RunStart) {
     val exchange = rabbitMqConfigModel.exchange
     this.addNewQueue(exchange, (event.runnerData as Runner).workspaceId!!)
-  }
-
-  @EventListener(WorkspaceCreated::class)
-  fun addQueueForNewWorkspace(event: WorkspaceCreated) {
-    val exchange = rabbitMqConfigModel.exchange
-    this.addNewQueue(exchange, event.workspaceId)
   }
 
   @EventListener(WorkspaceDeleted::class)
