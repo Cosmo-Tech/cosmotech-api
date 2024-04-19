@@ -36,7 +36,7 @@ class AmqpClientServiceImpl(
   @EventListener(RunStart::class)
   fun awakeListener(event: RunStart) {
     val exchange = rabbitMqConfigModel.exchange
-    this.addQueueToListener(exchange, (event.runnerData as Runner).workspaceId!!)
+    this.addNewQueue(exchange, (event.runnerData as Runner).workspaceId!!)
   }
 
   @EventListener(WorkspaceCreated::class)
