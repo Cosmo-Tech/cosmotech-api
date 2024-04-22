@@ -52,7 +52,6 @@ import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
 import io.mockk.verify
 import java.util.*
-import java.util.stream.Stream
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Ignore
@@ -66,11 +65,6 @@ import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
-import org.junit.jupiter.api.extension.ExtensionContext
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.Arguments
-import org.junit.jupiter.params.provider.ArgumentsProvider
-import org.junit.jupiter.params.provider.ArgumentsSource
 
 const val ORGANIZATION_ID = "O-AbCdEf123"
 const val WORKSPACE_ID = "W-AbCdEf123"
@@ -1097,6 +1091,7 @@ class ScenarioServiceImplTests {
   }
 }
 
+/*
 private fun <T, U> List<T>.cartesianProduct(otherList: List<U>): List<Pair<T, U>> =
     this.flatMap { elementInThisList ->
       otherList.map { elementInOtherList -> elementInThisList to elementInOtherList }
@@ -1109,3 +1104,4 @@ private class ParentRootScenarioIdsCartesianProductArgumentsProvider : Arguments
           .map { (parentId, rootId) -> Arguments.of(parentId, rootId) }
           .stream()
 }
+*/
