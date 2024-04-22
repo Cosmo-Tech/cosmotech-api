@@ -237,7 +237,12 @@ class DatasetServiceImpl(
             ingestionStatus = Dataset.IngestionStatus.PENDING,
             twincacheStatus = Dataset.TwincacheStatus.EMPTY,
             connector =
-                dataset.connector?.apply { parametersValues?.set(TWINCACHE_NAME, subTwingraphId) },
+                dataset.connector?.copy(
+                    parametersValues =
+                        (dataset.connector
+                                ?.parametersValues
+                                ?.plus(mutableMapOf(TWINCACHE_NAME to subTwingraphId)))
+                            ?.toMutableMap()),
             sourceType = DatasetSourceType.Twincache,
             tags = dataset.tags)
 
