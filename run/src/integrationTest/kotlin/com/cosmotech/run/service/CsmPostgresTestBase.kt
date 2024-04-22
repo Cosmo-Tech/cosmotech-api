@@ -15,7 +15,7 @@ import org.testcontainers.utility.MountableFile
 
 @Testcontainers
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-open class CsmPostgresTestBase: CsmRedisTestBase() {
+open class CsmPostgresTestBase : CsmRedisTestBase() {
 
   companion object {
     private const val ADMIN_USER_CREDENTIALS = "adminusertest"

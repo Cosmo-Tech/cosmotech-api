@@ -87,8 +87,7 @@ fun JdbcTemplate.existDB(name: String): Boolean {
 
 fun JdbcTemplate.existTable(name: String): Boolean {
   return this.queryForList(
-          "SELECT * FROM information_schema.tables " +
-              "WHERE table_name='${name}'")
+          "SELECT * FROM information_schema.tables " + "WHERE table_name='${name}'")
       .size == 1
 }
 

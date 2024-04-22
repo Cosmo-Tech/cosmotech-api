@@ -35,6 +35,7 @@ plugins {
   id("org.owasp.dependencycheck") version "9.0.2"
   id("com.github.jk1.dependency-license-report") version "2.5"
   id("org.jetbrains.kotlinx.kover") version "0.7.4"
+  id("org.jetbrains.kotlin.plugin.serialization") version "1.9.23"
   id("io.gitlab.arturbosch.detekt") version "1.23.5"
   id("org.openapi.generator") version "7.3.0" apply false
   id("com.google.cloud.tools.jib") version "3.4.0" apply false
@@ -141,6 +142,7 @@ allprojects {
       }
     }
     maven {
+      mavenLocal()
       name = "Argo Client Java GitHub Packages"
       url = uri("https://maven.pkg.github.com/argoproj/argo-client-java")
       credentials {

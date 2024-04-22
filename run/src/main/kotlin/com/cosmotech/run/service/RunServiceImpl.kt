@@ -35,8 +35,10 @@ import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.service.getRbac
 import com.google.gson.Gson
+import java.sql.ResultSetMetaData
 import java.sql.SQLException
 import java.time.Instant
+import org.json.JSONObject
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.PageRequest
@@ -147,7 +149,8 @@ class RunServiceImpl(
     data.forEach { dataLine ->
       dataLine.keys.forEach { key ->
         // Get weight for a given column
-        val keyWeight = jsonTypeMapWeight.getOrDefault(dataLine[key]!!::class.simpleName, CONFLICT_KEY_WEIGHT)
+        val keyWeight =
+            jsonTypeMapWeight.getOrDefault(dataLine[key]!!::class.simpleName, CONFLICT_KEY_WEIGHT)
         if (!dataKeyWeight.containsKey(key)) dataKeyWeight[key] = keyWeight!!
         // If a conflict exists between 2 values in a same column use default value instead
         else if (dataKeyWeight[key] != keyWeight) dataKeyWeight[key] = CONFLICT_KEY_WEIGHT
@@ -239,7 +242,7 @@ class RunServiceImpl(
         // correct type
         val insertPreparedStatement =
             connection.prepareStatement(
-                "INSERT INTO \"$dataTableName\" ( ${dataLine.keys.joinToString(separator = ", ") {"\"$it\""}} ) " +
+                "INSERT INTO \"$dataTableName\" ( ${dataLine.keys.joinToString(separator = ", ") { "\"$it\"" }} ) " +
                     "VALUES ( ${dataLine.keys.joinToString(separator = ", ") { "?::${dataKeyType[it]!!}" }} )")
         // insert all values as pure data into the statement ensuring no SQL can be executed
         // inside the query
@@ -272,7 +275,8 @@ class RunServiceImpl(
     val run = getRun(organizationId, workspaceId, runnerId, runId)
     run.hasPermission(PERMISSION_WRITE)
 
-    if (sendRunDataRequest.data!!.isEmpty()) throw IllegalArgumentException("Data field cannot be empty")
+    if (sendRunDataRequest.data!!.isEmpty())
+        throw IllegalArgumentException("Data field cannot be empty")
 
     return this.sendDataToStorage(runId, sendRunDataRequest.id!!, sendRunDataRequest.data)
   }
@@ -292,10 +296,27 @@ class RunServiceImpl(
     runtimeDS.setDriverClassName("org.postgresql.Driver")
 
     val runDBJdbcTemplate = JdbcTemplate(runtimeDS)
+    val connection = runDBJdbcTemplate.dataSource!!.connection
 
-    val result = runDBJdbcTemplate.queryForList(runDataQuery.query)
-    val resultList = mutableListOf(String())
-    result.forEach { resultList.add(it.toString()) }
+    val preparedStatement = connection.prepareStatement(runDataQuery.query)
+    val queryResults = preparedStatement.executeQuery()
+
+    val md: ResultSetMetaData = queryResults.metaData
+    val columns = md.columnCount
+    val rows: MutableList<Map<String, Any>> = ArrayList()
+    while (queryResults.next()) {
+      val row: MutableMap<String, Any> = HashMap(columns)
+      for (i in 1..columns) {
+        row[md.getColumnLabel(i)] = queryResults.getObject(i)
+      }
+      rows.add(row)
+    }
+    val resultList = emptyList<JSONObject>().toMutableList()
+    rows.forEach {
+      val json = JSONObject()
+      it.forEach { element -> json.put(element.key, element.value.toString()) }
+      resultList.add(json)
+    }
 
     return QueryResult(resultList)
   }

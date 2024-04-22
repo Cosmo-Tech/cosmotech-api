@@ -4,6 +4,7 @@ package com.cosmotech.run.service
 
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.RunStart
+import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.ROLE_ADMIN
 import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
@@ -24,6 +25,7 @@ import com.cosmotech.run.config.existDB
 import com.cosmotech.run.config.existTable
 import com.cosmotech.run.config.toDataTableName
 import com.cosmotech.run.domain.Run
+import com.cosmotech.run.domain.RunDataQuery
 import com.cosmotech.run.domain.SendRunDataRequest
 import com.cosmotech.run.workflow.WorkflowService
 import com.cosmotech.runner.RunnerApiServiceInterface
@@ -61,6 +63,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
+import org.postgresql.util.PSQLException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -96,8 +99,11 @@ class RunServiceIntegrationTest : CsmPostgresTestBase() {
   @Autowired lateinit var workspaceApiService: WorkspaceApiServiceInterface
   @SpykBean @Autowired lateinit var runnerApiService: RunnerApiServiceInterface
   @Autowired lateinit var runApiService: RunApiServiceInterface
+  @SpykBean @Autowired lateinit var runServiceImpl: RunServiceImpl
+  @SpykBean @Autowired lateinit var csmRbac: CsmRbac
   @Autowired lateinit var eventPublisher: com.cosmotech.api.events.CsmEventPublisher
 
+  @Autowired lateinit var readerRunStorageTemplate: JdbcTemplate
   @Autowired lateinit var adminRunStorageTemplate: JdbcTemplate
 
   lateinit var connector: Connector
@@ -538,6 +544,127 @@ class RunServiceIntegrationTest : CsmPostgresTestBase() {
                 runSavedId,
                 requestBody)
           }
+    }
+
+    val data =
+        listOf(
+            mapOf("col1" to "value1", "col2" to "value2"),
+            mapOf("col1" to "1", "col2" to "2"),
+            mapOf(
+                "col1" to JSONObject(mapOf("param4" to "value4")).toString(),
+                "col2" to JSONObject(mapOf("param10" to "value10")).toString()))
+
+    @Test
+    fun `should get all entries`() {
+      val requestBody = SendRunDataRequest(id = runSavedId, data = data)
+      val sentData =
+          runApiService.sendRunData(
+              organizationSaved.id!!,
+              workspaceSaved.id!!,
+              runnerSaved.id!!,
+              runSavedId,
+              requestBody)
+      val queryResult =
+          runApiService.queryRunData(
+              organizationSaved.id!!,
+              workspaceSaved.id!!,
+              runnerSaved.id!!,
+              runSavedId,
+              RunDataQuery("SELECT * FROM \"${runSavedId.toDataTableName(false)}\""))
+      val expectedResult =
+          listOf<Any>(
+              JSONObject().put("param1", "value1"),
+              JSONObject().put("param2", "2"),
+              JSONObject().put("param1", "{\"param4\":\"value4\"}"))
+
+      assertEquals(expectedResult, queryResult.result)
+    }
+
+    @Test
+    fun `should throw table do not exist`() {
+      val requestBody = SendRunDataRequest(id = runSavedId, data = data)
+      runApiService.sendRunData(
+          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
+      val exception =
+          assertThrows<PSQLException> {
+            runApiService.queryRunData(
+                organizationSaved.id!!,
+                workspaceSaved.id!!,
+                runnerSaved.id!!,
+                runSavedId,
+                RunDataQuery("SELECT * FROM \"${runSavedId.toDataTableName(false)}2\""))
+          }
+      assertEquals(
+          "ERROR: relation \"${runSavedId.toDataTableName(false)}2\" does not exist\n  Position: 15",
+          exception.message)
+    }
+
+    @Test
+    fun `should not allow command other than select`() {
+
+      // TODO make a more generic test
+
+      val requestBody = SendRunDataRequest(id = runSavedId, data = data)
+      runApiService.sendRunData(
+          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
+      var e =
+          assertThrows<PSQLException> {
+            runApiService.queryRunData(
+                organizationSaved.id!!,
+                workspaceSaved.id!!,
+                runnerSaved.id!!,
+                runSavedId,
+                RunDataQuery("DROP TABLE \"${runSavedId.toDataTableName(false)}\""))
+          }
+      assertEquals("ERROR: must be owner of table ${runSavedId.toDataTableName(false)}", e.message)
+      e =
+          assertThrows<PSQLException> {
+            runApiService.queryRunData(
+                organizationSaved.id!!,
+                workspaceSaved.id!!,
+                runnerSaved.id!!,
+                runSavedId,
+                RunDataQuery(
+                    "CREATE TABLE \"${runSavedId.toDataTableName(false)}\" (id VARCHAR(100))"))
+          }
+      assertEquals("ERROR: permission denied for schema public\n" + "  Position: 14", e.message)
+    }
+
+    @Test
+    fun `should get all tables in dB`() {
+      val requestBody = SendRunDataRequest(id = runSavedId, data = data)
+      runApiService.sendRunData(
+          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
+      runApiService.sendRunData(
+          organizationSaved.id!!,
+          workspaceSaved.id!!,
+          runnerSaved.id!!,
+          runSavedId + 2,
+          requestBody)
+      runApiService.sendRunData(
+          organizationSaved.id!!,
+          workspaceSaved.id!!,
+          runnerSaved.id!!,
+          runSavedId + 3,
+          requestBody)
+      val queryResult =
+          runApiService.queryRunData(
+              organizationSaved.id!!,
+              workspaceSaved.id!!,
+              runnerSaved.id!!,
+              runSavedId,
+              RunDataQuery(
+                  "SELECT tablename\n" +
+                      "FROM pg_catalog.pg_tables\n" +
+                      "WHERE schemaname = 'public'\n" +
+                      "ORDER BY tablename ASC;"))
+
+      assertEquals(
+          listOf(
+              runSavedId.toDataTableName(false),
+              (runSavedId + 2).toDataTableName(false),
+              (runSavedId + 3).toDataTableName(false)),
+          queryResult.result)
     }
   }
 }
