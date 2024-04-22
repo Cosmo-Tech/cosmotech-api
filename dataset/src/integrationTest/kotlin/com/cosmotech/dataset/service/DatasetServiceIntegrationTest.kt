@@ -454,6 +454,83 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals(
         2, countEntities(subDatasetWithQuery.twingraphId!!, "MATCH ()-[r]-() RETURN count(r)"))
   }
+  @Test
+  fun `should not change parent connector parameters on subdataset creation`() {
+    logger.info("Create a Graph with a ZIP Entry")
+    logger.info(
+        "loading nodes: Double=2, Single=1, Users=9 & relationships: Double=2, Single=1, Follows=2")
+    val file = this::class.java.getResource("/integrationTest.zip")?.file
+    val resource = ByteArrayResource(File(file!!).readBytes())
+    organizationSaved = organizationApiService.registerOrganization(organization)
+    dataset = makeDatasetWithRole()
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+    datasetApiService.updateDataset(
+        organizationSaved.id!!,
+        datasetSaved.id!!,
+        datasetSaved.copy(sourceType = DatasetSourceType.File))
+
+    val fileUploadValidation =
+        datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
+    assertEquals(
+        FileUploadValidation(
+            mutableListOf(
+                FileUploadMetadata("Double", 90),
+                FileUploadMetadata("Single", 54),
+                FileUploadMetadata("Users", 749),
+            ),
+            mutableListOf(
+                FileUploadMetadata("Double", 214),
+                FileUploadMetadata("Follows", 47),
+                FileUploadMetadata("SingleEdge", 59),
+            )),
+        fileUploadValidation)
+
+    // add timout for while loop
+    val timeout = Instant.now()
+    while (datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!) !=
+        Dataset.IngestionStatus.SUCCESS.value) {
+      if (Instant.now().minusSeconds(10).isAfter(timeout)) {
+        throw Exception("Timeout while waiting for dataset twingraph to be ready")
+      }
+      Thread.sleep(500)
+    }
+    datasetSaved = datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+    do {
+      Thread.sleep(50L)
+      val datasetStatus =
+          datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
+    } while (datasetStatus == Dataset.IngestionStatus.PENDING.value)
+    assertEquals(12, countEntities(datasetSaved.twingraphId!!, "MATCH (n) RETURN count(n)"))
+    assertEquals(5, countEntities(datasetSaved.twingraphId!!, "MATCH ()-[r]-() RETURN count(r)"))
+    assertEquals(
+        datasetSaved.connector!!.parametersValues!!["TWIN_CACHE_NAME"], datasetSaved.twingraphId)
+
+    val subDatasetParams =
+        SubDatasetGraphQuery(
+            name = "subDataset",
+            description = "subDataset description",
+        )
+    val subDataset =
+        datasetApiService.createSubDataset(
+            organizationSaved.id!!, datasetSaved.id!!, subDatasetParams)
+    do {
+      Thread.sleep(50L)
+      val datasetStatus =
+          datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, subDataset.id!!)
+    } while (datasetStatus == Dataset.IngestionStatus.PENDING.value)
+
+    // get parent after sub dataset creation
+    datasetSaved = datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
+
+    assertEquals("subDataset", subDataset.name)
+    assertEquals("subDataset description", subDataset.description)
+    assertEquals(12, countEntities(subDataset.twingraphId!!, "MATCH (n) RETURN count(n)"))
+    assertEquals(5, countEntities(subDataset.twingraphId!!, "MATCH ()-[r]-() RETURN count(r)"))
+    assertEquals(
+        datasetSaved.connector!!.parametersValues!!["TWIN_CACHE_NAME"], datasetSaved.twingraphId)
+    assertEquals(
+        subDataset.connector!!.parametersValues!!["TWIN_CACHE_NAME"], subDataset.twingraphId)
+  }
 
   fun countEntities(twingraphId: String, query: String): Int {
     val resultSet = redisGraph.query(twingraphId, query)
