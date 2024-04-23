@@ -752,7 +752,8 @@ components:
           type: array
           description: the list of results
           items:
-            type: string
+            type: object
+            additionalProperties: true
   examples:
     DefaultRunData:
       summary: Run Data exemple

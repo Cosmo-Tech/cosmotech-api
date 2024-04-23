@@ -35,9 +35,11 @@ import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.service.getRbac
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import java.sql.SQLException
 import java.time.Instant
 import org.apache.commons.lang3.NotImplementedException
+import org.json.JSONObject
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.PageRequest
@@ -285,24 +287,41 @@ class RunServiceImpl(
   }
 
   override fun queryRunData(
-      organizationId: String,
-      workspaceId: String,
-      runnerId: String,
-      runId: String,
-      runDataQuery: RunDataQuery
+    organizationId: String,
+    workspaceId: String,
+    runnerId: String,
+    runId: String,
+    runDataQuery: RunDataQuery
   ): QueryResult {
     val runtimeDS =
-        DriverManagerDataSource(
-            "jdbc:postgresql://$host:$port/$runId", readerStorageUsername, readerStoragePassword)
+      DriverManagerDataSource(
+        "jdbc:postgresql://localhost:$port/$runId",
+        readerStorageUsername,
+        readerStoragePassword)
     runtimeDS.setDriverClassName("org.postgresql.Driver")
 
     val runDBJdbcTemplate = JdbcTemplate(runtimeDS)
+    val connection = runDBJdbcTemplate.dataSource!!.connection
 
-    val result = runDBJdbcTemplate.queryForList(runDataQuery.query)
-    val resultList = mutableListOf(String())
-    result.forEach { resultList.add(it.toString()) }
+    val preparedStatement = connection.prepareStatement(runDataQuery.query)
+    val queryResults = preparedStatement.executeQuery()
 
-    return QueryResult(resultList)
+    val gson = Gson()
+    val mapAdapter = gson.getAdapter(object : TypeToken<Map<String, Any?>>() {})
+    val results = mutableListOf<Map<String, Any>>()
+
+    while (queryResults.next()) {
+      var row = "{"
+      for (i in 1..queryResults.metaData.columnCount) {
+        row += "\"${queryResults.metaData.getColumnName(i)}\": ${queryResults.getString(i)},"
+      }
+      row = row.substring(0, row.length - 1) + "}"
+      logger.debug("ROW: $row")
+      val rowInsert = mapAdapter.fromJson(row) as Map<String, Any>
+      results.add(rowInsert)
+    }
+
+    return QueryResult(results)
   }
 
   private fun Run.withStateInformation(): Run {
