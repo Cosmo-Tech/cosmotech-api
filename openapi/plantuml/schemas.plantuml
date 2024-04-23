@@ -189,7 +189,7 @@ entity OrganizationServices {
 }
 
 entity QueryResult {
-    result: List<String>
+    result: List<Map>
 }
 
 entity ResourceSizeInfo {
