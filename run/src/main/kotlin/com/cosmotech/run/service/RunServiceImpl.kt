@@ -137,7 +137,7 @@ class RunServiceImpl(
   }
 
   @Suppress("LongMethod")
-  private fun sendDataToStorage(
+  fun sendDataToStorage(
       runId: String,
       tableName: String,
       data: List<Map<String, Any>>,
