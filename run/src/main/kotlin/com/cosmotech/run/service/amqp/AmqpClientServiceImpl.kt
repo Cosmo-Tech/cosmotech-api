@@ -76,12 +76,12 @@ class AmqpClientServiceImpl(
     val data = mutableListOf<Map<String, Any>>()
     messageRead.facts.forEach { it ->
       val row = (it + messageRead.facts_common).toMutableMap()
-      row["probe.name"] = messageRead.probe["name"] as String
-      row["probe.run"] = messageRead.probe["run"] as String
+      row["probe.name"] = messageRead.probe["name"].toString()
+      row["probe.run"] = messageRead.probe["run"]!!
       data.add(row)
     }
-    val runId = messageRead.simulation["run"] as String
-    val tableName = messageRead.probe["type"] as String
+    val runId = messageRead.simulation["run"].toString()
+    val tableName = messageRead.probe["type"].toString()
     runServiceImpl.sendDataToStorage(runId, tableName, data, true)
   }
 
