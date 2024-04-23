@@ -101,6 +101,7 @@ csm:
       # Use CsmPlatformProperties instead !
       allowed-tenants: ["test"]
     vendor: on_premise
+    use_internal_result_services: true
     argo:
       base-uri: "https://argo-server.argo.svc.cluster.local:2746"
       workflows:
@@ -134,6 +135,9 @@ csm:
         password: "pwd3"
     eventbus:
       host: "localhost"
+      default-exchange: "csm-exchange"
+      default-queue: "csm"
+      default-routing-key: "csm"
       sender:
         username: "user3"
         password: "pwd3"

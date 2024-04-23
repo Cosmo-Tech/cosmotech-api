@@ -49,36 +49,6 @@ class RunStorageConfig {
   ): JdbcTemplate {
     return JdbcTemplate(dataSource)
   }
-
-  @Bean
-  fun writerRunStorageDatasource(): DriverManagerDataSource {
-    val dataSource =
-        DriverManagerDataSource(storageHost, writerStorageUsername, writerStoragePassword)
-    dataSource.setDriverClassName(jdbcdriverClass)
-    return dataSource
-  }
-
-  @Bean
-  fun writerRunStorageTemplate(
-      @Qualifier("writerRunStorageDatasource") dataSource: DataSource
-  ): JdbcTemplate {
-    return JdbcTemplate(dataSource)
-  }
-
-  @Bean
-  fun readerRunStorageDatasource(): DriverManagerDataSource {
-    val dataSource =
-        DriverManagerDataSource(storageHost, readerStorageUsername, readerStoragePassword)
-    dataSource.setDriverClassName(jdbcdriverClass)
-    return dataSource
-  }
-
-  @Bean
-  fun readerRunStorageTemplate(
-      @Qualifier("readerRunStorageDatasource") dataSource: DataSource
-  ): JdbcTemplate {
-    return JdbcTemplate(dataSource)
-  }
 }
 
 fun JdbcTemplate.existDB(name: String): Boolean {
@@ -87,8 +57,7 @@ fun JdbcTemplate.existDB(name: String): Boolean {
 
 fun JdbcTemplate.existTable(name: String): Boolean {
   return this.queryForList(
-          "SELECT * FROM information_schema.tables " +
-              "WHERE table_name='${name}'")
+          "SELECT * FROM information_schema.tables " + "WHERE table_name='${name}'")
       .size == 1
 }
 
