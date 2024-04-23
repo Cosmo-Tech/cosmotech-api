@@ -293,9 +293,13 @@ class RunServiceImpl(
     runId: String,
     runDataQuery: RunDataQuery
   ): QueryResult {
+
+    checkInternalResultDataServiceConfiguration()
+    getRun(organizationId, workspaceId, runnerId, runId)
+
     val runtimeDS =
       DriverManagerDataSource(
-        "jdbc:postgresql://localhost:$port/$runId",
+        "jdbc:postgresql://$host:$port/$runId",
         readerStorageUsername,
         readerStoragePassword)
     runtimeDS.setDriverClassName("org.postgresql.Driver")
