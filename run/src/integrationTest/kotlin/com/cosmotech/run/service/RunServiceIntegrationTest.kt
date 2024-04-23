@@ -403,12 +403,11 @@ class RunServiceIntegrationTest : CsmPostgresTestBase() {
               organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, solutionSaved.id!!)
       assertTrue(adminRunStorageTemplate.existDB(runSavedId))
 
-      val uri =
-          csmPlatformProperties.storage.host.replaceAfter(
-              "${csmPlatformProperties.storage.port}", "")
+      val host = csmPlatformProperties.storage.host
+      val port = csmPlatformProperties.storage.port
       val runtimeDS =
           DriverManagerDataSource(
-              "$uri/$runSavedId",
+              "jdbc:postgresql://$host:$port/$runSavedId",
               csmPlatformProperties.storage.reader.username,
               csmPlatformProperties.storage.reader.password)
       runtimeDS.setDriverClassName("org.postgresql.Driver")

@@ -34,7 +34,7 @@ open class CsmPostgresTestBase : CsmRedisTestBase() {
     @JvmStatic
     @DynamicPropertySource
     fun connectionProperties(registry: DynamicPropertyRegistry) {
-      registry.add("csm.platform.storage.host") { postgres.jdbcUrl }
+      registry.add("csm.platform.storage.host") { postgres.host }
       registry.add("csm.platform.storage.port") { postgres.getMappedPort(POSTGRESQL_PORT) }
       registry.add("csm.platform.storage.admin.username") { ADMIN_USER_CREDENTIALS }
       registry.add("csm.platform.storage.admin.password") { ADMIN_USER_CREDENTIALS }
