@@ -15,6 +15,7 @@ import com.cosmotech.api.events.DeleteHistoricalDataWorkspace
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.events.RemoveDatasetFromWorkspace
 import com.cosmotech.api.events.RemoveWorkspaceFromDataset
+import com.cosmotech.api.events.WorkspaceDeleted
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
@@ -210,7 +211,11 @@ internal class WorkspaceServiceImpl(
       workspace.linkedDatasetIdList?.forEach { unlinkDataset(organizationId, workspaceId, it) }
     } finally {
       workspaceRepository.delete(workspace)
+      if (csmPlatformProperties.useInternalResultServices) {
+        this.eventPublisher.publishEvent(WorkspaceDeleted(this, organizationId, workspaceId))
+      }
     }
+
     return workspace
   }
 
@@ -335,7 +340,12 @@ internal class WorkspaceServiceImpl(
       val pageable: Pageable =
           Pageable.ofSize(csmPlatformProperties.twincache.workspace.defaultPageSize)
       val workspaces = workspaceRepository.findByOrganizationId(organizationId, pageable).toList()
-      workspaceRepository.deleteAll(workspaces)
+      workspaces.forEach {
+        workspaceRepository.delete(it)
+        if (csmPlatformProperties.useInternalResultServices) {
+          this.eventPublisher.publishEvent(WorkspaceDeleted(this, organizationId, it.id!!))
+        }
+      }
     }
   }
 

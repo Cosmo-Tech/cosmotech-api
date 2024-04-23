@@ -3,8 +3,8 @@
 package com.cosmotech.scenariorun.service
 
 import com.cosmotech.api.CsmPhoenixService
-import com.cosmotech.api.azure.adx.AzureDataExplorerClient
-import com.cosmotech.api.azure.eventhubs.AzureEventHubsClient
+import com.cosmotech.api.clients.EventBusClient
+import com.cosmotech.api.clients.ResultDataClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.DeleteHistoricalDataOrganization
 import com.cosmotech.api.events.DeleteHistoricalDataScenario
@@ -73,6 +73,7 @@ import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
+import org.apache.commons.lang3.NotImplementedException
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.PageRequest
 import org.springframework.scheduling.annotation.Async
@@ -94,8 +95,8 @@ class ScenarioRunServiceImpl(
     private val organizationService: OrganizationApiServiceInterface,
     private val workspaceService: WorkspaceApiServiceInterface,
     private val scenarioApiService: ScenarioApiServiceInterface,
-    private val azureDataExplorerClient: AzureDataExplorerClient,
-    private val azureEventHubsClient: AzureEventHubsClient,
+    private val azureDataExplorerClient: ResultDataClient,
+    private val azureEventHubsClient: EventBusClient,
     private val workspaceEventHubService: IWorkspaceEventHubService,
     private val scenarioRunRepository: ScenarioRunRepository,
     private val csmRbac: CsmRbac
@@ -103,7 +104,13 @@ class ScenarioRunServiceImpl(
 
   val scenarioPermissions = getScenarioRolesDefinition()
 
+  private val notImplementedExceptionMessage =
+      "The API is configured to use the internal result data service. " +
+          "This endpoint is deactivated so, use run/runner endpoints instead. " +
+          "To change that, set the API configuration entry 'csm.platform.use-internal-result-services' to false"
+
   override fun deleteScenarioRun(organizationId: String, scenariorunId: String) {
+    checkInternalResultDataServiceConfiguration()
     val scenarioRun = this.findScenarioRunById(organizationId, scenariorunId)
     val scenario =
         scenarioApiService.findScenarioById(
@@ -163,6 +170,7 @@ class ScenarioRunServiceImpl(
   }
 
   override fun deleteHistoricalDataOrganization(organizationId: String, deleteUnknown: Boolean) {
+    checkInternalResultDataServiceConfiguration()
     val organization = organizationService.findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_DELETE)
     this.eventPublisher.publishEvent(
@@ -174,6 +182,7 @@ class ScenarioRunServiceImpl(
       workspaceId: String,
       deleteUnknown: Boolean
   ) {
+    checkInternalResultDataServiceConfiguration()
     val workspace = workspaceService.findWorkspaceById(organizationId, workspaceId)
     csmRbac.verify(workspace.getRbac(), PERMISSION_DELETE)
     this.eventPublisher.publishEvent(
@@ -187,6 +196,7 @@ class ScenarioRunServiceImpl(
       scenarioId: String,
       deleteUnknown: Boolean
   ) {
+    checkInternalResultDataServiceConfiguration()
     val scenario = scenarioApiService.findScenarioById(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_DELETE)
     GlobalScope.launch {
@@ -256,8 +266,10 @@ class ScenarioRunServiceImpl(
         }
   }
 
-  override fun findScenarioRunById(organizationId: String, scenariorunId: String) =
-      findScenarioRunById(organizationId, scenariorunId, withStateInformation = true)
+  override fun findScenarioRunById(organizationId: String, scenariorunId: String): ScenarioRun {
+    checkInternalResultDataServiceConfiguration()
+    return findScenarioRunById(organizationId, scenariorunId, withStateInformation = true)
+  }
 
   private fun findScenarioRunByIdOptional(
       organizationId: String,
@@ -299,11 +311,13 @@ class ScenarioRunServiceImpl(
   }
 
   override fun getScenarioRunLogs(organizationId: String, scenariorunId: String): ScenarioRunLogs {
+    checkInternalResultDataServiceConfiguration()
     val scenarioRun = findScenarioRunById(organizationId, scenariorunId)
     return workflowService.getScenarioRunLogs(scenarioRun)
   }
 
   override fun getScenarioRunCumulatedLogs(organizationId: String, scenariorunId: String): String {
+    checkInternalResultDataServiceConfiguration()
     val scenarioRun = findScenarioRunById(organizationId, scenariorunId)
     val scenarioRunCumulatedLogs = workflowService.getScenarioRunCumulatedLogs(scenarioRun)
     logger.trace(scenarioRunCumulatedLogs)
@@ -317,6 +331,7 @@ class ScenarioRunServiceImpl(
       page: Int?,
       size: Int?
   ): List<ScenarioRun> {
+    checkInternalResultDataServiceConfiguration()
     val defaultPageSize = csmPlatformProperties.twincache.scenariorun.defaultPageSize
     var pageable = constructPageRequest(page, size, defaultPageSize)
     // This call verify by itself that we have the read authorization in the scenario
@@ -342,6 +357,7 @@ class ScenarioRunServiceImpl(
       page: Int?,
       size: Int?
   ): List<ScenarioRun> {
+    checkInternalResultDataServiceConfiguration()
     // This call verify by itself that we have the read authorization in the workspace
     workspaceService.findWorkspaceById(organizationId, workspaceId)
     val defaultPageSize = csmPlatformProperties.twincache.scenariorun.defaultPageSize
@@ -482,6 +498,7 @@ class ScenarioRunServiceImpl(
       workspaceId: String,
       scenarioId: String
   ): ScenarioRun {
+    checkInternalResultDataServiceConfiguration()
     val scenario = scenarioApiService.findScenarioById(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_LAUNCH, scenarioPermissions)
 
@@ -577,6 +594,7 @@ class ScenarioRunServiceImpl(
       page: Int?,
       size: Int?
   ): List<ScenarioRun> {
+    checkInternalResultDataServiceConfiguration()
     // This call verify by itself that we have the read authorization in the organization
     organizationService.findOrganizationById(organizationId)
     val defaultPageSize = csmPlatformProperties.twincache.scenariorun.defaultPageSize
@@ -599,6 +617,7 @@ class ScenarioRunServiceImpl(
       organizationId: String,
       scenarioRunStartContainers: ScenarioRunStartContainers
   ): ScenarioRun {
+    checkInternalResultDataServiceConfiguration()
     val organization = organizationService.findOrganizationById(organizationId)
     csmRbac.verify(organization.getRbac(), PERMISSION_CREATE_CHILDREN)
     val scenarioRunRequest = workflowService.launchScenarioRun(scenarioRunStartContainers, null)
@@ -679,6 +698,7 @@ class ScenarioRunServiceImpl(
       organizationId: String,
       scenariorunId: String
   ): ScenarioRunStatus {
+    checkInternalResultDataServiceConfiguration()
     val scenarioRun =
         this.findScenarioRunById(organizationId, scenariorunId, withStateInformation = false)
     // This call verify by itself that we have the read authorization in the scenario
@@ -880,6 +900,7 @@ class ScenarioRunServiceImpl(
   }
 
   override fun stopScenarioRun(organizationId: String, scenariorunId: String): ScenarioRunStatus {
+    checkInternalResultDataServiceConfiguration()
     val scenarioRun = findScenarioRunById(organizationId, scenariorunId)
     var scenario =
         scenarioApiService.findScenarioById(
@@ -897,13 +918,10 @@ class ScenarioRunServiceImpl(
     return workflowService.stopWorkflow(findScenarioRunById(organizationId, scenariorunId))
   }
 
-  override fun getVerifiedScenarioRun(
-      organizationId: String,
-      workspaceId: String,
-      scenarioId: String,
-      requiredPermission: String
-  ): ScenarioRun {
-    TODO("Not yet implemented")
+  internal fun checkInternalResultDataServiceConfiguration() {
+    if (csmPlatformProperties.useInternalResultServices) {
+      throw NotImplementedException(notImplementedExceptionMessage)
+    }
   }
 
   private fun sendScenarioRunMetaData(
