@@ -19,14 +19,15 @@ class RunStorageConfig {
   @Value("\${csm.platform.storage.admin.password}")
   private lateinit var adminStoragePassword: String
 
-  @Value("\${csm.platform.storage.host}") private lateinit var storageHost: String
+  @Value("\${csm.platform.storage.host}") private lateinit var host: String
+  @Value("\${csm.platform.storage.port}") private lateinit var port: String
 
   private val jdbcdriverClass = "org.postgresql.Driver"
 
   @Bean
   fun adminRunStorageDatasource(): DriverManagerDataSource {
     val dataSource =
-        DriverManagerDataSource(storageHost, adminStorageUsername, adminStoragePassword)
+        DriverManagerDataSource("jdbc:postgresql://$host:$port/postgres", adminStorageUsername, adminStoragePassword)
     dataSource.setDriverClassName(jdbcdriverClass)
     return dataSource
   }
