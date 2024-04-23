@@ -19,18 +19,6 @@ class RunStorageConfig {
   @Value("\${csm.platform.storage.admin.password}")
   private lateinit var adminStoragePassword: String
 
-  @Value("\${csm.platform.storage.writer.username}")
-  private lateinit var writerStorageUsername: String
-
-  @Value("\${csm.platform.storage.writer.password}")
-  private lateinit var writerStoragePassword: String
-
-  @Value("\${csm.platform.storage.reader.username}")
-  private lateinit var readerStorageUsername: String
-
-  @Value("\${csm.platform.storage.reader.password}")
-  private lateinit var readerStoragePassword: String
-
   @Value("\${csm.platform.storage.host}") private lateinit var storageHost: String
 
   private val jdbcdriverClass = "org.postgresql.Driver"
