@@ -109,6 +109,7 @@ class RunServiceImpl(
   @Value("\${csm.platform.storage.reader.password}")
   private lateinit var readerStoragePassword: String
 
+  @Value("\${csm.platform.storage.host}") private lateinit var host: String
   @Value("\${csm.platform.storage.port}") private lateinit var port: String
 
   private val notImplementedExceptionMessage =
@@ -167,9 +168,7 @@ class RunServiceImpl(
 
     val runtimeDS =
         DriverManagerDataSource(
-            "jdbc:postgresql://localhost:$port/$runId",
-            writerStorageUsername,
-            writerStoragePassword)
+            "jdbc:postgresql://$host:$port/$runId", writerStorageUsername, writerStoragePassword)
     runtimeDS.setDriverClassName("org.postgresql.Driver")
     val runDBJdbcTemplate = JdbcTemplate(runtimeDS)
     val connection = runDBJdbcTemplate.dataSource!!.connection
@@ -294,9 +293,7 @@ class RunServiceImpl(
   ): QueryResult {
     val runtimeDS =
         DriverManagerDataSource(
-            "jdbc:postgresql://localhost:$port/$runId",
-            readerStorageUsername,
-            readerStoragePassword)
+            "jdbc:postgresql://$host:$port/$runId", readerStorageUsername, readerStoragePassword)
     runtimeDS.setDriverClassName("org.postgresql.Driver")
 
     val runDBJdbcTemplate = JdbcTemplate(runtimeDS)
@@ -405,24 +402,12 @@ class RunServiceImpl(
     val runner = runStartRequest.runnerData as Runner
     val runId = idGenerator.generate("run", prependPrefix = "run-")
 
-    val startInfo =
-        containerFactory.getStartInfo(
-            runner.organizationId!!, runner.workspaceId!!, runner.id!!, WORKFLOW_TYPE_RUN, runId)
-    val runRequest =
-        workflowService.launchRun(
-            startInfo.startContainers,
-            startInfo.runTemplate.executionTimeout,
-            startInfo.solution.alwaysPull ?: false)
-    val run = this.dbCreateRun(runId, runner, startInfo, runRequest)
-
     if (csmPlatformProperties.useInternalResultServices) {
       adminRunStorageTemplate.createDB(runId)
 
       val runtimeDS =
           DriverManagerDataSource(
-              "jdbc:postgresql://localhost:$port/$runId",
-              adminStorageUsername,
-              adminStoragePassword)
+              "jdbc:postgresql://$host:$port/$runId", adminStorageUsername, adminStoragePassword)
       runtimeDS.setDriverClassName("org.postgresql.Driver")
       val runDBJdbcTemplate = JdbcTemplate(runtimeDS)
       val connection = runDBJdbcTemplate.dataSource!!.connection
@@ -446,6 +431,16 @@ class RunServiceImpl(
         connection.close()
       }
     }
+
+    val startInfo =
+        containerFactory.getStartInfo(
+            runner.organizationId!!, runner.workspaceId!!, runner.id!!, WORKFLOW_TYPE_RUN, runId)
+    val runRequest =
+        workflowService.launchRun(
+            startInfo.startContainers,
+            startInfo.runTemplate.executionTimeout,
+            startInfo.solution.alwaysPull ?: false)
+    val run = this.dbCreateRun(runId, runner, startInfo, runRequest)
     runStartRequest.response = run.id
   }
 
