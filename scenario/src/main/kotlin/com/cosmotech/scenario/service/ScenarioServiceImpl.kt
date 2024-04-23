@@ -360,13 +360,11 @@ internal class ScenarioServiceImpl(
     var pageable = constructPageRequest(page, size, defaultPageSize)
     if (pageable != null) {
       return this.findPaginatedScenariosStateOption(
-              organizationId, workspaceId, pageable.pageNumber, pageable.pageSize, true)
-          .addLastRunsInfo(this, organizationId, workspaceId)
+          organizationId, workspaceId, pageable.pageNumber, pageable.pageSize, true)
     }
     return findAllPaginated(defaultPageSize) {
       this.findPaginatedScenariosStateOption(
               organizationId, workspaceId, it.pageNumber, it.pageSize, true)
-          .addLastRunsInfo(this, organizationId, workspaceId)
           .toMutableList()
     }
   }
@@ -496,9 +494,7 @@ internal class ScenarioServiceImpl(
       workspaceId: String,
       scenarioId: String
   ): Scenario {
-    val scenario =
-        this.findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
-            .addLastRunsInfo(this, organizationId, workspaceId)
+    val scenario = this.findScenarioByIdNoState(organizationId, workspaceId, scenarioId)
     csmRbac.verify(scenario.getRbac(), PERMISSION_READ, scenarioPermissions)
     this.addStateToScenario(organizationId, scenario)
     return scenario
@@ -604,8 +600,7 @@ internal class ScenarioServiceImpl(
     do {
       val scenarioList =
           this.findPaginatedScenariosStateOption(
-                  organizationId, workspaceId, pageable.pageNumber, pageable.pageSize, true)
-              .addLastRunsInfo(this, organizationId, workspaceId)
+              organizationId, workspaceId, pageable.pageNumber, pageable.pageSize, true)
       scenarioTree.addAll(scenarioList)
       pageable = pageable.next()
     } while (scenarioList.isNotEmpty())
