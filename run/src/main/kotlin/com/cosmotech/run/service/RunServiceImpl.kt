@@ -371,8 +371,9 @@ class RunServiceImpl(
     val run = this.getRun(organizationId, workspaceId, runnerId, runId)
     run.hasPermission(PERMISSION_DELETE)
     try {
+
+      if (csmPlatformProperties.useInternalResultServices) adminRunStorageTemplate.dropDB(runId)
       runRepository.delete(run)
-      adminRunStorageTemplate.dropDB(runId)
     } catch (exception: IllegalStateException) {
       logger.debug(
           "An error occured while deleteting Run {}: {}", run.id, exception.message, exception)
