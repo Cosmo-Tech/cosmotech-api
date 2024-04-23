@@ -152,7 +152,8 @@ class RunServiceImpl(
     data.forEach { dataLine ->
       dataLine.keys.forEach { key ->
         // Get weight for a given column
-        val keyWeight = jsonTypeMapWeight.getOrDefault(dataLine[key]!!::class.simpleName, CONFLICT_KEY_WEIGHT)
+        val keyWeight =
+            jsonTypeMapWeight.getOrDefault(dataLine[key]!!::class.simpleName, CONFLICT_KEY_WEIGHT)
         if (!dataKeyWeight.containsKey(key)) dataKeyWeight[key] = keyWeight!!
         // If a conflict exists between 2 values in a same column use default value instead
         else if (dataKeyWeight[key] != keyWeight) dataKeyWeight[key] = CONFLICT_KEY_WEIGHT
@@ -256,11 +257,11 @@ class RunServiceImpl(
 
       logger.debug("Inserted ${data.size} rows in table $dataTableName for run $runId")
       connection.commit()
-      connection.close()
     } catch (e: SQLException) {
       connection.rollback()
-      connection.close()
       throw e
+    } finally {
+      connection.close()
     }
     return RunData(
         databaseName = runId, tableName = tableName.toDataTableName(isProbeData), data = data)
@@ -278,7 +279,8 @@ class RunServiceImpl(
     val run = getRun(organizationId, workspaceId, runnerId, runId)
     run.hasPermission(PERMISSION_WRITE)
 
-    if (sendRunDataRequest.data!!.isEmpty()) throw IllegalArgumentException("Data field cannot be empty")
+    if (sendRunDataRequest.data!!.isEmpty())
+        throw IllegalArgumentException("Data field cannot be empty")
 
     return this.sendDataToStorage(runId, sendRunDataRequest.id!!, sendRunDataRequest.data)
   }
@@ -413,27 +415,37 @@ class RunServiceImpl(
             startInfo.solution.alwaysPull ?: false)
     val run = this.dbCreateRun(runId, runner, startInfo, runRequest)
 
-    adminRunStorageTemplate.createDB(runId)
+    if (csmPlatformProperties.useInternalResultServices) {
+      adminRunStorageTemplate.createDB(runId)
 
-    val runtimeDS =
-        DriverManagerDataSource(
-            "jdbc:postgresql://localhost:$port/$runId", adminStorageUsername, adminStoragePassword)
-    runtimeDS.setDriverClassName("org.postgresql.Driver")
-    val runDBJdbcTemplate = JdbcTemplate(runtimeDS)
-    val connection = runDBJdbcTemplate.dataSource!!.connection
-    connection.autoCommit = false
-    connection
-        .prepareStatement("GRANT CONNECT ON DATABASE \"$runId\" TO $readerStorageUsername")
-        .executeUpdate()
-    connection
-        .prepareStatement("GRANT CONNECT ON DATABASE \"$runId\" TO $writerStorageUsername")
-        .executeUpdate()
+      val runtimeDS =
+          DriverManagerDataSource(
+              "jdbc:postgresql://localhost:$port/$runId",
+              adminStorageUsername,
+              adminStoragePassword)
+      runtimeDS.setDriverClassName("org.postgresql.Driver")
+      val runDBJdbcTemplate = JdbcTemplate(runtimeDS)
+      val connection = runDBJdbcTemplate.dataSource!!.connection
+      try {
+        connection.autoCommit = false
+        connection
+            .prepareStatement("GRANT CONNECT ON DATABASE \"$runId\" TO $readerStorageUsername")
+            .executeUpdate()
+        connection
+            .prepareStatement("GRANT CONNECT ON DATABASE \"$runId\" TO $writerStorageUsername")
+            .executeUpdate()
 
-    connection
-        .prepareStatement("GRANT CREATE ON SCHEMA public to $writerStorageUsername")
-        .executeUpdate()
-    connection.commit()
-    connection.close()
+        connection
+            .prepareStatement("GRANT CREATE ON SCHEMA public to $writerStorageUsername")
+            .executeUpdate()
+        connection.commit()
+      } catch (e: SQLException) {
+        connection.rollback()
+        throw e
+      } finally {
+        connection.close()
+      }
+    }
     runStartRequest.response = run.id
   }
 
