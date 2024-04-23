@@ -5,7 +5,10 @@ package com.cosmotech.run.service.amqp
 import com.cosmotech.api.events.RunStart
 import com.cosmotech.api.events.WorkspaceDeleted
 import com.cosmotech.run.config.RabbitMqConfigModel
+import com.cosmotech.run.service.RunServiceImpl
 import com.cosmotech.runner.domain.Runner
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import java.io.BufferedReader
 import java.io.ByteArrayInputStream
 import java.io.InputStreamReader
@@ -22,12 +25,21 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
 
+@Suppress("ConstructorParameterNaming")
+data class ProbeMessage(
+    val simulation: Map<String, Any>,
+    val probe: Map<String, Any>,
+    val facts_common: Map<String, Any>,
+    val facts: List<Map<String, Any>>
+)
+
 @Service
 @ConditionalOnExpression("'\${csm.platform.use-internal-result-services}' == 'true'")
 class AmqpClientServiceImpl(
     private val rabbitAdmin: RabbitAdmin,
     private val rabbitListenerEndpointRegistry: RabbitListenerEndpointRegistry,
-    private val rabbitMqConfigModel: RabbitMqConfigModel
+    private val rabbitMqConfigModel: RabbitMqConfigModel,
+    private val runServiceImpl: RunServiceImpl
 ) : AmqpClientServiceInterface {
 
   private val logger = LoggerFactory.getLogger(AmqpClientServiceImpl::class.java)
@@ -50,15 +62,27 @@ class AmqpClientServiceImpl(
       concurrency = "5")
   fun receive(message: Message) {
     logger.debug("Message received...")
+    val gson = Gson()
+    val mapAdapter = gson.getAdapter(object : TypeToken<ProbeMessage>() {})
     val messageRead =
-        ByteArrayInputStream(message.body).use { bais ->
-          GZIPInputStream(bais).use { gis ->
-            InputStreamReader(gis, Charsets.UTF_8).use { isr ->
-              BufferedReader(isr).use { bfr -> bfr.readText() }
-            }
-          }
-        }
-    logger.debug("Message read: $messageRead")
+        mapAdapter.fromJson(
+            ByteArrayInputStream(message.body).use { bais ->
+              GZIPInputStream(bais).use { gis ->
+                InputStreamReader(gis, Charsets.UTF_8).use { isr ->
+                  BufferedReader(isr).use { bfr -> bfr.readText() }
+                }
+              }
+            })
+    val data = mutableListOf<Map<String, Any>>()
+    messageRead.facts.forEach { it ->
+      val row = (it + messageRead.facts_common).toMutableMap()
+      row["probe.name"] = messageRead.probe["name"].toString()
+      row["probe.run"] = messageRead.probe["run"]!!
+      data.add(row)
+    }
+    val runId = messageRead.simulation["run"].toString()
+    val tableName = messageRead.probe["type"].toString()
+    runServiceImpl.sendDataToStorage(runId, tableName, data, true)
   }
 
   override fun addNewQueue(exchangeName: String, queueName: String) {
