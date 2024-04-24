@@ -35,11 +35,12 @@ import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.service.getRbac
 import com.google.gson.Gson
+import com.google.gson.JsonParser
 import com.google.gson.reflect.TypeToken
 import java.sql.SQLException
 import java.time.Instant
 import org.apache.commons.lang3.NotImplementedException
-import org.json.JSONObject
+import org.postgresql.util.PGobject
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.PageRequest
@@ -251,7 +252,9 @@ class RunServiceImpl(
         // insert all values as pure data into the statement ensuring no SQL can be executed
         // inside the query
         dataLine.keys.forEachIndexed { index, key ->
-          insertPreparedStatement.setString(index + 1, gson.toJson(dataLine[key]))
+          if (dataKeyType[key] == JSON_POSTGRESQL_TYPE)
+              insertPreparedStatement.setString(index + 1, gson.toJson(dataLine[key]))
+          else insertPreparedStatement.setObject(index + 1, dataLine[key])
         }
         insertPreparedStatement.executeUpdate()
       }
@@ -287,21 +290,19 @@ class RunServiceImpl(
   }
 
   override fun queryRunData(
-    organizationId: String,
-    workspaceId: String,
-    runnerId: String,
-    runId: String,
-    runDataQuery: RunDataQuery
+      organizationId: String,
+      workspaceId: String,
+      runnerId: String,
+      runId: String,
+      runDataQuery: RunDataQuery
   ): QueryResult {
 
     checkInternalResultDataServiceConfiguration()
     getRun(organizationId, workspaceId, runnerId, runId)
 
     val runtimeDS =
-      DriverManagerDataSource(
-        "jdbc:postgresql://$host:$port/$runId",
-        readerStorageUsername,
-        readerStoragePassword)
+        DriverManagerDataSource(
+            "jdbc:postgresql://$host:$port/$runId", readerStorageUsername, readerStoragePassword)
     runtimeDS.setDriverClassName("org.postgresql.Driver")
 
     val runDBJdbcTemplate = JdbcTemplate(runtimeDS)
@@ -310,19 +311,26 @@ class RunServiceImpl(
     val preparedStatement = connection.prepareStatement(runDataQuery.query)
     val queryResults = preparedStatement.executeQuery()
 
-    val gson = Gson()
-    val mapAdapter = gson.getAdapter(object : TypeToken<Map<String, Any?>>() {})
     val results = mutableListOf<Map<String, Any>>()
-
+    val gson = Gson()
+    val mapAdapter = gson.getAdapter(object : TypeToken<Map<String, Any>>() {})
+    val arrayAdapter = gson.getAdapter(object : TypeToken<Array<Any>>() {})
     while (queryResults.next()) {
-      var row = "{"
+      val row = mutableMapOf<String, Any>()
       for (i in 1..queryResults.metaData.columnCount) {
-        row += "\"${queryResults.metaData.getColumnName(i)}\": ${queryResults.getString(i)},"
+        if (queryResults.getObject(i) == null) continue
+
+        val resultValue = queryResults.getObject(i)
+        if (resultValue is PGobject) {
+          val parsedValue = JsonParser.parseString(resultValue.value)
+
+          if (parsedValue.isJsonObject)
+              row[queryResults.metaData.getColumnName(i)] = mapAdapter.fromJson(resultValue.value)
+          else
+              row[queryResults.metaData.getColumnName(i)] = arrayAdapter.fromJson(resultValue.value)
+        } else row[queryResults.metaData.getColumnName(i)] = resultValue
       }
-      row = row.substring(0, row.length - 1) + "}"
-      logger.debug("ROW: $row")
-      val rowInsert = mapAdapter.fromJson(row) as Map<String, Any>
-      results.add(rowInsert)
+      results.add(row)
     }
 
     return QueryResult(results)
