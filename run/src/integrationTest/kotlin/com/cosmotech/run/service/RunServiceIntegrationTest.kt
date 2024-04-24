@@ -76,7 +76,7 @@ import org.springframework.test.util.ReflectionTestUtils
 @ExtendWith(SpringExtension::class)
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class RunServiceIntegrationTest : CsmPostgresTestBase() {
+class RunServiceIntegrationTest : CsmRunTestBase() {
 
   @Autowired lateinit var csmPlatformProperties: CsmPlatformProperties
 
@@ -403,14 +403,13 @@ class RunServiceIntegrationTest : CsmPostgresTestBase() {
               organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, solutionSaved.id!!)
       assertTrue(adminRunStorageTemplate.existDB(runSavedId))
 
-      val uri =
-          csmPlatformProperties.storage.host.replaceAfter(
-              "${csmPlatformProperties.storage.port}", "")
+      val internalResultServices = csmPlatformProperties.internalResultServices!!
       val runtimeDS =
           DriverManagerDataSource(
-              "$uri/$runSavedId",
-              csmPlatformProperties.storage.reader.username,
-              csmPlatformProperties.storage.reader.password)
+              "jdbc:postgresql://${internalResultServices.storage.host}:${internalResultServices.storage.port}" +
+                  "/$runSavedId",
+              internalResultServices.storage.reader.username,
+              internalResultServices.storage.reader.password)
       runtimeDS.setDriverClassName("org.postgresql.Driver")
       readerRunStorageTemplate = JdbcTemplate(runtimeDS)
     }

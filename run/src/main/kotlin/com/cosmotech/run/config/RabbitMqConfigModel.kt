@@ -7,12 +7,15 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-@ConditionalOnExpression("'\${csm.platform.use-internal-result-services}' == 'true'")
+@ConditionalOnExpression("'\${csm.platform.internalResultServices.enabled}' == 'true'")
 class RabbitMqConfigModel {
 
-  @Value("\${csm.platform.eventbus.default-exchange}") lateinit var exchange: String
+  @Value("\${csm.platform.internalResultServices.eventbus.default-exchange}")
+  lateinit var exchange: String
 
-  @Value("\${csm.platform.eventbus.default-queue}") lateinit var queue: String
+  @Value("\${csm.platform.internalResultServices.eventbus.default-queue}")
+  lateinit var queue: String
 
-  @Value("\${csm.platform.eventbus.default-routing-key}") lateinit var routingKey: String
+  @Value("\${csm.platform.internalResultServices.eventbus.default-routing-key}")
+  lateinit var routingKey: String
 }

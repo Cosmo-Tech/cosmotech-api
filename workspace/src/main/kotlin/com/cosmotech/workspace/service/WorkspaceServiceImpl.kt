@@ -211,7 +211,7 @@ internal class WorkspaceServiceImpl(
       workspace.linkedDatasetIdList?.forEach { unlinkDataset(organizationId, workspaceId, it) }
     } finally {
       workspaceRepository.delete(workspace)
-      if (csmPlatformProperties.useInternalResultServices) {
+      if (csmPlatformProperties.internalResultServices?.enabled == true) {
         this.eventPublisher.publishEvent(WorkspaceDeleted(this, organizationId, workspaceId))
       }
     }
@@ -342,7 +342,7 @@ internal class WorkspaceServiceImpl(
       val workspaces = workspaceRepository.findByOrganizationId(organizationId, pageable).toList()
       workspaces.forEach {
         workspaceRepository.delete(it)
-        if (csmPlatformProperties.useInternalResultServices) {
+        if (csmPlatformProperties.internalResultServices?.enabled == true) {
           this.eventPublisher.publishEvent(WorkspaceDeleted(this, organizationId, it.id!!))
         }
       }

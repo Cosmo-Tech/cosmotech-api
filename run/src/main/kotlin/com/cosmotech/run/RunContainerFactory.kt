@@ -259,12 +259,16 @@ class RunContainerFactory(
 
     val envVars: MutableMap<String, String> = mutableMapOf()
 
-    if (csmPlatformProperties.useInternalResultServices) {
+    if (csmPlatformProperties.internalResultServices?.enabled == true) {
+      val internalServiceInfo = csmPlatformProperties.internalResultServices!!
+      val eventHubUri =
+          "amqp://" +
+              "${internalServiceInfo.eventbus.host}:${internalServiceInfo.eventbus.port}/${workspace.id!!}"
       envVars.putAll(
           mapOf(
-              CSM_AMQPCONSUMER_USER_ENV_VAR to csmPlatformProperties.eventbus.sender.username,
-              CSM_AMQPCONSUMER_PASSWORD_ENV_VAR to csmPlatformProperties.eventbus.sender.password,
-              EVENT_HUB_MEASURES_VAR to constructEventBusUri(workspace.id!!)))
+              CSM_AMQPCONSUMER_USER_ENV_VAR to internalServiceInfo.eventbus.sender.username,
+              CSM_AMQPCONSUMER_PASSWORD_ENV_VAR to internalServiceInfo.eventbus.sender.password,
+              EVENT_HUB_MEASURES_VAR to eventHubUri))
     } else {
       logger.debug(
           "Get Event Hub env vars for workspace {} with dedicated namespace: {}",
@@ -307,10 +311,6 @@ class RunContainerFactory(
     }
 
     return envVars.toMap()
-  }
-
-  private fun constructEventBusUri(workspaceId: String): String {
-    return "amqp://${csmPlatformProperties.eventbus.host}:${csmPlatformProperties.eventbus.port}/$workspaceId"
   }
 
   private fun getImageName(registry: String, repository: String?, version: String? = null): String {

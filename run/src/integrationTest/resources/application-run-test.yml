@@ -1,4 +1,9 @@
 spring:
+  rabbitmq:
+    host: "localhost"
+    port: 5672
+    username: "user_rabbit"
+    password: "pwd_rabbit"
   data:
     redis:
       host: "localhost"
@@ -121,29 +126,31 @@ csm:
       password: "my-wonderful-password"
       scenariorun:
         default-page-size: 5
-    storage:
-      host: "localhost"
-      port: "5432"
-      reader:
-        username: "user1"
-        password: "pwd1"
-      writer:
-        username: "user2"
-        password: "pwd2"
-      admin:
-        username: "user3"
-        password: "pwd3"
-    eventbus:
-      host: "localhost"
-      default-exchange: "csm-exchange"
-      default-queue: "csm"
-      default-routing-key: "csm"
-      sender:
-        username: "user3"
-        password: "pwd3"
-      listener:
-        username: "user4"
-        password: "pwd4"
+    internalResultServices:
+      enabled: true
+      storage:
+        host: "localhost"
+        port: "5432"
+        reader:
+          username: "user1"
+          password: "pwd1"
+        writer:
+          username: "user2"
+          password: "pwd2"
+        admin:
+          username: "user3"
+          password: "pwd3"
+      eventbus:
+        host: "localhost"
+        default-exchange: "csm-exchange"
+        default-queue: "csm"
+        default-routing-key: "csm"
+        sender:
+          username: "user3"
+          password: "pwd3"
+        listener:
+          username: "user4"
+          password: "pwd4"
     rbac:
       enabled: true
     containerRegistry:

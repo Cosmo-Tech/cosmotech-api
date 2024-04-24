@@ -91,26 +91,26 @@ class RunServiceImpl(
     private val adminRunStorageTemplate: JdbcTemplate
 ) : CsmPhoenixService(), RunApiServiceInterface {
 
-  @Value("\${csm.platform.storage.admin.username}")
+  @Value("\${csm.platform.internalResultServices.storage.admin.username}")
   private lateinit var adminStorageUsername: String
 
-  @Value("\${csm.platform.storage.admin.password}")
+  @Value("\${csm.platform.internalResultServices.storage.admin.password}")
   private lateinit var adminStoragePassword: String
 
-  @Value("\${csm.platform.storage.writer.username}")
+  @Value("\${csm.platform.internalResultServices.storage.writer.username}")
   private lateinit var writerStorageUsername: String
 
-  @Value("\${csm.platform.storage.writer.password}")
+  @Value("\${csm.platform.internalResultServices.storage.writer.password}")
   private lateinit var writerStoragePassword: String
 
-  @Value("\${csm.platform.storage.reader.username}")
+  @Value("\${csm.platform.internalResultServices.storage.reader.username}")
   private lateinit var readerStorageUsername: String
 
-  @Value("\${csm.platform.storage.reader.password}")
+  @Value("\${csm.platform.internalResultServices.storage.reader.password}")
   private lateinit var readerStoragePassword: String
 
-  @Value("\${csm.platform.storage.host}") private lateinit var host: String
-  @Value("\${csm.platform.storage.port}") private lateinit var port: String
+  @Value("\${csm.platform.internalResultServices.storage.host}") private lateinit var host: String
+  @Value("\${csm.platform.internalResultServices.storage.port}") private lateinit var port: String
 
   private val notImplementedExceptionMessage =
       "The API is configured to use the external result data service. " +
@@ -372,7 +372,8 @@ class RunServiceImpl(
     run.hasPermission(PERMISSION_DELETE)
     try {
 
-      if (csmPlatformProperties.useInternalResultServices) adminRunStorageTemplate.dropDB(runId)
+      if (csmPlatformProperties.internalResultServices?.enabled == true)
+          adminRunStorageTemplate.dropDB(runId)
       runRepository.delete(run)
     } catch (exception: IllegalStateException) {
       logger.debug(
@@ -403,7 +404,7 @@ class RunServiceImpl(
     val runner = runStartRequest.runnerData as Runner
     val runId = idGenerator.generate("run", prependPrefix = "run-")
 
-    if (csmPlatformProperties.useInternalResultServices) {
+    if (csmPlatformProperties.internalResultServices?.enabled == true) {
       adminRunStorageTemplate.createDB(runId)
 
       val runtimeDS =
@@ -503,7 +504,7 @@ class RunServiceImpl(
   }
 
   internal fun checkInternalResultDataServiceConfiguration() {
-    if (!csmPlatformProperties.useInternalResultServices) {
+    if (csmPlatformProperties.internalResultServices?.enabled != true) {
       throw NotImplementedException(notImplementedExceptionMessage)
     }
   }
