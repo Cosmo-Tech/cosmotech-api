@@ -6,10 +6,10 @@ logging:
 
 spring:
   rabbitmq:
-    host: ${csm.platform.eventbus.host}
-    port: ${csm.platform.eventbus.port}
-    password: ${csm.platform.eventbus.listener.password}
-    username: ${csm.platform.eventbus.listener.username}
+    host: ${csm.platform.internalResultServices.eventbus.host:}
+    port: ${csm.platform.internalResultServices.eventbus.port:}
+    password: ${csm.platform.internalResultServices.eventbus.listener.password:}
+    username: ${csm.platform.internalResultServices.eventbus.listener.username:}
   data:
     redis:
       host: ${csm.platform.twincache.host}
@@ -84,30 +84,32 @@ csm:
         maxResult: 200
       scenario:
         maxResult: 200
-    storage:
-      host: "localhost"
-      port: 5432
-      reader:
-        username: "storage_reader_username"
-        password: "storage_reader_password"
-      writer:
-        username: "storage_writer_username"
-        password: "storage_writer_password"
-      admin:
-        username: "storage_admin_username"
-        password: "storage_admin_password"
-    eventbus:
-      host: "localhost"
-      port: 5672
-      default-exchange: "csm-exchange"
-      default-queue: "csm"
-      default-routing-key: "csm"
-      listener:
-        username: "eventbus_admin_username"
-        password: "eventbus_admin_password"
-      sender:
-        username: "eventbus_sender_username"
-        password: "eventbus_sender_password"
+    internalResultServices:
+      enabled: false
+      storage:
+        host: "localhost"
+        port: 5432
+        reader:
+          username: "storage_reader_username"
+          password: "storage_reader_password"
+        writer:
+          username: "storage_writer_username"
+          password: "storage_writer_password"
+        admin:
+          username: "storage_admin_username"
+          password: "storage_admin_password"
+      eventbus:
+        host: "localhost"
+        port: 5672
+        default-exchange: "csm-exchange"
+        default-queue: "csm"
+        default-routing-key: "csm"
+        listener:
+          username: "eventbus_admin_username"
+          password: "eventbus_admin_password"
+        sender:
+          username: "eventbus_sender_username"
+          password: "eventbus_sender_password"
     argo:
       base-uri: "https://localhost:2746"
       image-pull-secrets: []
