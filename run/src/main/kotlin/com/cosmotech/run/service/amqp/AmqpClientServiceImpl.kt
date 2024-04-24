@@ -34,7 +34,7 @@ data class ProbeMessage(
 )
 
 @Service
-@ConditionalOnExpression("'\${csm.platform.use-internal-result-services}' == 'true'")
+@ConditionalOnExpression("'\${csm.platform.internalResultServices.enabled}' == 'true'")
 class AmqpClientServiceImpl(
     private val rabbitAdmin: RabbitAdmin,
     private val rabbitListenerEndpointRegistry: RabbitListenerEndpointRegistry,
@@ -57,8 +57,8 @@ class AmqpClientServiceImpl(
   }
 
   @RabbitListener(
-      id = "\${csm.platform.eventbus.default-exchange}",
-      queues = ["\${csm.platform.eventbus.default-queue}"],
+      id = "\${csm.platform.internalResultServices.eventbus.default-exchange}",
+      queues = ["\${csm.platform.internalResultServices.eventbus.default-queue}"],
       concurrency = "5")
   fun receive(message: Message) {
     logger.debug("Message received...")
