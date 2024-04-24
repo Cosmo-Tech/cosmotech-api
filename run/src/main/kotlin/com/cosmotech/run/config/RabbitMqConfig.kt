@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.messaging.handler.annotation.support.DefaultMessageHandlerMethodFactory
 
 @Configuration
-@ConditionalOnExpression("'\${csm.platform.use_internal_result_services}' == 'true'")
+@ConditionalOnExpression("'\${csm.platform.internalResultServices.enabled}' == 'true'")
 class RabbitMqConfig(
     val connectionFactory: ConnectionFactory,
     val rabbitMqConfigModel: RabbitMqConfigModel

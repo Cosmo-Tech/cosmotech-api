@@ -919,7 +919,7 @@ class ScenarioRunServiceImpl(
   }
 
   internal fun checkInternalResultDataServiceConfiguration() {
-    if (csmPlatformProperties.useInternalResultServices) {
+    if (csmPlatformProperties.internalResultServices?.enabled == true) {
       throw NotImplementedException(notImplementedExceptionMessage)
     }
   }
