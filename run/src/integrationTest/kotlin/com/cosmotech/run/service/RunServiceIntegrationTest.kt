@@ -24,6 +24,7 @@ import com.cosmotech.run.config.existDB
 import com.cosmotech.run.config.existTable
 import com.cosmotech.run.config.toDataTableName
 import com.cosmotech.run.domain.Run
+import com.cosmotech.run.domain.RunDataQuery
 import com.cosmotech.run.domain.SendRunDataRequest
 import com.cosmotech.run.workflow.WorkflowService
 import com.cosmotech.runner.RunnerApiServiceInterface
@@ -61,6 +62,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runner.RunWith
+import org.postgresql.util.PSQLException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -70,6 +72,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
+import kotlin.test.assertContentEquals
 
 @ActiveProfiles(profiles = ["run-test"])
 @ExtendWith(MockKExtension::class)
@@ -537,6 +540,127 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
                 runSavedId,
                 requestBody)
           }
+    }
+
+    val data =
+        listOf(
+            mapOf("col1" to "value1", "col2" to "value2"),
+            mapOf("col1" to 1, "col2" to 2),
+            mapOf(
+                "col1" to """{"value4":"param4"}""",
+                "col2" to """{"value10w":"param10"}"""))
+
+    @Test
+    fun `should get all entries`() {
+      val requestBody = SendRunDataRequest(id = runSavedId, data = data)
+          runApiService.sendRunData(
+          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
+      val queryResult =
+          runApiService.queryRunData(
+              organizationSaved.id!!,
+              workspaceSaved.id!!,
+              runnerSaved.id!!,
+              runSavedId,
+              RunDataQuery("SELECT col1, col2 FROM \"${runSavedId.toDataTableName(false)}\""))
+      val expectedResult =
+        listOf(
+        JSONObject("""{"col1":"value1","col2":"value2"}"""),
+        JSONObject("""{"col1":1, "col2":2}"""),
+        JSONObject("""{"col1":{"value4":"param4"},"col2":{"value10":"param10"}}"""))
+      /*expectedResult.forEachIndexed { index, it ->
+        assert(it.similar(queryResult.result!![index]))}*/
+      assertEquals(expectedResult, queryResult.result!!)
+    }
+
+    @Test
+    fun `should throw table do not exist`() {
+      val requestBody = SendRunDataRequest(id = runSavedId, data = data)
+      runApiService.sendRunData(
+          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
+      val exception =
+          assertThrows<PSQLException> {
+            runApiService.queryRunData(
+                organizationSaved.id!!,
+                workspaceSaved.id!!,
+                runnerSaved.id!!,
+                runSavedId,
+                RunDataQuery("SELECT * FROM \"${runSavedId.toDataTableName(false)}2\""))
+          }
+      assertEquals(
+          "ERROR: relation \"${runSavedId.toDataTableName(false)}2\" does not exist\n  Position: 15",
+          exception.message)
+    }
+
+    @Test
+    fun `should not allow command other than select`() {
+
+      // TODO make a more generic test
+
+      val requestBody = SendRunDataRequest(id = runSavedId, data = data)
+      runApiService.sendRunData(
+          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
+      var e =
+          assertThrows<PSQLException> {
+            runApiService.queryRunData(
+                organizationSaved.id!!,
+                workspaceSaved.id!!,
+                runnerSaved.id!!,
+                runSavedId,
+                RunDataQuery("DROP TABLE \"${runSavedId.toDataTableName(false)}\""))
+          }
+      assertEquals("ERROR: must be owner of table ${runSavedId.toDataTableName(false)}", e.message)
+      e =
+          assertThrows<PSQLException> {
+            runApiService.queryRunData(
+                organizationSaved.id!!,
+                workspaceSaved.id!!,
+                runnerSaved.id!!,
+                runSavedId,
+                RunDataQuery(
+                    "CREATE TABLE \"${runSavedId.toDataTableName(false)}\" (id VARCHAR(100))"))
+          }
+      assertEquals("ERROR: permission denied for schema public\n" + "  Position: 14", e.message)
+    }
+
+    @Test
+    fun `should get all tables in dB`() {
+      val requestBody = SendRunDataRequest(id = runSavedId, data = data)
+      val secondRunId = mockStartRun(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, solutionSaved.id!!)
+      val thirdRunId = mockStartRun(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, solutionSaved.id!!)
+      runSavedId =
+        mockStartRun(
+          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, solutionSaved.id!!)
+      runApiService.sendRunData(
+          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
+      runApiService.sendRunData(
+          organizationSaved.id!!,
+          workspaceSaved.id!!,
+          runnerSaved.id!!,
+          secondRunId,
+          requestBody)
+      runApiService.sendRunData(
+          organizationSaved.id!!,
+          workspaceSaved.id!!,
+          runnerSaved.id!!,
+        thirdRunId,
+          requestBody)
+      val queryResult =
+          runApiService.queryRunData(
+              organizationSaved.id!!,
+              workspaceSaved.id!!,
+              runnerSaved.id!!,
+              runSavedId,
+              RunDataQuery(
+                  "SELECT tablename\n" +
+                      "FROM pg_catalog.pg_tables\n" +
+                      "WHERE schemaname = 'public'\n" +
+                      "ORDER BY tablename ASC;"))
+      val expectedResult =
+          listOf(
+              runSavedId.toDataTableName(false),
+              (secondRunId).toDataTableName(false),
+              (thirdRunId).toDataTableName(false))
+      assertEquals(expectedResult, queryResult.result)
     }
   }
 }
