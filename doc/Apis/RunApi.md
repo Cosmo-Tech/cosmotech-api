@@ -9,7 +9,7 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 | [**getRunLogs**](RunApi.md#getRunLogs) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/logs | get the logs for the Run |
 | [**getRunStatus**](RunApi.md#getRunStatus) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/status | get the status for the Run |
 | [**listRuns**](RunApi.md#listRuns) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs | get the list of Runs for the Runner |
-| [**queryRunData**](RunApi.md#queryRunData) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/results/query | query the runDatas |
+| [**queryRunData**](RunApi.md#queryRunData) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/results/query | query the run data |
 | [**sendRunData**](RunApi.md#sendRunData) | **POST** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/data/send | Send data associated to a run |
 
 
@@ -158,7 +158,7 @@ get the list of Runs for the Runner
 # **queryRunData**
 > QueryResult queryRunData(organization\_id, workspace\_id, runner\_id, run\_id, RunDataQuery)
 
-query the runDatas
+query the run data
 
 ### Parameters
 

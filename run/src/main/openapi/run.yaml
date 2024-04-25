@@ -241,7 +241,7 @@ paths:
       operationId: queryRunData
       tags:
         - run
-      summary: query the runDatas
+      summary: query the run data
       requestBody:
         description: the query to run
         required: true
