@@ -54,8 +54,10 @@ fun JdbcTemplate.existTable(name: String): Boolean {
 fun String.toDataTableName(isProbeData: Boolean): String =
     if (isProbeData) "P_$this" else "CD_$this"
 
-fun JdbcTemplate.createDB(name: String): String {
+fun JdbcTemplate.createDB(name: String, comment: String? = null): String {
   this.execute("CREATE DATABASE \"$name\"")
+  if (comment != null)
+    this.execute("COMMENT ON DATABASE \"$name\" IS `$comment`")
   return name
 }
 
