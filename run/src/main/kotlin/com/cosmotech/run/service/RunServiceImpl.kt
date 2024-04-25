@@ -436,7 +436,9 @@ class RunServiceImpl(
     val runId = idGenerator.generate("run", prependPrefix = "run-")
 
     if (csmPlatformProperties.internalResultServices?.enabled == true) {
-      adminRunStorageTemplate.createDB(runId)
+      val dbComment =
+          "organizationId=${runner.organizationId!!}, workspaceId=${runner.workspaceId!!}, runnerId=${runner.id!!}"
+      adminRunStorageTemplate.createDB(runId, dbComment)
 
       val runtimeDS =
           DriverManagerDataSource(
