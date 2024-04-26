@@ -48,8 +48,10 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import java.math.BigDecimal
 import java.sql.SQLException
 import java.util.*
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
@@ -72,7 +74,6 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
-import kotlin.test.assertContentEquals
 
 @ActiveProfiles(profiles = ["run-test"])
 @ExtendWith(MockKExtension::class)
@@ -542,18 +543,15 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
           }
     }
 
-    val data =
-        listOf(
-            mapOf("col1" to "value1", "col2" to "value2"),
-            mapOf("col1" to 1, "col2" to 2),
-            mapOf(
-                "col1" to """{"value4":"param4"}""",
-                "col2" to """{"value10w":"param10"}"""))
-
     @Test
     fun `should get all entries`() {
+      val data =
+          listOf(
+              mapOf("param1" to "value1"),
+              mapOf("param2" to 2),
+              mapOf("param3" to mapOf("param4" to "value4")))
       val requestBody = SendRunDataRequest(id = runSavedId, data = data)
-          runApiService.sendRunData(
+      runApiService.sendRunData(
           organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
       val queryResult =
           runApiService.queryRunData(
@@ -561,19 +559,22 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
               workspaceSaved.id!!,
               runnerSaved.id!!,
               runSavedId,
-              RunDataQuery("SELECT col1, col2 FROM \"${runSavedId.toDataTableName(false)}\""))
+              RunDataQuery("SELECT * FROM \"${runSavedId.toDataTableName(false)}\""))
       val expectedResult =
-        listOf(
-        JSONObject("""{"col1":"value1","col2":"value2"}"""),
-        JSONObject("""{"col1":1, "col2":2}"""),
-        JSONObject("""{"col1":{"value4":"param4"},"col2":{"value10":"param10"}}"""))
-      /*expectedResult.forEachIndexed { index, it ->
-        assert(it.similar(queryResult.result!![index]))}*/
-      assertEquals(expectedResult, queryResult.result!!)
+          listOf(
+              mapOf("param1" to "value1"),
+              mapOf("param2" to BigDecimal(2)),
+              mapOf("param3" to mapOf("param4" to "value4")))
+      assertContentEquals(expectedResult, queryResult.result!!)
     }
 
     @Test
     fun `should throw table do not exist`() {
+      val data =
+          listOf(
+              mapOf("param1" to "value1"),
+              mapOf("param2" to 2),
+              mapOf("param3" to mapOf("param4" to "value4")))
       val requestBody = SendRunDataRequest(id = runSavedId, data = data)
       runApiService.sendRunData(
           organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
@@ -593,9 +594,11 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
 
     @Test
     fun `should not allow command other than select`() {
-
-      // TODO make a more generic test
-
+      val data =
+          listOf(
+              mapOf("param1" to "value1"),
+              mapOf("param2" to 2),
+              mapOf("param3" to mapOf("param4" to "value4")))
       val requestBody = SendRunDataRequest(id = runSavedId, data = data)
       runApiService.sendRunData(
           organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
@@ -624,26 +627,20 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
 
     @Test
     fun `should get all tables in dB`() {
-      val requestBody = SendRunDataRequest(id = runSavedId, data = data)
-      val secondRunId = mockStartRun(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, solutionSaved.id!!)
-      val thirdRunId = mockStartRun(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, solutionSaved.id!!)
-      runSavedId =
-        mockStartRun(
-          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, solutionSaved.id!!)
+      val data =
+          listOf(
+              mapOf("param1" to "value1"),
+              mapOf("param2" to 2),
+              mapOf("param3" to mapOf("param4" to "value4")))
+      var requestBody = SendRunDataRequest(id = "table1", data = data)
       runApiService.sendRunData(
           organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
+      requestBody = SendRunDataRequest(id = "table2", data = data)
       runApiService.sendRunData(
-          organizationSaved.id!!,
-          workspaceSaved.id!!,
-          runnerSaved.id!!,
-          secondRunId,
-          requestBody)
+          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
+      requestBody = SendRunDataRequest(id = "table3", data = data)
       runApiService.sendRunData(
-          organizationSaved.id!!,
-          workspaceSaved.id!!,
-          runnerSaved.id!!,
-        thirdRunId,
-          requestBody)
+          organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
       val queryResult =
           runApiService.queryRunData(
               organizationSaved.id!!,
@@ -651,15 +648,12 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
               runnerSaved.id!!,
               runSavedId,
               RunDataQuery(
-                  "SELECT tablename\n" +
-                      "FROM pg_catalog.pg_tables\n" +
-                      "WHERE schemaname = 'public'\n" +
-                      "ORDER BY tablename ASC;"))
+                  "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';"))
       val expectedResult =
           listOf(
-              runSavedId.toDataTableName(false),
-              (secondRunId).toDataTableName(false),
-              (thirdRunId).toDataTableName(false))
+              mapOf("table_name" to ("table1").toDataTableName(false)),
+              mapOf("table_name" to ("table2").toDataTableName(false)),
+              mapOf("table_name" to ("table3").toDataTableName(false)))
       assertEquals(expectedResult, queryResult.result)
     }
   }
