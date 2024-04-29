@@ -263,11 +263,11 @@ class RunContainerFactory(
       val internalServiceInfo = csmPlatformProperties.internalResultServices!!
       val eventHubUri =
           "amqp://" +
-              "${internalServiceInfo.eventbus.host}:${internalServiceInfo.eventbus.port}/${workspace.id!!}"
+              "${internalServiceInfo.eventBus.host}:${internalServiceInfo.eventBus.port}/${workspace.id!!}"
       envVars.putAll(
           mapOf(
-              CSM_AMQPCONSUMER_USER_ENV_VAR to internalServiceInfo.eventbus.sender.username,
-              CSM_AMQPCONSUMER_PASSWORD_ENV_VAR to internalServiceInfo.eventbus.sender.password,
+              CSM_AMQPCONSUMER_USER_ENV_VAR to internalServiceInfo.eventBus.sender.username,
+              CSM_AMQPCONSUMER_PASSWORD_ENV_VAR to internalServiceInfo.eventBus.sender.password,
               EVENT_HUB_MEASURES_VAR to eventHubUri))
     } else {
       logger.debug(

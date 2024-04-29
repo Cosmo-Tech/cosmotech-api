@@ -6,10 +6,10 @@ logging:
 
 spring:
   rabbitmq:
-    host: ${csm.platform.internalResultServices.eventbus.host:}
-    port: ${csm.platform.internalResultServices.eventbus.port:}
-    password: ${csm.platform.internalResultServices.eventbus.listener.password:}
-    username: ${csm.platform.internalResultServices.eventbus.listener.username:}
+    host: ${csm.platform.internalResultServices.eventBus.host}
+    port: ${csm.platform.internalResultServices.eventBus.port}
+    password: ${csm.platform.internalResultServices.eventBus.listener.password}
+    username: ${csm.platform.internalResultServices.eventBus.listener.username}
   data:
     redis:
       host: ${csm.platform.twincache.host}
@@ -98,7 +98,7 @@ csm:
         admin:
           username: "storage_admin_username"
           password: "storage_admin_password"
-      eventbus:
+      eventBus:
         host: "localhost"
         port: 5672
         default-exchange: "csm-exchange"
