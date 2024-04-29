@@ -5,10 +5,8 @@ Apis/RunApi.md
 Apis/RunnerApi.md
 Apis/ScenarioApi.md
 Apis/ScenariorunApi.md
-Apis/ScenariorunresultApi.md
 Apis/SolutionApi.md
 Apis/TwingraphApi.md
-Apis/ValidatorApi.md
 Apis/WorkspaceApi.md
 Models/ComponentRolePermissions.md
 Models/Connector.md
@@ -93,7 +91,6 @@ Models/ScenarioRunContainerArtifact.md
 Models/ScenarioRunContainerLogs.md
 Models/ScenarioRunLogs.md
 Models/ScenarioRunResourceRequested.md
-Models/ScenarioRunResult.md
 Models/ScenarioRunSearch.md
 Models/ScenarioRunStartContainers.md
 Models/ScenarioRunState.md
