@@ -57,8 +57,8 @@ class AmqpClientServiceImpl(
   }
 
   @RabbitListener(
-      id = "\${csm.platform.internalResultServices.eventbus.default-exchange}",
-      queues = ["\${csm.platform.internalResultServices.eventbus.default-queue}"],
+      id = "\${csm.platform.internalResultServices.eventBus.default-exchange}",
+      queues = ["\${csm.platform.internalResultServices.eventBus.default-queue}"],
       concurrency = "5")
   fun receive(message: Message) {
     logger.debug("Message received...")

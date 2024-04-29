@@ -50,10 +50,10 @@ open class CsmRunTestBase : CsmRedisTestBase() {
       registry.add("spring.rabbitmq.port") { rabbit.getMappedPort(DEFAULT_AMQP_PORT) }
       registry.add("spring.rabbitmq.username") { rabbit.adminUsername }
       registry.add("spring.rabbitmq.password") { rabbit.adminPassword }
-      registry.add("csm.platform.internalResultServices.eventbus.listener.username") {
+      registry.add("csm.platform.internalResultServices.eventBus.listener.username") {
         rabbit.adminUsername
       }
-      registry.add("csm.platform.internalResultServices.eventbus.listener.password") {
+      registry.add("csm.platform.internalResultServices.eventBus.listener.password") {
         rabbit.adminPassword
       }
     }
