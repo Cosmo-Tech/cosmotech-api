@@ -56,8 +56,7 @@ fun String.toDataTableName(isProbeData: Boolean): String =
 
 fun JdbcTemplate.createDB(name: String, comment: String? = null): String {
   this.execute("CREATE DATABASE \"$name\"")
-  if (comment != null)
-    this.execute("COMMENT ON DATABASE \"$name\" IS '$comment'")
+  if (comment != null) this.execute("COMMENT ON DATABASE \"$name\" IS '$comment'")
   return name
 }
 
