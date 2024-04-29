@@ -21,7 +21,6 @@ dependencies {
   implementation(projects.cosmotechWorkspaceApi)
   implementation(projects.cosmotechTwingraphApi)
   implementation(projects.cosmotechMetricsService)
-  implementation(projects.cosmotechScenariorunresultApi)
   implementation(projects.cosmotechRunApi)
   implementation(projects.cosmotechRunnerApi)
 }
