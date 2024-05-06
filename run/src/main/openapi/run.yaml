@@ -211,7 +211,7 @@ paths:
                   $ref: '#/components/examples/DefaultRunData'
         "400":
           description: Data sent format is malformed
-  /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/results/query:
+  /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/data/query:
     parameters:
       - name: organization_id
         in: path
