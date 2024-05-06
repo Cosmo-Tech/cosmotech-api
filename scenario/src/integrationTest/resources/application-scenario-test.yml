@@ -40,6 +40,8 @@ spring:
           # Fill storage endpoint URL copied from portal
           endpoint: "https://fakeaccountname.blob.core.windows.net"
           enabled: true
+  main:
+    banner-mode: "off"
 
 csm:
   platform:
@@ -145,26 +147,31 @@ csm:
       password:
       scenario:
         default-page-size: 20
-    storage:
-      host: "localhost"
-      port: "5432"
-      reader:
-        username: "user1"
-        password: "pwd1"
-      writer:
-        username: "user2"
-        password: "pwd2"
-      admin:
-        username: "user3"
-        password: "pwd3"
-    eventbus:
-      host: "localhost"
-      listener:
-        username: "user3"
-        password: "pwd3"
-      sender:
-        username: "user4"
-        password: "pwd4"
+    internalResultServices:
+      enabled: false
+      storage:
+        host: "localhost"
+        port: "5432"
+        reader:
+          username: "user1"
+          password: "pwd1"
+        writer:
+          username: "user2"
+          password: "pwd2"
+        admin:
+          username: "user3"
+          password: "pwd3"
+      eventBus:
+        host: "localhost"
+        default-exchange: "csm-exchange"
+        default-queue: "csm"
+        default-routing-key: "csm"
+        sender:
+          username: "user3"
+          password: "pwd3"
+        listener:
+          username: "user4"
+          password: "pwd4"
     rbac:
       enabled: true
 

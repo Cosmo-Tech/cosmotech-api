@@ -29,6 +29,8 @@ spring:
           # Fill storage endpoint URL copied from portal
           endpoint: "https://fakeaccountname.blob.core.windows.net"
           enabled: true
+  main:
+    banner-mode: "off"
 
 management:
   endpoints:
