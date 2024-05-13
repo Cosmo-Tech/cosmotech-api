@@ -105,6 +105,7 @@ class ScenarioRunServiceImplTests {
 
     val csmPlatformPropertiesTwincache = mockk<CsmPlatformProperties.CsmTwinCacheProperties>()
     every { csmPlatformProperties.twincache } returns csmPlatformPropertiesTwincache
+    every { csmPlatformProperties.internalResultServices } returns null
     mockkStatic(::getCurrentAuthentication)
     val authentication = mockk<BearerTokenAuthentication>()
 
