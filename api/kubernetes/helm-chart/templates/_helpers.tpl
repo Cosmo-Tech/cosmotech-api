@@ -128,11 +128,7 @@ management:
         enabled: true
       group:
         readiness:
-          {{- if .Values.config.csm.platform.use_internal_result_services }}
           include: "readinessState,argo"
-          {{- else }}
-          include: "readinessState,argo,csmADX"
-          {{- end }}
 
 csm:
   platform:
