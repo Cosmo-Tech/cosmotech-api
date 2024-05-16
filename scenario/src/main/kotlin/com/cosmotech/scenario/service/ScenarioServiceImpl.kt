@@ -188,7 +188,7 @@ internal class ScenarioServiceImpl(
                               organizationId,
                               it,
                               SubDatasetGraphQuery(
-                                  name = "Scenario - ${scenario.name})", main = false))
+                                  name = "Scenario - ${scenario.name}", main = false))
                           .id!!
                   else -> throw CsmClientException("Dataset ${dataset.id} is not ready")
                 }
