@@ -19,6 +19,7 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.getCurrentAuthentication
 import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
+import com.cosmotech.dataset.domain.IngestionStatusEnum
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
@@ -158,7 +159,7 @@ class ScenarioServiceImplTests {
     every { datasetService.findDatasetById(any(), any()) } returns
         Dataset().apply {
           this.twingraphId = "1"
-          this.ingestionStatus = Dataset.IngestionStatus.SUCCESS
+          this.ingestionStatus = IngestionStatusEnum.SUCCESS
         }
     every { datasetService.createSubDataset(any(), any(), any()) } returns mockk(relaxed = true)
 
@@ -200,7 +201,7 @@ class ScenarioServiceImplTests {
     every { datasetService.findDatasetById(any(), any()) } returns
         Dataset().apply {
           this.twingraphId = "1"
-          this.ingestionStatus = Dataset.IngestionStatus.SUCCESS
+          this.ingestionStatus = IngestionStatusEnum.SUCCESS
         }
     every { datasetService.createSubDataset(any(), any(), any()) } returns mockk(relaxed = true)
 
@@ -242,7 +243,7 @@ class ScenarioServiceImplTests {
     every { datasetService.findDatasetById(any(), any()) } returns
         Dataset().apply {
           this.twingraphId = "1"
-          this.ingestionStatus = Dataset.IngestionStatus.SUCCESS
+          this.ingestionStatus = IngestionStatusEnum.SUCCESS
         }
     every { datasetService.createSubDataset(any(), any(), any()) } returns mockk(relaxed = true)
 

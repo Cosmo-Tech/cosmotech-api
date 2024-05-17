@@ -7,7 +7,7 @@
 | **runTemplateId** | **String** | the Solution Analysis Id to search | [optional] [default to null] |
 | **workspaceId** | **String** | the Workspace Id to search | [optional] [default to null] |
 | **scenarioId** | **String** | the Scenario Id to search | [optional] [default to null] |
-| **state** | **String** | the state to search | [optional] [default to null] |
+| **state** | [**ScenarioRunSearchState**](ScenarioRunSearchState.md) |  | [optional] [default to null] |
 | **workflowId** | **String** | the Cosmo Tech compute cluster Argo Workflow Id to search | [optional] [default to null] |
 | **workflowName** | **String** | the Cosmo Tech compute cluster Argo Workflow Name | [optional] [default to null] |
 | **ownerId** | **String** | the owner Id to search | [optional] [default to null] |

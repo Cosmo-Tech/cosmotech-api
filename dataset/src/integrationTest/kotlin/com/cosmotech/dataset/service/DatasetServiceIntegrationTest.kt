@@ -35,8 +35,10 @@ import com.cosmotech.dataset.domain.DatasetTwinGraphQuery
 import com.cosmotech.dataset.domain.FileUploadMetadata
 import com.cosmotech.dataset.domain.FileUploadValidation
 import com.cosmotech.dataset.domain.GraphProperties
+import com.cosmotech.dataset.domain.IngestionStatusEnum
 import com.cosmotech.dataset.domain.SourceInfo
 import com.cosmotech.dataset.domain.SubDatasetGraphQuery
+import com.cosmotech.dataset.domain.TwincacheStatusEnum
 import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
@@ -391,7 +393,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     // add timout for while loop
     val timeout = Instant.now()
     while (datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!) !=
-        Dataset.IngestionStatus.SUCCESS.value) {
+        IngestionStatusEnum.SUCCESS.value) {
       if (Instant.now().minusSeconds(10).isAfter(timeout)) {
         throw Exception("Timeout while waiting for dataset twingraph to be ready")
       }
@@ -402,7 +404,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
       Thread.sleep(50L)
       val datasetStatus =
           datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
-    } while (datasetStatus == Dataset.IngestionStatus.PENDING.value)
+    } while (datasetStatus == IngestionStatusEnum.PENDING.value)
     assertEquals(12, countEntities(datasetSaved.twingraphId!!, "MATCH (n) RETURN count(n)"))
     assertEquals(5, countEntities(datasetSaved.twingraphId!!, "MATCH ()-[r]-() RETURN count(r)"))
 
@@ -419,7 +421,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
       Thread.sleep(50L)
       val datasetStatus =
           datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, subDataset.id!!)
-    } while (datasetStatus == Dataset.IngestionStatus.PENDING.value)
+    } while (datasetStatus == IngestionStatusEnum.PENDING.value)
 
     assertEquals("subDataset", subDataset.name)
     assertEquals("subDataset description", subDataset.description)
@@ -441,7 +443,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
       val datasetStatus =
           datasetApiService.getDatasetTwingraphStatus(
               organizationSaved.id!!, subDatasetWithQuery.id!!)
-    } while (datasetStatus == Dataset.IngestionStatus.PENDING.value)
+    } while (datasetStatus == IngestionStatusEnum.PENDING.value)
 
     assertEquals("subDatasetWithQuery", subDatasetWithQuery.name)
     assertEquals("subDatasetWithQuery description", subDatasetWithQuery.description)
@@ -587,14 +589,14 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
       Thread.sleep(50L)
       datasetStatus =
           datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
-    } while (datasetStatus == Dataset.IngestionStatus.PENDING.value)
+    } while (datasetStatus == IngestionStatusEnum.PENDING.value)
 
-    assertEquals(Dataset.IngestionStatus.SUCCESS.value, datasetStatus)
+    assertEquals(IngestionStatusEnum.SUCCESS.value, datasetStatus)
 
     val modifiedDataset =
         datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
-    assertEquals(Dataset.IngestionStatus.SUCCESS.value, modifiedDataset.ingestionStatus!!.value)
-    assertEquals(Dataset.TwincacheStatus.FULL.value, modifiedDataset.twincacheStatus!!.value)
+    assertEquals(IngestionStatusEnum.SUCCESS.value, modifiedDataset.ingestionStatus!!.value)
+    assertEquals(TwincacheStatusEnum.FULL.value, modifiedDataset.twincacheStatus!!.value)
   }
 
   @Test
@@ -611,14 +613,14 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
       Thread.sleep(50L)
       datasetStatus =
           datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
-    } while (datasetStatus == Dataset.IngestionStatus.PENDING.value)
+    } while (datasetStatus == IngestionStatusEnum.PENDING.value)
 
-    assertEquals(Dataset.IngestionStatus.ERROR.value, datasetStatus)
+    assertEquals(IngestionStatusEnum.ERROR.value, datasetStatus)
 
     val modifiedDataset =
         datasetApiService.findDatasetById(organizationSaved.id!!, datasetSaved.id!!)
-    assertEquals(Dataset.IngestionStatus.ERROR.value, modifiedDataset.ingestionStatus!!.value)
-    assertEquals(Dataset.TwincacheStatus.EMPTY.value, modifiedDataset.twincacheStatus!!.value)
+    assertEquals(IngestionStatusEnum.ERROR.value, modifiedDataset.ingestionStatus!!.value)
+    assertEquals(TwincacheStatusEnum.EMPTY.value, modifiedDataset.twincacheStatus!!.value)
   }
 
   @Test
@@ -670,7 +672,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     do {
       Thread.sleep(50L)
     } while (datasetApiService.getDatasetTwingraphStatus(
-        organizationSaved.id!!, datasetSaved.id!!) == Dataset.IngestionStatus.PENDING.value)
+        organizationSaved.id!!, datasetSaved.id!!) == IngestionStatusEnum.PENDING.value)
 
     datasetApiService.createTwingraphEntities(
         organizationSaved.id!!,
@@ -686,7 +688,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     do {
       Thread.sleep(50L)
     } while (datasetApiService.getDatasetTwingraphStatus(
-        organizationSaved.id!!, datasetSaved.id!!) == Dataset.IngestionStatus.PENDING.value)
+        organizationSaved.id!!, datasetSaved.id!!) == IngestionStatusEnum.PENDING.value)
 
     queryResult =
         datasetApiService.twingraphQuery(
@@ -702,8 +704,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
 
     datasetSaved =
-        datasetRepository.save(
-            datasetSaved.apply { ingestionStatus = Dataset.IngestionStatus.NONE })
+        datasetRepository.save(datasetSaved.apply { ingestionStatus = IngestionStatusEnum.NONE })
     var exception =
         assertThrows<IllegalArgumentException> {
           datasetApiService.rollbackRefresh(organizationSaved.id!!, datasetSaved.id!!)
@@ -711,8 +712,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals("The dataset hasn't failed and can't be rolled back", exception.message)
 
     datasetSaved =
-        datasetRepository.save(
-            datasetSaved.apply { ingestionStatus = Dataset.IngestionStatus.PENDING })
+        datasetRepository.save(datasetSaved.apply { ingestionStatus = IngestionStatusEnum.PENDING })
     exception =
         assertThrows<IllegalArgumentException> {
           datasetApiService.rollbackRefresh(organizationSaved.id!!, datasetSaved.id!!)
@@ -720,8 +720,7 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     assertEquals("The dataset hasn't failed and can't be rolled back", exception.message)
 
     datasetSaved =
-        datasetRepository.save(
-            datasetSaved.apply { ingestionStatus = Dataset.IngestionStatus.SUCCESS })
+        datasetRepository.save(datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
     exception =
         assertThrows<IllegalArgumentException> {
           datasetApiService.rollbackRefresh(organizationSaved.id!!, datasetSaved.id!!)
@@ -737,11 +736,11 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     makeDatasetWithRole(sourceType = DatasetSourceType.File)
     datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
 
-    datasetRepository.save(datasetSaved.apply { ingestionStatus = Dataset.IngestionStatus.ERROR })
+    datasetRepository.save(datasetSaved.apply { ingestionStatus = IngestionStatusEnum.ERROR })
     datasetApiService.rollbackRefresh(organizationSaved.id!!, datasetSaved.id!!)
     var datasetStatus =
         datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
-    assertEquals(Dataset.IngestionStatus.NONE.value, datasetStatus)
+    assertEquals(IngestionStatusEnum.NONE.value, datasetStatus)
 
     every { datasetApiService.query(any(), any()) } returns mockk()
     val fileName = this::class.java.getResource("/integrationTest.zip")?.file
@@ -752,12 +751,12 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
       Thread.sleep(50L)
       datasetStatus =
           datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
-    } while (datasetStatus == Dataset.IngestionStatus.PENDING.value)
-    datasetRepository.save(datasetSaved.apply { ingestionStatus = Dataset.IngestionStatus.ERROR })
+    } while (datasetStatus == IngestionStatusEnum.PENDING.value)
+    datasetRepository.save(datasetSaved.apply { ingestionStatus = IngestionStatusEnum.ERROR })
     datasetApiService.rollbackRefresh(organizationSaved.id!!, datasetSaved.id!!)
     datasetStatus =
         datasetApiService.getDatasetTwingraphStatus(organizationSaved.id!!, datasetSaved.id!!)
-    assertEquals(Dataset.IngestionStatus.NONE.value, datasetStatus)
+    assertEquals(IngestionStatusEnum.NONE.value, datasetStatus)
   }
 
   @TestFactory

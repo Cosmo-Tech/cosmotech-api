@@ -20,11 +20,14 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
+import com.cosmotech.connector.domain.IoTypesEnum
 import com.cosmotech.dataset.api.DatasetApiService
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetConnector
 import com.cosmotech.dataset.domain.DatasetSecurity
+import com.cosmotech.dataset.domain.IngestionStatusEnum
+import com.cosmotech.dataset.domain.TwincacheStatusEnum
 import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
@@ -612,7 +615,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
         name = name,
         repository = "/repository",
         version = "1.0",
-        ioTypes = listOf(Connector.IoTypes.read))
+        ioTypes = listOf(IoTypesEnum.read))
   }
 
   fun makeDataset(
@@ -736,8 +739,8 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
       if (createTwingraph) {
         jedis.graphQuery(this.twingraphId, "MATCH (n:labelrouge) return 1")
       }
-      this.ingestionStatus = Dataset.IngestionStatus.SUCCESS
-      this.twincacheStatus = Dataset.TwincacheStatus.FULL
+      this.ingestionStatus = IngestionStatusEnum.SUCCESS
+      this.twincacheStatus = TwincacheStatusEnum.FULL
     }
     return datasetRepository.save(dataset)
   }

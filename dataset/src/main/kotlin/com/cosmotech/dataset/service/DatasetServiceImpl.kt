@@ -46,6 +46,7 @@ import com.cosmotech.connector.ConnectorApiServiceInterface
 import com.cosmotech.connector.domain.Connector
 import com.cosmotech.connector.domain.ConnectorParameter
 import com.cosmotech.connector.domain.ConnectorParameterGroup
+import com.cosmotech.connector.domain.IoTypesEnum
 import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.bulk.QueryBuffer
 import com.cosmotech.dataset.domain.Dataset
@@ -63,9 +64,11 @@ import com.cosmotech.dataset.domain.DatasetTwinGraphQuery
 import com.cosmotech.dataset.domain.FileUploadMetadata
 import com.cosmotech.dataset.domain.FileUploadValidation
 import com.cosmotech.dataset.domain.GraphProperties
+import com.cosmotech.dataset.domain.IngestionStatusEnum
 import com.cosmotech.dataset.domain.SourceInfo
 import com.cosmotech.dataset.domain.SubDatasetGraphQuery
 import com.cosmotech.dataset.domain.TwinGraphBatchResult
+import com.cosmotech.dataset.domain.TwincacheStatusEnum
 import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.dataset.utils.CsmGraphEntityType
 import com.cosmotech.dataset.utils.isReadOnlyQuery
@@ -200,8 +203,8 @@ class DatasetServiceImpl(
             source = dataset.source ?: SourceInfo("none"),
             main = dataset.main ?: true,
             creationDate = Instant.now().toEpochMilli(),
-            ingestionStatus = Dataset.IngestionStatus.NONE,
-            twincacheStatus = Dataset.TwincacheStatus.EMPTY,
+            ingestionStatus = IngestionStatusEnum.NONE,
+            twincacheStatus = TwincacheStatusEnum.EMPTY,
             ownerId = getCurrentAuthenticatedUserName(csmPlatformProperties),
             organizationId = organizationId,
             security = datasetSecurity)
@@ -218,7 +221,7 @@ class DatasetServiceImpl(
       subDatasetGraphQuery: SubDatasetGraphQuery
   ): Dataset {
     val dataset =
-        getDatasetWithStatus(organizationId, datasetId, status = Dataset.IngestionStatus.SUCCESS)
+        getDatasetWithStatus(organizationId, datasetId, status = IngestionStatusEnum.SUCCESS)
     csmRbac.verify(dataset.getRbac(), PERMISSION_CREATE_CHILDREN)
     val subTwingraphId = idGenerator.generate("twingraph")
     val subDatasetId = idGenerator.generate("dataset")
@@ -234,8 +237,8 @@ class DatasetServiceImpl(
             main = subDatasetGraphQuery.main ?: dataset.main,
             creationDate = Instant.now().toEpochMilli(),
             parentId = dataset.id,
-            ingestionStatus = Dataset.IngestionStatus.PENDING,
-            twincacheStatus = Dataset.TwincacheStatus.EMPTY,
+            ingestionStatus = IngestionStatusEnum.PENDING,
+            twincacheStatus = TwincacheStatusEnum.EMPTY,
             connector =
                 dataset.connector?.apply { parametersValues?.set(TWINCACHE_NAME, subTwingraphId) },
             sourceType = DatasetSourceType.Twincache,
@@ -264,8 +267,8 @@ class DatasetServiceImpl(
 
         datasetRepository.save(
             datasetSaved.apply {
-              ingestionStatus = Dataset.IngestionStatus.SUCCESS
-              twincacheStatus = Dataset.TwincacheStatus.FULL
+              ingestionStatus = IngestionStatusEnum.SUCCESS
+              twincacheStatus = TwincacheStatusEnum.FULL
             })
       }
     }
@@ -364,7 +367,7 @@ class DatasetServiceImpl(
             unifiedJedis.eval("redis.call('DEL', KEYS[1]);", 1, "backupGraph-$datasetId")
           }
         }
-        datasetRepository.save(dataset.apply { twincacheStatus = Dataset.TwincacheStatus.FULL })
+        datasetRepository.save(dataset.apply { twincacheStatus = TwincacheStatusEnum.FULL })
       } catch (e: Exception) {
         if (safeReplace) {
           unifiedJedis.eval(
@@ -385,39 +388,39 @@ class DatasetServiceImpl(
   ): String {
     val dataset = getVerifiedDataset(organizationId, datasetId)
     return when (dataset.sourceType) {
-      null -> Dataset.IngestionStatus.NONE.value
+      null -> IngestionStatusEnum.NONE.value
       DatasetSourceType.None -> {
-        var twincacheStatus = Dataset.TwincacheStatus.EMPTY
+        var twincacheStatus = TwincacheStatusEnum.EMPTY
         if (unifiedJedis.exists(dataset.twingraphId!!)) {
-          twincacheStatus = Dataset.TwincacheStatus.FULL
+          twincacheStatus = TwincacheStatusEnum.FULL
         }
         datasetRepository.apply { dataset.twincacheStatus = twincacheStatus }
 
         dataset.ingestionStatus!!.value
       }
       DatasetSourceType.File -> {
-        if (dataset.ingestionStatus == Dataset.IngestionStatus.NONE) {
-          return Dataset.IngestionStatus.NONE.value
+        if (dataset.ingestionStatus == IngestionStatusEnum.NONE) {
+          return IngestionStatusEnum.NONE.value
         }
-        if (dataset.ingestionStatus == Dataset.IngestionStatus.ERROR) {
-          return Dataset.IngestionStatus.ERROR.value
+        if (dataset.ingestionStatus == IngestionStatusEnum.ERROR) {
+          return IngestionStatusEnum.ERROR.value
         } else if (!unifiedJedis.exists(dataset.twingraphId!!)) {
-          Dataset.IngestionStatus.PENDING.value
+          IngestionStatusEnum.PENDING.value
         } else {
           dataset
-              .takeIf { it.ingestionStatus == Dataset.IngestionStatus.PENDING }
+              .takeIf { it.ingestionStatus == IngestionStatusEnum.PENDING }
               ?.apply {
-                ingestionStatus = Dataset.IngestionStatus.SUCCESS
-                twincacheStatus = Dataset.TwincacheStatus.FULL
+                ingestionStatus = IngestionStatusEnum.SUCCESS
+                twincacheStatus = TwincacheStatusEnum.FULL
               }
           datasetRepository.save(dataset)
-          Dataset.IngestionStatus.SUCCESS.value
+          IngestionStatusEnum.SUCCESS.value
         }
       }
       DatasetSourceType.ADT,
       DatasetSourceType.Twincache,
       DatasetSourceType.AzureStorage -> {
-        if (dataset.ingestionStatus == Dataset.IngestionStatus.PENDING) {
+        if (dataset.ingestionStatus == IngestionStatusEnum.PENDING) {
           dataset.source!!.takeIf { !it.jobId.isNullOrEmpty() }
               ?: return dataset.ingestionStatus!!.value
 
@@ -427,11 +430,11 @@ class DatasetServiceImpl(
           dataset.apply {
             when (twingraphImportJobInfoRequest.response) {
               "Succeeded" -> {
-                ingestionStatus = Dataset.IngestionStatus.SUCCESS
-                twincacheStatus = Dataset.TwincacheStatus.FULL
+                ingestionStatus = IngestionStatusEnum.SUCCESS
+                twincacheStatus = TwincacheStatusEnum.FULL
               }
               "Error",
-              "Failed" -> ingestionStatus = Dataset.IngestionStatus.ERROR
+              "Failed" -> ingestionStatus = IngestionStatusEnum.ERROR
             }
             datasetRepository.save(this)
           }
@@ -439,7 +442,7 @@ class DatasetServiceImpl(
         return dataset.ingestionStatus!!.value
       }
       DatasetSourceType.ETL -> {
-        if (dataset.ingestionStatus == Dataset.IngestionStatus.PENDING) {
+        if (dataset.ingestionStatus == IngestionStatusEnum.PENDING) {
           dataset.source!!.takeIf { !it.jobId.isNullOrEmpty() }
               ?: return dataset.ingestionStatus!!.value
 
@@ -455,12 +458,12 @@ class DatasetServiceImpl(
           dataset.apply {
             when (askRunStatusEvent.response) {
               "Successful" -> {
-                ingestionStatus = Dataset.IngestionStatus.SUCCESS
-                twincacheStatus = Dataset.TwincacheStatus.FULL
+                ingestionStatus = IngestionStatusEnum.SUCCESS
+                twincacheStatus = TwincacheStatusEnum.FULL
               }
               "Error",
               "Unknown",
-              "Failed" -> ingestionStatus = Dataset.IngestionStatus.ERROR
+              "Failed" -> ingestionStatus = IngestionStatusEnum.ERROR
             }
             datasetRepository.save(this)
           }
@@ -477,13 +480,13 @@ class DatasetServiceImpl(
         ?: throw CsmResourceNotFoundException("Cannot be applied to source type 'File'")
     dataset.takeUnless { it.sourceType == DatasetSourceType.None }
         ?: throw CsmResourceNotFoundException("Cannot be applied to source type 'None'")
-    dataset.ingestionStatus?.takeUnless { it == Dataset.IngestionStatus.PENDING }
+    dataset.ingestionStatus?.takeUnless { it == IngestionStatusEnum.PENDING }
         ?: throw CsmClientException("Dataset in use, cannot update. Retry later")
 
     datasetRepository.save(
         dataset.apply {
           refreshDate = Instant.now().toEpochMilli()
-          ingestionStatus = Dataset.IngestionStatus.PENDING
+          ingestionStatus = IngestionStatusEnum.PENDING
         })
 
     val dataSourceLocation =
@@ -518,17 +521,17 @@ class DatasetServiceImpl(
     var dataset = getVerifiedDataset(organizationId, datasetId, PERMISSION_WRITE)
 
     val status = getDatasetTwingraphStatus(organizationId, datasetId)
-    if (status != Dataset.IngestionStatus.ERROR.value) {
+    if (status != IngestionStatusEnum.ERROR.value) {
       throw IllegalArgumentException("The dataset hasn't failed and can't be rolled back")
     }
 
     dataset =
-        if (dataset.twincacheStatus == Dataset.TwincacheStatus.FULL) {
+        if (dataset.twincacheStatus == TwincacheStatusEnum.FULL) {
           datasetRepository.save(
-              dataset.apply { dataset.ingestionStatus = Dataset.IngestionStatus.SUCCESS })
+              dataset.apply { dataset.ingestionStatus = IngestionStatusEnum.SUCCESS })
         } else {
           datasetRepository.save(
-              dataset.apply { dataset.ingestionStatus = Dataset.IngestionStatus.NONE })
+              dataset.apply { dataset.ingestionStatus = IngestionStatusEnum.NONE })
         }
     return "Dataset $datasetId status is now ${dataset.ingestionStatus}"
   }
@@ -615,7 +618,7 @@ class DatasetServiceImpl(
       datasetTwinGraphQuery: DatasetTwinGraphQuery
   ): String {
     val dataset =
-        getDatasetWithStatus(organizationId, datasetId, status = Dataset.IngestionStatus.SUCCESS)
+        getDatasetWithStatus(organizationId, datasetId, status = IngestionStatusEnum.SUCCESS)
     return query(dataset, datasetTwinGraphQuery.query).toJsonString()
   }
 
@@ -630,16 +633,16 @@ class DatasetServiceImpl(
   }
 
   fun <T> trx(dataset: Dataset, actionLambda: (Dataset) -> T): T {
-    dataset.ingestionStatus?.takeUnless { it == Dataset.IngestionStatus.PENDING }
+    dataset.ingestionStatus?.takeUnless { it == IngestionStatusEnum.PENDING }
         ?: throw CsmClientException("Dataset in use, cannot update. Retry later")
-    datasetRepository.save(dataset.apply { ingestionStatus = Dataset.IngestionStatus.PENDING })
+    datasetRepository.save(dataset.apply { ingestionStatus = IngestionStatusEnum.PENDING })
     try {
       val returnData = actionLambda(dataset)
-      datasetRepository.save(dataset.apply { ingestionStatus = Dataset.IngestionStatus.SUCCESS })
+      datasetRepository.save(dataset.apply { ingestionStatus = IngestionStatusEnum.SUCCESS })
       return returnData
     } catch (e: Exception) {
       logger.error(e.message)
-      datasetRepository.save(dataset.apply { ingestionStatus = Dataset.IngestionStatus.ERROR })
+      datasetRepository.save(dataset.apply { ingestionStatus = IngestionStatusEnum.ERROR })
       throw e
     }
   }
@@ -674,7 +677,7 @@ class DatasetServiceImpl(
       datasetTwinGraphQuery: DatasetTwinGraphQuery
   ): DatasetTwinGraphHash {
     val dataset =
-        getDatasetWithStatus(organizationId, datasetId, status = Dataset.IngestionStatus.SUCCESS)
+        getDatasetWithStatus(organizationId, datasetId, status = IngestionStatusEnum.SUCCESS)
     val bulkQueryKey = bulkQueryKey(dataset.twingraphId!!, datasetTwinGraphQuery.query, null)
     val twinGraphHash = DatasetTwinGraphHash(bulkQueryKey.second)
     val keyExists = unifiedJedis.exists(bulkQueryKey.first)
@@ -719,7 +722,7 @@ class DatasetServiceImpl(
   fun getDatasetWithStatus(
       organizationId: String,
       datasetId: String,
-      status: Dataset.IngestionStatus? = null
+      status: IngestionStatusEnum? = null
   ): Dataset {
     val dataset = getVerifiedDataset(organizationId, datasetId)
     dataset.takeUnless { it.twingraphId.isNullOrBlank() }
@@ -1125,7 +1128,7 @@ class DatasetServiceImpl(
                 version = twinCacheConnectorProperties.imageVersion,
                 repository = twinCacheConnectorProperties.imageName,
                 description = "Auto-generated connector for TwinCache",
-                ioTypes = listOf(Connector.IoTypes.read),
+                ioTypes = listOf(IoTypesEnum.read),
                 parameterGroups =
                     listOf(
                         ConnectorParameterGroup(

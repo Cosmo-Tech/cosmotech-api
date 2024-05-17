@@ -16,9 +16,9 @@ import com.cosmotech.api.exceptions.CsmClientException
 import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
-import com.cosmotech.connector.domain.Connector.IoTypes
 import com.cosmotech.connector.domain.ConnectorParameter
 import com.cosmotech.connector.domain.ConnectorParameterGroup
+import com.cosmotech.connector.domain.IoTypesEnum
 import com.cosmotech.dataset.api.DatasetApiService
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetConnector
@@ -3501,7 +3501,7 @@ class ContainerFactoryTests {
         name = "Test Connector",
         repository = repository,
         version = "1.0.0",
-        ioTypes = listOf(IoTypes.read),
+        ioTypes = listOf(IoTypesEnum.read),
         parameterGroups = listOf(parameterGroup))
   }
 
@@ -3523,7 +3523,7 @@ class ContainerFactoryTests {
         name = "Test Connector",
         repository = repository,
         version = "1.0.0",
-        ioTypes = listOf(IoTypes.read),
+        ioTypes = listOf(IoTypesEnum.read),
         parameterGroups = listOf(parameterGroup))
   }
 
@@ -3545,7 +3545,7 @@ class ContainerFactoryTests {
         name = "Test Connector",
         repository = repository,
         version = "1.0.0",
-        ioTypes = listOf(IoTypes.read),
+        ioTypes = listOf(IoTypesEnum.read),
         parameterGroups = listOf(parameterGroup))
   }
 
@@ -3556,7 +3556,7 @@ class ContainerFactoryTests {
         name = "Test Connector",
         repository = "cosmotech/test_connector",
         version = "1.0.0",
-        ioTypes = listOf(IoTypes.read))
+        ioTypes = listOf(IoTypesEnum.read))
   }
 
   private fun getConnectorNoVarsManagedIdentity(): Connector {
@@ -3566,7 +3566,7 @@ class ContainerFactoryTests {
         name = "Test Connector",
         repository = "cosmotech/test_connector",
         version = "1.0.0",
-        ioTypes = listOf(IoTypes.read),
+        ioTypes = listOf(IoTypesEnum.read),
         azureManagedIdentity = true)
   }
 

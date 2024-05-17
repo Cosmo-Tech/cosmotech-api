@@ -200,16 +200,18 @@ components:
         ioTypes:
           type: array
           items:
-            type: string
-            description: The read and write capabilities of connector
-            enum:
-              - read
-              - write
+            $ref: '#/components/schemas/ioTypesEnum'
         parameterGroups:
           type: array
           description: the list of connector parameters groups
           items:
             $ref: '#/components/schemas/ConnectorParameterGroup'
+    ioTypesEnum:
+      type: string
+      description: The read and write capabilities of connector
+      enum:
+        - read
+        - write
     ConnectorParameterGroup:
       type: object
       description: a connector parameters group

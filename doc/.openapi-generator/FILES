@@ -30,6 +30,7 @@ Models/DeleteHistoricalData.md
 Models/FileUploadMetadata.md
 Models/FileUploadValidation.md
 Models/GraphProperties.md
+Models/IngestionStatusEnum.md
 Models/Organization.md
 Models/OrganizationAccessControl.md
 Models/OrganizationRole.md
@@ -47,6 +48,7 @@ Models/RunDataQuery.md
 Models/RunLogs.md
 Models/RunResourceRequested.md
 Models/RunSearch.md
+Models/RunSearchState.md
 Models/RunStartContainers.md
 Models/RunState.md
 Models/RunStatus.md
@@ -92,6 +94,7 @@ Models/ScenarioRunContainerLogs.md
 Models/ScenarioRunLogs.md
 Models/ScenarioRunResourceRequested.md
 Models/ScenarioRunSearch.md
+Models/ScenarioRunSearchState.md
 Models/ScenarioRunStartContainers.md
 Models/ScenarioRunState.md
 Models/ScenarioRunStatus.md
@@ -108,8 +111,8 @@ Models/SubDatasetGraphQuery.md
 Models/TwinGraphBatchResult.md
 Models/TwinGraphHash.md
 Models/TwinGraphQuery.md
+Models/TwincacheStatusEnum.md
 Models/Validator.md
-Models/ValidatorRun.md
 Models/Workspace.md
 Models/WorkspaceAccessControl.md
 Models/WorkspaceFile.md
@@ -118,5 +121,6 @@ Models/WorkspaceSecret.md
 Models/WorkspaceSecurity.md
 Models/WorkspaceSolution.md
 Models/WorkspaceWebApp.md
+Models/ioTypesEnum.md
 Models/sendRunData_request.md
 README.md

@@ -42,9 +42,9 @@ import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.dataset.api.DatasetApiService
-import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetRole
+import com.cosmotech.dataset.domain.IngestionStatusEnum
 import com.cosmotech.dataset.domain.SubDatasetGraphQuery
 import com.cosmotech.dataset.service.getRbac
 import com.cosmotech.scenario.ScenarioApiServiceInterface
@@ -193,7 +193,7 @@ internal class ScenarioServiceImpl(
                 val dataset = datasetService.findDatasetById(organizationId, it)
                 when {
                   dataset.twingraphId == null -> it
-                  dataset.ingestionStatus == Dataset.IngestionStatus.SUCCESS ->
+                  dataset.ingestionStatus == IngestionStatusEnum.SUCCESS ->
                       datasetService
                           .createSubDataset(
                               organizationId,
