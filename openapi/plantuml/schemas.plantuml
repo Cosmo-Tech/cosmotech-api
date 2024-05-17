@@ -19,7 +19,7 @@ entity Connector {
     url: String
     azureManagedIdentity: Boolean
     azureAuthenticationWithCustomerAppRegistration: Boolean
-    ioTypes: List<String>
+    ioTypes: List<IoTypesEnum>
     parameterGroups: List<ConnectorParameterGroup>
 }
 
@@ -63,8 +63,8 @@ entity Dataset {
     refreshDate: Long
     sourceType: DatasetSourceType
     source: SourceInfo
-    ingestionStatus: String
-    twincacheStatus: String
+    ingestionStatus: IngestionStatusEnum
+    twincacheStatus: TwincacheStatusEnum
     queries: List<String>
     tags: List<String>
     connector: DatasetConnector
@@ -150,6 +150,12 @@ entity GraphProperties {
     target: String
     name: String
     params: String
+}
+
+entity IngestionStatusEnum {
+}
+
+entity IoTypesEnum {
 }
 
 entity Organization {
@@ -271,10 +277,13 @@ entity RunSearch {
     runTemplateId: String
     workspaceId: String
     runnerId: String
-    state: String
+    state: RunSearchState
     workflowId: String
     workflowName: String
     ownerId: String
+}
+
+entity RunSearchState {
 }
 
 entity RunStartContainers {
@@ -630,10 +639,13 @@ entity ScenarioRunSearch {
     runTemplateId: String
     workspaceId: String
     scenarioId: String
-    state: String
+    state: ScenarioRunSearchState
     workflowId: String
     workflowName: String
     ownerId: String
+}
+
+entity ScenarioRunSearchState {
 }
 
 entity ScenarioRunStartContainers {
@@ -760,6 +772,9 @@ entity TwinGraphQuery {
     * query: String
 }
 
+entity TwincacheStatusEnum {
+}
+
 entity Validator {
     * id: String
     * name: String
@@ -769,17 +784,6 @@ entity Validator {
     ownerId: String
     url: String
     tags: List<String>
-}
-
-entity ValidatorRun {
-    id: String
-    validatorId: String
-    validatorName: String
-    * datasetId: String
-    datasetName: String
-    state: String
-    containerId: String
-    logs: String
 }
 
 entity Workspace {

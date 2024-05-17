@@ -21,15 +21,8 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.api.utils.shaHash
 import com.cosmotech.connector.ConnectorApiServiceInterface
 import com.cosmotech.connector.domain.Connector
-import com.cosmotech.dataset.domain.Dataset
-import com.cosmotech.dataset.domain.DatasetConnector
-import com.cosmotech.dataset.domain.DatasetSourceType
-import com.cosmotech.dataset.domain.DatasetTwinGraphQuery
-import com.cosmotech.dataset.domain.FileUploadMetadata
-import com.cosmotech.dataset.domain.FileUploadValidation
-import com.cosmotech.dataset.domain.SourceInfo
-import com.cosmotech.dataset.domain.SubDatasetGraphQuery
-import com.cosmotech.dataset.domain.TwinGraphBatchResult
+import com.cosmotech.connector.domain.IoTypesEnum
+import com.cosmotech.dataset.domain.*
 import com.cosmotech.dataset.repository.DatasetRepository
 import com.cosmotech.dataset.utils.toJsonString
 import com.cosmotech.organization.OrganizationApiServiceInterface
@@ -138,7 +131,7 @@ class DatasetServiceImplTests {
             name = "name",
             repository = "repository",
             version = "version",
-            ioTypes = listOf(Connector.IoTypes.read))
+            ioTypes = listOf(IoTypesEnum.read))
     every { datasetRepository.save(any()) } returnsArgument 0
     val result = datasetService.createDataset(ORGANIZATION_ID, dataset)
     assertEquals(dataset.organizationId, result.organizationId)
@@ -146,7 +139,7 @@ class DatasetServiceImplTests {
         DatasetSourceType.None,
         result.sourceType,
     )
-    assertEquals(Dataset.IngestionStatus.NONE, result.ingestionStatus)
+    assertEquals(IngestionStatusEnum.NONE, result.ingestionStatus)
   }
 
   @Test
@@ -194,7 +187,7 @@ class DatasetServiceImplTests {
       val dataset =
           baseDataset()
               .copy(
-                  ingestionStatus = Dataset.IngestionStatus.SUCCESS,
+                  ingestionStatus = IngestionStatusEnum.SUCCESS,
                   sourceType = DatasetSourceType.Twincache,
                   source = SourceInfo("http://storage.location"),
                   twingraphId = "twingraphId")
@@ -231,7 +224,7 @@ class DatasetServiceImplTests {
   @Test
   fun `createSubDataset should throw IllegalArgumentException when twingraphId is empty`() {
     val dataset =
-        baseDataset().copy(twingraphId = "", ingestionStatus = Dataset.IngestionStatus.SUCCESS)
+        baseDataset().copy(twingraphId = "", ingestionStatus = IngestionStatusEnum.SUCCESS)
     val subDatasetGraphQuery = SubDatasetGraphQuery()
     every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
@@ -247,7 +240,7 @@ class DatasetServiceImplTests {
             .copy(
                 twingraphId = "twingraphId",
                 sourceType = DatasetSourceType.File,
-                ingestionStatus = Dataset.IngestionStatus.SUCCESS)
+                ingestionStatus = IngestionStatusEnum.SUCCESS)
     every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
 
@@ -266,7 +259,7 @@ class DatasetServiceImplTests {
             .copy(
                 twingraphId = "twingraphId",
                 sourceType = DatasetSourceType.File,
-                ingestionStatus = Dataset.IngestionStatus.SUCCESS)
+                ingestionStatus = IngestionStatusEnum.SUCCESS)
     every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
 
@@ -316,7 +309,7 @@ class DatasetServiceImplTests {
     val dataset =
         baseDataset()
             .copy(
-                ingestionStatus = Dataset.IngestionStatus.NONE,
+                ingestionStatus = IngestionStatusEnum.NONE,
                 sourceType = DatasetSourceType.File,
                 twingraphId = "twingraphId")
     val fileName = this::class.java.getResource("/Graph.zip")?.file
@@ -341,14 +334,14 @@ class DatasetServiceImplTests {
     val dataset =
         baseDataset()
             .copy(
-                ingestionStatus = Dataset.IngestionStatus.NONE,
+                ingestionStatus = IngestionStatusEnum.NONE,
                 sourceType = DatasetSourceType.File,
                 twingraphId = "twingraphId")
     every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { unifiedJedis.exists(any<String>()) } returns false
     val result = datasetService.getDatasetTwingraphStatus(ORGANIZATION_ID, DATASET_ID)
-    assertEquals(Dataset.IngestionStatus.NONE.value, result)
+    assertEquals(IngestionStatusEnum.NONE.value, result)
   }
 
   @Test
@@ -356,7 +349,7 @@ class DatasetServiceImplTests {
     val dataset =
         baseDataset()
             .copy(
-                ingestionStatus = Dataset.IngestionStatus.SUCCESS,
+                ingestionStatus = IngestionStatusEnum.SUCCESS,
                 sourceType = DatasetSourceType.File,
                 twingraphId = "twingraphId")
     every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
@@ -364,7 +357,7 @@ class DatasetServiceImplTests {
     every { unifiedJedis.exists(any<String>()) } returns true
     every { datasetRepository.save(any()) } returns mockk()
     val result = datasetService.getDatasetTwingraphStatus(ORGANIZATION_ID, DATASET_ID)
-    assertEquals(Dataset.IngestionStatus.SUCCESS.value, result)
+    assertEquals(IngestionStatusEnum.SUCCESS.value, result)
   }
 
   @Test
@@ -372,7 +365,7 @@ class DatasetServiceImplTests {
     val dataset =
         baseDataset()
             .copy(
-                ingestionStatus = Dataset.IngestionStatus.PENDING,
+                ingestionStatus = IngestionStatusEnum.PENDING,
                 sourceType = DatasetSourceType.ADT,
                 source = SourceInfo(location = "test", jobId = "0"),
                 twingraphId = "twingraphId")
@@ -385,7 +378,7 @@ class DatasetServiceImplTests {
 
     val result = datasetService.getDatasetTwingraphStatus(ORGANIZATION_ID, DATASET_ID)
 
-    assertEquals(Dataset.IngestionStatus.SUCCESS.value, result)
+    assertEquals(IngestionStatusEnum.SUCCESS.value, result)
   }
 
   @Test
@@ -406,7 +399,7 @@ class DatasetServiceImplTests {
     val dataset =
         baseDataset()
             .copy(
-                ingestionStatus = Dataset.IngestionStatus.NONE,
+                ingestionStatus = IngestionStatusEnum.NONE,
                 sourceType = DatasetSourceType.ADT,
                 source = SourceInfo("http://storage.location", jobId = "0"),
                 twingraphId = "twingraphId")
@@ -462,8 +455,7 @@ class DatasetServiceImplTests {
   @Test
   fun `twingraphQuery should call query and set data to Redis`() {
     val dataset =
-        baseDataset()
-            .copy(twingraphId = "graphId", ingestionStatus = Dataset.IngestionStatus.SUCCESS)
+        baseDataset().copy(twingraphId = "graphId", ingestionStatus = IngestionStatusEnum.SUCCESS)
     val graphQuery = "MATCH(n) RETURN n"
     val twinGraphQuery = DatasetTwinGraphQuery(graphQuery)
 
@@ -504,8 +496,7 @@ class DatasetServiceImplTests {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
     every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     val dataset =
-        baseDataset()
-            .copy(twingraphId = "graphId", ingestionStatus = Dataset.IngestionStatus.SUCCESS)
+        baseDataset().copy(twingraphId = "graphId", ingestionStatus = IngestionStatusEnum.SUCCESS)
     val graphQuery = "MATCH(n) RETURN n"
     every { datasetRepository.save(any()) } returnsArgument 0
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
@@ -533,8 +524,7 @@ class DatasetServiceImplTests {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("Platform.Admin")
     every { organizationService.getVerifiedOrganization(ORGANIZATION_ID) } returns Organization()
     val dataset =
-        baseDataset()
-            .copy(twingraphId = "graphId", ingestionStatus = Dataset.IngestionStatus.SUCCESS)
+        baseDataset().copy(twingraphId = "graphId", ingestionStatus = IngestionStatusEnum.SUCCESS)
     every { datasetRepository.save(any()) } returnsArgument 0
     every { datasetRepository.findBy(ORGANIZATION_ID, DATASET_ID) } returns Optional.of(dataset)
     every { unifiedJedis.keys(any<String>()) } returns setOf("graphId")

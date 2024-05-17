@@ -11,9 +11,11 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.connector.ConnectorApiServiceInterface
 import com.cosmotech.connector.domain.Connector
+import com.cosmotech.connector.domain.IoTypesEnum
 import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetConnector
+import com.cosmotech.dataset.domain.IngestionStatusEnum
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
@@ -161,7 +163,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
     every { workflowService.launchRun(any(), any()) } returns
         mockWorkflowRun(organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!)
     every { datasetApiService.findDatasetById(any(), any()) } returns
-        datasetSaved.apply { ingestionStatus = Dataset.IngestionStatus.SUCCESS }
+        datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS }
     every { datasetApiService.createSubDataset(any(), any(), any()) } returns mockk(relaxed = true)
 
     every { runnerApiService.getRunner(any(), any(), any()) } returns runnerSaved
@@ -173,7 +175,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
         name = name,
         repository = "/repository",
         version = "1.0",
-        ioTypes = listOf(Connector.IoTypes.read))
+        ioTypes = listOf(IoTypesEnum.read))
   }
 
   fun mockDataset(

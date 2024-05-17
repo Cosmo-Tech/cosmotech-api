@@ -544,9 +544,7 @@ components:
           type: string
           description: the Scenario Id to search
         state:
-          type: string
-          description: the state to search
-          enum: ["FetchingDatasets","FetchingScenarioParameters","ApplyingScenarioParameters","ValidatingScenarioData","SendingScenarioDataToDataWarehouse","PreRun","Running","PostRun","Success","Failed"]
+          $ref: '#/components/schemas/ScenarioRunSearchState'
         workflowId:
           type: string
           description: the Cosmo Tech compute cluster Argo Workflow Id to search
@@ -556,6 +554,10 @@ components:
         ownerId:
           type: string
           description: the owner Id to search
+    ScenarioRunSearchState:
+      type: string
+      description: the state to search
+      enum: [ "FetchingDatasets","FetchingScenarioParameters","ApplyingScenarioParameters","ValidatingScenarioData","SendingScenarioDataToDataWarehouse","PreRun","Running","PostRun","Success","Failed" ]
     ScenarioRunStartContainers:
       type: object
       description: the parameters to run directly containers

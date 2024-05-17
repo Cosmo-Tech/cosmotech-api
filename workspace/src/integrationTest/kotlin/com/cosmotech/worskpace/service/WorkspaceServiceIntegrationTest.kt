@@ -17,6 +17,7 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
+import com.cosmotech.connector.domain.IoTypesEnum
 import com.cosmotech.dataset.api.DatasetApiService
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetAccessControl
@@ -514,7 +515,7 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
         name = name,
         repository = "/repository",
         version = "1.0",
-        ioTypes = listOf(Connector.IoTypes.read))
+        ioTypes = listOf(IoTypesEnum.read))
   }
   fun makeDataset(
       organizationId: String = organizationSaved.id!!,

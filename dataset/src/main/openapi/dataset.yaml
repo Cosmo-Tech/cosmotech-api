@@ -1245,21 +1245,9 @@ components:
         source:
           $ref: '#/components/schemas/SourceInfo'
         ingestionStatus:
-          type: string
-          description: the Dataset ingestion status
-          nullable: true
-          enum:
-            - NONE
-            - PENDING
-            - ERROR
-            - SUCCESS
+          $ref: '#/components/schemas/IngestionStatusEnum'
         twincacheStatus:
-          type: string
-          description: the twincache data status
-          nullable: true
-          enum:
-            - EMPTY
-            - FULL
+          $ref: '#/components/schemas/TwincacheStatusEnum'
         queries:
           type: array
           description: the list of queries
@@ -1313,6 +1301,22 @@ components:
     #      required:
     #        - name
     #        - connector
+    TwincacheStatusEnum:
+      type: string
+      description: the twincache data status
+      nullable: true
+      enum:
+        - EMPTY
+        - FULL
+    IngestionStatusEnum:
+      type: string
+      description: the Dataset ingestion status
+      nullable: true
+      enum:
+        - NONE
+        - PENDING
+        - ERROR
+        - SUCCESS
     DatasetSecurity:
       type: object
       description: the dataset security information
@@ -1444,44 +1448,6 @@ components:
         - name
         - repository
         - version
-    ValidatorRun:
-      type: object
-      description: a Validator Run
-      properties:
-        id:
-          type: string
-          readOnly: true
-          description: the Validator Run id
-        validatorId:
-          type: string
-          readOnly: true
-          description: the Validator id
-        validatorName:
-          type: string
-          readOnly: true
-          description: the validator name
-        datasetId:
-          type: string
-          description: the Dataset id to run the validator on
-        datasetName:
-          type: string
-          readOnly: true
-          description: the Dataset name
-        state:
-          type: string
-          readOnly: true
-          description: the Validator Run state
-          enum: ["Running","Finished","OnError"]
-        containerId:
-          type: string
-          readOnly: true
-          description: the Validator Run container id
-        logs:
-          type: string
-          readOnly: true
-          description: the Validator Run logs
-      required:
-        - datasetId
     DatasetCopyParameters:
       type: object
       description: the Dataset Copy Parameters

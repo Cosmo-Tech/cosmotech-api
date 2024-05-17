@@ -12,9 +12,11 @@ import com.cosmotech.api.utils.getCurrentAuthenticatedRoles
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
 import com.cosmotech.connector.api.ConnectorApiService
 import com.cosmotech.connector.domain.Connector
+import com.cosmotech.connector.domain.IoTypesEnum
 import com.cosmotech.dataset.api.DatasetApiService
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetConnector
+import com.cosmotech.dataset.domain.IngestionStatusEnum
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
@@ -158,7 +160,7 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
             "Scenario",
             mutableListOf(datasetSaved.id!!))
     every { datasetApiService.findDatasetById(any(), any()) } returns
-        datasetSaved.apply { ingestionStatus = Dataset.IngestionStatus.SUCCESS }
+        datasetSaved.apply { ingestionStatus = IngestionStatusEnum.SUCCESS }
     every { datasetApiService.createSubDataset(any(), any(), any()) } returns mockk(relaxed = true)
     scenarioSaved =
         scenarioApiService.createScenario(organizationSaved.id!!, workspaceSaved.id!!, scenario)
@@ -291,7 +293,7 @@ class ScenarioRunServiceIntegrationTest : CsmRedisTestBase() {
         name = name,
         repository = "/repository",
         version = "1.0",
-        ioTypes = listOf(Connector.IoTypes.read))
+        ioTypes = listOf(IoTypesEnum.read))
   }
 
   fun mockDataset(

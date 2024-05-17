@@ -14,7 +14,7 @@
 | **url** | **String** | an optional URL link to connector page | [optional] [default to null] |
 | **azureManagedIdentity** | **Boolean** | whether or not the connector uses Azure Managed Identity | [optional] [default to null] |
 | **azureAuthenticationWithCustomerAppRegistration** | **Boolean** | whether to authenticate against Azure using the app registration credentials provided by the customer | [optional] [default to null] |
-| **ioTypes** | **List** |  | [optional] [default to null] |
+| **ioTypes** | [**List**](ioTypesEnum.md) |  | [optional] [default to null] |
 | **parameterGroups** | [**List**](ConnectorParameterGroup.md) | the list of connector parameters groups | [optional] [default to null] |
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

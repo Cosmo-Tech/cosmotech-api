@@ -38,6 +38,7 @@ import com.cosmotech.dataset.domain.DatasetSecurity
 import com.cosmotech.dataset.domain.DatasetSourceType
 import com.cosmotech.dataset.domain.DatasetTwinGraphQuery
 import com.cosmotech.dataset.domain.GraphProperties
+import com.cosmotech.dataset.domain.IngestionStatusEnum
 import com.cosmotech.dataset.domain.SourceInfo
 import com.cosmotech.dataset.domain.SubDatasetGraphQuery
 import com.cosmotech.dataset.repository.DatasetRepository
@@ -163,9 +164,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
               datasetRepository.save(
-                  datasetSaved.apply {
-                    datasetSaved.ingestionStatus = Dataset.IngestionStatus.ERROR
-                  })
+                  datasetSaved.apply { datasetSaved.ingestionStatus = IngestionStatusEnum.ERROR })
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -204,9 +203,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
               datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
               materializeTwingraph()
               datasetRepository.save(
-                  datasetSaved.apply {
-                    datasetSaved.ingestionStatus = Dataset.IngestionStatus.ERROR
-                  })
+                  datasetSaved.apply { datasetSaved.ingestionStatus = IngestionStatusEnum.ERROR })
 
               every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
 
@@ -2300,7 +2297,7 @@ class DatasetServiceRBACTest : CsmRedisTestBase() {
       if (createTwingraph) {
         jedis.graphQuery(this.twingraphId, "CREATE (n:labelrouge)")
       }
-      this.ingestionStatus = Dataset.IngestionStatus.SUCCESS
+      this.ingestionStatus = IngestionStatusEnum.SUCCESS
     }
     return datasetRepository.save(dataset)
   }
