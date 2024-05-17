@@ -54,15 +54,15 @@ val springWebVersion = "6.1.4"
 
 // Implementation
 val kotlinJvmTarget = 21
-val cosmotechApiCommonVersion = "1.0.0"
-val cosmotechApiAzureVersion = "1.0.0"
+val cosmotechApiCommonVersion = "1.0.2-SNAPSHOT"
+val cosmotechApiAzureVersion = "1.0.1-SNAPSHOT"
 val jedisVersion = "4.4.6"
 val springOauthVersion = "6.2.2"
-val redisOmSpringVersion = "0.9.0"
+val redisOmSpringVersion = "0.9.1"
 val kotlinCoroutinesCoreVersion = "1.7.3"
 val oktaSpringBootVersion = "3.0.5"
-val springDocVersion = "2.2.0"
-val swaggerParserVersion = "2.1.18"
+val springDocVersion = "2.5.0"
+val swaggerParserVersion = "2.1.22"
 val commonsCsvVersion = "1.10.0"
 val apiValidationVersion = "3.0.2"
 
@@ -128,9 +128,10 @@ allprojects {
     sourceCompatibility = JavaVersion.VERSION_21
     toolchain { languageVersion.set(JavaLanguageVersion.of(kotlinJvmTarget)) }
   }
-  configurations { all { resolutionStrategy { force("com.redis.om:redis-om-spring:0.9.0") } } }
+  configurations { all { resolutionStrategy { force("com.redis.om:redis-om-spring:0.9.1") } } }
 
   repositories {
+    mavenLocal()
     maven {
       name = "GitHubPackages"
       url = uri("https://maven.pkg.github.com/Cosmo-Tech/cosmotech-api-common")
