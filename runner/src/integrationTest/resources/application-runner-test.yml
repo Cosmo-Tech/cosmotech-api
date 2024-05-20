@@ -44,6 +44,10 @@ azure:
 
 csm:
   platform:
+    identityProvider:
+      code: on_premise_one # here because Azure (Entra ID) is the default one is not specified
+      authorizationUrl: "changeme"
+      tokenUrl: "changeme"
     runOutsideKubernetes: true
     metrics:
       enabled: false
