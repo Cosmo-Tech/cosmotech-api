@@ -34,7 +34,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: gradle/gradle-build-action@v3
         with:
-          cache-disabled: false
+          cache-disabled: true
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: |
@@ -71,7 +71,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: gradle/gradle-build-action@v3
         with:
-          cache-disabled: false
+          cache-disabled: true
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: test -x spotlessCheck -x openApiValidate
@@ -101,7 +101,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: gradle/gradle-build-action@v3
         with:
-          cache-disabled: false
+          cache-disabled: true
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: :cosmotech-connector-api:integrationTest -x spotlessCheck -x openApiValidate
@@ -131,7 +131,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: gradle/gradle-build-action@v3
         with:
-          cache-disabled: false
+          cache-disabled: true
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: :cosmotech-dataset-api:integrationTest --tests "com.cosmotech.dataset.service.DatasetServiceRBACTest" -x spotlessCheck -x openApiValidate
@@ -141,7 +141,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: gradle/gradle-build-action@v3
         with:
-          cache-disabled: false
+          cache-disabled: true
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: :cosmotech-dataset-api:integrationTest --tests "com.cosmotech.dataset.service.DatasetServiceIntegrationTest" -x spotlessCheck -x openApiValidate
@@ -171,7 +171,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: gradle/gradle-build-action@v3
         with:
-          cache-disabled: false
+          cache-disabled: true
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: :cosmotech-organization-api:integrationTest --tests "com.cosmotech.organization.service.OrganizationServiceIntegrationTest" -x spotlessCheck -x openApiValidate
@@ -181,7 +181,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: gradle/gradle-build-action@v3
         with:
-          cache-disabled: false
+          cache-disabled: true
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: :cosmotech-organization-api:integrationTest --tests "com.cosmotech.organization.service.OrganizationServiceRBACTest" -x spotlessCheck -x openApiValidate
@@ -211,7 +211,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: gradle/gradle-build-action@v3
         with:
-          cache-disabled: false
+          cache-disabled: true
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: :cosmotech-scenario-api:integrationTest --tests "com.cosmotech.scenario.service.ScenarioServiceRBACTest" -x spotlessCheck -x openApiValidate
@@ -221,7 +221,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: gradle/gradle-build-action@v3
         with:
-          cache-disabled: false
+          cache-disabled: true
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: :cosmotech-scenario-api:integrationTest --tests "com.cosmotech.scenario.service.ScenarioServiceIntegrationTest" -x spotlessCheck -x openApiValidate
@@ -251,7 +251,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: gradle/gradle-build-action@v3
         with:
-          cache-disabled: false
+          cache-disabled: true
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: :cosmotech-scenariorun-api:integrationTest --tests "com.cosmotech.scenariorun.service.ScenarioRunServiceIntegrationTest" -x spotlessCheck -x openApiValidate
@@ -261,7 +261,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: gradle/gradle-build-action@v3
         with:
-          cache-disabled: false
+          cache-disabled: true
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: :cosmotech-scenariorun-api:integrationTest --tests "com.cosmotech.scenariorun.service.ScenarioRunServiceRBACTest" -x spotlessCheck -x openApiValidate
@@ -291,7 +291,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: gradle/gradle-build-action@v3
         with:
-          cache-disabled: false
+          cache-disabled: true
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: :cosmotech-solution-api:integrationTest --tests "com.cosmotech.solution.service.SolutionServiceIntegrationTest" -x spotlessCheck -x openApiValidate
@@ -302,7 +302,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: gradle/gradle-build-action@v3
         with:
-          cache-disabled: false
+          cache-disabled: true
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: :cosmotech-solution-api:integrationTest --tests "com.cosmotech.solution.service.SolutionServiceRBACTest" -x spotlessCheck -x openApiValidate
@@ -332,7 +332,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: gradle/gradle-build-action@v3
         with:
-          cache-disabled: false
+          cache-disabled: true
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: :cosmotech-twingraph-api:integrationTest -x spotlessCheck -x openApiValidate
@@ -362,7 +362,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: gradle/gradle-build-action@v3
         with:
-          cache-disabled: false
+          cache-disabled: true
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: :cosmotech-workspace-api:integrationTest --tests "com.cosmotech.worskpace.service.WorkspaceServiceIntegrationTest" -x spotlessCheck -x openApiValidate
@@ -373,7 +373,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: gradle/gradle-build-action@v3
         with:
-          cache-disabled: false
+          cache-disabled: true
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: :cosmotech-workspace-api:integrationTest --tests "com.cosmotech.worskpace.service.WorkspaceServiceRBACTest" -x spotlessCheck -x openApiValidate
@@ -403,7 +403,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: gradle/gradle-build-action@v3
         with:
-          cache-disabled: false
+          cache-disabled: true
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: :cosmotech-runner-api:integrationTest --tests "com.cosmotech.runner.service.RunnerServiceIntegrationTest" -x spotlessCheck -x openApiValidate
@@ -413,7 +413,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: gradle/gradle-build-action@v3
         with:
-          cache-disabled: false
+          cache-disabled: true
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: :cosmotech-runner-api:integrationTest --tests "com.cosmotech.runner.service.RunnerServiceRBACTest" -x spotlessCheck -x openApiValidate
@@ -443,7 +443,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: gradle/gradle-build-action@v3
         with:
-          cache-disabled: false
+          cache-disabled: true
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: :cosmotech-run-api:integrationTest -x spotlessCheck -x openApiValidate
@@ -473,7 +473,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: gradle/gradle-build-action@v3
         with:
-          cache-disabled: false
+          cache-disabled: true
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: :cosmotech-api:integrationTest -x spotlessCheck -x openApiValidate
@@ -663,7 +663,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: gradle/gradle-build-action@v3
         with:
-          cache-disabled: false
+          cache-disabled: true
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: |
@@ -731,7 +731,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: gradle/gradle-build-action@v3
         with:
-          cache-disabled: false
+          cache-disabled: true
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
           arguments: |
