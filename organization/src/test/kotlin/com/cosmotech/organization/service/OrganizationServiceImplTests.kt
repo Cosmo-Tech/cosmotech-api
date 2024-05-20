@@ -24,8 +24,6 @@ import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationRole
 import com.cosmotech.organization.domain.OrganizationSecurity
-import com.cosmotech.organization.domain.OrganizationService
-import com.cosmotech.organization.domain.OrganizationServices
 import com.cosmotech.organization.repository.OrganizationRepository
 import io.mockk.MockKAnnotations
 import io.mockk.every
@@ -210,76 +208,6 @@ class OrganizationServiceImplTests {
           }
 
   @TestFactory
-  fun `test RBAC updateTenantCredentials organization`() =
-      mapOf(
-              ROLE_VIEWER to true,
-              ROLE_EDITOR to false,
-              ROLE_ADMIN to false,
-              ROLE_VALIDATOR to true,
-              ROLE_USER to true,
-              ROLE_NONE to true)
-          .map { (role, shouldThrow) ->
-            rbacTest("Test RBAC updateTenantCredentials : $role", role, shouldThrow) {
-              every { organizationRepository.findByIdOrNull(any()) } returns it
-              every { organizationRepository.save(any()) } returns it
-              organizationApiService.updateTenantCredentialsByOrganizationId(
-                  it.id!!, mapOf(Pair("", "")))
-            }
-          }
-
-  @TestFactory
-  fun `test RBAC updateStorageConfiguration organization`() =
-      mapOf(
-              ROLE_VIEWER to true,
-              ROLE_EDITOR to false,
-              ROLE_ADMIN to false,
-              ROLE_VALIDATOR to true,
-              ROLE_USER to true,
-              ROLE_NONE to true)
-          .map { (role, shouldThrow) ->
-            rbacTest("Test RBAC updateStorageConfiguration : $role", role, shouldThrow) {
-              every { organizationRepository.findByIdOrNull(any()) } returns it
-              every { organizationRepository.save(any()) } returns it
-              organizationApiService.updateStorageByOrganizationId(it.id!!, OrganizationService())
-            }
-          }
-
-  @TestFactory
-  fun `test RBAC updateSolutionsContainerRegistry organization`() =
-      mapOf(
-              ROLE_VIEWER to true,
-              ROLE_EDITOR to false,
-              ROLE_ADMIN to false,
-              ROLE_VALIDATOR to true,
-              ROLE_USER to true,
-              ROLE_NONE to true)
-          .map { (role, shouldThrow) ->
-            rbacTest("Test RBAC updateSolutionsContainerRegistry : $role", role, shouldThrow) {
-              every { organizationRepository.findByIdOrNull(any()) } returns it
-              every { organizationRepository.save(any()) } returns it
-              organizationApiService.updateSolutionsContainerRegistryByOrganizationId(
-                  it.id!!, OrganizationService())
-            }
-          }
-
-  @TestFactory
-  fun `test RBAC updateStorage organization`() =
-      mapOf(
-              ROLE_VIEWER to true,
-              ROLE_EDITOR to false,
-              ROLE_ADMIN to false,
-              ROLE_VALIDATOR to true,
-              ROLE_USER to true,
-              ROLE_NONE to true)
-          .map { (role, shouldThrow) ->
-            rbacTest("Test RBAC updateStorage : $role", role, shouldThrow) {
-              every { organizationRepository.findByIdOrNull(any()) } returns it
-              every { organizationRepository.save(any()) } returns it
-              organizationApiService.updateStorageByOrganizationId(it.id!!, OrganizationService())
-            }
-          }
-
-  @TestFactory
   fun `test RBAC getOrganizationSecurity organization`() =
       mapOf(
               ROLE_VIEWER to false,
@@ -418,23 +346,6 @@ class OrganizationServiceImplTests {
         id = id,
         name = name,
         ownerId = name,
-        services =
-            OrganizationServices(
-                tenantCredentials = mutableMapOf(),
-                storage =
-                    OrganizationService(
-                        cloudService = "cloud",
-                        baseUri = "base",
-                        platformService = "platform",
-                        resourceUri = "resource",
-                        credentials = mutableMapOf(Pair(name, role))),
-                solutionsContainerRegistry =
-                    OrganizationService(
-                        cloudService = "cloud",
-                        baseUri = "base",
-                        platformService = "platform",
-                        resourceUri = "resource",
-                        credentials = mutableMapOf(Pair(name, role)))),
         security =
             OrganizationSecurity(
                 default = "none",

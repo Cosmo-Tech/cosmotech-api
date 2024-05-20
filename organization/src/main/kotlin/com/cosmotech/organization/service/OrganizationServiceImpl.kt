@@ -19,7 +19,6 @@ import com.cosmotech.api.rbac.getCommonRolesDefinition
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
 import com.cosmotech.api.utils.changed
-import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
@@ -30,8 +29,6 @@ import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationRole
 import com.cosmotech.organization.domain.OrganizationSecurity
-import com.cosmotech.organization.domain.OrganizationService
-import com.cosmotech.organization.domain.OrganizationServices
 import com.cosmotech.organization.repository.OrganizationRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -126,10 +123,6 @@ class OrganizationServiceImpl(
       existingOrganization.name = organization.name
       hasChanged = true
     }
-    if (organization.services != null && organization.changed(existingOrganization) { services }) {
-      existingOrganization.services = organization.services
-      hasChanged = true
-    }
 
     if (organization.security != existingOrganization.security) {
       logger.warn(
@@ -142,39 +135,6 @@ class OrganizationServiceImpl(
     } else {
       existingOrganization
     }
-  }
-
-  override fun updateSolutionsContainerRegistryByOrganizationId(
-      organizationId: String,
-      organizationService: OrganizationService
-  ) =
-      updateOrganizationServiceByOrganizationId(organizationId, organizationService) {
-        solutionsContainerRegistry
-      }
-
-  override fun updateStorageByOrganizationId(
-      organizationId: String,
-      organizationService: OrganizationService
-  ) = updateOrganizationServiceByOrganizationId(organizationId, organizationService) { storage }
-
-  override fun updateTenantCredentialsByOrganizationId(
-      organizationId: String,
-      requestBody: Map<String, Any>
-  ): Map<String, Any> {
-    val existingOrganization = getVerifiedOrganization(organizationId, PERMISSION_WRITE)
-    if (requestBody.isEmpty()) {
-      return requestBody
-    }
-    val existingServices = existingOrganization.services ?: OrganizationServices()
-    val existingTenantCredentials =
-        existingServices.tenantCredentials?.toMutableMap() ?: mutableMapOf()
-    existingTenantCredentials.putAll(requestBody)
-
-    existingServices.tenantCredentials = existingTenantCredentials
-    existingOrganization.services = existingServices
-
-    val updatedOrganization = organizationRepository.save(existingOrganization)
-    return updatedOrganization.services!!.tenantCredentials!!.toMap()
   }
 
   override fun getAllPermissions(): List<ComponentRolePermissions> {
@@ -281,37 +241,6 @@ class OrganizationServiceImpl(
     val organization = getVerifiedOrganization(organizationId)
     requiredPermissions.forEach { csmRbac.verify(organization.getRbac(), it) }
     return organization
-  }
-
-  private fun updateOrganizationServiceByOrganizationId(
-      organizationId: String,
-      organizationService: OrganizationService,
-      memberAccessBlock: OrganizationServices.() -> OrganizationService?
-  ): OrganizationService {
-    val existingOrganization = getVerifiedOrganization(organizationId, PERMISSION_WRITE)
-    val existingServices = existingOrganization.services ?: OrganizationServices()
-    val existingOrganizationService =
-        with(existingServices, memberAccessBlock) ?: OrganizationService()
-
-    var hasChanged =
-        existingOrganizationService
-            .compareToAndMutateIfNeeded(
-                organizationService, excludedFields = arrayOf("credentials"))
-            .isNotEmpty()
-    if (organizationService.credentials != null) {
-      val existingOrganizationServiceCredentials =
-          existingOrganizationService.credentials?.toMutableMap() ?: mutableMapOf()
-      existingOrganizationServiceCredentials.clear()
-      existingOrganizationServiceCredentials.putAll(organizationService.credentials ?: emptyMap())
-      hasChanged = true
-    }
-
-    if (hasChanged) {
-      existingOrganization.services = existingServices
-      organizationRepository.save(existingOrganization)
-    }
-
-    return existingOrganizationService
   }
 
   private fun initSecurity(userId: String): OrganizationSecurity {

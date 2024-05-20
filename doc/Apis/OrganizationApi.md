@@ -18,9 +18,6 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 | [**unregisterOrganization**](OrganizationApi.md#unregisterOrganization) | **DELETE** /organizations/{organization_id} | Unregister an organization |
 | [**updateOrganization**](OrganizationApi.md#updateOrganization) | **PATCH** /organizations/{organization_id} | Update an Organization |
 | [**updateOrganizationAccessControl**](OrganizationApi.md#updateOrganizationAccessControl) | **PATCH** /organizations/{organization_id}/security/access/{identity_id} | Update the specified access to User for an Organization |
-| [**updateSolutionsContainerRegistryByOrganizationId**](OrganizationApi.md#updateSolutionsContainerRegistryByOrganizationId) | **PATCH** /organizations/{organization_id}/services/solutionsContainerRegistry | Update the solutions container registry configuration for the Organization specified |
-| [**updateStorageByOrganizationId**](OrganizationApi.md#updateStorageByOrganizationId) | **PATCH** /organizations/{organization_id}/services/storage | Update storage configuration for the Organization specified |
-| [**updateTenantCredentialsByOrganizationId**](OrganizationApi.md#updateTenantCredentialsByOrganizationId) | **PATCH** /organizations/{organization_id}/services/tenantCredentials | Update tenant credentials for the Organization specified |
 
 
 <a name="addOrganizationAccessControl"></a>
@@ -369,84 +366,6 @@ Update the specified access to User for an Organization
 ### Return type
 
 [**OrganizationAccessControl**](../Models/OrganizationAccessControl.md)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: application/json
-- **Accept**: application/json
-
-<a name="updateSolutionsContainerRegistryByOrganizationId"></a>
-# **updateSolutionsContainerRegistryByOrganizationId**
-> OrganizationService updateSolutionsContainerRegistryByOrganizationId(organization\_id, OrganizationService)
-
-Update the solutions container registry configuration for the Organization specified
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **OrganizationService** | [**OrganizationService**](../Models/OrganizationService.md)| the new solutions container registry configuration to use | |
-
-### Return type
-
-[**OrganizationService**](../Models/OrganizationService.md)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
-
-<a name="updateStorageByOrganizationId"></a>
-# **updateStorageByOrganizationId**
-> OrganizationService updateStorageByOrganizationId(organization\_id, OrganizationService)
-
-Update storage configuration for the Organization specified
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **OrganizationService** | [**OrganizationService**](../Models/OrganizationService.md)| the new Storage configuration to use | |
-
-### Return type
-
-[**OrganizationService**](../Models/OrganizationService.md)
-
-### Authorization
-
-[oAuth2AuthCode](../README.md#oAuth2AuthCode)
-
-### HTTP request headers
-
-- **Content-Type**: application/json, application/yaml
-- **Accept**: application/json
-
-<a name="updateTenantCredentialsByOrganizationId"></a>
-# **updateTenantCredentialsByOrganizationId**
-> Map updateTenantCredentialsByOrganizationId(organization\_id, request\_body)
-
-Update tenant credentials for the Organization specified
-
-### Parameters
-
-|Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **organization\_id** | **String**| the Organization identifier | [default to null] |
-| **request\_body** | [**Map**](../Models/AnyType.md)| the new Tenant Credentials to use | |
-
-### Return type
-
-[**Map**](../Models/AnyType.md)
 
 ### Authorization
 

@@ -35,8 +35,6 @@ Models/Organization.md
 Models/OrganizationAccessControl.md
 Models/OrganizationRole.md
 Models/OrganizationSecurity.md
-Models/OrganizationService.md
-Models/OrganizationServices.md
 Models/QueryResult.md
 Models/ResourceSizeInfo.md
 Models/Run.md

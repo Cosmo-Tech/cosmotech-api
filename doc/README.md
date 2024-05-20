@@ -57,9 +57,6 @@ All URIs are relative to *https://dev.api.cosmotech.com*
 *OrganizationApi* | [**unregisterOrganization**](Apis/OrganizationApi.md#unregisterorganization) | **DELETE** /organizations/{organization_id} | Unregister an organization |
 *OrganizationApi* | [**updateOrganization**](Apis/OrganizationApi.md#updateorganization) | **PATCH** /organizations/{organization_id} | Update an Organization |
 *OrganizationApi* | [**updateOrganizationAccessControl**](Apis/OrganizationApi.md#updateorganizationaccesscontrol) | **PATCH** /organizations/{organization_id}/security/access/{identity_id} | Update the specified access to User for an Organization |
-*OrganizationApi* | [**updateSolutionsContainerRegistryByOrganizationId**](Apis/OrganizationApi.md#updatesolutionscontainerregistrybyorganizationid) | **PATCH** /organizations/{organization_id}/services/solutionsContainerRegistry | Update the solutions container registry configuration for the Organization specified |
-*OrganizationApi* | [**updateStorageByOrganizationId**](Apis/OrganizationApi.md#updatestoragebyorganizationid) | **PATCH** /organizations/{organization_id}/services/storage | Update storage configuration for the Organization specified |
-*OrganizationApi* | [**updateTenantCredentialsByOrganizationId**](Apis/OrganizationApi.md#updatetenantcredentialsbyorganizationid) | **PATCH** /organizations/{organization_id}/services/tenantCredentials | Update tenant credentials for the Organization specified |
 | *RunApi* | [**deleteRun**](Apis/RunApi.md#deleterun) | **DELETE** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id} | Delete a run |
 *RunApi* | [**getRun**](Apis/RunApi.md#getrun) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id} | Get the details of a run |
 *RunApi* | [**getRunLogs**](Apis/RunApi.md#getrunlogs) | **GET** /organizations/{organization_id}/workspaces/{workspace_id}/runners/{runner_id}/runs/{run_id}/logs | get the logs for the Run |
@@ -207,8 +204,6 @@ All URIs are relative to *https://dev.api.cosmotech.com*
  - [OrganizationAccessControl](./Models/OrganizationAccessControl.md)
  - [OrganizationRole](./Models/OrganizationRole.md)
  - [OrganizationSecurity](./Models/OrganizationSecurity.md)
- - [OrganizationService](./Models/OrganizationService.md)
- - [OrganizationServices](./Models/OrganizationServices.md)
  - [QueryResult](./Models/QueryResult.md)
  - [ResourceSizeInfo](./Models/ResourceSizeInfo.md)
  - [Run](./Models/Run.md)

@@ -24,7 +24,6 @@ import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationRole
 import com.cosmotech.organization.domain.OrganizationSecurity
-import com.cosmotech.organization.domain.OrganizationService
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
@@ -192,109 +191,6 @@ class OrganizationServiceRBACTest : CsmRedisTestBase() {
                 }
               }
             }
-          }
-
-  @TestFactory
-  fun `test RBAC updateTenantCredentialsByOrganizationId`() =
-      mapOf(
-              ROLE_VIEWER to true,
-              ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
-              ROLE_USER to true,
-              ROLE_NONE to true,
-              ROLE_ADMIN to false,
-          )
-          .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC updateTenantCredentialsByOrganizationId : $role") {
-              val organization =
-                  organizationApiService.registerOrganization(
-                      mockOrganizationWithRole(TEST_USER_MAIL, role))
-
-              if (shouldThrow) {
-                val exception =
-                    assertThrows<CsmAccessForbiddenException> {
-                      organizationApiService.updateTenantCredentialsByOrganizationId(
-                          organization.id!!, mapOf())
-                    }
-                assertEquals(
-                    "RBAC ${organization.id!!} - User does not have permission $PERMISSION_WRITE",
-                    exception.message)
-              } else {
-                assertDoesNotThrow {
-                  organizationApiService.updateTenantCredentialsByOrganizationId(
-                      organization.id!!, mapOf())
-                }
-              }
-            }
-          }
-
-  @TestFactory
-  fun `test RBAC updateStorageByOrganizationId`() =
-      mapOf(
-              ROLE_VIEWER to true,
-              ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
-              ROLE_USER to true,
-              ROLE_NONE to true,
-              ROLE_ADMIN to false,
-          )
-          .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test RBAC updateStorageByOrganizationId : $role") {
-              val organization =
-                  organizationApiService.registerOrganization(
-                      mockOrganizationWithRole(TEST_USER_MAIL, role))
-
-              if (shouldThrow) {
-                val exception =
-                    assertThrows<CsmAccessForbiddenException> {
-                      organizationApiService.updateStorageByOrganizationId(
-                          organization.id!!, OrganizationService())
-                    }
-                assertEquals(
-                    "RBAC ${organization.id!!} - User does not have permission $PERMISSION_WRITE",
-                    exception.message)
-              } else {
-                assertDoesNotThrow {
-                  organizationApiService.updateStorageByOrganizationId(
-                      organization.id!!, OrganizationService())
-                }
-              }
-            }
-          }
-
-  @TestFactory
-  fun `test RBAC updateSolutionsContainerRegistryByOrganizationId`() =
-      mapOf(
-              ROLE_VIEWER to true,
-              ROLE_EDITOR to false,
-              ROLE_VALIDATOR to true,
-              ROLE_USER to true,
-              ROLE_NONE to true,
-              ROLE_ADMIN to false,
-          )
-          .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest(
-                "Test RBAC updateSolutionsContainerRegistryByOrganizationId : $role") {
-                  val organization =
-                      organizationApiService.registerOrganization(
-                          mockOrganizationWithRole(TEST_USER_MAIL, role))
-
-                  if (shouldThrow) {
-                    val exception =
-                        assertThrows<CsmAccessForbiddenException> {
-                          organizationApiService.updateSolutionsContainerRegistryByOrganizationId(
-                              organization.id!!, OrganizationService())
-                        }
-                    assertEquals(
-                        "RBAC ${organization.id!!} - User does not have permission $PERMISSION_WRITE",
-                        exception.message)
-                  } else {
-                    assertDoesNotThrow {
-                      organizationApiService.updateSolutionsContainerRegistryByOrganizationId(
-                          organization.id!!, OrganizationService())
-                    }
-                  }
-                }
           }
 
   @TestFactory

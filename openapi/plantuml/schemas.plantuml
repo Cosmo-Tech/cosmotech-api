@@ -162,7 +162,6 @@ entity Organization {
     id: String
     name: String
     ownerId: String
-    services: OrganizationServices
     security: OrganizationSecurity
 }
 
@@ -178,20 +177,6 @@ entity OrganizationRole {
 entity OrganizationSecurity {
     * default: String
     * accessControlList: List<OrganizationAccessControl>
-}
-
-entity OrganizationService {
-    cloudService: String
-    baseUri: String
-    platformService: String
-    resourceUri: String
-    credentials: Map
-}
-
-entity OrganizationServices {
-    tenantCredentials: Map
-    storage: OrganizationService
-    solutionsContainerRegistry: OrganizationService
 }
 
 entity QueryResult {
@@ -859,7 +844,6 @@ ScenarioRunStatus -- "0..*" ScenarioRunStatusNode : nodes
 ScenarioResourceSizing -- ResourceSizeInfo : requests
 ScenarioResourceSizing -- ResourceSizeInfo : limits
 ScenarioSecurity -- "0..*" ScenarioAccessControl : accessControlList
-Organization -- OrganizationServices : services
 Organization -- OrganizationSecurity : security
 FileUploadValidation -- "0..*" FileUploadMetadata : nodes
 FileUploadValidation -- "0..*" FileUploadMetadata : edges
@@ -888,8 +872,6 @@ ScenarioRunContainer -- "0..*" ScenarioRunContainerArtifact : artifacts
 RunStartContainers -- "0..*" RunContainer : containers
 WorkspaceSecurity -- "0..*" WorkspaceAccessControl : accessControlList
 ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
-OrganizationServices -- OrganizationService : storage
-OrganizationServices -- OrganizationService : solutionsContainerRegistry
 ScenarioRun -- "0..*" RunTemplateParameterValue : parametersValues
 ScenarioRun -- "0..*" ScenarioRunContainer : containers
 RunContainer -- ContainerResourceSizing : runSizing
