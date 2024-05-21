@@ -265,7 +265,7 @@ subprojects {
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-rules-libraries:$detektVersion")
     // Workaround until Detekt adds support for JVM Target 17
     // See https://github.com/detekt/detekt/issues/4287
-    detekt("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.9.0")
+    detekt("org.jetbrains.kotlin:kotlin-compiler-embeddable:2.0.0")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesCoreVersion")
 
