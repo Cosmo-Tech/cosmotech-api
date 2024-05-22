@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.worskpace.service
 
-import com.azure.storage.blob.BlobServiceClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
@@ -71,7 +70,6 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
   val CONNECTED_DEFAULT_USER = "test.user@cosmotech.com"
   private val logger = LoggerFactory.getLogger(WorkspaceServiceIntegrationTest::class.java)
 
-  @MockK(relaxed = true) private lateinit var azureStorageBlobServiceClient: BlobServiceClient
   @MockK private lateinit var secretManagerMock: SecretManager
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
@@ -100,9 +98,6 @@ class WorkspaceServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")
-
-    ReflectionTestUtils.setField(
-        workspaceApiService, "azureStorageBlobServiceClient", azureStorageBlobServiceClient)
 
     ReflectionTestUtils.setField(workspaceApiService, "secretManager", secretManagerMock)
 

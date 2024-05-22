@@ -90,12 +90,6 @@ class ContainerFactoryTests {
                 ),
             baseUri = "https://phoenix.westeurope.kusto.windows.net",
         )
-    every { azure.storage } returns
-        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureStorage(
-            connectionString = "csmphoenix_storage_connection_string",
-            baseUri = "Not Used",
-            resourceUri = "Not Used",
-        )
     every { azure.containerRegistries } returns
         CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureContainerRegistries(
             core = "ghcr.io", solutions = "twinengines.azurecr.io")

@@ -65,6 +65,7 @@ val springDocVersion = "2.5.0"
 val swaggerParserVersion = "2.1.22"
 val commonsCsvVersion = "1.10.0"
 val apiValidationVersion = "3.0.2"
+val awsSpringVersion = "3.1.1"
 
 // Checks
 val detektVersion = "1.23.5"
@@ -317,14 +318,8 @@ subprojects {
     api("com.github.Cosmo-Tech:cosmotech-api-common:$cosmotechApiCommonVersion")
     api("com.github.Cosmo-Tech:cosmotech-api-azure:$cosmotechApiAzureVersion")
 
-    // https://mvnrepository.com/artifact/com.azure.spring/spring-cloud-azure-dependencies
-    implementation("com.azure.spring:spring-cloud-azure-dependencies:5.7.0")
-    // https://mvnrepository.com/artifact/com.azure.spring/spring-cloud-azure-starter-storage-blob
-    implementation("com.azure.spring:spring-cloud-azure-starter-storage-blob:5.7.0")
-    implementation("com.azure.spring:spring-cloud-azure-starter-storage:5.7.0")
-    implementation("com.azure.spring:spring-cloud-azure-starter-actuator:5.7.0")
-    // https://mvnrepository.com/artifact/com.azure/azure-storage-blob-batch
-    implementation("com.azure:azure-storage-blob-batch:12.20.1")
+    implementation(platform("io.awspring.cloud:spring-cloud-aws-dependencies:$awsSpringVersion"))
+    implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:$awsSpringVersion")
   }
 
   tasks.withType<KotlinCompile> {

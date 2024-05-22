@@ -83,8 +83,5 @@ config:
             ingestionUri: "https://changeme.kusto.windows.net"
         eventBus:
           baseUri: "amqps://changeme.servicebus.windows.net"
-        storage:
-          account-name: "changeme"
-          account-key: "changeme"
         containerRegistries:
           solutions: "localhost:5000"

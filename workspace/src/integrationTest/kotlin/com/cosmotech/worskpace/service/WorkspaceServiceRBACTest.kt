@@ -2,8 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.worskpace.service
 
-import com.azure.spring.cloud.core.resource.AzureStorageBlobProtocolResolver
-import com.azure.storage.blob.BlobServiceClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
@@ -39,6 +37,7 @@ import com.cosmotech.workspace.domain.WorkspaceSecret
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.redis.om.spring.RediSearchIndexer
+import io.awspring.cloud.s3.S3Template
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
@@ -73,9 +72,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
   val TEST_USER_MAIL = "testuser@mail.fr"
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
 
-  @MockK(relaxed = true) private lateinit var azureStorageBlobServiceClient: BlobServiceClient
-  @MockK(relaxed = true)
-  private lateinit var azureStorageBlobProtocolResolver: AzureStorageBlobProtocolResolver
+  @RelaxedMockK private lateinit var s3Client: S3Template
   @MockK private lateinit var secretManagerMock: SecretManager
   @MockK private lateinit var resource: Resource
   @MockK private lateinit var inputStream: InputStream
@@ -95,11 +92,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
 
-    ReflectionTestUtils.setField(
-        workspaceApiService, "azureStorageBlobServiceClient", azureStorageBlobServiceClient)
-    ReflectionTestUtils.setField(
-        workspaceApiService, "azureStorageBlobProtocolResolver", azureStorageBlobProtocolResolver)
-
+    ReflectionTestUtils.setField(workspaceApiService, "s3Client", s3Client)
     ReflectionTestUtils.setField(workspaceApiService, "secretManager", secretManagerMock)
 
     rediSearchIndexer.createIndexFor(Organization::class.java)
@@ -527,7 +520,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test Organization RBAC findAllWorkspaceFiles : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              every { azureStorageBlobProtocolResolver.getResources(any()) } returns emptyArray()
               val organizationSaved =
                   organizationApiService.registerOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = role))
@@ -640,12 +632,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               every { resource.getFilename() } returns ""
               every { resource.contentLength() } returns 1
               every { resource.getInputStream() } returns inputStream
-              every {
-                azureStorageBlobServiceClient
-                    .getBlobContainerClient(any())
-                    .getBlobClient(any(), any())
-                    .upload(any(), any(), any())
-              } returns Unit
 
               if (shouldThrow) {
                 val exception =
@@ -697,12 +683,6 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               every { resource.getFilename() } returns ""
               every { resource.contentLength() } returns 1
               every { resource.getInputStream() } returns inputStream
-              every {
-                azureStorageBlobServiceClient
-                    .getBlobContainerClient(any())
-                    .getBlobClient(any(), any())
-                    .upload(any(), any(), any())
-              } returns Unit
 
               if (shouldThrow) {
                 val exception =

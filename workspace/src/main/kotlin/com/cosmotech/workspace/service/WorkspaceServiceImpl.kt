@@ -2,12 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.workspace.service
 
-import com.azure.spring.cloud.core.resource.AzureStorageBlobProtocolResolver
-import com.azure.storage.blob.BlobServiceClient
-import com.azure.storage.blob.batch.BlobBatchClient
-import com.azure.storage.blob.models.DeleteSnapshotsOptionType
 import com.cosmotech.api.CsmPhoenixService
-import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.events.AddDatasetToWorkspace
 import com.cosmotech.api.events.AddWorkspaceToDataset
 import com.cosmotech.api.events.DeleteHistoricalDataOrganization
@@ -51,11 +46,13 @@ import com.cosmotech.workspace.domain.WorkspaceSecret
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.repository.WorkspaceRepository
 import com.cosmotech.workspace.utils.getWorkspaceSecretName
+import io.awspring.cloud.s3.S3Template
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.context.annotation.Scope
 import org.springframework.context.event.EventListener
+import org.springframework.core.io.InputStreamResource
 import org.springframework.core.io.Resource
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -66,11 +63,9 @@ import org.springframework.stereotype.Service
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Suppress("TooManyFunctions")
 internal class WorkspaceServiceImpl(
-    private val azureStorageBlobProtocolResolver: AzureStorageBlobProtocolResolver,
     private val organizationService: OrganizationApiServiceInterface,
     private val solutionService: SolutionApiService,
-    private val azureStorageBlobServiceClient: BlobServiceClient,
-    private val azureStorageBlobBatchClient: BlobBatchClient,
+    private val s3Client: S3Template,
     private val csmRbac: CsmRbac,
     private val resourceScanner: ResourceScanner,
     private val secretManager: SecretManager,
@@ -144,28 +139,7 @@ internal class WorkspaceServiceImpl(
 
   override fun deleteAllWorkspaceFiles(organizationId: String, workspaceId: String) {
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
-
-    logger.debug("Deleting all files for workspace #{} ({})", workspace.id, workspace.name)
-
-    GlobalScope.launch(SecurityCoroutineContext()) {
-      // TODO Consider using a smaller coroutine scope
-      val workspaceFiles =
-          getWorkspaceFileResources(organizationId, workspaceId)
-              .map { it.url }
-              .map { it.toExternalForm() }
-      if (workspaceFiles.isEmpty()) {
-        logger.debug("No file to delete for workspace $workspaceId")
-      } else {
-        azureStorageBlobBatchClient
-            .deleteBlobs(workspaceFiles, DeleteSnapshotsOptionType.INCLUDE)
-            .forEach { response ->
-              logger.debug(
-                  "Deleting blob with URL {} completed with status code {}",
-                  response.request.url,
-                  response.statusCode)
-            }
-      }
-    }
+    deleteAllS3WorkspaceObjects(organizationId, workspace)
   }
 
   override fun updateWorkspace(
@@ -204,7 +178,7 @@ internal class WorkspaceServiceImpl(
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_DELETE)
 
     try {
-      deleteAllWorkspaceFiles(organizationId, workspaceId)
+      deleteAllS3WorkspaceObjects(organizationId, workspace)
       secretManager.deleteSecret(
           csmPlatformProperties.namespace, getWorkspaceSecretName(organizationId, workspace.key))
 
@@ -220,17 +194,11 @@ internal class WorkspaceServiceImpl(
   }
 
   override fun deleteWorkspaceFile(organizationId: String, workspaceId: String, fileName: String) {
+    if (".." in fileName) {
+      throw IllegalArgumentException("Invalid filename: '$fileName'. '..' is not allowed")
+    }
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_WRITE)
-
-    logger.debug(
-        "Deleting file resource from workspace #{} ({}): {}",
-        workspace.id,
-        workspace.name,
-        fileName)
-    azureStorageBlobServiceClient
-        .getBlobContainerClient(organizationId.sanitizeForAzureStorage())
-        .getBlobClient("${workspaceId.sanitizeForAzureStorage()}/$fileName")
-        .delete()
+    deleteS3WorkspaceObject(organizationId, workspace, fileName)
   }
 
   override fun downloadWorkspaceFile(
@@ -243,12 +211,14 @@ internal class WorkspaceServiceImpl(
     }
     val workspace = getVerifiedWorkspace(organizationId, workspaceId, PERMISSION_READ)
     logger.debug(
-        "Downloading file resource to workspace #{} ({}): {}",
+        "Downloading file resource from workspace #{} ({}): {}",
         workspace.id,
         workspace.name,
         fileName)
-    return azureStorageBlobProtocolResolver.getResource(
-        "azure-blob://$organizationId/$workspaceId/".sanitizeForAzureStorage() + fileName)
+    return InputStreamResource(
+        s3Client
+            .download(csmPlatformProperties.s3.bucketName, "$organizationId/$workspaceId/$fileName")
+            .inputStream)
   }
 
   override fun uploadWorkspaceFile(
@@ -275,8 +245,7 @@ internal class WorkspaceServiceImpl(
     if (destination.isNullOrBlank()) {
       fileRelativeDestinationBuilder.append(file.filename)
     } else {
-      // Using multiple consecutive '/' in the path results in Azure Storage creating
-      // weird <empty> names in-between two subsequent '/'
+      // Using multiple consecutive '/' in the path is not supported in the storage upload
       val destinationSanitized = destination.removePrefix("/").replace(Regex("(/)\\1+"), "/")
       fileRelativeDestinationBuilder.append(destinationSanitized)
       if (destinationSanitized.endsWith("/")) {
@@ -284,10 +253,15 @@ internal class WorkspaceServiceImpl(
       }
     }
 
-    azureStorageBlobServiceClient
-        .getBlobContainerClient(organizationId.sanitizeForAzureStorage())
-        .getBlobClient("${workspaceId.sanitizeForAzureStorage()}/$fileRelativeDestinationBuilder")
-        .upload(file.inputStream, file.contentLength(), overwrite)
+    val objectKey = "$organizationId/$workspaceId/$fileRelativeDestinationBuilder"
+
+    if (overwrite == false &&
+        s3Client.objectExists(csmPlatformProperties.s3.bucketName, objectKey)) {
+      throw IllegalArgumentException(
+          "File '$fileRelativeDestinationBuilder' already exists, not overwriting it")
+    }
+
+    s3Client.upload(csmPlatformProperties.s3.bucketName, objectKey, file.inputStream)
     return WorkspaceFile(fileName = fileRelativeDestinationBuilder.toString())
   }
 
@@ -298,9 +272,8 @@ internal class WorkspaceServiceImpl(
     val workspace = getVerifiedWorkspace(organizationId, workspaceId)
 
     logger.debug("List all files for workspace #{} ({})", workspace.id, workspace.name)
-    return getWorkspaceFileResources(organizationId, workspaceId)
-        .mapNotNull { it.filename?.removePrefix("${workspaceId.sanitizeForAzureStorage()}/") }
-        .map { WorkspaceFile(fileName = it) }
+
+    return getWorkspaceFiles(organizationId, workspaceId)
   }
 
   override fun createSecret(
@@ -334,17 +307,14 @@ internal class WorkspaceServiceImpl(
   @Async("csm-in-process-event-executor")
   fun onOrganizationUnregistered(organizationUnregistered: OrganizationUnregistered) {
     val organizationId = organizationUnregistered.organizationId
-    try {
-      azureStorageBlobServiceClient.deleteBlobContainer(organizationId)
-    } finally {
-      val pageable: Pageable =
-          Pageable.ofSize(csmPlatformProperties.twincache.workspace.defaultPageSize)
-      val workspaces = workspaceRepository.findByOrganizationId(organizationId, pageable).toList()
-      workspaces.forEach {
-        workspaceRepository.delete(it)
-        if (csmPlatformProperties.internalResultServices?.enabled == true) {
-          this.eventPublisher.publishEvent(WorkspaceDeleted(this, organizationId, it.id!!))
-        }
+    val pageable: Pageable =
+        Pageable.ofSize(csmPlatformProperties.twincache.workspace.defaultPageSize)
+    val workspaces = workspaceRepository.findByOrganizationId(organizationId, pageable).toList()
+    workspaces.forEach {
+      deleteAllS3WorkspaceObjects(organizationId, it)
+      workspaceRepository.delete(it)
+      if (csmPlatformProperties.internalResultServices?.enabled == true) {
+        this.eventPublisher.publishEvent(WorkspaceDeleted(this, organizationId, it.id!!))
       }
     }
   }
@@ -403,14 +373,42 @@ internal class WorkspaceServiceImpl(
     return workspace
   }
 
-  private fun getWorkspaceFileResources(
+  private fun getWorkspaceFiles(organizationId: String, workspaceId: String): List<WorkspaceFile> {
+    val prefix = "${organizationId}/${workspaceId}/"
+    return s3Client.listObjects(csmPlatformProperties.s3.bucketName, prefix).map {
+      WorkspaceFile(fileName = it.getFilename().removePrefix(prefix))
+    }
+  }
+
+  private fun deleteS3WorkspaceObject(
       organizationId: String,
-      workspaceId: String
-  ): List<Resource> {
-    findWorkspaceById(organizationId, workspaceId)
-    return azureStorageBlobProtocolResolver
-        .getResources("azure-blob://$organizationId/$workspaceId/**/*".sanitizeForAzureStorage())
-        .map { it as Resource }
+      workspace: Workspace,
+      fileName: String
+  ) {
+    logger.debug(
+        "Deleting file resource from workspace #{} ({}): {}",
+        workspace.id,
+        workspace.name,
+        fileName)
+
+    s3Client.deleteObject(
+        csmPlatformProperties.s3.bucketName, "$organizationId/${workspace.id}/$fileName")
+  }
+
+  private fun deleteAllS3WorkspaceObjects(organizationId: String, workspace: Workspace) {
+    logger.debug("Deleting all files for workspace #{} ({})", workspace.id, workspace.name)
+
+    GlobalScope.launch(SecurityCoroutineContext()) {
+      // TODO Consider using a smaller coroutine scope
+      val workspaceFiles = getWorkspaceFiles(organizationId, workspace.id!!)
+      if (workspaceFiles.isEmpty()) {
+        logger.debug("No file to delete for workspace #{} ({})", workspace.id, workspace.name)
+      } else {
+        workspaceFiles.forEach { file ->
+          deleteS3WorkspaceObject(organizationId, workspace, file.fileName!!)
+        }
+      }
+    }
   }
 
   override fun getWorkspacePermissions(

@@ -58,6 +58,11 @@ csm:
       host: "localhost"
       username: "eventbus_admin_username"
       password: "eventbus_admin_password"
+    s3:
+      endpointUrl: "http://localhost:9000"
+      bucketName: "cosmotech-api"
+      accessKeyId: "s3_username"
+      secretAccessKey: "s3_password"
     argo:
       base-uri: "http://localhost:2746"
     azure:
@@ -72,9 +77,5 @@ csm:
           ingestionUri: "https://ingest-phoenixdev.westeurope.kusto.windows.net"
       eventBus:
         baseUri: "amqps://phoenixdev.servicebus.windows.net"
-      storage:
-        # TODO Fill these values or reach out to the Cosmo Tech Platform Team for support
-        account-name: "csmphoenixdev"
-        account-key: "[fill-this-value]"
       containerRegistries:
         solutions: "localhost:5000"

@@ -69,9 +69,6 @@ config:
             ingestionUri: "https://changeme.kusto.windows.net"
         eventBus:
           baseUri: "amqps://changeme.servicebus.windows.net"
-        storage:
-          account-name: "changeme"
-          account-key: "changeme"
       containerRegistry:
         provider: azure
         registryUrl: "https://changeme.azurecr.io"

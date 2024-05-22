@@ -210,10 +210,5 @@ config:
             ingestionUri: "changeme"
         eventBus:
           baseUri: "changeme"
-        storage:
-          # -- Azure storage account name. Length should be between 3 and 24 and use numbers and lower-case letters only
-          account-name: "changeme"
-          # -- Azure storage account access key. Can be retrieved from the Azure portal
-          account-key: "changeme"
         containerRegistries:
           solutions: ""

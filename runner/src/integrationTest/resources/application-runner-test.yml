@@ -20,27 +20,20 @@ spring:
         session-stateless: true
         app-id-uri: "fake_app_id_uri"
         enabled: true
-      storage:
-        blob:
-          # Storage account name length should be between 3 and 24 and use numbers and lower-case letters only
-          account-name: "fakeaccountname"
-          # Fill storage account access key copied from portal
-          account-key: "fakeaccountkey"
-          # Fill storage endpoint URL copied from portal
-          endpoint: "https://fakeaccountname.blob.core.windows.net"
-          enabled: true
+    aws:
+      credentials:
+        access-key: "s3_username"
+        secret-key: "s3_password"
+      s3:
+        region: "dummy"
+        path-style-access-enabled: true
+        endpoint: "http://localhost:9000"
   main:
     banner-mode: "off"
 
 management:
   endpoints:
     enabled-by-default: false
-
-azure:
-  storage:
-    account-name: "faketestaccountname"
-    account-key: "this_is_a_key_base64_encoded"
-    blob-endpoint: "https://faketestaccountname.blob.core.windows.net"
 
 csm:
   platform:
@@ -112,6 +105,11 @@ csm:
         default-page-size: 20
     rbac:
       enabled: true
+    s3:
+      endpointUrl: "http://localhost:9000"
+      bucketName: "test-bucket"
+      accessKeyId: "s3_username"
+      secretAccessKey: "s3_password"
 
 
 

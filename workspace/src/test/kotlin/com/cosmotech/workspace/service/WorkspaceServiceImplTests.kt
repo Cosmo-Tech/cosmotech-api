@@ -2,11 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.workspace.service
 
-import com.azure.spring.cloud.core.resource.AzureStorageBlobProtocolResolver
-import com.azure.storage.blob.BlobContainerClient
-import com.azure.storage.blob.BlobServiceClient
-import com.azure.storage.blob.batch.BlobBatchClient
-import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.events.CsmEventPublisher
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
@@ -42,6 +37,7 @@ import com.cosmotech.workspace.domain.WorkspaceRole
 import com.cosmotech.workspace.domain.WorkspaceSecurity
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import com.cosmotech.workspace.repository.WorkspaceRepository
+import io.awspring.cloud.s3.S3Template
 import io.mockk.MockKAnnotations
 import io.mockk.confirmVerified
 import io.mockk.every
@@ -71,20 +67,19 @@ const val ORGANIZATION_ID = "O-AbCdEf123"
 const val WORKSPACE_ID = "W-BcDeFg123"
 const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
 const val CONNECTED_DEFAULT_USER = "test.user@cosmotech.com"
+const val S3_BUCKET_NAME = "test-bucket"
 
 @ExtendWith(MockKExtension::class)
 @Suppress("LargeClass")
 class WorkspaceServiceImplTests {
 
-  @MockK private lateinit var azureStorageBlobProtocolResolver: AzureStorageBlobProtocolResolver
   @MockK private lateinit var solutionService: SolutionApiServiceInterface
   @MockK private lateinit var resource: Resource
   @MockK private lateinit var inputStream: InputStream
   @RelaxedMockK private lateinit var organizationService: OrganizationApiServiceInterface
-  @MockK private lateinit var azureStorageBlobServiceClient: BlobServiceClient
   @Suppress("unused") @MockK private lateinit var secretManager: SecretManager
 
-  @Suppress("unused") @MockK private lateinit var azureStorageBlobBatchClient: BlobBatchClient
+  @RelaxedMockK private lateinit var s3Client: S3Template
 
   @Suppress("unused") @MockK private var eventPublisher: CsmEventPublisher = mockk(relaxed = true)
   @Suppress("unused") @MockK private var idGenerator: CsmIdGenerator = mockk(relaxed = true)
@@ -133,6 +128,9 @@ class WorkspaceServiceImplTests {
     every { csmPlatformProperties.rbac.enabled } returns true
     every { csmPlatformProperties.upload } returns csmPlatformPropertiesUpload
 
+    every { csmPlatformProperties.s3.bucketName } returns S3_BUCKET_NAME
+    every { s3Client.objectExists(any(), any()) } returns false
+
     MockKAnnotations.init(this)
   }
 
@@ -147,23 +145,19 @@ class WorkspaceServiceImplTests {
     val file = mockk<Resource>(relaxed = true)
     every { file.filename } returns "my_file.txt"
 
-    val blobContainerClient = mockk<BlobContainerClient>(relaxed = true)
-    every { azureStorageBlobServiceClient.getBlobContainerClient(any()) } returns
-        blobContainerClient
-
     val workspaceFile =
         workspaceServiceImpl.uploadWorkspaceFile(ORGANIZATION_ID, WORKSPACE_ID, file, false, null)
     assertNotNull(workspaceFile.fileName)
     assertEquals("my_file.txt", workspaceFile.fileName)
 
     verify(exactly = 1) {
-      azureStorageBlobServiceClient.getBlobContainerClient(
-          ORGANIZATION_ID.sanitizeForAzureStorage())
+      s3Client.objectExists(S3_BUCKET_NAME, "$ORGANIZATION_ID/$WORKSPACE_ID/my_file.txt")
     }
     verify(exactly = 1) {
-      blobContainerClient.getBlobClient("${WORKSPACE_ID.sanitizeForAzureStorage()}/my_file.txt")
+      s3Client.upload(
+          S3_BUCKET_NAME, "$ORGANIZATION_ID/$WORKSPACE_ID/my_file.txt", file.inputStream)
     }
-    confirmVerified(azureStorageBlobServiceClient, blobContainerClient)
+    confirmVerified(s3Client)
   }
 
   @Test
@@ -179,23 +173,19 @@ class WorkspaceServiceImplTests {
     val file = mockk<Resource>(relaxed = true)
     every { file.filename } returns "my_file.txt"
 
-    val blobContainerClient = mockk<BlobContainerClient>(relaxed = true)
-    every { azureStorageBlobServiceClient.getBlobContainerClient(any()) } returns
-        blobContainerClient
-
     val workspaceFile =
         workspaceServiceImpl.uploadWorkspaceFile(ORGANIZATION_ID, WORKSPACE_ID, file, false, "  ")
     assertNotNull(workspaceFile.fileName)
     assertEquals("my_file.txt", workspaceFile.fileName)
 
     verify(exactly = 1) {
-      azureStorageBlobServiceClient.getBlobContainerClient(
-          ORGANIZATION_ID.sanitizeForAzureStorage())
+      s3Client.objectExists(S3_BUCKET_NAME, "$ORGANIZATION_ID/$WORKSPACE_ID/my_file.txt")
     }
     verify(exactly = 1) {
-      blobContainerClient.getBlobClient("${WORKSPACE_ID.sanitizeForAzureStorage()}/my_file.txt")
+      s3Client.upload(
+          S3_BUCKET_NAME, "$ORGANIZATION_ID/$WORKSPACE_ID/my_file.txt", file.inputStream)
     }
-    confirmVerified(azureStorageBlobServiceClient, blobContainerClient)
+    confirmVerified(s3Client)
   }
 
   @Test
@@ -209,10 +199,6 @@ class WorkspaceServiceImplTests {
     val file = mockk<Resource>(relaxed = true)
     every { file.filename } returns "my_file.txt"
 
-    val blobContainerClient = mockk<BlobContainerClient>(relaxed = true)
-    every { azureStorageBlobServiceClient.getBlobContainerClient(any()) } returns
-        blobContainerClient
-
     val workspaceFile =
         workspaceServiceImpl.uploadWorkspaceFile(
             ORGANIZATION_ID, WORKSPACE_ID, file, false, "my/destination/")
@@ -220,14 +206,16 @@ class WorkspaceServiceImplTests {
     assertEquals("my/destination/my_file.txt", workspaceFile.fileName)
 
     verify(exactly = 1) {
-      azureStorageBlobServiceClient.getBlobContainerClient(
-          ORGANIZATION_ID.sanitizeForAzureStorage())
+      s3Client.objectExists(
+          S3_BUCKET_NAME, "$ORGANIZATION_ID/$WORKSPACE_ID/my/destination/my_file.txt")
     }
     verify(exactly = 1) {
-      blobContainerClient.getBlobClient(
-          "${WORKSPACE_ID.sanitizeForAzureStorage()}/my/destination/my_file.txt")
+      s3Client.upload(
+          S3_BUCKET_NAME,
+          "$ORGANIZATION_ID/$WORKSPACE_ID/my/destination/my_file.txt",
+          file.inputStream)
     }
-    confirmVerified(azureStorageBlobServiceClient, blobContainerClient)
+    confirmVerified(s3Client)
   }
 
   @Test
@@ -241,10 +229,6 @@ class WorkspaceServiceImplTests {
     val file = mockk<Resource>(relaxed = true)
     every { file.filename } returns "my_file.txt"
 
-    val blobContainerClient = mockk<BlobContainerClient>(relaxed = true)
-    every { azureStorageBlobServiceClient.getBlobContainerClient(any()) } returns
-        blobContainerClient
-
     val workspaceFile =
         workspaceServiceImpl.uploadWorkspaceFile(
             ORGANIZATION_ID, WORKSPACE_ID, file, false, "my/destination/file")
@@ -252,14 +236,13 @@ class WorkspaceServiceImplTests {
     assertEquals("my/destination/file", workspaceFile.fileName)
 
     verify(exactly = 1) {
-      azureStorageBlobServiceClient.getBlobContainerClient(
-          ORGANIZATION_ID.sanitizeForAzureStorage())
+      s3Client.objectExists(S3_BUCKET_NAME, "$ORGANIZATION_ID/$WORKSPACE_ID/my/destination/file")
     }
     verify(exactly = 1) {
-      blobContainerClient.getBlobClient(
-          "${WORKSPACE_ID.sanitizeForAzureStorage()}/my/destination/file")
+      s3Client.upload(
+          S3_BUCKET_NAME, "$ORGANIZATION_ID/$WORKSPACE_ID/my/destination/file", file.inputStream)
     }
-    confirmVerified(azureStorageBlobServiceClient, blobContainerClient)
+    confirmVerified(s3Client)
   }
 
   @Test
@@ -273,10 +256,6 @@ class WorkspaceServiceImplTests {
     val file = mockk<Resource>(relaxed = true)
     every { file.filename } returns "my_file.txt"
 
-    val blobContainerClient = mockk<BlobContainerClient>(relaxed = true)
-    every { azureStorageBlobServiceClient.getBlobContainerClient(any()) } returns
-        blobContainerClient
-
     val workspaceFile =
         workspaceServiceImpl.uploadWorkspaceFile(
             ORGANIZATION_ID, WORKSPACE_ID, file, false, "my//other/destination////////file")
@@ -284,36 +263,28 @@ class WorkspaceServiceImplTests {
     assertEquals("my/other/destination/file", workspaceFile.fileName)
 
     verify(exactly = 1) {
-      azureStorageBlobServiceClient.getBlobContainerClient(
-          ORGANIZATION_ID.sanitizeForAzureStorage())
+      s3Client.objectExists(
+          S3_BUCKET_NAME, "$ORGANIZATION_ID/$WORKSPACE_ID/my/other/destination/file")
     }
     verify(exactly = 1) {
-      blobContainerClient.getBlobClient(
-          "${WORKSPACE_ID.sanitizeForAzureStorage()}/my/other/destination/file")
+      s3Client.upload(
+          S3_BUCKET_NAME,
+          "$ORGANIZATION_ID/$WORKSPACE_ID/my/other/destination/file",
+          file.inputStream)
     }
-    confirmVerified(azureStorageBlobServiceClient, blobContainerClient)
+    confirmVerified(s3Client)
   }
 
   @Test
   fun `Calling uploadWorkspaceFile is not allowed when destination contains double-dot`() {
-    val blobContainerClient = mockk<BlobContainerClient>(relaxed = true)
-    every { azureStorageBlobServiceClient.getBlobContainerClient(any()) } returns
-        blobContainerClient
-
     assertThrows<IllegalArgumentException> {
       workspaceServiceImpl.uploadWorkspaceFile(
           ORGANIZATION_ID, WORKSPACE_ID, mockk(), false, "my/../other/destination/../../file")
     }
 
-    verify(exactly = 0) {
-      azureStorageBlobServiceClient.getBlobContainerClient(
-          ORGANIZATION_ID.sanitizeForAzureStorage())
-    }
-    verify(exactly = 0) {
-      blobContainerClient.getBlobClient(
-          "${WORKSPACE_ID.sanitizeForAzureStorage()}/my/other/destination/file")
-    }
-    confirmVerified(azureStorageBlobServiceClient, blobContainerClient)
+    verify(exactly = 0) { s3Client.objectExists(any(), any()) }
+    verify(exactly = 0) { s3Client.upload(any(), any(), any()) }
+    confirmVerified(s3Client)
   }
 
   @Test
@@ -323,8 +294,8 @@ class WorkspaceServiceImplTests {
           ORGANIZATION_ID, WORKSPACE_ID, "my/../../other/destination/file")
     }
 
-    verify(exactly = 0) { azureStorageBlobProtocolResolver.getResource(any()) }
-    confirmVerified(azureStorageBlobProtocolResolver)
+    verify(exactly = 0) { s3Client.download(any(), any()) }
+    confirmVerified(s3Client)
   }
 
   @Test
@@ -476,12 +447,6 @@ class WorkspaceServiceImplTests {
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC delete workspace file: $role", role, shouldThrow) {
               every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
-              every {
-                azureStorageBlobServiceClient
-                    .getBlobContainerClient(any())
-                    .getBlobClient(any())
-                    .delete()
-              } returns mockk()
               workspaceServiceImpl.deleteWorkspaceFile(it.organization.id!!, it.workspace.id!!, "")
             }
           }
@@ -498,7 +463,6 @@ class WorkspaceServiceImplTests {
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC download workspace file: $role", role, shouldThrow) {
               every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
-              every { azureStorageBlobProtocolResolver.getResource(any()) } returns mockk()
               workspaceServiceImpl.downloadWorkspaceFile(
                   it.organization.id!!, it.workspace.id!!, "")
             }
@@ -517,12 +481,6 @@ class WorkspaceServiceImplTests {
             rbacTest("Test RBAC upload workspace file: $role", role, shouldThrow) {
               every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
               every { resource.filename } returns "name"
-              every {
-                azureStorageBlobServiceClient
-                    .getBlobContainerClient(any())
-                    .getBlobClient(any())
-                    .upload(any() as InputStream, any(), any())
-              } returns mockk()
               every { resource.inputStream } returns inputStream
               every { resource.contentLength() } returns 0
               workspaceServiceImpl.uploadWorkspaceFile(
@@ -542,8 +500,6 @@ class WorkspaceServiceImplTests {
           .map { (role, shouldThrow) ->
             rbacTest("Test RBAC findAllWorkspaceFiles: $role", role, shouldThrow) {
               every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
-              every { azureStorageBlobServiceClient.getBlobContainerClient(any()) } returns mockk()
-              every { azureStorageBlobProtocolResolver.getResources(any()) } returns arrayOf()
               workspaceServiceImpl.findAllWorkspaceFiles(it.organization.id!!, it.workspace.id!!)
             }
           }

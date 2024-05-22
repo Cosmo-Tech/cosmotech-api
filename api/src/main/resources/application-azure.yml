@@ -36,10 +36,6 @@ csm:
           tenantId: null
           clientId: null
           clientSecret: null
-      storage:
-        base-uri: "changeme"
-        resource-uri: "changeme"
-        connection-string: "DefaultEndpointsProtocol=https;AccountName=${spring.cloud.azure.storage.blob.account-name};AccountKey=${azure.storage.account-key};EndpointSuffix=core.windows.net"
       containerRegistries:
         core: ghcr.io
         solutions: ""
@@ -98,13 +94,3 @@ spring:
         session-stateless: true
         app-id-uri: ${csm.platform.azure.appIdUri}
         enabled: true
-      storage:
-        blob:
-          # Storage account name length should be between 3 and 24 and use numbers and lower-case letters only
-          account-name: "${csm.platform.azure.storage.account-name}"
-          # Fill storage account access key copied from portal
-          account-key: "${csm.platform.azure.storage.account-key}"
-          # Fill storage endpoint URL copied from portal
-          endpoint: "https://${csm.platform.azure.storage.account-name}.blob.core.windows.net"
-          enabled: true
-
