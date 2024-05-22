@@ -2,9 +2,7 @@
 // Licensed under the MIT license.
 package com.cosmotech.solution.service
 
-import com.azure.storage.blob.BlobServiceClient
 import com.cosmotech.api.CsmPhoenixService
-import com.cosmotech.api.azure.sanitizeForAzureStorage
 import com.cosmotech.api.events.OrganizationUnregistered
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
@@ -20,7 +18,6 @@ import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
 import com.cosmotech.api.security.ROLE_PLATFORM_ADMIN
-import com.cosmotech.api.utils.ResourceScanner
 import com.cosmotech.api.utils.changed
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
 import com.cosmotech.api.utils.constructPageRequest
@@ -32,20 +29,14 @@ import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.service.getRbac
 import com.cosmotech.solution.SolutionApiServiceInterface
 import com.cosmotech.solution.domain.RunTemplate
-import com.cosmotech.solution.domain.RunTemplateHandlerId
 import com.cosmotech.solution.domain.RunTemplateParameter
 import com.cosmotech.solution.domain.RunTemplateParameterGroup
-import com.cosmotech.solution.domain.RunTemplateStepSource
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
 import com.cosmotech.solution.domain.SolutionRole
 import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.solution.repository.SolutionRepository
-import org.apache.commons.compress.archivers.ArchiveException
-import org.apache.commons.compress.archivers.ArchiveStreamFactory
 import org.springframework.context.event.EventListener
-import org.springframework.core.io.Resource
-import org.springframework.core.io.ResourceLoader
 import org.springframework.data.domain.Pageable
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
@@ -53,9 +44,6 @@ import org.springframework.stereotype.Service
 @Service
 @Suppress("TooManyFunctions")
 class SolutionServiceImpl(
-    private val resourceLoader: ResourceLoader,
-    private val azureStorageBlobServiceClient: BlobServiceClient,
-    private val resourceScanner: ResourceScanner,
     private val solutionRepository: SolutionRepository,
     private val organizationApiService: OrganizationApiServiceInterface,
     private val csmRbac: CsmRbac,
@@ -314,84 +302,6 @@ class SolutionServiceImpl(
     solutionRepository.deleteAll(solutions)
   }
 
-  override fun uploadRunTemplateHandler(
-      organizationId: String,
-      solutionId: String,
-      runTemplateId: String,
-      handlerId: RunTemplateHandlerId,
-      body: Resource,
-      overwrite: Boolean
-  ) {
-    var solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_WRITE)
-    solution = this.validateRunTemplate(solution, runTemplateId)
-    logger.debug(
-        "Uploading run template handler to solution #{} ({} - {})",
-        solution.id,
-        solution.name,
-        solution.version)
-
-    try {
-      val archiverType = ArchiveStreamFactory.detect(body.inputStream.buffered())
-      if (ArchiveStreamFactory.ZIP != archiverType) {
-        throw IllegalArgumentException(
-            "Invalid archive type: '$archiverType'. A Zip Archive is expected.")
-      }
-    } catch (ae: ArchiveException) {
-      throw IllegalArgumentException("A Zip Archive is expected.", ae)
-    }
-
-    resourceScanner.scanMimeTypes(body, csmPlatformProperties.upload.authorizedMimeTypes.handlers)
-
-    azureStorageBlobServiceClient
-        .getBlobContainerClient(organizationId.sanitizeForAzureStorage())
-        .getBlobClient(
-            "${solutionId.sanitizeForAzureStorage()}/$runTemplateId/${handlerId.value}.zip")
-        .upload(body.inputStream, body.contentLength(), overwrite)
-
-    val runTemplate =
-        solution.runTemplates?.findLast { it.id == runTemplateId }
-            ?: throw CsmResourceNotFoundException("Run Template '$runTemplateId' *not* found")
-    when (handlerId) {
-      RunTemplateHandlerId.parameters_handler ->
-          runTemplate.parametersHandlerSource = RunTemplateStepSource.cloud
-      RunTemplateHandlerId.validator ->
-          runTemplate.datasetValidatorSource = RunTemplateStepSource.cloud
-      RunTemplateHandlerId.prerun -> runTemplate.preRunSource = RunTemplateStepSource.cloud
-      RunTemplateHandlerId.engine -> runTemplate.runSource = RunTemplateStepSource.cloud
-      RunTemplateHandlerId.postrun -> runTemplate.postRunSource = RunTemplateStepSource.cloud
-      RunTemplateHandlerId.scenariodata_transform ->
-          runTemplate.scenariodataTransformSource = RunTemplateStepSource.cloud
-    }.run {
-      // This trick forces Kotlin to raise an error at compile time if the "when" statement is not
-      // exhaustive
-    }
-
-    solutionRepository.save(solution)
-  }
-
-  override fun downloadRunTemplateHandler(
-      organizationId: String,
-      solutionId: String,
-      runTemplateId: String,
-      handlerId: RunTemplateHandlerId
-  ): ByteArray {
-    var solution = getVerifiedSolution(organizationId, solutionId)
-    solution = this.validateRunTemplate(solution, runTemplateId)
-    val blobPath =
-        "${organizationId.sanitizeForAzureStorage()}/" +
-            "${solutionId.sanitizeForAzureStorage()}/" +
-            "$runTemplateId/${handlerId.value}.zip"
-    logger.debug(
-        "Downloading run template handler resource for #{} ({}-{}) - {} - {}: {}",
-        solution.id,
-        solution.name,
-        solution.version,
-        runTemplateId,
-        handlerId,
-        blobPath)
-    return resourceLoader.getResource("azure-blob://$blobPath").inputStream.readAllBytes()
-  }
-
   override fun getSolutionSecurity(organizationId: String, solutionId: String): SolutionSecurity {
     val solution = getVerifiedSolution(organizationId, solutionId, PERMISSION_READ_SECURITY)
     return solution.security
@@ -489,25 +399,6 @@ class SolutionServiceImpl(
               "Solution $solutionId not found in organization $organizationId")
         }
     csmRbac.verify(solution.getRbac(), requiredPermission)
-    return solution
-  }
-
-  private fun validateRunTemplate(
-      solution: Solution,
-      runTemplateId: String,
-  ): Solution {
-    val validRunTemplateIds = solution.runTemplates?.map { it.id }?.toSet()
-    if (validRunTemplateIds == null || validRunTemplateIds.isEmpty()) {
-      throw IllegalArgumentException(
-          "Solution ${solution.id} does not declare any run templates. " +
-              "It is therefore not possible to upload run template handlers. " +
-              "Either update the Solution or upload a new one with run templates.")
-    }
-    if (runTemplateId !in validRunTemplateIds) {
-      throw IllegalArgumentException(
-          "Invalid runTemplateId: [$runTemplateId]. Must be one of: $validRunTemplateIds")
-    }
-
     return solution
   }
 }

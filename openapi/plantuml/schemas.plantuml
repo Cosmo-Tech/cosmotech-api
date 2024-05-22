@@ -351,9 +351,6 @@ entity RunTemplate {
     deleteHistoricalData: DeleteHistoricalData
 }
 
-entity RunTemplateHandlerId {
-}
-
 entity RunTemplateOrchestrator {
 }
 

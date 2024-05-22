@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.solution.service
 
-import com.azure.storage.blob.BlobServiceClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.rbac.PERMISSION_CREATE_CHILDREN
@@ -27,7 +26,6 @@ import com.cosmotech.organization.domain.OrganizationAccessControl
 import com.cosmotech.organization.domain.OrganizationSecurity
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.solution.domain.RunTemplate
-import com.cosmotech.solution.domain.RunTemplateHandlerId
 import com.cosmotech.solution.domain.RunTemplateParameter
 import com.cosmotech.solution.domain.RunTemplateParameterGroup
 import com.cosmotech.solution.domain.Solution
@@ -42,7 +40,6 @@ import io.mockk.mockkStatic
 import java.io.InputStream
 import java.util.*
 import kotlin.test.assertEquals
-import org.apache.commons.compress.archivers.ArchiveStreamFactory
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
@@ -53,11 +50,9 @@ import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.core.io.Resource
-import org.springframework.core.io.ResourceLoader
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
-import org.springframework.test.util.ReflectionTestUtils
 
 @ActiveProfiles(profiles = ["solution-test"])
 @ExtendWith(MockKExtension::class)
@@ -67,8 +62,6 @@ import org.springframework.test.util.ReflectionTestUtils
 class SolutionServiceRBACTest : CsmRedisTestBase() {
 
   val TEST_USER_MAIL = "testuser@mail.fr"
-
-  @MockK(relaxed = true) private lateinit var azureStorageBlobServiceClient: BlobServiceClient
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
 
@@ -87,7 +80,6 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
   @MockK lateinit var resource: Resource
   @MockK lateinit var resourceScanner: ResourceScanner
   @MockK lateinit var inputStream: InputStream
-  @MockK lateinit var resourceLoader: ResourceLoader
 
   @BeforeEach
   fun setUp() {
@@ -1435,254 +1427,6 @@ class SolutionServiceRBACTest : CsmRedisTestBase() {
                 assertDoesNotThrow {
                   solutionApiService.updateSolutionRunTemplate(
                       organizationSaved.id!!, solutionSaved.id!!, "runTemplate", runTemplate)
-                }
-              }
-            }
-          }
-
-  @TestFactory
-  fun `test Organization RBAC downloadRunTemplateHandler`() =
-      mapOf(
-              ROLE_VIEWER to false,
-              ROLE_EDITOR to false,
-              ROLE_USER to false,
-              ROLE_NONE to true,
-              ROLE_ADMIN to false,
-          )
-          .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test Organization RBAC downloadRunTemplateHandler : $role") {
-              ReflectionTestUtils.setField(
-                  solutionApiService,
-                  "azureStorageBlobServiceClient",
-                  azureStorageBlobServiceClient)
-              ReflectionTestUtils.setField(solutionApiService, "resourceLoader", resourceLoader)
-
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-
-              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
-              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
-
-              val runTemplateHandlerId = RunTemplateHandlerId.values().first()
-
-              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
-
-              if (shouldThrow) {
-                val exception =
-                    assertThrows<CsmAccessForbiddenException> {
-                      solutionApiService.downloadRunTemplateHandler(
-                          organizationSaved.id!!,
-                          solutionSaved.id!!,
-                          "runTemplate",
-                          runTemplateHandlerId)
-                    }
-                assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
-                    exception.message)
-              } else {
-                every { resourceLoader.getResource(any()).inputStream } returns
-                    (this::class.java.getResource("/test_download.zip")?.openStream()!!)
-
-                assertDoesNotThrow {
-                  solutionApiService.downloadRunTemplateHandler(
-                      organizationSaved.id!!,
-                      solutionSaved.id!!,
-                      "runTemplate",
-                      runTemplateHandlerId)
-                }
-              }
-            }
-          }
-
-  @TestFactory
-  fun `test Solution RBAC downloadRunTemplateHandler`() =
-      mapOf(
-              ROLE_VIEWER to false,
-              ROLE_EDITOR to false,
-              ROLE_USER to false,
-              ROLE_NONE to true,
-              ROLE_ADMIN to false,
-          )
-          .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test Solution RBAC downloadRunTemplateHandler : $role") {
-              ReflectionTestUtils.setField(
-                  solutionApiService,
-                  "azureStorageBlobServiceClient",
-                  azureStorageBlobServiceClient)
-              ReflectionTestUtils.setField(solutionApiService, "resourceLoader", resourceLoader)
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-
-              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
-              organizationSaved = organizationApiService.registerOrganization(organization)
-              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
-
-              val runTemplateHandlerId = RunTemplateHandlerId.values().first()
-
-              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
-
-              if (shouldThrow) {
-                val exception =
-                    assertThrows<CsmAccessForbiddenException> {
-                      solutionApiService.downloadRunTemplateHandler(
-                          organizationSaved.id!!,
-                          solutionSaved.id!!,
-                          "runTemplate",
-                          runTemplateHandlerId)
-                    }
-                assertEquals(
-                    "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_READ",
-                    exception.message)
-              } else {
-                every { resourceLoader.getResource(any()).inputStream } returns
-                    (this::class.java.getResource("/test_download.zip")?.openStream()!!)
-
-                assertDoesNotThrow {
-                  solutionApiService.downloadRunTemplateHandler(
-                      organizationSaved.id!!,
-                      solutionSaved.id!!,
-                      "runTemplate",
-                      runTemplateHandlerId)
-                }
-              }
-            }
-          }
-
-  @TestFactory
-  fun `test Organization RBAC uploadRunTemplateHandler`() =
-      mapOf(
-              ROLE_VIEWER to false,
-              ROLE_EDITOR to false,
-              ROLE_USER to false,
-              ROLE_NONE to true,
-              ROLE_ADMIN to false,
-          )
-          .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test Organization RBAC uploadRunTemplateHandler : $role") {
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-
-              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = role)
-              organizationSaved = organizationApiService.registerOrganization(organization)
-              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
-
-              ReflectionTestUtils.setField(solutionApiService, "resourceScanner", resourceScanner)
-              every { resourceScanner.scanMimeTypes(any(), any()) } returns Unit
-              mockkStatic(ArchiveStreamFactory::class)
-              every { ArchiveStreamFactory.detect(any()) } returns "zip"
-              ReflectionTestUtils.setField(
-                  solutionApiService,
-                  "azureStorageBlobServiceClient",
-                  azureStorageBlobServiceClient)
-              every {
-                azureStorageBlobServiceClient
-                    .getBlobContainerClient(any())
-                    .getBlobClient(any())
-                    .upload(any(), any(), any())
-              } returns Unit
-
-              every { resource.contentLength() } returns 0
-              every { resource.getInputStream() } returns inputStream
-              every { inputStream.read() } returns 0
-
-              val runTemplateHandlerId = RunTemplateHandlerId.values().first()
-
-              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
-
-              if (shouldThrow) {
-                val exception =
-                    assertThrows<CsmAccessForbiddenException> {
-                      solutionApiService.uploadRunTemplateHandler(
-                          organizationSaved.id!!,
-                          solutionSaved.id!!,
-                          "runTemplate",
-                          runTemplateHandlerId,
-                          resource,
-                          true)
-                    }
-                assertEquals(
-                    "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
-                    exception.message)
-              } else {
-                assertDoesNotThrow {
-                  solutionApiService.uploadRunTemplateHandler(
-                      organizationSaved.id!!,
-                      solutionSaved.id!!,
-                      "runTemplate",
-                      runTemplateHandlerId,
-                      resource,
-                      true)
-                }
-              }
-            }
-          }
-
-  @TestFactory
-  fun `test Solution RBAC uploadRunTemplateHandler`() =
-      mapOf(
-              ROLE_VIEWER to true,
-              ROLE_EDITOR to false,
-              ROLE_USER to true,
-              ROLE_NONE to true,
-              ROLE_ADMIN to false,
-          )
-          .map { (role, shouldThrow) ->
-            DynamicTest.dynamicTest("Test Solution RBAC uploadRunTemplateHandler : $role") {
-              every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-
-              val organization = makeOrganizationWithRole(id = TEST_USER_MAIL, role = ROLE_ADMIN)
-              organizationSaved = organizationApiService.registerOrganization(organization)
-              val solution = makeSolutionWithRole(id = TEST_USER_MAIL, role = role)
-              solutionSaved = solutionApiService.createSolution(organizationSaved.id!!, solution)
-
-              ReflectionTestUtils.setField(solutionApiService, "resourceScanner", resourceScanner)
-              every { resourceScanner.scanMimeTypes(any(), any()) } returns Unit
-              mockkStatic(ArchiveStreamFactory::class)
-              every { ArchiveStreamFactory.detect(any()) } returns "zip"
-              ReflectionTestUtils.setField(
-                  solutionApiService,
-                  "azureStorageBlobServiceClient",
-                  azureStorageBlobServiceClient)
-              every {
-                azureStorageBlobServiceClient
-                    .getBlobContainerClient(any())
-                    .getBlobClient(any())
-                    .upload(any(), any(), any())
-              } returns Unit
-
-              every { resource.contentLength() } returns 0
-              every { resource.getInputStream() } returns inputStream
-              every { inputStream.read() } returns 0
-
-              val runTemplateHandlerId = RunTemplateHandlerId.values().first()
-
-              every { getCurrentAccountIdentifier(any()) } returns TEST_USER_MAIL
-
-              if (shouldThrow) {
-                val exception =
-                    assertThrows<CsmAccessForbiddenException> {
-                      solutionApiService.uploadRunTemplateHandler(
-                          organizationSaved.id!!,
-                          solutionSaved.id!!,
-                          "runTemplate",
-                          runTemplateHandlerId,
-                          resource,
-                          true)
-                    }
-
-                assertEquals(
-                    "RBAC ${solutionSaved.id!!} - User does not have permission $PERMISSION_WRITE",
-                    exception.message)
-              } else {
-                assertDoesNotThrow {
-                  solutionApiService.uploadRunTemplateHandler(
-                      organizationSaved.id!!,
-                      solutionSaved.id!!,
-                      "runTemplate",
-                      runTemplateHandlerId,
-                      resource,
-                      true)
                 }
               }
             }

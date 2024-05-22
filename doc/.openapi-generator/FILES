@@ -49,7 +49,6 @@ Models/RunState.md
 Models/RunStatus.md
 Models/RunStatusNode.md
 Models/RunTemplate.md
-Models/RunTemplateHandlerId.md
 Models/RunTemplateOrchestrator.md
 Models/RunTemplateParameter.md
 Models/RunTemplateParameterGroup.md

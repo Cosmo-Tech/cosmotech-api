@@ -160,13 +160,6 @@ csm:
           - text/plain
           - text/x-yaml
           - application/json
-        handlers:
-          - application/zip
-          - application/x-sh
-          - application/json
-          - text/x-python
-          - text/plain
-          - text/x-yaml
     loki:
       # base Url of Loki where to query logs
       baseUrl: http://loki.phoenix.svc.cluster.local:3100

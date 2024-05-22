@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 package com.cosmotech.solution.service
 
-import com.azure.storage.blob.BlobServiceClient
 import com.cosmotech.api.config.CsmPlatformProperties
 import com.cosmotech.api.exceptions.CsmAccessForbiddenException
 import com.cosmotech.api.exceptions.CsmResourceNotFoundException
@@ -29,7 +28,6 @@ import com.cosmotech.solution.domain.SolutionRole
 import com.cosmotech.solution.domain.SolutionSecurity
 import com.redis.om.spring.RediSearchIndexer
 import io.mockk.every
-import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockkStatic
 import java.util.*
@@ -46,7 +44,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
-import org.springframework.test.util.ReflectionTestUtils
 
 const val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
 const val CONNECTED_READER_USER = "test.user@cosmotech.com"
@@ -59,8 +56,6 @@ const val CONNECTED_READER_USER = "test.user@cosmotech.com"
 class SolutionServiceIntegrationTest : CsmRedisTestBase() {
 
   private val logger = LoggerFactory.getLogger(SolutionServiceIntegrationTest::class.java)
-
-  @MockK(relaxed = true) private lateinit var azureStorageBlobServiceClient: BlobServiceClient
 
   @Autowired lateinit var rediSearchIndexer: RediSearchIndexer
   @Autowired lateinit var organizationApiService: OrganizationApiServiceInterface
@@ -79,9 +74,6 @@ class SolutionServiceIntegrationTest : CsmRedisTestBase() {
     every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
     every { getCurrentAuthenticatedUserName(csmPlatformProperties) } returns "test.user"
     every { getCurrentAuthenticatedRoles(any()) } returns listOf("user")
-
-    ReflectionTestUtils.setField(
-        solutionApiService, "azureStorageBlobServiceClient", azureStorageBlobServiceClient)
 
     rediSearchIndexer.createIndexFor(Organization::class.java)
     rediSearchIndexer.createIndexFor(Solution::class.java)
