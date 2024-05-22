@@ -55,7 +55,7 @@ api/kubernetes/helm-chart/values-vcr.yaml
 /api/kubernetes/helm-chart/values-JREY*.yaml
 
 ### Logs ###
-logs/access_log*.log
+logs/*access_log*.log
 
 ### Helm ###
 # Chart dependencies
