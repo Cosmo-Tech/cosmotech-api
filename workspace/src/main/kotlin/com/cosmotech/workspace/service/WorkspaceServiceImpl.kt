@@ -408,7 +408,7 @@ internal class WorkspaceServiceImpl(
       workspaceId: String
   ): List<Resource> {
     findWorkspaceById(organizationId, workspaceId)
-    return AzureStorageBlobProtocolResolver()
+    return azureStorageBlobProtocolResolver
         .getResources("azure-blob://$organizationId/$workspaceId/**/*".sanitizeForAzureStorage())
         .map { it as Resource }
   }
