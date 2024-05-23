@@ -51,7 +51,6 @@ import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.impl.annotations.SpyK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
-import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
 import io.mockk.verify
 import java.io.InputStream
@@ -544,10 +543,7 @@ class WorkspaceServiceImplTests {
             rbacTest("Test RBAC findAllWorkspaceFiles: $role", role, shouldThrow) {
               every { workspaceRepository.findByIdOrNull(any()) } returns it.workspace
               every { azureStorageBlobServiceClient.getBlobContainerClient(any()) } returns mockk()
-              mockkConstructor(AzureStorageBlobProtocolResolver::class)
-              every {
-                anyConstructed<AzureStorageBlobProtocolResolver>().getResources(any())
-              } returns arrayOf()
+              every { azureStorageBlobProtocolResolver.getResources(any()) } returns arrayOf()
               workspaceServiceImpl.findAllWorkspaceFiles(it.organization.id!!, it.workspace.id!!)
             }
           }

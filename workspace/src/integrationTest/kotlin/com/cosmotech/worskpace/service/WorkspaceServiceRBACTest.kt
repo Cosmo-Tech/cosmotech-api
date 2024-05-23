@@ -43,7 +43,6 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
 import java.io.InputStream
 import java.util.*
@@ -75,6 +74,8 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
 
   @MockK(relaxed = true) private lateinit var azureStorageBlobServiceClient: BlobServiceClient
+  @MockK(relaxed = true)
+  private lateinit var azureStorageBlobProtocolResolver: AzureStorageBlobProtocolResolver
   @MockK private lateinit var secretManagerMock: SecretManager
   @MockK private lateinit var resource: Resource
   @MockK private lateinit var inputStream: InputStream
@@ -96,6 +97,8 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
 
     ReflectionTestUtils.setField(
         workspaceApiService, "azureStorageBlobServiceClient", azureStorageBlobServiceClient)
+    ReflectionTestUtils.setField(
+        workspaceApiService, "azureStorageBlobProtocolResolver", azureStorageBlobProtocolResolver)
 
     ReflectionTestUtils.setField(workspaceApiService, "secretManager", secretManagerMock)
 
@@ -524,10 +527,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
           .map { (role, shouldThrow) ->
             DynamicTest.dynamicTest("Test Organization RBAC findAllWorkspaceFiles : $role") {
               every { getCurrentAccountIdentifier(any()) } returns CONNECTED_ADMIN_USER
-              mockkConstructor(AzureStorageBlobProtocolResolver::class)
-              every {
-                anyConstructed<AzureStorageBlobProtocolResolver>().getResources(any())
-              } returns emptyArray()
+              every { azureStorageBlobProtocolResolver.getResources(any()) } returns emptyArray()
               val organizationSaved =
                   organizationApiService.registerOrganization(
                       makeOrganizationWithRole(id = TEST_USER_MAIL, role = role))
