@@ -79,6 +79,7 @@ import com.cosmotech.organization.service.getRbac
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
 import java.time.Instant
+import kotlin.jvm.optionals.getOrNull
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.apache.commons.compress.archivers.ArchiveStreamFactory
@@ -630,6 +631,27 @@ class DatasetServiceImpl(
       unifiedJedis.graphQuery(
           dataset.twingraphId!!, query, csmPlatformProperties.twincache.queryTimeout)
     }
+  }
+
+  override fun findByOrganizationIdAndDatasetId(
+      organizationId: String,
+      datasetId: String
+  ): Dataset? {
+    organizationService.getVerifiedOrganization(organizationId)
+    return datasetRepository.findBy(organizationId, datasetId).getOrNull()
+  }
+
+  override fun addOrUpdateAccessControl(
+      organizationId: String,
+      dataset: Dataset,
+      identity: String,
+      role: String
+  ): DatasetAccessControl {
+    val rbacSecurity = csmRbac.setUserRole(dataset.getRbac(), identity, role)
+    dataset.setRbac(rbacSecurity)
+    datasetRepository.save(dataset)
+    val rbacAccessControl = csmRbac.getAccessControl(dataset.getRbac(), identity)
+    return DatasetAccessControl(rbacAccessControl.id, rbacAccessControl.role)
   }
 
   fun <T> trx(dataset: Dataset, actionLambda: (Dataset) -> T): T {
