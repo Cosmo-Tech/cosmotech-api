@@ -23,7 +23,9 @@ import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetConnector
 import com.cosmotech.dataset.domain.DatasetSecurity
+import com.cosmotech.dataset.domain.SubDatasetGraphQuery
 import com.cosmotech.dataset.repository.DatasetRepository
+import com.cosmotech.dataset.service.getRbac
 import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.organization.domain.OrganizationAccessControl
@@ -59,6 +61,7 @@ import io.mockk.mockkStatic
 import java.time.Instant
 import java.util.*
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -742,7 +745,12 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
 
   @Test
   fun `test updating datasetList and assert the accessControlList has the correct users`() {
-    val newDataset = datasetApiService.createDataset(organizationSaved.id!!, makeDataset())
+    val newDataset =
+        datasetApiService.createSubDataset(
+            organizationSaved.id!!,
+            datasetSaved.id!!,
+            SubDatasetGraphQuery(
+                name = "Copy of datasetSaved", queries = mutableListOf("FAKE Query"), main = false))
     scenarioSaved =
         scenarioApiService.updateScenario(
             organizationSaved.id!!,
@@ -755,9 +763,15 @@ class ScenarioServiceIntegrationTest : CsmRedisTestBase() {
             organizationSaved.id!!, workspaceSaved.id!!, scenarioSaved.id!!)
 
     scenarioSaved.datasetList!!.forEach { thisDataset ->
-      val datasetUserList =
-          datasetApiService.getDatasetSecurityUsers(organizationSaved.id!!, thisDataset)
-      scenarioUserList.forEach { user -> assertTrue(datasetUserList.contains(user)) }
+      val dataset =
+          datasetApiService.findByOrganizationIdAndDatasetId(organizationSaved.id!!, thisDataset)
+      assertNotNull(dataset)
+      val datasetUserList = dataset.getRbac().accessControlList
+      if (dataset.main == null || dataset.main == true) {
+        datasetUserList.map { it.id }.forEach { assertTrue(scenarioUserList.contains(it)) }
+      } else {
+        assertTrue(datasetUserList.map { it.id }.containsAll(scenarioUserList))
+      }
     }
   }
 

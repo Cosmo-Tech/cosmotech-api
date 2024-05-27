@@ -41,7 +41,7 @@ import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.api.utils.findAllPaginated
 import com.cosmotech.api.utils.getCurrentAccountIdentifier
 import com.cosmotech.api.utils.getCurrentAuthenticatedUserName
-import com.cosmotech.dataset.api.DatasetApiService
+import com.cosmotech.dataset.DatasetApiServiceInterface
 import com.cosmotech.dataset.domain.Dataset
 import com.cosmotech.dataset.domain.DatasetAccessControl
 import com.cosmotech.dataset.domain.DatasetRole
@@ -83,7 +83,7 @@ import org.springframework.stereotype.Service
 @Service
 @Suppress("LargeClass", "TooManyFunctions", "LongParameterList")
 internal class ScenarioServiceImpl(
-    private val datasetService: DatasetApiService,
+    private val datasetService: DatasetApiServiceInterface,
     private val solutionService: SolutionApiServiceInterface,
     private val workspaceService: WorkspaceApiServiceInterface,
     private val azureDataExplorerClient: AzureDataExplorerClient,
@@ -979,7 +979,7 @@ internal class ScenarioServiceImpl(
     val scenario =
         getVerifiedScenario(organizationId, workspaceId, scenarioId, PERMISSION_WRITE_SECURITY)
     csmRbac.checkUserExists(
-        scenario.getRbac(), identityId, "User '$identityId' not found in scenario $workspaceId")
+        scenario.getRbac(), identityId, "User '$identityId' not found in scenario $scenarioId")
     val rbacSecurity =
         csmRbac.setUserRole(scenario.getRbac(), identityId, scenarioRole.role, scenarioPermissions)
     scenario.setRbac(rbacSecurity)
@@ -995,29 +995,41 @@ internal class ScenarioServiceImpl(
       scenario: Scenario,
       scenarioAccessControl: ScenarioAccessControl
   ) {
-    val id = scenarioAccessControl.id
-    // Scenario and Dataset don't have the same roles
-    // This function translates the role set from one to another
+    val userIdForAcl = scenarioAccessControl.id
+
     val workspace = workspaceService.getVerifiedWorkspace(organizationId, scenario.workspaceId!!)
 
-    // The role in the datasets should be only be similar to scenarios if they are a copy
-    val role: String =
-        if (workspace.datasetCopy == true) {
+    if (workspace.datasetCopy == true) {
+      // Scenario and Dataset don't have the same roles
+      // This function translates the role set from one to another
+      val datasetRoleFromScenarioAcl: String =
           if (scenarioAccessControl.role == ROLE_VALIDATOR) {
             ROLE_USER
           } else {
             scenarioAccessControl.role
           }
-        } else {
-          ROLE_VIEWER
-        }
-    scenario.datasetList!!.forEach {
-      val datasetUsers = datasetService.getDatasetSecurityUsers(organizationId, it)
-      if (datasetUsers.contains(id)) {
-        datasetService.updateDatasetAccessControl(organizationId, it, id, DatasetRole(role))
-      } else {
-        datasetService.addDatasetAccessControl(organizationId, it, DatasetAccessControl(id, role))
-      }
+
+      scenario.datasetList!!
+          .mapNotNull { datasetService.findByOrganizationIdAndDatasetId(organizationId, it) }
+          // Filter on dataset copy (cause we do not want update main dataset when
+          // workspace.dataCopy is true)
+          .filter { it.main == false }
+          .forEach { dataset ->
+            // Dataset roles should be similar to scenario ones if dataset are copy of a master one
+            // This is possible when workspace.datasetCopy is true
+            datasetService.addOrUpdateAccessControl(
+                organizationId, dataset, userIdForAcl, datasetRoleFromScenarioAcl)
+          }
+    } else {
+      scenario.datasetList!!
+          .mapNotNull { datasetService.findByOrganizationIdAndDatasetId(organizationId, it) }
+          .forEach { dataset ->
+            val datasetAcl = dataset.getRbac().accessControlList
+            if (datasetAcl.none { it.id == userIdForAcl }) {
+              datasetService.addOrUpdateAccessControl(
+                  organizationId, dataset, userIdForAcl, ROLE_VIEWER)
+            }
+          }
     }
   }
 

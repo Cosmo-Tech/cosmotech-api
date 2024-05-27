@@ -198,6 +198,30 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
   }
 
   @Test
+  fun `test Dataset - findByOrganizationIdAndDatasetId`() {
+    organizationSaved = organizationApiService.registerOrganization(organization)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+
+    logger.info("Fetch dataset...")
+    val datasetRetrieved =
+        datasetApiService.findByOrganizationIdAndDatasetId(
+            organizationSaved.id!!, datasetSaved.id!!)
+    assertNotNull(datasetRetrieved)
+    assertEquals(datasetSaved, datasetRetrieved)
+  }
+
+  @Test
+  fun `test Dataset - findByOrganizationIdAndDatasetId wrong dataset id`() {
+    organizationSaved = organizationApiService.registerOrganization(organization)
+    datasetSaved = datasetApiService.createDataset(organizationSaved.id!!, dataset)
+
+    logger.info("Fetch dataset...")
+    val datasetRetrieved =
+        datasetApiService.findByOrganizationIdAndDatasetId(organizationSaved.id!!, "wrong_id")
+    assertNull(datasetRetrieved)
+  }
+
+  @Test
   fun `can delete dataset when user is not the owner and is Platform Admin`() {
 
     logger.info("Register dataset : ${dataset.id}...")
