@@ -5,8 +5,8 @@ package com.cosmotech.dataset
 import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.dataset.api.DatasetApiService
 import com.cosmotech.dataset.domain.Dataset
-import com.redislabs.redisgraph.ResultSet
 import com.cosmotech.dataset.domain.DatasetAccessControl
+import com.redislabs.redisgraph.ResultSet
 
 interface DatasetApiServiceInterface : DatasetApiService {
 
