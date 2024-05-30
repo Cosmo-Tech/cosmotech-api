@@ -326,7 +326,7 @@ Name | Type | Description  | Notes
 
 <a name="startRun"></a>
 # **startRun**
-> RunnerLastRun startRun(organization\_id, workspace\_id, runner\_id)
+> String startRun(organization\_id, workspace\_id, runner\_id)
 
 Start a run with runner parameters
 
@@ -340,7 +340,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**RunnerLastRun**](../Models/RunnerLastRun.md)
+**String**
 
 ### Authorization
 

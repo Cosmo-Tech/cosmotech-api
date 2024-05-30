@@ -206,12 +206,7 @@ class RunServiceImpl(
   @EventListener(RunStop::class)
   fun onRunStop(runStopRequest: RunStop) {
     val runner = runStopRequest.runnerData as Runner
-    val run =
-        getRun(
-            runner.organizationId!!,
-            runner.workspaceId!!,
-            runner.id!!,
-            runner.lastRun!!.runnerRunId!!)
+    val run = getRun(runner.organizationId!!, runner.workspaceId!!, runner.id!!, runner.lastRunId!!)
     run.hasPermission(PERMISSION_WRITE)
     if (run.state!!.isTerminal()) {
       throw IllegalStateException(

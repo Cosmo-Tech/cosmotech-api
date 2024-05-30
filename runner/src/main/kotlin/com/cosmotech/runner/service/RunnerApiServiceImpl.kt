@@ -14,7 +14,6 @@ import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
-import com.cosmotech.runner.domain.RunnerLastRun
 import com.cosmotech.runner.domain.RunnerRole
 import com.cosmotech.runner.domain.RunnerSecurity
 import org.springframework.data.domain.PageRequest
@@ -81,11 +80,7 @@ internal class RunnerApiServiceImpl(
     return runnerService.listInstances(pageRequest)
   }
 
-  override fun startRun(
-      organizationId: String,
-      workspaceId: String,
-      runnerId: String
-  ): RunnerLastRun {
+  override fun startRun(organizationId: String, workspaceId: String, runnerId: String): String {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
 
     val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_LAUNCH)
