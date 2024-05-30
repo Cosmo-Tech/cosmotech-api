@@ -326,7 +326,7 @@ Set the Runner default security
 
 <a name="startRun"></a>
 # **startRun**
-> RunnerLastRun startRun(organization\_id, workspace\_id, runner\_id)
+> String startRun(organization\_id, workspace\_id, runner\_id)
 
 Start a run with runner parameters
 
@@ -340,7 +340,7 @@ Start a run with runner parameters
 
 ### Return type
 
-[**RunnerLastRun**](../Models/RunnerLastRun.md)
+**String**
 
 ### Authorization
 

@@ -3,6 +3,7 @@
 package com.cosmotech.runner.service
 
 import com.cosmotech.api.CsmPhoenixService
+import com.cosmotech.api.events.AskRunStatusEvent
 import com.cosmotech.api.events.RunStart
 import com.cosmotech.api.events.RunStop
 import com.cosmotech.api.exceptions.CsmClientException
@@ -28,8 +29,6 @@ import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.runner.domain.Runner
 import com.cosmotech.runner.domain.RunnerAccessControl
-import com.cosmotech.runner.domain.RunnerJobState
-import com.cosmotech.runner.domain.RunnerLastRun
 import com.cosmotech.runner.domain.RunnerSecurity
 import com.cosmotech.runner.repository.RunnerRepository
 import com.cosmotech.solution.SolutionApiServiceInterface
@@ -77,9 +76,19 @@ class RunnerService(
   }
 
   fun deleteInstance(runnerInstance: RunnerInstance) {
-    if (runnerInstance.isRunning())
-        throw CsmClientException(
-            "Can't delete a running runner : ${runnerInstance.getRunnerDataObjet().id}")
+    val runner = runnerInstance.runner
+
+    if (!runner.lastRunId.isNullOrBlank()) {
+      val askRunStatusEvent =
+          AskRunStatusEvent(
+              this, runner.organizationId!!, runner.workspaceId!!, runner.id!!, runner.lastRunId!!)
+      this.eventPublisher.publishEvent(askRunStatusEvent)
+
+      if (askRunStatusEvent.response == "Running")
+          throw CsmClientException(
+              "Can't delete a running runner : ${runnerInstance.getRunnerDataObjet().id}")
+    }
+
     return runnerRepository.delete(runnerInstance.getRunnerDataObjet())
   }
 
@@ -111,35 +120,25 @@ class RunnerService(
         .toList()
   }
 
-  fun startRunWith(runnerInstance: RunnerInstance): RunnerLastRun {
+  fun startRunWith(runnerInstance: RunnerInstance): String {
     val startEvent = RunStart(this, runnerInstance.getRunnerDataObjet())
     this.eventPublisher.publishEvent(startEvent)
-
     val runId = startEvent.response ?: throw IllegalStateException("Run Service did not respond")
-    val runInfo = RunnerLastRun(runnerRunId = runId)
-    runnerInstance.setLastRun(runInfo)
-
+    runnerInstance.setLastRunId(runId)
     runnerRepository.save(runnerInstance.getRunnerDataObjet())
-
-    return runInfo
+    return runId
   }
 
   fun stopLastRunOf(runnerInstance: RunnerInstance) {
     val runner = runnerInstance.getRunnerDataObjet()
-    val runId =
-        runner.lastRun?.runnerRunId
-            ?: throw IllegalArgumentException("Runner ${runner.id} doesn't have a last run")
-
+    runner.lastRunId
+        ?: throw IllegalArgumentException("Runner ${runner.id} doesn't have a last run")
     this.eventPublisher.publishEvent(RunStop(this, runner))
   }
 
   @Suppress("TooManyFunctions")
   inner class RunnerInstance(var runner: Runner = Runner()) {
     private val roleDefinition: RolesDefinition = getScenarioRolesDefinition()
-
-    fun isRunning(): Boolean {
-      return this.runner.state == RunnerJobState.Running
-    }
 
     fun initialize(): RunnerInstance = apply {
       val now = Instant.now().toEpochMilli()
@@ -190,8 +189,8 @@ class RunnerService(
       this.setRbacSecurity(rbacSecurity)
     }
 
-    fun setLastRun(runInfo: RunnerLastRun) {
-      this.runner.lastRun = runInfo
+    fun setLastRunId(runInfo: String) {
+      this.runner.lastRunId = runInfo
     }
 
     fun initSecurity(): RunnerInstance = apply {

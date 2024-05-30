@@ -15,7 +15,7 @@ class RunnerEventServiceImpl(private val runnerApiService: RunnerApiService) :
     val workspaceId = triggerEvent.workspaceId
     val runnerId = triggerEvent.runnerId
 
-    val runInfo = runnerApiService.startRun(organizationId, workspaceId, runnerId)
-    triggerEvent.response = runInfo.runnerRunId
+    val runId = runnerApiService.startRun(organizationId, workspaceId, runnerId)
+    triggerEvent.response = runId
   }
 }
