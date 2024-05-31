@@ -9,17 +9,17 @@ entity ComponentRolePermissions {
 
 entity Connector {
     id: String
-    key: String
-    name: String
+    * key: String
+    * name: String
     description: String
-    repository: String
-    version: String
+    * repository: String
+    * version: String
     tags: List<String>
     ownerId: String
     url: String
     azureManagedIdentity: Boolean
     azureAuthenticationWithCustomerAppRegistration: Boolean
-    ioTypes: List<IoTypesEnum>
+    * ioTypes: List<String>
     parameterGroups: List<ConnectorParameterGroup>
 }
 
@@ -63,8 +63,8 @@ entity Dataset {
     refreshDate: Long
     sourceType: DatasetSourceType
     source: SourceInfo
-    ingestionStatus: IngestionStatusEnum
-    twincacheStatus: TwincacheStatusEnum
+    ingestionStatus: String
+    twincacheStatus: String
     queries: List<String>
     tags: List<String>
     connector: DatasetConnector
@@ -152,16 +152,11 @@ entity GraphProperties {
     params: String
 }
 
-entity IngestionStatusEnum {
-}
-
-entity IoTypesEnum {
-}
-
 entity Organization {
     id: String
     name: String
     ownerId: String
+    services: OrganizationServices
     security: OrganizationSecurity
 }
 
@@ -179,8 +174,18 @@ entity OrganizationSecurity {
     * accessControlList: List<OrganizationAccessControl>
 }
 
-entity QueryResult {
-    result: List<Map>
+entity OrganizationService {
+    cloudService: String
+    baseUri: String
+    platformService: String
+    resourceUri: String
+    credentials: Map
+}
+
+entity OrganizationServices {
+    tenantCredentials: Map
+    storage: OrganizationService
+    solutionsContainerRegistry: OrganizationService
 }
 
 entity ResourceSizeInfo {
@@ -237,16 +242,6 @@ entity RunContainerLogs {
     logs: String
 }
 
-entity RunData {
-    database_name: String
-    table_name: String
-    data: List<Map>
-}
-
-entity RunDataQuery {
-    * query: String
-}
-
 entity RunLogs {
     runId: String
     containers: Map
@@ -262,13 +257,10 @@ entity RunSearch {
     runTemplateId: String
     workspaceId: String
     runnerId: String
-    state: RunSearchState
+    state: String
     workflowId: String
     workflowName: String
     ownerId: String
-}
-
-entity RunSearchState {
 }
 
 entity RunStartContainers {
@@ -603,18 +595,20 @@ entity ScenarioRunResourceRequested {
     memory: Long
 }
 
+entity ScenarioRunResult {
+    id: String
+    results: List<Map>
+}
+
 entity ScenarioRunSearch {
     solutionId: String
     runTemplateId: String
     workspaceId: String
     scenarioId: String
-    state: ScenarioRunSearchState
+    state: String
     workflowId: String
     workflowName: String
     ownerId: String
-}
-
-entity ScenarioRunSearchState {
 }
 
 entity ScenarioRunStartContainers {
@@ -671,11 +665,6 @@ entity ScenarioSecurity {
 }
 
 entity ScenarioValidationStatus {
-}
-
-entity SendRunDataRequest {
-    id: String
-    data: List<Map>
 }
 
 entity Solution {
@@ -741,9 +730,6 @@ entity TwinGraphQuery {
     * query: String
 }
 
-entity TwincacheStatusEnum {
-}
-
 entity Validator {
     * id: String
     * name: String
@@ -753,6 +739,17 @@ entity Validator {
     ownerId: String
     url: String
     tags: List<String>
+}
+
+entity ValidatorRun {
+    id: String
+    validatorId: String
+    validatorName: String
+    * datasetId: String
+    datasetName: String
+    state: String
+    containerId: String
+    logs: String
 }
 
 entity Workspace {
@@ -820,11 +817,13 @@ Scenario -- "0..*" ScenarioRunTemplateParameterValue : parametersValues
 Scenario -- ScenarioLastRun : lastRun
 Scenario -- ScenarioLastRun : parentLastRun
 Scenario -- ScenarioLastRun : rootLastRun
+Scenario -- ScenarioValidationStatus : validationStatus
 Scenario -- ScenarioSecurity : security
 ScenarioRunStatus -- "0..*" ScenarioRunStatusNode : nodes
 ScenarioResourceSizing -- ResourceSizeInfo : requests
 ScenarioResourceSizing -- ResourceSizeInfo : limits
 ScenarioSecurity -- "0..*" ScenarioAccessControl : accessControlList
+Organization -- OrganizationServices : services
 Organization -- OrganizationSecurity : security
 FileUploadValidation -- "0..*" FileUploadMetadata : nodes
 FileUploadValidation -- "0..*" FileUploadMetadata : edges
@@ -839,6 +838,7 @@ Dataset -- SourceInfo : source
 Dataset -- DatasetConnector : connector
 Dataset -- "0..*" DatasetCompatibility : compatibility
 Dataset -- DatasetSecurity : security
+Run -- RunState : state
 Run -- "0..*" RunTemplateParameterValue : parametersValues
 Run -- "0..*" RunContainer : containers
 OrganizationSecurity -- "0..*" OrganizationAccessControl : accessControlList
@@ -853,6 +853,9 @@ ScenarioRunContainer -- "0..*" ScenarioRunContainerArtifact : artifacts
 RunStartContainers -- "0..*" RunContainer : containers
 WorkspaceSecurity -- "0..*" WorkspaceAccessControl : accessControlList
 ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
+OrganizationServices -- OrganizationService : storage
+OrganizationServices -- OrganizationService : solutionsContainerRegistry
+ScenarioRun -- ScenarioRunState : state
 ScenarioRun -- "0..*" RunTemplateParameterValue : parametersValues
 ScenarioRun -- "0..*" ScenarioRunContainer : containers
 RunContainer -- ContainerResourceSizing : runSizing
@@ -861,6 +864,7 @@ ScenarioRunStatusNode -- ScenarioRunResourceRequested : resourcesDuration
 Connector -- "0..*" ConnectorParameterGroup : parameterGroups
 Runner -- RunnerResourceSizing : runSizing
 Runner -- "0..*" RunnerRunTemplateParameterValue : parametersValues
+Runner -- RunnerValidationStatus : validationStatus
 Runner -- RunnerSecurity : security
 RunStatus -- "0..*" RunStatusNode : nodes
 RunnerSecurity -- "0..*" RunnerAccessControl : accessControlList
