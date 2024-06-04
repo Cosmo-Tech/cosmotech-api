@@ -41,7 +41,7 @@ open class CsmRunTestBase : AbstractTestcontainersRedisTestBase() {
                 MountableFile.forClasspathResource("init-db.sql"), "/docker-entrypoint-initdb.d/")
 
     var rabbit: RabbitMQContainer =
-        RabbitMQContainer(DockerImageName.parse("rabbitmq:3.7.25-management-alpine"))
+        RabbitMQContainer(DockerImageName.parse("rabbitmq:3.13.3-management-alpine"))
 
     var redisStackServer =
         RedisStackContainer(

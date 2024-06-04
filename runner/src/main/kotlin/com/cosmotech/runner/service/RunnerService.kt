@@ -15,7 +15,7 @@ import com.cosmotech.api.rbac.ROLE_NONE
 import com.cosmotech.api.rbac.ROLE_USER
 import com.cosmotech.api.rbac.ROLE_VALIDATOR
 import com.cosmotech.api.rbac.RolesDefinition
-import com.cosmotech.api.rbac.getScenarioRolesDefinition
+import com.cosmotech.api.rbac.getRunnerRolesDefinition
 import com.cosmotech.api.rbac.model.RbacAccessControl
 import com.cosmotech.api.rbac.model.RbacSecurity
 import com.cosmotech.api.utils.compareToAndMutateIfNeeded
@@ -138,7 +138,7 @@ class RunnerService(
 
   @Suppress("TooManyFunctions")
   inner class RunnerInstance(var runner: Runner = Runner()) {
-    private val roleDefinition: RolesDefinition = getScenarioRolesDefinition()
+    private val roleDefinition: RolesDefinition = getRunnerRolesDefinition()
 
     fun initialize(): RunnerInstance = apply {
       val now = Instant.now().toEpochMilli()

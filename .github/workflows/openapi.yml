@@ -36,11 +36,8 @@ jobs:
           - connector
           - dataset
           - organization
-          - scenario
-          - scenariorun
           - solution
           - workspace
-          - twingraph
 
     steps:
       - uses: actions/checkout@v4
@@ -62,7 +59,7 @@ jobs:
           # Fetch all tags since Gradle project version is built upon SCM
           fetch-depth: 0
 
-      - name: Set up JDK
+      - name: Set up JDKIs anybody working on
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'

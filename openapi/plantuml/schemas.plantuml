@@ -466,213 +466,6 @@ entity RunnerSecurity {
 entity RunnerValidationStatus {
 }
 
-entity Scenario {
-    id: String
-    name: String
-    description: String
-    tags: List<String>
-    parentId: String
-    ownerId: String
-    rootId: String
-    solutionId: String
-    runTemplateId: String
-    organizationId: String
-    workspaceId: String
-    state: ScenarioJobState
-    creationDate: Long
-    lastUpdate: Long
-    ownerName: String
-    solutionName: String
-    runTemplateName: String
-    datasetList: List<String>
-    runSizing: ScenarioResourceSizing
-    parametersValues: List<ScenarioRunTemplateParameterValue>
-    lastRun: ScenarioLastRun
-    parentLastRun: ScenarioLastRun
-    rootLastRun: ScenarioLastRun
-    validationStatus: ScenarioValidationStatus
-    security: ScenarioSecurity
-}
-
-entity ScenarioAccessControl {
-    * id: String
-    * role: String
-}
-
-entity ScenarioChangedParameterValue {
-    parameterId: String
-    varType: String
-    value: String
-    comparedValue: String
-}
-
-entity ScenarioComparisonResult {
-    scenarioId: String
-    comparedScenarioId: String
-    changedValues: List<ScenarioChangedParameterValue>
-}
-
-entity ScenarioDataDownloadInfo {
-    url: String
-    state: ScenarioJobState
-}
-
-entity ScenarioDataDownloadJob {
-    id: String
-}
-
-entity ScenarioJobState {
-}
-
-entity ScenarioLastRun {
-    scenarioRunId: String
-    csmSimulationRun: String
-    workflowId: String
-    workflowName: String
-}
-
-entity ScenarioResourceSizing {
-    * requests: ResourceSizeInfo
-    * limits: ResourceSizeInfo
-}
-
-entity ScenarioRole {
-    * role: String
-}
-
-entity ScenarioRun {
-    id: String
-    state: ScenarioRunState
-    organizationId: String
-    workflowId: String
-    csmSimulationRun: String
-    generateName: String
-    workflowName: String
-    ownerId: String
-    workspaceId: String
-    workspaceKey: String
-    scenarioId: String
-    solutionId: String
-    runTemplateId: String
-    computeSize: String
-    sdkVersion: String
-    createdAt: String
-    noDataIngestionState: Boolean
-    datasetList: List<String>
-    parametersValues: List<RunTemplateParameterValue>
-    sendDatasetsToDataWarehouse: Boolean
-    sendInputParametersToDataWarehouse: Boolean
-    nodeLabel: String
-    containers: List<ScenarioRunContainer>
-}
-
-entity ScenarioRunContainer {
-    id: String
-    * name: String
-    labels: Map
-    envVars: Map
-    * image: String
-    entrypoint: String
-    runArgs: List<String>
-    dependencies: List<String>
-    solutionContainer: Boolean
-    nodeLabel: String
-    runSizing: ContainerResourceSizing
-    artifacts: List<ScenarioRunContainerArtifact>
-}
-
-entity ScenarioRunContainerArtifact {
-    name: String
-    path: String
-}
-
-entity ScenarioRunContainerLogs {
-    nodeId: String
-    containerName: String
-    children: List<String>
-    logs: String
-}
-
-entity ScenarioRunLogs {
-    scenariorunId: String
-    containers: Map
-}
-
-entity ScenarioRunResourceRequested {
-    cpu: Long
-    memory: Long
-}
-
-entity ScenarioRunSearch {
-    solutionId: String
-    runTemplateId: String
-    workspaceId: String
-    scenarioId: String
-    state: ScenarioRunSearchState
-    workflowId: String
-    workflowName: String
-    ownerId: String
-}
-
-entity ScenarioRunSearchState {
-}
-
-entity ScenarioRunStartContainers {
-    generateName: String
-    * csmSimulationId: String
-    nodeLabel: String
-    labels: Map
-    * containers: List<ScenarioRunContainer>
-}
-
-entity ScenarioRunState {
-}
-
-entity ScenarioRunStatus {
-    id: String
-    organizationId: String
-    workflowId: String
-    workflowName: String
-    startTime: String
-    endTime: String
-    phase: String
-    progress: String
-    message: String
-    estimatedDuration: Integer
-    nodes: List<ScenarioRunStatusNode>
-    state: ScenarioRunState
-}
-
-entity ScenarioRunStatusNode {
-    id: String
-    name: String
-    containerName: String
-    outboundNodes: List<String>
-    resourcesDuration: ScenarioRunResourceRequested
-    estimatedDuration: Integer
-    hostNodeName: String
-    message: String
-    phase: String
-    progress: String
-    startTime: String
-    endTime: String
-}
-
-entity ScenarioRunTemplateParameterValue {
-    * parameterId: String
-    varType: String
-    * value: String
-    isInherited: Boolean
-}
-
-entity ScenarioSecurity {
-    * default: String
-    * accessControlList: List<ScenarioAccessControl>
-}
-
-entity ScenarioValidationStatus {
-}
-
 entity SendRunDataRequest {
     id: String
     data: List<Map>
@@ -730,15 +523,6 @@ entity TwinGraphBatchResult {
     * totalLines: Integer
     * processedLines: Integer
     * errors: List<String>
-}
-
-entity TwinGraphHash {
-    hash: String
-}
-
-entity TwinGraphQuery {
-    version: String
-    * query: String
 }
 
 entity TwincacheStatusEnum {
@@ -812,29 +596,33 @@ entity WorkspaceWebApp {
 }
 
 
+RunTemplateResourceSizing -- ResourceSizeInfo : requests
+RunTemplateResourceSizing -- ResourceSizeInfo : limits
+DatasetSecurity -- "0..*" DatasetAccessControl : accessControlList
 ContainerResourceSizing -- ContainerResourceSizeInfo : requests
 ContainerResourceSizing -- ContainerResourceSizeInfo : limits
+RunStartContainers -- "0..*" RunContainer : containers
 SolutionSecurity -- "0..*" SolutionAccessControl : accessControlList
-Scenario -- ScenarioResourceSizing : runSizing
-Scenario -- "0..*" ScenarioRunTemplateParameterValue : parametersValues
-Scenario -- ScenarioLastRun : lastRun
-Scenario -- ScenarioLastRun : parentLastRun
-Scenario -- ScenarioLastRun : rootLastRun
-Scenario -- ScenarioSecurity : security
-ScenarioRunStatus -- "0..*" ScenarioRunStatusNode : nodes
-ScenarioResourceSizing -- ResourceSizeInfo : requests
-ScenarioResourceSizing -- ResourceSizeInfo : limits
-ScenarioSecurity -- "0..*" ScenarioAccessControl : accessControlList
+WorkspaceSecurity -- "0..*" WorkspaceAccessControl : accessControlList
+ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
+RunContainer -- ContainerResourceSizing : runSizing
+RunContainer -- "0..*" RunContainerArtifact : artifacts
+Connector -- "0..*" ConnectorParameterGroup : parameterGroups
+Runner -- RunnerResourceSizing : runSizing
+Runner -- "0..*" RunnerRunTemplateParameterValue : parametersValues
+Runner -- RunnerSecurity : security
 Organization -- OrganizationSecurity : security
+RunStatus -- "0..*" RunStatusNode : nodes
 FileUploadValidation -- "0..*" FileUploadMetadata : nodes
 FileUploadValidation -- "0..*" FileUploadMetadata : edges
 RunTemplate -- RunTemplateResourceSizing : runSizing
 RunTemplate -- DeleteHistoricalData : deleteHistoricalData
+RunnerSecurity -- "0..*" RunnerAccessControl : accessControlList
+RunStatusNode -- RunResourceRequested : resourcesDuration
 Solution -- "0..*" RunTemplateParameter : parameters
 Solution -- "0..*" RunTemplateParameterGroup : parameterGroups
 Solution -- "0..*" RunTemplate : runTemplates
 Solution -- SolutionSecurity : security
-ScenarioComparisonResult -- "0..*" ScenarioChangedParameterValue : changedValues
 Dataset -- SourceInfo : source
 Dataset -- DatasetConnector : connector
 Dataset -- "0..*" DatasetCompatibility : compatibility
@@ -844,27 +632,6 @@ Run -- "0..*" RunContainer : containers
 OrganizationSecurity -- "0..*" OrganizationAccessControl : accessControlList
 RunnerResourceSizing -- ResourceSizeInfo : requests
 RunnerResourceSizing -- ResourceSizeInfo : limits
-ScenarioRunStartContainers -- "0..*" ScenarioRunContainer : containers
-RunTemplateResourceSizing -- ResourceSizeInfo : requests
-RunTemplateResourceSizing -- ResourceSizeInfo : limits
-DatasetSecurity -- "0..*" DatasetAccessControl : accessControlList
-ScenarioRunContainer -- ContainerResourceSizing : runSizing
-ScenarioRunContainer -- "0..*" ScenarioRunContainerArtifact : artifacts
-RunStartContainers -- "0..*" RunContainer : containers
-WorkspaceSecurity -- "0..*" WorkspaceAccessControl : accessControlList
-ConnectorParameterGroup -- "0..*" ConnectorParameter : parameters
-ScenarioRun -- "0..*" RunTemplateParameterValue : parametersValues
-ScenarioRun -- "0..*" ScenarioRunContainer : containers
-RunContainer -- ContainerResourceSizing : runSizing
-RunContainer -- "0..*" RunContainerArtifact : artifacts
-ScenarioRunStatusNode -- ScenarioRunResourceRequested : resourcesDuration
-Connector -- "0..*" ConnectorParameterGroup : parameterGroups
-Runner -- RunnerResourceSizing : runSizing
-Runner -- "0..*" RunnerRunTemplateParameterValue : parametersValues
-Runner -- RunnerSecurity : security
-RunStatus -- "0..*" RunStatusNode : nodes
-RunnerSecurity -- "0..*" RunnerAccessControl : accessControlList
-RunStatusNode -- RunResourceRequested : resourcesDuration
 RunnerComparisonResult -- "0..*" RunnerChangedParameterValue : changedValues
 Workspace -- WorkspaceSolution : solution
 Workspace -- WorkspaceWebApp : webApp

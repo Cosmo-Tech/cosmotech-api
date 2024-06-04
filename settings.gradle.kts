@@ -18,11 +18,8 @@ include(
     "connector",
     "dataset",
     "organization",
-    "scenario",
-    "scenariorun",
     "solution",
     "workspace",
-    "twingraph",
     "metrics",
     "runner",
     "run")
@@ -35,15 +32,9 @@ project(":dataset").name = "cosmotech-dataset-api"
 
 project(":organization").name = "cosmotech-organization-api"
 
-project(":scenario").name = "cosmotech-scenario-api"
-
-project(":scenariorun").name = "cosmotech-scenariorun-api"
-
 project(":solution").name = "cosmotech-solution-api"
 
 project(":workspace").name = "cosmotech-workspace-api"
-
-project(":twingraph").name = "cosmotech-twingraph-api"
 
 project(":metrics").name = "cosmotech-metrics-service"
 

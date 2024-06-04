@@ -80,9 +80,9 @@ csm:
       dataset:
         # TODO: Should be way less than a thousand. See open ticket
         maxResult: 1000
-      scenariorun:
+      run:
         maxResult: 200
-      scenario:
+      runner:
         maxResult: 200
     internalResultServices:
       enabled: false

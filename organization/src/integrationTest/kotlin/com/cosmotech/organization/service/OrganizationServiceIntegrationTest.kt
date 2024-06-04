@@ -405,7 +405,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
                                   PERMISSION_DELETE),
                       )),
               ComponentRolePermissions(
-                  component = "scenario",
+                  component = "runner",
                   roles =
                       mutableMapOf(
                           ROLE_VIEWER to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY),
@@ -1332,7 +1332,7 @@ class OrganizationServiceIntegrationTest : CsmRedisTestBase() {
                                   PERMISSION_DELETE),
                       )),
               ComponentRolePermissions(
-                  component = "scenario",
+                  component = "runner",
                   roles =
                       mutableMapOf(
                           ROLE_VIEWER to mutableListOf(PERMISSION_READ, PERMISSION_READ_SECURITY),

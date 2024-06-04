@@ -9,7 +9,7 @@ import com.cosmotech.api.rbac.PERMISSION_LAUNCH
 import com.cosmotech.api.rbac.PERMISSION_READ_SECURITY
 import com.cosmotech.api.rbac.PERMISSION_WRITE
 import com.cosmotech.api.rbac.PERMISSION_WRITE_SECURITY
-import com.cosmotech.api.rbac.getScenarioRolesDefinition
+import com.cosmotech.api.rbac.getRunnerRolesDefinition
 import com.cosmotech.api.utils.constructPageRequest
 import com.cosmotech.runner.RunnerApiServiceInterface
 import com.cosmotech.runner.domain.Runner
@@ -73,7 +73,7 @@ internal class RunnerApiServiceImpl(
   ): List<Runner> {
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
 
-    val defaultPageSize = csmPlatformProperties.twincache.scenario.defaultPageSize
+    val defaultPageSize = csmPlatformProperties.twincache.runner.defaultPageSize
     val pageRequest =
         constructPageRequest(page, size, defaultPageSize) ?: PageRequest.of(0, defaultPageSize)
 
@@ -180,7 +180,7 @@ internal class RunnerApiServiceImpl(
     val runnerService = getRunnerService().inOrganization(organizationId).inWorkspace(workspaceId)
     runnerService.getInstance(runnerId).userHasPermission(PERMISSION_READ_SECURITY)
 
-    return com.cosmotech.api.rbac.getPermissions(role, getScenarioRolesDefinition())
+    return com.cosmotech.api.rbac.getPermissions(role, getRunnerRolesDefinition())
   }
 
   override fun getRunnerSecurityUsers(

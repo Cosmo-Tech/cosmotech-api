@@ -54,8 +54,8 @@ val springWebVersion = "6.1.4"
 
 // Implementation
 val kotlinJvmTarget = 21
-val cosmotechApiCommonVersion = "1.0.1"
-val cosmotechApiAzureVersion = "1.0.1"
+val cosmotechApiCommonVersion = "1.0.2-SNAPSHOT"
+val cosmotechApiAzureVersion = "1.0.2-SNAPSHOT"
 val jedisVersion = "4.4.6"
 val springOauthVersion = "6.2.2"
 val redisOmSpringVersion = "0.9.1"

@@ -5,12 +5,16 @@ package com.cosmotech.run.service
 import com.cosmotech.api.CsmPhoenixService
 import com.cosmotech.api.events.RunStart
 import com.cosmotech.api.events.RunStop
+import com.cosmotech.api.events.TwingraphImportEvent
+import com.cosmotech.api.events.TwingraphImportJobInfoRequest
 import com.cosmotech.api.rbac.CsmRbac
 import com.cosmotech.api.rbac.PERMISSION_DELETE
 import com.cosmotech.api.rbac.PERMISSION_READ
 import com.cosmotech.api.rbac.PERMISSION_WRITE
-import com.cosmotech.api.rbac.getScenarioRolesDefinition
+import com.cosmotech.api.rbac.getRunnerRolesDefinition
 import com.cosmotech.api.utils.constructPageRequest
+import com.cosmotech.api.utils.convertToMap
+import com.cosmotech.run.CSM_JOB_ID_LABEL_KEY
 import com.cosmotech.run.RunApiServiceInterface
 import com.cosmotech.run.RunContainerFactory
 import com.cosmotech.run.config.createDB
@@ -39,6 +43,7 @@ import com.google.gson.JsonParser
 import com.google.gson.reflect.TypeToken
 import java.sql.SQLException
 import java.time.Instant
+import java.util.MissingResourceException
 import org.apache.commons.lang3.NotImplementedException
 import org.postgresql.util.PGobject
 import org.springframework.beans.factory.annotation.Value
@@ -49,6 +54,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.stereotype.Service
 
 internal const val WORKFLOW_TYPE_RUN = "container-run"
+internal const val WORKFLOW_TYPE_TWIN_GRAPH_IMPORT = "twin-graph-import"
 
 internal const val BOOLEAN_KEY_WEIGHT = 0
 internal const val BOOLEAN_POSTGRESQL_TYPE = "BOOLEAN"
@@ -130,7 +136,7 @@ class RunServiceImpl(
     // This call verify the user read authorization in the Runner
     runnerApiService.getRunner(organizationId, workspaceId, runnerId)
 
-    val defaultPageSize = csmPlatformProperties.twincache.scenariorun.defaultPageSize
+    val defaultPageSize = csmPlatformProperties.twincache.run.defaultPageSize
     val pageable =
         constructPageRequest(page, size, defaultPageSize) ?: PageRequest.of(0, defaultPageSize)
 
@@ -528,12 +534,89 @@ class RunServiceImpl(
   private fun Run.hasPermission(permission: String) = apply {
     val runner =
         runnerApiService.getRunner(this.organizationId!!, this.workspaceId!!, this.runnerId!!)
-    csmRbac.verify(runner.getRbac(), permission, getScenarioRolesDefinition())
+    csmRbac.verify(runner.getRbac(), permission, getRunnerRolesDefinition())
   }
 
   internal fun checkInternalResultDataServiceConfiguration() {
     if (csmPlatformProperties.internalResultServices?.enabled != true) {
       throw NotImplementedException(notImplementedExceptionMessage)
+    }
+  }
+
+  @EventListener(TwingraphImportEvent::class)
+  fun onTwingraphImportEvent(twingraphImportEvent: TwingraphImportEvent) {
+
+    val containerName = "${twingraphImportEvent.sourceType}TwingraphImport"
+
+    val containerEnvVars = getEnvVarsForJobImportInfo(twingraphImportEvent)
+
+    val twingraphImportContainerList =
+        csmPlatformProperties.containers.filter { it.name == containerName }
+
+    if (twingraphImportContainerList.isEmpty()) {
+      throw MissingResourceException(
+          "$containerName is not found in configuration (workflow.containers.name)",
+          RunServiceImpl::class.simpleName,
+          "workflow.containers.name")
+    }
+    val adtTwincacheContainerInfo = twingraphImportContainerList[0]
+    val simpleContainer =
+        containerFactory.buildSingleContainerStart(
+            adtTwincacheContainerInfo.name,
+            adtTwincacheContainerInfo.imageName,
+            twingraphImportEvent.jobId,
+            adtTwincacheContainerInfo.imageRegistry,
+            adtTwincacheContainerInfo.imageVersion,
+            containerEnvVars,
+            WORKFLOW_TYPE_TWIN_GRAPH_IMPORT,
+        )
+    twingraphImportEvent.response = workflowService.launchRun(simpleContainer, null).convertToMap()
+  }
+
+  internal fun getEnvVarsForJobImportInfo(
+      jobImportInfo: TwingraphImportEvent
+  ): MutableMap<String, String> {
+    val queries = jobImportInfo.queries?.joinToString(";") ?: ""
+    return when (jobImportInfo.sourceType) {
+      "ADT" -> {
+        mutableMapOf(
+            "TWIN_CACHE_NAME" to jobImportInfo.twingraphId,
+            "LOG_LEVEL" to "DEBUG",
+            "AZURE_DIGITAL_TWINS_URL" to jobImportInfo.sourceLocation,
+            "QUERIES" to queries)
+      }
+      "AzureStorage" -> {
+        mutableMapOf(
+            "TWIN_CACHE_NAME" to jobImportInfo.twingraphId,
+            "LOG_LEVEL" to "DEBUG",
+            "ACCOUNT_NAME" to jobImportInfo.sourceName,
+            "CONTAINER_NAME" to jobImportInfo.sourceLocation,
+            "STORAGE_PATH" to jobImportInfo.sourcePath,
+            "QUERIES" to queries)
+      }
+      "Twincache" -> {
+        mutableMapOf(
+            "TWIN_CACHE_NAME" to jobImportInfo.twingraphId,
+            "TWIN_CACHE_SOURCE" to jobImportInfo.sourceLocation,
+            "LOG_LEVEL" to "DEBUG",
+            "QUERIES" to queries)
+      }
+      else -> {
+        throw IllegalArgumentException(
+            "${jobImportInfo.sourceType} : Source type for import job is not supported ")
+      }
+    }
+  }
+
+  @EventListener(TwingraphImportJobInfoRequest::class)
+  fun onTwingraphImportJobInfoRequest(
+      twingraphImportJobInfoRequest: TwingraphImportJobInfoRequest
+  ) {
+    val jobId = twingraphImportJobInfoRequest.jobId
+    val workflowStatusList =
+        this.workflowService.findWorkflowStatusByLabel("$CSM_JOB_ID_LABEL_KEY=$jobId")
+    if (workflowStatusList.isNotEmpty()) {
+      twingraphImportJobInfoRequest.response = workflowStatusList[0].status
     }
   }
 }

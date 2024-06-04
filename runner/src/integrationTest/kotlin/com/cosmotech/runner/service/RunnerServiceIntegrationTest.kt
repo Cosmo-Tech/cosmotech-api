@@ -223,7 +223,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
 
     // We create more runner than there can be on one page of default size to assert
     // deleteAllRunners still works with high quantities of runners
-    repeat(csmPlatformProperties.twincache.scenario.defaultPageSize + 1) {
+    repeat(csmPlatformProperties.twincache.runner.defaultPageSize + 1) {
       runnerApiService.createRunner(organizationSaved.id!!, workspaceSaved.id!!, makeRunner())
     }
   }
@@ -231,7 +231,7 @@ class RunnerServiceIntegrationTest : CsmRedisTestBase() {
   @Test
   fun `test find All Runners with different pagination params`() {
     val numberOfRunners = 20
-    val defaultPageSize = csmPlatformProperties.twincache.scenario.defaultPageSize
+    val defaultPageSize = csmPlatformProperties.twincache.runner.defaultPageSize
     val expectedSize = 15
     datasetSaved = materializeTwingraph()
     IntRange(1, numberOfRunners - 1).forEach {

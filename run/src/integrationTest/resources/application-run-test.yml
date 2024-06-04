@@ -127,7 +127,7 @@ csm:
       port: "6379"
       username: "default"
       password: "my-wonderful-password"
-      scenariorun:
+      run:
         default-page-size: 5
     internalResultServices:
       enabled: true

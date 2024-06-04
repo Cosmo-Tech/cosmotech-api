@@ -346,7 +346,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
   @Test
   fun `test find All Runs with different pagination params`() {
     val numberOfRuns = 20
-    val defaultPageSize = csmPlatformProperties.twincache.scenariorun.defaultPageSize
+    val defaultPageSize = csmPlatformProperties.twincache.run.defaultPageSize
     val expectedSize = 15
 
     IntRange(1, numberOfRuns).forEach {

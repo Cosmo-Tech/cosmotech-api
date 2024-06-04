@@ -128,7 +128,7 @@ management:
         enabled: true
       group:
         readiness:
-          include: "readinessState,argo"
+          include: "readinessState,runArgo"
 
 csm:
   platform:
