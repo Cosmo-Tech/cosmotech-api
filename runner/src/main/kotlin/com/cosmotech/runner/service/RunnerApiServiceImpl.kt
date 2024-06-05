@@ -85,7 +85,7 @@ internal class RunnerApiServiceImpl(
 
     val runnerInstance = runnerService.getInstance(runnerId).userHasPermission(PERMISSION_LAUNCH)
 
-    return "\"" + runnerService.startRunWith(runnerInstance) + "\""
+    return runnerService.startRunWith(runnerInstance)
   }
 
   override fun stopRun(organizationId: String, workspaceId: String, runnerId: String) {
