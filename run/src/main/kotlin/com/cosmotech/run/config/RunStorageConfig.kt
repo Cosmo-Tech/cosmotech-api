@@ -47,12 +47,12 @@ fun JdbcTemplate.existDB(name: String): Boolean {
 
 fun JdbcTemplate.existTable(name: String): Boolean {
   return this.queryForList(
-          "SELECT * FROM information_schema.tables " + "WHERE table_name='${name}'")
-      .size == 1
+          "SELECT * FROM information_schema.tables " + "WHERE table_name ilike '${name}'")
+      .size >= 1
 }
 
 fun String.toDataTableName(isProbeData: Boolean): String =
-    if (isProbeData) "P_$this" else "CD_$this"
+    (if (isProbeData) "P_$this" else "CD_$this").lowercase()
 
 fun JdbcTemplate.createDB(name: String, comment: String? = null): String {
   this.execute("CREATE DATABASE \"$name\"")
