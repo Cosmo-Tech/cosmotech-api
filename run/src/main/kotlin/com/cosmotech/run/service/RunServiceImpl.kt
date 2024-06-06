@@ -140,7 +140,7 @@ class RunServiceImpl(
         .map { it.withStateInformation().withoutSensitiveData() }
   }
 
-  @Suppress("LongMethod")
+  @Suppress("LongMethod", "ThrowsCount")
   fun sendDataToStorage(
       runId: String,
       tableName: String,
@@ -149,16 +149,30 @@ class RunServiceImpl(
   ): RunData {
     val dataTableName = tableName.toDataTableName(isProbeData)
 
+    if (!dataTableName.matches(Regex("\\w+"))) {
+      throw SQLException("Table name \"$dataTableName\" is not a valid SQL identifier")
+    }
+
     // Start by looking through the data for postgresql column type inference
     // Make use of a "weight" system for each data type to ensure most specific type when executed
     val dataKeyWeight = mutableMapOf<String, Int>()
 
+    val treatedData = mutableListOf<Map<String, Any>>()
     data.forEach { dataLine ->
+      val newDataLine = mutableMapOf<String, Any>()
+      dataLine.keys.forEach { key -> newDataLine[key.lowercase()] = dataLine[key]!! }
+      treatedData.add(newDataLine)
+    }
+
+    treatedData.forEach { dataLine ->
       dataLine.keys.forEach { key ->
         // Get weight for a given column
+        if (!key.matches(Regex("\\w+"))) {
+          throw SQLException("Column name \"$key\" is not a valid SQL identifier")
+        }
         val keyWeight =
             jsonTypeMapWeight.getOrDefault(dataLine[key]!!::class.simpleName, CONFLICT_KEY_WEIGHT)
-        if (!dataKeyWeight.containsKey(key)) dataKeyWeight[key] = keyWeight!!
+        if (!dataKeyWeight.containsKey(key)) dataKeyWeight[key] = keyWeight
         // If a conflict exists between 2 values in a same column use default value instead
         else if (dataKeyWeight[key] != keyWeight) dataKeyWeight[key] = CONFLICT_KEY_WEIGHT
       }
@@ -183,15 +197,15 @@ class RunServiceImpl(
         // Table does not exist
         connection
             .prepareStatement(
-                "CREATE TABLE \"$dataTableName\" " +
-                    "( ${dataKeys.joinToString(separator = ", ") { "\"$it\" ${dataKeyType[it]!!}" }} ) ")
+                "CREATE TABLE $dataTableName " +
+                    "( ${dataKeys.joinToString(separator = ", ") { "$it ${dataKeyType[it]!!}" }} ) ")
             .executeUpdate()
 
         logger.debug("Creating new table $dataTableName for run $runId")
 
         // Grant select rights to the reader account
         connection
-            .prepareStatement("GRANT SELECT ON TABLE \"$dataTableName\" TO $readerStorageUsername ")
+            .prepareStatement("GRANT SELECT ON TABLE $dataTableName TO $readerStorageUsername ")
             .executeUpdate()
 
         logger.debug(
@@ -203,7 +217,7 @@ class RunServiceImpl(
         val listColumnsPreparedStatement =
             connection.prepareStatement(
                 "SELECT column_name, upper(data_type::text) as column_type " +
-                    "FROM information_schema.columns WHERE table_name = ?")
+                    "FROM information_schema.columns WHERE table_name ilike ?")
         listColumnsPreparedStatement.setString(1, dataTableName)
         val postgresTableKeyResultSet = listColumnsPreparedStatement.executeQuery()
 
@@ -233,21 +247,21 @@ class RunServiceImpl(
         }
         missingKeys.forEach { missingKey ->
           // Alter the table for each missing key to add the column missing
+          logger.debug("Adding COLUMN $missingKey on table $dataTableName for run $runId")
           connection
               .prepareStatement(
-                  "ALTER TABLE \"$dataTableName\" ADD COLUMN \"$missingKey\" ${dataKeyType[missingKey]!!}")
+                  "ALTER TABLE $dataTableName ADD COLUMN $missingKey ${dataKeyType[missingKey]!!}")
               .executeUpdate()
-          logger.debug("Adding COLUMN $missingKey on table $dataTableName for run $runId")
         }
       }
-      data.forEach { dataLine ->
+      treatedData.forEach { dataLine ->
         // Insertion of data using prepared statements
         // for each key a parameter is created in the SQL query
         // that is then replaced by a string representation of the data that is then cast to the
         // correct type
         val insertPreparedStatement =
             connection.prepareStatement(
-                "INSERT INTO \"$dataTableName\" ( ${dataLine.keys.joinToString(separator = ", ") {"\"$it\""}} ) " +
+                "INSERT INTO $dataTableName ( ${dataLine.keys.joinToString(separator = ", ") {"$it"}} ) " +
                     "VALUES ( ${dataLine.keys.joinToString(separator = ", ") { "?::${dataKeyType[it]!!}" }} )")
         // insert all values as pure data into the statement ensuring no SQL can be executed
         // inside the query
