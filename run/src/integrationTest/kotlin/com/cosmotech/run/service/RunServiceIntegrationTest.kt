@@ -552,7 +552,8 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
               mapOf("param1" to "value1"),
               mapOf("param2" to 2),
               mapOf("param3" to mapOf("param4" to "value4")))
-      val requestBody = SendRunDataRequest(id = runSavedId, data = data)
+      val customDataId = "CustomData"
+      val requestBody = SendRunDataRequest(id = customDataId, data = data)
       runApiService.sendRunData(
           organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
       val queryResult =
@@ -561,7 +562,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
               workspaceSaved.id!!,
               runnerSaved.id!!,
               runSavedId,
-              RunDataQuery("SELECT * FROM \"${runSavedId.toDataTableName(false)}\""))
+              RunDataQuery("SELECT * FROM ${customDataId.toDataTableName(false)}"))
       val expectedResult =
           listOf(
               mapOf("param1" to "value1"),
@@ -577,7 +578,8 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
               mapOf("param1" to "value1"),
               mapOf("param2" to 2),
               mapOf("param3" to mapOf("param4" to "value4")))
-      val requestBody = SendRunDataRequest(id = runSavedId, data = data)
+      val customDataId = "CustomData"
+      val requestBody = SendRunDataRequest(id = customDataId, data = data)
       runApiService.sendRunData(
           organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
       val exception =
@@ -587,10 +589,10 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
                 workspaceSaved.id!!,
                 runnerSaved.id!!,
                 runSavedId,
-                RunDataQuery("SELECT * FROM \"${runSavedId.toDataTableName(false)}2\""))
+                RunDataQuery("SELECT * FROM ${customDataId.toDataTableName(false)}2"))
           }
       assertEquals(
-          "ERROR: relation \"${runSavedId.toDataTableName(false)}2\" does not exist\n  Position: 15",
+          "ERROR: relation \"${customDataId.toDataTableName(false)}2\" does not exist\n  Position: 15",
           exception.message)
     }
 
@@ -601,7 +603,8 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
               mapOf("param1" to "value1"),
               mapOf("param2" to 2),
               mapOf("param3" to mapOf("param4" to "value4")))
-      val requestBody = SendRunDataRequest(id = runSavedId, data = data)
+      val customDataId = "CustomData"
+      val requestBody = SendRunDataRequest(id = customDataId, data = data)
       runApiService.sendRunData(
           organizationSaved.id!!, workspaceSaved.id!!, runnerSaved.id!!, runSavedId, requestBody)
       var e =
@@ -611,9 +614,10 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
                 workspaceSaved.id!!,
                 runnerSaved.id!!,
                 runSavedId,
-                RunDataQuery("DROP TABLE \"${runSavedId.toDataTableName(false)}\""))
+                RunDataQuery("DROP TABLE ${customDataId.toDataTableName(false)}"))
           }
-      assertEquals("ERROR: must be owner of table ${runSavedId.toDataTableName(false)}", e.message)
+      assertEquals(
+          "ERROR: must be owner of table ${customDataId.toDataTableName(false)}", e.message)
       e =
           assertThrows<PSQLException> {
             runApiService.queryRunData(
@@ -622,7 +626,7 @@ class RunServiceIntegrationTest : CsmRunTestBase() {
                 runnerSaved.id!!,
                 runSavedId,
                 RunDataQuery(
-                    "CREATE TABLE \"${runSavedId.toDataTableName(false)}\" (id VARCHAR(100))"))
+                    "CREATE TABLE ${customDataId.toDataTableName(false)} (id VARCHAR(100))"))
           }
       assertEquals("ERROR: permission denied for schema public\n" + "  Position: 14", e.message)
     }

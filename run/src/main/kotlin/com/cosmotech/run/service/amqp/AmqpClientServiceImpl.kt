@@ -76,8 +76,8 @@ class AmqpClientServiceImpl(
     val data = mutableListOf<Map<String, Any>>()
     messageRead.facts.forEach { it ->
       val row = (it + messageRead.facts_common).toMutableMap()
-      row["probe.name"] = messageRead.probe["name"].toString()
-      row["probe.run"] = messageRead.probe["run"]!!
+      row["probe_name"] = messageRead.probe["name"].toString()
+      row["probe_run"] = messageRead.probe["run"]!!
       data.add(row)
     }
     val runId = messageRead.simulation["run"].toString()
