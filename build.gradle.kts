@@ -320,8 +320,8 @@ subprojects {
     // https://mvnrepository.com/artifact/com.azure.spring/spring-cloud-azure-dependencies
     implementation("com.azure.spring:spring-cloud-azure-dependencies:5.7.0")
     // https://mvnrepository.com/artifact/com.azure.spring/spring-cloud-azure-starter-storage-blob
-    implementation("com.azure.spring:spring-cloud-azure-starter-storage-blob:5.7.0")
-    implementation("com.azure.spring:spring-cloud-azure-starter-storage:5.7.0")
+    implementation("com.azure.spring:spring-cloud-azure-starter-storage-blob:5.13.0")
+    implementation("com.azure.spring:spring-cloud-azure-starter-storage:5.13.0")
     implementation("com.azure.spring:spring-cloud-azure-starter-actuator:5.7.0")
     // https://mvnrepository.com/artifact/com.azure/azure-storage-blob-batch
     implementation("com.azure:azure-storage-blob-batch:12.20.1")
