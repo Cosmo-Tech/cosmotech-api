@@ -730,7 +730,7 @@ Async batch update by loading a CSV file on a graph instance
 
 <a name="twingraphQuery"></a>
 # **twingraphQuery**
-> String twingraphQuery(organization\_id, dataset\_id, DatasetTwinGraphQuery)
+> List twingraphQuery(organization\_id, dataset\_id, DatasetTwinGraphQuery)
 
 Return the result of a query made on the graph instance as a json
 
@@ -746,7 +746,7 @@ Return the result of a query made on the graph instance as a json
 
 ### Return type
 
-**String**
+**List**
 
 ### Authorization
 
