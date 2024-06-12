@@ -49,8 +49,6 @@ Cosmo Tech Platform API
 | config.csm.platform.azure.dataWarehouseCluster.baseUri | string | `"changeme"` |  |
 | config.csm.platform.azure.dataWarehouseCluster.options.ingestionUri | string | `"changeme"` |  |
 | config.csm.platform.azure.eventBus.baseUri | string | `"changeme"` |  |
-| config.csm.platform.azure.storage.account-key | string | `"changeme"` | Azure storage account access key. Can be retrieved from the Azure portal |
-| config.csm.platform.azure.storage.account-name | string | `"changeme"` | Azure storage account name. Length should be between 3 and 24 and use numbers and lower-case letters only |
 | config.csm.platform.vendor | string | `"azure"` |  |
 | deploymentStrategy | object | `{"rollingUpdate":{"maxSurge":1,"maxUnavailable":"50%"},"type":"RollingUpdate"}` | Deployment strategy |
 | deploymentStrategy.rollingUpdate.maxSurge | int | `1` | maximum number of Pods that can be created over the desired number of Pods |
