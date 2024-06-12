@@ -187,6 +187,11 @@ config:
           requests:
             # Azure file storage minimal claim is 100Gi for Premium classes
             storage: 100Gi
+      s3:
+        endpointUrl: "http://s3-server:9000"
+        bucketName: "changeme"
+        accessKeyId: "changeme"
+        secretAccessKey: "changeme"
       authorization:
         allowed-tenants: []
       azure:
