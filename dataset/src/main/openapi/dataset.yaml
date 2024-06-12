@@ -462,7 +462,9 @@ paths:
           content:
             application/json:
               schema:
-                type: string
+                type: array
+                items:
+                  type: object
 
   /organizations/{organization_id}/datasets/{dataset_id}/twingraph/{type}:
     parameters:

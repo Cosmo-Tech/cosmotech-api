@@ -703,10 +703,9 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
         datasetSaved.id!!,
         "node",
         listOf(GraphProperties(type = "Node", name = "newNode", params = "value:0")))
-    var queryResult =
+    val queryResult =
         datasetApiService.twingraphQuery(
             organizationSaved.id!!, datasetSaved.id!!, DatasetTwinGraphQuery("MATCH (n) RETURN n"))
-    val initalNodeAmount = queryResult.split("}}}").size
 
     datasetApiService.uploadTwingraph(organizationSaved.id!!, datasetSaved.id!!, resource)
     do {
@@ -714,12 +713,11 @@ class DatasetServiceIntegrationTest : CsmRedisTestBase() {
     } while (datasetApiService.getDatasetTwingraphStatus(
         organizationSaved.id!!, datasetSaved.id!!) == IngestionStatusEnum.PENDING.value)
 
-    queryResult =
+    val secondQueryResult =
         datasetApiService.twingraphQuery(
             organizationSaved.id!!, datasetSaved.id!!, DatasetTwinGraphQuery("MATCH (n) RETURN n"))
-    val newNodeAmount = queryResult.split("}}}").size
 
-    assertNotEquals(initalNodeAmount, newNodeAmount)
+    assertNotEquals(queryResult.size, secondQueryResult.size)
   }
 
   @Test
