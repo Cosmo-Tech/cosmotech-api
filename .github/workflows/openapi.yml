@@ -38,6 +38,8 @@ jobs:
           - organization
           - solution
           - workspace
+          - runner
+          - run
 
     steps:
       - uses: actions/checkout@v4
