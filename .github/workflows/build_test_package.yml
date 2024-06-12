@@ -255,7 +255,7 @@ jobs:
           cache-disabled: true
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: :cosmotech-workspace-api:integrationTest --tests "com.cosmotech.worskpace.service.WorkspaceServiceIntegrationTest" -x spotlessCheck -x openApiValidate
+          arguments: :cosmotech-workspace-api:integrationTest --tests "com.cosmotech.workspace.service.WorkspaceServiceIntegrationTest" -x spotlessCheck -x openApiValidate
 
 
       - name: Run RBAC Workspace integration tests
@@ -266,7 +266,7 @@ jobs:
           cache-disabled: true
           # Cache storage space is limited for GitHub actions
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-          arguments: :cosmotech-workspace-api:integrationTest --tests "com.cosmotech.worskpace.service.WorkspaceServiceRBACTest" -x spotlessCheck -x openApiValidate
+          arguments: :cosmotech-workspace-api:integrationTest --tests "com.cosmotech.workspace.service.WorkspaceServiceRBACTest" -x spotlessCheck -x openApiValidate
 
   runner_it:
     runs-on: ubuntu-latest
