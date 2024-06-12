@@ -49,6 +49,10 @@ Cosmo Tech Platform API
 | config.csm.platform.azure.dataWarehouseCluster.baseUri | string | `"changeme"` |  |
 | config.csm.platform.azure.dataWarehouseCluster.options.ingestionUri | string | `"changeme"` |  |
 | config.csm.platform.azure.eventBus.baseUri | string | `"changeme"` |  |
+| config.csm.platform.s3.accessKeyId | string | `"changeme"` |  |
+| config.csm.platform.s3.bucketName | string | `"changeme"` |  |
+| config.csm.platform.s3.endpointUrl | string | `"http://s3-server:9000"` |  |
+| config.csm.platform.s3.secretAccessKey | string | `"changeme"` |  |
 | config.csm.platform.vendor | string | `"azure"` |  |
 | deploymentStrategy | object | `{"rollingUpdate":{"maxSurge":1,"maxUnavailable":"50%"},"type":"RollingUpdate"}` | Deployment strategy |
 | deploymentStrategy.rollingUpdate.maxSurge | int | `1` | maximum number of Pods that can be created over the desired number of Pods |
