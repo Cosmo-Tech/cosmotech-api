@@ -198,7 +198,7 @@ class ContainerFactoryTests {
                 "CSM_ORGANIZATION_ID" to organization.id!!,
                 "CSM_WORKSPACE_ID" to workspace.id!!,
                 "CSM_RUNNER_ID" to runner.id!!,
-                "CSM_RUNNER_RUN_ID" to runId,
+                "CSM_RUN_ID" to runId,
                 "CSM_RUN_TEMPLATE_ID" to CSM_RUN_TEMPLATE_ID,
                 "CSM_CONTAINER_MODE" to RunTemplateOrchestrator.csmOrc.value,
                 "CSM_ENTRYPOINT_LEGACY" to "false",
