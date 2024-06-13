@@ -184,7 +184,7 @@ class RunServiceImpl(
       }
     }
 
-    val dataKeyType = dataKeyWeight.mapValues { postgresTypeFromWeight[it.value]!! }
+    val dataKeyType = dataKeyWeight.mapValues { postgresTypeFromWeight[it.value]!! }.toMutableMap()
     val dataKeys = dataKeyType.keys
 
     val gson = Gson()
@@ -250,6 +250,7 @@ class RunServiceImpl(
               dataKeyWeight[commonKey]!! != columnKeyWeight)
               throw SQLException(
                   "Column $commonKey can not be converted to ${postgresTableKeysType[commonKey]!!}")
+          else dataKeyType[commonKey] = postgresTableKeysType[commonKey]!!
         }
         missingKeys.forEach { missingKey ->
           // Alter the table for each missing key to add the column missing
@@ -346,8 +347,13 @@ class RunServiceImpl(
 
           if (parsedValue.isJsonObject)
               row[queryResults.metaData.getColumnName(i)] = mapAdapter.fromJson(resultValue.value)
-          else
+          else if (parsedValue.isJsonArray)
               row[queryResults.metaData.getColumnName(i)] = arrayAdapter.fromJson(resultValue.value)
+          else if (parsedValue.asJsonPrimitive.isBoolean)
+              row[queryResults.metaData.getColumnName(i)] = parsedValue.asBoolean
+          else if (parsedValue.asJsonPrimitive.isNumber)
+              row[queryResults.metaData.getColumnName(i)] = parsedValue.asNumber
+          else row[queryResults.metaData.getColumnName(i)] = parsedValue.asString
         } else row[queryResults.metaData.getColumnName(i)] = resultValue
       }
       results.add(row)
