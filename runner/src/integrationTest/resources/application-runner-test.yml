@@ -7,19 +7,6 @@ spring:
       password:
       client-type: jedis
   cloud:
-    azure:
-      # Required to auto-configure the beans provided by the Azure Spring Boot AutoConfigurations
-      active-directory:
-        profile:
-          # tenantId is 'common' to use the login process of multi-tenant access
-          # See https://github.com/Azure/azure-sdk-for-java/blob/master/sdk/spring/azure-spring-boot-starter-active-directory/ACCESS_TO_MULTI_TENANT_APP.md
-          tenant-id: "fake_tenant_id"
-        credential:
-          client-id: "fake_client_id"
-          client-secret: "fake_client_secret"
-        session-stateless: true
-        app-id-uri: "fake_app_id_uri"
-        enabled: true
     aws:
       credentials:
         access-key: "s3_username"
@@ -38,7 +25,7 @@ management:
 csm:
   platform:
     identityProvider:
-      code: on_premise_one # here because Azure (Entra ID) is the default one is not specified
+      code: on_premise_one
       authorizationUrl: "changeme"
       tokenUrl: "changeme"
     runOutsideKubernetes: true
@@ -83,7 +70,6 @@ csm:
       # Note that the way @Value works in Spring does not make it possible to inject this sole YAML list.
       # Use CsmPlatformProperties instead !
       allowed-tenants: ["test"]
-    vendor: on_premise
     argo:
       base-uri: "https://argo-server.argo.svc.cluster.local:2746"
       workflows:

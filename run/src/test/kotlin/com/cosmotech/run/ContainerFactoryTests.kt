@@ -3,11 +3,7 @@
 package com.cosmotech.run
 
 import com.cosmotech.api.config.CsmPlatformProperties
-import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCredentials
-import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureCredentials.CsmPlatformAzureCredentialsCore
-import com.cosmotech.api.config.CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus
 import com.cosmotech.api.containerregistry.ContainerRegistryService
-import com.cosmotech.api.utils.SecretManager
 import com.cosmotech.organization.api.OrganizationApiService
 import com.cosmotech.organization.domain.Organization
 import com.cosmotech.run.domain.ContainerResourceSizeInfo
@@ -22,11 +18,6 @@ import com.cosmotech.solution.domain.RunTemplate
 import com.cosmotech.solution.domain.RunTemplateOrchestrator
 import com.cosmotech.solution.domain.Solution
 import com.cosmotech.workspace.api.WorkspaceApiService
-import com.cosmotech.workspace.azure.IWorkspaceEventHubService
-import com.cosmotech.workspace.azure.WorkspaceEventHubService
-import com.cosmotech.workspace.azure.strategy.IWorkspaceEventHubStrategy
-import com.cosmotech.workspace.azure.strategy.WorkspaceEventHubStrategyDedicated
-import com.cosmotech.workspace.azure.strategy.WorkspaceEventHubStrategyShared
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceSolution
 import io.mockk.MockKAnnotations
@@ -45,16 +36,13 @@ private const val CSM_RUN_TEMPLATE_ID = "testruntemplate"
 @ExtendWith(MockKExtension::class)
 class ContainerFactoryTests {
 
-  @MockK(relaxed = true) private lateinit var azure: CsmPlatformProperties.CsmPlatformAzure
   @MockK(relaxed = true) private lateinit var csmPlatformProperties: CsmPlatformProperties
 
   @MockK private lateinit var runnerService: RunnerApiService
   @MockK private lateinit var workspaceService: WorkspaceApiService
   @MockK private lateinit var solutionService: SolutionApiService
   @MockK private lateinit var organizationService: OrganizationApiService
-  @MockK private lateinit var secretManager: SecretManager
   @MockK private lateinit var containerRegistryService: ContainerRegistryService
-  private lateinit var workspaceEventHubService: IWorkspaceEventHubService
 
   private lateinit var factory: RunContainerFactory
 
@@ -63,37 +51,6 @@ class ContainerFactoryTests {
   fun setUp() {
     MockKAnnotations.init(this)
 
-    every { azure.appIdUri } returns "http://dev.api.cosmotech.com"
-    every { azure.credentials } returns
-        CsmPlatformAzureCredentials(
-            core =
-                CsmPlatformAzureCredentialsCore(
-                    tenantId = "12345678",
-                    clientId = "98765432",
-                    clientSecret = "azertyuiop",
-                    aadPodIdBinding = "phoenixdev-pod-identity",
-                ),
-            customer =
-                CsmPlatformAzureCredentials.CsmPlatformAzureCredentialsCustomer(
-                    tenantId = "customer-app-registration-tenantId",
-                    clientId = "customer-app-registration-clientId",
-                    clientSecret = "customer-app-registration-clientSecret"))
-    every { azure.eventBus } returns
-        CsmPlatformAzureEventBus(
-            baseUri = "amqps://csm-phoenix.servicebus.windows.net",
-        )
-    every { azure.dataWarehouseCluster } returns
-        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureDataWarehouseCluster(
-            options =
-                CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureDataWarehouseCluster.Options(
-                    ingestionUri = "https://ingest-phoenix.westeurope.kusto.windows.net",
-                ),
-            baseUri = "https://phoenix.westeurope.kusto.windows.net",
-        )
-    every { azure.containerRegistries } returns
-        CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureContainerRegistries(
-            core = "ghcr.io", solutions = "twinengines.azurecr.io")
-    every { csmPlatformProperties.azure } returns azure
     every { csmPlatformProperties.namespace } returns "csm-phoenix"
     every { csmPlatformProperties.api } returns
         CsmPlatformProperties.Api(
@@ -108,7 +65,7 @@ class ContainerFactoryTests {
         )
     every { csmPlatformProperties.identityProvider } returns
         CsmPlatformProperties.CsmIdentityProvider(
-            code = "azure",
+            code = "keycloak",
             defaultScopes = mapOf("This is a fake scope id" to "This is a fake scope name"),
             authorizationUrl = "http://this_is_a_fake_url.com",
             tokenUrl = "http://this_is_a_fake_token_url.com",
@@ -120,13 +77,32 @@ class ContainerFactoryTests {
             password = "this_is_a_password",
         )
 
-    val dedicatedStrategy: IWorkspaceEventHubStrategy =
-        WorkspaceEventHubStrategyDedicated(csmPlatformProperties, secretManager)
-    val sharedStrategy: IWorkspaceEventHubStrategy =
-        WorkspaceEventHubStrategyShared(csmPlatformProperties)
-    workspaceEventHubService =
-        WorkspaceEventHubService(
-            mapOf("Dedicated" to dedicatedStrategy, "Shared" to sharedStrategy))
+    every { csmPlatformProperties.internalResultServices } returns
+        CsmPlatformProperties.CsmServiceResult(
+            enabled = true,
+            eventBus =
+                CsmPlatformProperties.CsmServiceResult.CsmEventBus(
+                    host = "localhost",
+                    port = 6379,
+                    listener =
+                        CsmPlatformProperties.CsmServiceResult.CsmEventBus.CsmEventBusUser(
+                            password = "password", username = "username"),
+                    sender =
+                        CsmPlatformProperties.CsmServiceResult.CsmEventBus.CsmEventBusUser(
+                            password = "password", username = "username")),
+            storage =
+                CsmPlatformProperties.CsmServiceResult.CsmStorage(
+                    host = "localhost",
+                    port = 5432,
+                    admin =
+                        CsmPlatformProperties.CsmServiceResult.CsmStorage.CsmStorageUser(
+                            password = "password", username = "username"),
+                    reader =
+                        CsmPlatformProperties.CsmServiceResult.CsmStorage.CsmStorageUser(
+                            username = "username", password = "password"),
+                    writer =
+                        CsmPlatformProperties.CsmServiceResult.CsmStorage.CsmStorageUser(
+                            username = "username", password = "password")))
 
     factory =
         RunContainerFactory(
@@ -135,7 +111,6 @@ class ContainerFactoryTests {
             workspaceService,
             solutionService,
             organizationService,
-            workspaceEventHubService,
             containerRegistryService)
   }
 
@@ -173,17 +148,20 @@ class ContainerFactoryTests {
       runTemplate: RunTemplate,
       runId: String
   ): RunContainer {
+
+    val eventHubUri =
+        "amqp://" +
+            "${csmPlatformProperties.internalResultServices?.eventBus?.host}:" +
+            "${csmPlatformProperties.internalResultServices?.eventBus?.port}/" +
+            workspace.id!!
+
     return RunContainer(
         name = "CSMOrchestrator",
         image = "twinengines.azurecr.io/" + solution.repository + ":" + solution.version,
         envVars =
             mapOf(
-                "AZURE_TENANT_ID" to azure.credentials.core.tenantId,
-                "AZURE_CLIENT_ID" to azure.credentials.core.clientId,
-                "AZURE_CLIENT_SECRET" to azure.credentials.core.clientSecret,
-                "IDENTITY_PROVIDER" to "azure",
+                "IDENTITY_PROVIDER" to "keycloak",
                 "CSM_API_URL" to csmPlatformProperties.api.baseUrl,
-                "CSM_API_SCOPE" to azure.appIdUri + "/.default",
                 "CSM_DATASET_ABSOLUTE_PATH" to "/mnt/scenariorun-data",
                 "CSM_PARAMETERS_ABSOLUTE_PATH" to "/mnt/scenariorun-parameters",
                 "TWIN_CACHE_HOST" to csmPlatformProperties.twincache.host,
@@ -191,10 +169,6 @@ class ContainerFactoryTests {
                 "TWIN_CACHE_PASSWORD" to csmPlatformProperties.twincache.password,
                 "TWIN_CACHE_USERNAME" to csmPlatformProperties.twincache.username,
                 "CSM_SIMULATION_ID" to CSM_SIMULATION_ID,
-                "AZURE_DATA_EXPLORER_RESOURCE_URI" to azure.dataWarehouseCluster.baseUri,
-                "AZURE_DATA_EXPLORER_RESOURCE_INGEST_URI" to
-                    azure.dataWarehouseCluster.options.ingestionUri,
-                "AZURE_DATA_EXPLORER_DATABASE_NAME" to organization.id!!.lowercase() + "-test",
                 "CSM_ORGANIZATION_ID" to organization.id!!,
                 "CSM_WORKSPACE_ID" to workspace.id!!,
                 "CSM_RUNNER_ID" to runner.id!!,
@@ -202,13 +176,7 @@ class ContainerFactoryTests {
                 "CSM_RUN_TEMPLATE_ID" to CSM_RUN_TEMPLATE_ID,
                 "CSM_CONTAINER_MODE" to RunTemplateOrchestrator.csmOrc.value,
                 "CSM_ENTRYPOINT_LEGACY" to "false",
-                "CSM_PROBES_MEASURES_TOPIC" to
-                    azure.eventBus.baseUri + "/" + organization.id!!.lowercase() + "-test",
-                "CSM_CONTROL_PLANE_TOPIC" to
-                    azure.eventBus.baseUri +
-                        "/" +
-                        organization.id!!.lowercase() +
-                        "-test-scenariorun",
+                "CSM_PROBES_MEASURES_TOPIC" to eventHubUri,
                 "CSM_SIMULATION" to runTemplate.csmSimulation!!),
         entrypoint = "entrypoint.py",
         nodeLabel = runTemplate.computeSize!!.removeSuffix("pool"),

@@ -1770,7 +1770,9 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.createSecret(
-                          organizationSaved.id!!, workspaceSaved.id!!, WorkspaceSecret(""))
+                          organizationSaved.id!!,
+                          workspaceSaved.id!!,
+                          WorkspaceSecret("foo", "bar"))
                     }
                 assertEquals(
                     "RBAC ${organizationSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -1778,7 +1780,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.createSecret(
-                      organizationSaved.id!!, workspaceSaved.id!!, WorkspaceSecret(""))
+                      organizationSaved.id!!, workspaceSaved.id!!, WorkspaceSecret("foo", "bar"))
                 }
               }
             }
@@ -1817,7 +1819,9 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
                 val exception =
                     assertThrows<CsmAccessForbiddenException> {
                       workspaceApiService.createSecret(
-                          organizationSaved.id!!, workspaceSaved.id!!, WorkspaceSecret(""))
+                          organizationSaved.id!!,
+                          workspaceSaved.id!!,
+                          WorkspaceSecret("foo", "bar"))
                     }
                 assertEquals(
                     "RBAC ${workspaceSaved.id!!} - User does not have permission $PERMISSION_READ",
@@ -1825,7 +1829,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
               } else {
                 assertDoesNotThrow {
                   workspaceApiService.createSecret(
-                      organizationSaved.id!!, workspaceSaved.id!!, WorkspaceSecret(""))
+                      organizationSaved.id!!, workspaceSaved.id!!, WorkspaceSecret("foo", "bar"))
                 }
               }
             }
