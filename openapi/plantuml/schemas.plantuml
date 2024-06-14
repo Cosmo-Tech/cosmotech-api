@@ -572,7 +572,8 @@ entity WorkspaceRole {
 }
 
 entity WorkspaceSecret {
-    dedicatedEventHubKey: String
+    * name: String
+    * value: String
 }
 
 entity WorkspaceSecurity {

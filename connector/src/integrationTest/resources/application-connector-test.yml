@@ -10,20 +10,6 @@ spring:
       # Leave it as blank as there's no auth with test container
       password:
       client-type: jedis
-  cloud:
-    azure:
-      # Required to auto-configure the beans provided by the Azure Spring Boot AutoConfigurations
-      active-directory:
-        profile:
-          # tenantId is 'common' to use the login process of multi-tenant access
-          # See https://github.com/Azure/azure-sdk-for-java/blob/master/sdk/spring/azure-spring-boot-starter-active-directory/ACCESS_TO_MULTI_TENANT_APP.md
-          tenant-id: "fake_tenant_id"
-        credential:
-          client-id: "fake_client_id"
-          client-secret: "fake_client_secret"
-        session-stateless: true
-        app-id-uri: "fake_app_id_uri"
-        enabled: true
     aws:
       credentials:
         access-key: "s3_username"
@@ -37,27 +23,6 @@ spring:
 
 csm:
   platform:
-    azure:
-      appIdUri: "api://fake_app_id_uri"
-      credentials:
-        core:
-          tenantId: "fake_tenant_id"
-          clientId: "fake_client_id"
-          clientSecret: "fake_client_secret"
-      dataWarehouseCluster:
-        baseUri: "https://fake_uri.kusto.windows.net"
-        options:
-          ingestionUri: "https://ingest-fake_uri.kusto.windows.net"
-      eventBus:
-        baseUri: "amqps://fake_uri.servicebus.windows.net"
-      containerRegistries:
-        core: ghcr.io
-        solutions: "localhost:5000"
-      keyVault: "changeme"
-      analytics:
-        resourceUri: ""
-        instrumentationKey: ""
-        connectionString: "changeme"
     runOutsideKubernetes: true
     metrics:
       enabled: false
@@ -100,7 +65,6 @@ csm:
       # Note that the way @Value works in Spring does not make it possible to inject this sole YAML list.
       # Use CsmPlatformProperties instead !
       allowed-tenants: ["test"]
-    vendor: azure
     argo:
       base-uri: "https://argo-server.argo.svc.cluster.local:2746"
       workflows:
@@ -124,6 +88,7 @@ csm:
     rbac:
       enabled: true
     s3:
+      region: "dummy"
       endpointUrl: "http://localhost:9000"
       bucketName: "test-bucket"
       accessKeyId: "s3_username"

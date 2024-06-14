@@ -55,7 +55,6 @@ val springWebVersion = "6.1.4"
 // Implementation
 val kotlinJvmTarget = 21
 val cosmotechApiCommonVersion = "2.0.0-SNAPSHOT"
-val cosmotechApiAzureVersion = "1.0.2-SNAPSHOT"
 val jedisVersion = "4.4.6"
 val springOauthVersion = "6.2.2"
 val redisOmSpringVersion = "0.9.1"
@@ -318,7 +317,6 @@ subprojects {
     integrationTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 
     api("com.github.Cosmo-Tech:cosmotech-api-common:$cosmotechApiCommonVersion")
-    api("com.github.Cosmo-Tech:cosmotech-api-azure:$cosmotechApiAzureVersion")
 
     implementation(platform("io.awspring.cloud:spring-cloud-aws-dependencies:$awsSpringVersion"))
     implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:$awsSpringVersion")
@@ -482,7 +480,7 @@ subprojects {
   tasks.getByName<BootRun>("bootRun") {
     workingDir = rootDir
 
-    environment("CSM_PLATFORM_VENDOR", project.findProperty("platform")?.toString() ?: "azure")
+    environment("CSM_PLATFORM_VENDOR", project.findProperty("platform")?.toString() ?: "")
     project.findProperty("identityProvider")?.toString()?.let {
       environment("IDENTITY_PROVIDER", it)
     }

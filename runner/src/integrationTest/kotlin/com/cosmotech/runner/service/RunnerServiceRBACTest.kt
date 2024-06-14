@@ -48,7 +48,6 @@ import com.cosmotech.solution.domain.Solution
 import com.cosmotech.solution.domain.SolutionAccessControl
 import com.cosmotech.solution.domain.SolutionSecurity
 import com.cosmotech.workspace.api.WorkspaceApiService
-import com.cosmotech.workspace.azure.WorkspaceEventHubInfo
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceSecurity
@@ -4467,19 +4466,6 @@ class RunnerServiceRBACTest : CsmRedisTestBase() {
       this.ingestionStatus = IngestionStatusEnum.SUCCESS
     }
     return datasetRepository.save(dataset)
-  }
-
-  private fun makeWorkspaceEventHubInfo(): WorkspaceEventHubInfo {
-    return WorkspaceEventHubInfo(
-        eventHubNamespace = "eventHubNamespace",
-        eventHubAvailable = false,
-        eventHubName = "eventHubName",
-        eventHubUri = "eventHubUri",
-        eventHubSasKeyName = "eventHubSasKeyName",
-        eventHubSasKey = "eventHubSasKey",
-        eventHubCredentialType =
-            CsmPlatformProperties.CsmPlatformAzure.CsmPlatformAzureEventBus.Authentication.Strategy
-                .SHARED_ACCESS_POLICY)
   }
 
   private fun makeConnector(): Connector {
