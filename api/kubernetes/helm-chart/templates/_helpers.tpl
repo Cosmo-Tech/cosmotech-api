@@ -148,13 +148,4 @@ csm:
       workflows:
         storage-class: {{ include "cosmotech-api.fullname" . }}-{{ .Release.Namespace }}
       {{- end }}
-    {{- if eq .Values.config.csm.platform.vendor "azure" }}
-    azure:
-      containerRegistries:
-        {{- if .Values.config.csm.platform.azure.containerRegistries.solutions }}
-        solutions: "{{ .Values.config.csm.platform.azure.containerRegistries.solutions }}"
-        {{- else }}
-        solutions: "{{- default "" .Values.argo.imageCredentials.registry -}}"
-        {{- end }}
-    {{- end }}
 {{- end }}

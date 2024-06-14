@@ -942,9 +942,15 @@ components:
       type: object
       description: the secret definition
       properties:
-        dedicatedEventHubKey:
+        name:
           type: string
-          description: the dedicated event hub shared access key
+          description: the secret name
+        value:
+          type: string
+          description: the secret value
+      required:
+        - name
+        - value
   examples:
     BreweryWorkspace:
       summary: Brewery Workspace
@@ -1163,7 +1169,8 @@ components:
         - fileName: myData2.csv
         - fileName: myData3.csv
     WorkspaceSecretExample:
-      summary: a shared access policy
-      description: a shared policy example
+      summary: simple secret
+      description: simple secret example
       value:
-        dedicatedEventHubKey: xxx
+        name: foo
+        value: bar

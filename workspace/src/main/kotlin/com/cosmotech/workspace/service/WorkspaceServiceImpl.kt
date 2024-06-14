@@ -37,7 +37,6 @@ import com.cosmotech.organization.OrganizationApiServiceInterface
 import com.cosmotech.organization.service.getRbac
 import com.cosmotech.solution.api.SolutionApiService
 import com.cosmotech.workspace.WorkspaceApiServiceInterface
-import com.cosmotech.workspace.azure.WORKSPACE_EVENTHUB_ACCESSKEY_SECRET
 import com.cosmotech.workspace.domain.Workspace
 import com.cosmotech.workspace.domain.WorkspaceAccessControl
 import com.cosmotech.workspace.domain.WorkspaceFile
@@ -288,7 +287,7 @@ internal class WorkspaceServiceImpl(
     secretManager.createOrReplaceSecret(
         csmPlatformProperties.namespace,
         getWorkspaceSecretName(organizationId, workspaceId),
-        mapOf(WORKSPACE_EVENTHUB_ACCESSKEY_SECRET to (workspaceSecret.dedicatedEventHubKey ?: "")))
+        mapOf(workspaceSecret.name to workspaceSecret.value))
   }
 
   @EventListener(DeleteHistoricalDataOrganization::class)
