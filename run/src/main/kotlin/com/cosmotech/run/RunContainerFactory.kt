@@ -327,11 +327,7 @@ class RunContainerFactory(
  * @return all scopes defined join by ","
  */
 internal fun getContainerScopes(csmPlatformProperties: CsmPlatformProperties): String {
-  return csmPlatformProperties.identityProvider
-      ?.containerScopes
-      ?.keys
-      ?.joinToString(separator = " ")
-      ?: ""
+  return csmPlatformProperties.identityProvider.containerScopes.keys.joinToString(separator = " ")
 }
 
 internal fun getMinimalCommonEnvVars(
@@ -339,7 +335,7 @@ internal fun getMinimalCommonEnvVars(
 ): MutableMap<String, String> {
 
   val oktaEnvVars: MutableMap<String, String> = mutableMapOf()
-  if (csmPlatformProperties.identityProvider?.code == "okta") {
+  if (csmPlatformProperties.identityProvider.code == "okta") {
     oktaEnvVars.putAll(
         mapOf(
             OKTA_CLIENT_ID to (csmPlatformProperties.okta?.clientId!!),
@@ -360,7 +356,7 @@ internal fun getMinimalCommonEnvVars(
   val containerScopes = getContainerScopes(csmPlatformProperties)
   val commonEnvVars =
       mapOf(
-          IDENTITY_PROVIDER to (csmPlatformProperties.identityProvider?.code ?: "keycloak"),
+          IDENTITY_PROVIDER to (csmPlatformProperties.identityProvider.code),
           API_BASE_URL_VAR to csmPlatformProperties.api.baseUrl,
           API_BASE_SCOPE_VAR to containerScopes,
           DATASET_PATH_VAR to DATASET_PATH,
