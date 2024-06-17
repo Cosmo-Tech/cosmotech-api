@@ -926,7 +926,7 @@ components:
       summary: Get all runData in a table
       description: Get all runData in a table
       value:
-        query: "SELECT * FROM \"CD_myCustomData\""
+        query: "SELECT * FROM cd_mycustomdata"
     QueryResultExample:
       summary: Result of SQL Query
       description: Result of SQL Query
