@@ -143,7 +143,7 @@ You may want to copy and customize the [sample configuration](config/application
 cp config/application-dev.sample.yml config/application-dev.yml
 ```
 
-Also note that the `azure` Profile is activated by default. As such, the [application-azure.yml](api/src/main/resources/application-azure.yml) file is also read as part of the application configuration.
+Also note that the `keycloak` Profile is activated by default. As such, the [application-keycloak.yml](api/src/main/resources/application-keycloak.yml) file is also read as part of the application configuration.
 
 Now you can run the API Server with :
 
