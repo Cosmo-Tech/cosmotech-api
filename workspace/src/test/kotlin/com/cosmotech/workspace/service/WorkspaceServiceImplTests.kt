@@ -62,6 +62,7 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.core.io.Resource
 import org.springframework.data.repository.findByIdOrNull
+import software.amazon.awssdk.services.s3.S3Client
 
 const val ORGANIZATION_ID = "O-AbCdEf123"
 const val WORKSPACE_ID = "W-BcDeFg123"
@@ -79,7 +80,8 @@ class WorkspaceServiceImplTests {
   @RelaxedMockK private lateinit var organizationService: OrganizationApiServiceInterface
   @Suppress("unused") @MockK private lateinit var secretManager: SecretManager
 
-  @RelaxedMockK private lateinit var s3Client: S3Template
+  @Suppress("unused") @RelaxedMockK private lateinit var s3Client: S3Client
+  @RelaxedMockK private lateinit var s3Template: S3Template
 
   @Suppress("unused") @MockK private var eventPublisher: CsmEventPublisher = mockk(relaxed = true)
   @Suppress("unused") @MockK private var idGenerator: CsmIdGenerator = mockk(relaxed = true)
@@ -129,7 +131,7 @@ class WorkspaceServiceImplTests {
     every { csmPlatformProperties.upload } returns csmPlatformPropertiesUpload
 
     every { csmPlatformProperties.s3.bucketName } returns S3_BUCKET_NAME
-    every { s3Client.objectExists(any(), any()) } returns false
+    every { s3Template.objectExists(any(), any()) } returns false
 
     MockKAnnotations.init(this)
   }
@@ -151,13 +153,13 @@ class WorkspaceServiceImplTests {
     assertEquals("my_file.txt", workspaceFile.fileName)
 
     verify(exactly = 1) {
-      s3Client.objectExists(S3_BUCKET_NAME, "$ORGANIZATION_ID/$WORKSPACE_ID/my_file.txt")
+      s3Template.objectExists(S3_BUCKET_NAME, "$ORGANIZATION_ID/$WORKSPACE_ID/my_file.txt")
     }
     verify(exactly = 1) {
-      s3Client.upload(
+      s3Template.upload(
           S3_BUCKET_NAME, "$ORGANIZATION_ID/$WORKSPACE_ID/my_file.txt", file.inputStream)
     }
-    confirmVerified(s3Client)
+    confirmVerified(s3Template)
   }
 
   @Test
@@ -179,13 +181,13 @@ class WorkspaceServiceImplTests {
     assertEquals("my_file.txt", workspaceFile.fileName)
 
     verify(exactly = 1) {
-      s3Client.objectExists(S3_BUCKET_NAME, "$ORGANIZATION_ID/$WORKSPACE_ID/my_file.txt")
+      s3Template.objectExists(S3_BUCKET_NAME, "$ORGANIZATION_ID/$WORKSPACE_ID/my_file.txt")
     }
     verify(exactly = 1) {
-      s3Client.upload(
+      s3Template.upload(
           S3_BUCKET_NAME, "$ORGANIZATION_ID/$WORKSPACE_ID/my_file.txt", file.inputStream)
     }
-    confirmVerified(s3Client)
+    confirmVerified(s3Template)
   }
 
   @Test
@@ -206,16 +208,16 @@ class WorkspaceServiceImplTests {
     assertEquals("my/destination/my_file.txt", workspaceFile.fileName)
 
     verify(exactly = 1) {
-      s3Client.objectExists(
+      s3Template.objectExists(
           S3_BUCKET_NAME, "$ORGANIZATION_ID/$WORKSPACE_ID/my/destination/my_file.txt")
     }
     verify(exactly = 1) {
-      s3Client.upload(
+      s3Template.upload(
           S3_BUCKET_NAME,
           "$ORGANIZATION_ID/$WORKSPACE_ID/my/destination/my_file.txt",
           file.inputStream)
     }
-    confirmVerified(s3Client)
+    confirmVerified(s3Template)
   }
 
   @Test
@@ -236,13 +238,13 @@ class WorkspaceServiceImplTests {
     assertEquals("my/destination/file", workspaceFile.fileName)
 
     verify(exactly = 1) {
-      s3Client.objectExists(S3_BUCKET_NAME, "$ORGANIZATION_ID/$WORKSPACE_ID/my/destination/file")
+      s3Template.objectExists(S3_BUCKET_NAME, "$ORGANIZATION_ID/$WORKSPACE_ID/my/destination/file")
     }
     verify(exactly = 1) {
-      s3Client.upload(
+      s3Template.upload(
           S3_BUCKET_NAME, "$ORGANIZATION_ID/$WORKSPACE_ID/my/destination/file", file.inputStream)
     }
-    confirmVerified(s3Client)
+    confirmVerified(s3Template)
   }
 
   @Test
@@ -263,16 +265,16 @@ class WorkspaceServiceImplTests {
     assertEquals("my/other/destination/file", workspaceFile.fileName)
 
     verify(exactly = 1) {
-      s3Client.objectExists(
+      s3Template.objectExists(
           S3_BUCKET_NAME, "$ORGANIZATION_ID/$WORKSPACE_ID/my/other/destination/file")
     }
     verify(exactly = 1) {
-      s3Client.upload(
+      s3Template.upload(
           S3_BUCKET_NAME,
           "$ORGANIZATION_ID/$WORKSPACE_ID/my/other/destination/file",
           file.inputStream)
     }
-    confirmVerified(s3Client)
+    confirmVerified(s3Template)
   }
 
   @Test
@@ -282,9 +284,9 @@ class WorkspaceServiceImplTests {
           ORGANIZATION_ID, WORKSPACE_ID, mockk(), false, "my/../other/destination/../../file")
     }
 
-    verify(exactly = 0) { s3Client.objectExists(any(), any()) }
-    verify(exactly = 0) { s3Client.upload(any(), any(), any()) }
-    confirmVerified(s3Client)
+    verify(exactly = 0) { s3Template.objectExists(any(), any()) }
+    verify(exactly = 0) { s3Template.upload(any(), any(), any()) }
+    confirmVerified(s3Template)
   }
 
   @Test
@@ -294,8 +296,8 @@ class WorkspaceServiceImplTests {
           ORGANIZATION_ID, WORKSPACE_ID, "my/../../other/destination/file")
     }
 
-    verify(exactly = 0) { s3Client.download(any(), any()) }
-    confirmVerified(s3Client)
+    verify(exactly = 0) { s3Template.download(any(), any()) }
+    confirmVerified(s3Template)
   }
 
   @Test

@@ -58,6 +58,8 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
 
 @Service
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -65,7 +67,8 @@ import org.springframework.stereotype.Service
 internal class WorkspaceServiceImpl(
     private val organizationService: OrganizationApiServiceInterface,
     private val solutionService: SolutionApiService,
-    private val s3Client: S3Template,
+    private val s3Client: S3Client,
+    private val s3Template: S3Template,
     private val csmRbac: CsmRbac,
     private val resourceScanner: ResourceScanner,
     private val secretManager: SecretManager,
@@ -216,7 +219,7 @@ internal class WorkspaceServiceImpl(
         workspace.name,
         fileName)
     return InputStreamResource(
-        s3Client
+        s3Template
             .download(csmPlatformProperties.s3.bucketName, "$organizationId/$workspaceId/$fileName")
             .inputStream)
   }
@@ -256,12 +259,12 @@ internal class WorkspaceServiceImpl(
     val objectKey = "$organizationId/$workspaceId/$fileRelativeDestinationBuilder"
 
     if (overwrite == false &&
-        s3Client.objectExists(csmPlatformProperties.s3.bucketName, objectKey)) {
+        s3Template.objectExists(csmPlatformProperties.s3.bucketName, objectKey)) {
       throw IllegalArgumentException(
           "File '$fileRelativeDestinationBuilder' already exists, not overwriting it")
     }
 
-    s3Client.upload(csmPlatformProperties.s3.bucketName, objectKey, file.inputStream)
+    s3Template.upload(csmPlatformProperties.s3.bucketName, objectKey, file.inputStream)
     return WorkspaceFile(fileName = fileRelativeDestinationBuilder.toString())
   }
 
@@ -375,9 +378,18 @@ internal class WorkspaceServiceImpl(
 
   private fun getWorkspaceFiles(organizationId: String, workspaceId: String): List<WorkspaceFile> {
     val prefix = "${organizationId}/${workspaceId}/"
-    return s3Client.listObjects(csmPlatformProperties.s3.bucketName, prefix).map {
-      WorkspaceFile(fileName = it.getFilename().removePrefix(prefix))
-    }
+    val listObjectsRequest =
+        ListObjectsV2Request.builder()
+            .bucket(csmPlatformProperties.s3.bucketName)
+            .prefix(prefix)
+            .build()
+    return s3Client
+        .listObjectsV2Paginator(listObjectsRequest)
+        .stream()
+        .flatMap {
+          it.contents().stream().map { WorkspaceFile(fileName = it.key().removePrefix(prefix)) }
+        }
+        .toList()
   }
 
   private fun deleteS3WorkspaceObject(
@@ -391,7 +403,7 @@ internal class WorkspaceServiceImpl(
         workspace.name,
         fileName)
 
-    s3Client.deleteObject(
+    s3Template.deleteObject(
         csmPlatformProperties.s3.bucketName, "$organizationId/${workspace.id}/$fileName")
   }
 

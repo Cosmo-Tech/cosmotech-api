@@ -60,6 +60,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.util.ReflectionTestUtils
+import software.amazon.awssdk.services.s3.S3Client
 
 @ActiveProfiles(profiles = ["workspace-test"])
 @ExtendWith(MockKExtension::class)
@@ -72,7 +73,8 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
   val TEST_USER_MAIL = "testuser@mail.fr"
   val CONNECTED_ADMIN_USER = "test.admin@cosmotech.com"
 
-  @RelaxedMockK private lateinit var s3Client: S3Template
+  @RelaxedMockK private lateinit var s3Client: S3Client
+  @RelaxedMockK private lateinit var s3Template: S3Template
   @MockK private lateinit var secretManagerMock: SecretManager
   @MockK private lateinit var resource: Resource
   @MockK private lateinit var inputStream: InputStream
@@ -93,6 +95,7 @@ class WorkspaceServiceRBACTest : CsmRedisTestBase() {
     every { getCurrentAuthenticatedRoles(any()) } returns listOf()
 
     ReflectionTestUtils.setField(workspaceApiService, "s3Client", s3Client)
+    ReflectionTestUtils.setField(workspaceApiService, "s3Template", s3Template)
     ReflectionTestUtils.setField(workspaceApiService, "secretManager", secretManagerMock)
 
     rediSearchIndexer.createIndexFor(Organization::class.java)
