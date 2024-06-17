@@ -17,8 +17,6 @@ entity Connector {
     tags: List<String>
     ownerId: String
     url: String
-    azureManagedIdentity: Boolean
-    azureAuthenticationWithCustomerAppRegistration: Boolean
     ioTypes: List<IoTypesEnum>
     parameterGroups: List<ConnectorParameterGroup>
 }
